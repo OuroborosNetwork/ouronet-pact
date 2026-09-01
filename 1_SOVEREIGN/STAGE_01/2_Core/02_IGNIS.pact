@@ -199,112 +199,7 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    (defun UC_FindKeyIndex:integer (key-lst:[string] key:string)
-        @doc "First index of key in key-lst, or -1 if absent. Single linear scan, local to the \
-            \ compress/prime pipeline below (UDC_CompressOutputCumulator/UDC_PrimeIgnisCumulator) \
-            \ only — NOT a general-purpose replacement for U|LST::UC_Search, whose documented \
-            \ contract (return every matching index) is different and untouched by this helper."
-        (if (= (length key-lst) 0)
-            -1
-            (fold
-                (lambda
-                    (found:integer idx:integer)
-                    (if (and (= found -1) (= (at idx key-lst) key)) idx found)
-                )
-                -1
-                (enumerate 0 (- (length key-lst) 1))
-            )
-        )
-    )
-    ;;{F0}  [UR]
-    ;;{F1}  [URC]
-    (defun URC_Exception (account:string)
-        (contains account GAS_EXCEPTION)
-    )
-    (defun URC_ZeroEliteGAZ (sender:string receiver:string)
-        (let
-            (
-                (t1:bool (URC_Exception sender))
-                (t2:bool (URC_Exception receiver))
-            )
-            (or t1 t2)
-        )
-    )
-    (defun URC_ZeroGAZ:bool (id:string sender:string receiver:string)
-        (let
-            (
-                (t1:bool (URC_ZeroGAS id sender))
-                (t2:bool (URC_Exception receiver))
-            )
-            (or t1 t2)
-        )
-    )
-    (defun URC_ZeroGAS:bool (id:string sender:string)
-        (let
-            (
-                (t1:bool (URC_IsVirtualGasZeroAbsolutely id))
-                (t2:bool (URC_Exception sender))
-            )
-            (or t1 t2)
-        )
-    )
-    (defun URC_IsVirtualGasZeroAbsolutely:bool (id:string)
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (t1:bool (URC_IsVirtualGasZero))
-                (gas-id:string (ref-DALOS::UR_IgnisID))
-                (t2:bool (if (or (= gas-id BAR)(= id gas-id)) true false))
-            )
-            (or t1 t2)
-        )
-    )
-    (defun URC_IsVirtualGasZero:bool ()
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-            )
-            (if (ref-DALOS::UR_VirtualToggle)
-                false
-                true
-            )
-        ) 
-    )
-    (defun URC_IsNativeGasZero:bool ()
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-            )
-            (if (ref-DALOS::UR_NativeToggle)
-                false
-                true
-            )
-        )
-    )
-    ;;{F2}  [UEV]
-    (defun UEV_TwentyFourPrecision (amount:decimal)
-        @doc "Enforces a 24 Precision, for use with IGNIS Token."
-        (enforce
-            (= (floor amount 24) amount)
-            (format "The GAS Amount of {} is not a valid GAS Amount decimal wise" [amount])
-        )
-    )
-    (defun UEV_Patron (patron:string)
-        @doc "Capability that ensures a DALOS account can act as gas payer, enforcing all necesarry restrictions"
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-            )
-            (if (ref-DALOS::UR_AccountType patron)
-                (do
-                    (enforce (= patron DALOS|SC_NAME) "Only the DALOS Account can be a Smart Patron")
-                    (ref-DALOS::CAP_EnforceAccountOwnership DALOS|SC_NAME)
-                )
-                (ref-DALOS::CAP_EnforceAccountOwnership patron)
-            )
-        )
-    )
-    ;;{F3}  [UDC]
+    ;;{F1}  Construct [UDC]
     (defun UDC_MakeIDP:string (ignis-discount:decimal)
         (format "{}{}" [(* (- 1.0 ignis-discount) 100.0) "%"])
     )
@@ -417,40 +312,6 @@
                 []
             )
         )
-    )
-    ;;
-    ;;<======================>
-    ;;[DALOS-URCi] cost readers — the single source for each DALOS client op's tier choice.
-    ;;  DALOS deploys below IGNIS (cannot host these); Talos bills through them and the Z_Reads
-    ;;  presentation derives its preview from the same call, so billing and preview never drift.
-    ;;<======================>
-    (defun DALOS|URCi_ControlSmartAccount:object{IgnisCollectorV1.OutputCumulator} (account:string)
-        (UDC_SmallCumulator account)
-    )
-    (defun DALOS|URCi_RotateGovernor:object{IgnisCollectorV1.OutputCumulator} (account:string)
-        (UDC_SmallCumulator account)
-    )
-    (defun DALOS|URCi_RotateGuard:object{IgnisCollectorV1.OutputCumulator} (account:string)
-        (UDC_SmallCumulator account)
-    )
-    (defun DALOS|URCi_RotateStoa:object{IgnisCollectorV1.OutputCumulator} (account:string)
-        (UDC_SmallCumulator account)
-    )
-    (defun DALOS|URCi_RotateSovereign:object{IgnisCollectorV1.OutputCumulator} (account:string)
-        (UDC_SmallCumulator account)
-    )
-    (defun DALOS|URCi_UpdateEliteAccount:object{IgnisCollectorV1.OutputCumulator} (patron:string)
-        (UDC_SmallCumulator patron)
-    )
-    (defun DALOS|URCi_UpdateEliteAccountSquared:object{IgnisCollectorV1.OutputCumulator} (patron:string)
-        (UDC_MediumCumulator patron)
-    )
-    ;;  STOA-billed DALOS ops: the URCi returns the native fair price (the tier "key" single-sourced)
-    (defun DALOS|URCi_DeploySmartAccount:decimal ()
-        (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::UR_UsagePrice "smart"))
-    )
-    (defun DALOS|URCi_DeployStandardAccount:decimal ()
-        (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::UR_UsagePrice "standard"))
     )
     ;;
     (defun UDC_MakeModularCumulator:object{IgnisCollectorV1.ModularCumulator}
@@ -633,91 +494,6 @@
             {"primed-cumulator" : folded-obj}
         )
     )
-    ;;
-    ;;<======================>
-    ;;[OURONET-INFO] Functions — shared cost/format vocabulary (relocated from INFO-ZERO;
-    ;;  must live pre-Talos so Talos + all cost modules + Z_Reads presentation can reach it)
-    ;;<======================>
-    (defun OI|UC_IfpFromOutputCumulator:decimal (input:object{IgnisCollectorV1.OutputCumulator})
-        (let
-            (
-                (cc:[object{IgnisCollectorV1.ModularCumulator}] (at "cumulator-chain" input))
-            )
-            (fold
-                (lambda
-                    (acc:decimal idx:integer)
-                    (+ acc (at "ignis" (at idx cc)))
-                )
-                0.0
-                (enumerate 0 (- (length cc) 1))
-            )
-        )
-    )
-    (defun OI|UC_ShortAccount:string (account:string)
-        (concat
-            [
-                (take 5 account)
-                "..."
-                (take -3 account)
-            ]
-        )
-    )
-    (defun OI|UC_ConvertPrice:string (input-price:decimal)
-        (let
-            (
-                (number-of-decimals:integer (if (<= input-price 1.00) 3 2))
-                (converted:decimal
-                    (if (< input-price 1.00)
-                        (floor (* input-price 100.0) 3)
-                        (floor input-price 2)
-                    )
-                )
-                (s:string
-                    (if (< input-price 1.00)
-                        "¢"
-                        "$"
-                    )
-                )
-                (ss:string "<0.001¢")
-            )
-            (if (< input-price 0.00001)
-                (format "{}" [ss])
-                (format "{}{}" [converted s])
-            )
-        )
-    )
-    (defun OI|UC_FormatIndex:string (index:decimal)
-        (let
-            (
-                (fi:decimal (floor index 12))
-                (fis:string (format "{}" [fi]))
-                (l1:string (take -3 fis))
-                (l2:string (take -3 (drop -3 fis)))
-                (l3:string (take -3 (drop -6 fis)))
-                (l4:string (take -3 (drop -9 fis)))
-                (whole:string (drop -13 fis))
-            )
-            (concat
-                [whole ",[" l4 "." l3 "." l2 "." l1 "]"]
-            )
-        )
-    )
-    (defun OI|UC_FormatTokenAmount:string (amount:decimal)
-        (format "{}" [(floor amount 4)])
-    )
-    (defun OI|UR_StoaTargets:[string] ()
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-            )
-            [
-                (at 2 (ref-DALOS::UR_DemiurgoiID))
-                DALOS|SC_NAME
-                (at 1 (ref-DALOS::UR_DemiurgoiID))
-                OUROBOROS|SC_NAME
-            ]
-        )
-    )
     (defun OI|UDC_ClientInfo:object{OuronetInfoV1.ClientInfo}
         (a:[string] b:[string] c:object{OuronetInfoV1.ClientIgnisCosts} d:object{OuronetInfoV1.ClientStoaCosts} e:list)
         {"pre-text"         : a
@@ -856,11 +632,279 @@
             (OI|UDC_IgnisCosts patron ifp)
         )
     )
+    ;;{F2}  Compute [UC]
+    (defun UC_FindKeyIndex:integer (key-lst:[string] key:string)
+        @doc "First index of key in key-lst, or -1 if absent. Single linear scan, local to the \
+            \ compress/prime pipeline below (UDC_CompressOutputCumulator/UDC_PrimeIgnisCumulator) \
+            \ only — NOT a general-purpose replacement for U|LST::UC_Search, whose documented \
+            \ contract (return every matching index) is different and untouched by this helper."
+        (if (= (length key-lst) 0)
+            -1
+            (fold
+                (lambda
+                    (found:integer idx:integer)
+                    (if (and (= found -1) (= (at idx key-lst) key)) idx found)
+                )
+                -1
+                (enumerate 0 (- (length key-lst) 1))
+            )
+        )
+    )
     ;;
-    ;;{F4}  [CAP]
+    ;;<======================>
+    ;;[OURONET-INFO] Functions — shared cost/format vocabulary (relocated from INFO-ZERO;
+    ;;  must live pre-Talos so Talos + all cost modules + Z_Reads presentation can reach it)
+    ;;<======================>
+    (defun OI|UC_IfpFromOutputCumulator:decimal (input:object{IgnisCollectorV1.OutputCumulator})
+        (let
+            (
+                (cc:[object{IgnisCollectorV1.ModularCumulator}] (at "cumulator-chain" input))
+            )
+            (fold
+                (lambda
+                    (acc:decimal idx:integer)
+                    (+ acc (at "ignis" (at idx cc)))
+                )
+                0.0
+                (enumerate 0 (- (length cc) 1))
+            )
+        )
+    )
+    (defun OI|UC_ShortAccount:string (account:string)
+        (concat
+            [
+                (take 5 account)
+                "..."
+                (take -3 account)
+            ]
+        )
+    )
+    (defun OI|UC_ConvertPrice:string (input-price:decimal)
+        (let
+            (
+                (number-of-decimals:integer (if (<= input-price 1.00) 3 2))
+                (converted:decimal
+                    (if (< input-price 1.00)
+                        (floor (* input-price 100.0) 3)
+                        (floor input-price 2)
+                    )
+                )
+                (s:string
+                    (if (< input-price 1.00)
+                        "¢"
+                        "$"
+                    )
+                )
+                (ss:string "<0.001¢")
+            )
+            (if (< input-price 0.00001)
+                (format "{}" [ss])
+                (format "{}{}" [converted s])
+            )
+        )
+    )
+    (defun OI|UC_FormatIndex:string (index:decimal)
+        (let
+            (
+                (fi:decimal (floor index 12))
+                (fis:string (format "{}" [fi]))
+                (l1:string (take -3 fis))
+                (l2:string (take -3 (drop -3 fis)))
+                (l3:string (take -3 (drop -6 fis)))
+                (l4:string (take -3 (drop -9 fis)))
+                (whole:string (drop -13 fis))
+            )
+            (concat
+                [whole ",[" l4 "." l3 "." l2 "." l1 "]"]
+            )
+        )
+    )
+    (defun OI|UC_FormatTokenAmount:string (amount:decimal)
+        (format "{}" [(floor amount 4)])
+    )
+    ;;{F3}  Read [UR/URC/URH/URCi]
+    (defun URC_Exception (account:string)
+        (contains account GAS_EXCEPTION)
+    )
+    (defun URC_ZeroEliteGAZ (sender:string receiver:string)
+        (let
+            (
+                (t1:bool (URC_Exception sender))
+                (t2:bool (URC_Exception receiver))
+            )
+            (or t1 t2)
+        )
+    )
+    (defun URC_ZeroGAZ:bool (id:string sender:string receiver:string)
+        (let
+            (
+                (t1:bool (URC_ZeroGAS id sender))
+                (t2:bool (URC_Exception receiver))
+            )
+            (or t1 t2)
+        )
+    )
+    (defun URC_ZeroGAS:bool (id:string sender:string)
+        (let
+            (
+                (t1:bool (URC_IsVirtualGasZeroAbsolutely id))
+                (t2:bool (URC_Exception sender))
+            )
+            (or t1 t2)
+        )
+    )
+    (defun URC_IsVirtualGasZeroAbsolutely:bool (id:string)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (t1:bool (URC_IsVirtualGasZero))
+                (gas-id:string (ref-DALOS::UR_IgnisID))
+                (t2:bool (if (or (= gas-id BAR)(= id gas-id)) true false))
+            )
+            (or t1 t2)
+        )
+    )
+    (defun URC_IsVirtualGasZero:bool ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+            )
+            (if (ref-DALOS::UR_VirtualToggle)
+                false
+                true
+            )
+        ) 
+    )
+    (defun URC_IsNativeGasZero:bool ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+            )
+            (if (ref-DALOS::UR_NativeToggle)
+                false
+                true
+            )
+        )
+    )
     ;;
-    ;;{F5}  [A]
-    ;;{F6}  [C]
+    ;;<======================>
+    ;;[DALOS-URCi] cost readers — the single source for each DALOS client op's tier choice.
+    ;;  DALOS deploys below IGNIS (cannot host these); Talos bills through them and the Z_Reads
+    ;;  presentation derives its preview from the same call, so billing and preview never drift.
+    ;;<======================>
+    (defun DALOS|URCi_ControlSmartAccount:object{IgnisCollectorV1.OutputCumulator} (account:string)
+        (UDC_SmallCumulator account)
+    )
+    (defun DALOS|URCi_RotateGovernor:object{IgnisCollectorV1.OutputCumulator} (account:string)
+        (UDC_SmallCumulator account)
+    )
+    (defun DALOS|URCi_RotateGuard:object{IgnisCollectorV1.OutputCumulator} (account:string)
+        (UDC_SmallCumulator account)
+    )
+    (defun DALOS|URCi_RotateStoa:object{IgnisCollectorV1.OutputCumulator} (account:string)
+        (UDC_SmallCumulator account)
+    )
+    (defun DALOS|URCi_RotateSovereign:object{IgnisCollectorV1.OutputCumulator} (account:string)
+        (UDC_SmallCumulator account)
+    )
+    (defun DALOS|URCi_UpdateEliteAccount:object{IgnisCollectorV1.OutputCumulator} (patron:string)
+        (UDC_SmallCumulator patron)
+    )
+    (defun DALOS|URCi_UpdateEliteAccountSquared:object{IgnisCollectorV1.OutputCumulator} (patron:string)
+        (UDC_MediumCumulator patron)
+    )
+    ;;  STOA-billed DALOS ops: the URCi returns the native fair price (the tier "key" single-sourced)
+    (defun DALOS|URCi_DeploySmartAccount:decimal ()
+        (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::UR_UsagePrice "smart"))
+    )
+    (defun DALOS|URCi_DeployStandardAccount:decimal ()
+        (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::UR_UsagePrice "standard"))
+    )
+    (defun OI|UR_StoaTargets:[string] ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+            )
+            [
+                (at 2 (ref-DALOS::UR_DemiurgoiID))
+                DALOS|SC_NAME
+                (at 1 (ref-DALOS::UR_DemiurgoiID))
+                OUROBOROS|SC_NAME
+            ]
+        )
+    )
+    ;;{F4}  Validate [UEV/CAP]
+    (defun UEV_TwentyFourPrecision (amount:decimal)
+        @doc "Enforces a 24 Precision, for use with IGNIS Token."
+        (enforce
+            (= (floor amount 24) amount)
+            (format "The GAS Amount of {} is not a valid GAS Amount decimal wise" [amount])
+        )
+    )
+    (defun UEV_Patron (patron:string)
+        @doc "Capability that ensures a DALOS account can act as gas payer, enforcing all necesarry restrictions"
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+            )
+            (if (ref-DALOS::UR_AccountType patron)
+                (do
+                    (enforce (= patron DALOS|SC_NAME) "Only the DALOS Account can be a Smart Patron")
+                    (ref-DALOS::CAP_EnforceAccountOwnership DALOS|SC_NAME)
+                )
+                (ref-DALOS::CAP_EnforceAccountOwnership patron)
+            )
+        )
+    )
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    (defun XI_IgnisCollector (patron:string interactor:string amount:decimal)
+        (require-capability (IGNIS|C>COLLECT patron interactor amount))
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (collector:string
+                    (if (= interactor BAR)
+                        (ref-DALOS::UR_Tanker)
+                        interactor
+                    )
+                )
+            )
+            (ref-DALOS::XE_IgnisIncrement false amount)
+            (XI_IgnisTransfer patron collector amount)
+        )
+    )
+    (defun XI_IgnisTransfer (sender:string receiver:string ta:decimal)
+        (require-capability (IGNIS|C>TRANSFER sender receiver ta))
+        (XI_IgnisDebit sender ta)
+        (XI_IgnisCredit receiver ta)
+    )
+    (defun XI_IgnisDebit (sender:string ta:decimal)
+        (require-capability (IGNIS|C>DEBIT sender ta))
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+            )
+            (ref-DALOS::XB_UpdateBalance sender false 
+                (- (ref-DALOS::UR_TF_AccountSupply sender false) ta)
+            )
+        )
+    )
+    (defun XI_IgnisCredit (receiver:string ta:decimal)
+        (require-capability (IGNIS|C>CREDIT receiver))
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+            )
+            (ref-DALOS::XB_UpdateBalance receiver false 
+                (+ (ref-DALOS::UR_TF_AccountSupply receiver false) ta)
+            )
+        )
+    )
+    ;;{F7}  User [A]
+    ;;{F8}  User [C]
+    ;;
+    ;;
     (defun C_TransferDalosFuel (sender:string receiver:string amount:decimal)
         (let
             (
@@ -964,50 +1008,6 @@
                     (C_TransferDalosFuel stoa-sender stoa-dalos am1)        ;;20% to STOA-Dalos (Ouronet Gas Station)
                 )
                 (format "While Stoa Collection is {}, the {} STOA could not be collected" [trigger amount])
-            )
-        )
-    )
-    ;;{F7}  [X]
-    (defun XI_IgnisCollector (patron:string interactor:string amount:decimal)
-        (require-capability (IGNIS|C>COLLECT patron interactor amount))
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (collector:string
-                    (if (= interactor BAR)
-                        (ref-DALOS::UR_Tanker)
-                        interactor
-                    )
-                )
-            )
-            (ref-DALOS::XE_IgnisIncrement false amount)
-            (XI_IgnisTransfer patron collector amount)
-        )
-    )
-    (defun XI_IgnisTransfer (sender:string receiver:string ta:decimal)
-        (require-capability (IGNIS|C>TRANSFER sender receiver ta))
-        (XI_IgnisDebit sender ta)
-        (XI_IgnisCredit receiver ta)
-    )
-    (defun XI_IgnisDebit (sender:string ta:decimal)
-        (require-capability (IGNIS|C>DEBIT sender ta))
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-            )
-            (ref-DALOS::XB_UpdateBalance sender false 
-                (- (ref-DALOS::UR_TF_AccountSupply sender false) ta)
-            )
-        )
-    )
-    (defun XI_IgnisCredit (receiver:string ta:decimal)
-        (require-capability (IGNIS|C>CREDIT receiver))
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-            )
-            (ref-DALOS::XB_UpdateBalance receiver false 
-                (+ (ref-DALOS::UR_TF_AccountSupply receiver false) ta)
             )
         )
     )

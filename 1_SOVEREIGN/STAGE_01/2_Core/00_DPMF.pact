@@ -584,7 +584,24 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    ;;{F0}  [UR]
+    ;;{F1}  Construct [UDC]
+    (defun UDC_Compose:object{DemiourgosPactMetaFungibleV6.DPMF|Schema} (nonce:integer balance:decimal meta-data:[object])
+        @doc "Composes a DPMF Object"
+        {"nonce" : nonce, "balance": balance, "meta-data" : meta-data}
+    )
+    (defun UDC_Nonce-Balance:[object{DemiourgosPactMetaFungibleV6.DPMF|Nonce-Balance}] (nonce-lst:[integer] balance-lst:[decimal])
+        @doc "Composes a Nonce-Balance Object, needed for Wiping functionality"
+        (let
+            (
+                (nonce-length:integer (length nonce-lst))
+                (balance-length:integer (length balance-lst))
+            )
+            (enforce (= nonce-length balance-length) "Nonce and Balance Lists are not of equal length")
+            (zip (lambda (x:integer y:decimal) { "nonce": x, "balance": y }) nonce-lst balance-lst)
+        )
+    )
+    ;;{F2}  Compute [UC]
+    ;;{F3}  Read [UR/URC/URH/URCi]
     (defun UR_P-KEYS:[string] ()
         (keys DPMF|PropertiesTable)
     )
@@ -687,7 +704,6 @@
     (defun UR_AccountSupply:decimal (id:string account:string)
         (fold (+) 0.0 (UR_AccountBalances id account))
     )
-
     (defun UR_AccountRoleBurn:bool (id:string account:string)
         (with-default-read DPMF|BalanceTable (concat [id BAR account])
             { "role-nft-burn" : false}
@@ -890,7 +906,6 @@
             )
         )
     )
-    ;;{F1}  [URC]
     (defun URC_IzRBT:bool (reward-bearing-token:string)
         @doc "Returns a boolean, if token id is RBT in any atspair"
         (UEV_id reward-bearing-token)
@@ -1013,7 +1028,7 @@
             (contains id [ea-id fea rea vea sea])
         )
     )
-    ;;{F2}  [UEV]
+    ;;{F4}  Validate [UEV/CAP]
     (defun UEV_ParentOwnership (dpmf:string)
         @doc "Enforces: \
             \ <dpmf> Ownership, if <dpmf> is pure \
@@ -1224,23 +1239,6 @@
             (enforce (= has-sleeping existance) (format "Sleeping for the Token {} is not satisfied with existance {}" [id existance]))
         )
     )
-    ;;{F3}  [UDC]
-    (defun UDC_Compose:object{DemiourgosPactMetaFungibleV6.DPMF|Schema} (nonce:integer balance:decimal meta-data:[object])
-        @doc "Composes a DPMF Object"
-        {"nonce" : nonce, "balance": balance, "meta-data" : meta-data}
-    )
-    (defun UDC_Nonce-Balance:[object{DemiourgosPactMetaFungibleV6.DPMF|Nonce-Balance}] (nonce-lst:[integer] balance-lst:[decimal])
-        @doc "Composes a Nonce-Balance Object, needed for Wiping functionality"
-        (let
-            (
-                (nonce-length:integer (length nonce-lst))
-                (balance-length:integer (length balance-lst))
-            )
-            (enforce (= nonce-length balance-length) "Nonce and Balance Lists are not of equal length")
-            (zip (lambda (x:integer y:decimal) { "nonce": x, "balance": y }) nonce-lst balance-lst)
-        )
-    )
-    ;;{F4}  [CAP]
     (defun CAP_Owner (id:string)
         @doc "Enforces DPMF Token ID Ownership"
         (let
@@ -1250,308 +1248,8 @@
             (ref-DALOS::CAP_EnforceAccountOwnership (UR_Konto id))
         )
     )
-    ;;
-    ;;{F5}  [A]
-    ;;{F6}  [C]
-    (defun C_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator}
-        (entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}])
-        (UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-BRD:module{BrandingV1} BRD)
-            )
-            (with-capability (DPMF|C>UPDATE-BRD entity-id)
-                (ref-BRD::XE_UpdatePendingBranding entity-id logo description website social)
-                (ref-IGNIS::UDC_BrandingCumulator (UR_Konto entity-id) 1.5)
-            )
-        )
-    )
-    (defun C_UpgradeBranding (patron:string entity-id:string months:integer)
-        (UEV_IMC)
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-BRD:module{BrandingV1} BRD)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (parent:string (URC_Parent entity-id))
-                (parent-owner:string
-                    (if (= parent entity-id)
-                        (UR_Konto entity-id)
-                        (ref-DPTF::UR_Konto parent)
-                    )
-                )
-                (stoa-payment:decimal
-                    (with-capability (DPMF|C>UPGRADE-BRD entity-id)
-                        (ref-BRD::XE_UpgradeBranding entity-id parent-owner months)
-                    )
-                )
-            )
-            (ref-DALOS::STOA|C_CollectWT patron stoa-payment false)
-        )
-    )
-    ;;
-    (defun C_AddQuantity:object{IgnisCollectorV1.OutputCumulator}
-        (id:string nonce:integer account:string amount:decimal)
-        (UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-            )
-            (with-capability (DPMF|C>ADD-QTY id account amount)
-                (XI_AddQuantity id nonce account amount)
-                (ref-IGNIS::UDC_SmallCumulator (UR_Konto id))
-            )
-        )
-    )
-    (defun C_Burn:object{IgnisCollectorV1.OutputCumulator}
-        (id:string nonce:integer account:string amount:decimal)
-        (UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-            )
-            (with-capability (DPMF|C>BURN id account amount)
-                (XI_Burn id nonce account amount)
-                (ref-IGNIS::UDC_SmallCumulator (UR_Konto id))
-            )
-        )
-    )
-    (defun C_Control:object{IgnisCollectorV1.OutputCumulator}
-        (id:string cco:bool cu:bool casr:bool cf:bool cw:bool cp:bool ctncr:bool)
-        (UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-            )
-            (with-capability (DPMF|S>CTRL id)
-                (XI_Control id cco cu casr cf cw cp ctncr)
-                (ref-IGNIS::UDC_MediumCumulator (UR_Konto id))
-            )
-        )
-    )
-    (defun C_Create:object{IgnisCollectorV1.OutputCumulator}
-        (id:string account:string meta-data:[object])
-        (UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (price:decimal (ref-DALOS::UR_UsagePrice "ignis|medium"))
-                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                (new-nonce:integer
-                    (with-capability (DPMF|C>CREATE id account)
-                        (XI_Create id account meta-data)
-                    )
-                )
-            )
-            (ref-IGNIS::UDC_ConstructOutputCumulator price (UR_Konto id) trigger [new-nonce])
-        )
-    )
-    (defun C_DeployAccount (id:string account:string)
-        (UEV_IMC)
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (create-role-account:string (UR_CreateRoleAccount id))
-                (role-nft-create-boolean:bool (if (= create-role-account account) true false))
-            )
-            (ref-DALOS::UEV_EnforceAccountExists account)
-            (UEV_id id)
-            (with-default-read DPMF|BalanceTable (concat [id BAR account])
-                {"exist"                               : true
-                ,"unit"                                : [DPMF|NEUTRAL]
-                ,"role-nft-add-quantity"               : false
-                ,"role-nft-burn"                       : false
-                ,"role-nft-create"                     : role-nft-create-boolean
-                ,"role-transfer"                       : false
-                ,"frozen"                              : false}
-                {"exist"                               := e
-                ,"unit"                                := u
-                ,"role-nft-add-quantity"               := rnaq
-                ,"role-nft-burn"                       := rb
-                ,"role-nft-create"                     := rnc
-                ,"role-transfer"                       := rt
-                ,"frozen"                              := f }
-                (write DPMF|BalanceTable (concat [id BAR account])
-                    {"exist"                           : e
-                    ,"unit"                            : u
-                    ,"role-nft-add-quantity"           : rnaq
-                    ,"role-nft-burn"                   : rb
-                    ,"role-nft-create"                 : rnc
-                    ,"role-transfer"                   : rt
-                    ,"frozen"                          : f}
-                )
-            )
-        )
-    )
-    (defun C_Issue:object{IgnisCollectorV1.OutputCumulator}
-        (patron:string account:string name:[string] ticker:[string] decimals:[integer] can-change-owner:[bool] can-upgrade:[bool] can-add-special-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool] can-transfer-nft-create-role:[bool])
-        (UEV_IMC)
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (l1:integer (length name))
-                (mf-cost:decimal (ref-DALOS::UR_UsagePrice "dpmf"))
-                (stoa-costs:decimal (* (dec l1) mf-cost))
-                (iz-special:[bool] (make-list l1 false))
-                (ico:object{IgnisCollectorV1.OutputCumulator}
-                    (with-capability (SECURE)
-                        (XB_IssueFree account name ticker decimals can-change-owner can-upgrade can-add-special-role can-freeze can-wipe can-pause can-transfer-nft-create-role iz-special)
-                    )
-                )
-            )
-            (ref-DALOS::STOA|C_Collect patron stoa-costs)
-            ico
-        )
-    )
-    (defun C_Mint:object{IgnisCollectorV1.OutputCumulator}
-        (id:string account:string amount:decimal meta-data:[object])
-        (UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (new-nonce:integer
-                    (with-capability (DPMF|C>MINT id account amount)
-                        (XI_Mint id account amount meta-data)
-                    )
-                )
-                (medium:decimal (ref-DALOS::UR_UsagePrice "ignis|medium"))
-                (small:decimal (ref-DALOS::UR_UsagePrice "ignis|small"))
-                (price:decimal (+ medium small))
-                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-            )
-            (ref-IGNIS::UDC_ConstructOutputCumulator price (UR_Konto id) trigger [new-nonce])
-        )
-    )
-    (defun C_MultiBatchTransfer:object{IgnisCollectorV1.OutputCumulator}
-        (id:string nonces:[integer] sender:string receiver:string method:bool)
-        (UEV_IMC)
-        (with-capability (DPMF|S>MULTI-BATCH-TRANSFER id nonces sender)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (folded-obj:[object{IgnisCollectorV1.OutputCumulator}]
-                        (fold
-                            (lambda
-                                (acc:[object{IgnisCollectorV1.OutputCumulator}] idx:integer)
-                                (ref-U|LST::UC_AppL
-                                    acc
-                                    (C_SingleBatchTransfer id (at idx nonces) sender receiver method)
-                                )
-                            )
-                            []
-                            (enumerate 0 (- (length nonces) 1))
-                        )
-                    )
-                )
-                (ref-IGNIS::UDC_ConcatenateOutputCumulators folded-obj [])
-            )
-        )
-    )
-    (defun C_RotateOwnership:object{IgnisCollectorV1.OutputCumulator}
-        (id:string new-owner:string)
-        (UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-            )
-            (with-capability (DPMF|S>RT_OWN id new-owner)
-                (XI_ChangeOwnership id new-owner)
-                (ref-IGNIS::UDC_BiggestCumulator (UR_Konto id))
-            )
-        )
-    )
-    (defun C_SingleBatchTransfer:object{IgnisCollectorV1.OutputCumulator}
-        (id:string nonce:integer sender:string receiver:string method:bool)
-        (UEV_IMC)
-        (C_Transfer id nonce sender receiver (UR_AccountNonceBalance id nonce sender) method)
-    )
-    (defun C_ToggleFreezeAccount:object{IgnisCollectorV1.OutputCumulator}
-        (id:string account:string toggle:bool)
-        (UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-            )
-            (with-capability (DPMF|C>FRZ-ACC id account toggle)
-                (XI_ToggleFreezeAccount id account toggle)
-                (XB_WriteRoles id account 5 toggle)
-                (ref-IGNIS::UDC_BiggestCumulator (UR_Konto id))
-            )
-        )
-    )
-    (defun C_TogglePause:object{IgnisCollectorV1.OutputCumulator}
-        (id:string toggle:bool)
-        (UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-            )
-            (with-capability (DPMF|S>TG_PAUSE id toggle)
-                (XI_TogglePause id toggle)
-                (ref-IGNIS::UDC_MediumCumulator (UR_Konto id))
-            )
-        )
-    )
-    (defun C_ToggleTransferRole:object{IgnisCollectorV1.OutputCumulator}
-        (id:string account:string toggle:bool)
-        (UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-            )
-            (with-capability (DPMF|C>TG_TRANSFER-R id account toggle)
-                (XB_DeployAccountWNE id account)
-                (XI_ToggleTransferRole id account toggle)
-                (XI_UpdateRoleTransferAmount id toggle)
-                (XB_WriteRoles id account 4 toggle)
-                (ref-IGNIS::UDC_BiggestCumulator (UR_Konto id))
-            )
-        )
-    )
-    (defun C_Transfer:object{IgnisCollectorV1.OutputCumulator}
-        (id:string nonce:integer sender:string receiver:string transfer-amount:decimal method:bool)
-        (UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-            )
-            (with-capability (DPMF|C>TRANSFER id sender receiver transfer-amount method)
-                (XI_Transfer id nonce sender receiver transfer-amount method)
-                (ref-IGNIS::UDC_SmallCumulator (UR_Konto id))
-            )
-        )
-    )
-    (defun C_Wipe:object{IgnisCollectorV1.OutputCumulator}
-        (id:string atbw:string)
-        (UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-            )
-            (with-capability (DPMF|C>TOTAL-WIPE id atbw)
-                (XI_Wipe id atbw)
-                (ref-IGNIS::UDC_BiggestCumulator (UR_Konto id))
-            )
-        )
-    )
-    (defun C_WipePartial:object{IgnisCollectorV1.OutputCumulator}
-        (id:string atbw:string nonces:[integer])
-        (UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-            )
-            (with-capability (DPMF|C>PARTIAL-WIPE id atbw nonces)
-                (XI_WipePartial id atbw nonces)
-                (ref-IGNIS::UDC_BiggestCumulator (UR_Konto id))
-            )
-        )
-    )
-    ;;{F7}  [X]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
     (defun XB_DeployAccountWNE (id:string account:string)
         (UEV_IMC)
         (let
@@ -2200,6 +1898,307 @@
             )
             (XI_DebitMultiple id nonces account-to-be-wiped balances)
             (XI_UpdateSupply id sum false)
+        )
+    )
+    ;;{F7}  User [A]
+    ;;{F8}  User [C]
+    ;;
+    (defun C_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator}
+        (entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}])
+        (UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-BRD:module{BrandingV1} BRD)
+            )
+            (with-capability (DPMF|C>UPDATE-BRD entity-id)
+                (ref-BRD::XE_UpdatePendingBranding entity-id logo description website social)
+                (ref-IGNIS::UDC_BrandingCumulator (UR_Konto entity-id) 1.5)
+            )
+        )
+    )
+    (defun C_UpgradeBranding (patron:string entity-id:string months:integer)
+        (UEV_IMC)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-BRD:module{BrandingV1} BRD)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (parent:string (URC_Parent entity-id))
+                (parent-owner:string
+                    (if (= parent entity-id)
+                        (UR_Konto entity-id)
+                        (ref-DPTF::UR_Konto parent)
+                    )
+                )
+                (stoa-payment:decimal
+                    (with-capability (DPMF|C>UPGRADE-BRD entity-id)
+                        (ref-BRD::XE_UpgradeBranding entity-id parent-owner months)
+                    )
+                )
+            )
+            (ref-DALOS::STOA|C_CollectWT patron stoa-payment false)
+        )
+    )
+    ;;
+    (defun C_AddQuantity:object{IgnisCollectorV1.OutputCumulator}
+        (id:string nonce:integer account:string amount:decimal)
+        (UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+            )
+            (with-capability (DPMF|C>ADD-QTY id account amount)
+                (XI_AddQuantity id nonce account amount)
+                (ref-IGNIS::UDC_SmallCumulator (UR_Konto id))
+            )
+        )
+    )
+    (defun C_Burn:object{IgnisCollectorV1.OutputCumulator}
+        (id:string nonce:integer account:string amount:decimal)
+        (UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+            )
+            (with-capability (DPMF|C>BURN id account amount)
+                (XI_Burn id nonce account amount)
+                (ref-IGNIS::UDC_SmallCumulator (UR_Konto id))
+            )
+        )
+    )
+    (defun C_Control:object{IgnisCollectorV1.OutputCumulator}
+        (id:string cco:bool cu:bool casr:bool cf:bool cw:bool cp:bool ctncr:bool)
+        (UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+            )
+            (with-capability (DPMF|S>CTRL id)
+                (XI_Control id cco cu casr cf cw cp ctncr)
+                (ref-IGNIS::UDC_MediumCumulator (UR_Konto id))
+            )
+        )
+    )
+    (defun C_Create:object{IgnisCollectorV1.OutputCumulator}
+        (id:string account:string meta-data:[object])
+        (UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (price:decimal (ref-DALOS::UR_UsagePrice "ignis|medium"))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                (new-nonce:integer
+                    (with-capability (DPMF|C>CREATE id account)
+                        (XI_Create id account meta-data)
+                    )
+                )
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator price (UR_Konto id) trigger [new-nonce])
+        )
+    )
+    (defun C_DeployAccount (id:string account:string)
+        (UEV_IMC)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (create-role-account:string (UR_CreateRoleAccount id))
+                (role-nft-create-boolean:bool (if (= create-role-account account) true false))
+            )
+            (ref-DALOS::UEV_EnforceAccountExists account)
+            (UEV_id id)
+            (with-default-read DPMF|BalanceTable (concat [id BAR account])
+                {"exist"                               : true
+                ,"unit"                                : [DPMF|NEUTRAL]
+                ,"role-nft-add-quantity"               : false
+                ,"role-nft-burn"                       : false
+                ,"role-nft-create"                     : role-nft-create-boolean
+                ,"role-transfer"                       : false
+                ,"frozen"                              : false}
+                {"exist"                               := e
+                ,"unit"                                := u
+                ,"role-nft-add-quantity"               := rnaq
+                ,"role-nft-burn"                       := rb
+                ,"role-nft-create"                     := rnc
+                ,"role-transfer"                       := rt
+                ,"frozen"                              := f }
+                (write DPMF|BalanceTable (concat [id BAR account])
+                    {"exist"                           : e
+                    ,"unit"                            : u
+                    ,"role-nft-add-quantity"           : rnaq
+                    ,"role-nft-burn"                   : rb
+                    ,"role-nft-create"                 : rnc
+                    ,"role-transfer"                   : rt
+                    ,"frozen"                          : f}
+                )
+            )
+        )
+    )
+    (defun C_Issue:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string account:string name:[string] ticker:[string] decimals:[integer] can-change-owner:[bool] can-upgrade:[bool] can-add-special-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool] can-transfer-nft-create-role:[bool])
+        (UEV_IMC)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (l1:integer (length name))
+                (mf-cost:decimal (ref-DALOS::UR_UsagePrice "dpmf"))
+                (stoa-costs:decimal (* (dec l1) mf-cost))
+                (iz-special:[bool] (make-list l1 false))
+                (ico:object{IgnisCollectorV1.OutputCumulator}
+                    (with-capability (SECURE)
+                        (XB_IssueFree account name ticker decimals can-change-owner can-upgrade can-add-special-role can-freeze can-wipe can-pause can-transfer-nft-create-role iz-special)
+                    )
+                )
+            )
+            (ref-DALOS::STOA|C_Collect patron stoa-costs)
+            ico
+        )
+    )
+    (defun C_Mint:object{IgnisCollectorV1.OutputCumulator}
+        (id:string account:string amount:decimal meta-data:[object])
+        (UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (new-nonce:integer
+                    (with-capability (DPMF|C>MINT id account amount)
+                        (XI_Mint id account amount meta-data)
+                    )
+                )
+                (medium:decimal (ref-DALOS::UR_UsagePrice "ignis|medium"))
+                (small:decimal (ref-DALOS::UR_UsagePrice "ignis|small"))
+                (price:decimal (+ medium small))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator price (UR_Konto id) trigger [new-nonce])
+        )
+    )
+    (defun C_MultiBatchTransfer:object{IgnisCollectorV1.OutputCumulator}
+        (id:string nonces:[integer] sender:string receiver:string method:bool)
+        (UEV_IMC)
+        (with-capability (DPMF|S>MULTI-BATCH-TRANSFER id nonces sender)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (folded-obj:[object{IgnisCollectorV1.OutputCumulator}]
+                        (fold
+                            (lambda
+                                (acc:[object{IgnisCollectorV1.OutputCumulator}] idx:integer)
+                                (ref-U|LST::UC_AppL
+                                    acc
+                                    (C_SingleBatchTransfer id (at idx nonces) sender receiver method)
+                                )
+                            )
+                            []
+                            (enumerate 0 (- (length nonces) 1))
+                        )
+                    )
+                )
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators folded-obj [])
+            )
+        )
+    )
+    (defun C_RotateOwnership:object{IgnisCollectorV1.OutputCumulator}
+        (id:string new-owner:string)
+        (UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+            )
+            (with-capability (DPMF|S>RT_OWN id new-owner)
+                (XI_ChangeOwnership id new-owner)
+                (ref-IGNIS::UDC_BiggestCumulator (UR_Konto id))
+            )
+        )
+    )
+    (defun C_SingleBatchTransfer:object{IgnisCollectorV1.OutputCumulator}
+        (id:string nonce:integer sender:string receiver:string method:bool)
+        (UEV_IMC)
+        (C_Transfer id nonce sender receiver (UR_AccountNonceBalance id nonce sender) method)
+    )
+    (defun C_ToggleFreezeAccount:object{IgnisCollectorV1.OutputCumulator}
+        (id:string account:string toggle:bool)
+        (UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+            )
+            (with-capability (DPMF|C>FRZ-ACC id account toggle)
+                (XI_ToggleFreezeAccount id account toggle)
+                (XB_WriteRoles id account 5 toggle)
+                (ref-IGNIS::UDC_BiggestCumulator (UR_Konto id))
+            )
+        )
+    )
+    (defun C_TogglePause:object{IgnisCollectorV1.OutputCumulator}
+        (id:string toggle:bool)
+        (UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+            )
+            (with-capability (DPMF|S>TG_PAUSE id toggle)
+                (XI_TogglePause id toggle)
+                (ref-IGNIS::UDC_MediumCumulator (UR_Konto id))
+            )
+        )
+    )
+    (defun C_ToggleTransferRole:object{IgnisCollectorV1.OutputCumulator}
+        (id:string account:string toggle:bool)
+        (UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+            )
+            (with-capability (DPMF|C>TG_TRANSFER-R id account toggle)
+                (XB_DeployAccountWNE id account)
+                (XI_ToggleTransferRole id account toggle)
+                (XI_UpdateRoleTransferAmount id toggle)
+                (XB_WriteRoles id account 4 toggle)
+                (ref-IGNIS::UDC_BiggestCumulator (UR_Konto id))
+            )
+        )
+    )
+    (defun C_Transfer:object{IgnisCollectorV1.OutputCumulator}
+        (id:string nonce:integer sender:string receiver:string transfer-amount:decimal method:bool)
+        (UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+            )
+            (with-capability (DPMF|C>TRANSFER id sender receiver transfer-amount method)
+                (XI_Transfer id nonce sender receiver transfer-amount method)
+                (ref-IGNIS::UDC_SmallCumulator (UR_Konto id))
+            )
+        )
+    )
+    (defun C_Wipe:object{IgnisCollectorV1.OutputCumulator}
+        (id:string atbw:string)
+        (UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+            )
+            (with-capability (DPMF|C>TOTAL-WIPE id atbw)
+                (XI_Wipe id atbw)
+                (ref-IGNIS::UDC_BiggestCumulator (UR_Konto id))
+            )
+        )
+    )
+    (defun C_WipePartial:object{IgnisCollectorV1.OutputCumulator}
+        (id:string atbw:string nonces:[integer])
+        (UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+            )
+            (with-capability (DPMF|C>PARTIAL-WIPE id atbw nonces)
+                (XI_WipePartial id atbw nonces)
+                (ref-IGNIS::UDC_BiggestCumulator (UR_Konto id))
+            )
         )
     )
     ;;

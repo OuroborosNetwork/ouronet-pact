@@ -645,11 +645,27 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
+    ;;{F1}  Construct [UDC]
+    (defun UDC_TrueFungibleAccount:object{OuronetDalosV1.DPTF|BalanceSchema}
+        (a:decimal b:bool c:bool d:bool e:bool f:bool g:string h:string)
+        {"balance"              : a
+        ,"frozen"               : b
+        ,"role-burn"            : c
+        ,"role-mint"            : d
+        ,"role-fee-exemption"   : e
+        ,"role-transfer"        : f
+        ,"id"                   : g
+        ,"account"              : h}
+    )
+    (defun UDC_BlankTrueFungible:object{OuronetDalosV1.DPTF|BalanceSchema} (account:string)
+        (UDC_TrueFungibleAccount 0.0 false false false false false BAR account)
+    )
+    ;;{F2}  Compute [UC]
     (defun UC_GuardProtocol:string (g:guard)
         @doc "Principal protocol prefix for a guard (k:/w:/r:/u:/c:/m:/p:)."
         (typeof-principal (create-principal g))
     )
-    ;;{F0}  [UR]
+    ;;{F3}  Read [UR/URC/URH/URCi]
     (defun URH_AccountCounter ()
         (format "Ouronet has {} real Accounts!"
             [(length (keys DALOS|AccountTable))]
@@ -873,7 +889,6 @@
             ]
         )
     )
-    ;;{F1}  [URC]
     ;;
     (defun URC_IgnisGasDiscount:decimal (account:string)
         @doc "Computes the Discount for Ignis Gas Costs. A value of 1.00 means no discount"
@@ -938,7 +953,7 @@
             )
         )
     )
-    ;;{F2}  [UEV]
+    ;;{F4}  Validate [UEV/CAP]
     (defun UEV_NotSmartOuronetAccount (account:string)
         (enforce (not (UR_AutonomicRoles account)) "Non Smart Ouronet Accounts required for exec")
     )
@@ -1068,23 +1083,7 @@
                     (format "Guard must be key-based (keyset/keyset-ref); got '{}'" [proto]))
                 (enforce (contains proto ["u:" "c:" "m:" "p:"])
                     (format "Governor must be non-key-based (user/capability/module/pact); got '{}'" [proto])))))
-    ;;{F3}  [UDC]
-    (defun UDC_TrueFungibleAccount:object{OuronetDalosV1.DPTF|BalanceSchema}
-        (a:decimal b:bool c:bool d:bool e:bool f:bool g:string h:string)
-        {"balance"              : a
-        ,"frozen"               : b
-        ,"role-burn"            : c
-        ,"role-mint"            : d
-        ,"role-fee-exemption"   : e
-        ,"role-transfer"        : f
-        ,"id"                   : g
-        ,"account"              : h}
-    )
-    (defun UDC_BlankTrueFungible:object{OuronetDalosV1.DPTF|BalanceSchema} (account:string)
-        (UDC_TrueFungibleAccount 0.0 false false false false false BAR account)
-    )
     ;;
-    ;;{F4}  [CAP]
     (defun CAP_EnforceAccountOwnership (account:string)
         @doc "Enforces OuroNet Account Ownership"
         (if (UR_AccountType account)
@@ -1092,159 +1091,9 @@
             (UEV_StandardAccOwn account)
         )
     )
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
     ;;
-    ;;{F5}  [A]
-    (defun A_MigrateLiquidFunds:decimal (migration-target-stoa-account:string)
-        (UEV_IMC)
-        (with-capability (GOV|MIGRATE migration-target-stoa-account)
-            (let
-                (
-                    (ref-coin:module{stoa-ns.fungible-v1} coin)    
-                    (dalos-stoa:string DALOS|SC_STOA-NAME)
-                    (present-stoa-balance:decimal (ref-coin::get-balance dalos-stoa))
-                )
-                (install-capability (ref-coin::TRANSFER dalos-stoa migration-target-stoa-account present-stoa-balance))
-                (ref-coin::transfer dalos-stoa migration-target-stoa-account present-stoa-balance)
-                present-stoa-balance
-            )
-        )
-    )
-    (defun A_ToggleOAPU (oapu:bool)
-        (UEV_IMC)
-        (with-capability (GOV|DALOS_ADMIN)
-            (update DALOS|PropertiesTable DALOS|INFO
-                {"ouro-auto-price-via-swaps"    : oapu}
-            )
-        )
-    )
-    (defun A_ToggleGAP (gap:bool)
-        (UEV_IMC)
-        (with-capability (GOV|GAP gap)
-            (update DALOS|PropertiesTable DALOS|INFO
-                {"global-administrative-pause"  : gap}
-            )
-        )
-    )
-    (defun A_DeploySmartAccount (account:string guard:guard stoa:string sovereign:string public:string)
-        (with-capability (DALOS|A>DEPLOY-SMART-OURONET-ACCOUNT account guard stoa sovereign)
-            (XI_DeploySmartAccount account guard stoa sovereign public)
-        )
-    )
-    (defun A_DeployStandardAccount (account:string guard:guard stoa:string public:string)
-        (with-capability (SECURE-ADMIN)
-            (XI_DeployStandardAccount account guard stoa public)
-        )
-    )
-    (defun A_ToggleGasCollection (native:bool toggle:bool)
-        @doc "Enables or disable GAS Collection. \
-            \ <native> true reffers to STOA Collection \
-            \ <native> false reffers to IGNIS Collection"
-        (UEV_IMC)
-        (with-capability (DALOS|C>TOGGLE-GAS-COLLECTION native toggle)
-            (XI_GasToggle native toggle)
-        )
-    )
-    (defun A_SetIgnisSourcePrice (price:decimal)
-        (UEV_IMC)
-        (with-capability (DALOS|S>SET-OURO-PRICE price)
-            (XB_UpdateOuroPrice price)
-        )
-    )
-    (defun A_SetAutoFueling (toggle:bool)
-        (UEV_IMC)
-        (with-capability (GOV|DALOS_ADMIN)
-            (update DALOS|GasManagementTable DALOS|VGD
-                {"native-gas-pump" : toggle}
-            )
-        )
-    )
-    (defun A_UpdatePublicKey (account:string new-public:string)
-        (UEV_IMC)
-        (with-capability (GOV|DALOS_ADMIN)
-            (update DALOS|AccountTable account
-                {"public"     : new-public}
-            )
-        )
-    )
-    ;;#53L fix: added a non-negative bound check on <new-price> - defense-in-depth for an
-    ;;admin-only fat-finger, not a security gate (GOV|DALOS_ADMIN already fully trusted). A
-    ;;stray 0/negative price here was flagged as a contributing cause of #8H (IGNIS C_Collect's
-    ;;since-fixed zero-leg abort) - purely additive, no change to the existing valid-price path.
-    (defun A_UpdateUsagePrice (action:string new-price:decimal)
-        (UEV_IMC)
-        (with-capability (GOV|DALOS_ADMIN)
-            (enforce (> new-price 0.0) "New price must be a positive amount")
-            (let
-                (
-                    (ref-U|CT:module{OuronetConstantsV1} U|CT)
-                    (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))
-                )
-                (write DALOS|PricesTable action
-                    {"price"     : (floor new-price stoa-prec)}
-                )
-            )
-        )
-    )
-    ;;{F6}  [C]
-    (defun C_ControlSmartAccount
-        (account:string payable-as-smart-contract:bool payable-by-smart-contract:bool payable-by-method:bool)
-        (UEV_IMC)
-        (with-capability (DALOS|C>CONTROL-SMART-OURONET-ACCOUNT account payable-as-smart-contract payable-by-smart-contract payable-by-method)
-            (XI_UpdateSmartAccountParameters account payable-as-smart-contract payable-by-smart-contract payable-by-method)
-        )
-    )
-    (defun C_DeploySmartAccount (account:string guard:guard stoa:string sovereign:string public:string)
-        (UEV_IMC)
-        (with-capability (DALOS|C>DEPLOY-SMART-OURONET-ACCOUNT account guard stoa sovereign)
-            (XI_DeploySmartAccount account guard stoa sovereign public)
-        )
-    )
-    (defun C_DeployStandardAccount (account:string guard:guard stoa:string public:string)
-        (UEV_IMC)
-        (with-capability (SECURE)
-            (XI_DeployStandardAccount account guard stoa public)
-        )
-    )
-    (defun C_RotateGovernor
-        (account:string governor:guard)
-        (UEV_IMC)
-        (with-capability (DALOS|C>ROTATE-OA_GOVERNOR account governor)
-            (XI_RotateGovernor account governor)
-        )
-    )
-    (defun C_RotateGuard
-        (account:string new-guard:guard safe:bool)
-        (UEV_IMC)
-        (with-capability (DALOS|C>ROTATE-OA-GUARD account new-guard safe)
-            (XI_RotateGuard account new-guard safe)
-        )
-    )
-    (defun C_RotateStoa
-        (account:string stoa:string)
-        (UEV_IMC)
-        (with-capability (DALOS|C>ROTATE-OA-STOA account)
-            ;;#25M fix: read the OLD stoa address before XI_RotateStoa overwrites it -
-            ;;otherwise UR_AccountStoa returns the already-rotated NEW address, the ledger
-            ;;cleanup targets the wrong key, and the old address's ledger row is orphaned forever.
-            (let
-                (
-                    (old-stoa:string (UR_AccountStoa account))
-                )
-                (XI_RotateStoa account stoa)
-                (XI_UpdateStoaLedger old-stoa account false)
-                (XI_UpdateStoaLedger stoa account true)
-            )
-        )
-    )
-    (defun C_RotateSovereign
-        (account:string new-sovereign:string)
-        (UEV_IMC)
-        (with-capability (DALOS|S>ROTATE-OA-SOVEREIGN account new-sovereign)
-            (XI_RotateSovereign account new-sovereign)
-        )
-    )
-    ;;
-    ;;{F7}  [X]
     ;;
     ;;      [X-A]
     (defun XI_DeploySmartAccount (account:string guard:guard stoa:string sovereign:string public:string)
@@ -1531,8 +1380,100 @@
             )
         )
     )
+    ;;{F7}  User [A]
     ;;
-    ;;{F8}  [AUP - Admin Update Functions]
+    (defun A_MigrateLiquidFunds:decimal (migration-target-stoa-account:string)
+        (UEV_IMC)
+        (with-capability (GOV|MIGRATE migration-target-stoa-account)
+            (let
+                (
+                    (ref-coin:module{stoa-ns.fungible-v1} coin)    
+                    (dalos-stoa:string DALOS|SC_STOA-NAME)
+                    (present-stoa-balance:decimal (ref-coin::get-balance dalos-stoa))
+                )
+                (install-capability (ref-coin::TRANSFER dalos-stoa migration-target-stoa-account present-stoa-balance))
+                (ref-coin::transfer dalos-stoa migration-target-stoa-account present-stoa-balance)
+                present-stoa-balance
+            )
+        )
+    )
+    (defun A_ToggleOAPU (oapu:bool)
+        (UEV_IMC)
+        (with-capability (GOV|DALOS_ADMIN)
+            (update DALOS|PropertiesTable DALOS|INFO
+                {"ouro-auto-price-via-swaps"    : oapu}
+            )
+        )
+    )
+    (defun A_ToggleGAP (gap:bool)
+        (UEV_IMC)
+        (with-capability (GOV|GAP gap)
+            (update DALOS|PropertiesTable DALOS|INFO
+                {"global-administrative-pause"  : gap}
+            )
+        )
+    )
+    (defun A_DeploySmartAccount (account:string guard:guard stoa:string sovereign:string public:string)
+        (with-capability (DALOS|A>DEPLOY-SMART-OURONET-ACCOUNT account guard stoa sovereign)
+            (XI_DeploySmartAccount account guard stoa sovereign public)
+        )
+    )
+    (defun A_DeployStandardAccount (account:string guard:guard stoa:string public:string)
+        (with-capability (SECURE-ADMIN)
+            (XI_DeployStandardAccount account guard stoa public)
+        )
+    )
+    (defun A_ToggleGasCollection (native:bool toggle:bool)
+        @doc "Enables or disable GAS Collection. \
+            \ <native> true reffers to STOA Collection \
+            \ <native> false reffers to IGNIS Collection"
+        (UEV_IMC)
+        (with-capability (DALOS|C>TOGGLE-GAS-COLLECTION native toggle)
+            (XI_GasToggle native toggle)
+        )
+    )
+    (defun A_SetIgnisSourcePrice (price:decimal)
+        (UEV_IMC)
+        (with-capability (DALOS|S>SET-OURO-PRICE price)
+            (XB_UpdateOuroPrice price)
+        )
+    )
+    (defun A_SetAutoFueling (toggle:bool)
+        (UEV_IMC)
+        (with-capability (GOV|DALOS_ADMIN)
+            (update DALOS|GasManagementTable DALOS|VGD
+                {"native-gas-pump" : toggle}
+            )
+        )
+    )
+    (defun A_UpdatePublicKey (account:string new-public:string)
+        (UEV_IMC)
+        (with-capability (GOV|DALOS_ADMIN)
+            (update DALOS|AccountTable account
+                {"public"     : new-public}
+            )
+        )
+    )
+    ;;#53L fix: added a non-negative bound check on <new-price> - defense-in-depth for an
+    ;;admin-only fat-finger, not a security gate (GOV|DALOS_ADMIN already fully trusted). A
+    ;;stray 0/negative price here was flagged as a contributing cause of #8H (IGNIS C_Collect's
+    ;;since-fixed zero-leg abort) - purely additive, no change to the existing valid-price path.
+    (defun A_UpdateUsagePrice (action:string new-price:decimal)
+        (UEV_IMC)
+        (with-capability (GOV|DALOS_ADMIN)
+            (enforce (> new-price 0.0) "New price must be a positive amount")
+            (let
+                (
+                    (ref-U|CT:module{OuronetConstantsV1} U|CT)
+                    (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))
+                )
+                (write DALOS|PricesTable action
+                    {"price"     : (floor new-price stoa-prec)}
+                )
+            )
+        )
+    )
+    ;;
     ;;
     (defcap AHU ()
         (let
@@ -1579,6 +1520,64 @@
                 (remove "exist" v2)
                 v2
             )
+        )
+    )
+    ;;{F8}  User [C]
+    (defun C_ControlSmartAccount
+        (account:string payable-as-smart-contract:bool payable-by-smart-contract:bool payable-by-method:bool)
+        (UEV_IMC)
+        (with-capability (DALOS|C>CONTROL-SMART-OURONET-ACCOUNT account payable-as-smart-contract payable-by-smart-contract payable-by-method)
+            (XI_UpdateSmartAccountParameters account payable-as-smart-contract payable-by-smart-contract payable-by-method)
+        )
+    )
+    (defun C_DeploySmartAccount (account:string guard:guard stoa:string sovereign:string public:string)
+        (UEV_IMC)
+        (with-capability (DALOS|C>DEPLOY-SMART-OURONET-ACCOUNT account guard stoa sovereign)
+            (XI_DeploySmartAccount account guard stoa sovereign public)
+        )
+    )
+    (defun C_DeployStandardAccount (account:string guard:guard stoa:string public:string)
+        (UEV_IMC)
+        (with-capability (SECURE)
+            (XI_DeployStandardAccount account guard stoa public)
+        )
+    )
+    (defun C_RotateGovernor
+        (account:string governor:guard)
+        (UEV_IMC)
+        (with-capability (DALOS|C>ROTATE-OA_GOVERNOR account governor)
+            (XI_RotateGovernor account governor)
+        )
+    )
+    (defun C_RotateGuard
+        (account:string new-guard:guard safe:bool)
+        (UEV_IMC)
+        (with-capability (DALOS|C>ROTATE-OA-GUARD account new-guard safe)
+            (XI_RotateGuard account new-guard safe)
+        )
+    )
+    (defun C_RotateStoa
+        (account:string stoa:string)
+        (UEV_IMC)
+        (with-capability (DALOS|C>ROTATE-OA-STOA account)
+            ;;#25M fix: read the OLD stoa address before XI_RotateStoa overwrites it -
+            ;;otherwise UR_AccountStoa returns the already-rotated NEW address, the ledger
+            ;;cleanup targets the wrong key, and the old address's ledger row is orphaned forever.
+            (let
+                (
+                    (old-stoa:string (UR_AccountStoa account))
+                )
+                (XI_RotateStoa account stoa)
+                (XI_UpdateStoaLedger old-stoa account false)
+                (XI_UpdateStoaLedger stoa account true)
+            )
+        )
+    )
+    (defun C_RotateSovereign
+        (account:string new-sovereign:string)
+        (UEV_IMC)
+        (with-capability (DALOS|S>ROTATE-OA-SOVEREIGN account new-sovereign)
+            (XI_RotateSovereign account new-sovereign)
         )
     )
     ;;

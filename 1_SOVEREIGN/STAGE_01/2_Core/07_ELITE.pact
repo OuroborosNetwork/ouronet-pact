@@ -125,8 +125,9 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    ;;{F0}  [UR]
-    ;;{F1}  [URC]
+    ;;{F1}  Construct [UDC]
+    ;;{F2}  Compute [UC]
+    ;;{F3}  Read [UR/URC/URH/URCi]
     (defun URC_EliteAurynzSupply (account:string)
         (let
             (
@@ -196,13 +197,10 @@
             (contains id [ea-id fea rea vea sea hea])
         )
     )
-    ;;{F2}  [UEV]
-    ;;{F3}  [UDC]
-    ;;{F4}  [CAP]
+    ;;{F4}  Validate [UEV/CAP]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
     ;;
-    ;;{F5}  [A]
-    ;;{F6}  [C]
-    ;;{F7}  [X]
     (defun XE_UpdateEliteSingle (id:string account:string)
         (UEV_IMC)
         (let
@@ -246,6 +244,8 @@
             )
         )
     )
+    ;;{F7}  User [A]
+    ;;{F8}  User [C]
     ;;
 )
 

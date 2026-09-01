@@ -147,69 +147,7 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    ;;{F0}  [UR]
-    (defun UR_Branding:object{BrandingV1.Schema} (id:string pending:bool)
-        (if pending
-            (with-read BRD|BrandingTable id
-                { "branding-pending" := b }
-                b
-            )
-            (with-read BRD|BrandingTable id
-                { "branding" := b }
-                b
-            )
-        )
-    )
-    (defun UR_Logo:string (id:string pending:bool)
-        (at "logo" (UR_Branding id pending))
-    )
-    (defun UR_Description:string (id:string pending:bool)
-        (at "description" (UR_Branding id pending))
-    )
-    (defun UR_Website:string (id:string pending:bool)
-        (at "website" (UR_Branding id pending))
-    )
-    (defun UR_Social:[object{BrandingV1.SocialSchema}] (id:string pending:bool)
-        (at "social" (UR_Branding id pending))
-    )
-    (defun UR_Flag:integer (id:string pending:bool)
-        (at "flag" (UR_Branding id pending))
-    )
-    (defun UR_Genesis:time (id:string pending:bool)
-        (at "genesis" (UR_Branding id pending))
-    )
-    (defun UR_PremiumUntil:time (id:string pending:bool)
-        (at "premium-until" (UR_Branding id pending))
-    )
-    ;;{F1}  [URC]
-    (defun URC_MaxBluePayment (account:string)
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (mt:integer (ref-DALOS::UR_Elite-Tier-Major account))
-            )
-            (if (<= mt 2)
-                1
-                (if (and (> mt 2)(< mt 5))
-                    2
-                    3
-                )
-            )
-        )
-    )
-    (defun URCi_UpgradeBranding:decimal (months:integer)
-        @doc "Blue-flag upgrade cost = months * UsagePrice(\"blue\"). Single source \
-            \ for both the XE_UpgradeBranding write (exec billing) and every module's \
-            \ C_UpgradeBranding cost preview (INFO)."
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-            )
-            (* (dec months) (ref-DALOS::UR_UsagePrice "blue"))
-        )
-    )
-    ;;{F2}  [UEV]
-    ;;{F3}  [UDC]
+    ;;{F1}  Construct [UDC]
     (defun UDC_BrandingLogo:object{BrandingV1.Schema} (input:object{BrandingV1.Schema} logo:string)
         (+
             {"logo" : logo}
@@ -247,42 +185,70 @@
             (remove "premium-until" input)
         )
     )
-    ;;{F4}  [CAP]
-    ;;
-    ;;{F5}  [A]
-    (defun A_Live (entity-id:string)
-        (UEV_IMC)
-        (with-capability (BRD|C>LIVE)
-            (let
-                (
-                    (branding-pending:object{BrandingV1.Schema} (UR_Branding entity-id true))
-                    (flag:integer (UR_Flag entity-id false))
-                    (updated-flag:integer (if (<= flag 1) flag 2))
-                    (updated-branding:object{BrandingV1.Schema} (UDC_BrandingFlag branding-pending updated-flag))
-                    (np1:object{BrandingV1.Schema} (UDC_BrandingLogo branding-pending BAR))
-                    (np2:object{BrandingV1.Schema} (UDC_BrandingDescription np1 BAR))
-                    (np3:object{BrandingV1.Schema} (UDC_BrandingWebsite np2 BAR))
-                    (np4:object{BrandingV1.Schema} (UDC_BrandingSocial np3 [SOCIAL|EMPTY]))
-                )
-                (XI_UpdateBrandingData entity-id false updated-branding)
-                (XI_UpdateBrandingData entity-id true np4)
+    ;;{F2}  Compute [UC]
+    ;;{F3}  Read [UR/URC/URH/URCi]
+    (defun UR_Branding:object{BrandingV1.Schema} (id:string pending:bool)
+        (if pending
+            (with-read BRD|BrandingTable id
+                { "branding-pending" := b }
+                b
+            )
+            (with-read BRD|BrandingTable id
+                { "branding" := b }
+                b
             )
         )
     )
-    (defun A_SetFlag (entity-id:string flag:integer)
-        (UEV_IMC)
-        (with-capability (BRD|C>ADMIN_SET flag)
-            (let
-                (
-                    (existing-branding:object{BrandingV1.Schema} (UR_Branding entity-id false))
-                    (modified-branding:object{BrandingV1.Schema} (UDC_BrandingFlag existing-branding flag))
+    (defun UR_Logo:string (id:string pending:bool)
+        (at "logo" (UR_Branding id pending))
+    )
+    (defun UR_Description:string (id:string pending:bool)
+        (at "description" (UR_Branding id pending))
+    )
+    (defun UR_Website:string (id:string pending:bool)
+        (at "website" (UR_Branding id pending))
+    )
+    (defun UR_Social:[object{BrandingV1.SocialSchema}] (id:string pending:bool)
+        (at "social" (UR_Branding id pending))
+    )
+    (defun UR_Flag:integer (id:string pending:bool)
+        (at "flag" (UR_Branding id pending))
+    )
+    (defun UR_Genesis:time (id:string pending:bool)
+        (at "genesis" (UR_Branding id pending))
+    )
+    (defun UR_PremiumUntil:time (id:string pending:bool)
+        (at "premium-until" (UR_Branding id pending))
+    )
+    (defun URC_MaxBluePayment (account:string)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (mt:integer (ref-DALOS::UR_Elite-Tier-Major account))
+            )
+            (if (<= mt 2)
+                1
+                (if (and (> mt 2)(< mt 5))
+                    2
+                    3
                 )
-                (XI_UpdateBrandingData entity-id false modified-branding)
             )
         )
     )
-    ;;{F6}  [C]
-    ;;{F7}  [X]
+    (defun URCi_UpgradeBranding:decimal (months:integer)
+        @doc "Blue-flag upgrade cost = months * UsagePrice(\"blue\"). Single source \
+            \ for both the XE_UpgradeBranding write (exec billing) and every module's \
+            \ C_UpgradeBranding cost preview (INFO)."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+            )
+            (* (dec months) (ref-DALOS::UR_UsagePrice "blue"))
+        )
+    )
+    ;;{F4}  Validate [UEV/CAP]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
     (defun XE_Issue (entity-id:string)
         (UEV_IMC)
         (insert BRD|BrandingTable entity-id
@@ -380,6 +346,40 @@
             )
         )
     )
+    ;;{F7}  User [A]
+    ;;
+    (defun A_Live (entity-id:string)
+        (UEV_IMC)
+        (with-capability (BRD|C>LIVE)
+            (let
+                (
+                    (branding-pending:object{BrandingV1.Schema} (UR_Branding entity-id true))
+                    (flag:integer (UR_Flag entity-id false))
+                    (updated-flag:integer (if (<= flag 1) flag 2))
+                    (updated-branding:object{BrandingV1.Schema} (UDC_BrandingFlag branding-pending updated-flag))
+                    (np1:object{BrandingV1.Schema} (UDC_BrandingLogo branding-pending BAR))
+                    (np2:object{BrandingV1.Schema} (UDC_BrandingDescription np1 BAR))
+                    (np3:object{BrandingV1.Schema} (UDC_BrandingWebsite np2 BAR))
+                    (np4:object{BrandingV1.Schema} (UDC_BrandingSocial np3 [SOCIAL|EMPTY]))
+                )
+                (XI_UpdateBrandingData entity-id false updated-branding)
+                (XI_UpdateBrandingData entity-id true np4)
+            )
+        )
+    )
+    (defun A_SetFlag (entity-id:string flag:integer)
+        (UEV_IMC)
+        (with-capability (BRD|C>ADMIN_SET flag)
+            (let
+                (
+                    (existing-branding:object{BrandingV1.Schema} (UR_Branding entity-id false))
+                    (modified-branding:object{BrandingV1.Schema} (UDC_BrandingFlag existing-branding flag))
+                )
+                (XI_UpdateBrandingData entity-id false modified-branding)
+            )
+        )
+    )
+    ;;{F8}  User [C]
     ;;
 )
 

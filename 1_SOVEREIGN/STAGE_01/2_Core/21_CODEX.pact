@@ -364,7 +364,103 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    ;;{F0}  [UC]
+    ;;{F1}  Construct [UDC]
+    (defun UDC_CIX|Identity:object{CODEX|S|Identity}
+        ( codex-id-standard:string
+          codex-id-smart:string
+          public-standard:string
+          public-smart:string
+          codex-guard:guard
+          registered-at:time
+          registered-by:string
+          codex-id:string )
+        @doc "Constructor for object{CODEX|S|Identity}."
+        { "codex-id-standard": codex-id-standard
+        , "codex-id-smart":    codex-id-smart
+        , "public-standard":   public-standard
+        , "public-smart":      public-smart
+        , "codex-guard":       codex-guard
+        , "registered-at":     registered-at
+        , "registered-by":     registered-by
+        , "codex-id":          codex-id
+        }
+    )
+    (defun UDC_CIX|GuardUpdate:object (new-codex-guard:guard)
+        @doc "Partial update object for codex-guard rotation."
+        { "codex-guard": new-codex-guard }
+    )
+    (defun UDC_CIX|Unregistered:object ()
+        @doc "Sentinel for UR_CIX|DataOrNull when codex-id is absent."
+        { "codex-id":           ""
+        , "codex-id-standard":  ""
+        , "codex-id-smart":     ""
+        , "public-standard":    ""
+        , "public-smart":       ""
+        , "registered-at":      CODEX|EPOCH
+        , "registered-by":      ""
+        , "is-registered":      false
+        }
+    )
+    (defun UDC_CIX|WithRegisteredFlag:object (row:object{CODEX|S|Identity})
+        (+ row { "is-registered": true })
+    )
+    (defun UDC_AWT|Tracker:object{CODEX|S|ArweaveTracker}
+        ( codex-id:string
+          arweave-tx-id:string
+          upload-time:time
+          uploaded-bytes:integer )
+        { "codex-id":       codex-id
+        , "arweave-tx-id":  arweave-tx-id
+        , "upload-time":    upload-time
+        , "uploaded-bytes": uploaded-bytes
+        }
+    )
+    (defun UDC_AWT|EmptyLatest:object (codex-id:string)
+        (UDC_AWT|Tracker codex-id "" CODEX|EPOCH 0)
+    )
+    (defun UDC_STG|StoicTag:object{CODEX|S|StoicTag}
+        ( account-address:string registered-at:time iz-active:bool tag-name:string )
+        { "account-address": account-address
+        , "registered-at":   registered-at
+        , "iz-active":         iz-active
+        , "tag-name":        tag-name
+        }
+    )
+    (defun UDC_STG|IzActiveUpdate:object (iz-active:bool)
+        { "iz-active": iz-active }
+    )
+    (defun UDC_STG|Unregistered:object ()
+        { "tag-name":        ""
+        , "account-address": ""
+        , "registered-at":   CODEX|EPOCH
+        , "iz-active":         false
+        , "is-registered":   false
+        }
+    )
+    (defun UDC_STG|WithRegisteredFlag:object (row:object{CODEX|S|StoicTag})
+        (+ row { "is-registered": true })
+    )
+    (defun UDC_STBA|StoicTagByAccount:object{CODEX|S|StoicTagByAccount}
+        ( tag-name:string iz-active:bool account-address:string )
+        { "tag-name":        tag-name
+        , "iz-active":         iz-active
+        , "account-address": account-address
+        }
+    )
+    (defun UDC_STBA|IzActiveUpdate:object (iz-active:bool)
+        { "iz-active": iz-active }
+    )
+    (defun UDC_STBA|Unregistered:object ()
+        { "account-address": ""
+        , "tag-name":        ""
+        , "iz-active":         false
+        , "has-stoictag":    false
+        }
+    )
+    (defun UDC_STBA|WithHasStoicTagFlag:object (row:object{CODEX|S|StoicTagByAccount})
+        (+ row { "has-stoictag": true })
+    )
+    ;;{F2}  Compute [UC]
     (defun UC_IsBase64urlChar:bool (c:string)
         (or (and (>= c "A") (<= c "Z"))
             (or (and (>= c "a") (<= c "z"))
@@ -387,17 +483,6 @@
     (defun UC_StoicTagStoaFee:decimal (tag-name:string)
         @doc "Native STOA due for registering <tag-name>: exactly 1 STOA per glyph (= string length). E.g. bytales → 7.0 STOA."
         (dec (length tag-name))
-    )
-    (defun URCi_RegisterStoicTag:decimal (tag-name:string)
-        @doc "Cost single-source for CODEX|C_RegisterStoicTag — RAW native STOA toll \
-            \ (1/glyph). Elite discount is applied at collect against the tagged account, \
-            \ so this returns the pre-discount amount. Consumed by TS01-C4 exec + INFO."
-        (UC_StoicTagStoaFee tag-name)
-    )
-    (defun URCi_ReleaseStoicTag:decimal (tag-name:string)
-        @doc "Cost single-source for CODEX|C_ReleaseStoicTag — flat IGNIS toll (1/glyph), \
-            \ collected via IGNIS::C_Collect in TS01-C4. Consumed by exec + INFO."
-        (UC_StoicTagStoaFee tag-name)
     )
     (defun UC_ValidateStoicTagName:bool (tag-name:string)
         @doc "True when tag-name is 3–256 glyphs from DALOS|CHARSET (U|DALOS)."
@@ -439,8 +524,19 @@
         @doc "Composite table key for CODEX|T|ArweaveTracker."
         (format "{}|{}" [codex-id arweave-tx-id])
     )
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
+    (defun URCi_RegisterStoicTag:decimal (tag-name:string)
+        @doc "Cost single-source for CODEX|C_RegisterStoicTag — RAW native STOA toll \
+            \ (1/glyph). Elite discount is applied at collect against the tagged account, \
+            \ so this returns the pre-discount amount. Consumed by TS01-C4 exec + INFO."
+        (UC_StoicTagStoaFee tag-name)
+    )
+    (defun URCi_ReleaseStoicTag:decimal (tag-name:string)
+        @doc "Cost single-source for CODEX|C_ReleaseStoicTag — flat IGNIS toll (1/glyph), \
+            \ collected via IGNIS::C_Collect in TS01-C4. Consumed by exec + INFO."
+        (UC_StoicTagStoaFee tag-name)
+    )
     ;;
-    ;;{F1}  [UR]
     ;; [1] CODEX|T|Identities  (CODEX|S|Identity)  Key = <codex-id>
     (defun UR_CIX|Data:object{CODEX|S|Identity} (codex-id:string)
         @doc "Full codex identity row."
@@ -556,7 +652,6 @@
         )
     )
     ;;
-    ;;{F2}  [URC]
     (defun URC_AWT|LatestUpload:object (codex-id:string)
         @doc "Newest arweave-tracker row for codex-id, or empty object if none."
         (let 
@@ -577,156 +672,6 @@
                 )
             )
         )
-    )
-    ;;{F3}  [UEV]
-    ;;{F4}  [UDC]
-    (defun UDC_CIX|Identity:object{CODEX|S|Identity}
-        ( codex-id-standard:string
-          codex-id-smart:string
-          public-standard:string
-          public-smart:string
-          codex-guard:guard
-          registered-at:time
-          registered-by:string
-          codex-id:string )
-        @doc "Constructor for object{CODEX|S|Identity}."
-        { "codex-id-standard": codex-id-standard
-        , "codex-id-smart":    codex-id-smart
-        , "public-standard":   public-standard
-        , "public-smart":      public-smart
-        , "codex-guard":       codex-guard
-        , "registered-at":     registered-at
-        , "registered-by":     registered-by
-        , "codex-id":          codex-id
-        }
-    )
-    (defun UDC_CIX|GuardUpdate:object (new-codex-guard:guard)
-        @doc "Partial update object for codex-guard rotation."
-        { "codex-guard": new-codex-guard }
-    )
-    (defun UDC_CIX|Unregistered:object ()
-        @doc "Sentinel for UR_CIX|DataOrNull when codex-id is absent."
-        { "codex-id":           ""
-        , "codex-id-standard":  ""
-        , "codex-id-smart":     ""
-        , "public-standard":    ""
-        , "public-smart":       ""
-        , "registered-at":      CODEX|EPOCH
-        , "registered-by":      ""
-        , "is-registered":      false
-        }
-    )
-    (defun UDC_CIX|WithRegisteredFlag:object (row:object{CODEX|S|Identity})
-        (+ row { "is-registered": true })
-    )
-    (defun UDC_AWT|Tracker:object{CODEX|S|ArweaveTracker}
-        ( codex-id:string
-          arweave-tx-id:string
-          upload-time:time
-          uploaded-bytes:integer )
-        { "codex-id":       codex-id
-        , "arweave-tx-id":  arweave-tx-id
-        , "upload-time":    upload-time
-        , "uploaded-bytes": uploaded-bytes
-        }
-    )
-    (defun UDC_AWT|EmptyLatest:object (codex-id:string)
-        (UDC_AWT|Tracker codex-id "" CODEX|EPOCH 0)
-    )
-    (defun UDC_STG|StoicTag:object{CODEX|S|StoicTag}
-        ( account-address:string registered-at:time iz-active:bool tag-name:string )
-        { "account-address": account-address
-        , "registered-at":   registered-at
-        , "iz-active":         iz-active
-        , "tag-name":        tag-name
-        }
-    )
-    (defun UDC_STG|IzActiveUpdate:object (iz-active:bool)
-        { "iz-active": iz-active }
-    )
-    (defun UDC_STG|Unregistered:object ()
-        { "tag-name":        ""
-        , "account-address": ""
-        , "registered-at":   CODEX|EPOCH
-        , "iz-active":         false
-        , "is-registered":   false
-        }
-    )
-    (defun UDC_STG|WithRegisteredFlag:object (row:object{CODEX|S|StoicTag})
-        (+ row { "is-registered": true })
-    )
-    (defun UDC_STBA|StoicTagByAccount:object{CODEX|S|StoicTagByAccount}
-        ( tag-name:string iz-active:bool account-address:string )
-        { "tag-name":        tag-name
-        , "iz-active":         iz-active
-        , "account-address": account-address
-        }
-    )
-    (defun UDC_STBA|IzActiveUpdate:object (iz-active:bool)
-        { "iz-active": iz-active }
-    )
-    (defun UDC_STBA|Unregistered:object ()
-        { "account-address": ""
-        , "tag-name":        ""
-        , "iz-active":         false
-        , "has-stoictag":    false
-        }
-    )
-    (defun UDC_STBA|WithHasStoicTagFlag:object (row:object{CODEX|S|StoicTagByAccount})
-        (+ row { "has-stoictag": true })
-    )
-    ;;{F5}  [CAP]
-    ;;{F6}  [A]
-    (defun A_RegisterCodexIdentity:string
-        ( codex-id:string
-          public-standard:string
-          public-smart:string
-          codex-guard:guard
-          registered-by:string )
-        @doc "ADMIN-only insert into CODEX|T|Identities; standard/smart halves derived from codex-id."
-        (UEV_IMC)
-        (with-capability (CODEX|A>REGISTER-IDENTITY codex-id public-standard public-smart codex-guard registered-by)
-            (XI_InsertIdentity
-                codex-id public-standard public-smart codex-guard registered-by
-            )
-        )
-        (format "Codex Identity {} registered" [codex-id])
-    )
-    ;;{F7}  [C]
-    (defun C_RotateCodexGuard:string (codex-id:string new-codex-guard:guard)
-        @doc "Rotate codex-guard; validation in CODEX|C>ROTATE-GUARD; XI writes only."
-        (UEV_IMC)
-        (with-capability (CODEX|C>ROTATE-GUARD codex-id new-codex-guard)
-            (XI_UpdateCodexGuard codex-id new-codex-guard)
-        )
-        (format "Codex {} guard rotated" [codex-id])
-    )
-    ;;
-    (defun C_RecordArweaveUpload:string (codex-id:string arweave-tx-id:string uploaded-bytes:integer)
-        @doc "Append one row to CODEX|T|ArweaveTracker; validation in CODEX|C>RECORD-ARWEAVE."
-        (UEV_IMC)
-        (with-capability (CODEX|C>RECORD-ARWEAVE codex-id arweave-tx-id uploaded-bytes)
-            (XI_InsertArweaveTracker codex-id arweave-tx-id uploaded-bytes)
-        )
-        (format "Upload recorded: {} -> {}" [codex-id arweave-tx-id])
-    )
-    ;;
-    (defun C_RegisterStoicTag:string (tag-name:string account-address:string)
-        @doc "Register StoicTag; validation in CODEX|C>REGISTER-STOICTAG; XI writes only (1 STOA/glyph fee in TS01-C4)."
-        (UEV_IMC)
-        (with-capability (CODEX|C>REGISTER-STOICTAG tag-name account-address)
-            (XI_UpsertStoicTag tag-name account-address)
-        )
-        (format "StoicTag §{} registered to account {}" [tag-name account-address])
-    )
-    ;;
-    (defun C_ReleaseStoicTag:string (tag-name:string)
-        @doc "Release StoicTag (iz-active false); validation in CODEX|C>RELEASE-STOICTAG; XI updates only."
-        (UEV_IMC)
-        (with-capability (CODEX|C>RELEASE-STOICTAG tag-name)
-            (XI_DeactivateStoicTag tag-name)
-        )
-        (format "StoicTag §{} released" [tag-name])
     )
     ;;
     (defun INFO_CODEX|RegisterStoicTag:object{OuronetInfoV1.ClientInfo}
@@ -777,7 +722,9 @@
             )
         )
     )
-    ;;{F8}  [X]
+    ;;{F4}  Validate [UEV/CAP]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
     (defun XI_InsertIdentity:string
         ( codex-id:string
           public-standard:string
@@ -837,6 +784,58 @@
             (update CODEX|T|StoicTags tag-name (UDC_STG|IzActiveUpdate false))
             (update CODEX|T|StoicTagsByAccount account-address (UDC_STBA|IzActiveUpdate false))
         )
+    )
+    ;;{F7}  User [A]
+    (defun A_RegisterCodexIdentity:string
+        ( codex-id:string
+          public-standard:string
+          public-smart:string
+          codex-guard:guard
+          registered-by:string )
+        @doc "ADMIN-only insert into CODEX|T|Identities; standard/smart halves derived from codex-id."
+        (UEV_IMC)
+        (with-capability (CODEX|A>REGISTER-IDENTITY codex-id public-standard public-smart codex-guard registered-by)
+            (XI_InsertIdentity
+                codex-id public-standard public-smart codex-guard registered-by
+            )
+        )
+        (format "Codex Identity {} registered" [codex-id])
+    )
+    ;;{F8}  User [C]
+    (defun C_RotateCodexGuard:string (codex-id:string new-codex-guard:guard)
+        @doc "Rotate codex-guard; validation in CODEX|C>ROTATE-GUARD; XI writes only."
+        (UEV_IMC)
+        (with-capability (CODEX|C>ROTATE-GUARD codex-id new-codex-guard)
+            (XI_UpdateCodexGuard codex-id new-codex-guard)
+        )
+        (format "Codex {} guard rotated" [codex-id])
+    )
+    ;;
+    (defun C_RecordArweaveUpload:string (codex-id:string arweave-tx-id:string uploaded-bytes:integer)
+        @doc "Append one row to CODEX|T|ArweaveTracker; validation in CODEX|C>RECORD-ARWEAVE."
+        (UEV_IMC)
+        (with-capability (CODEX|C>RECORD-ARWEAVE codex-id arweave-tx-id uploaded-bytes)
+            (XI_InsertArweaveTracker codex-id arweave-tx-id uploaded-bytes)
+        )
+        (format "Upload recorded: {} -> {}" [codex-id arweave-tx-id])
+    )
+    ;;
+    (defun C_RegisterStoicTag:string (tag-name:string account-address:string)
+        @doc "Register StoicTag; validation in CODEX|C>REGISTER-STOICTAG; XI writes only (1 STOA/glyph fee in TS01-C4)."
+        (UEV_IMC)
+        (with-capability (CODEX|C>REGISTER-STOICTAG tag-name account-address)
+            (XI_UpsertStoicTag tag-name account-address)
+        )
+        (format "StoicTag §{} registered to account {}" [tag-name account-address])
+    )
+    ;;
+    (defun C_ReleaseStoicTag:string (tag-name:string)
+        @doc "Release StoicTag (iz-active false); validation in CODEX|C>RELEASE-STOICTAG; XI updates only."
+        (UEV_IMC)
+        (with-capability (CODEX|C>RELEASE-STOICTAG tag-name)
+            (XI_DeactivateStoicTag tag-name)
+        )
+        (format "StoicTag §{} released" [tag-name])
     )
     ;;
 )

@@ -9,7 +9,7 @@ import sys, re
 CLASSES = [
     ("F1", "Construct [UDC]",              ["UDCx_","UDC_"]),
     ("F2", "Compute [UC]",                 ["UCkx_","UCxx_","UCk_","UCv_","UCx_","UC_"]),
-    ("F3", "Read [UR/URC/URH/URCi]",       ["URHCx_","URHC_","URHx_","URH_","URCix_","URCi_","URCx_","URCv_","URC_","URU_","UR_"]),
+    ("F3", "Read [UR/URC/URH/URCi/INFO]",  ["URHCx_","URHC_","URHx_","URH_","URCix_","URCi_","URCx_","URCv_","URC_","URU_","UR_","INFO_"]),
     ("F4", "Validate [UEV/CAP]",           ["UEV_","CAP_"]),
     ("F5", "Write [W]",                    ["WI_","WU7_","WU6_","WU5_","WU4_","WU3_","WU2_","WU_","WW_"]),
     ("F6", "Aux/Protected [X]",            ["XI_","XE_","XB_"]),

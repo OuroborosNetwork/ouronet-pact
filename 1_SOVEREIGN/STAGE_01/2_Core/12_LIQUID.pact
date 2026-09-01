@@ -231,7 +231,9 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    ;;{F0}  [UR]
+    ;;{F1}  Construct [UDC]
+    ;;{F2}  Compute [UC]
+    ;;{F3}  Read [UR/URC/URH/URCi]
     (defun UR_IzOuronetAccountRegisteredForUrstoaHoldings:bool (ouronet-account:string)
         (let
             (
@@ -243,8 +245,95 @@
             (if (= (typeof trial) "bool") false true)
         )
     )
-    ;;{F1}  [URC]
-    ;;{F2}  [UEV]
+    (defun URCi_UnwrapStoa:object{IgnisCollectorV1.OutputCumulator}
+        (unwrapper:string amount:decimal)
+        @doc "Cost preview for C_UnwrapStoa: unwrapper->LIQUID wrapped-STOA transfer + burn, \
+            \ re-derived purely (the STOA fuel payout is a separate side effect)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                (lq-sc:string LIQUID|SC_NAME)
+                (w-stoa-id:string (ref-DALOS::UR_WrappedStoaID))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (ref-TFT::URCi_Transfer w-stoa-id unwrapper lq-sc amount)
+                    (ref-DPTF::URCi_Burn w-stoa-id lq-sc)
+                ]
+                []
+            )
+        )
+    )
+    (defun URCi_WrapStoa:object{IgnisCollectorV1.OutputCumulator}
+        (wrapper:string amount:decimal)
+        @doc "Cost preview for C_WrapStoa: mint wrapped-STOA on LIQUID + LIQUID->wrapper \
+            \ transfer, re-derived purely (the STOA fuel intake is a separate side effect)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                (lq-sc:string LIQUID|SC_NAME)
+                (w-stoa-id:string (ref-DALOS::UR_WrappedStoaID))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (ref-DPTF::URCi_Mint w-stoa-id lq-sc false)
+                    (ref-TFT::URCi_Transfer w-stoa-id lq-sc wrapper amount)
+                ]
+                []
+            )
+        )
+    )
+    (defun URCi_UnwrapUrStoa:object{IgnisCollectorV1.OutputCumulator}
+        (unwrapper:string amount:decimal)
+        @doc "Cost preview for C_UnwrapUrStoa: unwrapper->LIQUID Ur-STOA transfer + burn, \
+            \ re-derived purely (the Ur-STOA transmit payout is a separate side effect)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                (lq-sc:string LIQUID|SC_NAME)
+                (w-ur-stoa-id:string (ref-DALOS::UR_UrStoaID))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (ref-TFT::URCi_Transfer w-ur-stoa-id unwrapper lq-sc amount)
+                    (ref-DPTF::URCi_Burn w-ur-stoa-id lq-sc)
+                ]
+                []
+            )
+        )
+    )
+    (defun URCi_WrapUrStoa:object{IgnisCollectorV1.OutputCumulator}
+        (wrapper:string amount:decimal)
+        @doc "Cost preview for C_WrapUrStoa: mint Ur-STOA on LIQUID + LIQUID->wrapper transfer, \
+            \ re-derived purely (the Ur-STOA intake is a separate side effect)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                (lq-sc:string LIQUID|SC_NAME)
+                (w-ur-stoa-id:string (ref-DALOS::UR_UrStoaID))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (ref-DPTF::URCi_Mint w-ur-stoa-id lq-sc false)
+                    (ref-TFT::URCi_Transfer w-ur-stoa-id lq-sc wrapper amount)
+                ]
+                []
+            )
+        )
+    )
+    ;;{F4}  Validate [UEV/CAP]
     (defun UEV_IzLiquidStakingLive ()
         @doc "Enforces Liquid Staking is live with an existing Autostake Pair"
         (let
@@ -280,10 +369,10 @@
             )
         )
     )
-    ;;{F3}  [UDC]
-    ;;{F4}  [CAP]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    ;;{F7}  User [A]
     ;;
-    ;;{F5}  [A]
     (defun A_MigrateLiquidFunds:decimal (migration-target-stoa-account:string)
         (UEV_IMC)
         (with-capability (GOV|MIGRATE migration-target-stoa-account)
@@ -300,29 +389,7 @@
             )
         )
     )
-    ;;{F6}  [C]
-    (defun URCi_UnwrapStoa:object{IgnisCollectorV1.OutputCumulator}
-        (unwrapper:string amount:decimal)
-        @doc "Cost preview for C_UnwrapStoa: unwrapper->LIQUID wrapped-STOA transfer + burn, \
-            \ re-derived purely (the STOA fuel payout is a separate side effect)."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                (lq-sc:string LIQUID|SC_NAME)
-                (w-stoa-id:string (ref-DALOS::UR_WrappedStoaID))
-            )
-            (ref-IGNIS::UDC_ConcatenateOutputCumulators
-                [
-                    (ref-TFT::URCi_Transfer w-stoa-id unwrapper lq-sc amount)
-                    (ref-DPTF::URCi_Burn w-stoa-id lq-sc)
-                ]
-                []
-            )
-        )
-    )
+    ;;{F8}  User [C]
     (defun C_UnwrapStoa:object{IgnisCollectorV1.OutputCumulator}
         (unwrapper:string amount:decimal)
         (UEV_IMC)
@@ -360,28 +427,6 @@
             )
         )
     )
-    (defun URCi_WrapStoa:object{IgnisCollectorV1.OutputCumulator}
-        (wrapper:string amount:decimal)
-        @doc "Cost preview for C_WrapStoa: mint wrapped-STOA on LIQUID + LIQUID->wrapper \
-            \ transfer, re-derived purely (the STOA fuel intake is a separate side effect)."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                (lq-sc:string LIQUID|SC_NAME)
-                (w-stoa-id:string (ref-DALOS::UR_WrappedStoaID))
-            )
-            (ref-IGNIS::UDC_ConcatenateOutputCumulators
-                [
-                    (ref-DPTF::URCi_Mint w-stoa-id lq-sc false)
-                    (ref-TFT::URCi_Transfer w-stoa-id lq-sc wrapper amount)
-                ]
-                []
-            )
-        )
-    )
     (defun C_WrapStoa:object{IgnisCollectorV1.OutputCumulator}
         (wrapper:string amount:decimal)
         (UEV_IMC)
@@ -412,28 +457,6 @@
                     (ref-IGNIS::C_TransferDalosFuel stoa-patron lq-stoa amount)
                     output
                 )
-            )
-        )
-    )
-    (defun URCi_UnwrapUrStoa:object{IgnisCollectorV1.OutputCumulator}
-        (unwrapper:string amount:decimal)
-        @doc "Cost preview for C_UnwrapUrStoa: unwrapper->LIQUID Ur-STOA transfer + burn, \
-            \ re-derived purely (the Ur-STOA transmit payout is a separate side effect)."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                (lq-sc:string LIQUID|SC_NAME)
-                (w-ur-stoa-id:string (ref-DALOS::UR_UrStoaID))
-            )
-            (ref-IGNIS::UDC_ConcatenateOutputCumulators
-                [
-                    (ref-TFT::URCi_Transfer w-ur-stoa-id unwrapper lq-sc amount)
-                    (ref-DPTF::URCi_Burn w-ur-stoa-id lq-sc)
-                ]
-                []
             )
         )
     )
@@ -480,28 +503,6 @@
             )
         )
     )
-    (defun URCi_WrapUrStoa:object{IgnisCollectorV1.OutputCumulator}
-        (wrapper:string amount:decimal)
-        @doc "Cost preview for C_WrapUrStoa: mint Ur-STOA on LIQUID + LIQUID->wrapper transfer, \
-            \ re-derived purely (the Ur-STOA intake is a separate side effect)."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                (lq-sc:string LIQUID|SC_NAME)
-                (w-ur-stoa-id:string (ref-DALOS::UR_UrStoaID))
-            )
-            (ref-IGNIS::UDC_ConcatenateOutputCumulators
-                [
-                    (ref-DPTF::URCi_Mint w-ur-stoa-id lq-sc false)
-                    (ref-TFT::URCi_Transfer w-ur-stoa-id lq-sc wrapper amount)
-                ]
-                []
-            )
-        )
-    )
     (defun C_WrapUrStoa:object{IgnisCollectorV1.OutputCumulator}
         (wrapper:string amount:decimal)
         @doc "Wrapper is the Ouronet Account doing the Wrapping. \
@@ -542,9 +543,6 @@
             )
         )
     )
-    
-    ;;{F7}  [X]
-    
     ;;
 )
 

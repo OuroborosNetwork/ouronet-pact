@@ -287,6 +287,8 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
+    ;;{F1}  Construct [UDC]
+    ;;{F2}  Compute [UC]
     (defun UC_FindNeighbourIndex:[integer] (neighbours:[object{SwapTracerV2.NeighbourEdge}] token:string)
         @doc "Returns [idx] of the entry in <neighbours> whose token field matches \
             \ <token>, or [] if no such entry exists yet."
@@ -318,7 +320,78 @@
             \ rediscovering the same route."
         (filter (lambda (s:string) (not (contains s exclude))) swpairs)
     )
-    ;;{F0}  [UR]
+    (defun UC_MakeGraphFromRaw:[object{BreadthFirstSearchV1.GraphNode}]
+        (input:string output:string swpairs:[string] raw-graph:[object{RawGraphNode}])
+        @doc "#65bL Phase 2: pure (zero table reads) equivalent of <URC_MakeGraph> — \
+            \ builds the identical active-filtered [GraphNode] shape, but derives \
+            \ every node's links from an ALREADY-FETCHED <raw-graph> \
+            \ (<URC_FetchRawGraph>) instead of re-reading SWPT|Graph per node, and \
+            \ also skips the double-read <URC_MakeGraph> itself has (one read via \
+            \ <URC_TokenNeighbours> to list neighbour tokens, another via \
+            \ <URC_EdgesActive>/<URC_Edges> per neighbour to re-derive the exact \
+            \ same swpairs already sitting in that first read's result) — the \
+            \ per-neighbour <swpairs> field is already right there on each \
+            \ <NeighbourEdge>, filtered directly, no re-read or re-derivation \
+            \ needed either way. <raw-graph> must cover every node <swpairs> could \
+            \ ever produce here — always true when it was fetched against a \
+            \ swpairs universe that's a SUPERSET of this one (e.g. the original, \
+            \ unshrunk universe a best-of-K search started from, reused unchanged \
+            \ across every attempt's own shrinking exclusion universe)."
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+                (nodes:[string] (ref-U|SWP::UC_MakeGraphNodes input output swpairs))
+            )
+            (if (= 0 (length nodes))
+                []
+                (fold
+                    (lambda
+                        (acc:[object{BreadthFirstSearchV1.GraphNode}] idx:integer)
+                        (let*
+                            (
+                                (this-node:string (at idx nodes))
+                                ;;#65bL Phase 3 investigated a binary-search replacement for
+                                ;;this scan (see URC_FetchRawGraph's own doc) — measured as a
+                                ;;real regression on the actual integrated call, not shipped.
+                                ;;Linear filter stays, unchanged from Phase 2.
+                                (raw-matches:[object{RawGraphNode}]
+                                    (filter (lambda (rg:object{RawGraphNode}) (= (at "node" rg) this-node)) raw-graph)
+                                )
+                                (neighbours:[object{NeighbourEdge}]
+                                    (if (= 0 (length raw-matches)) [] (at "neighbours" (at 0 raw-matches)))
+                                )
+                            )
+                            (ref-U|LST::UC_AppL
+                                acc
+                                {
+                                    "node": this-node,
+                                    "links":
+                                        (map (at "token")
+                                            (filter
+                                                (lambda (ne:object{NeighbourEdge})
+                                                    (!=
+                                                        (filter
+                                                            (lambda (sp:string) (contains sp swpairs))
+                                                            (at "swpairs" ne)
+                                                        )
+                                                        []
+                                                    )
+                                                )
+                                                neighbours
+                                            )
+                                        )
+                                }
+                            )
+                        )
+                    )
+                    []
+                    (enumerate 0 (- (length nodes) 1))
+                )
+            )
+        )
+    )
+    ;;{F3}  Read [UR/URC/URH/URCi]
     (defun UR_Graph:[object{SwapTracerV2.NeighbourEdge}] (token:string)
         (with-default-read SWPT|Graph token
             {"neighbours" : []}
@@ -349,7 +422,6 @@
             v
         )
     )
-    ;;{F1}  [URC]
     (defun URC_TokenNeighbours:[string] (token:string)
         (map (at "token") (UR_Graph token))
     )
@@ -724,77 +796,6 @@
             nodes
         )
     )
-    (defun UC_MakeGraphFromRaw:[object{BreadthFirstSearchV1.GraphNode}]
-        (input:string output:string swpairs:[string] raw-graph:[object{RawGraphNode}])
-        @doc "#65bL Phase 2: pure (zero table reads) equivalent of <URC_MakeGraph> — \
-            \ builds the identical active-filtered [GraphNode] shape, but derives \
-            \ every node's links from an ALREADY-FETCHED <raw-graph> \
-            \ (<URC_FetchRawGraph>) instead of re-reading SWPT|Graph per node, and \
-            \ also skips the double-read <URC_MakeGraph> itself has (one read via \
-            \ <URC_TokenNeighbours> to list neighbour tokens, another via \
-            \ <URC_EdgesActive>/<URC_Edges> per neighbour to re-derive the exact \
-            \ same swpairs already sitting in that first read's result) — the \
-            \ per-neighbour <swpairs> field is already right there on each \
-            \ <NeighbourEdge>, filtered directly, no re-read or re-derivation \
-            \ needed either way. <raw-graph> must cover every node <swpairs> could \
-            \ ever produce here — always true when it was fetched against a \
-            \ swpairs universe that's a SUPERSET of this one (e.g. the original, \
-            \ unshrunk universe a best-of-K search started from, reused unchanged \
-            \ across every attempt's own shrinking exclusion universe)."
-        (let
-            (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                (nodes:[string] (ref-U|SWP::UC_MakeGraphNodes input output swpairs))
-            )
-            (if (= 0 (length nodes))
-                []
-                (fold
-                    (lambda
-                        (acc:[object{BreadthFirstSearchV1.GraphNode}] idx:integer)
-                        (let*
-                            (
-                                (this-node:string (at idx nodes))
-                                ;;#65bL Phase 3 investigated a binary-search replacement for
-                                ;;this scan (see URC_FetchRawGraph's own doc) — measured as a
-                                ;;real regression on the actual integrated call, not shipped.
-                                ;;Linear filter stays, unchanged from Phase 2.
-                                (raw-matches:[object{RawGraphNode}]
-                                    (filter (lambda (rg:object{RawGraphNode}) (= (at "node" rg) this-node)) raw-graph)
-                                )
-                                (neighbours:[object{NeighbourEdge}]
-                                    (if (= 0 (length raw-matches)) [] (at "neighbours" (at 0 raw-matches)))
-                                )
-                            )
-                            (ref-U|LST::UC_AppL
-                                acc
-                                {
-                                    "node": this-node,
-                                    "links":
-                                        (map (at "token")
-                                            (filter
-                                                (lambda (ne:object{NeighbourEdge})
-                                                    (!=
-                                                        (filter
-                                                            (lambda (sp:string) (contains sp swpairs))
-                                                            (at "swpairs" ne)
-                                                        )
-                                                        []
-                                                    )
-                                                )
-                                                neighbours
-                                            )
-                                        )
-                                }
-                            )
-                        )
-                    )
-                    []
-                    (enumerate 0 (- (length nodes) 1))
-                )
-            )
-        )
-    )
     (defun URC_ShortestChainPerNodeFromRaw:[[string]]
         (input:string output:string swpairs:[string] raw-graph:[object{RawGraphNode}])
         @doc "#65bL Phase 2: <URC_ShortestChainPerNode>, sourcing its graph via \
@@ -1062,7 +1063,9 @@
             )
         )
     )
-    ;;{F7}  [X]
+    ;;{F4}  Validate [UEV/CAP]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
     (defun XE_UpdateGraph (swpair:string)
         @doc "Records <swpair> in the adjacency graph: every token in <swpair> gets \
             \ every OTHER token in <swpair> appended to its neighbour list (idempotent \
@@ -1211,6 +1214,8 @@
             (XI_RegisterPath token-a token-b nodes edges)
         )
     )
+    ;;{F7}  User [A]
+    ;;{F8}  User [C]
     ;;
 )
 

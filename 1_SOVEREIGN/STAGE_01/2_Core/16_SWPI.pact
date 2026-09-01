@@ -347,6 +347,63 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
+    ;;{F1}  Construct [UDC]
+    (defun UDC_DirectRawSwapInput:object{UtilitySwpV1.DirectRawSwapInput}
+        (
+            dsid:object{UtilitySwpV1.DirectSwapInputData}
+            A:decimal X:[decimal] input-positions:[integer] output-position:integer weights:[decimal]
+        )
+        (let
+            (
+                ;;Unwrap Object Data
+                (input-amounts:[decimal] (at "input-amounts" dsid))
+                (output-id:string (at "output-id" dsid))
+                ;;
+                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+            )
+            (ref-U|SWP::UDC_DirectRawSwapInput
+                A
+                X
+                input-amounts 
+                input-positions
+                output-position
+                (ref-DPTF::UR_Decimals output-id)
+                weights
+            )
+        )
+    )
+    (defun UDC_InverseRawSwapInput:object{UtilitySwpV1.InverseRawSwapInput}
+        (
+            rsid:object{UtilitySwpV1.ReverseSwapInputData}
+            A:decimal X:[decimal] output-position:integer input-position:integer weights:[decimal]
+        )
+        (let
+            (
+                ;;Unwrap Object Data
+                (output-amount:decimal (at "output-amount" rsid))
+                (input-id:string (at "input-id" rsid))
+                ;;
+                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+            )
+            (ref-U|SWP::UDC_InverseRawSwapInput
+                A
+                X
+                output-amount
+                output-position
+                input-position
+                (ref-DPTF::UR_Decimals input-id)
+                weights
+            )
+        )
+    )
+    (defun UDC_Hopper:object{SwapperIssueV3.Hopper} (a:[string] b:[string] c:[decimal])
+        {"nodes"            : a
+        ,"edges"            : b
+        ,"output-values"    : c}
+    )
+    ;;{F2}  Compute [UC]
     (defun UC_DeviationInValueShares:decimal (pool-reserves:[decimal] asymmetric-liq:[decimal] w:[decimal])
         @doc "Maximum Pool Deviation is (n-1)/n, and max allowed deviation for asymmetric liq is 40% of this value"
         (let
@@ -684,8 +741,249 @@
             )
         )
     )
-    ;;{F0}  [UR]
-    ;;{F1}  [URC]
+    (defun UC_BestHopper:object{SwapperIssueV3.Hopper} (candidates:[object{SwapperIssueV3.Hopper}])
+        @doc "Picks the candidate Hopper with the highest final output value. \
+            \ <candidates> must be non-empty (caller's responsibility — <URCx_Hopper> \
+            \ only calls this once it has confirmed at least one route was found)."
+        (if (<= (length candidates) 1)
+            (at 0 candidates)
+            (fold
+                (lambda
+                    (best:object{SwapperIssueV3.Hopper} idx:integer)
+                    (let
+                        (
+                            (candidate:object{SwapperIssueV3.Hopper} (at idx candidates))
+                            (best-final:decimal (at 0 (take -1 (at "output-values" best))))
+                            (candidate-final:decimal (at 0 (take -1 (at "output-values" candidate))))
+                        )
+                        (if (> candidate-final best-final) candidate best)
+                    )
+                )
+                (at 0 candidates)
+                (enumerate 1 (- (length candidates) 1))
+            )
+        )
+    )
+    (defun URCx_Hopper:object{SwapperIssueV3.Hopper}
+        (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal swpairs:[string])
+        @doc "Shared Hopper-computation core for <URC_Hopper>/<URC_HopperActive> — \
+            \ identical in every respect except which <swpairs> universe routing \
+            \ is allowed to consider. Internal only, not on <SwapperIssueV3>. \
+            \ #65bL Phase 5 fix: was best-of-3 via <SWPT::URC_ComputeAlternateRoutes> \
+            \ (#34M/M2's original fix). Measured directly against this codebase's \
+            \ real, organically-grown ~102-pool topology (not a hand-engineered one) \
+            \ across 7 representative pairs spanning 1-8 hops: best-of-3 found a \
+            \ better route than the single first-found one in ZERO of them — 0.0% \
+            \ difference every time. #34M/M2's own original proof that best-of-3 \
+            \ matters used a deliberately hand-built diamond topology (issuance order \
+            \ controlled specifically to make BFS's first-found route the weak one) \
+            \ to demonstrate the FAILURE MODE is real — it never claimed the failure \
+            \ mode manifests naturally at scale, and per this measurement, it \
+            \ doesn't, here: with dozens of parallel pools and organic swap activity \
+            \ pushing chronically-unbalanced pools back toward parity, first-found \
+            \ and best-of-3 converge. Switched to a single <SWPT::URC_ComputeGraphPath> \
+            \ call — the greedy, single-shot search <URC_HopperActiveShortest> \
+            \ already uses elsewhere. <SWPT::URC_ComputeAlternateRoutes> itself is \
+            \ NOT deleted (still correct, still tested, `SWP|TX 032c`-`032g`'s own \
+            \ adversarial proof of the original failure mode stays as regression \
+            \ coverage) — just no longer the default live-routing path. \
+            \ CAVEAT, worth stating plainly: URCx_HopperForNodes's own per-hop \
+            \ <URC_BestEdgeFiltered> selection is a GREEDY choice — picking the best \
+            \ available edge at each individual hop does not mathematically guarantee \
+            \ the overall path is the highest-value one achievable end to end (a \
+            \ locally-optimal choice at every step is not the same as a globally- \
+            \ optimal path). This was already true before this fix, at every K \
+            \ (including best-of-3) — this fix does not introduce that limitation, it \
+            \ was always structurally present; it only removes the (measured, at this \
+            \ topology, not currently earning its cost) 2-candidate cross-route \
+            \ comparison layered on top of it. \
+            \ #65bL Phase 1 fix: checks SWPT|PathCache (via URC_ReadPathCacheFresh) \
+            \ first — on a fresh hit, skips the live BFS search entirely and \
+            \ uses the cached node-path as the sole candidate. Safe because the real \
+            \ per-hop edge is always re-derived live downstream in \
+            \ URCx_HopperForNodes regardless of where the node-path came from — a \
+            \ cache hit only changes WHICH nodes get tried, never how an edge gets \
+            \ picked or validated. On a miss (or a stale entry, topology-version \
+            \ behind current), falls through to the unchanged live search."
+        (let
+            (
+                ;;#21H: SWPT no longer needs a principal list at all — the Tracer's
+                ;;storage is principal-agnostic (SwapTracerV2).
+                (ref-SWPT:module{SwapTracerV2} SWPT)
+                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+                (cached:object{SwapTracerV2.PathCacheRow}
+                    (ref-SWPT::URC_ReadPathCacheFresh hopper-input-id hopper-output-id)
+                )
+                (cached-nodes:[string] (at "nodes" cached))
+                ;;Only computed on an actual cache miss — a `let` binding here would
+                ;;evaluate unconditionally even on a hit, silently paying for the live
+                ;;search Phase 1's whole point is to skip. Nested inside the `if`
+                ;;instead so a cache hit never touches SWPT::URC_ComputeGraphPathFromRaw.
+                (routes:[[string]]
+                    (if (!= cached-nodes [BAR])
+                        [cached-nodes]
+                        ;;#65bL Phase 5 fix: must go through the raw-graph-once path
+                        ;;(URC_FetchRawGraph + URC_ComputeGraphPathFromRaw), NOT the
+                        ;;plain self-fetching URC_ComputeGraphPath — that function was
+                        ;;never touched by Phase 2's optimization (it only ever makes
+                        ;;one call, so cross-attempt sharing never applied to it), so
+                        ;;using it here would mean a SINGLE search that's still paying
+                        ;;the pre-Phase-2 cost, while best-of-3's own first attempt
+                        ;;(via URC_ComputeAlternateRoutes's own internal fetch) is
+                        ;;already Phase-2-cheap. Measured directly: using the plain
+                        ;;self-fetching path here was NET MORE EXPENSIVE than
+                        ;;best-of-3, exactly backwards from the goal — caught before
+                        ;;shipping, not after.
+                        (let
+                            (
+                                (single-route:[string]
+                                    (ref-SWPT::URC_ComputeGraphPathFromRaw
+                                        hopper-input-id hopper-output-id swpairs
+                                        (ref-SWPT::URC_FetchRawGraph
+                                            (ref-U|SWP::UC_MakeGraphNodes hopper-input-id hopper-output-id swpairs)
+                                        )
+                                    )
+                                )
+                            )
+                            (if (= single-route [BAR]) [] [single-route])
+                        )
+                    )
+                )
+            )
+            (if (= (length routes) 0)
+                (at 0 EMPTY_HOPPER)
+                (let
+                    (
+                        (candidates:[object{SwapperIssueV3.Hopper}]
+                            (map
+                                (lambda (nodes:[string]) (URCx_HopperForNodes nodes hopper-input-amount swpairs))
+                                routes
+                            )
+                        )
+                    )
+                    (UC_BestHopper candidates)
+                )
+            )
+        )
+    )
+    (defun URCx_HopperFromRaw:object{SwapperIssueV3.Hopper}
+        (
+            hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal
+            swpairs:[string] raw-graph:[object{SwapTracerV2.RawGraphNode}]
+        )
+        @doc "#65bL Phase 4 fix: <URCx_Hopper>, sourcing its routing search via an \
+            \ ALREADY-FETCHED <raw-graph> (<SWPT::URC_FetchRawGraph>) instead of \
+            \ letting <SWPT::URC_ComputeGraphPathFromRaw> fetch its own — for a caller \
+            \ making MULTIPLE unrelated Hopper queries in one transaction (the \
+            \ STOA-repricing loop: one query per distinct pool touched, each to a \
+            \ different first-token but the SAME destination, WSTOA) who fetches the \
+            \ whole topology's raw graph exactly ONCE and reuses it across every \
+            \ query. Safe because <SWPT::UC_MakeGraphNodes> (the node-universe \
+            \ derivation both the fetch and every query rely on) is <input>/<output>- \
+            \ independent by construction — it derives every token appearing across \
+            \ the full <swpairs> list, regardless of which specific pair is being \
+            \ queried — so ONE raw-graph fetched against a given <swpairs> universe \
+            \ is valid for EVERY query against that same universe, not just the one \
+            \ it happened to be fetched for. Still checks SWPT|PathCache first, \
+            \ identically to <URCx_Hopper> — a cache hit is even cheaper than a \
+            \ shared-raw-graph live search, this doesn't replace that, it only makes \
+            \ the miss case cheaper too. \
+            \ #65bL Phase 5 fix: was best-of-3 via <SWPT::URC_ComputeAlternateRoutesFromRaw> \
+            \ — see <URCx_Hopper>'s own doc for the full measured rationale (identical \
+            \ here, same shared decision)."
+        (let
+            (
+                (ref-SWPT:module{SwapTracerV2} SWPT)
+                (cached:object{SwapTracerV2.PathCacheRow}
+                    (ref-SWPT::URC_ReadPathCacheFresh hopper-input-id hopper-output-id)
+                )
+                (cached-nodes:[string] (at "nodes" cached))
+                ;;Only computed on an actual cache miss — see URCx_Hopper's own comment
+                ;;on this exact same eager-`let`-evaluation trap.
+                (routes:[[string]]
+                    (if (!= cached-nodes [BAR])
+                        [cached-nodes]
+                        (let
+                            (
+                                (single-route:[string]
+                                    (ref-SWPT::URC_ComputeGraphPathFromRaw hopper-input-id hopper-output-id swpairs raw-graph)
+                                )
+                            )
+                            (if (= single-route [BAR]) [] [single-route])
+                        )
+                    )
+                )
+            )
+            (if (= (length routes) 0)
+                (at 0 EMPTY_HOPPER)
+                (let
+                    (
+                        (candidates:[object{SwapperIssueV3.Hopper}]
+                            (map
+                                (lambda (nodes:[string]) (URCx_HopperForNodes nodes hopper-input-amount swpairs))
+                                routes
+                            )
+                        )
+                    )
+                    (UC_BestHopper candidates)
+                )
+            )
+        )
+    )
+    (defun URCx_HopperFromGraph:object{SwapperIssueV3.Hopper}
+        (
+            hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal
+            swpairs:[string] graph:[object{BreadthFirstSearchV1.GraphNode}]
+        )
+        @doc "#65bL Phase 7 fix: <URCx_HopperFromRaw>, sourcing its routing search \
+            \ via an ALREADY-BUILT <graph> (<SWPT::UC_MakeGraphFromRaw>) instead of \
+            \ rebuilding it from <raw-graph> on every call — see \
+            \ <URC_HopperFromGraph>'s own doc for the full rationale (repricing- \
+            \ loop graph-build sharing, one layer deeper than Phase 4's raw-graph \
+            \ sharing). Still checks SWPT|PathCache first, identically to \
+            \ <URCx_Hopper>/<URCx_HopperFromRaw> — a cache hit is even cheaper than \
+            \ a shared-graph live search, this doesn't replace that, it only makes \
+            \ the miss case cheaper too."
+        (let
+            (
+                (ref-SWPT:module{SwapTracerV2} SWPT)
+                (cached:object{SwapTracerV2.PathCacheRow}
+                    (ref-SWPT::URC_ReadPathCacheFresh hopper-input-id hopper-output-id)
+                )
+                (cached-nodes:[string] (at "nodes" cached))
+                ;;Only computed on an actual cache miss — see URCx_Hopper's own comment
+                ;;on this exact same eager-`let`-evaluation trap.
+                (routes:[[string]]
+                    (if (!= cached-nodes [BAR])
+                        [cached-nodes]
+                        (let
+                            (
+                                (single-route:[string]
+                                    (ref-SWPT::URC_ComputeGraphPathFromGraph hopper-input-id hopper-output-id graph)
+                                )
+                            )
+                            (if (= single-route [BAR]) [] [single-route])
+                        )
+                    )
+                )
+            )
+            (if (= (length routes) 0)
+                (at 0 EMPTY_HOPPER)
+                (let
+                    (
+                        (candidates:[object{SwapperIssueV3.Hopper}]
+                            (map
+                                (lambda (nodes:[string]) (URCx_HopperForNodes nodes hopper-input-amount swpairs))
+                                routes
+                            )
+                        )
+                    )
+                    (UC_BestHopper candidates)
+                )
+            )
+        )
+    )
+    ;;{F3}  Read [UR/URC/URH/URCi]
     (defun URC_EliteFeeReduction:object{UtilitySwpV1.SwapFeez} (account:string fees:object{UtilitySwpV1.SwapFeez})
         (let
             (
@@ -1054,248 +1352,6 @@
                 )
             )
             (at 0 EMPTY_HOPPER)
-        )
-    )
-    (defun UC_BestHopper:object{SwapperIssueV3.Hopper} (candidates:[object{SwapperIssueV3.Hopper}])
-        @doc "Picks the candidate Hopper with the highest final output value. \
-            \ <candidates> must be non-empty (caller's responsibility — <URCx_Hopper> \
-            \ only calls this once it has confirmed at least one route was found)."
-        (if (<= (length candidates) 1)
-            (at 0 candidates)
-            (fold
-                (lambda
-                    (best:object{SwapperIssueV3.Hopper} idx:integer)
-                    (let
-                        (
-                            (candidate:object{SwapperIssueV3.Hopper} (at idx candidates))
-                            (best-final:decimal (at 0 (take -1 (at "output-values" best))))
-                            (candidate-final:decimal (at 0 (take -1 (at "output-values" candidate))))
-                        )
-                        (if (> candidate-final best-final) candidate best)
-                    )
-                )
-                (at 0 candidates)
-                (enumerate 1 (- (length candidates) 1))
-            )
-        )
-    )
-    (defun URCx_Hopper:object{SwapperIssueV3.Hopper}
-        (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal swpairs:[string])
-        @doc "Shared Hopper-computation core for <URC_Hopper>/<URC_HopperActive> — \
-            \ identical in every respect except which <swpairs> universe routing \
-            \ is allowed to consider. Internal only, not on <SwapperIssueV3>. \
-            \ #65bL Phase 5 fix: was best-of-3 via <SWPT::URC_ComputeAlternateRoutes> \
-            \ (#34M/M2's original fix). Measured directly against this codebase's \
-            \ real, organically-grown ~102-pool topology (not a hand-engineered one) \
-            \ across 7 representative pairs spanning 1-8 hops: best-of-3 found a \
-            \ better route than the single first-found one in ZERO of them — 0.0% \
-            \ difference every time. #34M/M2's own original proof that best-of-3 \
-            \ matters used a deliberately hand-built diamond topology (issuance order \
-            \ controlled specifically to make BFS's first-found route the weak one) \
-            \ to demonstrate the FAILURE MODE is real — it never claimed the failure \
-            \ mode manifests naturally at scale, and per this measurement, it \
-            \ doesn't, here: with dozens of parallel pools and organic swap activity \
-            \ pushing chronically-unbalanced pools back toward parity, first-found \
-            \ and best-of-3 converge. Switched to a single <SWPT::URC_ComputeGraphPath> \
-            \ call — the greedy, single-shot search <URC_HopperActiveShortest> \
-            \ already uses elsewhere. <SWPT::URC_ComputeAlternateRoutes> itself is \
-            \ NOT deleted (still correct, still tested, `SWP|TX 032c`-`032g`'s own \
-            \ adversarial proof of the original failure mode stays as regression \
-            \ coverage) — just no longer the default live-routing path. \
-            \ CAVEAT, worth stating plainly: URCx_HopperForNodes's own per-hop \
-            \ <URC_BestEdgeFiltered> selection is a GREEDY choice — picking the best \
-            \ available edge at each individual hop does not mathematically guarantee \
-            \ the overall path is the highest-value one achievable end to end (a \
-            \ locally-optimal choice at every step is not the same as a globally- \
-            \ optimal path). This was already true before this fix, at every K \
-            \ (including best-of-3) — this fix does not introduce that limitation, it \
-            \ was always structurally present; it only removes the (measured, at this \
-            \ topology, not currently earning its cost) 2-candidate cross-route \
-            \ comparison layered on top of it. \
-            \ #65bL Phase 1 fix: checks SWPT|PathCache (via URC_ReadPathCacheFresh) \
-            \ first — on a fresh hit, skips the live BFS search entirely and \
-            \ uses the cached node-path as the sole candidate. Safe because the real \
-            \ per-hop edge is always re-derived live downstream in \
-            \ URCx_HopperForNodes regardless of where the node-path came from — a \
-            \ cache hit only changes WHICH nodes get tried, never how an edge gets \
-            \ picked or validated. On a miss (or a stale entry, topology-version \
-            \ behind current), falls through to the unchanged live search."
-        (let
-            (
-                ;;#21H: SWPT no longer needs a principal list at all — the Tracer's
-                ;;storage is principal-agnostic (SwapTracerV2).
-                (ref-SWPT:module{SwapTracerV2} SWPT)
-                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                (cached:object{SwapTracerV2.PathCacheRow}
-                    (ref-SWPT::URC_ReadPathCacheFresh hopper-input-id hopper-output-id)
-                )
-                (cached-nodes:[string] (at "nodes" cached))
-                ;;Only computed on an actual cache miss — a `let` binding here would
-                ;;evaluate unconditionally even on a hit, silently paying for the live
-                ;;search Phase 1's whole point is to skip. Nested inside the `if`
-                ;;instead so a cache hit never touches SWPT::URC_ComputeGraphPathFromRaw.
-                (routes:[[string]]
-                    (if (!= cached-nodes [BAR])
-                        [cached-nodes]
-                        ;;#65bL Phase 5 fix: must go through the raw-graph-once path
-                        ;;(URC_FetchRawGraph + URC_ComputeGraphPathFromRaw), NOT the
-                        ;;plain self-fetching URC_ComputeGraphPath — that function was
-                        ;;never touched by Phase 2's optimization (it only ever makes
-                        ;;one call, so cross-attempt sharing never applied to it), so
-                        ;;using it here would mean a SINGLE search that's still paying
-                        ;;the pre-Phase-2 cost, while best-of-3's own first attempt
-                        ;;(via URC_ComputeAlternateRoutes's own internal fetch) is
-                        ;;already Phase-2-cheap. Measured directly: using the plain
-                        ;;self-fetching path here was NET MORE EXPENSIVE than
-                        ;;best-of-3, exactly backwards from the goal — caught before
-                        ;;shipping, not after.
-                        (let
-                            (
-                                (single-route:[string]
-                                    (ref-SWPT::URC_ComputeGraphPathFromRaw
-                                        hopper-input-id hopper-output-id swpairs
-                                        (ref-SWPT::URC_FetchRawGraph
-                                            (ref-U|SWP::UC_MakeGraphNodes hopper-input-id hopper-output-id swpairs)
-                                        )
-                                    )
-                                )
-                            )
-                            (if (= single-route [BAR]) [] [single-route])
-                        )
-                    )
-                )
-            )
-            (if (= (length routes) 0)
-                (at 0 EMPTY_HOPPER)
-                (let
-                    (
-                        (candidates:[object{SwapperIssueV3.Hopper}]
-                            (map
-                                (lambda (nodes:[string]) (URCx_HopperForNodes nodes hopper-input-amount swpairs))
-                                routes
-                            )
-                        )
-                    )
-                    (UC_BestHopper candidates)
-                )
-            )
-        )
-    )
-    (defun URCx_HopperFromRaw:object{SwapperIssueV3.Hopper}
-        (
-            hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal
-            swpairs:[string] raw-graph:[object{SwapTracerV2.RawGraphNode}]
-        )
-        @doc "#65bL Phase 4 fix: <URCx_Hopper>, sourcing its routing search via an \
-            \ ALREADY-FETCHED <raw-graph> (<SWPT::URC_FetchRawGraph>) instead of \
-            \ letting <SWPT::URC_ComputeGraphPathFromRaw> fetch its own — for a caller \
-            \ making MULTIPLE unrelated Hopper queries in one transaction (the \
-            \ STOA-repricing loop: one query per distinct pool touched, each to a \
-            \ different first-token but the SAME destination, WSTOA) who fetches the \
-            \ whole topology's raw graph exactly ONCE and reuses it across every \
-            \ query. Safe because <SWPT::UC_MakeGraphNodes> (the node-universe \
-            \ derivation both the fetch and every query rely on) is <input>/<output>- \
-            \ independent by construction — it derives every token appearing across \
-            \ the full <swpairs> list, regardless of which specific pair is being \
-            \ queried — so ONE raw-graph fetched against a given <swpairs> universe \
-            \ is valid for EVERY query against that same universe, not just the one \
-            \ it happened to be fetched for. Still checks SWPT|PathCache first, \
-            \ identically to <URCx_Hopper> — a cache hit is even cheaper than a \
-            \ shared-raw-graph live search, this doesn't replace that, it only makes \
-            \ the miss case cheaper too. \
-            \ #65bL Phase 5 fix: was best-of-3 via <SWPT::URC_ComputeAlternateRoutesFromRaw> \
-            \ — see <URCx_Hopper>'s own doc for the full measured rationale (identical \
-            \ here, same shared decision)."
-        (let
-            (
-                (ref-SWPT:module{SwapTracerV2} SWPT)
-                (cached:object{SwapTracerV2.PathCacheRow}
-                    (ref-SWPT::URC_ReadPathCacheFresh hopper-input-id hopper-output-id)
-                )
-                (cached-nodes:[string] (at "nodes" cached))
-                ;;Only computed on an actual cache miss — see URCx_Hopper's own comment
-                ;;on this exact same eager-`let`-evaluation trap.
-                (routes:[[string]]
-                    (if (!= cached-nodes [BAR])
-                        [cached-nodes]
-                        (let
-                            (
-                                (single-route:[string]
-                                    (ref-SWPT::URC_ComputeGraphPathFromRaw hopper-input-id hopper-output-id swpairs raw-graph)
-                                )
-                            )
-                            (if (= single-route [BAR]) [] [single-route])
-                        )
-                    )
-                )
-            )
-            (if (= (length routes) 0)
-                (at 0 EMPTY_HOPPER)
-                (let
-                    (
-                        (candidates:[object{SwapperIssueV3.Hopper}]
-                            (map
-                                (lambda (nodes:[string]) (URCx_HopperForNodes nodes hopper-input-amount swpairs))
-                                routes
-                            )
-                        )
-                    )
-                    (UC_BestHopper candidates)
-                )
-            )
-        )
-    )
-    (defun URCx_HopperFromGraph:object{SwapperIssueV3.Hopper}
-        (
-            hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal
-            swpairs:[string] graph:[object{BreadthFirstSearchV1.GraphNode}]
-        )
-        @doc "#65bL Phase 7 fix: <URCx_HopperFromRaw>, sourcing its routing search \
-            \ via an ALREADY-BUILT <graph> (<SWPT::UC_MakeGraphFromRaw>) instead of \
-            \ rebuilding it from <raw-graph> on every call — see \
-            \ <URC_HopperFromGraph>'s own doc for the full rationale (repricing- \
-            \ loop graph-build sharing, one layer deeper than Phase 4's raw-graph \
-            \ sharing). Still checks SWPT|PathCache first, identically to \
-            \ <URCx_Hopper>/<URCx_HopperFromRaw> — a cache hit is even cheaper than \
-            \ a shared-graph live search, this doesn't replace that, it only makes \
-            \ the miss case cheaper too."
-        (let
-            (
-                (ref-SWPT:module{SwapTracerV2} SWPT)
-                (cached:object{SwapTracerV2.PathCacheRow}
-                    (ref-SWPT::URC_ReadPathCacheFresh hopper-input-id hopper-output-id)
-                )
-                (cached-nodes:[string] (at "nodes" cached))
-                ;;Only computed on an actual cache miss — see URCx_Hopper's own comment
-                ;;on this exact same eager-`let`-evaluation trap.
-                (routes:[[string]]
-                    (if (!= cached-nodes [BAR])
-                        [cached-nodes]
-                        (let
-                            (
-                                (single-route:[string]
-                                    (ref-SWPT::URC_ComputeGraphPathFromGraph hopper-input-id hopper-output-id graph)
-                                )
-                            )
-                            (if (= single-route [BAR]) [] [single-route])
-                        )
-                    )
-                )
-            )
-            (if (= (length routes) 0)
-                (at 0 EMPTY_HOPPER)
-                (let
-                    (
-                        (candidates:[object{SwapperIssueV3.Hopper}]
-                            (map
-                                (lambda (nodes:[string]) (URCx_HopperForNodes nodes hopper-input-amount swpairs))
-                                routes
-                            )
-                        )
-                    )
-                    (UC_BestHopper candidates)
-                )
-            )
         )
     )
     (defun URC_HopperExhaustive:object{SwapperIssueV3.Hopper}
@@ -2155,7 +2211,49 @@
             )
         )
     )
-    ;;{F2}  [UEV]
+    (defun URCi_Issue:object{IgnisCollectorV1.OutputCumulator}
+        (account:string pool-tokens:[object{SwapperV3.PoolTokens}])
+        @doc "Cost preview for C_Issue's IGNIS cumulator (the STOA dptf+swp usage prices are \
+            \ billed separately). Five legs, matching C_Issue's concat: \
+            \ ico1 = LP-token issue gas (URCi_IssueGas 1 on SWP); \
+            \ ico2 = the account->SWP pool-token multi-transfer (EXISTING tokens, real reader); \
+            \ ico3 = the genesis LP mint (origin -> biggest on SWP); \
+            \ ico4 = the SWP->account LP transfer-out (fresh LP is fee-toggle-off => class-1 \
+            \        Simple => smallest); \
+            \ ico5 = the flat swp-issue gas. \
+            \ ico3/ico4 are reconstructed from XE_IssueLP's FIXED LP invariants (issued via \
+            \ XB_IssueFree with fee-toggle off, so a fresh LP always transfers as class 1) rather \
+            \ than calling URCi_Mint/URCi_Transfer, because the LP id is a block-hash write product \
+            \ that does not exist at preview time. Every trigger reduces to the GLOBAL \
+            \ URC_IsVirtualGasZero: URC_IsVirtualGasZeroAbsolutely on a non-gas id is global, \
+            \ SWP is not in GAS_EXCEPTION, and <account> is a normal (non-exempt) account. \
+            \ Output ([swpair token-lp]) is empty here (write products)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                (ref-SWP:module{SwapperV3} SWP)
+                ;;
+                (pool-token-ids:[string] (ref-SWP::UC_ExtractTokens pool-tokens))
+                (pool-token-amounts:[decimal] (ref-SWP::UC_ExtractTokenSupplies pool-tokens))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                (swp-sc:string SWP|SC_NAME)
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-DPTF::URCi_IssueGas 1) swp-sc trigger [])
+                    (ref-TFT::URCi_MultiTransferCumulator pool-token-ids account swp-sc pool-token-amounts)
+                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-DALOS::UR_UsagePrice "ignis|biggest") swp-sc trigger [])
+                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-DALOS::UR_UsagePrice "ignis|smallest") swp-sc trigger [])
+                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-DALOS::UR_UsagePrice "ignis|swp-issue") swp-sc trigger [])
+                ]
+                []
+            )
+        )
+    )
+    ;;{F4}  Validate [UEV/CAP]
     (defun UEV_SwapData 
         (swpair:string dsid:object{UtilitySwpV1.DirectSwapInputData})
         (let
@@ -2354,176 +2452,8 @@
             (format "Validation prior to pool creation executed succesfully {}" ["!"])
         )
     )
-    ;;{F3}  [UDC]
-    (defun UDC_DirectRawSwapInput:object{UtilitySwpV1.DirectRawSwapInput}
-        (
-            dsid:object{UtilitySwpV1.DirectSwapInputData}
-            A:decimal X:[decimal] input-positions:[integer] output-position:integer weights:[decimal]
-        )
-        (let
-            (
-                ;;Unwrap Object Data
-                (input-amounts:[decimal] (at "input-amounts" dsid))
-                (output-id:string (at "output-id" dsid))
-                ;;
-                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-            )
-            (ref-U|SWP::UDC_DirectRawSwapInput
-                A
-                X
-                input-amounts 
-                input-positions
-                output-position
-                (ref-DPTF::UR_Decimals output-id)
-                weights
-            )
-        )
-    )
-    (defun UDC_InverseRawSwapInput:object{UtilitySwpV1.InverseRawSwapInput}
-        (
-            rsid:object{UtilitySwpV1.ReverseSwapInputData}
-            A:decimal X:[decimal] output-position:integer input-position:integer weights:[decimal]
-        )
-        (let
-            (
-                ;;Unwrap Object Data
-                (output-amount:decimal (at "output-amount" rsid))
-                (input-id:string (at "input-id" rsid))
-                ;;
-                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-            )
-            (ref-U|SWP::UDC_InverseRawSwapInput
-                A
-                X
-                output-amount
-                output-position
-                input-position
-                (ref-DPTF::UR_Decimals input-id)
-                weights
-            )
-        )
-    )
-    (defun UDC_Hopper:object{SwapperIssueV3.Hopper} (a:[string] b:[string] c:[decimal])
-        {"nodes"            : a
-        ,"edges"            : b
-        ,"output-values"    : c}
-    )
-    ;;{F4}  [CAP]
-    ;;
-    ;;{F5}  [A]
-    (defun A_RebuildGraph ()
-        @doc "One-time migration/backfill utility (#21H). Rebuilds SWPT's adjacency \
-            \ graph (SwapTracerV2) from every currently-existing swpair \
-            \ (SWP::URC_Swpairs()), by calling SWPT::XE_UpdateGraph exactly as normal \
-            \ issuance already does — just once per EXISTING pool instead of once for \
-            \ a newly-issued one. Lives here rather than in SWPT itself because SWPT \
-            \ deploys before SWP in this codebase's deploy order and can't hold a \
-            \ compile-time reference to SwapperV3; SWPI already deploys after both and \
-            \ is already a legitimate XE_UpdateGraph caller (C_Issue uses the same \
-            \ call). XE_UpdateGraph's own writes are idempotent (XI_UpdatePair only \
-            \ appends a swpair if not already present), so this is safe to re-run — \
-            \ pools issued after this upgrade (which already populate the graph \
-            \ directly at issuance) are a no-op here. Intended to be run exactly once \
-            \ by an admin immediately after deploying the #21H architecture change, to \
-            \ backfill every pool that was issued under the old, now-removed \
-            \ principal-keyed SWPT|Tracer storage."
-        (with-capability (GOV|SWPI_ADMIN)
-            ;;XE_UpdateGraph's own UEV_IMC checks that P|SWPI|CALLER (the guard SWPI
-            ;;registers with SWPT via P|A_Define) is actively composed — true when
-            ;;reached via C_Issue's cap chain (SWPI|C>ISSUE -> P|DT), not true by
-            ;;default just because this code happens to live in SWPI's module.
-            (with-capability (P|SECURE-CALLER)
-                (let
-                    (
-                        (ref-SWP:module{SwapperV3} SWP)
-                        (ref-SWPT:module{SwapTracerV2} SWPT)
-                    )
-                    (map (lambda (sp:string) (ref-SWPT::XE_UpdateGraph sp)) (ref-SWP::URC_Swpairs))
-                )
-            )
-        )
-    )
-    ;;{F6}  [C]
-    (defun URCi_Issue:object{IgnisCollectorV1.OutputCumulator}
-        (account:string pool-tokens:[object{SwapperV3.PoolTokens}])
-        @doc "Cost preview for C_Issue's IGNIS cumulator (the STOA dptf+swp usage prices are \
-            \ billed separately). Five legs, matching C_Issue's concat: \
-            \ ico1 = LP-token issue gas (URCi_IssueGas 1 on SWP); \
-            \ ico2 = the account->SWP pool-token multi-transfer (EXISTING tokens, real reader); \
-            \ ico3 = the genesis LP mint (origin -> biggest on SWP); \
-            \ ico4 = the SWP->account LP transfer-out (fresh LP is fee-toggle-off => class-1 \
-            \        Simple => smallest); \
-            \ ico5 = the flat swp-issue gas. \
-            \ ico3/ico4 are reconstructed from XE_IssueLP's FIXED LP invariants (issued via \
-            \ XB_IssueFree with fee-toggle off, so a fresh LP always transfers as class 1) rather \
-            \ than calling URCi_Mint/URCi_Transfer, because the LP id is a block-hash write product \
-            \ that does not exist at preview time. Every trigger reduces to the GLOBAL \
-            \ URC_IsVirtualGasZero: URC_IsVirtualGasZeroAbsolutely on a non-gas id is global, \
-            \ SWP is not in GAS_EXCEPTION, and <account> is a normal (non-exempt) account. \
-            \ Output ([swpair token-lp]) is empty here (write products)."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                (ref-SWP:module{SwapperV3} SWP)
-                ;;
-                (pool-token-ids:[string] (ref-SWP::UC_ExtractTokens pool-tokens))
-                (pool-token-amounts:[decimal] (ref-SWP::UC_ExtractTokenSupplies pool-tokens))
-                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                (swp-sc:string SWP|SC_NAME)
-            )
-            (ref-IGNIS::UDC_ConcatenateOutputCumulators
-                [
-                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-DPTF::URCi_IssueGas 1) swp-sc trigger [])
-                    (ref-TFT::URCi_MultiTransferCumulator pool-token-ids account swp-sc pool-token-amounts)
-                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-DALOS::UR_UsagePrice "ignis|biggest") swp-sc trigger [])
-                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-DALOS::UR_UsagePrice "ignis|smallest") swp-sc trigger [])
-                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-DALOS::UR_UsagePrice "ignis|swp-issue") swp-sc trigger [])
-                ]
-                []
-            )
-        )
-    )
-    (defun C_Issue:object{IgnisCollectorV1.OutputCumulator}
-        (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
-        @doc "Issues a new SWPair (Liquidty Pool). \
-            \ #36M/M5 fix: the write sequence itself (mint/transfer/tracker) now lives in \
-            \ the shared XE_IssueWrite — MTX-SWP::MTX|C_Issue's own Step 3 calls the same \
-            \ function instead of independently reimplementing it. This function still \
-            \ owns all of ITS OWN IGNIS billing/aggregation (MTX|C_Issue bills separately, \
-            \ in its own Step 2, before Step 3 ever runs)."
-        (UEV_IMC)
-        (with-capability (SWPI|C>ISSUE account pool-tokens fee-lp weights amp p)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DALOS:module{OuronetDalosV1} DALOS)
-                    (stoa-dptf-cost:decimal (ref-DALOS::UR_UsagePrice "dptf"))
-                    (stoa-swp-cost:decimal (ref-DALOS::UR_UsagePrice "swp"))
-                    (stoa-costs:decimal (+ stoa-dptf-cost stoa-swp-cost))
-                    (gas-swp-cost:decimal (ref-DALOS::UR_UsagePrice "ignis|swp-issue"))
-                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                    (write-result:list (XE_IssueWrite account pool-tokens fee-lp weights amp p))
-                    (swpair:string (at 0 write-result))
-                    (token-lp:string (at 1 write-result))
-                    (ico1:object{IgnisCollectorV1.OutputCumulator} (at 2 write-result))
-                    (ico2:object{IgnisCollectorV1.OutputCumulator} (at 3 write-result))
-                    (ico3:object{IgnisCollectorV1.OutputCumulator} (at 4 write-result))
-                    (ico4:object{IgnisCollectorV1.OutputCumulator} (at 5 write-result))
-                    (ico5:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-IGNIS::UDC_ConstructOutputCumulator gas-swp-cost SWP|SC_NAME trigger [])
-                    )
-                )
-                (ref-IGNIS::STOA|C_Collect patron stoa-costs)
-                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3 ico4 ico5] [swpair token-lp])
-            )
-        )
-    )
-    ;;{F7}  [X]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
     (defun XE_IssueWrite:list
         (account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
         @doc "#36M/M5 fix: forward-module entrypoint holding the ONE shared pool-issuance \
@@ -2577,6 +2507,76 @@
                     (ref-SWPT::XE_UpdateGraph swpair)
                     [swpair token-lp ico-lp ico-transfer-in ico-mint ico-transfer-out]
                 )
+            )
+        )
+    )
+    ;;{F7}  User [A]
+    ;;
+    (defun A_RebuildGraph ()
+        @doc "One-time migration/backfill utility (#21H). Rebuilds SWPT's adjacency \
+            \ graph (SwapTracerV2) from every currently-existing swpair \
+            \ (SWP::URC_Swpairs()), by calling SWPT::XE_UpdateGraph exactly as normal \
+            \ issuance already does — just once per EXISTING pool instead of once for \
+            \ a newly-issued one. Lives here rather than in SWPT itself because SWPT \
+            \ deploys before SWP in this codebase's deploy order and can't hold a \
+            \ compile-time reference to SwapperV3; SWPI already deploys after both and \
+            \ is already a legitimate XE_UpdateGraph caller (C_Issue uses the same \
+            \ call). XE_UpdateGraph's own writes are idempotent (XI_UpdatePair only \
+            \ appends a swpair if not already present), so this is safe to re-run — \
+            \ pools issued after this upgrade (which already populate the graph \
+            \ directly at issuance) are a no-op here. Intended to be run exactly once \
+            \ by an admin immediately after deploying the #21H architecture change, to \
+            \ backfill every pool that was issued under the old, now-removed \
+            \ principal-keyed SWPT|Tracer storage."
+        (with-capability (GOV|SWPI_ADMIN)
+            ;;XE_UpdateGraph's own UEV_IMC checks that P|SWPI|CALLER (the guard SWPI
+            ;;registers with SWPT via P|A_Define) is actively composed — true when
+            ;;reached via C_Issue's cap chain (SWPI|C>ISSUE -> P|DT), not true by
+            ;;default just because this code happens to live in SWPI's module.
+            (with-capability (P|SECURE-CALLER)
+                (let
+                    (
+                        (ref-SWP:module{SwapperV3} SWP)
+                        (ref-SWPT:module{SwapTracerV2} SWPT)
+                    )
+                    (map (lambda (sp:string) (ref-SWPT::XE_UpdateGraph sp)) (ref-SWP::URC_Swpairs))
+                )
+            )
+        )
+    )
+    ;;{F8}  User [C]
+    (defun C_Issue:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
+        @doc "Issues a new SWPair (Liquidty Pool). \
+            \ #36M/M5 fix: the write sequence itself (mint/transfer/tracker) now lives in \
+            \ the shared XE_IssueWrite — MTX-SWP::MTX|C_Issue's own Step 3 calls the same \
+            \ function instead of independently reimplementing it. This function still \
+            \ owns all of ITS OWN IGNIS billing/aggregation (MTX|C_Issue bills separately, \
+            \ in its own Step 2, before Step 3 ever runs)."
+        (UEV_IMC)
+        (with-capability (SWPI|C>ISSUE account pool-tokens fee-lp weights amp p)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-DALOS:module{OuronetDalosV1} DALOS)
+                    (stoa-dptf-cost:decimal (ref-DALOS::UR_UsagePrice "dptf"))
+                    (stoa-swp-cost:decimal (ref-DALOS::UR_UsagePrice "swp"))
+                    (stoa-costs:decimal (+ stoa-dptf-cost stoa-swp-cost))
+                    (gas-swp-cost:decimal (ref-DALOS::UR_UsagePrice "ignis|swp-issue"))
+                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                    (write-result:list (XE_IssueWrite account pool-tokens fee-lp weights amp p))
+                    (swpair:string (at 0 write-result))
+                    (token-lp:string (at 1 write-result))
+                    (ico1:object{IgnisCollectorV1.OutputCumulator} (at 2 write-result))
+                    (ico2:object{IgnisCollectorV1.OutputCumulator} (at 3 write-result))
+                    (ico3:object{IgnisCollectorV1.OutputCumulator} (at 4 write-result))
+                    (ico4:object{IgnisCollectorV1.OutputCumulator} (at 5 write-result))
+                    (ico5:object{IgnisCollectorV1.OutputCumulator}
+                        (ref-IGNIS::UDC_ConstructOutputCumulator gas-swp-cost SWP|SC_NAME trigger [])
+                    )
+                )
+                (ref-IGNIS::STOA|C_Collect patron stoa-costs)
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3 ico4 ico5] [swpair token-lp])
             )
         )
     )

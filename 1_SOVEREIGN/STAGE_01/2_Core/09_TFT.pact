@@ -458,6 +458,28 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
+    ;;{F1}  Construct [UDC]
+    (defun UDC_GetDispoData:object{UtilityDptfV1.DispoData} (account:string)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-ATS:module{AutostakeV2} ATS)
+                (a-id:string (ref-DALOS::UR_AurynID))
+                (ea-id:string (ref-DALOS::UR_EliteAurynID))
+                (ouro-id:string (ref-DALOS::UR_OuroborosID))
+                (auryndex:string (at 0 (ref-DPTF::UR_RewardToken ouro-id)))
+                (elite-auryndex:string (at 0 (ref-DPTF::UR_RewardToken a-id)))
+            )
+            {"elite-auryn-amount"   : (ref-DPTF::UR_AccountSupply ea-id account)
+            ,"auryndex-value"       : (ref-ATS::URC_Index auryndex)
+            ,"elite-auryndex-value" : (ref-ATS::URC_Index elite-auryndex)
+            ,"major-tier"           : (ref-DALOS::UR_Elite-Tier-Major account)
+            ,"minor-tier"           : (ref-DALOS::UR_Elite-Tier-Minor account)
+            ,"ouroboros-precision"  : (ref-DPTF::UR_Decimals ouro-id)}
+        )
+    )
+    ;;{F2}  Compute [UC]
     (defun UC_ContainsEliteAurynz:bool (id-lst:[string])
         (fold
             (lambda
@@ -499,8 +521,7 @@
             )
         )
     )
-    ;;{F0}  [UR]
-    ;;{F1}  [URC]
+    ;;{F3}  Read [UR/URC/URH/URCi]
     (defun URC_MinimumOuro:decimal (account:string)
         @doc "Computes the minimum Negative Ouroboros amount an Account is able to overconsume \
         \ Using the Standard Dispo mechanics"
@@ -843,108 +864,6 @@
         )
     )
     ;;
-    ;;{F2}  [UEV]
-    (defun UEV_MinimumMapperForBulk
-        (id:string transfer-amount-lst:[decimal])
-        (map
-            (lambda
-                (idx:integer)
-                (UEV_Minimum id (at idx transfer-amount-lst))
-            )
-            (enumerate 0 (- (length transfer-amount-lst) 1))
-        )
-    )
-    (defun UEV_Minimum (id:string amount:decimal)
-        (let
-            (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (min-move-read:decimal (ref-DPTF::UR_MinMove id))
-                (precision:integer (ref-DPTF::UR_Decimals id))
-                (min-move:decimal
-                    (if (= min-move-read -1.0)
-                        (floor (/ 1.0 (^ 10.0 (dec precision))) precision)
-                        min-move-read
-                    )
-                )
-            )
-            (enforce (>= amount min-move) (format "{} is not a valid {} min move amount" [amount id]))
-        )
-    )
-    (defun UEV_DispoLocker (id:string account:string)
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (type:bool (ref-DALOS::UR_AccountType account))
-                (ea-id:string (ref-DALOS::UR_EliteAurynID))
-                (ouro-amount:decimal (ref-DALOS::UR_TF_AccountSupply account true))
-            )
-            (if (and (= id ea-id) (not type))
-                (enforce (not (< ouro-amount 0.0)) "When Account has negative OURO, Elite-Auryn is dispo-locked and cannot be moved")
-                true
-            )
-        )
-    )
-    (defun UEV_MoveRoleCheck (id:string sender:string receiver:string)
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (verum-five:[string] (ref-DPTF::UR_Verum5 id))
-                (lvf:integer (length verum-five))
-                (transfer-roles:integer
-                    (if (and (= lvf 1) (= verum-five [BAR]))
-                        0 lvf
-                    )
-                )
-                (are-transfer-roles-active:bool (if (> transfer-roles 0) true false))
-                (ss:string (ref-I|OURONET::OI|UC_ShortAccount sender))
-                (sr:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
-                (allow:string (format "{} Transfer from {} to {} is allowed" [TF ss sr]))
-            )
-            (if are-transfer-roles-active
-                (let
-                    (
-                        (ref-DALOS:module{OuronetDalosV1} DALOS)
-                        (ouroboros:string OUROBOROS|SC_NAME)
-                        (dalos:string DALOS|SC_NAME)
-                        ;;
-                        (sender-transfer-role:bool (ref-DPTF::UR_AccountRoleTransfer id sender))
-                        (receiver-transfer-role:bool (ref-DPTF::UR_AccountRoleTransfer id receiver))
-                    )
-                    (enforce-one
-                        (format "Incompatible Transfer Roles from {} to {}" [ss sr])
-                        [
-                            (enforce sender-transfer-role (format "Incompatible Transfer Role for Sender {}" [ss]))
-                            (enforce receiver-transfer-role (format "Incompatible Transfer Role for Receiver {}" [sr]))
-                        ]
-                    )
-                )
-                allow
-            )
-        )
-    )
-    ;;{F3}  [UDC]
-    (defun UDC_GetDispoData:object{UtilityDptfV1.DispoData} (account:string)
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-ATS:module{AutostakeV2} ATS)
-                (a-id:string (ref-DALOS::UR_AurynID))
-                (ea-id:string (ref-DALOS::UR_EliteAurynID))
-                (ouro-id:string (ref-DALOS::UR_OuroborosID))
-                (auryndex:string (at 0 (ref-DPTF::UR_RewardToken ouro-id)))
-                (elite-auryndex:string (at 0 (ref-DPTF::UR_RewardToken a-id)))
-            )
-            {"elite-auryn-amount"   : (ref-DPTF::UR_AccountSupply ea-id account)
-            ,"auryndex-value"       : (ref-ATS::URC_Index auryndex)
-            ,"elite-auryndex-value" : (ref-ATS::URC_Index elite-auryndex)
-            ,"major-tier"           : (ref-DALOS::UR_Elite-Tier-Major account)
-            ,"minor-tier"           : (ref-DALOS::UR_Elite-Tier-Minor account)
-            ,"ouroboros-precision"  : (ref-DPTF::UR_Decimals ouro-id)}
-        )
-    )
-    ;;
     (defun URCi_SmallTransmuteCumulator:object{IgnisCollectorV1.OutputCumulator}
         (id:string transmuter:string)
         (let
@@ -1242,10 +1161,325 @@
             )
         )
     )
-    ;;{F4}  [CAP]
+    ;;{F4}  Validate [UEV/CAP]
     ;;
-    ;;{F5}  [A]
-    ;;{F6}  [C]
+    (defun UEV_MinimumMapperForBulk
+        (id:string transfer-amount-lst:[decimal])
+        (map
+            (lambda
+                (idx:integer)
+                (UEV_Minimum id (at idx transfer-amount-lst))
+            )
+            (enumerate 0 (- (length transfer-amount-lst) 1))
+        )
+    )
+    (defun UEV_Minimum (id:string amount:decimal)
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (min-move-read:decimal (ref-DPTF::UR_MinMove id))
+                (precision:integer (ref-DPTF::UR_Decimals id))
+                (min-move:decimal
+                    (if (= min-move-read -1.0)
+                        (floor (/ 1.0 (^ 10.0 (dec precision))) precision)
+                        min-move-read
+                    )
+                )
+            )
+            (enforce (>= amount min-move) (format "{} is not a valid {} min move amount" [amount id]))
+        )
+    )
+    (defun UEV_DispoLocker (id:string account:string)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (type:bool (ref-DALOS::UR_AccountType account))
+                (ea-id:string (ref-DALOS::UR_EliteAurynID))
+                (ouro-amount:decimal (ref-DALOS::UR_TF_AccountSupply account true))
+            )
+            (if (and (= id ea-id) (not type))
+                (enforce (not (< ouro-amount 0.0)) "When Account has negative OURO, Elite-Auryn is dispo-locked and cannot be moved")
+                true
+            )
+        )
+    )
+    (defun UEV_MoveRoleCheck (id:string sender:string receiver:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (verum-five:[string] (ref-DPTF::UR_Verum5 id))
+                (lvf:integer (length verum-five))
+                (transfer-roles:integer
+                    (if (and (= lvf 1) (= verum-five [BAR]))
+                        0 lvf
+                    )
+                )
+                (are-transfer-roles-active:bool (if (> transfer-roles 0) true false))
+                (ss:string (ref-I|OURONET::OI|UC_ShortAccount sender))
+                (sr:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
+                (allow:string (format "{} Transfer from {} to {} is allowed" [TF ss sr]))
+            )
+            (if are-transfer-roles-active
+                (let
+                    (
+                        (ref-DALOS:module{OuronetDalosV1} DALOS)
+                        (ouroboros:string OUROBOROS|SC_NAME)
+                        (dalos:string DALOS|SC_NAME)
+                        ;;
+                        (sender-transfer-role:bool (ref-DPTF::UR_AccountRoleTransfer id sender))
+                        (receiver-transfer-role:bool (ref-DPTF::UR_AccountRoleTransfer id receiver))
+                    )
+                    (enforce-one
+                        (format "Incompatible Transfer Roles from {} to {}" [ss sr])
+                        [
+                            (enforce sender-transfer-role (format "Incompatible Transfer Role for Sender {}" [ss]))
+                            (enforce receiver-transfer-role (format "Incompatible Transfer Role for Receiver {}" [sr]))
+                        ]
+                    )
+                )
+                allow
+            )
+        )
+    )
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    (defun XI_Transmute (id:string transmuter:string transmute-amount:decimal)
+        (require-capability (DPTF|C>X-TRANSMUTE id transmuter transmute-amount))
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (dispo-data:object{UtilityDptfV1.DispoData} (UDC_GetDispoData transmuter))
+            )
+            (ref-DPTF::XB_DebitTrueFungible id transmuter transmute-amount dispo-data false)
+            (XI_CreditPrimaryFee id transmute-amount false)
+        )
+    )
+    ;;
+    (defun XI_SimpleTransfer (id:string sender:string receiver:string transfer-amount:decimal method:bool)
+        (require-capability (DPTF|C>X-TRANSFER id sender receiver method))
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (dispo-data:object{UtilityDptfV1.DispoData} (UDC_GetDispoData sender))
+            )
+            (ref-DPTF::XB_DebitTrueFungible id sender transfer-amount dispo-data false)
+            (ref-DPTF::XB_CreditTrueFungible id receiver transfer-amount)
+        )
+    )
+    (defun XI_ComplexTransfer (id:string sender:string receiver:string transfer-amount:decimal method:bool)
+        (require-capability (DPTF|C>X-TRANSFER id sender receiver method))
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (dispo-data:object{UtilityDptfV1.DispoData} (UDC_GetDispoData sender))
+            )
+            (ref-DPTF::XB_DebitTrueFungible id sender transfer-amount dispo-data false)
+            (XI_ComplexCredit id receiver transfer-amount)
+        )
+    )
+    (defun XI_ComplexCredit (id:string receiver:string transfer-amount:decimal)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (dalos:string DALOS|SC_NAME)
+                (fees:[decimal] (ref-DPTF::URC_Fee id transfer-amount))
+                (primary-fee:decimal (at 0 fees))
+                (secondary-fee:decimal (at 1 fees))
+                (remainder:decimal (at 2 fees))
+            )
+            (if (!= primary-fee 0.0)
+                (XI_CreditPrimaryFee id primary-fee true)
+                true
+            )
+            (if (!= secondary-fee 0.0)
+                (do
+                    (ref-DPTF::XB_CreditTrueFungible id dalos secondary-fee)
+                    (ref-DPTF::XE_UpdateFeeVolume id secondary-fee false)
+                )
+                true
+            )
+            (ref-DPTF::XB_CreditTrueFungible id receiver remainder)
+        )
+    )
+    (defun XI_DynamicUpdateEliteAccount (account:string)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (type:bool (ref-DALOS::UR_AccountType account))
+            )
+            (if (not type)
+                (XI_DirectUpdateEliteAccount account)
+                true
+            )
+        )
+    )
+    (defun XI_DirectUpdateEliteAccount (account:string)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-ELITE:module{EliteV1} ELITE)
+                (elite-aurynz:decimal (ref-ELITE::URC_EliteAurynzSupply account))
+            )
+            (ref-DALOS::XE_UpdateElite account elite-aurynz)
+        )
+    )
+    ;;
+    (defun XI_BulkCredit
+        (id:string receiver-lst:[string] transfer-amount-lst:[decimal] complexity:bool elite:bool)
+        (require-capability (SECURE))
+        (let
+            (
+                (size:integer (length receiver-lst))
+            )
+            (if (not complexity)
+                (do
+                    (XI_BulkCreditAmounts id receiver-lst transfer-amount-lst)
+                    (if elite (XI_BulkUpdateElite receiver-lst) true)
+                )
+                (let
+                    (
+                        (ref-DALOS:module{OuronetDalosV1} DALOS)
+                        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                        (dalos:string DALOS|SC_NAME)
+                        (fees:[decimal] (UC_BulkFees id transfer-amount-lst))
+                        (primary-fee:decimal (at 0 fees))
+                        (secondary-fee:decimal (at 1 fees))
+                        (bulk-remainders:[decimal] (UC_BulkRemainders id transfer-amount-lst))
+                    )
+                    (if (!= primary-fee 0.0)
+                        (XI_CreditPrimaryFee id primary-fee true)
+                        true
+                    )
+                    (if (!= secondary-fee 0.0)
+                        (do
+                            (ref-DPTF::XB_CreditTrueFungible id dalos secondary-fee)
+                            (ref-DPTF::XE_UpdateFeeVolume id secondary-fee false)
+                        )
+                        true
+                    )
+                    (XI_BulkCreditAmounts id receiver-lst bulk-remainders)
+                    (if elite (XI_BulkUpdateElite receiver-lst) true)
+                )
+            )
+        )
+    )
+    (defun XI_BulkCreditAmounts (id:string receiver-lst:[string] amounts:[decimal])
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+            )
+            (map
+                (lambda
+                    (idx:integer)
+                    (ref-DPTF::XB_CreditTrueFungible id (at idx receiver-lst) (at idx amounts))
+                )
+                (enumerate 0 (- (length receiver-lst) 1))
+            )
+        )
+    )
+    (defun XI_BulkUpdateElite (receiver-lst:[string])
+        (require-capability (SECURE))
+        (map
+            (lambda
+                (idx:integer)
+                (XI_DirectUpdateEliteAccount (at idx receiver-lst))
+            )
+            (enumerate 0 (- (length receiver-lst) 1))
+        )
+    )
+    ;;  [Aux Credit-Primary-Fee]
+    (defun XI_CreditPrimaryFee (id:string pf:decimal native:bool)
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (rt:bool (ref-DPTF::URC_IzRT id))
+                (rbt:bool (ref-DPTF::URC_IzRBT id))
+                (target:string (ref-DPTF::UR_FeeTarget id))
+            )
+            (if (and rt rbt)
+                (let
+                    (
+                        (v:[decimal] (URCx_CPF_RT-RBT id pf))
+                        (v1:decimal (at 0 v))
+                        (v2:decimal (at 1 v))
+                        (v3:decimal (at 2 v))
+                    )
+                    (XI_CPF_StillFee id target v1)
+                    (XI_CPF_CreditFee id target v2)
+                    (XI_CPF_BurnFee id target v3)
+                )
+                (if rt
+                    (let
+                        (
+                            (v1:decimal (URCx_CPF_RT id pf))
+                            (v2:decimal (- pf v1))
+                        )
+                        (XI_CPF_StillFee id target v1)
+                        (XI_CPF_CreditFee id target v2)
+                    )
+                    (if rbt
+                        (let
+                            (
+                                (v1:decimal (URCx_CPF_RBT id pf))
+                                (v2:decimal (- pf v1))
+                            )
+                            (XI_CPF_StillFee id target v1)
+                            (XI_CPF_BurnFee id target v2)
+                        )
+                        (ref-DPTF::XB_CreditTrueFungible id target pf)
+                    )
+                )
+            )
+            (if native
+                (ref-DPTF::XE_UpdateFeeVolume id pf true)
+                true
+            )
+        )
+    )
+    (defun XI_CPF_StillFee (id:string target:string still-fee:decimal)
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+            )
+            (if (!= still-fee 0.0)
+                (ref-DPTF::XB_CreditTrueFungible id target still-fee)
+                true
+            )
+        )
+    )
+    (defun XI_CPF_BurnFee (id:string target:string burn-fee:decimal)
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+            )
+            (if (!= burn-fee 0.0)
+                (ref-DPTF::XB_UpdateSupply id burn-fee false)
+                true
+            )
+        )
+    )
+    (defun XI_CPF_CreditFee (id:string target:string credit-fee:decimal)
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-ATS:module{AutostakeV2} ATS)
+                (ats:string (ref-ATS::GOV|ATS|SC_NAME))
+            )
+            (if (!= credit-fee 0.0)
+                (ref-DPTF::XB_CreditTrueFungible id ats credit-fee)
+                true
+            )
+        )
+    )
+    ;;{F7}  User [A]
+    ;;{F8}  User [C]
+    ;;
     ;;Clear Dispo
     (defun C_ClearDispo:object{IgnisCollectorV1.OutputCumulator}
         (account:string)
@@ -1549,240 +1783,6 @@
                 true
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators folded-obj [])
-        )
-    )
-    ;;{F7}  [X]
-    (defun XI_Transmute (id:string transmuter:string transmute-amount:decimal)
-        (require-capability (DPTF|C>X-TRANSMUTE id transmuter transmute-amount))
-        (let
-            (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (dispo-data:object{UtilityDptfV1.DispoData} (UDC_GetDispoData transmuter))
-            )
-            (ref-DPTF::XB_DebitTrueFungible id transmuter transmute-amount dispo-data false)
-            (XI_CreditPrimaryFee id transmute-amount false)
-        )
-    )
-    ;;
-    (defun XI_SimpleTransfer (id:string sender:string receiver:string transfer-amount:decimal method:bool)
-        (require-capability (DPTF|C>X-TRANSFER id sender receiver method))
-        (let
-            (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (dispo-data:object{UtilityDptfV1.DispoData} (UDC_GetDispoData sender))
-            )
-            (ref-DPTF::XB_DebitTrueFungible id sender transfer-amount dispo-data false)
-            (ref-DPTF::XB_CreditTrueFungible id receiver transfer-amount)
-        )
-    )
-    (defun XI_ComplexTransfer (id:string sender:string receiver:string transfer-amount:decimal method:bool)
-        (require-capability (DPTF|C>X-TRANSFER id sender receiver method))
-        (let
-            (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (dispo-data:object{UtilityDptfV1.DispoData} (UDC_GetDispoData sender))
-            )
-            (ref-DPTF::XB_DebitTrueFungible id sender transfer-amount dispo-data false)
-            (XI_ComplexCredit id receiver transfer-amount)
-        )
-    )
-    (defun XI_ComplexCredit (id:string receiver:string transfer-amount:decimal)
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (dalos:string DALOS|SC_NAME)
-                (fees:[decimal] (ref-DPTF::URC_Fee id transfer-amount))
-                (primary-fee:decimal (at 0 fees))
-                (secondary-fee:decimal (at 1 fees))
-                (remainder:decimal (at 2 fees))
-            )
-            (if (!= primary-fee 0.0)
-                (XI_CreditPrimaryFee id primary-fee true)
-                true
-            )
-            (if (!= secondary-fee 0.0)
-                (do
-                    (ref-DPTF::XB_CreditTrueFungible id dalos secondary-fee)
-                    (ref-DPTF::XE_UpdateFeeVolume id secondary-fee false)
-                )
-                true
-            )
-            (ref-DPTF::XB_CreditTrueFungible id receiver remainder)
-        )
-    )
-    (defun XI_DynamicUpdateEliteAccount (account:string)
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (type:bool (ref-DALOS::UR_AccountType account))
-            )
-            (if (not type)
-                (XI_DirectUpdateEliteAccount account)
-                true
-            )
-        )
-    )
-    (defun XI_DirectUpdateEliteAccount (account:string)
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-ELITE:module{EliteV1} ELITE)
-                (elite-aurynz:decimal (ref-ELITE::URC_EliteAurynzSupply account))
-            )
-            (ref-DALOS::XE_UpdateElite account elite-aurynz)
-        )
-    )
-    ;;
-    (defun XI_BulkCredit
-        (id:string receiver-lst:[string] transfer-amount-lst:[decimal] complexity:bool elite:bool)
-        (require-capability (SECURE))
-        (let
-            (
-                (size:integer (length receiver-lst))
-            )
-            (if (not complexity)
-                (do
-                    (XI_BulkCreditAmounts id receiver-lst transfer-amount-lst)
-                    (if elite (XI_BulkUpdateElite receiver-lst) true)
-                )
-                (let
-                    (
-                        (ref-DALOS:module{OuronetDalosV1} DALOS)
-                        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                        (dalos:string DALOS|SC_NAME)
-                        (fees:[decimal] (UC_BulkFees id transfer-amount-lst))
-                        (primary-fee:decimal (at 0 fees))
-                        (secondary-fee:decimal (at 1 fees))
-                        (bulk-remainders:[decimal] (UC_BulkRemainders id transfer-amount-lst))
-                    )
-                    (if (!= primary-fee 0.0)
-                        (XI_CreditPrimaryFee id primary-fee true)
-                        true
-                    )
-                    (if (!= secondary-fee 0.0)
-                        (do
-                            (ref-DPTF::XB_CreditTrueFungible id dalos secondary-fee)
-                            (ref-DPTF::XE_UpdateFeeVolume id secondary-fee false)
-                        )
-                        true
-                    )
-                    (XI_BulkCreditAmounts id receiver-lst bulk-remainders)
-                    (if elite (XI_BulkUpdateElite receiver-lst) true)
-                )
-            )
-        )
-    )
-    (defun XI_BulkCreditAmounts (id:string receiver-lst:[string] amounts:[decimal])
-        (require-capability (SECURE))
-        (let
-            (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-            )
-            (map
-                (lambda
-                    (idx:integer)
-                    (ref-DPTF::XB_CreditTrueFungible id (at idx receiver-lst) (at idx amounts))
-                )
-                (enumerate 0 (- (length receiver-lst) 1))
-            )
-        )
-    )
-    (defun XI_BulkUpdateElite (receiver-lst:[string])
-        (require-capability (SECURE))
-        (map
-            (lambda
-                (idx:integer)
-                (XI_DirectUpdateEliteAccount (at idx receiver-lst))
-            )
-            (enumerate 0 (- (length receiver-lst) 1))
-        )
-    )
-    ;;  [Aux Credit-Primary-Fee]
-    (defun XI_CreditPrimaryFee (id:string pf:decimal native:bool)
-        (let
-            (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (rt:bool (ref-DPTF::URC_IzRT id))
-                (rbt:bool (ref-DPTF::URC_IzRBT id))
-                (target:string (ref-DPTF::UR_FeeTarget id))
-            )
-            (if (and rt rbt)
-                (let
-                    (
-                        (v:[decimal] (URCx_CPF_RT-RBT id pf))
-                        (v1:decimal (at 0 v))
-                        (v2:decimal (at 1 v))
-                        (v3:decimal (at 2 v))
-                    )
-                    (XI_CPF_StillFee id target v1)
-                    (XI_CPF_CreditFee id target v2)
-                    (XI_CPF_BurnFee id target v3)
-                )
-                (if rt
-                    (let
-                        (
-                            (v1:decimal (URCx_CPF_RT id pf))
-                            (v2:decimal (- pf v1))
-                        )
-                        (XI_CPF_StillFee id target v1)
-                        (XI_CPF_CreditFee id target v2)
-                    )
-                    (if rbt
-                        (let
-                            (
-                                (v1:decimal (URCx_CPF_RBT id pf))
-                                (v2:decimal (- pf v1))
-                            )
-                            (XI_CPF_StillFee id target v1)
-                            (XI_CPF_BurnFee id target v2)
-                        )
-                        (ref-DPTF::XB_CreditTrueFungible id target pf)
-                    )
-                )
-            )
-            (if native
-                (ref-DPTF::XE_UpdateFeeVolume id pf true)
-                true
-            )
-        )
-    )
-    (defun XI_CPF_StillFee (id:string target:string still-fee:decimal)
-        (require-capability (SECURE))
-        (let
-            (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-            )
-            (if (!= still-fee 0.0)
-                (ref-DPTF::XB_CreditTrueFungible id target still-fee)
-                true
-            )
-        )
-    )
-    (defun XI_CPF_BurnFee (id:string target:string burn-fee:decimal)
-        (require-capability (SECURE))
-        (let
-            (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-            )
-            (if (!= burn-fee 0.0)
-                (ref-DPTF::XB_UpdateSupply id burn-fee false)
-                true
-            )
-        )
-    )
-    (defun XI_CPF_CreditFee (id:string target:string credit-fee:decimal)
-        (require-capability (SECURE))
-        (let
-            (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-ATS:module{AutostakeV2} ATS)
-                (ats:string (ref-ATS::GOV|ATS|SC_NAME))
-            )
-            (if (!= credit-fee 0.0)
-                (ref-DPTF::XB_CreditTrueFungible id ats credit-fee)
-                true
-            )
         )
     )
     ;;
