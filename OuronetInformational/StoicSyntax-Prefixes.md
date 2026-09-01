@@ -166,6 +166,50 @@ because it does no reads. A conditionally-heavy function takes the heavy prefix 
 
 ---
 
+## 2.1 Sweep rulings (2026-09-01) — canon additions from the whole-codebase StoicSyntax sweep
+
+Owner-ratified during the #90 sweep. These **extend / amend** §1–§2 (authoritative):
+
+**New prefixes**
+- **`INFO_`** — **Information reader**, a specialization of the **READ / URC** family (coloured as READ/URC).
+  A preview reader returning `object{OuronetInfoV1.ClientInfo}` that wraps a `URCi_` cost source into a
+  UI cost + description preview. Pure read+derive, **no `enforce`**. Canonical form `INFO_MODULE|Op`.
+  **Supersedes** the legacy `MODULE|INFO_Op`, bare `INFO_Op`, and the interim `URC_MODULE|Op` INFO
+  spellings — all migrate to **`INFO_MODULE|Op`**.
+- **`REPL_`** — **repl-test-only helper**. Exists solely for `.repl` harnesses and is **stripped from the
+  mainnet deploy**. Off the production surface; excluded from the interface. Not a production class.
+
+**Scope form — prefix-first is canonical (supersedes module-first).** Every module/entity-scoped name is
+`PREFIX_MODULE|Name`: the class prefix **leads**, then the entity scope, then the name — for EVERY class,
+**including the Talos recipe wrappers**: `DPNF|C_Create` → `C_DPNF|Create`, `SPARK|C_Acquire` →
+`C_SPARK|Acquire`, `MTX|2|C_Inject` → `C_MTX|2|Inject`. The earlier `MODULE|PREFIX_Name` Talos form is
+retired. Multi-segment scopes keep their pipes (`C_MTX|2|Inject`).
+
+**Suffix stacking.** Lowercase specialization markers stack freely: `x`→`xx` (aux-of-aux, e.g. `UCxx_`) and
+combine across roles (`URCi`+`x` = `URCix_`, a cost-reader auxiliary). The prefix still reflects the
+function's own nature; extra `x` layers say "helper of the helper above."
+
+**Numeric quantifiers.**
+- **Recipe steps** — a recipe may carry a numeric step: `A01_`…`A11_` = `A_` admin executed in ordered
+  steps (same class as `A_`; the number is sequence, not a new prefix).
+- **Write arity** — `W{I,U,W}<n>_`, `<n>` = fields touched in one op: `WU2_`=2 updates … `WU7_`=7. Extends
+  the former WU2/3/4 to any `<n>`.
+
+**Structural-payload scope = `GOV`.** The smart-account branding/governor payloads formerly written bare
+(`DALOS|Info`, `SWP|Info`, `TALOS|Gassless`, `DALOS|VirtualGasData`, `DALOS|EmptyOutputCumulatorV2`) take
+their **real class prefix**, scoped under **`GOV`**: `UDC_GOV|Info`, `…_GOV|Gassless`, etc.
+
+**Variant scope `STOA-PID`.** SWP liquidity/swap functions taking an explicit `stoa-pid` (STOA price in
+USD) arg keep their real class and carry `STOA-PID` as a variant scope: `XI_STOA-PID|Swap`,
+`C_STOA-PID|AddStandardLiquidity`, `URC_STOA-PID|LpToIgnis` (kept because a plain twin exists, e.g.
+`XI_Swap`). The "`stoa-pid` = STOA price in USD" fact lives in each `@doc`.
+
+**Corrections applied during the sweep.** `X_` (bare) → the correct one of `XI_/XE_/XB_` by reach; `XII_` →
+`XI_` (typo); `NS_` → `CT_` (namespace constants). The §3 migrations plus `URCcap_→CAP_` and `AUP_→AU_`
+are applied.
+
+---
+
 ## 3. Migration mapping (old → new)
 
 The heavy-read letter changed from `D` (which collided with `D`=Data in `UDC_`, and was not
@@ -305,6 +349,52 @@ Capabilities are written in four bands, in order **C1 → C2 → C3 → C4**, ea
 > closes the capability region. Colour: **C1 bronze · C2/C3 silver · C4 gold — all metallic** (rendered as
 > a gradient-clipped brushed-metal sheen, distinct from the neutral silver used for type annotations).
 
+**Colour rule — only GOLD needs a marker; bronze and silver are inferred.** You can't tell an ownership cap from
+a plain custom cap by its body, so **gold** is the one band that must be declared. Everything else follows from the
+body. Precedence, top to bottom:
+
+1. **`true`-only body → BRONZE.** `(defcap X (…) true)` — a literal `true` and nothing else. (A cap whose body
+   merely *calls* one function — e.g. `(CAP_EnforceAccountOwnership account)` — is **not** trivial.) Highest priority.
+2. **Under `;;{C4}` OR a governance cap (`;;{G2}`) → GOLD.** The ownership/governance/authority band — declared by
+   the marker, because it isn't inferable.
+3. **Anything else (any non-`true` cap, with or without `compose-capability`) → SILVER.**
+
+So the **`;;{C1}` / `;;{C2}` / `;;{C3}` markers organise the file but do NOT drive the colour** — a C1 block holds
+true caps (→ bronze) but a non-true cap sitting there is silver; C2/C3 are silver by construction. The classifier
+reads exactly two signals: *is the body literally `true`?* and *is it under `;;{C4}`/`;;{G2}`?*
+
+### 5.2.1 The GOVERNANCE region (`;;GOVERNANCE`, sub-blocks G1–G3)
+
+The governance region at the top of a module has three marked sub-blocks:
+
+| Marker | Contents | Colour |
+|---|---|---|
+| `;;{G1}` | governance **constants** (`defconst GOV\|…`) | **grey + BOLD** (grey like other constants, but bolded) |
+| `;;{G2}` | governance **capabilities** | **gold** — *except* a true/simple one, which is **bronze** (the priority rule) |
+| `;;{G3}` | governance **defuns** (all `GOV`-prefixed) | **grey** (STRUCTURAL — unchanged; correct as-is) |
+
+Policy sub-blocks (`;;{P1}…{P4}`) and the schema/table/const blocks (`;;{1}…{3}`) mark regions the same way but
+carry no cap band — a cap under them (rare) falls back to silver.
+
+### 5.2.2 Foreign & uncategorisable → BLACK
+
+Some names are pulled in from **other modules** (via a mod-ref, `ref-X::member`) or otherwise **don't follow
+StoicSyntax** and can't be categorised. This module cannot know their band or nature, so they render **neutral
+BLACK** — a **charcoal medallion with LIGHT text** (visible, but unmistakably "not one of ours"):
+
+- **Foreign CAPABILITY** — a cap installed/required from another module, e.g. `install-capability
+  (ref-coin::TRANSFER …)` → **black ANGLED medallion**. Angled because it *is* a capability; black because from
+  outside we cannot know whether it is C1–C4 or what state it's in.
+- **Foreign / non-conforming FUNCTION** — a call that matches no StoicSyntax prefix and is no Pact built-in, e.g.
+  `ref-coin::get-balance`, `ref-coin::transfer` → **black ROUNDED medallion** (a pill, *not* plain text, so the
+  "uncategorised / from outside" flag is impossible to miss). It's black because it doesn't follow the syntax —
+  not merely because it's external.
+
+Detection: after a `ref-X::member` split (`::` left default, §5), if the member matches **no** prefix **and** is
+no built-in → it's foreign. **ALL-CAPS letters = a capability** (Pact convention: `TRANSFER`/`MINT`/`ROTATE`),
+otherwise a **function**. Rare in practice — StoicSyntax modules are still recognised by prefix across the `::`
+(e.g. `ref-U|ATS::UDC_Elite` stays yellow); only truly foreign/generic names (the `coin` interface, etc.) go black.
+
 ### 5.3 Body-statement order (deterministic when order is free)
 
 Inside any body — a capability **or** a function — when the statements are **order-independent**, order them:
@@ -323,6 +413,57 @@ making the written structure exact and deterministic across the whole codebase.
 > functions are ordered by canon, not dependency; (d) capability bands **C1–C4** and the **body-statement
 > order** are now specified (they were referenced but undefined). The earlier worked reference
 > `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/06_MTX-AQP.pact` predates the Construct-first order.
+
+### 5.4 The block-marker skeleton (the full canonical layout)
+
+Every module and interface is partitioned by **marker comments** — the machine-readable skeleton the sweep +
+colouring agents read. Two forms:
+
+- **Region header** — an ALL-CAPS comment: `;;GOVERNANCE`, `;;POLICY`, `;;SCHEMAS-TABLES-CONSTANTS`,
+  `;;CAPABILITIES`, `;;FUNCTIONS`.
+- **Sub-block marker** — a braced tag: `;;{G1}`, `;;{C4}`, `;;{F3}`, `;;{2}` … one per sub-block, in order.
+
+**Canonical MODULE skeleton** (regions top-to-bottom; sub-blocks in the order shown):
+
+```
+(module NAME GOV
+  ;;GOVERNANCE                     — the module's own governance, self-contained
+    ;;{G1}   governance CONSTANTS   (defconst GOV|…)            → grey + BOLD
+    ;;{G2}   governance CAPS        (defcap  GOV|…)             → gold  (bronze if a `true` body)
+    ;;{G3}   governance DEFUNS      (defun   GOV|…)             → grey  (STRUCTURAL)
+  ;;POLICY                          — IMC policy registry (present when the module has policies)
+    ;;{P1}   policy capabilities · ;;{P2} policy tables (P|…) · ;;{P3} … · ;;{P4} policy consts + defuns (P|…)
+  ;;SCHEMAS-TABLES-CONSTANTS
+    ;;{1}    defschema …            → schemas
+    ;;{2}    deftable  …            → tables            (interface: OMIT — tables are module-only)
+    ;;{3}    defconst … + CT_ const-helper defuns
+  ;;CAPABILITIES                    — bands, in order C1 → C2 → C3 → C4 (colour rule in §5.2)
+    ;;{C1}  simple/true             ;;{C2} custom non-composing   ;;{C3} custom composing   ;;{C4} ownership/gov
+  ;;FUNCTIONS                       — the prefixed functions, in the CANONICAL 7-class order (§5.1.1)
+    ;;{F1} Construct [UDC]  · ;;{F2} Compute [UC] · ;;{F3} Read [UR/URC/URH/URCi] · ;;{F4} Validate [UEV/CAP]
+    ;;{F5} Write [W]        · ;;{F6} Aux/Protected [X]  (sub-tiers X-A, X-C, X-<Table>) · ;;{F7} User [A] · ;;{F8} User [C]
+)
+```
+
+**Ordering, at three scales** (all deterministic — see §5.1's "no intra-module load-order constraint"):
+1. **Blocks** — the region + sub-block order above (Governance → Policy → Schemas/Tables/Consts → Capabilities →
+   Functions; and within each, the sub-markers in the listed order).
+2. **Within a block** — functions follow the **7-class order** (§5.1.1: Construct→Compute→Read→Validate→Write→
+   Aux/Protected→User); each `…x` auxiliary sits directly beneath the function it serves (§1); capabilities go
+   C1→C4; recipes by weight then mode (§2 recipe-axes).
+3. **Within a prefix family** — strongest → lightest (bold lead ▸ shades ▸ aux italic ▸ cost), the exact 1–37
+   sequence in §5.1.1 / §6.
+
+**Canonical INTERFACE skeleton** — the same order, dropping what interfaces can't hold (§5.1.2): **no**
+`;;GOVERNANCE`, **no** `;;POLICY`, **no** `;;{2}` tables; keeps `;;SCHEMAS-TABLES-CONSTANTS` (schemas + consts
+only), `;;CAPABILITIES` (the ones in the contract), and `;;FUNCTIONS` **minus** the four excluded kinds (`…x`
+aux, `W…` writers, `XI_`, and any `object{module-schema}` return).
+
+> **Marker note (2026-08-31).** The `;;{Cx}`/`;;{Gx}`/`;;{Fx}`/`;;{Px}`/`;;{n}` markers are the source of truth
+> the agents read: the **cap classifier** needs only `;;{C4}` and `;;{G2}` (gold — §5.2), the **G1** marker drives
+> the bold-grey governance constants, and the **region order** drives the sweep. A real module's markers may be in
+> a pre-sweep order (e.g. DALOS today lists functions `UR→URC→UEV→UDC→CAP→A→C→X→AUP`); the sweep re-lays them into
+> the canonical order above, and the colourer is order-independent so it renders correctly either way.
 
 ---
 
