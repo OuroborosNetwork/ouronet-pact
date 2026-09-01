@@ -1531,7 +1531,7 @@
                 ["Operation: 2-step enforced-fresh inject (spike fallback for CC_Inject on vault/treasury)."
                  "Executes via TS02-C3.MTX-AQP|C_2|Inject."]
                 [(format "2-step fresh-injected {} of {} into FVT {}." [amount reward-dptf-id fvt-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|INJECT))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-FVT.URCi_Inject fvt-id [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount]))
     )
