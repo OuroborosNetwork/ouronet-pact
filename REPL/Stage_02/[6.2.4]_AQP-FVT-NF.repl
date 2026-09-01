@@ -225,11 +225,30 @@
                 (expect (format "<<TX-FVT-NF-02>> need-sync true got={}" [need-mid]) true need-mid)
             ]
         )
-        (print "--- [TX-FVT-NF-02 · 02 · C_SyncNonFungibleAnchors] ---")
+        (print "--- [TX-FVT-NF-02 · 02 · C_SyncNonFungibleAnchors + FULL-cost ground truth] ---")
         (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-        (print (format "<(AQP-POOL|C_SyncNonFungibleAnchors)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|C_SyncNonFungibleAnchors patron beneficiary-id dpnf-id)
-        ]))
+        ;; GROUND TRUTH: FULL reconstructed reader (URCi_SyncCollectableAnchorsFull) through OI|UDC_DynamicIgnisCost
+        ;; == the REAL IGNIS the patron pays for the Talos exec (concatenated exec cumulator). Proves reader == exec.
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-DPTF2:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (predicted:decimal
+                    (at "ignis-need"
+                        (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                            (AQP-POOL.URCi_SyncCollectableAnchorsFull beneficiary-id dpnf-id))))
+                (pre-gas:decimal (ref-DPTF2::UR_AccountSupply "GAS-98c486052a51" patron))
+            )
+            (print (format "<(URCi_SyncCollectableAnchorsFull NF→ignis-need)> = {} ; patron pre-gas = {}" [predicted pre-gas]))
+            (print (format "<(AQP-POOL|C_SyncNonFungibleAnchors)> => \"{}\"" [
+                (ref-TS02-C3::AQP-POOL|C_SyncNonFungibleAnchors patron beneficiary-id dpnf-id)
+            ]))
+            (let ((post-gas:decimal (ref-DPTF2::UR_AccountSupply "GAS-98c486052a51" patron)))
+                (map print
+                    [ (format "<(post-gas)> = {} ; real IGNIS delta = {}" [post-gas (- pre-gas post-gas)])
+                      (expect (format "<<TX-FVT-NF-02-GT>> INFO full-cost {} == real IGNIS delta {}"
+                          [predicted (- pre-gas post-gas)])
+                        predicted (- pre-gas post-gas)) ])))
         (let
             (
                 (need-post:bool (ref-AQP::URC_BenDpnfAnchorsNeedSync beneficiary-id dpnf-id))

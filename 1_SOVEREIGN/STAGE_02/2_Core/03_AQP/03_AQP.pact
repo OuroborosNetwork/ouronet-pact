@@ -3029,6 +3029,53 @@
     (defun URCi_SyncCollectableAnchors:object{IgnisCollectorV1.OutputCumulator} (output:[string])
         @doc "GAS|SYNC-COLLECTABLE-ANCHORS gas leg (SF+NF); exec concats it with the anchor-repair + meta legs (state-dependent)."
         (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|SYNC-COLLECTABLE-ANCHORS AQP|SC_NAME (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_SyncTrueFungibleAnchorsFull:decimal (beneficiary-id:string dptf-id:string)
+        @doc "FULL reconstructed IGNIS ifp of C_SyncTrueFungibleAnchors: the read-only mirror of the exec's \
+            \ UDC_ConcatenateOutputCumulators [ico-ank ico-meta ico-gas]. ico-ank = ANK anchor-refresh (ignis|small \
+            \ x n-live, n-live = live TF anchors on dptf-id) reproducing XE_UpdateTrueFungibleUserAnchorValues; \
+            \ ico-meta = the biggest-tier sync-count stamp (XB_SetBenDptfAnkSyncCount); ico-gas = URCi_SyncTrueFungibleAnchors."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                ;;
+                (n-live:integer (length (ref-ANK::UR_ANK|AnchorsForAsset dptf-id)))
+            )
+            (fold (+) 0.0
+                [ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                                     ;; ico-ank
+                      (ref-IGNIS::UDC_ConstructOutputCumulator
+                          (ref-ANK::URC_TrueFungibleStakeAnchorRefreshIgnis n-live)
+                          AQP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []))
+                  (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                                     ;; ico-meta
+                      (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME))
+                  (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                                     ;; ico-gas
+                      (URCi_SyncTrueFungibleAnchors [beneficiary-id dptf-id]))
+                ])))
+    (defun URCi_SyncCollectableAnchorsFull:decimal (beneficiary-id:string collectable-id:string)
+        @doc "FULL reconstructed IGNIS ifp of C_SyncCollectableAnchors (SF son=true / NF son=false — cost is \
+            \ son-independent). Read-only mirror of the exec's UDC_ConcatenateOutputCumulators [ico-ank ico-meta ico-gas]. \
+            \ ico-ank = ANK anchor-refresh (ignis|small x n-live, n-live = live anchors on collectable-id) reproducing \
+            \ XE_Resync{Semi,Non}FungibleUserAnchorValues (both use URC_TrueFungibleStakeAnchorRefreshIgnis); ico-meta = \
+            \ the biggest-tier sync-count stamp (XB_SetBenCollectableAnkSyncCount); ico-gas = URCi_SyncCollectableAnchors."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                ;;
+                (n-live:integer (length (ref-ANK::UR_ANK|AnchorsForAsset collectable-id)))
+            )
+            (fold (+) 0.0
+                [ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                                     ;; ico-ank
+                      (ref-IGNIS::UDC_ConstructOutputCumulator
+                          (ref-ANK::URC_TrueFungibleStakeAnchorRefreshIgnis n-live)
+                          AQP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []))
+                  (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                                     ;; ico-meta
+                      (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME))
+                  (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                                     ;; ico-gas
+                      (URCi_SyncCollectableAnchors [beneficiary-id collectable-id]))
+                ])))
     ;;
     ;; [C]   client
     ;;

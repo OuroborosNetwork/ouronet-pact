@@ -428,10 +428,29 @@
                 (expect (format "<<TX-FVT-05>> inject debited OURO got={} expected={}" [ouro-after-inject (- ouro-pre inject-amt)]) (- ouro-pre inject-amt) ouro-after-inject)
             ]
         )
-        (print "--- [TX-FVT-05 · 02 · collect once] ---")
-        (print (format "<(TS02-C3.AQP-FVT|CC_Collect type=1)> => \"{}\"" [
-            (ref-TS02-C3::AQP-FVT|CC_Collect patron fvt-id 1 score-id ouro-id)
-        ]))
+        (print "--- [TX-FVT-05 · 02 · collect once + FULL-cost ground truth (plain reward)] ---")
+        ;; GROUND TRUTH: FULL reconstructed collect reader (URCi_CollectFull = payout transfer leg + forced-fix + gas)
+        ;; through OI|UDC_DynamicIgnisCost == the REAL IGNIS the patron pays for the Talos CC_Collect. Plain (non-triplet)
+        ;; OURO reward, instant-injected lane (no live stream) → payout is drift-free, so reader == exec exactly.
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (predicted:decimal
+                    (at "ignis-need"
+                        (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                            (AQP-FVT.URCi_CollectFull patron fvt-id 1 score-id ouro-id))))
+                (pre-gas:decimal (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" patron))
+            )
+            (print (format "<(URCi_CollectFull plain→ignis-need)> = {} ; patron pre-gas = {}" [predicted pre-gas]))
+            (print (format "<(TS02-C3.AQP-FVT|CC_Collect type=1)> => \"{}\"" [
+                (ref-TS02-C3::AQP-FVT|CC_Collect patron fvt-id 1 score-id ouro-id)
+            ]))
+            (let ((post-gas:decimal (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" patron)))
+                (map print
+                    [ (format "<(post-gas)> = {} ; real IGNIS delta = {}" [post-gas (- pre-gas post-gas)])
+                      (expect (format "<<TX-FVT-05-COLLECT-GT>> INFO full-cost {} == real IGNIS delta {}"
+                          [predicted (- pre-gas post-gas)])
+                        predicted (- pre-gas post-gas)) ])))
         (let
             (
                 (ouro-after-collect:decimal (ref-DPTF::UR_AccountSupply ouro-id patron))
@@ -622,11 +641,31 @@
                 (expect (format "<<TX-FVT-06>> need-sync true after late anchor got={}" [need-after-issue]) true need-after-issue)
             ]
         )
-        (print "--- [TX-FVT-06 · 02 · C_SyncTrueFungibleAnchors] ---")
+        (print "--- [TX-FVT-06 · 02 · C_SyncTrueFungibleAnchors + FULL-cost ground truth] ---")
         (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-        (print (format "<(AQP-POOL|C_SyncTrueFungibleAnchors)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|C_SyncTrueFungibleAnchors patron beneficiary-id ouro-id)
-        ]))
+        ;; GROUND TRUTH: the FULL reconstructed reader (URCi_SyncTrueFungibleAnchorsFull, ico-ank + ico-meta + ico-gas)
+        ;; run through the SAME OI|UDC_DynamicIgnisCost path AQP-INFO uses == the REAL IGNIS the patron pays for the
+        ;; Talos exec (which bills the concatenated exec cumulator). Proves reader == exec (INFO no longer understated).
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-DPTF2:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (predicted:decimal
+                    (at "ignis-need"
+                        (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                            (AQP-POOL.URCi_SyncTrueFungibleAnchorsFull beneficiary-id ouro-id))))
+                (pre-gas:decimal (ref-DPTF2::UR_AccountSupply "GAS-98c486052a51" patron))
+            )
+            (print (format "<(URCi_SyncTrueFungibleAnchorsFull→ignis-need)> = {} ; patron pre-gas = {}" [predicted pre-gas]))
+            (print (format "<(AQP-POOL|C_SyncTrueFungibleAnchors)> => \"{}\"" [
+                (ref-TS02-C3::AQP-POOL|C_SyncTrueFungibleAnchors patron beneficiary-id ouro-id)
+            ]))
+            (let ((post-gas:decimal (ref-DPTF2::UR_AccountSupply "GAS-98c486052a51" patron)))
+                (map print
+                    [ (format "<(post-gas)> = {} ; real IGNIS delta = {}" [post-gas (- pre-gas post-gas)])
+                      (expect (format "<<TX-FVT-06-GT>> INFO full-cost {} == real IGNIS delta {}"
+                          [predicted (- pre-gas post-gas)])
+                        predicted (- pre-gas post-gas)) ])))
         (let
             (
                 (need-after-sync:bool (ref-AQP::URC_BenDptfAnchorsNeedSync beneficiary-id ouro-id))

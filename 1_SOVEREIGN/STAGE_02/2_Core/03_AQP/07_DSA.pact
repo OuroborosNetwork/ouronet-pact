@@ -561,6 +561,37 @@
     (defun URCi_FuelRoyalty:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string])
         @doc "GAS leg only; exec concats this with the fuel's IGNIS (FVT::XE_FuelRoyalty, state-dependent)."
         (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|FUEL-ROYALTY patron (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_WithdrawRoyaltyFull:decimal (patron:string fvt-id:string reward-dptf-id:string)
+        @doc "FULL reconstructed IGNIS ifp of A_WithdrawRoyalty: GAS|WITHDRAW-ROYALTY gas leg + the FVT custody-move \
+            \ leg (FVT::URCi_WithdrawRoyaltyCustody mirroring XE_WithdrawRoyalty to the FVT owner). Read-only mirror \
+            \ of the exec's UDC_ConcatenateOutputCumulators [gas custody]."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+            )
+            (+ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (URCi_WithdrawRoyalty patron [fvt-id]))
+               (ref-FVT::URCi_WithdrawRoyaltyCustody fvt-id reward-dptf-id (ref-FVT::UR_FVT|OwnerKonto fvt-id)))))
+    (defun URCi_BurnRoyaltyFull:decimal (patron:string fvt-id:string reward-dptf-id:string)
+        @doc "FULL reconstructed IGNIS ifp of A_BurnRoyalty: GAS|BURN-ROYALTY gas leg + the FVT custody-burn leg \
+            \ (FVT::URCi_BurnRoyaltyCustody mirroring XE_BurnRoyalty). Read-only mirror of the exec's concat."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+            )
+            (+ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (URCi_BurnRoyalty patron [fvt-id]))
+               (ref-FVT::URCi_BurnRoyaltyCustody fvt-id reward-dptf-id))))
+    (defun URCi_FuelRoyaltyFull:decimal (patron:string fvt-id:string reward-dptf-id:string swpair:string)
+        @doc "FULL reconstructed IGNIS ifp of A_FuelRoyalty: GAS|FUEL-ROYALTY gas leg + the FVT custody-fuel leg \
+            \ (FVT::URCi_FuelRoyaltyCustody mirroring XE_FuelRoyalty into <swpair>). Read-only mirror of the exec's concat."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+            )
+            (+ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (URCi_FuelRoyalty patron [fvt-id]))
+               (ref-FVT::URCi_FuelRoyaltyCustody fvt-id reward-dptf-id swpair))))
     (defun URCi_SetAgencyFee:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string])
         (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|SET-AGENCY-FEE patron (r::URC_IsVirtualGasZero) output)))
     ;;

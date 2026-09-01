@@ -429,40 +429,43 @@
     )
     (defun AQP-POOL|INFO_SyncTrueFungibleAnchors:object{OuronetInfoV1.ClientInfo}
         (patron:string beneficiary-id:string dptf-id:string)
-        @doc "Cost preview for AQP-POOL|C_SyncTrueFungibleAnchors. IGNIS GAS|SYNC-TF-ANCHORS base (+ state-dependent ANK repair); no STOA."
+        @doc "Cost preview for AQP-POOL|C_SyncTrueFungibleAnchors. FULL IGNIS: GAS|SYNC-TF-ANCHORS gas leg + \
+            \ state-dependent ANK anchor-repair (ignis|small x live TF anchors) + biggest-tier sync-count stamp; no STOA."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Repair a beneficiary's True-Fungible anchor slots after a stake."
-                 "Base IGNIS shown; any per-anchor repair legs are added at execution."
+                 "Full IGNIS shown: gas + per-anchor repair + sync-count stamp (reconstructed byte-for-byte)."
                  "Executes via TS02-C3.AQP-POOL|C_SyncTrueFungibleAnchors."]
                 [(format "TF anchors synced for {} on DPTF {}." [beneficiary-id dptf-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-POOL.URCi_SyncTrueFungibleAnchors [])))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (AQP-POOL.URCi_SyncTrueFungibleAnchorsFull beneficiary-id dptf-id))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-POOL|INFO_SyncSemiFungibleAnchors:object{OuronetInfoV1.ClientInfo}
         (patron:string beneficiary-id:string dpsf-id:string)
-        @doc "Cost preview for AQP-POOL|C_SyncSemiFungibleAnchors. IGNIS GAS|SYNC-COLLECTABLE-ANCHORS base (+ state-dependent ANK repair); no STOA."
+        @doc "Cost preview for AQP-POOL|C_SyncSemiFungibleAnchors. FULL IGNIS: GAS|SYNC-COLLECTABLE-ANCHORS gas leg + \
+            \ state-dependent ANK anchor-repair (ignis|small x live SF anchors) + biggest-tier sync-count stamp; no STOA."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Repair a beneficiary's Semi-Fungible anchor slots after a stake."
-                 "Base IGNIS shown; any per-anchor repair legs are added at execution."
+                 "Full IGNIS shown: gas + per-anchor repair + sync-count stamp (reconstructed byte-for-byte)."
                  "Executes via TS02-C3.AQP-POOL|C_SyncSemiFungibleAnchors."]
                 [(format "SF anchors synced for {} on DPSF {}." [beneficiary-id dpsf-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-POOL.URCi_SyncCollectableAnchors [])))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (AQP-POOL.URCi_SyncCollectableAnchorsFull beneficiary-id dpsf-id))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-POOL|INFO_SyncNonFungibleAnchors:object{OuronetInfoV1.ClientInfo}
         (patron:string beneficiary-id:string dpnf-id:string)
-        @doc "Cost preview for AQP-POOL|C_SyncNonFungibleAnchors. IGNIS GAS|SYNC-COLLECTABLE-ANCHORS base (+ state-dependent ANK repair); no STOA."
+        @doc "Cost preview for AQP-POOL|C_SyncNonFungibleAnchors. FULL IGNIS: GAS|SYNC-COLLECTABLE-ANCHORS gas leg + \
+            \ state-dependent ANK anchor-repair (ignis|small x live NF anchors) + biggest-tier sync-count stamp; no STOA."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Repair a beneficiary's Non-Fungible anchor slots after a stake."
-                 "Base IGNIS shown; any per-anchor repair legs are added at execution."
+                 "Full IGNIS shown: gas + per-anchor repair + sync-count stamp (reconstructed byte-for-byte)."
                  "Executes via TS02-C3.AQP-POOL|C_SyncNonFungibleAnchors."]
                 [(format "NF anchors synced for {} on DPNF {}." [beneficiary-id dpnf-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-POOL.URCi_SyncCollectableAnchors [])))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (AQP-POOL.URCi_SyncCollectableAnchorsFull beneficiary-id dpnf-id))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -927,15 +930,16 @@
     )
     (defun AQP-FVT|INFO_Collect:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
-        @doc "Cost preview for AQP-FVT|CC_Collect. IGNIS GAS|COLLECT base; STOA none. For a MULTIPLET_BASE triplet \
-            \ reward the payout also fires ATS Coil/Curl ladder legs (added at execution)."
+        @doc "Cost preview for AQP-FVT|CC_Collect. FULL IGNIS: reward-payout leg (plain TFT transfer, or a \
+            \ MULTIPLET_BASE triplet Coil/Curl ladder) + Phase-7 forced-fix penalty + GAS|COLLECT; STOA none. \
+            \ Reconstructed on the current claimable state (exact for un-streamed / settled lanes)."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Collect your claimable reward from this FVT membership."
-                 "Base IGNIS shown; a triplet MULTIPLET reward adds ladder (Coil/Curl) legs at execution."
+                 "Full IGNIS shown: payout transfer/ladder + any forced-fix penalty + gas (reconstructed byte-for-byte)."
                  "Executes via TS02-C3.AQP-FVT|CC_Collect."]
                 [(format "Collected reward token {} from score-entity {}." [reward-dptf-id score-entity-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-FVT.URCi_Collect fvt-id [])))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (AQP-FVT.URCi_CollectFull patron fvt-id score-entity-type score-entity-id reward-dptf-id))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -1068,34 +1072,43 @@
     )
     (defun AQP-DSA|INFO_WithdrawRoyalty:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string reward-dptf-id:string)
-        @doc "Cost preview for AQP-DSA|A_WithdrawRoyalty. IGNIS GAS|WITHDRAW-ROYALTY; STOA none (custody move)."
+        @doc "Cost preview for AQP-DSA|A_WithdrawRoyalty. FULL IGNIS: GAS|WITHDRAW-ROYALTY gas leg + the state- \
+            \ dependent custody-move leg (normalize + TFT transfer of the live royalty pool to the FVT owner); STOA none."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
             (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Withdraw the whole royalty pool to the FVT owner." "Executes via TS02-C3.AQP-DSA|A_WithdrawRoyalty."]
+                ["Operation: Withdraw the whole royalty pool to the FVT owner."
+                 "Full IGNIS shown: gas + custody move (reconstructed from the live royalty balance)."
+                 "Executes via TS02-C3.AQP-DSA|A_WithdrawRoyalty."]
                 [(format "Royalty pool of reward {} on FVT {} withdrawn to owner." [reward-dptf-id fvt-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-DSA.URCi_WithdrawRoyalty patron [])))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (AQP-DSA.URCi_WithdrawRoyaltyFull patron fvt-id reward-dptf-id))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-DSA|INFO_BurnRoyalty:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string reward-dptf-id:string)
-        @doc "Cost preview for AQP-DSA|A_BurnRoyalty. IGNIS GAS|BURN-ROYALTY; STOA none (custody burn)."
+        @doc "Cost preview for AQP-DSA|A_BurnRoyalty. FULL IGNIS: GAS|BURN-ROYALTY gas leg + the state-dependent \
+            \ custody-burn leg (normalize + DPTF burn of the live royalty pool); STOA none."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
             (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Burn the whole royalty pool." "Executes via TS02-C3.AQP-DSA|A_BurnRoyalty."]
+                ["Operation: Burn the whole royalty pool."
+                 "Full IGNIS shown: gas + custody burn (reconstructed from the live royalty balance)."
+                 "Executes via TS02-C3.AQP-DSA|A_BurnRoyalty."]
                 [(format "Royalty pool of reward {} on FVT {} burned." [reward-dptf-id fvt-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-DSA.URCi_BurnRoyalty patron [])))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (AQP-DSA.URCi_BurnRoyaltyFull patron fvt-id reward-dptf-id))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-DSA|INFO_FuelRoyalty:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string reward-dptf-id:string swpair:string)
-        @doc "Cost preview for AQP-DSA|A_FuelRoyalty. IGNIS GAS|FUEL-ROYALTY; STOA none (custody move)."
+        @doc "Cost preview for AQP-DSA|A_FuelRoyalty. FULL IGNIS: GAS|FUEL-ROYALTY gas leg + the state-dependent \
+            \ custody-fuel leg (normalize + SWPLC fuel of the live royalty pool into the swpair); STOA none."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
             (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Fuel a swap pair with the whole royalty pool (no LP mint)." "Executes via TS02-C3.AQP-DSA|A_FuelRoyalty."]
+                ["Operation: Fuel a swap pair with the whole royalty pool (no LP mint)."
+                 "Full IGNIS shown: gas + custody fuel (reconstructed from the live royalty balance)."
+                 "Executes via TS02-C3.AQP-DSA|A_FuelRoyalty."]
                 [(format "Royalty pool of reward {} on FVT {} fueled into {}." [reward-dptf-id fvt-id swpair])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-DSA.URCi_FuelRoyalty patron [])))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (AQP-DSA.URCi_FuelRoyaltyFull patron fvt-id reward-dptf-id swpair))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )

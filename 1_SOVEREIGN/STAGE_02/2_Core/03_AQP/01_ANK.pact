@@ -55,6 +55,7 @@
     (defun URC_TraitOrClass:bool (anchor-id:string))
     (defun URC_ConformNonces:integer (dpnf-id:string nonces:[integer] trait-key:string trait-value:string))
     (defun URC_ConformNoncesByClass:integer (dpnf-id:string nonces:[integer] nonce-class:integer))
+    (defun URC_TrueFungibleStakeAnchorRefreshIgnis:decimal (n-live:integer))
     ;; [URH] heavy-read
     (defun URH_ANK|AllAnchorIds:[string] ())
     (defun URH_BC|AllBoostClassIds:[string] ())
