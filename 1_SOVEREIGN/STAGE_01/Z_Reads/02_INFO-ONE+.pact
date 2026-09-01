@@ -212,9 +212,9 @@
     (defun URC_DALOS|UpdateEliteAccount:object{OuronetInfoV1.ClientInfo} (patron:string account:string))
     (defun URC_DALOS|UpdateEliteAccountSquared:object{OuronetInfoV1.ClientInfo} (patron:string sender:string receiver:string))
 )
-;;LIQUID|INFO_UnwrapStoa
-;;LIQUID|INFO_WrapStoa
-;;LIQUID|INFO_UnwrapUrStoa
+;;INFO_LIQUID|UnwrapStoa
+;;INFO_LIQUID|WrapStoa
+;;INFO_LIQUID|UnwrapUrStoa
 (module INFO-ONE GOV
     ;;
     (implements InfoOneV1)
@@ -1589,7 +1589,7 @@
             )
         )
     )
-    ;; NOTE: the former DPOF|INFO_Create was an orphan preview — DPOF has no C_Create client
+    ;; NOTE: the former INFO_DPOF|Create was an orphan preview — DPOF has no C_Create client
     ;; op (create-without-quantity is not a gas-funded path; Mint creates+adds in one op).
     ;; Dropped in the URCi rehaul; re-add alongside a real client op if one is ever introduced.
     (defun URC_DPOF|DeployAccount:object{OuronetInfoV1.ClientInfo}
@@ -2409,7 +2409,7 @@
             )
         )
     )
-    (defun VST|INFO-HibernatedNoncesDisplay:[object{HibernatedNoncesView}]
+    (defun INFO_VST|HibernatedNoncesDisplay:[object{HibernatedNoncesView}]
         (account:string dpof:string)
         (let
             (
@@ -2421,13 +2421,13 @@
             (map
                 (lambda
                     (idx:integer)
-                    (VST|INFO-HibernatedNonceDisplay dpof (at idx owned-nonces))
+                    (INFO_VST|HibernatedNonceDisplay dpof (at idx owned-nonces))
                 )
                 (enumerate 0 (- l 1))
             )
         )
     )
-    (defun VST|INFO-HibernatedNonceDisplay:object{HibernatedNoncesView}
+    (defun INFO_VST|HibernatedNonceDisplay:object{HibernatedNoncesView}
         (dpof:string nonce:integer)
         (let
             (

@@ -3,7 +3,7 @@
 ;; multi-leg stake/unstake info functions. Runs AFTER a full boot that provisions TfStakePool
 ;; (i.e. after [6.2.4]_AQP-FVT) and AFTER AQP-INFO is deployed.
 ;;
-;; Proof: AQP-INFO.AQP-POOL|INFO_StakeTrueFungible.ignis-need == the REAL IGNIS (GAS token)
+;; Proof: AQP-INFO.INFO_AQP-POOL|StakeTrueFungible.ignis-need == the REAL IGNIS (GAS token)
 ;; balance delta the patron pays for the actual TS02-C3.AQP-POOL|CC_StakeTrueFungible. The
 ;; preview is computed on pre-stake state; the execution acts on the same state → exact match.
 ;; Same for unstake (transfer leg reversed).
@@ -34,7 +34,7 @@
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1}    TS02-C3)
         (pool-id:string         (ref-U|DALOS::UDC_Makeid "TfStakePool"))
         ;; 1) PREVIEW on pre-stake state
-        (info                   (AQP-INFO.AQP-POOL|INFO_StakeTrueFungible
+        (info                   (AQP-INFO.INFO_AQP-POOL|StakeTrueFungible
                                     patron pool-id owner-id beneficiary-id ouro-id amount))
         (predicted:decimal      (at "ignis-need" (at "ignis" info)))
         (pre-gas:decimal        (ref-DPTF::UR_AccountSupply gas-id patron))
@@ -73,7 +73,7 @@
         (ref-DPTF:module{DemiourgosPactTrueFungibleV1}      DPTF)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1}    TS02-C3)
         (pool-id:string         (ref-U|DALOS::UDC_Makeid "TfStakePool"))
-        (info                   (AQP-INFO.AQP-POOL|INFO_UnstakeTrueFungible
+        (info                   (AQP-INFO.INFO_AQP-POOL|UnstakeTrueFungible
                                     patron pool-id owner-id beneficiary-id ouro-id amount))
         (predicted:decimal      (at "ignis-need" (at "ignis" info)))
         (pre-gas:decimal        (ref-DPTF::UR_AccountSupply gas-id patron))
@@ -170,7 +170,7 @@
         (pool-id:string         (ref-U|DALOS::UDC_Makeid "InfoGtOfPool"))
         (stake-nonce:integer    (at 0 (ref-DPOF::URH_AccountNonces owner-id dpof-id)))
         (nonces:[integer]       [stake-nonce])
-        (info                   (AQP-INFO.AQP-POOL|INFO_StakeOrtoFungible
+        (info                   (AQP-INFO.INFO_AQP-POOL|StakeOrtoFungible
                                     patron pool-id owner-id beneficiary-id dpof-id nonces))
         (predicted:decimal      (at "ignis-need" (at "ignis" info)))
         (pre-gas:decimal        (ref-DPTF::UR_AccountSupply gas-id patron))
@@ -262,7 +262,7 @@
         (owned:[integer]        (ref-DPDC::URH_AccountNonces owner-id dpsf-id true))
         (stake-nonce:integer    (at 0 owned))
         (nonces:[integer]       [stake-nonce])
-        (info                   (AQP-INFO.AQP-POOL|INFO_StakeSemiFungibleCollectable
+        (info                   (AQP-INFO.INFO_AQP-POOL|StakeSemiFungibleCollectable
                                     patron pool-id owner-id beneficiary-id dpsf-id nonces))
         (predicted:decimal      (at "ignis-need" (at "ignis" info)))
         (pre-gas:decimal        (ref-DPTF::UR_AccountSupply gas-id patron))
@@ -320,7 +320,7 @@
             (
                 (predicted:decimal
                     (at "ignis-need" (at "ignis"
-                        (AQP-INFO.AQP-POOL|INFO_BatchVacateTrueFungible patron pool-id ouro-id legs))))
+                        (AQP-INFO.INFO_AQP-POOL|BatchVacateTrueFungible patron pool-id ouro-id legs))))
                 (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
             )
             (print (format "<(INFO_BatchVacateTrueFungible)> predicted ignis-need = {} ; staked-bal = {} ; patron pre-gas = {}"
@@ -372,7 +372,7 @@
                 (
                     (predicted:decimal
                         (at "ignis-need" (at "ignis"
-                            (AQP-INFO.AQP-POOL|INFO_BatchVacateOrtoFungible patron pool-id dpof-id legs))))
+                            (AQP-INFO.INFO_AQP-POOL|BatchVacateOrtoFungible patron pool-id dpof-id legs))))
                     (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
                 )
                 (print (format "<(INFO_BatchVacateOrtoFungible)> predicted ignis-need = {} ; legs = {} ; pre-gas = {}"
@@ -425,7 +425,7 @@
                 (
                     (predicted:decimal
                         (at "ignis-need" (at "ignis"
-                            (AQP-INFO.AQP-POOL|INFO_BatchVacateCollectables patron pool-id dpsf-id son legs))))
+                            (AQP-INFO.INFO_AQP-POOL|BatchVacateCollectables patron pool-id dpsf-id son legs))))
                     (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
                 )
                 (print (format "<(INFO_BatchVacateCollectables)> predicted ignis-need = {} ; legs = {} ; pre-gas = {}"
@@ -538,7 +538,7 @@
                 (
                     (predicted:decimal
                         (at "ignis-need" (at "ignis"
-                            (AQP-INFO.AQP-POOL|INFO_BatchDrainTrueFungible patron pool-id dptf-id legs))))
+                            (AQP-INFO.INFO_AQP-POOL|BatchDrainTrueFungible patron pool-id dptf-id legs))))
                     (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
                 )
                 (print (format "<(INFO_BatchDrainTrueFungible)> predicted ignis-need = {} ; legs = {} ; pre-gas = {}"
@@ -650,7 +650,7 @@
                 (
                     (predicted:decimal
                         (at "ignis-need" (at "ignis"
-                            (AQP-INFO.AQP-POOL|INFO_BatchDrainOrtoFungible patron pool-id dpof-id legs))))
+                            (AQP-INFO.INFO_AQP-POOL|BatchDrainOrtoFungible patron pool-id dpof-id legs))))
                     (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
                 )
                 (print (format "<(INFO_BatchDrainOrtoFungible)> predicted ignis-need = {} ; legs = {} ; pre-gas = {}"
@@ -758,7 +758,7 @@
                 (
                     (predicted:decimal
                         (at "ignis-need" (at "ignis"
-                            (AQP-INFO.AQP-POOL|INFO_BatchDrainCollectable patron pool-id coll-id son legs))))
+                            (AQP-INFO.INFO_AQP-POOL|BatchDrainCollectable patron pool-id coll-id son legs))))
                     (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
                 )
                 (print (format "<(INFO_BatchDrainCollectable)> predicted ignis-need = {} ; legs = {} ; pre-gas = {}"
@@ -866,7 +866,7 @@
             (
                 (predicted:decimal
                     (at "ignis-need" (at "ignis"
-                        (AQP-INFO.AQP-POOL|INFO_FullVacate patron pool-id tf-lanes of-lanes coll-lanes false))))
+                        (AQP-INFO.INFO_AQP-POOL|FullVacate patron pool-id tf-lanes of-lanes coll-lanes false))))
                 (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
             )
             (print (format "<(INFO_FullVacate)> predicted ignis-need = {} ; lanes = {}tf/{}of/{}coll ; pre-gas = {}"

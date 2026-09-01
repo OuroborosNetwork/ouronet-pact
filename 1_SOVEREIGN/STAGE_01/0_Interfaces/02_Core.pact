@@ -697,20 +697,20 @@
     (defun URH_ListInactiveApiKeys:[object] ())
     ;;
     ;; [INFO] UI previews — deploy/rename: STOA via STOA|C_CollectWTEx in TS01-C4
-    (defun PYTHIA|INFO_DeployApiKey:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_PYTHIA|DeployApiKey:object{OuronetInfoV1.ClientInfo}
         ( patron:string
           owner-account:string
           apollo-account:string
           public:string
           consumer-lane:string ))
-    (defun PYTHIA|INFO_UpdateApiConsumerName:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_PYTHIA|UpdateApiConsumerName:object{OuronetInfoV1.ClientInfo}
         ( patron:string
           owner-account:string
           apollo-account:string
           new-name:string ))
 )
 (interface PythiaV2
-    @doc "PYTHIA V2 — adds UC_DeactivateIgnisFee + PYTHIA|INFO_DeactivateApiKey (1 IGNIS deactivate toll)."
+    @doc "PYTHIA V2 — adds UC_DeactivateIgnisFee + INFO_PYTHIA|DeactivateApiKey (1 IGNIS deactivate toll)."
     (defun GOV|CronotonKey ())
     ;;
     ;;
@@ -763,18 +763,18 @@
     (defun URH_ListInactiveApiKeys:[object] ())
     ;;
     ;; [INFO] UI previews — deploy/rename: STOA via STOA|C_CollectWTEx; deactivate: IGNIS via C_Collect
-    (defun PYTHIA|INFO_DeployApiKey:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_PYTHIA|DeployApiKey:object{OuronetInfoV1.ClientInfo}
         ( patron:string
           owner-account:string
           apollo-account:string
           public:string
           consumer-lane:string ))
-    (defun PYTHIA|INFO_UpdateApiConsumerName:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_PYTHIA|UpdateApiConsumerName:object{OuronetInfoV1.ClientInfo}
         ( patron:string
           owner-account:string
           apollo-account:string
           new-name:string ))
-    (defun PYTHIA|INFO_DeactivateApiKey:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_PYTHIA|DeactivateApiKey:object{OuronetInfoV1.ClientInfo}
         ( patron:string
           apollo-account:string ))
 )
@@ -841,25 +841,25 @@
     (defun URH_ListActiveDualLinks:[object] ())
     (defun URH_ListInactiveDualLinks:[object] ())
     ;;
-    (defun PYTHIA|INFO_DeployApiKey:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_PYTHIA|DeployApiKey:object{OuronetInfoV1.ClientInfo}
         (
             patron:string
             owner-account:string
             apollo-account:string
             public:string
         ))
-    (defun PYTHIA|INFO_LinkDualApiKey:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_PYTHIA|LinkDualApiKey:object{OuronetInfoV1.ClientInfo}
         (
             standard-apollo:string
             smart-apollo:string
             consumer-lane:string
         ))
-    (defun PYTHIA|INFO_UnlinkDualApiKey:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_PYTHIA|UnlinkDualApiKey:object{OuronetInfoV1.ClientInfo}
         (
             patron:string
             dual-link-key:string
         ))
-    (defun PYTHIA|INFO_UpdateDualConsumerLane:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_PYTHIA|UpdateDualConsumerLane:object{OuronetInfoV1.ClientInfo}
         (
             patron:string
             dual-link-key:string

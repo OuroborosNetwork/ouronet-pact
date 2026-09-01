@@ -56,7 +56,7 @@
     ;;<====================>
     ;;[AQP-ANK] Anchors
     ;;<====================>
-    (defun AQP-ANK|INFO_IssueTrueFungibleAnchor:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-ANK|IssueTrueFungibleAnchor:object{OuronetInfoV1.ClientInfo}
         (patron:string anchor-name:string dptf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dptf-amount:decimal)
         @doc "Cost preview for AQP-ANK|C_IssueTrueFungibleAnchor. IGNIS 1000 (inline) + STOA 'standard' x(2 if acnoi else 1)."
         (let
@@ -75,7 +75,7 @@
             )
         )
     )
-    (defun AQP-ANK|INFO_IssueSemiFungibleAnchor:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-ANK|IssueSemiFungibleAnchor:object{OuronetInfoV1.ClientInfo}
         (patron:string anchor-name:string dpsf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpsf-nonce:integer)
         @doc "Cost preview for AQP-ANK|C_IssueSemiFungibleAnchor. IGNIS 1000 + STOA 'standard' x(2 if acnoi else 1)."
         (let
@@ -94,7 +94,7 @@
             )
         )
     )
-    (defun AQP-ANK|INFO_IssueNonFungibleAnchor:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-ANK|IssueNonFungibleAnchor:object{OuronetInfoV1.ClientInfo}
         (patron:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-trait-key:string dpnf-trait-value:string)
         @doc "Cost preview for AQP-ANK|C_IssueNonFungibleAnchor. IGNIS 1000 + STOA 'standard' x(2 if acnoi else 1)."
         (let
@@ -113,7 +113,7 @@
             )
         )
     )
-    (defun AQP-ANK|INFO_IssueNonFungibleSetAnchor:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-ANK|IssueNonFungibleSetAnchor:object{OuronetInfoV1.ClientInfo}
         (patron:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-nonce-class:integer)
         @doc "Cost preview for AQP-ANK|C_IssueNonFungibleSetAnchor. IGNIS 1000 + STOA 'standard' x(2 if acnoi else 1)."
         (let
@@ -132,7 +132,7 @@
             )
         )
     )
-    (defun AQP-ANK|INFO_RevokeAnchor:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-ANK|RevokeAnchor:object{OuronetInfoV1.ClientInfo}
         (patron:string anchor-id:string)
         @doc "Cost preview for AQP-ANK|C_RevokeAnchor. IGNIS 'ignis|biggest' tier; no STOA."
         (let
@@ -150,7 +150,7 @@
             )
         )
     )
-    (defun AQP-ANK|INFO_RevokeBoostClass:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-ANK|RevokeBoostClass:object{OuronetInfoV1.ClientInfo}
         (patron:string boost-class-id:string)
         @doc "Cost preview for AQP-ANK|C_RevokeBoostClass. IGNIS 'ignis|biggest' tier; no STOA."
         (let
@@ -172,7 +172,7 @@
     ;;<====================>
     ;;[AQP-SCR] Scores
     ;;<====================>
-    (defun AQP-SCR|INFO_IssueLiquidityScore:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-SCR|IssueLiquidityScore:object{OuronetInfoV1.ClientInfo}
         (patron:string owner-konto:string score-name:string precision:integer lp-denominator:string mx-frozen:decimal mx-sleeping:decimal)
         @doc "Cost preview for AQP-SCR|C_IssueLiquidityScore. IGNIS GAS|ISSUE-SCORE + STOA 'smart'."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -183,7 +183,7 @@
                 (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (AQP-SCORE.URCi_IssueScoreStoa))
                 []))
     )
-    (defun AQP-SCR|INFO_IssueTrueFungibleScore:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-SCR|IssueTrueFungibleScore:object{OuronetInfoV1.ClientInfo}
         (patron:string owner-konto:string score-name:string precision:integer mx-frozen:decimal)
         @doc "Cost preview for AQP-SCR|C_IssueTrueFungibleScore. IGNIS GAS|ISSUE-SCORE + STOA 'smart'."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -194,7 +194,7 @@
                 (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (AQP-SCORE.URCi_IssueScoreStoa))
                 []))
     )
-    (defun AQP-SCR|INFO_IssueOrtoFungibleScore:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-SCR|IssueOrtoFungibleScore:object{OuronetInfoV1.ClientInfo}
         (patron:string owner-konto:string score-name:string precision:integer mx-sleeping:decimal mx-hibernated:decimal)
         @doc "Cost preview for AQP-SCR|C_IssueOrtoFungibleScore. IGNIS GAS|ISSUE-SCORE + STOA 'smart'."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -205,7 +205,7 @@
                 (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (AQP-SCORE.URCi_IssueScoreStoa))
                 []))
     )
-    (defun AQP-SCR|INFO_IssueSemiFungibleScore:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-SCR|IssueSemiFungibleScore:object{OuronetInfoV1.ClientInfo}
         (patron:string owner-konto:string score-name:string precision:integer sft-equality:bool)
         @doc "Cost preview for AQP-SCR|C_IssueSemiFungibleScore. IGNIS GAS|ISSUE-SCORE + STOA 'smart'."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -216,7 +216,7 @@
                 (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (AQP-SCORE.URCi_IssueScoreStoa))
                 []))
     )
-    (defun AQP-SCR|INFO_IssueNonFungibleScore:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-SCR|IssueNonFungibleScore:object{OuronetInfoV1.ClientInfo}
         (patron:string owner-konto:string score-name:string precision:integer nft-score-model:integer)
         @doc "Cost preview for AQP-SCR|C_IssueNonFungibleScore. IGNIS GAS|ISSUE-SCORE + STOA 'smart'."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -227,7 +227,7 @@
                 (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (AQP-SCORE.URCi_IssueScoreStoa))
                 []))
     )
-    (defun AQP-SCR|INFO_RotateScoreOwnership:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-SCR|RotateScoreOwnership:object{OuronetInfoV1.ClientInfo}
         (patron:string score-id:string new-owner-konto:string)
         @doc "Cost preview for AQP-SCR|C_RotateScoreOwnership. IGNIS 'ignis|medium' tier; no STOA."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -238,7 +238,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-SCR|INFO_ControlScore:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-SCR|ControlScore:object{OuronetInfoV1.ClientInfo}
         (patron:string score-id:string new-can-upgrade:bool new-can-change-owner:bool)
         @doc "Cost preview for AQP-SCR|C_ControlScore. IGNIS 'ignis|medium' tier; no STOA."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -249,7 +249,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-SCR|INFO_CreateScoreBoostClassLink:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-SCR|CreateScoreBoostClassLink:object{OuronetInfoV1.ClientInfo}
         (patron:string score-id:string boost-class-id:string)
         @doc "Cost preview for AQP-SCR|C_CreateScoreBoostClassLink. IGNIS 'ignis|biggest' tier; no STOA."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -260,7 +260,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-SCR|INFO_CreateScoreBoostLink:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-SCR|CreateScoreBoostLink:object{OuronetInfoV1.ClientInfo}
         (patron:string score-id:string boost-score-id:string)
         @doc "Cost preview for AQP-SCR|C_CreateScoreBoostLink. IGNIS 'ignis|biggest' tier; no STOA."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -271,7 +271,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-SCR|INFO_EnableDebBoost:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-SCR|EnableDebBoost:object{OuronetInfoV1.ClientInfo}
         (patron:string score-id:string)
         @doc "Cost preview for AQP-SCR|C_EnableDebBoost. IGNIS 'ignis|medium' tier; no STOA. Irreversible."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -282,7 +282,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-SCR|INFO_IssueTriplet:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-SCR|IssueTriplet:object{OuronetInfoV1.ClientInfo}
         (patron:string bronze-score-id:string silver-score-id:string golden-score-id:string)
         @doc "Cost preview for AQP-SCR|C_IssueTriplet. IGNIS GAS|ISSUE-TRIPLET; no STOA."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -293,7 +293,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-SCR|INFO_IssueSingleScoreModel:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-SCR|IssueSingleScoreModel:object{OuronetInfoV1.ClientInfo}
         (patron:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal])
         @doc "Cost preview for AQP-SCR|C_IssueSingleScoreModel. IGNIS GAS|ISSUE-SCORE-MODEL; no STOA."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -304,7 +304,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-SCR|INFO_CombineTripletScoreModel:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-SCR|CombineTripletScoreModel:object{OuronetInfoV1.ClientInfo}
         (patron:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
         @doc "Cost preview for AQP-SCR|C_CombineTripletScoreModel. IGNIS GAS|ISSUE-SCORE-MODEL; no STOA."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -315,7 +315,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-SCR|INFO_IssueScoreFromModel:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-SCR|IssueScoreFromModel:object{OuronetInfoV1.ClientInfo}
         (patron:string owner-konto:string model-id:string agency-name:string)
         @doc "Cost preview for AQP-SCR|C_IssueScoreFromModel. IGNIS GAS|ISSUE-SCORE-MODEL; no STOA."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -326,7 +326,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-SCR|INFO_IssueSemiFungibleScoreDefinition:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-SCR|IssueSemiFungibleScoreDefinition:object{OuronetInfoV1.ClientInfo}
         (patron:string score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal])
         @doc "Cost preview for AQP-SCR|C_IssueSemiFungibleScoreDefinition. IGNIS = count × 'ignis|big'; no STOA."
         (let
@@ -340,7 +340,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-SCR|INFO_IssueNonFungibleScoreDefinition:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-SCR|IssueNonFungibleScoreDefinition:object{OuronetInfoV1.ClientInfo}
         (patron:string score-id:string dpnf-id:string trait-keys:[string] trait-values:[string] trait-score-values:[decimal])
         @doc "Cost preview for AQP-SCR|C_IssueNonFungibleScoreDefinition. IGNIS = count × 'ignis|biggest'; no STOA."
         (let
@@ -354,7 +354,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-SCR|INFO_IssueNonFungibleSetScoreDefinition:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-SCR|IssueNonFungibleSetScoreDefinition:object{OuronetInfoV1.ClientInfo}
         (patron:string score-id:string dpnf-id:string dpnf-nonce-classes:[integer] class-score-values:[decimal])
         @doc "Cost preview for AQP-SCR|C_IssueNonFungibleSetScoreDefinition. IGNIS = count × 'ignis|biggest'; no STOA."
         (let
@@ -372,7 +372,7 @@
     ;;<====================>
     ;;[AQP-POOL] Pools (config)
     ;;<====================>
-    (defun AQP-POOL|INFO_Issue:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-POOL|Issue:object{OuronetInfoV1.ClientInfo}
         (patron:string pool-name:string asset-id:string aqp-class:integer)
         @doc "Cost preview for AQP-POOL|C_Issue. IGNIS GAS|ISSUE-POOL + STOA 'smart'."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -383,7 +383,7 @@
                 (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (AQP-POOL.URCi_IssueStoa))
                 []))
     )
-    (defun AQP-POOL|INFO_AddScore:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-POOL|AddScore:object{OuronetInfoV1.ClientInfo}
         (patron:string pool-id:string score-id:string)
         @doc "Cost preview for AQP-POOL|C_AddScore. IGNIS GAS|ADD-SCORE; no STOA."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -394,7 +394,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-POOL|INFO_RevokeScore:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-POOL|RevokeScore:object{OuronetInfoV1.ClientInfo}
         (patron:string pool-id:string score-id:string)
         @doc "Cost preview for AQP-POOL|C_RevokeScore. IGNIS GAS|REVOKE-SCORE; no STOA."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -405,7 +405,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-POOL|INFO_EnablePoolStake:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-POOL|EnablePoolStake:object{OuronetInfoV1.ClientInfo}
         (patron:string pool-id:string)
         @doc "Cost preview for AQP-POOL|C_EnablePoolStake. IGNIS GAS|SET-POOL-STAKE; no STOA."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -416,7 +416,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-POOL|INFO_DisablePoolStake:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-POOL|DisablePoolStake:object{OuronetInfoV1.ClientInfo}
         (patron:string pool-id:string)
         @doc "Cost preview for AQP-POOL|C_DisablePoolStake. IGNIS GAS|SET-POOL-STAKE; no STOA."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -427,7 +427,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-POOL|INFO_SyncTrueFungibleAnchors:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-POOL|SyncTrueFungibleAnchors:object{OuronetInfoV1.ClientInfo}
         (patron:string beneficiary-id:string dptf-id:string)
         @doc "Cost preview for AQP-POOL|C_SyncTrueFungibleAnchors. FULL IGNIS: GAS|SYNC-TF-ANCHORS gas leg + \
             \ state-dependent ANK anchor-repair (ignis|small x live TF anchors) + biggest-tier sync-count stamp; no STOA."
@@ -441,7 +441,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-POOL|INFO_SyncSemiFungibleAnchors:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-POOL|SyncSemiFungibleAnchors:object{OuronetInfoV1.ClientInfo}
         (patron:string beneficiary-id:string dpsf-id:string)
         @doc "Cost preview for AQP-POOL|C_SyncSemiFungibleAnchors. FULL IGNIS: GAS|SYNC-COLLECTABLE-ANCHORS gas leg + \
             \ state-dependent ANK anchor-repair (ignis|small x live SF anchors) + biggest-tier sync-count stamp; no STOA."
@@ -455,7 +455,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-POOL|INFO_SyncNonFungibleAnchors:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-POOL|SyncNonFungibleAnchors:object{OuronetInfoV1.ClientInfo}
         (patron:string beneficiary-id:string dpnf-id:string)
         @doc "Cost preview for AQP-POOL|C_SyncNonFungibleAnchors. FULL IGNIS: GAS|SYNC-COLLECTABLE-ANCHORS gas leg + \
             \ state-dependent ANK anchor-repair (ignis|small x live NF anchors) + biggest-tier sync-count stamp; no STOA."
@@ -470,7 +470,7 @@
                 []))
     )
     ;;<---- stake / unstake (multi-leg reconstructed cost) ---->
-    (defun AQP-POOL|INFO_StakeTrueFungible:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-POOL|StakeTrueFungible:object{OuronetInfoV1.ClientInfo}
         (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
         @doc "Cost preview for AQP-POOL|CC_StakeTrueFungible. Full multi-leg IGNIS (transfer + tracker + rollup \
             \ + RPS + anchor + score-delta + book + checkpoint); no STOA. Cost reconstructed byte-for-byte."
@@ -484,7 +484,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount]))
     )
-    (defun AQP-POOL|INFO_UnstakeTrueFungible:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-POOL|UnstakeTrueFungible:object{OuronetInfoV1.ClientInfo}
         (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
         @doc "Cost preview for AQP-POOL|CC_UnstakeTrueFungible. Same legs as stake with the custody transfer \
             \ reversed (vault→owner); no STOA. Cost reconstructed byte-for-byte."
@@ -498,7 +498,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount]))
     )
-    (defun AQP-POOL|INFO_StakeOrtoFungible:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-POOL|StakeOrtoFungible:object{OuronetInfoV1.ClientInfo}
         (patron:string pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer])
         @doc "Cost preview for AQP-POOL|CC_StakeOrtoFungible. Multi-leg IGNIS (transfer + tracker×|nonces| + RPS \
             \ + class-matched score-delta + book + checkpoint); no STOA. Reconstructed byte-for-byte."
@@ -512,7 +512,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [(length nonces)]))
     )
-    (defun AQP-POOL|INFO_UnstakeOrtoFungible:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-POOL|UnstakeOrtoFungible:object{OuronetInfoV1.ClientInfo}
         (patron:string pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer])
         @doc "Cost preview for AQP-POOL|CC_UnstakeOrtoFungible. Same legs as OF stake; no STOA. Reconstructed byte-for-byte."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -525,7 +525,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [(length nonces)]))
     )
-    (defun AQP-POOL|INFO_StakeSemiFungibleCollectable:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-POOL|StakeSemiFungibleCollectable:object{OuronetInfoV1.ClientInfo}
         (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer])
         @doc "Cost preview for AQP-POOL|CC_StakeSemiFungibleCollectable (DPSF, son=true / class-3). Multi-leg IGNIS \
             \ (transfer + tracker×|nonces| + rollup×|nonces| + RPS + flat anchor + class-3 score-delta + book + checkpoint); no STOA."
@@ -540,7 +540,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [(length nonces)]))
     )
-    (defun AQP-POOL|INFO_UnstakeSemiFungibleCollectable:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-POOL|UnstakeSemiFungibleCollectable:object{OuronetInfoV1.ClientInfo}
         (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer] nonce-amounts:[integer])
         @doc "Cost preview for AQP-POOL|CC_UnstakeSemiFungibleCollectable (DPSF, son=true / class-3). Same legs as SF stake; \
             \ nonce-amounts is caller-supplied (the staked quantities — owner no longer holds them). No STOA."
@@ -554,7 +554,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [(length nonces)]))
     )
-    (defun AQP-POOL|INFO_StakeNonFungibleCollectable:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-POOL|StakeNonFungibleCollectable:object{OuronetInfoV1.ClientInfo}
         (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer])
         @doc "Cost preview for AQP-POOL|CC_StakeNonFungibleCollectable (DPNF, son=false / class-4). Multi-leg IGNIS \
             \ (transfer + tracker×|nonces| + rollup×|nonces| + RPS + flat anchor + class-4 score-delta + book + checkpoint); no STOA."
@@ -569,7 +569,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [(length nonces)]))
     )
-    (defun AQP-POOL|INFO_UnstakeNonFungibleCollectable:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-POOL|UnstakeNonFungibleCollectable:object{OuronetInfoV1.ClientInfo}
         (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer] nonce-amounts:[integer])
         @doc "Cost preview for AQP-POOL|CC_UnstakeNonFungibleCollectable (DPNF, son=false / class-4). Same legs as NF stake; \
             \ nonce-amounts is caller-supplied (the staked quantities — owner no longer holds them). No STOA."
@@ -584,7 +584,7 @@
                 [(length nonces)]))
     )
     ;;<---- vacate lifecycle (fixed-cost endpoints) ---->
-    (defun AQP-POOL|INFO_BatchVacateTrueFungible:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-POOL|BatchVacateTrueFungible:object{OuronetInfoV1.ClientInfo}
         (patron:string pool-id:string dptf-id:string legs:[object{AQP-VCT.VCT|VacateTfLeg}])
         @doc "Cost preview for AQP-POOL|CCp_BatchVacateTrueFungible. Multi-leg IGNIS (per-leg \
             \ tracker-zero + per-beneficiary unwind + one bulk transfer); no STOA. Fed the same \
@@ -599,7 +599,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-POOL|INFO_BatchVacateOrtoFungible:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-POOL|BatchVacateOrtoFungible:object{OuronetInfoV1.ClientInfo}
         (patron:string pool-id:string dpof-id:string legs:[object{AQP-VCT.VCT|VacateNonceLeg}])
         @doc "Cost preview for AQP-POOL|CCp_BatchVacateOrtoFungible. Multi-leg IGNIS (bulk DPOF \
             \ transfer + per-nonce tracker + per-beneficiary score unwind); no STOA. Fed the same \
@@ -614,7 +614,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-POOL|INFO_BatchVacateCollectables:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-POOL|BatchVacateCollectables:object{OuronetInfoV1.ClientInfo}
         (patron:string pool-id:string collectable-id:string son:bool legs:[object{AQP-VCT.VCT|VacateNonceLeg}])
         @doc "Cost preview for AQP-POOL|CCp_BatchVacateCollectables (son=DPSF true / DPNF false). \
             \ Multi-leg IGNIS (bulk transfer + per-nonce tracker + rollup + flat anchor + per- \
@@ -629,7 +629,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-POOL|INFO_BatchDrainTrueFungible:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-POOL|BatchDrainTrueFungible:object{OuronetInfoV1.ClientInfo}
         (patron:string pool-id:string dptf-id:string legs:[object{AQP-VCT.VCT|VacateTfLeg}])
         @doc "Cost preview for AQP-POOL|CCp_BatchDrainTrueFungible. Score-free drain: per-leg \
             \ tracker-zero + rollup, settle-on-last-drain only for beneficiaries fully drained \
@@ -644,7 +644,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-POOL|INFO_BatchDrainOrtoFungible:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-POOL|BatchDrainOrtoFungible:object{OuronetInfoV1.ClientInfo}
         (patron:string pool-id:string dpof-id:string legs:[object{AQP-VCT.VCT|VacateNonceLeg}])
         @doc "Cost preview for AQP-POOL|CCp_BatchDrainOrtoFungible. Score-free drain: bulk DPOF \
             \ transfer + per-nonce tracker + settle-on-last-drain (no anchor); no STOA. Fed the legs."
@@ -658,7 +658,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-POOL|INFO_BatchDrainCollectable:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-POOL|BatchDrainCollectable:object{OuronetInfoV1.ClientInfo}
         (patron:string pool-id:string collectable-id:string son:bool legs:[object{AQP-VCT.VCT|VacateNonceLeg}])
         @doc "Cost preview for AQP-POOL|CCp_BatchDrainCollectable (son=DPSF true / DPNF false). \
             \ Score-free drain: bulk transfer + per-leg tracker + rollup + flat anchor + settle- \
@@ -673,7 +673,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-POOL|INFO_FullVacate:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-POOL|FullVacate:object{OuronetInfoV1.ClientInfo}
         (patron:string pool-id:string
          tf-lanes:[object{AQP-VCT.VCT|VacateTfLane}]
          of-lanes:[object{AQP-VCT.VCT|VacateNonceLane}]
@@ -693,7 +693,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-POOL|INFO_FinalizeVacate:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-POOL|FinalizeVacate:object{OuronetInfoV1.ClientInfo}
         (patron:string pool-id:string)
         @doc "Cost preview for AQP-POOL|C_FinalizeVacate. IGNIS one flat 'ignis|medium' tier (05_VCT:3016); no STOA."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -705,7 +705,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-POOL|INFO_AbortVacate:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-POOL|AbortVacate:object{OuronetInfoV1.ClientInfo}
         (patron:string pool-id:string)
         @doc "Cost preview for AQP-POOL|C_AbortVacate. Empty cumulator (05_VCT:2989) — costs you nothing."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -722,7 +722,7 @@
     ;;<====================>
     ;;[AQP-FVT] Farms / Vaults / Treasuries (config + rewards)
     ;;<====================>
-    (defun AQP-FVT|INFO_Issue:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-FVT|Issue:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-name:string owner-konto:string fvt-class:integer common-denominator:string)
         @doc "Cost preview for AQP-FVT|C_Issue. IGNIS GAS|ISSUE-FVT + STOA 'smart'."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -733,7 +733,7 @@
                 (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (AQP-FVT.URCi_IssueStoa))
                 []))
     )
-    (defun AQP-FVT|INFO_RotateOwnership:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-FVT|RotateOwnership:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string new-owner-konto:string)
         @doc "Cost preview for AQP-FVT|C_RotateOwnership. IGNIS 'ignis|medium'; no STOA."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -744,7 +744,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-FVT|INFO_Control:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-FVT|Control:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string new-can-upgrade:bool new-can-change-owner:bool)
         @doc "Cost preview for AQP-FVT|C_Control. IGNIS 'ignis|medium'; no STOA."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -755,7 +755,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-FVT|INFO_SetCommonDenominator:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-FVT|SetCommonDenominator:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string common-denominator:string)
         @doc "Cost preview for AQP-FVT|C_SetCommonDenominator. IGNIS GAS|SET-COMMON-DENOMINATOR; no STOA."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -766,7 +766,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-FVT|INFO_SetMosaic:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-FVT|SetMosaic:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string mosaic:bool)
         @doc "Cost preview for AQP-FVT|C_SetMosaic. IGNIS GAS|SET-MOSAIC; no STOA."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -777,7 +777,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-FVT|INFO_SetSplitMode:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-FVT|SetSplitMode:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string split-mode:string)
         @doc "Cost preview for AQP-FVT|C_SetSplitMode. IGNIS GAS|SET-SPLIT-MODE; no STOA. Reports the farm's current \
             \ reward-split mode alongside the requested one."
@@ -789,7 +789,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-FVT|INFO_AddScoreEntity:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-FVT|AddScoreEntity:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string)
         @doc "Cost preview for AQP-FVT|C_AddScoreEntity. IGNIS GAS|ADD-SCORE-ENTITY; no STOA."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -800,7 +800,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-FVT|INFO_ToggleScoreEntityLink:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-FVT|ToggleScoreEntityLink:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string enabled:bool)
         @doc "Cost preview for AQP-FVT|C_ToggleScoreEntityLink. IGNIS GAS|TOGGLE-SCORE-ENTITY-LINK; no STOA."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -811,7 +811,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-FVT|INFO_IssueMultipletFamily:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-FVT|IssueMultipletFamily:object{OuronetInfoV1.ClientInfo}
         (patron:string token-0-id:string token-1-id:string token-2-id:string ats-0-1-id:string ats-1-2-id:string)
         @doc "Cost preview for AQP-FVT|C_IssueMultipletFamily. IGNIS GAS|ISSUE-MULTIPLET-FAMILY; no STOA."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -822,7 +822,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-FVT|INFO_AddRewardLink:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-FVT|AddRewardLink:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string reward-dptf-id:string segmentation:bool multiplet-family-id:string)
         @doc "Cost preview for AQP-FVT|C_AddRewardLink. IGNIS GAS|ADD-REWARD-LINK; no STOA."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -833,7 +833,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-FVT|INFO_ToggleRewardLink:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-FVT|ToggleRewardLink:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string reward-dptf-id:string enabled:bool)
         @doc "Cost preview for AQP-FVT|C_ToggleRewardLink. IGNIS GAS|TOGGLE-REWARD-LINK; no STOA."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -844,7 +844,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-FVT|INFO_SetQualitySplit:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-FVT|SetQualitySplit:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string reward-dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
         @doc "Cost preview for AQP-FVT|C_SetQualitySplit. IGNIS GAS|SET-QUALITY-SPLIT; no STOA."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -855,7 +855,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-FVT|INFO_InjectStream:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-FVT|InjectStream:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
         @doc "Cost preview for AQP-FVT|CC_InjectStream. IGNIS GAS|INJECT; STOA none (custody transfer)."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -867,7 +867,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount]))
     )
-    (defun AQP-FVT|INFO_CC_Inject:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-FVT|CC_Inject:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "Cost preview for AQP-FVT|CC_Inject (enforced-fresh single-tx inject). IGNIS GAS|INJECT; STOA none."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -879,7 +879,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount]))
     )
-    (defun AQP-FVT|INFO_CC_InjectFinalize:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-FVT|CC_InjectFinalize:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "Cost preview for AQP-FVT|CC_InjectFinalize. IGNIS GAS|INJECT; STOA none."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -891,7 +891,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount]))
     )
-    (defun AQP-FVT|INFO_CCp_InjectFixChunk:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-FVT|CCp_InjectFixChunk:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
         @doc "Cost preview for AQP-FVT|CCp_InjectFixChunk. Gas-station subsidised — no IGNIS/STOA to the patron."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -904,7 +904,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-FVT|INFO_CCp_UnstaleAll:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-FVT|CCp_UnstaleAll:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
         @doc "Cost preview for AQP-FVT|CCp_UnstaleAll. Gas-station subsidised — no IGNIS/STOA to the patron."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -917,7 +917,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-FVT|INFO_UnstaleMyScores:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-FVT|UnstaleMyScores:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-ids:[string])
         @doc "Cost preview for AQP-FVT|CC_UnstaleMyScores. IGNIS GAS|UNSTALE; no STOA."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -928,7 +928,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-FVT|INFO_Collect:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-FVT|Collect:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         @doc "Cost preview for AQP-FVT|CC_Collect. FULL IGNIS: reward-payout leg (plain TFT transfer, or a \
             \ MULTIPLET_BASE triplet Coil/Curl ladder) + Phase-7 forced-fix penalty + GAS|COLLECT; STOA none. \
@@ -943,7 +943,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-FVT|INFO_CC_SweepRevokeAnchor:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-FVT|CC_SweepRevokeAnchor:object{OuronetInfoV1.ClientInfo}
         (patron:string anchor-id:string)
         @doc "Cost preview for AQP-FVT|CC_SweepRevokeAnchor. Gas-station subsidised — no IGNIS/STOA to the patron."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -956,7 +956,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-FVT|INFO_CC_SweepBegin:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-FVT|CC_SweepBegin:object{OuronetInfoV1.ClientInfo}
         (patron:string anchor-id:string)
         @doc "Cost preview for AQP-FVT|CC_SweepBegin. Gas-station subsidised — no IGNIS/STOA to the patron."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -969,7 +969,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-FVT|INFO_CCp_SweepRecomputeChunk:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-FVT|CCp_SweepRecomputeChunk:object{OuronetInfoV1.ClientInfo}
         (patron:string anchor-id:string chunk:integer)
         @doc "Cost preview for AQP-FVT|CCp_SweepRecomputeChunk. Gas-station subsidised — no IGNIS/STOA to the patron."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -986,7 +986,7 @@
     ;;<====================>
     ;;[AQP-DSA] Delegated Staking Agencies
     ;;<====================>
-    (defun AQP-DSA|INFO_DefineDelegationVault:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-DSA|DefineDelegationVault:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string model-id:string unit-score:integer)
         @doc "Cost preview for AQP-DSA|A_DefineDelegationVault. IGNIS GAS|DEFINE-VAULT; no STOA."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -997,7 +997,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-DSA|INFO_OpenAgency:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-DSA|OpenAgency:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string pool-id:string score-entity-id:string fee-per-mille:integer collectable-id:string stake-nonces:[integer])
         @doc "Cost preview for AQP-DSA|C_OpenAgency. IGNIS GAS|OPEN-AGENCY base; the atomic open also stakes the \
             \ operator's collateral (staking legs added at execution). No STOA."
@@ -1011,7 +1011,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-DSA|INFO_RecomputeCapture:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-DSA|RecomputeCapture:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string score-entity-id:string)
         @doc "Cost preview for AQP-DSA|C_RecomputeCapture. IGNIS GAS|RECOMPUTE-CAPTURE; no STOA."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -1022,7 +1022,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-DSA|INFO_SetOracleAuth:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-DSA|SetOracleAuth:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string oracle-guard:guard)
         @doc "Cost preview for AQP-DSA|A_SetOracleAuth. IGNIS GAS|SET-ORACLE-AUTH; no STOA."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -1033,7 +1033,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-DSA|INFO_OracleWrite:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-DSA|OracleWrite:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string score-entity-id:string nodes:integer uptime:integer)
         @doc "Cost preview for AQP-DSA|A_OracleWrite. IGNIS GAS|ORACLE-WRITE; no STOA."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -1044,7 +1044,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-DSA|INFO_ToggleExternalOracle:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-DSA|ToggleExternalOracle:object{OuronetInfoV1.ClientInfo}
         (on:bool)
         @doc "Cost preview for AQP-DSA|A_ToggleExternalOracle. Chain-wide GOV switch — no IGNIS/STOA."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -1057,7 +1057,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-DSA|INFO_SetOracleValidity:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-DSA|SetOracleValidity:object{OuronetInfoV1.ClientInfo}
         (seconds:integer)
         @doc "Cost preview for AQP-DSA|A_SetOracleValidity. Chain-wide GOV switch — no IGNIS/STOA."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -1070,7 +1070,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-DSA|INFO_WithdrawRoyalty:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-DSA|WithdrawRoyalty:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string reward-dptf-id:string)
         @doc "Cost preview for AQP-DSA|A_WithdrawRoyalty. FULL IGNIS: GAS|WITHDRAW-ROYALTY gas leg + the state- \
             \ dependent custody-move leg (normalize + TFT transfer of the live royalty pool to the FVT owner); STOA none."
@@ -1084,7 +1084,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-DSA|INFO_BurnRoyalty:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-DSA|BurnRoyalty:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string reward-dptf-id:string)
         @doc "Cost preview for AQP-DSA|A_BurnRoyalty. FULL IGNIS: GAS|BURN-ROYALTY gas leg + the state-dependent \
             \ custody-burn leg (normalize + DPTF burn of the live royalty pool); STOA none."
@@ -1098,7 +1098,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-DSA|INFO_FuelRoyalty:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-DSA|FuelRoyalty:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string reward-dptf-id:string swpair:string)
         @doc "Cost preview for AQP-DSA|A_FuelRoyalty. FULL IGNIS: GAS|FUEL-ROYALTY gas leg + the state-dependent \
             \ custody-fuel leg (normalize + SWPLC fuel of the live royalty pool into the swpair); STOA none."
@@ -1112,7 +1112,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun AQP-DSA|INFO_SetAgencyFee:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-DSA|SetAgencyFee:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer)
         @doc "Cost preview for AQP-DSA|A_SetAgencyFee. IGNIS GAS|SET-AGENCY-FEE; no STOA. O(1) reprice."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -1127,7 +1127,7 @@
     ;;<====================>
     ;;[AQP-MTX] Matrix drivers (spike-fallback defpacts)
     ;;<====================>
-    (defun AQP-MTX|INFO_2Inject:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-MTX|2Inject:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "Cost preview for MTX-AQP|C_2|Inject (2-step enforced-fresh inject). IGNIS GAS|INJECT (inner XB_FvtInject); STOA none."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -1139,7 +1139,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount]))
     )
-    (defun AQP-MTX|INFO_2SweepRevokeAnchor:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-MTX|2SweepRevokeAnchor:object{OuronetInfoV1.ClientInfo}
         (patron:string anchor-id:string)
         @doc "Cost preview for MTX-AQP|C_2|SweepRevokeAnchor. Gas-station subsidised — no IGNIS/STOA to the patron."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))

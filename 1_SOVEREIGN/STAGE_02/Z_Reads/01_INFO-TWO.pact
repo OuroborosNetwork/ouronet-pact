@@ -2,8 +2,8 @@
     @doc "Exposes the Stage-2 INFO (ClientInfo preview) surface — DPDC collectables, \
         \ DEMIPAD launchpad, EQUITY, AQP. Each function wraps a core URCi cost reader."
     ;;  [DPDC collectables]
-    (defun DPSF|INFO_Make:object{OuronetInfoV1.ClientInfo} (patron:string account:string id:string nonces:[integer] set-class:integer how-many-sets:integer))
-    (defun DPNF|INFO_Make:object{OuronetInfoV1.ClientInfo} (patron:string account:string id:string nonces:[integer] set-class:integer))
+    (defun INFO_DPSF|Make:object{OuronetInfoV1.ClientInfo} (patron:string account:string id:string nonces:[integer] set-class:integer how-many-sets:integer))
+    (defun INFO_DPNF|Make:object{OuronetInfoV1.ClientInfo} (patron:string account:string id:string nonces:[integer] set-class:integer))
     ;;  [DEMIPAD] — sovereign launchpad
     (defun URC_DEMIPAD|Deposit:object{OuronetInfoV1.ClientInfo} (patron:string donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal))
     (defun URC_DEMIPAD|Withdraw:object{OuronetInfoV1.ClientInfo} (patron:string asset-id:string type:integer destination:string))
@@ -19,9 +19,9 @@
     (defun URC_EQUITY|IssueCompany:object{OuronetInfoV1.ClientInfo} (patron:string creator-account:string collection-name:string))
     (defun URC_EQUITY|MorphEquity:object{OuronetInfoV1.ClientInfo} (patron:string account:string id:string input-nonce:integer input-amount:integer output-nonce:integer))
 )
-;;LIQUID|INFO_UnwrapStoa
-;;LIQUID|INFO_WrapStoa
-;;LIQUID|INFO_UnwrapUrStoa
+;;INFO_LIQUID|UnwrapStoa
+;;INFO_LIQUID|WrapStoa
+;;INFO_LIQUID|UnwrapUrStoa
 (module INFO-TWO GOV
     ;;
     ;;(implements InfoTwoV1)
@@ -76,7 +76,7 @@
     ;;  [INFO] - Informational URC Functions
     ;;
     ;;  [DPSF]
-    (defun DPSF|INFO_Make:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_DPSF|Make:object{OuronetInfoV1.ClientInfo}
         (patron:string account:string id:string nonces:[integer] set-class:integer how-many-sets:integer)
         (let
             (
@@ -107,7 +107,7 @@
     ;;
     ;;  [DPNF]
     ;;
-    (defun DPNF|INFO_Make:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_DPNF|Make:object{OuronetInfoV1.ClientInfo}
         (patron:string account:string id:string nonces:[integer] set-class:integer)
         (let
             (

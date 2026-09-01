@@ -72,9 +72,9 @@
     (defun C_ReleaseStoicTag:string (tag-name:string))
     ;;
     ;; [INFO] UI previews — register: STOA always (STOA|C_CollectWT false); release: IGNIS per virtual-gas rules
-    (defun CODEX|INFO_RegisterStoicTag:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_CODEX|RegisterStoicTag:object{OuronetInfoV1.ClientInfo}
         (patron:string tag-name:string account-address:string))
-    (defun CODEX|INFO_ReleaseStoicTag:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_CODEX|ReleaseStoicTag:object{OuronetInfoV1.ClientInfo}
         (patron:string tag-name:string))
 )
 
@@ -729,7 +729,7 @@
         (format "StoicTag §{} released" [tag-name])
     )
     ;;
-    (defun CODEX|INFO_RegisterStoicTag:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_CODEX|RegisterStoicTag:object{OuronetInfoV1.ClientInfo}
         (patron:string tag-name:string account-address:string)
         @doc "ClientInfo preview for TS01-C4 CODEX|C_RegisterStoicTag — STOA from patron; Elite discount on account-address."
         (let
@@ -751,7 +751,7 @@
             )
         )
     )
-    (defun CODEX|INFO_ReleaseStoicTag:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_CODEX|ReleaseStoicTag:object{OuronetInfoV1.ClientInfo}
         (patron:string tag-name:string)
         @doc "ClientInfo preview for TS01-C4 CODEX|C_ReleaseStoicTag (IGNIS = UC_StoicTagStoaFee per glyph)."
         (let

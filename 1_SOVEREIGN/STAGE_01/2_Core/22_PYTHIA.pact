@@ -96,25 +96,25 @@
     (defun URH_ApiKeyByConsumer:object (smart-apollo:string))
     ;;
     ;; [INFO]
-    (defun PYTHIA|INFO_DeployApiKey:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_PYTHIA|DeployApiKey:object{OuronetInfoV1.ClientInfo}
         (
             patron:string
             owner-account:string
             apollo-account:string
             public:string
         ))
-    (defun PYTHIA|INFO_LinkDualApiKey:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_PYTHIA|LinkDualApiKey:object{OuronetInfoV1.ClientInfo}
         (
             standard-apollo:string
             smart-apollo:string
             consumer-lane:string
         ))
-    (defun PYTHIA|INFO_UnlinkDualApiKey:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_PYTHIA|UnlinkDualApiKey:object{OuronetInfoV1.ClientInfo}
         (
             patron:string
             dual-link-key:string
         ))
-    (defun PYTHIA|INFO_UpdateDualConsumerLane:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_PYTHIA|UpdateDualConsumerLane:object{OuronetInfoV1.ClientInfo}
         (
             patron:string
             dual-link-key:string
@@ -1412,7 +1412,7 @@
     )
     ;;
     ;;{F7}  [INFO]
-    (defun PYTHIA|INFO_DeployApiKey:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_PYTHIA|DeployApiKey:object{OuronetInfoV1.ClientInfo}
         (
             patron:string
             owner-account:string
@@ -1444,7 +1444,7 @@
             )
         )
     )
-    (defun PYTHIA|INFO_LinkDualApiKey:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_PYTHIA|LinkDualApiKey:object{OuronetInfoV1.ClientInfo}
         (
             standard-apollo:string
             smart-apollo:string
@@ -1476,7 +1476,7 @@
             )
         )
     )
-    (defun PYTHIA|INFO_UnlinkDualApiKey:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_PYTHIA|UnlinkDualApiKey:object{OuronetInfoV1.ClientInfo}
         (
             patron:string
             dual-link-key:string
@@ -1513,7 +1513,7 @@
             )
         )
     )
-    (defun PYTHIA|INFO_UpdateDualConsumerLane:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_PYTHIA|UpdateDualConsumerLane:object{OuronetInfoV1.ClientInfo}
         (
             patron:string
             dual-link-key:string
