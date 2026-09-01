@@ -200,7 +200,7 @@
 
         (format "S-VST Supply is {}" [(ref-DPOF::UR_Supply s-vst)])
 
-        (format "Emma has {} {} in total, owned nonces are {}"[(ref-DPOF::UR_AccountSupply s-vst emma) s-vst (ref-DPOF::URD_AccountNonces emma s-vst)])
+        (format "Emma has {} {} in total, owned nonces are {}"[(ref-DPOF::UR_AccountSupply s-vst emma) s-vst (ref-DPOF::URH_AccountNonces emma s-vst)])
         (format "Emma VST supply is {}" [(ref-DPTF::UR_AccountSupply vst emma)])
     ]
     (env-chain-data
@@ -274,7 +274,7 @@
 
         (format "S-VST Supply is {}" [(ref-DPOF::UR_Supply s-vst)])
 
-        (format "Emma has {} {} in total, owned nonces are {}"[(ref-DPOF::UR_AccountSupply s-vst emma) s-vst (ref-DPOF::URD_AccountNonces emma s-vst)])
+        (format "Emma has {} {} in total, owned nonces are {}"[(ref-DPOF::UR_AccountSupply s-vst emma) s-vst (ref-DPOF::URH_AccountNonces emma s-vst)])
         (format "Emma VST supply is {}" [(ref-DPTF::UR_AccountSupply vst emma)])
 
         ;(format "Emma Sleeping VST Units are: {}" [(ref-DPOF::UR_AccountUnit s-vst emma)])

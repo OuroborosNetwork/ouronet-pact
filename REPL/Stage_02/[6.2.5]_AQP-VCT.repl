@@ -680,7 +680,7 @@
         (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
         (aqp-class:integer 4)
-        (pre-count:integer (length (ref-DPDC::URD_AccountNonces source dpnf-id false)))
+        (pre-count:integer (length (ref-DPDC::URH_AccountNonces source dpnf-id false)))
         (split-smart:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
         )
@@ -724,7 +724,7 @@
     ]))
     (let
         (
-            (stake-nonce:integer (at pre-count (ref-DPDC::URD_AccountNonces source dpnf-id false)))
+            (stake-nonce:integer (at pre-count (ref-DPDC::URH_AccountNonces source dpnf-id false)))
             (pre-supply:integer 1)
         )
         (print (format "<(DPNF|C_TransferNonces nonce {})> => \"{}\"" [stake-nonce
@@ -799,7 +799,7 @@
         (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
         (aqp-class:integer 4)
-        (pre-count:integer (length (ref-DPDC::URD_AccountNonces source dpnf-id false)))
+        (pre-count:integer (length (ref-DPDC::URH_AccountNonces source dpnf-id false)))
         (split-smart:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
         )
@@ -843,7 +843,7 @@
     ]))
     (let
         (
-            (stake-nonce:integer (at pre-count (ref-DPDC::URD_AccountNonces source dpnf-id false)))
+            (stake-nonce:integer (at pre-count (ref-DPDC::URH_AccountNonces source dpnf-id false)))
             (pre-supply:integer 1)
         )
         (print (format "<(DPNF|C_TransferNonces nonce {})> => \"{}\"" [stake-nonce
@@ -909,7 +909,7 @@
         (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
         ;; DPNF02 vacated the DHN nonce back to ANHD — reuse that same nonce for the rehaul restake
-        (stake-nonce:integer (at 0 (ref-DPDC::URD_AccountNonces owner-id dpnf-id false)))
+        (stake-nonce:integer (at 0 (ref-DPDC::URH_AccountNonces owner-id dpnf-id false)))
     )
     ;; DhnVacatePool is Lumy-owned — the vacate owner gate (VCT|C>VACATE) needs PK_Lumy.
     (env-sigs
@@ -976,7 +976,7 @@
         (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
         (aqp-class:integer 4)
-        (pre-count:integer (length (ref-DPDC::URD_AccountNonces source dpnf-id false)))
+        (pre-count:integer (length (ref-DPDC::URH_AccountNonces source dpnf-id false)))
         (split-smart:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
         )
@@ -1020,7 +1020,7 @@
     ]))
     (let
         (
-            (stake-nonce:integer (at pre-count (ref-DPDC::URD_AccountNonces source dpnf-id false)))
+            (stake-nonce:integer (at pre-count (ref-DPDC::URH_AccountNonces source dpnf-id false)))
             (pre-supply:integer 1)
         )
         (print (format "<(DPNF|C_TransferNonces nonce {})> => \"{}\"" [stake-nonce
@@ -1478,7 +1478,7 @@
     ]))
     (let
         (
-            (patron-nonces:[integer] (ref-DPOF::URD_AccountNonces patron dpof-id))
+            (patron-nonces:[integer] (ref-DPOF::URH_AccountNonces patron dpof-id))
             (nonce-b:integer (at (- (length patron-nonces) 1) patron-nonces))
         )
         (print (format "<(DPOF|C_Transfer nonce-b={} → EMMA)> => \"{}\"" [

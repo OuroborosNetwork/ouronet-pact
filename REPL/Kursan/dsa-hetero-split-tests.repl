@@ -175,13 +175,13 @@
                 (enforce (>= lp-bal-final stake-amt) "HET: patron needs LP balance after seed")
                 (let
                     (
-                        (anhd-kbn:[integer] (ref-DPDC::URD_AccountNonces owner kbn-id false))
+                        (anhd-kbn:[integer] (ref-DPDC::URH_AccountNonces owner kbn-id false))
                         (prom-pre:decimal (ref-ANK::UR_UB|AggregatePromile owner silver-score))
                     )
                     (if (= prom-pre 0.0)
                         (let
                             (
-                                (emma-kbn:[integer] (ref-DPDC::URD_AccountNonces emma kbn-id false))
+                                (emma-kbn:[integer] (ref-DPDC::URH_AccountNonces emma kbn-id false))
                             )
                             (if (not (contains auryn-rain-nonce anhd-kbn))
                                 (enforce (contains auryn-rain-nonce emma-kbn) "HET: EMMA must hold Auryn Rain KBN nonce 75")

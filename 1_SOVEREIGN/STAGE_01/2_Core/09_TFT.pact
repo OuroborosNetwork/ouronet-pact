@@ -705,7 +705,7 @@
         )
     )
     ;;
-    (defun URCX_CPF_RT-RBT:[decimal] (id:string native-fee-amount:decimal)
+    (defun URCx_CPF_RT-RBT:[decimal] (id:string native-fee-amount:decimal)
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
@@ -715,8 +715,8 @@
                 (rbt-ats-pairs:[string] (ref-DPTF::UR_RewardBearingToken id))
                 (length-rt:integer (length rt-ats-pairs))
                 (length-rbt:integer (length rbt-ats-pairs))
-                (rt-boolean:[bool] (URCX_NFR-Boolean_RT-RBT id rt-ats-pairs true))
-                (rbt-boolean:[bool] (URCX_NFR-Boolean_RT-RBT id rbt-ats-pairs false))
+                (rt-boolean:[bool] (URCx_NFR-Boolean_RT-RBT id rt-ats-pairs true))
+                (rbt-boolean:[bool] (URCx_NFR-Boolean_RT-RBT id rbt-ats-pairs false))
                 (rt-milestones:integer (length (ref-U|LST::UC_Search rt-boolean true)))
                 (rbt-milestones:integer (length (ref-U|LST::UC_Search rbt-boolean true)))
                 (milestones:integer (+ rt-milestones rbt-milestones))
@@ -725,7 +725,7 @@
                 (let
                     (
                         (truths:[bool] (+ rt-boolean rbt-boolean))
-                        (split-with-truths:[decimal] (URCX_BooleanDecimalCombiner id native-fee-amount milestones truths))
+                        (split-with-truths:[decimal] (URCx_BooleanDecimalCombiner id native-fee-amount milestones truths))
                     )
                     (if (!= rt-milestones 0)
                         (let
@@ -759,13 +759,13 @@
             )
         )
     )
-    (defun URCX_CPF_RBT:decimal (id:string native-fee-amount:decimal)
+    (defun URCx_CPF_RBT:decimal (id:string native-fee-amount:decimal)
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ats-pairs:[string] (ref-DPTF::UR_RewardBearingToken id))
-                (ats-pairs-bool:[bool] (URCX_NFR-Boolean_RT-RBT id ats-pairs false))
+                (ats-pairs-bool:[bool] (URCx_NFR-Boolean_RT-RBT id ats-pairs false))
                 (milestones:integer (length (ref-U|LST::UC_Search ats-pairs-bool true)))
             )
             (if (!= milestones 0)
@@ -774,20 +774,20 @@
             )
         )
     )
-    (defun URCX_CPF_RT:decimal (id:string native-fee-amount:decimal)
+    (defun URCx_CPF_RT:decimal (id:string native-fee-amount:decimal)
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-ATS:module{AutostakeV2} ATS)
                 (ats-pairs:[string] (ref-DPTF::UR_RewardToken id))
-                (ats-pairs-bool:[bool] (URCX_NFR-Boolean_RT-RBT id ats-pairs true))
+                (ats-pairs-bool:[bool] (URCx_NFR-Boolean_RT-RBT id ats-pairs true))
                 (milestones:integer (length (ref-U|LST::UC_Search ats-pairs-bool true)))
             )
             (if (!= milestones 0)
                 (let
                     (
-                        (rt-split-with-boolean:[decimal] (URCX_BooleanDecimalCombiner id native-fee-amount milestones ats-pairs-bool))
+                        (rt-split-with-boolean:[decimal] (URCx_BooleanDecimalCombiner id native-fee-amount milestones ats-pairs-bool))
                         (number-of-zeroes:integer (length (ref-U|LST::UC_Search rt-split-with-boolean 0.0)))
                     )
                     (map
@@ -806,7 +806,7 @@
             )
         )
     )
-    (defun URCX_NFR-Boolean_RT-RBT:[bool] (id:string ats-pairs:[string] rt-or-rbt:bool)
+    (defun URCx_NFR-Boolean_RT-RBT:[bool] (id:string ats-pairs:[string] rt-or-rbt:bool)
         @doc "Makes a [bool] using RT or RBT <nfr> values from a list of ATS Pair"
         (let
             (
@@ -832,7 +832,7 @@
             )
         )
     )
-    (defun URCX_BooleanDecimalCombiner:[decimal] (id:string amount:decimal milestones:integer boolean:[bool])
+    (defun URCx_BooleanDecimalCombiner:[decimal] (id:string amount:decimal milestones:integer boolean:[bool])
         (let
             (
                 (ref-U|ATS:module{UtilityAtsV2} U|ATS)
@@ -1207,7 +1207,7 @@
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
             )
-            (UDCX_BulkTransferCumulator id sender size (ref-DALOS::UR_UsagePrice "ignis|smallest"))
+            (UDCx_BulkTransferCumulator id sender size (ref-DALOS::UR_UsagePrice "ignis|smallest"))
         )
     )
     (defun URCi_ComplexBulkTransferCumulator:object{IgnisCollectorV1.OutputCumulator}
@@ -1216,7 +1216,7 @@
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
             )
-            (UDCX_BulkTransferCumulator id sender size (ref-DALOS::UR_UsagePrice "ignis|small"))
+            (UDCx_BulkTransferCumulator id sender size (ref-DALOS::UR_UsagePrice "ignis|small"))
         )
     )
     (defun URCi_EliteBulkTransferCumulator:object{IgnisCollectorV1.OutputCumulator}
@@ -1225,10 +1225,10 @@
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
             )
-            (UDCX_BulkTransferCumulator id sender size (ref-DALOS::UR_UsagePrice "ignis|medium"))
+            (UDCx_BulkTransferCumulator id sender size (ref-DALOS::UR_UsagePrice "ignis|medium"))
         )
     )
-    (defun UDCX_BulkTransferCumulator:object{IgnisCollectorV1.OutputCumulator}
+    (defun UDCx_BulkTransferCumulator:object{IgnisCollectorV1.OutputCumulator}
         (id:string sender:string size:integer price:decimal)
         (let
             (
@@ -1710,7 +1710,7 @@
             (if (and rt rbt)
                 (let
                     (
-                        (v:[decimal] (URCX_CPF_RT-RBT id pf))
+                        (v:[decimal] (URCx_CPF_RT-RBT id pf))
                         (v1:decimal (at 0 v))
                         (v2:decimal (at 1 v))
                         (v3:decimal (at 2 v))
@@ -1722,7 +1722,7 @@
                 (if rt
                     (let
                         (
-                            (v1:decimal (URCX_CPF_RT id pf))
+                            (v1:decimal (URCx_CPF_RT id pf))
                             (v2:decimal (- pf v1))
                         )
                         (XI_CPF_StillFee id target v1)
@@ -1731,7 +1731,7 @@
                     (if rbt
                         (let
                             (
-                                (v1:decimal (URCX_CPF_RBT id pf))
+                                (v1:decimal (URCx_CPF_RBT id pf))
                                 (v2:decimal (- pf v1))
                             )
                             (XI_CPF_StillFee id target v1)

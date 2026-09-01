@@ -64,7 +64,7 @@
     (defun URC_HopperActive:object{Hopper} (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal))
     (defun URC_HopperActiveShortest:object{Hopper} (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal))
     ;;#65bL Phase 4: URC_Hopper, sourcing its graph from an ALREADY-FETCHED <raw-graph>
-    ;;(SWPT::URC_FetchRawGraph) instead of URCX_Hopper's own self-fetch — lets a caller
+    ;;(SWPT::URC_FetchRawGraph) instead of URCx_Hopper's own self-fetch — lets a caller
     ;;doing MULTIPLE unrelated Hopper queries in the same transaction (e.g. the
     ;;STOA-repricing loop, one query per distinct pool touched) fetch the whole
     ;;topology's raw graph exactly ONCE and reuse it across every query, instead of
@@ -75,7 +75,7 @@
     ;;#65bL Phase 7: URC_HopperFromRaw again, but sourcing its graph from an
     ;;ALREADY-BUILT [GraphNode] (SWPT::UC_MakeGraphFromRaw) instead of rebuilding it
     ;;from <raw-graph> on every call — the STOA-repricing loop's own
-    ;;URC_HopperFromRaw/URCX_HopperFromRaw calls independently rebuilt the identical
+    ;;URC_HopperFromRaw/URCx_HopperFromRaw calls independently rebuilt the identical
     ;;graph structure once per distinct pool touched; this lets that shared build
     ;;happen once and be reused, same shape of win one layer deeper than Phase 4's
     ;;raw-graph sharing.
@@ -86,7 +86,7 @@
         )
     )
     ;;#34 Phase 11 — the original #34 ask: genuine exhaustive route discovery. Mirrors
-    ;;URCX_Hopper (the shared internal core URC_Hopper/URC_HopperActive both wrap) but
+    ;;URCx_Hopper (the shared internal core URC_Hopper/URC_HopperActive both wrap) but
     ;;calls SWPT::URC_ComputeAllRoutes instead of the K=3-capped
     ;;URC_ComputeAlternateRoutes, and — unlike the hidden-universe URC_Hopper/
     ;;URC_HopperActive public wrappers — exposes <swpairs>/<max-attempts> directly, so
@@ -103,7 +103,7 @@
     (defun URC_ValidatePathActive:bool (nodes:[string] edges:[string]))
     ;;#34 Phase 8: computes a Hopper (feeless output-values) for an ALREADY-CHOSEN
     ;;nodes+edges route (a dirty-read-injected bundle's swap-route or a pricing path),
-    ;;walking the EXACT supplied edges — unlike URCX_HopperForNodes (used by the
+    ;;walking the EXACT supplied edges — unlike URCx_HopperForNodes (used by the
     ;;self-searching URC_Hopper/URC_HopperActive), this never re-selects a "best" edge
     ;;per hop, since the real execution will use these exact edges regardless. Caller's
     ;;responsibility to validate nodes/edges first (URC_ValidatePathStructure/Active) —
@@ -125,7 +125,7 @@
     ;;Used by URC_WorthWSTOA's own id==OURO shortcut (see that function's own doc).
     (defun URC_SingleOuroWorthWSTOA:decimal (ouro:string wstoa:string))
     ;;#65fL Phase 8b: SSTOA's own worth in WSTOA, per unit, via the ATS autostake index
-    ;;— extracted so URC_WorthWSTOA's own id==SSTOA branch and URCX_PrimordialValueAndOuroSupply
+    ;;— extracted so URC_WorthWSTOA's own id==SSTOA branch and URCx_PrimordialValueAndOuroSupply
     ;;share it without a static recursive-cycle compile error (see the defun's own doc).
     (defun URC_SingleSSTOAWorthWSTOA:decimal ())
     (defun URC_TokenDollarPrice (id:string stoa-pid:decimal))
@@ -921,12 +921,12 @@
         )
     )
     ;;
-    (defun URCX_HopperForNodes:object{SwapperIssueV3.Hopper}
+    (defun URCx_HopperForNodes:object{SwapperIssueV3.Hopper}
         (nodes:[string] hopper-input-amount:decimal swpairs:[string])
         @doc "Computes the Hopper object (best per-hop edge + accumulated output) for \
-            \ an ALREADY-KNOWN <nodes> path. Split out of <URCX_Hopper> (#34M/M2 fix) \
+            \ an ALREADY-KNOWN <nodes> path. Split out of <URCx_Hopper> (#34M/M2 fix) \
             \ so the identical per-hop best-edge computation can be run once per \
-            \ candidate route in <URCX_Hopper>'s best-of-K comparison, not just the \
+            \ candidate route in <URCx_Hopper>'s best-of-K comparison, not just the \
             \ single first-found route. Computes: \
             \ 1] The hops along <nodes>, the <edges> as the highest-output edge from all available \
             \ #49L fix: was 'cheapest available edge' — backwards framing (C1/#6C's own fix made \
@@ -989,7 +989,7 @@
     )
     (defun URC_HopperForKnownRoute:object{SwapperIssueV3.Hopper}
         (nodes:[string] edges:[string] hopper-input-amount:decimal)
-        @doc "#34 Phase 8: like URCX_HopperForNodes, computes the feeless per-hop output \
+        @doc "#34 Phase 8: like URCx_HopperForNodes, computes the feeless per-hop output \
             \ chain for a KNOWN path — but walks the caller-supplied <edges> directly \
             \ instead of re-deriving a 'best' edge per hop via URC_BestEdgeFiltered. \
             \ This matters: a dirty-read-injected bundle's swap-route is what real \
@@ -1058,7 +1058,7 @@
     )
     (defun UC_BestHopper:object{SwapperIssueV3.Hopper} (candidates:[object{SwapperIssueV3.Hopper}])
         @doc "Picks the candidate Hopper with the highest final output value. \
-            \ <candidates> must be non-empty (caller's responsibility — <URCX_Hopper> \
+            \ <candidates> must be non-empty (caller's responsibility — <URCx_Hopper> \
             \ only calls this once it has confirmed at least one route was found)."
         (if (<= (length candidates) 1)
             (at 0 candidates)
@@ -1079,7 +1079,7 @@
             )
         )
     )
-    (defun URCX_Hopper:object{SwapperIssueV3.Hopper}
+    (defun URCx_Hopper:object{SwapperIssueV3.Hopper}
         (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal swpairs:[string])
         @doc "Shared Hopper-computation core for <URC_Hopper>/<URC_HopperActive> — \
             \ identical in every respect except which <swpairs> universe routing \
@@ -1102,7 +1102,7 @@
             \ NOT deleted (still correct, still tested, `SWP|TX 032c`-`032g`'s own \
             \ adversarial proof of the original failure mode stays as regression \
             \ coverage) — just no longer the default live-routing path. \
-            \ CAVEAT, worth stating plainly: URCX_HopperForNodes's own per-hop \
+            \ CAVEAT, worth stating plainly: URCx_HopperForNodes's own per-hop \
             \ <URC_BestEdgeFiltered> selection is a GREEDY choice — picking the best \
             \ available edge at each individual hop does not mathematically guarantee \
             \ the overall path is the highest-value one achievable end to end (a \
@@ -1116,7 +1116,7 @@
             \ first — on a fresh hit, skips the live BFS search entirely and \
             \ uses the cached node-path as the sole candidate. Safe because the real \
             \ per-hop edge is always re-derived live downstream in \
-            \ URCX_HopperForNodes regardless of where the node-path came from — a \
+            \ URCx_HopperForNodes regardless of where the node-path came from — a \
             \ cache hit only changes WHICH nodes get tried, never how an edge gets \
             \ picked or validated. On a miss (or a stale entry, topology-version \
             \ behind current), falls through to the unchanged live search."
@@ -1171,7 +1171,7 @@
                     (
                         (candidates:[object{SwapperIssueV3.Hopper}]
                             (map
-                                (lambda (nodes:[string]) (URCX_HopperForNodes nodes hopper-input-amount swpairs))
+                                (lambda (nodes:[string]) (URCx_HopperForNodes nodes hopper-input-amount swpairs))
                                 routes
                             )
                         )
@@ -1181,12 +1181,12 @@
             )
         )
     )
-    (defun URCX_HopperFromRaw:object{SwapperIssueV3.Hopper}
+    (defun URCx_HopperFromRaw:object{SwapperIssueV3.Hopper}
         (
             hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal
             swpairs:[string] raw-graph:[object{SwapTracerV2.RawGraphNode}]
         )
-        @doc "#65bL Phase 4 fix: <URCX_Hopper>, sourcing its routing search via an \
+        @doc "#65bL Phase 4 fix: <URCx_Hopper>, sourcing its routing search via an \
             \ ALREADY-FETCHED <raw-graph> (<SWPT::URC_FetchRawGraph>) instead of \
             \ letting <SWPT::URC_ComputeGraphPathFromRaw> fetch its own — for a caller \
             \ making MULTIPLE unrelated Hopper queries in one transaction (the \
@@ -1200,11 +1200,11 @@
             \ queried — so ONE raw-graph fetched against a given <swpairs> universe \
             \ is valid for EVERY query against that same universe, not just the one \
             \ it happened to be fetched for. Still checks SWPT|PathCache first, \
-            \ identically to <URCX_Hopper> — a cache hit is even cheaper than a \
+            \ identically to <URCx_Hopper> — a cache hit is even cheaper than a \
             \ shared-raw-graph live search, this doesn't replace that, it only makes \
             \ the miss case cheaper too. \
             \ #65bL Phase 5 fix: was best-of-3 via <SWPT::URC_ComputeAlternateRoutesFromRaw> \
-            \ — see <URCX_Hopper>'s own doc for the full measured rationale (identical \
+            \ — see <URCx_Hopper>'s own doc for the full measured rationale (identical \
             \ here, same shared decision)."
         (let
             (
@@ -1213,7 +1213,7 @@
                     (ref-SWPT::URC_ReadPathCacheFresh hopper-input-id hopper-output-id)
                 )
                 (cached-nodes:[string] (at "nodes" cached))
-                ;;Only computed on an actual cache miss — see URCX_Hopper's own comment
+                ;;Only computed on an actual cache miss — see URCx_Hopper's own comment
                 ;;on this exact same eager-`let`-evaluation trap.
                 (routes:[[string]]
                     (if (!= cached-nodes [BAR])
@@ -1235,7 +1235,7 @@
                     (
                         (candidates:[object{SwapperIssueV3.Hopper}]
                             (map
-                                (lambda (nodes:[string]) (URCX_HopperForNodes nodes hopper-input-amount swpairs))
+                                (lambda (nodes:[string]) (URCx_HopperForNodes nodes hopper-input-amount swpairs))
                                 routes
                             )
                         )
@@ -1245,18 +1245,18 @@
             )
         )
     )
-    (defun URCX_HopperFromGraph:object{SwapperIssueV3.Hopper}
+    (defun URCx_HopperFromGraph:object{SwapperIssueV3.Hopper}
         (
             hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal
             swpairs:[string] graph:[object{BreadthFirstSearchV1.GraphNode}]
         )
-        @doc "#65bL Phase 7 fix: <URCX_HopperFromRaw>, sourcing its routing search \
+        @doc "#65bL Phase 7 fix: <URCx_HopperFromRaw>, sourcing its routing search \
             \ via an ALREADY-BUILT <graph> (<SWPT::UC_MakeGraphFromRaw>) instead of \
             \ rebuilding it from <raw-graph> on every call — see \
             \ <URC_HopperFromGraph>'s own doc for the full rationale (repricing- \
             \ loop graph-build sharing, one layer deeper than Phase 4's raw-graph \
             \ sharing). Still checks SWPT|PathCache first, identically to \
-            \ <URCX_Hopper>/<URCX_HopperFromRaw> — a cache hit is even cheaper than \
+            \ <URCx_Hopper>/<URCx_HopperFromRaw> — a cache hit is even cheaper than \
             \ a shared-graph live search, this doesn't replace that, it only makes \
             \ the miss case cheaper too."
         (let
@@ -1266,7 +1266,7 @@
                     (ref-SWPT::URC_ReadPathCacheFresh hopper-input-id hopper-output-id)
                 )
                 (cached-nodes:[string] (at "nodes" cached))
-                ;;Only computed on an actual cache miss — see URCX_Hopper's own comment
+                ;;Only computed on an actual cache miss — see URCx_Hopper's own comment
                 ;;on this exact same eager-`let`-evaluation trap.
                 (routes:[[string]]
                     (if (!= cached-nodes [BAR])
@@ -1288,7 +1288,7 @@
                     (
                         (candidates:[object{SwapperIssueV3.Hopper}]
                             (map
-                                (lambda (nodes:[string]) (URCX_HopperForNodes nodes hopper-input-amount swpairs))
+                                (lambda (nodes:[string]) (URCx_HopperForNodes nodes hopper-input-amount swpairs))
                                 routes
                             )
                         )
@@ -1304,16 +1304,16 @@
             swpairs:[string] max-attempts:integer
         )
         @doc "#34 Phase 11 — the original #34 ask: genuine exhaustive route discovery, \
-            \ not URCX_Hopper's fixed best-of-3 approximation. Identical shape to \
-            \ URCX_Hopper (route-then-price-then-pick-best) but sources candidate \
+            \ not URCx_Hopper's fixed best-of-3 approximation. Identical shape to \
+            \ URCx_Hopper (route-then-price-then-pick-best) but sources candidate \
             \ node-paths from SWPT::URC_ComputeAllRoutes (a real parameterized search \
             \ up to <max-attempts>, P0.2's flat +1000 caller-side escalation pattern \
             \ and P0.2/P0.4's outer-hard-stop/depth-cap already enforced inside that \
             \ function) instead of the K=3-capped URC_ComputeAlternateRoutes. Reuses \
-            \ URCX_HopperForNodes (per-candidate feeless value) and UC_BestHopper (pick \
+            \ URCx_HopperForNodes (per-candidate feeless value) and UC_BestHopper (pick \
             \ the genuinely highest-output candidate, P1.8's requirement — never by hop \
             \ count as a proxy for cost) completely unchanged; no new value-computation \
-            \ logic needed, same division of labor URCX_Hopper already established. \
+            \ logic needed, same division of labor URCx_Hopper already established. \
             \ Exposes <swpairs> directly (unlike the hidden-universe URC_Hopper/ \
             \ URC_HopperActive public wrappers) so a caller picks the routing universe \
             \ explicitly — active-only for real swap discovery, or any subset for \
@@ -1333,7 +1333,7 @@
                     (
                         (candidates:[object{SwapperIssueV3.Hopper}]
                             (map
-                                (lambda (nodes:[string]) (URCX_HopperForNodes nodes hopper-input-amount swpairs))
+                                (lambda (nodes:[string]) (URCx_HopperForNodes nodes hopper-input-amount swpairs))
                                 routes
                             )
                         )
@@ -1356,7 +1356,7 @@
             (
                 (ref-SWP:module{SwapperV3} SWP)
             )
-            (URCX_Hopper hopper-input-id hopper-output-id hopper-input-amount (ref-SWP::URC_Swpairs))
+            (URCx_Hopper hopper-input-id hopper-output-id hopper-input-amount (ref-SWP::URC_Swpairs))
         )
     )
     (defun URC_HopperFromRaw:object{SwapperIssueV3.Hopper}
@@ -1366,12 +1366,12 @@
         )
         @doc "#65bL Phase 4 fix: <URC_Hopper>, sourcing its routing search via an \
             \ ALREADY-FETCHED <raw-graph> instead of a fresh self-fetch — see \
-            \ <URCX_HopperFromRaw>'s own doc for the full rationale."
+            \ <URCx_HopperFromRaw>'s own doc for the full rationale."
         (let
             (
                 (ref-SWP:module{SwapperV3} SWP)
             )
-            (URCX_HopperFromRaw hopper-input-id hopper-output-id hopper-input-amount (ref-SWP::URC_Swpairs) raw-graph)
+            (URCx_HopperFromRaw hopper-input-id hopper-output-id hopper-input-amount (ref-SWP::URC_Swpairs) raw-graph)
         )
     )
     (defun URC_HopperFromGraph:object{SwapperIssueV3.Hopper}
@@ -1381,13 +1381,13 @@
         )
         @doc "#65bL Phase 7 fix: <URC_HopperFromRaw>, sourcing its routing search \
             \ via an ALREADY-BUILT <graph> instead of rebuilding it from \
-            \ <raw-graph> on every call — see <URCX_HopperFromGraph>'s own doc for \
+            \ <raw-graph> on every call — see <URCx_HopperFromGraph>'s own doc for \
             \ the full rationale."
         (let
             (
                 (ref-SWP:module{SwapperV3} SWP)
             )
-            (URCX_HopperFromGraph hopper-input-id hopper-output-id hopper-input-amount (ref-SWP::URC_Swpairs) graph)
+            (URCx_HopperFromGraph hopper-input-id hopper-output-id hopper-input-amount (ref-SWP::URC_Swpairs) graph)
         )
     )
     (defun URC_HopperActive:object{SwapperIssueV3.Hopper}
@@ -1400,7 +1400,7 @@
             (
                 (ref-SWP:module{SwapperV3} SWP)
             )
-            (URCX_Hopper hopper-input-id hopper-output-id hopper-input-amount (ref-SWP::URC_ActiveSwpairs))
+            (URCx_Hopper hopper-input-id hopper-output-id hopper-input-amount (ref-SWP::URC_ActiveSwpairs))
         )
     )
     (defun URC_HopperActiveShortest:object{SwapperIssueV3.Hopper}
@@ -1419,11 +1419,11 @@
             \ #65fL Phase 8a fix: this was the one Hopper variant left completely \
             \ untouched by #65bL Phases 1-7 — no PathCache check, no shared \
             \ raw-graph. Now checks SWPT|PathCache first (URC_ReadPathCacheFresh), \
-            \ identically to URCX_Hopper's own Phase 1 pattern — on a fresh hit, \
+            \ identically to URCx_Hopper's own Phase 1 pattern — on a fresh hit, \
             \ skips the live BFS entirely and uses the cached node-path as the \
             \ sole candidate, safe for the same reason Phase 1 established (the \
             \ real per-hop edge is always re-derived live downstream in \
-            \ URCX_HopperForNodes against the <swpairs> active-only universe, \
+            \ URCx_HopperForNodes against the <swpairs> active-only universe, \
             \ regardless of where the node-path came from). Especially valuable \
             \ here since this targets exactly the pair a bundle-assisted swap's \
             \ own <boost-path> already warms in this same cache (#65bL Phase 6) — \
@@ -1446,7 +1446,7 @@
                     )
                 )
             )
-            (URCX_HopperForNodes nodes hopper-input-amount swpairs)
+            (URCx_HopperForNodes nodes hopper-input-amount swpairs)
         )
     )
     (defun URC_ValidatePathActive:bool (nodes:[string] edges:[string])
@@ -1473,7 +1473,7 @@
             )
         )
     )
-    (defun URCX_BestEdgeOf:string (ia:decimal i:string o:string edges:[string])
+    (defun URCx_BestEdgeOf:string (ia:decimal i:string o:string edges:[string])
         @doc "Shared best-edge-selection core for <URC_BestEdge>/<URC_BestEdgeFiltered> \
             \ — identical in every respect except which <edges> candidate list is \
             \ passed in. Internal only, not on the interface."
@@ -1525,12 +1525,12 @@
                 ;;#21H: SWPT no longer needs a principal list.
                 (ref-SWPT:module{SwapTracerV2} SWPT)
             )
-            (URCX_BestEdgeOf ia i o (ref-SWPT::URC_Edges i o))
+            (URCx_BestEdgeOf ia i o (ref-SWPT::URC_Edges i o))
         )
     )
     (defun URC_BestEdgeFiltered:string (ia:decimal i:string o:string swpairs:[string])
         @doc "Best edge restricted to swpairs also present in <swpairs> — used by \
-            \ <URCX_Hopper> so a disabled parallel pool between the same token \
+            \ <URCx_Hopper> so a disabled parallel pool between the same token \
             \ pair is never selected as the executed hop, even when an active \
             \ parallel pool exists between the same two tokens (#19H)."
         (let
@@ -1538,7 +1538,7 @@
                 ;;#21H: SWPT no longer needs a principal list.
                 (ref-SWPT:module{SwapTracerV2} SWPT)
             )
-            (URCX_BestEdgeOf ia i o (ref-SWPT::URC_EdgesActive i o swpairs))
+            (URCx_BestEdgeOf ia i o (ref-SWPT::URC_EdgesActive i o swpairs))
         )
     )
     ;;Value Computations
@@ -1546,11 +1546,11 @@
         @doc "#65fL Phase 8b: SSTOA's own worth in WSTOA terms, per unit — the ATS \
             \ autostake index (the 'liquid staking conversion, backwards'), zero \
             \ graph search. Extracted as its own function, mirroring \
-            \ <URC_SingleOuroWorthWSTOA>, so <URCX_PrimordialValueAndOuroSupply> can \
+            \ <URC_SingleOuroWorthWSTOA>, so <URCx_PrimordialValueAndOuroSupply> can \
             \ call it directly instead of going through <URC_SingleWorthWSTOA>/ \
             \ <URC_WorthWSTOA> — routing through those would create a genuine STATIC \
             \ recursive cycle at compile time (URC_WorthWSTOA's own id==OURO branch \
-            \ calls into URCX_PrimordialValueAndOuroSupply), caught by Pact 5's own \
+            \ calls into URCx_PrimordialValueAndOuroSupply), caught by Pact 5's own \
             \ cycle detector when this was first wired that way — even though the \
             \ actual runtime call chain (always SSTOA's own id here, which never \
             \ re-enters the OURO branch) would never truly recurse. <URC_WorthWSTOA>'s \
@@ -1568,7 +1568,7 @@
             (ref-ATS::URC_Index stoaliquindex)
         )
     )
-    (defun URCX_PrimordialValueAndOuroSupply:[decimal] ()
+    (defun URCx_PrimordialValueAndOuroSupply:[decimal] ()
         @doc "#65fL Phase 8b: shared core extracted from <URC_OuroPrimordialPrice> — \
             \ [<primordial-wstoa-value> <ouro-supply>], where <primordial-wstoa-value> \
             \ is the primordial pool's total value in WSTOA-equivalent terms (native \
@@ -1609,7 +1609,7 @@
     )
     (defun URC_OuroPrimordialPrice:decimal ()
         @doc "#65fL Phase 8b fix: sources the shared primordial-pool read via \
-            \ URCX_PrimordialValueAndOuroSupply instead of its own inline copy — \
+            \ URCx_PrimordialValueAndOuroSupply instead of its own inline copy — \
             \ pure extraction, computation order and rounding UNCHANGED (still \
             \ sum-in-WSTOA -> convert-to-dollar -> divide-by-ouro-supply, same 2 \
             \ floor calls at the same precision, in the same order), verified \
@@ -1618,7 +1618,7 @@
             (
                 (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
                 (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
-                (pv:[decimal] (URCX_PrimordialValueAndOuroSupply))
+                (pv:[decimal] (URCx_PrimordialValueAndOuroSupply))
                 (primordial-wstoa-value:decimal (at 0 pv))
                 (ouro-supply:decimal (at 1 pv))
                 (primordial-wstoa-value-in-dollarz:decimal (floor (* primordial-wstoa-value stoa-pid) 24))
@@ -1759,7 +1759,7 @@
     (defun URC_WorthWSTOAFromRaw (id:string amount:decimal raw-graph:[object{SwapTracerV2.RawGraphNode}])
         @doc "#65bL Phase 4 fix: <URC_WorthWSTOA>, sourcing any graph search it needs \
             \ via an ALREADY-FETCHED <raw-graph> (<URC_HopperFromRaw>) instead of a \
-            \ fresh self-fetch — see <URCX_HopperFromRaw>'s own doc for the full \
+            \ fresh self-fetch — see <URCx_HopperFromRaw>'s own doc for the full \
             \ rationale (repricing-loop sharing). The WSTOA/SSTOA short-circuit branches \
             \ never needed a graph search to begin with and stay unchanged. \
             \ #65fL Phase 8b fix: added the same id==OURO short-circuit \
@@ -1817,7 +1817,7 @@
         @doc "#65bL Phase 7 fix: <URC_WorthWSTOA>, sourcing any graph search it needs \
             \ via an ALREADY-BUILT <graph> (<URC_HopperFromGraph>) instead of \
             \ rebuilding it from <raw-graph> per call — see \
-            \ <URCX_HopperFromGraph>'s own doc for the full rationale (repricing- \
+            \ <URCx_HopperFromGraph>'s own doc for the full rationale (repricing- \
             \ loop graph-build sharing). The WSTOA/SSTOA short-circuit branches never \
             \ needed a graph search to begin with and stay unchanged. \
             \ #65fL Phase 8b fix: added the same id==OURO short-circuit \

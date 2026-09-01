@@ -1,5 +1,5 @@
-;; Verify Fix for DPDC Audit #34M — URD_AccountNoncesWithSupplies now returns [] (not [{}]) when an
-;; account holds zero nonces of a collection, matching its sibling URD_AccountNonces.
+;; Verify Fix for DPDC Audit #34M — URH_AccountNoncesWithSupplies now returns [] (not [{}]) when an
+;; account holds zero nonces of a collection, matching its sibling URH_AccountNonces.
 (load "../Stage00_Sanboxes.repl")
 (load "../Stage00a_StoaTests.repl")
 (load "../Stage01_Tester.repl")
@@ -22,27 +22,27 @@
         (nobody:string "k:0000000000000000000000000000000000000000000000000000000000nobody")
     )
     (print
-        (expect "<<PROBE-34M>> zero-nonce account returns [] from URD_AccountNoncesWithSupplies (was [{}])"
+        (expect "<<PROBE-34M>> zero-nonce account returns [] from URH_AccountNoncesWithSupplies (was [{}])"
             []
-            (ref-DPDC::URD_AccountNoncesWithSupplies nobody id true)
+            (ref-DPDC::URH_AccountNoncesWithSupplies nobody id true)
         )
     )
     (print
         (expect "<<PROBE-34M>> (length ...) on the empty result is now 0 (was 1, the phantom-nonce bug)"
             0
-            (length (ref-DPDC::URD_AccountNoncesWithSupplies nobody id true))
+            (length (ref-DPDC::URH_AccountNoncesWithSupplies nobody id true))
         )
     )
     ;;Control: ANHD DOES hold real nonces of DHCD -- confirm the non-empty path is unaffected.
     (print
-        (format "<(DPDC.URD_AccountNoncesWithSupplies ANHD DHCD)> => {}"
-            [(ref-DPDC::URD_AccountNoncesWithSupplies KST.ANHD id true)]
+        (format "<(DPDC.URH_AccountNoncesWithSupplies ANHD DHCD)> => {}"
+            [(ref-DPDC::URH_AccountNoncesWithSupplies KST.ANHD id true)]
         )
     )
     (print
         (expect "<<PROBE-34M>> non-empty case (ANHD holds real DHCD nonces) still returns real entries"
             true
-            (> (length (ref-DPDC::URD_AccountNoncesWithSupplies KST.ANHD id true)) 0)
+            (> (length (ref-DPDC::URH_AccountNoncesWithSupplies KST.ANHD id true)) 0)
         )
     )
 )

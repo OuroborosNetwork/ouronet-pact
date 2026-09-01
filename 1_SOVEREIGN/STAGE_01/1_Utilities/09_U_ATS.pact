@@ -161,7 +161,7 @@
             \ (the primal RT), mirroring the pool-level primal-RT swap in ATSU.X_RemoveSecondary. \
             \ Fix (audit finding #1C / C2c): this MUST run unconditionally — an all-zero (never-touched) \
             \ Awo still needs its array shrunk to match the post-removal reward-token list, or every later \
-            \ read (URCX_PosObjSt, XI_StoreUnstakeObject) that structurally compares it against a freshly \
+            \ read (URCx_PosObjSt, XI_StoreUnstakeObject) that structurally compares it against a freshly \
             \ length-derived zero/negative sentinel will see a stale, longer array and misclassify an \
             \ empty slot as permanently occupied. UC_SolidifyUnstakeObject is safe to run unconditionally: \
             \ merging a 0.0 removee into slot 0 is a no-op on the value, it only ever needs to shrink the array."

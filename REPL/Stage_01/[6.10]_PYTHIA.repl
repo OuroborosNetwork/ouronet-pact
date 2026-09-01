@@ -80,7 +80,7 @@
                 (expect "<<TX001>> registered-at block-time" TV.TIME00 (ref-PYTHIA::UR_RegisteredAt apollo-std))
                 (expect "<<TX001>> updated-at block-time" TV.TIME00 (ref-PYTHIA::UR_UpdatedAt apollo-std))
                 (expect "<<TX001>> UC_IsStandardApollo true" true (ref-PYTHIA::UC_IsStandardApollo apollo-std))
-                (expect "<<TX001>> URD_ApiKeyCount >= 1" true (>= (ref-PYTHIA::URD_ApiKeyCount) 1))
+                (expect "<<TX001>> URH_ApiKeyCount >= 1" true (>= (ref-PYTHIA::URH_ApiKeyCount) 1))
             ]
         )
         ""
@@ -125,7 +125,7 @@
         (map print
             [
                 (expect "<<TX002>> UC_IsStandardApollo false for Π." false (ref-PYTHIA::UC_IsStandardApollo apollo-smt))
-                (expect "<<TX002>> URD_ApiKeyCount >= 2" true (>= (ref-PYTHIA::URD_ApiKeyCount) 2))
+                (expect "<<TX002>> URH_ApiKeyCount >= 2" true (>= (ref-PYTHIA::URH_ApiKeyCount) 2))
             ]
         )
         ""
@@ -157,7 +157,7 @@
                 (expect "<<TX003>> UR_Counterpart set on Smart" apollo-std (ref-PYTHIA::UR_Counterpart apollo-smt))
                 (expect "<<TX003>> UR_DualLinkConsumerLane set" lane-dual (ref-PYTHIA::UR_DualLinkConsumerLane dlk))
                 (expect "<<TX003>> UR_DualLinkIzActive false" false (ref-PYTHIA::UR_DualLinkIzActive dlk))
-                (expect "<<TX003>> URD_DualLinkCount >= 1" true (>= (ref-PYTHIA::URD_DualLinkCount) 1))
+                (expect "<<TX003>> URH_DualLinkCount >= 1" true (>= (ref-PYTHIA::URH_DualLinkCount) 1))
             ]
         )
         ""
@@ -184,8 +184,8 @@
             [
                 (expect "<<TX004>> UR_DualLinkIzActive true" true (ref-PYTHIA::UR_DualLinkIzActive dlk))
                 (expect "<<TX004>> UR_DualLinkIzActiveOrFalse true" true (ref-PYTHIA::UR_DualLinkIzActiveOrFalse dlk))
-                (expect "<<TX004>> URD_ActiveDualLinkSet contains dlk" true (contains dlk (ref-PYTHIA::URD_ActiveDualLinkSet)))
-                (expect "<<TX004>> URD_ApiKeyByConsumer iz-active true" true (at "iz-active" (ref-PYTHIA::URD_ApiKeyByConsumer apollo-smt)))
+                (expect "<<TX004>> URH_ActiveDualLinkSet contains dlk" true (contains dlk (ref-PYTHIA::URH_ActiveDualLinkSet)))
+                (expect "<<TX004>> URH_ApiKeyByConsumer iz-active true" true (at "iz-active" (ref-PYTHIA::URH_ApiKeyByConsumer apollo-smt)))
             ]
         )
         ""
@@ -295,7 +295,7 @@
     (map print
         [
             (expect "<<TX007>> keyless UR_DualLinkIzActiveOrFalse" true (ref-PYTHIA::UR_DualLinkIzActiveOrFalse dlk))
-            (expect "<<TX007>> keyless URD_ListActiveDualLinks non-empty" true (> (length (ref-PYTHIA::URD_ListActiveDualLinks)) 0))
+            (expect "<<TX007>> keyless URH_ListActiveDualLinks non-empty" true (> (length (ref-PYTHIA::URH_ListActiveDualLinks)) 0))
             (expect "<<TX007>> keyless UR_RevocationEpoch 3156 at height 378734" 3156 (ref-PYTHIA::UR_RevocationEpoch))
             (expect "<<TX007>> keyless UR_RevocationAtHeight > 0" true (> (ref-PYTHIA::UR_RevocationAtHeight) 0))
             (expect "<<TX007>> unknown dual key => false" false (ref-PYTHIA::UR_DualLinkIzActiveOrFalse "₱.unknown|Π.unknown"))
@@ -434,8 +434,8 @@
                 (expect "<<TX007c>> counterparts set on Smart" apollo-std (ref-PYTHIA::UR_Counterpart apollo-smt))
                 (expect "<<TX007c>> UR_DualLinkIzActive true (created active)" true (ref-PYTHIA::UR_DualLinkIzActive dlk))
                 (expect "<<TX007c>> auto consumer-lane PYTHIA-<hash12>" expected-lane (ref-PYTHIA::UR_DualLinkConsumerLane dlk))
-                (expect "<<TX007c>> URD_ActiveDualLinkSet contains pair-2 dlk" true (contains dlk (ref-PYTHIA::URD_ActiveDualLinkSet)))
-                (expect "<<TX007c>> URD_ApiKeyByConsumer iz-active true" true (at "iz-active" (ref-PYTHIA::URD_ApiKeyByConsumer apollo-smt)))
+                (expect "<<TX007c>> URH_ActiveDualLinkSet contains pair-2 dlk" true (contains dlk (ref-PYTHIA::URH_ActiveDualLinkSet)))
+                (expect "<<TX007c>> URH_ApiKeyByConsumer iz-active true" true (at "iz-active" (ref-PYTHIA::URH_ApiKeyByConsumer apollo-smt)))
             ]
         )
         ""
@@ -465,8 +465,8 @@
             (expect "<<TX008>> UR_PythLedgerEpochStart" (time "2026-08-01T00:00:00Z") (ref-LEDGER::UR_PythLedgerEpochStart))
             (expect "<<TX008>> total-metrics petitions 0" 0 (at "petitions" tm))
             (expect "<<TX008>> total-metrics pondus 0.0" 0.0 (at "pondus" tm))
-            ;; URD_ListPythDaily maps UR_PythDay (hard read) — empty ledger: use invalid range → []
-            (expect "<<TX008>> URD_ListPythDaily invalid range []" 0 (length (ref-LEDGER::URD_ListPythDaily 0 0)))
+            ;; URH_ListPythDaily maps UR_PythDay (hard read) — empty ledger: use invalid range → []
+            (expect "<<TX008>> URH_ListPythDaily invalid range []" 0 (length (ref-LEDGER::URH_ListPythDaily 0 0)))
             (expect "<<TX008>> UR_PythTotal last-day field 0" 0 (at "last-day" tot))
         ]
     )

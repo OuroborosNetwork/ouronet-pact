@@ -51,7 +51,7 @@
     (defun URCi_WipeCumulator:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool removable-nonces-obj:object{RemovableNonces}))
     ;;
     ;;  [URDC/URC/UDC]  RemovableNonces builders (dirty-read helpers, also used by INFO preview)
-    (defun URDC_WipePure:object{RemovableNonces} (account:string id:string son:bool))
+    (defun URHC_WipePure:object{RemovableNonces} (account:string id:string son:bool))
     (defun URC_FilterAccountViableNonces:object{RemovableNonces} (account:string id:string son:bool nonces:[integer]))
     (defun UDC_RemovableNonces:object{RemovableNonces} (a:[integer] b:[integer]))
 )
@@ -417,14 +417,14 @@
     )
     ;;{F0}  [UR]
     ;;{F1}  [URC]
-    (defun URDC_WipePure:object{DpdcManagementV1.RemovableNonces} (account:string id:string son:bool)
+    (defun URHC_WipePure:object{DpdcManagementV1.RemovableNonces} (account:string id:string son:bool)
         @doc "Uses Expensive Read Functions to obtain a |object{DpdcManagementV1.RemovableNonces}| that can be used \
         \ to execute a <C_WipePure>, bypassing the expensive gas costs of using (keys...) or (select...) functions"
         (let
             (
                 (ref-DPDC:module{DpdcV1} DPDC)
             )
-            (URC_FilterAccountViableNonces account id son (ref-DPDC::URD_AccountNonces account id son))
+            (URC_FilterAccountViableNonces account id son (ref-DPDC::URH_AccountNonces account id son))
         )
     )
     (defun URC_FilterClassZeroNonces:[integer] (id:string son:bool nonces:[integer])
@@ -741,7 +741,7 @@
             \ (that arent meant to be used in transactional context) to get the Account Nonces; \
             \ May fit in a single Transaction for Small Data Sets"
         (UEV_IMC)
-        (C_WipePure account id son (URDC_WipePure account id son))
+        (C_WipePure account id son (URHC_WipePure account id son))
     )
     (defun C_WipePure:object{IgnisCollectorV1.OutputCumulator}
         (account:string id:string son:bool removable-nonces-obj:object{DpdcManagementV1.RemovableNonces})
@@ -750,8 +750,8 @@
             \ The object must be pre-read (dirty read) \
             \ \
             \ Example to retrieve the <removable-nonces-obj> \
-            \ <(URDC_WipePure account id son)> ; to get the whole object \
-            \ <(UC_TakePureWipe (URDC_WipePure account id son) 165)> ; to get only the first 165 units \
+            \ <(URHC_WipePure account id son)> ; to get the whole object \
+            \ <(UC_TakePureWipe (URHC_WipePure account id son) 165)> ; to get only the first 165 units \
             \ Aproximately 167 Individual Wipes fit inside one TX (for NFTs)."
         (UEV_IMC)
         (let

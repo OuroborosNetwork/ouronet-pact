@@ -1593,7 +1593,7 @@
         ;(listoflists:[[string]] (map (lambda (x:string) (ref-U|LST::UC_SplitString "|" x)) keyz))
         ;(fl:[string] (ref-U|DALOS::UC_InverseFilterId listoflists ps))
         ;;
-        (accounts-with-ats-data:[string] (ref-ATS::URD_ExistingAutostakePairs ps))
+        (accounts-with-ats-data:[string] (ref-ATS::URH_ExistingAutostakePairs ps))
     )
     
     
@@ -3529,7 +3529,7 @@
 ;;==== WithdrawRoyalties Proof · 02 · let / invocation ==== ========================================
 (print "--- [WithdrawRoyalties Proof · 02 · let / invocation] ---")
 ;; ATSU|C>WITHDRAW-ROYALTIES enforces a nonzero accrued sum (RUR bucket 3) before it will run, so a
-;; royalty rate is set and a Coil is performed first (URCX_RBT-Amount charges royalty-fee out of
+;; royalty rate is set and a Coil is performed first (URCx_RBT-Amount charges royalty-fee out of
 ;; every Coil deposit once ATS|C_UpdateRoyalty has set a nonzero royalty-promile) to actually accrue
 ;; something to withdraw.
 (let

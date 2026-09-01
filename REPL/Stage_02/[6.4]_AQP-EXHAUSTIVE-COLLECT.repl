@@ -93,7 +93,7 @@
         (dhwc-id:string "DHWC-98c486052a51")
         (inject-amt:decimal 75.0)
         (fvt-class:integer (ref-FVT::UR_FVT|FvtClass fvt-id))
-        (dhwc-nonces:[integer] (ref-DPDC::URD_AccountNonces owner-id dhwc-id true))
+        (dhwc-nonces:[integer] (ref-DPDC::URH_AccountNonces owner-id dhwc-id true))
     )
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (enforce (= fvt-class 1) "SubsidiaryTreasury must be vault/treasury class 1")
@@ -229,13 +229,13 @@
                 (enforce (>= lp-bal-final stake-amt) "CL03: patron needs LP balance after seed")
                 (let
                     (
-                        (anhd-kbn:[integer] (ref-DPDC::URD_AccountNonces owner kbn-id false))
+                        (anhd-kbn:[integer] (ref-DPDC::URH_AccountNonces owner kbn-id false))
                         (prom-pre:decimal (ref-ANK::UR_UB|AggregatePromile owner silver-score))
                     )
                     (if (= prom-pre 0.0)
                         (let
                             (
-                                (emma-kbn:[integer] (ref-DPDC::URD_AccountNonces emma kbn-id false))
+                                (emma-kbn:[integer] (ref-DPDC::URH_AccountNonces emma kbn-id false))
                             )
                             (if (not (contains auryn-rain-nonce anhd-kbn))
                                 (enforce (contains auryn-rain-nonce emma-kbn) "CL03: EMMA must hold Auryn Rain KBN nonce 75")

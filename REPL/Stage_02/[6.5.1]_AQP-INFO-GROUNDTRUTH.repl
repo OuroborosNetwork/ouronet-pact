@@ -137,7 +137,7 @@
         ]
     )
     ;; ensure ANHD holds MVST nonces to stake
-    (if (= (length (ref-DPOF::URD_AccountNonces owner-konto dpof-id)) 0)
+    (if (= (length (ref-DPOF::URH_AccountNonces owner-konto dpof-id)) 0)
         (ref-TS01-C1::DPOF|C_Mint patron dpof-id owner-konto 1000.0 [{"test": "info-gt-of"}])
         "already has MVST")
     (ref-TS02-C3::AQP-SCR|C_IssueOrtoFungibleScore patron owner-konto score-name 12 1.0 1.0)
@@ -168,7 +168,7 @@
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV1}      DPOF)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1}    TS02-C3)
         (pool-id:string         (ref-U|DALOS::UDC_Makeid "InfoGtOfPool"))
-        (stake-nonce:integer    (at 0 (ref-DPOF::URD_AccountNonces owner-id dpof-id)))
+        (stake-nonce:integer    (at 0 (ref-DPOF::URH_AccountNonces owner-id dpof-id)))
         (nonces:[integer]       [stake-nonce])
         (info                   (AQP-INFO.AQP-POOL|INFO_StakeOrtoFungible
                                     patron pool-id owner-id beneficiary-id dpof-id nonces))
@@ -259,7 +259,7 @@
         (ref-DPDC:module{DpdcV1} DPDC)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1}    TS02-C3)
         (pool-id:string         (ref-U|DALOS::UDC_Makeid "InfoGtSfPool"))
-        (owned:[integer]        (ref-DPDC::URD_AccountNonces owner-id dpsf-id true))
+        (owned:[integer]        (ref-DPDC::URH_AccountNonces owner-id dpsf-id true))
         (stake-nonce:integer    (at 0 owned))
         (nonces:[integer]       [stake-nonce])
         (info                   (AQP-INFO.AQP-POOL|INFO_StakeSemiFungibleCollectable
@@ -616,7 +616,7 @@
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "InfoGtOfDrPool"))
-        (owned:[integer] (ref-DPOF::URD_AccountNonces patron dpof-id))
+        (owned:[integer] (ref-DPOF::URH_AccountNonces patron dpof-id))
     )
     ;; stake an owned MVST nonce (returned to owner by the earlier OF vacate)
     (enforce (> (length owned) 0) "TX912: ANHD needs an MVST nonce")
@@ -725,7 +725,7 @@
         (ref-DPDC:module{DpdcV1} DPDC)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "InfoGtSfDrPool"))
-        (owned:[integer] (ref-DPDC::URD_AccountNonces patron dpsf-id true))
+        (owned:[integer] (ref-DPDC::URH_AccountNonces patron dpsf-id true))
     )
     (enforce (> (length owned) 0) "TX913: ANHD needs a DHCD nonce")
     (let ((fresh-nonce:integer (at 0 owned)))

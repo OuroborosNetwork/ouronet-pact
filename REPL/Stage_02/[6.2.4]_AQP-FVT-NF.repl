@@ -72,7 +72,7 @@
         (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
         (aqp-class:integer 4)
-        (pre-count:integer (length (ref-DPDC::URD_AccountNonces source dpnf-id false)))
+        (pre-count:integer (length (ref-DPDC::URH_AccountNonces source dpnf-id false)))
         (split-smart:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
         )
@@ -117,7 +117,7 @@
     ]))
     (let
         (
-            (stake-nonce:integer (at pre-count (ref-DPDC::URD_AccountNonces source dpnf-id false)))
+            (stake-nonce:integer (at pre-count (ref-DPDC::URH_AccountNonces source dpnf-id false)))
         )
         (print (format "<(DPNF|C_TransferNonces nonce {})> => \"{}\"" [stake-nonce
             (ref-TS02-C2::DPNF|C_TransferNonces patron dpnf-id source owner-id [stake-nonce] [1] false)
@@ -381,7 +381,7 @@
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
         ;; ANHD now HOLDS the nonce (returned by NF-03) but it is NOT staked in NfSyncPool → unstake must fail.
-        (held-nonce:integer (at 0 (ref-DPDC::URD_AccountNonces owner-id dpnf-id false)))
+        (held-nonce:integer (at 0 (ref-DPDC::URH_AccountNonces owner-id dpnf-id false)))
     )
     (map print
         [
@@ -420,7 +420,7 @@
         (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
         ;; ANHD holds the DHB nonce (returned by NF-03) — stake it FOR the foreign beneficiary EMMA.
-        (owned:[integer] (ref-DPDC::URD_AccountNonces owner-id dpnf-id false))
+        (owned:[integer] (ref-DPDC::URH_AccountNonces owner-id dpnf-id false))
     )
     (enforce (> (length owned) 0) "TX-FVT-NF-05: owner needs a held DHB nonce for the non-self proof")
     (let
@@ -505,7 +505,7 @@
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
-        (pre-count:integer (length (ref-DPDC::URD_AccountNonces source dpnf-id false)))
+        (pre-count:integer (length (ref-DPDC::URH_AccountNonces source dpnf-id false)))
         (split-smart:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
         )
@@ -534,7 +534,7 @@
     (ref-TS02-C2::DPNF|C_Create patron dpnf-id (NfSyncProbe.UC_DpnfNonceRows 1))
     (let
         (
-            (stake-nonce:integer (at pre-count (ref-DPDC::URD_AccountNonces source dpnf-id false)))
+            (stake-nonce:integer (at pre-count (ref-DPDC::URH_AccountNonces source dpnf-id false)))
         )
         (ref-TS02-C2::DPNF|C_TransferNonces patron dpnf-id source owner-id [stake-nonce] [1] false)
         ;; keep the DHB pool-owner keyset signed through stake AND drain (the drain's CAP_VctVacatePoolOwner
@@ -560,7 +560,7 @@
                     )
                     (let
                         (
-                            (owned-post:[integer] (ref-DPDC::URD_AccountNonces owner-id dpnf-id false))
+                            (owned-post:[integer] (ref-DPDC::URH_AccountNonces owner-id dpnf-id false))
                             (tracker-post:decimal (ref-AQP::UR_AQP|DPNFTrackerBalance pool-id dpnf-id owner-id beneficiary-id stake-nonce))
                             (nns2:integer (ref-AQP::UR_AQP|PoolNns pool-id))
                             (unn2:integer (ref-AQP::UR_AQP|UserUnn pool-id beneficiary-id))
@@ -660,7 +660,7 @@
                             (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id (ref-U|DALOS::UDC_Makeid sc))
                             (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron (ref-U|DALOS::UDC_Makeid (format "{}Fvt" [pool])) patron (ref-U|DALOS::UDC_Makeid sc) ouro-id)
                             (ref-TS02-C2::DPNF|C_Create patron dpnf-id (NfSyncProbe.UC_DpnfNonceRows n))
-                            (let ((minted:[integer] (take (- n) (ref-DPDC::URD_AccountNonces source dpnf-id false))))
+                            (let ((minted:[integer] (take (- n) (ref-DPDC::URH_AccountNonces source dpnf-id false))))
                                 (ref-TS02-C2::DPNF|C_TransferNonces patron dpnf-id source owner-id minted amts false)
                                 (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id owner-id ben dpnf-id minted)
                                 (let ((g0:integer (env-gas)))
@@ -728,8 +728,8 @@
         (ref-DPDC:module{DpdcV1} DPDC)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
-        (anhd-kbn:[integer] (ref-DPDC::URD_AccountNonces owner-id kbn-id false))
-        (emma-kbn:[integer] (ref-DPDC::URD_AccountNonces source kbn-id false))
+        (anhd-kbn:[integer] (ref-DPDC::URH_AccountNonces owner-id kbn-id false))
+        (emma-kbn:[integer] (ref-DPDC::URH_AccountNonces source kbn-id false))
         (split-smart:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices patron (* 4.0 (ref-DALOS::UR_UsagePrice "smart")))
         )
@@ -746,7 +746,7 @@
             (ref-TS02-C2::DPNF|C_TransferNonces patron kbn-id source owner-id to-move (make-list 12 1) false)
             (let
                 (
-                    (owned:[integer] (ref-DPDC::URD_AccountNonces owner-id kbn-id false))
+                    (owned:[integer] (ref-DPDC::URH_AccountNonces owner-id kbn-id false))
                 )
             (let
                 (

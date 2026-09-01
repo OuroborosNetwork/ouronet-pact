@@ -376,7 +376,7 @@
             \ unchanged by the #21H storage redesign."
         (filter (lambda (swpair:string) (contains swpair whitelist)) (URC_Edges t1 t2))
     )
-    (defun URCX_ShortestChainToTarget:[[string]] (input:string output:string swpairs:[string])
+    (defun URCx_ShortestChainToTarget:[[string]] (input:string output:string swpairs:[string])
         @doc "#65hL: <URC_ShortestChainPerNode>, but stops doing real BFS-expansion \
             \ work once <output> is reached, via <U|BFS::UC_BFSTargeted> — see that \
             \ function's own doc for the full rationale and correctness argument \
@@ -403,14 +403,14 @@
         \ <at> crash — whenever no chain reaches <output>, including the case of a \
         \ genuinely disconnected pair once <swpairs> has been narrowed upstream \
         \ (e.g. to active-only pools, #19H). \
-        \ #65hL fix: sources its chains via <URCX_ShortestChainToTarget> instead of \
+        \ #65hL fix: sources its chains via <URCx_ShortestChainToTarget> instead of \
         \ <URC_ShortestChainPerNode> — same post-filter-down-to-<output> logic \
         \ below, unchanged, just fed from a BFS that stops once <output> is \
         \ actually found instead of exploring the whole reachable set first."
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
-                (shortest-chains:[[string]] (URCX_ShortestChainToTarget input output swpairs))
+                (shortest-chains:[[string]] (URCx_ShortestChainToTarget input output swpairs))
 
             )
             (if (!= shortest-chains [[BAR]])
@@ -518,7 +518,7 @@
         @doc "#65bL Phase 2/4 fix: <URC_ComputeAlternateRoutes>'s real logic, \
             \ parameterized on an ALREADY-FETCHED <raw-graph> instead of fetching its \
             \ own — see <URC_ComputeAlternateRoutes>'s own doc for the full best-of-3 \
-            \ rationale (unchanged here) and <URCX_HopperFromRaw>'s doc for why one \
+            \ rationale (unchanged here) and <URCx_HopperFromRaw>'s doc for why one \
             \ fetch can safely serve many different (input,output) queries against \
             \ the same <swpairs> universe (<UC_MakeGraphNodes> is input/output- \
             \ independent by construction). An exhausted-universe guard (empty \
@@ -601,7 +601,7 @@
             \ exact same over-cap route every remaining attempt, wasting the whole \
             \ budget making zero progress) — only whether it's ADDED to the returned \
             \ results is filtered. \
-            \ Reuses the already-shipped URCX_HopperForNodes/UC_BestHopper unchanged \
+            \ Reuses the already-shipped URCx_HopperForNodes/UC_BestHopper unchanged \
             \ for picking the best candidate by actual computed output value (P1.8's \
             \ requirement) — that value-computation logic lives in SWPI (16_SWPI.pact), \
             \ not here; this function only discovers node-path candidates, same \
@@ -811,9 +811,9 @@
             (at "chains" bfs-obj)
         )
     )
-    (defun URCX_ShortestChainToTargetFromRaw:[[string]]
+    (defun URCx_ShortestChainToTargetFromRaw:[[string]]
         (input:string output:string swpairs:[string] raw-graph:[object{RawGraphNode}])
-        @doc "#65hL: <URCX_ShortestChainToTarget>, sourcing its graph via an \
+        @doc "#65hL: <URCx_ShortestChainToTarget>, sourcing its graph via an \
             \ ALREADY-FETCHED <raw-graph> instead of a fresh self-fetch — same \
             \ early-exit-on-<output> shape as <UC_BFSTargeted>, mirroring \
             \ <URC_ShortestChainPerNodeFromRaw>'s own raw-graph sourcing. Internal \
@@ -836,14 +836,14 @@
             \ <URC_ShortestChainPerNode> — same post-filter-down-to-<output> logic, \
             \ unchanged, just fed from an already-fetched raw graph. \
             \ #65hL fix: now sources its chains via \
-            \ <URCX_ShortestChainToTargetFromRaw> instead — same raw-graph sourcing, \
+            \ <URCx_ShortestChainToTargetFromRaw> instead — same raw-graph sourcing, \
             \ but stops once <output> is actually found instead of exploring the \
             \ whole reachable set first."
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
                 (shortest-chains:[[string]]
-                    (URCX_ShortestChainToTargetFromRaw input output swpairs raw-graph)
+                    (URCx_ShortestChainToTargetFromRaw input output swpairs raw-graph)
                 )
             )
             (if (!= shortest-chains [[BAR]])
@@ -897,9 +897,9 @@
             (at "chains" bfs-obj)
         )
     )
-    (defun URCX_ShortestChainToTargetFromGraph:[[string]]
+    (defun URCx_ShortestChainToTargetFromGraph:[[string]]
         (input:string output:string graph:[object{BreadthFirstSearchV1.GraphNode}])
-        @doc "#65hL: <URCX_ShortestChainToTargetFromRaw>, sourcing an ALREADY-BUILT \
+        @doc "#65hL: <URCx_ShortestChainToTargetFromRaw>, sourcing an ALREADY-BUILT \
             \ <graph> instead of rebuilding it from <raw-graph>/<swpairs> — same \
             \ early-exit-on-<output> shape, mirroring \
             \ <URC_ShortestChainPerNodeFromGraph>'s own already-built-graph sourcing. \
@@ -919,14 +919,14 @@
             \ instead of rebuilding it from <raw-graph>/<swpairs> on every call — \
             \ same post-filter-down-to-<output> logic, unchanged. \
             \ #65hL fix: now sources its chains via \
-            \ <URCX_ShortestChainToTargetFromGraph> instead — same already-built- \
+            \ <URCx_ShortestChainToTargetFromGraph> instead — same already-built- \
             \ graph sourcing, but stops once <output> is actually found instead of \
             \ exploring the whole reachable set first."
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
                 (shortest-chains:[[string]]
-                    (URCX_ShortestChainToTargetFromGraph input output graph)
+                    (URCx_ShortestChainToTargetFromGraph input output graph)
                 )
             )
             (if (!= shortest-chains [[BAR]])

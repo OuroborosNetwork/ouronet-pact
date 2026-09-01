@@ -81,11 +81,11 @@
     (defun UR_AccountNonceSupply:integer (account:string id:string son:bool nonce:integer))
     (defun UR_AccountNoncesSupplies:[integer] (account:string id:string son:bool nonces:[integer]))
     ;;
-    (defun URD_HeldCollectables:[string] (account:string son:bool))
-    (defun URD_ExistingCollectables:[string] (dpdc:string son:bool))
-    (defun URD_OwnedCollectables:[string] (account:string son:bool))
-    (defun URD_AccountNonces:[integer] (account:string id:string son:bool))
-    (defun URD_AccountNoncesWithSupplies:[object] (account:string id:string son:bool))
+    (defun URH_HeldCollectables:[string] (account:string son:bool))
+    (defun URH_ExistingCollectables:[string] (dpdc:string son:bool))
+    (defun URH_OwnedCollectables:[string] (account:string son:bool))
+    (defun URH_AccountNonces:[integer] (account:string id:string son:bool))
+    (defun URH_AccountNoncesWithSupplies:[object] (account:string id:string son:bool))
     ;;
     ;;  [UEV]
     ;;
@@ -355,9 +355,9 @@
         )
     )
     ;;{F0}  [UR]
-    ;;DPDC Audit #55L: renamed from UR_AS-KEYS -- a full (keys ...) table scan belongs under the URD_
-    ;;prefix (dirty/scan-tier reads), not UR_ (point reads); matches this file's other URD_* scans.
-    (defun URD_AS-Keys:[string] (son:bool)
+    ;;DPDC Audit #55L: renamed from UR_AS-KEYS -- a full (keys ...) table scan belongs under the URH_
+    ;;prefix (dirty/scan-tier reads), not UR_ (point reads); matches this file's other URH_* scans.
+    (defun URH_AS-Keys:[string] (son:bool)
         (keys (if son DPSF|T|AccountSupplies DPNF|T|AccountSupplies))
     )
     ;;
@@ -666,7 +666,7 @@
     ;;  [URD]
     ;;
     ;;1] Returns Collectables held by Account
-    (defun URD_HeldCollectables:[string] (account:string son:bool)
+    (defun URH_HeldCollectables:[string] (account:string son:bool)
         @doc "Returns all Collectables that are registered for a given <account>"
         (map (at "id")
             (select (if son DPSF|T|Account DPNF|T|Account) ["id"]
@@ -675,7 +675,7 @@
         )
     )
     ;;2]Returns Accounts that are registered for a given Collectable
-    (defun URD_ExistingCollectables:[string] (dpdc:string son:bool)
+    (defun URH_ExistingCollectables:[string] (dpdc:string son:bool)
         @doc "Returns all Ouronet Accounts that are registered for a given <dpdc>"
         (map (at "account")
             (select (if son DPSF|T|Account DPNF|T|Account) ["account"]
@@ -684,7 +684,7 @@
         )
     )
     ;;3]Returns a List of DPTFs that are owned by a given Account for Management Purposes
-    (defun URD_OwnedCollectables:[string] (account:string son:bool)
+    (defun URH_OwnedCollectables:[string] (account:string son:bool)
         @doc "Returns all Collectables that can be managed by the given <account>"
         (map (at "id")
             (select (if son DPSF|T|Properties DPNF|T|Properties) ["id"]
@@ -693,7 +693,7 @@
         )
     )
     ;;
-    (defun URD_AccountNonces:[integer] (account:string id:string son:bool)
+    (defun URH_AccountNonces:[integer] (account:string id:string son:bool)
         (let 
             (
                 (tbl (if son DPSF|T|AccountSupplies DPNF|T|AccountSupplies))
@@ -718,7 +718,7 @@
             )
         )
     )
-    (defun URD_AccountNoncesWithSupplies:[object] (account:string id:string son:bool)
+    (defun URH_AccountNoncesWithSupplies:[object] (account:string id:string son:bool)
         @doc "Returns an object with keys <nonce> and <supply> with the required data"
         (let 
             (
@@ -734,7 +734,7 @@
             )
             ;;DPDC Audit #34M: was [{}] (a 1-element list of an empty object with no "nonce"/"supply"
             ;;keys) -- a phantom result that inflates any caller's (length ...) count by 1 for an
-            ;;account holding zero nonces. Mirror URD_AccountNonces's correct [] for the empty case.
+            ;;account holding zero nonces. Mirror URH_AccountNonces's correct [] for the empty case.
             (if (= (length results) 0)
                 []
                 (filter (lambda (x) (> (at "supply" x) 0)) results)
@@ -1624,7 +1624,7 @@
             (compose-capability (SECURE))
         )
     )
-    ;;get keys with (URD_AS-Keys son)
+    ;;get keys with (URH_AS-Keys son)
     (defun AUP_SFTs (kis:[string])
         (with-capability (AHU)
             (let

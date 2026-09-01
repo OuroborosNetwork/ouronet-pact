@@ -100,7 +100,7 @@
     ;;
     ;;  [URC]
     ;;
-    (defun URDC_WipePure:object{DpofUdcV1.RemovableNonces} (account:string id:string))
+    (defun URHC_WipePure:object{DpofUdcV1.RemovableNonces} (account:string id:string))
     (defun URC_IzRBT:bool (reward-bearing-token:string))
     (defun URC_IzRBTg:bool (atspair:string reward-bearing-token:string))
         ;;
@@ -111,10 +111,10 @@
     ;;
     ;;  [URD]
     ;;
-    (defun URD_HeldOrtoFungibles:[string] (account:string))
-    (defun URD_ExistingOrtoFungibles:[string] (dotf:string))
-    (defun URD_OwnedOrtoFungibles:[string] (account:string))
-    (defun URD_AccountNonces:[integer] (account:string dpof-id:string))
+    (defun URH_HeldOrtoFungibles:[string] (account:string))
+    (defun URH_ExistingOrtoFungibles:[string] (dotf:string))
+    (defun URH_OwnedOrtoFungibles:[string] (account:string))
+    (defun URH_AccountNonces:[integer] (account:string dpof-id:string))
     ;;
     ;;  [UEV]
     ;;
@@ -1278,12 +1278,12 @@
     ;;
     ;;
     ;;{F1}  [URC]
-    (defun URDC_WipePure:object{DpofUdcV1.RemovableNonces} (account:string id:string)
+    (defun URHC_WipePure:object{DpofUdcV1.RemovableNonces} (account:string id:string)
         @doc "Uses Expensive Read Functions to obtain a |object{DpofUdcV1.RemovableNonces}| that can be used \
             \ to execute a <C_WipePure>, bypassing the expensive gas costs of using (keys...) or (select...) functions"
         (let
             (
-                (nonces:[integer] (URD_AccountNonces account id))
+                (nonces:[integer] (URH_AccountNonces account id))
                 (amounts:[decimal] (UR_NoncesSupplies id nonces))
             )
             (UDC_RemovableNonces nonces amounts)
@@ -1354,7 +1354,7 @@
     ;;  [URD]
     ;;
     ;;1] Returns True Fungibles held by Account
-    (defun URD_HeldOrtoFungibles:[string] (account:string)
+    (defun URH_HeldOrtoFungibles:[string] (account:string)
         @doc "Returns all Orto Fungibles that are registered for a given <account>"
         (map (at "id")
             (select DPOF|T|AccountRoles ["id"]
@@ -1363,7 +1363,7 @@
         )
     )
     ;;2]Returns Accounts that are registered for a given DPTF
-    (defun URD_ExistingOrtoFungibles:[string] (dotf:string)
+    (defun URH_ExistingOrtoFungibles:[string] (dotf:string)
         @doc "Returns all Ouronet Accounts that are registered for a given <dotf>"
         (map (at "account")
             (select DPOF|T|AccountRoles ["account"]
@@ -1372,7 +1372,7 @@
         )
     )
     ;;3]Returns a List of DPOFs that are owned by a given Account for Management Purposes
-    (defun URD_OwnedOrtoFungibles:[string] (account:string)
+    (defun URH_OwnedOrtoFungibles:[string] (account:string)
         @doc "Returns all Orto Fungibles that can be managed by the given <account>"
         (map (at "id")
             (select DPOF|T|Properties ["id"]
@@ -1381,7 +1381,7 @@
         )
     )
     ;;4]
-    (defun URD_AccountNonces:[integer] (account:string dpof-id:string)
+    (defun URH_AccountNonces:[integer] (account:string dpof-id:string)
         (map (at "value")
             (select DPOF|T|Nonces ["value"]
                 (and?
@@ -1702,7 +1702,7 @@
         {"r-nonces"     : a
         ,"r-amounts"    : b}
     )
-    (defun UDCX_TransmitData:object{TransmitData}
+    (defun UDCx_TransmitData:object{TransmitData}
         (a:[integer] b:[decimal] c:[integer] d:[[object]])
         {"input-nonces"     : a
         ,"input-amounts"    : b
@@ -2134,7 +2134,7 @@
             \ (that arent meant to be used in transactional context) to get the Account Nonces; \
             \ May fit in a single Transaction for Small Data Sets"
         (UEV_IMC)
-        (C_WipePure id account (URDC_WipePure account id))
+        (C_WipePure id account (URHC_WipePure account id))
     )
     (defun C_WipePure:object{IgnisCollectorV1.OutputCumulator}
         (id:string account:string removable-nonces-obj:object{DpofUdcV1.RemovableNonces})
@@ -2143,8 +2143,8 @@
             \ The object must be pre-read (dirty read) \
             \ \
             \ Example to retrieve the <removable-nonces-obj> \
-            \ <(URDC_WipePure account id)> ; to get the whole object \
-            \ <(UC_TakePureWipe (URDC_WipePure account id) 165)> ; to get only the first 165 units \
+            \ <(URHC_WipePure account id)> ; to get the whole object \
+            \ <(UC_TakePureWipe (URHC_WipePure account id) 165)> ; to get only the first 165 units \
             \ Aproximately xx Individual Wipes fit inside one TX (for NFTs)."
         (UEV_IMC)
         (let
@@ -2190,7 +2190,7 @@
                 (output-nonces:[integer] (enumerate (+ nonces-used 1) (+ nonces-used how-many)))
                 (meta-data-array:[[object]] (UR_NoncesMetaDatas id nonces))
                 (td:object{TransmitData}
-                    (UDCX_TransmitData nonces amounts output-nonces meta-data-array)
+                    (UDCx_TransmitData nonces amounts output-nonces meta-data-array)
                 )
             )
             (with-capability (DPOF|C>TRANSMIT id td sender receiver method)

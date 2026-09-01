@@ -889,7 +889,7 @@
                 ;;Balanced Liq Computation
                 (x:decimal 
                     (if iz-balanced
-                        (URCX_BalancedLP lcd balanced-lq)
+                        (URCx_BalancedLP lcd balanced-lq)
                         0.0
                     )
                 )
@@ -898,7 +898,7 @@
                     (if iz-asymmetric
                         (let
                             (
-                                (asymmetric-lp:[decimal] (URCX_AsymmetricLP swpair asymmetric-lq lcd))
+                                (asymmetric-lp:[decimal] (URCx_AsymmetricLP swpair asymmetric-lq lcd))
                                 (full-lp:decimal (at 0 asymmetric-lp))
                                 (taxd-lp:decimal (at 1 asymmetric-lp))
                             )
@@ -917,7 +917,7 @@
             )
         )
     )
-    (defun URCX_BalancedLP:decimal (lcd:object{SwapperLiquidityV1.LiquidityComputationData} balanced-lq:[decimal])
+    (defun URCx_BalancedLP:decimal (lcd:object{SwapperLiquidityV1.LiquidityComputationData} balanced-lq:[decimal])
         (let
             (
                 (ref-U|SWP:module{UtilitySwpV1} U|SWP)
@@ -930,7 +930,7 @@
             )
         )
     )
-    (defun URCX_AsymmetricLP:[decimal] (swpair:string asymmetric-lq:[decimal] lcd:object{SwapperLiquidityV1.LiquidityComputationData})
+    (defun URCx_AsymmetricLP:[decimal] (swpair:string asymmetric-lq:[decimal] lcd:object{SwapperLiquidityV1.LiquidityComputationData})
         @doc "Computes the Full LP (at 0) and Reduced LP (at 1) from Liquidity Fee for asymmetric-liquidity"
         (let
             (
@@ -1226,7 +1226,7 @@
                             )
                         )
                         (vse2:object{UtilitySwpV1.VirtualSwapEngine}
-                            (UCX_Step2AsymmetricTaxVirtualSwapper 
+                            (UCx_Step2AsymmetricTaxVirtualSwapper 
                                 vse1 first-pt df-pool-tokens (drop 1 aba)
                             )
                         )
@@ -1268,7 +1268,7 @@
             )
         )
     )
-    (defun UCX_Step2AsymmetricTaxVirtualSwapper:object{UtilitySwpV1.VirtualSwapEngine}
+    (defun UCx_Step2AsymmetricTaxVirtualSwapper:object{UtilitySwpV1.VirtualSwapEngine}
         (vse:object{UtilitySwpV1.VirtualSwapEngine} first-token-id:string liq-ids:[string] liq-amounts:[decimal])
         (let
             (

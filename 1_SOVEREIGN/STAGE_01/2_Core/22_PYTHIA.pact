@@ -21,7 +21,7 @@
 ;; If PYTHIA were already on-chain at V3, only PythDaily + PythTotal are additive create-tables.
 ;;
 (interface PythiaV4
-    @doc "PYTHIA V4 — V3 dual-Apollo + Config UR prices; select-based inventory is URD_."
+    @doc "PYTHIA V4 — V3 dual-Apollo + Config UR prices; select-based inventory is URH_."
     (defun GOV|CronotonKey ())
     ;;
     (defun UC_DeployPrice:decimal ())
@@ -85,15 +85,15 @@
     (defun UR_ApiKeyBySlot:object (standard-apollo:string))
     ;;
     ;; [URD] — select / keys inventory
-    (defun URD_ApiKeyCount:integer ())
-    (defun URD_ApiKeyCountStr:string ())
-    (defun URD_DualLinkCount:integer ())
-    (defun URD_ListAllApiKeys:[object] ())
-    (defun URD_ListAllDualLinks:[object] ())
-    (defun URD_ListActiveDualLinks:[object] ())
-    (defun URD_ListInactiveDualLinks:[object] ())
-    (defun URD_ActiveDualLinkSet:[string] ())
-    (defun URD_ApiKeyByConsumer:object (smart-apollo:string))
+    (defun URH_ApiKeyCount:integer ())
+    (defun URH_ApiKeyCountStr:string ())
+    (defun URH_DualLinkCount:integer ())
+    (defun URH_ListAllApiKeys:[object] ())
+    (defun URH_ListAllDualLinks:[object] ())
+    (defun URH_ListActiveDualLinks:[object] ())
+    (defun URH_ListInactiveDualLinks:[object] ())
+    (defun URH_ActiveDualLinkSet:[string] ())
+    (defun URH_ApiKeyByConsumer:object (smart-apollo:string))
     ;;
     ;; [INFO]
     (defun PYTHIA|INFO_DeployApiKey:object{OuronetInfoV1.ClientInfo}
@@ -170,7 +170,7 @@
     (defun UR_PythTotal|TotalMetrics:object{PYTHIA|S|PythMetrics} ())
     (defun UR_PythTotal|LastDay:integer ())
     (defun UR_PythDay:object{PYTHIA|S|PythDaily} (day:integer))
-    (defun URD_ListPythDaily:[object{PYTHIA|S|PythDaily}] (from:integer to:integer))
+    (defun URH_ListPythDaily:[object{PYTHIA|S|PythDaily}] (from:integer to:integer))
 )
 ;;
 (module PYTHIA GOV
@@ -535,7 +535,7 @@
     )
     ;;
     ;;{F0b} [UCK]
-    (defun UCK_PythDaily:string (day:integer)
+    (defun UCk_PythDaily:string (day:integer)
         @doc "PYTHIA|T|PythDaily key = decimal string of day ordinal."
         (int-to-str 10 day)
     )
@@ -685,7 +685,7 @@
     (defun UR_PythDay:object{PythiaLedgerV2.PYTHIA|S|PythDaily} (day:integer)
         @doc "Full Pyth daily delta row for day ordinal; zeroed row for un-flushed / gap \
             \ days (never aborts, so range reads survive holes in the ledger)."
-        (with-default-read PYTHIA|T|PythDaily (UCK_PythDaily day)
+        (with-default-read PYTHIA|T|PythDaily (UCk_PythDaily day)
             { "day":         day
             , "flushed-at":  PYTHIA|LEDGER-EPOCH-START
             , "iz-sealed":   false
@@ -744,7 +744,7 @@
         ;; Avoid (keys ...) enumeration (disallowed in some capability/guard modes) AND
         ;; do not rely on UR_PythDay throwing (it now defaults). Probe a sentinel `day`
         ;; of -1: a real row always carries day >= 1, so present <=> read day != -1.
-        (with-default-read PYTHIA|T|PythDaily (UCK_PythDaily day)
+        (with-default-read PYTHIA|T|PythDaily (UCk_PythDaily day)
             { "day": -1 }
             { "day" := d }
             (!= d -1)
@@ -1055,7 +1055,7 @@
         )
         @doc "Insert PYTHIA|T|PythDaily full row (first flush of calendar day only)."
         (require-capability (SECURE))
-        (insert PYTHIA|T|PythDaily (UCK_PythDaily day) row)
+        (insert PYTHIA|T|PythDaily (UCk_PythDaily day) row)
     )
     (defun WU_PythDaily|Metrics:string
         (
@@ -1064,17 +1064,17 @@
         )
         @doc "Replace same-day metrics snapshot (open day re-flush)."
         (require-capability (SECURE))
-        (update PYTHIA|T|PythDaily (UCK_PythDaily day) {"metrics": metrics})
+        (update PYTHIA|T|PythDaily (UCk_PythDaily day) {"metrics": metrics})
     )
     (defun WU_PythDaily|FlushedAt:string (day:integer flushed-at:time)
         @doc "Stamp latest flush time on the open calendar day row."
         (require-capability (SECURE))
-        (update PYTHIA|T|PythDaily (UCK_PythDaily day) {"flushed-at": flushed-at})
+        (update PYTHIA|T|PythDaily (UCk_PythDaily day) {"flushed-at": flushed-at})
     )
     (defun WU_PythDaily|IzSealed:string (day:integer iz-sealed:bool)
         @doc "Seal a calendar day when advancing to the next day."
         (require-capability (SECURE))
-        (update PYTHIA|T|PythDaily (UCK_PythDaily day) {"iz-sealed": iz-sealed})
+        (update PYTHIA|T|PythDaily (UCk_PythDaily day) {"iz-sealed": iz-sealed})
     )
     ;; WU_PythDaily|Day — not mutable [.]
     ;;
@@ -1089,51 +1089,51 @@
     ;; WU_PythTotal|LastDay — not used: mutates via WW_PythTotal (full row).
     ;;
     ;;{F3}  [URD]
-    (defun URD_ApiKeyCount:integer ()
+    (defun URH_ApiKeyCount:integer ()
         (length (keys PYTHIA|T|ApiKeys))
     )
-    (defun URD_ApiKeyCountStr:string ()
-        (format "Pythia Apollo halves registered: {}" [(URD_ApiKeyCount)])
+    (defun URH_ApiKeyCountStr:string ()
+        (format "Pythia Apollo halves registered: {}" [(URH_ApiKeyCount)])
     )
-    (defun URD_DualLinkCount:integer ()
+    (defun URH_DualLinkCount:integer ()
         (length (keys PYTHIA|T|DualLinks))
     )
-    (defun URD_ListAllApiKeys:[object] ()
+    (defun URH_ListAllApiKeys:[object] ()
         (select PYTHIA|T|ApiKeys
             [ "apollo-account" "public" "counterpart" "owner-account"
               "registered-at" "updated-at" ]
             (constantly true)
         )
     )
-    (defun URD_ListAllDualLinks:[object] ()
+    (defun URH_ListAllDualLinks:[object] ()
         (select PYTHIA|T|DualLinks
             [ "dual-link-key" "standard-apollo" "smart-apollo" "consumer-lane" "iz-active"
               "linked-at" "updated-at" ]
             (constantly true)
         )
     )
-    (defun URD_ListActiveDualLinks:[object] ()
+    (defun URH_ListActiveDualLinks:[object] ()
         (select PYTHIA|T|DualLinks
             [ "dual-link-key" "standard-apollo" "smart-apollo" "consumer-lane" "iz-active"
               "linked-at" "updated-at" ]
             (where "iz-active" (= true))
         )
     )
-    (defun URD_ListInactiveDualLinks:[object] ()
+    (defun URH_ListInactiveDualLinks:[object] ()
         (select PYTHIA|T|DualLinks
             [ "dual-link-key" "standard-apollo" "smart-apollo" "consumer-lane" "iz-active"
               "linked-at" "updated-at" ]
             (where "iz-active" (= false))
         )
     )
-    (defun URD_ActiveDualLinkSet:[string] ()
+    (defun URH_ActiveDualLinkSet:[string] ()
         @doc "Active dual-link-key strings for Pythia cache mirror."
         (map
             (lambda (row:object) (at "dual-link-key" row))
             (select PYTHIA|T|DualLinks ["dual-link-key"] (where "iz-active" (= true)))
         )
     )
-    (defun URD_ApiKeyByConsumer:object (smart-apollo:string)
+    (defun URH_ApiKeyByConsumer:object (smart-apollo:string)
         @doc "Auth-path lookup by Smart Π. consumer half (select on DualLinks)."
         (let
             (
@@ -1164,7 +1164,7 @@
             )
         )
     )
-    (defun URD_ListPythDaily:[object{PythiaLedgerV2.PYTHIA|S|PythDaily}] (from:integer to:integer)
+    (defun URH_ListPythDaily:[object{PythiaLedgerV2.PYTHIA|S|PythDaily}] (from:integer to:integer)
         @doc "Bounded daily delta rows for charting (inclusive range; empty when invalid)."
         (if
             (fold (or) false

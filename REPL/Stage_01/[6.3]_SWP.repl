@@ -2775,13 +2775,13 @@
     ;(ref-TS01-C2::VST|C_RepurposeSleeping patron s-vst 25 emma patron)
     [
         (format "<<<<<>>>>>{}" [p])
-        (format "Emma has {} {} in total, owned nonces are {}"[(ref-DPOF::UR_AccountSupply s-vst emma) s-vst (ref-DPOF::URD_AccountNonces emma s-vst)])
+        (format "Emma has {} {} in total, owned nonces are {}"[(ref-DPOF::UR_AccountSupply s-vst emma) s-vst (ref-DPOF::URH_AccountNonces emma s-vst)])
         (format "<<<<<>>>>>{}" [p])
         (format "Emma VST supply is {}" [(ref-DPTF::UR_AccountSupply vst emma)])
         (format "Emma has on Nonce {} exactly {} units" [24 (ref-DPOF::UR_NonceSupply s-vst 24)])
         (format "<<<<<>>>>>{}" [p])
         (format "<<<<<>>>>>{}" [p])
-        (format "AH has {} {} in total after repurpose, owned nonces are {}"[(ref-DPOF::UR_AccountSupply s-vst patron) s-vst (ref-DPOF::URD_AccountNonces patron s-vst)])
+        (format "AH has {} {} in total after repurpose, owned nonces are {}"[(ref-DPOF::UR_AccountSupply s-vst patron) s-vst (ref-DPOF::URH_AccountNonces patron s-vst)])
     ]
 )
 
@@ -2824,11 +2824,11 @@
     ;(ref-TS01-C2::VST|C_Merge KST.EMMA KST.EMMA s-vesta (enumerate 1 30))
     ;(ref-TS01-C2::VST|C_MergeAll KST.EMMA KST.EMMA s-vesta)
     ;(ref-TS01-C2::VST|C_RepurposeMerge KST.EMMA s-vesta (enumerate 1 10) KST.EMMA KST.ANHD)
-    (ref-TS01-C2::VST|C_RepurposeMerge KST.EMMA s-vesta (ref-DPOF::URD_AccountNonces KST.EMMA s-vesta) KST.EMMA KST.ANHD)
+    (ref-TS01-C2::VST|C_RepurposeMerge KST.EMMA s-vesta (ref-DPOF::URH_AccountNonces KST.EMMA s-vesta) KST.EMMA KST.ANHD)
     [
-        (format "Emma has {} {} in total, owned nonces are {}"[(ref-DPOF::UR_AccountSupply s-vesta KST.EMMA) s-vesta (ref-DPOF::URD_AccountNonces KST.EMMA s-vesta)])
+        (format "Emma has {} {} in total, owned nonces are {}"[(ref-DPOF::UR_AccountSupply s-vesta KST.EMMA) s-vesta (ref-DPOF::URH_AccountNonces KST.EMMA s-vesta)])
         (format "Emma VST supply is {}" [(ref-DPTF::UR_AccountSupply "VST-98c486052a51" KST.EMMA)])
-        (format "Ah has {} {} in total, owned nonces are {}"[(ref-DPOF::UR_AccountSupply s-vesta KST.ANHD) s-vesta (ref-DPOF::URD_AccountNonces KST.ANHD s-vesta)])
+        (format "Ah has {} {} in total, owned nonces are {}"[(ref-DPOF::UR_AccountSupply s-vesta KST.ANHD) s-vesta (ref-DPOF::URH_AccountNonces KST.ANHD s-vesta)])
         (format "Ah VST supply is {}" [(ref-DPTF::UR_AccountSupply "VST-98c486052a51" KST.ANHD)])
     ]
 )
@@ -2875,7 +2875,7 @@
     ;(ref-TS01-C2::VST|C_Merge KST.EMMA KST.EMMA "Z|VST-98c486052a51" (enumerate 1 30))
     (ref-TS01-C2::VST|C_Vest patron patron emma ouro 250.0 3600 7200 20)
     [
-        (format "Emma has {} {} in total, owned nonces are {}"[(ref-DPOF::UR_AccountSupply v-ouro emma) v-ouro (ref-DPOF::URD_AccountNonces emma v-ouro)])
+        (format "Emma has {} {} in total, owned nonces are {}"[(ref-DPOF::UR_AccountSupply v-ouro emma) v-ouro (ref-DPOF::URH_AccountNonces emma v-ouro)])
         (format "Emma OURO supply is {}" [(ref-DPTF::UR_AccountSupply ouro emma)])
     ]
 )
@@ -2928,7 +2928,7 @@
     [
         ;(format "Account Nonce Balance is {}" [(ref-DPOF::UR_NonceSupply v-ouro 1)])
         ;(format "Culled Amount is {}" [(ref-VST::URC_CullMetaDataAmount emma v-ouro 1)])
-        (format "Emma has {} {} in total, owned nonces are {}"[(ref-DPOF::UR_AccountSupply v-ouro emma) v-ouro (ref-DPOF::URD_AccountNonces emma v-ouro)])
+        (format "Emma has {} {} in total, owned nonces are {}"[(ref-DPOF::UR_AccountSupply v-ouro emma) v-ouro (ref-DPOF::URH_AccountNonces emma v-ouro)])
         (format "Emma OURO supply is {}" [(ref-DPTF::UR_AccountSupply ouro emma)])
         (format "Emma GAS supply is {}" [(ref-DPTF::UR_AccountSupply "GAS-98c486052a51" emma)])
     ]
@@ -3017,7 +3017,7 @@
     ;[
     ;    ;(format "Account Nonce Balance is {}" [(ref-DPOF::UR_NonceSupply v-ouro 1)])
     ;    ;(format "Culled Amount is {}" [(ref-VST::URC_CullMetaDataAmount emma v-ouro 1)])
-    ;    (format "AH has {} {} in total, owned nonces are {}"[(ref-DPOF::UR_AccountSupply "V|OURO-98c486052a51" KST.ANHD) "V|OURO-98c486052a51" (ref-DPOF::URD_AccountNonces KST.ANHD "V|OURO-98c486052a51")])
+    ;    (format "AH has {} {} in total, owned nonces are {}"[(ref-DPOF::UR_AccountSupply "V|OURO-98c486052a51" KST.ANHD) "V|OURO-98c486052a51" (ref-DPOF::URH_AccountNonces KST.ANHD "V|OURO-98c486052a51")])
     ;    (format "AH OURO supply is {}" [(ref-DPTF::UR_AccountSupply "OURO-98c486052a51" KST.ANHD)])
     ;]
     (ref-DALOS::CAP_EnforceAccountOwnership dalos)
@@ -3571,7 +3571,7 @@
 ;;measured, on this codebase's real organically-grown ~102-pool topology (7
 ;;representative pairs, 1-8 hops), that best-of-3 never actually found anything
 ;;better than first-found there — so the LIVE default routing path
-;;(SWP|CC_SmartSwapNoSlippage -> URC_HopperActive -> URCX_Hopper) now uses
+;;(SWP|CC_SmartSwapNoSlippage -> URC_HopperActive -> URCx_Hopper) now uses
 ;;first-found only. On THIS deliberately-adversarial topology specifically, that
 ;;means the live path now takes the worse route — proven directly below, not
 ;;glossed over. SWPT::URC_ComputeAlternateRoutes itself is unchanged and still
@@ -3603,7 +3603,7 @@
         (active-swpairs:[string] (ref-SWP::URC_ActiveSwpairs))
         (alt-routes:[[string]] (ref-SWPT::URC_ComputeAlternateRoutes "OURO-98c486052a51" "TSTZ-98c486052a51" active-swpairs))
         (alt-candidates:[object{SwapperIssueV3.Hopper}]
-            (map (lambda (nodes:[string]) (ref-SWPI::URCX_HopperForNodes nodes 10000.0 active-swpairs)) alt-routes)
+            (map (lambda (nodes:[string]) (ref-SWPI::URCx_HopperForNodes nodes 10000.0 active-swpairs)) alt-routes)
         )
         (alt-best-val:decimal (at 0 (take -1 (at "output-values" (ref-SWPI::UC_BestHopper alt-candidates)))))
     )
@@ -4889,7 +4889,7 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
-(begin-tx "SWP|TX 032z2b - #38M/M4 proof: UCX_GraphNodeLinks single-pass rewrite, same result + gas at ~102 active pools")
+(begin-tx "SWP|TX 032z2b - #38M/M4 proof: UCx_GraphNodeLinks single-pass rewrite, same result + gas at ~102 active pools")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 032z2b - #38M/M4 proof · 01 · isolated graph-search call on the real P2-scale topology ====
@@ -4897,7 +4897,7 @@
 ;;Same worst-case 6-hop pair (W1 -> W7) and the same real ~102-active-pool
 ;;topology SWP|TX 032z2/#34 already measured for the full self-searching
 ;;swap. Calling SWPT::URC_ComputeGraphPath directly isolates JUST the
-;;graph-search cost (URC_MakeGraph -> UC_BFS -> UCX_GraphNodeLinks, the
+;;graph-search cost (URC_MakeGraph -> UC_BFS -> UCx_GraphNodeLinks, the
 ;;exact functions M4/#38 flags and this fix touches) from swap-execution
 ;;overhead (fees/transfers/mints) that has nothing to do with M4.
 (let*
@@ -5272,7 +5272,7 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
-(begin-tx "SWP|TX 032z6b - #65bL Phase 1 PathCache-Wired URCX_Hopper Proof (Permanent)")
+(begin-tx "SWP|TX 032z6b - #65bL Phase 1 PathCache-Wired URCx_Hopper Proof (Permanent)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 032z6b - #65bL Phase 1 PathCache Proof · 01 · env-sigs (caps) ====
@@ -5284,12 +5284,12 @@
 )
 ;;#65bL Phase 1 fix: SWP|TX 032z6 (immediately above) already warmed SWPT|PathCache
 ;;for <verify-first-token>->DWK via the bundle-based swap's own cache self-warming
-;;(XI_RegisterBundlePaths). URCX_Hopper (16_SWPI.pact) now checks SWPT|PathCache
+;;(XI_RegisterBundlePaths). URCx_Hopper (16_SWPI.pact) now checks SWPT|PathCache
 ;;(via URC_ReadPathCacheFresh) before running its own live best-of-3 BFS search.
 ;;This proves: (1) a warm-cache call returns EXACTLY the cached node path, not some
 ;;independently-recomputed route that just happens to match, and (2) the real
 ;;measured gas cost of that same lookup, for later comparison against the same
-;;scenario with Phase 1's URCX_Hopper wiring reverted (see the stashed before/after
+;;scenario with Phase 1's URCx_Hopper wiring reverted (see the stashed before/after
 ;;measurement in the session notes for this fix).
 ;;==== SWP|TX 032z6b - #65bL Phase 1 PathCache Proof · 02 · recompute + measured call ====
 (print "--- [SWP|TX 032z6b - #65bL Phase 1 PathCache Proof · 02 · recompute + measured call] ---")
@@ -5953,7 +5953,7 @@
 ;;OLD, still-fully-intact <UC_BFS> (used unchanged by
 ;;<URC_ShortestChainPerNode> for any caller wanting chains to every
 ;;reachable node) against the NEW <UC_BFSTargeted> (used by
-;;<URC_ComputeGraphPath> via <URCX_ShortestChainToTarget>) on the exact
+;;<URC_ComputeGraphPath> via <URCx_ShortestChainToTarget>) on the exact
 ;;same real ~102-active-pool topology and the same deliberately-adversarial
 ;;6-hop pair (W1 -> W7, the same pair SWP|TX 032z2b/#38M/M4 isolates) —
 ;;both functions remain real, permanent production code paths, so this
@@ -6287,7 +6287,7 @@
         ;(format "ASMT2 IZZZZ {}" [asmt2])
         ;(format "Separator is {}" ["||||||||||||||||||||||||||||||||||||||||||||||||||||||"])
         ;(format "Shares is {}" [shares])
-        ;(format "AH has {} {} in total, owned nonces are {}"[(ref-DPOF::UR_AccountSupply s-vst patron) s-vst (ref-DPOF::URD_AccountNonces patron s-vst)])
+        ;(format "AH has {} {} in total, owned nonces are {}"[(ref-DPOF::UR_AccountSupply s-vst patron) s-vst (ref-DPOF::URH_AccountNonces patron s-vst)])
         ;(format "Pool LP Capacity is {}" [(ref-SWP::URC_LpCapacity pool)])
         ;(format "Pool Token Supplies are {}" [(ref-SWP::UR_PoolTokenSupplies pool)])
         ;(format "AH has {} {}" [(ref-DPTF::UR_AccountSupply f-lp patron) f-lp])
@@ -6572,14 +6572,14 @@
             [
                 (ref-DPOF::UR_AccountSupply s-vst emma) 
                 s-vst 
-                (ref-DPOF::URD_AccountNonces emma s-vst)
+                (ref-DPOF::URH_AccountNonces emma s-vst)
             ]
         )
         (format "Emma has {} {} in total, owned nonces are {}" 
             [
                 (ref-DPOF::UR_AccountSupply s-ouro emma) 
                 s-ouro 
-                (ref-DPOF::URD_AccountNonces emma s-ouro)
+                (ref-DPOF::URH_AccountNonces emma s-ouro)
             ]
         )
     ]

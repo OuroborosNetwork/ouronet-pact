@@ -269,7 +269,7 @@
     (defun UC|GasPrice:decimal (full-price:decimal trigger:bool)
         (if trigger 0.0 full-price)
     )
-    (defun UCX_ToggleAddOrSwapIfp:decimal (swpair:string toggle:bool)
+    (defun UCx_ToggleAddOrSwapIfp:decimal (swpair:string toggle:bool)
         @doc "Ignis preview for <SwapperV3.C_ToggleAddOrSwap> (Talos <SWP|C_ToggleAddLiquidity> / <SWP|C_ToggleSwapCapability>)."
         (let
             (
@@ -323,7 +323,7 @@
             )
         )
     )
-    (defun UCX_AddLiquidity:object{OuronetInfoV1.ClientInfo} 
+    (defun UCx_AddLiquidity:object{OuronetInfoV1.ClientInfo} 
         (
             patron:string account:string swpair:string input-amounts:[decimal]
             asymmetric-collection:bool gaseous-collection:bool stoa-pid:decimal
@@ -413,7 +413,7 @@
         )
     )
     ;;
-    (defun UCX_Swap:object{OuronetInfoV1.ClientInfo}
+    (defun UCx_Swap:object{OuronetInfoV1.ClientInfo}
         (patron:string account:string swpair:string dsid:object{UtilitySwpV1.DirectSwapInputData})
         (let
             (
@@ -1857,7 +1857,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Heavy-wipes all viable DPOF {} Nonces from Account {}" [id sa])]
                 [(format "Succesfully heavy-wiped DPOF {} from Account {}" [id sa])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_WipeCumulator id (ref-DPOF::URDC_WipePure account id))))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_WipeCumulator id (ref-DPOF::URHC_WipePure account id))))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
@@ -2415,7 +2415,7 @@
             (
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
                 ;;
-                (owned-nonces:[integer] (sort (ref-DPOF::URD_AccountNonces account dpof)))
+                (owned-nonces:[integer] (sort (ref-DPOF::URH_AccountNonces account dpof)))
                 (l:integer (length owned-nonces))
             )
             (map

@@ -109,8 +109,8 @@
             (if (= prom-pre 0.0)
                 (let
                     (
-                        (anhd-kbn:[integer] (ref-DPDC::URD_AccountNonces owner kbn-id false))
-                        (emma-kbn:[integer] (ref-DPDC::URD_AccountNonces emma kbn-id false))
+                        (anhd-kbn:[integer] (ref-DPDC::URH_AccountNonces owner kbn-id false))
+                        (emma-kbn:[integer] (ref-DPDC::URH_AccountNonces emma kbn-id false))
                     )
                     (if (not (contains auryn-rain-nonce anhd-kbn))
                         (enforce (contains auryn-rain-nonce emma-kbn) "A03: EMMA must hold Auryn Rain KBN nonce 75")
@@ -189,7 +189,7 @@
         (elk-nonces:[integer]
             (filter
                 (lambda (n:integer) (= 1 (ref-ANK::URC_ConformNonces kbn-id [n] trait-key trait-value)))
-                (ref-DPDC::URD_AccountNonces owner kbn-id false)))
+                (ref-DPDC::URH_AccountNonces owner kbn-id false)))
     )
     (env-sigs
         [
@@ -252,7 +252,7 @@
                 (lambda (n:integer)
                     (and (= 1 (ref-ANK::URC_ConformNonces kbn-id [n] "Eyes" "Elk0nite Unity Glasses"))
                          (= 1 (ref-ANK::URC_ConformNonces kbn-id [n] "Rarity" "Common"))))
-                (ref-DPDC::URD_AccountNonces owner kbn-id false)))
+                (ref-DPDC::URH_AccountNonces owner kbn-id false)))
     )
     (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] } { "key": "PK_Lumy", "caps": [] } ])
     (if (> (length single-nonces) 0)
@@ -311,7 +311,7 @@
                 (lambda (n:integer)
                     (and (= 1 (ref-ANK::URC_ConformNonces kbn-id [n] "Rarity" "Legendary"))
                          (= 1 (ref-ANK::URC_ConformNonces kbn-id [n] "Background" "Elite-Auryn Rain"))))
-                (ref-DPDC::URD_AccountNonces owner kbn-id false)))
+                (ref-DPDC::URH_AccountNonces owner kbn-id false)))
     )
     (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] } { "key": "PK_Lumy", "caps": [] } ])
     (print (format "<(EMMA Legendary-Elite-Auryn conforming nonces)> => \"{}\"" [multi-nonces]))

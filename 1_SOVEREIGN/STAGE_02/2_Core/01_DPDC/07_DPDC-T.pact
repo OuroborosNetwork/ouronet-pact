@@ -334,7 +334,7 @@
             )
             (if (= how-many-zeroes 0)
                 agg
-                (UDCX_AggregatedRoyalties
+                (UDCx_AggregatedRoyalties
                     ;;Creators
                     (map
                         (lambda (idx:integer) (at idx agg-creators))
@@ -356,7 +356,7 @@
                 (ref-U|LST:module{StringProcessorV1} U|LST)
                 (d-creators:[string] (distinct creators))
             )
-            (UDCX_AggregatedRoyalties
+            (UDCx_AggregatedRoyalties
                 d-creators
                 (fold
                     (lambda
@@ -591,7 +591,7 @@
             (ref-IGNIS::UDC_ConstructOutputCumulator total sender zero-elite [])
         )
     )
-    (defun UDCX_AggregatedRoyalties:object{DpdcTransferV1.AggregatedRoyalties}
+    (defun UDCx_AggregatedRoyalties:object{DpdcTransferV1.AggregatedRoyalties}
         (a:[string] b:[decimal])
         {"creators"         : a
         ,"ignis-royalties"  : b}
@@ -747,7 +747,7 @@
             )
             (if (or ivgz (= sum 0.0))
                 (with-capability (IGNIS|C>NO-ROYALTY )
-                    (UDCX_AggregatedRoyalties [""] [0.0])
+                    (UDCx_AggregatedRoyalties [""] [0.0])
                 )
                 (let
                     (
@@ -765,7 +765,7 @@
                         )
                         (enumerate 0 (- (length agg-creators) 1))
                     )
-                    (UDCX_AggregatedRoyalties agg-creators agg-royalties)
+                    (UDCx_AggregatedRoyalties agg-creators agg-royalties)
                 )
             )
         )

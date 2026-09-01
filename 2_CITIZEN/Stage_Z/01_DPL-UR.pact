@@ -463,7 +463,7 @@
                     (
                         (supply:decimal (ref-DPTF::UR_AccountSupply c-rbt recoverer))
                         (met:integer (ref-DALOS::UR_Elite-Tier-Major recoverer))
-                        (pstate:[integer] (ref-ATS::URCX_PSL ats recoverer))
+                        (pstate:[integer] (ref-ATS::URCx_PSL ats recoverer))
                         (slots-in-use:[integer] (take met pstate))
                         (occupied-count:integer
                             (fold
@@ -771,7 +771,7 @@
                 (wallet-gstoa-value:decimal (URC_TrueFungibleAmountPrice gstoa-id wallet-gstoa p6))
                 (wallet-hgstoa:decimal (ref-DPOF::UR_AccountSupply hgstoa-id account))
                 (wallet-hgstoa-value:decimal (URC_TrueFungibleAmountPrice gstoa-id wallet-hgstoa p6))
-                (wallet-hgstoa-nonces-count:integer (length (ref-DPOF::URD_AccountNonces account hgstoa-id)))
+                (wallet-hgstoa-nonces-count:integer (length (ref-DPOF::URH_AccountNonces account hgstoa-id)))
                 (wallet-gstoa-total:decimal (+ wallet-gstoa wallet-hgstoa))
                 (wallet-gstoa-total-value:decimal (URC_TrueFungibleAmountPrice gstoa-id wallet-gstoa-total p6))
                 ;;
@@ -1197,7 +1197,7 @@
                 (dpof-supply:decimal (ref-DPOF::UR_Supply dpof-id))
                 (dpof-total-nonces:integer (ref-DPOF::UR_NoncesUsed dpof-id))
                 (dpof-excluded-nonces:integer (ref-DPOF::UR_NoncesExcluded dpof-id))
-                (wallet-nonces:[integer] (ref-DPOF::URD_AccountNonces account dpof-id))
+                (wallet-nonces:[integer] (ref-DPOF::URH_AccountNonces account dpof-id))
                 ;;
                 (token-worth-in-dollarz:decimal
                     (ref-SWPI::URC_TokenDollarPrice dptf-id stoa-pid)
@@ -1264,7 +1264,7 @@
                     (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
                     (wallet-supply:decimal (ref-DPOF::UR_AccountSupply lp-id-sleeping-counterpart account))
                     (lp-supply:decimal(ref-DPOF::UR_Supply lp-id-sleeping-counterpart))
-                    (wallet-nonces:[integer] (ref-DPOF::URD_AccountNonces account lp-id-sleeping-counterpart))
+                    (wallet-nonces:[integer] (ref-DPOF::URH_AccountNonces account lp-id-sleeping-counterpart))
                     ;;
                     (pool-value:[decimal] (ref-SWPI::URC_PoolValue swpair))
                     (token-worth-in-stoa:decimal (at 1 pool-value))
@@ -1667,8 +1667,8 @@
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 ;;
                 (total-tf-number:integer (length (keys DPTF.DPTF|PropertiesTable)))
-                (held-tf:[string] (ref-DPTF::URD_HeldTrueFungibles account))
-                (mngd-tf:[string] (ref-DPTF::URD_OwnedTrueFungibles account))
+                (held-tf:[string] (ref-DPTF::URH_HeldTrueFungibles account))
+                (mngd-tf:[string] (ref-DPTF::URH_OwnedTrueFungibles account))
             )
             {"total-true-fungible-number"       : total-tf-number
             ,"held-tf"                          : held-tf
@@ -1800,8 +1800,8 @@
                 ;;
                 (total-of-number:integer (length (keys DPOF.DPOF|T|Properties)))
                 (total-of-nonces:integer (length (keys DPOF.DPOF|T|Nonces)))
-                (held-of:[string] (ref-DPOF::URD_HeldOrtoFungibles account))
-                (mngd-of:[string] (ref-DPOF::URD_OwnedOrtoFungibles account))
+                (held-of:[string] (ref-DPOF::URH_HeldOrtoFungibles account))
+                (mngd-of:[string] (ref-DPOF::URH_OwnedOrtoFungibles account))
             )
             {"total-orto-fungible-number"       : total-of-number
             ,"total-orto-fungible-nonces"       : total-of-nonces
@@ -1932,16 +1932,16 @@
                 ;;
                 (tsfn:integer (length (keys DPDC.DPSF|T|Properties)))
                 (tsfnn:integer (length (keys DPDC.DPSF|T|Nonces)))
-                (held-sf:[string] (ref-DPDC::URD_HeldCollectables account true))
+                (held-sf:[string] (ref-DPDC::URH_HeldCollectables account true))
                 (held-sf-no:integer (length held-sf))
-                (mngd-sf:[string] (ref-DPDC::URD_OwnedCollectables account true))
+                (mngd-sf:[string] (ref-DPDC::URH_OwnedCollectables account true))
                 (mngd-sf-no:integer (length mngd-sf))
                 ;;
                 (tnfn:integer (length (keys DPDC.DPNF|T|Properties)))
                 (tnfnn:integer (length (keys DPDC.DPNF|T|Nonces)))
-                (held-nf:[string] (ref-DPDC::URD_HeldCollectables account false))
+                (held-nf:[string] (ref-DPDC::URH_HeldCollectables account false))
                 (held-nf-no:integer (length held-nf))
-                (mngd-nf:[string] (ref-DPDC::URD_OwnedCollectables account false))
+                (mngd-nf:[string] (ref-DPDC::URH_OwnedCollectables account false))
                 (mngd-nf-no:integer (length mngd-nf))
             )
             {"total-semi-fungible-number"       : tsfn
@@ -1965,7 +1965,7 @@
             (
                 (ref-DPDC:module{DpdcV1} DPDC)
                 ;;
-                (wallet-nonces:[object] (ref-DPDC::URD_AccountNoncesWithSupplies account dpdc-id son))
+                (wallet-nonces:[object] (ref-DPDC::URH_AccountNoncesWithSupplies account dpdc-id son))
             )
             {"t1"                               : (ref-DPDC::UR_Name dpdc-id son)
             ,"t2"                               : dpdc-id
@@ -2103,7 +2103,7 @@
                         false
                         (if son
                             burn-role
-                            (and burn-role (UCX_NonFungibleNonceExistance dpdc-id fn true))
+                            (and burn-role (UCx_NonFungibleNonceExistance dpdc-id fn true))
                         )
                     )
                 )
@@ -2113,7 +2113,7 @@
                         (fold (and) true 
                             [
                                 (ref-DPDC::UR_CA|R-Create dpdc-id son account)
-                                (UCX_NonFungibleNonceExistance dpdc-id fn false)
+                                (UCx_NonFungibleNonceExistance dpdc-id fn false)
                             ]
                         )
                     )
@@ -2160,7 +2160,7 @@
             }
         )
     )
-    (defun UCX_NonFungibleNonceExistance:bool (dpdc-id:string nonce:integer existance:bool)
+    (defun UCx_NonFungibleNonceExistance:bool (dpdc-id:string nonce:integer existance:bool)
         (let
             (
                 (ref-DPDC:module{DpdcV1} DPDC)

@@ -460,18 +460,18 @@
             ;:Unfreeze Emma
             (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron id emma f)
         ;;
-        (format "Emma Nonces are {}" [(ref-DPDC::URD_AccountNonces emma id true)])
+        (format "Emma Nonces are {}" [(ref-DPDC::URH_AccountNonces emma id true)])
 
         
         
         
         ;(ref-TS02-C1::DPSF|C_WipeNonces patron id emma)
         ;(format "Nonce 1 Supply is {}" [(ref-DPDC::UR_AccountNonceSupply emma id true 1)])
-        ;(format "SemiFungible Account Holdings are: {}" [(ref-DPDC::URD_AccountNoncesWithSupplies id emma)])
-        ;(format "Nonce 1 Supply again is {}" [(ref-DPDC::UC_SupplyFronNonceBalanceObject (ref-DPDC::URD_AccountNoncesWithSupplies id emma) 1 true)])
+        ;(format "SemiFungible Account Holdings are: {}" [(ref-DPDC::URH_AccountNoncesWithSupplies id emma)])
+        ;(format "Nonce 1 Supply again is {}" [(ref-DPDC::UC_SupplyFronNonceBalanceObject (ref-DPDC::URH_AccountNoncesWithSupplies id emma) 1 true)])
 
         ;(ref-DPDC::UR_NonceSupply id true 1)
-        ;(ref-DPDC::URD_AccountNoncesWithSupplies id emma)
+        ;(ref-DPDC::URH_AccountNoncesWithSupplies id emma)
     ]
 )
 
@@ -514,7 +514,7 @@
         (t:bool true)
         (f:bool false)
         ;;
-        ;(wipe-obj:object{DpdcManagementV1.RemovableNonces} (ref-DPDC-MNG::URDC_WipePure emma id true))
+        ;(wipe-obj:object{DpdcManagementV1.RemovableNonces} (ref-DPDC-MNG::URHC_WipePure emma id true))
     )
     [
         ;wipe-obj
@@ -665,8 +665,8 @@
         (format "Transfer Cumulator is {}" [(ref-DPDC-T::URCi_MultiTransferCumulator [id] [true] patron emma [[1]] [[7]])])
         (ref-TS02-C1::DPSF|C_TransferNonce patron id patron lumy 1 7 false)
         (format "Patron has after transfer {} IGNIS" [(ref-DALOS::UR_TF_AccountSupply patron false)])
-        (ref-DPDC::URD_AccountNoncesWithSupplies lumy id true)
-        (ref-DPDC::URD_AccountNoncesWithSupplies emma id true)
+        (ref-DPDC::URH_AccountNoncesWithSupplies lumy id true)
+        (ref-DPDC::URH_AccountNoncesWithSupplies emma id true)
     ]
 )
 
@@ -723,12 +723,12 @@
 
         ;;
         (ref-DPDC::UR_AccountSupply emma id1 true 1)
-        ;(ref-DPDC::URD_AccountNoncesWithSupplies emma id1 true)
-        ;(ref-DPDC::URD_AccountNoncesWithSupplies lumy id1 true)
-        (ref-DPDC::URD_AccountNoncesWithSupplies lumy id1 true)
-        (ref-DPDC::URD_AccountNoncesWithSupplies emma id1 true)
-        (ref-DPDC::URD_AccountNonces lumy id1 true)
-        (ref-DPDC::URD_AccountNonces emma id1 true)
+        ;(ref-DPDC::URH_AccountNoncesWithSupplies emma id1 true)
+        ;(ref-DPDC::URH_AccountNoncesWithSupplies lumy id1 true)
+        (ref-DPDC::URH_AccountNoncesWithSupplies lumy id1 true)
+        (ref-DPDC::URH_AccountNoncesWithSupplies emma id1 true)
+        (ref-DPDC::URH_AccountNonces lumy id1 true)
+        (ref-DPDC::URH_AccountNonces emma id1 true)
 
         ;(ref-TS01-C2::ATS|C_Curl patron patron "Auryndex-98c486052a51" "EliteAuryndex-98c486052a51" "OURO-98c486052a51" 5.0)
         (ref-TS02-C1::DPDC|C_MultiTransfer
@@ -792,11 +792,11 @@
     (ref-TS02-C1::DPSF|C_MakeFragments patron patron id 1 3)
     (ref-TS02-C1::DPSF|C_MergeFragments patron patron id -1 3000)
     [
-        (ref-DPDC::URD_AccountNoncesWithSupplies patron id true)
-        (ref-DPDC::URD_AccountNonces patron id true)
+        (ref-DPDC::URH_AccountNoncesWithSupplies patron id true)
+        (ref-DPDC::URH_AccountNonces patron id true)
         ;; [{"nonce": -1,"supply": 0} {"nonce": 1,"supply": 10000} {"nonce": 2,"supply": 1000} {"nonce": 3,"supply": 100} {"nonce": 4,"supply": 105}]
 
-        (ref-DPDC::URD_AccountNoncesWithSupplies dpdc id true)
+        (ref-DPDC::URH_AccountNoncesWithSupplies dpdc id true)
         ;(ref-DPDC::UR_AccountNonceSupply dpdc id true -1)
         ;(ref-DPDC::UR_AccountFragments id true patron)
     ]
@@ -846,7 +846,7 @@
             1
         )
         
-        (ref-DPDC::URD_AccountNonces patron id true)
+        (ref-DPDC::URH_AccountNonces patron id true)
         (ref-DPDC::UR_AccountNonceSupply patron id true 1)
         (ref-DPDC::UR_AccountNonceSupply patron id true 2)
         (ref-DPDC::UR_AccountNonceSupply patron id true 3)

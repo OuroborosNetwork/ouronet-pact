@@ -83,9 +83,9 @@
     ;;
     ;;  [URD]
     ;;
-    (defun URD_HeldTrueFungibles:[string] (account:string))
-    (defun URD_ExistingTrueFungibles:[string] (dptf:string))
-    (defun URD_OwnedTrueFungibles:[string] (account:string))
+    (defun URH_HeldTrueFungibles:[string] (account:string))
+    (defun URH_ExistingTrueFungibles:[string] (dptf:string))
+    (defun URH_OwnedTrueFungibles:[string] (account:string))
     ;;
     ;;  [UEV]
     ;;
@@ -1349,7 +1349,7 @@
     ;;  [URD]
     ;;
     ;;1] Returns True Fungibles held by Account
-    (defun URD_HeldTrueFungibles:[string] (account:string)
+    (defun URH_HeldTrueFungibles:[string] (account:string)
         @doc "Returns all True Fungibles that are registered for a given <account>"
         (map (at "id")
             (select DPTF|BalanceTable ["id"]
@@ -1358,7 +1358,7 @@
         )
     )
     ;;2]Returns Accounts that are registered for a given DPTF
-    (defun URD_ExistingTrueFungibles:[string] (dptf:string)
+    (defun URH_ExistingTrueFungibles:[string] (dptf:string)
         @doc "Returns all Ouronet Accounts that are registered for a given <dptf>"
         (map (at "account")
             (select DPTF|BalanceTable ["account"]
@@ -1367,7 +1367,7 @@
         )
     )
     ;;3]Returns a List of DPTFs that are owned by a given Account for Management Purposes
-    (defun URD_OwnedTrueFungibles:[string] (account:string)
+    (defun URH_OwnedTrueFungibles:[string] (account:string)
         @doc "Returns all True Fungibles that can be managed by the given <account>"
         (map (at "id")
             (select DPTF|PropertiesTable ["id"]

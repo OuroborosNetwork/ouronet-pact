@@ -221,8 +221,8 @@
         (format "Create Role for AH on MVST is {}" [(ref-DPOF::UR_R-Create dpmf patron)])
         ;(format "Emma has MVST {}" [(ref-DPOF::UR_AccountSupply dpmf emma)])
         
-        (format "Emma has nonces of MVST {}" [(ref-DPOF::URD_AccountNonces emma dpmf)])
-        (format "AH has nonces of MVST {}" [(ref-DPOF::URD_AccountNonces patron dpmf)])
+        (format "Emma has nonces of MVST {}" [(ref-DPOF::URH_AccountNonces emma dpmf)])
+        (format "AH has nonces of MVST {}" [(ref-DPOF::URH_AccountNonces patron dpmf)])
         
         (format "cco <can-change-owner> is {}" [(ref-DPOF::UR_CanChangeOwner dpmf)])
         (format "cu <can-upgrade> is {}" [(ref-DPOF::UR_CanUpgrade dpmf)])

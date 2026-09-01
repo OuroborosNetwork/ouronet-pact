@@ -57,8 +57,8 @@
           (
               (stake-amt:decimal (if (> lp-bal 100.0) 100.0 lp-bal))
               (rain-nonces:[integer] [ouro-rain-nonce auryn-rain-nonce elite-auryn-nonce])
-              (emma-kbn:[integer] (ref-DPDC::URD_AccountNonces emma kbn-id false))
-              (anhd-kbn:[integer] (ref-DPDC::URD_AccountNonces owner kbn-id false))
+              (emma-kbn:[integer] (ref-DPDC::URH_AccountNonces emma kbn-id false))
+              (anhd-kbn:[integer] (ref-DPDC::URH_AccountNonces owner kbn-id false))
           )
           (map
               (lambda (n:integer)
@@ -76,7 +76,7 @@
           )
           (let
               (
-                  (anhd-unstaked:[integer] (ref-DPDC::URD_AccountNonces owner kbn-id false))
+                  (anhd-unstaked:[integer] (ref-DPDC::URH_AccountNonces owner kbn-id false))
               )
               (map
                   (lambda (n:integer)

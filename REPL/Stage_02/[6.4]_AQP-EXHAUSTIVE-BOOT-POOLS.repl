@@ -23,7 +23,7 @@
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "DHWonderCoach"))
         (score-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryWonderCoach"))
-        (nonces:[integer] (ref-DPDC::URD_AccountNonces owner dhwc-id true))
+        (nonces:[integer] (ref-DPDC::URH_AccountNonces owner dhwc-id true))
         (stake-nonce:integer (at 0 nonces))
         (stake-amt:integer (ref-DPDC::UR_AccountNonceSupply owner dhwc-id true (at 0 nonces)))
         (deb-pre:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore owner pool-id score-id))
@@ -158,12 +158,12 @@
                         (let
                             (
                                 (prom-pre:decimal (ref-ANK::UR_UB|AggregatePromile owner silver-score))
-                                (anhd-kbn:[integer] (ref-DPDC::URD_AccountNonces owner kbn-id false))
+                                (anhd-kbn:[integer] (ref-DPDC::URH_AccountNonces owner kbn-id false))
                             )
                             (if (= prom-pre 0.0)
                                 (let
                                     (
-                                        (emma-kbn:[integer] (ref-DPDC::URD_AccountNonces emma kbn-id false))
+                                        (emma-kbn:[integer] (ref-DPDC::URH_AccountNonces emma kbn-id false))
                                     )
                                     (if (not (contains auryn-rain-nonce anhd-kbn))
                                         (enforce (contains auryn-rain-nonce emma-kbn) "BP03: EMMA must hold Auryn Rain KBN nonce 75")

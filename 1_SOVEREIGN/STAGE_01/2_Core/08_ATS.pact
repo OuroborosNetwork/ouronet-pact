@@ -110,9 +110,9 @@
     ;;
     ;;  [URD]
     ;;
-    (defun URD_HeldAutostakePairs:[string] (account:string))
-    (defun URD_ExistingAutostakePairs:[string] (ats:string))
-    (defun URD_OwnedAutostakePairs:[string] (account:string))
+    (defun URH_HeldAutostakePairs:[string] (account:string))
+    (defun URH_ExistingAutostakePairs:[string] (ats:string))
+    (defun URH_OwnedAutostakePairs:[string] (account:string))
     ;;
     ;;  [UEV]
     ;;
@@ -1314,7 +1314,7 @@
             (fold
                 (lambda
                     (acc:decimal item:object{UtilityAtsV2.Awo})
-                    (+ acc (URCX_UnstakeObjectUnbondingValue atspair reward-token item))
+                    (+ acc (URCx_UnstakeObjectUnbondingValue atspair reward-token item))
                 )
                 0.0
                 (UR_P0 atspair account)
@@ -1322,14 +1322,14 @@
             (fold
                 (lambda
                     (acc:decimal item:integer)
-                    (+ acc (URCX_UnstakeObjectUnbondingValue atspair reward-token (UR_P1-7 atspair account item)))
+                    (+ acc (URCx_UnstakeObjectUnbondingValue atspair reward-token (UR_P1-7 atspair account item)))
                 )
                 0.0
                 (enumerate 1 7)
             )
         )
     )
-    (defun URCX_UnstakeObjectUnbondingValue (atspair:string reward-token:string io:object{UtilityAtsV2.Awo})
+    (defun URCx_UnstakeObjectUnbondingValue (atspair:string reward-token:string io:object{UtilityAtsV2.Awo})
         (let
             (
                 (rtp:integer (URC_RewardTokenPosition atspair reward-token))
@@ -1367,12 +1367,12 @@
                 (elite:bool (UR_EliteMode atspair))
             )
             (if elite
-                (URCX_ElitePosition atspair c-rbt-amount account)
-                (URCX_NonElitePosition atspair account)
+                (URCx_ElitePosition atspair c-rbt-amount account)
+                (URCx_NonElitePosition atspair account)
             )
         )
     )
-    (defun URCX_ElitePosition:integer (atspair:string c-rbt-amount:decimal account:string)
+    (defun URCx_ElitePosition:integer (atspair:string c-rbt-amount:decimal account:string)
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
@@ -1388,7 +1388,7 @@
                 (let
                     (
                         (iz-ea-id:bool (if (= ea-id c-rbt) true false))
-                        (pstate:[integer] (URCX_PSL atspair account))
+                        (pstate:[integer] (URCx_PSL atspair account))
                         (met:integer (ref-DALOS::UR_Elite-Tier-Major account))
                         (ea-supply:decimal (ref-DPTF::UR_AccountSupply ea-id account))
                         (t-ea-supply:decimal (ref-ELITE::URC_EliteAurynzSupply account))
@@ -1408,11 +1408,11 @@
                         (+ (at 0 search-res) 1)
                     )
                 )
-                (URCX_NonElitePosition atspair account)
+                (URCx_NonElitePosition atspair account)
             )
         )
     )
-    (defun URCX_NonElitePosition:integer (atspair:string account:string)
+    (defun URCx_NonElitePosition:integer (atspair:string account:string)
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
@@ -1422,7 +1422,7 @@
                 -1
                 (let
                     (
-                        (pstate:[integer] (URCX_PSL atspair account))
+                        (pstate:[integer] (URCx_PSL atspair account))
                         (available:[integer] (take positions pstate))
                         (search-res:[integer] (ref-U|LST::UC_Search available 1))
                     )
@@ -1434,17 +1434,17 @@
             )
         )
     )
-    (defun URCX_PSL:[integer] (atspair:string account:string)
+    (defun URCx_PSL:[integer] (atspair:string account:string)
         (fold
             (lambda
                 (acc:[integer] idx:integer)
-                (+ acc [(URCX_PosSt atspair account idx)])
+                (+ acc [(URCx_PosSt atspair account idx)])
             )
             []
             (enumerate 1 7)
         )
     )
-    (defun URCX_PosSt:integer (atspair:string account:string position:integer)
+    (defun URCx_PosSt:integer (atspair:string account:string position:integer)
         (let
             (
                 (ref-U|INT:module{OuronetIntegersV1} U|INT)
@@ -1472,19 +1472,19 @@
                 ,"P7"   : hybrid}
                 { "P1" := p1, "P2" := p2, "P3" := p3, "P4" := p4, "P5" := p5, "P6" := p6, "P7" := p7 }
                 (cond
-                    ((= position 1) (URCX_PosObjSt atspair p1))
-                    ((= position 2) (URCX_PosObjSt atspair p2))
-                    ((= position 3) (URCX_PosObjSt atspair p3))
-                    ((= position 4) (URCX_PosObjSt atspair p4))
-                    ((= position 5) (URCX_PosObjSt atspair p5))
-                    ((= position 6) (URCX_PosObjSt atspair p6))
-                    ((= position 7) (URCX_PosObjSt atspair p7))
+                    ((= position 1) (URCx_PosObjSt atspair p1))
+                    ((= position 2) (URCx_PosObjSt atspair p2))
+                    ((= position 3) (URCx_PosObjSt atspair p3))
+                    ((= position 4) (URCx_PosObjSt atspair p4))
+                    ((= position 5) (URCx_PosObjSt atspair p5))
+                    ((= position 6) (URCx_PosObjSt atspair p6))
+                    ((= position 7) (URCx_PosObjSt atspair p7))
                     0
                 )
             )
         )
     )
-    (defun URCX_PosObjSt:integer (atspair:string input-obj:object{UtilityAtsV2.Awo})
+    (defun URCx_PosObjSt:integer (atspair:string input-obj:object{UtilityAtsV2.Awo})
         @doc "Computes the state of an uncoil positional object, \
         \ to see if it the position it is on can be used for uncoiling \
         \ <-1> = closed; <0> = occupied; <1> = opened"
@@ -1581,13 +1581,13 @@
     ;;
     (defun URC_RewardBearingTokenAmounts:object{AutostakeV2.CoilData}
         (ats:string rt:string amount:decimal)
-        (URCX_RBT-Amount ats rt amount 1)
+        (URCx_RBT-Amount ats rt amount 1)
     )
     (defun URC_RewardBearingTokenAmountsWithHibernation:object{AutostakeV2.CoilData}
         (ats:string rt:string amount:decimal hibernation-dayz:integer)
-        (URCX_RBT-Amount ats rt amount hibernation-dayz)
+        (URCx_RBT-Amount ats rt amount hibernation-dayz)
     )
-    (defun URCX_RBT-Amount:object{AutostakeV2.CoilData} 
+    (defun URCx_RBT-Amount:object{AutostakeV2.CoilData} 
         (ats:string rt:string amount:decimal dayz:integer)
         (let
             (
@@ -1646,7 +1646,7 @@
     ;;  [URD]
     ;;
     ;;1] Returns ATSPairs that Have the Account registered in the ATS|Ledger (has used unstake)
-    (defun URD_HeldAutostakePairs:[string] (account:string)
+    (defun URH_HeldAutostakePairs:[string] (account:string)
         @doc "Returns all ATSpairs for which the <account> existsin the ATS|Ledger Table"
         (map (at "id")
             (select ATS|Ledger ["id"]
@@ -1655,7 +1655,7 @@
         )
     )
     ;;2]Returns Accounts have used a given ATSpair Unstaking
-    (defun URD_ExistingAutostakePairs:[string] (ats:string)
+    (defun URH_ExistingAutostakePairs:[string] (ats:string)
         @doc "Returns all Ouronet Accounts that exist in a given <ats> ATS|Ledger"
         (map (at "account")
             (select ATS|Ledger ["account"]
@@ -1664,7 +1664,7 @@
         )
     )
     ;;3]Returns a List of ATSPairs that are owned by a given Account for Management Purposes
-    (defun URD_OwnedAutostakePairs:[string] (account:string)
+    (defun URH_OwnedAutostakePairs:[string] (account:string)
         @doc "Returns all ATSPairs that can be managed by the given <account>"
         (map (at "id")
             (select ATS|Pairs ["id"]
@@ -1827,7 +1827,7 @@
         ,"unbonding"    : d
         ,"royalty"      : e}
     )
-    (defun UDCX_Balance:object{ATS|BalanceSchemaV2}
+    (defun UDCx_Balance:object{ATS|BalanceSchemaV2}
         (
             a:[object{UtilityAtsV2.Awo}] b:object{UtilityAtsV2.Awo} 
             c:object{UtilityAtsV2.Awo} d:object{UtilityAtsV2.Awo}
@@ -2753,7 +2753,7 @@
                 (n:object{UtilityAtsV2.Awo} (UDC_MakeNegativeUnstakeObject atspair))
             )
             (with-default-read ATS|Ledger (UC_AtspairAccount atspair account)
-                (UDCX_Balance [zero] n n n n n n n atspair account)
+                (UDCx_Balance [zero] n n n n n n n atspair account)
                 {"P0"       := p0
                 ,"P1"       := p1
                 ,"P2"       := p2
@@ -2765,7 +2765,7 @@
                 ,"id"       := i
                 ,"account"  := a}
                 (write ATS|Ledger (UC_AtspairAccount atspair account)
-                    (UDCX_Balance p0 p1 p2 p3 p4 p5 p6 p7 i a)
+                    (UDCx_Balance p0 p1 p2 p3 p4 p5 p6 p7 i a)
                 )
             )
         )
@@ -2779,7 +2779,7 @@
             (with-read ATS|Ledger (UC_AtspairAccount atspair account)
                 {"P0" := p0, "P1" := p1, "P2" := p2, "P3" := p3, "P4" := p4, "P5" := p5, "P6" := p6, "P7" := p7, "id" := id, "account" := acc}
                 (update ATS|Ledger (UC_AtspairAccount atspair account)
-                    (UDCX_Balance
+                    (UDCx_Balance
                         (ref-U|ATS::UC_MultiReshapeUnstakeObject p0 rp)
                         (ref-U|ATS::UC_ReshapeUnstakeObject p1 rp)
                         (ref-U|ATS::UC_ReshapeUnstakeObject p2 rp)
@@ -2912,7 +2912,7 @@
             )
             (if (not can-coil)
                 (UDC_CanCoil can-coil [])
-                (UDC_CanCoil can-coil (UCX_RewardTokenPairsByHibernate dptf true))
+                (UDC_CanCoil can-coil (UCx_RewardTokenPairsByHibernate dptf true))
             )
         )
     )
@@ -2925,7 +2925,7 @@
             )
             (if (not can-constrict)
                 (UDC_CanConstrict can-constrict [])
-                (UDC_CanConstrict can-constrict (UCX_RewardTokenPairsByHibernate dptf false))
+                (UDC_CanConstrict can-constrict (UCx_RewardTokenPairsByHibernate dptf false))
             )
         )
     )
@@ -2940,7 +2940,7 @@
                 (UDC_CanCurl false [])
                 (let
                     (
-                        (chains:[[string]] (UCX_ChainsRtRbtSecondRt dptf true))
+                        (chains:[[string]] (UCx_ChainsRtRbtSecondRt dptf true))
                     )
                     (UDC_CanCurl (< 0 (length chains)) chains)
                 )
@@ -2957,7 +2957,7 @@
                 (UDC_CanBrumate false [])
                 (let
                     (
-                        (chains:[[string]] (UCX_ChainsRtRbtSecondRt dptf false))
+                        (chains:[[string]] (UCx_ChainsRtRbtSecondRt dptf false))
                     )
                     (UDC_CanBrumate (< 0 (length chains)) chains)
                 )
@@ -2965,14 +2965,14 @@
         )
     )
     ;;
-    (defun UCX_ChainsRtRbtSecondRt:[[string]] (dptf:string second-pairs-non-hibernate:bool)
+    (defun UCx_ChainsRtRbtSecondRt:[[string]] (dptf:string second-pairs-non-hibernate:bool)
         @doc "Two-hop chains [ats1 ats2]: <dptf> is RT on non-hibernating ats1; cold RBT of ats1 \
             \ is RT on ats2. Second hop uses <second-pairs-non-hibernate> (true: non-hibernate ats2 \
             \ only; false: hibernating ats2 only). Enforces ats1 != ats2."
         (let
             (
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (pair1-candidates:[string] (UCX_RewardTokenPairsByHibernate dptf true))
+                (pair1-candidates:[string] (UCx_RewardTokenPairsByHibernate dptf true))
             )
             (fold
                 (lambda (acc:[[string]] ats1:string)
@@ -2980,7 +2980,7 @@
                         (
                             (rbt:string (UR_ColdRewardBearingToken ats1))
                             (pair2-candidates:[string]
-                                (UCX_FilterHibernatedAts
+                                (UCx_FilterHibernatedAts
                                     (ref-DPTF::UR_RewardToken rbt)
                                     second-pairs-non-hibernate
                                 )
@@ -3006,17 +3006,17 @@
             )
         )
     )
-    (defun UCX_RewardTokenPairsByHibernate:[string] (dptf:string non-hibernate:bool)
+    (defun UCx_RewardTokenPairsByHibernate:[string] (dptf:string non-hibernate:bool)
         @doc "ATS pairs where <dptf> is a reward token, filtered by hibernation: \
             \ <non-hibernate> true keeps non-hibernating pairs only; false keeps hibernating only."
         (let
             (
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
             )
-            (UCX_FilterHibernatedAts (ref-DPTF::UR_RewardToken dptf) non-hibernate)
+            (UCx_FilterHibernatedAts (ref-DPTF::UR_RewardToken dptf) non-hibernate)
         )
     )
-    (defun UCX_FilterHibernatedAts:[string] (ats-pairs:[string] out-or-in:bool)
+    (defun UCx_FilterHibernatedAts:[string] (ats-pairs:[string] out-or-in:bool)
         @doc "If <out-or-in> is true, return <ats-pairs> with hibernating pairs removed; \
             \ if false, return only hibernating pairs."
         (if out-or-in

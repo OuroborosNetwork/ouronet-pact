@@ -121,7 +121,7 @@
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
-        (owned-nonces:[integer] (ref-DPOF::URD_AccountNonces owner-id dpof-id))
+        (owned-nonces:[integer] (ref-DPOF::URH_AccountNonces owner-id dpof-id))
     )
     (print "--- [TX-FVT-05 · 01 · ensure owner holds ≥1 MVST nonce] ---")
     (if (= (length owned-nonces) 0)
@@ -130,7 +130,7 @@
     )
     (let
         (
-            (nonces:[integer] (ref-DPOF::URD_AccountNonces owner-id dpof-id))
+            (nonces:[integer] (ref-DPOF::URH_AccountNonces owner-id dpof-id))
             (stake-nonce:integer (at 0 nonces))
             (stake-amount:decimal (ref-DPOF::UR_NonceSupply dpof-id stake-nonce))
             (pre-supply:decimal (ref-DPOF::UR_AccountSupply dpof-id owner-id))
@@ -216,7 +216,7 @@
         (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
         (vault-konto:string (ref-ANK::GOV|AQP|SC_NAME))
-        (staked-nonces:[integer] (ref-DPOF::URD_AccountNonces vault-konto dpof-id))
+        (staked-nonces:[integer] (ref-DPOF::URH_AccountNonces vault-konto dpof-id))
         (stake-nonce:integer (at 0 staked-nonces))
         (stake-amount:decimal (ref-DPOF::UR_NonceSupply dpof-id stake-nonce))
         (pre-supply:decimal (ref-DPOF::UR_AccountSupply dpof-id owner-id))
@@ -291,7 +291,7 @@
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
-        (owned-nonces:[integer] (ref-DPOF::URD_AccountNonces owner-id dpof-id))
+        (owned-nonces:[integer] (ref-DPOF::URH_AccountNonces owner-id dpof-id))
     )
     (enforce (> (length owned-nonces) 0) "owner needs an MVST nonce for the non-self proof")
     (if (ref-DPOF::UR_R-Frozen dpof-id owner-id)
@@ -539,7 +539,7 @@
         )
         (enforce (> inv-count 0) "URD must show OF vacate inventory before full vacate")
         (enforce (> tracker-pre 0.0) "tracker must hold stake before full vacate")
-        (print (format "<(URD_AQP|VacateOfInventory leg-count)> => {}" [inv-count]))
+        (print (format "<(URH_AQP|VacateOfInventory leg-count)> => {}" [inv-count]))
         (print "--- [TX-FVT-08 · 01 · CC_FullVacate (agnostic, class-2 OF; pool-id only)] ---")
         (print (format "<(TS02-C3.AQP-POOL|CC_FullVacate)> => \"{}\"" [
             (ref-TS02-C3::AQP-POOL|CC_FullVacate patron pool-id)
@@ -555,7 +555,7 @@
             )
             (map print
                 [
-                    (format "<(URD_AQP|VacateOfInventory leg-count)> post => \"{}\"" [inv-post])
+                    (format "<(URH_AQP|VacateOfInventory leg-count)> post => \"{}\"" [inv-post])
                     (format "<(AQP-POOL|DPOFTrackerBalance)> => \"{}\"" [tracker-post])
                     (format "<(AQP-SCORE|deb-score)> => \"{}\"" [deb-user])
                     (format "<(FVT|unclaimed-count)> => \"{}\"" [unclaimed])
@@ -601,7 +601,7 @@
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "OfStakePool"))
-        (owned:[integer] (ref-DPOF::URD_AccountNonces owner-id dpof-id))
+        (owned:[integer] (ref-DPOF::URH_AccountNonces owner-id dpof-id))
     )
     (if (= (length owned) 0)
         (print "SKIP TX-FVT-OF-NNS: owner holds no MVST nonce post-vacate")
@@ -672,7 +672,7 @@
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
-        (owned:[integer] (ref-DPOF::URD_AccountNonces owner-id dpof-id))
+        (owned:[integer] (ref-DPOF::URH_AccountNonces owner-id dpof-id))
         (split-smart:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
         )
@@ -723,7 +723,7 @@
                 )
                 (let
                     (
-                        (owned-post:[integer] (ref-DPOF::URD_AccountNonces owner-id dpof-id))
+                        (owned-post:[integer] (ref-DPOF::URH_AccountNonces owner-id dpof-id))
                         (nns2:integer (ref-AQP::UR_AQP|PoolNns pool-id))
                         (unn2:integer (ref-AQP::UR_AQP|UserUnn pool-id beneficiary-id))
                         (base-post:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore beneficiary-id pool-id score-id))

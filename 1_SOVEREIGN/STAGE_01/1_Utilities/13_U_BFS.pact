@@ -66,16 +66,16 @@
                 (if (= idx 0)
                     (let
                         (
-                            (links:[string] (UCX_GraphNodeLinks graph in))
+                            (links:[string] (UCx_GraphNodeLinks graph in))
                         )
                         (if (!= links [BAR])
                             (let
                                 (
-                                    (primal-que:[object{BreadthFirstSearchV1.QE}] (UCX_PrimalQE links in))
-                                    (chains-to-add:[[string]] (UCX_GetChains primal-que))
-                                    (acc1-visited:object{BreadthFirstSearchV1.BFS} (UDCX_AddVisited acc (+ [in] links)))
-                                    (acc2-que:object{BreadthFirstSearchV1.BFS} (UDCX_AddToQue acc1-visited primal-que))
-                                    (acc3-chains:object{BreadthFirstSearchV1.BFS} (UDCX_AddChains acc2-que chains-to-add))
+                                    (primal-que:[object{BreadthFirstSearchV1.QE}] (UCx_PrimalQE links in))
+                                    (chains-to-add:[[string]] (UCx_GetChains primal-que))
+                                    (acc1-visited:object{BreadthFirstSearchV1.BFS} (UDCx_AddVisited acc (+ [in] links)))
+                                    (acc2-que:object{BreadthFirstSearchV1.BFS} (UDCx_AddToQue acc1-visited primal-que))
+                                    (acc3-chains:object{BreadthFirstSearchV1.BFS} (UDCx_AddChains acc2-que chains-to-add))
                                 )
                                 acc3-chains
                             )
@@ -92,11 +92,11 @@
                                 (let
                                     (
                                         (ref-U|LST:module{StringProcessorV1} U|LST)
-                                        (first-qe-node-links:[string] (UCX_GraphNodeLinks graph first-qe-node))
+                                        (first-qe-node-links:[string] (UCx_GraphNodeLinks graph first-qe-node))
                                         (visited:[string] (at "visited" acc))
-                                        (not-visited:[string] (UCX_FilterVisited visited first-qe-node-links))
+                                        (not-visited:[string] (UCx_FilterVisited visited first-qe-node-links))
                                         (lnv:integer (length not-visited))
-                                        (acc0-rm:object{BreadthFirstSearchV1.BFS} (UDCX_RmFromQue acc))
+                                        (acc0-rm:object{BreadthFirstSearchV1.BFS} (UDCx_RmFromQue acc))
                                         (new-que:[object{BreadthFirstSearchV1.QE}]
                                             (if (= lnv 0)
                                                 EQE
@@ -105,7 +105,7 @@
                                                         (acc:[object{BreadthFirstSearchV1.QE}] idx2:integer)
                                                         (ref-U|LST::UC_AppL
                                                             acc
-                                                            (UDCX_ExtendChain first-qe (at idx2 not-visited))
+                                                            (UDCx_ExtendChain first-qe (at idx2 not-visited))
                                                         )
                                                     )
                                                     []
@@ -113,17 +113,17 @@
                                                 )
                                             )
                                         )
-                                        (chains-to-add:[[string]] (UCX_GetChains new-que))
-                                        (acc1-visited:object{BreadthFirstSearchV1.BFS} (UDCX_AddVisited acc0-rm not-visited))
+                                        (chains-to-add:[[string]] (UCx_GetChains new-que))
+                                        (acc1-visited:object{BreadthFirstSearchV1.BFS} (UDCx_AddVisited acc0-rm not-visited))
                                         (acc2-que:object{BreadthFirstSearchV1.BFS}
                                             (if (!= chains-to-add [[BAR]])
-                                                (UDCX_AddToQue acc1-visited new-que)
+                                                (UDCx_AddToQue acc1-visited new-que)
                                                 acc1-visited
                                             )
                                         )
                                         (acc3-chains:object{BreadthFirstSearchV1.BFS}
                                             (if (!= chains-to-add [[BAR]])
-                                                (UDCX_AddChains acc2-que chains-to-add)
+                                                (UDCx_AddChains acc2-que chains-to-add)
                                                 acc2-que
                                             )
                                         )
@@ -171,16 +171,16 @@
                 (if (= idx 0)
                     (let
                         (
-                            (links:[string] (UCX_GraphNodeLinks graph in))
+                            (links:[string] (UCx_GraphNodeLinks graph in))
                         )
                         (if (!= links [BAR])
                             (let
                                 (
-                                    (primal-que:[object{BreadthFirstSearchV1.QE}] (UCX_PrimalQE links in))
-                                    (chains-to-add:[[string]] (UCX_GetChains primal-que))
-                                    (acc1-visited:object{BreadthFirstSearchV1.BFS} (UDCX_AddVisited acc (+ [in] links)))
-                                    (acc2-que:object{BreadthFirstSearchV1.BFS} (UDCX_AddToQue acc1-visited primal-que))
-                                    (acc3-chains:object{BreadthFirstSearchV1.BFS} (UDCX_AddChains acc2-que chains-to-add))
+                                    (primal-que:[object{BreadthFirstSearchV1.QE}] (UCx_PrimalQE links in))
+                                    (chains-to-add:[[string]] (UCx_GetChains primal-que))
+                                    (acc1-visited:object{BreadthFirstSearchV1.BFS} (UDCx_AddVisited acc (+ [in] links)))
+                                    (acc2-que:object{BreadthFirstSearchV1.BFS} (UDCx_AddToQue acc1-visited primal-que))
+                                    (acc3-chains:object{BreadthFirstSearchV1.BFS} (UDCx_AddChains acc2-que chains-to-add))
                                 )
                                 acc3-chains
                             )
@@ -199,11 +199,11 @@
                                     (let
                                         (
                                             (ref-U|LST:module{StringProcessorV1} U|LST)
-                                            (first-qe-node-links:[string] (UCX_GraphNodeLinks graph first-qe-node))
+                                            (first-qe-node-links:[string] (UCx_GraphNodeLinks graph first-qe-node))
                                             (visited:[string] (at "visited" acc))
-                                            (not-visited:[string] (UCX_FilterVisited visited first-qe-node-links))
+                                            (not-visited:[string] (UCx_FilterVisited visited first-qe-node-links))
                                             (lnv:integer (length not-visited))
-                                            (acc0-rm:object{BreadthFirstSearchV1.BFS} (UDCX_RmFromQue acc))
+                                            (acc0-rm:object{BreadthFirstSearchV1.BFS} (UDCx_RmFromQue acc))
                                             (new-que:[object{BreadthFirstSearchV1.QE}]
                                                 (if (= lnv 0)
                                                     EQE
@@ -212,7 +212,7 @@
                                                             (acc:[object{BreadthFirstSearchV1.QE}] idx2:integer)
                                                             (ref-U|LST::UC_AppL
                                                                 acc
-                                                                (UDCX_ExtendChain first-qe (at idx2 not-visited))
+                                                                (UDCx_ExtendChain first-qe (at idx2 not-visited))
                                                             )
                                                         )
                                                         []
@@ -220,17 +220,17 @@
                                                     )
                                                 )
                                             )
-                                            (chains-to-add:[[string]] (UCX_GetChains new-que))
-                                            (acc1-visited:object{BreadthFirstSearchV1.BFS} (UDCX_AddVisited acc0-rm not-visited))
+                                            (chains-to-add:[[string]] (UCx_GetChains new-que))
+                                            (acc1-visited:object{BreadthFirstSearchV1.BFS} (UDCx_AddVisited acc0-rm not-visited))
                                             (acc2-que:object{BreadthFirstSearchV1.BFS}
                                                 (if (!= chains-to-add [[BAR]])
-                                                    (UDCX_AddToQue acc1-visited new-que)
+                                                    (UDCx_AddToQue acc1-visited new-que)
                                                     acc1-visited
                                                 )
                                             )
                                             (acc3-chains:object{BreadthFirstSearchV1.BFS}
                                                 (if (!= chains-to-add [[BAR]])
-                                                    (UDCX_AddChains acc2-que chains-to-add)
+                                                    (UDCx_AddChains acc2-que chains-to-add)
                                                     acc2-que
                                                 )
                                             )
@@ -249,11 +249,11 @@
             (enumerate 0 (- (length graph) 1))
         )
     )
-    (defun UCX_GraphNodeLinks:[string] (graph:[object{BreadthFirstSearchV1.GraphNode}] node:string)
+    (defun UCx_GraphNodeLinks:[string] (graph:[object{BreadthFirstSearchV1.GraphNode}] node:string)
         @doc "Scans a Graph for a Node, outputing its links. \
             \ #38M/M4 fix: single-pass <filter> directly over <graph>, matching by \
             \ the \"node\" field, replacing the old rebuild-the-whole-name-list \
-            \ (UCX_GraphNodes) + linear search (UC_Search) + re-index-by-position \
+            \ (UCx_GraphNodes) + linear search (UC_Search) + re-index-by-position \
             \ chain — that old path did two full O(V) passes plus a reindex per \
             \ call; this does one. Same O(V) cost per lookup either way (Pact has \
             \ no O(1) hash-index over a plain list argument, so a full BFS \
@@ -262,7 +262,7 @@
             \ preserved exactly: first matching entry by original <graph> order, \
             \ same as the old UC_Search-based lookup. <filter> is empty-list-safe \
             \ by construction, so the #37M/M3-style length guard isn't needed \
-            \ here. UCX_GraphNodes (its only caller) removed as dead code."
+            \ here. UCx_GraphNodes (its only caller) removed as dead code."
         (let
             (
                 (matches:[object{BreadthFirstSearchV1.GraphNode}]
@@ -278,7 +278,7 @@
             )
         )
     )
-    (defun UCX_PrimalQE:[object{BreadthFirstSearchV1.QE}] (links:[string] node:string)
+    (defun UCx_PrimalQE:[object{BreadthFirstSearchV1.QE}] (links:[string] node:string)
         @doc "Computes the Primal Que Elements in a BFS Object, which is the first Que Element that is created"
         (let
             (
@@ -300,7 +300,7 @@
             )
         )
     )
-    (defun UCX_GetChains:[[string]] (input:[object{BreadthFirstSearchV1.QE}])
+    (defun UCx_GetChains:[[string]] (input:[object{BreadthFirstSearchV1.QE}])
         @doc "Extracts a list of chains from a list of Que Objects"
         (let
             (
@@ -319,7 +319,7 @@
             )
         )
     )
-    (defun UCX_FilterVisited:[string] (visited:[string] new-nodes:[string])
+    (defun UCx_FilterVisited:[string] (visited:[string] new-nodes:[string])
         @doc "Filters a list of new-nodes by a list of visited nodes"
         (let
             (
@@ -344,25 +344,25 @@
             )
         )
     )
-    (defun UCX_ExStrLst:[string] (to-extend:[string] elements:[string])
+    (defun UCx_ExStrLst:[string] (to-extend:[string] elements:[string])
         (if (= [BAR] to-extend)
             elements
             (+ to-extend elements)
         )
     )
-    (defun UCX_ExQeLst:[object{BreadthFirstSearchV1.QE}] (input:[object{BreadthFirstSearchV1.QE}] que-element:[object{BreadthFirstSearchV1.QE}])
+    (defun UCx_ExQeLst:[object{BreadthFirstSearchV1.QE}] (input:[object{BreadthFirstSearchV1.QE}] que-element:[object{BreadthFirstSearchV1.QE}])
         (if (and (= (at 0 EQE) (at 0 input)) (= (length input) 1))
             que-element
             (+ input que-element)
         )
     )
-    (defun UCX_RmFirstQeList:[object{BreadthFirstSearchV1.QE}] (input:[object{BreadthFirstSearchV1.QE}])
+    (defun UCx_RmFirstQeList:[object{BreadthFirstSearchV1.QE}] (input:[object{BreadthFirstSearchV1.QE}])
         (if (> (length input) 1)
             (drop 1 input)
             EQE
         )
     )
-    (defun UCX_ExStrArrLst:[[string]] (to-extend:[[string]] elements:[[string]])
+    (defun UCx_ExStrArrLst:[[string]] (to-extend:[[string]] elements:[[string]])
         (if (= [[BAR]] to-extend)
             elements
             (+ to-extend elements)
@@ -372,7 +372,7 @@
     ;;{F1}  [URC]
     ;;{F2}  [UEV]
     ;;{F3}  [UDC]
-    (defun UDCX_ExtendChain:object{BreadthFirstSearchV1.QE} (input:object{BreadthFirstSearchV1.QE} element:string)
+    (defun UDCx_ExtendChain:object{BreadthFirstSearchV1.QE} (input:object{BreadthFirstSearchV1.QE} element:string)
         @doc "Extends a Que Element with a new element"
         (let
             (
@@ -384,32 +384,32 @@
             }
         )
     )
-    (defun UDCX_AddVisited:object{BreadthFirstSearchV1.BFS} (input:object{BreadthFirstSearchV1.BFS} visited:[string])
+    (defun UDCx_AddVisited:object{BreadthFirstSearchV1.BFS} (input:object{BreadthFirstSearchV1.BFS} visited:[string])
         {
-            "visited":  (UCX_ExStrLst (at "visited" input) visited),
+            "visited":  (UCx_ExStrLst (at "visited" input) visited),
             "que":      (at "que" input),
             "chains":   (at "chains" input)
         }
     )
-    (defun UDCX_AddToQue:object{BreadthFirstSearchV1.BFS} (input:object{BreadthFirstSearchV1.BFS} que:[object{BreadthFirstSearchV1.QE}])
+    (defun UDCx_AddToQue:object{BreadthFirstSearchV1.BFS} (input:object{BreadthFirstSearchV1.BFS} que:[object{BreadthFirstSearchV1.QE}])
         {
             "visited":  (at "visited" input),
-            "que":      (UCX_ExQeLst (at "que" input) que),
+            "que":      (UCx_ExQeLst (at "que" input) que),
             "chains":   (at "chains" input)
         }
     )
-    (defun UDCX_RmFromQue:object{BreadthFirstSearchV1.BFS} (input:object{BreadthFirstSearchV1.BFS})
+    (defun UDCx_RmFromQue:object{BreadthFirstSearchV1.BFS} (input:object{BreadthFirstSearchV1.BFS})
         {
             "visited":  (at "visited" input),
-            "que":      (UCX_RmFirstQeList (at "que" input)),
+            "que":      (UCx_RmFirstQeList (at "que" input)),
             "chains":   (at "chains" input)
         }
     )
-    (defun UDCX_AddChains:object{BreadthFirstSearchV1.BFS} (input:object{BreadthFirstSearchV1.BFS} chains-to-add:[[string]])
+    (defun UDCx_AddChains:object{BreadthFirstSearchV1.BFS} (input:object{BreadthFirstSearchV1.BFS} chains-to-add:[[string]])
         {
             "visited":  (at "visited" input),
             "que":      (at "que" input),
-            "chains":   (UCX_ExStrArrLst (at "chains" input) chains-to-add)
+            "chains":   (UCx_ExStrArrLst (at "chains" input) chains-to-add)
         }
     )
     ;;{F4}  [CAP]

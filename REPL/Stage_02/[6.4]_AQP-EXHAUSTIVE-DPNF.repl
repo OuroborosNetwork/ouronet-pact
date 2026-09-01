@@ -26,7 +26,7 @@
         (pool-id:string (ref-U|DALOS::UDC_Makeid "DHBloodshed"))
         (score-main:string (ref-U|DALOS::UDC_Makeid "Bloodshed"))
         (score-sub:string (ref-U|DALOS::UDC_Makeid "SubsidiaryBloodshed"))
-        (nonces:[integer] (ref-DPDC::URD_AccountNonces owner dhb-id false))
+        (nonces:[integer] (ref-DPDC::URH_AccountNonces owner dhb-id false))
         (stake-nonce:integer (at 0 nonces))
     )
     (env-sigs
@@ -70,7 +70,7 @@
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "DHNosferatu"))
         (score-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryNosferatu"))
-        (nonces:[integer] (ref-DPDC::URD_AccountNonces owner dhn-id false))
+        (nonces:[integer] (ref-DPDC::URH_AccountNonces owner dhn-id false))
         (stake-nonce:integer (at 0 nonces))
     )
     (env-sigs
@@ -112,7 +112,7 @@
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "DHBunnies"))
         (score-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryBunnies"))
-        (nonces:[integer] (ref-DPDC::URD_AccountNonces owner kbn-id false))
+        (nonces:[integer] (ref-DPDC::URH_AccountNonces owner kbn-id false))
     )
     (env-sigs
         [

@@ -76,7 +76,7 @@
     (defun URC_Swpairs:[string] ())
     (defun URC_LpComposer:[string] (pool-tokens:[object{PoolTokens}] weights:[decimal] amp:decimal))
     ;;
-    (defun URD_OwnedSwapPairs:[string] (account:string))
+    (defun URH_OwnedSwapPairs:[string] (account:string))
     ;;
     (defun UEV_FeeSplit (input:object{FeeSplit}))
     (defun UEV_id (swpair:string))
@@ -1098,7 +1098,7 @@
     ;;  [URD]
     ;;
     ;;1]Returns a List of SWPPairs that are owned by a given Account for Management Purposes
-    (defun URD_OwnedSwapPairs:[string] (account:string)
+    (defun URH_OwnedSwapPairs:[string] (account:string)
         @doc "Returns all SWPPairs that can be managed by the given <account>"
         (map (at "id")
             (select SWP|Pairs ["id"]

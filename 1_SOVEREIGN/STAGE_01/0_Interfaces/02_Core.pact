@@ -450,9 +450,9 @@
     ;;
     ;;  [URD]
     ;;
-    (defun URD_HeldAutostakePairs:[string] (account:string))
-    (defun URD_ExistingAutostakePairs:[string] (ats:string))
-    (defun URD_OwnedAutostakePairs:[string] (account:string))
+    (defun URH_HeldAutostakePairs:[string] (account:string))
+    (defun URH_ExistingAutostakePairs:[string] (ats:string))
+    (defun URH_OwnedAutostakePairs:[string] (account:string))
     ;;
     ;;  [UEV]
     ;;
@@ -604,7 +604,7 @@
     (defun URC_ActiveSwpairs:[string] ())
     (defun URC_LpComposer:[string] (pool-tokens:[object{PoolTokens}] weights:[decimal] amp:decimal))
     ;;
-    (defun URD_OwnedSwapPairs:[string] (account:string))
+    (defun URH_OwnedSwapPairs:[string] (account:string))
     ;;
     (defun UEV_FeeSplit (input:object{FeeSplit}))
     (defun UEV_id (swpair:string))
@@ -690,11 +690,11 @@
     (defun URC_ActivatedSet:[string] ())
     ;;
     ;; [URD] — directory scans for Pythia website
-    (defun URD_ApiKeyCount:integer ())
-    (defun URD_ApiKeyCountStr:string ())
-    (defun URD_ListAllApiKeys:[object] ())
-    (defun URD_ListActivatedApiKeys:[object] ())
-    (defun URD_ListInactiveApiKeys:[object] ())
+    (defun URH_ApiKeyCount:integer ())
+    (defun URH_ApiKeyCountStr:string ())
+    (defun URH_ListAllApiKeys:[object] ())
+    (defun URH_ListActivatedApiKeys:[object] ())
+    (defun URH_ListInactiveApiKeys:[object] ())
     ;;
     ;; [INFO] UI previews — deploy/rename: STOA via STOA|C_CollectWTEx in TS01-C4
     (defun PYTHIA|INFO_DeployApiKey:object{OuronetInfoV1.ClientInfo}
@@ -756,11 +756,11 @@
     (defun URC_ActivatedSet:[string] ())
     ;;
     ;; [URD] — directory scans for Pythia website
-    (defun URD_ApiKeyCount:integer ())
-    (defun URD_ApiKeyCountStr:string ())
-    (defun URD_ListAllApiKeys:[object] ())
-    (defun URD_ListActivatedApiKeys:[object] ())
-    (defun URD_ListInactiveApiKeys:[object] ())
+    (defun URH_ApiKeyCount:integer ())
+    (defun URH_ApiKeyCountStr:string ())
+    (defun URH_ListAllApiKeys:[object] ())
+    (defun URH_ListActivatedApiKeys:[object] ())
+    (defun URH_ListInactiveApiKeys:[object] ())
     ;;
     ;; [INFO] UI previews — deploy/rename: STOA via STOA|C_CollectWTEx; deactivate: IGNIS via C_Collect
     (defun PYTHIA|INFO_DeployApiKey:object{OuronetInfoV1.ClientInfo}
@@ -833,13 +833,13 @@
     (defun UR_ApiKeyBySlot:object (standard-apollo:string))
     (defun UR_ApiKeyByConsumer:object (smart-apollo:string))
     ;;
-    (defun URD_ApiKeyCount:integer ())
-    (defun URD_ApiKeyCountStr:string ())
-    (defun URD_DualLinkCount:integer ())
-    (defun URD_ListAllApiKeys:[object] ())
-    (defun URD_ListAllDualLinks:[object] ())
-    (defun URD_ListActiveDualLinks:[object] ())
-    (defun URD_ListInactiveDualLinks:[object] ())
+    (defun URH_ApiKeyCount:integer ())
+    (defun URH_ApiKeyCountStr:string ())
+    (defun URH_DualLinkCount:integer ())
+    (defun URH_ListAllApiKeys:[object] ())
+    (defun URH_ListAllDualLinks:[object] ())
+    (defun URH_ListActiveDualLinks:[object] ())
+    (defun URH_ListInactiveDualLinks:[object] ())
     ;;
     (defun PYTHIA|INFO_DeployApiKey:object{OuronetInfoV1.ClientInfo}
         (
@@ -903,7 +903,7 @@
     (defun UR_PythTotal|TotalMetrics:object{PYTHIA|S|PythMetrics} ())
     (defun UR_PythTotal|LastDay:integer ())
     (defun UR_PythDay:object{PYTHIA|S|PythDaily} (day:integer))
-    (defun URD_ListPythDaily:[object{PYTHIA|S|PythDaily}] (from:integer to:integer))
+    (defun URH_ListPythDaily:[object{PYTHIA|S|PythDaily}] (from:integer to:integer))
 )
 (interface PythiaLedgerV2BlockTime
     @doc "Frozen — never deployed. Block-time calendar day; single six-metric flush (superseded by batch PythiaLedgerV2 in 22_PYTHIA.pact)."
@@ -942,5 +942,5 @@
     (defun UR_PythTotal|TotalMetrics:object{PYTHIA|S|PythMetrics} ())
     (defun UR_PythTotal|LastDay:integer ())
     (defun UR_PythDay:object{PYTHIA|S|PythDaily} (day:integer))
-    (defun URD_ListPythDaily:[object{PYTHIA|S|PythDaily}] (from:integer to:integer))
+    (defun URH_ListPythDaily:[object{PYTHIA|S|PythDaily}] (from:integer to:integer))
 )

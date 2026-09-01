@@ -650,7 +650,7 @@
         (typeof-principal (create-principal g))
     )
     ;;{F0}  [UR]
-    (defun URD_AccountCounter ()
+    (defun URH_AccountCounter ()
         (format "Ouronet has {} real Accounts!"
             [(length (keys DALOS|AccountTable))]
         )

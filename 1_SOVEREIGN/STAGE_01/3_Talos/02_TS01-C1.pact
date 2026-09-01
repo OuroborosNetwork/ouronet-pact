@@ -1247,8 +1247,8 @@
         \ The object must be pre-read (dirty read) \
         \ \
         \ Example to retrieve the <removable-nonces-obj> \
-        \ <(URDC_WipePure account id)> ; to get the whole object \
-        \ <(UC_TakePureWipe (URDC_WipePure account id) 165)> ; to get only the first 165 units \
+        \ <(URHC_WipePure account id)> ; to get the whole object \
+        \ <(UC_TakePureWipe (URHC_WipePure account id) 165)> ; to get only the first 165 units \
         \ Aproximately xx Individual Wipes fit inside one TX (for NFTs)."
         (with-capability (P|TS)
             (let

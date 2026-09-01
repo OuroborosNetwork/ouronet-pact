@@ -617,7 +617,7 @@
         (remover:string ats:string reward-token:string accounts-with-ats-data:[string])
         @doc "Administrative Variant. Fix (audit finding #1C / C2b): <accounts-with-ats-data> is now \
             \ IGNORED — X_RemoveSecondary always re-derives the complete account list on-chain via \
-            \ <ATS.URD_ExistingAutostakePairs ats> itself, so a caller-supplied list can no longer be \
+            \ <ATS.URH_ExistingAutostakePairs ats> itself, so a caller-supplied list can no longer be \
             \ incomplete/stale and silently desync some accounts' stored positions. The parameter is kept \
             \ only for interface-signature compatibility (AutostakeUsageV1 is unchanged); do not rely on \
             \ its contents."
@@ -630,7 +630,7 @@
     (defun C_RemoveSecondary:object{IgnisCollectorV1.OutputCumulator}
         (remover:string ats:string reward-token:string)
         @doc "Client Variant. X_RemoveSecondary derives the complete account list itself via \
-            \ <ATS.URD_ExistingAutostakePairs ats>."
+            \ <ATS.URH_ExistingAutostakePairs ats>."
         (UEV_IMC)
         (with-capability (ATSU|C>REMOVE-SECONDARY ats reward-token)
             (X_RemoveSecondary remover ats reward-token)
@@ -1955,7 +1955,7 @@
     (defun X_RemoveSecondary:object{IgnisCollectorV1.OutputCumulator}
         (remover:string ats:string reward-token:string)
         @doc "Fix (audit finding #1C / C2): (1) the account list to reshape is ALWAYS derived on-chain \
-            \ here via <ATS.URD_ExistingAutostakePairs ats> — never trusted from a caller — so removal can \
+            \ here via <ATS.URH_ExistingAutostakePairs ats> — never trusted from a caller — so removal can \
             \ no longer skip an account and leave its stored positions desynced from the live reward-token \
             \ list (was C2b/C2c's root enabler). (2) the royalty bucket (RUR 3) is now migrated into the \
             \ primal RT exactly like resident/unbonding (RUR 1/2) — previously it was silently deleted with \
@@ -1981,7 +1981,7 @@
                 (royalty-sum:decimal (at remove-position (ref-ATS::UR_RewardTokenRUR ats 3)))
                 (remove-sum:decimal (+ (+ resident-sum unbound-sum) royalty-sum))
                 ;; Complete, on-chain-derived account list — never trusted from a caller (fix #1C/C2).
-                (accounts-with-ats-data:[string] (ref-ATS::URD_ExistingAutostakePairs ats))
+                (accounts-with-ats-data:[string] (ref-ATS::URH_ExistingAutostakePairs ats))
                 ;;
                 (ico1:object{IgnisCollectorV1.OutputCumulator}
                     (ref-IGNIS::UDC_ConstructOutputCumulator
