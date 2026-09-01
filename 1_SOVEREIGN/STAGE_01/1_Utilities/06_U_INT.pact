@@ -40,22 +40,19 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    ;;#45M fix: renamed UC_MaxInteger -> UEV_MaxInteger (was a UC_-prefixed function that crashed
-    ;;uncatchably - a raw array-bounds runtime error, not even `try`-catchable - on an empty
-    ;;list via `(at 0 lst)`). There's no safe benign default for "max of an empty list," so the
-    ;;fix is a real `enforce` converting the crash into a clean, catchable rejection - same
-    ;;root-cause/fix shape as #44M. Body below the enforce is byte-for-byte unchanged.
-    (defun UEV_MaxInteger:integer (lst:[integer])
-        (enforce (> (length lst) 0) "UEV_MaxInteger: list cannot be empty")
-        (fold
-            (lambda
-                (acc:integer element:integer)
-                (if (> element acc) element acc)
-            )
-            (at 0 lst)
-            (drop 1 lst)
-        )
+    ;;{F1}  Construct [UDC]
+    (defun UDC_SplitIntegers:object{OuronetIntegersV1.SplitIntegers} (neg:[integer] pos:[integer])
+        {"negative" : neg
+        ,"positive" : pos}
     )
+    (defun UDC_NonceSplitter:object{OuronetIntegersV1.NonceSplitter}
+        (a:[integer] b:[integer] c:[integer] d:[integer])
+        {"negative-nonces"          : a
+        ,"positive-nonces"          : b
+        ,"negative-counterparts"    : c
+        ,"positive-counterparts"    : d}
+    )
+    ;;{F2}  Compute [UC]
     (defun UC_SplitAuxiliaryIntegerList:object{OuronetIntegersV1.SplitIntegers} (primary:[integer] auxiliary:[integer])
         @doc "Splits an auxiliary integer list into 2 integers list, according to the negatives and positives of the primary"
         (let 
@@ -98,9 +95,24 @@
             )
         )
     )
-    ;;{F0}  [UR]
-    ;;{F1}  [URC]
-    ;;{F2}  [UEV]
+    ;;{F3}  Read [UR/URC/URH/URCi]
+    ;;{F4}  Validate [UEV/CAP]
+    ;;#45M fix: renamed UC_MaxInteger -> UEV_MaxInteger (was a UC_-prefixed function that crashed
+    ;;uncatchably - a raw array-bounds runtime error, not even `try`-catchable - on an empty
+    ;;list via `(at 0 lst)`). There's no safe benign default for "max of an empty list," so the
+    ;;fix is a real `enforce` converting the crash into a clean, catchable rejection - same
+    ;;root-cause/fix shape as #44M. Body below the enforce is byte-for-byte unchanged.
+    (defun UEV_MaxInteger:integer (lst:[integer])
+        (enforce (> (length lst) 0) "UEV_MaxInteger: list cannot be empty")
+        (fold
+            (lambda
+                (acc:integer element:integer)
+                (if (> element acc) element acc)
+            )
+            (at 0 lst)
+            (drop 1 lst)
+        )
+    )
     (defun UEV_ContainsAll:bool (l1:[integer] l2:[integer])
         (let*
             (
@@ -144,22 +156,9 @@
             )
         )
     )
-    ;;{F3}  [UDC]
-    (defun UDC_SplitIntegers:object{OuronetIntegersV1.SplitIntegers} (neg:[integer] pos:[integer])
-        {"negative" : neg
-        ,"positive" : pos}
-    )
-    (defun UDC_NonceSplitter:object{OuronetIntegersV1.NonceSplitter}
-        (a:[integer] b:[integer] c:[integer] d:[integer])
-        {"negative-nonces"          : a
-        ,"positive-nonces"          : b
-        ,"negative-counterparts"    : c
-        ,"positive-counterparts"    : d}
-    )
-    ;;{F4}  [CAP]
-    ;;
-    ;;{F5}  [A]
-    ;;{F6}  [C]
-    ;;{F7}  [X]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    ;;{F7}  User [A]
+    ;;{F8}  User [C]
     ;;
 )

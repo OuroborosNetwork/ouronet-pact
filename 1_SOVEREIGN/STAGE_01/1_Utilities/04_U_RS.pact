@@ -40,9 +40,10 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    ;;{F0}  [UR]
-    ;;{F1}  [URC]
-    ;;{F2}  [UEV]
+    ;;{F1}  Construct [UDC]
+    ;;{F2}  Compute [UC]
+    ;;{F3}  Read [UR/URC/URH/URCi]
+    ;;{F4}  Validate [UEV/CAP]
     (defun UEV_CheckReserved:string (account:string)
         @doc "Checks account for reserved name and returns type if \
             \ found or empty string. Reserved names start with a \
@@ -78,11 +79,9 @@
             )
         )
     )
-    ;;{F3}  [UDC]
-    ;;{F4}  [CAP]
-    ;;
-    ;;{F5}  [A]
-    ;;{F6}  [C]
-    ;;{F7}  [X]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    ;;{F7}  User [A]
+    ;;{F8}  User [C]
     ;;
 )

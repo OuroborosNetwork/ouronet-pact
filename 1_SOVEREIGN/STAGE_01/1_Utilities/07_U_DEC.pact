@@ -42,6 +42,8 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
+    ;;{F1}  Construct [UDC]
+    ;;{F2}  Compute [UC]
     (defun UC_AddArray:[decimal] (array:[[decimal]])
         @doc "Adds all column elements in an array of decimal elements, while ensuring all rows are of equal length"
         (UEV_DecimalArray array)
@@ -127,9 +129,8 @@
             [gas-cost gaz-cost]
         )
     )
-    ;;{F0}  [UR]
-    ;;{F1}  [URC]
-    ;;{F2}  [UEV]
+    ;;{F3}  Read [UR/URC/URH/URCi]
+    ;;{F4}  Validate [UEV/CAP]
     (defun UEV_DecimalArray (array:[[decimal]])
         @doc "Enforces all inner list inside an array of decimal elements are of equal size"
         (enforce
@@ -156,11 +157,9 @@
             "All Fee-Array Lists must be of equal length !"
         )
     )
-    ;;{F3}  [UDC]
-    ;;{F4}  [CAP]
-    ;;
-    ;;{F5}  [A]
-    ;;{F6}  [C]
-    ;;{F7}  [X]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    ;;{F7}  User [A]
+    ;;{F8}  User [C]
     ;;
 )

@@ -40,6 +40,8 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
+    ;;{F1}  Construct [UDC]
+    ;;{F2}  Compute [UC]
     (defun UC_AppL:list (in:list item)
         @doc "Append an item at the end of the list"
         (+ in [item])
@@ -60,35 +62,6 @@
     (defun UC_IsNotEmpty:bool (x:list)
         @doc "Return true if the list is not empty"
         (< 0 (length x))
-    )
-    ;;#44M fix: renamed UC_IzUnique -> UEV_IzUnique (was a UC_-prefixed function that enforces,
-    ;;violating the UC_ pure-compute contract - same root cause as #43M). There is no "not
-    ;;unique" case to return false for: a duplicate aborts the whole transaction via enforce,
-    ;;there is no graceful path. The old inline comment ("If all items are unique, the function
-    ;;returns true") misleadingly implied a real false-returning predicate contract that never
-    ;;existed - fixed to state the actual contract plainly.
-    (defun UEV_IzUnique (lst:[string])
-        @doc "Enforces that <lst> is composed of unique elements. Aborts the transaction on the \
-            \ first duplicate found - there is no false-returning case; always returns true."
-        (let
-            (
-                (unique-set
-                    (fold
-                        (lambda
-                            (acc:[string] item:string)
-                            (enforce
-                                (not (contains item acc))
-                                (format "Unique Items Required, duplicate item found: {}" [item])
-                            )
-                            (UC_AppL acc item)
-                        )
-                        []
-                        lst
-                    )
-                )
-            )
-            true
-        )
     )
     (defun UC_LE (in:list)
         @doc "Returns the last item of the list"
@@ -158,9 +131,37 @@
             )
         )
     )
-    ;;{F0}  [UR]
-    ;;{F1}  [URC]
-    ;;{F2}  [UEV]
+    ;;{F3}  Read [UR/URC/URH/URCi]
+    ;;{F4}  Validate [UEV/CAP]
+    ;;#44M fix: renamed UC_IzUnique -> UEV_IzUnique (was a UC_-prefixed function that enforces,
+    ;;violating the UC_ pure-compute contract - same root cause as #43M). There is no "not
+    ;;unique" case to return false for: a duplicate aborts the whole transaction via enforce,
+    ;;there is no graceful path. The old inline comment ("If all items are unique, the function
+    ;;returns true") misleadingly implied a real false-returning predicate contract that never
+    ;;existed - fixed to state the actual contract plainly.
+    (defun UEV_IzUnique (lst:[string])
+        @doc "Enforces that <lst> is composed of unique elements. Aborts the transaction on the \
+            \ first duplicate found - there is no false-returning case; always returns true."
+        (let
+            (
+                (unique-set
+                    (fold
+                        (lambda
+                            (acc:[string] item:string)
+                            (enforce
+                                (not (contains item acc))
+                                (format "Unique Items Required, duplicate item found: {}" [item])
+                            )
+                            (UC_AppL acc item)
+                        )
+                        []
+                        lst
+                    )
+                )
+            )
+            true
+        )
+    )
     (defun UEV_NotEmpty:bool (x:list)
         @doc "Verify and Enforces that a list is not empty"
         (enforce (UC_IsNotEmpty x) "List cannot be empty")
@@ -182,11 +183,9 @@
             (enforce iz-present (format "String {} is not present in list {}." [item item-lst]))
         )
     )
-    ;;{F3}  [UDC]
-    ;;{F4}  [CAP]
-    ;;
-    ;;{F5}  [A]
-    ;;{F6}  [C]
-    ;;{F7}  [X]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    ;;{F7}  User [A]
+    ;;{F8}  User [C]
     ;;
 )

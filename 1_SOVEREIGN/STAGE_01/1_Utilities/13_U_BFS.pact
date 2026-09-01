@@ -57,6 +57,8 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
+    ;;{F1}  Construct [UDC]
+    ;;{F2}  Compute [UC]
     (defun UC_BFS:object{BreadthFirstSearchV1.BFS} (graph:[object{BreadthFirstSearchV1.GraphNode}] in:string)
         @doc "Implementation of the Breadth First Search Method, outputing a BFS Object, \
         \ which ultimately contains all chains, starting from a specific <in> node"
@@ -368,10 +370,6 @@
             (+ to-extend elements)
         )
     )
-    ;;{F0}  [UR]
-    ;;{F1}  [URC]
-    ;;{F2}  [UEV]
-    ;;{F3}  [UDC]
     (defun UDCx_ExtendChain:object{BreadthFirstSearchV1.QE} (input:object{BreadthFirstSearchV1.QE} element:string)
         @doc "Extends a Que Element with a new element"
         (let
@@ -412,10 +410,11 @@
             "chains":   (UCx_ExStrArrLst (at "chains" input) chains-to-add)
         }
     )
-    ;;{F4}  [CAP]
-    ;;
-    ;;{F5}  [A]
-    ;;{F6}  [C]
-    ;;{F7}  [X]
+    ;;{F3}  Read [UR/URC/URH/URCi]
+    ;;{F4}  Validate [UEV/CAP]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    ;;{F7}  User [A]
+    ;;{F8}  User [C]
     ;;
 )

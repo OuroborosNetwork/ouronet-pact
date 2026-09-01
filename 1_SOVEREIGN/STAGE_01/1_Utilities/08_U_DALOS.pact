@@ -93,6 +93,45 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
+    ;;{F1}  Construct [UDC]
+    (defun UDC_Makeid:string (ticker:string)
+        @doc "Creates a Token Id from a string source as the Token Ticker \
+            \ using the first 12 Characters of the prev-block-hash of (chain-data) as \
+            \ randomness source. \
+            \ NOTE (DPDC Audit #33M, accepted/by-design, 2026-08-23): <prev-block-hash> is \
+            \ block-level, identical for every tx in the same block -- not a per-tx nonce. \
+            \ Two issuances with the SAME <ticker> landing in the SAME block (regardless of \
+            \ caller/module -- DPDC-I, DPTF, ATS, MTX-SWP, DPOF, DPMF, SWPI all key off this \
+            \ id, and all share the single BRD|BrandingTable) produce byte-identical ids and \
+            \ the second hard-aborts on a raw table-insert collision. This cannot be fixed \
+            \ inside this function: doing so would require this Utility (deployed before \
+            \ Core) to read a Core-module table (e.g. BRD|BrandingTable) to detect/retry a \
+            \ collision, which is a deploy-order violation. Accepted as-is: the failure is \
+            \ atomic, self-healing (the next block has a different <prev-block-hash>), and \
+            \ not exploitable beyond a same-block retry -- callers hitting this should \
+            \ simply resubmit in a later block."
+        (let
+            (
+                (dash "-")
+                (twelve (take 12 (at "prev-block-hash" (chain-data))))
+            )
+            (concat [ticker dash twelve])
+        )
+    )
+    (defun UDC_MakeMVXNonce:string (nonce:integer)
+        @doc "Creates a MultiversX specific NFT nonce from an integer"
+        (let*
+            (
+                (hexa:string (int-to-str 16 nonce))
+                (hexalength:integer (length hexa))
+            )
+            (if (= (mod hexalength 2) 1 )
+                (concat ["0" hexa])
+                hexa
+            )
+        )
+    )
+    ;;{F2}  Compute [UC]
     (defun UC_TenTwentyThirtyFourtySplit:[decimal] (input:decimal ip:integer)
         (let
             (
@@ -260,9 +299,27 @@
             )
         )
     )
-    ;;{F0}  [UR]
-    ;;{F1}  [URC]
-    ;;{F2}  [UEV]
+    (defun UC_IzStoicTagName:bool (name:string)
+        @doc "True when <name> is 3–256 chars and every glyph is in DALOS|CHARSET."
+        (let 
+            (
+                (nlen:integer (length name))
+            )
+            (fold (and) true
+                [
+                    (>= nlen GLYPH|STOICTAG-MIN-LEN)
+                    (<= nlen GLYPH|STOICTAG-MAX-LEN)
+                    (fold
+                        (lambda (ok:bool c:string) (and ok (contains c DALOS|CHARSET)))
+                        true
+                        (str-to-list name)
+                    )
+                ]
+            )
+        )
+    )
+    ;;{F3}  Read [UR/URC/URH/URCi]
+    ;;{F4}  Validate [UEV/CAP]
     (defun GLYPH|UEV_DalosAccountCheck (account:string)
         @doc "Checks if a string is a valid DALOS Account, using no enforcements "
         (let
@@ -386,25 +443,6 @@
             )
         )
     )
-    (defun UC_IzStoicTagName:bool (name:string)
-        @doc "True when <name> is 3–256 chars and every glyph is in DALOS|CHARSET."
-        (let 
-            (
-                (nlen:integer (length name))
-            )
-            (fold (and) true
-                [
-                    (>= nlen GLYPH|STOICTAG-MIN-LEN)
-                    (<= nlen GLYPH|STOICTAG-MAX-LEN)
-                    (fold
-                        (lambda (ok:bool c:string) (and ok (contains c DALOS|CHARSET)))
-                        true
-                        (str-to-list name)
-                    )
-                ]
-            )
-        )
-    )
     (defun UEV_StoicTagName (name:string)
         @doc "Enforces CODEX StoicTag name length and DALOS|CHARSET."
         (enforce
@@ -477,48 +515,9 @@
             )
         )
     )
-    ;;{F3}  [UDC]
-    (defun UDC_Makeid:string (ticker:string)
-        @doc "Creates a Token Id from a string source as the Token Ticker \
-            \ using the first 12 Characters of the prev-block-hash of (chain-data) as \
-            \ randomness source. \
-            \ NOTE (DPDC Audit #33M, accepted/by-design, 2026-08-23): <prev-block-hash> is \
-            \ block-level, identical for every tx in the same block -- not a per-tx nonce. \
-            \ Two issuances with the SAME <ticker> landing in the SAME block (regardless of \
-            \ caller/module -- DPDC-I, DPTF, ATS, MTX-SWP, DPOF, DPMF, SWPI all key off this \
-            \ id, and all share the single BRD|BrandingTable) produce byte-identical ids and \
-            \ the second hard-aborts on a raw table-insert collision. This cannot be fixed \
-            \ inside this function: doing so would require this Utility (deployed before \
-            \ Core) to read a Core-module table (e.g. BRD|BrandingTable) to detect/retry a \
-            \ collision, which is a deploy-order violation. Accepted as-is: the failure is \
-            \ atomic, self-healing (the next block has a different <prev-block-hash>), and \
-            \ not exploitable beyond a same-block retry -- callers hitting this should \
-            \ simply resubmit in a later block."
-        (let
-            (
-                (dash "-")
-                (twelve (take 12 (at "prev-block-hash" (chain-data))))
-            )
-            (concat [ticker dash twelve])
-        )
-    )
-    (defun UDC_MakeMVXNonce:string (nonce:integer)
-        @doc "Creates a MultiversX specific NFT nonce from an integer"
-        (let*
-            (
-                (hexa:string (int-to-str 16 nonce))
-                (hexalength:integer (length hexa))
-            )
-            (if (= (mod hexalength 2) 1 )
-                (concat ["0" hexa])
-                hexa
-            )
-        )
-    )
-    ;;{F4}  [CAP]
-    ;;
-    ;;{F5}  [A]
-    ;;{F6}  [C]
-    ;;{F7}  [X]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    ;;{F7}  User [A]
+    ;;{F8}  User [C]
     ;;
 )

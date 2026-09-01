@@ -42,6 +42,80 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
+    ;;{F1}  Construct [UDC]
+    (defun UDC_DirectRawSwapInput:object{UtilitySwpV1.DirectRawSwapInput}
+        (a:decimal b:[decimal] c:[decimal] d:[integer] e:integer f:integer g:[decimal])
+        {"A"                : a
+        ,"X"                : b
+        ,"input-amounts"    : c
+        ,"input-positions"  : d
+        ,"output-position"  : e
+        ,"output-precision" : f
+        ,"weights"          : g}
+    )
+    (defun UDC_InverseRawSwapInput:object{UtilitySwpV1.InverseRawSwapInput}
+        (a:decimal b:[decimal] c:decimal d:integer e:integer f:integer g:[decimal])
+        {"A"                : a
+        ,"X"                : b
+        ,"output-amount"    : c
+        ,"output-position"  : d
+        ,"input-position"   : e
+        ,"input-precision"  : f
+        ,"weights"          : g}
+    )
+    ;;
+    (defun UDC_DirectSwapInputData:object{UtilitySwpV1.DirectSwapInputData}
+        (a:[string] b:[decimal] c:string)
+        {"input-ids"        : a
+        ,"input-amounts"    : b
+        ,"output-id"        : c}
+    )
+    (defun UDC_ReverseSwapInputData:object{UtilitySwpV1.ReverseSwapInputData}
+        (a:string b:decimal c:string)
+        {"output-id"        : a
+        ,"output-amount"    : b
+        ,"input-id"         : c}
+    )
+    ;;
+    (defun UDC_DirectTaxedSwapOutput:object{UtilitySwpV1.DirectTaxedSwapOutput}
+        (a:[decimal] b:string c:decimal d:decimal e:decimal)
+        {"lp-fuel"          : a
+        ,"o-id"             : b
+        ,"o-id-special"     : c
+        ,"o-id-liquid"      : d
+        ,"o-id-netto"       : e}
+    )
+    (defun UDC_InverseTaxedSwapOutput:object{UtilitySwpV1.InverseTaxedSwapOutput}
+        (a:decimal b:decimal c:[decimal] d:string e:decimal)
+        {"o-id-liquid"      : a
+        ,"o-id-special"     : b
+        ,"lp-fuel"          : c
+        ,"i-id"             : d
+        ,"i-id-brutto"      : e}
+    )
+    (defun UDC_SwapFeez:object{UtilitySwpV1.SwapFeez}
+        (a:decimal b:decimal c:decimal)
+        {"lp"               : a
+        ,"special"          : b
+        ,"boost"            : c}
+    )
+    (defun UDC_VirtualSwapEngine:object{UtilitySwpV1.VirtualSwapEngine}
+        (a:[string] b:[integer] c:string d:[decimal] e:string f:[decimal] g:decimal h:[decimal] i:object{UtilitySwpV1.SwapFeez} j:[decimal] k:[decimal] l:[decimal] m:[object{UtilitySwpV1.DirectSwapInputData}])
+        {"v-tokens"         : a
+        ,"v-prec"           : b
+        ,"account"          : c
+        ,"account-supply"   : d
+        ,"swpair"           : e
+        ,"X"                : f
+        ,"A"                : g
+        ,"W"                : h
+        ,"F"                : i
+        ,"fuel"             : j
+        ,"special"          : k
+        ,"boost"            : l
+        ,"swaps"            : m}
+    )
+    ;;{F2}  Compute [UC]
     ;;S - Stable Pools Computation using Curve Finance original math.
     (defun UC_ComputeY 
         (drsi:object{UtilitySwpV1.DirectRawSwapInput})
@@ -821,86 +895,11 @@
     (defun UC_PoolType:string (swpair:string)
         (take 1 swpair)
     )
-    ;;{F0}  [UR]
-    ;;{F1}  [URC]
-    ;;{F2}  [UEV]
-    ;;{F3}  [UDC]
-    (defun UDC_DirectRawSwapInput:object{UtilitySwpV1.DirectRawSwapInput}
-        (a:decimal b:[decimal] c:[decimal] d:[integer] e:integer f:integer g:[decimal])
-        {"A"                : a
-        ,"X"                : b
-        ,"input-amounts"    : c
-        ,"input-positions"  : d
-        ,"output-position"  : e
-        ,"output-precision" : f
-        ,"weights"          : g}
-    )
-    (defun UDC_InverseRawSwapInput:object{UtilitySwpV1.InverseRawSwapInput}
-        (a:decimal b:[decimal] c:decimal d:integer e:integer f:integer g:[decimal])
-        {"A"                : a
-        ,"X"                : b
-        ,"output-amount"    : c
-        ,"output-position"  : d
-        ,"input-position"   : e
-        ,"input-precision"  : f
-        ,"weights"          : g}
-    )
-    ;;
-    (defun UDC_DirectSwapInputData:object{UtilitySwpV1.DirectSwapInputData}
-        (a:[string] b:[decimal] c:string)
-        {"input-ids"        : a
-        ,"input-amounts"    : b
-        ,"output-id"        : c}
-    )
-    (defun UDC_ReverseSwapInputData:object{UtilitySwpV1.ReverseSwapInputData}
-        (a:string b:decimal c:string)
-        {"output-id"        : a
-        ,"output-amount"    : b
-        ,"input-id"         : c}
-    )
-    ;;
-    (defun UDC_DirectTaxedSwapOutput:object{UtilitySwpV1.DirectTaxedSwapOutput}
-        (a:[decimal] b:string c:decimal d:decimal e:decimal)
-        {"lp-fuel"          : a
-        ,"o-id"             : b
-        ,"o-id-special"     : c
-        ,"o-id-liquid"      : d
-        ,"o-id-netto"       : e}
-    )
-    (defun UDC_InverseTaxedSwapOutput:object{UtilitySwpV1.InverseTaxedSwapOutput}
-        (a:decimal b:decimal c:[decimal] d:string e:decimal)
-        {"o-id-liquid"      : a
-        ,"o-id-special"     : b
-        ,"lp-fuel"          : c
-        ,"i-id"             : d
-        ,"i-id-brutto"      : e}
-    )
-    (defun UDC_SwapFeez:object{UtilitySwpV1.SwapFeez}
-        (a:decimal b:decimal c:decimal)
-        {"lp"               : a
-        ,"special"          : b
-        ,"boost"            : c}
-    )
-    (defun UDC_VirtualSwapEngine:object{UtilitySwpV1.VirtualSwapEngine}
-        (a:[string] b:[integer] c:string d:[decimal] e:string f:[decimal] g:decimal h:[decimal] i:object{UtilitySwpV1.SwapFeez} j:[decimal] k:[decimal] l:[decimal] m:[object{UtilitySwpV1.DirectSwapInputData}])
-        {"v-tokens"         : a
-        ,"v-prec"           : b
-        ,"account"          : c
-        ,"account-supply"   : d
-        ,"swpair"           : e
-        ,"X"                : f
-        ,"A"                : g
-        ,"W"                : h
-        ,"F"                : i
-        ,"fuel"             : j
-        ,"special"          : k
-        ,"boost"            : l
-        ,"swaps"            : m}
-    )
-    ;;{F4}  [CAP]
-    ;;
-    ;;{F5}  [A]
-    ;;{F6}  [C]
-    ;;{F7}  [X]
+    ;;{F3}  Read [UR/URC/URH/URCi]
+    ;;{F4}  Validate [UEV/CAP]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    ;;{F7}  User [A]
+    ;;{F8}  User [C]
     ;;
 )

@@ -42,6 +42,8 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
+    ;;{F1}  Construct [UDC]
+    ;;{F2}  Compute [UC]
     ;;{F-UC}
     (defun UC_MakeVestingDateList:[time] (offset:integer duration:integer milestones:integer)
         @doc "Makes a Times list with unvesting milestones according to vesting parameters"
@@ -131,9 +133,8 @@
             [vested-name vested-ticker]
         )
     )
-    ;;{F0}  [UR]
-    ;;{F1}  [URC]
-    ;;{F2}  [UEV]
+    ;;{F3}  Read [UR/URC/URH/URCi]
+    ;;{F4}  Validate [UEV/CAP]
     (defun UEV_Milestone (milestones:integer)
         @doc "Restrict Milestone integer between 1 and 250 Milestones"
         (enforce
@@ -155,11 +156,9 @@
         ;;<upper-limit-in-seconds> = 788400000 for Vesting and Sleeping
         ;;<upper-limit-in-seconds> = 3153600000 for Hibernating
     )
-    ;;{F3}  [UDC]
-    ;;{F4}  [CAP]
-    ;;
-    ;;{F5}  [A]
-    ;;{F6}  [C]
-    ;;{F7}  [X]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    ;;{F7}  User [A]
+    ;;{F8}  User [C]
     ;;
 )
