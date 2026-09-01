@@ -160,6 +160,56 @@
         )
     )
     ;;
+    ;;  [DPDC roles/toggles] — DPDC-R (son = false for DPNF, true for DPSF)
+    (defun URC_DPDC-R|Toggle:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string son:bool label:string ico:object{IgnisCollectorV1.OutputCumulator} toggle:bool)
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (sa:string (ref-I|OURONET::OI|UC_ShortAccount account)))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(if toggle (format "Operation: Adds {} Role for {} {} to {}" [label (if son "SFT" "NFT") id sa]) (format "Operation: Removes {} Role for {} {} to {}" [label (if son "SFT" "NFT") id sa]))]
+                [(if toggle (format "{} Role added for {} to {}" [label id sa]) (format "{} Role removed for {} to {}" [label id sa]))]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [toggle])))
+    (defun URC_DPNF|ToggleBurnRole:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string toggle:bool) (let ((r:module{DpdcRolesV1} DPDC-R)) (URC_DPDC-R|Toggle patron id account false "Burn" (r::URCi_ToggleBurnRole id false) toggle)))
+    (defun URC_DPSF|ToggleBurnRole:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string toggle:bool) (let ((r:module{DpdcRolesV1} DPDC-R)) (URC_DPDC-R|Toggle patron id account true "Burn" (r::URCi_ToggleBurnRole id true) toggle)))
+    (defun URC_DPNF|ToggleExemptionRole:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string toggle:bool) (let ((r:module{DpdcRolesV1} DPDC-R)) (URC_DPDC-R|Toggle patron id account false "Fee-Exemption" (r::URCi_ToggleExemptionRole id false) toggle)))
+    (defun URC_DPSF|ToggleExemptionRole:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string toggle:bool) (let ((r:module{DpdcRolesV1} DPDC-R)) (URC_DPDC-R|Toggle patron id account true "Fee-Exemption" (r::URCi_ToggleExemptionRole id true) toggle)))
+    (defun URC_DPNF|ToggleFreezeAccount:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string toggle:bool) (let ((r:module{DpdcRolesV1} DPDC-R)) (URC_DPDC-R|Toggle patron id account false "Freeze" (r::URCi_ToggleFreezeAccount id false) toggle)))
+    (defun URC_DPSF|ToggleFreezeAccount:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string toggle:bool) (let ((r:module{DpdcRolesV1} DPDC-R)) (URC_DPDC-R|Toggle patron id account true "Freeze" (r::URCi_ToggleFreezeAccount id true) toggle)))
+    (defun URC_DPNF|ToggleModifyCreatorRole:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string toggle:bool) (let ((r:module{DpdcRolesV1} DPDC-R)) (URC_DPDC-R|Toggle patron id account false "Modify-Creator" (r::URCi_ToggleModifyCreatorRole id false) toggle)))
+    (defun URC_DPSF|ToggleModifyCreatorRole:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string toggle:bool) (let ((r:module{DpdcRolesV1} DPDC-R)) (URC_DPDC-R|Toggle patron id account true "Modify-Creator" (r::URCi_ToggleModifyCreatorRole id true) toggle)))
+    (defun URC_DPNF|ToggleModifyRoyaltiesRole:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string toggle:bool) (let ((r:module{DpdcRolesV1} DPDC-R)) (URC_DPDC-R|Toggle patron id account false "Modify-Royalties" (r::URCi_ToggleModifyRoyaltiesRole id false) toggle)))
+    (defun URC_DPSF|ToggleModifyRoyaltiesRole:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string toggle:bool) (let ((r:module{DpdcRolesV1} DPDC-R)) (URC_DPDC-R|Toggle patron id account true "Modify-Royalties" (r::URCi_ToggleModifyRoyaltiesRole id true) toggle)))
+    (defun URC_DPNF|ToggleTransferRole:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string toggle:bool) (let ((r:module{DpdcRolesV1} DPDC-R)) (URC_DPDC-R|Toggle patron id account false "Transfer" (r::URCi_ToggleTransferRole id false) toggle)))
+    (defun URC_DPSF|ToggleTransferRole:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string toggle:bool) (let ((r:module{DpdcRolesV1} DPDC-R)) (URC_DPDC-R|Toggle patron id account true "Transfer" (r::URCi_ToggleTransferRole id true) toggle)))
+    (defun URC_DPNF|ToggleUpdateRole:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string toggle:bool) (let ((r:module{DpdcRolesV1} DPDC-R)) (URC_DPDC-R|Toggle patron id account false "Update" (r::URCi_ToggleUpdateRole id false) toggle)))
+    (defun URC_DPSF|ToggleUpdateRole:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string toggle:bool) (let ((r:module{DpdcRolesV1} DPDC-R)) (URC_DPDC-R|Toggle patron id account true "Update" (r::URCi_ToggleUpdateRole id true) toggle)))
+    (defun URC_DPSF|ToggleAddQuantityRole:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string toggle:bool) (let ((r:module{DpdcRolesV1} DPDC-R)) (URC_DPDC-R|Toggle patron id account true "Add-Quantity" (r::URCi_ToggleAddQuantityRole id) toggle)))
+    ;;  [DPDC role moves] — DPDC-R Move* (patron id new-account)
+    (defun URC_DPDC-R|Move:object{OuronetInfoV1.ClientInfo} (patron:string id:string new-account:string son:bool label:string ico:object{IgnisCollectorV1.OutputCumulator})
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (sa:string (ref-I|OURONET::OI|UC_ShortAccount new-account)))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Moves the {} Role of {} {} to {}" [label (if son "SFT" "NFT") id sa])]
+                [(format "{} Role of {} succesfully moved to {}" [label id sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+    (defun URC_DPNF|MoveCreateRole:object{OuronetInfoV1.ClientInfo} (patron:string id:string new-account:string) (let ((r:module{DpdcRolesV1} DPDC-R)) (URC_DPDC-R|Move patron id new-account false "Create" (r::URCi_MoveCreateRole id false))))
+    (defun URC_DPSF|MoveCreateRole:object{OuronetInfoV1.ClientInfo} (patron:string id:string new-account:string) (let ((r:module{DpdcRolesV1} DPDC-R)) (URC_DPDC-R|Move patron id new-account true "Create" (r::URCi_MoveCreateRole id true))))
+    (defun URC_DPNF|MoveRecreateRole:object{OuronetInfoV1.ClientInfo} (patron:string id:string new-account:string) (let ((r:module{DpdcRolesV1} DPDC-R)) (URC_DPDC-R|Move patron id new-account false "Recreate" (r::URCi_MoveRecreateRole id false))))
+    (defun URC_DPSF|MoveRecreateRole:object{OuronetInfoV1.ClientInfo} (patron:string id:string new-account:string) (let ((r:module{DpdcRolesV1} DPDC-R)) (URC_DPDC-R|Move patron id new-account true "Recreate" (r::URCi_MoveRecreateRole id true))))
+    (defun URC_DPNF|MoveSetUriRole:object{OuronetInfoV1.ClientInfo} (patron:string id:string new-account:string) (let ((r:module{DpdcRolesV1} DPDC-R)) (URC_DPDC-R|Move patron id new-account false "Set-URI" (r::URCi_MoveSetUriRole id false))))
+    (defun URC_DPSF|MoveSetUriRole:object{OuronetInfoV1.ClientInfo} (patron:string id:string new-account:string) (let ((r:module{DpdcRolesV1} DPDC-R)) (URC_DPDC-R|Move patron id new-account true "Set-URI" (r::URCi_MoveSetUriRole id true))))
+    ;;  [DPDC management] — DPDC-MNG Control / Pause / Respawn / AddQuantity
+    (defun URC_DPDC-MNG|Simple:object{OuronetInfoV1.ClientInfo} (patron:string desc:string result:string ico:object{IgnisCollectorV1.OutputCumulator})
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
+            (ref-I|OURONET::OI|UDC_ClientInfo [desc] [result]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+    (defun URC_DPNF|Control:object{OuronetInfoV1.ClientInfo} (patron:string id:string cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool) (let ((r:module{DpdcManagementV1} DPDC-MNG)) (URC_DPDC-MNG|Simple patron (format "Operation: Controls Boolean Properties of NFT {}" [id]) (format "Succesfully controlled Properties of NFT {}" [id]) (r::URCi_Control id false))))
+    (defun URC_DPSF|Control:object{OuronetInfoV1.ClientInfo} (patron:string id:string cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool) (let ((r:module{DpdcManagementV1} DPDC-MNG)) (URC_DPDC-MNG|Simple patron (format "Operation: Controls Boolean Properties of SFT {}" [id]) (format "Succesfully controlled Properties of SFT {}" [id]) (r::URCi_Control id true))))
+    (defun URC_DPNF|TogglePause:object{OuronetInfoV1.ClientInfo} (patron:string id:string toggle:bool) (let ((r:module{DpdcManagementV1} DPDC-MNG)) (URC_DPDC-MNG|Simple patron (if toggle (format "Operation: Pauses NFT {}" [id]) (format "Operation: Unpauses NFT {}" [id])) (format "NFT {} pause toggled" [id]) (r::URCi_TogglePause id false))))
+    (defun URC_DPSF|TogglePause:object{OuronetInfoV1.ClientInfo} (patron:string id:string toggle:bool) (let ((r:module{DpdcManagementV1} DPDC-MNG)) (URC_DPDC-MNG|Simple patron (if toggle (format "Operation: Pauses SFT {}" [id]) (format "Operation: Unpauses SFT {}" [id])) (format "SFT {} pause toggled" [id]) (r::URCi_TogglePause id true))))
+    (defun URC_DPNF|Respawn:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string nonce:integer) (let ((r:module{DpdcManagementV1} DPDC-MNG)) (URC_DPDC-MNG|Simple patron (format "Operation: Respawns NFT {} Nonce {}" [id nonce]) (format "Succesfully respawned NFT {} Nonce {}" [id nonce]) (r::URCi_RespawnNFT id))))
+    (defun URC_DPSF|AddQuantity:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string nonce:integer amount:integer) (let ((r:module{DpdcManagementV1} DPDC-MNG)) (URC_DPDC-MNG|Simple patron (format "Operation: Adds {} quantity to SFT {} Nonce {}" [amount id nonce]) (format "Succesfully added {} quantity to SFT {} Nonce {}" [amount id nonce]) (r::URCi_AddQuantity id))))
+    ;;
     ;;  [DEMIPAD] — sovereign launchpad ops (deposit + fuel/retrieve TF/OF/SF/NF + withdraw)
     (defun URC_DEMIPAD|Deposit:object{OuronetInfoV1.ClientInfo} (patron:string donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal)
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD) (sd:string (ref-I|OURONET::OI|UC_ShortAccount donor)))
