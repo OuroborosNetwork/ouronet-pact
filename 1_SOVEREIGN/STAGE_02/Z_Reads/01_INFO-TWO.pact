@@ -325,6 +325,33 @@
     (defun URC_DPSF|MakeFragments:object{OuronetInfoV1.ClientInfo} (patron:string account:string id:string nonce:integer amount:integer) (let ((fr:module{DpdcFragmentsV1} DPDC-F)) (URC_DPDC-MNG|Simple patron (format "Operation: Makes {} Fragments of SFT {} Nonce {}" [amount id nonce]) (format "{} Fragments made of SFT {} Nonce {}" [amount id nonce]) (fr::URCi_MakeFragments id true))))
     (defun URC_DPNF|MergeFragments:object{OuronetInfoV1.ClientInfo} (patron:string account:string id:string nonce:integer amount:integer) (let ((fr:module{DpdcFragmentsV1} DPDC-F)) (URC_DPDC-MNG|Simple patron (format "Operation: Merges {} Fragments of NFT {} Nonce {}" [amount id nonce]) (format "{} Fragments merged of NFT {} Nonce {}" [amount id nonce]) (fr::URCi_MergeFragments id false))))
     (defun URC_DPSF|MergeFragments:object{OuronetInfoV1.ClientInfo} (patron:string account:string id:string nonce:integer amount:integer) (let ((fr:module{DpdcFragmentsV1} DPDC-F)) (URC_DPDC-MNG|Simple patron (format "Operation: Merges {} Fragments of SFT {} Nonce {}" [amount id nonce]) (format "{} Fragments merged of SFT {} Nonce {}" [amount id nonce]) (fr::URCi_MergeFragments id true))))
+    ;;  [DPDC create/issue] — DpdcCreateV1 / DpdcIssueV1
+    (defun URC_DPNF|Create:object{OuronetInfoV1.ClientInfo} (patron:string id:string input-nonce-data:[object{DpdcUdcV1.DPDC|NonceData}]) (let ((c:module{DpdcCreateV1} DPDC-C)) (URC_DPDC-MNG|Simple patron (format "Operation: Creates {} new Nonces for NFT {}" [(length input-nonce-data) id]) (format "{} new Nonces created for NFT {}" [(length input-nonce-data) id]) (c::URCi_CreateNewNonces id false (make-list (length input-nonce-data) 1)))))
+    (defun URC_DPSF|Create:object{OuronetInfoV1.ClientInfo} (patron:string id:string amount:[integer] input-nonce-data:[object{DpdcUdcV1.DPDC|NonceData}]) (let ((c:module{DpdcCreateV1} DPDC-C)) (URC_DPDC-MNG|Simple patron (format "Operation: Creates {} new Nonces for SFT {}" [(length input-nonce-data) id]) (format "{} new Nonces created for SFT {}" [(length input-nonce-data) id]) (c::URCi_CreateNewNonces id true amount))))
+    (defun URC_DPDC-I|Issue:object{OuronetInfoV1.ClientInfo} (patron:string owner-account:string collection-name:string son:bool)
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (i:module{DpdcIssueV1} DPDC-I))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Issues a new {} Collection '{}' for {}" [(if son "SemiFungible" "NonFungible") collection-name (ref-I|OURONET::OI|UC_ShortAccount owner-account)])]
+                [(format "{} Collection '{}' succesfully issued" [(if son "SemiFungible" "NonFungible") collection-name])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (i::URCi_IssueDigitalCollection son owner-account)))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (i::URCi_IssueCollectionStoa son)) [])))
+    (defun URC_DPNF|Issue:object{OuronetInfoV1.ClientInfo} (patron:string owner-account:string creator-account:string collection-name:string collection-ticker:string can-upgrade:bool can-change-owner:bool can-change-creator:bool can-add-special-role:bool can-transfer-nft-create-role:bool can-freeze:bool can-wipe:bool can-pause:bool) (URC_DPDC-I|Issue patron owner-account collection-name false))
+    (defun URC_DPSF|Issue:object{OuronetInfoV1.ClientInfo} (patron:string owner-account:string creator-account:string collection-name:string collection-ticker:string can-upgrade:bool can-change-owner:bool can-change-creator:bool can-add-special-role:bool can-transfer-nft-create-role:bool can-freeze:bool can-wipe:bool can-pause:bool) (URC_DPDC-I|Issue patron owner-account collection-name true))
+    ;;  [DPDC branding] — DpdcV1 UpdatePendingBranding (IGNIS) + UpgradeBranding (STOA)
+    (defun URC_DPNF|UpdatePendingBranding:object{OuronetInfoV1.ClientInfo} (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}]) (let ((d:module{DpdcV1} DPDC)) (URC_DPDC-MNG|Simple patron (format "Operation: Updates pending Branding of NFT {}" [entity-id]) (format "Pending Branding of NFT {} updated" [entity-id]) (d::URCi_UpdatePendingBranding entity-id false))))
+    (defun URC_DPSF|UpdatePendingBranding:object{OuronetInfoV1.ClientInfo} (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}]) (let ((d:module{DpdcV1} DPDC)) (URC_DPDC-MNG|Simple patron (format "Operation: Updates pending Branding of SFT {}" [entity-id]) (format "Pending Branding of SFT {} updated" [entity-id]) (d::URCi_UpdatePendingBranding entity-id true))))
+    (defun URC_DPDC|UpgradeBranding:object{OuronetInfoV1.ClientInfo} (patron:string entity-id:string months:integer son:bool)
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (d:module{DpdcV1} DPDC))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Upgrades Branding of {} {} for {} months" [(if son "SFT" "NFT") entity-id months])]
+                [(format "Branding of {} {} upgraded for {} months" [(if son "SFT" "NFT") entity-id months])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (d::URCi_UpgradeBranding months)) [])))
+    (defun URC_DPNF|UpgradeBranding:object{OuronetInfoV1.ClientInfo} (patron:string entity-id:string months:integer) (URC_DPDC|UpgradeBranding patron entity-id months false))
+    (defun URC_DPSF|UpgradeBranding:object{OuronetInfoV1.ClientInfo} (patron:string entity-id:string months:integer) (URC_DPDC|UpgradeBranding patron entity-id months true))
+    ;;  [DPSF equity aliases] — Talos surfaces EQUITY ops under the DPSF| client namespace
+    (defun URC_DPSF|IssueCompany:object{OuronetInfoV1.ClientInfo} (patron:string creator-account:string collection-name:string collection-ticker:string royalty:decimal ignis-royalty:decimal ipfs-links:[string]) (URC_EQUITY|IssueCompany patron creator-account collection-name))
+    (defun URC_DPSF|MorphEquity:object{OuronetInfoV1.ClientInfo} (patron:string account:string id:string input-nonce:integer input-amount:integer output-nonce:integer) (URC_EQUITY|MorphEquity patron account id input-nonce input-amount output-nonce))
     ;;
     ;;  [DEMIPAD] — sovereign launchpad ops (deposit + fuel/retrieve TF/OF/SF/NF + withdraw)
     (defun URC_DEMIPAD|Deposit:object{OuronetInfoV1.ClientInfo} (patron:string donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal)

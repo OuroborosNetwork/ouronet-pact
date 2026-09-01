@@ -190,6 +190,10 @@
     ;; [<AccountSuppliesTable> Writings] [4]
     ;;
     (defun XE_W|Supply (account:string id:string son:bool nonce-value:integer amount:integer))
+    ;;
+    ;;  [URCi]  Branding cost readers — single source for exec billing + INFO preview
+    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator} (entity-id:string son:bool))
+    (defun URCi_UpgradeBranding:decimal (months:integer))
 )
 ;;
 (module DPDC GOV
