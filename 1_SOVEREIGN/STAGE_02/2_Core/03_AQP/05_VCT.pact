@@ -964,7 +964,7 @@
     )
     ;; [URCi]   vacate / drain / full-vacate flow ifp readers — relocated from AQP-INFO (byte-identical
     ;;   ifp sums). Fed the SAME dirty-read legs/lanes the exec receives. Tier gates + the two score-delta
-    ;;   sums are reached cross-module on AQP-FVT (AQP-FVT.SIP|URC_* / AQP-FVT.URC_StakeScoreDeltaSum*),
+    ;;   sums are reached cross-module on AQP-FVT (AQP-FVT.URC_Tier* / AQP-FVT.URC_StakeScoreDeltaSum*),
     ;;   the single source they share with the stake readers. INFO repoints here; execs are unchanged.
     (defun URCi_FinalizeVacate:object{IgnisCollectorV1.OutputCumulator} ()
         @doc "Flat 'ignis|medium' tier on AQP|SC_NAME — single source for C_FinalizeVacate + its INFO preview."
@@ -984,21 +984,21 @@
                 (score-delta:decimal (AQP-FVT.URC_StakeScoreDeltaSum pool-id))
             )
             (fold (+) 0.0
-                [ (* (AQP-FVT.SIP|URC_Medium) (dec (length legs)))                                 ;; per-leg tracker-zero
+                [ (* (AQP-FVT.URC_TierMedium) (dec (length legs)))                                 ;; per-leg tracker-zero
                   (fold (+) 0.0
                       (map
                           (lambda (benef:string)
                               (fold (+) 0.0
-                                  [ (AQP-FVT.SIP|URC_Biggest)                                      ;; rollup
-                                    (AQP-FVT.SIP|URC_Fixed (AQP-ANK.URC_TrueFungibleStakeAnchorRefreshIgnis n-live)) ;; anchor refresh
-                                    (AQP-FVT.SIP|URC_Biggest)                                      ;; XB sync-count flat
-                                    (AQP-FVT.SIP|URC_Fixed score-delta)                            ;; apply stake delta
-                                    (AQP-FVT.SIP|URC_Fixed (AQP-FVT.URC_BookStakeUnclaimedIgnis
+                                  [ (AQP-FVT.URC_TierBiggest)                                      ;; rollup
+                                    (AQP-FVT.URC_TierFixed (AQP-ANK.URC_TrueFungibleStakeAnchorRefreshIgnis n-live)) ;; anchor refresh
+                                    (AQP-FVT.URC_TierBiggest)                                      ;; XB sync-count flat
+                                    (AQP-FVT.URC_TierFixed score-delta)                            ;; apply stake delta
+                                    (AQP-FVT.URC_TierFixed (AQP-FVT.URC_BookStakeUnclaimedIgnis
                                         (at "distinct-fvts" (AQP-FVT.URHC_BuildStakeSettleBundle pool-id benef)))) ;; book
-                                    (AQP-FVT.SIP|URC_Fixed (AQP-FVT.URC_CheckpointStakeRpsIgnis))  ;; checkpoint
+                                    (AQP-FVT.URC_TierFixed (AQP-FVT.URC_CheckpointStakeRpsIgnis))  ;; checkpoint
                                   ]))
                           unique-benefs))
-                  (AQP-FVT.SIP|URC_Fixed (ref-I|OURONET::OI|UC_IfpFromOutputCumulator               ;; bulk DPTF multi-transfer
+                  (AQP-FVT.URC_TierFixed (ref-I|OURONET::OI|UC_IfpFromOutputCumulator               ;; bulk DPTF multi-transfer
                       (TFT.URCi_MultiBulkTransferCumulator [dptf-id] AQP-POOL.AQP|SC_NAME
                           (at "receiver-array" bulk-arr) (at "transfer-amount-array" bulk-arr))))
                 ])
@@ -1022,17 +1022,17 @@
                 (score-delta:decimal (AQP-FVT.URC_StakeScoreDeltaSumForClasses pool-id [0 2]))
             )
             (fold (+) 0.0
-                [ (AQP-FVT.SIP|URC_Fixed (ref-I|OURONET::OI|UC_IfpFromOutputCumulator               ;; bulk DPOF transfer
+                [ (AQP-FVT.URC_TierFixed (ref-I|OURONET::OI|UC_IfpFromOutputCumulator               ;; bulk DPOF transfer
                       (DPOF.URCi_MoveCumulator dpof-id all-nonces false)))
-                  (* (AQP-FVT.SIP|URC_Medium) (dec (length all-nonces)))                            ;; per-row tracker (medium × Σ|nonces|)
+                  (* (AQP-FVT.URC_TierMedium) (dec (length all-nonces)))                            ;; per-row tracker (medium × Σ|nonces|)
                   (fold (+) 0.0
                       (map
                           (lambda (benef:string)
                               (fold (+) 0.0
-                                  [ (AQP-FVT.SIP|URC_Fixed score-delta)                             ;; apply OF stake delta {0,2}
-                                    (AQP-FVT.SIP|URC_Fixed (AQP-FVT.URC_BookStakeUnclaimedIgnis
+                                  [ (AQP-FVT.URC_TierFixed score-delta)                             ;; apply OF stake delta {0,2}
+                                    (AQP-FVT.URC_TierFixed (AQP-FVT.URC_BookStakeUnclaimedIgnis
                                         (at "distinct-fvts" (AQP-FVT.URHC_BuildStakeSettleBundle pool-id benef)))) ;; book
-                                    (AQP-FVT.SIP|URC_Fixed (AQP-FVT.URC_CheckpointStakeRpsIgnis))   ;; checkpoint
+                                    (AQP-FVT.URC_TierFixed (AQP-FVT.URC_CheckpointStakeRpsIgnis))   ;; checkpoint
                                   ]))
                           unique-benefs))
                 ])
@@ -1056,23 +1056,23 @@
                     (UC_VacateUniqueBeneficiaries
                         (map (lambda (l:object{VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)))
                 (score-delta:decimal (AQP-FVT.URC_StakeScoreDeltaSumForClasses pool-id (if son [3] [4])))
-                (anchor-flat:decimal (+ (AQP-FVT.SIP|URC_Medium) (AQP-FVT.SIP|URC_Biggest)))
+                (anchor-flat:decimal (+ (AQP-FVT.URC_TierMedium) (AQP-FVT.URC_TierBiggest)))
             )
             (fold (+) 0.0
-                [ (AQP-FVT.SIP|URC_Fixed (ref-I|OURONET::OI|UC_IfpFromOutputCumulator               ;; bulk DPDC-T transfer
+                [ (AQP-FVT.URC_TierFixed (ref-I|OURONET::OI|UC_IfpFromOutputCumulator               ;; bulk DPDC-T transfer
                       (DPDC-T.URCi_BulkTransferCumulator collectable-id son AQP-POOL.AQP|SC_NAME
                           (map (lambda (l:object{VCT|VacateNonceLeg}) (at "owner-id" l)) legs)
                           nonces-array amounts-array)))
-                  (* (* 2.0 (AQP-FVT.SIP|URC_Medium)) (dec (length (fold (+) [] nonces-array))))    ;; per-row tracker + rollup (each medium×|nonces|)
+                  (* (* 2.0 (AQP-FVT.URC_TierMedium)) (dec (length (fold (+) [] nonces-array))))    ;; per-row tracker + rollup (each medium×|nonces|)
                   (fold (+) 0.0
                       (map
                           (lambda (benef:string)
                               (fold (+) 0.0
-                                  [ (AQP-FVT.SIP|URC_Fixed anchor-flat)                             ;; flat anchor refresh
-                                    (AQP-FVT.SIP|URC_Fixed score-delta)                             ;; apply collectable delta [son?3:4]
-                                    (AQP-FVT.SIP|URC_Fixed (AQP-FVT.URC_BookStakeUnclaimedIgnis
+                                  [ (AQP-FVT.URC_TierFixed anchor-flat)                             ;; flat anchor refresh
+                                    (AQP-FVT.URC_TierFixed score-delta)                             ;; apply collectable delta [son?3:4]
+                                    (AQP-FVT.URC_TierFixed (AQP-FVT.URC_BookStakeUnclaimedIgnis
                                         (at "distinct-fvts" (AQP-FVT.URHC_BuildStakeSettleBundle pool-id benef)))) ;; book
-                                    (AQP-FVT.SIP|URC_Fixed (AQP-FVT.URC_CheckpointStakeRpsIgnis))   ;; checkpoint
+                                    (AQP-FVT.URC_TierFixed (AQP-FVT.URC_CheckpointStakeRpsIgnis))   ;; checkpoint
                                   ]))
                           unique-benefs))
                 ])
@@ -1092,23 +1092,23 @@
                 (unique-benefs:[string] (UC_VacateUniqueBeneficiariesFromLegs legs))
                 (n-live:integer (length (AQP-ANK.UR_ANK|AnchorsForAsset dptf-id)))
                 (bulk-arr:object (UC_VacateTfLegsToTftBulkArrays legs))
-                (anchor-ifp:decimal (+ (AQP-FVT.SIP|URC_Fixed (AQP-ANK.URC_TrueFungibleStakeAnchorRefreshIgnis n-live)) (AQP-FVT.SIP|URC_Biggest)))
-                (checkpoint:decimal (AQP-FVT.SIP|URC_Fixed (AQP-FVT.URC_CheckpointStakeRpsIgnis)))
+                (anchor-ifp:decimal (+ (AQP-FVT.URC_TierFixed (AQP-ANK.URC_TrueFungibleStakeAnchorRefreshIgnis n-live)) (AQP-FVT.URC_TierBiggest)))
+                (checkpoint:decimal (AQP-FVT.URC_TierFixed (AQP-FVT.URC_CheckpointStakeRpsIgnis)))
             )
             (fold (+) 0.0
-                [ (* (dec (length legs)) (+ (AQP-FVT.SIP|URC_Medium) (AQP-FVT.SIP|URC_Biggest)))    ;; Phase A per-leg tracker-zero + rollup
+                [ (* (dec (length legs)) (+ (AQP-FVT.URC_TierMedium) (AQP-FVT.URC_TierBiggest)))    ;; Phase A per-leg tracker-zero + rollup
                   (fold (+) 0.0
                       (map
                           (lambda (benef:string)
                               (if (= (- (AQP-POOL.UR_AQP|UserUnn pool-id benef)
                                         (length (filter (lambda (l:object{VCT|VacateTfLeg}) (= (at "beneficiary-id" l) benef)) legs)))
                                      0)
-                                  (+ (AQP-FVT.SIP|URC_Fixed (AQP-FVT.URC_BookStakeUnclaimedIgnis
+                                  (+ (AQP-FVT.URC_TierFixed (AQP-FVT.URC_BookStakeUnclaimedIgnis
                                         (at "distinct-fvts" (AQP-FVT.URHC_BuildStakeSettleBundle pool-id benef))))
                                      (+ checkpoint anchor-ifp))
                                   0.0))
                           unique-benefs))
-                  (AQP-FVT.SIP|URC_Fixed (ref-I|OURONET::OI|UC_IfpFromOutputCumulator               ;; bulk DPTF multi-transfer
+                  (AQP-FVT.URC_TierFixed (ref-I|OURONET::OI|UC_IfpFromOutputCumulator               ;; bulk DPTF multi-transfer
                       (TFT.URCi_MultiBulkTransferCumulator [dptf-id] AQP-POOL.AQP|SC_NAME
                           (at "receiver-array" bulk-arr) (at "transfer-amount-array" bulk-arr))))
                 ])
@@ -1128,12 +1128,12 @@
                     (UC_VacateUniqueBeneficiaries
                         (map (lambda (l:object{VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)))
                 (all-nonces:[integer] (fold (+) [] (map (lambda (l:object{VCT|VacateNonceLeg}) (at "nonces" l)) legs)))
-                (checkpoint:decimal (AQP-FVT.SIP|URC_Fixed (AQP-FVT.URC_CheckpointStakeRpsIgnis)))
+                (checkpoint:decimal (AQP-FVT.URC_TierFixed (AQP-FVT.URC_CheckpointStakeRpsIgnis)))
             )
             (fold (+) 0.0
-                [ (AQP-FVT.SIP|URC_Fixed (ref-I|OURONET::OI|UC_IfpFromOutputCumulator               ;; bulk DPOF transfer
+                [ (AQP-FVT.URC_TierFixed (ref-I|OURONET::OI|UC_IfpFromOutputCumulator               ;; bulk DPOF transfer
                       (DPOF.URCi_MoveCumulator dpof-id all-nonces false)))
-                  (* (AQP-FVT.SIP|URC_Medium) (dec (length all-nonces)))                            ;; per-row tracker (medium × total-nonces)
+                  (* (AQP-FVT.URC_TierMedium) (dec (length all-nonces)))                            ;; per-row tracker (medium × total-nonces)
                   (fold (+) 0.0
                       (map
                           (lambda (benef:string)
@@ -1141,7 +1141,7 @@
                                         (fold (+) 0 (map (lambda (l:object{VCT|VacateNonceLeg}) (length (at "nonces" l)))
                                                          (filter (lambda (l:object{VCT|VacateNonceLeg}) (= (at "beneficiary-id" l) benef)) legs))))
                                      0)
-                                  (+ (AQP-FVT.SIP|URC_Fixed (AQP-FVT.URC_BookStakeUnclaimedIgnis
+                                  (+ (AQP-FVT.URC_TierFixed (AQP-FVT.URC_BookStakeUnclaimedIgnis
                                         (at "distinct-fvts" (AQP-FVT.URHC_BuildStakeSettleBundle pool-id benef))))
                                      checkpoint)
                                   0.0))
@@ -1166,15 +1166,15 @@
                 (unique-benefs:[string]
                     (UC_VacateUniqueBeneficiaries
                         (map (lambda (l:object{VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)))
-                (checkpoint:decimal (AQP-FVT.SIP|URC_Fixed (AQP-FVT.URC_CheckpointStakeRpsIgnis)))
+                (checkpoint:decimal (AQP-FVT.URC_TierFixed (AQP-FVT.URC_CheckpointStakeRpsIgnis)))
             )
             (fold (+) 0.0
-                [ (AQP-FVT.SIP|URC_Fixed (ref-I|OURONET::OI|UC_IfpFromOutputCumulator               ;; bulk DPDC-T transfer
+                [ (AQP-FVT.URC_TierFixed (ref-I|OURONET::OI|UC_IfpFromOutputCumulator               ;; bulk DPDC-T transfer
                       (DPDC-T.URCi_BulkTransferCumulator collectable-id son AQP-POOL.AQP|SC_NAME
                           (map (lambda (l:object{VCT|VacateNonceLeg}) (at "owner-id" l)) legs)
                           nonces-array amounts-array)))
-                  (* (* 2.0 (AQP-FVT.SIP|URC_Medium)) (dec (length (fold (+) [] nonces-array))))    ;; per-leg tracker + rollup
-                  (* (+ (AQP-FVT.SIP|URC_Medium) (AQP-FVT.SIP|URC_Biggest)) (dec (length legs)))    ;; per-leg flat anchor refresh
+                  (* (* 2.0 (AQP-FVT.URC_TierMedium)) (dec (length (fold (+) [] nonces-array))))    ;; per-leg tracker + rollup
+                  (* (+ (AQP-FVT.URC_TierMedium) (AQP-FVT.URC_TierBiggest)) (dec (length legs)))    ;; per-leg flat anchor refresh
                   (fold (+) 0.0
                       (map
                           (lambda (benef:string)
@@ -1182,7 +1182,7 @@
                                         (fold (+) 0 (map (lambda (l:object{VCT|VacateNonceLeg}) (length (at "nonces" l)))
                                                          (filter (lambda (l:object{VCT|VacateNonceLeg}) (= (at "beneficiary-id" l) benef)) legs))))
                                      0)
-                                  (+ (AQP-FVT.SIP|URC_Fixed (AQP-FVT.URC_BookStakeUnclaimedIgnis
+                                  (+ (AQP-FVT.URC_TierFixed (AQP-FVT.URC_BookStakeUnclaimedIgnis
                                         (at "distinct-fvts" (AQP-FVT.URHC_BuildStakeSettleBundle pool-id benef))))
                                      checkpoint)
                                   0.0))

@@ -48,48 +48,9 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    ;;{F0}  [UC]  — gas-price gate (mirrors INFO-ONE UC|GasPrice: zero when the toggle is off)
-    (defun UC|GasPrice:decimal (full-price:decimal trigger:bool)
-        @doc "Full price when live billing is on (trigger=false); 0.0 when the gas toggle zeroes it."
-        (if trigger 0.0 full-price)
-    )
-    ;;{F1}  [SIP|URC]  — Simple Ignis Price: one named UsagePrice tier behind the virtual-gas gate
-    (defun SIP|URC_Small:decimal ()
-        @doc "IGNIS tier 'ignis|small' behind the virtual-gas toggle."
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS) (ref-DALOS:module{OuronetDalosV1} DALOS))
-            (UC|GasPrice (ref-DALOS::UR_UsagePrice "ignis|small") (ref-IGNIS::URC_IsVirtualGasZero)))
-    )
-    (defun SIP|URC_Medium:decimal ()
-        @doc "IGNIS tier 'ignis|medium' behind the virtual-gas toggle (score/FVT rotate & control, enable-deb-boost)."
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS) (ref-DALOS:module{OuronetDalosV1} DALOS))
-            (UC|GasPrice (ref-DALOS::UR_UsagePrice "ignis|medium") (ref-IGNIS::URC_IsVirtualGasZero)))
-    )
-    (defun SIP|URC_Big:decimal ()
-        @doc "IGNIS tier 'ignis|big' behind the virtual-gas toggle."
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS) (ref-DALOS:module{OuronetDalosV1} DALOS))
-            (UC|GasPrice (ref-DALOS::UR_UsagePrice "ignis|big") (ref-IGNIS::URC_IsVirtualGasZero)))
-    )
-    (defun SIP|URC_Biggest:decimal ()
-        @doc "IGNIS tier 'ignis|biggest' behind the virtual-gas toggle (anchor/boost-class revokes, score boost-links)."
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS) (ref-DALOS:module{OuronetDalosV1} DALOS))
-            (UC|GasPrice (ref-DALOS::UR_UsagePrice "ignis|biggest") (ref-IGNIS::URC_IsVirtualGasZero)))
-    )
-    (defun SIP|URC_Fixed:decimal (gas-cost:decimal)
-        @doc "A FIXED GAS| constant (read cross-module from the executing core) behind the virtual-gas toggle."
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS))
-            (UC|GasPrice gas-cost (ref-IGNIS::URC_IsVirtualGasZero)))
-    )
-    ;;{F2}  [SKP|URC]  — Simple Stoa Price: a native UsagePrice charge behind the native-gas gate
-    (defun SKP|URC_Standard:decimal (multiplier:decimal)
-        @doc "Native STOA 'standard' × multiplier behind the native-gas toggle (anchor issue: mult 2 when acnoi)."
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS) (ref-DALOS:module{OuronetDalosV1} DALOS))
-            (UC|GasPrice (* (ref-DALOS::UR_UsagePrice "standard") multiplier) (ref-IGNIS::URC_IsNativeGasZero)))
-    )
-    (defun SKP|URC_Smart:decimal ()
-        @doc "Native STOA 'smart' behind the native-gas toggle (score/pool/FVT issue)."
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS) (ref-DALOS:module{OuronetDalosV1} DALOS))
-            (UC|GasPrice (ref-DALOS::UR_UsagePrice "smart") (ref-IGNIS::URC_IsNativeGasZero)))
-    )
+    ;;{F0-F2}  [UC/SIP/SKP]  — REMOVED. Every AQP INFO now sources its cost from a core URCi_ reader
+    ;;   (AQP-{ANK,SCORE,POOL,FVT,VCT,DSA}.URCi_*, via OI|UC_IfpFromOutputCumulator / OI|UDC_DynamicStoaCost),
+    ;;   so the local price-tier gates (UC|GasPrice / SIP|URC_* / SKP|URC_*) are no longer used here.
     ;;{F3}  [INFO]  — one per AQP user/admin entrypoint, grouped by source module
     ;;
     ;;<====================>
@@ -371,10 +332,6 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                ;; mirror C_IssueSemiFungibleScoreDefinition: (* (dec (length nonces)) (UsagePrice "ignis|big"))
-                (ifp:decimal (UC|GasPrice (* (dec (length nonces)) (ref-DALOS::UR_UsagePrice "ignis|big")) (ref-IGNIS::URC_IsVirtualGasZero)))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Write Semi-Fungible score definition rows (one per nonce)." "Executes via TS02-C3.AQP-SCR|C_IssueSemiFungibleScoreDefinition."]
@@ -389,9 +346,6 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ifp:decimal (UC|GasPrice (* (dec (length trait-keys)) (ref-DALOS::UR_UsagePrice "ignis|biggest")) (ref-IGNIS::URC_IsVirtualGasZero)))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Write Non-Fungible trait-score definition rows (one per trait)." "Executes via TS02-C3.AQP-SCR|C_IssueNonFungibleScoreDefinition."]
@@ -406,9 +360,6 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ifp:decimal (UC|GasPrice (* (dec (length dpnf-nonce-classes)) (ref-DALOS::UR_UsagePrice "ignis|biggest")) (ref-IGNIS::URC_IsVirtualGasZero)))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Write Non-Fungible SET score definition rows (one per nonce-class)." "Executes via TS02-C3.AQP-SCR|C_IssueNonFungibleSetScoreDefinition."]
@@ -1090,7 +1041,7 @@
                 []))
     )
     (defun AQP-DSA|INFO_ToggleExternalOracle:object{OuronetInfoV1.ClientInfo}
-        (patron:string on:bool)
+        (on:bool)
         @doc "Cost preview for AQP-DSA|A_ToggleExternalOracle. Chain-wide GOV switch — no IGNIS/STOA."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -1103,7 +1054,7 @@
                 []))
     )
     (defun AQP-DSA|INFO_SetOracleValidity:object{OuronetInfoV1.ClientInfo}
-        (patron:string seconds:integer)
+        (seconds:integer)
         @doc "Cost preview for AQP-DSA|A_SetOracleValidity. Chain-wide GOV switch — no IGNIS/STOA."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
             (ref-I|OURONET::OI|UDC_ClientInfo

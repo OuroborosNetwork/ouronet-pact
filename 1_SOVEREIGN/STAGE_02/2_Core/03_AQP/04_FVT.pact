@@ -5780,27 +5780,27 @@
         (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|COLLECT (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
     ;; [URCi]   multi-leg STAKE/UNSTAKE flow ifp readers — relocated from AQP-INFO (byte-identical ifp sums).
     ;;   Mirror CC_*StakeFlow leg-for-leg; every leg gated by the virtual-gas toggle so toggle-on -> 0.
-    ;;   Tier gates below reproduce AQP-INFO's SIP|URC_* (UsagePrice tier behind URC_IsVirtualGasZero);
+    ;;   Tier gates below reproduce the UsagePrice tier behind URC_IsVirtualGasZero);
     ;;   AQP-VCT's vacate readers reach them + the two score-delta sums cross-module. Leg map:
     ;;   memories/2026-08-27-aqp-info-final17-costmap.md
-    (defun UC|GasPrice:decimal (full-price:decimal trigger:bool)
+    (defun UC_GasPrice:decimal (full-price:decimal trigger:bool)
         @doc "Full price when live billing is on (trigger=false); 0.0 when the gas toggle zeroes it."
         (if trigger 0.0 full-price)
     )
-    (defun SIP|URC_Medium:decimal ()
+    (defun URC_TierMedium:decimal ()
         @doc "IGNIS tier 'ignis|medium' behind the virtual-gas toggle."
         (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS) (ref-DALOS:module{OuronetDalosV1} DALOS))
-            (UC|GasPrice (ref-DALOS::UR_UsagePrice "ignis|medium") (ref-IGNIS::URC_IsVirtualGasZero)))
+            (UC_GasPrice (ref-DALOS::UR_UsagePrice "ignis|medium") (ref-IGNIS::URC_IsVirtualGasZero)))
     )
-    (defun SIP|URC_Biggest:decimal ()
+    (defun URC_TierBiggest:decimal ()
         @doc "IGNIS tier 'ignis|biggest' behind the virtual-gas toggle."
         (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS) (ref-DALOS:module{OuronetDalosV1} DALOS))
-            (UC|GasPrice (ref-DALOS::UR_UsagePrice "ignis|biggest") (ref-IGNIS::URC_IsVirtualGasZero)))
+            (UC_GasPrice (ref-DALOS::UR_UsagePrice "ignis|biggest") (ref-IGNIS::URC_IsVirtualGasZero)))
     )
-    (defun SIP|URC_Fixed:decimal (gas-cost:decimal)
+    (defun URC_TierFixed:decimal (gas-cost:decimal)
         @doc "A FIXED IGNIS gas cost behind the virtual-gas toggle."
         (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS))
-            (UC|GasPrice gas-cost (ref-IGNIS::URC_IsVirtualGasZero)))
+            (UC_GasPrice gas-cost (ref-IGNIS::URC_IsVirtualGasZero)))
     )
     (defun URC_StakeScoreDeltaSum:decimal (pool-id:string)
         @doc "Phase-4 leg: Σ SCORE.URC_StakeScoreDeltaIgnisUnit over POOL.URC_PoolActiveScoreIds (raw, ungated)."
@@ -5835,16 +5835,16 @@
                 (n-live:integer   (length (AQP-ANK.UR_ANK|AnchorsForAsset dptf-id)))
             )
             (fold (+) 0.0
-                [ (SIP|URC_Fixed (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                     ;; 1.1 custody transfer
+                [ (URC_TierFixed (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                     ;; 1.1 custody transfer
                       (TFT.URCi_TransferCumulator xfer-type dptf-id sender receiver)))
-                  (SIP|URC_Medium)                                                                 ;; 1.2 pool tracker (medium ×1)
-                  (SIP|URC_Biggest)                                                                ;; 1.3 ben rollup   (biggest ×1)
-                  (SIP|URC_Fixed (URC_SettleStakePendingIgnis settle-scores distinct-fvts))        ;; 2   RPS settle
-                  (SIP|URC_Fixed (AQP-ANK.URC_TrueFungibleStakeAnchorRefreshIgnis n-live))         ;; 3.1a ANK anchor refresh
-                  (SIP|URC_Biggest)                                                                ;; 3.1b XB sync-count (biggest ×1)
-                  (SIP|URC_Fixed (URC_StakeScoreDeltaSum pool-id))                                 ;; 4   score delta
-                  (SIP|URC_Fixed (URC_BookStakeUnclaimedIgnis distinct-fvts))                      ;; 5.1 book unclaimed
-                  (SIP|URC_Fixed (URC_CheckpointStakeRpsIgnis))                                    ;; 5.2 checkpoint
+                  (URC_TierMedium)                                                                 ;; 1.2 pool tracker (medium ×1)
+                  (URC_TierBiggest)                                                                ;; 1.3 ben rollup   (biggest ×1)
+                  (URC_TierFixed (URC_SettleStakePendingIgnis settle-scores distinct-fvts))        ;; 2   RPS settle
+                  (URC_TierFixed (AQP-ANK.URC_TrueFungibleStakeAnchorRefreshIgnis n-live))         ;; 3.1a ANK anchor refresh
+                  (URC_TierBiggest)                                                                ;; 3.1b XB sync-count (biggest ×1)
+                  (URC_TierFixed (URC_StakeScoreDeltaSum pool-id))                                 ;; 4   score delta
+                  (URC_TierFixed (URC_BookStakeUnclaimedIgnis distinct-fvts))                      ;; 5.1 book unclaimed
+                  (URC_TierFixed (URC_CheckpointStakeRpsIgnis))                                    ;; 5.2 checkpoint
                 ])
         )
     )
@@ -5862,13 +5862,13 @@
                 (nn:decimal       (dec (length nonces)))
             )
             (fold (+) 0.0
-                [ (SIP|URC_Fixed (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                     ;; 1.1 transfer (dir-indep)
+                [ (URC_TierFixed (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                     ;; 1.1 transfer (dir-indep)
                       (DPOF.URCi_MoveCumulator dpof-id nonces false)))
-                  (* (SIP|URC_Medium) nn)                                                          ;; 1.2 tracker (medium × |nonces|)
-                  (SIP|URC_Fixed (URC_SettleStakePendingIgnis settle-scores distinct-fvts))        ;; 2   RPS settle
-                  (SIP|URC_Fixed (URC_StakeScoreDeltaSumForClasses pool-id [0 2]))                 ;; 4   score delta (class ∈ {0,2})
-                  (SIP|URC_Fixed (URC_BookStakeUnclaimedIgnis distinct-fvts))                      ;; 5.1 book unclaimed
-                  (SIP|URC_Fixed (URC_CheckpointStakeRpsIgnis))                                    ;; 5.2 checkpoint
+                  (* (URC_TierMedium) nn)                                                          ;; 1.2 tracker (medium × |nonces|)
+                  (URC_TierFixed (URC_SettleStakePendingIgnis settle-scores distinct-fvts))        ;; 2   RPS settle
+                  (URC_TierFixed (URC_StakeScoreDeltaSumForClasses pool-id [0 2]))                 ;; 4   score delta (class ∈ {0,2})
+                  (URC_TierFixed (URC_BookStakeUnclaimedIgnis distinct-fvts))                      ;; 5.1 book unclaimed
+                  (URC_TierFixed (URC_CheckpointStakeRpsIgnis))                                    ;; 5.2 checkpoint
                 ])
         )
     )
@@ -5891,16 +5891,16 @@
                 (tgt-class:integer (if son 3 4))
             )
             (fold (+) 0.0
-                [ (SIP|URC_Fixed (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                     ;; 1.1 transfer (dir-dep)
+                [ (URC_TierFixed (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                     ;; 1.1 transfer (dir-dep)
                       (DPDC-T.URCi_MultiTransferCumulator [collectable-id] [son] sender receiver [nonces] [nonce-amounts])))
-                  (* (SIP|URC_Medium) nn)                                                          ;; 1.2 tracker (medium × |nonces|)
-                  (* (SIP|URC_Medium) nn)                                                          ;; 1.3 rollup  (medium × |nonces|)
-                  (SIP|URC_Fixed (URC_SettleStakePendingIgnis settle-scores distinct-fvts))        ;; 2   RPS settle
-                  (SIP|URC_Medium)                                                                 ;; 3 anchor flat medium
-                  (SIP|URC_Biggest)                                                                ;; 3 anchor flat biggest
-                  (SIP|URC_Fixed (URC_StakeScoreDeltaSumForClasses pool-id [tgt-class]))           ;; 4 score delta (class == son?3:4)
-                  (SIP|URC_Fixed (URC_BookStakeUnclaimedIgnis distinct-fvts))                      ;; 5.1 book unclaimed
-                  (SIP|URC_Fixed (URC_CheckpointStakeRpsIgnis))                                    ;; 5.2 checkpoint
+                  (* (URC_TierMedium) nn)                                                          ;; 1.2 tracker (medium × |nonces|)
+                  (* (URC_TierMedium) nn)                                                          ;; 1.3 rollup  (medium × |nonces|)
+                  (URC_TierFixed (URC_SettleStakePendingIgnis settle-scores distinct-fvts))        ;; 2   RPS settle
+                  (URC_TierMedium)                                                                 ;; 3 anchor flat medium
+                  (URC_TierBiggest)                                                                ;; 3 anchor flat biggest
+                  (URC_TierFixed (URC_StakeScoreDeltaSumForClasses pool-id [tgt-class]))           ;; 4 score delta (class == son?3:4)
+                  (URC_TierFixed (URC_BookStakeUnclaimedIgnis distinct-fvts))                      ;; 5.1 book unclaimed
+                  (URC_TierFixed (URC_CheckpointStakeRpsIgnis))                                    ;; 5.2 checkpoint
                 ])
         )
     )
