@@ -10,7 +10,7 @@
         \ registry, Arweave upload audit log, and StoicTag name registry. It declares UC \
         \ validators (Apollo composite id, Arweave tx-id, StoicTag name/fee), UR field \
         \ accessors and DataOrNull readers over the CODEX tables, URCi cost single-sources \
-        \ and INFO_ previews for StoicTag register/release, plus A_/C_ entrypoints to \
+        \ for StoicTag register/release, plus A_/C_ entrypoints to \
         \ register identities, rotate codex guards, record Arweave uploads, and \
         \ register/release StoicTags. Client entrypoints are wired through Talos TS01-C4."
 
@@ -97,16 +97,12 @@
     ;;
     ;; [URC]
     (defun URC_AWT|LatestUpload:object (codex-id:string))
-    ;;
-    ;; [INFO] UI previews — register: STOA always (C_STOA|CollectWT false); release: IGNIS per virtual-gas rules
-    (defun INFO_CODEX|RegisterStoicTag:object{OuronetInfoV2.ClientInfo}
-        (patron:string tag-name:string account-address:string))
-    (defun INFO_CODEX|ReleaseStoicTag:object{OuronetInfoV2.ClientInfo}
-        (patron:string tag-name:string))
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
+    ;; NOTE: INFO_CODEX|* previews are UI-only → NOT declared here (canon: INFO not in
+    ;; interfaces); they live in the CODEX module's {5.3} Read block.
     ;;
     (defun A_RegisterCodexIdentity:string
         ( codex-id:string

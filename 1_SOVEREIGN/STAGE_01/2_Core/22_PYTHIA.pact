@@ -105,36 +105,12 @@
     (defun URH_ListInactiveDualLinks:[object] ())
     (defun URH_ActiveDualLinkSet:[string] ())
     (defun URH_ApiKeyByConsumer:object (smart-apollo:string))
-    ;;
-    ;; [INFO]
-    (defun INFO_PYTHIA|DeployApiKey:object{OuronetInfoV2.ClientInfo}
-        (
-            patron:string
-            owner-account:string
-            apollo-account:string
-            public:string
-        ))
-    (defun INFO_PYTHIA|LinkDualApiKey:object{OuronetInfoV2.ClientInfo}
-        (
-            standard-apollo:string
-            smart-apollo:string
-            consumer-lane:string
-        ))
-    (defun INFO_PYTHIA|UnlinkDualApiKey:object{OuronetInfoV2.ClientInfo}
-        (
-            patron:string
-            dual-link-key:string
-        ))
-    (defun INFO_PYTHIA|UpdateDualConsumerLane:object{OuronetInfoV2.ClientInfo}
-        (
-            patron:string
-            dual-link-key:string
-            new-name:string
-        ))
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
+    ;; NOTE: INFO_PYTHIA|* previews are UI-only → NOT declared here (canon: INFO not in
+    ;; interfaces); they live in the PYTHIA module's {5.3} Read block.
     ;;
     (defun A_LinkDualApiKey:string (standard-apollo:string smart-apollo:string))
         ;; Cronoton: create+activate (auto PYTHIA-<hash12> lane) or flip inactive→true
@@ -1166,7 +1142,7 @@
             )
         )
     )
-    (defun INFO_PYTHIA|LinkDualApiKey:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_PYTHIA|Link:object{OuronetInfoV2.ClientInfo}
         (
             standard-apollo:string
             smart-apollo:string
@@ -1198,7 +1174,7 @@
             )
         )
     )
-    (defun INFO_PYTHIA|UnlinkDualApiKey:object{OuronetInfoV2.ClientInfo}
+    (defun INFO_PYTHIA|RevokeLink:object{OuronetInfoV2.ClientInfo}
         (
             patron:string
             dual-link-key:string
