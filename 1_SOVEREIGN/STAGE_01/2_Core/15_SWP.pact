@@ -141,6 +141,7 @@
     (defun UEV_SleepingLP (swpair:string state:bool))
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
+    (defun XE_AddLPTracker (lp-id:string swpair:string))
     ;;
     (defun XB_ModifyWeights (swpair:string new-weights:[decimal]))
     ;;
