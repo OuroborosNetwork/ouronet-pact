@@ -3,6 +3,39 @@
 ;;
 (interface OuronetConstantsV1
     @doc "Exported Constants as Functions from this Module via interface"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
     ;;
     (defun CT_NS_USE ())
     (defun CT_GOV|UTILS ())
@@ -93,35 +126,158 @@
     (defun CT_N75 ())
     (defun CT_N76 ())
     (defun CT_N77 ())
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
 )
 (interface DiaStoaPidV1
     @doc "Exposes the UR Function that Reads STOA Price in Dollars (STOA-PID) via Dia Oracle on Chain 2"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
     (defun UR_STOA-PID|Price:decimal ())
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
 )
 ;;
 ;;  [2]      [U|G]
 ;;
 (interface OuronetGuardsV1
     @doc "Exported Functions from this Module via interface"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
     ;;
     (defun UC_Try (g:guard))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
     ;;
     (defun UEV_All:bool (guards:[guard]))
     (defun UEV_Any:bool (guards:[guard]))
     (defun UEV_GuardOfAll:guard (guards:[guard]))
     (defun UEV_GuardOfAny:guard (guards:[guard]))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
 )
 ;;
 ;;  [3]      [U|ST]
 ;;
 (interface OuronetGasStationV1
     @doc "Exported Ouronet Gas Station Functions"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
     (defun UR_chain-gas-price ())
     (defun UR_chain-gas-limit ())
     ;;
     (defun URC_chain-gas-notional ())
+    ;;{5.4}  Validate [UEV/CAP]
     ;;
     (defun UEV_max-gas-notional:guard (gasNotional:decimal))
     (defun UEV_enforce-below-gas-notional (gasNotional:decimal))
@@ -132,21 +288,99 @@
     (defun UEV_max-gas-limit:guard (gasLimit:integer))
     (defun UEV_enforce-below-gas-limit:bool (gasLimit:integer))
     (defun UEV_enforce-below-or-at-gas-limit:bool (gasLimit:integer))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
 )
 ;;
 ;;  [4]      [U|RS]
 ;;
 (interface ReservedAccountsV1
     @doc "Exported Reserved Account Functions"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
     ;;
     (defun UEV_CheckReserved:string (account:string))
     (defun UEV_EnforceReserved:bool (account:string guard:guard))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
 )
 ;;
 ;;  [5]      [U|LST]
 ;;
 (interface StringProcessorV1
     @doc "Exported List and String Processor Functions"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
     ;;
     (defun UC_AppL:list (in:list item))
     (defun UC_Chain:list (in:list))
@@ -161,17 +395,44 @@
     (defun UC_Search:[integer] (searchee:list item))
     (defun UC_SecondListElement (in:list))
     (defun UC_SplitString:[string] (splitter:string splitee:string))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
     ;;
     (defun UEV_NotEmpty:bool (x:list))
     (defun UEV_StringPresence (item:string item-lst:[string]))
     ;;#44M fix: moved from [UC] - was UC_IzUnique, enforces (violates UC_ contract), renamed.
     (defun UEV_IzUnique (lst:[string]))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
 )
 ;;
 ;;  [6]      [U|INT]
 ;;
 (interface OuronetIntegersV1
     @doc "Exported Integer Functions"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
     (defschema NonceSplitter
         negative-nonces:[integer]
         positive-nonces:[integer]
@@ -182,10 +443,28 @@
         negative:[integer]
         positive:[integer]
     )
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;
+    (defun UDC_SplitIntegers:object{SplitIntegers} (neg:[integer] pos:[integer]))
+    (defun UDC_NonceSplitter:object{NonceSplitter} (a:[integer] b:[integer] c:[integer] d:[integer]))
+    ;;{5.2}  Compute [UC]
     ;;
     (defun UC_SplitAuxiliaryIntegerList:object{SplitIntegers} (primary:[integer] auxiliary:[integer]))
     (defun UC_SplitIntegerList:object{SplitIntegers} (input:[integer]))
     (defun UC_NonceSplitter:object{NonceSplitter} (nonces:[integer] amounts:[integer]))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
     ;;
     (defun UEV_ContainsAll:bool (l1:[integer] l2:[integer]))
     (defun UEV_PositionalVariable (integer-to-validate:integer positions:integer message:string))
@@ -196,15 +475,50 @@
     ;;case), so the correct fix is a real `enforce`, not a silent default - same root cause/fix
     ;;shape as #44M's UC_IzUnique -> UEV_IzUnique rename.
     (defun UEV_MaxInteger:integer (lst:[integer]))
-    ;;
-    (defun UDC_SplitIntegers:object{SplitIntegers} (neg:[integer] pos:[integer]))
-    (defun UDC_NonceSplitter:object{NonceSplitter} (a:[integer] b:[integer] c:[integer] d:[integer]))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
 )
 ;;
 ;;  [7]      [U|DEC]
 ;;
 (interface OuronetDecimalsV1
     @doc "Exported Decimal Functions"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
     ;;
     (defun UC_AddArray:[decimal] (array:[[decimal]]))
     (defun UC_AddHybridArray (lists)) ;;2
@@ -212,14 +526,57 @@
     (defun UC_Percent:decimal (x:decimal percent:decimal precision:integer)) ;;3
     (defun UC_Promille:decimal (x:decimal promille:decimal precision:integer)) ;;1
     (defun UC_UnlockPrice:[decimal] (unlocks:integer dptf-or-ats:bool)) ;;2
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
     ;;
     (defun UEV_DecimalArray (array:[[decimal]])) ;;1
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
 )
 ;;
 ;;  [8]      [U|DALOS]
 ;;
 (interface UtilityDalosV1
     @doc "Exported Utility Functions for the DALOS Module"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;
+    (defun UDC_Makeid:string (ticker:string))
+    (defun UDC_MakeMVXNonce:string (nonce:integer))
+    ;;{5.2}  Compute [UC]
     ;;
     (defun UC_TenTwentyThirtyFourtySplit:[decimal] (input:decimal ip:integer))
     (defun UC_DirectFilterId:[string] (listoflists:[[string]] account:string))
@@ -231,38 +588,157 @@
     (defun UC_IzCharacterANC:bool (c:string capital:bool iz-special:bool))
     (defun UC_IzStringANC:bool (s:string capital:bool iz-special:bool))
     (defun UC_NewRoleList (current-lst:[string] account:string direction:bool))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
     ;;
     (defun UEV_Decimals:bool (decimals:integer))
     (defun UEV_Fee (fee:decimal))
     (defun UEV_NameOrTicker:bool (name-ticker:string name-or-ticker:bool iz-special:bool))
-    ;;
-    (defun UDC_Makeid:string (ticker:string))
-    (defun UDC_MakeMVXNonce:string (nonce:integer))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
 )
 (interface UtilityDalosGlyphsV1
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
     (defun GLYPH|UEV_DalosAccountCheck (account:string))
     (defun GLYPH|UEV_DalosAccount (account:string))
     (defun GLYPH|UEV_MsDc:bool (multi-s:string))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
 )
 (interface UtilityDalosGlyphsV2
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    (defun UC_IzStoicTagName:bool (name:string))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
     (defun GLYPH|UEV_DalosAccountCheck (account:string))
     (defun GLYPH|UEV_DalosAccount (account:string))
     (defun GLYPH|UEV_ApolloAccountCheck (account:string smart:bool))
     (defun GLYPH|UEV_ApolloAccount (account:string smart:bool))
     (defun GLYPH|UEV_MsDc:bool (multi-s:string))
-    (defun UC_IzStoicTagName:bool (name:string))
     (defun UEV_StoicTagName (name:string))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
 )
 ;;
 ;;  [9]      [U|ATS]
 ;;
 (interface UtilityAtsV1
     @doc "Exported Utility Functions for the ATS and ATSU Modules"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
     ;;
     (defschema Awo
         reward-tokens:[decimal]
         cull-time:time
     )
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;
+    (defun UDC_Elite (x:decimal))
+    ;;{5.2}  Compute [UC]
     ;;
     (defun UC_IzCullable:bool (input:object{Awo}))
     (defun UC_IzUnstakeObjectValid:bool (input:object{Awo}))
@@ -275,6 +751,8 @@
     (defun UC_SplitBalanceWithBooleans:[decimal] (precision:integer amount:decimal milestones:integer boolean:[bool]))
     (defun UC_SplitByIndexedRBT:[decimal] (rbt-amount:decimal pair-rbt-supply:decimal index:decimal resident-amounts:[decimal] rt-precisions:[integer]))
     (defun UC_UnlockPrice:[decimal] (unlocks:integer))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
     ;;
     (defun UEV_AutostakeIndex (ats:string))
     (defun UEV_UniqueAtspair (ats:string))
@@ -287,16 +765,54 @@
     (defun UEV_HibernationFees (peak:decimal decay:decimal))
         ;;
     (defun UEV_ColdDurationParameters (soft-or-hard:bool base:integer growth:integer))
-    ;;
-    (defun UDC_Elite (x:decimal))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
 )
 (interface UtilityAtsV2
     @doc "Exported Utility Functions for the ATS and ATSU Modules (V2: StoicTag index helpers)"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
     ;;
     (defschema Awo
         reward-tokens:[decimal]
         cull-time:time
     )
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;
+    (defun UDC_Elite (x:decimal))
+    ;;{5.2}  Compute [UC]
     ;;
     (defun UC_IzCullable:bool (input:object{Awo}))
     (defun UC_IzUnstakeObjectValid:bool (input:object{Awo}))
@@ -310,10 +826,12 @@
     (defun UC_SplitBalanceWithBooleans:[decimal] (precision:integer amount:decimal milestones:integer boolean:[bool]))
     (defun UC_SplitByIndexedRBT:[decimal] (rbt-amount:decimal pair-rbt-supply:decimal index:decimal resident-amounts:[decimal] rt-precisions:[integer]))
     (defun UC_UnlockPrice:[decimal] (unlocks:integer))
-    ;;
-    (defun UEV_AutostakeIndex (ats:string))
     (defun UC_IzStoicTagIndexChar:bool (c:string))
     (defun UC_IzStoicTagIndex:bool (name:string))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;
+    (defun UEV_AutostakeIndex (ats:string))
     (defun UEV_StoicTagIndex (name:string))
     (defun UEV_UniqueAtspair (ats:string))
         ;;
@@ -325,8 +843,10 @@
     (defun UEV_HibernationFees (peak:decimal decay:decimal))
         ;;
     (defun UEV_ColdDurationParameters (soft-or-hard:bool base:integer growth:integer))
-    ;;
-    (defun UDC_Elite (x:decimal))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
 )
 ;;
 ;;  [10]     [U|DPTF]
@@ -334,6 +854,27 @@
 (interface UtilityDptfV1
     @doc "Exported Utility Functions for the DPTF Module \
         \ Commented Functions are internal use only and have no use outside the module"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
     ;;
     (defschema DispoData
         @doc "Stores the information needed to compute the maximum Negative Ouro an Account is allowed to overconsume"
@@ -344,8 +885,21 @@
         minor-tier:integer
         ouroboros-precision:integer
     )
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
     ;;
     (defun UDC_EmptyDispo:object{DispoData} ())
+    ;;{5.2}  Compute [UC]
     ;;
     (defun UC_TwoSplitter:[integer] (input:integer))
     (defun UC_FourSplitter:[integer] (input:integer))
@@ -354,6 +908,12 @@
     (defun UC_OuroDispo:decimal (input:object{DispoData}))
     (defun UC_UnlockPrice:[decimal] (unlocks:integer))
     (defun UC_VolumetricTax (precision:integer amount:decimal))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
 )
 ;;
 ;;  [11]     [U|VST]
@@ -361,6 +921,40 @@
 
 (interface UtilityVstV1
     @doc "Exported Utility Functions for the VST Module"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
     ;;
     (defun UC_MakeVestingDateList:[time] (offset:integer duration:integer milestones:integer))
     (defun UC_SplitBalanceForVesting:[decimal] (precision:integer amount:decimal milestones:integer))
@@ -372,15 +966,42 @@
     (defun UC_ReservedID:[string] (dptf-name:string dptf-ticker:string))
         ;;
     (defun UC_EquityID:[string] (sft-name:string sft-ticker:string))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
     ;;
     (defun UEV_Milestone (milestones:integer))
     (defun UEV_MilestoneWithTime (offset:integer duration:integer milestones:integer upper-limit-in-seconds:integer))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
 )
 ;;
 ;;  [12]     [U|SWP]
 ;;
 (interface UtilitySwpV1
     @doc "Exported Utility Functions for the SWP Module"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
     ;;
     ;;Raw Swap INPUT Data - <drsi> and <irsi>
     ;;Data needed to perform the actual swap computation with no fees.
@@ -475,6 +1096,29 @@
         ;;Virtual Swap Chains
         swaps:[object{DirectSwapInputData}] ;;Stores the Data of the Swaps in a Chain
     )
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;
+    ;;
+    (defun UDC_DirectRawSwapInput:object{DirectRawSwapInput} (a:decimal b:[decimal] c:[decimal] d:[integer] e:integer f:integer g:[decimal]))
+    (defun UDC_InverseRawSwapInput:object{InverseRawSwapInput} (a:decimal b:[decimal] c:decimal d:integer e:integer f:integer g:[decimal]))
+    (defun UDC_DirectSwapInputData:object{DirectSwapInputData} (a:[string] b:[decimal] c:string))
+    (defun UDC_ReverseSwapInputData:object{ReverseSwapInputData} (a:string b:decimal c:string))
+    (defun UDC_DirectTaxedSwapOutput:object{DirectTaxedSwapOutput} (a:[decimal] b:string c:decimal d:decimal e:decimal))
+    (defun UDC_InverseTaxedSwapOutput:object{InverseTaxedSwapOutput} (a:decimal b:decimal c:[decimal] d:string e:decimal))
+    (defun UDC_SwapFeez:object{SwapFeez} (a:decimal b:decimal c:decimal))
+    (defun UDC_VirtualSwapEngine:object{VirtualSwapEngine} (a:[string] b:[integer] c:string d:[decimal] e:string f:[decimal] g:decimal h:[decimal] i:object{SwapFeez} j:[decimal] k:[decimal] l:[decimal] m:[object{DirectSwapInputData}]))
+    ;;{5.2}  Compute [UC]
     ;;
     (defun UC_ComputeY (drsi:object{DirectRawSwapInput}))
     (defun UC_ComputeInverseY (irsi:object{InverseRawSwapInput}))
@@ -509,16 +1153,12 @@
     (defun UC_TokensFromSwpairString:[string] (swpair:string))
     (defun UC_UniqueTokens:[string] (swpairs:[string]))
     (defun UC_MakeLiquidityList (swpair:string ptp:integer amount:decimal))
-    ;;
-    ;;
-    (defun UDC_DirectRawSwapInput:object{DirectRawSwapInput} (a:decimal b:[decimal] c:[decimal] d:[integer] e:integer f:integer g:[decimal]))
-    (defun UDC_InverseRawSwapInput:object{InverseRawSwapInput} (a:decimal b:[decimal] c:decimal d:integer e:integer f:integer g:[decimal]))
-    (defun UDC_DirectSwapInputData:object{DirectSwapInputData} (a:[string] b:[decimal] c:string))
-    (defun UDC_ReverseSwapInputData:object{ReverseSwapInputData} (a:string b:decimal c:string))
-    (defun UDC_DirectTaxedSwapOutput:object{DirectTaxedSwapOutput} (a:[decimal] b:string c:decimal d:decimal e:decimal))
-    (defun UDC_InverseTaxedSwapOutput:object{InverseTaxedSwapOutput} (a:decimal b:decimal c:[decimal] d:string e:decimal))
-    (defun UDC_SwapFeez:object{SwapFeez} (a:decimal b:decimal c:decimal))
-    (defun UDC_VirtualSwapEngine:object{VirtualSwapEngine} (a:[string] b:[integer] c:string d:[decimal] e:string f:[decimal] g:decimal h:[decimal] i:object{SwapFeez} j:[decimal] k:[decimal] l:[decimal] m:[object{DirectSwapInputData}]))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
 )
 ;;
 ;;  [13]     [U|BFS]
@@ -526,6 +1166,27 @@
 (interface BreadthFirstSearchV1
     @doc "Interface exposing a Breadth-First-Search Implementation on Pact \
     \ Used in the SWP Modules to compute Paths between SWPair Tokens."
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
     ;;
     (defschema GraphNode
         node:string
@@ -540,9 +1201,28 @@
         node:string
         chain:[string]
     )
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
     ;;
     (defun UC_BFS:object{BFS} (graph:[object{GraphNode}] in:string))
     ;;#65hL: UC_BFS, with an early-exit once <target> has been reached — see the
     ;;defun's own doc for the full rationale. Additive, not a replacement.
     (defun UC_BFSTargeted:object{BFS} (graph:[object{GraphNode}] in:string target:string))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
 )

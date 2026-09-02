@@ -4,6 +4,45 @@
 (interface SwapperMtxV3
     @doc "Exposes SWP MultiStep (via defpact) Functions. \
         \ V3: issue pool caps use SwapperV3.PoolTokens (bumped with SwapperV3 row types)."
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
     ;;
     ;;
     ;;  []C] Functions
@@ -18,7 +57,7 @@
     (defun C_AddGlacialLiquidity (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
     (defun C_AddFrozenLiquidity (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal))
     (defun C_AddSleepingLiquidity (patron:string account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal))
-    ;;
+
 )
 ;;
 ;;HISTORICAL NOTE (owner, 2026-08-17, during SWP audit #C9): this module's whole reason to exist is
@@ -36,6 +75,7 @@
 ;;registration into XE_Issue itself, in 1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact, so every issuance path
 ;;gets it "for free" and this class of per-caller-remembers-it gap can't recur here.)
 (module MTX-SWP GOV
+
 
 
     ;;<=========================================================================>

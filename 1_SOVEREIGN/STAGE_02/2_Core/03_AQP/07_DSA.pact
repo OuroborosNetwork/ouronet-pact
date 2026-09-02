@@ -8,6 +8,41 @@
 ;;
 (interface DsaV1
     @doc "Delegated Staking Agencies — client/reader surface (v1; grows as the module is built)."
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
     (defun UR_DSA-TMP|UnitScore:integer (fvt-id:string))
     (defun UR_DSA-TMP|Active:bool (fvt-id:string))
@@ -15,9 +50,24 @@
     (defun UR_DSA-AGN|Nodes:integer (fvt-id:string score-entity-id:string))
     (defun UR_DSA-AGN|Uptime:integer (fvt-id:string score-entity-id:string))
     ;;
+    ;; [URCi]   cost readers — single source for exec billing + INFO preview
+    (defun URCi_DefineDelegationVault:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
+    (defun URCi_OpenAgency:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
+    (defun URCi_RecomputeCapture:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
+    (defun URCi_SetOracleAuth:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
+    (defun URCi_OracleWrite:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
+    (defun URCi_WithdrawRoyalty:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
+    (defun URCi_BurnRoyalty:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
+    (defun URCi_FuelRoyalty:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
+    (defun URCi_SetAgencyFee:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_OpenGate:bool (fvt-id:string score-entity-id:string))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+    ;;
     (defun A_DefineDelegationVault:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string model-id:string unit-score:integer))
-    (defun UEV_OpenGate:bool (fvt-id:string score-entity-id:string))
     (defun C_AdmitAgency:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer))
     (defun C_RecomputeCapture:object{IgnisCollectorV1.OutputCumulator}
@@ -36,21 +86,11 @@
         (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer))
     (defun A_ToggleExternalOracle:string (on:bool))
     (defun A_SetOracleValidity:string (seconds:integer))
-    ;;
-    ;; [URCi]   cost readers — single source for exec billing + INFO preview
-    (defun URCi_DefineDelegationVault:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
-    (defun URCi_OpenAgency:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
-    (defun URCi_RecomputeCapture:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
-    (defun URCi_SetOracleAuth:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
-    (defun URCi_OracleWrite:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
-    (defun URCi_WithdrawRoyalty:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
-    (defun URCi_BurnRoyalty:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
-    (defun URCi_FuelRoyalty:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
-    (defun URCi_SetAgencyFee:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
-    ;;
+
 )
 ;;
 (module AQP-DSA GOV
+
 
 
     ;;<=========================================================================>

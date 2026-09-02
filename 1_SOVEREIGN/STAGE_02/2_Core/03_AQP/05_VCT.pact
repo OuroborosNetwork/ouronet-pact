@@ -1,8 +1,43 @@
 (interface AcquisitionVacateV1
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
     (defun GOV|Demiurgoi ())
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
     ;; [UC]  compute
     (defun UC_ComputeMinSliceCount:integer (unit-count:integer vacate-kind:integer))
     (defun UC_ZeroIntAmountsMatrix:[[integer]] (nonces-array:[[integer]]))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;; [UR]  read
     (defun UR_VacateInProgress:bool (pool-id:string))
     (defun URC_PoolFullyVacated:bool (pool-id:string))
@@ -16,11 +51,15 @@
     (defun URH_VacateTfInventory:object (pool-id:string dptf-id:string))
     (defun URH_VacateOfInventory:object (pool-id:string dpof-id:string))
     (defun URH_VacateCollectableInventory:object (pool-id:string collectable-id:string son:bool))
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
     ;; [XB]
     (defun XB_VacateTrueFungible:object{IgnisCollectorV1.OutputCumulator} (pool-id:string))
     (defun XB_VacateOrtoFungible:object{IgnisCollectorV1.OutputCumulator} (pool-id:string dpof-id:string))
     (defun XB_VacateSemiFungible:object{IgnisCollectorV1.OutputCumulator} (pool-id:string dpsf-id:string))
     (defun XB_VacateNonFungible:object{IgnisCollectorV1.OutputCumulator} (pool-id:string dpnf-id:string))
+    ;;{5.7}  User [A/C]
     ;; [C]   client
     (defun CC_FullVacate:object{IgnisCollectorV1.OutputCumulator} (pool-id:string))
     (defun CCp_BatchVacateTrueFungible:object{IgnisCollectorV1.OutputCumulator}
@@ -37,6 +76,7 @@
         (pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
     (defun C_AbortVacate:object{IgnisCollectorV1.OutputCumulator} (pool-id:string))
     (defun C_FinalizeVacate:object{IgnisCollectorV1.OutputCumulator} (pool-id:string))
+
 )
 
 ;; =============================================================================
@@ -79,6 +119,7 @@
 ;; =============================================================================
 
 (module AQP-VCT GOV
+
 
 
     ;;<=========================================================================>

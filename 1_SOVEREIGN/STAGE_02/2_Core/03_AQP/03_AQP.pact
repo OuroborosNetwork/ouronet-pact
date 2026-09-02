@@ -1,5 +1,39 @@
 (interface AcquisitionPoolsV1
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
     (defun GOV|Demiurgoi ())
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
     ;; [UC]  compute
     ;;
     (defun UCk_DPTFTracker:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string))
@@ -12,6 +46,7 @@
     (defun UCk_BenDpsfAnkMeta:string (beneficiary-id:string dpsf-id:string))
     (defun UCk_BenDpnfAnkMeta:string (beneficiary-id:string dpnf-id:string))
     (defun UCk_UserOccupancy:string (pool-id:string beneficiary-id:string))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;; [UR]  read
     (defun UR_AQP|PoolAqpClass:integer (pool-id:string))
     (defun UR_AQP|PoolAssetId:string (pool-id:string))
@@ -108,6 +143,18 @@
     (defun URH_AQP|DpnfStakesByBeneficiary:[object] (beneficiary-id:string))
     (defun URH_AQP|BenDpsfActiveNonceSupplies:[object] (beneficiary-id:string dpsf-id:string))
     (defun URH_AQP|BenDpnfActiveNonceSupplies:[object] (beneficiary-id:string dpnf-id:string))
+    ;;
+    ;; [URCi]   cost readers — single source for exec billing + INFO preview (config/sync ops)
+    (defun URCi_Issue:object{IgnisCollectorV1.OutputCumulator} (output:[string]))
+    (defun URCi_IssueStoa:decimal ())
+    (defun URCi_AddScore:object{IgnisCollectorV1.OutputCumulator} (output:[string]))
+    (defun URCi_RevokeScore:object{IgnisCollectorV1.OutputCumulator} (output:[string]))
+    (defun URCi_SetPoolStake:object{IgnisCollectorV1.OutputCumulator} (output:[string]))
+    (defun URCi_SyncTrueFungibleAnchors:object{IgnisCollectorV1.OutputCumulator} (output:[string]))
+    (defun URCi_SyncCollectableAnchors:object{IgnisCollectorV1.OutputCumulator} (output:[string]))
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
     ;; [XE]
     ;;
     (defun XE_ZeroDptfTrackerSlot:object{IgnisCollectorV1.OutputCumulator}
@@ -178,6 +225,7 @@
     (defun XB_SetBenCollectableAnkSyncCount:object{IgnisCollectorV1.OutputCumulator}
         (beneficiary-id:string collectable-id:string son:bool)
     )
+    ;;{5.7}  User [A/C]
     ;; [C]   client
     ;;
     (defun C_Issue:object{IgnisCollectorV1.OutputCumulator}
@@ -202,17 +250,10 @@
     (defun C_SyncCollectableAnchors:object{IgnisCollectorV1.OutputCumulator}
         (patron:string beneficiary-id:string collectable-id:string son:bool)
     )
-    ;;
-    ;; [URCi]   cost readers — single source for exec billing + INFO preview (config/sync ops)
-    (defun URCi_Issue:object{IgnisCollectorV1.OutputCumulator} (output:[string]))
-    (defun URCi_IssueStoa:decimal ())
-    (defun URCi_AddScore:object{IgnisCollectorV1.OutputCumulator} (output:[string]))
-    (defun URCi_RevokeScore:object{IgnisCollectorV1.OutputCumulator} (output:[string]))
-    (defun URCi_SetPoolStake:object{IgnisCollectorV1.OutputCumulator} (output:[string]))
-    (defun URCi_SyncTrueFungibleAnchors:object{IgnisCollectorV1.OutputCumulator} (output:[string]))
-    (defun URCi_SyncCollectableAnchors:object{IgnisCollectorV1.OutputCumulator} (output:[string]))
+
 )
 (module AQP-POOL GOV
+
 
 
     ;;<=========================================================================>

@@ -4,13 +4,52 @@
 ;;
 (interface DemiourgosPactTrueFungibleV1
     @doc "Exposes most of the Functions related to True-Fungibles"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;
+    ;;  [UDC]
+    ;;
+    (defun UDC_TrueFungibleAccount:object{OuronetDalosV1.DPTF|BalanceSchema} (a:decimal b:bool c:bool d:bool e:bool f:bool g:string h:string))
+    ;;{5.2}  Compute [UC]
+    (defun UC_IdAccount:string (id:string account:string))
+    (defun UC_VolumetricTax (id:string amount:decimal))
+    (defun UC_TreasuryLowestDispo (ouro-supply:decimal ouro-precision:integer dispo-type:integer tdp:decimal tds:decimal))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
     ;;  [UC]
     ;;
     (defun URU_UpgradeTruefungibleToV2 (ids:[string]))
-    (defun UC_IdAccount:string (id:string account:string))
-    (defun UC_VolumetricTax (id:string amount:decimal))
-    (defun UC_TreasuryLowestDispo (ouro-supply:decimal ouro-precision:integer dispo-type:integer tdp:decimal tds:decimal))
     ;;
     ;;  [UR]
     ;;
@@ -87,6 +126,34 @@
     (defun URH_ExistingTrueFungibles:[string] (dptf:string))
     (defun URH_OwnedTrueFungibles:[string] (account:string))
     ;;
+    ;;  [URCi] cost readers — single source per op (the C_ bills them, INFO previews from them)
+    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator} (entity-id:string))
+    (defun URCi_RotateOwnership:object{IgnisCollectorV1.OutputCumulator} (id:string))
+    (defun URCi_Control:object{IgnisCollectorV1.OutputCumulator} (id:string))
+    (defun URCi_TogglePause:object{IgnisCollectorV1.OutputCumulator} (id:string))
+    (defun URCi_ToggleReservation:object{IgnisCollectorV1.OutputCumulator} (id:string))
+    (defun URCi_ToggleFee:object{IgnisCollectorV1.OutputCumulator} (id:string))
+    (defun URCi_SetMinMove:object{IgnisCollectorV1.OutputCumulator} (id:string))
+    (defun URCi_SetFee:object{IgnisCollectorV1.OutputCumulator} (id:string))
+    (defun URCi_SetFeeTarget:object{IgnisCollectorV1.OutputCumulator} (id:string))
+    (defun URCi_ToggleFreezeAccount:object{IgnisCollectorV1.OutputCumulator} (id:string))
+    (defun URCi_ToggleBurnRole:object{IgnisCollectorV1.OutputCumulator} (id:string))
+    (defun URCi_ToggleMintRole:object{IgnisCollectorV1.OutputCumulator} (id:string))
+    (defun URCi_ToggleFeeExemptionRole:object{IgnisCollectorV1.OutputCumulator} (id:string))
+    (defun URCi_ToggleTransferRole:object{IgnisCollectorV1.OutputCumulator} (id:string))
+    (defun URCi_WipeSlim:object{IgnisCollectorV1.OutputCumulator} (id:string))
+    (defun URCi_Wipe:object{IgnisCollectorV1.OutputCumulator} (id:string))
+    (defun URCi_Burn:object{IgnisCollectorV1.OutputCumulator} (id:string account:string))
+    (defun URCi_Mint:object{IgnisCollectorV1.OutputCumulator} (id:string account:string origin:bool))
+    (defun URCi_UpdateSpecialTrueFungible:object{IgnisCollectorV1.OutputCumulator} (main-dptf:string))
+    (defun URCi_ToggleFeeLock:object{IgnisCollectorV1.OutputCumulator} (id:string toggle:bool))
+    (defun URCi_IssueGas:decimal (token-count:integer))
+    (defun URCi_IssueStoa:decimal (token-count:integer))
+    (defun URCi_UpgradeBranding:decimal (months:integer))
+    (defun URCi_DeployAccount:object{IgnisCollectorV1.OutputCumulator} (account:string))
+    (defun URCi_ToggleFeeLockStoa:decimal (id:string toggle:bool))
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;
     ;;  [UEV]
     ;;
     (defun UEV_ParentOwnership (dptf:string))
@@ -118,13 +185,47 @@
     (defun UEV_Frozen (id:string existance:bool))
     (defun UEV_Reserved (id:string existance:bool))
     ;;
-    ;;  [UDC]
-    ;;
-    (defun UDC_TrueFungibleAccount:object{OuronetDalosV1.DPTF|BalanceSchema} (a:decimal b:bool c:bool d:bool e:bool f:bool g:string h:string))
-    ;;
     ;;  [CAP]
     ;;
     (defun CAP_Owner (id:string))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;
+    ;;  [X]
+    ;;
+    (defun XE_IssueLP:object{IgnisCollectorV1.OutputCumulator} (name:string ticker:string))
+    (defun XB_IssueFree:object{IgnisCollectorV1.OutputCumulator}
+        (
+            account:string
+            name:[string]
+            ticker:[string]
+            decimals:[integer]
+            ;;
+            can-upgrade:[bool]
+            can-change-owner:[bool]
+            can-add-special-role:[bool]
+            ;;
+            can-freeze:[bool]
+            can-wipe:[bool]
+            can-pause:[bool]
+            ;;
+            iz-special:[bool]
+        )
+    )
+    (defun XB_DeployAccountWNE (account:string id:string))
+    (defun XB_UpdateSupply (id:string amount:decimal direction:bool))
+    (defun XE_UpdateFeeVolume (id:string amount:decimal primary:bool))
+    (defun XE_UpdateRewardToken (atspair:string id:string direction:bool))
+    (defun XE_UpdateRewardBearingToken (atspair:string id:string))
+    (defun XE_UpdateVesting (dptf:string dpof:string))
+    (defun XE_UpdateSleeping (dptf:string dpof:string))
+    (defun XE_UpdateHibernation (dptf:string dpof:string))
+    (defun XE_UpdateSpecialTrueFungible:object{IgnisCollectorV1.OutputCumulator}
+        (main-dptf:string secondary-dptf:string fr-tag:integer)
+    )
+    (defun XB_DebitTrueFungible (id:string account:string amount:decimal dispo-data:object{UtilityDptfV1.DispoData} wipe-mode:bool))
+    (defun XB_CreditTrueFungible (id:string account:string amount:decimal))
+    ;;{5.7}  User [A/C]
     ;;
     ;;  [A]
     ;;
@@ -164,71 +265,11 @@
     (defun C_Mint:object{IgnisCollectorV1.OutputCumulator} (id:string account:string amount:decimal origin:bool))
     (defun C_WipeSlim:object{IgnisCollectorV1.OutputCumulator} (id:string account-to-be-wiped:string amount-to-be-wiped:decimal))
     (defun C_Wipe:object{IgnisCollectorV1.OutputCumulator} (id:string account-to-be-wiped:string))
-    ;;
-    ;;  [URCi] cost readers — single source per op (the C_ bills them, INFO previews from them)
-    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator} (entity-id:string))
-    (defun URCi_RotateOwnership:object{IgnisCollectorV1.OutputCumulator} (id:string))
-    (defun URCi_Control:object{IgnisCollectorV1.OutputCumulator} (id:string))
-    (defun URCi_TogglePause:object{IgnisCollectorV1.OutputCumulator} (id:string))
-    (defun URCi_ToggleReservation:object{IgnisCollectorV1.OutputCumulator} (id:string))
-    (defun URCi_ToggleFee:object{IgnisCollectorV1.OutputCumulator} (id:string))
-    (defun URCi_SetMinMove:object{IgnisCollectorV1.OutputCumulator} (id:string))
-    (defun URCi_SetFee:object{IgnisCollectorV1.OutputCumulator} (id:string))
-    (defun URCi_SetFeeTarget:object{IgnisCollectorV1.OutputCumulator} (id:string))
-    (defun URCi_ToggleFreezeAccount:object{IgnisCollectorV1.OutputCumulator} (id:string))
-    (defun URCi_ToggleBurnRole:object{IgnisCollectorV1.OutputCumulator} (id:string))
-    (defun URCi_ToggleMintRole:object{IgnisCollectorV1.OutputCumulator} (id:string))
-    (defun URCi_ToggleFeeExemptionRole:object{IgnisCollectorV1.OutputCumulator} (id:string))
-    (defun URCi_ToggleTransferRole:object{IgnisCollectorV1.OutputCumulator} (id:string))
-    (defun URCi_WipeSlim:object{IgnisCollectorV1.OutputCumulator} (id:string))
-    (defun URCi_Wipe:object{IgnisCollectorV1.OutputCumulator} (id:string))
-    (defun URCi_Burn:object{IgnisCollectorV1.OutputCumulator} (id:string account:string))
-    (defun URCi_Mint:object{IgnisCollectorV1.OutputCumulator} (id:string account:string origin:bool))
-    (defun URCi_UpdateSpecialTrueFungible:object{IgnisCollectorV1.OutputCumulator} (main-dptf:string))
-    (defun URCi_ToggleFeeLock:object{IgnisCollectorV1.OutputCumulator} (id:string toggle:bool))
-    (defun URCi_IssueGas:decimal (token-count:integer))
-    (defun URCi_IssueStoa:decimal (token-count:integer))
-    (defun URCi_UpgradeBranding:decimal (months:integer))
-    (defun URCi_DeployAccount:object{IgnisCollectorV1.OutputCumulator} (account:string))
-    (defun URCi_ToggleFeeLockStoa:decimal (id:string toggle:bool))
-    ;;
-    ;;  [X]
-    ;;
-    (defun XE_IssueLP:object{IgnisCollectorV1.OutputCumulator} (name:string ticker:string))
-    (defun XB_IssueFree:object{IgnisCollectorV1.OutputCumulator}
-        (
-            account:string
-            name:[string]
-            ticker:[string]
-            decimals:[integer]
-            ;;
-            can-upgrade:[bool]
-            can-change-owner:[bool]
-            can-add-special-role:[bool]
-            ;;
-            can-freeze:[bool]
-            can-wipe:[bool]
-            can-pause:[bool]
-            ;;
-            iz-special:[bool]
-        )
-    )
-    (defun XB_DeployAccountWNE (account:string id:string))
-    (defun XB_UpdateSupply (id:string amount:decimal direction:bool))
-    (defun XE_UpdateFeeVolume (id:string amount:decimal primary:bool))
-    (defun XE_UpdateRewardToken (atspair:string id:string direction:bool))
-    (defun XE_UpdateRewardBearingToken (atspair:string id:string))
-    (defun XE_UpdateVesting (dptf:string dpof:string))
-    (defun XE_UpdateSleeping (dptf:string dpof:string))
-    (defun XE_UpdateHibernation (dptf:string dpof:string))
-    (defun XE_UpdateSpecialTrueFungible:object{IgnisCollectorV1.OutputCumulator}
-        (main-dptf:string secondary-dptf:string fr-tag:integer)
-    )
-    (defun XB_DebitTrueFungible (id:string account:string amount:decimal dispo-data:object{UtilityDptfV1.DispoData} wipe-mode:bool))
-    (defun XB_CreditTrueFungible (id:string account:string amount:decimal))
+
 )
 ;;
 (module DPTF GOV
+
 
 
     ;;<=========================================================================>

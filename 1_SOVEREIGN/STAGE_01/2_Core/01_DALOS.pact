@@ -2,37 +2,14 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
 ;;
 (interface OuronetDalosV1
-    ;;
-    ;;  SCHEMAS
-    ;;
-    (defschema DPTF|BalanceSchema
-        @doc "Schema that Stores Account Balances for DPTF Tokens (True Fungibles)\
-            \ Key for the Table is a string composed of: <DPTF id> + BAR + <account> \
-            \ This ensure a single entry per DPTF id per account. \
-            \ As an Exception OUROBOROS and IGNIS Account Data is Stored at the DALOS Account Level"
-        balance:decimal
-        frozen:bool
-        role-burn:bool
-        role-mint:bool
-        role-fee-exemption:bool
-        role-transfer:bool
-        ;;
-        ;;ForSelect, store Key Make-up
-        id:string
-        account:string
-    )
-    (defschema CanonicalStoaIds
-        @doc "#65fL Phase 8b: OURO/WSTOA/SSTOA's canonical token ids, all 3 read together \
-            \ in ONE table read (all 3 live on the same DALOS|PropertiesTable row) — \
-            \ for a caller (SWPI::URC_WorthWSTOA and its FromRaw/FromGraph siblings) that \
-            \ previously needed all 3 identities via 3 separate UR_OuroborosID/ \
-            \ UR_WrappedStoaID/UR_SilverStoaID calls, each independently re-reading the \
-            \ same row. Field names match DALOS|PropertiesSchema's own field names \
-            \ exactly, so the read is a pure passthrough — no renaming/reconstruction."
-        gas-source-id:string      ;;OUROBOROS
-        wrapped-stoa-id:string    ;;OWS - Ouronet Wrapped Stoa
-        silver-stoa-id:string     ;;OSS - Ouronet Silver (Liquid) Stoa
-    )
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
     ;;
     ;;  [GOV]
     ;;
@@ -64,9 +41,74 @@
     (defun GOV|OUROBOROS|PBL ())
     (defun GOV|SWP|PBL ())
     (defun GOV|DHV|PBL ())
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;
+    ;;  SCHEMAS
+    ;;
+    (defschema DPTF|BalanceSchema
+        @doc "Schema that Stores Account Balances for DPTF Tokens (True Fungibles)\
+            \ Key for the Table is a string composed of: <DPTF id> + BAR + <account> \
+            \ This ensure a single entry per DPTF id per account. \
+            \ As an Exception OUROBOROS and IGNIS Account Data is Stored at the DALOS Account Level"
+        balance:decimal
+        frozen:bool
+        role-burn:bool
+        role-mint:bool
+        role-fee-exemption:bool
+        role-transfer:bool
+        ;;
+        ;;ForSelect, store Key Make-up
+        id:string
+        account:string
+    )
+    (defschema CanonicalStoaIds
+        @doc "#65fL Phase 8b: OURO/WSTOA/SSTOA's canonical token ids, all 3 read together \
+            \ in ONE table read (all 3 live on the same DALOS|PropertiesTable row) — \
+            \ for a caller (SWPI::URC_WorthWSTOA and its FromRaw/FromGraph siblings) that \
+            \ previously needed all 3 identities via 3 separate UR_OuroborosID/ \
+            \ UR_WrappedStoaID/UR_SilverStoaID calls, each independently re-reading the \
+            \ same row. Field names match DALOS|PropertiesSchema's own field names \
+            \ exactly, so the read is a pure passthrough — no renaming/reconstruction."
+        gas-source-id:string      ;;OUROBOROS
+        wrapped-stoa-id:string    ;;OWS - Ouronet Wrapped Stoa
+        silver-stoa-id:string     ;;OSS - Ouronet Silver (Liquid) Stoa
+    )
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
     ;;
     (defun CT_Info ())
     (defun CT_VirtualGasData ())
+    ;;
+    ;;  [UDC]
+    ;;
+    (defun UDC_TrueFungibleAccount:object{DPTF|BalanceSchema}
+        (a:decimal b:bool c:bool d:bool e:bool f:bool g:string h:string)
+    )
+    (defun UDC_BlankTrueFungible:object{DPTF|BalanceSchema} (account:string))
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
     ;;
     ;;  [UR]
@@ -139,6 +181,7 @@
     (defun URC_GasDiscount:decimal (account:string native:bool))
     (defun URC_SplitSTOAPrices:[decimal] (account:string stoa-price:decimal))
     (defun URC_Transferability:bool (sender:string receiver:string method:bool))
+    ;;{5.4}  Validate [UEV/CAP]
     ;;
     ;;  [UEV]
     ;;
@@ -156,16 +199,26 @@
         ;;
     (defun UEV_Glyph (account:string))
     ;;
-    ;;  [UDC]
-    ;;
-    (defun UDC_TrueFungibleAccount:object{DPTF|BalanceSchema}
-        (a:decimal b:bool c:bool d:bool e:bool f:bool g:string h:string)
-    )
-    (defun UDC_BlankTrueFungible:object{DPTF|BalanceSchema} (account:string))
-    ;;
     ;;  [CAP]
     ;;
     (defun CAP_EnforceAccountOwnership (account:string))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;
+    ;;  [X]
+    ;;
+    (defun XB_UpdateOuroPrice (price:decimal))
+    (defun XE_UpdateTreasury (type:integer tdp:decimal tds:decimal))
+    (defun XE_IgnisIncrement (native:bool increment:decimal))
+    (defun XE_IncrementOuronetAccountNonce (account:string))
+    (defun XE_UpdateElite (account:string amount:decimal))
+    (defun XB_UpdateBalance (account:string snake-or-gas:bool new-balance:decimal))
+    (defun XE_UpdateFreeze (account:string snake-or-gas:bool new-freeze:bool))
+    (defun XE_UpdateBurnRole (account:string snake-or-gas:bool new-burn:bool))
+    (defun XE_UpdateMintRole (account:string snake-or-gas:bool new-mint:bool))
+    (defun XE_UpdateFeeExemptionRole (account:string snake-or-gas:bool new-fee-exemption:bool))
+    (defun XE_UpdateTransferRole (account:string snake-or-gas:bool new-transfer:bool))
+    ;;{5.7}  User [A/C]
     ;;
     ;;  [A]
     ;;
@@ -191,23 +244,11 @@
     (defun C_RotateGuard (account:string new-guard:guard safe:bool))
     (defun C_RotateStoa (account:string stoa:string))
     (defun C_RotateSovereign (account:string new-sovereign:string))
-    ;;
-    ;;  [X]
-    ;;
-    (defun XB_UpdateOuroPrice (price:decimal))
-    (defun XE_UpdateTreasury (type:integer tdp:decimal tds:decimal))
-    (defun XE_IgnisIncrement (native:bool increment:decimal))
-    (defun XE_IncrementOuronetAccountNonce (account:string))
-    (defun XE_UpdateElite (account:string amount:decimal))
-    (defun XB_UpdateBalance (account:string snake-or-gas:bool new-balance:decimal))
-    (defun XE_UpdateFreeze (account:string snake-or-gas:bool new-freeze:bool))
-    (defun XE_UpdateBurnRole (account:string snake-or-gas:bool new-burn:bool))
-    (defun XE_UpdateMintRole (account:string snake-or-gas:bool new-mint:bool))
-    (defun XE_UpdateFeeExemptionRole (account:string snake-or-gas:bool new-fee-exemption:bool))
-    (defun XE_UpdateTransferRole (account:string snake-or-gas:bool new-transfer:bool))
+
 )
 ;;
 (module DALOS GOV
+
 
 
 

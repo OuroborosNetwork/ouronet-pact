@@ -5,17 +5,60 @@
 (interface StoaLiquidStakingV1
     @doc "Exposes the functions needed for Stoa Liquid Staking, Wrap and Unwrap STOA \
         \ as well as their URSTOA Counterparts"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
     ;;
     (defun GOV|LIQUID|SC_STOA-NAME ())
     (defun GOV|LIQUID|GUARD ())
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
     ;;  [UR]
     ;;
     (defun UR_IzOuronetAccountRegisteredForUrstoaHoldings:bool (ouronet-account:string))
+    (defun URCi_UnwrapStoa:object{IgnisCollectorV1.OutputCumulator} (unwrapper:string amount:decimal))
+    (defun URCi_WrapStoa:object{IgnisCollectorV1.OutputCumulator} (wrapper:string amount:decimal))
+    (defun URCi_UnwrapUrStoa:object{IgnisCollectorV1.OutputCumulator} (unwrapper:string amount:decimal))
+    (defun URCi_WrapUrStoa:object{IgnisCollectorV1.OutputCumulator} (wrapper:string amount:decimal))
+    ;;{5.4}  Validate [UEV/CAP]
     ;;
     ;;  [UEV]
     ;;
     (defun UEV_IzLiquidStakingLive ())
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
     ;;
     ;;  [A]
     ;;
@@ -25,8 +68,6 @@
     ;;
     (defun C_UnwrapStoa:object{IgnisCollectorV1.OutputCumulator} (unwrapper:string amount:decimal))
     (defun C_WrapStoa:object{IgnisCollectorV1.OutputCumulator} (wrapper:string amount:decimal))
-    (defun URCi_UnwrapStoa:object{IgnisCollectorV1.OutputCumulator} (unwrapper:string amount:decimal))
-    (defun URCi_WrapStoa:object{IgnisCollectorV1.OutputCumulator} (wrapper:string amount:decimal))
     ;;
     ;;#13H fix: C_RegisterOuronetAccountForUrstoaHoldings removed (2026-08-27) - it took a
     ;;caller-supplied <guard> for an arbitrary <ouronet-account> with no ownership check
@@ -36,11 +77,11 @@
     ;;OuronetInformational/memories/2026-08-27-urstoa-account-creation-is-ui-constructed.md.
     (defun C_UnwrapUrStoa:object{IgnisCollectorV1.OutputCumulator} (unwrapper:string amount:decimal))
     (defun C_WrapUrStoa:object{IgnisCollectorV1.OutputCumulator} (wrapper:string amount:decimal))
-    (defun URCi_UnwrapUrStoa:object{IgnisCollectorV1.OutputCumulator} (unwrapper:string amount:decimal))
-    (defun URCi_WrapUrStoa:object{IgnisCollectorV1.OutputCumulator} (wrapper:string amount:decimal))
+
 )
 ;;
 (module LIQUID GOV
+
 
 
     ;;<=========================================================================>

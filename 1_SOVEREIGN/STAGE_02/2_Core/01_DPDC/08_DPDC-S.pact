@@ -3,6 +3,41 @@
 ;;
 (interface DpdcSetsV1
     @doc "Exposes Collectables Set related Functions"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
     ;;  [UR]
     ;;
@@ -30,10 +65,21 @@
     (defun URC_NoncesSummedScore:decimal (id:string son:bool nonces:[integer]))
     (defun URC_SemiFungibleConstituents:[integer] (id:string set-class:integer))
     (defun URC_NonFungibleConstituents:[integer] (id:string nonce:integer))
+        ;;  [URCi] cost readers — single source per op
+    (defun URCi_MakeSemiFungibleSet:object{IgnisCollectorV1.OutputCumulator} (account:string id:string nonces:[integer] how-many-sets:integer))
+    (defun URCi_BreakSemiFungibleSet:object{IgnisCollectorV1.OutputCumulator} (account:string id:string nonce:integer how-many-sets:integer))
+    (defun URCi_MakeNonFungibleSet:object{IgnisCollectorV1.OutputCumulator} (account:string id:string nonces:[integer]))
+    (defun URCi_BreakNonFungibleSet:object{IgnisCollectorV1.OutputCumulator} (account:string id:string nonce:integer))
+    (defun URCi_DefinePrimordialSet:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
+    (defun URCi_DefineCompositeSet:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
+    (defun URCi_DefineHybridSet:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
+    (defun URCi_EnableSetClassFragmentation:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
+    (defun URCi_ToggleSet:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
+    (defun URCi_RenameSet:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
+    ;;{5.4}  Validate [UEV/CAP]
     ;;
     ;;  [UEV]
     ;;
-    
         ;;
     (defun UEV_PrimordialSetDefinition (id:string son:bool set-definition:[object{DpdcUdcV1.DPDC|AllowedNonceForSetPosition}]))
     (defun UEV_PrimordialSetElement (son:bool element:object{DpdcUdcV1.DPDC|AllowedNonceForSetPosition}))
@@ -46,6 +92,14 @@
     (defun UEV_NoncesForSetClass (id:string son:bool nonces:[integer] set-class:integer))
     (defun UEV_Primordial (nonces:[integer] psd:[object{DpdcUdcV1.DPDC|AllowedNonceForSetPosition}]))
     (defun UEV_Composite (id:string son:bool nonces:[integer] csd:[object{DpdcUdcV1.DPDC|AllowedClassForSetPosition}]))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;; C_UpdateSetMultiplier removed — DPDC Audit #15H: score-multiplier is now immutable after Define,
+    ;; matching the Set-Class recipe's own immutability. A wrong multiplier means disabling that
+    ;; Set-Class and defining a new one, same recovery path as a wrong recipe.
+    ;;
+    (defun XB_U|NonceOrSplitData (id:string son:bool set-class:integer nos:bool nd:object{DpdcUdcV1.DPDC|NonceData}))
+    ;;{5.7}  User [A/C]
     ;;
     ;;  [C]
     ;;
@@ -84,25 +138,11 @@
     )
     (defun C_ToggleSet:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool set-class:integer toggle:bool))
     (defun C_RenameSet:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool set-class:integer new-name:string))
-        ;;  [URCi] cost readers — single source per op
-    (defun URCi_MakeSemiFungibleSet:object{IgnisCollectorV1.OutputCumulator} (account:string id:string nonces:[integer] how-many-sets:integer))
-    (defun URCi_BreakSemiFungibleSet:object{IgnisCollectorV1.OutputCumulator} (account:string id:string nonce:integer how-many-sets:integer))
-    (defun URCi_MakeNonFungibleSet:object{IgnisCollectorV1.OutputCumulator} (account:string id:string nonces:[integer]))
-    (defun URCi_BreakNonFungibleSet:object{IgnisCollectorV1.OutputCumulator} (account:string id:string nonce:integer))
-    (defun URCi_DefinePrimordialSet:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
-    (defun URCi_DefineCompositeSet:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
-    (defun URCi_DefineHybridSet:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
-    (defun URCi_EnableSetClassFragmentation:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
-    (defun URCi_ToggleSet:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
-    (defun URCi_RenameSet:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
-    ;; C_UpdateSetMultiplier removed — DPDC Audit #15H: score-multiplier is now immutable after Define,
-    ;; matching the Set-Class recipe's own immutability. A wrong multiplier means disabling that
-    ;; Set-Class and defining a new one, same recovery path as a wrong recipe.
-    ;;
-    (defun XB_U|NonceOrSplitData (id:string son:bool set-class:integer nos:bool nd:object{DpdcUdcV1.DPDC|NonceData}))
+
 )
 ;;
 (module DPDC-S GOV
+
 
 
     ;;<=========================================================================>

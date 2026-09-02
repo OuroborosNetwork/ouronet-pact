@@ -3,20 +3,41 @@
 ;;
 (interface DpdcRolesV1
     @doc "Exposes Collectables Role Functions"
-    ;;
-    ;;  [C]
-    ;;
-    (defun C_ToggleAddQuantityRole:object{IgnisCollectorV1.OutputCumulator} (id:string account:string toggle:bool))
-    (defun C_ToggleFreezeAccount:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool account:string toggle:bool))
-    (defun C_ToggleExemptionRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool account:string toggle:bool))
-    (defun C_ToggleBurnRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool account:string toggle:bool))
-    (defun C_ToggleUpdateRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool account:string toggle:bool))
-    (defun C_ToggleModifyCreatorRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool account:string toggle:bool))
-    (defun C_ToggleModifyRoyaltiesRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool account:string toggle:bool))
-    (defun C_ToggleTransferRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool account:string toggle:bool))
-    (defun C_MoveCreateRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool new-account:string))
-    (defun C_MoveRecreateRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool new-account:string))
-    (defun C_MoveSetUriRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool new-account:string))
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
     ;;  [URCi]
     ;;
@@ -31,9 +52,29 @@
     (defun URCi_MoveCreateRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
     (defun URCi_MoveRecreateRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
     (defun URCi_MoveSetUriRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+    ;;
+    ;;  [C]
+    ;;
+    (defun C_ToggleAddQuantityRole:object{IgnisCollectorV1.OutputCumulator} (id:string account:string toggle:bool))
+    (defun C_ToggleFreezeAccount:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool account:string toggle:bool))
+    (defun C_ToggleExemptionRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool account:string toggle:bool))
+    (defun C_ToggleBurnRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool account:string toggle:bool))
+    (defun C_ToggleUpdateRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool account:string toggle:bool))
+    (defun C_ToggleModifyCreatorRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool account:string toggle:bool))
+    (defun C_ToggleModifyRoyaltiesRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool account:string toggle:bool))
+    (defun C_ToggleTransferRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool account:string toggle:bool))
+    (defun C_MoveCreateRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool new-account:string))
+    (defun C_MoveRecreateRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool new-account:string))
+    (defun C_MoveSetUriRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool new-account:string))
+
 )
 ;;
 (module DPDC-R GOV
+
 
 
     ;;<=========================================================================>

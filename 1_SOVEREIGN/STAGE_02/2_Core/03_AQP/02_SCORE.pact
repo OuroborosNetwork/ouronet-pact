@@ -1,6 +1,40 @@
 (interface AcquisitionScoresV1
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
     ;;
     (defun P|UEV_IMC ())
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
     ;; [UC]  compute
     (defun UCk_UserScore:string (ouronet-account:string pool-id:string score-id:string))
     (defun UCk_SFScore:string (score-id:string dpsf-id:string nonce:integer))
@@ -9,6 +43,7 @@
     (defun UCk_NFDefRevision:string (score-id:string dpnf-id:string))
     (defun UCk_NFTraitKeys:string (score-id:string dpnf-id:string))
     (defun UCk_Triplet:string (bronze-score-id:string silver-score-id:string golden-score-id:string))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;; [UR]  read
     (defun UR_SCR|ScoreOwnerKonto:string (score-id:string))
     (defun UR_SCR|ScoreCanUpgrade:bool (score-id:string))
@@ -79,10 +114,27 @@
     ;; [URH] heavy-read
     ;;
     (defun URH_SCR|AllScoreIds:[string] ())
+    ;;
+    ;; [URCi]   cost readers — single source for exec billing + INFO preview
+    (defun URCi_IssueScore:object{IgnisCollectorV1.OutputCumulator} (owner-konto:string output:[string]))
+    (defun URCi_IssueScoreStoa:decimal ())
+    (defun URCi_RotateOwnership:object{IgnisCollectorV1.OutputCumulator} (score-id:string))
+    (defun URCi_Control:object{IgnisCollectorV1.OutputCumulator} (score-id:string))
+    (defun URCi_CreateBoostClassLink:object{IgnisCollectorV1.OutputCumulator} (score-id:string))
+    (defun URCi_CreateBoostLink:object{IgnisCollectorV1.OutputCumulator} (score-id:string))
+    (defun URCi_EnableDebBoost:object{IgnisCollectorV1.OutputCumulator} (score-id:string))
+    (defun URCi_IssueTriplet:object{IgnisCollectorV1.OutputCumulator} (silver-score-id:string output:[string]))
+    (defun URCi_IssueSemiFungibleScoreDefinition:object{IgnisCollectorV1.OutputCumulator} (score-id:string nonces:[integer]))
+    (defun URCi_IssueNonFungibleScoreDefinition:object{IgnisCollectorV1.OutputCumulator} (score-id:string trait-keys:[string]))
+    (defun URCi_IssueNonFungibleSetScoreDefinition:object{IgnisCollectorV1.OutputCumulator} (score-id:string dpnf-nonce-classes:[integer]))
+    (defun URCi_IssueScoreModel:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
+    ;;{5.4}  Validate [UEV/CAP]
     ;; [UEV] enforce
     (defun UEV_NonFungibleScoreDefinition
         (score-id:string dpnf-id:string trait-score-values:[decimal] trait-keys:[string] trait-values:[string] dpnf-nonce-classes:[integer])
     )
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
     ;; [XE]
     ;;
     (defun XE_CreateAqpoolLink:string
@@ -114,6 +166,7 @@
             employed-ids:[string]
         )
     )
+    ;;{5.7}  User [A/C]
     ;; [C]   client
     ;;
     (defun C_IssueLiquidityScore:object{IgnisCollectorV1.OutputCumulator}
@@ -157,20 +210,7 @@
     (defun C_IssueScoreFromModel:object{IgnisCollectorV1.OutputCumulator}
         (patron:string owner-konto:string model-id:string agency-name:string)
     )
-    ;;
-    ;; [URCi]   cost readers — single source for exec billing + INFO preview
-    (defun URCi_IssueScore:object{IgnisCollectorV1.OutputCumulator} (owner-konto:string output:[string]))
-    (defun URCi_IssueScoreStoa:decimal ())
-    (defun URCi_RotateOwnership:object{IgnisCollectorV1.OutputCumulator} (score-id:string))
-    (defun URCi_Control:object{IgnisCollectorV1.OutputCumulator} (score-id:string))
-    (defun URCi_CreateBoostClassLink:object{IgnisCollectorV1.OutputCumulator} (score-id:string))
-    (defun URCi_CreateBoostLink:object{IgnisCollectorV1.OutputCumulator} (score-id:string))
-    (defun URCi_EnableDebBoost:object{IgnisCollectorV1.OutputCumulator} (score-id:string))
-    (defun URCi_IssueTriplet:object{IgnisCollectorV1.OutputCumulator} (silver-score-id:string output:[string]))
-    (defun URCi_IssueSemiFungibleScoreDefinition:object{IgnisCollectorV1.OutputCumulator} (score-id:string nonces:[integer]))
-    (defun URCi_IssueNonFungibleScoreDefinition:object{IgnisCollectorV1.OutputCumulator} (score-id:string trait-keys:[string]))
-    (defun URCi_IssueNonFungibleSetScoreDefinition:object{IgnisCollectorV1.OutputCumulator} (score-id:string dpnf-nonce-classes:[integer]))
-    (defun URCi_IssueScoreModel:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
+
 )
 (module AQP-SCORE GOV
     @doc "AQP-SCORE — sovereign acquisition scoring for AQP pools. Owns global score configuration and totals (SCR|T|Score), per (ouronet-account, pool-id, score-id) user triples (SCR|T|UserScore), semi-fungible nonce weights (SCR|T|SF|Score) and SF DefRevision, and non-fungible definitions on SCR|T|NF|TraitScore vs SCR|T|NF|ClassScore with NF DefRevision split into global-, trait-, and class-revision nonces so trackers and URCX stake math can gate expensive selects. \

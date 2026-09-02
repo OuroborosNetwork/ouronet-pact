@@ -3,11 +3,57 @@
 ;;
 (interface DpdcFragmentsV1
     @doc "Exposes Collectables Fragmentation related Functions"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;
+    ;;  [URCi]
+    ;;
+    (defun URCi_RepurposeCollectableFragments:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool fragment-amounts:[integer]))
+    (defun URCi_MakeFragments:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
+    (defun URCi_MergeFragments:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
+    (defun URCi_EnableNonceFragmentation:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
+    ;;{5.4}  Validate [UEV/CAP]
     ;;
     ;; [UEV]
     ;;
     (defun UEV_IzNonceFragmented:bool (id:string son:bool nonce:integer))
     (defun UEV_Fragmentation (id:string son:bool nonce:integer))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
     ;;
     ;; [C]
     ;;
@@ -22,16 +68,11 @@
             fragmentation-ind:object{DpdcUdcV1.DPDC|NonceData}
         )
     )
-    ;;
-    ;;  [URCi]
-    ;;
-    (defun URCi_RepurposeCollectableFragments:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool fragment-amounts:[integer]))
-    (defun URCi_MakeFragments:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
-    (defun URCi_MergeFragments:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
-    (defun URCi_EnableNonceFragmentation:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
+
 )
 ;;
 (module DPDC-F GOV
+
 
 
     ;;<=========================================================================>

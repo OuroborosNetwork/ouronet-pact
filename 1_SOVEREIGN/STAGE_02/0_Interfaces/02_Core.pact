@@ -4,6 +4,27 @@
 ;;
 (interface DpdcUdcV1
     @doc "Exposes Collectables UDC Constructors"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
     ;;
     ;;  [1]
     ;;
@@ -99,7 +120,6 @@
     ;;
     ;;  [4]
     ;;
-    ;;DPSF
     (defschema DPSF|AccountRoles
         @doc "Key = <DPSF-id> + BAR + <account>"
         roles:object{AccountRoles}
@@ -109,7 +129,6 @@
         id:string
         account:string
     )
-    ;;DPNF
     (defschema DPNF|AccountRoles
         @doc "Key = <DPNF-id> + BAR + <account>"
         roles:object{AccountRoles}
@@ -171,6 +190,18 @@
     (defschema DPDC|AllowedClassForSetPosition
         allowed-sclass:integer
     )
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
     ;;
     ;;  [UDC]
     ;;
@@ -226,7 +257,6 @@
     ;;
     ;;  [6]
     ;;
-    
     (defun UDC_DPDC|AllowedClassForSetPosition:object{DPDC|AllowedClassForSetPosition}  (a:integer))
     (defun UDC_DPDC|AllowedNonceForSetPosition:object{DPDC|AllowedNonceForSetPosition}  (a:[integer]))
     (defun UDC_DPDC|Set:object{DPDC|Set}
@@ -255,4 +285,11 @@
     ;;  [6]
     (defun UDC_NoPrimordialSet:[object{DPDC|AllowedNonceForSetPosition}] ())
     (defun UDC_NoCompositeSet:[object{DPDC|AllowedClassForSetPosition}] ())
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
 )

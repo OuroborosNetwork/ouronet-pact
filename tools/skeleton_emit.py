@@ -72,11 +72,12 @@ def emit_module(block):
         if s=='' or MARK_RE.match(line): k+=1; continue
         pend.append(line); k+=1
     # classify caps then all forms
+    is_iface = block[0].startswith('(interface')
     capcaps=[(f['name'],f['body']) for f in forms if f['kind']=='defcap'
              and not (f['name']=='GOV' or f['name'].startswith('GOV|') or f['name'].startswith('P|'))]
     cb={n:v for n,(v,_) in cap_band.classify(capcaps).items()}
     base=lambda n: n.split(':')[0]
-    has_gas = any(base(f['name']) in GAS_MEMBERS for f in forms)
+    has_gas = (not is_iface) and any(base(f['name']) in GAS_MEMBERS for f in forms)
     buckets={}
     for f in forms:
         if has_gas and base(f['name']) in GAS_MEMBERS: b="#"
@@ -91,10 +92,13 @@ def emit_module(block):
     def emit_forms(fs):
         for f in fs:
             out.extend(f['comments']); out.extend(f['body'])
-    order=[("0",False)]
-    if has_gas: order.append(("#",False))
-    order += [("1",True),("2",True),("3",True),("4",True),("5",True)]
-    if "6" in buckets: order.append(("6",False))
+    if is_iface:
+        order=[("1",True),("2",True),("3",True),("4",True),("5",True)]   # interfaces: no {0}/{#}/{6}
+    else:
+        order=[("0",False)]
+        if has_gas: order.append(("#",False))
+        order += [("1",True),("2",True),("3",True),("4",True),("5",True)]
+        if "6" in buckets: order.append(("6",False))
     for blk,hassub in order:
         out.append(""); out.append(RULE)
         name = SUBS[blk][0] if hassub else FLAT[blk]
@@ -112,7 +116,7 @@ def main(path):
     lines=open(path,encoding='utf-8').read().split('\n')
     segs=[]; i=0
     while i<len(lines):
-        if lines[i].startswith('(module '):
+        if lines[i].startswith('(module ') or lines[i].startswith('(interface '):
             j=i+1
             while j<len(lines) and not lines[j].startswith(')'): j+=1
             segs.append(('mod',lines[i:j+1])); i=j+1

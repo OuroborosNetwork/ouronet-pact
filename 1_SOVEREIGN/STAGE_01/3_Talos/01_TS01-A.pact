@@ -3,8 +3,51 @@
 ;;
 (interface TalosStageOne_AdminV1
     @doc "Exposes Ouronet Administrative Functions"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
     ;;
-    ;;DALOS Functions
+    ;;
+    ;;Fueling Functions
+    (defun XB_DynamicFuelSTOA ())
+    (defun XE_ConditionalFuelSTOA (condition:bool))
+    ;;{5.7}  User [A/C]
+    ;;
     (defun A_DALOS|MigrateLiquidFunds:decimal (migration-target-stoa-account:string))
     (defun A_DALOS|ToggleOAPU (oapu:bool))
     (defun A_DALOS|ToggleGAP (gap:bool))
@@ -17,44 +60,33 @@
     (defun A_DALOS|UpdateUsagePrice (action:string new-price:decimal))
     ;;
     ;;
-    ;;BRD Functions
     (defun A_BRD|Live (entity-id:string))
     (defun A_BRD|SetFlag (entity-id:string flag:integer))
     ;;
     ;;
-    ;;DPTF Functions
     (defun A_DPTF|UpdateTreasuryDispoParameters (type:integer tdp:decimal tds:decimal))
     (defun A_DPTF|WipeTreasuryDebt ())
     (defun A_DPTF|WipeTreasuryDebtPartial (debt-to-be-wiped:decimal))
     (defun A_DPTF|DeployAccount (patron:string id:string account:string))
     ;;
-    ;;DPOF Functions
     (defun A_DPOF|DeployAccount (patron:string id:string account:string))
     ;;
-    ;;ATS Functions
     (defun A_ATS|RemoveSecondary (patron:string remover:string ats:string reward-token:string accounts-with-ats-data:[string]))
     (defun A_ATS|KickStart (patron:string kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
     ;;
-    ;;LIQUID Functions
     (defun A_LIQUID|MigrateLiquidFunds:decimal (migration-target-stoa-account:string))
     ;;
     ;;
-    ;;ORBR Functions
     (defun A_ORBR|Fuel ())
     ;;
     ;;
-    ;;SWP Functions
     (defun A_SWP|UpdatePrincipal (principal:string add-or-remove:bool))
     (defun A_SWP|RotatePrincipal (old:string new:string))
     (defun A_SWP|UpdateLimit (limit:decimal spawn:bool))
     (defun A_SWP|UpdateLiquidBoost (new-boost-variable:bool))
     (defun A_SWP|DefinePrimordialPool (primordial-pool:string))
     (defun A_SWP|ToggleAsymetricLiquidityAddition (toggle:bool))
-    ;;
-    ;;
-    ;;Fueling Functions
-    (defun XB_DynamicFuelSTOA ())
-    (defun XE_ConditionalFuelSTOA (condition:bool))
+
 )
 ;;
 (module TS01-A GOV

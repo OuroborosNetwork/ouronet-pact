@@ -8,6 +8,27 @@
     \    V2: Smart Swap slippage quote using fee-less multi-hop path tracing via <UDC_SpawnSmartSwapSlippageBounds> \
     \    V2: Smart Swap Multi-hop swap across the entire pool base using BFS path tracing with per-hop liquid pump via <CC_SmartSwap> \
     \    (#34 Phase 8: renamed from <C_SmartSwap> — self-searching variant; <C_SmartSwap> is reserved for the bundle-based, dirty-read-injected path)"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
     ;;
     ;;
     ;;  SCHEMAS
@@ -81,15 +102,18 @@
         boost-path:object{CachedPathOrMiss}
         stoa-paths:[object{TokenPathPair}]
     )
-    ;;
-    ;;
-    ;;  [UC] Functions
-    ;;
-    (defun UC_SlippageMinMax:[decimal] (input:object{Slippage}))
-    ;;#34 Phase 7: dedup + lookup helpers for the bundle's <stoa-paths>, built ahead of
-    ;;Phase 8's actual wiring so that phase builds against a settled, tested shape.
-    (defun URC_DedupFirstTokens:[string] (distinct-edges:[string]))
-    (defun UC_FindStoaPath:object{CachedPathOrMiss} (stoa-paths:[object{TokenPathPair}] first-token:string))
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
     ;;
     ;;
     ;;  [UDC] Functions
@@ -98,16 +122,32 @@
     (defun UDC_SpawnSlippageBounds:object{Slippage} (swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal))
     (defun UDC_Slippage:object{Slippage} (a:decimal b:integer c:decimal))
     (defun UDC_SlippageObject:object{Slippage} (swpair:string dsid:object{UtilitySwpV1.DirectSwapInputData} slippage-value:decimal))
+    ;;{5.2}  Compute [UC]
+    ;;
+    ;;
+    ;;  [UC] Functions
+    ;;
+    (defun UC_SlippageMinMax:[decimal] (input:object{Slippage}))
+    (defun UC_FindStoaPath:object{CachedPathOrMiss} (stoa-paths:[object{TokenPathPair}] first-token:string))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;#34 Phase 7: dedup + lookup helpers for the bundle's <stoa-paths>, built ahead of
+    ;;Phase 8's actual wiring so that phase builds against a settled, tested shape.
+    (defun URC_DedupFirstTokens:[string] (distinct-edges:[string]))
+    (defun URCi_ToggleSwapCapability:object{IgnisCollectorV1.OutputCumulator} (swpair:string toggle:bool))
+    (defun URCi_SmartSwap:object{IgnisCollectorV1.OutputCumulator} (account:string input-id:string input-amount:decimal output-id:string slippage:decimal slippage-bounds:object{Slippage}))
+    (defun URCi_SmartSwapWithBundle:object{IgnisCollectorV1.OutputCumulator} (account:string input-id:string input-amount:decimal output-id:string slippage:decimal slippage-bounds:object{Slippage} bundle:object{SmartSwapPathBundle}))
+    (defun URCi_Swap:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal slippage-bounds:object{Slippage}))
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
     ;;
     ;;
     ;;  []C] Functions
     ;;
     ;;
     (defun C_ToggleSwapCapability:object{IgnisCollectorV1.OutputCumulator} (swpair:string toggle:bool))
-    (defun URCi_ToggleSwapCapability:object{IgnisCollectorV1.OutputCumulator} (swpair:string toggle:bool))
     (defun CC_SmartSwap:object{IgnisCollectorV1.OutputCumulator} (account:string input-id:string input-amount:decimal output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{Slippage}))
-    (defun URCi_SmartSwap:object{IgnisCollectorV1.OutputCumulator} (account:string input-id:string input-amount:decimal output-id:string slippage:decimal slippage-bounds:object{Slippage}))
-    (defun URCi_SmartSwapWithBundle:object{IgnisCollectorV1.OutputCumulator} (account:string input-id:string input-amount:decimal output-id:string slippage:decimal slippage-bounds:object{Slippage} bundle:object{SmartSwapPathBundle}))
     ;;#34 Phase 8: the bundle-based, dirty-read-injected SmartSwap — performs zero
     ;;internal searching (route, boost-path and stoa-paths are all supplied by the
     ;;caller, per SmartSwapPathBundle), built alongside CC_SmartSwap for direct gas
@@ -119,10 +159,11 @@
         )
     )
     (defun C_Swap:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{Slippage}))
-    (defun URCi_Swap:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal slippage-bounds:object{Slippage}))
+
 )
 ;;
 (module SWPU GOV
+
 
 
     ;;<=========================================================================>

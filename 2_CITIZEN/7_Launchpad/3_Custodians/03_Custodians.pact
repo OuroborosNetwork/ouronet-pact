@@ -1,8 +1,43 @@
 (interface SaleCustodiansV1
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
     ;;
     ;;  [UC]
     ;;
     (defun UC_NonceQuintessence:integer (nonce:integer))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
     ;;  [UR]
     ;;
@@ -16,21 +51,26 @@
     (defun URC_NonceCosts:object{DemiourgosLaunchpadV1.Costs} (nonce:integer))
     (defun URC_NonceAmountCosts:object{DemiourgosLaunchpadV1.Costs} (nonce:integer amount:integer))
     (defun URC_Acquire:[string] (buyer:string nonce:integer amount:integer iz-native:bool slippage:decimal))
-    (defun CAP_Acquire (buyer:string nonce:integer amount:integer iz-native:bool))
-    ;;
-    ;;  [UEV]
-    ;;
-    (defun UEV_AcquisitionNonce (nonce:integer))
-    ;;
-    ;;  [A+C]
-    ;;
-    (defun A_UpdateQuintessencePrice (price:decimal))
-    (defun C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal))
     ;;
     ;;  [URCi] / [INFO]  (pure-citizen cost preview: Sigma of the sovereign Talos ops' IGNIS)
     ;;
     (defun URCi_Acquire:decimal (buyer:string nonce:integer amount:integer iz-native:bool))
     (defun INFO_Acquire:object{OuronetInfoV1.ClientInfo} (patron:string buyer:string nonce:integer amount:integer iz-native:bool))
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun CAP_Acquire (buyer:string nonce:integer amount:integer iz-native:bool))
+    ;;
+    ;;  [UEV]
+    ;;
+    (defun UEV_AcquisitionNonce (nonce:integer))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+    ;;
+    ;;  [A+C]
+    ;;
+    (defun A_UpdateQuintessencePrice (price:decimal))
+    (defun C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal))
+
 )
 (module DEMIPAD-CUSTODIANS GOV
     @doc "Module defining the Sale Mechanics for Ouronet Custodians Collection"

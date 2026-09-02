@@ -4,25 +4,64 @@
 ;;
 (interface OuroborosV1
     @doc "Exposes Functions related to the OUROBOROS Module"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
     ;;
     (defun GOV|ORBR|SC_STOA-NAME ())
     (defun GOV|ORBR|GUARD ())
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
     ;;
     (defun URC_ProjectedStoaLiquindex:[decimal] ())
     (defun URC_Compress:[decimal] (ignis-amount:decimal))
     (defun URC_Sublimate:decimal (ouro-amount:decimal))
-    ;;
-    (defun UEV_Exchange ())
-    ;;
-    ;;
-    (defun C_Compress:object{IgnisCollectorV1.OutputCumulator} (client:string ignis-amount:decimal))
-    (defun XB_Compress:object{IgnisCollectorV1.OutputCumulator} (client:string ignis-amount:decimal))
     (defun URCi_Compress:object{IgnisCollectorV1.OutputCumulator} (client:string ignis-amount:decimal))
     (defun URCi_Fuel:object{IgnisCollectorV1.OutputCumulator} ())
     (defun URCi_Sublimate:object{IgnisCollectorV1.OutputCumulator} (client:string target:string ouro-amount:decimal))
     (defun URCi_SublimateV2:object{IgnisCollectorV1.OutputCumulator} (client:string target:string ouro-amount:decimal))
     (defun URCi_WithdrawFees:object{IgnisCollectorV1.OutputCumulator} (id:string target:string))
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;
+    (defun UEV_Exchange ())
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    (defun XB_Compress:object{IgnisCollectorV1.OutputCumulator} (client:string ignis-amount:decimal))
+    ;;{5.7}  User [A/C]
+    ;;
+    ;;
+    (defun C_Compress:object{IgnisCollectorV1.OutputCumulator} (client:string ignis-amount:decimal))
     (defun C_Fuel:object{IgnisCollectorV1.OutputCumulator} ())
     (defun C_Sublimate:object{IgnisCollectorV1.OutputCumulator} (client:string target:string ouro-amount:decimal))
     ;;#23H fix: C_SublimateV2 was already live/actively-used (TS01-C2's C_ORBR|SublimateV2,
@@ -31,9 +70,11 @@
     ;;behavioral change, the module already implements this exact signature.
     (defun C_SublimateV2:object{IgnisCollectorV1.OutputCumulator} (client:string target:string ouro-amount:decimal))
     (defun C_WithdrawFees:object{IgnisCollectorV1.OutputCumulator} (id:string target:string))
+
 )
 ;;
 (module OUROBOROS GOV
+
 
 
     ;;<=========================================================================>

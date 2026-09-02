@@ -13,6 +13,27 @@
     \ V3 adds 2 Functions related to single Elite Account Update. \
     \ \
     \ V4 Removes <patron> input variable where it is not needed"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
     ;;
     ;;
     (defschema DPMF|Schema
@@ -24,6 +45,23 @@
         nonce:integer
         balance:decimal
     )
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;
+    (defun UDC_Compose:object{DPMF|Schema} (nonce:integer balance:decimal meta-data:[object]))
+    (defun UDC_Nonce-Balance:[object{DPMF|Nonce-Balance}] (nonce-lst:[integer] balance-lst:[decimal]))
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
     ;;
     (defun UR_P-KEYS:[string] ())
@@ -75,6 +113,7 @@
     (defun URC_HasSleeping:bool (id:string))
     (defun URC_Parent:string (dpmf:string))
     (defun URC_IzIdEA:bool (id:string))
+    ;;{5.4}  Validate [UEV/CAP]
     ;;
     (defun UEV_ParentOwnership (dpmf:string))
     (defun UEV_NoncesToAccount (id:string account:string nonces:[integer]))
@@ -99,11 +138,23 @@
     (defun UEV_Vesting (id:string existance:bool))
     (defun UEV_Sleeping (id:string existance:bool))
     ;;
-    (defun UDC_Compose:object{DPMF|Schema} (nonce:integer balance:decimal meta-data:[object]))
-    (defun UDC_Nonce-Balance:[object{DPMF|Nonce-Balance}] (nonce-lst:[integer] balance-lst:[decimal]))
-    ;;
     ;;
     (defun CAP_Owner (id:string))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;
+    (defun XB_DeployAccountWNE (id:string account:string))
+    (defun XB_IssueFree:object{IgnisCollectorV1.OutputCumulator} (account:string name:[string] ticker:[string] decimals:[integer] can-change-owner:[bool] can-upgrade:[bool] can-add-special-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool] can-transfer-nft-create-role:[bool] iz-special:[bool]))
+    (defun XB_UpdateEliteSingle (id:string account:string))
+    (defun XB_UpdateElite (id:string sender:string receiver:string))
+    (defun XB_WriteRoles (id:string account:string rp:integer d:bool))
+    ;;
+    (defun XE_MoveCreateRole (id:string receiver:string))
+    (defun XE_ToggleAddQuantityRole (id:string account:string toggle:bool))
+    (defun XE_ToggleBurnRole (id:string account:string toggle:bool))
+    (defun XE_UpdateRewardBearingToken (atspair:string id:string))
+    (defun XE_UpdateSpecialMetaFungible:object{IgnisCollectorV1.OutputCumulator} (main-dptf:string secondary-dpmf:string vesting-or-sleeping:bool))
+    ;;{5.7}  User [A/C]
     ;;
     (defun C_AddQuantity:object{IgnisCollectorV1.OutputCumulator} (id:string nonce:integer account:string amount:decimal))
     (defun C_Burn:object{IgnisCollectorV1.OutputCumulator} (id:string nonce:integer account:string amount:decimal))
@@ -121,21 +172,11 @@
     (defun C_Transfer:object{IgnisCollectorV1.OutputCumulator} (id:string nonce:integer sender:string receiver:string transfer-amount:decimal method:bool))
     (defun C_Wipe:object{IgnisCollectorV1.OutputCumulator} (id:string atbw:string))
     (defun C_WipePartial:object{IgnisCollectorV1.OutputCumulator} (id:string atbw:string nonces:[integer]))
-    ;;
-    (defun XB_DeployAccountWNE (id:string account:string))
-    (defun XB_IssueFree:object{IgnisCollectorV1.OutputCumulator} (account:string name:[string] ticker:[string] decimals:[integer] can-change-owner:[bool] can-upgrade:[bool] can-add-special-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool] can-transfer-nft-create-role:[bool] iz-special:[bool]))
-    (defun XB_UpdateEliteSingle (id:string account:string))
-    (defun XB_UpdateElite (id:string sender:string receiver:string))
-    (defun XB_WriteRoles (id:string account:string rp:integer d:bool))
-    ;;
-    (defun XE_MoveCreateRole (id:string receiver:string))
-    (defun XE_ToggleAddQuantityRole (id:string account:string toggle:bool))
-    (defun XE_ToggleBurnRole (id:string account:string toggle:bool))
-    (defun XE_UpdateRewardBearingToken (atspair:string id:string))
-    (defun XE_UpdateSpecialMetaFungible:object{IgnisCollectorV1.OutputCumulator} (main-dptf:string secondary-dpmf:string vesting-or-sleeping:bool))
+
 )
 ;;
 (module DPMF GOV
+
 
 
     ;;<=========================================================================>

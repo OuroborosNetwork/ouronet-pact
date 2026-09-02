@@ -20,6 +20,26 @@
         \ (SWP::A_UpdatePrincipal or its future replacement-only successor) never touch \
         \ this module at all; there is nothing here that could go stale."
 
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
     (defschema NeighbourEdge
         token:string
         swpairs:[string]
@@ -68,7 +88,23 @@
         node:string
         neighbours:[object{NeighbourEdge}]
     )
+    ;;{3.3}  tables
 
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    (defun UC_MakeGraphFromRaw:[object{BreadthFirstSearchV1.GraphNode}]
+        (input:string output:string swpairs:[string] raw-graph:[object{RawGraphNode}])
+    )
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     (defun UR_Graph:[object{NeighbourEdge}] (token:string))
     (defun URC_TokenNeighbours:[string] (token:string))
     (defun URC_Edges:[string] (t1:string t2:string))
@@ -79,13 +115,9 @@
     (defun URC_ShortestChainPerNode:[[string]] (input:string output:string swpairs:[string]))
     (defun URC_MakeGraph:[object{BreadthFirstSearchV1.GraphNode}] (input:string output:string swpairs:[string]))
     ;;#65bL Phase 2: raw-fetch/pure-filter split, used by URC_ComputeAlternateRoutes/
-    ;;URC_ComputeAllRoutes to fetch each candidate node's SWPT|Graph row exactly ONCE
     ;;per transaction and reuse it across every best-of-K attempt, instead of each
     ;;attempt calling URC_MakeGraph (a fresh read per node, every time).
     (defun URC_FetchRawGraph:[object{RawGraphNode}] (nodes:[string]))
-    (defun UC_MakeGraphFromRaw:[object{BreadthFirstSearchV1.GraphNode}]
-        (input:string output:string swpairs:[string] raw-graph:[object{RawGraphNode}])
-    )
     (defun URC_ShortestChainPerNodeFromRaw:[[string]]
         (input:string output:string swpairs:[string] raw-graph:[object{RawGraphNode}])
     )
@@ -114,7 +146,6 @@
     ;;rationale.
     (defun URC_ComputeAlternateRoutes:[[string]] (input:string output:string swpairs:[string]))
     ;;#65bL Phase 4: URC_ComputeAlternateRoutes, sourcing its graph via an
-    ;;ALREADY-FETCHED <raw-graph> instead of fetching its own — lets a caller doing
     ;;multiple unrelated best-of-K searches in one transaction (the STOA-repricing
     ;;loop, one search per distinct pool) share ONE raw-graph fetch across all of them.
     (defun URC_ComputeAlternateRoutesFromRaw:[[string]]
@@ -124,7 +155,6 @@
     ;;3-attempt cap into a real parameterized search — see the defun's own @doc for the
     ;;full mechanics (early-exit, depth-cap filter, outer hard stop).
     (defun URC_ComputeAllRoutes:[[string]] (input:string output:string swpairs:[string] max-attempts:integer))
-
     ;;#34 Phase 7: dirty-read path-cache core functions — exists-only (structural) side.
     ;;The active-required wrapper (adds SWP::UR_CanSwap per edge) lives in SWPI instead,
     ;;same reason URC_EdgesActive's own whitelist check couldn't live here either — SWPT
@@ -139,6 +169,9 @@
     (defun URC_ReadPathCacheFresh:object{PathCacheRow} (token-a:string token-b:string))
     (defun URC_EdgeConnects:bool (i-id:string o-id:string swpair:string))
     (defun URC_ValidatePathStructure:bool (nodes:[string] edges:[string]))
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
     (defun XI_RegisterPath (token-a:string token-b:string nodes:[string] edges:[string]))
     ;;#34 Phase 8: forward-module entrypoint for XI_RegisterPath — mirrors XE_UpdateGraph
     ;;exactly (P|UEV_IMC gate + internal SECURE composition). Cross-module callers (SWPU)
@@ -147,11 +180,13 @@
     ;;would grant it to literally anyone, not just legitimate Ouronet modules (confirmed
     ;;against this exact class of issue in this codebase's own ATS audit findings).
     (defun XE_RegisterPath (token-a:string token-b:string nodes:[string] edges:[string]))
-
     (defun XE_UpdateGraph (swpair:string))
+    ;;{5.7}  User [A/C]
+
 )
 ;;
 (module SWPT GOV
+
 
 
     ;;<=========================================================================>

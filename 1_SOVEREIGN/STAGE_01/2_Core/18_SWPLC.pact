@@ -4,18 +4,104 @@
 (interface BrandingUsageSecondaryV1
     @doc "Exposes Branding Functions for True-Fungible LP Tokens \
         \ <entity-pos>: 1 (Native LP), 2 (Freezing LP), 3 (Sleeping LP)"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
     ;;
     (defun C_UpdatePendingBrandingLPs:object{IgnisCollectorV1.OutputCumulator} (swpair:string entity-pos:integer logo:string description:string website:string social:[object{BrandingV1.SocialSchema}]))
     (defun C_UpgradeBrandingLPs (patron:string swpair:string entity-pos:integer months:integer))
+
 )
 ;;
 (interface SwapperLiquidityClientV1
     @doc "Exposes the Client Functions of Swapper Liquidity"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
     ;;
     ;;  [URC] Functions
     ;;
     (defun URC_EntityPosToID:string (swpair:string entity-pos:integer))
+    (defun URCi_UpdatePendingBrandingLPs:object{IgnisCollectorV1.OutputCumulator} (swpair:string entity-pos:integer))
+    (defun URCi_UpgradeBrandingLPs:decimal (months:integer))
+    (defun URCi_ToggleAddLiquidity:object{IgnisCollectorV1.OutputCumulator} (swpair:string toggle:bool))
+    (defun URCi_Fuel:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string input-amounts:[decimal] direct-or-indirect:bool))
+    (defun URCi_AddStandardLiquidity:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun URCi_AddIcedLiquidity:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun URCi_AddGlacialLiquidity:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun URCi_AddFrozenLiquidity:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal))
+    (defun URCi_AddSleepingLiquidity:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal))
+    (defun URCi_RemoveLiquidity:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string lp-amount:decimal))
+    ;;{5.4}  Validate [UEV/CAP]
     ;;
     ;;
     ;;  [UEV] Functions
@@ -27,6 +113,9 @@
     (defun UEV_AddChilledLiquidity (swpair:string ld:object{SwapperLiquidityV1.LiquidityData}))
     (defun UEV_AddLiquidity (swpair:string ld:object{SwapperLiquidityV1.LiquidityData}))
     (defun UEV_RemoveLiquidity (swpair:string lp-amount:decimal))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
     ;;
     ;;
     ;;  []C] Functions
@@ -34,27 +123,19 @@
     ;;
     (defun C_ToggleAddLiquidity:object{IgnisCollectorV1.OutputCumulator} (swpair:string toggle:bool))
     (defun C_Fuel:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string input-amounts:[decimal] direct-or-indirect:bool validation:bool))
-    (defun URCi_UpdatePendingBrandingLPs:object{IgnisCollectorV1.OutputCumulator} (swpair:string entity-pos:integer))
-    (defun URCi_UpgradeBrandingLPs:decimal (months:integer))
-    (defun URCi_ToggleAddLiquidity:object{IgnisCollectorV1.OutputCumulator} (swpair:string toggle:bool))
-    (defun URCi_Fuel:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string input-amounts:[decimal] direct-or-indirect:bool))
         ;;
     (defun C_STOA-PID|AddStandardLiquidity:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
     (defun C_STOA-PID|AddIcedLiquidity:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
     (defun C_STOA-PID|AddGlacialLiquidity:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
     (defun C_STOA-PID|AddFrozenLiquidity:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal))
     (defun C_STOA-PID|AddSleepingLiquidity:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal))
-    (defun URCi_AddStandardLiquidity:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
-    (defun URCi_AddIcedLiquidity:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
-    (defun URCi_AddGlacialLiquidity:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
-    (defun URCi_AddFrozenLiquidity:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal))
-    (defun URCi_AddSleepingLiquidity:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal))
         ;;
     (defun C_RemoveLiquidity:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string lp-amount:decimal))
-    (defun URCi_RemoveLiquidity:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string lp-amount:decimal))
+
 )
 ;;
 (module SWPLC GOV
+
 
 
     ;;<=========================================================================>

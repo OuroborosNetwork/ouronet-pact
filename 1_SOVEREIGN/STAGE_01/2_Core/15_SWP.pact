@@ -6,6 +6,27 @@
     @doc "Swapper forward surface for module SWP (successor to SwapperV2). \
         \ Row shapes use this interface's PoolTokens and FeeSplit schemas (field-compatible with SwapperV2). \
         \ V3: UR_StoaValue and XE_UpdateStoaValue for STOA pool ledger on SWP|Pairs."
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
     ;;
     (defschema PoolTokens
         token-id:string
@@ -15,14 +36,28 @@
         target:string
         value:integer
     )
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
     ;;
     (defun CT_Info ())
+    ;;{5.2}  Compute [UC]
     ;;
     ;;
     (defun UC_ExtractTokens:[string] (input:[object{PoolTokens}]))
     (defun UC_ExtractTokenSupplies:[decimal] (input:[object{PoolTokens}]))
     (defun UC_CustomSpecialFeeTargets:[string] (io:[object{FeeSplit}]))
     (defun UC_CustomSpecialFeeTargetsProportions:[decimal] (io:[object{FeeSplit}]))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
     (defun UR_Asymetric:bool ())
     (defun UR_Principals:[string] ())
@@ -77,6 +112,20 @@
     (defun URC_LpComposer:[string] (pool-tokens:[object{PoolTokens}] weights:[decimal] amp:decimal))
     ;;
     (defun URH_OwnedSwapPairs:[string] (account:string))
+    ;;  [URCi] cost readers — single source per op (EnableFrozen/Sleeping/ToggleAddOrSwap composers -> Phase 1.2)
+    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator} (entity-id:string))
+    (defun URCi_ChangeOwnership:object{IgnisCollectorV1.OutputCumulator} (swpair:string))
+    (defun URCi_ModifyCanChangeOwner:object{IgnisCollectorV1.OutputCumulator} (swpair:string))
+    (defun URCi_ModifyWeights:object{IgnisCollectorV1.OutputCumulator} (swpair:string))
+    (defun URCi_UpdateAmplifier:object{IgnisCollectorV1.OutputCumulator} (swpair:string))
+    (defun URCi_UpdateFee:object{IgnisCollectorV1.OutputCumulator} (swpair:string))
+    (defun URCi_UpdateSpecialFeeTargets:object{IgnisCollectorV1.OutputCumulator} (swpair:string))
+    (defun URCi_ToggleFeeLock:object{IgnisCollectorV1.OutputCumulator} (swpair:string toggle:bool))
+    (defun URCi_EnableFrozenLP:object{IgnisCollectorV1.OutputCumulator} (patron:string swpair:string))
+    (defun URCi_EnableSleepingLP:object{IgnisCollectorV1.OutputCumulator} (patron:string swpair:string))
+    (defun URCi_ToggleAddOrSwap:object{IgnisCollectorV1.OutputCumulator} (swpair:string toggle:bool add-or-swap:bool))
+    (defun URCi_UpgradeBranding:decimal (months:integer))
+    ;;{5.4}  Validate [UEV/CAP]
     ;;
     (defun UEV_FeeSplit (input:object{FeeSplit}))
     (defun UEV_id (swpair:string))
@@ -89,6 +138,17 @@
     (defun UEV_CheckAgainst:bool (token-ids:[string] pool-tokens:[string]))
     (defun UEV_FrozenLP (swpair:string state:bool))
     (defun UEV_SleepingLP (swpair:string state:bool))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;
+    (defun XB_ModifyWeights (swpair:string new-weights:[decimal]))
+    ;;
+    (defun XE_UpdateSupplies (swpair:string new-supplies:[decimal]))
+    (defun XE_UpdateSupply (swpair:string id:string new-supply:decimal))
+    (defun XE_UpdateStoaValue (swpair:string new-stoa-value:decimal))
+    (defun XE_Issue:string (account:string pool-tokens:[object{PoolTokens}] token-lp:string fee-lp:decimal weights:[decimal] amp:decimal p:bool))
+    (defun XE_CanAddOrSwapToggle (swpair:string toggle:bool add-or-swap:bool))
+    ;;{5.7}  User [A/C]
     ;;
     ;;
     (defun A_UpdatePrincipal (principal:string add-or-remove:bool))
@@ -108,31 +168,11 @@
     (defun C_UpdateAmplifier:object{IgnisCollectorV1.OutputCumulator} (swpair:string amp:decimal))
     (defun C_UpdateFee:object{IgnisCollectorV1.OutputCumulator} (swpair:string new-fee:decimal lp-or-special:bool))
     (defun C_UpdateSpecialFeeTargets:object{IgnisCollectorV1.OutputCumulator} (swpair:string targets:[object{FeeSplit}]))
-    ;;  [URCi] cost readers — single source per op (EnableFrozen/Sleeping/ToggleAddOrSwap composers -> Phase 1.2)
-    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator} (entity-id:string))
-    (defun URCi_ChangeOwnership:object{IgnisCollectorV1.OutputCumulator} (swpair:string))
-    (defun URCi_ModifyCanChangeOwner:object{IgnisCollectorV1.OutputCumulator} (swpair:string))
-    (defun URCi_ModifyWeights:object{IgnisCollectorV1.OutputCumulator} (swpair:string))
-    (defun URCi_UpdateAmplifier:object{IgnisCollectorV1.OutputCumulator} (swpair:string))
-    (defun URCi_UpdateFee:object{IgnisCollectorV1.OutputCumulator} (swpair:string))
-    (defun URCi_UpdateSpecialFeeTargets:object{IgnisCollectorV1.OutputCumulator} (swpair:string))
-    (defun URCi_ToggleFeeLock:object{IgnisCollectorV1.OutputCumulator} (swpair:string toggle:bool))
-    (defun URCi_EnableFrozenLP:object{IgnisCollectorV1.OutputCumulator} (patron:string swpair:string))
-    (defun URCi_EnableSleepingLP:object{IgnisCollectorV1.OutputCumulator} (patron:string swpair:string))
-    (defun URCi_ToggleAddOrSwap:object{IgnisCollectorV1.OutputCumulator} (swpair:string toggle:bool add-or-swap:bool))
-    (defun URCi_UpgradeBranding:decimal (months:integer))
-    ;;
-    (defun XB_ModifyWeights (swpair:string new-weights:[decimal]))
-    ;;
-    (defun XE_UpdateSupplies (swpair:string new-supplies:[decimal]))
-    (defun XE_UpdateSupply (swpair:string id:string new-supply:decimal))
-    (defun XE_UpdateStoaValue (swpair:string new-stoa-value:decimal))
-    (defun XE_Issue:string (account:string pool-tokens:[object{PoolTokens}] token-lp:string fee-lp:decimal weights:[decimal] amp:decimal p:bool))
-    (defun XE_CanAddOrSwapToggle (swpair:string toggle:bool add-or-swap:bool))
-    ;;
+
 )
 ;;
 (module SWP GOV
+
 
 
     ;;<=========================================================================>

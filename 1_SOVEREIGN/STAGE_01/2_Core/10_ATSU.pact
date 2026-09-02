@@ -4,6 +4,41 @@
 ;;
 (interface AutostakeUsageV1
     @doc "Exposes Autostake Usage Functions, which involve Token Transfers"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
     ;;  [URC]
     ;;
@@ -13,6 +48,23 @@
     ;;  [UDC]
     ;;
     (defun URCi_UnlimitedUncoilCumulator:object{IgnisCollectorV1.OutputCumulator} (ats:string account:string))
+    (defun URCi_WithdrawRoyalties:object{IgnisCollectorV1.OutputCumulator} (ats:string target:string))
+    (defun URCi_KickStart:object{IgnisCollectorV1.OutputCumulator} (kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
+    (defun URCi_Fuel:object{IgnisCollectorV1.OutputCumulator} (fueler:string ats:string reward-token:string amount:decimal))
+    (defun URCi_Coil:object{IgnisCollectorV1.OutputCumulator} (coiler:string ats:string rt:string amount:decimal))
+    (defun URCi_Curl:object{IgnisCollectorV1.OutputCumulator} (curler:string ats1:string ats2:string rt:string amount:decimal))
+    (defun URCi_ColdRecovery:object{IgnisCollectorV1.OutputCumulator} (recoverer:string ats:string ra:decimal))
+    (defun URCi_Cull:object{IgnisCollectorV1.OutputCumulator} (culler:string ats:string))
+    (defun URCi_HotRecovery:object{IgnisCollectorV1.OutputCumulator} (recoverer:string ats:string ra:decimal))
+    (defun URCi_Recover:object{IgnisCollectorV1.OutputCumulator} (recoverer:string id:string nonce:integer))
+    (defun URCi_Redeem:object{IgnisCollectorV1.OutputCumulator} (redeemer:string id:string nonce:integer))
+    (defun URCi_DirectRecovery:object{IgnisCollectorV1.OutputCumulator} (recoverer:string ats:string ra:decimal))
+    (defun URCi_Syphon:object{IgnisCollectorV1.OutputCumulator} (syphon-target:string ats:string syphon-amounts:[decimal]))
+    (defun URCi_RemoveSecondary:object{IgnisCollectorV1.OutputCumulator} (remover:string ats:string reward-token:string))
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
     ;;
     ;;  [A]
     ;;
@@ -29,39 +81,27 @@
         (remover:string ats:string reward-token:string)
     )
     (defun C_WithdrawRoyalties:object{IgnisCollectorV1.OutputCumulator}(ats:string target:string))
-    (defun URCi_WithdrawRoyalties:object{IgnisCollectorV1.OutputCumulator} (ats:string target:string))
         ;;
     (defun C_KickStart:object{IgnisCollectorV1.OutputCumulator} (kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
-    (defun URCi_KickStart:object{IgnisCollectorV1.OutputCumulator} (kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
     (defun C_Fuel:object{IgnisCollectorV1.OutputCumulator} (fueler:string ats:string reward-token:string amount:decimal))
-    (defun URCi_Fuel:object{IgnisCollectorV1.OutputCumulator} (fueler:string ats:string reward-token:string amount:decimal))
     (defun C_Coil:object{IgnisCollectorV1.OutputCumulator} (coiler:string ats:string rt:string amount:decimal))
-    (defun URCi_Coil:object{IgnisCollectorV1.OutputCumulator} (coiler:string ats:string rt:string amount:decimal))
     (defun C_Curl:object{IgnisCollectorV1.OutputCumulator} (curler:string ats1:string ats2:string rt:string amount:decimal))
-    (defun URCi_Curl:object{IgnisCollectorV1.OutputCumulator} (curler:string ats1:string ats2:string rt:string amount:decimal))
         ;;
     (defun C_ColdRecovery:object{IgnisCollectorV1.OutputCumulator} (recoverer:string ats:string ra:decimal))
-    (defun URCi_ColdRecovery:object{IgnisCollectorV1.OutputCumulator} (recoverer:string ats:string ra:decimal))
     (defun C_Cull:object{IgnisCollectorV1.OutputCumulator}(culler:string ats:string))
-    (defun URCi_Cull:object{IgnisCollectorV1.OutputCumulator} (culler:string ats:string))
         ;;
     (defun C_HotRecovery:object{IgnisCollectorV1.OutputCumulator} (recoverer:string ats:string ra:decimal))
-    (defun URCi_HotRecovery:object{IgnisCollectorV1.OutputCumulator} (recoverer:string ats:string ra:decimal))
     (defun C_Recover:object{IgnisCollectorV1.OutputCumulator} (recoverer:string id:string nonce:integer))
-    (defun URCi_Recover:object{IgnisCollectorV1.OutputCumulator} (recoverer:string id:string nonce:integer))
     (defun C_Redeem:object{IgnisCollectorV1.OutputCumulator} (redeemer:string id:string nonce:integer))
-    (defun URCi_Redeem:object{IgnisCollectorV1.OutputCumulator} (redeemer:string id:string nonce:integer))
         ;;
     (defun C_DirectRecovery:object{IgnisCollectorV1.OutputCumulator} (recoverer:string ats:string ra:decimal))
-    (defun URCi_DirectRecovery:object{IgnisCollectorV1.OutputCumulator} (recoverer:string ats:string ra:decimal))
         ;;
     (defun C_Syphon:object{IgnisCollectorV1.OutputCumulator} (syphon-target:string ats:string syphon-amounts:[decimal]))
-    (defun URCi_Syphon:object{IgnisCollectorV1.OutputCumulator} (syphon-target:string ats:string syphon-amounts:[decimal]))
-    (defun URCi_RemoveSecondary:object{IgnisCollectorV1.OutputCumulator} (remover:string ats:string reward-token:string))
-    ;;
+
 )
 ;;
 (module ATSU GOV
+
 
 
     ;;<=========================================================================>

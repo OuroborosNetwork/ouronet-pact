@@ -1,5 +1,39 @@
 (interface AcquisitionFarmsVaultsTreasuriesV1
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
     (defun GOV|Demiurgoi ())
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
     ;; [UC]  compute
     ;;
     (defun UCk_ScoreEntityLink:string (fvt-id:string score-entity-id:string))
@@ -7,6 +41,7 @@
     (defun UCk_RpsMember:string (fvt-id:string score-entity-id:string dptf-id:string))
     (defun UCk_RpsUser:string (user-id:string fvt-id:string score-entity-id:string dptf-id:string))
     (defun UCk_MultipletFamily:string (token-0-id:string token-1-id:string token-2-id:string))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;; [UR]  read
     ;;
     (defun UR_FVT|FvtClass:integer (fvt-id:string))
@@ -83,6 +118,40 @@
     (defun URHC_BuildStakeSettleBundle:object
         (pool-id:string beneficiary-id:string)
     )
+    (defun UR_ExternalOracle:bool ())
+    (defun UR_OracleValidity:integer ())
+    (defun URCi_WithdrawRoyaltyCustody:decimal (fvt-id:string reward-dptf-id:string destination:string))
+    (defun URCi_BurnRoyaltyCustody:decimal (fvt-id:string reward-dptf-id:string))
+    (defun URCi_FuelRoyaltyCustody:decimal (fvt-id:string reward-dptf-id:string swpair:string))
+    ;;
+    ;; [URCi]   cost readers — single source for exec billing + INFO preview
+    (defun URCi_Issue:object{IgnisCollectorV1.OutputCumulator} (owner-konto:string output:[string]))
+    (defun URCi_IssueStoa:decimal ())
+    (defun URCi_RotateOwnership:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string))
+    (defun URCi_Control:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string))
+    (defun URCi_SetCommonDenominator:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
+    (defun URCi_SetMosaic:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
+    (defun URCi_SetSplitMode:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
+    (defun URCi_AddScoreEntity:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
+    (defun URCi_ToggleScoreEntityLink:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
+    (defun URCi_IssueMultipletFamily:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
+    (defun URCi_AddRewardLink:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
+    (defun URCi_ToggleRewardLink:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
+    (defun URCi_SetQualitySplit:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
+    (defun URCi_Inject:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
+    (defun URCi_UnstaleMyScores:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
+    (defun URCi_Collect:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
+    (defun URCi_CollectFull:decimal
+        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string))
+    (defun URCi_TrueFungibleStakeFlow:decimal
+        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool))
+    (defun URCi_OrtoFungibleStakeFlow:decimal
+        (pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] direction:bool))
+    (defun URCi_CollectableStakeFlow:decimal
+        (pool-id:string owner-id:string beneficiary-id:string collectable-id:string son:bool nonces:[integer] nonce-amounts:[integer] direction:bool))
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
     ;; [XE]
     (defun XE_FvtFixUserChunk:object{IgnisCollectorV1.OutputCumulator}
         (fvt-id:string reward-dptf-id:string users:[string])
@@ -100,20 +169,12 @@
     (defun XE_SetExternalOracle:string (on:bool))
     (defun XE_SetOracleValidity:string (seconds:integer))
     (defun XE_SetAgencyFee:string (fvt-id:string score-entity-id:string operator-konto:string fee-per-mille:integer))
-    (defun UR_ExternalOracle:bool ())
-    (defun UR_OracleValidity:integer ())
     (defun XE_SetMemberDelegation:string (fvt-id:string score-entity-id:string delegation:bool))
     (defun XE_SetMemberCapture:string (fvt-id:string score-entity-id:string capture-units:decimal capture-weight:decimal oracle-ts:time))
     (defun XE_AdmitDelegationMember:string (fvt-id:string triplet-id:string operator:string))
     (defun XE_WithdrawRoyalty:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string reward-dptf-id:string destination:string))
     (defun XE_BurnRoyalty:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string reward-dptf-id:string))
     (defun XE_FuelRoyalty:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string reward-dptf-id:string swpair:string))
-    (defun URCi_WithdrawRoyaltyCustody:decimal (fvt-id:string reward-dptf-id:string destination:string))
-    (defun URCi_BurnRoyaltyCustody:decimal (fvt-id:string reward-dptf-id:string))
-    (defun URCi_FuelRoyaltyCustody:decimal (fvt-id:string reward-dptf-id:string swpair:string))
-    (defun C_SetQualitySplit:object{IgnisCollectorV1.OutputCumulator}
-        (patron:string fvt-id:string reward-dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
-    )
     (defun XE_BankScorePendingRewards:object{IgnisCollectorV1.OutputCumulator}
         (beneficiary-id:string pool-id:string plan:object)
     )
@@ -139,6 +200,10 @@
     ;; [XB]
     (defun XB_FvtInject:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+    )
+    ;;{5.7}  User [A/C]
+    (defun C_SetQualitySplit:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string fvt-id:string reward-dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
     )
     ;; [C]   client
     ;;
@@ -223,34 +288,10 @@
     (defun CC_Collect:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
     )
-    ;;
-    ;; [URCi]   cost readers — single source for exec billing + INFO preview
-    (defun URCi_Issue:object{IgnisCollectorV1.OutputCumulator} (owner-konto:string output:[string]))
-    (defun URCi_IssueStoa:decimal ())
-    (defun URCi_RotateOwnership:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string))
-    (defun URCi_Control:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string))
-    (defun URCi_SetCommonDenominator:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
-    (defun URCi_SetMosaic:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
-    (defun URCi_SetSplitMode:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
-    (defun URCi_AddScoreEntity:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
-    (defun URCi_ToggleScoreEntityLink:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
-    (defun URCi_IssueMultipletFamily:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
-    (defun URCi_AddRewardLink:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
-    (defun URCi_ToggleRewardLink:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
-    (defun URCi_SetQualitySplit:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
-    (defun URCi_Inject:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
-    (defun URCi_UnstaleMyScores:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
-    (defun URCi_Collect:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
-    (defun URCi_CollectFull:decimal
-        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string))
-    (defun URCi_TrueFungibleStakeFlow:decimal
-        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool))
-    (defun URCi_OrtoFungibleStakeFlow:decimal
-        (pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] direction:bool))
-    (defun URCi_CollectableStakeFlow:decimal
-        (pool-id:string owner-id:string beneficiary-id:string collectable-id:string son:bool nonces:[integer] nonce-amounts:[integer] direction:bool))
+
 )
 (module AQP-FVT GOV
+
 
 
     ;;<=========================================================================>

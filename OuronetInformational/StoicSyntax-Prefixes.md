@@ -661,3 +661,13 @@ version stays in the name):
   `EmptyDispo` → **`UDC_EmptyDispo`**; `DALOS|EmptyOutputCumulatorV2` → **`UDC_EmptyOutputCumulatorV2`**
   (drop the DALOS scope — generic constructor in IGNIS); `DALOS|VirtualGasData` → **`CT_VirtualGasData`**
   ({#} gas block); `TALOS|Gassless` → **`URC_Gassless`**.
+
+### 7.12 Interface markers (amendment 2026-09-02)
+Interfaces carry the **same block-marker skeleton** as modules, minus the blocks
+they can't hold: **no `{0}` implementers, no `{#}` gasstation, no `{6}` REPL, no
+tables/bodies**. They mirror the module's order for what they *can* declare —
+constants `{3.1}` · schemas `{3.2}`/`{G2}`/`{P2}` · cap signatures `{4}` ·
+function signatures `{5.1..5.7}` (and `{G5}`/`{P5}`). Notably **`CAP_` is a Validate
+FUNCTION → `{5.4}` with the `UEV_`s** (the old separate `[CAP]` group is gone). The
+skeleton emitter (`tools/skeleton_emit.py`) sweeps `(interface …)` blocks the same
+way it sweeps `(module …)`.

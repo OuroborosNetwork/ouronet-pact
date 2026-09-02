@@ -4,8 +4,46 @@
 (interface TalosStageOne_ClientOneV1
     @doc "Exposes Ouronets Stage One First Batch of Client Functions \
         \ Modules: DALOS, DPTF and DPOF are included in the First Batch"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
     ;;
-    ;;DALOS Functions
     (defun C_DALOS|ControlSmartAccount (patron:string account:string payable-as-smart-contract:bool payable-by-smart-contract:bool payable-by-method:bool))
     (defun C_DALOS|DeploySmartAccount (account:string guard:guard stoa:string sovereign:string public:string))
     (defun C_DALOS|DeployStandardAccount (account:string guard:guard stoa:string public:string))
@@ -17,7 +55,6 @@
     (defun C_DALOS|UpdateEliteAccountSquared (patron:string sender:string receiver:string))
     ;;
     ;;
-    ;;DPTF (Demiourgos Pact True Fungible) Functions
     (defun C_DPTF|UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}]))
     (defun C_DPTF|UpgradeBranding (patron:string entity-id:string months:integer))
     ;;
@@ -55,7 +92,6 @@
     (defun C_DPTF|MultiBulkTransfer (patron:string id:[string] sender:string receiver-array:[[string]] transfer-amount-array:[[decimal]]))
     ;;
     ;;
-    ;;DPOF (Demiourgos Pact Orto Fungible) Functions
     (defun C_DPOF|UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}]))
     (defun C_DPOF|UpgradeBranding (patron:string entity-id:string months:integer))
     ;;
@@ -81,14 +117,54 @@
         ;;
     (defun C_DPOF|Transmit (patron:string id:string nonces:[integer] amounts:[decimal] sender:string receiver:string method:bool))
     (defun C_DPOF|Transfer (patron:string id:string nonces:[integer] sender:string receiver:string method:bool))    
-    ;;
+
 )
 ;;
 (interface TalosStageOne_ClientOneV2
     @doc "Additive Talos Stage One Client One surface — opt-in per consumer; does not replace TalosStageOne_ClientOneV1."
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
     (defun C_DPOF|BulkTransfer
         (patron:string id:string nonces-array:[[integer]] sender:string receiver-lst:[string] method:bool)
     )
+
 )
 ;;
 (module TS01-C1 GOV

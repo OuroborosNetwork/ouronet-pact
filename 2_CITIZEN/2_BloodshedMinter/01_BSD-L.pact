@@ -1,15 +1,24 @@
 (interface Bloodshed
-    (defschema MD
-        Rarity:string
-        Dacian:string
-        Potency:string
-        Bloodshed:string
-        Background:string
-        FirstProtection:string
-        SecondProtection:string
-        MainHand:string
-        OffHand:string
-    )
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
     (defconst IPFS                  "https://ipfs.io/ipfs/QmYjHPWPxCeHGu9vgYUbzjmWo34A2z3CNuYmU6MEzgUSzP/")
     (defconst LEGENDARY             277.0)      ;;Legendary BS Score
     (defconst EPIC                  43.0)       ;;Epic BS Score
@@ -92,9 +101,41 @@
     ;;
     (defconst NAME                  "Bloodshed")
     (defconst DS                    "A Collection of 12928 NFTs depicting 272 unique Dacian Warriors, representing Bloodshed.gg, a gaming Guild within Age of Zalmoxis - a Web3 MMORPG, spawned on Ouronet, powered by Stoa")
+    ;;{3.2}  schemas
+    (defschema MD
+        Rarity:string
+        Dacian:string
+        Potency:string
+        Bloodshed:string
+        Background:string
+        FirstProtection:string
+        SecondProtection:string
+        MainHand:string
+        OffHand:string
+    )
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
 )
 ;;
 (module BLOODSHED-L GOV
+
 
 
     ;;<=========================================================================>

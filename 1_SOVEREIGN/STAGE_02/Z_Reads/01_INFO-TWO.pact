@@ -1,6 +1,41 @@
 (interface InfoTwoV1
     @doc "Exposes the Stage-2 INFO (ClientInfo preview) surface — DPDC collectables, \
         \ DEMIPAD launchpad, EQUITY, AQP. Each function wraps a core URCi cost reader."
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;  [DPDC collectables]
     (defun INFO_DPSF|Make:object{OuronetInfoV1.ClientInfo} (patron:string account:string id:string nonces:[integer] set-class:integer how-many-sets:integer))
     (defun INFO_DPNF|Make:object{OuronetInfoV1.ClientInfo} (patron:string account:string id:string nonces:[integer] set-class:integer))
@@ -18,11 +53,17 @@
     ;;  [EQUITY]
     (defun INFO_EQUITY|IssueCompany:object{OuronetInfoV1.ClientInfo} (patron:string creator-account:string collection-name:string))
     (defun INFO_EQUITY|MorphEquity:object{OuronetInfoV1.ClientInfo} (patron:string account:string id:string input-nonce:integer input-amount:integer output-nonce:integer))
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
 )
 ;;INFO_LIQUID|UnwrapStoa
 ;;INFO_LIQUID|WrapStoa
 ;;INFO_LIQUID|UnwrapUrStoa
 (module INFO-TWO GOV
+
 
 
     ;;<=========================================================================>

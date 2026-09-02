@@ -3,6 +3,27 @@
 ;;
 (interface DpdcManagementV1
     @doc "Exposes Collectables Management Functions"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
     ;;
     (defschema RemovableNonces
         @doc "Removable Nonces are Class 0 Nonces held by a given Account with greater than 0 supply \
@@ -10,6 +31,41 @@
         r-nonces:[integer]
         r-amounts:[integer]
     )
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    (defun UDC_RemovableNonces:object{RemovableNonces} (a:[integer] b:[integer]))
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;
+    ;;  [URCi]
+    ;;
+    (defun URCi_Control:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
+    (defun URCi_TogglePause:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
+    (defun URCi_AddQuantity:object{IgnisCollectorV1.OutputCumulator} (id:string))
+    (defun URCi_RespawnNFT:object{IgnisCollectorV1.OutputCumulator} (id:string))
+    (defun URCi_BurnSFT:object{IgnisCollectorV1.OutputCumulator} (id:string))
+    (defun URCi_WipeSlim:object{IgnisCollectorV1.OutputCumulator} (id:string))
+    (defun URCi_BurnNFT:object{IgnisCollectorV1.OutputCumulator} (id:string))
+    (defun URCi_WipeNonce:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
+    (defun URCi_WipeCumulator:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool removable-nonces-obj:object{RemovableNonces}))
+    ;;
+    ;;  [URDC/URC/UDC]  RemovableNonces builders (dirty-read helpers, also used by INFO preview)
+    (defun URHC_WipePure:object{RemovableNonces} (account:string id:string son:bool))
+    (defun URC_FilterAccountViableNonces:object{RemovableNonces} (account:string id:string son:bool nonces:[integer]))
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
     ;;
     ;; [C]
     ;;
@@ -37,26 +93,11 @@
     (defun C_WipePure:object{IgnisCollectorV1.OutputCumulator} (account:string id:string son:bool removable-nonces-obj:object{RemovableNonces}))
     (defun C_WipeClean:object{IgnisCollectorV1.OutputCumulator} (account:string id:string son:bool nonces:[integer]))
     (defun C_WipeDirty:object{IgnisCollectorV1.OutputCumulator} (account:string id:string son:bool nonces:[integer]))
-    ;;
-    ;;  [URCi]
-    ;;
-    (defun URCi_Control:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
-    (defun URCi_TogglePause:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
-    (defun URCi_AddQuantity:object{IgnisCollectorV1.OutputCumulator} (id:string))
-    (defun URCi_RespawnNFT:object{IgnisCollectorV1.OutputCumulator} (id:string))
-    (defun URCi_BurnSFT:object{IgnisCollectorV1.OutputCumulator} (id:string))
-    (defun URCi_WipeSlim:object{IgnisCollectorV1.OutputCumulator} (id:string))
-    (defun URCi_BurnNFT:object{IgnisCollectorV1.OutputCumulator} (id:string))
-    (defun URCi_WipeNonce:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
-    (defun URCi_WipeCumulator:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool removable-nonces-obj:object{RemovableNonces}))
-    ;;
-    ;;  [URDC/URC/UDC]  RemovableNonces builders (dirty-read helpers, also used by INFO preview)
-    (defun URHC_WipePure:object{RemovableNonces} (account:string id:string son:bool))
-    (defun URC_FilterAccountViableNonces:object{RemovableNonces} (account:string id:string son:bool nonces:[integer]))
-    (defun UDC_RemovableNonces:object{RemovableNonces} (a:[integer] b:[integer]))
+
 )
 ;;
 (module DPDC-MNG GOV
+
 
 
     ;;<=========================================================================>

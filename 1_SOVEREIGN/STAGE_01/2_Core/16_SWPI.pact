@@ -5,6 +5,27 @@
     @doc "Exposes SWP Issuing Functions. \
         \ Also contains Swap Computation Functions, and the Hopper Function. \
         \ V3: UEV_Issue and C_Issue use SwapperV3.PoolTokens (bumped when Swapper row types moved to SwapperV3)."
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
     ;;
     ;;
     ;;  SCHEMAS
@@ -14,6 +35,30 @@
         edges:[string]
         output-values:[decimal]    
     )
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;
+    ;;
+    ;;  [UDC] Functions
+    ;;
+    (defun UDC_DirectRawSwapInput:object{UtilitySwpV1.DirectRawSwapInput} 
+        (dsid:object{UtilitySwpV1.DirectSwapInputData} A:decimal X:[decimal] input-positions:[integer] output-position:integer weights:[decimal])
+    )
+    (defun UDC_InverseRawSwapInput:object{UtilitySwpV1.InverseRawSwapInput} 
+        (rsid:object{UtilitySwpV1.ReverseSwapInputData} A:decimal X:[decimal] output-position:integer input-position:integer weights:[decimal])
+    )
+    (defun UDC_Hopper:object{Hopper} (a:[string] b:[string] c:[decimal]))
+    ;;{5.2}  Compute [UC]
     ;;
     ;;
     ;;  [UC] Functions
@@ -41,6 +86,7 @@
     (defun UC_BareboneSwap:decimal (pool-type:string drsi:object{UtilitySwpV1.DirectRawSwapInput}))
     (defun UC_BareboneInverseSwap:decimal (pool-type:string irsi:object{UtilitySwpV1.InverseRawSwapInput}))
     (defun UC_PoolTokenPositions:[integer] (swpair:string input-ids:[string]))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
     ;;
     ;;  [URC] Functions
@@ -66,16 +112,13 @@
     ;;#65bL Phase 4: URC_Hopper, sourcing its graph from an ALREADY-FETCHED <raw-graph>
     ;;(SWPT::URC_FetchRawGraph) instead of URCx_Hopper's own self-fetch — lets a caller
     ;;doing MULTIPLE unrelated Hopper queries in the same transaction (e.g. the
-    ;;STOA-repricing loop, one query per distinct pool touched) fetch the whole
     ;;topology's raw graph exactly ONCE and reuse it across every query, instead of
     ;;each query independently re-reading and rebuilding it.
     (defun URC_HopperFromRaw:object{Hopper}
         (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal raw-graph:[object{SwapTracerV2.RawGraphNode}])
     )
     ;;#65bL Phase 7: URC_HopperFromRaw again, but sourcing its graph from an
-    ;;ALREADY-BUILT [GraphNode] (SWPT::UC_MakeGraphFromRaw) instead of rebuilding it
     ;;from <raw-graph> on every call — the STOA-repricing loop's own
-    ;;URC_HopperFromRaw/URCx_HopperFromRaw calls independently rebuilt the identical
     ;;graph structure once per distinct pool touched; this lets that shared build
     ;;happen once and be reused, same shape of win one layer deeper than Phase 4's
     ;;raw-graph sharing.
@@ -86,10 +129,7 @@
         )
     )
     ;;#34 Phase 11 — the original #34 ask: genuine exhaustive route discovery. Mirrors
-    ;;URCx_Hopper (the shared internal core URC_Hopper/URC_HopperActive both wrap) but
     ;;calls SWPT::URC_ComputeAllRoutes instead of the K=3-capped
-    ;;URC_ComputeAlternateRoutes, and — unlike the hidden-universe URC_Hopper/
-    ;;URC_HopperActive public wrappers — exposes <swpairs>/<max-attempts> directly, so
     ;;an off-chain caller can choose the routing universe (active-only, full, or any
     ;;subset for Phase 12's varying-scale measurement) and search depth explicitly.
     ;;Meant for off-chain dirty-read use only (see the defun's own @doc).
@@ -134,7 +174,6 @@
     (defun URC_PoolValue:[decimal] (swpair:string))
     ;;#65bL Phase 4: URC_WorthWSTOA/URC_PoolValue, sourcing any graph search they need
     ;;via an ALREADY-FETCHED <raw-graph> instead of a fresh self-fetch per call — see
-    ;;URC_HopperFromRaw's own doc for the full rationale (repricing-loop sharing).
     (defun URC_WorthWSTOAFromRaw (id:string amount:decimal raw-graph:[object{SwapTracerV2.RawGraphNode}]))
     (defun URC_PoolValueFromRaw:[decimal] (swpair:string raw-graph:[object{SwapTracerV2.RawGraphNode}]))
     ;;#65bL Phase 7: URC_WorthWSTOA/URC_PoolValue again, sourcing any graph search via
@@ -146,6 +185,8 @@
     (defun URC_DirectRefillAmounts:[decimal] (swpair:string ids:[string] amounts:[decimal]))
     (defun URC_IndirectRefillAmounts:[decimal] (X:[decimal] positions:[integer] amounts:[decimal]))
     (defun URC_TrimIdsWithZeroAmounts:[string] (swpair:string input-amounts:[decimal]))
+    (defun URCi_Issue:object{IgnisCollectorV1.OutputCumulator} (account:string pool-tokens:[object{SwapperV3.PoolTokens}]))
+    ;;{5.4}  Validate [UEV/CAP]
     ;;
     ;;
     ;;  [UEV] Functions
@@ -154,24 +195,8 @@
     (defun UEV_InverseSwapData (swpair:string rsid:object{UtilitySwpV1.ReverseSwapInputData}))
         ;;
     (defun UEV_Issue (account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool))
-    ;;
-    ;;
-    ;;  [UDC] Functions
-    ;;
-    (defun UDC_DirectRawSwapInput:object{UtilitySwpV1.DirectRawSwapInput} 
-        (dsid:object{UtilitySwpV1.DirectSwapInputData} A:decimal X:[decimal] input-positions:[integer] output-position:integer weights:[decimal])
-    )
-    (defun UDC_InverseRawSwapInput:object{UtilitySwpV1.InverseRawSwapInput} 
-        (rsid:object{UtilitySwpV1.ReverseSwapInputData} A:decimal X:[decimal] output-position:integer input-position:integer weights:[decimal])
-    )
-    (defun UDC_Hopper:object{Hopper} (a:[string] b:[string] c:[decimal]))
-    ;;
-    ;;
-    ;;  []C] Functions
-    ;;
-    ;;
-    (defun C_Issue:object{IgnisCollectorV1.OutputCumulator} (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool))
-    (defun URCi_Issue:object{IgnisCollectorV1.OutputCumulator} (account:string pool-tokens:[object{SwapperV3.PoolTokens}]))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
     ;;
     ;;
     ;;  [X] Functions
@@ -186,9 +211,18 @@
     ;;billed response exactly as before, while C_MTX|Issue (which already bills
     ;;separately in its own Step 2) can just take swpair/token-lp and ignore the rest.
     (defun XE_IssueWrite:list (account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool))
+    ;;{5.7}  User [A/C]
+    ;;
+    ;;
+    ;;  []C] Functions
+    ;;
+    ;;
+    (defun C_Issue:object{IgnisCollectorV1.OutputCumulator} (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool))
+
 )
 ;;
 (module SWPI GOV
+
 
 
     ;;<=========================================================================>

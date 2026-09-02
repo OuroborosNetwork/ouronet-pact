@@ -1,10 +1,45 @@
 (interface EquityV1
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
     ;;
     ;;  [UC]
     ;;
     (defun UC_Name:[string] (collection-name:string))
     (defun UC_Description:[string] (collection-name:string))
     (defun UC_Convert:integer (id:string input-tier:integer input-tier-amount:integer output-tier:integer))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
     ;;  [UR]
     ;;
@@ -16,6 +51,9 @@
     (defun URC_SharesPerMillion:[integer] (id:string))
     (defun URC_SingleSharePerMillions:integer (id:string package-share-tier:integer))
     (defun URC_CombineCapacity:integer (id:string))
+    (defun URCi_MorphPackageShares:object{IgnisCollectorV1.OutputCumulator} (account:string id:string input-nonce:integer input-amount:integer output-nonce:integer))
+    (defun URCi_IssueShareholderCollection:object{IgnisCollectorV1.OutputCumulator} ())
+    ;;{5.4}  Validate [UEV/CAP]
     ;;
     ;;  [UEV]
     ;;
@@ -24,6 +62,9 @@
     (defun UEV_EquitySemiFungibleID (id:string))
     (defun UEV_Convert (id:string input-tier:integer input-tier-amount:integer output-tier:integer))
     (defun UEV_Morph (input-nonce:integer output-nonce:integer))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
     ;;
     ;;  [C]
     ;;
@@ -34,10 +75,10 @@
         )
     )
     (defun C_MorphPackageShares:object{IgnisCollectorV1.OutputCumulator} (account:string id:string input-nonce:integer input-amount:integer output-nonce:integer))
-    (defun URCi_MorphPackageShares:object{IgnisCollectorV1.OutputCumulator} (account:string id:string input-nonce:integer input-amount:integer output-nonce:integer))
-    (defun URCi_IssueShareholderCollection:object{IgnisCollectorV1.OutputCumulator} ())
+
 )
 (module EQUITY GOV
+
 
 
     ;;<=========================================================================>

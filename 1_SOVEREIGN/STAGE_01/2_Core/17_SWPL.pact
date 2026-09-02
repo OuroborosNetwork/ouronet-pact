@@ -3,6 +3,27 @@
 ;;
 (interface SwapperLiquidityV1
     @doc "Exposes Liquidity Functions;"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
     ;;
     ;;
     ;;  SCHEMAS
@@ -91,43 +112,18 @@
         FT:[string]
         FTP:[decimal]
     )
-    ;;
-    ;;
-    ;;  [UC] Functions
-    ;;
-    (defun UC_DetermineLiquidity:object{LiquiditySplitType} (input-lqs:object{LiquiditySplit}))
-    ;;
-    ;;
-    ;;  [URC] Functions
-    ;;
-    (defun URC_STOA-PID|LpToIgnis:decimal (swpair:string amount:decimal stoa-pid:decimal))
-    (defun URC_STOA-PID|TokenToIgnis (id:string amount:decimal stoa-pid:decimal))
-    (defun URC_STOA-PID|CLAD:object{CompleteLiquidityAdditionData}
-        (
-            account:string swpair:string ld:object{LiquidityData} 
-            asymmetric-collection:bool gaseous-collection:bool stoa-pid:decimal
-        )
-    )
-    (defun URC_TokenPrecision (id:string))
-    (defun URC_IgnisPrecision ())
-        ;;
-    (defun URC_LD:object{LiquidityData} (swpair:string input-amounts:[decimal]))
-    (defun URC_AsymmetricTax:object{AsymmetricTax} (account:string swpair:string ld:object{LiquidityData}))
-    (defun URC_SortLiquidity:object{LiquiditySplit} (swpair:string input-amounts:[decimal]))
-        ;;
-    ;;#56L fix: renamed to URCv_AreAmountsBalanced (StoicSyntax v1.11.0 'validating'
-    ;;specialization) — see the defun's own @doc for the full rationale.
-    (defun URCv_AreAmountsBalanced:bool (swpair:string input-amounts:[decimal]))
-    (defun URC_BalancedLiquidity:[decimal] (swpair:string input-id:string input-amount:decimal with-validation:bool))
-    (defun URC_LpBreakAmounts:[decimal] (swpair:string input-lp-amount:decimal))
-    (defun URC_CustomLpBreakAmounts:[decimal] (swpair:string swpair-pool-token-supplies:[decimal] swpair-lp-supply:decimal input-lp-amount:decimal))
-    ;;
-    ;;
-    ;;  [UEV] Functions
-    ;;
-    (defun UEV_Liquidity:[decimal] (swpair:string ld:object{LiquidityData}))
-    (defun UEV_BalancedLiquidity (swpair:string input-id:string input-amount:decimal))
-    
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
     ;;
     ;;
     ;;  [UDC] Functions
@@ -159,7 +155,49 @@
     )
     (defun UDC_CladOperation:object{CladOperation} (a:object{IgnisCollectorV1.OutputCumulator} b:[string] c:[decimal] d:bool e:[string] f:[decimal] g:[decimal] h:[decimal]))
     (defun UDC_PoolState:object{PoolState} (a:decimal b:object{UtilitySwpV1.SwapFeez} c:[decimal] d:[decimal] e:decimal f:[string] g:[decimal]))
+    ;;{5.2}  Compute [UC]
     ;;
+    ;;
+    ;;  [UC] Functions
+    ;;
+    (defun UC_DetermineLiquidity:object{LiquiditySplitType} (input-lqs:object{LiquiditySplit}))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;
+    ;;
+    ;;  [URC] Functions
+    ;;
+    (defun URC_STOA-PID|LpToIgnis:decimal (swpair:string amount:decimal stoa-pid:decimal))
+    (defun URC_STOA-PID|TokenToIgnis (id:string amount:decimal stoa-pid:decimal))
+    (defun URC_STOA-PID|CLAD:object{CompleteLiquidityAdditionData}
+        (
+            account:string swpair:string ld:object{LiquidityData} 
+            asymmetric-collection:bool gaseous-collection:bool stoa-pid:decimal
+        )
+    )
+    (defun URC_TokenPrecision (id:string))
+    (defun URC_IgnisPrecision ())
+        ;;
+    (defun URC_LD:object{LiquidityData} (swpair:string input-amounts:[decimal]))
+    (defun URC_AsymmetricTax:object{AsymmetricTax} (account:string swpair:string ld:object{LiquidityData}))
+    (defun URC_SortLiquidity:object{LiquiditySplit} (swpair:string input-amounts:[decimal]))
+        ;;
+    ;;#56L fix: renamed to URCv_AreAmountsBalanced (StoicSyntax v1.11.0 'validating'
+    ;;specialization) — see the defun's own @doc for the full rationale.
+    (defun URCv_AreAmountsBalanced:bool (swpair:string input-amounts:[decimal]))
+    (defun URC_BalancedLiquidity:[decimal] (swpair:string input-id:string input-amount:decimal with-validation:bool))
+    (defun URC_LpBreakAmounts:[decimal] (swpair:string input-lp-amount:decimal))
+    (defun URC_CustomLpBreakAmounts:[decimal] (swpair:string swpair-pool-token-supplies:[decimal] swpair-lp-supply:decimal input-lp-amount:decimal))
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;
+    ;;
+    ;;  [UEV] Functions
+    ;;
+    (defun UEV_Liquidity:[decimal] (swpair:string ld:object{LiquidityData}))
+    (defun UEV_BalancedLiquidity (swpair:string input-id:string input-amount:decimal))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
 )
 ;;
 (module SWPL GOV

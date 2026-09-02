@@ -3,10 +3,51 @@
 ;;
 (interface DpdcNonceV1
     @doc "Exposes Collectables Nonce Management related Functions"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
     ;; [UR]
     ;;
     (defun UR_Nonce:object{DpdcUdcV1.DPDC|NonceData} (id:string son:bool nosc:integer nos:bool nost:bool))
+    ;;
+    ;;  [URCi]
+    ;;
+    (defun URCi_UpdateNonces:object{IgnisCollectorV1.OutputCumulator} (account:string count:integer))
+    (defun URCi_UpdateNonceField:object{IgnisCollectorV1.OutputCumulator} (account:string))
+    ;;{5.4}  Validate [UEV/CAP]
     ;;
     ;; [UEV]
     ;;
@@ -16,6 +57,9 @@
     (defun UEV_RoleModifyRoyaltiesON (id:string son:bool account:string))
     (defun UEV_RoleSetNewUriON (id:string son:bool account:string))
     (defun UEV_Score (score:decimal))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
     ;;
     ;; [C]
     ;;
@@ -27,14 +71,11 @@
     (defun C_UpdateNonceScore           (id:string son:bool account:string nosc:integer nos:bool nost:bool score:decimal))
     (defun C_UpdateNonceMetaData        (id:string son:bool account:string nosc:integer nos:bool nost:bool meta-data:object))
     (defun C_UpdateNonceURI             (id:string son:bool account:string nosc:integer nos:bool nost:bool ay:object{DpdcUdcV1.URI|Type} u1:object{DpdcUdcV1.URI|Data} u2:object{DpdcUdcV1.URI|Data} u3:object{DpdcUdcV1.URI|Data}))
-    ;;
-    ;;  [URCi]
-    ;;
-    (defun URCi_UpdateNonces:object{IgnisCollectorV1.OutputCumulator} (account:string count:integer))
-    (defun URCi_UpdateNonceField:object{IgnisCollectorV1.OutputCumulator} (account:string))
+
 )
 ;;
 (module DPDC-N GOV
+
 
 
     ;;<=========================================================================>

@@ -4,6 +4,27 @@
 ;;
 (interface TrueFungibleTransferV1
     @doc "Exposes True Fungible Transfer Functions"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
     ;;
     ;;  SCHEMAS
     ;;
@@ -11,12 +32,30 @@
         type:integer
         iz-it-simple:bool
     )
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;
+    ;;  [UDC]
+    ;;
+    (defun UDC_GetDispoData:object{UtilityDptfV1.DispoData} (account:string))
+    ;;{5.2}  Compute [UC]
     ;;
     ;;  [UC]
     ;;
     (defun UC_ContainsEliteAurynz:bool (id-lst:[string]))
     (defun UC_BulkRemainders:[decimal] (id:string transfer-amount-lst:[decimal]))
     (defun UC_BulkFees:[decimal] (id:string transfer-amount-lst:[decimal]))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
     ;;  [URC]
     ;;
@@ -33,17 +72,6 @@
     (defun URC_IzTrueFungibleEliteAuryn:bool (id:string))
     (defun URC_IzTrueFungibleUnity:bool (id:string))
     (defun URC_AreTrueFungiblesEliteAurynz:bool (id:string))
-    ;;
-    ;;  [UEV]
-    ;;
-    (defun UEV_MinimumMapperForBulk (id:string transfer-amount-lst:[decimal]))
-    (defun UEV_Minimum (id:string amount:decimal))
-    (defun UEV_DispoLocker (id:string account:string))
-    (defun UEV_MoveRoleCheck (id:string sender:string receiver:string))
-    ;;
-    ;;  [UDC]
-    ;;
-    (defun UDC_GetDispoData:object{UtilityDptfV1.DispoData} (account:string))
     (defun URCi_SmallTransmuteCumulator:object{IgnisCollectorV1.OutputCumulator} (id:string transmuter:string))
     (defun URCi_LargeTransmuteCumulator:object{IgnisCollectorV1.OutputCumulator} (id:string transmuter:string))
     (defun URCi_Transmute:object{IgnisCollectorV1.OutputCumulator} (id:string transmuter:string))
@@ -64,6 +92,17 @@
     (defun URCi_SimpleBulkTransferCumulator:object{IgnisCollectorV1.OutputCumulator} (id:string sender:string size:integer))
     (defun URCi_ComplexBulkTransferCumulator:object{IgnisCollectorV1.OutputCumulator} (id:string sender:string size:integer))
     (defun URCi_EliteBulkTransferCumulator:object{IgnisCollectorV1.OutputCumulator} (id:string sender:string size:integer))
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;
+    ;;  [UEV]
+    ;;
+    (defun UEV_MinimumMapperForBulk (id:string transfer-amount-lst:[decimal]))
+    (defun UEV_Minimum (id:string amount:decimal))
+    (defun UEV_DispoLocker (id:string account:string))
+    (defun UEV_MoveRoleCheck (id:string sender:string receiver:string))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
     ;;
     ;;  [C]
     ;;
@@ -72,10 +111,11 @@
     (defun C_Transfer:object{IgnisCollectorV1.OutputCumulator} (id:string sender:string receiver:string transfer-amount:decimal method:bool))
     (defun C_MultiTransfer:object{IgnisCollectorV1.OutputCumulator} (id-lst:[string] sender:string receiver:string transfer-amount-lst:[decimal] method:bool))
     (defun C_MultiBulkTransfer:object{IgnisCollectorV1.OutputCumulator} (id-lst:[string] sender:string receiver-array:[[string]] transfer-amount-array:[[decimal]]))
-    ;;
+
 )
 ;;
 (module TFT GOV
+
 
 
     ;;<=========================================================================>

@@ -22,7 +22,41 @@
 ;;
 (interface PythiaV4
     @doc "PYTHIA V4 — V3 dual-Apollo + Config UR prices; select-based inventory is URH_."
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
     (defun GOV|CronotonKey ())
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
     ;;
     (defun UC_DeployPrice:decimal ())
     (defun UC_RenamePrice:decimal ())
@@ -34,37 +68,13 @@
     (defun UC_DualLinkSmart:string (dual-link-key:string))
     (defun UC_ChainEpoch:integer (block-height:integer))
     (defun UC_CurrentChainEpoch:integer ())
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
     ;; [URCi] cost single-source readers — one raw toll per cost-bearing client op;
     ;; consumed by BOTH the TS01-C4 exec collect and the INFO preview layer.
     (defun URCi_DeployApiKey:decimal ())
     (defun URCi_UpdateDualConsumerLane:decimal ())
     (defun URCi_RevokeLink:decimal ())
-    ;;
-    (defun A_LinkDualApiKey:string (standard-apollo:string smart-apollo:string))
-        ;; Cronoton: create+activate (auto PYTHIA-<hash12> lane) or flip inactive→true
-    (defun A_RevokeDualLink:string (dual-link-key:string))
-    (defun A_UpdateDeployPrice:string (new-price:decimal))
-    (defun A_UpdateRenamePrice:string (new-price:decimal))
-    ;;
-    (defun C_DeployApolloPythiaApiKey:string
-        (
-            owner-account:string
-            apollo-account:string
-            public:string
-        ))
-    (defun C_LinkDualApiKey:string
-        (
-            standard-apollo:string
-            smart-apollo:string
-            consumer-lane:string
-        ))
-    (defun C_RevokeDualLink:string (dual-link-key:string))
-    (defun C_UpdateDualConsumerLane:string
-        (
-            dual-link-key:string
-            new-name:string
-        ))
     ;;
     ;; [UR] PYTHIA|S|ApiKey + DualLink + Config + Revocation
     (defun UR_Public:string (apollo-account:string))
@@ -120,9 +130,60 @@
             dual-link-key:string
             new-name:string
         ))
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+    ;;
+    (defun A_LinkDualApiKey:string (standard-apollo:string smart-apollo:string))
+        ;; Cronoton: create+activate (auto PYTHIA-<hash12> lane) or flip inactive→true
+    (defun A_RevokeDualLink:string (dual-link-key:string))
+    (defun A_UpdateDeployPrice:string (new-price:decimal))
+    (defun A_UpdateRenamePrice:string (new-price:decimal))
+    ;;
+    (defun C_DeployApolloPythiaApiKey:string
+        (
+            owner-account:string
+            apollo-account:string
+            public:string
+        ))
+    (defun C_LinkDualApiKey:string
+        (
+            standard-apollo:string
+            smart-apollo:string
+            consumer-lane:string
+        ))
+    (defun C_RevokeDualLink:string (dual-link-key:string))
+    (defun C_UpdateDualConsumerLane:string
+        (
+            dual-link-key:string
+            new-name:string
+        ))
+
 )
 (interface PythiaLedgerV2
     @doc "Pyth ledger V2 — batch flush entries (explicit day, iz-complete); order-independent txs."
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
     ;;
     (defschema PYTHIA|S|PythMetrics
         @doc "Six Pyth work counters — nested on daily and total rows."
@@ -161,8 +222,20 @@
         total-metrics:object{PYTHIA|S|PythMetrics}
         last-day:integer
     )
-    ;;
-    (defun A_Flush:string (entries:[object{PYTHIA|S|PythFlushEntry}]))
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     (defun UR_PythMaxFlushBatch:integer ())
     (defun UR_PythLedgerEpochStart:time ())
     (defun UR_PythCurrentDay:integer ())
@@ -171,6 +244,13 @@
     (defun UR_PythTotal|LastDay:integer ())
     (defun UR_PythDay:object{PYTHIA|S|PythDaily} (day:integer))
     (defun URH_ListPythDaily:[object{PYTHIA|S|PythDaily}] (from:integer to:integer))
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+    ;;
+    (defun A_Flush:string (entries:[object{PYTHIA|S|PythFlushEntry}]))
+
 )
 ;;
 (module PYTHIA GOV

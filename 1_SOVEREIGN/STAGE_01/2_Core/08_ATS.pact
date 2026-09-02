@@ -4,6 +4,27 @@
 ;;
 (interface AutostakeV2
     @doc "AutostakeV2 — same surface as AutostakeV1 with UtilityAtsV2.Awo typing for unstake objects."
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
     ;;
     ;;  SCHEMAS
     ;;
@@ -26,11 +47,34 @@
         rbt-amount:decimal
         rbt-id:string
     )
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;
+    ;;  [UDC]
+    ;;
+    (defun UDC_MakeUnstakeObject:object{UtilityAtsV2.Awo} (atspair:string tm:time))
+    (defun UDC_MakeZeroUnstakeObject:object{UtilityAtsV2.Awo} (atspair:string))
+    (defun UDC_MakeNegativeUnstakeObject:object{UtilityAtsV2.Awo} (atspair:string))
+    (defun UDC_ComposePrimaryRewardToken:object{ATS|RewardTokenSchemaV2} (token:string nfr:bool))
+    (defun UDC_RT:object{ATS|RewardTokenSchemaV2} (a:string b:bool c:decimal d:decimal e:decimal))
+    (defun UDC_CoilData:object{CoilData} (a:decimal b:decimal c:decimal d:decimal e:decimal f:decimal g:string))
+    ;;{5.2}  Compute [UC]
+    (defun UC_AtspairAccount:string (atspair:string account:string))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
     ;;  [UC]
     ;;
     (defun URU_UpgradeAtspairToV2 (atspairs:[string]))
-    (defun UC_AtspairAccount:string (atspair:string account:string))
     ;;
     ;;  [UR]
     ;;
@@ -113,6 +157,31 @@
     (defun URH_HeldAutostakePairs:[string] (account:string))
     (defun URH_ExistingAutostakePairs:[string] (ats:string))
     (defun URH_OwnedAutostakePairs:[string] (account:string))
+    ;;  [URCi] cost readers — single source per op (the C_ bills them, INFO previews from them)
+    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator} (entity-id:string))
+    (defun URCi_RotateOwnership:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
+    (defun URCi_Control:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
+    (defun URCi_UpdateRoyalty:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
+    (defun URCi_UpdateSyphon:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
+    (defun URCi_SetHibernationFees:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
+    (defun URCi_ControlColdRecoveryFees:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
+    (defun URCi_SetColdRecoveryDuration:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
+    (defun URCi_ToggleElite:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
+    (defun URCi_ToggleUpgrade:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
+    (defun URCi_SwitchColdRecovery:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
+    (defun URCi_ControlHotRecoveryFee:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
+    (defun URCi_SetHotRecoveryFees:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
+    (defun URCi_SwitchHotRecovery:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
+    (defun URCi_SetDirectRecoveryFee:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
+    (defun URCi_SwitchDirectRecovery:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
+    (defun URCi_AddSecondary:object{IgnisCollectorV1.OutputCumulator} ())
+    (defun URCi_AddHotRBT:object{IgnisCollectorV1.OutputCumulator} (atspair:string hot-rbt:string))
+    (defun URCi_SetColdRecoveryFees:object{IgnisCollectorV1.OutputCumulator} ())
+    (defun URCi_ToggleParameterLock:object{IgnisCollectorV1.OutputCumulator} (atspair:string toggle:bool))
+    (defun URCi_IssueGas:decimal (token-count:integer))
+    (defun URCi_IssueStoa:decimal (token-count:integer))
+    (defun URCi_UpgradeBranding:decimal (months:integer))
+    ;;{5.4}  Validate [UEV/CAP]
     ;;
     ;;  [UEV]
     ;;
@@ -128,18 +197,27 @@
     (defun UEV_DirectRecoveryState (atspair:string state:bool))
     (defun UEV_IssueData (atspair:string index-decimals:integer reward-token:string reward-bearing-token:string))
     ;;
-    ;;  [UDC]
-    ;;
-    (defun UDC_MakeUnstakeObject:object{UtilityAtsV2.Awo} (atspair:string tm:time))
-    (defun UDC_MakeZeroUnstakeObject:object{UtilityAtsV2.Awo} (atspair:string))
-    (defun UDC_MakeNegativeUnstakeObject:object{UtilityAtsV2.Awo} (atspair:string))
-    (defun UDC_ComposePrimaryRewardToken:object{ATS|RewardTokenSchemaV2} (token:string nfr:bool))
-    (defun UDC_RT:object{ATS|RewardTokenSchemaV2} (a:string b:bool c:decimal d:decimal e:decimal))
-    (defun UDC_CoilData:object{CoilData} (a:decimal b:decimal c:decimal d:decimal e:decimal f:decimal g:string))
-    ;;
     ;;  [CAP]
     ;;
     (defun CAP_Owner (id:string))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;
+    ;;  [X]
+    ;;
+    (defun XE_RemoveSecondary (atspair:string reward-token:string))
+    (defun XE_UpdateRUR (atspair:string reward-token:string rur:integer direction:bool amount:decimal))
+    (defun XE_SpawnAutostakeAccount (atspair:string account:string))
+    (defun XE_ReshapeUnstakeAccount (atspair:string account:string rp:integer))
+    (defun XE_UpP0 (atspair:string account:string obj:[object{UtilityAtsV2.Awo}]))
+    (defun XE_UpP1 (atspair:string account:string obj:object{UtilityAtsV2.Awo}))
+    (defun XE_UpP2 (atspair:string account:string obj:object{UtilityAtsV2.Awo}))
+    (defun XE_UpP3 (atspair:string account:string obj:object{UtilityAtsV2.Awo}))
+    (defun XE_UpP4 (atspair:string account:string obj:object{UtilityAtsV2.Awo}))
+    (defun XE_UpP5 (atspair:string account:string obj:object{UtilityAtsV2.Awo}))
+    (defun XE_UpP6 (atspair:string account:string obj:object{UtilityAtsV2.Awo}))
+    (defun XE_UpP7 (atspair:string account:string obj:object{UtilityAtsV2.Awo}))
+    ;;{5.7}  User [A/C]
     ;;
     ;;  [C]
     ;;
@@ -182,49 +260,31 @@
         ;;
     (defun C_SetDirectRecoveryFee:object{IgnisCollectorV1.OutputCumulator} (atspair:string promile:decimal))
     (defun C_SwitchDirectRecovery:object{IgnisCollectorV1.OutputCumulator} (atspair:string toggle:bool))
-    ;;  [URCi] cost readers — single source per op (the C_ bills them, INFO previews from them)
-    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator} (entity-id:string))
-    (defun URCi_RotateOwnership:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
-    (defun URCi_Control:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
-    (defun URCi_UpdateRoyalty:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
-    (defun URCi_UpdateSyphon:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
-    (defun URCi_SetHibernationFees:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
-    (defun URCi_ControlColdRecoveryFees:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
-    (defun URCi_SetColdRecoveryDuration:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
-    (defun URCi_ToggleElite:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
-    (defun URCi_ToggleUpgrade:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
-    (defun URCi_SwitchColdRecovery:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
-    (defun URCi_ControlHotRecoveryFee:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
-    (defun URCi_SetHotRecoveryFees:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
-    (defun URCi_SwitchHotRecovery:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
-    (defun URCi_SetDirectRecoveryFee:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
-    (defun URCi_SwitchDirectRecovery:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
-    (defun URCi_AddSecondary:object{IgnisCollectorV1.OutputCumulator} ())
-    (defun URCi_AddHotRBT:object{IgnisCollectorV1.OutputCumulator} (atspair:string hot-rbt:string))
-    (defun URCi_SetColdRecoveryFees:object{IgnisCollectorV1.OutputCumulator} ())
-    (defun URCi_ToggleParameterLock:object{IgnisCollectorV1.OutputCumulator} (atspair:string toggle:bool))
-    (defun URCi_IssueGas:decimal (token-count:integer))
-    (defun URCi_IssueStoa:decimal (token-count:integer))
-    (defun URCi_UpgradeBranding:decimal (months:integer))
-    ;;
-    ;;  [X]
-    ;;
-    (defun XE_RemoveSecondary (atspair:string reward-token:string))
-    (defun XE_UpdateRUR (atspair:string reward-token:string rur:integer direction:bool amount:decimal))
-    (defun XE_SpawnAutostakeAccount (atspair:string account:string))
-    (defun XE_ReshapeUnstakeAccount (atspair:string account:string rp:integer))
-    (defun XE_UpP0 (atspair:string account:string obj:[object{UtilityAtsV2.Awo}]))
-    (defun XE_UpP1 (atspair:string account:string obj:object{UtilityAtsV2.Awo}))
-    (defun XE_UpP2 (atspair:string account:string obj:object{UtilityAtsV2.Awo}))
-    (defun XE_UpP3 (atspair:string account:string obj:object{UtilityAtsV2.Awo}))
-    (defun XE_UpP4 (atspair:string account:string obj:object{UtilityAtsV2.Awo}))
-    (defun XE_UpP5 (atspair:string account:string obj:object{UtilityAtsV2.Awo}))
-    (defun XE_UpP6 (atspair:string account:string obj:object{UtilityAtsV2.Awo}))
-    (defun XE_UpP7 (atspair:string account:string obj:object{UtilityAtsV2.Awo}))
-    ;;
+
 )
 ;;
 (interface AutostakeComputerV1
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
     (defschema CanCoil
         can-coil:bool
         where-coil:[string]
@@ -241,14 +301,34 @@
         can-brumate:bool
         where-brumate:[[string]]
     )
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
     ;;
     (defun UC_CanCoil:object{CanCoil} (dptf:string))
     (defun UC_CanConstrict:object{CanConstrict} (dptf:string))
     (defun UC_CanCurl:object{CanCurl} (dptf:string))
     (defun UC_CanBrumate:object{CanBrumate} (dptf:string))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
 )
 ;;
 (module ATS GOV
+
 
 
     ;;<=========================================================================>

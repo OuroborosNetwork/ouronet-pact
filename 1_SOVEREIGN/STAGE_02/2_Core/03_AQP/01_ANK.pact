@@ -1,15 +1,50 @@
 (interface AcquisitionAnchorsV1
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
     (defun GOV|AqpKey ())
     (defun GOV|AQP|SC_NAME ())
     (defun GOV|AQP|PBL ())
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
     ;;
     (defun P|UEV_IMC ())
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
     ;;
     (defcap AQP|GOV ())
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
     ;; [UC]  compute
     ;;
     (defun UCk_Anchors:string (account:string anchor-id:string))
     (defun UCk_UserBoost:string (account:string boost-class-id:string))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;; [UR]  read
     ;;
     (defun UR_ANK|AnchoredAsset:string (anchor-id:string))
@@ -59,12 +94,21 @@
     ;; [URH] heavy-read
     (defun URH_ANK|AllAnchorIds:[string] ())
     (defun URH_BC|AllBoostClassIds:[string] ())
+    ;;
+    ;; [URCi]   cost readers — single source for exec billing + INFO preview
+    (defun URCi_IssueAnchor:object{IgnisCollectorV1.OutputCumulator} (output:[string]))
+    (defun URCi_IssueAnchorStoa:decimal (acnoi:bool))
+    (defun URCi_RevokeAnchor:object{IgnisCollectorV1.OutputCumulator} ())
+    (defun URCi_RevokeBoostClass:object{IgnisCollectorV1.OutputCumulator} ())
+    ;;{5.4}  Validate [UEV/CAP]
     ;; [UEV] enforce
     (defun UEV_AnkFungibility (asset-fungibility:[bool]))
     (defun UEV_Promile (anchor-precision:integer anchor-promile:decimal))
     (defun UEV_IssueAnchor (ank-asset:string boost-class-id:string))
     (defun UEV_AssetAnchorCap (ank-asset:string))
     (defun UEV_LiveAnchor (anchor-id:string))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
     ;; [XE]
     ;;
     (defun XE_UpdateTrueFungibleUserAnchorValues:object{IgnisCollectorV1.OutputCumulator}
@@ -86,6 +130,7 @@
     (defun XE_ResyncNonFungibleUserAnchorValues:object{IgnisCollectorV1.OutputCumulator}
         (account:string dpnf-id:string nonces:[integer])
     )
+    ;;{5.7}  User [A/C]
     ;; [C]   client
     ;;
     (defun C_RevokeBoostClass:object{IgnisCollectorV1.OutputCumulator}
@@ -104,14 +149,10 @@
         (patron:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-nonce-class:integer)
     )
     (defun C_RevokeAnchor:object{IgnisCollectorV1.OutputCumulator} (anchor-id:string))
-    ;;
-    ;; [URCi]   cost readers — single source for exec billing + INFO preview
-    (defun URCi_IssueAnchor:object{IgnisCollectorV1.OutputCumulator} (output:[string]))
-    (defun URCi_IssueAnchorStoa:decimal (acnoi:bool))
-    (defun URCi_RevokeAnchor:object{IgnisCollectorV1.OutputCumulator} ())
-    (defun URCi_RevokeBoostClass:object{IgnisCollectorV1.OutputCumulator} ())
+
 )
 (module AQP-ANK GOV
+
 
 
     ;;<=========================================================================>

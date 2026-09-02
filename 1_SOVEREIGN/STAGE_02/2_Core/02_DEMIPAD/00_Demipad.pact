@@ -1,4 +1,27 @@
 (interface DemiourgosLaunchpadV1
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+    ;;
+    (defun GOV|DEMIPAD|SC_NAME ())
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
     ;;
     ;;  [Schemas]
     ;;
@@ -49,14 +72,45 @@
         end:decimal
         fee-promille:decimal
     )
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
     ;;
-    (defun GOV|DEMIPAD|SC_NAME ())
+    ;;  [UDC]
+    ;;
+    (defun UDC_Costs:object{Costs} (a:decimal b:decimal))
+    (defun UDC_DEMIPAD|Holdings:object{DEMIPAD|Holdings}
+        (
+            a:decimal b:decimal c:decimal d:decimal
+            e:decimal f:decimal g:decimal
+            h:bool i:bool
+            j:[bool] k:bool l:object m:bool
+        )
+    )
+    (defun UDC_LaunchpadPrices:object{DEMIPAD|Prices}
+        (
+            a:string b:string c:string d:string
+            e:decimal f:decimal g:decimal h:decimal
+            j:decimal k:decimal l:decimal
+        )
+    )
+    ;;{5.2}  Compute [UC]
     ;;
     ;;
     (defun UC_Type:string (asset-id:string fungibility:[bool]))
     (defun UC_GenerateRoyaltyIntervals:[object{RoyaltyInterval}] ())
     (defun UC_ComputeDepositRoyalty:decimal (current-balance:decimal deposit-amount:decimal))
     (defun UC_LaunchpadEnviromentSplit:[decimal] (amount-in-stoa:decimal))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
     ;;  [UR]
     ;;
@@ -87,6 +141,16 @@
     ;;
     (defun URC_Prices:object{DEMIPAD|Prices} (asset-id:string amount-in-dollars:decimal type:integer))
     (defun URC_Acquire:[string] (buyer:string asset-id:string buy-amount-in-dollarz:decimal type:integer slippage:decimal))
+    (defun URCi_Deposit:object{IgnisCollectorV1.OutputCumulator}
+        (donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool)
+    )
+    (defun URCi_TransmitSemiFungibles:object{IgnisCollectorV1.OutputCumulator}
+        (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
+    )
+    (defun URCi_TransmitNonFungibles:object{IgnisCollectorV1.OutputCumulator}
+        (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
+    )
+    ;;{5.4}  Validate [UEV/CAP]
     (defun CAP_Acquire (buyer:string asset-id:string buy-amount-in-dollarz:decimal type:integer))
     ;;
     ;;  [UEV]
@@ -94,28 +158,12 @@
     (defun UEV_AssetFungibility (asset-id:string fungibility-to-check:[bool]))
     (defun UEV_Fungibility (fungibility:[bool]))
     ;;
-    ;;  [UDC]
-    ;;
-    (defun UDC_Costs:object{Costs} (a:decimal b:decimal))
-    (defun UDC_DEMIPAD|Holdings:object{DEMIPAD|Holdings}
-        (
-            a:decimal b:decimal c:decimal d:decimal
-            e:decimal f:decimal g:decimal
-            h:bool i:bool
-            j:[bool] k:bool l:object m:bool
-        )
-    )
-    (defun UDC_LaunchpadPrices:object{DEMIPAD|Prices}
-        (
-            a:string b:string c:string d:string
-            e:decimal f:decimal g:decimal h:decimal
-            j:decimal k:decimal l:decimal
-        )
-    )
-    ;;
     ;;  [CAP]
     ;;
     (defun CAP_Owner (asset-id:string))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
     ;;
     ;;  [A]
     ;;
@@ -140,16 +188,7 @@
     (defun C_TransmitNonFungibles:object{IgnisCollectorV1.OutputCumulator}
         (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
     )
-    (defun URCi_Deposit:object{IgnisCollectorV1.OutputCumulator}
-        (donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool)
-    )
-    (defun URCi_TransmitSemiFungibles:object{IgnisCollectorV1.OutputCumulator}
-        (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
-    )
-    (defun URCi_TransmitNonFungibles:object{IgnisCollectorV1.OutputCumulator}
-        (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
-    )
-    ;;
+
 )
 (module DEMIPAD GOV
     @doc "Demiourgos Launchpad, is a permissioned Launchpad operated by Demiourgos.Holdings  \

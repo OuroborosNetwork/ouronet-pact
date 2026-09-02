@@ -3,7 +3,46 @@
 ;;
 (interface DpdcV1
     @doc "Exposes Collectables Functions"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
     (defun GOV|DPDC|SC_NAME ())
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;
+    ;; [UDC]
+    ;;
+    (defun UDC_Control:object{DpdcUdcV1.DPDC|Properties} (id:string son:bool cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool))
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
     ;;  [UR]
     ;;
@@ -87,6 +126,11 @@
     (defun URH_AccountNonces:[integer] (account:string id:string son:bool))
     (defun URH_AccountNoncesWithSupplies:[object] (account:string id:string son:bool))
     ;;
+    ;;  [URCi]  Branding cost readers — single source for exec billing + INFO preview
+    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator} (entity-id:string son:bool))
+    (defun URCi_UpgradeBranding:decimal (months:integer))
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;
     ;;  [UEV]
     ;;
     (defun UEV_id (id:string son:bool))
@@ -122,15 +166,13 @@
     (defun UEV_NonceQuantityInclusion (account:string id:string son:bool nonce:integer amount:integer))
     (defun UEV_NonceQuantityInclusionMapper (account:string id:string son:bool nonces:[integer] amounts:[integer]))
     ;;
-    ;; [UDC]
-    ;;
-    (defun UDC_Control:object{DpdcUdcV1.DPDC|Properties} (id:string son:bool cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool))
-    ;;
     ;;  [CAP]
     ;;
     (defun CAP_Owner (id:string son:bool))
     (defun CAP_Creator (id:string son:bool))
     (defun CAP_OwnerOrCreator (id:string son:bool))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
     ;;
     ;;  [X]
     ;;
@@ -190,13 +232,12 @@
     ;; [<AccountSuppliesTable> Writings] [4]
     ;;
     (defun XE_W|Supply (account:string id:string son:bool nonce-value:integer amount:integer))
-    ;;
-    ;;  [URCi]  Branding cost readers — single source for exec billing + INFO preview
-    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator} (entity-id:string son:bool))
-    (defun URCi_UpgradeBranding:decimal (months:integer))
+    ;;{5.7}  User [A/C]
+
 )
 ;;
 (module DPDC GOV
+
 
 
     ;;<=========================================================================>

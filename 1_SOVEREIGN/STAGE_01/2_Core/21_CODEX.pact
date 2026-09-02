@@ -5,7 +5,41 @@
 ;; Mnemosyne operator: ouronet-ns.codex-keyset (define before A_RegisterCodexIdentity).
 ;;
 (interface CodexV1
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
     (defun GOV|CodexKey ())
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
     ;;
     ;;
     (defun UC_ValidateArweaveTxId:bool (tx-id:string))
@@ -15,18 +49,12 @@
     (defun UC_CodexIdSmart:string (codex-id:string))
     (defun UC_ValidateCompositeCodexId:bool (codex-id:string))
     (defun UC_ArweaveTrackerKey:string (codex-id:string arweave-tx-id:string))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
     ;; [URCi] cost single-source readers — one raw toll per cost-bearing client op;
     ;; consumed by BOTH the TS01-C4 exec collect and the INFO preview layer.
     (defun URCi_RegisterStoicTag:decimal (tag-name:string))
     (defun URCi_ReleaseStoicTag:decimal (tag-name:string))
-    ;;
-    (defun A_RegisterCodexIdentity:string
-        ( codex-id:string
-          public-standard:string
-          public-smart:string
-          codex-guard:guard
-          registered-by:string ))
     ;;
     ;; [UR] CODEX|S|Identity — field accessors + DataOrNull (UR_CIX|Data is module-only; schema not in interface)
     (defun UR_CIX|CodexIdStandard:string (codex-id:string))
@@ -62,6 +90,23 @@
     ;; [URC]
     (defun URC_AWT|LatestUpload:object (codex-id:string))
     ;;
+    ;; [INFO] UI previews — register: STOA always (C_STOA|CollectWT false); release: IGNIS per virtual-gas rules
+    (defun INFO_CODEX|RegisterStoicTag:object{OuronetInfoV1.ClientInfo}
+        (patron:string tag-name:string account-address:string))
+    (defun INFO_CODEX|ReleaseStoicTag:object{OuronetInfoV1.ClientInfo}
+        (patron:string tag-name:string))
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+    ;;
+    (defun A_RegisterCodexIdentity:string
+        ( codex-id:string
+          public-standard:string
+          public-smart:string
+          codex-guard:guard
+          registered-by:string ))
+    ;;
     ;;#24H fix: these four were already live/actively-called via TS01-C4's module{CodexV1}-typed
     ;;ref, but missing from the interface itself. Added here, purely additive - the module already
     ;;implements all four with matching signatures.
@@ -70,12 +115,7 @@
     (defun C_RecordArweaveUpload:string (codex-id:string arweave-tx-id:string uploaded-bytes:integer))
     (defun C_RegisterStoicTag:string (tag-name:string account-address:string))
     (defun C_ReleaseStoicTag:string (tag-name:string))
-    ;;
-    ;; [INFO] UI previews — register: STOA always (C_STOA|CollectWT false); release: IGNIS per virtual-gas rules
-    (defun INFO_CODEX|RegisterStoicTag:object{OuronetInfoV1.ClientInfo}
-        (patron:string tag-name:string account-address:string))
-    (defun INFO_CODEX|ReleaseStoicTag:object{OuronetInfoV1.ClientInfo}
-        (patron:string tag-name:string))
+
 )
 
 (module CODEX GOV

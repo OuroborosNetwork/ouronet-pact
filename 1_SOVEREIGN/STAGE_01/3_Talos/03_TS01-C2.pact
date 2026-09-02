@@ -4,8 +4,46 @@
 (interface TalosStageOne_ClientTwoV1
     @doc "Exposes Ouronet Stage One Second Batch of Client Functions \
         \ Modules: ATS, VST, LQD and ORBR are included in the Second Batch"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
     ;;
-    ;;ATS (Autostake) Functions
     (defun C_ATS|UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}]))
     (defun C_ATS|UpgradeBranding (patron:string entity-id:string months:integer))
     ;;
@@ -61,7 +99,6 @@
     (defun C_ATS|DirectRecovery (patron:string recoverer:string ats:string ra:decimal))
     ;;
     ;;
-    ;;VST (Vesting) Functions
     (defun C_VST|CreateFrozenLink:[string] (patron:string dptf:string))
     (defun C_VST|CreateReservationLink:[string] (patron:string dptf:string))
     (defun C_VST|CreateVestingLink:[string] (patron:string dptf:string))
@@ -96,7 +133,6 @@
     (defun C_VST|ToggleTransferRoleHibernatedDPOF (patron:string s-dpof:string target:string toggle:bool))
     ;;
     ;;
-    ;;LQD (Liquid-Staking STOA) Functions
     (defun C_LQD|UnwrapStoa (patron:string unwrapper:string amount:decimal))
     (defun C_LQD|WrapStoa (patron:string wrapper:string amount:decimal))
     ;;#13H fix: LQD|C_RegisterOuronetAccountForUrstoaHoldings removed (2026-08-27) - see
@@ -105,12 +141,11 @@
     (defun C_LQD|WrapUrStoa (patron:string wrapper:string amount:decimal))
     ;;
     ;;
-    ;;ORBR (Ouroboros) Functions
     (defun C_ORBR|Compress (client:string ignis-amount:decimal))
     (defun C_ORBR|Sublimate (client:string target:string ouro-amount:decimal))
     (defun C_ORBR|SublimateV2 (client:string target:string ouro-amount:decimal))
     (defun C_ORBR|WithdrawFees (patron:string id:string target:string))
-    ;;
+
 )
 ;;
 (module TS01-C2 GOV

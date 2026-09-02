@@ -3,10 +3,51 @@
 ;;
 (interface DpdcCreateV1
     @doc "Exposes Collectables Create Functions, containining the Credit and Debit Variants"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
     ;;
     ;;  [UC]
     ;;
     (defun UC_AndTruths:bool (truths:[bool]))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;
+    ;;  [URCi]
+    ;;
+    (defun URCi_RegisterCollectablesPrice:decimal (id:string son:bool amounts:[integer]))
+    (defun URCi_CreateNewNonces:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool amounts:[integer]))
+    ;;{5.4}  Validate [UEV/CAP]
     ;;
     ;;  [UEV]
     ;;
@@ -14,26 +55,8 @@
     (defun UEV_NonceType (nonce:integer fragments-or-native:bool))
     (defun UEV_NonceTypeMapper (nonces:[integer] fragments-or-native:bool))
     (defun UEV_HybridNonces:object{OuronetIntegersV1.SplitIntegers} (nonces:[integer]))
-    ;;
-    ;;  [C]
-    ;;
-    (defun C_CreateNewNonce:object{IgnisCollectorV1.OutputCumulator}
-        (
-            id:string son:bool nonce-class:integer amount:integer
-            input-nonce-data:object{DpdcUdcV1.DPDC|NonceData} sft-set-mode:bool
-        )
-    )
-    (defun C_CreateNewNonces:object{IgnisCollectorV1.OutputCumulator}
-        (
-            id:string son:bool amounts:[integer]
-            input-nonce-datas:[object{DpdcUdcV1.DPDC|NonceData}]
-        )
-    )
-    ;;
-    ;;  [URCi]
-    ;;
-    (defun URCi_RegisterCollectablesPrice:decimal (id:string son:bool amounts:[integer]))
-    (defun URCi_CreateNewNonces:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool amounts:[integer]))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
     ;;
     ;;  [X]
     ;;
@@ -61,10 +84,27 @@
     (defun XE_CreditNFT-HybridNonces (account:string id:string nonces:[integer] amounts:[integer]))
     (defun XE_DebitSFT-HybridNonces (account:string id:string nonces:[integer] amounts:[integer]))
     (defun XE_DebitNFT-HybridNonces (account:string id:string nonces:[integer] amounts:[integer]))
+    ;;{5.7}  User [A/C]
     ;;
+    ;;  [C]
+    ;;
+    (defun C_CreateNewNonce:object{IgnisCollectorV1.OutputCumulator}
+        (
+            id:string son:bool nonce-class:integer amount:integer
+            input-nonce-data:object{DpdcUdcV1.DPDC|NonceData} sft-set-mode:bool
+        )
+    )
+    (defun C_CreateNewNonces:object{IgnisCollectorV1.OutputCumulator}
+        (
+            id:string son:bool amounts:[integer]
+            input-nonce-datas:[object{DpdcUdcV1.DPDC|NonceData}]
+        )
+    )
+
 )
 ;;
 (module DPDC-C GOV
+
 
 
     ;;<=========================================================================>

@@ -4,6 +4,27 @@
 ;;
 (interface VestingV1
     @doc "Exposes Vesting Functions"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
     ;;
     ;;  SCHEMAS
     ;;
@@ -15,34 +36,35 @@
         mint-time:time
         release-date:time
     )
-    ;;
-    ;;  [UC]
-    ;;
-    (defun UC_MergeAll:[decimal] (balances:[decimal] seconds-to-unsleep:[decimal]))
-    ;;
-    ;;  [URC]
-    ;;
-    (defun URC_CullMetaDataAmountWithObject:list (id:string nonce:integer))
-    (defun URC_SecondsToUnlock:[decimal] (id:string nonces:[integer]))
-    ;;
-    ;;  [UEV]
-    ;;
-    (defun UEV_NoncesForMerging (nonces:[integer]))
-    (defun UEV_StillHasSleeping (sleeping-dpof:string nonce:integer))
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
     ;;
     ;;  [UDC]
     ;;
     (defun UDC_ComposeVestingMetaData:[object{VST|MetaDataSchema}]
         (dptf:string amount:decimal offset:integer duration:integer milestones:integer)
     )
+    ;;{5.2}  Compute [UC]
     ;;
-    ;;  [C]
+    ;;  [UC]
     ;;
-    (defun C_CreateFrozenLink:object{IgnisCollectorV1.OutputCumulator} (patron:string dptf:string))
-    (defun C_CreateReservationLink:object{IgnisCollectorV1.OutputCumulator} (patron:string dptf:string))
-    (defun C_CreateVestingLink:object{IgnisCollectorV1.OutputCumulator} (patron:string dptf:string))
-    (defun C_CreateSleepingLink:object{IgnisCollectorV1.OutputCumulator} (patron:string dptf:string))
-    (defun C_CreateHibernatingLink:object{IgnisCollectorV1.OutputCumulator} (patron:string dptf:string))
+    (defun UC_MergeAll:[decimal] (balances:[decimal] seconds-to-unsleep:[decimal]))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;
+    ;;  [URC]
+    ;;
+    (defun URC_CullMetaDataAmountWithObject:list (id:string nonce:integer))
+    (defun URC_SecondsToUnlock:[decimal] (id:string nonces:[integer]))
     (defun URCi_CreateSpecialTrueFungibleLink:object{IgnisCollectorV1.OutputCumulator} (dptf:string))
     (defun URCi_CreateSpecialOrtoFungibleLink:object{IgnisCollectorV1.OutputCumulator} (dptf:string vzh-tag:integer))
     (defun URCi_RepurposeTrueFungible:object{IgnisCollectorV1.OutputCumulator} (dptf-to-repurpose:string repurpose-from:string repurpose-to:string))
@@ -52,8 +74,6 @@
     (defun URCi_Awake:object{IgnisCollectorV1.OutputCumulator} (awaker:string dpof:string nonce:integer))
     (defun URCi_Constrict:object{IgnisCollectorV1.OutputCumulator} (constricter:string ats:string rt:string amount:decimal dayz:integer))
     (defun URCi_Brumate:object{IgnisCollectorV1.OutputCumulator} (brumator:string ats1:string ats2:string rt:string amount:decimal dayz:integer))
-        ;;
-    (defun C_Freeze:object{IgnisCollectorV1.OutputCumulator} (freezer:string freeze-output:string dptf:string amount:decimal))
     (defun URCi_Freeze:object{IgnisCollectorV1.OutputCumulator} (freezer:string freeze-output:string dptf:string amount:decimal))
     (defun URCi_ToggleTransferRoleFrozenDPTF:object{IgnisCollectorV1.OutputCumulator} (s-dptf:string))
     (defun URCi_ToggleTransferRoleReservedDPTF:object{IgnisCollectorV1.OutputCumulator} (s-dptf:string))
@@ -65,6 +85,25 @@
     (defun URCi_Sleep:object{IgnisCollectorV1.OutputCumulator} (sleeper:string target-account:string dptf:string amount:decimal duration:integer))
     (defun URCi_Unsleep:object{IgnisCollectorV1.OutputCumulator} (unsleeper:string dpof:string nonce:integer))
     (defun URCi_Hibernate:object{IgnisCollectorV1.OutputCumulator} (hibernator:string target-account:string dptf:string amount:decimal dayz:integer))
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;
+    ;;  [UEV]
+    ;;
+    (defun UEV_NoncesForMerging (nonces:[integer]))
+    (defun UEV_StillHasSleeping (sleeping-dpof:string nonce:integer))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+    ;;
+    ;;  [C]
+    ;;
+    (defun C_CreateFrozenLink:object{IgnisCollectorV1.OutputCumulator} (patron:string dptf:string))
+    (defun C_CreateReservationLink:object{IgnisCollectorV1.OutputCumulator} (patron:string dptf:string))
+    (defun C_CreateVestingLink:object{IgnisCollectorV1.OutputCumulator} (patron:string dptf:string))
+    (defun C_CreateSleepingLink:object{IgnisCollectorV1.OutputCumulator} (patron:string dptf:string))
+    (defun C_CreateHibernatingLink:object{IgnisCollectorV1.OutputCumulator} (patron:string dptf:string))
+        ;;
+    (defun C_Freeze:object{IgnisCollectorV1.OutputCumulator} (freezer:string freeze-output:string dptf:string amount:decimal))
     (defun C_RepurposeFrozen:object{IgnisCollectorV1.OutputCumulator} (dptf-to-repurpose:string repurpose-from:string repurpose-to:string))
     (defun C_ToggleTransferRoleFrozenDPTF:object{IgnisCollectorV1.OutputCumulator} (s-dptf:string target:string toggle:bool))
         ;;
@@ -93,10 +132,11 @@
     ;;
     (defun C_Constrict:object{IgnisCollectorV1.OutputCumulator} (constricter:string ats:string rt:string amount:decimal dayz:integer))
     (defun C_Brumate:object{IgnisCollectorV1.OutputCumulator} (brumator:string ats1:string ats2:string rt:string amount:decimal dayz:integer))
-    ;;
+
 )
 ;;
 (module VST GOV
+
 
 
     ;;<=========================================================================>
