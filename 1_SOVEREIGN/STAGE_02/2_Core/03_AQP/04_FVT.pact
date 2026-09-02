@@ -613,7 +613,7 @@
     )
     (defschema FVT|SweepProgress
         @doc "Key = <Anchor-ID>. Cursor for the paginated defun+gate re-score sweep (CC_SweepBegin → \
-            \ CCp_SweepRecomputeChunk*), the scalable twin of the fixed 2-step MTX|2|C_SweepRevokeAnchor defpact. \
+            \ CCp_SweepRecomputeChunk*), the scalable twin of the fixed 2-step C_MTX|2|SweepRevokeAnchor defpact. \
             \ `total` = the recompute-set size captured at BEGIN (sweep-in-progress freeze holds URH_FvtPresentUsers \
             \ fixed across the batch's separate txs); `offset` = holders recomputed so far over the GLOBAL flattened \
             \ present set (present users concatenated across the boost-class's score-ids in order); `active` = a \
@@ -966,7 +966,7 @@
             \ CC_InjectFinalize, for stale sets exceeding one tx. Validates the SAME reward context as an inject \
             \ (not vacate-frozen, reward link row exists + enabled) minus the amount, so a fix pass is always tied \
             \ to a real reward link (the fix force-refreshes stale stakers + records the 2e penalty, exactly as \
-            \ the MTX|2|C_Inject defpact does). `chunk` is bounded by the loose INJECT-FIX-CHUNK-MAX backstop (the \
+            \ the C_MTX|2|Inject defpact does). `chunk` is bounded by the loose INJECT-FIX-CHUNK-MAX backstop (the \
             \ UI sizes it by simulation; the node gas meter is the real ceiling). Composes P|SECURE-CALLER for the \
             \ intra-module fix + the cross-module XE_RefreshUserScoreDeb into AQP-SCORE. `patron` retained for \
             \ symmetry / the event."
@@ -5835,7 +5835,7 @@
         (fvt-id:string score-entity-id:string swept-boost-class-id:string users:[string])
         @doc "Forward (re-score sweep defpact — cross-module): recompute a CHUNK of holders on one (fvt, member). \
             \ Thin UEV_IMC + FVT|XE>SWEEP-FIX (composes SECURE) wrapper over XI_FvtSweepRecomputeChunk. Caller passes \
-            \ `take N` of the member's present users. Paged by MTX-AQP::MTX|2|C_SweepRevokeAnchor (XI_SweepRecomputeWindow)."
+            \ `take N` of the member's present users. Paged by MTX-AQP::C_MTX|2|SweepRevokeAnchor (XI_SweepRecomputeWindow)."
         (UEV_IMC)
         (with-capability (FVT|XE>SWEEP-FIX fvt-id)
             (XI_FvtSweepRecomputeChunk fvt-id score-entity-id swept-boost-class-id users)
@@ -6417,7 +6417,7 @@
     ;;   Entrypoint (Talos wrapper)        Farm(0,LP)  Vault(1,TF/SF/NF)  Treasury(2,OF)  Divisor  Tx
     ;;   C_Inject   (CC_AQP-FVT|Inject)        yes           yes               yes          naive    1
     ;;   CC_Inject  (CC_AQP-FVT|Inject)       yes           yes               yes          fresh    1
-    ;;   MTX|2|C_Inject defpact (C_2|Inject)  yes           yes               yes          fresh    2*
+    ;;   C_MTX|2|Inject defpact (C_2|Inject)  yes           yes               yes          fresh    2*
     ;;   (* spike fallback for CC_Inject — up to 2×N_FIX stale stakers across 2 steps)
     ;;
     ;;   NAIVE  = distribute over the CURRENT divisor (may be deb-lagged; self-heals at each staker's collect).
@@ -6493,7 +6493,7 @@
     (defun CCp_InjectFixChunk:string
         (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
         @doc "PAGE the enforced-fresh inject's FIX phase — the scalable prelude to CC_InjectFinalize, the defun+gate \
-            \ twin of the fixed 2-step MTX|2|C_Inject defpact, for stale sets exceeding one tx. Fixes up to `chunk` \
+            \ twin of the fixed 2-step C_MTX|2|Inject defpact, for stale sets exceeding one tx. Fixes up to `chunk` \
             \ CURRENTLY-stale present users (settle at old deb + refresh to live + resync mirror, recording the 2e \
             \ forced-fix count — same penalized fix as the single-tx CC_Inject and the defpact). No cursor: the \
             \ stale set SHRINKS as it is fixed (fixed users read fresh, so they drop out of URH_FvtStalePresentUsers) \
@@ -6531,7 +6531,7 @@
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "FINALIZE a paginated enforced-fresh inject: enforce that NO stale present user remains (the prior \
             \ CCp_InjectFixChunk pages made the divisor live), then inject on the fresh divisor via the shared \
-            \ XI_FvtInjectCore — identical outcome to the single-tx CC_Inject and the MTX|2|C_Inject defpact terminal \
+            \ XI_FvtInjectCore — identical outcome to the single-tx CC_Inject and the C_MTX|2|Inject defpact terminal \
             \ step. The zero-stale gate is the enforced-fresh guarantee at the moment of inject (a heavy scan, so it \
             \ lives in the body, not the defcap). UEV_IMC + FVT|C>INJECT (same auth as any inject)."
         (UEV_IMC)
@@ -6600,7 +6600,7 @@
             \ mirror), then unfreezes. Owner-initiated: the anchor owner (= the anchored-asset owner) signs; CAP_Owner \
             \ is enforced inside ANK|XE>SWEEP-REVOKE. Scans the boost-class reverse index (ANK::UR_BC|ScoreLinks) × \
             \ each score's present users — bounded by score DEFINITIONS × stakers. For staker sets exceeding one tx, \
-            \ use the paginated MTX-AQP::MTX|2|C_SweepRevokeAnchor defpact (mirrors CC_Inject → MTX|2|C_Inject). Lives in \
+            \ use the paginated MTX-AQP::C_MTX|2|SweepRevokeAnchor defpact (mirrors CC_Inject → C_MTX|2|Inject). Lives in \
             \ AQP-FVT (earliest module that can call ANK/SCR/POOL/FVT + owns the recompute). UEV_IMC + \
             \ FVT|C>SWEEP-REVOKE. `patron` is retained for symmetry / future IGNIS."
         (UEV_IMC)
@@ -6638,7 +6638,7 @@
     (defun CC_SweepBegin:string
         (patron:string anchor-id:string)
         @doc "OPEN a paginated defun+gate re-score sweep — the scalable twin of CC_SweepRevokeAnchor (single-tx) \
-            \ and MTX|2|C_SweepRevokeAnchor (fixed 2-step defpact). Mirrors steps 1-2 of the single-tx: FREEZE every \
+            \ and C_MTX|2|SweepRevokeAnchor (fixed 2-step defpact). Mirrors steps 1-2 of the single-tx: FREEZE every \
             \ affected pool then swept-revoke the anchor globally (skips the #9 score-link lock), then records the \
             \ frozen recompute-set size in an offset-0 cursor. Recompute is deferred to repeated CCp_SweepRecomputeChunk \
             \ calls under the held freeze; the finalizing chunk unfreezes. Use this + chunking when the holder set \

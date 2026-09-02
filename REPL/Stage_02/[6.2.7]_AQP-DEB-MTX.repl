@@ -2,7 +2,7 @@
 ;; REPL/Stage_02/[6.2.7]_AQP-DEB-MTX.repl — AQP deb-staleness conservation + MTX defpacts (inject + sweep).
 ;; TEST BODY ONLY: assumes full deploy + AQP-BOOT + [6.2.1-3] + [6.2.9] boot-full + [6.4] PREP/BOOT-POOLS/RPS/COLLECT
 ;; are already loaded (by deb-staleness-proof.repl or AQP-comprehensive.repl). Covers M3 #12 deb refresh/mirror,
-;; present-flag transitions, CC_Inject forced-fix, MTX|2|C_Inject + MTX|2|C_SweepRevokeAnchor defpacts.
+;; present-flag transitions, CC_Inject forced-fix, C_MTX|2|Inject + C_MTX|2|SweepRevokeAnchor defpacts.
 ;; NOTE: SWEEP01/02 RETIRE the AurynRain anchor — load this AFTER any AurynRain-dependent suite.
 ;;
 ;; ============================================================================
@@ -480,7 +480,7 @@
 (print "")
 ;;
 ;; ============================================================================
-;; TX-AQP-DEB08 — the MTX|2|C_Inject DEFPACT end-to-end (via Talos + continue-pact).
+;; TX-AQP-DEB08 — the C_MTX|2|Inject DEFPACT end-to-end (via Talos + continue-pact).
 ;; Re-stale ANHD (move his deb again), then run the 2-step enforced-fresh inject:
 ;; step 0 (Talos C_MTX-AQP|2|Inject) scans, finds S ≤ N_FIX → fixes all + injects
 ;; (terminal); continue-pact 1 resumes {injected:true} → no-op. Proves the defpact
@@ -839,7 +839,7 @@
 (print "")
 ;;
 ;; ============================================================================
-;; TX-AQP-DEB12 — the MTX|2|C_Inject DEFPACT on the class-0 FARM. Proves the 2-step
+;; TX-AQP-DEB12 — the C_MTX|2|Inject DEFPACT on the class-0 FARM. Proves the 2-step
 ;; enforced-fresh spike-fallback path is no longer vault/treasury-only: step 0 scans
 ;; (0 stale ≤ N_FIX) → fixes all + injects (terminal) on the farm; step 1 = no-op.
 ;; ============================================================================
@@ -930,7 +930,7 @@
 ;; TX-AQP-SWEEP01 — PAGINATED RE-SCORE SWEEP end-to-end (Phase 3 closeout). Retire
 ;; the EMPLOYED AurynRain anchor (SilverSnakePower boost-class, promile 100, employed
 ;; by the SnakePower TRUE-triplet in OuroLpFarm where ANHD stakes) via the 2-step
-;; MTX|2|C_SweepRevokeAnchor defpact. Auth: the anchor owner == the anchored-asset
+;; C_MTX|2|SweepRevokeAnchor defpact. Auth: the anchor owner == the anchored-asset
 ;; (KBN) owner == LUMY, who signs. Step 0 (here) XE_SweepBegin FREEZES the pool +
 ;; swept-REMOVES the anchor (skipping the #9 lock), then XI_SweepRecomputeWindow
 ;; RECOMPUTES every present holder's aggregate-promile + triplet lanes; ANHD is the
@@ -938,7 +938,7 @@
 ;; Step 1 (continue-pact, SWEEP02) is a no-op. Proves the paginated path reaches the
 ;; same end-state as the single-tx CC_SweepRevokeAnchor, across defpact steps.
 ;; ============================================================================
-(begin-tx "TX-AQP-SWEEP01 - MTX|2|C_SweepRevokeAnchor defpact step 0 retires an employed anchor")
+(begin-tx "TX-AQP-SWEEP01 - C_MTX|2|SweepRevokeAnchor defpact step 0 retires an employed anchor")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;; force a known pact-id so continue-pact in SWEEP02 matches

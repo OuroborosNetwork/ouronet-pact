@@ -7,7 +7,7 @@
 ;;         04_TS02-C3.pact (CCp_AQP-FVT|InjectFixChunk / CC_AQP-FVT|InjectFinalize).
 ;; REPL tests: deb-staleness-inject-cc.repl.
 ;;
-;; WHAT THIS PROVES — the paginated (defun+gate) twin of the fixed 2-step MTX|2|C_Inject
+;; WHAT THIS PROVES — the paginated (defun+gate) twin of the fixed 2-step C_MTX|2|Inject
 ;; defpact reaches the SAME end as the single-tx CC_Inject ([6.2.7] DEB06), but the fix and
 ;; the inject are split across txs for spike loads exceeding one tx:
 ;;   1. ANHD moves his own Elite-DEB DOWN -> his SubsidiaryTreasury scores go STALE.

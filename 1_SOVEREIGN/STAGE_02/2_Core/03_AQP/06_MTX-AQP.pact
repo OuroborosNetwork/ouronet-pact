@@ -228,24 +228,24 @@
     ;;{F8}  User [C]
     (defun C_2|Inject (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "2-step enforced-fresh inject (spike fallback for AQP-FVT::CC_Inject; handles up to 2×N_FIX stale \
-            \ stakers). Acquires MTX-AQP|C>INJECT, then runs the MTX|2|C_Inject defpact. Advance with \
+            \ stakers). Acquires MTX-AQP|C>INJECT, then runs the C_MTX|2|Inject defpact. Advance with \
             \ (continue-pact 1). Vault/treasury only (the defpact's inject is class≠0)."
         (UEV_IMC)
         (with-capability (MTX-AQP|C>INJECT patron fvt-id reward-dptf-id amount)
-            (MTX|2|C_Inject patron fvt-id reward-dptf-id amount)
+            (C_MTX|2|Inject patron fvt-id reward-dptf-id amount)
         )
     )
     (defun C_2|SweepRevokeAnchor (patron:string anchor-id:string)
         @doc "2-step paginated re-score SWEEP that retires an employed anchor (Phase 3 closeout; spike fallback for \
             \ AQP-FVT::CC_SweepRevokeAnchor when the recompute set exceeds one tx). Acquires MTX-AQP|C>SWEEP-REVOKE, \
-            \ then runs the MTX|2|C_SweepRevokeAnchor defpact. Step 0 brackets (freeze + swept-revoke) + recomputes \
+            \ then runs the C_MTX|2|SweepRevokeAnchor defpact. Step 0 brackets (freeze + swept-revoke) + recomputes \
             \ the first window; advance with (continue-pact 1). Owner enforced downstream in ANK|XE>SWEEP-REVOKE."
         (UEV_IMC)
         (with-capability (MTX-AQP|C>SWEEP-REVOKE patron anchor-id)
-            (MTX|2|C_SweepRevokeAnchor patron anchor-id)
+            (C_MTX|2|SweepRevokeAnchor patron anchor-id)
         )
     )
-    (defpact MTX|2|C_Inject (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+    (defpact C_MTX|2|Inject (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "Enforced-fresh vault/treasury inject as a 2-step defpact: each step's opening stale scan IS the \
             \ pre-inject freshness proof — atomically fixing a whole scanned set of size <= N_FIX leaves zero \
             \ stale, so no re-scan is needed. Step 0 injects terminally when the stale set fits, else fixes \
@@ -304,7 +304,7 @@
             )
         )
     )
-    (defpact MTX|2|C_SweepRevokeAnchor (patron:string anchor-id:string)
+    (defpact C_MTX|2|SweepRevokeAnchor (patron:string anchor-id:string)
         @doc "Paginated re-score sweep + anchor revoke as a 2-step defpact (Phase 3 closeout): step 0 brackets \
             \ the sweep (freezes every affected pool + swept-revokes the anchor) then recomputes the first window \
             \ of present holders; sweep-in-progress holds across steps (separate txs) so the flattened holder \
