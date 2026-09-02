@@ -5,6 +5,7 @@
 ;; Prerequisite: PYTHIA module deployed (22_PYTHIA.pact ships PythiaV5 + PythiaLedgerV3).
 ;; REPL: REPL/Stage_01/[6.10]_PYTHIA.repl
 ;;
+;; net: v7   ·   dev: v8   ;; bumped by the StoicSyntax refactor — deploy v8 then set net: v8
 (interface TalosStageOne_ClientFourV8
     @doc "Talos Stage One Client Four V7 — patronless Cronoton A_RevokeLink (no IGNIS); C_RevokeLink still 1 IGNIS."
 

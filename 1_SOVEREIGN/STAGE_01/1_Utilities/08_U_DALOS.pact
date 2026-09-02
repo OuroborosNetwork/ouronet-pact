@@ -1,3 +1,4 @@
+;; net: v2   ·   dev: v3   ;; bumped by the StoicSyntax refactor — deploy v3 then set net: v3
 (interface UtilityDalosGlyphsV3
 
 
@@ -49,6 +50,7 @@
 
 )
 
+;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
 (interface UtilityDalosV2
     @doc "Exported Utility Functions for the DALOS Module"
 

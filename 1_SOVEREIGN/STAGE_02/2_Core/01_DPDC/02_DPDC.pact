@@ -1,6 +1,7 @@
 ;; Deploy: load THIS file — interface(s) + module ship together.
 ;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact
 ;;
+;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
 (interface BrandingUsageTertiaryV2
     @doc "Exposes Branding Functions for Semi-Fungibles (S) and Non-Fungibles (N)"
 
@@ -48,6 +49,7 @@
 
 )
 
+;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
 (interface DpdcV2
     @doc "Exposes Collectables Functions"
 

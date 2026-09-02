@@ -1,3 +1,4 @@
+;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
 (interface UtilitySwpV2
     @doc "Exported Utility Functions for the SWP Module"
 

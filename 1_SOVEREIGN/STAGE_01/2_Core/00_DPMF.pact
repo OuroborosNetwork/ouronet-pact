@@ -1,6 +1,7 @@
 ;; Deploy: load THIS file — interface(s) + module ship together.
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
 ;;
+;; net: v6   ·   dev: v7   ;; bumped by the StoicSyntax refactor — deploy v7 then set net: v7
 (interface DemiourgosPactMetaFungibleV7
     @doc "Exposes most of the Functions of the DPMF Module. \
     \ The ATS Module contains 3 more DPTF Functions that couldnt be brought here logisticaly \

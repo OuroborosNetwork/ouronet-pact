@@ -1,6 +1,7 @@
 ;; Deploy: load THIS file — interface(s) + module ship together.
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
 ;;
+;; net: v3   ·   dev: v4   ;; bumped by the StoicSyntax refactor — deploy v4 then set net: v4
 (interface SwapperIssueV4
     @doc "Exposes SWP Issuing Functions. \
         \ Also contains Swap Computation Functions, and the Hopper Function. \

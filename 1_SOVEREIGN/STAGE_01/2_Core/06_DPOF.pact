@@ -1,6 +1,7 @@
 ;; Deploy: load THIS file — interface(s) + module ship together.
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
 ;;
+;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
 (interface DpofUdcV2
     @doc "Exposes DPOF UDC Constructors"
 
@@ -109,6 +110,7 @@
 
 )
 
+;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
 (interface DemiourgosPactOrtoFungibleV2
     @doc "Exposes Functions related to Orto-Fungibles \
         \ Orto-Fungibles are the next Evoloution of the Meta-Fungibles \

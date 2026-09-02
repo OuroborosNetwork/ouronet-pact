@@ -6,6 +6,7 @@
 ;; load point (mirrors the same reason ClientFourV6 was left undocumented-in-full there, per
 ;; that file's own comment — module-owned-type dependency, not resolvable in the early registry).
 ;;
+;; net: v3   ·   dev: v4   ;; bumped by the StoicSyntax refactor — deploy v4 then set net: v4
 (interface TalosStageOne_ClientThreeV4
     @doc "Exposes Ouronet Stage One Third Batch of Client Functions \
         \ Modules: SWP are included in the Second Batch\

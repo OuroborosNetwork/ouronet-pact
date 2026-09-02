@@ -1,4 +1,5 @@
 
+;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
 (interface UtilityDptfV2
     @doc "Exported Utility Functions for the DPTF Module \
         \ Commented Functions are internal use only and have no use outside the module"

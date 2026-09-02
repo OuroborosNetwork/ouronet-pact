@@ -1,6 +1,7 @@
 ;; Deploy: load THIS file — interface(s) + module ship together.
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/03_Talos.pact
 ;;
+;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
 (interface TalosStageOne_ClientOneV2
     @doc "Exposes Ouronets Stage One First Batch of Client Functions \
         \ Modules: DALOS, DPTF and DPOF are included in the First Batch"

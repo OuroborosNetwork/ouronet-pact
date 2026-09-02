@@ -4,6 +4,7 @@
 ;; (frozen in 04_TS01-C3.pact for the same reason) rather than the central registry — kept
 ;; together with its always-paired sibling rather than split across files.
 ;;
+;; net: v3   ·   dev: v4   ;; bumped by the StoicSyntax refactor — deploy v4 then set net: v4
 (interface TalosStageOne_ClientPactsV4
     @doc "Exposes Ouronet Stage One Client Multistep Functions \
         \ Currently including functions from SWP Module. \

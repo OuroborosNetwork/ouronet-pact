@@ -1,3 +1,4 @@
+;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
 (interface BrandingV2
     @doc "Interface Exposing the Branding Functions needed to create the Branding Functionality \
         \ Entities are DPTF DPMF DPSF DPNF ATSPairs SWPairs \

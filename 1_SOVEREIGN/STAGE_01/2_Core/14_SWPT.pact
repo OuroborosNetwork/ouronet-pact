@@ -2,6 +2,7 @@
 ;; Deploy: load THIS file — interface(s) + module ship together.
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
 ;;
+;; net: v2   ·   dev: v3   ;; bumped by the StoicSyntax refactor — deploy v3 then set net: v3
 (interface SwapTracerV3
     @doc "Exposes Tracer Functions, needed to compute Paths between Tokens existing on \
         \ Liquidity Pools. \

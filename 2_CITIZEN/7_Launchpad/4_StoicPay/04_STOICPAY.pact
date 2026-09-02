@@ -1,3 +1,4 @@
+;; net: v2   ·   dev: v3   ;; bumped by the StoicSyntax refactor — deploy v3 then set net: v3
 (interface StoicPayV3
 
 

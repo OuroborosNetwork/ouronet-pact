@@ -1,6 +1,7 @@
 ;; Deploy: load THIS file — interface(s) + module ship together.
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/03_Talos.pact
 ;;
+;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
 (interface TalosStageOne_ClientTwoV2
     @doc "Exposes Ouronet Stage One Second Batch of Client Functions \
         \ Modules: ATS, VST, LQD and ORBR are included in the Second Batch"

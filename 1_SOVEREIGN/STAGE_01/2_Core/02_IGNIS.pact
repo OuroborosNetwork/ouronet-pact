@@ -1,4 +1,5 @@
 
+;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
 (interface IgnisCollectorV2
 
 
@@ -115,6 +116,7 @@
 
 )
 
+;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
 (interface OuronetInfoV2
     @doc "Holds Information Schemas"
 

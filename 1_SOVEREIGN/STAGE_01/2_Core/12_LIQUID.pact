@@ -2,6 +2,7 @@
 ;; Deploy: load THIS file — interface(s) + module ship together.
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
 ;;
+;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
 (interface StoaLiquidStakingV2
     @doc "Exposes the functions needed for Stoa Liquid Staking, Wrap and Unwrap STOA \
         \ as well as their URSTOA Counterparts"

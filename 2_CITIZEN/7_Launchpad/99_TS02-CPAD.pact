@@ -7,6 +7,7 @@
 ;; but ONLY these Talos wrappers are the gas-funded path — a direct citizen-module call
 ;; would not have its gas paid.
 ;;
+;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
 (interface CitizenLaunchpadTalosV2
     @doc "Exposes the Ouronet Stage Two CITIZEN launchpad user Client Functions (sole gas-funded path)."
 

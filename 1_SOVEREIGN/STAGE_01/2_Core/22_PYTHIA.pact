@@ -20,6 +20,7 @@
 ;; You do not submit separate create-table txs. All eight fire in the PYTHIA deploy tx.
 ;; If PYTHIA were already on-chain at V3, only PythDaily + PythTotal are additive create-tables.
 ;;
+;; net: v4   ·   dev: v5   ;; bumped by the StoicSyntax refactor — deploy v5 then set net: v5
 (interface PythiaV5
     @doc "PYTHIA V4 — V3 dual-Apollo + Config UR prices; select-based inventory is URH_."
 
@@ -161,6 +162,7 @@
         ))
 
 )
+;; net: v2   ·   dev: v3   ;; bumped by the StoicSyntax refactor — deploy v3 then set net: v3
 (interface PythiaLedgerV3
     @doc "Pyth ledger V2 — batch flush entries (explicit day, iz-complete); order-independent txs."
 

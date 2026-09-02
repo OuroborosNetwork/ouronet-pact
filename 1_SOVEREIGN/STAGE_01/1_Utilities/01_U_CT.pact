@@ -1,3 +1,4 @@
+;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
 (interface DiaStoaPidV2
     @doc "Exposes the UR Function that Reads STOA Price in Dollars (STOA-PID) via Dia Oracle on Chain 2"
 
@@ -44,6 +45,7 @@
 
 )
 
+;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
 (interface OuronetConstantsV2
     @doc "Exported Constants as Functions from this Module via interface"
 

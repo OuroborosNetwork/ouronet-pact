@@ -1,3 +1,4 @@
+;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
 (interface InfoTwoV2
     @doc "Exposes the Stage-2 INFO (ClientInfo preview) surface — DPDC collectables, \
         \ DEMIPAD launchpad, EQUITY, AQP. Each function wraps a core URCi cost reader."

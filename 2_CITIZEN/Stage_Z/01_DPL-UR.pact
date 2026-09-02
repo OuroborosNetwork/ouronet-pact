@@ -2,6 +2,7 @@
 ;; Load only after Stage 1 and Stage 2 (REPL/StageZZ_Tester.repl after Stage02_Tester.repl).
 ;; Implements DeployerReadsV7 + V8 (StoicTag) + V9 (PYTHIA Apollo) + V10 (Elite) + V11 (Dual API + Pythia prices) + V12 (Elite rich list).
 ;;
+;; net: v12   ·   dev: v13   ;; bumped by the StoicSyntax refactor — deploy v13 then set net: v13
 (interface DeployerReadsV13
     @doc "Elite Account rich-list scan (V12 additive — all Standard Ouronet accounts)."
 
