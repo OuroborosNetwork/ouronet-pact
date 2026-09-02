@@ -208,6 +208,16 @@
 )
 ;;
 (module DALOS GOV
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
+    ;;
+    (implements stoa-ns.gas-payer-v1)
+    (implements OuronetPolicyV1)
+    (implements OuronetDalosV1)
+
+    ;;<=========================================================================>
+    ;;{#}  GASSTATION
     ;;
     ;;Ouronet DALOS Gas-Station
     ;;
@@ -285,21 +295,17 @@
     (defun create-gas-payer-guard:guard ()
         GOV|DALOS|GUARD
     )
+    (defun CT_VirtualGasData ()          (at 0 ["VirtualGasData"]))
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
     ;;
-    (implements stoa-ns.gas-payer-v1)
-    (implements OuronetPolicyV1)
-    (implements OuronetDalosV1)
-    ;;
-    ;;<========>
-    ;;GOVERNANCE
-    ;;{G1}
     (defconst GOV|MD_DALOS                  (keyset-ref-guard (GOV|Demiurgoi)))
     (defconst GOV|SC_DALOS                  (keyset-ref-guard DALOS|SC_KEY))
-    ;;
-    (defconst DALOS|SC_KEY                  (GOV|DalosKey))
-    (defconst DALOS|SC_NAME                 (GOV|DALOS|SC_NAME))
-    (defconst DALOS|SC_STOA-NAME             (GOV|DALOS|SC_STOA-NAME))
-    ;;{G2}
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
     (defcap GOV ()                          (compose-capability (GOV|DALOS_ADMIN)))
     (defcap GOV|DALOS_ADMIN ()
         @event
@@ -321,16 +327,23 @@
             (compose-capability (GOV|DALOS_ADMIN))
         )
     )
-    (defcap DALOS|NATIVE-AUTOMATIC  ()
-        @doc "Autonomic management of <stoa-konto> of the DALOS Smart Ouronet Account"
-        true
+    (defcap GOV|MIGRATE (migration-target-stoa-account:string)
+        @event
+        (let
+            (
+                (ref-coin:module{stoa-ns.fungible-v1} coin)
+                (target-balance:decimal (ref-coin::get-balance migration-target-stoa-account))
+                (gap:bool (UR_GAP))
+            )
+            (enforce gap (format "Migration can only be executed when Global Administrative Pause is offline"))
+            (enforce (= target-balance 0.0) "Migration can only be executed to an empty stoa account")
+            (compose-capability (GOV|DALOS_ADMIN))
+            (compose-capability (DALOS|NATIVE-AUTOMATIC))
+        )
     )
-    ;;{G3}
+    ;;{G5}  functions
     (defun GOV|DALOS|SC_STOA-NAME ()         (create-principal (GOV|DALOS|GUARD)))
     (defun GOV|DALOS|GUARD ()               (create-capability-guard (DALOS|NATIVE-AUTOMATIC)))
-    ;;
-    ;; [Keys]
-    (defun CT_Namespace ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
     (defun GOV|Demiurgoi ()                 (+ (CT_Namespace) ".dh_master-keyset"))
     (defun GOV|DalosKey ()                  (+ (CT_Namespace) ".dh_sc_dalos-keyset"))
     (defun GOV|AutostakeKey ()              (+ (CT_Namespace) ".dh_sc_autostake-keyset"))
@@ -359,16 +372,18 @@
     (defun GOV|OUROBOROS|PBL ()             (at 0 ["9H.28jB2BBny4op601Cfqz9brFJKAEo67jbEDJi91i00pGjcD1Mpn0y0A1CxcAwGgBu35Ix3bG4e4p56Mu6x7Mmd50nKfmpDGtLy1ywyCjoDD5xiHBb0y5dAjB0fuokrqyx3ula9rtxyEHK1A4gkG4g3GEyysMtgF40IBgKjm7t8ffGshICIypFeF3gA5x0MixA0soiCx9tBnMDzI6G5xC8yIJJ3Bt2sCvJHAp7HAEA3rKK6Bgnx8hK94oDbgrpCkxw3zpo7tbeHhcakzbg0ELG3EJvk19hyd9LC73t2gizl0B6puq3Ljji5EDAhzno7K32x8vCagc5D2GLiMfdzEzsj5KEe1c2p7hxj76lMvp40r9F56vzlK8Kb7mrKt90ILEMqCghLrok7D4uH8h28EGqbK75wiyguimc1jDGxthyBJFfApClymKA57ehqbv2Lyv323w44b0kIItu35fjmhe2DCBMwjn67ffDII97b6AdyG010wvAHf55xFt25Mbm2pflsggL4D5jHtokl7qn6g4ltM5ilvHvsxn7jHe23Cfgoxn1JssdFMBpcDvB2xki7"]))
     (defun GOV|SWP|PBL ()                   (at 0 ["9G.4Bl3bJ5o1eIoBkhynF39lFdvkA3E0n8m5fBr9iG4D6Ahj3xfop72b98rr33vFFLjqaiozE1btl7lgzKcjHwjzu5GuFqvMb43v9CHHe8je3buLbHMkcAyKdEMD85yIHsb9ty58Kzyado3ho1n1mf9GzpeegMrpK9wDFteeKexdL7HHq8GF7ptD2w45IkMf2A8j4pm7E6vJ1ytCckhclD9nd3JzL2j5cyLxawnE76leKmEmFaxqnF76yyJe5Mu6yLkg2yonJa6vx6jd1kr0hdEf81o42Asr8EcCDeeqD4nAehC3w3pFDMwbln4Mbl6t55GHGephx99LJKH1ojhlMlnyC4bbJFAiyD1h6vs0o7mKAaazFG9y0vfbvM9imcs1vCMmpk2cGDAAAqH6iJe32ugHA3AECEgCvxCskw4Mfx6Cc4rx2BkmKMlxeHqyDceI6wa2qjzuyI80vKg6H6tMwEg48H0ywIMDyxteDfHav08eEJE2lljEIAc1jxLlLcosbiknAyxJvu8g7kA4oAlcio2jI8lMxp76vosd5FxpatowuFktILfyCFyHvKfcozy"]))
     (defun GOV|DHV|PBL ()                   (at 0 ["9G.7G3mkhkk34Bg37uslsu3M7psBc40xsKFibE9DL0jb43JcJ7fzDh9cz3Edn8uvlkh0bCeFafFntCKt0HvJsmczx3Lek9d3mqr38BbIwmBrDkd8sordjr4L7tJ5Fnqj39F6s55hD3rEFvMGors4sws3lDcKiEHkMEE7kHuuB31gGe3F5HsI0yHbwsm2IcspsB1ICiD1g73vup127pjLauIc6gxl3sJy0lAml1uA9g18Btcl6prinGmo3uFomeoyvx9oLGlf6ctFsfavKa5vFrvaw2FB1KsAiejqqjaeMu1I1cEey3m55allFm5pg9LaFK307qnmjxfmqv38vvr2wBerI4BnvFKLgpB7e7pCCmarDJq1l6nHEIv6wl3d96iwAqEHxKEwpH7ljzqnsnBpcEFlpKu6xjc5o78DiwzrltiDxa5c9ug7wML3MGqDEH9tzIj2IreF5yEnw4M15yy38z7gqKbd7l3Fb3qc7kvrgHKG8cpq9M54kg6v5a1k7Laqea07ynccK6r2bjwl7L8IkE7EsAep77M1kb4455klFFH2qx2uEuGBlfsu1rztiMa"]))
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    (defconst P|I                   (P|Info))
+    ;;{P2}  schemas
+    ;;{P3}  tables
     ;;
-    ;;<====>
-    ;;POLICY
-    ;;{P1}
-    ;;{P2}
     (deftable P|T:{OuronetPolicyV1.P|S})
     (deftable P|MT:{OuronetPolicyV1.P|MS})
-    ;;{P3}
-    ;;{P4}
-    (defconst P|I                   (P|Info))
+    ;;{P4}  capabilities
+    ;;{P5}  functions
     (defun P|Info ()                (at 0 ["InterModulePolicies"]))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
@@ -376,45 +391,31 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|DALOS_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|DALOS_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                       {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        true
-    )
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
     ;;
-    ;;<======================>
-    ;;SCHEMAS-TABLES-CONSTANTS
-    ;;{1}
+    (defconst DALOS|SC_KEY                  (GOV|DalosKey))
+    (defconst DALOS|SC_NAME                 (GOV|DALOS|SC_NAME))
+    (defconst DALOS|SC_STOA-NAME             (GOV|DALOS|SC_STOA-NAME))
+    (defconst BAR                           (CT_Bar))
+    (defconst DALOS|INFO                    (CT_Info))
+    (defconst DALOS|VGD                     (CT_VirtualGasData))
+    (defconst DALOS|PLEB
+        {"class"    : "NOVICE"
+        ,"name"     : "Infidel"
+        ,"tier"     : "0.0"
+        ,"deb"      : 1.0 }
+    )
+    (defconst DALOS|VOID
+        {"class"    : "VOID"
+        ,"name"     : "Undead"
+        ,"tier"     : "0.0"
+        ,"deb"      : 0.0 }
+    )
+    ;;{3.2}  schemas
+    ;;
     (defschema DALOS|StoaSchema
         dalos:[string]
     )
@@ -473,43 +474,37 @@
         tier:string
         deb:decimal
     )
-    ;;{2}
+    ;;{3.3}  tables
     (deftable DALOS|StoaLedger:{DALOS|StoaSchema})              ;;Key = <k:account>
     (deftable DALOS|PropertiesTable:{DALOS|PropertiesSchema})       ;;Key = DALOS|INFO
     (deftable DALOS|GasManagementTable:{DALOS|GasManagementSchema}) ;;Key = DALOS|VGD
     (deftable DALOS|PricesTable:{DALOS|PricesSchema})               ;;Key = <action>
     (deftable DALOS|AccountTable:{DALOS|AccountSchemaV2})           ;;Key = <account>
-    ;;{3}
-    (defun CT_Bar ()                        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
-    (defun CT_Info ()                    (at 0 ["DalosInformation"]))
-    (defun CT_VirtualGasData ()          (at 0 ["VirtualGasData"]))
-    (defconst BAR                           (CT_Bar))
-    (defconst DALOS|INFO                    (CT_Info))
-    (defconst DALOS|VGD                     (CT_VirtualGasData))
-    (defconst DALOS|PLEB
-        {"class"    : "NOVICE"
-        ,"name"     : "Infidel"
-        ,"tier"     : "0.0"
-        ,"deb"      : 1.0 }
-    )
-    (defconst DALOS|VOID
-        {"class"    : "VOID"
-        ,"name"     : "Undead"
-        ,"tier"     : "0.0"
-        ,"deb"      : 0.0 }
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    (defcap DALOS|NATIVE-AUTOMATIC  ()
+        @doc "Autonomic management of <stoa-konto> of the DALOS Smart Ouronet Account"
+        true
     )
     ;;
-    ;;<==========>
-    ;;CAPABILITIES
-    ;;{C1}
     (defcap SECURE ()
         true
     )
-    (defcap SECURE-ADMIN ()
-        (compose-capability (SECURE))
-        (compose-capability (GOV|DALOS_ADMIN))
+    ;;
+    ;;
+    (defcap AHU ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ah:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership ah)
+            (compose-capability (SECURE))
+        )
     )
-    ;;{C2}
+    ;;{C2}  Simple
     (defcap DALOS|S>SET-OURO-PRICE (price:decimal)
         @event
         (let
@@ -537,28 +532,10 @@
         (UEV_EnforceAccountType new-sovereign false)
         (UEV_SenderWithReceiver (UR_AccountSovereign account) new-sovereign)
     )
-    ;;{C3}
-    (defcap DALOS|F>OWNER (account:string)
-        (CAP_EnforceAccountOwnership account)
-    )
-    (defcap DALOS|F>GOV (account:string)
-        (CAP_EnforceAccountOwnership account)
-        (UEV_EnforceAccountType account true)
-    )
-    ;;{C4}
-    (defcap GOV|MIGRATE (migration-target-stoa-account:string)
-        @event
-        (let
-            (
-                (ref-coin:module{stoa-ns.fungible-v1} coin)
-                (target-balance:decimal (ref-coin::get-balance migration-target-stoa-account))
-                (gap:bool (UR_GAP))
-            )
-            (enforce gap (format "Migration can only be executed when Global Administrative Pause is offline"))
-            (enforce (= target-balance 0.0) "Migration can only be executed to an empty stoa account")
-            (compose-capability (GOV|DALOS_ADMIN))
-            (compose-capability (DALOS|NATIVE-AUTOMATIC))
-        )
+    ;;{C3}  Composed
+    (defcap SECURE-ADMIN ()
+        (compose-capability (SECURE))
+        (compose-capability (GOV|DALOS_ADMIN))
     )
     (defcap DALOS|C>TOGGLE-GAS-COLLECTION (native:bool toggle:bool)
         (compose-capability (GOV|DALOS_ADMIN))
@@ -642,10 +619,24 @@
         (compose-capability (SECURE))
         (compose-capability (DALOS|F>OWNER account))
     )
+    ;;{C4}  Ownership [gold]
+    (defcap DALOS|F>OWNER (account:string)
+        (CAP_EnforceAccountOwnership account)
+    )
+    (defcap DALOS|F>GOV (account:string)
+        (CAP_EnforceAccountOwnership account)
+        (UEV_EnforceAccountType account true)
+    )
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
     ;;
-    ;;<=======>
-    ;;FUNCTIONS
-    ;;{F1}  Construct [UDC]
+    ;; [Keys]
+    (defun CT_Namespace ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
+    (defun CT_Bar ()                        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_Info ()                    (at 0 ["DalosInformation"]))
+    ;;
     (defun UDC_TrueFungibleAccount:object{OuronetDalosV1.DPTF|BalanceSchema}
         (a:decimal b:bool c:bool d:bool e:bool f:bool g:string h:string)
         {"balance"              : a
@@ -660,12 +651,12 @@
     (defun UDC_BlankTrueFungible:object{OuronetDalosV1.DPTF|BalanceSchema} (account:string)
         (UDC_TrueFungibleAccount 0.0 false false false false false BAR account)
     )
-    ;;{F2}  Compute [UC]
+    ;;{5.2}  Compute [UC]
     (defun UC_GuardProtocol:string (g:guard)
         @doc "Principal protocol prefix for a guard (k:/w:/r:/u:/c:/m:/p:)."
         (typeof-principal (create-principal g))
     )
-    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     (defun URH_AccountCounter ()
         (format "Ouronet has {} real Accounts!"
             [(length (keys DALOS|AccountTable))]
@@ -953,7 +944,15 @@
             )
         )
     )
-    ;;{F4}  Validate [UEV/CAP]
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
     (defun UEV_NotSmartOuronetAccount (account:string)
         (enforce (not (UR_AutonomicRoles account)) "Non Smart Ouronet Accounts required for exec")
     )
@@ -1091,8 +1090,8 @@
             (UEV_StandardAccOwn account)
         )
     )
-    ;;{F5}  Write [W]
-    ;;{F6}  Aux/Protected [X]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
     ;;
     ;;
     ;;      [X-A]
@@ -1380,7 +1379,34 @@
             )
         )
     )
-    ;;{F7}  User [A]
+    ;;{5.7}  User [A/C]
+    (defun A_P|Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|DALOS_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun A_P|AddIMP (policy-guard:guard)
+        (with-capability (GOV|DALOS_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                       {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun A_P|Define ()
+        true
+    )
     ;;
     (defun A_MigrateLiquidFunds:decimal (migration-target-stoa-account:string)
         (UEV_IMC)
@@ -1473,18 +1499,6 @@
             )
         )
     )
-    ;;
-    ;;
-    (defcap AHU ()
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ah:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
-            )
-            (ref-DALOS::CAP_EnforceAccountOwnership ah)
-            (compose-capability (SECURE))
-        )
-    )
     (defun AU_OuronetAccounts (accounts:[string])
         @doc "Get Accounts with <(keys DALOS|AccountTable)>"
         (with-capability (AHU)
@@ -1522,7 +1536,6 @@
             )
         )
     )
-    ;;{F8}  User [C]
     (defun C_ControlSmartAccount
         (account:string payable-as-smart-contract:bool payable-by-smart-contract:bool payable-by-method:bool)
         (UEV_IMC)
@@ -1580,8 +1593,7 @@
             (XI_RotateSovereign account new-sovereign)
         )
     )
-    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
-    ;;
+
 )
 
 ;;Tables exist from initial DALOS
