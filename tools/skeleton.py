@@ -18,7 +18,7 @@ import cap_band
 
 # function prefix → class 5.x  (build order)
 FN_CLASS = [
-    ("5.1", ["UDCx_","UDC_"]),
+    ("5.1", ["CT_","UDCx_","UDC_"]),
     ("5.2", ["UCkx_","UCxx_","UCk_","UCv_","UCx_","UC_"]),
     ("5.3", ["URHCx_","URHC_","URHx_","URH_","URCix_","URCi_","URCx_","URCv_","URC_","URU_","UR_","INFO_"]),
     ("5.4", ["UEV_","CAP_"]),

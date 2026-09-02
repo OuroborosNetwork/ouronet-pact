@@ -577,7 +577,7 @@ separator: `<component>|<component>|<component>`. The `|` bar is the one canonic
 ### 7.6 FUNCTIONS 5.1..5.7 (build order; strongest→lightest within each)
 | Sub | Class | Prefixes (ordered) | Family colour |
 |---|---|---|---|
-| 5.1 | **Construct** | `UDC_` · `UDCx_` | yellow |
+| 5.1 | **Construct** | `CT_` (constant — **leads**, C<U) · `UDC_` · `UDCx_` | yellow |
 | 5.2 | **Compute** | `UC_` · `UCk_` · `UCx_`/`UCkx_` | teal |
 | 5.3 | **Read** | `UR_` · `URC_` · `URU_` · `URCx_` · `URH_`/`URHC_`(heavy) · `URCi_`(cost) · `INFO_` | tan/amber |
 | 5.4 | **Validate** | `UEV_` · `CAP_` (a Validate **function**, not a `{C4}` cap) — **NB** the IMC spine enforce is a POLICY function `P|UEV_IMC` in `{P5}`, **not** here | red |
@@ -646,3 +646,18 @@ version stays in the name):
 - **On mainnet deploy:** set `net: v6`. Synced again.
 - **Pre-first-deploy (today):** `net: —  (undeployed)`; keep each interface's **current** version number as
   `dev:` (V1…V12 as they stand — do **not** reset to V1). The #83 fresh redeploy records `dev:` as the initial `net:`.
+
+### 7.11 Sweep rulings — CT_/gas-station/unprefixed helpers (amendment 2026-09-02)
+
+- **`CT_` = the UDC-constant variant (variant A: keep the spelling).** `CT_` is recognized in canon as a
+  **Construct-family constant** (the `c` = constant specialization of UDC). It **leads sub-block `{5.1}`**
+  (order: `CT_` → `UDC_` → `UDCx_` — `C` sorts before `U`). No physical rename of the ~186 `CT_` functions /
+  `OuronetConstantsV1`. (`defconst` VALUES stay in CST `{3.1}`; `CT_` ACCESSOR functions live in `{5.1}`.)
+- **Gas-station `{#}` detection** = a module has a **`GAS_PAYER` capability** and/or a **`create-gas-payer-guard`
+  function** (the `stoa-ns.gas-payer-v1` surface). Those two + `CT_VirtualGasData` form the `{#}` block;
+  `create-gas-payer-guard` keeps its interface-mandated name. Only DALOS has one today.
+- **Unprefixed scoped helpers → canonical prefixes** (reclassified this sweep):
+  `‹MOD›|Info` (DALOS/LIQUID/SWP/SPARK/SNAKES/CUSTODIANS/KPAY/STOAICO) → **`CT_Info`** (constant info-key);
+  `EmptyDispo` → **`UDC_EmptyDispo`**; `DALOS|EmptyOutputCumulatorV2` → **`UDC_EmptyOutputCumulatorV2`**
+  (drop the DALOS scope — generic constructor in IGNIS); `DALOS|VirtualGasData` → **`CT_VirtualGasData`**
+  ({#} gas block); `TALOS|Gassless` → **`URC_Gassless`**.
