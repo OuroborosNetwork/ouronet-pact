@@ -233,7 +233,7 @@
     ;;FUNCTIONS
     ;;{F1}  Construct [UDC]
     ;;{F2}  Compute [UC]
-    ;;{F3}  Read [UR/URC/URH/URCi]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     (defun UR_IzOuronetAccountRegisteredForUrstoaHoldings:bool (ouronet-account:string)
         (let
             (
@@ -543,6 +543,7 @@
             )
         )
     )
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )
 

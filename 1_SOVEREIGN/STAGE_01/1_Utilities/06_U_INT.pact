@@ -95,7 +95,7 @@
             )
         )
     )
-    ;;{F3}  Read [UR/URC/URH/URCi]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     ;;{F4}  Validate [UEV/CAP]
     ;;#45M fix: renamed UC_MaxInteger -> UEV_MaxInteger (was a UC_-prefixed function that crashed
     ;;uncatchably - a raw array-bounds runtime error, not even `try`-catchable - on an empty
@@ -160,5 +160,6 @@
     ;;{F6}  Aux/Protected [X]
     ;;{F7}  User [A]
     ;;{F8}  User [C]
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )

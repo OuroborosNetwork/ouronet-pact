@@ -133,7 +133,7 @@
             [vested-name vested-ticker]
         )
     )
-    ;;{F3}  Read [UR/URC/URH/URCi]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     ;;{F4}  Validate [UEV/CAP]
     (defun UEV_Milestone (milestones:integer)
         @doc "Restrict Milestone integer between 1 and 250 Milestones"
@@ -160,5 +160,6 @@
     ;;{F6}  Aux/Protected [X]
     ;;{F7}  User [A]
     ;;{F8}  User [C]
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )

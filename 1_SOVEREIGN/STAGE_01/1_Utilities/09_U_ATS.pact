@@ -461,7 +461,7 @@
             )
         )
     )
-    ;;{F3}  Read [UR/URC/URH/URCi]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     ;;{F4}  Validate [UEV/CAP]
     (defun UEV_AutostakeIndex (ats:string)
         @doc "Enforces that ATS Index Name <account> ID meets charset and length requirements"
@@ -676,5 +676,6 @@
     ;;{F6}  Aux/Protected [X]
     ;;{F7}  User [A]
     ;;{F8}  User [C]
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )

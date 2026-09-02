@@ -318,7 +318,7 @@
             )
         )
     )
-    ;;{F3}  Read [UR/URC/URH/URCi]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     ;;{F4}  Validate [UEV/CAP]
     (defun GLYPH|UEV_DalosAccountCheck (account:string)
         @doc "Checks if a string is a valid DALOS Account, using no enforcements "
@@ -519,5 +519,6 @@
     ;;{F6}  Aux/Protected [X]
     ;;{F7}  User [A]
     ;;{F8}  User [C]
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )

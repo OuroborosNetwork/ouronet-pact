@@ -1730,6 +1730,7 @@
             (ref-IGNIS::C_STOA|CollectWT patron stoa-payment false)
         )
     )
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )
 

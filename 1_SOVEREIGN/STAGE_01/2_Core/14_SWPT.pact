@@ -391,7 +391,7 @@
             )
         )
     )
-    ;;{F3}  Read [UR/URC/URH/URCi]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     (defun UR_Graph:[object{SwapTracerV2.NeighbourEdge}] (token:string)
         (with-default-read SWPT|Graph token
             {"neighbours" : []}
@@ -1216,6 +1216,7 @@
     )
     ;;{F7}  User [A]
     ;;{F8}  User [C]
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )
 

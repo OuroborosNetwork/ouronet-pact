@@ -372,5 +372,6 @@
     ;;{F6}  Aux/Protected [X]
     ;;{F7}  User [A]
     ;;{F8}  User [C]
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )

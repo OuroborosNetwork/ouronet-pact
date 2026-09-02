@@ -1013,7 +1013,7 @@
             (filter (lambda (ats-pair:string) (UR_Hibernate ats-pair)) ats-pairs)
         )
     )
-    ;;{F3}  Read [UR/URC/URH/URCi]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     (defun URU_UpgradeAtspairToV2 (atspairs:[string])
         (map
             (lambda
@@ -3035,6 +3035,7 @@
             )
         )
     )
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )
 

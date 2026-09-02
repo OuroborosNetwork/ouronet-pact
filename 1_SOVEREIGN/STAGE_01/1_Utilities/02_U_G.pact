@@ -46,7 +46,7 @@
         @doc "Helper function used in <UEV_Any>"
         (try false (enforce-guard g))
     )
-    ;;{F3}  Read [UR/URC/URH/URCi]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     ;;{F4}  Validate [UEV/CAP]
     (defun UEV_All:bool (guards:[guard])
         @doc "Enforces all guards in GUARDS"
@@ -74,5 +74,6 @@
     ;;{F6}  Aux/Protected [X]
     ;;{F7}  User [A]
     ;;{F8}  User [C]
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )

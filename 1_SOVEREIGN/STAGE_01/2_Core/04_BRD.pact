@@ -186,7 +186,7 @@
         )
     )
     ;;{F2}  Compute [UC]
-    ;;{F3}  Read [UR/URC/URH/URCi]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     (defun UR_Branding:object{BrandingV1.Schema} (id:string pending:bool)
         (if pending
             (with-read BRD|BrandingTable id
@@ -380,6 +380,7 @@
         )
     )
     ;;{F8}  User [C]
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )
 

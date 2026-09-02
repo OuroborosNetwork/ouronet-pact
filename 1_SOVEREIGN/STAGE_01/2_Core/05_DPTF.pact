@@ -915,7 +915,7 @@
             (- 0.0 max-dispo)
         )
     )
-    ;;{F3}  Read [UR/URC/URH/URCi]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     (defun URU_UpgradeTruefungibleToV2 (ids:[string])
         (map
             (lambda
@@ -2815,6 +2815,7 @@
             )
         )
     )
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )
 

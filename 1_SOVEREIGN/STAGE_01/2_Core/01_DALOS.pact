@@ -665,7 +665,7 @@
         @doc "Principal protocol prefix for a guard (k:/w:/r:/u:/c:/m:/p:)."
         (typeof-principal (create-principal g))
     )
-    ;;{F3}  Read [UR/URC/URH/URCi]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     (defun URH_AccountCounter ()
         (format "Ouronet has {} real Accounts!"
             [(length (keys DALOS|AccountTable))]
@@ -1580,6 +1580,7 @@
             (XI_RotateSovereign account new-sovereign)
         )
     )
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )
 

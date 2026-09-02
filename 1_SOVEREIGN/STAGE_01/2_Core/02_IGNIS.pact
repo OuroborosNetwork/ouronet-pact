@@ -722,7 +722,7 @@
     (defun OI|UC_FormatTokenAmount:string (amount:decimal)
         (format "{}" [(floor amount 4)])
     )
-    ;;{F3}  Read [UR/URC/URH/URCi]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     (defun URC_Exception (account:string)
         (contains account GAS_EXCEPTION)
     )
@@ -1011,6 +1011,7 @@
             )
         )
     )
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )
 

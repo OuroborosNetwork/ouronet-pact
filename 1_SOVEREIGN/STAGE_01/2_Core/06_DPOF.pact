@@ -1023,7 +1023,7 @@
             )
         )
     )
-    ;;{F3}  Read [UR/URC/URH/URCi]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     (defun URCi_MoveCumulator:object{IgnisCollectorV1.OutputCumulator}
         (id:string nonces:[integer] transmit-or-transfer:bool)
         (let
@@ -2792,6 +2792,7 @@
             )
         )
     )
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )
 

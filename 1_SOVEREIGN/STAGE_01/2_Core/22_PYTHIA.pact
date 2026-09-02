@@ -1648,6 +1648,7 @@
         )
         (format "Pythia dual link {} lane renamed to {}" [dual-link-key new-name])
     )
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )
 

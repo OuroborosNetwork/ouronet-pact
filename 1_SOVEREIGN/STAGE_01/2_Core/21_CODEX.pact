@@ -837,6 +837,7 @@
         )
         (format "StoicTag §{} released" [tag-name])
     )
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )
 

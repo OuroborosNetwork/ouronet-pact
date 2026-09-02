@@ -601,7 +601,7 @@
         )
     )
     ;;{F2}  Compute [UC]
-    ;;{F3}  Read [UR/URC/URH/URCi]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     (defun UR_P-KEYS:[string] ()
         (keys DPMF|PropertiesTable)
     )
@@ -2201,5 +2201,6 @@
             )
         )
     )
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )

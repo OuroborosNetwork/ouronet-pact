@@ -648,7 +648,7 @@
             ]
         )
     )
-    ;;{F3}  Read [UR/URC/URH/URCi]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     (defun URC_CullMetaDataAmountWithObject:list (id:string nonce:integer)
         (let
             (
@@ -2148,6 +2148,7 @@
             )
         )
     )
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )
 

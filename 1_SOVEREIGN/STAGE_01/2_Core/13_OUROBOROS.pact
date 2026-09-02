@@ -240,7 +240,7 @@
     ;;FUNCTIONS
     ;;{F1}  Construct [UDC]
     ;;{F2}  Compute [UC]
-    ;;{F3}  Read [UR/URC/URH/URCi]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     (defun URC_ProjectedStoaLiquindex:[decimal] ()
         @doc "Computes the Projected STOA Liquindex, considering STOA amount in reserves ready to be used as Fuel"
         (let
@@ -714,6 +714,7 @@
             )
         )
     )
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )
 

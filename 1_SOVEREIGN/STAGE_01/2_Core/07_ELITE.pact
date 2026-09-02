@@ -127,7 +127,7 @@
     ;;FUNCTIONS
     ;;{F1}  Construct [UDC]
     ;;{F2}  Compute [UC]
-    ;;{F3}  Read [UR/URC/URH/URCi]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     (defun URC_EliteAurynzSupply (account:string)
         (let
             (
@@ -246,6 +246,7 @@
     )
     ;;{F7}  User [A]
     ;;{F8}  User [C]
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )
 
