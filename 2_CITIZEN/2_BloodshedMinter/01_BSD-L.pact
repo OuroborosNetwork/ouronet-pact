@@ -217,44 +217,9 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    (defun OrderMultiplier:decimal (rarity-range:integer position:integer rarity-elements:integer)
-        (enforce (<= position rarity-elements) "Invalid Position To Rarity Elements Value")
-        (let
-            (
-                (rr:decimal (dec rarity-range))
-                (p:decimal (dec position))
-                (re:decimal (dec rarity-elements))
-            )
-            (floor (- rr (/ (* rr (- p 1)) (- re 1))) BS-PREC)
-        )
-    )
-    (defun LegendaryOM (position:integer)
-        (OrderMultiplier 100 position LEGENDARY-S)
-    )
-    (defun LS (position:integer)
-        (floor (* LEGENDARY (LegendaryOM position)) BS-PREC)
-    )
+    ;;{F1}  Construct [UDC]
     ;;
-    (defun LegendaryLink:string (position:integer small-or-big:bool)
-        (let
-            (
-                (type:string (if small-or-big "512x512" "FULL"))
-                (folder:string "/07_Bloodshed/1_Legendary/")
-                (p:integer (mod position 8))
-                (l:string "L_")
-                (image-str:string 
-                    (concat ["L_" (if (= p 0) "8" (format "{}" [p])) ".jpg"])
-                )
-            )
-            (concat [IPFS type folder image-str])
-        )
-    )
-    ;;
-    ;;{F0}  [UR]
-    ;;{F1}  [URC]
-    ;;{F2}  [UEV]
-    ;;{F3}  [UDC]
-    (defun MD:object{Bloodshed.MD}
+    (defun UDC_MetaData:object{Bloodshed.MD}
         (a:string b:string c:string d:string e:string f:string g:string h:string i:string)
         {"Rarity"           : a
         ,"Dacian"           : b
@@ -268,27 +233,63 @@
         }
     )
     ;;
-    (defun L-x (pos:integer)
+    (defun UDC_LegendaryByPosition (pos:integer)
         (let
             (
                 (p:integer (mod pos 8))
             )
             (cond
-                ((= p 1) (MD R4 D1 P3 B5 LG1 MP1 SP1 MH3 OH2))
-                ((= p 2) (MD R4 D2 P3 B5 LG2 MP1 SP1 MH1 OH1))
-                ((= p 3) (MD R4 D3 P3 B5 LG3 MP1 SP2 MH2 OH4))
-                ((= p 4) (MD R4 D4 P3 B5 LG4 MP1 SP1 MH2 OH3))
-                ((= p 5) (MD R4 D5 P3 B5 LG5 MP2 SP1 MH3 OH5))
-                ((= p 6) (MD R4 D6 P3 B5 LG6 MP2 SP2 MH2 OH4))
-                ((= p 7) (MD R4 D7 P3 B5 LG7 MP2 SP1 MH2 OH5))
-                ((= p 0) (MD R4 D8 P3 B5 LG8 MP2 SP1 MH1 OH1))
+                ((= p 1) (UDC_MetaData R4 D1 P3 B5 LG1 MP1 SP1 MH3 OH2))
+                ((= p 2) (UDC_MetaData R4 D2 P3 B5 LG2 MP1 SP1 MH1 OH1))
+                ((= p 3) (UDC_MetaData R4 D3 P3 B5 LG3 MP1 SP2 MH2 OH4))
+                ((= p 4) (UDC_MetaData R4 D4 P3 B5 LG4 MP1 SP1 MH2 OH3))
+                ((= p 5) (UDC_MetaData R4 D5 P3 B5 LG5 MP2 SP1 MH3 OH5))
+                ((= p 6) (UDC_MetaData R4 D6 P3 B5 LG6 MP2 SP2 MH2 OH4))
+                ((= p 7) (UDC_MetaData R4 D7 P3 B5 LG7 MP2 SP1 MH2 OH5))
+                ((= p 0) (UDC_MetaData R4 D8 P3 B5 LG8 MP2 SP1 MH1 OH1))
                 true
             )
         )
     )
-    ;;{F4}  [CAP]
+    ;;{F2}  Compute [UC]
+    (defun UC_OrderMultiplier:decimal (rarity-range:integer position:integer rarity-elements:integer)
+        (enforce (<= position rarity-elements) "Invalid Position To Rarity Elements Value")
+        (let
+            (
+                (rr:decimal (dec rarity-range))
+                (p:decimal (dec position))
+                (re:decimal (dec rarity-elements))
+            )
+            (floor (- rr (/ (* rr (- p 1)) (- re 1))) BS-PREC)
+        )
+    )
+    (defun UC_LegendaryOM (position:integer)
+        (UC_OrderMultiplier 100 position LEGENDARY-S)
+    )
+    (defun UC_LegendaryScore (position:integer)
+        (floor (* LEGENDARY (UC_LegendaryOM position)) BS-PREC)
+    )
     ;;
-    ;;{F5}  [A]
+    (defun UC_LegendaryLink:string (position:integer small-or-big:bool)
+        (let
+            (
+                (type:string (if small-or-big "512x512" "FULL"))
+                (folder:string "/07_Bloodshed/1_Legendary/")
+                (p:integer (mod position 8))
+                (l:string "L_")
+                (image-str:string 
+                    (concat ["L_" (if (= p 0) "8" (format "{}" [p])) ".jpg"])
+                )
+            )
+            (concat [IPFS type folder image-str])
+        )
+    )
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{F4}  Validate [UEV/CAP]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    ;;{F7}  User [A]
+    ;;
     (defun A_Issue (patron:string collection-owner:string collection-creator:string)
         @doc "Issue Bloodshed NFT Collection"
         (let
@@ -335,10 +336,10 @@
                                     IR-L
                                     (format "Bloodshed Legendary #{}" [p])
                                     d-l
-                                    (ref-DPDC-UDC::UDC_NonceMetaData (LS p) [0] (L-x p))
+                                    (ref-DPDC-UDC::UDC_NonceMetaData (UC_LegendaryScore p) [0] (UDC_LegendaryByPosition p))
                                     type
-                                    (ref-DPDC-UDC::UDC_URI|Data (LegendaryLink p true) b b b b b b)
-                                    (ref-DPDC-UDC::UDC_URI|Data (LegendaryLink p false) b b b b b b)
+                                    (ref-DPDC-UDC::UDC_URI|Data (UC_LegendaryLink p true) b b b b b b)
+                                    (ref-DPDC-UDC::UDC_URI|Data (UC_LegendaryLink p false) b b b b b b)
                                     zd
                                 )
                             )
@@ -350,7 +351,7 @@
             )
         )
     )
-    ;;{F6}  [C]
-    ;;{F7}  [X]
+    ;;{F8}  User [C]
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )

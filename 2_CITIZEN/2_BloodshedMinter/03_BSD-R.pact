@@ -121,7 +121,104 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    (defun OrderMultiplier:decimal (rarity-range:integer position:integer rarity-elements:integer)
+    ;;{F1}  Construct [UDC]
+    (defun UDC_MetaData:object{Bloodshed.MD}
+        (a:string b:string c:string d:string e:string f:string g:string h:string i:string)
+        {"Rarity"           : a
+        ,"Dacian"           : b
+        ,"Potency"          : c
+        ,"Bloodshed"        : d
+        ,"Background"       : e
+        ,"FirstProtection"  : f
+        ,"SecondProtection" : g
+        ,"MainHand"         : h
+        ,"OffHand"          : i
+        }
+    )
+    (defun UDC_RareByPosition (pos:integer)
+        (let
+            (
+                (p:integer (mod pos 72))
+            )
+            (cond
+                ((= p 1) (UDC_MetaData R2 D1 P1 B1 RR1 MP1 SP1 MH3 OH2))
+                ((= p 2) (UDC_MetaData R2 D1 P1 B1 RR2 MP1 SP1 MH3 OH2))
+                ((= p 3) (UDC_MetaData R2 D1 P1 B1 RR3 MP1 SP1 MH3 OH2))
+                ((= p 4) (UDC_MetaData R2 D1 P2 B2 RR1 MP1 SP1 MH3 OH2))
+                ((= p 5) (UDC_MetaData R2 D1 P2 B2 RR2 MP1 SP1 MH3 OH2))
+                ((= p 6) (UDC_MetaData R2 D1 P2 B2 RR3 MP1 SP1 MH3 OH2))
+                ((= p 7) (UDC_MetaData R2 D1 P3 B3 RR1 MP1 SP1 MH3 OH2))
+                ((= p 8) (UDC_MetaData R2 D1 P3 B3 RR2 MP1 SP1 MH3 OH2))
+                ((= p 9) (UDC_MetaData R2 D1 P3 B3 RR3 MP1 SP1 MH3 OH2))
+                ((= p 10) (UDC_MetaData R2 D2 P1 B1 RR1 MP1 SP1 MH1 OH1))
+                ((= p 11) (UDC_MetaData R2 D2 P1 B1 RR2 MP1 SP1 MH1 OH1))
+                ((= p 12) (UDC_MetaData R2 D2 P1 B1 RR3 MP1 SP1 MH1 OH1))
+                ((= p 13) (UDC_MetaData R2 D2 P2 B2 RR1 MP1 SP1 MH1 OH1))
+                ((= p 14) (UDC_MetaData R2 D2 P2 B2 RR2 MP1 SP1 MH1 OH1))
+                ((= p 15) (UDC_MetaData R2 D2 P2 B2 RR3 MP1 SP1 MH1 OH1))
+                ((= p 16) (UDC_MetaData R2 D2 P3 B3 RR1 MP1 SP1 MH1 OH1))
+                ((= p 17) (UDC_MetaData R2 D2 P3 B3 RR2 MP1 SP1 MH1 OH1))
+                ((= p 18) (UDC_MetaData R2 D2 P3 B3 RR3 MP1 SP1 MH1 OH1))
+                ((= p 19) (UDC_MetaData R2 D3 P1 B1 RR1 MP1 SP2 MH2 OH4))
+                ((= p 20) (UDC_MetaData R2 D3 P1 B1 RR2 MP1 SP2 MH2 OH4))
+                ((= p 21) (UDC_MetaData R2 D3 P1 B1 RR3 MP1 SP2 MH2 OH4))
+                ((= p 22) (UDC_MetaData R2 D3 P2 B2 RR1 MP1 SP2 MH2 OH4))
+                ((= p 23) (UDC_MetaData R2 D3 P2 B2 RR2 MP1 SP2 MH2 OH4))
+                ((= p 24) (UDC_MetaData R2 D3 P2 B2 RR3 MP1 SP2 MH2 OH4))
+                ((= p 25) (UDC_MetaData R2 D3 P3 B3 RR1 MP1 SP2 MH2 OH4))
+                ((= p 26) (UDC_MetaData R2 D3 P3 B3 RR2 MP1 SP2 MH2 OH4))
+                ((= p 27) (UDC_MetaData R2 D3 P3 B3 RR3 MP1 SP2 MH2 OH4))
+                ((= p 28) (UDC_MetaData R2 D4 P1 B1 RR1 MP1 SP1 MH2 OH3))
+                ((= p 29) (UDC_MetaData R2 D4 P1 B1 RR2 MP1 SP1 MH2 OH3))
+                ((= p 30) (UDC_MetaData R2 D4 P1 B1 RR3 MP1 SP1 MH2 OH3))
+                ((= p 31) (UDC_MetaData R2 D4 P2 B2 RR1 MP1 SP1 MH2 OH3))
+                ((= p 32) (UDC_MetaData R2 D4 P2 B2 RR2 MP1 SP1 MH2 OH3))
+                ((= p 33) (UDC_MetaData R2 D4 P2 B2 RR3 MP1 SP1 MH2 OH3))
+                ((= p 34) (UDC_MetaData R2 D4 P3 B3 RR1 MP1 SP1 MH2 OH3))
+                ((= p 35) (UDC_MetaData R2 D4 P3 B3 RR2 MP1 SP1 MH2 OH3))
+                ((= p 36) (UDC_MetaData R2 D4 P3 B3 RR3 MP1 SP1 MH2 OH3))
+                ((= p 37) (UDC_MetaData R2 D5 P1 B1 RR1 MP2 SP1 MH3 OH5))
+                ((= p 38) (UDC_MetaData R2 D5 P1 B1 RR2 MP2 SP1 MH3 OH5))
+                ((= p 39) (UDC_MetaData R2 D5 P1 B1 RR3 MP2 SP1 MH3 OH5))
+                ((= p 40) (UDC_MetaData R2 D5 P2 B2 RR1 MP2 SP1 MH3 OH5))
+                ((= p 41) (UDC_MetaData R2 D5 P2 B2 RR2 MP2 SP1 MH3 OH5))
+                ((= p 42) (UDC_MetaData R2 D5 P2 B2 RR3 MP2 SP1 MH3 OH5))
+                ((= p 43) (UDC_MetaData R2 D5 P3 B3 RR1 MP2 SP1 MH3 OH5))
+                ((= p 44) (UDC_MetaData R2 D5 P3 B3 RR2 MP2 SP1 MH3 OH5))
+                ((= p 45) (UDC_MetaData R2 D5 P3 B3 RR3 MP2 SP1 MH3 OH5))
+                ((= p 46) (UDC_MetaData R2 D6 P1 B1 RR1 MP2 SP2 MH2 OH4))
+                ((= p 47) (UDC_MetaData R2 D6 P1 B1 RR2 MP2 SP2 MH2 OH4))
+                ((= p 48) (UDC_MetaData R2 D6 P1 B1 RR3 MP2 SP2 MH2 OH4))
+                ((= p 49) (UDC_MetaData R2 D6 P2 B2 RR1 MP2 SP2 MH2 OH4))
+                ((= p 50) (UDC_MetaData R2 D6 P2 B2 RR2 MP2 SP2 MH2 OH4))
+                ((= p 51) (UDC_MetaData R2 D6 P2 B2 RR3 MP2 SP2 MH2 OH4))
+                ((= p 52) (UDC_MetaData R2 D6 P3 B3 RR1 MP2 SP2 MH2 OH4))
+                ((= p 53) (UDC_MetaData R2 D6 P3 B3 RR2 MP2 SP2 MH2 OH4))
+                ((= p 54) (UDC_MetaData R2 D6 P3 B3 RR3 MP2 SP2 MH2 OH4))
+                ((= p 55) (UDC_MetaData R2 D7 P1 B1 RR1 MP2 SP1 MH2 OH5))
+                ((= p 56) (UDC_MetaData R2 D7 P1 B1 RR2 MP2 SP1 MH2 OH5))
+                ((= p 57) (UDC_MetaData R2 D7 P1 B1 RR3 MP2 SP1 MH2 OH5))
+                ((= p 58) (UDC_MetaData R2 D7 P2 B2 RR1 MP2 SP1 MH2 OH5))
+                ((= p 59) (UDC_MetaData R2 D7 P2 B2 RR2 MP2 SP1 MH2 OH5))
+                ((= p 60) (UDC_MetaData R2 D7 P2 B2 RR3 MP2 SP1 MH2 OH5))
+                ((= p 61) (UDC_MetaData R2 D7 P3 B3 RR1 MP2 SP1 MH2 OH5))
+                ((= p 62) (UDC_MetaData R2 D7 P3 B3 RR2 MP2 SP1 MH2 OH5))
+                ((= p 63) (UDC_MetaData R2 D7 P3 B3 RR3 MP2 SP1 MH2 OH5))
+                ((= p 64) (UDC_MetaData R2 D8 P1 B1 RR1 MP2 SP1 MH1 OH1))
+                ((= p 65) (UDC_MetaData R2 D8 P1 B1 RR2 MP2 SP1 MH1 OH1))
+                ((= p 66) (UDC_MetaData R2 D8 P1 B1 RR3 MP2 SP1 MH1 OH1))
+                ((= p 67) (UDC_MetaData R2 D8 P2 B2 RR1 MP2 SP1 MH1 OH1))
+                ((= p 68) (UDC_MetaData R2 D8 P2 B2 RR2 MP2 SP1 MH1 OH1))
+                ((= p 69) (UDC_MetaData R2 D8 P2 B2 RR3 MP2 SP1 MH1 OH1))
+                ((= p 70) (UDC_MetaData R2 D8 P3 B3 RR1 MP2 SP1 MH1 OH1))
+                ((= p 71) (UDC_MetaData R2 D8 P3 B3 RR2 MP2 SP1 MH1 OH1))
+                ((= p 0) (UDC_MetaData R2 D8 P3 B3 RR3 MP2 SP1 MH1 OH1))
+                true
+            )
+        )
+    )
+    ;;{F2}  Compute [UC]
+    (defun UC_OrderMultiplier:decimal (rarity-range:integer position:integer rarity-elements:integer)
         (enforce (<= position rarity-elements) "Invalid Position To Rarity Elements Value")
         (let
             (
@@ -132,14 +229,14 @@
             (floor (- rr (/ (* rr (- p 1)) (- re 1))) BS-PREC)
         )
     )
-    (defun RareOM (position:integer)
-        (OrderMultiplier 300 position RARE-S)
+    (defun UC_RareOM (position:integer)
+        (UC_OrderMultiplier 300 position RARE-S)
     )
-    (defun RS (position:integer)
-        (floor (* RARE (RareOM position)) BS-PREC)
+    (defun UC_RareScore (position:integer)
+        (floor (* RARE (UC_RareOM position)) BS-PREC)
     )
     ;;
-    (defun RareLink:string (position:integer small-or-big:bool)
+    (defun UC_RareLink:string (position:integer small-or-big:bool)
         (let
             (
                 (type:string (if small-or-big "512x512" "FULL"))
@@ -158,108 +255,12 @@
             (concat [IPFS type folder image-str])
         )
     )
-    ;;{F0}  [UR]
-    ;;{F1}  [URC]
-    ;;{F2}  [UEV]
-    ;;{F3}  [UDC]
-    (defun MD:object{Bloodshed.MD}
-        (a:string b:string c:string d:string e:string f:string g:string h:string i:string)
-        {"Rarity"           : a
-        ,"Dacian"           : b
-        ,"Potency"          : c
-        ,"Bloodshed"        : d
-        ,"Background"       : e
-        ,"FirstProtection"  : f
-        ,"SecondProtection" : g
-        ,"MainHand"         : h
-        ,"OffHand"          : i
-        }
-    )
-    (defun R-x (pos:integer)
-        (let
-            (
-                (p:integer (mod pos 72))
-            )
-            (cond
-                ((= p 1) (MD R2 D1 P1 B1 RR1 MP1 SP1 MH3 OH2))
-                ((= p 2) (MD R2 D1 P1 B1 RR2 MP1 SP1 MH3 OH2))
-                ((= p 3) (MD R2 D1 P1 B1 RR3 MP1 SP1 MH3 OH2))
-                ((= p 4) (MD R2 D1 P2 B2 RR1 MP1 SP1 MH3 OH2))
-                ((= p 5) (MD R2 D1 P2 B2 RR2 MP1 SP1 MH3 OH2))
-                ((= p 6) (MD R2 D1 P2 B2 RR3 MP1 SP1 MH3 OH2))
-                ((= p 7) (MD R2 D1 P3 B3 RR1 MP1 SP1 MH3 OH2))
-                ((= p 8) (MD R2 D1 P3 B3 RR2 MP1 SP1 MH3 OH2))
-                ((= p 9) (MD R2 D1 P3 B3 RR3 MP1 SP1 MH3 OH2))
-                ((= p 10) (MD R2 D2 P1 B1 RR1 MP1 SP1 MH1 OH1))
-                ((= p 11) (MD R2 D2 P1 B1 RR2 MP1 SP1 MH1 OH1))
-                ((= p 12) (MD R2 D2 P1 B1 RR3 MP1 SP1 MH1 OH1))
-                ((= p 13) (MD R2 D2 P2 B2 RR1 MP1 SP1 MH1 OH1))
-                ((= p 14) (MD R2 D2 P2 B2 RR2 MP1 SP1 MH1 OH1))
-                ((= p 15) (MD R2 D2 P2 B2 RR3 MP1 SP1 MH1 OH1))
-                ((= p 16) (MD R2 D2 P3 B3 RR1 MP1 SP1 MH1 OH1))
-                ((= p 17) (MD R2 D2 P3 B3 RR2 MP1 SP1 MH1 OH1))
-                ((= p 18) (MD R2 D2 P3 B3 RR3 MP1 SP1 MH1 OH1))
-                ((= p 19) (MD R2 D3 P1 B1 RR1 MP1 SP2 MH2 OH4))
-                ((= p 20) (MD R2 D3 P1 B1 RR2 MP1 SP2 MH2 OH4))
-                ((= p 21) (MD R2 D3 P1 B1 RR3 MP1 SP2 MH2 OH4))
-                ((= p 22) (MD R2 D3 P2 B2 RR1 MP1 SP2 MH2 OH4))
-                ((= p 23) (MD R2 D3 P2 B2 RR2 MP1 SP2 MH2 OH4))
-                ((= p 24) (MD R2 D3 P2 B2 RR3 MP1 SP2 MH2 OH4))
-                ((= p 25) (MD R2 D3 P3 B3 RR1 MP1 SP2 MH2 OH4))
-                ((= p 26) (MD R2 D3 P3 B3 RR2 MP1 SP2 MH2 OH4))
-                ((= p 27) (MD R2 D3 P3 B3 RR3 MP1 SP2 MH2 OH4))
-                ((= p 28) (MD R2 D4 P1 B1 RR1 MP1 SP1 MH2 OH3))
-                ((= p 29) (MD R2 D4 P1 B1 RR2 MP1 SP1 MH2 OH3))
-                ((= p 30) (MD R2 D4 P1 B1 RR3 MP1 SP1 MH2 OH3))
-                ((= p 31) (MD R2 D4 P2 B2 RR1 MP1 SP1 MH2 OH3))
-                ((= p 32) (MD R2 D4 P2 B2 RR2 MP1 SP1 MH2 OH3))
-                ((= p 33) (MD R2 D4 P2 B2 RR3 MP1 SP1 MH2 OH3))
-                ((= p 34) (MD R2 D4 P3 B3 RR1 MP1 SP1 MH2 OH3))
-                ((= p 35) (MD R2 D4 P3 B3 RR2 MP1 SP1 MH2 OH3))
-                ((= p 36) (MD R2 D4 P3 B3 RR3 MP1 SP1 MH2 OH3))
-                ((= p 37) (MD R2 D5 P1 B1 RR1 MP2 SP1 MH3 OH5))
-                ((= p 38) (MD R2 D5 P1 B1 RR2 MP2 SP1 MH3 OH5))
-                ((= p 39) (MD R2 D5 P1 B1 RR3 MP2 SP1 MH3 OH5))
-                ((= p 40) (MD R2 D5 P2 B2 RR1 MP2 SP1 MH3 OH5))
-                ((= p 41) (MD R2 D5 P2 B2 RR2 MP2 SP1 MH3 OH5))
-                ((= p 42) (MD R2 D5 P2 B2 RR3 MP2 SP1 MH3 OH5))
-                ((= p 43) (MD R2 D5 P3 B3 RR1 MP2 SP1 MH3 OH5))
-                ((= p 44) (MD R2 D5 P3 B3 RR2 MP2 SP1 MH3 OH5))
-                ((= p 45) (MD R2 D5 P3 B3 RR3 MP2 SP1 MH3 OH5))
-                ((= p 46) (MD R2 D6 P1 B1 RR1 MP2 SP2 MH2 OH4))
-                ((= p 47) (MD R2 D6 P1 B1 RR2 MP2 SP2 MH2 OH4))
-                ((= p 48) (MD R2 D6 P1 B1 RR3 MP2 SP2 MH2 OH4))
-                ((= p 49) (MD R2 D6 P2 B2 RR1 MP2 SP2 MH2 OH4))
-                ((= p 50) (MD R2 D6 P2 B2 RR2 MP2 SP2 MH2 OH4))
-                ((= p 51) (MD R2 D6 P2 B2 RR3 MP2 SP2 MH2 OH4))
-                ((= p 52) (MD R2 D6 P3 B3 RR1 MP2 SP2 MH2 OH4))
-                ((= p 53) (MD R2 D6 P3 B3 RR2 MP2 SP2 MH2 OH4))
-                ((= p 54) (MD R2 D6 P3 B3 RR3 MP2 SP2 MH2 OH4))
-                ((= p 55) (MD R2 D7 P1 B1 RR1 MP2 SP1 MH2 OH5))
-                ((= p 56) (MD R2 D7 P1 B1 RR2 MP2 SP1 MH2 OH5))
-                ((= p 57) (MD R2 D7 P1 B1 RR3 MP2 SP1 MH2 OH5))
-                ((= p 58) (MD R2 D7 P2 B2 RR1 MP2 SP1 MH2 OH5))
-                ((= p 59) (MD R2 D7 P2 B2 RR2 MP2 SP1 MH2 OH5))
-                ((= p 60) (MD R2 D7 P2 B2 RR3 MP2 SP1 MH2 OH5))
-                ((= p 61) (MD R2 D7 P3 B3 RR1 MP2 SP1 MH2 OH5))
-                ((= p 62) (MD R2 D7 P3 B3 RR2 MP2 SP1 MH2 OH5))
-                ((= p 63) (MD R2 D7 P3 B3 RR3 MP2 SP1 MH2 OH5))
-                ((= p 64) (MD R2 D8 P1 B1 RR1 MP2 SP1 MH1 OH1))
-                ((= p 65) (MD R2 D8 P1 B1 RR2 MP2 SP1 MH1 OH1))
-                ((= p 66) (MD R2 D8 P1 B1 RR3 MP2 SP1 MH1 OH1))
-                ((= p 67) (MD R2 D8 P2 B2 RR1 MP2 SP1 MH1 OH1))
-                ((= p 68) (MD R2 D8 P2 B2 RR2 MP2 SP1 MH1 OH1))
-                ((= p 69) (MD R2 D8 P2 B2 RR3 MP2 SP1 MH1 OH1))
-                ((= p 70) (MD R2 D8 P3 B3 RR1 MP2 SP1 MH1 OH1))
-                ((= p 71) (MD R2 D8 P3 B3 RR2 MP2 SP1 MH1 OH1))
-                ((= p 0) (MD R2 D8 P3 B3 RR3 MP2 SP1 MH1 OH1))
-                true
-            )
-        )
-    )
-    ;;{F4}  [CAP]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{F4}  Validate [UEV/CAP]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    ;;{F7}  User [A]
     ;;
-    ;;{F5}  [A]
     (defun A_Rare (patron:string dhb:string pos:[integer])
         @doc "Issue Bloodshed Rare NFT"
         (let
@@ -292,10 +293,10 @@
                                     IR-L
                                     (format "Bloodshed Rare #{}" [p])
                                     d-l
-                                    (ref-DPDC-UDC::UDC_NonceMetaData (RS p) [0] (R-x p))
+                                    (ref-DPDC-UDC::UDC_NonceMetaData (UC_RareScore p) [0] (UDC_RareByPosition p))
                                     type
-                                    (ref-DPDC-UDC::UDC_URI|Data (RareLink p true) b b b b b b)
-                                    (ref-DPDC-UDC::UDC_URI|Data (RareLink p false) b b b b b b)
+                                    (ref-DPDC-UDC::UDC_URI|Data (UC_RareLink p true) b b b b b b)
+                                    (ref-DPDC-UDC::UDC_URI|Data (UC_RareLink p false) b b b b b b)
                                     zd
                                 )
                             )
@@ -308,7 +309,7 @@
             )
         )
     )
-    ;;{F6}  [C]
-    ;;{F7}  [X]
+    ;;{F8}  User [C]
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )

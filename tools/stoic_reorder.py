@@ -48,6 +48,9 @@ def class_rank(name):
     if tok is None: return (99, name)  # unknown -> keep at end of its neighbourhood
     for i,(fx,label,prefixes) in enumerate(CLASSES):
         if tok in prefixes: return (i, )
+    # numbered-admin steps (A01_ … A11_, A09a_) are canon User [A]
+    if re.match(r'^A\d+[a-z]?_$', tok):
+        return (next(i for i,(fx,_,_) in enumerate(CLASSES) if fx=="F7"),)
     return (99,)
 
 def is_aux(name):
