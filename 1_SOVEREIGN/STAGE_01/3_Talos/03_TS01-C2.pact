@@ -131,7 +131,7 @@
     (defun C_VST|Slumber (patron:string merger:string dpof:string nonces:[integer]))
     (defun C_VST|RepurposeSlumber (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string))
     (defun C_VST|RepurposeHibernating (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
-    (defun C_VST|ToggleTransferRoleHibernatedDPOF (patron:string s-dpof:string target:string toggle:bool))
+    (defun C_VST|ToggleTransferRoleHibernatingDPOF (patron:string s-dpof:string target:string toggle:bool))
     ;;
     ;;
     (defun C_LQD|UnwrapStoa (patron:string unwrapper:string amount:decimal))
@@ -1643,8 +1643,8 @@
             )
         )
     )
-    (defun C_VST|ToggleTransferRoleHibernatedDPOF (patron:string s-dpof:string target:string toggle:bool)
-        @doc "Toggles Transfer Role for a Hibernated DPOF"
+    (defun C_VST|ToggleTransferRoleHibernatingDPOF (patron:string s-dpof:string target:string toggle:bool)
+        @doc "Toggles Transfer Role for a Hibernating DPOF"
         (with-capability (P|TS)
             (let
                 (
