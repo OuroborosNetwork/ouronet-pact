@@ -542,8 +542,10 @@ Every block/sub-block is marked **even when empty** (except `{#}` and `{6}`, whi
 ### 7.2 GOVERNANCE G1..G5 — **gov caps move `{G2}`→`{G4}`**
 G1 constants (⟨COLOUR⟩ grey+BOLD) · G2 schemas · G3 tables (key-shape comment) · **G4 capabilities**
 (⟨COLOUR⟩ GOLD unless bronze by composition; order class-1-first…class-4-last, no `{Cx}` markers in-block) ·
-G5 functions (all `GOV|`; may carry camelCase custom designators — Keys / SmartContractNames / PublicKey —
-each on its own sub-sub line). *This replaces the prior §5.2.1 "G1 const · G2 caps · G3 defuns".*
+G5 functions (all `GOV|`). G5 **may optionally** carry per-need **custom sub-sub designators** — **arbitrary**
+camelCase names, each on its own sub-sub line, present only if the module needs them. DALOS happens to use
+`Keys` / `SmartContractNames` / `PublicKey`, but that is **only an example — not a mandatory or fixed set**;
+a module may use any names it needs, or none. *This replaces the prior §5.2.1 "G1 const · G2 caps · G3 defuns".*
 ⟨COLOUR dep⟩ the classifier's gold-gov-cap check moves from `{G2}` to **`{G4}`**.
 
 ### 7.3 POLICY P1..P5 — `P|` leads
@@ -576,7 +578,7 @@ separator: `<component>|<component>|<component>`. The `|` bar is the one canonic
 | 5.1 | **Construct** | `UDC_` · `UDCx_` | yellow |
 | 5.2 | **Compute** | `UC_` · `UCk_` · `UCx_`/`UCkx_` | teal |
 | 5.3 | **Read** | `UR_` · `URC_` · `URU_` · `URCx_` · `URH_`/`URHC_`(heavy) · `URCi_`(cost) · `INFO_` | tan/amber |
-| 5.4 | **Validate** | `UEV_` · `UEV_IMC` · `CAP_` (a Validate **function**, not a `{C4}` cap) | red |
+| 5.4 | **Validate** | `UEV_` · `CAP_` (a Validate **function**, not a `{C4}` cap) — **NB** the IMC spine enforce is a POLICY function `P|UEV_IMC` in `{P5}`, **not** here | red |
 | 5.5 | **Write** | `WI_` · `WU_`/`WU2_`/`WU3_`/`WU4_` · `WW_` | magenta |
 | 5.6 | **Aux/X** | `XI_` · `XE_` · `XB_` | purple |
 | 5.7 | **User** | `A_`·`AA_`·`Ap_`·`AAp_`·`AU_` **then** `C_`·`CC_`·`Cp_`·`CCp_` | green |
@@ -587,6 +589,14 @@ are now `{5.1..5.7}`; admin+client are one class (5.7), REPL is block `{6}`.*
 - **BLOCK**: a rule line `;;<` + `=`×73 + `>` immediately followed by `;;{N}  NAME` (N ∈ `0 # 1 2 3 4 5 6`).
 - **SUB-BLOCK**: `;;{tag}  label` — tags `G1..G5` · `P1..P5` · `3.1..3.3` · `C1..C4` · `5.1..5.7`.
 - **SUB-SUB (variant / G5 designator)**: `;;  · label` (indented middle-dot; lighter than a sub-block).
+- **REPL block `{6}` separator — DELIBERATELY DISTINCT**: an **X-rule** (not the `=` rule) so the strippable
+  test block is trivially greppable/wipeable at deploy. Present **only when the block exists**:
+  ```
+  ;;<XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX>
+  ;;{6}  REPL   —   TEST-ONLY · DELETE ON DEPLOY
+  ;;<XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX>
+  ```
+  Deploy strip = delete from the `{6}` X-rule to the module close. Never emitted in `canon.pact`.
 - All markers appear in canonical order; the sweep re-lays a file's markers to it.
 
 ### 7.8 Colour-bearing markers (keep classifier ↔ canon in lockstep)

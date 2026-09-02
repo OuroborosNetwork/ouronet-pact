@@ -46,10 +46,10 @@
     ;;{G2}  schemas
     ;;{G3}  tables                                 ;; key-shape comment: <comp>|<comp>|…
     ;;{G4}  capabilities                           ;; ⟨COLOUR⟩ GOLD (unless bronze by composition)
-    ;;{G5}  functions                              ;; all GOV| ; custom designators camelCase:
-    ;;  · Keys
-    ;;  · SmartContractNames
-    ;;  · PublicKey
+    ;;{G5}  functions                              ;; all GOV| ; OPTIONAL, per-need custom sub-sub designators —
+    ;;                                             ;; ARBITRARY camelCase names, present only if the module needs them.
+    ;;  · <CustomDesignator>                       ;; e.g. DALOS uses Keys / SmartContractNames / PublicKey — those are
+    ;;                                             ;; just DALOS's example, NOT a mandatory set; omit this line if unneeded.
 
     ;;<=========================================================================>
     ;;{2}  POLICY
@@ -93,8 +93,8 @@
     ;;  · URH_ / URHC_ (heavy — loud)
     ;;  · URCi_ (cost) · INFO_ (client-info reader)
     ;;{5.4}  Validate  [UEV]                        ;; UEV_
-    ;;  · UEV_IMC (IMC spine enforce)
     ;;  · CAP_ (capability-guard FUNCTION — not a {C4} cap)
+    ;;                                             ;; NB the IMC spine enforce is a POLICY function → P|UEV_IMC in {P5}, NOT here.
     ;;{5.5}  Write     [W]                          ;; WI_ (insert)
     ;;  · WU_ / WU2_ / WU3_ / WU4_ … (update)
     ;;  · WW_ (overwrite)
@@ -106,10 +106,13 @@
     ;;  · C_ (client)
     ;;  · CC_ / Cp_ / CCp_
 
-    ;; {6} REPL — test-only functions (REPL_*). NOT part of this template: add the
-    ;; block ONLY in modules that need it; it is DELETED at deploy. Shape when present:
-    ;;   ;;<=====…=====>
-    ;;   ;;{6}  REPL
-    ;;   ;;<=====…=====>
+    ;; {6} REPL — test-only functions (REPL_*). NOT part of this template: added ONLY in
+    ;; modules that need it, and DELETED at deploy. Its separator is DELIBERATELY DISTINCT
+    ;; from every other block (an X-rule, not the `=` rule) so it is trivially greppable and
+    ;; wipeable on deploy. Exact shape WHEN PRESENT (last block, just before the module close):
+    ;;
+    ;;   ;;<XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX>
+    ;;   ;;{6}  REPL   —   TEST-ONLY · DELETE ON DEPLOY
+    ;;   ;;<XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX>
     ;;   (defun REPL_… )
 )
