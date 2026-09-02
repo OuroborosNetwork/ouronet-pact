@@ -53,9 +53,9 @@
             (ref-TS02-C1::DPSF|C_DefinePrimordialSet
                 owner id "GarbageProbeSet" 1.0
                 [
-                    (ref-DPDC-UDC::N [1])
-                    (ref-DPDC-UDC::N [2])
-                    (ref-DPDC-UDC::N [-100000])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [2])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [-100000])
                 ]
                 nd
             )
@@ -68,8 +68,8 @@
             (ref-TS02-C1::DPSF|C_DefinePrimordialSet
                 owner id "ZeroProbeSet" 1.0
                 [
-                    (ref-DPDC-UDC::N [1])
-                    (ref-DPDC-UDC::N [0])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [0])
                 ]
                 nd
             )
@@ -81,9 +81,9 @@
         (ref-TS02-C1::DPSF|C_DefinePrimordialSet
             owner id "LegitProbeSet" 1.0
             [
-                (ref-DPDC-UDC::N [1])
-                (ref-DPDC-UDC::N [2])
-                (ref-DPDC-UDC::N [-3])
+                (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1])
+                (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [2])
+                (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [-3])
             ]
             nd2
         )

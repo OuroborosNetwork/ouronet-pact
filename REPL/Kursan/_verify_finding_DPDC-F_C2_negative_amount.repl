@@ -2,7 +2,7 @@
 ;; Make/Merge/Repurpose fragmentation call chain — a negative amount inverts credit/debit direction."
 ;; Claim under test: this was already closed as a side effect of Fix #1 (DPDC-C::UEV_Amount, the universal
 ;; credit/debit chokepoint), since C_MakeFragments/C_MergeFragments route their constituent leg through
-;; DPDC-T::C_Transfer -> the same CreditOrDebitDPDC. Never independently live-tested by name until now.
+;; DPDC-T::C_Transfer -> the same XI_CreditOrDebitDPDC. Never independently live-tested by name until now.
 (load "../Stage00_Sanboxes.repl")
 (load "../Stage01_Tester.repl")
 (load "../Stage_02/[0.1]_Interfaces.repl")
@@ -43,7 +43,7 @@
 ;;|| NEXT >
 ;; The exploit attempt: C_MakeFragments with a negative amount, submitted as its own real, uncaught
 ;; transaction (no expect-failure — matching real on-chain submission). EXPECTED: hard rejection before
-;; commit-tx, ideally at UEV_Amount inside DPDC-C::CreditOrDebitDPDC (proving Fix #1's chokepoint is what
+;; commit-tx, ideally at UEV_Amount inside DPDC-C::XI_CreditOrDebitDPDC (proving Fix #1's chokepoint is what
 ;; catches it, not some new/separate guard).
 (begin-tx "PROBE-C3 - the exploit: negative amount, submitted as a real uncaught transaction")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)

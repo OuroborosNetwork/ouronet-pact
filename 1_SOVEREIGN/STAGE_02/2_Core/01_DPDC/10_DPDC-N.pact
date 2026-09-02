@@ -274,7 +274,9 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    ;;{F0}  [UR]
+    ;;{F1}  Construct [UDC]
+    ;;{F2}  Compute [UC]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     (defun UR_Nonce:object{DpdcUdcV1.DPDC|NonceData}
         (id:string son:bool nosc:integer nos:bool nost:bool)
         @doc "nosc = <Nonce-Or-Set-Class> ; value of either a Nonce or Set-Class \
@@ -297,8 +299,32 @@
             )
         )
     )
-    ;;{F1}  [URC]
-    ;;{F2}  [UEV]
+    ;;
+    (defun URCi_UpdateNonces:object{IgnisCollectorV1.OutputCumulator}
+        (account:string count:integer)
+        @doc "Cost preview for C_UpdateNonces (count * UsagePrice ignis|smallest; \
+            \ construct with empty output list)."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (price:decimal (* (dec count) (ref-DALOS::UR_UsagePrice "ignis|smallest")))
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator price account (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    (defun URCi_UpdateNonceField:object{IgnisCollectorV1.OutputCumulator}
+        (account:string)
+        @doc "Cost preview for the single-field nonce updates (Royalty, IgnisRoyalty, \
+            \ Name, Description, Score, MetaData, URI) — all flat Small(account)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+            )
+            (ref-IGNIS::UDC_SmallCumulator account)
+        )
+    )
+    ;;{F4}  Validate [UEV/CAP]
     (defun UEV_NonceDataUpdater
         (id:string son:bool account:string nosc:integer nos:bool nost:bool)
         (enforce (> nosc 0) "Operation requires greater than zero <nonce-or-set-class>")
@@ -403,36 +429,152 @@
             "Score must be the -1.0 unscored sentinel or a non-negative value below 100 billion"
         )
     )
-    ;;{F3}  [UDC]
-    ;;{F4}  [CAP]
-    ;;
-    ;;{F5}  [A]
-    ;;{F5.5}  [URCi]  Cost readers — single source for exec billing + INFO preview
-    (defun URCi_UpdateNonces:object{IgnisCollectorV1.OutputCumulator}
-        (account:string count:integer)
-        @doc "Cost preview for C_UpdateNonces (count * UsagePrice ignis|smallest; \
-            \ construct with empty output list)."
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    (defun XI_U|NoncesData
+        (id:string son:bool account:string nosc:[integer] nos:bool nost:bool new-nonce-data:[object{DpdcUdcV1.DPDC|NonceData}])
+        (require-capability (SECURE))
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (price:decimal (* (dec count) (ref-DALOS::UR_UsagePrice "ignis|smallest")))
+                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
             )
-            (ref-IGNIS::UDC_ConstructOutputCumulator price account (ref-IGNIS::URC_IsVirtualGasZero) [])
+            (map
+                (lambda
+                    (idx:integer)
+                    (if nost
+                        ;;Nonce
+                        (ref-DPDC::XE_U|NonceOrSplitData id son (at idx nosc) nos (at idx new-nonce-data))
+                        ;;Sets
+                        (ref-DPDC-S::XB_U|NonceOrSplitData id son (at idx nosc) nos (at idx new-nonce-data))
+                    )
+                )
+                (enumerate 0 (- (length nosc) 1))
+            )
         )
     )
-    (defun URCi_UpdateNonceField:object{IgnisCollectorV1.OutputCumulator}
-        (account:string)
-        @doc "Cost preview for the single-field nonce updates (Royalty, IgnisRoyalty, \
-            \ Name, Description, Score, MetaData, URI) — all flat Small(account)."
+    (defun XI_U|NonceRoyalty
+        (id:string son:bool account:string nosc:integer nos:bool nost:bool r-or-ir:bool royalty-value:decimal)
+        (require-capability (SECURE))
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (read-nonce-data:object{DpdcUdcV1.DPDC|NonceData} (UR_Nonce id son nosc nos nost))
+                (new-nonce-data:object{DpdcUdcV1.DPDC|NonceData}
+                    (if r-or-ir
+                        (+
+                            {"royalty" : royalty-value}
+                            (remove "royalty" read-nonce-data)
+                        )
+                        (+
+                            {"ignis" : royalty-value}
+                            (remove "ignis" read-nonce-data)
+                        )
+                    ) 
+                )
             )
-            (ref-IGNIS::UDC_SmallCumulator account)
+            (XI_U|NoncesData id son account [nosc] nos nost [new-nonce-data])
         )
     )
-    ;;{F6}  [C]
+    (defun XI_U|NonceNoD 
+        (id:string son:bool account:string nosc:integer nos:bool nost:bool name-or-description:bool name-description:string)
+        (require-capability (SECURE))
+        (let
+            (
+                (read-nonce-data:object{DpdcUdcV1.DPDC|NonceData} (UR_Nonce id son nosc nos nost))
+                (new-nonce-data:object{DpdcUdcV1.DPDC|NonceData}
+                    (if name-or-description
+                        (+
+                            {"name" : name-description}
+                            (remove "name" read-nonce-data)
+                        )
+                        (+
+                            {"description" : name-description}
+                            (remove "description" read-nonce-data)
+                        )
+                    ) 
+                )
+            )
+            (XI_U|NoncesData id son account [nosc] nos nost [new-nonce-data])
+        )
+    )
+    (defun XI_U|NonceScore
+        (id:string son:bool account:string nosc:integer nos:bool nost:bool score:decimal)
+        (require-capability (SECURE))
+        (let
+            (
+                (read-nonce-data:object{DpdcUdcV1.DPDC|NonceData} (UR_Nonce id son nosc nos nost))
+                (read-md:object{DpdcUdcV1.NonceMetaData} (at "meta-data" read-nonce-data))
+                ;;
+                (updated-md:object{DpdcUdcV1.NonceMetaData}
+                    (+
+                        {"score" : score}
+                        (remove "score" read-md)
+                    )
+                )
+                (new-nonce-data:object{DpdcUdcV1.DPDC|NonceData}
+                    (+
+                        {"meta-data" : updated-md}
+                        (remove "meta-data" read-nonce-data)
+                    )
+                )
+            )
+            (XI_U|NoncesData id son account [nosc] nos nost [new-nonce-data])
+        )
+    )
+    (defun XI_NonceMetaData 
+        (id:string son:bool account:string nosc:integer nos:bool nost:bool meta-data:object)
+        (require-capability (SECURE))
+        (let
+            (
+                (read-nonce-data:object{DpdcUdcV1.DPDC|NonceData} (UR_Nonce id son nosc nos nost))
+                (read-md:object{DpdcUdcV1.NonceMetaData} (at "meta-data" read-nonce-data))
+                ;;
+                (updated-md:object{DpdcUdcV1.NonceMetaData}
+                    (+
+                        {"meta-data" : meta-data}
+                        (remove "meta-data" read-md)
+                    )
+                )
+                (new-nonce-data:object{DpdcUdcV1.DPDC|NonceData}
+                    (+
+                        {"meta-data" : updated-md}
+                        (remove "meta-data" read-nonce-data)
+                    )
+                )
+            )
+            (XI_U|NoncesData id son account [nosc] nos nost [new-nonce-data])
+        )
+    )
+    (defun XI_U|NonceUri
+        (
+            id:string son:bool account:string nosc:integer nos:bool nost:bool
+            ay:object{DpdcUdcV1.URI|Type} u1:object{DpdcUdcV1.URI|Data} u2:object{DpdcUdcV1.URI|Data} u3:object{DpdcUdcV1.URI|Data}
+        )
+        (require-capability (SECURE))
+        (let
+            (
+                (read-nonce-data:object{DpdcUdcV1.DPDC|NonceData} (UR_Nonce id son nosc nos nost))
+                (new-nonce-data:object{DpdcUdcV1.DPDC|NonceData}
+                    (+
+                        {"uri-tertiary" : u3}
+                        (+
+                            {"uri-secondary" : u2}
+                            (+
+                                {"uri-primary" : u1}
+                                (+
+                                    {"asset-type" : ay}
+                                    (remove "asset-type" read-nonce-data)
+                                )
+                            )
+                        )
+                    ) 
+                )
+            )
+            (XI_U|NoncesData id son account [nosc] nos nost [new-nonce-data])
+        )
+    )
+    ;;{F7}  User [A]
+    ;;{F8}  User [C]
     (defun C_UpdateNonces
         (id:string son:bool account:string nosc:[integer] nos:bool nost:bool new-nonces-data:[object{DpdcUdcV1.DPDC|NonceData}])
         @doc "[0] Updates Full Nonce Data for multiple Nonces at a time"
@@ -534,7 +676,7 @@
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
             )
             (with-capability (DPDC-N|C>SET-META-DATA id son account nosc nos nost meta-data)
-                (XI|U_NonceMetaData id son account nosc nos nost meta-data)
+                (XI_NonceMetaData id son account nosc nos nost meta-data)
                 (URCi_UpdateNonceField account)
             )
         )
@@ -556,149 +698,7 @@
             )
         )
     )
-    ;;{F7}  [X]
-    (defun XI_U|NoncesData
-        (id:string son:bool account:string nosc:[integer] nos:bool nost:bool new-nonce-data:[object{DpdcUdcV1.DPDC|NonceData}])
-        (require-capability (SECURE))
-        (let
-            (
-                (ref-DPDC:module{DpdcV1} DPDC)
-                (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
-            )
-            (map
-                (lambda
-                    (idx:integer)
-                    (if nost
-                        ;;Nonce
-                        (ref-DPDC::XE_U|NonceOrSplitData id son (at idx nosc) nos (at idx new-nonce-data))
-                        ;;Sets
-                        (ref-DPDC-S::XB_U|NonceOrSplitData id son (at idx nosc) nos (at idx new-nonce-data))
-                    )
-                )
-                (enumerate 0 (- (length nosc) 1))
-            )
-        )
-    )
-    (defun XI_U|NonceRoyalty
-        (id:string son:bool account:string nosc:integer nos:bool nost:bool r-or-ir:bool royalty-value:decimal)
-        (require-capability (SECURE))
-        (let
-            (
-                (read-nonce-data:object{DpdcUdcV1.DPDC|NonceData} (UR_Nonce id son nosc nos nost))
-                (new-nonce-data:object{DpdcUdcV1.DPDC|NonceData}
-                    (if r-or-ir
-                        (+
-                            {"royalty" : royalty-value}
-                            (remove "royalty" read-nonce-data)
-                        )
-                        (+
-                            {"ignis" : royalty-value}
-                            (remove "ignis" read-nonce-data)
-                        )
-                    ) 
-                )
-            )
-            (XI_U|NoncesData id son account [nosc] nos nost [new-nonce-data])
-        )
-    )
-    (defun XI_U|NonceNoD 
-        (id:string son:bool account:string nosc:integer nos:bool nost:bool name-or-description:bool name-description:string)
-        (require-capability (SECURE))
-        (let
-            (
-                (read-nonce-data:object{DpdcUdcV1.DPDC|NonceData} (UR_Nonce id son nosc nos nost))
-                (new-nonce-data:object{DpdcUdcV1.DPDC|NonceData}
-                    (if name-or-description
-                        (+
-                            {"name" : name-description}
-                            (remove "name" read-nonce-data)
-                        )
-                        (+
-                            {"description" : name-description}
-                            (remove "description" read-nonce-data)
-                        )
-                    ) 
-                )
-            )
-            (XI_U|NoncesData id son account [nosc] nos nost [new-nonce-data])
-        )
-    )
-    (defun XI_U|NonceScore
-        (id:string son:bool account:string nosc:integer nos:bool nost:bool score:decimal)
-        (require-capability (SECURE))
-        (let
-            (
-                (read-nonce-data:object{DpdcUdcV1.DPDC|NonceData} (UR_Nonce id son nosc nos nost))
-                (read-md:object{DpdcUdcV1.NonceMetaData} (at "meta-data" read-nonce-data))
-                ;;
-                (updated-md:object{DpdcUdcV1.NonceMetaData}
-                    (+
-                        {"score" : score}
-                        (remove "score" read-md)
-                    )
-                )
-                (new-nonce-data:object{DpdcUdcV1.DPDC|NonceData}
-                    (+
-                        {"meta-data" : updated-md}
-                        (remove "meta-data" read-nonce-data)
-                    )
-                )
-            )
-            (XI_U|NoncesData id son account [nosc] nos nost [new-nonce-data])
-        )
-    )
-    (defun XI|U_NonceMetaData 
-        (id:string son:bool account:string nosc:integer nos:bool nost:bool meta-data:object)
-        (require-capability (SECURE))
-        (let
-            (
-                (read-nonce-data:object{DpdcUdcV1.DPDC|NonceData} (UR_Nonce id son nosc nos nost))
-                (read-md:object{DpdcUdcV1.NonceMetaData} (at "meta-data" read-nonce-data))
-                ;;
-                (updated-md:object{DpdcUdcV1.NonceMetaData}
-                    (+
-                        {"meta-data" : meta-data}
-                        (remove "meta-data" read-md)
-                    )
-                )
-                (new-nonce-data:object{DpdcUdcV1.DPDC|NonceData}
-                    (+
-                        {"meta-data" : updated-md}
-                        (remove "meta-data" read-nonce-data)
-                    )
-                )
-            )
-            (XI_U|NoncesData id son account [nosc] nos nost [new-nonce-data])
-        )
-    )
-    (defun XI_U|NonceUri
-        (
-            id:string son:bool account:string nosc:integer nos:bool nost:bool
-            ay:object{DpdcUdcV1.URI|Type} u1:object{DpdcUdcV1.URI|Data} u2:object{DpdcUdcV1.URI|Data} u3:object{DpdcUdcV1.URI|Data}
-        )
-        (require-capability (SECURE))
-        (let
-            (
-                (read-nonce-data:object{DpdcUdcV1.DPDC|NonceData} (UR_Nonce id son nosc nos nost))
-                (new-nonce-data:object{DpdcUdcV1.DPDC|NonceData}
-                    (+
-                        {"uri-tertiary" : u3}
-                        (+
-                            {"uri-secondary" : u2}
-                            (+
-                                {"uri-primary" : u1}
-                                (+
-                                    {"asset-type" : ay}
-                                    (remove "asset-type" read-nonce-data)
-                                )
-                            )
-                        )
-                    ) 
-                )
-            )
-            (XI_U|NoncesData id son account [nosc] nos nost [new-nonce-data])
-        )
-    )
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )
 

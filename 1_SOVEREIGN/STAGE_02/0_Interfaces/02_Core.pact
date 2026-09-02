@@ -227,9 +227,9 @@
     ;;  [6]
     ;;
     
-    (defun C:object{DPDC|AllowedClassForSetPosition}  (a:integer))
-    (defun N:object{DPDC|AllowedNonceForSetPosition}  (a:[integer]))
-    (defun S:object{DPDC|Set}
+    (defun UDC_DPDC|AllowedClassForSetPosition:object{DPDC|AllowedClassForSetPosition}  (a:integer))
+    (defun UDC_DPDC|AllowedNonceForSetPosition:object{DPDC|AllowedNonceForSetPosition}  (a:[integer]))
+    (defun UDC_DPDC|Set:object{DPDC|Set}
         (
             a:integer b:string c:decimal d:integer e:bool f:bool g:bool
             h:[object{DPDC|AllowedNonceForSetPosition}]

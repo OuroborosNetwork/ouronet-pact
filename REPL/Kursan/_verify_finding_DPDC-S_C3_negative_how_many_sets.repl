@@ -1,7 +1,7 @@
 ;; Verification for DPDC Audit finding #8C (DPDC-S/DPDC-C · C3): "how-many-sets is never bounded to a
 ;; positive value anywhere on the C_MakeSemiFungibleSet/C_BreakSemiFungibleSet path."
 ;; Question under test, live, not reasoned about: does a NEGATIVE how-many-sets actually work today
-;; (post-Fix-#1), or was it already closed as a side effect of DPDC-C::CreditOrDebitDPDC's UEV_Amount?
+;; (post-Fix-#1), or was it already closed as a side effect of DPDC-C::XI_CreditOrDebitDPDC's UEV_Amount?
 ;; Uses the real, genesis-defined "Bronze" primordial set (Wonder Coach collection, set-class 1,
 ;; constituent nonces 1-10) so this is a real set-class, not a synthetic one.
 (load "../Stage00_Sanboxes.repl")

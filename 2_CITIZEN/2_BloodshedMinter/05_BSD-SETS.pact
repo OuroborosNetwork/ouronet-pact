@@ -49,7 +49,7 @@
             (
                 (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
             )
-            (ref-DPDC-UDC::N lst)
+            (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition lst)
         )
     )
     (defun C:object{DpdcUdcV1.DPDC|AllowedClassForSetPosition} (input:integer)
@@ -57,7 +57,7 @@
             (
                 (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
             )
-            (ref-DPDC-UDC::C input)
+            (ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition input)
         )
     )
     (defun SetLink:string (position:integer small-or-big:bool)

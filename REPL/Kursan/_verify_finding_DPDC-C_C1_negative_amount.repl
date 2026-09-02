@@ -5,7 +5,7 @@
 ;; Not a canonical test — see REPL/Kursan/README.md.
 ;;
 ;; Fix (single chokepoint, per owner decision): DPDC-C::UEV_Amount, called from the one function every
-;; SFT/fragment credit or debit in the whole DPDC family funnels through — CreditOrDebitDPDC
+;; SFT/fragment credit or debit in the whole DPDC family funnels through — XI_CreditOrDebitDPDC
 ;; (03_DPDC-C.pact). DPDC-T carries no amount-positivity check of its own; it doesn't need one.
 ;;
 ;; IMPORTANT test-methodology note: the exploit attempt below is submitted as its OWN begin-tx/commit-tx,

@@ -51,7 +51,7 @@
             (expect-failure
                 "<<PROBE-51L>> oversized (21-position) Primordial set-definition rejected"
                 (ref-TS02-C1::DPSF|C_DefinePrimordialSet owner id "OversizedProbe" 1.0
-                    (make-list 21 (ref-DPDC-UDC::N [1])) nd)
+                    (make-list 21 (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1])) nd)
             )
         ]
     )

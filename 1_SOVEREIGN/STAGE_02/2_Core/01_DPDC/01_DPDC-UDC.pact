@@ -98,10 +98,7 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    ;;{F0}  [UR]
-    ;;{F1}  [URC]
-    ;;{F2}  [UEV]
-    ;;{F3}  [UDC]
+    ;;{F1}  Construct [UDC]
     ;;Properties UDCs
     ;;
     ;;  [1]
@@ -250,17 +247,17 @@
     ;;
     ;;  [6]
     ;;
-    (defun C:object{DpdcUdcV1.DPDC|AllowedClassForSetPosition} 
+    (defun UDC_DPDC|AllowedClassForSetPosition:object{DpdcUdcV1.DPDC|AllowedClassForSetPosition} 
         (a:integer)
         @doc "<C> = AllowedClassForSetPosition"
         {"allowed-sclass"   : a}
     )
-    (defun N:object{DpdcUdcV1.DPDC|AllowedNonceForSetPosition} 
+    (defun UDC_DPDC|AllowedNonceForSetPosition:object{DpdcUdcV1.DPDC|AllowedNonceForSetPosition} 
         (a:[integer])
         @doc "<N> = AllowedNonceForSetPosition"
         {"allowed-nonces"   : a}
     )
-    (defun S:object{DpdcUdcV1.DPDC|Set}
+    (defun UDC_DPDC|Set:object{DpdcUdcV1.DPDC|Set}
         (
             a:integer b:string c:decimal d:integer e:bool f:bool g:bool
             h:[object{DpdcUdcV1.DPDC|AllowedNonceForSetPosition}]
@@ -318,16 +315,19 @@
     ;;  [6]
     ;;
     (defun UDC_NoPrimordialSet:[object{DpdcUdcV1.DPDC|AllowedNonceForSetPosition}] ()
-        [(N [0])]
+        [(UDC_DPDC|AllowedNonceForSetPosition [0])]
     )
     (defun UDC_NoCompositeSet:[object{DpdcUdcV1.DPDC|AllowedClassForSetPosition}] ()
-        [(C -1)]
+        [(UDC_DPDC|AllowedClassForSetPosition -1)]
     )
-    ;;{F4}  [CAP]
-    ;;
-    ;;{F5}  [A]
-    ;;{F6}  [C]
-    ;;{F7}  [X]
+    ;;{F2}  Compute [UC]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{F4}  Validate [UEV/CAP]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    ;;{F7}  User [A]
+    ;;{F8}  User [C]
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )
 

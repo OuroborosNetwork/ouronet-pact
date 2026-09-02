@@ -276,7 +276,7 @@
     )
     (defcap DPNF|C>CREDIT-HYBRID-NONCES (id:string nonces:[integer] amounts:[integer])
         ;; DPDC Audit #24M: only the fragment (negative) legs carry a real, amount-driven credit —
-        ;; the native (positive) legs are unaffected by <amounts> here (MappedUpdateOwnerNFT hardcodes
+        ;; the native (positive) legs are unaffected by <amounts> here (XI_MappedUpdateOwnerNFT hardcodes
         ;; native NFT supply to 1 regardless of the input value), so only the fragment legs need the
         ;; positive-multiple-of-1000 check.
         (map
@@ -394,12 +394,54 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
+    ;;{F1}  Construct [UDC]
+    ;;{F2}  Compute [UC]
     (defun UC_AndTruths:bool (truths:[bool])
         (fold (and) true truths)
     )
-    ;;{F0}  [UR]
-    ;;{F1}  [URC]
-    ;;{F2}  [UEV]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
+    ;;
+    (defun URCi_RegisterCollectablesPrice:decimal
+        (id:string son:bool amounts:[integer])
+        @doc "Single-source issue price for collectable creation: \
+            \ smallest * sum(amounts), with a /1000 discount for a first Elite (E|) \
+            \ SFT nonce (son & NoncesUsed = 0). Used by both the XI_RegisterCollectables \
+            \ exec write and the INFO preview."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPDC:module{DpdcV1} DPDC)
+                (nu:integer (ref-DPDC::UR_NoncesUsed id son))
+                (s-amounts:integer (fold (+) 0 amounts))
+                (smallest:decimal (ref-DALOS::UR_UsagePrice "ignis|smallest"))
+                (ft:string (take 2 id))
+                (raw-price:decimal (* smallest (dec s-amounts)))
+            )
+            (if (fold (and) true [(= ft "E|") son (= nu 0)])
+                (/ raw-price 1000.0)
+                raw-price
+            )
+        )
+    )
+    (defun URCi_CreateNewNonces:object{IgnisCollectorV1.OutputCumulator}
+        (id:string son:bool amounts:[integer])
+        @doc "Cost preview for C_CreateNewNonce/C_CreateNewNonces: issue construct \
+            \ priced via URCi_RegisterCollectablesPrice on the owner-konto payer, \
+            \ empty output list (created collectable names are exec-only write products)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (URCi_RegisterCollectablesPrice id son amounts)
+                (ref-DPDC::UR_OwnerKonto id son)
+                (ref-IGNIS::URC_IsVirtualGasZero)
+                []
+            )
+        )
+    )
+    ;;{F4}  Validate [UEV/CAP]
     (defun UEV_NonceDataForCreation (ind:object{DpdcUdcV1.DPDC|NonceData})
         @doc "Validates the ind for creation of new nonce"
         (let
@@ -461,7 +503,7 @@
     (defun UEV_Amount (amount:integer)
         @doc "Floor for every SFT/fragment credit or debit quantity. Zero is legal (nonce-creation \
             \ genesis supply, e.g. EQUITY's zero-initial-supply tier nonces) — negative is never legal, \
-            \ it inverts the credit/debit direction in CreditOrDebitDPDC. See DPDC Audit #1C."
+            \ it inverts the credit/debit direction in XI_CreditOrDebitDPDC. See DPDC Audit #1C."
         (enforce (>= amount 0) "Amount cannot be negative")
     )
     (defun UEV_FragmentCreditAmount (amount:integer)
@@ -475,76 +517,8 @@
             (format "NFT fragment credit amount of {} must be a positive multiple of 1000" [amount])
         )
     )
-    ;;{F3}  [UDC]
-    ;;{F4}  [CAP]
-    ;;
-    ;;{F5}  [A]
-    ;;{F5.5}  [URCi]  Cost readers — single source for exec billing + INFO preview
-    (defun URCi_RegisterCollectablesPrice:decimal
-        (id:string son:bool amounts:[integer])
-        @doc "Single-source issue price for collectable creation: \
-            \ smallest * sum(amounts), with a /1000 discount for a first Elite (E|) \
-            \ SFT nonce (son & NoncesUsed = 0). Used by both the XI_RegisterCollectables \
-            \ exec write and the INFO preview."
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-DPDC:module{DpdcV1} DPDC)
-                (nu:integer (ref-DPDC::UR_NoncesUsed id son))
-                (s-amounts:integer (fold (+) 0 amounts))
-                (smallest:decimal (ref-DALOS::UR_UsagePrice "ignis|smallest"))
-                (ft:string (take 2 id))
-                (raw-price:decimal (* smallest (dec s-amounts)))
-            )
-            (if (fold (and) true [(= ft "E|") son (= nu 0)])
-                (/ raw-price 1000.0)
-                raw-price
-            )
-        )
-    )
-    (defun URCi_CreateNewNonces:object{IgnisCollectorV1.OutputCumulator}
-        (id:string son:bool amounts:[integer])
-        @doc "Cost preview for C_CreateNewNonce/C_CreateNewNonces: issue construct \
-            \ priced via URCi_RegisterCollectablesPrice on the owner-konto payer, \
-            \ empty output list (created collectable names are exec-only write products)."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DPDC:module{DpdcV1} DPDC)
-            )
-            (ref-IGNIS::UDC_ConstructOutputCumulator
-                (URCi_RegisterCollectablesPrice id son amounts)
-                (ref-DPDC::UR_OwnerKonto id son)
-                (ref-IGNIS::URC_IsVirtualGasZero)
-                []
-            )
-        )
-    )
-    ;;{F6}  [C]
-    (defun C_CreateNewNonce:object{IgnisCollectorV1.OutputCumulator}
-        (
-            id:string son:bool nonce-class:integer amount:integer
-            input-nonce-data:object{DpdcUdcV1.DPDC|NonceData} sft-set-mode:bool
-        )
-        (UEV_IMC)
-        (with-capability (DPDC-C|C>REGISTER-SINGLE-NONCE id son amount input-nonce-data sft-set-mode)
-            (XI_RegisterCollectables id son [nonce-class] [amount] [input-nonce-data] sft-set-mode)
-        )
-    )
-    (defun C_CreateNewNonces:object{IgnisCollectorV1.OutputCumulator}
-        (
-            id:string son:bool amounts:[integer]
-            input-nonce-datas:[object{DpdcUdcV1.DPDC|NonceData}]
-        )
-        (UEV_IMC)
-        (with-capability (DPDC-C|C>REGISTER-MULTIPLE-NONCES id son amounts input-nonce-datas)
-            (XI_RegisterCollectables id son 
-                (make-list (length input-nonce-datas) 0) 
-                amounts input-nonce-datas false
-            )
-        )
-    )
-    ;;{F7}  [X]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
     ;;T3x20
     (defun XE_CreditSFT-FragmentNonce (account:string id:string nonce:integer amount:integer)
         (UEV_IMC)
@@ -758,28 +732,28 @@
             )
             (if (and (> negatives 0) (= positives 0))
                 ;; only negative nonces
-                (MappedCreditOrDebitDPDC account id son negative-nonces negative-counterparts cod)
+                (XI_MappedCreditOrDebitDPDC account id son negative-nonces negative-counterparts cod)
                 (if (and (> positives 0) (= negatives 0))
                     ;;only positive nonces
                     (if son
                         ;;If SFT
-                        (MappedCreditOrDebitDPDC account id son positive-nonces positive-counterparts cod)
+                        (XI_MappedCreditOrDebitDPDC account id son positive-nonces positive-counterparts cod)
                         ;;If NFT
                         (if cod
                             ;;If Credit
-                            (MappedUpdateOwnerNFT id positive-nonces account false)
+                            (XI_MappedUpdateOwnerNFT id positive-nonces account false)
                             ;;If Debit
-                            (MappedUpdateOwnerNFT id positive-nonces account true)
+                            (XI_MappedUpdateOwnerNFT id positive-nonces account true)
                         )
                     )
                     ;;positive and negative nonces
                     (do
-                        (MappedCreditOrDebitDPDC account id son negative-nonces negative-counterparts cod)
+                        (XI_MappedCreditOrDebitDPDC account id son negative-nonces negative-counterparts cod)
                         (if son
-                            (MappedCreditOrDebitDPDC account id son positive-nonces positive-counterparts cod)
+                            (XI_MappedCreditOrDebitDPDC account id son positive-nonces positive-counterparts cod)
                             (if cod
-                                (MappedUpdateOwnerNFT id positive-nonces account false)
-                                (MappedUpdateOwnerNFT id positive-nonces account true)
+                                (XI_MappedUpdateOwnerNFT id positive-nonces account false)
+                                (XI_MappedUpdateOwnerNFT id positive-nonces account true)
                             )
                         )
                     )
@@ -919,7 +893,7 @@
     )
     ;;===========================================
     ;;
-    (defun MappedUpdateOwnerNFT (id:string nonces:[integer] account:string iz-bar:bool)
+    (defun XI_MappedUpdateOwnerNFT (id:string nonces:[integer] account:string iz-bar:bool)
         (let
             (
                 (ref-DPDC:module{DpdcV1} DPDC)
@@ -949,7 +923,7 @@
         )
     )
     ;;Must account for exist/not-exist
-    (defun CreditOrDebitDPDC (account:string id:string son:bool nonce:integer amount:integer cod:bool)
+    (defun XI_CreditOrDebitDPDC (account:string id:string son:bool nonce:integer amount:integer cod:bool)
         (let
             (
                 (ref-DPDC:module{DpdcV1} DPDC)
@@ -975,7 +949,7 @@
             (ref-DPDC::XE_W|Supply account id son nonce new-supply)
         )
     )
-    (defun MappedCreditOrDebitDPDC (account:string id:string son:bool nonces:[integer] amounts:[integer] cod:bool)
+    (defun XI_MappedCreditOrDebitDPDC (account:string id:string son:bool nonces:[integer] amounts:[integer] cod:bool)
         (let
             (
                 (l1:integer (length nonces))
@@ -985,12 +959,39 @@
             (map
                 (lambda
                     (idx:integer)
-                    (CreditOrDebitDPDC account id son (at idx nonces) (at idx amounts) cod)
+                    (XI_CreditOrDebitDPDC account id son (at idx nonces) (at idx amounts) cod)
                 )
                 (enumerate 0 (- l1 1))
             )
         )
     )
+    ;;{F7}  User [A]
+    ;;{F8}  User [C]
+    (defun C_CreateNewNonce:object{IgnisCollectorV1.OutputCumulator}
+        (
+            id:string son:bool nonce-class:integer amount:integer
+            input-nonce-data:object{DpdcUdcV1.DPDC|NonceData} sft-set-mode:bool
+        )
+        (UEV_IMC)
+        (with-capability (DPDC-C|C>REGISTER-SINGLE-NONCE id son amount input-nonce-data sft-set-mode)
+            (XI_RegisterCollectables id son [nonce-class] [amount] [input-nonce-data] sft-set-mode)
+        )
+    )
+    (defun C_CreateNewNonces:object{IgnisCollectorV1.OutputCumulator}
+        (
+            id:string son:bool amounts:[integer]
+            input-nonce-datas:[object{DpdcUdcV1.DPDC|NonceData}]
+        )
+        (UEV_IMC)
+        (with-capability (DPDC-C|C>REGISTER-MULTIPLE-NONCES id son amounts input-nonce-datas)
+            (XI_RegisterCollectables id son 
+                (make-list (length input-nonce-datas) 0) 
+                amounts input-nonce-datas false
+            )
+        )
+    )
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
+    ;;
 )
 
 (create-table P|T)

@@ -629,16 +629,16 @@
             (ref-TS02-C1::DPSF|C_DefinePrimordialSet
                 patron dhcd-id (at 10 names) 1.0
                 [
-                    (ref-DPDC-UDC::N [1])
-                    (ref-DPDC-UDC::N [2])
-                    (ref-DPDC-UDC::N [3])
-                    (ref-DPDC-UDC::N [4])
-                    (ref-DPDC-UDC::N [5])
-                    (ref-DPDC-UDC::N [6])
-                    (ref-DPDC-UDC::N [7])
-                    (ref-DPDC-UDC::N [8])
-                    (ref-DPDC-UDC::N [9])
-                    (ref-DPDC-UDC::N [10])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [2])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [3])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [4])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [5])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [6])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [7])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [8])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [9])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [10])
                 ]
                 (at 10 native-nonce-data)
             )
@@ -886,16 +886,16 @@
             (ref-TS02-C1::DPSF|C_DefinePrimordialSet
                 patron dhwc-id (at 30 names) 1.0
                 [
-                    (ref-DPDC-UDC::N [1])
-                    (ref-DPDC-UDC::N [2])
-                    (ref-DPDC-UDC::N [3])
-                    (ref-DPDC-UDC::N [4])
-                    (ref-DPDC-UDC::N [5])
-                    (ref-DPDC-UDC::N [6])
-                    (ref-DPDC-UDC::N [7])
-                    (ref-DPDC-UDC::N [8])
-                    (ref-DPDC-UDC::N [9])
-                    (ref-DPDC-UDC::N [10])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [2])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [3])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [4])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [5])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [6])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [7])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [8])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [9])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [10])
                 ]
                 (at 30 native-nonce-data)
             )
@@ -903,16 +903,16 @@
             (ref-TS02-C1::DPSF|C_DefinePrimordialSet
                 patron dhwc-id (at 31 names) 1.0
                 [
-                    (ref-DPDC-UDC::N [11])
-                    (ref-DPDC-UDC::N [12])
-                    (ref-DPDC-UDC::N [13])
-                    (ref-DPDC-UDC::N [14])
-                    (ref-DPDC-UDC::N [15])
-                    (ref-DPDC-UDC::N [16])
-                    (ref-DPDC-UDC::N [17])
-                    (ref-DPDC-UDC::N [18])
-                    (ref-DPDC-UDC::N [19])
-                    (ref-DPDC-UDC::N [20])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [11])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [12])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [13])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [14])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [15])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [16])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [17])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [18])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [19])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [20])
                 ]
                 (at 31 native-nonce-data)
             )
@@ -920,16 +920,16 @@
             (ref-TS02-C1::DPSF|C_DefinePrimordialSet
                 patron dhwc-id (at 32 names) 1.0
                 [
-                    (ref-DPDC-UDC::N [21])
-                    (ref-DPDC-UDC::N [22])
-                    (ref-DPDC-UDC::N [23])
-                    (ref-DPDC-UDC::N [24])
-                    (ref-DPDC-UDC::N [25])
-                    (ref-DPDC-UDC::N [26])
-                    (ref-DPDC-UDC::N [27])
-                    (ref-DPDC-UDC::N [28])
-                    (ref-DPDC-UDC::N [29])
-                    (ref-DPDC-UDC::N [30])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [21])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [22])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [23])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [24])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [25])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [26])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [27])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [28])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [29])
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [30])
                 ]
                 (at 32 native-nonce-data)
             )
@@ -937,9 +937,9 @@
             (ref-TS02-C1::DPSF|C_DefineCompositeSet
                 patron dhwc-id (at 33 names) 1.0
                 [
-                    (ref-DPDC-UDC::C 1)
-                    (ref-DPDC-UDC::C 2)
-                    (ref-DPDC-UDC::C 3)
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 2)
+                    (ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 3)
                 ]
                 (at 33 native-nonce-data)
             )

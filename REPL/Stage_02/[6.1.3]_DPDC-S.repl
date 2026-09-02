@@ -161,19 +161,19 @@
             ;;SC1: Primordial, positions = nonce 1, nonce 2 -> nonce-of-set = 11
             (format "<(TS02-C1.DPSF|C_DefinePrimordialSet SC1: nonce1+nonce2)> => \"{}\""
                 [(ref-TS02-C1::DPSF|C_DefinePrimordialSet owner sft-id "SC1-Primordial" 1.0
-                    [(ref-DPDC-UDC::N [1]) (ref-DPDC-UDC::N [2])] nd)])
+                    [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1]) (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [2])] nd)])
             ;;SC2: Composite, position = set-class 1 -> nonce-of-set = 12
             (format "<(TS02-C1.DPSF|C_DefineCompositeSet SC2: set-class 1)> => \"{}\""
                 [(ref-TS02-C1::DPSF|C_DefineCompositeSet owner sft-id "SC2-Composite" 1.0
-                    [(ref-DPDC-UDC::C 1)] nd)])
+                    [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)] nd)])
             ;;SC3: Hybrid, primordial position = nonce 3, composite position = set-class 1 -> nonce-of-set = 13
             (format "<(TS02-C1.DPSF|C_DefineHybridSet SC3: nonce3 + set-class 1)> => \"{}\""
                 [(ref-TS02-C1::DPSF|C_DefineHybridSet owner sft-id "SC3-Hybrid" 1.0
-                    [(ref-DPDC-UDC::N [3])] [(ref-DPDC-UDC::C 1)] nd)])
+                    [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [3])] [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)] nd)])
             ;;NFT SC1: Primordial, position1 = choice of [1 2], position2 = choice of [3 4]
             (format "<(TS02-C2.DPNF|C_DefinePrimordialSet NFT-SC1: [1 2]/[3 4])> => \"{}\""
                 [(ref-TS02-C2::DPNF|C_DefinePrimordialSet owner nft-id "NFT-SC1-Primordial" 1.0
-                    [(ref-DPDC-UDC::N [1 2]) (ref-DPDC-UDC::N [3 4])] nd)])
+                    [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1 2]) (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [3 4])] nd)])
         ]
     )
     (map print

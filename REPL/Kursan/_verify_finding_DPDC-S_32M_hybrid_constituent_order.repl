@@ -38,8 +38,8 @@
     (print
         (ref-TS02-C1::DPSF|C_DefineHybridSet
             owner id "HybridProbeSet" 1.0
-            [(ref-DPDC-UDC::N [5])]
-            [(ref-DPDC-UDC::C 1)]
+            [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [5])]
+            [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)]
             nd
         )
     )

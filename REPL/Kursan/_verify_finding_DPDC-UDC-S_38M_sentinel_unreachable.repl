@@ -35,7 +35,7 @@
             "<<PROBE-38M>> user-supplied Primordial position [0] (matches UDC_NoPrimordialSet's sentinel) is rejected"
             (ref-TS02-C1::DPSF|C_DefinePrimordialSet
                 owner id "PrimordialSentinelProbe" 1.0
-                [(ref-DPDC-UDC::N [0])]
+                [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [0])]
                 nd
             )
         )
@@ -45,7 +45,7 @@
             "<<PROBE-38M>> user-supplied Composite position -1 (matches UDC_NoCompositeSet's sentinel) is rejected"
             (ref-TS02-C1::DPSF|C_DefineCompositeSet
                 owner id "CompositeSentinelProbe" 1.0
-                [(ref-DPDC-UDC::C -1)]
+                [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition -1)]
                 nd
             )
         )
