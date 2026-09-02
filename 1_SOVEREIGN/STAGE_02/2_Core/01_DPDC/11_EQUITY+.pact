@@ -38,28 +38,37 @@
     (defun URCi_IssueShareholderCollection:object{IgnisCollectorV1.OutputCumulator} ())
 )
 (module EQUITY GOV
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
     ;;
     @doc "Defines the rules for creating Shareholder DPSF Collections"
     (implements OuronetPolicyV1)
     (implements EquityV1)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
     ;;
-    ;;<========>
-    ;;GOVERNANCE
-    ;;{G1}
     (defconst GOV|MD_EQUITY                 (keyset-ref-guard (GOV|Demiurgoi)))
-    ;;{G2}
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
     (defcap GOV ()                          (compose-capability (GOV|EQUITY_ADMIN)))
     (defcap GOV|EQUITY_ADMIN ()             (enforce-guard GOV|MD_EQUITY))
-    ;;{G3}
+    ;;{G5}  functions
     (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    (defconst P|I                   (P|Info))
+    ;;{P2}  schemas
+    ;;{P3}  tables
     ;;
-    ;;<====>
-    ;;POLICY
-    ;;{P1}
-    ;;{P2}
     (deftable P|T:{OuronetPolicyV1.P|S})
     (deftable P|MT:{OuronetPolicyV1.P|MS})
-    ;;{P3}
+    ;;{P4}  capabilities
     (defcap P|EQUITY|CALLER ()
         true
     )
@@ -75,8 +84,7 @@
         (compose-capability (P|EQUITY|CALLER))
         (compose-capability (P|EQUITY|REMOTE-GOV))
     )
-    ;;{P4}
-    (defconst P|I                   (P|Info))
+    ;;{P5}  functions
     (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
@@ -84,81 +92,28 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|EQUITY_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|EQUITY_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|DPDC:module{OuronetPolicyV1} DPDC)
-                (ref-P|DPDC-C:module{OuronetPolicyV1} DPDC-C)
-                (ref-P|DPDC-I:module{OuronetPolicyV1} DPDC-I)
-                (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
-                (mg:guard (create-capability-guard (P|EQUITY|CALLER)))
-            )
-            (ref-P|DPDC::A_P|Add
-                "EQUITY|RemoteDpdcGov"
-                (create-capability-guard (P|EQUITY|REMOTE-GOV))
-            )
-            (ref-P|DPDC::A_P|AddIMP mg)
-            (ref-P|DPDC-C::A_P|AddIMP mg)
-            (ref-P|DPDC-I::A_P|AddIMP mg)
-            (ref-P|DPDC-T::A_P|AddIMP mg)
-        )
-    )
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
-    ;;
-    ;;<======================>
-    ;;SCHEMAS-TABLES-CONSTANTS
-    ;;{1}
-    ;;{2}
-    ;;{3}
-    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
     (defconst BAR                   (CT_Bar))
     (defconst P                     ["0.1‰" "0.2‰" "0.5‰" "1‰" "2‰" "5‰" "1%"])
     (defconst S                     [100 200 500 1000 2000 5000 10000])
-    ;;DPDC Audit #29M: at most 1/PACKAGING_CAP_DIVISOR (50%) of a company's total shares (nonce 1) may
     ;;ever be packaged into tradeable tier-units (nonces 2-8) at once; the remainder must stay as loose,
     ;;unpackaged barebone shares. See URC_CombineCapacity below, the sole consumer of this constant.
     (defconst PACKAGING_CAP_DIVISOR 2)
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
     ;;
-    ;;<==========>
-    ;;CAPABILITIES
-    ;;{C1}
     (defcap SECURE ()
         true
     )
-    ;;{C2}
-    ;;{C3}
-    ;;{C4}
+    ;;{C2}  Simple
+    ;;{C3}  Composed
     (defcap EQUITY|C>MAKE (id:string shares-amount:integer package-share-tier:integer)
         @event
         (UEV_EquitySemiFungibleID id)
@@ -177,11 +132,15 @@
         (UEV_Convert id input-package-share-tier input-package-share-tier-amount output-package-share-tier)
         (compose-capability (P|GOV-CALLER))
     )
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
     ;;
-    ;;<=======>
-    ;;FUNCTIONS
-    ;;{F1}  Construct [UDC]
-    ;;{F2}  Compute [UC]
+    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    ;;{5.2}  Compute [UC]
+    ;;
     (defun UC_Name:[string] (collection-name:string)
         (let
             (
@@ -233,7 +192,7 @@
             )
         )
     )
-    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     (defun UR_TierSupplies:[integer] (id:string)
         @doc "Total outstanding supply of each package tier (nonces 2-8, in tier-unit counts, not \
             \ share-equivalents), in tier order."
@@ -396,7 +355,15 @@
             )
         )
     )
-    ;;{F4}  Validate [UEV/CAP]
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
     (defun UEV_SharePackageTier (package-share-tier:integer)
         (let
             (
@@ -462,8 +429,8 @@
             (enforce (!= input-nonce output-nonce) "Input and Output Nonces must be different for Morphing")
         )
     )
-    ;;{F5}  Write [W]
-    ;;{F6}  Aux/Protected [X]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
     (defun XI_ConvertPackageShares:object{IgnisCollectorV1.OutputCumulator}
         (account:string id:string input-package-share-tier:integer input-package-share-tier-amount:integer output-package-share-tier:integer)
         @doc "Converts any Nonce to [2 3 4 5 6 7 8] to any Nonce [2 3 4 5 6 7 8]"
@@ -585,8 +552,50 @@
             )
         )
     )
-    ;;{F7}  User [A]
-    ;;{F8}  User [C]
+    ;;{5.7}  User [A/C]
+    (defun A_P|Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|EQUITY_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun A_P|AddIMP (policy-guard:guard)
+        (with-capability (GOV|EQUITY_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun A_P|Define ()
+        (let
+            (
+                (ref-P|DPDC:module{OuronetPolicyV1} DPDC)
+                (ref-P|DPDC-C:module{OuronetPolicyV1} DPDC-C)
+                (ref-P|DPDC-I:module{OuronetPolicyV1} DPDC-I)
+                (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
+                (mg:guard (create-capability-guard (P|EQUITY|CALLER)))
+            )
+            (ref-P|DPDC::A_P|Add
+                "EQUITY|RemoteDpdcGov"
+                (create-capability-guard (P|EQUITY|REMOTE-GOV))
+            )
+            (ref-P|DPDC::A_P|AddIMP mg)
+            (ref-P|DPDC-C::A_P|AddIMP mg)
+            (ref-P|DPDC-I::A_P|AddIMP mg)
+            (ref-P|DPDC-T::A_P|AddIMP mg)
+        )
+    )
     (defun C_IssueShareholderCollection:object{IgnisCollectorV1.OutputCumulator}
         (
             patron:string creator-account:string collection-name:string collection-ticker:string
@@ -709,8 +718,7 @@
             )
         )
     )
-    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
-    ;;
+
 )
 
 (create-table P|T)

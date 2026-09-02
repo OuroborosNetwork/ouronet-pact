@@ -189,30 +189,38 @@
 )
 ;;
 (module SWPI GOV
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV1)
     (implements SwapperIssueV3)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
     ;;
-    ;;<========>
-    ;;GOVERNANCE
-    ;;{G1}
     (defconst GOV|MD_SWPI           (keyset-ref-guard (GOV|Demiurgoi)))
-    (defconst SWP|SC_NAME           (GOV|SWP|SC_NAME))
-    ;;{G2}
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
     (defcap GOV ()                  (compose-capability (GOV|SWPI_ADMIN)))
     (defcap GOV|SWPI_ADMIN ()       (enforce-guard GOV|MD_SWPI))
+    ;;{G5}  functions
     ;;
     (defun GOV|SWP|SC_NAME ()       (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|SWP|SC_NAME)))
-    ;;{G3}
     (defun GOV|Demiurgoi ()         (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    (defconst P|I                   (P|Info))
+    ;;{P2}  schemas
+    ;;{P3}  tables
     ;;
-    ;;<====>
-    ;;POLICY
-    ;;{P1}
-    ;;{P2}
     (deftable P|T:{OuronetPolicyV1.P|S})                        ;;Key = <policy-name>
     (deftable P|MT:{OuronetPolicyV1.P|MS})                      ;;Key = P|I (module-identity singleton constant)
-    ;;{P3}
+    ;;{P4}  capabilities
     (defcap P|SWPI|CALLER ()
         true
     )
@@ -227,8 +235,7 @@
         (compose-capability (P|SWPI|REMOTE-GOV))
         (compose-capability (P|SWPI|CALLER))
     )
-    ;;{P4}
-    (defconst P|I                   (P|Info))
+    ;;{P5}  functions
     (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
@@ -236,69 +243,12 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|SWPI_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|SWPI_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (ref-P|BRD:module{OuronetPolicyV1} BRD)
-                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
-                (ref-P|TFT:module{OuronetPolicyV1} TFT)
-                (ref-P|ORBR:module{OuronetPolicyV1} OUROBOROS)
-                (ref-P|SWP:module{OuronetPolicyV1} SWP)
-                (ref-P|SWPT:module{OuronetPolicyV1} SWPT)
-                (mg:guard (create-capability-guard (P|SWPI|CALLER)))
-            )
-            (ref-P|SWP::A_P|Add
-                "SWPI|RemoteSwpGov"
-                (create-capability-guard (P|SWPI|REMOTE-GOV))
-            )
-            (ref-P|DALOS::A_P|AddIMP mg)
-            (ref-P|BRD::A_P|AddIMP mg)
-            (ref-P|DPTF::A_P|AddIMP mg)
-            (ref-P|TFT::A_P|AddIMP mg)
-            (ref-P|ORBR::A_P|AddIMP mg)
-            (ref-P|SWP::A_P|AddIMP mg)
-            (ref-P|SWPT::A_P|AddIMP mg)
-        )
-    )
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    (defconst SWP|SC_NAME           (GOV|SWP|SC_NAME))
     ;;
-    ;;<======================>
-    ;;SCHEMAS-TABLES-CONSTANTS
-    ;;{1}
-    ;;{2}
-    ;;{3}
     (defconst EMPTY_HOPPER
         [
             {
@@ -308,31 +258,21 @@
             }
         ]
     )
-    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
     (defconst BAR                   (CT_Bar))
     ;;#36M/M5 fix: named, single source of truth for the genesis LP mint amount —
     ;;was a bare 10000000.0 literal duplicated independently in both C_Issue and
     ;;C_MTX|Issue's own write sequences; now lives once, inside the shared
     ;;XE_IssueWrite both call.
     (defconst GENESIS_LP_SUPPLY     10000000.0)
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
     ;;
-    ;;<==========>
-    ;;CAPABILITIES
-    ;;{C1}
     (defcap SECURE ()
         true
-    )
-    ;;{C2}
-    ;;{C3}
-    ;;{C4}
-    (defcap SWPI|C>ISSUE (account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
-        @event
-        (UEV_Issue account pool-tokens fee-lp weights amp p)
-        (compose-capability (P|DT))
-        (if p
-            (compose-capability (GOV|SWPI_ADMIN))
-            true
-        )
     )
     ;;#36M/M5 fix: local cap for XE_IssueWrite (forward-module entrypoint) — no
     ;;checks of its own beyond UEV_IMC in the defun itself. Real validation
@@ -344,10 +284,24 @@
         @event
         true
     )
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    (defcap SWPI|C>ISSUE (account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
+        @event
+        (UEV_Issue account pool-tokens fee-lp weights amp p)
+        (compose-capability (P|DT))
+        (if p
+            (compose-capability (GOV|SWPI_ADMIN))
+            true
+        )
+    )
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
     ;;
-    ;;<=======>
-    ;;FUNCTIONS
-    ;;{F1}  Construct [UDC]
     (defun UDC_DirectRawSwapInput:object{UtilitySwpV1.DirectRawSwapInput}
         (
             dsid:object{UtilitySwpV1.DirectSwapInputData}
@@ -403,7 +357,7 @@
         ,"edges"            : b
         ,"output-values"    : c}
     )
-    ;;{F2}  Compute [UC]
+    ;;{5.2}  Compute [UC]
     (defun UC_DeviationInValueShares:decimal (pool-reserves:[decimal] asymmetric-liq:[decimal] w:[decimal])
         @doc "Maximum Pool Deviation is (n-1)/n, and max allowed deviation for asymmetric liq is 40% of this value"
         (let
@@ -764,6 +718,7 @@
             )
         )
     )
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     (defun URCx_Hopper:object{SwapperIssueV3.Hopper}
         (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal swpairs:[string])
         @doc "Shared Hopper-computation core for <URC_Hopper>/<URC_HopperActive> — \
@@ -983,7 +938,6 @@
             )
         )
     )
-    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     (defun URC_EliteFeeReduction:object{UtilitySwpV1.SwapFeez} (account:string fees:object{UtilitySwpV1.SwapFeez})
         (let
             (
@@ -2253,7 +2207,15 @@
             )
         )
     )
-    ;;{F4}  Validate [UEV/CAP]
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
     (defun UEV_SwapData 
         (swpair:string dsid:object{UtilitySwpV1.DirectSwapInputData})
         (let
@@ -2452,8 +2414,8 @@
             (format "Validation prior to pool creation executed succesfully {}" ["!"])
         )
     )
-    ;;{F5}  Write [W]
-    ;;{F6}  Aux/Protected [X]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
     (defun XE_IssueWrite:list
         (account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
         @doc "#36M/M5 fix: forward-module entrypoint holding the ONE shared pool-issuance \
@@ -2510,7 +2472,56 @@
             )
         )
     )
-    ;;{F7}  User [A]
+    ;;{5.7}  User [A/C]
+    (defun A_P|Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|SWPI_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun A_P|AddIMP (policy-guard:guard)
+        (with-capability (GOV|SWPI_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun A_P|Define ()
+        (let
+            (
+                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
+                (ref-P|BRD:module{OuronetPolicyV1} BRD)
+                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
+                (ref-P|TFT:module{OuronetPolicyV1} TFT)
+                (ref-P|ORBR:module{OuronetPolicyV1} OUROBOROS)
+                (ref-P|SWP:module{OuronetPolicyV1} SWP)
+                (ref-P|SWPT:module{OuronetPolicyV1} SWPT)
+                (mg:guard (create-capability-guard (P|SWPI|CALLER)))
+            )
+            (ref-P|SWP::A_P|Add
+                "SWPI|RemoteSwpGov"
+                (create-capability-guard (P|SWPI|REMOTE-GOV))
+            )
+            (ref-P|DALOS::A_P|AddIMP mg)
+            (ref-P|BRD::A_P|AddIMP mg)
+            (ref-P|DPTF::A_P|AddIMP mg)
+            (ref-P|TFT::A_P|AddIMP mg)
+            (ref-P|ORBR::A_P|AddIMP mg)
+            (ref-P|SWP::A_P|AddIMP mg)
+            (ref-P|SWPT::A_P|AddIMP mg)
+        )
+    )
     ;;
     (defun A_RebuildGraph ()
         @doc "One-time migration/backfill utility (#21H). Rebuilds SWPT's adjacency \
@@ -2544,7 +2555,6 @@
             )
         )
     )
-    ;;{F8}  User [C]
     (defun C_Issue:object{IgnisCollectorV1.OutputCumulator}
         (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
         @doc "Issues a new SWPair (Liquidty Pool). \
@@ -2580,8 +2590,7 @@
             )
         )
     )
-    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
-    ;;
+
 )
 
 (create-table P|T)

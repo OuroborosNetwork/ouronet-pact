@@ -28,20 +28,24 @@
 )
 (module DEMIPAD-STOICPAY GOV
     @doc "StoicPay sale mechanics (DEMIPAD). UI read aggregate lives in DPL-UR as URC_0030_StoicPay."
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV1)
     (implements StoicPayV2)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
     ;;
-    ;;<========>
-    ;;GOVERNANCE
-    ;;{G1}
     (defconst GOV|MD_KPAY                       (keyset-ref-guard (GOV|Demiurgoi)))
-    ;;
-    (defconst DEMIPAD|SC_NAME                   (GOV|DEMIPAD|SC_NAME))
-    ;;{G2}
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
     (defcap GOV ()                              (compose-capability (GOV|KPAY_ADMIN)))
     (defcap GOV|KPAY_ADMIN ()                   (enforce-guard GOV|MD_KPAY))
-    ;;{G3}
+    ;;{G5}  functions
     (defun GOV|Demiurgoi ()                     (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
     (defun GOV|DEMIPAD|SC_NAME ()               (let ((ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)) (ref-DEMIPAD::GOV|DEMIPAD|SC_NAME)))
     ;;Team allocation recipients (LIVE deployed set — identical to on-chain ouronet-ns.DEMIPAD-STOICPAY).
@@ -52,14 +56,17 @@
     (defun GOV|VENTURE2 ()                      (at 0 ["Ѻ.ĄÀтмωωàŹČлďÜhÍηЛνÙνûĘõțЫåÒÛHážNÍЧψξïžŹЬΛξП¥ЮςĄEйNĄЧ9óпиÃЗ2äÔвœ₿£ČóΩÞдréě7νшDÅЬXтBørŸĂBςąЙęìvÆлμЛáΩγĘЗôåУțτжéδÚνpÍżȘĘï4ąŹȘkφNθþÀωΞÀWžIи5ь€ÊOôΣëñэÔÿνÜw1юÔzźцξńѺfś"]))
     (defun GOV|VENTURE3 ()                      (at 0 ["Ѻ.ìѺďΘčμЮÚşŁì92lźřWмPòíFùЛgßCÊȚδğďŘTπΠrπмЮ6ŁYŘэHóęÀSăλьПO€ЮrØòш2ΓεîțůOÂŁŻДÍ¥ôWxí4ïçдå₿ЙÒεЗzÝăÚÆπБцìcÕyьΘæěЖù₱фщđÝKÚßzUÉÍЬŒΠYvVŻUЫýčWŘвůćCČΦú2ãбşèуÓçË€ïmôrýмúüÄЬáó"]))
     (defun GOV|VENTURE4 ()                      (at 0 ["Ѻ.BPΩÉ5eønDMRзΣÛł4áÃÄПNΩFзÌõãBЙĞńŒμЗŽτЯÈЙÓDд5țσÆďΔÂиĂqtVŒ3ЦтòȚиåâ8юđhýZNтě∇ŹÀĂkÖѺζEğOüбĆ6мθÈSoш∇ŠmHŒДiÖĎďнÈèTuĎSжğĎЫěIťčç$ÇíżùàĐZξÁτÞFxPÎÎπÿWÖàыДŤγEψàýÔу€эjĆ2ĎżÃς"]))
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    (defconst P|I                   (P|Info))
+    ;;{P2}  schemas
+    ;;{P3}  tables
     ;;
-    ;;<====>
-    ;;POLICY
-    ;;{P1}
-    ;;{P2}
     (deftable P|T:{OuronetPolicyV1.P|S})
     (deftable P|MT:{OuronetPolicyV1.P|MS})
-    ;;{P3}
+    ;;{P4}  capabilities
     (defcap P|KPAY|CALLER ()
         true
     )
@@ -70,8 +77,7 @@
         (compose-capability (P|KPAY|CALLER))
         (compose-capability (SECURE))
     )
-    ;;{P4}
-    (defconst P|I                   (P|Info))
+    ;;{P5}  functions
     (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
@@ -79,78 +85,31 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|KPAY_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|KPAY_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|TFT:module{OuronetPolicyV1} TFT)
-                (ref-P|DPAD:module{OuronetPolicyV1} DEMIPAD)
-                (mg:guard (create-capability-guard (P|KPAY|CALLER)))
-            )
-            (ref-P|DPAD::A_P|Add
-                "KPAY|RemoteGov"
-                (create-capability-guard (P|PAD-KPAY|REMOTE-GOV))
-            )
-            (ref-P|TFT::A_P|AddIMP mg)
-            (ref-P|DPAD::A_P|AddIMP mg)
-        )
-    )
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
     ;;
-    ;;<======================>
-    ;;SCHEMAS-TABLES-CONSTANTS
-    ;;{1}
+    (defconst DEMIPAD|SC_NAME                   (GOV|DEMIPAD|SC_NAME))
+    (defconst KPAY|INFO                     (CT_Info))
+    (defconst BAR                           (CT_Bar))
+    ;;{3.2}  schemas
+    ;;
     (defschema KPAY|PropertiesSchema
         asset-id:string
     )
-    ;;{2}
+    ;;{3.3}  tables
     (deftable KPAY|T|Properties:{KPAY|PropertiesSchema})
-    ;;{3}
-    (defun CT_Info ()                     (at 0 ["StoicPayV2"]))
-    (defconst KPAY|INFO                     (CT_Info))
-    (defun CT_Bar ()                        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
-    (defconst BAR                           (CT_Bar))
-    
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
     ;;
-    ;;<==========>
-    ;;CAPABILITIES
-    ;;{C1}
     (defcap SECURE ()
         true
     )
-    ;;{C2}
-    ;;{C3}
-    ;;{C4}
+    ;;{C2}  Simple
+    ;;{C3}  Composed
     (defcap KPAY|C>BUY (kpay-amount:integer)
         @event
         (let
@@ -173,12 +132,16 @@
             (compose-capability (P|KPAY|CALLER))
         )
     )
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    (defun CT_Info ()                     (at 0 ["StoicPayV2"]))
+    (defun CT_Bar ()                        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
-    ;;<=======>
-    ;;FUNCTIONS
-    ;;{F1}  Construct [UDC]
-    ;;{F2}  Compute [UC]
-    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     (defun UR_KpayID:string ()
         (at "asset-id" (read KPAY|T|Properties KPAY|INFO ["asset-id"]))
     )
@@ -413,7 +376,15 @@
             )
         )
     )
-    ;;{F4}  Validate [UEV/CAP]
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
     (defun CAP_Acquire
         (buyer:string amount:integer iz-native:bool)
         @doc "Variant 2 (slippage off) — installs the coin.TRANSFER caps in-code at the live price; the \
@@ -428,10 +399,48 @@
             (ref-DEMIPAD::CAP_Acquire buyer KpayID pid type)
         )
     )
-    ;;{F5}  Write [W]
-    ;;{F6}  Aux/Protected [X]
-    ;;{F7}  User [A]
-    ;;{F8}  User [C]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+    (defun A_P|Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|KPAY_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun A_P|AddIMP (policy-guard:guard)
+        (with-capability (GOV|KPAY_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun A_P|Define ()
+        (let
+            (
+                (ref-P|TFT:module{OuronetPolicyV1} TFT)
+                (ref-P|DPAD:module{OuronetPolicyV1} DEMIPAD)
+                (mg:guard (create-capability-guard (P|KPAY|CALLER)))
+            )
+            (ref-P|DPAD::A_P|Add
+                "KPAY|RemoteGov"
+                (create-capability-guard (P|PAD-KPAY|REMOTE-GOV))
+            )
+            (ref-P|TFT::A_P|AddIMP mg)
+            (ref-P|DPAD::A_P|AddIMP mg)
+        )
+    )
     ;;
     (defun C_BuyStoicPay (patron:string buyer:string kpay-amount:integer iz-native:bool max-cost:decimal)
         @doc "<max-cost> is the buyer's slippage ceiling in dollars (Variant 1); pass a sentinel below \
@@ -472,8 +481,7 @@
             )
         )
     )
-    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
-    ;;
+
 )
 
 (create-table P|T)

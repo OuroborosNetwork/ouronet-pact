@@ -1,29 +1,38 @@
 
 (module IGNIS GOV
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV1)
     (implements IgnisCollectorV1)
     (implements IgnisCollectorV2)
     (implements OuronetInfoV1)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
     ;;
-    ;;<========>
-    ;;GOVERNANCE
-    ;;{G1}
     (defconst GOV|MD_IGNIS                  (keyset-ref-guard (GOV|Demiurgoi)))
-    ;;{G2}
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
     (defcap GOV ()                          (compose-capability (GOV|IGNIS_ADMIN)))
     (defcap GOV|IGNIS_ADMIN ()              (enforce-guard GOV|MD_IGNIS))
-    ;;{G3}
+    ;;{G5}  functions
     (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    (defconst P|I                   (P|Info))
+    ;;{P2}  schemas
+    ;;{P3}  tables
     ;;
     ;;
-    ;;<====>
-    ;;POLICY
-    ;;{P1}
-    ;;{P2}
     (deftable P|T:{OuronetPolicyV1.P|S})
     (deftable P|MT:{OuronetPolicyV1.P|MS})
-    ;;{P3}
+    ;;{P4}  capabilities
     (defcap P|IGNIS|CALLER ()
         true
     )
@@ -31,8 +40,7 @@
         (compose-capability (P|IGNIS|CALLER))
         (compose-capability (SECURE))
     )
-    ;;{P4}
-    (defconst P|I                   (P|Info))
+    ;;{P5}  functions
     (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
@@ -40,56 +48,11 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|IGNIS_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|IGNIS_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (mg:guard (create-capability-guard (P|IGNIS|CALLER)))
-            )
-            (ref-P|DALOS::A_P|AddIMP mg)
-        )
-    )
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
-    ;;
-    ;;<======================>
-    ;;SCHEMAS-TABLES-CONSTANTS
-    ;;{1}
-    ;;{2}
-    ;;{3}
-    (defun CT_Bar ()                        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
     (defconst BAR                           (CT_Bar))
-    (defun CT_StoaPrec ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_STOA_PRECISION)))
     (defconst STOAPREC                       (CT_StoaPrec))
     ;;
     (defconst DALOS|SC_NAME                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|DALOS|SC_NAME)))
@@ -101,14 +64,6 @@
             OUROBOROS|SC_NAME
         ]
     )
-    (defun UDC_EmptyOutputCumulatorV2:object{IgnisCollectorV1.OutputCumulator} ()
-        {"cumulator-chain"      :
-            [
-                {"ignis"        : 0.0
-                ,"interactor"   : BAR}
-            ]
-        ,"output"               : []}
-    )
     (defconst EMPTY_CC
         [
             {
@@ -117,10 +72,13 @@
             }
         ]
     )
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
     ;;
-    ;;<==========>
-    ;;CAPABILITIES
-    ;;{C1}
     (defcap SECURE ()
         true
     )
@@ -132,9 +90,29 @@
         @event
         true
     )
-    ;;{C2}
-    ;;{C3}
-    ;;{C4}
+    (defcap IGNIS|C>DEBIT (sender:string ta:decimal)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (read-gas:decimal (ref-DALOS::UR_TF_AccountSupply sender false))
+            )
+            (enforce (<= ta read-gas) "Insufficient GAS for GAS-Debiting")
+            (ref-DALOS::UEV_EnforceAccountExists sender)
+            (ref-DALOS::UEV_EnforceAccountType sender false)
+            (compose-capability (SECURE))
+        )
+    )
+    (defcap IGNIS|C>CREDIT (receiver:string)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+            )
+            (ref-DALOS::UEV_EnforceAccountExists receiver)
+            (compose-capability (SECURE))
+        )
+    )
+    ;;{C2}  Simple
+    ;;{C3}  Composed
     (defcap IGNIS|C>DC (patron:string)
         (let
             (
@@ -175,31 +153,23 @@
         (compose-capability (IGNIS|C>DEBIT sender ta))
         (compose-capability (IGNIS|C>CREDIT receiver))
     )
-    (defcap IGNIS|C>DEBIT (sender:string ta:decimal)
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (read-gas:decimal (ref-DALOS::UR_TF_AccountSupply sender false))
-            )
-            (enforce (<= ta read-gas) "Insufficient GAS for GAS-Debiting")
-            (ref-DALOS::UEV_EnforceAccountExists sender)
-            (ref-DALOS::UEV_EnforceAccountType sender false)
-            (compose-capability (SECURE))
-        )
-    )
-    (defcap IGNIS|C>CREDIT (receiver:string)
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-            )
-            (ref-DALOS::UEV_EnforceAccountExists receiver)
-            (compose-capability (SECURE))
-        )
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;
+    (defun CT_Bar ()                        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_StoaPrec ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_STOA_PRECISION)))
+    (defun UDC_EmptyOutputCumulatorV2:object{IgnisCollectorV1.OutputCumulator} ()
+        {"cumulator-chain"      :
+            [
+                {"ignis"        : 0.0
+                ,"interactor"   : BAR}
+            ]
+        ,"output"               : []}
     )
     ;;
-    ;;<=======>
-    ;;FUNCTIONS
-    ;;{F1}  Construct [UDC]
     (defun UDC_MakeIDP:string (ignis-discount:decimal)
         (format "{}{}" [(* (- 1.0 ignis-discount) 100.0) "%"])
     )
@@ -632,7 +602,7 @@
             (OI|UDC_IgnisCosts patron ifp)
         )
     )
-    ;;{F2}  Compute [UC]
+    ;;{5.2}  Compute [UC]
     (defun UC_FindKeyIndex:integer (key-lst:[string] key:string)
         @doc "First index of key in key-lst, or -1 if absent. Single linear scan, local to the \
             \ compress/prime pipeline below (UDC_CompressOutputCumulator/UDC_PrimeIgnisCumulator) \
@@ -651,10 +621,8 @@
         )
     )
     ;;
-    ;;<======================>
     ;;[OURONET-INFO] Functions — shared cost/format vocabulary (relocated from INFO-ZERO;
     ;;  must live pre-Talos so Talos + all cost modules + Z_Reads presentation can reach it)
-    ;;<======================>
     (defun OI|UC_IfpFromOutputCumulator:decimal (input:object{IgnisCollectorV1.OutputCumulator})
         (let
             (
@@ -722,7 +690,7 @@
     (defun OI|UC_FormatTokenAmount:string (amount:decimal)
         (format "{}" [(floor amount 4)])
     )
-    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     (defun URC_Exception (account:string)
         (contains account GAS_EXCEPTION)
     )
@@ -787,11 +755,9 @@
         )
     )
     ;;
-    ;;<======================>
     ;;[DALOS-URCi] cost readers — the single source for each DALOS client op's tier choice.
     ;;  DALOS deploys below IGNIS (cannot host these); Talos bills through them and the Z_Reads
     ;;  presentation derives its preview from the same call, so billing and preview never drift.
-    ;;<======================>
     (defun DALOS|URCi_ControlSmartAccount:object{IgnisCollectorV1.OutputCumulator} (account:string)
         (UDC_SmallCumulator account)
     )
@@ -833,7 +799,15 @@
             ]
         )
     )
-    ;;{F4}  Validate [UEV/CAP]
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
     (defun UEV_TwentyFourPrecision (amount:decimal)
         @doc "Enforces a 24 Precision, for use with IGNIS Token."
         (enforce
@@ -856,8 +830,8 @@
             )
         )
     )
-    ;;{F5}  Write [W]
-    ;;{F6}  Aux/Protected [X]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
     (defun XI_IgnisCollector (patron:string interactor:string amount:decimal)
         (require-capability (IGNIS|C>COLLECT patron interactor amount))
         (let
@@ -901,8 +875,40 @@
             )
         )
     )
-    ;;{F7}  User [A]
-    ;;{F8}  User [C]
+    ;;{5.7}  User [A/C]
+    (defun A_P|Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|IGNIS_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun A_P|AddIMP (policy-guard:guard)
+        (with-capability (GOV|IGNIS_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun A_P|Define ()
+        (let
+            (
+                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
+                (mg:guard (create-capability-guard (P|IGNIS|CALLER)))
+            )
+            (ref-P|DALOS::A_P|AddIMP mg)
+        )
+    )
     ;;
     ;;
     (defun C_TransferDalosFuel (sender:string receiver:string amount:decimal)
@@ -1011,8 +1017,7 @@
             )
         )
     )
-    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
-    ;;
+
 )
 
 (create-table P|T)

@@ -51,15 +51,21 @@
 )
 ;;
 (module AQP-DSA GOV
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV1)
     (implements DsaV1)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
     ;;
-    ;;<========>
-    ;;GOVERNANCE
-    ;;{G1}
     (defconst GOV|MD_DSA            (keyset-ref-guard (GOV|Demiurgoi)))
-    ;;{G2}
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
     (defcap GOV ()                  (compose-capability (GOV|DSA_ADMIN)))
     (defcap GOV|DSA_ADMIN ()
         (let
@@ -78,16 +84,19 @@
             )
         )
     )
-    ;;{G3}
+    ;;{G5}  functions
     (defun GOV|Demiurgoi ()         (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    (defconst P|I                   (P|Info))
+    ;;{P2}  schemas
+    ;;{P3}  tables
     ;;
-    ;;<====>
-    ;;POLICY
-    ;;{P1}
-    ;;{P2}
     (deftable P|T:{OuronetPolicyV1.P|S})
     (deftable P|MT:{OuronetPolicyV1.P|MS})
-    ;;{P3}
+    ;;{P4}  capabilities
     (defcap P|DSA|CALLER ()
         true
     )
@@ -102,8 +111,7 @@
         (compose-capability (P|DSA|REMOTE-GOV))
         (compose-capability (P|DSA|CALLER))
     )
-    ;;{P4}
-    (defconst P|I                   (P|Info))
+    ;;{P5}  functions
     (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
@@ -111,54 +119,29 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|DSA_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|DSA_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|FVT:module{OuronetPolicyV1} AQP-FVT)
-                (mg:guard (create-capability-guard (P|DSA|CALLER)))
-            )
-            ;; DSA calls AQP-FVT's XE_ building blocks (SetMemberCapture / SetMemberDelegation / SetFvtOracleOn,
-            ;; all UEV_IMC-gated) — register DSA as an allowed IMC caller of AQP-FVT. (SCORE/POOL calls for
-            ;; agency-open are added here when that path is built.)
-            (ref-P|FVT::A_P|AddIMP mg)
-        )
-    )
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    (defconst BAR                   (CT_Bar))
+    (defconst EOC                   (CT_EmptyCumulator))
+    ;; Operator fee bounds (flat, per-mille): 1%..50%.
+    (defconst DSA_FEE_MIN:integer 10)
+    (defconst DSA_FEE_MAX:integer 500)
+    ;; Full-uptime promile (the oracle scale; capture-weight = capture-units × uptime / DSA_UPTIME_FULL).
+    (defconst DSA_UPTIME_FULL:integer 1000)
+    (defconst GAS|DEFINE-VAULT:decimal 500.0)
+    (defconst GAS|OPEN-AGENCY:decimal 500.0)
+    (defconst GAS|RECOMPUTE-CAPTURE:decimal 300.0)
+    (defconst GAS|SET-ORACLE-AUTH:decimal 300.0)
+    (defconst GAS|ORACLE-WRITE:decimal 200.0)
+    (defconst GAS|WITHDRAW-ROYALTY:decimal 400.0)
+    (defconst GAS|BURN-ROYALTY:decimal 400.0)
+    (defconst GAS|FUEL-ROYALTY:decimal 500.0)
+    (defconst GAS|SET-AGENCY-FEE:decimal 300.0)
+    (defconst DSA_UPTIME_MIN:integer 0)
+    ;;{3.2}  schemas
     ;;
-    ;;<======================>
-    ;;SCHEMAS-TABLES-CONSTANTS
-    ;;{1}
     (defschema DSA|Template
         @doc "Key = <FVT-ID>. Per DSA vault: binds a class-0 FVT to the score-entity MODEL every agency \
             \ instantiates (SCR|ScoreEntityModel) + the unit-score (1 staking unit = 1 node; open gate = \
@@ -188,38 +171,20 @@
         ;;Select Keys
         fvt-id:string
     )
-    ;;{2}
+    ;;{3.3}  tables
     (deftable DSA|T|Template:{DSA|Template})                    ;; Key = <FVT-ID>
     (deftable DSA|T|Agency:{DSA|Agency})                        ;; Key = <FVT-ID> | <Score-Entity-ID>
     (deftable DSA|T|OracleAuth:{DSA|OracleAuth})                ;; Key = <FVT-ID>
-    ;;{3}
-    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
-    (defun CT_EmptyCumulator ()     (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_EmptyOutputCumulatorV2)))
-    (defconst BAR                   (CT_Bar))
-    (defconst EOC                   (CT_EmptyCumulator))
-    ;; Operator fee bounds (flat, per-mille): 1%..50%.
-    (defconst DSA_FEE_MIN:integer 10)
-    (defconst DSA_FEE_MAX:integer 500)
-    ;; Full-uptime promile (the oracle scale; capture-weight = capture-units × uptime / DSA_UPTIME_FULL).
-    (defconst DSA_UPTIME_FULL:integer 1000)
-    (defconst GAS|DEFINE-VAULT:decimal 500.0)
-    (defconst GAS|OPEN-AGENCY:decimal 500.0)
-    (defconst GAS|RECOMPUTE-CAPTURE:decimal 300.0)
-    (defconst GAS|SET-ORACLE-AUTH:decimal 300.0)
-    (defconst GAS|ORACLE-WRITE:decimal 200.0)
-    (defconst GAS|WITHDRAW-ROYALTY:decimal 400.0)
-    (defconst GAS|BURN-ROYALTY:decimal 400.0)
-    (defconst GAS|FUEL-ROYALTY:decimal 500.0)
-    (defconst GAS|SET-AGENCY-FEE:decimal 300.0)
-    (defconst DSA_UPTIME_MIN:integer 0)
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
     ;;
-    ;;<==========>
-    ;;CAPABILITIES
-    ;;{C1}
     (defcap SECURE ()
         true
     )
-    ;;{C2}
+    ;;{C2}  Simple
+    ;;{C3}  Composed
     (defcap DSA|C>DEFINE-VAULT (patron:string fvt-id:string model-id:string unit-score:integer)
         @doc "Bind a class-0 FVT as a DSA delegation vault. Enforces: the FVT exists + is class-0, patron IS the \
             \ FVT owner (+ signs), unit-score positive, no template yet. Composes SECURE for the template write. \
@@ -239,7 +204,6 @@
         )
         (compose-capability (SECURE))
     )
-    ;;{C3}
     (defcap DSA|C>OPEN-AGENCY (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer)
         @doc "Authorize opening a delegation agency on an active DSA vault. Enforces the vault template exists + \
             \ active and the fee is in [DSA_FEE_MIN, DSA_FEE_MAX]. Composes P|SECURE-CALLER so DSA's registered IMC \
@@ -371,11 +335,14 @@
         )
         (compose-capability (P|SECURE-CALLER))
     )
-    ;;{C4}
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_EmptyCumulator ()     (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_EmptyOutputCumulatorV2)))
     ;;
-    ;;<=======>
-    ;;FUNCTIONS
-    ;;{F1}  Construct [UDC]
     ;; [UDC] construct
     (defun UDC_DSA|Template:object{DSA|Template}
         (model-id:string unit-score:integer active:bool fvt-id:string)
@@ -401,19 +368,18 @@
         {"oracle-guard" : oracle-guard
         ,"fvt-id"       : fvt-id}
     )
-    ;;{F2}  Compute [UC]
+    ;;{5.2}  Compute [UC]
     ;; [UC]  compute
     (defun UCk_Agency:string (fvt-id:string score-entity-id:string)
         @doc "Composite key for DSA|T|Agency: fvt-id | score-entity-id."
         (concat [fvt-id BAR score-entity-id])
     )
-    ;;<====> Phase 3 — capture recompute + delegated oracle (canon-refactored after this build step)
     (defun UC_CaptureWeight:decimal (capture-units:decimal uptime:integer)
         @doc "The capture-weight (inject numerator) = capture-units × uptime / DSA_UPTIME_FULL. Uptime is a \
             \ per-mille [0..1000]; /1000 is exact in decimal, so no rounding is needed."
         (* capture-units (/ (dec uptime) (dec DSA_UPTIME_FULL)))
     )
-    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;; [UR]  read
     (defun UR_DSA-TMP|Template:object{DSA|Template} (fvt-id:string)
         @doc "Reads the full DSA template row for a vault."
@@ -460,7 +426,6 @@
         @doc "Reads the delegated oracle-write guard for a DSA vault."
         (at "oracle-guard" (read DSA|T|OracleAuth fvt-id ["oracle-guard"]))
     )
-    ;;<====> Phase 2 — vault define + agency open (canon-refactored after this build step)
     (defun URC_DsaTemplateExists:bool (fvt-id:string)
         @doc "True when a DSA vault template exists for this FVT."
         (with-default-read DSA|T|Template fvt-id {"fvt-id" : BAR} {"fvt-id" := f} (!= f BAR))
@@ -547,7 +512,15 @@
                (ref-FVT::URCi_FuelRoyaltyCustody fvt-id reward-dptf-id swpair))))
     (defun URCi_SetAgencyFee:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string])
         (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|SET-AGENCY-FEE patron (r::URC_IsVirtualGasZero) output)))
-    ;;{F4}  Validate [UEV/CAP]
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
     ;; [UEV] enforce
     (defun UEV_OpenGate:bool (fvt-id:string score-entity-id:string)
         @doc "Terminal open gate — after the operator's initial stake, the agency quintessence must clear \
@@ -556,7 +529,7 @@
         (enforce (>= (URC_AgencyQuintessence score-entity-id) (/ (dec (UR_DSA-TMP|UnitScore fvt-id)) 2.0))
             "Open gate: operator must stake quintessence >= unit-score/2 to open")
     )
-    ;;{F5}  Write [W]
+    ;;{5.5}  Write [W]
     ;; [W]   write
     (defun WI_Template:string (fvt-id:string row:object{DSA|Template})
         @doc "Insert a DSA vault template row. require SECURE."
@@ -583,7 +556,7 @@
         (require-capability (SECURE))
         (write DSA|T|OracleAuth fvt-id row)
     )
-    ;;{F6}  Aux/Protected [X]
+    ;;{5.6}  Aux/X
     ;; [XI]
     (defun XI_ApplyCapture:string (fvt-id:string score-entity-id:string oracle-ts:time)
         @doc "Recompute an agency's capture from CURRENT Q / nodes / uptime and write it onto the FVT member \
@@ -600,7 +573,43 @@
                 units (UC_CaptureWeight units (UR_DSA-AGN|Uptime fvt-id score-entity-id)) oracle-ts)
         )
     )
-    ;;{F7}  User [A]
+    ;;{5.7}  User [A/C]
+    (defun A_P|Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|DSA_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun A_P|AddIMP (policy-guard:guard)
+        (with-capability (GOV|DSA_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun A_P|Define ()
+        (let
+            (
+                (ref-P|FVT:module{OuronetPolicyV1} AQP-FVT)
+                (mg:guard (create-capability-guard (P|DSA|CALLER)))
+            )
+            ;; DSA calls AQP-FVT's XE_ building blocks (SetMemberCapture / SetMemberDelegation / SetFvtOracleOn,
+            ;; all UEV_IMC-gated) — register DSA as an allowed IMC caller of AQP-FVT. (SCORE/POOL calls for
+            ;; agency-open are added here when that path is built.)
+            (ref-P|FVT::A_P|AddIMP mg)
+        )
+    )
     ;;
     ;; [A]   admin
     (defun A_DefineDelegationVault:object{IgnisCollectorV1.OutputCumulator}
@@ -760,7 +769,6 @@
             )
         )
     )
-    ;;{F8}  User [C]
     ;; [C]   client
     (defun C_AdmitAgency:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer)
@@ -806,8 +814,7 @@
             )
         )
     )
-    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
-    ;;
+
 )
 (create-table P|T)
 (create-table P|MT)

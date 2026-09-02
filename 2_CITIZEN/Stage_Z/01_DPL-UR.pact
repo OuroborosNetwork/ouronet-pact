@@ -95,6 +95,9 @@
     (defun URC_0035_EliteAccountRichList:[object] ())
 )
 (module DPL-UR GOV
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
     ;;
     (implements DeployerReadsV7)
     (implements DeployerReadsV8)
@@ -102,47 +105,53 @@
     (implements DeployerReadsV10)
     (implements DeployerReadsV11)
     (implements DeployerReadsV12)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
     ;;
-    ;;<========>
-    ;;GOVERNANCE
-    ;;{G1}
     (defconst GOV|MD_DPL-UR                 (keyset-ref-guard (GOV|Demiurgoi)))
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
     ;;
-    ;;{G2}
     (defcap GOV ()                          (compose-capability (GOV|DPL_UR_ADMIN)))
     (defcap GOV|DPL_UR_ADMIN ()             (enforce-guard GOV|MD_DPL-UR))
-    ;;{G3}
-    (defun CT_Namespace ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
+    ;;{G5}  functions
     (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
-    ;;
-    ;;<====>
-    ;;POLICY
-    ;;{P1}
-    ;;{P2}
-    ;;{P3}
-    ;;{P4}
-    ;;
-    ;;<======================>
-    ;;SCHEMAS-TABLES-CONSTANTS
-    ;;{1}
-    
 
-    ;;{2}
-    ;;{3}
-    (defun CT_Bar ()                        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
     (defconst BAR                           (CT_Bar))
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    (defun CT_Namespace ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
     ;;
-    ;;<==========>
-    ;;CAPABILITIES
-    ;;{C1}
-    ;;{C2}
-    ;;{C3}
-    ;;{C4}
     ;;
-    ;;<=======>
-    ;;FUNCTIONS
-    ;;{F1}  Construct [UDC]
-    ;;{F2}  Compute [UC]
+    (defun CT_Bar ()                        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    ;;{5.2}  Compute [UC]
+    ;;
+    ;;
     (defun UC_TrimDecimalTrailingZeros:string (number:decimal)
         @doc "Trims trailing zeros from a decimal number"
         (let* 
@@ -305,7 +314,32 @@
             [pool-type pool-type-word]
         )
     )
-    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
+    (defun UCx_NonFungibleNonceExistance:bool (dpdc-id:string nonce:integer existance:bool)
+        (let
+            (
+                (ref-DPDC:module{DpdcV1} DPDC)
+                (x:string (ref-DPDC::UR_NonceHolder dpdc-id false nonce))
+            )
+            (if (> nonce 0)
+                (if existance
+                    (!= x BAR)
+                    (= x BAR)
+                )
+                (let
+                    (
+                        (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
+                        (split-data:object{DpdcUdcV1.DPDC|NonceData} (ref-DPDC::UR_SplitNonceData dpdc-id false nonce))
+                        (znd:object{DpdcUdcV1.DPDC|NonceData} (ref-DPDC-UDC::UDC_ZeroNonceData))
+                    )
+                    (if existance
+                        (!= split-data znd)
+                        (= split-data znd)
+                    )
+                )
+            )
+        )
+    )
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
     (defun URC_TrueFungibleAmountPrice:decimal (id:string amount:decimal price:decimal)
         (let
@@ -2160,31 +2194,6 @@
             }
         )
     )
-    (defun UCx_NonFungibleNonceExistance:bool (dpdc-id:string nonce:integer existance:bool)
-        (let
-            (
-                (ref-DPDC:module{DpdcV1} DPDC)
-                (x:string (ref-DPDC::UR_NonceHolder dpdc-id false nonce))
-            )
-            (if (> nonce 0)
-                (if existance
-                    (!= x BAR)
-                    (= x BAR)
-                )
-                (let
-                    (
-                        (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
-                        (split-data:object{DpdcUdcV1.DPDC|NonceData} (ref-DPDC::UR_SplitNonceData dpdc-id false nonce))
-                        (znd:object{DpdcUdcV1.DPDC|NonceData} (ref-DPDC-UDC::UDC_ZeroNonceData))
-                    )
-                    (if existance
-                        (!= split-data znd)
-                        (= split-data znd)
-                    )
-                )
-            )
-        )
-    )
     (defun URC_0027_AccountSelectorMapper (accounts:[string])
         (map
             (lambda
@@ -2933,11 +2942,9 @@
             )
         )
     )
-    ;;{F4}  Validate [UEV/CAP]
-    ;;{F5}  Write [W]
-    ;;{F6}  Aux/Protected [X]
-    ;;{F7}  User [A]
-    ;;{F8}  User [C]
-    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
-    ;;
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
 )

@@ -112,54 +112,52 @@
     (defun URCi_RevokeBoostClass:object{IgnisCollectorV1.OutputCumulator} ())
 )
 (module AQP-ANK GOV
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
     ;; REPL observability: REPL/Stage_02/[6.2.1]_AQP-ANK.repl tags each intra-tx group as TXnnn · mm · <slug> in ;;==== … ==== and (print "--- [TXnnn · mm · …] ---"); mm is 01.. within each begin-tx.
     ;;
     (implements OuronetPolicyV1)
     (implements AcquisitionAnchorsV1)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
     ;;
-    ;;<========>
-    ;;GOVERNANCE
-    ;;{G1}
     (defconst GOV|MD_AQP-ANK                (keyset-ref-guard (GOV|Demiurgoi)))
-    ;;{G2}
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
     (defcap GOV ()                          (compose-capability (GOV|ANK_ADMIN)))
     (defcap GOV|ANK_ADMIN ()                (enforce-guard GOV|MD_AQP-ANK))
-    (defcap AQP|GOV ()
-        @doc "Interface/deploy surface for AQP|SC_NAME governor rotate. Runtime compose: AQP-POOL.AQP|GOV only — \
-            \ do not compose this cap from other modules."
-        true
-    )
-    ;;{G3}
+    ;;{G5}  functions
     (defun GOV|Demiurgoi ()
         @doc "Resolves the governance keyset from DALOS."
         (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi))
-    )
-    (defun CT_Namespace ()
-        @doc "Namespace prefix for AQP governance keyset name."
-        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE))
     )
     (defun GOV|AqpKey ()
         @doc "Governance keyset name for the AQP smart account (canonical — sibling AQP modules ref AQP-ANK)."
         (+ (CT_Namespace) ".dh_sc_aqp-keyset")
     )
-    (defconst AQP|SC_KEY                    (GOV|AqpKey))
     (defun GOV|AQP|SC_NAME ()
         @doc "Symbolic name of the AQP sovereign smart DALOS account (canonical)."
         (at 0 ["Σ.ЖřÎzэóΣQз3ÌĄăådìÜλÅË9γğ7χûПæ0₳ПûÖŞrĄθXtFìмkщsGвÅgλąÇπЩAĚЭDíéαэБùđáżñИïПÆΣтцξsηåäялÃБц¢r6ÁíäзуμþĄĐЫîÉAćýìЧыQPнŁзßξĂйjay£üѺçRЫfУQșÏΠÜqîÔĄťß6ЗSρŠeΦñëdmûΦøШâΞýκъиřк"])
     )
-    (defconst AQP|SC_NAME                   (GOV|AQP|SC_NAME))
     (defun GOV|AQP|PBL ()
         @doc "Public branding/license payload for AQP|SC_NAME smart account deploy (canonical)."
         (at 0 ["9G.632vHq208xaznBw9AfwrFGmLBqkr7tqEzf2Msq389xqEknmfAk8qI5MM1MaszdgMtEBpo6rbuC09Do7F6pjc91jzy3JxI6fjCkyuIbDpDD5i8CxeCBL0dKdDu3d2uAAwl6wE6npnm4Mjxx6JhiFq1sKddsGjLH9BjHF0ljtegHrn39qIADru76Ftr9Kgxh6Ds2aj4EufG07uK9sFG38ej5vooDMr0wp8alqGdnIiJxbhmwEKEg44l8pI5LDq2EotoM2jq86x1EJ5hM4wkfhtq4ye610tkAMIdLrDD87Euk14aJgMwnrLmytzcCc3Kakrnhs8Jxy5dFeowGxzlx1bGHqfwEen0pLcd6nl9udGE9hfFucLjM1seKzv542nwzz5jrpKmvzebI4BLK00Br1ocvxs4uor2nEv2Fng1l6qAiLcbv0hMnbLDEEcLpF1bD55gw55of7H2c3ieozahorkuCe5FEkAkEAhcGwJ35HCletrbcn2Ebo0fsD0tf2zxKsbzinpcJCtpv4EF4AyyhwD1LbtEd6qsEbgyJkA2DqdGBE5Fuqudzf8082Ei88d"])
     )
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    (defconst P|I                   (P|Info))
+    ;;{P2}  schemas
+    ;;{P3}  tables
     ;;
-    ;;<====>
-    ;;POLICY
-    ;;{P1}
-    ;;{P2}
     (deftable P|T:{OuronetPolicyV1.P|S})
     (deftable P|MT:{OuronetPolicyV1.P|MS})
-    ;;{P3}
+    ;;{P4}  capabilities
     (defcap P|ANK|CALLER ()
         true
     )
@@ -167,8 +165,7 @@
         (compose-capability (P|ANK|CALLER))
         (compose-capability (SECURE))
     )
-    ;;{P4}
-    (defconst P|I                   (P|Info))
+    ;;{P5}  functions
     (defun P|Info ()
         @doc "Returns policy metadata key from DALOS policy module."
         (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info))
@@ -181,51 +178,26 @@
         @doc "Reads imported policy guards list."
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        @doc "Writes or updates one local policy guard entry."
-        (with-capability (GOV|ANK_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    (defconst AQP|SC_KEY                    (GOV|AqpKey))
+    (defconst AQP|SC_NAME                   (GOV|AQP|SC_NAME))
+    (defconst BAR                   (CT_Bar))
+    (defconst E-ANK
+        {"promile"                  : 0.0
+        ,"ouronet-account"          : BAR
+        ,"anchor-id"                : BAR}
     )
-    (defun A_P|AddIMP (policy-guard:guard)
-        @doc "Appends one imported policy guard entry."
-        (with-capability (GOV|ANK_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    ;;
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        @doc "Post-deploy hook (AQP-BOOT Step 0). No cross-module IMP registration required — \
-            \ ANK calls DALOS UR_*/CAP_*/UEV_* only (no DALOS UEV_IMC on those paths); client entry is Talos P|TALOS-SUMMONER."
-        true
-    )
-    (defun UEV_IMC ()
-        @doc "Enforces that caller matches an imported policy guard."
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
+    ;; M6 #15 — anchor-definition sanity bounds enforced at issue (UEV_Promile + ANK|C>ISSUE-DPTF).
+    (defconst CT_ANK_PRECISION:integer          3)          ;; anchors use exactly 3 decimals of promile precision
+    (defconst CT_ANK_MIN_PROMILE:decimal        1.0)        ;; minimum anchor promile
+    (defconst CT_ANK_MAX_PROMILE:decimal        10000.0)    ;; maximum anchor promile (caps a single anchor's boost)
+    (defconst CT_ANK_MIN_DPTF_AMOUNT:decimal    1000.0)     ;; minimum TF-anchor denominated amount
+    (defconst CT_ANK_MAX_DPTF_AMOUNT:decimal    1000000.0)  ;; maximum TF-anchor denominated amount
+    ;;{3.2}  schemas
     ;;
-    ;;<======================>
-    ;;SCHEMAS-TABLES-CONSTANTS
-    ;;{1}
     ;;1]General Anchor Definition
     (defschema ANK|Schema
         @doc "General Anchor Definition \
@@ -332,8 +304,8 @@
         score-links:[string]
         boost-class-id:string
     )
+    ;;{3.3}  tables
     ;;
-    ;;{2}
     (deftable ANK|T|Anchor:{ANK|Schema})                        ;;Key = <Anchor-ID>
     (deftable ANK|T|BoostClass:{ANK|BoostClass})                ;;Key = <Boost-Class-ID>
     (deftable ANK|T|AssetAnchors:{ANK|AssetAnchors})            ;;Key = <Asset-ID>
@@ -341,33 +313,78 @@
     ;;
     (deftable ANK|T|Anchors:{ANK|UserSchema})                   ;;Key = <Ouronet-Account> | <Anchor-ID>
     (deftable ANK|T|UserBoost:{ANK|UserBoostSchema})            ;;Key = <Ouronet-Account> | <Boost-Class-ID>
-    ;;{3}
-    (defun CT_Bar ()
-        @doc "Returns CT_BAR constant."
-        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR))
-    )
-    (defconst BAR                   (CT_Bar))
-    (defconst E-ANK
-        {"promile"                  : 0.0
-        ,"ouronet-account"          : BAR
-        ,"anchor-id"                : BAR}
-    )
-    ;; M6 #15 — anchor-definition sanity bounds enforced at issue (UEV_Promile + ANK|C>ISSUE-DPTF).
-    (defconst CT_ANK_PRECISION:integer          3)          ;; anchors use exactly 3 decimals of promile precision
-    (defconst CT_ANK_MIN_PROMILE:decimal        1.0)        ;; minimum anchor promile
-    (defconst CT_ANK_MAX_PROMILE:decimal        10000.0)    ;; maximum anchor promile (caps a single anchor's boost)
-    (defconst CT_ANK_MIN_DPTF_AMOUNT:decimal    1000.0)     ;; minimum TF-anchor denominated amount
-    (defconst CT_ANK_MAX_DPTF_AMOUNT:decimal    1000000.0)  ;; maximum TF-anchor denominated amount
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
     ;;
-    ;;<==========>
-    ;;CAPABILITIES
-    ;;{C1}
     (defcap SECURE ()
         true
     )
-    ;;{C2}
-    ;;{C3}
-    ;;{C4}
+    (defcap ANK|C>BUMP-BOOST-CLASS-LINKS (boost-class-id:string)
+        @doc "Authorizes AQP-SCORE (forward) to +1 a BoostClass score-link count — the H4 (#9) revoke lock."
+        (compose-capability (SECURE))
+    )
+    (defcap ANK|XE>SWEEP ()
+        @doc "Forward (re-score sweep · MTX-AQP): authorize the anchor-retire sweep's ANK writes — per-holder \
+            \ aggregate-promile refold + swept anchor removal. NO fund movement. Composes SECURE."
+        (compose-capability (SECURE))
+    )
+    (defcap ANK|C>UPDATE-DPTF (account:string dptf-id:string total-dptf-amount:decimal)
+        @doc "Authorizes updating user promile for all live DPTF-backed anchors on <dptf-id> after stake/unstake."
+        @event
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+            )
+            ;;1]<total-dptf-amount> must be non-negative (0.0 allowed — vacate/unstake refresh)
+            (enforce (>= total-dptf-amount 0.0) "total-dptf-amount must be non-negative")
+            ;;2]<account> must exist
+            (ref-DALOS::UEV_EnforceAccountExists account)
+            ;;3]<dptf-id> must exist
+            (ref-DPTF::UEV_id dptf-id)
+            ;;4] when positive, <total-dptf-amount> must conform to DPTF precision
+            (if (> total-dptf-amount 0.0)
+                (ref-DPTF::UEV_Amount dptf-id total-dptf-amount)
+                true
+            )
+        )
+        (compose-capability (SECURE))
+    )
+    (defcap ANK|C>UPDATE-DPSF (account:string dpsf-id:string nonces:[integer])
+        @doc "Authorizes updating user promile for DPSF-backed anchors on one asset (delegates to UPDATE-DPDC, SF)."
+        @event
+        (compose-capability (ANK|C>UPDATE-DPDC account dpsf-id nonces true))
+    )
+    (defcap ANK|C>UPDATE-DPNF (account:string dpnf-id:string nonces:[integer])
+        @doc "Authorizes updating user promile for DPNF-backed anchors on one asset (delegates to UPDATE-DPDC, NF)."
+        @event
+        (compose-capability (ANK|C>UPDATE-DPDC account dpnf-id nonces false))
+    )
+    (defcap ANK|C>UPDATE-DPDC (account:string asset-id:string nonces:[integer] son:bool)
+        @doc "Authorizes a DPDC anchor-value update for <account> on <asset-id>'s <nonces> \
+            \ (<son> discriminates the set / non-set collectable fungibility mode). Validates the \
+            \ account exists and the nonces exist for the target DPDC asset; composes SECURE for the write."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            ;;1]<account> must exist
+            (ref-DALOS::UEV_EnforceAccountExists account)
+            ;;2]<nonces> must exist for the target DPDC asset + fungibility mode
+            (ref-DPDC::UEV_NonceMapper asset-id son nonces)
+        )
+        (compose-capability (SECURE))
+    )
+    ;;{C2}  Simple
+    (defcap AQP|GOV ()
+        @doc "Interface/deploy surface for AQP|SC_NAME governor rotate. Runtime compose: AQP-POOL.AQP|GOV only — \
+            \ do not compose this cap from other modules."
+        true
+    )
+    ;;{C3}  Composed
     (defcap ANK|C>REVOKE-BOOST-CLASS (boost-class-id:string)
         @doc "Authorizes revoking an empty BoostClass."
         @event
@@ -535,15 +552,6 @@
         )
         (compose-capability (SECURE))
     )
-    (defcap ANK|C>BUMP-BOOST-CLASS-LINKS (boost-class-id:string)
-        @doc "Authorizes AQP-SCORE (forward) to +1 a BoostClass score-link count — the H4 (#9) revoke lock."
-        (compose-capability (SECURE))
-    )
-    (defcap ANK|XE>SWEEP ()
-        @doc "Forward (re-score sweep · MTX-AQP): authorize the anchor-retire sweep's ANK writes — per-holder \
-            \ aggregate-promile refold + swept anchor removal. NO fund movement. Composes SECURE."
-        (compose-capability (SECURE))
-    )
     (defcap ANK|XE>SWEEP-REVOKE (anchor-id:string)
         @doc "Forward (re-score sweep terminal): authorize SWEPT revocation of an EMPLOYED anchor — liveness + \
             \ owner enforced, but NOT the #9 score-link lock (the sweep has already refreshed every affected \
@@ -558,58 +566,20 @@
         @event
         (compose-capability (ANK|C>REVOKE-BOOST-CLASS boost-class-id))
     )
-    (defcap ANK|C>UPDATE-DPTF (account:string dptf-id:string total-dptf-amount:decimal)
-        @doc "Authorizes updating user promile for all live DPTF-backed anchors on <dptf-id> after stake/unstake."
-        @event
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-            )
-            ;;1]<total-dptf-amount> must be non-negative (0.0 allowed — vacate/unstake refresh)
-            (enforce (>= total-dptf-amount 0.0) "total-dptf-amount must be non-negative")
-            ;;2]<account> must exist
-            (ref-DALOS::UEV_EnforceAccountExists account)
-            ;;3]<dptf-id> must exist
-            (ref-DPTF::UEV_id dptf-id)
-            ;;4] when positive, <total-dptf-amount> must conform to DPTF precision
-            (if (> total-dptf-amount 0.0)
-                (ref-DPTF::UEV_Amount dptf-id total-dptf-amount)
-                true
-            )
-        )
-        (compose-capability (SECURE))
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    (defun CT_Namespace ()
+        @doc "Namespace prefix for AQP governance keyset name."
+        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE))
     )
-    (defcap ANK|C>UPDATE-DPSF (account:string dpsf-id:string nonces:[integer])
-        @doc "Authorizes updating user promile for DPSF-backed anchors on one asset (delegates to UPDATE-DPDC, SF)."
-        @event
-        (compose-capability (ANK|C>UPDATE-DPDC account dpsf-id nonces true))
-    )
-    (defcap ANK|C>UPDATE-DPNF (account:string dpnf-id:string nonces:[integer])
-        @doc "Authorizes updating user promile for DPNF-backed anchors on one asset (delegates to UPDATE-DPDC, NF)."
-        @event
-        (compose-capability (ANK|C>UPDATE-DPDC account dpnf-id nonces false))
-    )
-    (defcap ANK|C>UPDATE-DPDC (account:string asset-id:string nonces:[integer] son:bool)
-        @doc "Authorizes a DPDC anchor-value update for <account> on <asset-id>'s <nonces> \
-            \ (<son> discriminates the set / non-set collectable fungibility mode). Validates the \
-            \ account exists and the nonces exist for the target DPDC asset; composes SECURE for the write."
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-DPDC:module{DpdcV1} DPDC)
-            )
-            ;;1]<account> must exist
-            (ref-DALOS::UEV_EnforceAccountExists account)
-            ;;2]<nonces> must exist for the target DPDC asset + fungibility mode
-            (ref-DPDC::UEV_NonceMapper asset-id son nonces)
-        )
-        (compose-capability (SECURE))
+    (defun CT_Bar ()
+        @doc "Returns CT_BAR constant."
+        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR))
     )
     ;;
-    ;;<=======>
-    ;;FUNCTIONS
-    ;;{F1}  Construct [UDC]
     ;; [UDC] construct
     (defun UDC_ANK|Schema:object{ANK|Schema}
         (a:string b:[bool] c:string d:integer e:bool f:decimal g:decimal h:integer i:string j:string k:integer l:string)
@@ -896,7 +866,7 @@
         ,"ouronet-account"     : ouronet-account
         ,"boost-class-id"      : boost-class-id}
     )
-    ;;{F2}  Compute [UC]
+    ;;{5.2}  Compute [UC]
     ;; [UC]  compute
     (defun UCk_Anchors:string
         (account:string anchor-id:string)
@@ -908,7 +878,7 @@
         @doc "Composite key for ANK|T|UserBoost (account BAR boost-class-id)."
         (concat [account BAR boost-class-id])
     )
-    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;; [UR]  read
     ;; Reads follow schema order: (1) ANK|Schema (2) ANK|BoostClass (3) ANK|AssetAnchors (4) ANK|UserSchema (5) ANK|UserBoostSchema
     ;; Policy P|T, P|MT — not ANK rows; use P|Info, P|UR, P|UR_IMP above.
@@ -1446,7 +1416,16 @@
         @doc "IGNIS cost for C_RevokeBoostClass (biggest tier)."
         (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS))
             (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME)))
-    ;;{F4}  Validate [UEV/CAP]
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_IMC ()
+        @doc "Enforces that caller matches an imported policy guard."
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
     ;; [UEV] enforce
     (defun UEV_AnkFungibility (asset-fungibility:[bool])
         @doc "Validates asset-fungibility tuple (TF/SF/NF discriminator) for anchor-class / asset-summary tables."
@@ -1555,7 +1534,7 @@
             (ref-DALOS::CAP_EnforceAccountOwnership owner)
         )
     )
-    ;;{F5}  Write [W]
+    ;;{5.5}  Write [W]
     ;; [W]   write
     ;; Five blocks — one per deftable (table order). Within each block: WI → WW → WU → WU2+ (only when needed).
     ;; WU lists every schema field: defun when used; comment when [.], select key, or mutates via WW_*.
@@ -1678,7 +1657,7 @@
             (UDC_UserBoost aggregate-promile account boost-class-id)
         )
     )
-    ;;{F6}  Aux/Protected [X]
+    ;;{5.6}  Aux/X
     ;; [XI]
     ;;
     ;; Depth: C_* → XI_* (depth 0) → XI_1|* … ; XE_* / XB_* → XI_1|* (depth 1) → XI_2|* …
@@ -2137,8 +2116,39 @@
             )
         )
     )
-    ;;{F7}  User [A]
-    ;;{F8}  User [C]
+    ;;{5.7}  User [A/C]
+    (defun A_P|Add (policy-name:string policy-guard:guard)
+        @doc "Writes or updates one local policy guard entry."
+        (with-capability (GOV|ANK_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun A_P|AddIMP (policy-guard:guard)
+        @doc "Appends one imported policy guard entry."
+        (with-capability (GOV|ANK_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    ;;
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun A_P|Define ()
+        @doc "Post-deploy hook (AQP-BOOT Step 0). No cross-module IMP registration required — \
+            \ ANK calls DALOS UR_*/CAP_*/UEV_* only (no DALOS UEV_IMC on those paths); client entry is Talos P|TALOS-SUMMONER."
+        true
+    )
     ;;
     ;; [C]   client
     ;;
@@ -2261,8 +2271,7 @@
             (URCi_RevokeAnchor)
         )
     )
-    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
-    ;;
+
 )
 
 (create-table P|T)

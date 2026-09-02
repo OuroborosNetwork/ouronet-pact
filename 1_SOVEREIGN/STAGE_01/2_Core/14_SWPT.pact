@@ -152,32 +152,40 @@
 )
 ;;
 (module SWPT GOV
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV1)
     (implements SwapTracerV2)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
     ;;
-    ;;<========>
-    ;;GOVERNANCE
-    ;;{G1}
     (defconst GOV|MD_SWPT           (keyset-ref-guard (GOV|Demiurgoi)))
-    ;;{G2}
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
     (defcap GOV ()                  (compose-capability (GOV|SWPT_ADMIN)))
     (defcap GOV|SWPT_ADMIN ()       (enforce-guard GOV|MD_SWPT))
-    ;;{G3}
+    ;;{G5}  functions
     (defun GOV|Demiurgoi ()         (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    (defconst P|I                   (P|Info))
+    ;;{P2}  schemas
+    ;;{P3}  tables
     ;;
-    ;;<====>
-    ;;POLICY
-    ;;{P1}
-    ;;{P2}
     (deftable P|T:{OuronetPolicyV1.P|S})                        ;;Key = <policy-name>
     (deftable P|MT:{OuronetPolicyV1.P|MS})                      ;;Key = P|I (module-identity singleton constant)
-    ;;{P3}
+    ;;{P4}  capabilities
     (defcap P|SWPT|CALLER ()
         true
     )
-    ;;{P4}
-    (defconst P|I                   (P|Info))
+    ;;{P5}  functions
     (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
@@ -185,81 +193,10 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|SWPT_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|SWPT_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (ref-P|BRD:module{OuronetPolicyV1} BRD)
-                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
-                ;(ref-P|DPOF:module{OuronetPolicyV1} DPOF)
-                (ref-P|ATS:module{OuronetPolicyV1} ATS)
-                (ref-P|TFT:module{OuronetPolicyV1} TFT)
-                (ref-P|ATSU:module{OuronetPolicyV1} ATSU)
-                (ref-P|VST:module{OuronetPolicyV1} VST)
-                (ref-P|LIQUID:module{OuronetPolicyV1} LIQUID)
-                (ref-P|ORBR:module{OuronetPolicyV1} OUROBOROS)
-                (mg:guard (create-capability-guard (P|SWPT|CALLER)))
-            )
-            (ref-P|DALOS::A_P|AddIMP mg)
-            (ref-P|BRD::A_P|AddIMP mg)
-            (ref-P|DPTF::A_P|AddIMP mg)
-            ;(ref-P|DPOF::A_P|AddIMP mg)
-            (ref-P|ATS::A_P|AddIMP mg)
-            (ref-P|TFT::A_P|AddIMP mg)
-            (ref-P|ATSU::A_P|AddIMP mg)
-            (ref-P|VST::A_P|AddIMP mg)
-            (ref-P|LIQUID::A_P|AddIMP mg)
-            (ref-P|ORBR::A_P|AddIMP mg)
-        )
-    )
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
-    ;;
-    ;;<======================>
-    ;;SCHEMAS-TABLES-CONSTANTS
-    ;;{1}
-    (defschema SWPT|GraphSchema
-        neighbours:[object{SwapTracerV2.NeighbourEdge}]
-    )
-    ;;{2}
-    (deftable SWPT|Graph:{SWPT|GraphSchema})                    ;;Key = <token>
-    (deftable SWPT|PathCache:{SwapTracerV2.PathCacheRow})       ;;Key = <token-a>|<token-b> (insertion-order, reversed-lookup at read time)
-    ;;#65bL Phase 1: own table per this codebase's storage-pattern rule (never
-    ;;co-locate a row read for other reasons — segregated so only the path that
-    ;;needs the counter pays to deserialize it).
-    (deftable SWPT|TopologyVersion:{SwapTracerV2.TopologyVersionRow})  ;;Key = TOPOLOGY_VERSION_KEY (singleton)
-    ;;{3}
-    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
     (defconst BAR                   (CT_Bar))
     ;;#65bL Phase 1: singleton key for SWPT|TopologyVersion — same pattern as this
     ;;codebase's other singleton-row tables (e.g. policy's P|I).
@@ -274,21 +211,36 @@
     ;;owner may override. URC_ComputeAllRoutes clamps to this regardless of the
     ;;caller's own max-attempts argument.
     (defconst MAX_ATTEMPTS_HARD_CAP  50000)
+    ;;{3.2}  schemas
     ;;
-    ;;<==========>
-    ;;CAPABILITIES
-    ;;{C1}
+    (defschema SWPT|GraphSchema
+        neighbours:[object{SwapTracerV2.NeighbourEdge}]
+    )
+    ;;{3.3}  tables
+    (deftable SWPT|Graph:{SWPT|GraphSchema})                    ;;Key = <token>
+    (deftable SWPT|PathCache:{SwapTracerV2.PathCacheRow})       ;;Key = <token-a>|<token-b> (insertion-order, reversed-lookup at read time)
+    ;;#65bL Phase 1: own table per this codebase's storage-pattern rule (never
+    ;;co-locate a row read for other reasons — segregated so only the path that
+    ;;needs the counter pays to deserialize it).
+    (deftable SWPT|TopologyVersion:{SwapTracerV2.TopologyVersionRow})  ;;Key = TOPOLOGY_VERSION_KEY (singleton)
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;
     (defcap SECURE ()
         true
     )
-    ;;{C2}
-    ;;{C3}
-    ;;{C4}
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    ;;{5.2}  Compute [UC]
     ;;
-    ;;<=======>
-    ;;FUNCTIONS
-    ;;{F1}  Construct [UDC]
-    ;;{F2}  Compute [UC]
     (defun UC_FindNeighbourIndex:[integer] (neighbours:[object{SwapTracerV2.NeighbourEdge}] token:string)
         @doc "Returns [idx] of the entry in <neighbours> whose token field matches \
             \ <token>, or [] if no such entry exists yet."
@@ -391,7 +343,7 @@
             )
         )
     )
-    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     (defun UR_Graph:[object{SwapTracerV2.NeighbourEdge}] (token:string)
         (with-default-read SWPT|Graph token
             {"neighbours" : []}
@@ -1063,9 +1015,17 @@
             )
         )
     )
-    ;;{F4}  Validate [UEV/CAP]
-    ;;{F5}  Write [W]
-    ;;{F6}  Aux/Protected [X]
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
     (defun XE_UpdateGraph (swpair:string)
         @doc "Records <swpair> in the adjacency graph: every token in <swpair> gets \
             \ every OTHER token in <swpair> appended to its neighbour list (idempotent \
@@ -1214,10 +1174,59 @@
             (XI_RegisterPath token-a token-b nodes edges)
         )
     )
-    ;;{F7}  User [A]
-    ;;{F8}  User [C]
-    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
-    ;;
+    ;;{5.7}  User [A/C]
+    (defun A_P|Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|SWPT_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun A_P|AddIMP (policy-guard:guard)
+        (with-capability (GOV|SWPT_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun A_P|Define ()
+        (let
+            (
+                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
+                (ref-P|BRD:module{OuronetPolicyV1} BRD)
+                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
+                ;(ref-P|DPOF:module{OuronetPolicyV1} DPOF)
+                (ref-P|ATS:module{OuronetPolicyV1} ATS)
+                (ref-P|TFT:module{OuronetPolicyV1} TFT)
+                (ref-P|ATSU:module{OuronetPolicyV1} ATSU)
+                (ref-P|VST:module{OuronetPolicyV1} VST)
+                (ref-P|LIQUID:module{OuronetPolicyV1} LIQUID)
+                (ref-P|ORBR:module{OuronetPolicyV1} OUROBOROS)
+                (mg:guard (create-capability-guard (P|SWPT|CALLER)))
+            )
+            (ref-P|DALOS::A_P|AddIMP mg)
+            (ref-P|BRD::A_P|AddIMP mg)
+            (ref-P|DPTF::A_P|AddIMP mg)
+            ;(ref-P|DPOF::A_P|AddIMP mg)
+            (ref-P|ATS::A_P|AddIMP mg)
+            (ref-P|TFT::A_P|AddIMP mg)
+            (ref-P|ATSU::A_P|AddIMP mg)
+            (ref-P|VST::A_P|AddIMP mg)
+            (ref-P|LIQUID::A_P|AddIMP mg)
+            (ref-P|ORBR::A_P|AddIMP mg)
+        )
+    )
+
 )
 
 (create-table P|T)

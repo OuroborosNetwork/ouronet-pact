@@ -13,50 +13,59 @@
 ;; No interface: this is a leaf read-only preview module — nothing references it via module{}.
 ;; ================================================================================
 (module AQP-INFO GOV
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
     ;;
-    ;;<========>
-    ;;GOVERNANCE
-    ;;{G1}
     (defconst GOV|MD_INFO|AQP       (keyset-ref-guard (GOV|Demiurgoi)))
-    ;;{G2}
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
     (defcap GOV ()                  (compose-capability (GOV|INFO|AQP_ADMIN)))
     (defcap GOV|INFO|AQP_ADMIN ()   (enforce-guard GOV|MD_INFO|AQP))
-    ;;{G3}
+    ;;{G5}  functions
     (defun GOV|Demiurgoi ()         (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
-    ;;
-    ;;<====>
-    ;;POLICY
-    ;;{P1}
-    ;;{P2}
-    ;;{P3}
-    ;;{P4}
-    ;;
-    ;;<======================>
-    ;;SCHEMAS-TABLES-CONSTANTS
-    ;;{1}
-    ;;{2}
-    ;;{3}
-    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
     (defconst BAR                   (CT_Bar))
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
     ;;
-    ;;<==========>
-    ;;CAPABILITIES
-    ;;{C1}
-    ;;{C2}
-    ;;{C3}
-    ;;{C4}
     ;;
-    ;;<=======>
-    ;;FUNCTIONS
-    ;;{F1}  Construct [UDC]
-    ;;{F2}  Compute [UC]
-    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
+    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;
+    ;;
     ;;   (AQP-{ANK,SCORE,POOL,FVT,VCT,DSA}.URCi_*, via OI|UC_IfpFromOutputCumulator / OI|UDC_DynamicStoaCost),
     ;;   so the local price-tier gates (UC_GasPrice / SIP|URC_* / SKP|URC_*) are no longer used here.
     ;;
-    ;;<====================>
     ;;[AQP-ANK] Anchors
-    ;;<====================>
     (defun INFO_AQP-ANK|IssueTrueFungibleAnchor:object{OuronetInfoV1.ClientInfo}
         (patron:string anchor-name:string dptf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dptf-amount:decimal)
         @doc "Cost preview for C_AQP-ANK|IssueTrueFungibleAnchor. IGNIS 1000 (inline) + STOA 'standard' x(2 if acnoi else 1)."
@@ -170,9 +179,7 @@
         )
     )
     ;;
-    ;;<====================>
     ;;[AQP-SCR] Scores
-    ;;<====================>
     (defun INFO_AQP-SCR|IssueLiquidityScore:object{OuronetInfoV1.ClientInfo}
         (patron:string owner-konto:string score-name:string precision:integer lp-denominator:string mx-frozen:decimal mx-sleeping:decimal)
         @doc "Cost preview for C_AQP-SCR|IssueLiquidityScore. IGNIS GAS|ISSUE-SCORE + STOA 'smart'."
@@ -370,9 +377,7 @@
                 []))
     )
     ;;
-    ;;<====================>
     ;;[AQP-POOL] Pools (config)
-    ;;<====================>
     (defun INFO_AQP-POOL|Issue:object{OuronetInfoV1.ClientInfo}
         (patron:string pool-name:string asset-id:string aqp-class:integer)
         @doc "Cost preview for C_AQP-POOL|Issue. IGNIS GAS|ISSUE-POOL + STOA 'smart'."
@@ -720,9 +725,7 @@
                 []))
     )
     ;;
-    ;;<====================>
     ;;[AQP-FVT] Farms / Vaults / Treasuries (config + rewards)
-    ;;<====================>
     (defun INFO_AQP-FVT|Issue:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-name:string owner-konto:string fvt-class:integer common-denominator:string)
         @doc "Cost preview for C_AQP-FVT|Issue. IGNIS GAS|ISSUE-FVT + STOA 'smart'."
@@ -984,9 +987,7 @@
                 []))
     )
     ;;
-    ;;<====================>
     ;;[AQP-DSA] Delegated Staking Agencies
-    ;;<====================>
     (defun INFO_AQP-DSA|DefineDelegationVault:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string model-id:string unit-score:integer)
         @doc "Cost preview for A_AQP-DSA|DefineDelegationVault. IGNIS GAS|DEFINE-VAULT; no STOA."
@@ -1125,9 +1126,7 @@
                 []))
     )
     ;;
-    ;;<====================>
     ;;[AQP-MTX] Matrix drivers (spike-fallback defpacts)
-    ;;<====================>
     (defun INFO_AQP-MTX|2Inject:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "Cost preview for C_MTX-AQP|2|Inject (2-step enforced-fresh inject). IGNIS GAS|INJECT (inner XB_FvtInject); STOA none."
@@ -1153,11 +1152,9 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    ;;{F4}  Validate [UEV/CAP]
-    ;;{F5}  Write [W]
-    ;;{F6}  Aux/Protected [X]
-    ;;{F7}  User [A]
-    ;;{F8}  User [C]
-    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
-    ;;
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
 )

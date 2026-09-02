@@ -297,27 +297,36 @@
 ;;
 (module TS02-C3 GOV
     @doc "TALOS Stage 2 Client Functiones Part 3 - Acquisition Pools Functions"
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV1)
     (implements TalosStageTwo_ClientThreeV1)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
     ;;
-    ;;<========>
-    ;;GOVERNANCE
-    ;;{G1}
     (defconst GOV|MD_TS02-C3        (keyset-ref-guard (GOV|Demiurgoi)))
-    ;;{G2}
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
     (defcap GOV ()                  (compose-capability (GOV|TS02-C3_ADMIN)))
     (defcap GOV|TS02-C3_ADMIN ()    (enforce-guard GOV|MD_TS02-C3))
-    ;;{G3}
+    ;;{G5}  functions
     (defun GOV|Demiurgoi ()         (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    (defconst P|I                   (P|Info))
+    ;;{P2}  schemas
+    ;;{P3}  tables
     ;;
-    ;;<====>
-    ;;POLICY
-    ;;{P1}
-    ;;{P2}
     (deftable P|T:{OuronetPolicyV1.P|S})
     (deftable P|MT:{OuronetPolicyV1.P|MS})
-    ;;{P3}
+    ;;{P4}  capabilities
     (defcap P|TS ()
         (let
             (
@@ -332,90 +341,32 @@
         @doc "Talos Summoner Capability"
         true
     )
-    ;;{P4}
-    (defconst P|I                   (P|Info))
+    ;;{P5}  functions
     (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
-    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
-    (defconst BAR                   (CT_Bar))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|TS02-C3_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|TS02-C3_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|TS01-A:module{TalosStageOne_AdminV1} TS01-A)
-                (ref-P|ANK:module{OuronetPolicyV1} AQP-ANK)
-                (ref-P|SCR:module{OuronetPolicyV1} AQP-SCORE)
-                (ref-P|AQP:module{OuronetPolicyV1} AQP-POOL)
-                (ref-P|FVT:module{OuronetPolicyV1} AQP-FVT)
-                (ref-P|VCT:module{OuronetPolicyV1} AQP-VCT)
-                (ref-P|ATSU:module{OuronetPolicyV1} ATSU)
-                (ref-P|MTX-AQP:module{OuronetPolicyV1} MTX-AQP)
-                (ref-P|DSA:module{OuronetPolicyV1} AQP-DSA)
-                (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
-            )
-            (ref-P|TS01-A::A_P|AddIMP mg)
-            (ref-P|ANK::A_P|AddIMP mg)
-            (ref-P|SCR::A_P|AddIMP mg)
-            (ref-P|AQP::A_P|AddIMP mg)
-            (ref-P|FVT::A_P|AddIMP mg)
-            (ref-P|VCT::A_P|AddIMP mg)
-            (ref-P|ATSU::A_P|AddIMP mg)
-            ;; MTX-AQP defpact wrapper below — register the Talos summoner as an allowed IMC caller of MTX-AQP.
-            (ref-P|MTX-AQP::A_P|AddIMP mg)
-            ;; DSA vault/agency wrappers below — register the Talos summoner as an allowed IMC caller of AQP-DSA.
-            (ref-P|DSA::A_P|AddIMP mg)
-        )
-    )
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    (defconst BAR                   (CT_Bar))
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
     ;;
-    ;;<======================>
-    ;;SCHEMAS-TABLES-CONSTANTS
-    ;;{1}
-    ;;{2}
-    ;;{3}
     ;;
-    ;;<==========>
-    ;;CAPABILITIES
-    ;;{C1}
     (defcap SECURE ()
         true
     )
-    ;;{C2}
+    ;;{C2}  Simple
+    ;;{C3}  Composed
     (defcap AQP|C>STAKE-TRUE-FUNGIBLE
         (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
         @doc "AQP client event: stake TrueFungible. Composes P|TS only; sovereign recipe in FVT::CC_TrueFungibleStakeFlow."
@@ -490,13 +441,14 @@
         @event
         (compose-capability (P|TS))
     )
-    ;;{C3}
-    ;;{C4}
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    ;;{5.2}  Compute [UC]
     ;;
-    ;;<=======>
-    ;;FUNCTIONS
-    ;;{F1}  Construct [UDC]
-    ;;{F2}  Compute [UC]
     (defun UC_ShortAccount:string (account:string)
         (let
             (
@@ -630,10 +582,18 @@
             ]
         )
     )
-    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
-    ;;{F4}  Validate [UEV/CAP]
-    ;;{F5}  Write [W]
-    ;;{F6}  Aux/Protected [X]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
     (defun AQP-POOL|XB_VacateTrueFungible:string
         (patron:string pool-id:string)
         @doc "Vacate rehaul — pool-owner vacate of a pool's TrueFungible leg only (one tx; used standalone or by \
@@ -694,7 +654,58 @@
             )
         )
     )
-    ;;{F7}  User [A]
+    ;;{5.7}  User [A/C]
+    (defun A_P|Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|TS02-C3_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun A_P|AddIMP (policy-guard:guard)
+        (with-capability (GOV|TS02-C3_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun A_P|Define ()
+        (let
+            (
+                (ref-P|TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                (ref-P|ANK:module{OuronetPolicyV1} AQP-ANK)
+                (ref-P|SCR:module{OuronetPolicyV1} AQP-SCORE)
+                (ref-P|AQP:module{OuronetPolicyV1} AQP-POOL)
+                (ref-P|FVT:module{OuronetPolicyV1} AQP-FVT)
+                (ref-P|VCT:module{OuronetPolicyV1} AQP-VCT)
+                (ref-P|ATSU:module{OuronetPolicyV1} ATSU)
+                (ref-P|MTX-AQP:module{OuronetPolicyV1} MTX-AQP)
+                (ref-P|DSA:module{OuronetPolicyV1} AQP-DSA)
+                (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
+            )
+            (ref-P|TS01-A::A_P|AddIMP mg)
+            (ref-P|ANK::A_P|AddIMP mg)
+            (ref-P|SCR::A_P|AddIMP mg)
+            (ref-P|AQP::A_P|AddIMP mg)
+            (ref-P|FVT::A_P|AddIMP mg)
+            (ref-P|VCT::A_P|AddIMP mg)
+            (ref-P|ATSU::A_P|AddIMP mg)
+            ;; MTX-AQP defpact wrapper below — register the Talos summoner as an allowed IMC caller of MTX-AQP.
+            (ref-P|MTX-AQP::A_P|AddIMP mg)
+            ;; DSA vault/agency wrappers below — register the Talos summoner as an allowed IMC caller of AQP-DSA.
+            (ref-P|DSA::A_P|AddIMP mg)
+        )
+    )
     (defun A_AQP-DSA|DefineDelegationVault:string
         (patron:string fvt-id:string model-id:string unit-score:integer)
         @doc "DSA (Talos): bind a class-0 FVT as a delegation vault (score-entity model + unit-score); collects \
@@ -847,7 +858,6 @@
             )
         )
     )
-    ;;{F8}  User [C]
     ;;
     (defun C_AQP-ANK|RevokeBoostClass:string
         (patron:string boost-class-id:string)
@@ -2325,7 +2335,9 @@
             )
         )
     )
-    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
+
+    ;;<=========================================================================>
+    ;;{6}  REPL
     ;;
     ;; --- REPL dry-run (P|TS client shell → AQP-FVT::REPL_BootstrapVault under GOV|FVT_ADMIN) ---
     (defun AQP-FVT|REPL_BootstrapVault:string
@@ -2352,7 +2364,7 @@
             )
         )
     )
-    ;;
+
 )
 
 (create-table P|T)

@@ -1,40 +1,34 @@
 (module KBN GOV
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
     ;;
     ;;
-    ;;<========>
-    ;;GOVERNANCE
-    ;;{G1}
     (defconst GOV|MD_KBN                    (keyset-ref-guard (GOV|Demiurgoi)))
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
     ;;
-    ;;{G2}
     (defcap GOV ()                          (compose-capability (GOV|DPL_NFT_ADMIN)))
     (defcap GOV|DPL_NFT_ADMIN ()            (enforce-guard GOV|MD_KBN))
-    ;;{G3}
-    (defun CT_Namespace ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
+    ;;{G5}  functions
     (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
-    ;;
-    ;;<====>
-    ;;POLICY
-    ;;{P1}
-    ;;{P2}
-    ;;{P3}
-    ;;{P4}
-    ;;
-    ;;<======================>
-    ;;SCHEMAS-TABLES-CONSTANTS
-    ;;{1}
-    (defschema BunnyMetaData
-        Rarity:string
-        Background:string
-        Clothes:string
-        Ear:string
-        Eyes:string
-        Hats:string
-        Mouth:string
-    )
-    ;;{2}
-    ;;{3}
-    (defun CT_Bar ()                        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
     (defconst B                             (CT_Bar))
     ;;
     (defconst R     100.0)  ;;Native Bunny Royalty
@@ -49,20 +43,37 @@
     ;;
     (defconst TYPE                          (let ((ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)) (ref-DPDC-UDC::UDC_URI|Type T F F F F F F)))
     (defconst ZD                            (let ((ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    ;;{3.2}  schemas
     ;;
-    ;;<==========>
-    ;;CAPABILITIES
-    ;;{C1}
+    ;;
+    (defschema BunnyMetaData
+        Rarity:string
+        Background:string
+        Clothes:string
+        Ear:string
+        Eyes:string
+        Hats:string
+        Mouth:string
+    )
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;
     (defcap SECURE ()
         true
     )
-    ;;{C2}
-    ;;{C3}
-    ;;{C4}
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    (defun CT_Namespace ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
+    (defun CT_Bar ()                        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
     ;;
-    ;;<=======>
-    ;;FUNCTIONS
-    ;;{F1}  Construct [UDC]
     (defun UDC_MetaData:object{BunnyMetaData} (a:[string])
         {"Rarity"       : (at 0 a)
         ,"Background"   : (at 1 a)
@@ -73,7 +84,7 @@
         ,"Mouth"        : (at 6 a)
         }
     )
-    ;;{F2}  Compute [UC]
+    ;;{5.2}  Compute [UC]
     (defun UC_IpfsLink:string (starting-position:integer idx:integer small-or-big:bool)
         (let
             (
@@ -99,11 +110,11 @@
             (concat [ipfs type folder padded-num jpg])
         )
     )
-    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
-    ;;{F4}  Validate [UEV/CAP]
-    ;;{F5}  Write [W]
-    ;;{F6}  Aux/Protected [X]
-    ;;{F7}  User [A]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
     ;;
     (defun A_Step01 (patron:string kbn-id:string mdm:[[string]])
         (C_Spawn patron kbn-id 1 70 mdm)
@@ -190,7 +201,6 @@
             )
         )
     )
-    ;;{F8}  User [C]
     ;;
     (defun C_Spawn (patron:string kbn-id:string starting-position:integer number-of-positions:integer mdm:[[string]])
         (let
@@ -239,6 +249,5 @@
             )
         )
     )
-    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
-    ;;
+
 )

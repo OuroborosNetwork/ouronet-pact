@@ -61,27 +61,36 @@
     @doc "TALOS Stage 1 Administrator Functions \
         \ Contains All Administrator functions [DALOS BRD ORBR SWP]\
         \ Also contains Fueling Functions needed in all subsequent TALOS Modules"
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV1)
     (implements TalosStageOne_AdminV1)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
     ;;
-    ;;<========>
-    ;;GOVERNANCE
-    ;;{G1}
     (defconst GOV|MD_TS01-A         (keyset-ref-guard (GOV|Demiurgoi)))
-    ;;{G2}
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
     (defcap GOV ()                  (compose-capability (GOV|TS01-A_ADMIN)))
     (defcap GOV|TS01-A_ADMIN ()     (enforce-guard GOV|MD_TS01-A))
-    ;;{G3}
+    ;;{G5}  functions
     (defun GOV|Demiurgoi ()         (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    (defconst P|I                   (P|Info))
+    ;;{P2}  schemas
+    ;;{P3}  tables
     ;;
-    ;;<====>
-    ;;POLICY
-    ;;{P1}
-    ;;{P2}
     (deftable P|T:{OuronetPolicyV1.P|S})
     (deftable P|MT:{OuronetPolicyV1.P|MS})
-    ;;{P3}
+    ;;{P4}  capabilities
     (defcap P|TS ()
         @doc "Talos Summoner Capability"
         true
@@ -102,8 +111,7 @@
         (compose-capability (P|TS))
         (compose-capability (SECURE))
     )
-    ;;{P4}
-    (defconst P|I                   (P|Info))
+    ;;{P5}  functions
     (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
@@ -111,6 +119,82 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    (defconst GASLESS-PATRON        (URC_Gassless))
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;
+    (defcap SECURE ()
+        true
+    )
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;
+    (defun URC_Gassless ()        (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|DALOS|SC_NAME)))
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;
+    ;;  [Fueling Functions]
+    (defun XB_DynamicFuelSTOA ()
+        (UEV_IMC)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+            )
+            (if (ref-DALOS::UR_AutoFuel)
+                (with-capability (SECURE)
+                    (XI_DirectFuelSTOA)
+                )
+                true
+            )
+        )
+    )
+    ;;
+    (defun XE_ConditionalFuelSTOA (condition:bool)
+        (UEV_IMC)
+        (if condition
+            (with-capability (SECURE)
+                (XB_DynamicFuelSTOA)
+            )
+            true
+        )
+    )
+    ;;
+    (defun XI_DirectFuelSTOA ()
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-ORBR:module{OuroborosV1} OUROBOROS)
+            )
+            (with-capability (P|TS)
+                (ref-ORBR::C_Fuel)
+            )
+        )
+    )
+    ;;{5.7}  User [A/C]
     (defun A_P|Add (policy-name:string policy-guard:guard)
         (with-capability (GOV|TS01-A_ADMIN)
             (write P|T policy-name
@@ -174,79 +258,6 @@
             (ref-P|SWP::A_P|AddIMP mg)
         )
     )
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
-    ;;
-    ;;<======================>
-    ;;SCHEMAS-TABLES-CONSTANTS
-    ;;{1}
-    ;;{2}
-    ;;{3}
-    (defun URC_Gassless ()        (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|DALOS|SC_NAME)))
-    (defconst GASLESS-PATRON        (URC_Gassless))
-    ;;
-    ;;<==========>
-    ;;CAPABILITIES
-    ;;{C1}
-    (defcap SECURE ()
-        true
-    )
-    ;;{C2}
-    ;;{C3}
-    ;;{C4}
-    ;;
-    ;;<=======>
-    ;;FUNCTIONS
-    ;;{F1}  Construct [UDC]
-    ;;{F2}  Compute [UC]
-    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
-    ;;{F4}  Validate [UEV/CAP]
-    ;;{F5}  Write [W]
-    ;;{F6}  Aux/Protected [X]
-    ;;  [Fueling Functions]
-    (defun XB_DynamicFuelSTOA ()
-        (UEV_IMC)
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-            )
-            (if (ref-DALOS::UR_AutoFuel)
-                (with-capability (SECURE)
-                    (XI_DirectFuelSTOA)
-                )
-                true
-            )
-        )
-    )
-    ;;
-    (defun XE_ConditionalFuelSTOA (condition:bool)
-        (UEV_IMC)
-        (if condition
-            (with-capability (SECURE)
-                (XB_DynamicFuelSTOA)
-            )
-            true
-        )
-    )
-    ;;
-    (defun XI_DirectFuelSTOA ()
-        (require-capability (SECURE))
-        (let
-            (
-                (ref-ORBR:module{OuroborosV1} OUROBOROS)
-            )
-            (with-capability (P|TS)
-                (ref-ORBR::C_Fuel)
-            )
-        )
-    )
-    ;;{F7}  User [A]
     ;;
     ;;  [DALOS_Administrator]
     (defun A_DALOS|MigrateLiquidFunds:decimal (migration-target-stoa-account:string)
@@ -669,9 +680,7 @@
             )
         )
     )
-    ;;{F8}  User [C]
-    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
-    ;;
+
 )
 
 (create-table P|T)

@@ -81,35 +81,41 @@
 (module CODEX GOV
     @doc "On-chain Codex Identity registry, Arweave upload audit log, and StoicTag \
          \ name registry. Apollo cosign is off-chain only; chain enforces Stoa guards."
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
     ;;
     (implements CodexV1)
     (implements OuronetPolicyV1)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
     ;;
-    ;;<========>
-    ;;GOVERNANCE
-    ;;{G1}
     (defconst GOV|MD_CODEX                  (keyset-ref-guard (GOV|Demiurgoi)))
-    ;;{G2}
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
     (defcap GOV ()                          (compose-capability (GOV|CODEX_ADMIN)))
     (defcap GOV|CODEX_ADMIN ()              (enforce-guard GOV|MD_CODEX))
-    (defcap CODEX|ADMIN ()                  (enforce-guard (keyset-ref-guard (GOV|CodexKey))))
-    ;;{G3}
+    ;;{G5}  functions
     (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
-    (defun CT_Namespace ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
     (defun GOV|CodexKey ()                  (+ (CT_Namespace) ".codex-keyset"))
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    (defconst P|I                           (P|Info))
+    ;;{P2}  schemas
+    ;;{P3}  tables
     ;;
-    ;;<====>
-    ;;POLICY
-    ;;{P1}
-    ;;{P2}
     (deftable P|T:{OuronetPolicyV1.P|S})
     (deftable P|MT:{OuronetPolicyV1.P|MS})
-    ;;{P3}
+    ;;{P4}  capabilities
     (defcap P|CODEX|CALLER ()
         true
     )
-    ;;{P4}
-    (defconst P|I                           (P|Info))
+    ;;{P5}  functions
     (defun P|Info ()                        (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
@@ -117,46 +123,19 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|CODEX_ADMIN)
-            (write P|T policy-name {"policy" : policy-guard})
-        )
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    (defconst BAR                             (CT_Bar))
+    (defconst CODEX|EPOCH:time                (time "1970-01-01T00:00:00Z"))
+    (defconst CODEX|APOLLO-HALF-LEN:integer   162)
+    (defconst CODEX|COMPOSITE-SEP:string      ":")
+    (defconst CODEX|APOLLO-COMPOSITE-LEN:integer
+        (fold (+) 0 [CODEX|APOLLO-HALF-LEN 1 CODEX|APOLLO-HALF-LEN])
     )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|CODEX_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (mg:guard (create-capability-guard (P|CODEX|CALLER)))
-            )
-            (ref-P|DALOS::A_P|AddIMP mg)
-        )
-    )
-    (defun UEV_IMC ()
-        (let ((ref-U|G:module{OuronetGuardsV1} U|G))
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
+    ;;{3.2}  schemas
     ;;
-    ;;<======================>
-    ;;SCHEMAS-TABLES-CONSTANTS
-    ;;{1}
     (defschema CODEX|S|Identity
         @doc "One Mnemosyne-registered codex identity. Immutable except codex-guard."
         codex-id-standard:string            ;;[.]   Apollo Standard half (₱. + 160 charset chars, len 162)
@@ -196,27 +175,21 @@
         ;;Select Keys
         account-address:string              ;;[.]   Ouronet DALOS account (table key; Ѻ.* or Σ.*)
     )
-    ;;{2}
+    ;;{3.3}  tables
     (deftable CODEX|T|Identities:{CODEX|S|Identity})                    ;;Key = <codex-id>
     (deftable CODEX|T|ArweaveTracker:{CODEX|S|ArweaveTracker})          ;;Key = <codex-id> | <arweave-tx-id>
     (deftable CODEX|T|StoicTags:{CODEX|S|StoicTag})                     ;;Key = <tag-name>
     (deftable CODEX|T|StoicTagsByAccount:{CODEX|S|StoicTagByAccount})   ;;Key = <account-address>
-    ;;{3}
-    (defun CT_Bar ()                          (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
-    (defconst BAR                             (CT_Bar))
-    (defconst CODEX|EPOCH:time                (time "1970-01-01T00:00:00Z"))
-    (defconst CODEX|APOLLO-HALF-LEN:integer   162)
-    (defconst CODEX|COMPOSITE-SEP:string      ":")
-    (defconst CODEX|APOLLO-COMPOSITE-LEN:integer
-        (fold (+) 0 [CODEX|APOLLO-HALF-LEN 1 CODEX|APOLLO-HALF-LEN])
-    )
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
     ;;
-    ;;<==========>
-    ;;CAPABILITIES
-    ;;{C1}
     (defcap SECURE ()
         true
     )
+    ;;{C2}  Simple
+    (defcap CODEX|ADMIN ()                  (enforce-guard (keyset-ref-guard (GOV|CodexKey))))
     (defcap CODEX|OWNER (codex-id:string)
         (let 
             (
@@ -231,9 +204,7 @@
             (ref-DALOS::CAP_EnforceAccountOwnership account-address)
         )
     )
-    ;;{C2}
-    ;;{C3}
-    ;;{C4}
+    ;;{C3}  Composed
     (defcap CODEX|A>REGISTER-IDENTITY
         ( codex-id:string
           public-standard:string
@@ -361,10 +332,14 @@
             (compose-capability (SECURE))
         )
     )
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    (defun CT_Namespace ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
+    (defun CT_Bar ()                          (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
     ;;
-    ;;<=======>
-    ;;FUNCTIONS
-    ;;{F1}  Construct [UDC]
     (defun UDC_CIX|Identity:object{CODEX|S|Identity}
         ( codex-id-standard:string
           codex-id-smart:string
@@ -460,7 +435,7 @@
     (defun UDC_STBA|WithHasStoicTagFlag:object (row:object{CODEX|S|StoicTagByAccount})
         (+ row { "has-stoictag": true })
     )
-    ;;{F2}  Compute [UC]
+    ;;{5.2}  Compute [UC]
     (defun UC_IsBase64urlChar:bool (c:string)
         (or (and (>= c "A") (<= c "Z"))
             (or (and (>= c "a") (<= c "z"))
@@ -524,7 +499,7 @@
         @doc "Composite table key for CODEX|T|ArweaveTracker."
         (format "{}|{}" [codex-id arweave-tx-id])
     )
-    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     (defun URCi_RegisterStoicTag:decimal (tag-name:string)
         @doc "Cost single-source for C_CODEX|RegisterStoicTag — RAW native STOA toll \
             \ (1/glyph). Elite discount is applied at collect against the tagged account, \
@@ -722,9 +697,14 @@
             )
         )
     )
-    ;;{F4}  Validate [UEV/CAP]
-    ;;{F5}  Write [W]
-    ;;{F6}  Aux/Protected [X]
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_IMC ()
+        (let ((ref-U|G:module{OuronetGuardsV1} U|G))
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
     (defun XI_InsertIdentity:string
         ( codex-id:string
           public-standard:string
@@ -785,7 +765,38 @@
             (update CODEX|T|StoicTagsByAccount account-address (UDC_STBA|IzActiveUpdate false))
         )
     )
-    ;;{F7}  User [A]
+    ;;{5.7}  User [A/C]
+    (defun A_P|Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|CODEX_ADMIN)
+            (write P|T policy-name {"policy" : policy-guard})
+        )
+    )
+    (defun A_P|AddIMP (policy-guard:guard)
+        (with-capability (GOV|CODEX_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun A_P|Define ()
+        (let
+            (
+                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
+                (mg:guard (create-capability-guard (P|CODEX|CALLER)))
+            )
+            (ref-P|DALOS::A_P|AddIMP mg)
+        )
+    )
     (defun A_RegisterCodexIdentity:string
         ( codex-id:string
           public-standard:string
@@ -801,7 +812,6 @@
         )
         (format "Codex Identity {} registered" [codex-id])
     )
-    ;;{F8}  User [C]
     (defun C_RotateCodexGuard:string (codex-id:string new-codex-guard:guard)
         @doc "Rotate codex-guard; validation in CODEX|C>ROTATE-GUARD; XI writes only."
         (UEV_IMC)
@@ -837,8 +847,7 @@
         )
         (format "StoicTag §{} released" [tag-name])
     )
-    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
-    ;;
+
 )
 
 (create-table P|T)

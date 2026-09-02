@@ -1,12 +1,18 @@
 
 (module U|DPTF GOV
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
     ;;
     (implements UtilityDptfV1)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
     ;;
-    ;;<========>
-    ;;GOVERNANCE
-    ;;{G1}
-    ;;{G2}
     (defcap GOV ()                  (compose-capability (GOV|U|DPTF_ADMIN)))
     (defcap GOV|U|DPTF_ADMIN ()
         (let
@@ -17,20 +23,34 @@
             (enforce-guard g)
         )
     )
-    ;;{G3}
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
     ;;
-    ;;<====>
-    ;;POLICY
-    ;;{P1}
-    ;;{P2}
-    ;;{P3}
-    ;;{P4}
     ;;
-    ;;<======================>
-    ;;SCHEMAS-TABLES-CONSTANTS
-    ;;{1}
-    ;;{2}
-    ;;{3}
     (defun UDC_EmptyDispo:object{UtilityDptfV1.DispoData} ()
         {"elite-auryn-amount"           :0.0
         ,"auryndex-value"               :-1.0
@@ -39,18 +59,9 @@
         ,"minor-tier"                   :0
         ,"ouroboros-precision"          :24}
     )
+    ;;{5.2}  Compute [UC]
     ;;
-    ;;<==========>
-    ;;CAPABILITIES
-    ;;{C1}
-    ;;{C2}
-    ;;{C3}
-    ;;{C4}
     ;;
-    ;;<=======>
-    ;;FUNCTIONS
-    ;;{F1}  Construct [UDC]
-    ;;{F2}  Compute [UC]
     (defun UC_TwoSplitter:[integer] (input:integer)
         (let
             (
@@ -165,12 +176,10 @@
             volumetric-permile
         )
     )
-    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
-    ;;{F4}  Validate [UEV/CAP]
-    ;;{F5}  Write [W]
-    ;;{F6}  Aux/Protected [X]
-    ;;{F7}  User [A]
-    ;;{F8}  User [C]
-    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
-    ;;
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
 )

@@ -1,11 +1,17 @@
 (module U|ST GOV
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetGasStationV1)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
     ;;
-    ;;<========>
-    ;;GOVERNANCE
-    ;;{G1}
-    ;;{G2}
     (defcap GOV ()                  (compose-capability (GOV|U|ST_ADMIN)))
     (defcap GOV|U|ST_ADMIN ()
         (let
@@ -16,33 +22,38 @@
             (enforce-guard g)
         )
     )
-    ;;{G3}
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
-    ;;<====>
-    ;;POLICY
-    ;;{P1}
-    ;;{P2}
-    ;;{P3}
-    ;;{P4}
     ;;
-    ;;<======================>
-    ;;SCHEMAS-TABLES-CONSTANTS
-    ;;{1}
-    ;;{2}
-    ;;{3}
     ;;
-    ;;<==========>
-    ;;CAPABILITIES
-    ;;{C1}
-    ;;{C2}
-    ;;{C3}
-    ;;{C4}
     ;;
-    ;;<=======>
-    ;;FUNCTIONS
-    ;;{F1}  Construct [UDC]
-    ;;{F2}  Compute [UC]
-    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     (defun UR_chain-gas-price ()
         @doc "Return gas price from chain-data"
         (at 'gas-price (chain-data))
@@ -55,7 +66,7 @@
         @doc "Return gas limit * gas price from chain-data"
         (* (UR_chain-gas-price) (UR_chain-gas-limit))
     )
-    ;;{F4}  Validate [UEV/CAP]
+    ;;{5.4}  Validate [UEV/CAP]
     (defun UEV_max-gas-notional:guard (gasNotional:decimal)
         @doc "Guard to enforce gas price * gas limit is smaller than or equal to GAS"
         (create-user-guard
@@ -104,10 +115,8 @@
             (format "Gas Limit must be smaller than or equal to {}" [gasLimit])
         )
     )
-    ;;{F5}  Write [W]
-    ;;{F6}  Aux/Protected [X]
-    ;;{F7}  User [A]
-    ;;{F8}  User [C]
-    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
-    ;;
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
 )

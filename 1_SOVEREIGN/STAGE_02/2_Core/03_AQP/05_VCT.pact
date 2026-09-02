@@ -79,14 +79,22 @@
 ;; =============================================================================
 
 (module AQP-VCT GOV
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
     (implements OuronetPolicyV1)
     (implements AcquisitionVacateV1)
 
-    ;;<========>
-    ;;GOVERNANCE
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
     (defconst GOV|MD_VCT (keyset-ref-guard (GOV|Demiurgoi)))
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
     (defcap GOV () (compose-capability (GOV|VCT_ADMIN)))
     (defcap GOV|VCT_ADMIN () (enforce-guard GOV|MD_VCT))
+    ;;{G5}  functions
     (defun GOV|Demiurgoi ()
         (let
             (
@@ -96,11 +104,15 @@
         )
     )
 
-    ;;<====>
-    ;;POLICY
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    (defconst P|I (P|Info))
+    ;;{P2}  schemas
+    ;;{P3}  tables
     (deftable P|T:{OuronetPolicyV1.P|S})                          ;;Key = <Policy-Name>
     (deftable P|MT:{OuronetPolicyV1.P|MS})                        ;;Key = module P|I singleton
-
+    ;;{P4}  capabilities
     (defcap P|VCT|CALLER ()
         true
     )
@@ -115,8 +127,7 @@
         (compose-capability (P|VCT|REMOTE-GOV))
         (compose-capability (SECURE))
     )
-
-    (defconst P|I (P|Info))
+    ;;{P5}  functions
     (defun P|Info ()
         (let
             (
@@ -131,63 +142,39 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|VCT_ADMIN)
-            (write P|T policy-name {"policy" : policy-guard})
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|VCT_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    ;;
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)})
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        @doc "Post-deploy: VCT SECURE on AQP-SCORE + AQP-POOL + AQP-FVT IMP; P|VCT|CALLER on TFT/DPOF/DPDC-T; VCT|RemoteAqpGov on AQP-POOL."
-        (let
-            (
-                (ref-P|SCR:module{OuronetPolicyV1} AQP-SCORE)
-                (ref-P|AQP:module{OuronetPolicyV1} AQP-POOL)
-                (ref-P|FVT:module{OuronetPolicyV1} AQP-FVT)
-                (ref-P|TFT:module{OuronetPolicyV1} TFT)
-                (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
-                (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
-                ;;
-                (dg:guard (create-capability-guard (SECURE)))
-                (mg:guard (create-capability-guard (P|VCT|CALLER)))
-                (rg:guard (create-capability-guard (P|VCT|REMOTE-GOV)))
-            )
-            (ref-P|SCR::A_P|AddIMP dg)
-            (ref-P|AQP::A_P|AddIMP dg)
-            (ref-P|FVT::A_P|AddIMP dg)
-            (ref-P|AQP::A_P|Add "VCT|RemoteAqpGov" rg)
-            (ref-P|TFT::A_P|AddIMP mg)
-            (ref-P|DPOF::A_P|AddIMP mg)
-            (ref-P|DPDC-T::A_P|AddIMP mg)
-        )
-    )
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
-    (defcap SECURE () true)
 
-    ;;<======================>
-    ;;SCHEMAS-TABLES-CONSTANTS
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    (defconst BAR (CT_Bar))
+    (defconst AQP|SC_NAME (CT_AqpScName))
+    (defconst VACATE-KIND-TF 1)
+    (defconst VACATE-KIND-OF 2)
+    (defconst VACATE-KIND-DPSF 3)
+    (defconst VACATE-KIND-DPNF 4)
+    ;; REPL gas sweep (REPL/VCT-gas-sweep.repl) tunes these; keep above probe ladder max during profiling.
+    ;; OF/DPSF/DPNF: max total nonces summed across all owner rows per chunk tx (not owner count).
+    (defconst VACATE-MAX-NONCES 64)
+    (defconst VACATE-FULL-MAX-LEGS 128)
+    (defconst VACATE-FULL-MAX-NONCES 512)
+    (defconst VACATE-GAS-MAX-TF 24)     ;; legacy flat caps — superseded by the beneficiary-aware model below,
+    (defconst VACATE-GAS-MAX-OF 33)     ;; kept for UC_ComputeMinSliceCount / slice-plan references.
+    (defconst VACATE-GAS-MAX-DPSF 29)
+    (defconst VACATE-GAS-MAX-DPNF 30)
+    ;; Vacate-v2 Phase 2 — beneficiary-aware gas model (measured; applies to BOTH v1 vacate and v2 drain).
+    ;; est = unique-bens × PER-BEN + positions × PER-POS ≤ BUDGET. Cost is dominated by the per-beneficiary
+    ;; settle (~67-85k); the per-position marginal is small (~4k bare / ~10k trait-rich).
+    ;; ROLE (Phase 2 Step 3): this on-chain check is a GENEROUS BACKSTOP + the UI's seed — NOT the optimizer.
+    ;; The UI sizes real batches by simulating (/local dry-run) against the true, model-dependent gas and the
+    ;; node's gas meter is the real enforcement; an aborted oversized batch is atomic (rolls back — submitter's
+    ;; gas, no protocol harm). So the coefficients are the CHEAPEST realistic case (bare NFT, low settle), making
+    ;; the cap loose enough to never throttle a well-simulated batch: ~481 concentrated / ~25 spread. It only
+    ;; rejects egregiously-oversized / non-simulated batches early with a clean error. UC_ComputeMinSliceCount
+    ;; seeds the UI's optimization loop from the same model (concentrated slice size).
+    (defconst VACATE-GAS-BUDGET 2000000)
+    (defconst VACATE-GAS-PER-BEN 75000)
+    (defconst VACATE-GAS-PER-POS 4000)
+    ;;{3.2}  schemas
     ;; Offline plan schemas (SlicePayload / VacateSlicePlan). No Job/Slice session tables.
     (defschema VCT|SlicePayload
         @doc "Vacate slice payload for plan OC and hash commitment. \
@@ -250,76 +237,14 @@
         asset-id:string
         legs:[object{VCT|VacateNonceLeg}]
     )
+    ;;{3.3}  tables
 
-    (defun CT_Bar ()
-        (let
-            (
-                (ref-U|CT:module{OuronetConstantsV1} U|CT)
-            )
-            (ref-U|CT::CT_BAR)
-        )
-    )
-    (defconst BAR (CT_Bar))
-    (defun CT_AqpScName:string ()
-        (let
-            (
-                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-            )
-            (ref-ANK::GOV|AQP|SC_NAME)
-        )
-    )
-    (defconst AQP|SC_NAME (CT_AqpScName))
-
-    (defconst VACATE-KIND-TF 1)
-    (defconst VACATE-KIND-OF 2)
-    (defconst VACATE-KIND-DPSF 3)
-    (defconst VACATE-KIND-DPNF 4)
-
-    ;; REPL gas sweep (REPL/VCT-gas-sweep.repl) tunes these; keep above probe ladder max during profiling.
-    ;; OF/DPSF/DPNF: max total nonces summed across all owner rows per chunk tx (not owner count).
-    (defconst VACATE-MAX-NONCES 64)
-    (defconst VACATE-FULL-MAX-LEGS 128)
-    (defconst VACATE-FULL-MAX-NONCES 512)
-    (defconst VACATE-GAS-MAX-TF 24)     ;; legacy flat caps — superseded by the beneficiary-aware model below,
-    (defconst VACATE-GAS-MAX-OF 33)     ;; kept for UC_ComputeMinSliceCount / slice-plan references.
-    (defconst VACATE-GAS-MAX-DPSF 29)
-    (defconst VACATE-GAS-MAX-DPNF 30)
-    ;; Vacate-v2 Phase 2 — beneficiary-aware gas model (measured; applies to BOTH v1 vacate and v2 drain).
-    ;; est = unique-bens × PER-BEN + positions × PER-POS ≤ BUDGET. Cost is dominated by the per-beneficiary
-    ;; settle (~67-85k); the per-position marginal is small (~4k bare / ~10k trait-rich).
-    ;; ROLE (Phase 2 Step 3): this on-chain check is a GENEROUS BACKSTOP + the UI's seed — NOT the optimizer.
-    ;; The UI sizes real batches by simulating (/local dry-run) against the true, model-dependent gas and the
-    ;; node's gas meter is the real enforcement; an aborted oversized batch is atomic (rolls back — submitter's
-    ;; gas, no protocol harm). So the coefficients are the CHEAPEST realistic case (bare NFT, low settle), making
-    ;; the cap loose enough to never throttle a well-simulated batch: ~481 concentrated / ~25 spread. It only
-    ;; rejects egregiously-oversized / non-simulated batches early with a clean error. UC_ComputeMinSliceCount
-    ;; seeds the UI's optimization loop from the same model (concentrated slice size).
-    (defconst VACATE-GAS-BUDGET 2000000)
-    (defconst VACATE-GAS-PER-BEN 75000)
-    (defconst VACATE-GAS-PER-POS 4000)
-    ;; MEASURED (REPL/Kursan/AQP-scale-vacate.repl, TF drain, 50 distinct-beneficiary legs — the SPREAD case):
-    ;; gas(n) = 24,620 + 54,290*n → ~36 legs fit 2M. Per-distinct-ben leg = 54,290 < the model's 79,000
-    ;; (PER-BEN 75k + PER-POS 4k), so the 2-D model OVER-estimates → a safe, conservative backstop (it rejects
-    ;; at ~25 spread vs the true ~36; PER-BEN 75k also covers the ~85k trait-rich settle a bare TF leg doesn't hit).
-
-    ;;<==========>
-    ;;CAPABILITIES
-    ;; [CAP] pool-owner enforce predicate. MUST be a defun (not a defcap): every VCT|C>* vacate/abort
-    ;; cap calls it BARE — `(CAP_VctVacatePoolOwner pool-id)` — as an inline enforce. A defcap bare-called
-    ;; that way does NOT run its body, which silently no-opped the owner gate on the WHOLE vacate surface
-    ;; (CC_FullVacate / XB_Vacate* / Cp_BatchVacate* / C_AbortVacate) — any non-owner could vacate or abort.
-    ;; A defun runs the enforce, exactly like AQP-POOL::CAP_PoolOwner. Only the pool owner may vacate/abort.
-    (defun CAP_VctVacatePoolOwner (pool-id:string)
-        @doc "Vacate operations require tx sender ownership of the pool's canonical owner konto."
-        (let
-            (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-            )
-            (ref-DALOS::CAP_EnforceAccountOwnership (ref-AQP::URC_AqpOwnerKonto pool-id))
-        )
-    )
-
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    (defcap SECURE () true)
+    ;;{C2}  Simple
+    ;;{C3}  Composed
     (defcap VCT|C>TRUE-FUNGIBLE-VACATE
         (
             pool-id:string
@@ -503,8 +428,124 @@
         (compose-capability (SECURE))
         (compose-capability (P|VCT|RECIPE))
     )
-    ;;<=======>
-    ;;FUNCTIONS — UC → UR/URC → URH/URHC → UEV → CAP → UDC → W → XI/XE/XB → A → C
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    (defun CT_Bar ()
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV1} U|CT)
+            )
+            (ref-U|CT::CT_BAR)
+        )
+    )
+    (defun CT_AqpScName:string ()
+        (let
+            (
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+            )
+            (ref-ANK::GOV|AQP|SC_NAME)
+        )
+    )
+    ;; [UDC] construct
+    (defun UDC_TfSlicePayload:object{VCT|SlicePayload}
+        (
+            pool-id:string
+            asset-id:string
+            vacate-asset-kind:integer
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            amounts:[decimal]
+        )
+        @doc "Construct a TF vacate SlicePayload object: owner / beneficiary / amount parallel arrays with the \
+            \ nonce fields left empty."
+        {"pool-id"              : pool-id
+        ,"asset-id"             : asset-id
+        ,"vacate-asset-kind"    : vacate-asset-kind
+        ,"owner-ids"            : owner-ids
+        ,"beneficiary-ids"      : beneficiary-ids
+        ,"amounts"              : amounts
+        ,"nonces-array"         : []
+        ,"amounts-array"        : []}
+    )
+    (defun UDC_NonceSlicePayload:object{VCT|SlicePayload}
+        (
+            pool-id:string
+            asset-id:string
+            vacate-asset-kind:integer
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+            amounts-array:[[integer]]
+        )
+        @doc "Construct a nonce (OF/SF/NF) vacate SlicePayload object: owner / beneficiary arrays plus the \
+            \ nonces / amounts matrices, with the TF amounts field left empty."
+        {"pool-id"              : pool-id
+        ,"asset-id"             : asset-id
+        ,"vacate-asset-kind"    : vacate-asset-kind
+        ,"owner-ids"            : owner-ids
+        ,"beneficiary-ids"      : beneficiary-ids
+        ,"amounts"              : []
+        ,"nonces-array"         : nonces-array
+        ,"amounts-array"        : amounts-array}
+    )
+    (defun UDC_VacateSlicePlan:object{VCT|VacateSlicePlan}
+        (
+            vacate-job-id:string
+            pool-id:string
+            asset-id:string
+            vacate-asset-kind:integer
+            slice-count:integer
+            slices:[object{VCT|SlicePayload}]
+        )
+        @doc "Construct the offline VacateSlicePlan the UI drives: job id, pool / asset, vacate kind, slice \
+            \ count, and the per-slice payloads (one gas-bounded batch tx each)."
+        {"vacate-job-id"        : vacate-job-id
+        ,"pool-id"              : pool-id
+        ,"asset-id"             : asset-id
+        ,"vacate-asset-kind"    : vacate-asset-kind
+        ,"slice-count"          : slice-count
+        ,"slices"               : slices}
+    )
+    ;;
+    (defun UDC_VacateTfLeg:object{VCT|VacateTfLeg}
+        (owner-id:string beneficiary-id:string balance:decimal)
+        @doc "Construct a TF vacate leg object (owner, beneficiary, staked balance)."
+        {"owner-id" : owner-id, "beneficiary-id" : beneficiary-id, "balance" : balance}
+    )
+    (defun UDC_VacateNonceRow:object{VCT|VacateNonceRow}
+        (owner-id:string beneficiary-id:string nonce:integer balance:decimal)
+        @doc "Construct a single-nonce vacate row object (owner, beneficiary, nonce, balance)."
+        {"owner-id" : owner-id, "beneficiary-id" : beneficiary-id, "nonce" : nonce, "balance" : balance}
+    )
+    (defun UDC_VacateNonceLeg:object{VCT|VacateNonceLeg}
+        (owner-id:string beneficiary-id:string nonces:[integer] amounts:[decimal])
+        @doc "Construct a per-owner nonce vacate leg object (owner, beneficiary, nonces, amounts)."
+        {"owner-id" : owner-id, "beneficiary-id" : beneficiary-id, "nonces" : nonces, "amounts" : amounts}
+    )
+    (defun UDC_VacateTfLane:object{VCT|VacateTfLane}
+        (asset-id:string legs:[object{VCT|VacateTfLeg}])
+        @doc "Construct a TF vacate lane object (asset-id + its TF legs)."
+        {"asset-id" : asset-id, "legs" : legs}
+    )
+    (defun UDC_VacateNonceLane:object{VCT|VacateNonceLane}
+        (asset-id:string legs:[object{VCT|VacateNonceLeg}])
+        @doc "Construct a nonce vacate lane object (asset-id + its nonce legs)."
+        {"asset-id" : asset-id, "legs" : legs}
+    )
+    (defun UDC_VacateTfInventory:object{VCT|VacateTfInventory}
+        (legs:[object{VCT|VacateTfLeg}])
+        @doc "Construct a TF vacate inventory object (legs + derived leg-count)."
+        {"legs" : legs, "leg-count" : (length legs)}
+    )
+    (defun UDC_VacateNonceLegInventory:object{VCT|VacateNonceLegInventory}
+        (legs:[object{VCT|VacateNonceLeg}])
+        @doc "Construct a nonce vacate inventory object (legs + derived leg-count)."
+        {"legs" : legs, "leg-count" : (length legs)}
+    )
+    ;;{5.2}  Compute [UC]
     ;; [UC]  compute
     (defun UC_EmptyOc:object{IgnisCollectorV1.OutputCumulator} ()
         @doc "The empty OutputCumulator (no IGNIS, no STOA) — the identity result for vacate paths that bill nothing."
@@ -962,6 +1003,7 @@
                 ]
         }
     )
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;; [URCi]   vacate / drain / full-vacate flow ifp readers — relocated from AQP-INFO (byte-identical
     ;;   ifp sums). Fed the SAME dirty-read legs/lanes the exec receives. Tier gates + the two score-delta
     ;;   sums are reached cross-module on AQP-FVT (AQP-FVT.URC_Tier* / AQP-FVT.URC_StakeScoreDeltaSum*),
@@ -1936,107 +1978,41 @@
             )
         )
     )
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    ;; MEASURED (REPL/Kursan/AQP-scale-vacate.repl, TF drain, 50 distinct-beneficiary legs — the SPREAD case):
+    ;; gas(n) = 24,620 + 54,290*n → ~36 legs fit 2M. Per-distinct-ben leg = 54,290 < the model's 79,000
+    ;; (PER-BEN 75k + PER-POS 4k), so the 2-D model OVER-estimates → a safe, conservative backstop (it rejects
+    ;; at ~25 spread vs the true ~36; PER-BEN 75k also covers the ~85k trait-rich settle a bare TF leg doesn't hit).
+    ;; [CAP] pool-owner enforce predicate. MUST be a defun (not a defcap): every VCT|C>* vacate/abort
+    ;; cap calls it BARE — `(CAP_VctVacatePoolOwner pool-id)` — as an inline enforce. A defcap bare-called
+    ;; that way does NOT run its body, which silently no-opped the owner gate on the WHOLE vacate surface
+    ;; (CC_FullVacate / XB_Vacate* / Cp_BatchVacate* / C_AbortVacate) — any non-owner could vacate or abort.
+    ;; A defun runs the enforce, exactly like AQP-POOL::CAP_PoolOwner. Only the pool owner may vacate/abort.
+    (defun CAP_VctVacatePoolOwner (pool-id:string)
+        @doc "Vacate operations require tx sender ownership of the pool's canonical owner konto."
+        (let
+            (
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership (ref-AQP::URC_AqpOwnerKonto pool-id))
+        )
+    )
     ;; [UEV] enforce
     (defun UEV_TrueFungibleStakeNotReserved (dptf-id:string)
         @doc "Enforce <dptf-id> is not a reserved (R|) token — reserved DPTFs cannot be vacated."
         (enforce (not (= (take 2 dptf-id) "R|")) "Reserved DPTF (R|) cannot be vacated")
     )
-    ;; [UDC] construct
-    (defun UDC_TfSlicePayload:object{VCT|SlicePayload}
-        (
-            pool-id:string
-            asset-id:string
-            vacate-asset-kind:integer
-            owner-ids:[string]
-            beneficiary-ids:[string]
-            amounts:[decimal]
-        )
-        @doc "Construct a TF vacate SlicePayload object: owner / beneficiary / amount parallel arrays with the \
-            \ nonce fields left empty."
-        {"pool-id"              : pool-id
-        ,"asset-id"             : asset-id
-        ,"vacate-asset-kind"    : vacate-asset-kind
-        ,"owner-ids"            : owner-ids
-        ,"beneficiary-ids"      : beneficiary-ids
-        ,"amounts"              : amounts
-        ,"nonces-array"         : []
-        ,"amounts-array"        : []}
-    )
-    (defun UDC_NonceSlicePayload:object{VCT|SlicePayload}
-        (
-            pool-id:string
-            asset-id:string
-            vacate-asset-kind:integer
-            owner-ids:[string]
-            beneficiary-ids:[string]
-            nonces-array:[[integer]]
-            amounts-array:[[integer]]
-        )
-        @doc "Construct a nonce (OF/SF/NF) vacate SlicePayload object: owner / beneficiary arrays plus the \
-            \ nonces / amounts matrices, with the TF amounts field left empty."
-        {"pool-id"              : pool-id
-        ,"asset-id"             : asset-id
-        ,"vacate-asset-kind"    : vacate-asset-kind
-        ,"owner-ids"            : owner-ids
-        ,"beneficiary-ids"      : beneficiary-ids
-        ,"amounts"              : []
-        ,"nonces-array"         : nonces-array
-        ,"amounts-array"        : amounts-array}
-    )
-    (defun UDC_VacateSlicePlan:object{VCT|VacateSlicePlan}
-        (
-            vacate-job-id:string
-            pool-id:string
-            asset-id:string
-            vacate-asset-kind:integer
-            slice-count:integer
-            slices:[object{VCT|SlicePayload}]
-        )
-        @doc "Construct the offline VacateSlicePlan the UI drives: job id, pool / asset, vacate kind, slice \
-            \ count, and the per-slice payloads (one gas-bounded batch tx each)."
-        {"vacate-job-id"        : vacate-job-id
-        ,"pool-id"              : pool-id
-        ,"asset-id"             : asset-id
-        ,"vacate-asset-kind"    : vacate-asset-kind
-        ,"slice-count"          : slice-count
-        ,"slices"               : slices}
-    )
-    ;;
-    (defun UDC_VacateTfLeg:object{VCT|VacateTfLeg}
-        (owner-id:string beneficiary-id:string balance:decimal)
-        @doc "Construct a TF vacate leg object (owner, beneficiary, staked balance)."
-        {"owner-id" : owner-id, "beneficiary-id" : beneficiary-id, "balance" : balance}
-    )
-    (defun UDC_VacateNonceRow:object{VCT|VacateNonceRow}
-        (owner-id:string beneficiary-id:string nonce:integer balance:decimal)
-        @doc "Construct a single-nonce vacate row object (owner, beneficiary, nonce, balance)."
-        {"owner-id" : owner-id, "beneficiary-id" : beneficiary-id, "nonce" : nonce, "balance" : balance}
-    )
-    (defun UDC_VacateNonceLeg:object{VCT|VacateNonceLeg}
-        (owner-id:string beneficiary-id:string nonces:[integer] amounts:[decimal])
-        @doc "Construct a per-owner nonce vacate leg object (owner, beneficiary, nonces, amounts)."
-        {"owner-id" : owner-id, "beneficiary-id" : beneficiary-id, "nonces" : nonces, "amounts" : amounts}
-    )
-    (defun UDC_VacateTfLane:object{VCT|VacateTfLane}
-        (asset-id:string legs:[object{VCT|VacateTfLeg}])
-        @doc "Construct a TF vacate lane object (asset-id + its TF legs)."
-        {"asset-id" : asset-id, "legs" : legs}
-    )
-    (defun UDC_VacateNonceLane:object{VCT|VacateNonceLane}
-        (asset-id:string legs:[object{VCT|VacateNonceLeg}])
-        @doc "Construct a nonce vacate lane object (asset-id + its nonce legs)."
-        {"asset-id" : asset-id, "legs" : legs}
-    )
-    (defun UDC_VacateTfInventory:object{VCT|VacateTfInventory}
-        (legs:[object{VCT|VacateTfLeg}])
-        @doc "Construct a TF vacate inventory object (legs + derived leg-count)."
-        {"legs" : legs, "leg-count" : (length legs)}
-    )
-    (defun UDC_VacateNonceLegInventory:object{VCT|VacateNonceLegInventory}
-        (legs:[object{VCT|VacateNonceLeg}])
-        @doc "Construct a nonce vacate inventory object (legs + derived leg-count)."
-        {"legs" : legs, "leg-count" : (length legs)}
-    )
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
     ;; [XI]
     ;; Depth: C_* → XI_* (depth 0) → XI_1|* (depth 1) → XI_2|* (depth 2) → XI_3|* (depth 3).
     ;; Begin/finalize: XI_EnsureVacateBegun / XI_MaybeFinalizeVacate / XI_ClearVacateInProgress.
@@ -3006,6 +2982,52 @@
         (with-capability (VCT|C>VACATE pool-id)
             (XI_VacateCollectablesFromLegs pool-id dpnf-id false
                 (URHC_VacateNonceOwnerRowsRaw pool-id dpnf-id VACATE-KIND-DPNF))
+        )
+    )
+    ;;{5.7}  User [A/C]
+    (defun A_P|Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|VCT_ADMIN)
+            (write P|T policy-name {"policy" : policy-guard})
+        )
+    )
+    (defun A_P|AddIMP (policy-guard:guard)
+        (with-capability (GOV|VCT_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    ;;
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)})
+                )
+            )
+        )
+    )
+    (defun A_P|Define ()
+        @doc "Post-deploy: VCT SECURE on AQP-SCORE + AQP-POOL + AQP-FVT IMP; P|VCT|CALLER on TFT/DPOF/DPDC-T; VCT|RemoteAqpGov on AQP-POOL."
+        (let
+            (
+                (ref-P|SCR:module{OuronetPolicyV1} AQP-SCORE)
+                (ref-P|AQP:module{OuronetPolicyV1} AQP-POOL)
+                (ref-P|FVT:module{OuronetPolicyV1} AQP-FVT)
+                (ref-P|TFT:module{OuronetPolicyV1} TFT)
+                (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
+                (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
+                ;;
+                (dg:guard (create-capability-guard (SECURE)))
+                (mg:guard (create-capability-guard (P|VCT|CALLER)))
+                (rg:guard (create-capability-guard (P|VCT|REMOTE-GOV)))
+            )
+            (ref-P|SCR::A_P|AddIMP dg)
+            (ref-P|AQP::A_P|AddIMP dg)
+            (ref-P|FVT::A_P|AddIMP dg)
+            (ref-P|AQP::A_P|Add "VCT|RemoteAqpGov" rg)
+            (ref-P|TFT::A_P|AddIMP mg)
+            (ref-P|DPOF::A_P|AddIMP mg)
+            (ref-P|DPDC-T::A_P|AddIMP mg)
         )
     )
     ;; [C]   client

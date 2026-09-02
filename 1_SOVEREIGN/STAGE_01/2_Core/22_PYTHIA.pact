@@ -175,36 +175,42 @@
 ;;
 (module PYTHIA GOV
     @doc "Dual-Apollo Pythia registry + on-chain Pyth work ledger (daily flush / running total)."
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
     ;;
     (implements PythiaV4)
     (implements PythiaLedgerV2)
     (implements OuronetPolicyV1)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
     ;;
-    ;;<========>
-    ;;GOVERNANCE
-    ;;{G1}
     (defconst GOV|MD_PYTHIA                     (keyset-ref-guard (GOV|Demiurgoi)))
-    ;;{G2}
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
     (defcap GOV ()                              (compose-capability (GOV|PYTHIA_ADMIN)))
     (defcap GOV|PYTHIA_ADMIN ()                 (enforce-guard GOV|MD_PYTHIA))
-    (defcap PYTHIA|CRONOTON ()                  (enforce-guard (keyset-ref-guard (GOV|CronotonKey))))
-    ;;{G3}
+    ;;{G5}  functions
     (defun GOV|Demiurgoi ()                     (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
-    (defun CT_Namespace ()                        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
     (defun GOV|CronotonKey ()                   (+ (CT_Namespace) ".pythia-cronoton-keyset"))
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    (defconst P|I                               (P|Info))
+    ;;{P2}  schemas
+    ;;{P3}  tables
     ;;
-    ;;<====>
-    ;;POLICY
-    ;;{P1}
-    ;;{P2}
     (deftable P|T:{OuronetPolicyV1.P|S})
     (deftable P|MT:{OuronetPolicyV1.P|MS})
-    ;;{P3}
+    ;;{P4}  capabilities
     (defcap P|PYTHIA|CALLER ()
         true
     )
-    ;;{P4}
-    (defconst P|I                               (P|Info))
+    ;;{P5}  functions
     (defun P|Info ()                            (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
@@ -212,49 +218,29 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|PYTHIA_ADMIN)
-            (write P|T policy-name {"policy" : policy-guard})
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|PYTHIA_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (mg:guard (create-capability-guard (P|PYTHIA|CALLER)))
-            )
-            (ref-P|DALOS::A_P|AddIMP mg)
-        )
-    )
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    (defconst BAR:string                                (CT_Bar))
+    (defconst PYTHIA|EPOCH:time                         (time "1970-01-01T00:00:00Z"))
+    (defconst PYTHIA|LEDGER-EPOCH-START:time            (time "2026-08-01T00:00:00Z"))
+    (defconst PYTHIA|SECONDS-PER-DAY:decimal            86400.0)
+    (defconst PYTHIA|APOLLO-LEN:integer                 162)
+    (defconst PYTHIA|DUAL-LINK-LEN:integer              325)
+    (defconst PYTHIA|INFO:string                        "config")
+    (defconst PYTHIA|REVOCATION:string                  "revocation")
+    (defconst PYTHIA|STOACHAIN:string                   "stoachain")
+    (defconst PYTHIA|DEFAULT-DEPLOY-PRICE:decimal       500.0)
+    (defconst PYTHIA|DEFAULT-RENAME-PRICE:decimal       100.0)
+    (defconst PYTHIA|REVOKE-IGNIS-FEE:decimal           1.0)
+    (defconst PYTHIA|EPOCH-BLOCKS:integer               120)
+    (defconst PYTHIA|APOLLO-STANDARD:string             "₱")
+    (defconst PYTHIA|APOLLO-SMART:string                "Π")
+    (defconst PYTHIA|MAX-DAILY-RANGE:integer            365)
+    (defconst PYTHIA|MAX-FLUSH-BATCH:integer            1000)
+    ;;{3.2}  schemas
     ;;
-    ;;<======================>
-    ;;SCHEMAS-TABLES-CONSTANTS
-    ;;{1}
     (defschema PYTHIA|S|ApiKey
         @doc "One Apollo half (₱. slot or Π. consumer). Table key = apollo-account."
         public:string                                   ;;[.]   Canonical Apollo public-key material
@@ -286,42 +272,26 @@
         @doc "Last dual-link revoke anchor: block height at revoke (epoch = floor(height / 120))."
         revoked-at-height:integer
     )
-    ;;{2}
+    ;;{3.3}  tables
     (deftable PYTHIA|T|ApiKeys:{PYTHIA|S|ApiKey})                       ;;Key = <apollo-account>
     (deftable PYTHIA|T|DualLinks:{PYTHIA|S|DualLink})                   ;;Key = <dual-link-key>
     (deftable PYTHIA|T|Config:{PYTHIA|S|Config})                        ;;Key = PYTHIA|INFO
     (deftable PYTHIA|T|Revocation:{PYTHIA|S|Revocation})                ;;Key = PYTHIA|REVOCATION
     (deftable PYTHIA|T|PythDaily:{PythiaLedgerV2.PYTHIA|S|PythDaily})   ;;Key = <day ordinal string>
     (deftable PYTHIA|T|PythTotal:{PythiaLedgerV2.PYTHIA|S|PythTotal})   ;;Key = PYTHIA|STOACHAIN
-    ;;{3}
-    (defun CT_Bar ()                                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
-    (defconst BAR:string                                (CT_Bar))
-    (defconst PYTHIA|EPOCH:time                         (time "1970-01-01T00:00:00Z"))
-    (defconst PYTHIA|LEDGER-EPOCH-START:time            (time "2026-08-01T00:00:00Z"))
-    (defconst PYTHIA|SECONDS-PER-DAY:decimal            86400.0)
-    (defconst PYTHIA|APOLLO-LEN:integer                 162)
-    (defconst PYTHIA|DUAL-LINK-LEN:integer              325)
-    (defconst PYTHIA|INFO:string                        "config")
-    (defconst PYTHIA|REVOCATION:string                  "revocation")
-    (defconst PYTHIA|STOACHAIN:string                   "stoachain")
-    (defconst PYTHIA|DEFAULT-DEPLOY-PRICE:decimal       500.0)
-    (defconst PYTHIA|DEFAULT-RENAME-PRICE:decimal       100.0)
-    (defconst PYTHIA|REVOKE-IGNIS-FEE:decimal           1.0)
-    (defconst PYTHIA|EPOCH-BLOCKS:integer               120)
-    (defconst PYTHIA|APOLLO-STANDARD:string             "₱")
-    (defconst PYTHIA|APOLLO-SMART:string                "Π")
-    (defconst PYTHIA|MAX-DAILY-RANGE:integer            365)
-    (defconst PYTHIA|MAX-FLUSH-BATCH:integer            1000)
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
     ;;#68L fix: removed PYTHIA|FLUSH-GAS-TARGET - dead constant, confirmed zero references
     ;;anywhere; likely a leftover from an earlier gas-based batching design later replaced by
     ;;the count-based PYTHIA|MAX-FLUSH-BATCH cap. No functional change.
     ;;
-    ;;<==========>
-    ;;CAPABILITIES
-    ;;{C1}
     (defcap SECURE ()
         true
     )
+    ;;{C2}  Simple
+    (defcap PYTHIA|CRONOTON ()                  (enforce-guard (keyset-ref-guard (GOV|CronotonKey))))
     (defcap PYTHIA|OWNER (owner-account:string)
         @doc "Caller controls the Ouronet (DALOS) account."
         (let
@@ -331,7 +301,7 @@
             (ref-DALOS::CAP_EnforceAccountOwnership owner-account)
         )
     )
-    ;;{C2}
+    ;;{C3}  Composed
     (defcap PYTHIA|C>DEPLOY-API-KEY
         (
             owner-account:string
@@ -463,10 +433,14 @@
             (compose-capability (SECURE))
         )
     )
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    (defun CT_Namespace ()                        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
+    (defun CT_Bar ()                                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
     ;;
-    ;;<=======>
-    ;;FUNCTIONS
-    ;;{F1}  Construct [UDC]
     ;;
     (defun UDC_AKY|ApiKey:object{PYTHIA|S|ApiKey}
         (
@@ -624,7 +598,7 @@
         , "wasted-gas-reserved": wasted-gas-reserved
         }
     )
-    ;;{F2}  Compute [UC]
+    ;;{5.2}  Compute [UC]
     (defun UC_DeployPrice:decimal ()
         @doc "Alias → UR_DeployPrice (kept for Talos/INFO call sites)."
         (UR_DeployPrice)
@@ -719,7 +693,7 @@
         @doc "Greater of two day ordinals."
         (if (> a b) a b)
     )
-    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     (defun URCi_DeployApiKey:decimal ()
         @doc "Cost single-source for C_PYTHIA|DeployApiKey — RAW native STOA toll \
             \ (UC_DeployPrice, default 500). Discount anchor is BAR (no Elite discount). \
@@ -1173,7 +1147,15 @@
             )
         )
     )
-    ;;{F4}  Validate [UEV/CAP]
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
     ;;
     (defun UEV_FlushEntries:bool (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}])
         @doc "Validate flush batch: fold over entries; pure bool (no enforce)."
@@ -1264,9 +1246,8 @@
             dlk
         )
     )
-    ;;{F5}  Write [W]
+    ;;{5.5}  Write [W]
     ;;
-    ;;{FW}  [W]
     ;; Six blocks — one per deftable (table order). Within each block: WI → WW → WU (all fields).
     ;; WU lists every schema field: defun when used; comment when [.], select key, or mutates via WW_* / sibling WU_*.
     ;;
@@ -1406,7 +1387,7 @@
         (require-capability (SECURE))
         (write PYTHIA|T|PythTotal PYTHIA|STOACHAIN row)
     )
-    ;;{F6}  Aux/Protected [X]
+    ;;{5.6}  Aux/X
     ;;
     (defun XI_RecordRevocationAtHeight:integer ()
         @doc "Record executing block height at revoke (fast-lane poll via UR_RevocationAtHeight)."
@@ -1510,7 +1491,38 @@
             )
         )
     )
-    ;;{F7}  User [A]
+    ;;{5.7}  User [A/C]
+    (defun A_P|Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|PYTHIA_ADMIN)
+            (write P|T policy-name {"policy" : policy-guard})
+        )
+    )
+    (defun A_P|AddIMP (policy-guard:guard)
+        (with-capability (GOV|PYTHIA_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun A_P|Define ()
+        (let
+            (
+                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
+                (mg:guard (create-capability-guard (P|PYTHIA|CALLER)))
+            )
+            (ref-P|DALOS::A_P|AddIMP mg)
+        )
+    )
     ;;
     (defun A_LinkDualApiKey:string (standard-apollo:string smart-apollo:string)
         @doc "Cronoton create-or-activate (no fee): create active dual with auto PYTHIA-<hash12> lane, or flip inactive C_Link row to true."
@@ -1582,7 +1594,6 @@
         )
         (format "Pythia ledger flushed {} day entries" [(length entries)])
     )
-    ;;{F8}  User [C]
     ;;
     (defun C_DeployApolloPythiaApiKey:string
         (
@@ -1648,8 +1659,7 @@
         )
         (format "Pythia dual link {} lane renamed to {}" [dual-link-key new-name])
     )
-    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
-    ;;
+
 )
 
 ;; Module install — (create-table ...) runs in the same tx as (module PYTHIA …) on greenfield deploy.

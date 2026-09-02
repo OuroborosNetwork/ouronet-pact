@@ -251,30 +251,39 @@
         (pool-id:string owner-id:string beneficiary-id:string collectable-id:string son:bool nonces:[integer] nonce-amounts:[integer] direction:bool))
 )
 (module AQP-FVT GOV
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV1)
     (implements AcquisitionFarmsVaultsTreasuriesV1)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
     ;(implements DemiourgosPactDigitalCollectibles-UtilityPrototype)
     ;;
-    ;;<========>
-    ;;GOVERNANCE
-    ;;{G1}
     (defconst GOV|MD_FVT                    (keyset-ref-guard (GOV|Demiurgoi)))
-    ;;{G2}
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
     (defcap GOV ()                          (compose-capability (GOV|FVT_ADMIN)))
     (defcap GOV|FVT_ADMIN ()                (enforce-guard GOV|MD_FVT))
-    ;;{G3}
+    ;;{G5}  functions
     (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    (defconst P|I                   (P|Info))
+    ;;{P2}  schemas
+    ;;{P3}  tables
     ;;
-    ;;<====>
-    ;;POLICY
-    ;;{P1}
-    ;;{P2}
     (deftable P|T:{OuronetPolicyV1.P|S})                      ;; Key = <policy-name>
     ;;  PURPOSE: Named keyset guards for this module (OuronetPolicyV1). Used by GOV|FVT_ADMIN and IMP registration.
     (deftable P|MT:{OuronetPolicyV1.P|MS})                     ;; Key = P|I (module-identity constant)
+    ;;{P4}  capabilities
     ;;  PURPOSE: Multi-policy metadata — IMP guard list for cross-module capability checks.
-    ;;{P3}
     (defcap P|FVT|CALLER ()
         true
     )
@@ -286,8 +295,7 @@
         (compose-capability (P|FVT|CALLER))
         (compose-capability (SECURE))
     )
-    ;;{P4}
-    (defconst P|I                   (P|Info))
+    ;;{P5}  functions
     (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
@@ -295,78 +303,94 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|FVT_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|FVT_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    ;;
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        @doc "Post-deploy (AQP-BOOT Step 0): FVT SECURE on AQP-SCORE + AQP-POOL IMP; \
-            \ P|FVT|CALLER on TFT/DPOF/DPDC-T; FVT|RemoteAqpGov on AQP-POOL for inject/collect vault legs. \
-            \ Vacate recipes live in AQP-VCT."
-        (let
-            (
-                (ref-P|SCR:module{OuronetPolicyV1} AQP-SCORE)
-                (ref-P|AQP:module{OuronetPolicyV1} AQP-POOL)
-                (ref-P|TFT:module{OuronetPolicyV1} TFT)
-                (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
-                (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
-                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
-                (ref-P|SWPLC:module{OuronetPolicyV1} SWPLC)
-                (ref-P|ORBR:module{OuronetPolicyV1} OUROBOROS)
-                (ref-P|ATSU:module{OuronetPolicyV1} ATSU)
-                ;;
-                (dg:guard (create-capability-guard (SECURE)))
-                (mg:guard (create-capability-guard (P|FVT|CALLER)))
-                (rg:guard (create-capability-guard (P|FVT|REMOTE-GOV)))
-            )
-            (ref-P|SCR::A_P|AddIMP dg)
-            (ref-P|AQP::A_P|AddIMP dg)
-            (ref-P|AQP::A_P|Add "FVT|RemoteAqpGov" rg)
-            (ref-P|TFT::A_P|AddIMP mg)
-            (ref-P|DPOF::A_P|AddIMP mg)
-            (ref-P|DPDC-T::A_P|AddIMP mg)
-            ;; DPTF: FVT burns the royalty pool in place from AQP|SC_NAME (DSA royalty burn disposal).
-            (ref-P|DPTF::A_P|AddIMP mg)
-            ;; SWPLC: FVT fuels a swpair with the royalty pool from AQP|SC_NAME (DSA royalty fuel disposal).
-            (ref-P|SWPLC::A_P|AddIMP mg)
-            ;; OUROBOROS: FVT normalizes an IGNIS royalty leg to OURO (XB_Compress) before disposal.
-            (ref-P|ORBR::A_P|AddIMP mg)
-            (ref-P|ATSU::A_P|AddIMP mg)
-        )
-    )
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    (defconst CT_FVT_RPS_PREC 48)
+    (defconst FVT|DSA-ORACLE-KEY:string "GLOBAL")
+    ;; --- Time-streamed inject (linear vesting release) — see Audit/STREAMED-INJECT-DESIGN.md ---
+    (defconst STREAM_EPOCH:time (time "1970-01-01T00:00:00Z")
+        "Default stream-last-release for a lane with no live stream (irrelevant while stream-count = 0).")
+    (defconst STREAM_MIN_UPS 10000000
+        "Anti-degeneracy floor: min smallest-token-units released per second for a streamed inject. \
+       \ Precision-normalized — the effective min rate is STREAM_MIN_UPS * 10^(-reward-decimals), so it is \
+       \ uniform across tokens (a 24-dp token clears it with a tiny amount; a 12-dp token needs ~0.864/24h).")
+    (defconst STREAM_MAX_DURATION 31536000
+        "Max stream duration in seconds (365 days).")
+    (defconst STREAM_MIN_DURATION 3600
+        "Min stream duration in seconds (1 hour). duration = 0 means an INSTANT inject (unchanged path).")
+    (defconst STREAM_MAX_LANES 49
+        "Hard ceiling on concurrent streams per lane (7x7 grid). The per-account cap (URC_MaxStreamLanes, by \
+       \ Elite tier of the FVT owner konto) is always <= this.")
+    ;; --- DSA (Delegated Staking Agencies) — see Audit/DSA-DELEGATED-STAKING-DESIGN.md ---
+    (defconst DSA_ORACLE_TTL 90000
+        "Oracle validity window in seconds (25h = a daily oracle write + 1h overlap, so there is never a gap \
+       \ between last-write-expired and next-write). At inject, a delegation member whose last oracle write is \
+       \ older than this (now − oracle-ts > DSA_ORACLE_TTL) captures NOTHING (effective weight 0 ⇒ its whole \
+       \ share routes to the royalty pool). Only consulted when the FVT's oracle-on flag is set.")
+    ;; --- Re-score sweep CC-batch gas backstop (loose ceiling + UI seed, mirrors the vacate cap philosophy) ---
+    (defconst SWEEP-CHUNK-GAS-BUDGET 2000000
+        "Nominal per-tx gas envelope the sweep CC-batch chunk cap is sized against (backstop, not the optimizer).")
+    (defconst SWEEP-GAS-PER-HOLDER 2000
+        "Per-holder backstop for the re-score recompute (settle across every reward stream + ANK aggregate \
+       \ refold + deb refresh + mirror resync). MEASURED (REPL/Kursan/AQP-scale-sweep.repl, final hoisted \
+       \ code): gas(n) = 81,040 + 1,684*n on a single-score/single-stream FVT → ~1,139 holders fit 2M. Set to \
+       \ 2,000 (slope + ~19% margin) → SWEEP-CHUNK-MAX = 1,000 (1,000 holders = 1.77M, headroom). NOT the \
+       \ optimizer: the UI sizes real chunks by simulating (/local) against the true model-dependent gas (richer \
+       \ FVTs settle across more streams → higher per-holder → simulate lower), and the node gas meter is the \
+       \ real enforcement (an oversized chunk aborts atomically — submitter's gas, offset unchanged, retry smaller).")
+    (defconst SWEEP-CHUNK-MAX (/ SWEEP-CHUNK-GAS-BUDGET SWEEP-GAS-PER-HOLDER)
+        "1,000 holders/chunk — the UI's optimistic seed + a coarse safety ceiling; refined by simulation.")
+    ;; --- Enforced-fresh inject CC-batch fix backstop (loose ceiling + UI seed; same philosophy) ---
+    (defconst INJECT-FIX-CHUNK-GAS-BUDGET 2000000
+        "Nominal per-tx gas envelope the inject-fix chunk cap is sized against (backstop, not the optimizer).")
+    (defconst INJECT-FIX-GAS-PER-USER 6500
+        "Per-stale-user backstop for the enforced-fresh deb-fix (settle across every reward stream + deb refresh \
+       \ + mirror resync). MEASURED (REPL/Kursan/AQP-scale-inject.repl, final hoisted code): gas(n) = 199,096 + \
+       \ 5,189*n on a single-score/single-stream FVT → ~347 users fit 2M. Set to 6,500 (slope + ~25% margin) → \
+       \ INJECT-FIX-CHUNK-MAX = 307 (307 users = 1.79M, headroom). NOT the optimizer — the UI sizes real chunks \
+       \ by simulating (/local) and the node gas meter is the real ceiling; an oversized chunk aborts atomically \
+       \ (retry smaller). Richer FVTs → higher fixed + per-user → simulate lower.")
+    (defconst INJECT-FIX-CHUNK-MAX (/ INJECT-FIX-CHUNK-GAS-BUDGET INJECT-FIX-GAS-PER-USER)
+        "307 stale users/chunk — the UI's optimistic seed + a coarse safety ceiling; refined by simulation.")
+    ;; M3 #12 2e — IGNIS charged per inject-forced deb-fix, at the user's next collect (non-discountable). Governance
+    ;; param (placeholder); set ≥ the IGNIS cost of self-fixing one score so self-fixing is always cheaper. ~10 IGNIS.
+    (defconst CT_FORCED_FIX_RATE:decimal 10.0)
+    (defconst BAR                                               (CT_Bar))
+    (defconst AQP|SC_NAME                                       (CT_AqpScName))
+    (defconst GAS|ISSUE-FVT                                     1000.0)
+    (defconst GAS|ADD-SCORE-ENTITY                              500.0)
+    (defconst GAS|ISSUE-MULTIPLET-FAMILY                        500.0)
+    (defconst GAS|TOGGLE-SCORE-ENTITY-LINK                      500.0)
+    (defconst GAS|SET-MOSAIC                                    500.0)
+    (defconst GAS|ADD-REWARD-LINK                               500.0)
+    (defconst GAS|TOGGLE-REWARD-LINK                            500.0)
+    (defconst GAS|SET-QUALITY-SPLIT                             500.0)
+    (defconst GAS|SET-COMMON-DENOMINATOR                        500.0)
+    (defconst GAS|SET-SPLIT-MODE                                500.0)
+    (defconst GAS|INJECT                                        500.0)
+    (defconst GAS|COLLECT                                       500.0)
+    (defconst GAS|UNSTALE                                       500.0)
+    (defconst CT_REWARD_KIND_PLAIN                              "PLAIN")
+    (defconst CT_REWARD_KIND_MULTIPLET_BASE                     "MULTIPLET_BASE")
+    ;; Round B: a MULTIPLET_BASE triplet reward line can split each lane HOMOGENEOUSLY (each lane → one ladder
+    ;; token: bronze→token-0, silver→token-1, gold→token-2) or HETEROGENEOUSLY (each lane → all 3 ladder tokens
+    ;; per a stored per-mille matrix). Absent config ⇒ HOMOGENEOUS (unchanged behavior).
+    (defconst CT_REWARD_MODE_HOMOGENEOUS                        "HOMOGENEOUS")
+    (defconst CT_REWARD_MODE_HETEROGENEOUS                      "HETEROGENEOUS")
+    (defconst CT_SCORE_ENTITY_SCORE                             1)
+    (defconst CT_SCORE_ENTITY_TRIPLET                           3)
+    (defconst CT_MEMBERSHIP_MODE_BAR                            "BAR")
+    (defconst CT_MEMBERSHIP_MODE_SCORE                          "SCORE")
+    (defconst CT_MEMBERSHIP_MODE_TRUE_TRIPLET                   "TRUE-TRIPLET")
+    (defconst CT_MEMBERSHIP_MODE_STANDARD_TRIPLET               "STANDARD-TRIPLET")
+    ;; Farm reward-split modes (D1-G2). Level-2 W_i source at inject; per-farm, freely mutable.
+    (defconst CT_SPLIT_MODE_STAKED                             "SPLIT|STAKED") ;; Variant 1 — participation (farm default): W_i = member STAKED value (URC_MemberStakedStoaValue)
+    (defconst CT_SPLIT_MODE_TVL                                "SPLIT|TVL")    ;; Variant 2 — pool-size: W_i = whole swpair TVL (UR_StoaValue)
+    (defconst CT_SPLIT_MODE_NA                                 "|")            ;; sentinel — split-mode is farm-only; vaults/treasuries store this and never consult it
+    ;;{3.2}  schemas
     ;;
-    ;;<======================>
-    ;;SCHEMAS-TABLES-CONSTANTS
-    ;;{1}
     (defschema FVT|Schema
         @doc "Key = <FVT-ID>. One farm, vault, or treasury (FVT) entity: class, owner, enabled-reward-count, SCORE aggregate mirrors. \
             \ Farm (fvt-class 0): common-denominator + total-ghost-tvl-weight S is inject denominator. \
@@ -646,8 +670,8 @@
         external-oracle:bool
         oracle-validity:integer
     )
+    ;;{3.3}  tables
     ;;
-    ;;{2}
     (deftable FVT|T:{FVT|Schema})                               ;; Key = <FVT-ID>
     (deftable FVT|T|ScoreEntityLink:{FVT|ScoreEntityLink})      ;; Key = <FVT-ID> | <Score-Entity-ID>
     (deftable FVT|T|MultipletFamily:{FVT|MultipletFamily})      ;; Key = <Multiplet-Family-ID>
@@ -664,106 +688,21 @@
     (deftable FVT|T|DsaOracleConfig:{FVT|DsaOracleConfig})      ;; Key = FVT|DSA-ORACLE-KEY (single global row)
     (deftable FVT|T|AgencyFee:{FVT|AgencyFee})                  ;; Key = <FVT-ID> | <Score-Entity-ID>
     (deftable FVT|T|QualitySplit:{FVT|QualitySplit})            ;; Key = <FVT-ID> | <DPTF-ID>
-    ;;{3}
-    (defconst CT_FVT_RPS_PREC 48)
-    (defconst FVT|DSA-ORACLE-KEY:string "GLOBAL")
-    ;; --- Time-streamed inject (linear vesting release) — see Audit/STREAMED-INJECT-DESIGN.md ---
-    (defconst STREAM_EPOCH:time (time "1970-01-01T00:00:00Z")
-        "Default stream-last-release for a lane with no live stream (irrelevant while stream-count = 0).")
-    (defconst STREAM_MIN_UPS 10000000
-        "Anti-degeneracy floor: min smallest-token-units released per second for a streamed inject. \
-       \ Precision-normalized — the effective min rate is STREAM_MIN_UPS * 10^(-reward-decimals), so it is \
-       \ uniform across tokens (a 24-dp token clears it with a tiny amount; a 12-dp token needs ~0.864/24h).")
-    (defconst STREAM_MAX_DURATION 31536000
-        "Max stream duration in seconds (365 days).")
-    (defconst STREAM_MIN_DURATION 3600
-        "Min stream duration in seconds (1 hour). duration = 0 means an INSTANT inject (unchanged path).")
-    (defconst STREAM_MAX_LANES 49
-        "Hard ceiling on concurrent streams per lane (7x7 grid). The per-account cap (URC_MaxStreamLanes, by \
-       \ Elite tier of the FVT owner konto) is always <= this.")
-    ;; --- DSA (Delegated Staking Agencies) — see Audit/DSA-DELEGATED-STAKING-DESIGN.md ---
-    (defconst DSA_ORACLE_TTL 90000
-        "Oracle validity window in seconds (25h = a daily oracle write + 1h overlap, so there is never a gap \
-       \ between last-write-expired and next-write). At inject, a delegation member whose last oracle write is \
-       \ older than this (now − oracle-ts > DSA_ORACLE_TTL) captures NOTHING (effective weight 0 ⇒ its whole \
-       \ share routes to the royalty pool). Only consulted when the FVT's oracle-on flag is set.")
-    ;; --- Re-score sweep CC-batch gas backstop (loose ceiling + UI seed, mirrors the vacate cap philosophy) ---
-    (defconst SWEEP-CHUNK-GAS-BUDGET 2000000
-        "Nominal per-tx gas envelope the sweep CC-batch chunk cap is sized against (backstop, not the optimizer).")
-    (defconst SWEEP-GAS-PER-HOLDER 2000
-        "Per-holder backstop for the re-score recompute (settle across every reward stream + ANK aggregate \
-       \ refold + deb refresh + mirror resync). MEASURED (REPL/Kursan/AQP-scale-sweep.repl, final hoisted \
-       \ code): gas(n) = 81,040 + 1,684*n on a single-score/single-stream FVT → ~1,139 holders fit 2M. Set to \
-       \ 2,000 (slope + ~19% margin) → SWEEP-CHUNK-MAX = 1,000 (1,000 holders = 1.77M, headroom). NOT the \
-       \ optimizer: the UI sizes real chunks by simulating (/local) against the true model-dependent gas (richer \
-       \ FVTs settle across more streams → higher per-holder → simulate lower), and the node gas meter is the \
-       \ real enforcement (an oversized chunk aborts atomically — submitter's gas, offset unchanged, retry smaller).")
-    (defconst SWEEP-CHUNK-MAX (/ SWEEP-CHUNK-GAS-BUDGET SWEEP-GAS-PER-HOLDER)
-        "1,000 holders/chunk — the UI's optimistic seed + a coarse safety ceiling; refined by simulation.")
-    ;; --- Enforced-fresh inject CC-batch fix backstop (loose ceiling + UI seed; same philosophy) ---
-    (defconst INJECT-FIX-CHUNK-GAS-BUDGET 2000000
-        "Nominal per-tx gas envelope the inject-fix chunk cap is sized against (backstop, not the optimizer).")
-    (defconst INJECT-FIX-GAS-PER-USER 6500
-        "Per-stale-user backstop for the enforced-fresh deb-fix (settle across every reward stream + deb refresh \
-       \ + mirror resync). MEASURED (REPL/Kursan/AQP-scale-inject.repl, final hoisted code): gas(n) = 199,096 + \
-       \ 5,189*n on a single-score/single-stream FVT → ~347 users fit 2M. Set to 6,500 (slope + ~25% margin) → \
-       \ INJECT-FIX-CHUNK-MAX = 307 (307 users = 1.79M, headroom). NOT the optimizer — the UI sizes real chunks \
-       \ by simulating (/local) and the node gas meter is the real ceiling; an oversized chunk aborts atomically \
-       \ (retry smaller). Richer FVTs → higher fixed + per-user → simulate lower.")
-    (defconst INJECT-FIX-CHUNK-MAX (/ INJECT-FIX-CHUNK-GAS-BUDGET INJECT-FIX-GAS-PER-USER)
-        "307 stale users/chunk — the UI's optimistic seed + a coarse safety ceiling; refined by simulation.")
-    ;; M3 #12 2e — IGNIS charged per inject-forced deb-fix, at the user's next collect (non-discountable). Governance
-    ;; param (placeholder); set ≥ the IGNIS cost of self-fixing one score so self-fixing is always cheaper. ~10 IGNIS.
-    (defconst CT_FORCED_FIX_RATE:decimal 10.0)
-    (defun CT_Bar ()
-        @doc "Returns CT_BAR constant."
-        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR))
-    )
-    (defconst BAR                                               (CT_Bar))
-    (defun CT_AqpScName:string
-        ()
-        @doc "Resolves AQP|SC_NAME from canonical AQP-ANK via interface ref."
-        (let ((ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)) (ref-ANK::GOV|AQP|SC_NAME))
-    )
-    (defconst AQP|SC_NAME                                       (CT_AqpScName))
-    (defconst GAS|ISSUE-FVT                                     1000.0)
-    (defconst GAS|ADD-SCORE-ENTITY                              500.0)
-    (defconst GAS|ISSUE-MULTIPLET-FAMILY                        500.0)
-    (defconst GAS|TOGGLE-SCORE-ENTITY-LINK                      500.0)
-    (defconst GAS|SET-MOSAIC                                    500.0)
-    (defconst GAS|ADD-REWARD-LINK                               500.0)
-    (defconst GAS|TOGGLE-REWARD-LINK                            500.0)
-    (defconst GAS|SET-QUALITY-SPLIT                             500.0)
-    (defconst GAS|SET-COMMON-DENOMINATOR                        500.0)
-    (defconst GAS|SET-SPLIT-MODE                                500.0)
-    (defconst GAS|INJECT                                        500.0)
-    (defconst GAS|COLLECT                                       500.0)
-    (defconst GAS|UNSTALE                                       500.0)
-    (defconst CT_REWARD_KIND_PLAIN                              "PLAIN")
-    (defconst CT_REWARD_KIND_MULTIPLET_BASE                     "MULTIPLET_BASE")
-    ;; Round B: a MULTIPLET_BASE triplet reward line can split each lane HOMOGENEOUSLY (each lane → one ladder
-    ;; token: bronze→token-0, silver→token-1, gold→token-2) or HETEROGENEOUSLY (each lane → all 3 ladder tokens
-    ;; per a stored per-mille matrix). Absent config ⇒ HOMOGENEOUS (unchanged behavior).
-    (defconst CT_REWARD_MODE_HOMOGENEOUS                        "HOMOGENEOUS")
-    (defconst CT_REWARD_MODE_HETEROGENEOUS                      "HETEROGENEOUS")
-    (defconst CT_SCORE_ENTITY_SCORE                             1)
-    (defconst CT_SCORE_ENTITY_TRIPLET                           3)
-    (defconst CT_MEMBERSHIP_MODE_BAR                            "BAR")
-    (defconst CT_MEMBERSHIP_MODE_SCORE                          "SCORE")
-    (defconst CT_MEMBERSHIP_MODE_TRUE_TRIPLET                   "TRUE-TRIPLET")
-    (defconst CT_MEMBERSHIP_MODE_STANDARD_TRIPLET               "STANDARD-TRIPLET")
-    ;; Farm reward-split modes (D1-G2). Level-2 W_i source at inject; per-farm, freely mutable.
-    (defconst CT_SPLIT_MODE_STAKED                             "SPLIT|STAKED") ;; Variant 1 — participation (farm default): W_i = member STAKED value (URC_MemberStakedStoaValue)
-    (defconst CT_SPLIT_MODE_TVL                                "SPLIT|TVL")    ;; Variant 2 — pool-size: W_i = whole swpair TVL (UR_StoaValue)
-    (defconst CT_SPLIT_MODE_NA                                 "|")            ;; sentinel — split-mode is farm-only; vaults/treasuries store this and never consult it
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
     ;;
-    ;;<==========>
-    ;;CAPABILITIES
-    ;;{C1}
     (defcap SECURE ()
         true
     )
-    ;;{C2}
+    (defcap FVT|XE>SWEEP-FIX (fvt-id:string)
+        @doc "Forward (MTX-AQP MTX|n|C_Inject defpact): authorize a chunked deb-staleness FIX pass over an FVT's \
+            \ stale stakers — NO fund movement (settle + refresh + mirror-resync only). Composes SECURE."
+        (compose-capability (SECURE))
+    )
+    ;;{C2}  Simple
+    ;;{C3}  Composed
     (defcap FVT|C>ISSUE-FVT
         (fvt-name:string owner-konto:string fvt-class:integer common-denominator:string)
         @doc "Issue one FVT|T row: autostake fvt-name, owner, class 0..2, farm common-denominator or vault/treasury \"|\". Composes SECURE for XI_IssueFvt."
@@ -1015,11 +954,6 @@
         (compose-capability (P|SECURE-CALLER))
         (compose-capability (P|FVT|REMOTE-GOV))
     )
-    (defcap FVT|XE>SWEEP-FIX (fvt-id:string)
-        @doc "Forward (MTX-AQP MTX|n|C_Inject defpact): authorize a chunked deb-staleness FIX pass over an FVT's \
-            \ stale stakers — NO fund movement (settle + refresh + mirror-resync only). Composes SECURE."
-        (compose-capability (SECURE))
-    )
     (defcap FVT|XE>SWEEP-BRACKET (anchor-id:string)
         @doc "Forward (paginated MTX|n|C_SweepRevokeAnchor defpact): authorize the sweep BRACKET — freeze/unfreeze \
             \ every affected pool and the one-shot swept-revoke of the anchor. Composes P|SECURE-CALLER so FVT's \
@@ -1099,7 +1033,6 @@
             (ref-DALOS::CAP_EnforceAccountOwnership patron))
         (compose-capability (P|SECURE-CALLER))
     )
-    ;;{C3}
     (defcap FVT|C>TRUE-FUNGIBLE-STAKE-FLOW
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
         @doc "TrueFungible stake/unstake recipe (direction=true stake, false unstake). \
@@ -1263,11 +1196,21 @@
             (compose-capability (SECURE))
         )
     )
-    ;;{C4}
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    (defun CT_Bar ()
+        @doc "Returns CT_BAR constant."
+        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR))
+    )
+    (defun CT_AqpScName:string
+        ()
+        @doc "Resolves AQP|SC_NAME from canonical AQP-ANK via interface ref."
+        (let ((ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)) (ref-ANK::GOV|AQP|SC_NAME))
+    )
     ;;
-    ;;<=======>
-    ;;FUNCTIONS
-    ;;{F1}  Construct [UDC]
     ;; [UDC] construct
     ;;
     ;;
@@ -1486,7 +1429,7 @@
         ,"pre-nz-flags"     : pre-nz-flags
         ,"pre-member-debs"  : pre-member-debs}
     )
-    ;;{F2}  Compute [UC]
+    ;;{5.2}  Compute [UC]
     ;; [UC]  compute
     (defun UCk_ScoreEntityLink:string (fvt-id:string score-entity-id:string)
         @doc "Composite key for FVT|T|ScoreEntityLink: fvt-id | score-entity-id."
@@ -1559,7 +1502,7 @@
         @doc "Full price when live billing is on (trigger=false); 0.0 when the gas toggle zeroes it."
         (if trigger 0.0 full-price)
     )
-    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;; [UR]  read
     ;; FVT|T|MemberVault  Key = <FVT-ID> | <Score-Entity-ID> | <DPTF-ID>  (Tier-1 dust sweep, M1/#10)
     (defun UR_FVT-MV|AvailableRewards:decimal (fvt-id:string score-entity-id:string dptf-id:string)
@@ -3410,7 +3353,15 @@
                 ])
         )
     )
-    ;;{F4}  Validate [UEV/CAP]
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
     ;; [UEV] enforce
     (defun UEV_TrueFungibleStakeOwnerAccount (owner-id:string)
         @doc "Recipe cap: owner-id must be an activated Ouronet account (signer proof in AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY)."
@@ -3797,7 +3748,7 @@
             (ref-DPTF::UEV_id common-denominator)
         )
     )
-    ;;{F5}  Write [W]
+    ;;{5.5}  Write [W]
     ;; [W]   write
     ;; Five blocks — one per deftable (table order). Within each block: WI → WW → WU → WU2+ (only when needed).
     ;; WU lists every schema field: defun when used; comment when [.], select key, or mutates via WW_*.
@@ -4129,10 +4080,9 @@
             ,"fvt-id"       : fvt-id
             ,"dptf-id"      : dptf-id})
     )
-    ;;{F6}  Aux/Protected [X]
+    ;;{5.6}  Aux/X
     ;; [XI]
     ;;
-    ;;ACTIONS  (Farm class 0 — two-tier RPS; see README_FVT.md Ghost TVL + Execution order)
     ;;
     ;;1]INJECT Rewards (farm: require total-ghost-tvl-weight S > 0)
     ;;  1a] Tier-2: current-rps (G) += reward-amount / S
@@ -6126,8 +6076,67 @@
             (XI_FvtInjectCore patron fvt-id reward-dptf-id amount)
         )
     )
-    ;;{F7}  User [A]
-    ;;{F8}  User [C]
+    ;;{5.7}  User [A/C]
+    (defun A_P|Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|FVT_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun A_P|AddIMP (policy-guard:guard)
+        (with-capability (GOV|FVT_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    ;;
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun A_P|Define ()
+        @doc "Post-deploy (AQP-BOOT Step 0): FVT SECURE on AQP-SCORE + AQP-POOL IMP; \
+            \ P|FVT|CALLER on TFT/DPOF/DPDC-T; FVT|RemoteAqpGov on AQP-POOL for inject/collect vault legs. \
+            \ Vacate recipes live in AQP-VCT."
+        (let
+            (
+                (ref-P|SCR:module{OuronetPolicyV1} AQP-SCORE)
+                (ref-P|AQP:module{OuronetPolicyV1} AQP-POOL)
+                (ref-P|TFT:module{OuronetPolicyV1} TFT)
+                (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
+                (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
+                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
+                (ref-P|SWPLC:module{OuronetPolicyV1} SWPLC)
+                (ref-P|ORBR:module{OuronetPolicyV1} OUROBOROS)
+                (ref-P|ATSU:module{OuronetPolicyV1} ATSU)
+                ;;
+                (dg:guard (create-capability-guard (SECURE)))
+                (mg:guard (create-capability-guard (P|FVT|CALLER)))
+                (rg:guard (create-capability-guard (P|FVT|REMOTE-GOV)))
+            )
+            (ref-P|SCR::A_P|AddIMP dg)
+            (ref-P|AQP::A_P|AddIMP dg)
+            (ref-P|AQP::A_P|Add "FVT|RemoteAqpGov" rg)
+            (ref-P|TFT::A_P|AddIMP mg)
+            (ref-P|DPOF::A_P|AddIMP mg)
+            (ref-P|DPDC-T::A_P|AddIMP mg)
+            ;; DPTF: FVT burns the royalty pool in place from AQP|SC_NAME (DSA royalty burn disposal).
+            (ref-P|DPTF::A_P|AddIMP mg)
+            ;; SWPLC: FVT fuels a swpair with the royalty pool from AQP|SC_NAME (DSA royalty fuel disposal).
+            (ref-P|SWPLC::A_P|AddIMP mg)
+            ;; OUROBOROS: FVT normalizes an IGNIS royalty leg to OURO (XB_Compress) before disposal.
+            (ref-P|ORBR::A_P|AddIMP mg)
+            (ref-P|ATSU::A_P|AddIMP mg)
+        )
+    )
     ;;
     ;; [C]   client
     ;; --- Lifecycle (FVT|T) ---
@@ -6373,7 +6382,6 @@
             (URCi_SetQualitySplit fvt-id [fvt-id reward-dptf-id mode])
         )
     )
-    ;;RPS economics (FVT|T|RPS|Global / FVT|T|RPS|User)
     ;;
     ;; ═══════════════════════════════════════════════════════════════════════════
     ;; UrStoa canonical inject / collect — phased model (00_StoaSandbox/coin.pact)
@@ -7111,7 +7119,9 @@
             )
         )
     )
-    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
+
+    ;;<=========================================================================>
+    ;;{6}  REPL
     ;; [REPL] dry-run helpers (not on the interface)
     ;;
     ;; --- REPL dry-run (GOV|FVT_ADMIN; not on AcquisitionFarmsVaultsTreasuriesV1) ---
@@ -7162,7 +7172,7 @@
         )
         fvt-id
     )
-    ;;
+
 )
 
 (create-table P|T)

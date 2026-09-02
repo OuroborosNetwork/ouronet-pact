@@ -50,28 +50,37 @@
 )
 ;;
 (module DPDC-T GOV
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV1)
     (implements DpdcTransferV1)
     (implements DpdcTransferV2)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
     ;;
-    ;;<========>
-    ;;GOVERNANCE
-    ;;{G1}
     (defconst GOV|MD_DPDC-T                 (keyset-ref-guard (GOV|Demiurgoi)))
-    ;;{G2}
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
     (defcap GOV ()                          (compose-capability (GOV|DPDC-T_ADMIN)))
     (defcap GOV|DPDC-T_ADMIN ()             (enforce-guard GOV|MD_DPDC-T))
-    ;;{G3}
+    ;;{G5}  functions
     (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    (defconst P|I                   (P|Info))
+    ;;{P2}  schemas
+    ;;{P3}  tables
     ;;
-    ;;<====>
-    ;;POLICY
-    ;;{P1}
-    ;;{P2}
     (deftable P|T:{OuronetPolicyV1.P|S})
     (deftable P|MT:{OuronetPolicyV1.P|MS})
-    ;;{P3}
+    ;;{P4}  capabilities
     (defcap P|DPDC-T|CALLER ()
         true
     )
@@ -79,8 +88,7 @@
         (compose-capability (P|DPDC-T|CALLER))
         (compose-capability (SECURE))
     )
-    ;;{P4}
-    (defconst P|I                   (P|Info))
+    ;;{P5}  functions
     (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
@@ -88,67 +96,25 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|DPDC-T_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|DPDC-T_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (ref-P|DPDC-C:module{OuronetPolicyV1} DPDC-C)
-                (mg:guard (create-capability-guard (P|DPDC-T|CALLER)))
-            )
-            (ref-P|DALOS::A_P|AddIMP mg)
-            (ref-P|DPDC-C::A_P|AddIMP mg)
-        )
-    )
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
-    ;;
-    ;;<======================>
-    ;;SCHEMAS-TABLES-CONSTANTS
-    ;;{1}
-    ;;{2}
-    ;;{3}
-    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
     (defconst BAR                   (CT_Bar))
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
     ;;
-    ;;<==========>
-    ;;CAPABILITIES
-    ;;{C1}
     (defcap SECURE ()
         true
     )
     (defcap IGNIS|C>NO-ROYALTY ()
         true
     )
+    ;;{C2}  Simple
     (defcap DPDC-T|C>REPURPOSE (id:string son:bool repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer])
         @event
         (let
@@ -159,9 +125,38 @@
             (enforce (= l1 l2) "Invalid Repurpose data")
         )
     )
-    ;;{C2}
-    ;;{C3}
-    ;;{C4}
+    (defcap DPDC-T|S>BULK-TRANSFER
+        (id:string son:bool sender:string receiver-lst:[string] method:bool)
+        @doc "Bulk transfer guards — same family as DPDC-T|C>TRANSFER over receiver-lst. \
+            \ Standard Ouronet accounts only (no smart accounts in receiver-lst)."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-U|LST:module{StringProcessorV1} U|LST)
+                ;;
+                (l:integer (length receiver-lst))
+            )
+            (ref-U|LST::UEV_IzUnique receiver-lst)
+            (ref-DPDC::UEV_PauseState id son false)
+            (ref-DPDC::UEV_AccountFreezeState id son sender false)
+            (map
+                (lambda (idx:integer)
+                    (let
+                        (
+                            (receiver:string (at idx receiver-lst))
+                        )
+                        (ref-DALOS::UEV_EnforceAccountType receiver false)
+                        (ref-DALOS::UEV_EnforceTransferability sender receiver method)
+                        (ref-DPDC::UEV_AccountFreezeState id son receiver false)
+                        (UEV_TransferRoles id son sender receiver)
+                    )
+                )
+                (enumerate 0 (- l 1))
+            )
+        )
+    )
+    ;;{C3}  Composed
     (defcap DPDC-T|C>TRANSFER (ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
         @event
         (let
@@ -204,37 +199,6 @@
             )
             ;;Capabilities
             (compose-capability (P|SECURE-CALLER))
-        )
-    )
-    (defcap DPDC-T|S>BULK-TRANSFER
-        (id:string son:bool sender:string receiver-lst:[string] method:bool)
-        @doc "Bulk transfer guards — same family as DPDC-T|C>TRANSFER over receiver-lst. \
-            \ Standard Ouronet accounts only (no smart accounts in receiver-lst)."
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-DPDC:module{DpdcV1} DPDC)
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-                ;;
-                (l:integer (length receiver-lst))
-            )
-            (ref-U|LST::UEV_IzUnique receiver-lst)
-            (ref-DPDC::UEV_PauseState id son false)
-            (ref-DPDC::UEV_AccountFreezeState id son sender false)
-            (map
-                (lambda (idx:integer)
-                    (let
-                        (
-                            (receiver:string (at idx receiver-lst))
-                        )
-                        (ref-DALOS::UEV_EnforceAccountType receiver false)
-                        (ref-DALOS::UEV_EnforceTransferability sender receiver method)
-                        (ref-DPDC::UEV_AccountFreezeState id son receiver false)
-                        (UEV_TransferRoles id son sender receiver)
-                    )
-                )
-                (enumerate 0 (- l 1))
-            )
         )
     )
     (defcap DPDC-T|C>BULK-TRANSFER
@@ -308,11 +272,20 @@
             (compose-capability (P|DPDC-T|CALLER))
         )
     )
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
     ;;
-    ;;<=======>
-    ;;FUNCTIONS
-    ;;{F1}  Construct [UDC]
-    ;;{F2}  Compute [UC]
+    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun UDCx_AggregatedRoyalties:object{DpdcTransferV1.AggregatedRoyalties}
+        (a:[string] b:[decimal])
+        {"creators"         : a
+        ,"ignis-royalties"  : b}
+    )
+    ;;{5.2}  Compute [UC]
+    ;;
     (defun UC_AndTruths:bool (truths:[bool])
         (fold (and) true truths)
     )
@@ -386,7 +359,7 @@
             )
         )
     )
-    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     (defun URC_TransferRoleChecker:bool (id:string son:bool sender:string)
         (let
             (
@@ -536,11 +509,6 @@
             (ref-IGNIS::UDC_ConstructOutputCumulator total sender zero-elite [])
         )
     )
-    (defun UDCx_AggregatedRoyalties:object{DpdcTransferV1.AggregatedRoyalties}
-        (a:[string] b:[decimal])
-        {"creators"         : a
-        ,"ignis-royalties"  : b}
-    )
     ;;
     ;;  (URCi_MultiTransferCumulator / URCi_BulkTransferCumulator, below, cover the transfers.)
     (defun URCi_RepurposeCollectable:object{IgnisCollectorV1.OutputCumulator}
@@ -560,7 +528,15 @@
             (ref-IGNIS::UDC_ConstructOutputCumulator price owner (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    ;;{F4}  Validate [UEV/CAP]
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
     (defun UEV_TransferRoles (id:string son:bool sender:string receiver:string)
         (let
             (
@@ -615,8 +591,8 @@
             )
         )
     )
-    ;;{F5}  Write [W]
-    ;;{F6}  Aux/Protected [X]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
     (defun XI_TransferNonces (id:string son:bool sender:string receiver:string nonces:[integer] amounts:[integer])
         (let
             (
@@ -737,8 +713,42 @@
             (ref-DALOS::XB_UpdateBalance sender false (- (ref-DALOS::UR_TF_AccountSupply sender false) ta))
         )
     )
-    ;;{F7}  User [A]
-    ;;{F8}  User [C]
+    ;;{5.7}  User [A/C]
+    (defun A_P|Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|DPDC-T_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun A_P|AddIMP (policy-guard:guard)
+        (with-capability (GOV|DPDC-T_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun A_P|Define ()
+        (let
+            (
+                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
+                (ref-P|DPDC-C:module{OuronetPolicyV1} DPDC-C)
+                (mg:guard (create-capability-guard (P|DPDC-T|CALLER)))
+            )
+            (ref-P|DALOS::A_P|AddIMP mg)
+            (ref-P|DPDC-C::A_P|AddIMP mg)
+        )
+    )
     (defun C_RepurposeCollectable:object{IgnisCollectorV1.OutputCumulator}
         (id:string son:bool repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer])
         (UEV_IMC)
@@ -890,8 +900,7 @@
             )
         )
     )
-    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
-    ;;
+
 )
 
 (create-table P|T)

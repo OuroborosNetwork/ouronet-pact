@@ -229,16 +229,22 @@
 )
 ;;
 (module DPTF GOV
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV1)
     (implements BrandingUsagePrimaryV1)
     (implements DemiourgosPactTrueFungibleV1)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
     ;;
-    ;;<========>
-    ;;GOVERNANCE
-    ;;{G1}
     (defconst GOV|MD_DPTF           (keyset-ref-guard (GOV|Demiurgoi)))
-    ;;{G2}
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
     (defcap GOV ()                  (compose-capability (GOV|DPTF_ADMIN)))
     (defcap GOV|DPTF_ADMIN ()
         (let
@@ -257,16 +263,83 @@
             )
         )
     )
-    ;;{G3}
+    (defcap GOV|SET_TREASURY-DISPO (type:integer tdp:decimal tds:decimal)
+        @event
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ouro:string (ref-DALOS::UR_OuroborosID))
+                (ouro-supply:decimal (UR_Supply ouro))
+                (op:integer (UR_Decimals ouro))
+                (treasury:string (at 0 (ref-DALOS::UR_DemiurgoiID)))
+                (treasury-supply:decimal (UR_AccountSupply ouro treasury))
+            )
+            ;;Type can only pe 0, 1, 2 or 3
+            ;;Type 0 = No Treasury Dispo
+            ;;Type 1 = Maximum Dispo equal to Total Supply
+            ;;Type 2 = Percent Based Dispo
+            ;:Type 3 = Absolute Value Dispo in Thousands
+            (enforce (= (contains type (enumerate 0 3)) true) "Treasury Dispo Type can only be 0, 1, 2 or 3!")
+            (let
+                (
+                    (lowest-dispo:decimal (UC_TreasuryLowestDispo ouro-supply op type tdp tds))
+                )
+                (enforce
+                    (<= lowest-dispo treasury-supply)
+                    (format "A Type {} Treasury Dispo cannot be set at {} because it surpases the Current Treasury Value of {}" [type tdp treasury-supply])
+                )
+                (compose-capability (GOV|DPTF_ADMIN))
+            )
+        )
+    )
+    (defcap GOV|WIPE_ALL-TREASURY-DEBT ()
+        @event
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ouro:string (ref-DALOS::UR_OuroborosID))
+                (ouro-supply:decimal (UR_Supply ouro))
+                (op:integer (UR_Decimals ouro))
+                (treasury:string (at 0 (ref-DALOS::UR_DemiurgoiID)))
+                (treasury-supply:decimal (UR_AccountSupply ouro treasury))
+            )
+            (enforce (< treasury-supply 0.0) "Cannot Wipe Positive Treasury Balance")
+            (compose-capability (GOV|DPTF_ADMIN))
+            (compose-capability (SECURE))
+        )
+    )
+    (defcap GOV|WIPE_PARTIAL-TREASURY-DEBT (debt-to-be-wiped:decimal)
+        @event
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ouro:string (ref-DALOS::UR_OuroborosID))
+                (ouro-supply:decimal (UR_Supply ouro))
+                (op:integer (UR_Decimals ouro))
+                (treasury:string (at 0 (ref-DALOS::UR_DemiurgoiID)))
+                (treasury-supply:decimal (UR_AccountSupply ouro treasury))
+            )
+            (enforce (< treasury-supply 0.0) "Cannot Wipe Positive Treasury Balance")
+            (enforce (<= debt-to-be-wiped (abs treasury-supply))
+                "Debt to be wiped must be smaller than or equal to the absolute value of the current Treasury Debt"
+            )
+            (compose-capability (GOV|DPTF_ADMIN))
+            (compose-capability (SECURE))
+        )
+    )
+    ;;{G5}  functions
     (defun GOV|Demiurgoi ()         (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    (defconst P|I                   (P|Info))
+    ;;{P2}  schemas
+    ;;{P3}  tables
     ;;
-    ;;<====>
-    ;;POLICY
-    ;;{P1}
-    ;;{P2}
     (deftable P|T:{OuronetPolicyV1.P|S})
     (deftable P|MT:{OuronetPolicyV1.P|MS})
-    ;;{P3}
+    ;;{P4}  capabilities
     (defcap P|DPTF|CALLER ()
         true
     )
@@ -274,8 +347,7 @@
         (compose-capability (P|DPTF|CALLER))
         (compose-capability (SECURE))
     )
-    ;;{P4}
-    (defconst P|I                   (P|Info))
+    ;;{P5}  functions
     (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
@@ -283,53 +355,15 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|DPTF_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|DPTF_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (ref-P|BRD:module{OuronetPolicyV1} BRD)
-                (mg:guard (create-capability-guard (P|DPTF|CALLER)))
-            )
-            (ref-P|DALOS::A_P|AddIMP mg)
-            (ref-P|BRD::A_P|AddIMP mg)
-        )
-    )
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    (defconst BAR               (CT_Bar))
+    (defconst DALOS|SC_NAME     (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|DALOS|SC_NAME)))
+    (defconst OUROBOROS|SC_NAME (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|OUROBOROS|SC_NAME)))
+    ;;{3.2}  schemas
     ;;
-    ;;<======================>
-    ;;SCHEMAS-TABLES-CONSTANTS
-    ;;{1}
     (defschema DPTF|PropertiesSchema
         id:string
         owner-konto:string
@@ -376,23 +410,31 @@
         r-fee-exemption:[string]
         r-transfer:[string]
     )
-    ;;{2}
+    ;;{3.3}  tables
     (deftable DPTF|PropertiesTable:{DPTF|PropertiesSchema})             ;;Key = <DPTF-id>
     (deftable DPTF|RoleTable:{DPTF|RoleSchema})                         ;;Key = <DPTF-id>
     (deftable DPTF|BalanceTable:{OuronetDalosV1.DPTF|BalanceSchema})    ;;Key = <DPTF-id> + BAR + <account> 
-    ;;{3}
-    (defun CT_Bar ()            (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
-    (defconst BAR               (CT_Bar))
-    (defconst DALOS|SC_NAME     (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|DALOS|SC_NAME)))
-    (defconst OUROBOROS|SC_NAME (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|OUROBOROS|SC_NAME)))
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
     ;;
-    ;;<==========>
-    ;;CAPABILITIES
-    ;;{C1}
     (defcap SECURE ()
         true
     )
-    ;;{C2}
+    ;;
+    ;;
+    (defcap AHU ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ah:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership ah)
+            (compose-capability (SECURE))
+        )
+    )
+    ;;{C2}  Simple
     (defcap DPTF|S>ROTATE-OWNERSHIP (id:string new-owner:string)
         @event
         (let
@@ -488,72 +530,7 @@
         (CAP_Owner id)
         (UEV_FeeLockState id (not toggle))
     )
-    ;;{C3}
-    ;;{C4}
-    (defcap GOV|SET_TREASURY-DISPO (type:integer tdp:decimal tds:decimal)
-        @event
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ouro:string (ref-DALOS::UR_OuroborosID))
-                (ouro-supply:decimal (UR_Supply ouro))
-                (op:integer (UR_Decimals ouro))
-                (treasury:string (at 0 (ref-DALOS::UR_DemiurgoiID)))
-                (treasury-supply:decimal (UR_AccountSupply ouro treasury))
-            )
-            ;;Type can only pe 0, 1, 2 or 3
-            ;;Type 0 = No Treasury Dispo
-            ;;Type 1 = Maximum Dispo equal to Total Supply
-            ;;Type 2 = Percent Based Dispo
-            ;:Type 3 = Absolute Value Dispo in Thousands
-            (enforce (= (contains type (enumerate 0 3)) true) "Treasury Dispo Type can only be 0, 1, 2 or 3!")
-            (let
-                (
-                    (lowest-dispo:decimal (UC_TreasuryLowestDispo ouro-supply op type tdp tds))
-                )
-                (enforce
-                    (<= lowest-dispo treasury-supply)
-                    (format "A Type {} Treasury Dispo cannot be set at {} because it surpases the Current Treasury Value of {}" [type tdp treasury-supply])
-                )
-                (compose-capability (GOV|DPTF_ADMIN))
-            )
-        )
-    )
-    (defcap GOV|WIPE_ALL-TREASURY-DEBT ()
-        @event
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ouro:string (ref-DALOS::UR_OuroborosID))
-                (ouro-supply:decimal (UR_Supply ouro))
-                (op:integer (UR_Decimals ouro))
-                (treasury:string (at 0 (ref-DALOS::UR_DemiurgoiID)))
-                (treasury-supply:decimal (UR_AccountSupply ouro treasury))
-            )
-            (enforce (< treasury-supply 0.0) "Cannot Wipe Positive Treasury Balance")
-            (compose-capability (GOV|DPTF_ADMIN))
-            (compose-capability (SECURE))
-        )
-    )
-    (defcap GOV|WIPE_PARTIAL-TREASURY-DEBT (debt-to-be-wiped:decimal)
-        @event
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ouro:string (ref-DALOS::UR_OuroborosID))
-                (ouro-supply:decimal (UR_Supply ouro))
-                (op:integer (UR_Decimals ouro))
-                (treasury:string (at 0 (ref-DALOS::UR_DemiurgoiID)))
-                (treasury-supply:decimal (UR_AccountSupply ouro treasury))
-            )
-            (enforce (< treasury-supply 0.0) "Cannot Wipe Positive Treasury Balance")
-            (enforce (<= debt-to-be-wiped (abs treasury-supply))
-                "Debt to be wiped must be smaller than or equal to the absolute value of the current Treasury Debt"
-            )
-            (compose-capability (GOV|DPTF_ADMIN))
-            (compose-capability (SECURE))
-        )
-    )
+    ;;{C3}  Composed
     ;;
     (defcap DPTF|C>UPDATE-BRD (dptf:string)
         @event
@@ -865,10 +842,13 @@
             (compose-capability (SECURE))
         )
     )
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    (defun CT_Bar ()            (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
     ;;
-    ;;<=======>
-    ;;FUNCTIONS
-    ;;{F1}  Construct [UDC]
     (defun UDC_VerumRoles:object{DPTF|RoleSchema}
         (a:[string] b:[string] c:[string] d:[string] e:[string])
         {"a-frozen"             : a
@@ -886,7 +866,7 @@
             (ref-DALOS::UDC_TrueFungibleAccount a b c d e f g h)
         )
     )
-    ;;{F2}  Compute [UC]
+    ;;{5.2}  Compute [UC]
     (defun UC_IdAccount:string (id:string account:string)
         (format "{}{}{}" [id BAR account])
     )
@@ -915,7 +895,7 @@
             (- 0.0 max-dispo)
         )
     )
-    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     (defun URU_UpgradeTruefungibleToV2 (ids:[string])
         (map
             (lambda
@@ -1394,10 +1374,8 @@
         )
     )
     ;;
-    ;;<======================>
     ;;[URCi] cost readers — the single cost source per client/forward op. The C_/XE_ returns its URCi
     ;;  (billing); Phase 1.2 INFO previews from the same reader. Each == the prior inline cumulator.
-    ;;<======================>
     (defun URCi_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator} (entity-id:string)
         (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_BrandingCumulator (UR_Konto entity-id) 1.0))
     )
@@ -1508,7 +1486,15 @@
             (if toggle 0.0 (at 1 (ref-U|DPTF::UC_UnlockPrice (UR_FeeUnlocks id))))
         )
     )
-    ;;{F4}  Validate [UEV/CAP]
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
     (defun UEV_ParentOwnership (dptf:string)
         @doc "Enforces: \
             \ <dptf> Ownership, if <dptf> is pure \
@@ -1754,7 +1740,7 @@
             (ref-DALOS::CAP_EnforceAccountOwnership (UR_Konto id))
         )
     )
-    ;;{F5}  Write [W]
+    ;;{5.5}  Write [W]
     (defun WW_UpdateBalance (id:string account:string new-balance:decimal)
         (require-capability (SECURE))
         (let
@@ -1777,7 +1763,7 @@
             )
         )
     )
-    ;;{F6}  Aux/Protected [X]
+    ;;{5.6}  Aux/X
     (defun XE_IssueLP:object{IgnisCollectorV1.OutputCumulator}
         (name:string ticker:string)
         @doc "Issues a DPTF Token as a Liquidity Pool Token. A LP DPTF follows specific rules in naming."
@@ -1942,7 +1928,6 @@
             )
         )
     )
-    ;;PURE Update/Write Functions
     ;;1]DPTF|PropertiesTable
     (defun XI_ChangeOwnership (id:string new-owner:string)
         (require-capability (DPTF|S>ROTATE-OWNERSHIP id new-owner))
@@ -2319,7 +2304,42 @@
             )
         )
     )
-    ;;{F7}  User [A]
+    ;;{5.7}  User [A/C]
+    (defun A_P|Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|DPTF_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun A_P|AddIMP (policy-guard:guard)
+        (with-capability (GOV|DPTF_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun A_P|Define ()
+        (let
+            (
+                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
+                (ref-P|BRD:module{OuronetPolicyV1} BRD)
+                (mg:guard (create-capability-guard (P|DPTF|CALLER)))
+            )
+            (ref-P|DALOS::A_P|AddIMP mg)
+            (ref-P|BRD::A_P|AddIMP mg)
+        )
+    )
     ;;
     (defun A_UpdateTreasury (type:integer tdp:decimal tds:decimal)
         (UEV_IMC)
@@ -2359,18 +2379,6 @@
             (with-capability (GOV|WIPE_PARTIAL-TREASURY-DEBT debt-to-be-wiped)
                 (C_Mint ouro treasury debt-to-be-wiped false)
             )
-        )
-    )
-    ;;
-    ;;
-    (defcap AHU ()
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ah:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
-            )
-            (ref-DALOS::CAP_EnforceAccountOwnership ah)
-            (compose-capability (SECURE))
         )
     )
     (defun AU_TrueFungibleAccounts (keyz:[string])
@@ -2419,7 +2427,6 @@
             {"id"       : id}
         )
     )
-    ;;{F8}  User [C]
     (defun C_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator}
         (entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}])
         (UEV_IMC)
@@ -2815,8 +2822,7 @@
             )
         )
     )
-    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
-    ;;
+
 )
 
 (create-table P|T)

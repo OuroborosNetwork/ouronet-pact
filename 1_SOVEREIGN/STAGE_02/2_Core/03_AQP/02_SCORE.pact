@@ -176,29 +176,38 @@
     @doc "AQP-SCORE — sovereign acquisition scoring for AQP pools. Owns global score configuration and totals (SCR|T|Score), per (ouronet-account, pool-id, score-id) user triples (SCR|T|UserScore), semi-fungible nonce weights (SCR|T|SF|Score) and SF DefRevision, and non-fungible definitions on SCR|T|NF|TraitScore vs SCR|T|NF|ClassScore with NF DefRevision split into global-, trait-, and class-revision nonces so trackers and URCX stake math can gate expensive selects. \
         \ Public surface: AcquisitionScoresV1 reads and stake-weight URC_*; Talos-facing C_* builds IGNIS (and STOA where applicable) and acquires client caps; XI_* performs table writes under require-capability (SECURE / SCR|XI>*); XE_* is for forward modules and likewise does not enforce — the guarding defcap or C_* owns validation and enforce. UCx_ / URCx_ helpers exist only as operands inside URC_* stake deltas. \
         \ Implements OuronetPolicyV1 and AcquisitionScoresV1."
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
     ;; REPL: REPL/Stage_02/[6.2.2]_AQP-SCORE.repl — intra-tx groups TX-SCORE-nn · mm in ;;==== … ==== lines (mm = 01.. within each begin-tx).
     ;;
     (implements OuronetPolicyV1)
     (implements AcquisitionScoresV1)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
     ;(implements DemiourgosPactDigitalCollectibles-UtilityPrototype)
     ;;
-    ;;<========>
-    ;;GOVERNANCE
-    ;;{G1}
     (defconst GOV|MD_AQP-SCORE              (keyset-ref-guard (GOV|Demiurgoi)))
-    ;;{G2}
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
     (defcap GOV ()                          (compose-capability (GOV|AQP-SCORE_ADMIN)))
     (defcap GOV|AQP-SCORE_ADMIN ()          (enforce-guard GOV|MD_AQP-SCORE))
-    ;;{G3}
+    ;;{G5}  functions
     (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    (defconst P|I                   (P|Info))
+    ;;{P2}  schemas
+    ;;{P3}  tables
     ;;
-    ;;<====>
-    ;;POLICY
-    ;;{P1}
-    ;;{P2}
     (deftable P|T:{OuronetPolicyV1.P|S})
     (deftable P|MT:{OuronetPolicyV1.P|MS})
-    ;;{P3}
+    ;;{P4}  capabilities
     (defcap P|AQP-SCORE|CALLER ()
         true
     )
@@ -206,8 +215,7 @@
         (compose-capability (P|AQP-SCORE|CALLER))
         (compose-capability (SECURE))
     )
-    ;;{P4}
-    (defconst P|I                   (P|Info))
+    ;;{P5}  functions
     (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
@@ -215,48 +223,20 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|AQP-SCORE_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|AQP-SCORE_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    ;;
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        @doc "Post-deploy hook (AQP-BOOT Step 0). No cross-module IMP registration required — \
-            \ SCORE calls DALOS UR_*/CAP_*/UEV_* only (no DALOS UEV_IMC on those paths); client entry is Talos P|TALOS-SUMMONER."
-        true
-    )
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    (defconst BAR                                               (CT_Bar))
+    (defconst GAS|ISSUE-SCORE                                   1000.0)
+    (defconst GAS|ISSUE-TRIPLET                                 500.0)
+    (defconst GAS|ISSUE-SCORE-MODEL                             500.0)
+    (defconst CT_SCORE_MODEL_SINGLE:integer                     1)
+    (defconst CT_SCORE_MODEL_TRIPLET:integer                    3)
+    (defconst EOC                                               (CT_EmptyCumulator))
+    (defconst AQP|SC_NAME                                       (CT_AqpScName))
+    ;;{3.2}  schemas
     ;;
-    ;;<======================>
-    ;;SCHEMAS-TABLES-CONSTANTS
-    ;;{1}
     ;;1] SCR|T|Score
     (defschema SCR|Schema
         @doc "General Score Definition \
@@ -420,7 +400,6 @@
     ;;Monotonic revision per (score-id, DPDC collection): bump only when a
     ;;row in SCR|T|SF|Score or SCR|T|NF|TraitScore / SCR|T|NF|ClassScore changes for that pair. AQP
     ;;trackers compare applied-def-revision-nonce to SCR|T|SF|DefRevision.revision-nonce /
-    ;;SCR|T|NF|DefRevision.global-revision-nonce at (employed-score-id, dpsf-id|dpnf-id).
     ;;6] SCR|T|SF|DefRevision
     (defschema SCR|SF|DefRevision
         @doc "Per (score-id, dpsf-id). revision-nonce bumps on any add or \
@@ -485,8 +464,8 @@
         ;;Select Keys
         model-id:string                                      ;;[.]
     )
+    ;;{3.3}  tables
     ;;
-    ;;{2}
     (deftable SCR|T|Score:{SCR|Schema})                         ;;1] Key = <Score-ID>
     (deftable SCR|T|UserScore:{SCR|UserSchema})                 ;;2] Key = <Ouronet-Account> | <Pool-ID> | <Score-ID>
     (deftable SCR|T|SF|Score:{SCR|SF|Schema})                   ;;3] Key = <Score-ID> | <DPSF-ID> | <Nonce>
@@ -497,33 +476,30 @@
     (deftable SCR|T|NF|TraitKeys:{SCR|NF|TraitKeys})            ;;7b] Key = <Score-ID> | <DPNF-ID>
     (deftable SCR|T|Triplet:{SCR|Triplet})                      ;;8] Key = <Triplet-ID>
     (deftable SCR|T|ScoreEntityModel:{SCR|ScoreEntityModel})    ;;9] Key = <Model-ID>
-    ;;{3}
-    (defun CT_Bar ()
-        @doc "Returns CT_BAR constant."
-        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR))
-    )
-    (defconst BAR                                               (CT_Bar))
-    (defconst GAS|ISSUE-SCORE                                   1000.0)
-    (defconst GAS|ISSUE-TRIPLET                                 500.0)
-    (defconst GAS|ISSUE-SCORE-MODEL                             500.0)
-    (defconst CT_SCORE_MODEL_SINGLE:integer                     1)
-    (defconst CT_SCORE_MODEL_TRIPLET:integer                    3)
-    (defun CT_EmptyCumulator ()     (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_EmptyOutputCumulatorV2)))
-    (defconst EOC                                               (CT_EmptyCumulator))
-    (defun CT_AqpScName:string
-        ()
-        @doc "Resolves AQP|SC_NAME from canonical AQP-ANK via interface ref."
-        (let ((ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)) (ref-ANK::GOV|AQP|SC_NAME))
-    )
-    (defconst AQP|SC_NAME                                       (CT_AqpScName))
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
     ;;
-    ;;<==========>
-    ;;CAPABILITIES
-    ;;{C1}
     (defcap SECURE ()
         true
     )
-    ;;{C2}
+    (defcap SCR|XE>REFRESH-USER-SCORE-DEB (ouronet-account:string pool-id:string score-id:string)
+        @doc "Forward (AQP-FVT collect / inject sweep): recompute a user's stored deb-score at the current live \
+            \ Elite-DEB (M3 deb-staleness backstop). Benign — no fund movement, just a recompute; the CALLER must \
+            \ have settled the user's pending at the OLD deb-score first (RPS settle-before-weight-change). \
+            \ Composes SECURE."
+        (compose-capability (SECURE))
+    )
+    (defcap SCR|XE>NUKE-SCORE-FOR-VACATE (score-id:string)
+        @doc "Forward (AQP-VCT finalize): vacate-v2 §5 nuke of one employed score — bulk-zero the aggregate totals \
+            \ + nzs and bump vacate-generation (lazily invalidating every per-user row). Only reached from \
+            \ C_FinalizeVacate, which is pool-owner gated and requires nns==0 (the pool is verified empty and \
+            \ every beneficiary already settled during the drain). Composes SECURE."
+        (compose-capability (SECURE))
+    )
+    ;;{C2}  Simple
+    ;;{C3}  Composed
     (defcap SCR|XI>ISSUE-SCORE
         (
             score-name:string
@@ -591,8 +567,6 @@
             (compose-capability (SECURE))
         )
     )
-    ;;{C3}
-    ;;{C4}  Client score issuance — evented caps distinguish score-class path; each composes SCR|XI>ISSUE-SCORE.
     (defcap SCR|C>ISSUE-LIQUIDITY-SCORE
         (owner-konto:string score-name:string precision:integer lp-denominator:string mx-frozen:decimal mx-sleeping:decimal)
         @doc "Issue LP score (score-class 0). Caller supplies lp-denominator, mx-frozen and mx-sleeping; mx-hibernated 1.0, sft-equality true, nft-score-model -1."
@@ -1042,20 +1016,6 @@
         )
         (compose-capability (SECURE))
     )
-    (defcap SCR|XE>REFRESH-USER-SCORE-DEB (ouronet-account:string pool-id:string score-id:string)
-        @doc "Forward (AQP-FVT collect / inject sweep): recompute a user's stored deb-score at the current live \
-            \ Elite-DEB (M3 deb-staleness backstop). Benign — no fund movement, just a recompute; the CALLER must \
-            \ have settled the user's pending at the OLD deb-score first (RPS settle-before-weight-change). \
-            \ Composes SECURE."
-        (compose-capability (SECURE))
-    )
-    (defcap SCR|XE>NUKE-SCORE-FOR-VACATE (score-id:string)
-        @doc "Forward (AQP-VCT finalize): vacate-v2 §5 nuke of one employed score — bulk-zero the aggregate totals \
-            \ + nzs and bump vacate-generation (lazily invalidating every per-user row). Only reached from \
-            \ C_FinalizeVacate, which is pool-owner gated and requires nns==0 (the pool is verified empty and \
-            \ every beneficiary already settled during the drain). Composes SECURE."
-        (compose-capability (SECURE))
-    )
     (defcap SCR|XE>UPDATE-STAKE-DPOF
         (
             ouronet-account:string
@@ -1258,9 +1218,21 @@
         (enforce (URC_ScoreEntityModelExists model-id) "Model must exist")
         (compose-capability (SECURE))
     )
-    ;;<=======>
-    ;;FUNCTIONS
-    ;;{F1}  Construct [UDC]
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    (defun CT_Bar ()
+        @doc "Returns CT_BAR constant."
+        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR))
+    )
+    (defun CT_EmptyCumulator ()     (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_EmptyOutputCumulatorV2)))
+    (defun CT_AqpScName:string
+        ()
+        @doc "Resolves AQP|SC_NAME from canonical AQP-ANK via interface ref."
+        (let ((ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)) (ref-ANK::GOV|AQP|SC_NAME))
+    )
     ;; [UDC] construct
     ;;
     ;; Early UDC: SCR|UserSchema constructor is required before UR_U-SCR|UserScore (with-default-read default object).
@@ -1403,7 +1375,7 @@
         ,"golden-model-id"    : golden-model-id
         ,"model-id"           : model-id}
     )
-    ;;{F2}  Compute [UC]
+    ;;{5.2}  Compute [UC]
     ;; [UC]  compute
     (defun UCk_UserScore:string (ouronet-account:string pool-id:string score-id:string)
         @doc "Composite key for SCR|T|UserScore: account | pool | score."
@@ -1477,7 +1449,7 @@
             )
         )
     )
-    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;; [UR]  read
     (defun URC_NFTraitKeysList:[string] (score-id:string dpnf-id:string)
         @doc "The distinct defined trait-keys for (score-id, dpnf-id); [] when none defined. Point read \
@@ -2414,7 +2386,6 @@
         (not (= (take 2 dpof-id) "H|"))
     )
     ;;
-    ;;<====> DSA score-entity MODEL (§17) — reusable templates (canon-refactored after this build step)
     (defun URC_ScoreEntityModelExists:bool (model-id:string)
         @doc "True when a score-entity model row exists."
         (with-default-read SCR|T|ScoreEntityModel model-id {"model-id" : BAR} {"model-id" := m} (!= m BAR))
@@ -2472,7 +2443,15 @@
     (defun URCi_IssueScoreModel:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string])
         @doc "GAS|ISSUE-SCORE-MODEL (shared by IssueSingleScoreModel / CombineTripletScoreModel / IssueScoreFromModel)."
         (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ISSUE-SCORE-MODEL patron (r::URC_IsVirtualGasZero) output)))
-    ;;{F4}  Validate [UEV/CAP]
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
     ;; [UEV] enforce
     (defun UEV_LpStakeScoreContext
         (ouronet-account:string pool-id:string score-id:string lp-id:string)
@@ -2734,7 +2713,7 @@
             )
         )
     )
-    ;;{F5}  Write [W]
+    ;;{5.5}  Write [W]
     ;; [W]   write
     ;; Nine blocks — one per deftable (table order). Within each block: WI → WW → WU → WU2+ (only when needed).
     ;; WU lists every schema field: defun when used; comment when [.], select key, or mutates via WW_*.
@@ -2952,7 +2931,7 @@
         (require-capability (SECURE))
         (insert SCR|T|ScoreEntityModel model-id row)
     )
-    ;;{F6}  Aux/Protected [X]
+    ;;{5.6}  Aux/X
     ;; [XI]
     ;;
     ;; Depth: C_* → XI_* (depth 0) → XI_1|* … ; XE_* / XB_* → XI_1|* (depth 1) → XI_2|* …
@@ -3368,7 +3347,6 @@
             )
         )
     )
-    ;;<====> DSA score-entity model FACTORY (§17b) — issue conforming entities (canon-refactored after this step)
     (defun XI_IssueOneFromModel:string (owner-konto:string single-model-id:string score-name:string)
         @doc "Issue ONE SF score (class 3) named <score-name> + its SF definition from a SINGLE model, owned by \
             \ owner-konto. Returns the score-id (UDC_Makeid score-name). require SECURE; acquires SCR|XI>ISSUE-SCORE \
@@ -3599,8 +3577,37 @@
         )
         fvt-id
     )
-    ;;{F7}  User [A]
-    ;;{F8}  User [C]
+    ;;{5.7}  User [A/C]
+    (defun A_P|Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|AQP-SCORE_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun A_P|AddIMP (policy-guard:guard)
+        (with-capability (GOV|AQP-SCORE_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    ;;
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun A_P|Define ()
+        @doc "Post-deploy hook (AQP-BOOT Step 0). No cross-module IMP registration required — \
+            \ SCORE calls DALOS UR_*/CAP_*/UEV_* only (no DALOS UEV_IMC on those paths); client entry is Talos P|TALOS-SUMMONER."
+        true
+    )
     ;;
     ;; [C]   client
     ;;
@@ -3810,7 +3817,6 @@
             )
         )
     )
-    ;;DPDC granular definitions
     (defun C_IssueSemiFungibleScoreDefinition:object{IgnisCollectorV1.OutputCumulator}
         (score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal])
         @doc "Write SCR|T|SF|Score nonce-score-value for multiple nonces in one call; increments SF DefRevision revision-nonce once."
@@ -3958,8 +3964,7 @@
             )
         )
     )
-    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
-    ;;
+
 )
 
 (create-table P|T)

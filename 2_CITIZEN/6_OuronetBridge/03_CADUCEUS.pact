@@ -1,94 +1,107 @@
 (module CADUCEUS GOV
     @doc "Barebones Stage 2 Citizen module scaffold for Caduceus bridge."
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
     ;;
-    ;;<========>
-    ;;GOVERNANCE
-    ;;{G1}
     (defconst GOV|MD_CADUCEUS                (keyset-ref-guard (GOV|Demiurgoi)))
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
     ;;
-    ;;{G2}
     (defcap GOV ()                           (compose-capability (GOV|CADUCEUS_ADMIN)))
     (defcap GOV|CADUCEUS_ADMIN ()
         (enforce-guard GOV|MD_CADUCEUS)
     )
-    ;;
-    ;;{G3}
-    (defun CT_Namespace ()                     (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
+    ;;{G5}  functions
     (defun GOV|Demiurgoi ()                  (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|CADUCEUS|SC_NAME ()           (at 0 ["CADUCEUS_SMART_ACCOUNT_PLACEHOLDER"]))
+    (defun GOV|CADUCEUS|PBL ()               (at 0 ["CADUCEUS_PUBLIC_KEY_PLACEHOLDER"]))
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
     ;;
     ;; Placeholders to be set by you.
     (defconst CADUCEUS|SC_NAME               (GOV|CADUCEUS|SC_NAME))
     (defconst CADUCEUS|PBL                   (GOV|CADUCEUS|PBL))
-    (defun GOV|CADUCEUS|SC_NAME ()           (at 0 ["CADUCEUS_SMART_ACCOUNT_PLACEHOLDER"]))
-    (defun GOV|CADUCEUS|PBL ()               (at 0 ["CADUCEUS_PUBLIC_KEY_PLACEHOLDER"]))
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
     ;;
-    ;;<====>
-    ;;POLICY
-    ;;{P1}
-    ;;{P2}
-    ;;{P3}
-    ;;{P4}
     ;;
-    ;;<======================>
-    ;;SCHEMAS-TABLES-CONSTANTS
-    ;;{1}
-    ;;{2}
-    ;;{3}
     ;;
-    ;;<==========>
-    ;;CAPABILITIES
-    ;;{C1}
     (defcap SECURE ()
         true
     )
-    ;;{C2}
-    ;;{C3}
-    ;;{C4}
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
     ;;
-    ;;<=======>
-    ;;FUNCTIONS
-    ;;{F1}  Construct [UDC]
-    ;;{F2}  Compute [UC]
-    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
-    ;;{F4}  Validate [UEV/CAP]
-    ;;{F5}  Write [W]
-    ;;{F6}  Aux/Protected [X]
-    ;;{F7}  User [A]
-    ;;{F8}  User [C]
-    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
-    ;;
+    (defun CT_Namespace ()                     (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
 )
 (module CADUCEUS GOV
     @doc "Caduceus bridge controller for DPTF mint/burn flows."
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
     ;;
-    ;;<========>
-    ;;GOVERNANCE
-    ;;{G1}
     (defconst GOV|MD_CADUCEUS               (keyset-ref-guard (GOV|Demiurgoi)))
-    ;;{G2}
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
     (defcap GOV ()                          (compose-capability (GOV|CADUCEUS_ADMIN)))
     (defcap GOV|CADUCEUS_ADMIN ()
         (enforce-guard GOV|MD_CADUCEUS)
     )
-    ;; Oracle capability for bridge relayer keyset.
-    (defcap BRIDGE|RELAYER ()
-        (enforce-guard (keyset-ref-guard (CT_BridgeKey)))
-    )
-    ;;{G3}
-    (defun CT_Namespace ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
+    ;;{G5}  functions
     (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
-    (defun CT_BridgeKey ()                 (+ (CT_Namespace) ".dh_bridge_caduceus-keyset"))
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    (defconst CFG_KEY                        "bridge")
+    ;;{3.2}  schemas
     ;;
-    ;;<====>
-    ;;POLICY
-    ;;{P1}
-    ;;{P2}
-    ;;{P3}
-    ;;{P4}
     ;;
-    ;;<======================>
-    ;;SCHEMAS-TABLES-CONSTANTS
-    ;;{1}
     (defschema CADUCEUS|ConfigSchema
         bridge-account:string
         bridge-stoa:string
@@ -107,27 +120,33 @@
         amount:decimal
         processed-at:time
     )
-    ;;{2}
+    ;;{3.3}  tables
     (deftable CADUCEUS|ConfigTable:{CADUCEUS|ConfigSchema}) ;; Key = "bridge"
     (deftable CADUCEUS|SignalTable:{CADUCEUS|SignalSchema}) ;; Key = signal-id
-    ;;{3}
-    (defconst CFG_KEY                        "bridge")
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
     ;;
-    ;;<==========>
-    ;;CAPABILITIES
-    ;;{C1}
     (defcap SECURE ()
         true
     )
-    ;;{C2}
-    ;;{C3}
-    ;;{C4}
+    ;;{C2}  Simple
+    ;; Oracle capability for bridge relayer keyset.
+    (defcap BRIDGE|RELAYER ()
+        (enforce-guard (keyset-ref-guard (CT_BridgeKey)))
+    )
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    (defun CT_Namespace ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
+    (defun CT_BridgeKey ()                 (+ (CT_Namespace) ".dh_bridge_caduceus-keyset"))
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
-    ;;<=======>
-    ;;FUNCTIONS
-    ;;{F1}  Construct [UDC]
-    ;;{F2}  Compute [UC]
-    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     (defun UR_BridgeConfigured:bool ()
         (contains CFG_KEY (keys CADUCEUS|ConfigTable))
     )
@@ -146,7 +165,7 @@
     (defun UR_SignalProcessed:bool (signal-id:string)
         (contains signal-id (keys CADUCEUS|SignalTable))
     )
-    ;;{F4}  Validate [UEV/CAP]
+    ;;{5.4}  Validate [UEV/CAP]
     (defun UEV_Ready:bool ()
         (let
             (
@@ -174,9 +193,9 @@
             true
         )
     )
-    ;;{F5}  Write [W]
-    ;;{F6}  Aux/Protected [X]
-    ;;{F7}  User [A]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
     (defun A_SetBridgeConfig
         (
             bridge-account:string
@@ -254,7 +273,6 @@
             )
         )
     )
-    ;;{F8}  User [C]
     (defun C_MintToUserFromBridgeSignal
         (
             signal-id:string
@@ -327,6 +345,5 @@
             )
         )
     )
-    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
-    ;;
+
 )

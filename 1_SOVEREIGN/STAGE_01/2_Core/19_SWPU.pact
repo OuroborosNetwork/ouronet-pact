@@ -123,30 +123,38 @@
 )
 ;;
 (module SWPU GOV
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV1)
     (implements SwapperUsageV2)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
     ;;
-    ;;<========>
-    ;;GOVERNANCE
-    ;;{G1}
     (defconst GOV|MD_SWPU           (keyset-ref-guard (GOV|Demiurgoi)))
-    (defconst SWP|SC_NAME           (GOV|SWP|SC_NAME))
-    ;;{G2}
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
     (defcap GOV ()                  (compose-capability (GOV|SWPU_ADMIN)))
     (defcap GOV|SWPU_ADMIN ()       (enforce-guard GOV|MD_SWPU))
+    ;;{G5}  functions
     ;;
     (defun GOV|SWP|SC_NAME ()       (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|SWP|SC_NAME)))
-    ;;{G3}
     (defun GOV|Demiurgoi ()         (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    (defconst P|I                   (P|Info))
+    ;;{P2}  schemas
+    ;;{P3}  tables
     ;;
-    ;;<====>
-    ;;POLICY
-    ;;{P1}
-    ;;{P2}
     (deftable P|T:{OuronetPolicyV1.P|S})                        ;;Key = <policy-name>
     (deftable P|MT:{OuronetPolicyV1.P|MS})                      ;;Key = P|I (module-identity singleton constant)
-    ;;{P3}
+    ;;{P4}  capabilities
     (defcap P|SWPU|CALLER ()
         true
     )
@@ -157,8 +165,7 @@
         (compose-capability (P|SWPU|REMOTE-GOV))
         (compose-capability (P|SWPU|CALLER))
     )
-    ;;{P4}
-    (defconst P|I                   (P|Info))
+    ;;{P5}  functions
     (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
@@ -166,92 +173,11 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|SWPU_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|SWPU_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (ref-P|BRD:module{OuronetPolicyV1} BRD)
-                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
-                ;(ref-P|DPOF:module{OuronetPolicyV1} DPOF)
-                (ref-P|ATS:module{OuronetPolicyV1} ATS)
-                (ref-P|TFT:module{OuronetPolicyV1} TFT)
-                (ref-P|ATSU:module{OuronetPolicyV1} ATSU)
-                (ref-P|VST:module{OuronetPolicyV1} VST)
-                (ref-P|LIQUID:module{OuronetPolicyV1} LIQUID)
-                (ref-P|ORBR:module{OuronetPolicyV1} OUROBOROS)
-                (ref-P|SWPT:module{OuronetPolicyV1} SWPT)
-                (ref-P|SWP:module{OuronetPolicyV1} SWP)
-                (mg:guard (create-capability-guard (P|SWPU|CALLER)))
-            )
-            (ref-P|DALOS::A_P|Add
-                "SWPU|RemoteDalosGov"
-                (create-capability-guard (P|SWPU|REMOTE-GOV))
-            )
-            (ref-P|VST::A_P|Add
-                "SWPU|RemoteSwpGov"
-                (create-capability-guard (P|SWPU|REMOTE-GOV))
-            )
-            (ref-P|SWP::A_P|Add
-                "SWPU|RemoteSwpGov"
-                (create-capability-guard (P|SWPU|REMOTE-GOV))
-            )
-            (ref-P|DALOS::A_P|AddIMP mg)
-            (ref-P|BRD::A_P|AddIMP mg)
-            (ref-P|DPTF::A_P|AddIMP mg)
-            ;(ref-P|DPOF::A_P|AddIMP mg)
-            (ref-P|ATS::A_P|AddIMP mg)
-            (ref-P|TFT::A_P|AddIMP mg)
-            (ref-P|ATSU::A_P|AddIMP mg)
-            (ref-P|VST::A_P|AddIMP mg)
-            (ref-P|LIQUID::A_P|AddIMP mg)
-            (ref-P|ORBR::A_P|AddIMP mg)
-            (ref-P|SWPT::A_P|AddIMP mg)
-            (ref-P|SWP::A_P|AddIMP mg)
-        )
-    )
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-                (mp:[guard] (P|UR_IMP))
-                (g:guard (ref-U|G::UEV_GuardOfAny mp))
-            )
-            (enforce-guard g)
-        )
-    )
-    ;;
-    ;;<======================>
-    ;;SCHEMAS-TABLES-CONSTANTS
-    ;;{1}
-    ;;{2}
-    ;;{3}
-    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
-    (defun CT_EmptyCumulator ()     (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_EmptyOutputCumulatorV2)))
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    (defconst SWP|SC_NAME           (GOV|SWP|SC_NAME))
     (defconst BAR                   (CT_Bar))
     (defconst EOC                   (CT_EmptyCumulator))
     ;;#34 Phase 8: sentinel CachedPathOrMiss meaning "no bundle-supplied boost-path was
@@ -262,25 +188,27 @@
     ;;for "no cached path exists" — semantically the same case ("I have nothing for you,
     ;;compute it yourself"), not overloading the meaning.
     (defconst NO_PATH               {"nodes" : [BAR], "edges" : [], "is-new" : false})
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
     ;;
-    ;;<==========>
-    ;;CAPABILITIES
-    ;;{C1}
     (defcap SECURE ()
         true
-    )
-    (defcap SWPU|S>FEED-SPECIAL-TARGETS 
-        (id:string total-amount:decimal targets:[string] target-proportions:[decimal] target-amounts:[decimal])
-        @event
-        (compose-capability (P|SWPU|REMOTE-GOV))
     )
     (defcap SWPU|S>LIQUID-BOOST (id:string total-amount:decimal idx-increment:decimal)
         @event
         true
     )
-    ;;{C2}
-    ;;{C3}
-    ;;{C4}
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    (defcap SWPU|S>FEED-SPECIAL-TARGETS 
+        (id:string total-amount:decimal targets:[string] target-proportions:[decimal] target-amounts:[decimal])
+        @event
+        (compose-capability (P|SWPU|REMOTE-GOV))
+    )
     (defcap SPWU|C>TOGGLE-SWAP (swpair:string toggle:bool)
         (if toggle
             (let
@@ -478,10 +406,15 @@
             (compose-capability (SECURE))
         )
     )
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
     ;;
-    ;;<=======>
-    ;;FUNCTIONS
-    ;;{F1}  Construct [UDC]
+    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_EmptyCumulator ()     (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_EmptyOutputCumulatorV2)))
+    ;;
     (defun UDC_SpawnSmartSwapSlippageBounds:object{SwapperUsageV2.Slippage}
         (
             input-id:string 
@@ -572,7 +505,7 @@
             (UDC_Slippage expected o-prec slippage-value)
         )
     )
-    ;;{F2}  Compute [UC]
+    ;;{5.2}  Compute [UC]
     (defun UC_SlippageMinMax:[decimal] (input:object{SwapperUsageV2.Slippage})
         (let
             (
@@ -631,7 +564,7 @@
             )
         )
     )
-    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     (defun URC_DedupFirstTokens:[string] (distinct-edges:[string])
         @doc "#34 Phase 7 (validated with real evidence, P0.6/Phase 5): given the swap's \
             \ own <distinct-edges> (the pools actually traversed), returns the DEDUPED \
@@ -1142,9 +1075,19 @@
             )
         )
     )
-    ;;{F4}  Validate [UEV/CAP]
-    ;;{F5}  Write [W]
-    ;;{F6}  Aux/Protected [X]
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+                (mp:[guard] (P|UR_IMP))
+                (g:guard (ref-U|G::UEV_GuardOfAny mp))
+            )
+            (enforce-guard g)
+        )
+    )
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
     (defun XI_SmartSwapAndRegister:list
         (
             account:string input-id:string input-amount:decimal output-id:string slippage:decimal
@@ -2064,8 +2007,75 @@
             )
         )
     )
-    ;;{F7}  User [A]
-    ;;{F8}  User [C]
+    ;;{5.7}  User [A/C]
+    (defun A_P|Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|SWPU_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun A_P|AddIMP (policy-guard:guard)
+        (with-capability (GOV|SWPU_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun A_P|Define ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
+                (ref-P|BRD:module{OuronetPolicyV1} BRD)
+                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
+                ;(ref-P|DPOF:module{OuronetPolicyV1} DPOF)
+                (ref-P|ATS:module{OuronetPolicyV1} ATS)
+                (ref-P|TFT:module{OuronetPolicyV1} TFT)
+                (ref-P|ATSU:module{OuronetPolicyV1} ATSU)
+                (ref-P|VST:module{OuronetPolicyV1} VST)
+                (ref-P|LIQUID:module{OuronetPolicyV1} LIQUID)
+                (ref-P|ORBR:module{OuronetPolicyV1} OUROBOROS)
+                (ref-P|SWPT:module{OuronetPolicyV1} SWPT)
+                (ref-P|SWP:module{OuronetPolicyV1} SWP)
+                (mg:guard (create-capability-guard (P|SWPU|CALLER)))
+            )
+            (ref-P|DALOS::A_P|Add
+                "SWPU|RemoteDalosGov"
+                (create-capability-guard (P|SWPU|REMOTE-GOV))
+            )
+            (ref-P|VST::A_P|Add
+                "SWPU|RemoteSwpGov"
+                (create-capability-guard (P|SWPU|REMOTE-GOV))
+            )
+            (ref-P|SWP::A_P|Add
+                "SWPU|RemoteSwpGov"
+                (create-capability-guard (P|SWPU|REMOTE-GOV))
+            )
+            (ref-P|DALOS::A_P|AddIMP mg)
+            (ref-P|BRD::A_P|AddIMP mg)
+            (ref-P|DPTF::A_P|AddIMP mg)
+            ;(ref-P|DPOF::A_P|AddIMP mg)
+            (ref-P|ATS::A_P|AddIMP mg)
+            (ref-P|TFT::A_P|AddIMP mg)
+            (ref-P|ATSU::A_P|AddIMP mg)
+            (ref-P|VST::A_P|AddIMP mg)
+            (ref-P|LIQUID::A_P|AddIMP mg)
+            (ref-P|ORBR::A_P|AddIMP mg)
+            (ref-P|SWPT::A_P|AddIMP mg)
+            (ref-P|SWP::A_P|AddIMP mg)
+        )
+    )
     (defun C_ToggleSwapCapability:object{IgnisCollectorV1.OutputCumulator}
         (swpair:string toggle:bool)
         (UEV_IMC)
@@ -2208,8 +2218,7 @@
             )
         )
     )
-    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
-    ;;
+
 )
 
 (create-table P|T)

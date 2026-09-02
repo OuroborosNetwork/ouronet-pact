@@ -1,21 +1,22 @@
 (module STOAICO GOV
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV1)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
     ;;
-    ;;<========>
-    ;;GOVERNANCE
-    ;;{G1}
     (defconst GOV|MD_STOAICO                (keyset-ref-guard (GOV|Demiurgoi)))
-    (defconst DEMIPAD|SC_NAME               (GOV|DEMIPAD|SC_NAME))
-    ;;{G2}
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
     (defcap GOV ()                          (compose-capability (GOV|STOAICO_ADMIN)))
     (defcap GOV|STOAICO_ADMIN ()            (enforce-guard GOV|MD_STOAICO))
-    ;;{G3}
-    ;;{G3}
+    ;;{G5}  functions
     (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
-    ;;
-    ;; [Keys]
-    (defun CT_Namespace ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
     (defun GOV|LaunchpadKey ()              (+ (CT_Namespace) ".dh_sc_mb-keyset"))
     ;;
     ;; [SC-Names]
@@ -23,14 +24,17 @@
     ;;
     ;; [PBLs]
     (defun GOV|DEMIPAD|PBL ()               (at 0 ["9F.gGCkuc2wMAnFAjuFphikftLdl6qFqBD4yfeMEe9u65yMqf4r340Jd6dphh1d7E1cE20btMwl4HJ2cBEMvp209GA1eD4syB96hu4nmpFbB7dKnJEMz4p8fGLcmhvrBCfDmM0axnGin8qedl5vDtwbgL3l1aK5BsmjkEEJartqCH8qG8ialtjxwCcIMf50t2lkeww6Dct5LlmmLG25FmfpcgnwMMnkJl4Gfn9gwoA6vm0jKebjhodeJLjxnh9L11ss8f26866dqv1tEphxFFqutGetH4Itj3rHkrcrGsnlqpf4gfJp94b0gBwIBe4vCj6ha8jm6kd3f8B6pEaJtkJ3fbs6rCcGibltz1BAMn0vvKME5ddFyGBnzssk1s2s0vFzwxs6vjC61Ma2l1xDxqdg1thAk2u01hDiGndLhzK73HAfgtk7bxscn0qKhymG6JAqnEFt282pyHAq5nIthK9bA8nH76x7FEpLz4eK9tLIBsyjb8M5DxaeEei6pEnLxFCAg7ulacgtjjpjMiAaqhpmM1jEHqjt4G85q4L33zrME7whgIkIpIgwnF2qKd4"]))
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    (defconst P|I                   (P|Info))
+    ;;{P2}  schemas
+    ;;{P3}  tables
     ;;
-    ;;<====>
-    ;;POLICY
-    ;;{P1}
-    ;;{P2}
     (deftable P|T:{OuronetPolicyV1.P|S})
     (deftable P|MT:{OuronetPolicyV1.P|MS})
-    ;;{P3}
+    ;;{P4}  capabilities
     (defcap P|STOAICO|CALLER ()
         true
     )
@@ -41,8 +45,7 @@
         (compose-capability (P|STOAICO|CALLER))
         (compose-capability (SECURE))
     )
-    ;;{P4}
-    (defconst P|I                   (P|Info))
+    ;;{P5}  functions
     (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
@@ -50,55 +53,16 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|STOAICO_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|STOAICO_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|DPAD:module{OuronetPolicyV1} DEMIPAD)
-                (mg:guard (create-capability-guard (P|STOAICO|CALLER)))
-            )
-            (ref-P|DPAD::A_P|Add
-                "STOAICO|RemoteGov"
-                (create-capability-guard (P|PAD-STOAICO|REMOTE-GOV))
-            )
-            (ref-P|DPAD::A_P|AddIMP mg)
-        )
-    )
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    (defconst DEMIPAD|SC_NAME               (GOV|DEMIPAD|SC_NAME))
+    (defconst BAR                   (CT_Bar))
+    (defconst STOAICO|INFO          (CT_Info))
+    (defconst STOA_PREC             12)
+    ;;{3.2}  schemas
     ;;
-    ;;<======================>
-    ;;SCHEMAS-TABLES-CONSTANTS
-    ;;{1}
     (defschema UserContributionSchema
         dollarz:decimal             ;;Adds dollars contributed
         urstoa-earned:integer       ;;Adds Urstoa earned (WURSTOA bought with 5$ Contributions)
@@ -131,25 +95,19 @@
         wurstoa:string
         vusd:string
     )
-    ;;{2}
+    ;;{3.3}  tables
     (deftable STOAICO|T|User:{UserContributionSchema})          ;;Key = <Ouronet-Account>
     (deftable STOAICO|T|General:{GeneralContributionSchema})    ;;Key = <STOAICO|INFO>
-    ;;{3}
-    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
-    (defconst BAR                   (CT_Bar))
-    (defun CT_Info ()          (at 0 ["StoaIcoInformation"]))
-    (defconst STOAICO|INFO          (CT_Info))
-    (defconst STOA_PREC             12)
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
     ;;
-    ;;<==========>
-    ;;CAPABILITIES
-    ;;{C1}
     (defcap SECURE ()
         true
     )
-    ;;{C2}
-    ;;{C3}
-    ;;{C4}
+    ;;{C2}  Simple
+    ;;{C3}  Composed
     (defcap INIT-ICO-DISTRIBUTION ()
         @event
         (compose-capability (SECURE))
@@ -225,10 +183,17 @@
         @event
         (compose-capability (STOAICO|ADMIN))
     )
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
     ;;
-    ;;<=======>
-    ;;FUNCTIONS
-    ;;{F1}  Construct [UDC]
+    ;; [Keys]
+    (defun CT_Namespace ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
+    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_Info ()          (at 0 ["StoaIcoInformation"]))
+    ;;
     (defun UDC_UserData:object{UserContributionSchema}
         (a:decimal b:integer c:decimal d:decimal f:integer e:string)
         {"dollarz"              : a
@@ -238,8 +203,8 @@
         ,"last-collected-round" : f
         ,"owner-id"             : e}
     )
-    ;;{F2}  Compute [UC]
-    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     (defun UR_User0:object{UserContributionSchema} (account:string)
         (let
             (
@@ -429,9 +394,17 @@
             )
         )
     )
-    ;;{F4}  Validate [UEV/CAP]
-    ;;{F5}  Write [W]
-    ;;{F6}  Aux/Protected [X]
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
     (defun XI_CollectFor:string (patron:string account:string)
         @doc "#1C shared settle+deliver core: pays <account> its OWN wSTOA (its RPS delta, or the whole \
             \ remaining wstoa-supply when it is the round's last unclaimed staker — the dust sweep) plus its \
@@ -699,7 +672,44 @@
             )
         )
     )
-    ;;{F7}  User [A]
+    ;;{5.7}  User [A/C]
+    (defun A_P|Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|STOAICO_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun A_P|AddIMP (policy-guard:guard)
+        (with-capability (GOV|STOAICO_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun A_P|Define ()
+        (let
+            (
+                (ref-P|DPAD:module{OuronetPolicyV1} DEMIPAD)
+                (mg:guard (create-capability-guard (P|STOAICO|CALLER)))
+            )
+            (ref-P|DPAD::A_P|Add
+                "STOAICO|RemoteGov"
+                (create-capability-guard (P|PAD-STOAICO|REMOTE-GOV))
+            )
+            (ref-P|DPAD::A_P|AddIMP mg)
+        )
+    )
     ;;
     (defun A_InitialiseDistributionVault (account:string)
         @doc "Initialises the Distribuition Vault by creating and filling all necesary prerequisites"
@@ -927,7 +937,6 @@
             )
         )
     )
-    ;;{F8}  User [C]
     (defun C_Collect (patron:string account:string)
         @doc "Self-collect from the distribution Vault — once per distribution-round, by the <account> owner. \
             \ A new A_Inject opens the next round and re-enables collection (the RPS delta since last collect)."
@@ -935,8 +944,7 @@
             (XI_CollectFor patron account)
         )
     )
-    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
-    ;;
+
 )
 
 (create-table P|T)

@@ -1,34 +1,54 @@
 (module U|CT GOV
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetConstantsV1)
     (implements DiaStoaPidV1)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
     ;;
-    ;;<========>
-    ;;GOVERNANCE
-    ;;{G1}
+    (defconst GOV|DEMIURGOI         (+ (CT_NS_USE) ".dh_master-keyset"))
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    (defcap GOV ()                  (compose-capability (GOV|U|CT_ADMIN)))
+    (defcap GOV|U|CT_ADMIN ()       (enforce-guard (CT_GOV|UTILS)))
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;
     (defun CT_NamespaceMain ()               (at 0 ["ouronet-ns"]))
     (defun CT_NamespaceTest ()               (at 0 ["free"]))
     (defun CT_NS_USE  ()            (CT_NamespaceMain))
-    ;;
-    (defconst GOV|DEMIURGOI         (+ (CT_NS_USE) ".dh_master-keyset"))
-    ;;{G2}
-    (defcap GOV ()                  (compose-capability (GOV|U|CT_ADMIN)))
-    (defcap GOV|U|CT_ADMIN ()       (enforce-guard (CT_GOV|UTILS)))
-    ;;{G3}
     (defun CT_GOV|UTILS ()          (keyset-ref-guard GOV|DEMIURGOI))
     ;;
-    ;;<====>
-    ;;POLICY
-    ;;{P1}
-    ;;{P2}
-    ;;{P3}
-    ;;{P4}
     ;;
-    ;;<======================>
-    ;;SCHEMAS-TABLES-CONSTANTS
-    ;;{1}
-    ;;{2}
-    ;;{3}
     ;;#73L fix: removed the tautological `or` - `(CT_NamespaceTest)` is itself defined as
     ;;`(at 0 ["free"])` = "free" (line 10), so `(= (CT_NS_USE) (CT_NamespaceTest))` and
     ;;`(= (CT_NS_USE) "free")` were checking the exact same condition twice. Kept the named
@@ -50,7 +70,6 @@
     (defun CT_MIN_DESIGNATION_LENGTH () 2)
     (defun CT_MAX_TOKEN_NAME_LENGTH () 50)
     (defun CT_MAX_TOKEN_TICKER_LENGTH () 30)
-
     (defun CT_ACCOUNT_ID_PROH-CHAR () ["$" "¢" "£"])
     (defun CT_ACCOUNT_ID_MAX_LENGTH () 256)
     (defun CT_BAR () (at 0 ["|"]))
@@ -64,7 +83,6 @@
         ["a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m" "n" "o" "p" "q" "r" "s" "t" "u" "v" "w" "x" "y" "z"]
     )
     (defun CT_SPECIAL () ["|" "-" "^"])
-
     (defun CT_ET ()
         @doc "Represents the Total-Elite-Auryn (vested and non-vested) to increase in Elite-Account Rank"
         [0.0 1.0 2.0 5.0 10.0 20.0 50.0 100.0
@@ -151,19 +169,10 @@
     (defun CT_N75 () (at 0 ["Elite Demiurg"]))
     (defun CT_N76 () (at 0 ["Master Demiurg"]))
     (defun CT_N77 () (at 0 ["Grand-Master Demiurg"]))
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
-    ;;<==========>
-    ;;CAPABILITIES
-    ;;{C1}
-    ;;{C2}
-    ;;{C3}
-    ;;{C4}
     ;;
-    ;;<=======>
-    ;;FUNCTIONS
-    ;;{F1}  Construct [UDC]
-    ;;{F2}  Compute [UC]
-    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     (defun UR_STOA-PID|Price:decimal ()
         ;;(at "value" (n_bfb76eab37bf8c84359d6552a1d96a309e030b71.dia-oracle.get-value "STOA/USD"))
         ;;#19H: no live oracle wired up yet - hardcoded to mainnet's approximate STOA/USD price
@@ -171,11 +180,9 @@
         ;;one is available, and remove this stub.
         0.1
     )
-    ;;{F4}  Validate [UEV/CAP]
-    ;;{F5}  Write [W]
-    ;;{F6}  Aux/Protected [X]
-    ;;{F7}  User [A]
-    ;;{F8}  User [C]
-    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
-    ;;
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
 )

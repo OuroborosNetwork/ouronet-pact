@@ -164,16 +164,21 @@
 ;;
 (module SWPL GOV
     @doc "Exposes Liquidity Functions"
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV1)
     (implements SwapperLiquidityV1)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
     ;;
-    ;;<========>
-    ;;GOVERNANCE
-    ;;{G1}
     (defconst GOV|MD_SWPL           (keyset-ref-guard (GOV|Demiurgoi)))
-    (defconst SWP|SC_NAME           (GOV|SWP|SC_NAME))
-    ;;{G2}
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
     (defcap GOV ()                  (compose-capability (GOV|SWPL_ADMIN)))
     (defcap GOV|SWPL_ADMIN ()
         (let
@@ -192,18 +197,21 @@
             )
         )
     )
+    ;;{G5}  functions
     ;;
     (defun GOV|SWP|SC_NAME ()       (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|SWP|SC_NAME)))
-    ;;{G3}
     (defun GOV|Demiurgoi ()         (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    (defconst P|I                   (P|Info))
+    ;;{P2}  schemas
+    ;;{P3}  tables
     ;;
-    ;;<====>
-    ;;POLICY
-    ;;{P1}
-    ;;{P2}
     (deftable P|T:{OuronetPolicyV1.P|S})                        ;;Key = <policy-name>
     (deftable P|MT:{OuronetPolicyV1.P|MS})                      ;;Key = P|I (module-identity singleton constant)
-    ;;{P3}
+    ;;{P4}  capabilities
     (defcap P|SWPL|CALLER ()
         true
     )
@@ -211,8 +219,7 @@
         (compose-capability (P|SWPL|CALLER))
         (compose-capability (SECURE))
     )
-    ;;{P4}
-    (defconst P|I                   (P|Info))
+    ;;{P5}  functions
     (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
@@ -220,75 +227,24 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|SWPL_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|SWPL_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|BRD:module{OuronetPolicyV1} BRD)
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
-                ;(ref-P|DPOF:module{OuronetPolicyV1} DPOF)
-                (ref-P|TFT:module{OuronetPolicyV1} TFT)
-                (ref-P|VST:module{OuronetPolicyV1} VST)
-                (ref-P|SWP:module{OuronetPolicyV1} SWP)
-                (mg:guard (create-capability-guard (P|SWPL|CALLER)))
-            )
-            (ref-P|DALOS::A_P|AddIMP mg)
-            (ref-P|BRD::A_P|AddIMP mg)
-            (ref-P|DPTF::A_P|AddIMP mg)
-            ;(ref-P|DPOF::A_P|AddIMP mg)
-            (ref-P|TFT::A_P|AddIMP mg)
-            (ref-P|SWP::A_P|AddIMP mg)
-        )
-    )
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
-    ;;
-    ;;<======================>
-    ;;SCHEMAS-TABLES-CONSTANTS
-    ;;{1}
-    ;;{2}
-    ;;{3}
-    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
-    (defun CT_EmptyCumulator ()     (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_EmptyOutputCumulatorV2)))
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    (defconst SWP|SC_NAME           (GOV|SWP|SC_NAME))
     (defconst BAR                   (CT_Bar))
     (defconst EOC                   (CT_EmptyCumulator))
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
     ;;
-    ;;<==========>
-    ;;CAPABILITIES
-    ;;{C1}
     (defcap SECURE ()
         true
     )
+    ;;{C2}  Simple
     (defcap SWPL|S>ASYMMETRIC-LQ-GASEOUS-TAX (text:string)
         @doc "ASYMMETRIC-LQ-GASEOUS-TAX \
             \   PURPOSE     Compensates for the LP token deficit arising from asymmetric liquidity additions, \
@@ -432,13 +388,16 @@
         @event
         true
     )
-    ;;{C2}
-    ;;{C3}
-    ;;{C4}
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
     ;;
-    ;;<=======>
-    ;;FUNCTIONS
-    ;;{F1}  Construct [UDC]
+    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_EmptyCumulator ()     (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_EmptyOutputCumulatorV2)))
+    ;;
     (defun UDC_VirtualSwapEngineSwpair:object{UtilitySwpV1.VirtualSwapEngine}
         (account:string account-liq:[decimal] swpair:string pool-liq:[decimal])
         (let
@@ -582,7 +541,7 @@
         ,"FT"   : f
         ,"FTP"  : g}
     )
-    ;;{F2}  Compute [UC]
+    ;;{5.2}  Compute [UC]
     (defun UC_DetermineLiquidity:object{SwapperLiquidityV1.LiquiditySplitType}
         (input-lqs:object{SwapperLiquidityV1.LiquiditySplit})
         (UDC_LiquiditySplitType
@@ -590,7 +549,81 @@
             (!= (at "asymmetric" input-lqs) (make-list (length (at "asymmetric" input-lqs)) 0.0))
         )
     )
-    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
+    (defun UCx_Step2AsymmetricTaxVirtualSwapper:object{UtilitySwpV1.VirtualSwapEngine}
+        (vse:object{UtilitySwpV1.VirtualSwapEngine} first-token-id:string liq-ids:[string] liq-amounts:[decimal])
+        (let
+            (
+                (l1:integer (length liq-ids))
+                (l2:integer (length liq-amounts))
+            )
+            (if (and (= l1 l2) (= l1 0))
+                vse
+                (let
+                    (
+                        (ref-U|LST:module{StringProcessorV1} U|LST)
+                        (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+                        (ref-SWPI:module{SwapperIssueV3} SWPI)
+                        ;;
+                        ;;Unwrap VSE Object Data for fixed Variables
+                        (account:string (at "account" vse))
+                        (pool-type:string (ref-U|SWP::UC_PoolType (at "swpair" vse)))
+                        (fees:object{UtilitySwpV1.SwapFeez} (at "F" vse))
+                        (A:decimal (at "A" vse))
+                        (X-prec:[integer] (at "v-prec" vse))
+                        (v-tokens:[string] (at "v-tokens" vse))
+                        (W:[decimal] (at "W" vse))
+                        ;;
+                        (vse-single-chain:[object{UtilitySwpV1.VirtualSwapEngine}]
+                            (fold
+                                (lambda
+                                    (acc:[object{UtilitySwpV1.VirtualSwapEngine}] idx:integer)
+                                    (let
+                                        (
+                                            (prev-vse:object{UtilitySwpV1.VirtualSwapEngine} (at 0 acc))
+                                            (id:string (at idx liq-ids))
+                                            (amount:decimal (at idx liq-amounts))
+                                            ;;
+                                            ;;Unwrap VSE Object Data for mutable Variables
+                                            (X:[decimal] (at "X" prev-vse))
+                                            (output-position:integer (at 0 (ref-U|LST::UC_Search v-tokens id)))
+                                            ;;
+                                            (rsid:object{UtilitySwpV1.ReverseSwapInputData}
+                                                (ref-U|SWP::UDC_ReverseSwapInputData
+                                                    id amount first-token-id
+                                                )
+                                            )
+                                            (itso:object{UtilitySwpV1.InverseTaxedSwapOutput}
+                                                (ref-SWPI::UC_InverseBareboneSwapWithFeez
+                                                    account pool-type rsid fees A X X-prec output-position 0 W
+                                                )
+                                            )
+                                            (input-amount:decimal (at "i-id-brutto" itso))
+                                            ;;
+                                            (dsid:object{UtilitySwpV1.DirectSwapInputData}
+                                                (ref-U|SWP::UDC_DirectSwapInputData
+                                                    [first-token-id]
+                                                    [input-amount]
+                                                    id
+                                                )
+                                            )
+                                            (new-vse:object{UtilitySwpV1.VirtualSwapEngine}
+                                                (ref-SWPI::UC_VirtualSwap prev-vse dsid)
+                                            )
+                                        )
+                                        (ref-U|LST::UC_ReplaceAt acc 0 new-vse)
+                                    )
+                                )
+                                [vse]
+                                (enumerate 0 (- l1 1))
+                            )
+                        )
+                    )
+                    (at 0 vse-single-chain)
+                )
+            )
+        )
+    )
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
     (defun URC_STOA-PID|LpToIgnis:decimal (swpair:string amount:decimal stoa-pid:decimal)
         (let
@@ -1412,80 +1445,6 @@
             )
         )
     )
-    (defun UCx_Step2AsymmetricTaxVirtualSwapper:object{UtilitySwpV1.VirtualSwapEngine}
-        (vse:object{UtilitySwpV1.VirtualSwapEngine} first-token-id:string liq-ids:[string] liq-amounts:[decimal])
-        (let
-            (
-                (l1:integer (length liq-ids))
-                (l2:integer (length liq-amounts))
-            )
-            (if (and (= l1 l2) (= l1 0))
-                vse
-                (let
-                    (
-                        (ref-U|LST:module{StringProcessorV1} U|LST)
-                        (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                        (ref-SWPI:module{SwapperIssueV3} SWPI)
-                        ;;
-                        ;;Unwrap VSE Object Data for fixed Variables
-                        (account:string (at "account" vse))
-                        (pool-type:string (ref-U|SWP::UC_PoolType (at "swpair" vse)))
-                        (fees:object{UtilitySwpV1.SwapFeez} (at "F" vse))
-                        (A:decimal (at "A" vse))
-                        (X-prec:[integer] (at "v-prec" vse))
-                        (v-tokens:[string] (at "v-tokens" vse))
-                        (W:[decimal] (at "W" vse))
-                        ;;
-                        (vse-single-chain:[object{UtilitySwpV1.VirtualSwapEngine}]
-                            (fold
-                                (lambda
-                                    (acc:[object{UtilitySwpV1.VirtualSwapEngine}] idx:integer)
-                                    (let
-                                        (
-                                            (prev-vse:object{UtilitySwpV1.VirtualSwapEngine} (at 0 acc))
-                                            (id:string (at idx liq-ids))
-                                            (amount:decimal (at idx liq-amounts))
-                                            ;;
-                                            ;;Unwrap VSE Object Data for mutable Variables
-                                            (X:[decimal] (at "X" prev-vse))
-                                            (output-position:integer (at 0 (ref-U|LST::UC_Search v-tokens id)))
-                                            ;;
-                                            (rsid:object{UtilitySwpV1.ReverseSwapInputData}
-                                                (ref-U|SWP::UDC_ReverseSwapInputData
-                                                    id amount first-token-id
-                                                )
-                                            )
-                                            (itso:object{UtilitySwpV1.InverseTaxedSwapOutput}
-                                                (ref-SWPI::UC_InverseBareboneSwapWithFeez
-                                                    account pool-type rsid fees A X X-prec output-position 0 W
-                                                )
-                                            )
-                                            (input-amount:decimal (at "i-id-brutto" itso))
-                                            ;;
-                                            (dsid:object{UtilitySwpV1.DirectSwapInputData}
-                                                (ref-U|SWP::UDC_DirectSwapInputData
-                                                    [first-token-id]
-                                                    [input-amount]
-                                                    id
-                                                )
-                                            )
-                                            (new-vse:object{UtilitySwpV1.VirtualSwapEngine}
-                                                (ref-SWPI::UC_VirtualSwap prev-vse dsid)
-                                            )
-                                        )
-                                        (ref-U|LST::UC_ReplaceAt acc 0 new-vse)
-                                    )
-                                )
-                                [vse]
-                                (enumerate 0 (- l1 1))
-                            )
-                        )
-                    )
-                    (at 0 vse-single-chain)
-                )
-            )
-        )
-    )
     (defun URC_SortLiquidity:object{SwapperLiquidityV1.LiquiditySplit} (swpair:string input-amounts:[decimal])
         @doc "Sorts Liquidity into a balanced part and an asymmetric part"
         (let
@@ -1695,7 +1654,15 @@
             )
         )
     )
-    ;;{F4}  Validate [UEV/CAP]
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
     (defun UEV_Liquidity:[decimal]
         (swpair:string ld:object{SwapperLiquidityV1.LiquidityData})
             @doc "Validates the asymmetric Liquidity amount, if it exists within the LD Object. \
@@ -1756,8 +1723,8 @@
             (ref-DPTF::UEV_Amount input-id input-amount)
         )
     )
-    ;;{F5}  Write [W]
-    ;;{F6}  Aux/Protected [X]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
     ;;
     ;;
     (defun XE_STOA-PID|AddLiquidity
@@ -1933,10 +1900,52 @@
             )
         )
     )
-    ;;{F7}  User [A]
-    ;;{F8}  User [C]
-    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
-    ;;
+    ;;{5.7}  User [A/C]
+    (defun A_P|Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|SWPL_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun A_P|AddIMP (policy-guard:guard)
+        (with-capability (GOV|SWPL_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun A_P|Define ()
+        (let
+            (
+                (ref-P|BRD:module{OuronetPolicyV1} BRD)
+                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
+                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
+                ;(ref-P|DPOF:module{OuronetPolicyV1} DPOF)
+                (ref-P|TFT:module{OuronetPolicyV1} TFT)
+                (ref-P|VST:module{OuronetPolicyV1} VST)
+                (ref-P|SWP:module{OuronetPolicyV1} SWP)
+                (mg:guard (create-capability-guard (P|SWPL|CALLER)))
+            )
+            (ref-P|DALOS::A_P|AddIMP mg)
+            (ref-P|BRD::A_P|AddIMP mg)
+            (ref-P|DPTF::A_P|AddIMP mg)
+            ;(ref-P|DPOF::A_P|AddIMP mg)
+            (ref-P|TFT::A_P|AddIMP mg)
+            (ref-P|SWP::A_P|AddIMP mg)
+        )
+    )
+
 )
 
 (create-table P|T)

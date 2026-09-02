@@ -213,33 +213,37 @@
     (defun URCi_SyncCollectableAnchors:object{IgnisCollectorV1.OutputCumulator} (output:[string]))
 )
 (module AQP-POOL GOV
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV1)
     (implements AcquisitionPoolsV1)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
     ;(implements DemiourgosPactDigitalCollectibles-UtilityPrototype)
     ;;
-    ;;<========>
-    ;;GOVERNANCE
-    ;;{G1}
     (defconst GOV|MD_AQP                    (keyset-ref-guard (GOV|Demiurgoi)))
-    ;;{G2}
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
     (defcap GOV ()                          (compose-capability (GOV|AQP_ADMIN)))
     (defcap GOV|AQP_ADMIN ()                (enforce-guard GOV|MD_AQP))
-    (defcap AQP|GOV ()
-        @doc "Governor capability for the AQP|SC_NAME smart DALOS account (TFT/DPOF/DPDC vault send and receive). \
-            \ Composed only from this module — never compose AQP-ANK.AQP|GOV cross-module."
-        true
-    )
-    ;;{G3}
+    ;;{G5}  functions
     (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    (defconst P|I                   (P|Info))
+    ;;{P2}  schemas
+    ;;{P3}  tables
     ;;
-    ;;<====>
-    ;;POLICY
-    ;;{P1}
-    ;;{P2}
     (deftable P|T:{OuronetPolicyV1.P|S})
     (deftable P|MT:{OuronetPolicyV1.P|MS})
-    ;;{P3}
+    ;;{P4}  capabilities
     (defcap P|AQP|CALLER ()
         true
     )
@@ -251,8 +255,7 @@
         (compose-capability (P|AQP|CALLER))
         (compose-capability (SECURE))
     )
-    ;;{P4}
-    (defconst P|I                   (P|Info))
+    ;;{P5}  functions
     (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
@@ -260,62 +263,21 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|AQP_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|AQP_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    ;;
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        @doc "Post-deploy IMC wiring (AQP-BOOT Step 0). TFT + DPOF vault transfer/receive on AQP|SC_NAME."
-        (let
-            (
-                (ref-P|TFT:module{OuronetPolicyV1} TFT)
-                (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
-                (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
-                ;;
-                (mg:guard (create-capability-guard (P|AQP|CALLER)))
-            )
-            ;; AQP-POOL → TFT: XE_TrueFungibleTransfer calls TFT::C_Transfer; TFT UEV_IMC requires this guard.
-            (ref-P|TFT::A_P|AddIMP mg)
-            ;; AQP-POOL → DPOF: XE_OrtoFungibleTransfer calls DPOF::C_Transfer; vacate batch is AQP-VCT → DPOF::C_BulkTransfer.
-            (ref-P|DPOF::A_P|AddIMP mg)
-            ;; AQP-POOL → DPDC-T: XE_CollectableTransfer calls DPDC-T::C_Transfer; vacate batch is AQP-VCT → DPDC-T::C_BulkTransfer.
-            (ref-P|DPDC-T::A_P|AddIMP mg)
-            true
-        )
-    )
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    (defconst BAR                                                       (CT_Bar))
+    (defconst GAS|ISSUE-POOL                                            1000.0)
+    (defconst GAS|ADD-SCORE                                             500.0)
+    (defconst GAS|REVOKE-SCORE                                          500.0)
+    (defconst GAS|SET-POOL-STAKE                                        500.0)
+    (defconst GAS|SYNC-TF-ANCHORS                                       50.0)
+    (defconst GAS|SYNC-COLLECTABLE-ANCHORS                              50.0)
+    (defconst EOC                                                       (CT_EmptyCumulator))
+    (defconst AQP|SC_NAME                                               (CT_AqpScName))
+    ;;{3.2}  schemas
     ;;
-    ;;<======================>
-    ;;SCHEMAS-TABLES-CONSTANTS
-    ;;{1}
     ;; [1] AQP|T|Pool
     (defschema AQP|Schema
         @doc "One aqp-class and one canonical asset-id per pool; employed \
@@ -490,8 +452,8 @@
         pool-id:string                                                  ;;[.] Pool
         beneficiary-id:string                                           ;;[.] Beneficiary (SCORE / reward recipient)
     )
+    ;;{3.3}  tables
     ;;
-    ;;{2}
     (deftable AQP|T|Pool:{AQP|Schema})                                  ;;1] Key = <Pool-ID>
     (deftable AQP|T|DPTFTracker:{AQP|TrueFungibleTracker})              ;;2] Key = <Pool-ID> | <DPTF-ID> | <Owner-ID> | <Beneficiary-ID>
     (deftable AQP|T|DPOFTracker:{AQP|OrtoFungibleTracker})              ;;3] Key = <Pool-ID> | <DPOF-ID> | <Owner-ID> | <Beneficiary-ID> | <Nonce>
@@ -503,38 +465,21 @@
     (deftable AQP|T|BenDpsfAnkMeta:{AQP|BenDpsfAnkMeta})                ;;11] Key = <Beneficiary-ID> | <DPSF-ID>
     (deftable AQP|T|BenDpnfAnkMeta:{AQP|BenDpnfAnkMeta})                ;;12] Key = <Beneficiary-ID> | <DPNF-ID>
     (deftable AQP|T|UserOccupancy:{AQP|UserOccupancy})                  ;;13] Key = <Pool-ID> | <Beneficiary-ID>
-    ;;{3}
-    (defun CT_Bar:string
-        ()
-        @doc "Returns CT_BAR constant."
-        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT))               (ref-U|CT::CT_BAR))
-    )
-    (defconst BAR                                                       (CT_Bar))
-    (defconst GAS|ISSUE-POOL                                            1000.0)
-    (defconst GAS|ADD-SCORE                                             500.0)
-    (defconst GAS|REVOKE-SCORE                                          500.0)
-    (defconst GAS|SET-POOL-STAKE                                        500.0)
-    (defconst GAS|SYNC-TF-ANCHORS                                       50.0)
-    (defconst GAS|SYNC-COLLECTABLE-ANCHORS                              50.0)
-    (defun CT_EmptyCumulator ()
-        @doc "Empty IGNIS OutputCumulator for stub transfer legs."
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_EmptyOutputCumulatorV2))
-    )
-    (defconst EOC                                                       (CT_EmptyCumulator))
-    (defun CT_AqpScName:string
-        ()
-        @doc "Resolves AQP|SC_NAME from canonical AQP-ANK via interface ref."
-        (let ((ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)) (ref-ANK::GOV|AQP|SC_NAME))
-    )
-    (defconst AQP|SC_NAME                                               (CT_AqpScName))
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
     ;;
-    ;;<==========>
-    ;;CAPABILITIES
-    ;;{C1}
     (defcap SECURE ()
         true
     )
-    ;;{C2}
+    ;;{C2}  Simple
+    (defcap AQP|GOV ()
+        @doc "Governor capability for the AQP|SC_NAME smart DALOS account (TFT/DPOF/DPDC vault send and receive). \
+            \ Composed only from this module — never compose AQP-ANK.AQP|GOV cross-module."
+        true
+    )
+    ;;{C3}  Composed
     (defcap AQP|C>ISSUE-POOL
         (pool-name:string asset-id:string aqp-class:integer)
         @doc "Issue one acquisition pool (single @event). Validates pool-name, class, and asset-id; \
@@ -779,11 +724,26 @@
         (UEV_StakeCollectableLeg collectable-id son)
         (compose-capability (SECURE))
     )
-    ;;{C3}
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    (defun CT_Bar:string
+        ()
+        @doc "Returns CT_BAR constant."
+        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT))               (ref-U|CT::CT_BAR))
+    )
+    (defun CT_EmptyCumulator ()
+        @doc "Empty IGNIS OutputCumulator for stub transfer legs."
+        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_EmptyOutputCumulatorV2))
+    )
+    (defun CT_AqpScName:string
+        ()
+        @doc "Resolves AQP|SC_NAME from canonical AQP-ANK via interface ref."
+        (let ((ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)) (ref-ANK::GOV|AQP|SC_NAME))
+    )
     ;;
-    ;;<=======>
-    ;;FUNCTIONS
-    ;;{F1}  Construct [UDC]
     ;; [UDC] construct
     ;;
     ;; Default tracker and attribution rows for UR with-default-read.
@@ -927,7 +887,7 @@
             (if (= slot-index 6) score-id (at "score-septenary" pool))
         )
     )
-    ;;{F2}  Compute [UC]
+    ;;{5.2}  Compute [UC]
     ;; [UC]  compute
     (defun UCk_DPTFTracker:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string)
         @doc "Composite key for AQP|T|DPTFTracker: pool-id | dptf-id | owner-id | beneficiary-id."
@@ -992,7 +952,7 @@
             )
         )
     )
-    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;; [UR]  read
     (defun UR_AQP|Pool:object{AQP|Schema} (pool-id:string)
         @doc "Reads full pool definition row from AQP|T|Pool."
@@ -2034,7 +1994,15 @@
                   (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                                     ;; ico-gas
                       (URCi_SyncCollectableAnchors [beneficiary-id collectable-id]))
                 ])))
-    ;;{F4}  Validate [UEV/CAP]
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
     ;; [UEV] enforce
     (defun UEV_IssuePoolClassAndAsset (aqp-class:integer asset-id:string)
         @doc "aqp-class 0..4 and asset-id existence / shape for that class (native id only at issue)."
@@ -2259,7 +2227,7 @@
             (ref-DALOS::CAP_EnforceAccountOwnership owner-id)
         )
     )
-    ;;{F5}  Write [W]
+    ;;{5.5}  Write [W]
     ;; [W]   write
     ;;
     ;; Twelve blocks — one per deftable (table order). Within each block: WI → WW → WU → WU2+ (only when needed).
@@ -2503,7 +2471,7 @@
             (UDC_AQP|BenDpnfAnkMeta sync-count (at "active-nonce-count" row) beneficiary-id dpnf-id)
         )
     )
-    ;;{F6}  Aux/Protected [X]
+    ;;{5.6}  Aux/X
     ;; [XI]
     (defun XI_IssuePool:string
         (pool-id:string aqp-class:integer asset-id:string)
@@ -3082,8 +3050,51 @@
             )
         )
     )
-    ;;{F7}  User [A]
-    ;;{F8}  User [C]
+    ;;{5.7}  User [A/C]
+    (defun A_P|Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|AQP_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun A_P|AddIMP (policy-guard:guard)
+        (with-capability (GOV|AQP_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    ;;
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun A_P|Define ()
+        @doc "Post-deploy IMC wiring (AQP-BOOT Step 0). TFT + DPOF vault transfer/receive on AQP|SC_NAME."
+        (let
+            (
+                (ref-P|TFT:module{OuronetPolicyV1} TFT)
+                (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
+                (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
+                ;;
+                (mg:guard (create-capability-guard (P|AQP|CALLER)))
+            )
+            ;; AQP-POOL → TFT: XE_TrueFungibleTransfer calls TFT::C_Transfer; TFT UEV_IMC requires this guard.
+            (ref-P|TFT::A_P|AddIMP mg)
+            ;; AQP-POOL → DPOF: XE_OrtoFungibleTransfer calls DPOF::C_Transfer; vacate batch is AQP-VCT → DPOF::C_BulkTransfer.
+            (ref-P|DPOF::A_P|AddIMP mg)
+            ;; AQP-POOL → DPDC-T: XE_CollectableTransfer calls DPDC-T::C_Transfer; vacate batch is AQP-VCT → DPDC-T::C_BulkTransfer.
+            (ref-P|DPDC-T::A_P|AddIMP mg)
+            true
+        )
+    )
     ;;
     ;; [C]   client
     ;;
@@ -3266,8 +3277,7 @@
             )
         )
     )
-    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
-    ;;
+
 )
 
 (create-table P|T)

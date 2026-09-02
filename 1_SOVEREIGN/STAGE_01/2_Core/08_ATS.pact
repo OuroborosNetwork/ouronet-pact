@@ -249,20 +249,27 @@
 )
 ;;
 (module ATS GOV
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV1)
     (implements BrandingUsagePrimaryV1)
     (implements AutostakeV2)
     ;;
-    ;;<========>
-    ;;GOVERNANCE
-    ;;{G1}
+    ;; [AutostakeComputer]
+    ;;
+    (implements AutostakeComputerV1)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;
     (defconst GOV|MD_ATS            (keyset-ref-guard (GOV|Demiurgoi)))
     (defconst GOV|SC_ATS            (keyset-ref-guard ATS|SC_KEY))
-    ;;
-    (defconst ATS|SC_KEY            (GOV|AutostakeKey))
-    (defconst ATS|SC_NAME           (GOV|ATS|SC_NAME))
-    ;;{G2}
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
     (defcap GOV ()                  (compose-capability (GOV|ATS_ADMIN)))
     (defcap GOV|ATS_ADMIN ()
         (enforce-one
@@ -273,22 +280,21 @@
             ]
         )
     )
-    (defcap ATS|GOV ()
-        @doc "Governor Capability for the Autostake Smart DALOS Account"
-        true
-    )
-    ;;{G3}
+    ;;{G5}  functions
     (defun GOV|Demiurgoi ()         (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
     (defun GOV|AutostakeKey ()      (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|AutostakeKey)))
     (defun GOV|ATS|SC_NAME ()       (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|ATS|SC_NAME)))
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    (defconst P|I                   (P|Info))
+    ;;{P2}  schemas
+    ;;{P3}  tables
     ;;
-    ;;<====>
-    ;;POLICY
-    ;;{P1}
-    ;;{P2}
     (deftable P|T:{OuronetPolicyV1.P|S})
     (deftable P|MT:{OuronetPolicyV1.P|MS})
-    ;;{P3}
+    ;;{P4}  capabilities
     (defcap P|ATS|CALLER ()
         true
     )
@@ -296,8 +302,7 @@
         (compose-capability (P|ATS|CALLER))
         (compose-capability (SECURE))
     )
-    ;;{P4}
-    (defconst P|I                   (P|Info))
+    ;;{P5}  functions
     (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
@@ -305,57 +310,19 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|ATS_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|ATS_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (ref-P|BRD:module{OuronetPolicyV1} BRD)
-                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
-                (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
-                (mg:guard (create-capability-guard (P|ATS|CALLER)))
-            )
-            (ref-P|DALOS::A_P|AddIMP mg)
-            (ref-P|BRD::A_P|AddIMP mg)
-            (ref-P|DPTF::A_P|AddIMP mg)
-            (ref-P|DPOF::A_P|AddIMP mg)
-        )
-    )
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
     ;;
-    ;;<======================>
-    ;;SCHEMAS-TABLES-CONSTANTS
-    ;;{1}
+    (defconst ATS|SC_KEY            (GOV|AutostakeKey))
+    (defconst ATS|SC_NAME           (GOV|ATS|SC_NAME))
+    (defconst BAR                   (CT_Bar))
+    (defconst EOC                   (CT_EmptyCumulator))
+    (defconst NULLTIME              (time "1984-10-11T11:10:00Z"))
+    (defconst ANTITIME              (time "1983-08-07T11:10:00Z"))
+    ;;{3.2}  schemas
+    ;;
     (defschema ATS|PropertiesSchemaV3
         id:string                       ;[x] Added in V3
         owner-konto:string
@@ -419,24 +386,34 @@
         id:string
         account:string
     )
-    ;;{2}
+    ;;{3.3}  tables
     (deftable ATS|Pairs:{ATS|PropertiesSchemaV3})   ;;Key = <ATS-Pair-id>
     (deftable ATS|Ledger:{ATS|BalanceSchemaV2})     ;;Key = <ATS-Pair-id> + BAR + <account>
-    ;;{3}
-    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
-    (defun CT_EmptyCumulator ()     (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_EmptyOutputCumulatorV2)))
-    (defconst BAR                   (CT_Bar))
-    (defconst EOC                   (CT_EmptyCumulator))
-    (defconst NULLTIME              (time "1984-10-11T11:10:00Z"))
-    (defconst ANTITIME              (time "1983-08-07T11:10:00Z"))
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    (defcap ATS|GOV ()
+        @doc "Governor Capability for the Autostake Smart DALOS Account"
+        true
+    )
     ;;
-    ;;<==========>
-    ;;CAPABILITIES
-    ;;{C1}
     (defcap SECURE ()
         true
     )
-    ;;{C2}
+    ;;
+    ;;
+    (defcap AHU ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ah:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership ah)
+            (compose-capability (SECURE))
+        )
+    )
+    ;;{C2}  Simple
     (defcap ATS|S>ROTATE_OWNERSHIP (atspair:string new-owner:string)
         @event
         (let
@@ -534,8 +511,7 @@
         (CAP_Owner atspair)
         (UEV_DirectRecoveryState atspair (not toggle))
     )
-    ;;{C3}
-    ;;{C4}
+    ;;{C3}  Composed
     ;; Core (unevented) — StoicSyntax §14.7 layered-composition pattern: shared body, distinct leaf
     ;; events. Was two @event caps with the identical body pasted twice; refactored alongside the
     ;; C5 fix (ATS|C>HOT-RBT-BRD, below) that introduced this pattern's documentation.
@@ -673,7 +649,6 @@
         (compose-capability (P|ATS|CALLER))
     )
     ;;
-    
     (defcap ATS|C>CONTROL-COLD-FEES (atspair:string)
         @event
         (compose-capability (ATS|C>CONTROL-COLD-RECOVERY atspair))
@@ -718,14 +693,6 @@
         )
         (UEV_EliteState atspair (not toggle))
         (compose-capability (ATS|C>CONTROL-COLD-RECOVERY atspair))
-    )
-    (defcap ATS|C>TOGGLE_UPGRADE (atspair:string toggle:bool)
-        @doc "Fix (audit finding #21L / L3): can-upgrade previously had no setter at all - \
-            \ this is the first one. Gates C_Control (can-change-owner/syphoning/hibernate) \
-            \ via UEV_CanUpgradeON; turning this off blocks C_Control entirely until it's \
-            \ turned back on."
-        @event
-        (CAP_Owner atspair)
     )
     (defcap ATS|C>CONTROL-COLD-RECOVERY (atspair:string)
         (UEV_ColdRecoveryState atspair false)
@@ -793,10 +760,22 @@
         (UEV_DirectRecoveryState atspair false)
         (compose-capability (ATS|S>CONTROL-RECOVERY atspair))
     )
+    ;;{C4}  Ownership [gold]
+    (defcap ATS|C>TOGGLE_UPGRADE (atspair:string toggle:bool)
+        @doc "Fix (audit finding #21L / L3): can-upgrade previously had no setter at all - \
+            \ this is the first one. Gates C_Control (can-change-owner/syphoning/hibernate) \
+            \ via UEV_CanUpgradeON; turning this off blocks C_Control entirely until it's \
+            \ turned back on."
+        @event
+        (CAP_Owner atspair)
+    )
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_EmptyCumulator ()     (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_EmptyOutputCumulatorV2)))
     ;;
-    ;;<=======>
-    ;;FUNCTIONS
-    ;;{F1}  Construct [UDC]
     ;;
     (defun UDC_MakeUnstakeObject:object{UtilityAtsV2.Awo} (atspair:string tm:time)
         {"reward-tokens"    : (make-list (length (UR_RewardTokenList atspair)) 0.0)
@@ -868,29 +847,12 @@
         {"can-brumate"      : a
         ,"where-brumate"   : b}
     )
-    ;;{F2}  Compute [UC]
+    ;;{5.2}  Compute [UC]
     (defun UC_AtspairAccount:string (atspair:string account:string)
         (format "{}{}{}" [atspair BAR account])
     )
     ;;
-    ;; [AutostakeComputer]
     ;;
-    ;;<======================>
-    ;;SCHEMAS-TABLES-CONSTANTS
-    (implements AutostakeComputerV1)
-    ;;{1}
-    ;;{2}
-    ;;{3}
-    ;;
-    ;;<==========>
-    ;;CAPABILITIES
-    ;;{C1}
-    ;;{C2}
-    ;;{C3}
-    ;;{C4}
-    ;;
-    ;;<=======>
-    ;;FUNCTIONS
     (defun UC_CanCoil:object{AutostakeComputerV1.CanCoil} (dptf:string)
         @doc "Computes if a DPTF can be coiled, and outputs a <CanCoil> object. \
             \ This object also points the ats-pairs towards which the <dptf> can be coiled."
@@ -1013,7 +975,7 @@
             (filter (lambda (ats-pair:string) (UR_Hibernate ats-pair)) ats-pairs)
         )
     )
-    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     (defun URU_UpgradeAtspairToV2 (atspairs:[string])
         (map
             (lambda
@@ -1886,10 +1848,8 @@
     )
     ;;
     ;;
-    ;;<======================>
     ;;[URCi] cost readers — single cost source per op. The C_ returns/bills its URCi; Phase 1.2 INFO
     ;;  previews from the same reader. (HOT-RBT branding/Repurpose forward DPOF costs — no own URCi.)
-    ;;<======================>
     (defun URCi_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator} (entity-id:string)
         (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_BrandingCumulator (UR_OwnerKonto entity-id) 5.0))
     )
@@ -2001,7 +1961,15 @@
     (defun URCi_UpgradeBranding:decimal (months:integer)
         (let ((ref-BRD:module{BrandingV1} BRD)) (ref-BRD::URCi_UpgradeBranding months))
     )
-    ;;{F4}  Validate [UEV/CAP]
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
     (defun UEV_id (atspair:string)
         (let
             (
@@ -2137,8 +2105,8 @@
             (ref-DALOS::CAP_EnforceAccountOwnership (UR_OwnerKonto id))
         )
     )
-    ;;{F5}  Write [W]
-    ;;{F6}  Aux/Protected [X]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
     (defun XI_FoldedIssue:[string]
         (
             account:string
@@ -2573,17 +2541,44 @@
             { "P7"  : obj}
         )
     )
-    ;;{F7}  User [A]
-    ;;
-    ;;
-    (defcap AHU ()
+    ;;{5.7}  User [A/C]
+    (defun A_P|Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|ATS_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun A_P|AddIMP (policy-guard:guard)
+        (with-capability (GOV|ATS_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun A_P|Define ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ah:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
+                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
+                (ref-P|BRD:module{OuronetPolicyV1} BRD)
+                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
+                (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
+                (mg:guard (create-capability-guard (P|ATS|CALLER)))
             )
-            (ref-DALOS::CAP_EnforceAccountOwnership ah)
-            (compose-capability (SECURE))
+            (ref-P|DALOS::A_P|AddIMP mg)
+            (ref-P|BRD::A_P|AddIMP mg)
+            (ref-P|DPTF::A_P|AddIMP mg)
+            (ref-P|DPOF::A_P|AddIMP mg)
         )
     )
     (defun AU_UnstakeAccounts (keyz:[string])
@@ -2611,7 +2606,6 @@
             {"id"       : id}
         )
     )
-    ;;{F8}  User [C]
     (defun C_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator}
         (entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}])
         (UEV_IMC)
@@ -3035,8 +3029,7 @@
             )
         )
     )
-    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
-    ;;
+
 )
 
 (create-table P|T)

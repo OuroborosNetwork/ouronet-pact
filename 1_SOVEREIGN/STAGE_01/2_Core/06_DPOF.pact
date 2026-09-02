@@ -239,33 +239,39 @@
 )
 ;;
 (module DPOF GOV
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV1)
     (implements BrandingUsagePrimaryV1)
     (implements DemiourgosPactOrtoFungibleV1)
     (implements DemiourgosPactOrtoFungibleV2)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
     ;;
-    ;;<========>
-    ;;GOVERNANCE
-    ;;{G1}
     (defconst GOV|MD_DPOF                   (keyset-ref-guard (GOV|Demiurgoi)))
-    ;;{G2}
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
     (defcap GOV ()                          (compose-capability (GOV|DPOF_ADMIN)))
     (defcap GOV|DPOF_ADMIN ()               (enforce-guard GOV|MD_DPOF))
-    ;;{G3}
+    ;;{G5}  functions
     (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
-    ;;
-    ;; [Keys]
-    (defun CT_Namespace ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
     (defun GOV|CollectiblesKey ()           (+ (CT_Namespace) ".dh_sc_dpdc-keyset"))
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    (defconst P|I                   (P|Info))
+    ;;{P2}  schemas
+    ;;{P3}  tables
     ;;
-    ;;<====>
-    ;;POLICY
-    ;;{P1}
-    ;;{P2}
     (deftable P|T:{OuronetPolicyV1.P|S})
     (deftable P|MT:{OuronetPolicyV1.P|MS})
-    ;;{P3}
+    ;;{P4}  capabilities
     (defcap P|DPOF|CALLER ()
         true
     )
@@ -273,12 +279,7 @@
         (compose-capability (P|DPOF|CALLER))
         (compose-capability (SECURE))
     )
-    (defcap SECURE-ADMIN ()
-        (compose-capability (SECURE))
-        (compose-capability (GOV|DPOF_ADMIN))
-    )
-    ;;{P4}
-    (defconst P|I                   (P|Info))
+    ;;{P5}  functions
     (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
@@ -286,79 +287,56 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|DPOF_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|DPOF_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (ref-P|BRD:module{OuronetPolicyV1} BRD)
-                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
-                (mg:guard (create-capability-guard (P|DPOF|CALLER)))
-            )
-            (ref-P|DALOS::A_P|AddIMP mg)
-            (ref-P|BRD::A_P|AddIMP mg)
-            (ref-P|DPTF::A_P|AddIMP mg)
-        )
-    )
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    (defconst BAR           (CT_Bar))
+    (defconst OF            (at 0 ["Orto-Fungible"]))
+    (defconst ATS|SC_NAME   (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|ATS|SC_NAME)))
+    ;;{3.2}  schemas
     ;;
-    ;;<======================>
-    ;;SCHEMAS-TABLES-CONSTANTS
-    ;;{1}
     (defschema TransmitData
         input-nonces:[integer]
         input-amounts:[decimal]
         output-nonces:[integer]
         meta-data-array:[[object]]
     )
-    ;;{2}
+    ;;{3.3}  tables
     (deftable DPOF|T|Properties:{DpofUdcV1.DPOF|Properties})        ;;Key = <DPOF-id>      
     (deftable DPOF|T|Nonces:{DpofUdcV1.DPOF|NonceElement})          ;;Key = <DSOF-id> + BAR + <nonce>
     (deftable DPOF|T|VerumRoles:{DpofUdcV1.DPOF|VerumRoles})        ;;Key = <DPOF-id>
     (deftable DPOF|T|AccountRoles:{DpofUdcV1.DPOF|AccountRoles})    ;;Key = <DPOF-id> + BAR + <account> 
-    ;;{3}
-    (defun CT_Bar ()        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
-    (defconst BAR           (CT_Bar))
-    (defconst OF            (at 0 ["Orto-Fungible"]))
-    (defconst ATS|SC_NAME   (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|ATS|SC_NAME)))
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
     ;;
-    ;;<==========>
-    ;;CAPABILITIES
-    ;;{C1}
     (defcap SECURE ()
         true
     )
-    ;;{C2}
+    ;;
+    ;;#33M (audit note, 2026-08-28): AHU/AU_OrtoFungible(s)/AU_OrtoFungibleAccount(s) are a
+    ;;orto-fungible) migration, to batch-repair "id"/"account" key fields on rows carried over
+    ;;from that migration. Not a general-purpose admin backdoor: the hardcoded account (AH,
+    ;;"AncientHodler"/patron) was intentionally scoped to that one-time historical operation,
+    ;;which is now complete - not a substitute for GOV|DPOF_ADMIN and not meant to be a
+    ;;permanent alternate admin path. Owner (2026-08-28): "It's that way by design, and I think
+    ;;everything is migrated anyway... this was used when migrating from meta to orto fungible."
+    ;;Kept for historical reference, same retention rationale as DPMF itself (see #1C). No
+    ;;functional change made - documentation only.
+    ;;
+    (defcap AHU ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ah:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership ah)
+            (compose-capability (SECURE))
+        )
+    )
+    ;;{C2}  Simple
     (defcap DPOF|S>ROTATE-OWNERSHIP (id:string new-owner:string)
         @event
         (let
@@ -541,8 +519,11 @@
             )
         )
     )
-    ;;{C3}
-    ;;{C4}
+    ;;{C3}  Composed
+    (defcap SECURE-ADMIN ()
+        (compose-capability (SECURE))
+        (compose-capability (GOV|DPOF_ADMIN))
+    )
     (defcap DPOF|C>UPDATE-BRD (dpof:string)
         @event
         (UEV_ParentOwnership dpof)
@@ -757,7 +738,6 @@
         (compose-capability (DPOF|S>X_SWITCH-CREATE-ROLE id receiver))
         (compose-capability (SECURE))
     )
-
     (defcap DPOF|C>TOGGLE-TRANSFER-ROLE (id:string account:string toggle:bool)
         @doc "Toggle Verum 5"
         @event
@@ -891,10 +871,16 @@
             (compose-capability (P|SECURE-CALLER))
         )
     )
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
     ;;
-    ;;<=======>
-    ;;FUNCTIONS
-    ;;{F1}  Construct [UDC]
+    ;; [Keys]
+    (defun CT_Namespace ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
+    (defun CT_Bar ()        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    ;;
     (defun UDC_NonceElement:object{DpofUdcV1.DPOF|NonceElement}
         (a:string b:string c:integer d:decimal e:[object])
         {"holder"           : a
@@ -934,7 +920,7 @@
         ,"output-nonces"    : c
         ,"meta-data-array"  : d}
     )
-    ;;{F2}  Compute [UC]
+    ;;{5.2}  Compute [UC]
     (defun UC_IdNonce:string (id:string nonce:integer)
         (format "{}{}{}" [id BAR nonce])
     )
@@ -1006,6 +992,7 @@
             nonces-array
         )
     )
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     (defun URCix_NoncesCumulator:object{IgnisCollectorV1.OutputCumulator}
         (id:string number-of-nonces:integer price-per-nonce:decimal output-obj:object)
         (let
@@ -1023,7 +1010,6 @@
             )
         )
     )
-    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     (defun URCi_MoveCumulator:object{IgnisCollectorV1.OutputCumulator}
         (id:string nonces:[integer] transmit-or-transfer:bool)
         (let
@@ -1433,10 +1419,8 @@
     )
     ;;
     ;;
-    ;;<======================>
     ;;[URCi] cost readers — single cost source per op. The C_/XE_ returns/bills its URCi; Phase 1.2 INFO
     ;;  previews from the same reader. (Per-nonce wipe/move costs are URCi_WipeCumulator/URCi_MoveCumulator.)
-    ;;<======================>
     (defun URCi_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator} (entity-id:string)
         (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_BrandingCumulator (UR_Konto entity-id) 1.5))
     )
@@ -1501,7 +1485,15 @@
     (defun URCi_DeployAccount:object{IgnisCollectorV1.OutputCumulator} (account:string)
         (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_SmallCumulator account))
     )
-    ;;{F4}  Validate [UEV/CAP]
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
     ;;3]Returns a 
     (defun UEV_id (id:string)
         (with-default-read DPOF|T|Properties id
@@ -1788,8 +1780,8 @@
             (ref-DALOS::CAP_EnforceAccountOwnership (UR_Konto id))
         )
     )
-    ;;{F5}  Write [W]
-    ;;{F6}  Aux/Protected [X]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
     (defun XI_TransferWholeNonces
         (id:string sender:string receiver:string nonces:[integer])
         @doc "Move whole <nonces> from <sender> to <receiver> — shared by C_Transfer and C_BulkTransfer."
@@ -2293,27 +2285,42 @@
             {"total-account-supply" : new-tas}
         )
     )
-    ;;{F7}  User [A]
-    ;;
-    ;;#33M (audit note, 2026-08-28): AHU/AU_OrtoFungible(s)/AU_OrtoFungibleAccount(s) are a
-    ;;HISTORICAL, one-time migration utility used during the DPMF -> DPOF (meta-fungible to
-    ;;orto-fungible) migration, to batch-repair "id"/"account" key fields on rows carried over
-    ;;from that migration. Not a general-purpose admin backdoor: the hardcoded account (AH,
-    ;;"AncientHodler"/patron) was intentionally scoped to that one-time historical operation,
-    ;;which is now complete - not a substitute for GOV|DPOF_ADMIN and not meant to be a
-    ;;permanent alternate admin path. Owner (2026-08-28): "It's that way by design, and I think
-    ;;everything is migrated anyway... this was used when migrating from meta to orto fungible."
-    ;;Kept for historical reference, same retention rationale as DPMF itself (see #1C). No
-    ;;functional change made - documentation only.
-    ;;
-    (defcap AHU ()
+    ;;{5.7}  User [A/C]
+    (defun A_P|Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|DPOF_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun A_P|AddIMP (policy-guard:guard)
+        (with-capability (GOV|DPOF_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun A_P|Define ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ah:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
+                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
+                (ref-P|BRD:module{OuronetPolicyV1} BRD)
+                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
+                (mg:guard (create-capability-guard (P|DPOF|CALLER)))
             )
-            (ref-DALOS::CAP_EnforceAccountOwnership ah)
-            (compose-capability (SECURE))
+            (ref-P|DALOS::A_P|AddIMP mg)
+            (ref-P|BRD::A_P|AddIMP mg)
+            (ref-P|DPTF::A_P|AddIMP mg)
         )
     )
     (defun AU_OrtoFungibleAccounts (keyz:[string])
@@ -2341,7 +2348,6 @@
             {"id"       : id}
         )
     )
-    ;;{F8}  User [C]
     (defun C_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator}
         (entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}])
         (UEV_IMC)
@@ -2792,8 +2798,7 @@
             )
         )
     )
-    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
-    ;;
+
 )
 
 (create-table P|T)

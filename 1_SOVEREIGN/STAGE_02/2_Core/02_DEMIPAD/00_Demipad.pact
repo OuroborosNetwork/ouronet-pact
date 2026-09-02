@@ -190,30 +190,25 @@
         \ \
         \ Permissioned Launchpad, means its part of the Core Modules from Stage 2 \
         \ A permissionless Launchpad, in the form of the IGNIS Market Place will be launched after the Acquisition Pools Deployment"
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV1)
     (implements DemiourgosLaunchpadV1)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
     ;;
-    ;;<========>
-    ;;GOVERNANCE
-    ;;{G1}
     (defconst GOV|MD_DEMIPAD                (keyset-ref-guard (GOV|Demiurgoi)))
-    ;;
-    (defconst DEMIPAD|SC_KEY                (GOV|LaunchpadKey))
-    (defconst DEMIPAD|SC_NAME               (GOV|DEMIPAD|SC_NAME))
-    (defconst MB|SC_STOA-NAME                "k:xxx")
-    ;;{G2}
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
     (defcap GOV ()                          (compose-capability (GOV|DEMIPAD_ADMIN)))
     (defcap GOV|DEMIPAD_ADMIN ()            (enforce-guard GOV|MD_DEMIPAD))
-    (defcap DEMIPAD|GOV ()
-        @doc "Governor Capability for the DEMIPAD Smart DALOS Account"
-        true
-    )
-    ;;{G3}
+    ;;{G5}  functions
     (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
-    ;;
-    ;; [Keys]
-    (defun CT_Namespace ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
     (defun GOV|LaunchpadKey ()              (+ (CT_Namespace) ".dh_sc_mb-keyset"))
     ;;(defun GOV|LaunchpadKey ()              (+ (CT_Namespace) ".dh_sc_demipad-keyset"))
     ;;
@@ -222,14 +217,17 @@
     ;;
     ;; [PBLs]
     (defun GOV|DEMIPAD|PBL ()               (at 0 ["9F.gGCkuc2wMAnFAjuFphikftLdl6qFqBD4yfeMEe9u65yMqf4r340Jd6dphh1d7E1cE20btMwl4HJ2cBEMvp209GA1eD4syB96hu4nmpFbB7dKnJEMz4p8fGLcmhvrBCfDmM0axnGin8qedl5vDtwbgL3l1aK5BsmjkEEJartqCH8qG8ialtjxwCcIMf50t2lkeww6Dct5LlmmLG25FmfpcgnwMMnkJl4Gfn9gwoA6vm0jKebjhodeJLjxnh9L11ss8f26866dqv1tEphxFFqutGetH4Itj3rHkrcrGsnlqpf4gfJp94b0gBwIBe4vCj6ha8jm6kd3f8B6pEaJtkJ3fbs6rCcGibltz1BAMn0vvKME5ddFyGBnzssk1s2s0vFzwxs6vjC61Ma2l1xDxqdg1thAk2u01hDiGndLhzK73HAfgtk7bxscn0qKhymG6JAqnEFt282pyHAq5nIthK9bA8nH76x7FEpLz4eK9tLIBsyjb8M5DxaeEei6pEnLxFCAg7ulacgtjjpjMiAaqhpmM1jEHqjt4G85q4L33zrME7whgIkIpIgwnF2qKd4"]))
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    (defconst P|I                   (P|Info))
+    ;;{P2}  schemas
+    ;;{P3}  tables
     ;;
-    ;;<====>
-    ;;POLICY
-    ;;{P1}
-    ;;{P2}
     (deftable P|T:{OuronetPolicyV1.P|S})
     (deftable P|MT:{OuronetPolicyV1.P|MS})
-    ;;{P3}
+    ;;{P4}  capabilities
     (defcap P|DEMIPAD|CALLER ()
         true
     )
@@ -237,8 +235,7 @@
         (compose-capability (P|DEMIPAD|CALLER))
         (compose-capability (SECURE))
     )
-    ;;{P4}
-    (defconst P|I                   (P|Info))
+    ;;{P5}  functions
     (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
@@ -246,65 +243,14 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|DEMIPAD_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|DEMIPAD_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (ref-P|TFT:module{OuronetPolicyV1} TFT)
-                (ref-P|LIQUID:module{OuronetPolicyV1} LIQUID)
-                (ref-P|DPDC:module{OuronetPolicyV1} DPDC)
-                (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
-                (mg:guard (create-capability-guard (P|DEMIPAD|CALLER)))
-            )
-            (ref-P|DALOS::A_P|AddIMP mg)
-            (ref-P|TFT::A_P|AddIMP mg)
-            (ref-P|LIQUID::A_P|AddIMP mg)
-            (ref-P|DPDC::A_P|AddIMP mg)
-            (ref-P|DPDC-T::A_P|AddIMP mg)
-        )
-    )
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
     ;;
-    ;;<======================>
-    ;;SCHEMAS-TABLES-CONSTANTS
-    ;;{1}
-    ;;{2}
-    (deftable DEMIPAD|T|Properties:{DemiourgosLaunchpadV1.DEMIPAD|Properties})
-    (deftable DEMIPAD|T|Ledger:{DemiourgosLaunchpadV1.DEMIPAD|Holdings})
-    ;;{3}
-    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
-    (defun CT_EmptyCumulator ()     (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_EmptyOutputCumulatorV2)))
+    (defconst DEMIPAD|SC_KEY                (GOV|LaunchpadKey))
+    (defconst DEMIPAD|SC_NAME               (GOV|DEMIPAD|SC_NAME))
+    (defconst MB|SC_STOA-NAME                "k:xxx")
     (defconst BAR                   (CT_Bar))
     (defconst EOC                   (CT_EmptyCumulator))
     (defconst TF                    [true true])
@@ -313,16 +259,38 @@
     (defconst NF                    [false false])
     ;;
     (defconst PP                    "Launchpad-Properties")
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
     ;;
-    ;;<==========>
-    ;;CAPABILITIES
-    ;;{C1}
+    (deftable DEMIPAD|T|Properties:{DemiourgosLaunchpadV1.DEMIPAD|Properties})
+    (deftable DEMIPAD|T|Ledger:{DemiourgosLaunchpadV1.DEMIPAD|Holdings})
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    (defcap DEMIPAD|GOV ()
+        @doc "Governor Capability for the DEMIPAD Smart DALOS Account"
+        true
+    )
+    ;;
     (defcap SECURE ()
         true
     )
-    ;;{C2}
-    ;;{C3}
-    ;;{C4}
+    ;;{C2}  Simple
+    ;;
+    ;;#2H: the retrieval lock the launchpad advertises to buyers. A non-admin Owner/Creator may pull
+    ;;    deposited assets back out ONLY when retrieval is enabled; the Launchpad admin may always
+    ;;    retrieve. FUEL (deposit) is never gated — only RETRIEVE composes this. (Option A: admin override.)
+    (defcap DEMIPAD|C>RETRIEVAL-GATE (asset-id:string)
+        (enforce-one
+            (format "Asset {} retrieval is LOCKED (retrieval=false) — only the Launchpad admin may retrieve until a sale or an admin re-enable" [asset-id])
+            [
+                (enforce-guard GOV|MD_DEMIPAD)
+                (enforce (UR_Retrieval asset-id) "retrieval disabled")
+            ]
+        )
+    )
+    ;;{C3}  Composed
     (defcap DEMIPAD|C>REGISTER (asset-id:string fungibility:[bool])
         @event
         (UEV_Fungibility fungibility)
@@ -374,19 +342,6 @@
     (defcap DEMIPAD|C>FUEL-NON-FUNGIBLE (asset-id:string)
         @event
         (compose-capability (DEMIPAD|C>REGISTERED-ACCESS-BY-TYPE asset-id [false false]))
-    )
-    ;;
-    ;;#2H: the retrieval lock the launchpad advertises to buyers. A non-admin Owner/Creator may pull
-    ;;    deposited assets back out ONLY when retrieval is enabled; the Launchpad admin may always
-    ;;    retrieve. FUEL (deposit) is never gated — only RETRIEVE composes this. (Option A: admin override.)
-    (defcap DEMIPAD|C>RETRIEVAL-GATE (asset-id:string)
-        (enforce-one
-            (format "Asset {} retrieval is LOCKED (retrieval=false) — only the Launchpad admin may retrieve until a sale or an admin re-enable" [asset-id])
-            [
-                (enforce-guard GOV|MD_DEMIPAD)
-                (enforce (UR_Retrieval asset-id) "retrieval disabled")
-            ]
-        )
     )
     ;;
     (defcap DEMIPAD|C>RETRIEVE-TRUE-FUNGIBLE (asset-id:string)
@@ -500,11 +455,18 @@
             (compose-capability (DEMIPAD|C>REGISTERED-ACCESS asset-id))
         )
     )
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;
+    ;; [Keys]
+    (defun CT_Namespace ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
+    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_EmptyCumulator ()     (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_EmptyOutputCumulatorV2)))
     ;;
     ;;
-    ;;<=======>
-    ;;FUNCTIONS
-    ;;{F1}  Construct [UDC]
     (defun UDC_Costs:object{DemiourgosLaunchpadV1.Costs} 
         (a:decimal b:decimal)
         {"pid"  : a
@@ -552,7 +514,7 @@
         ,"coding-amount"        : k
         ,"remainder-amount"     : l}
     )
-    ;;{F2}  Compute [UC]
+    ;;{5.2}  Compute [UC]
     (defun UC_Type:string (asset-id:string fungibility:[bool])
         (cond
             ((= fungibility TF) "True Fungible")
@@ -690,7 +652,7 @@
             (ref-U|DALOS::UC_TenTwentyThirtyFourtySplit amount-in-stoa stoa-prec)
         )
     )
-    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     (defun UR_LaunchpadState:object{DemiourgosLaunchpadV1.DEMIPAD|Properties} ()
         (read DEMIPAD|T|Properties PP)
     )
@@ -966,7 +928,15 @@
             )
         )
     )
-    ;;{F4}  Validate [UEV/CAP]
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
     (defun CAP_Acquire
         (buyer:string asset-id:string buy-amount-in-dollarz:decimal type:integer)
         (let
@@ -1078,8 +1048,8 @@
             )
         )
     )
-    ;;{F5}  Write [W]
-    ;;{F6}  Aux/Protected [X]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
     ;;
     ;;
     (defun XI_RegisterAsset (asset-id:string fungibility:[bool])
@@ -1251,7 +1221,48 @@
             )
         )
     )
-    ;;{F7}  User [A]
+    ;;{5.7}  User [A/C]
+    (defun A_P|Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|DEMIPAD_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun A_P|AddIMP (policy-guard:guard)
+        (with-capability (GOV|DEMIPAD_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun A_P|Define ()
+        (let
+            (
+                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
+                (ref-P|TFT:module{OuronetPolicyV1} TFT)
+                (ref-P|LIQUID:module{OuronetPolicyV1} LIQUID)
+                (ref-P|DPDC:module{OuronetPolicyV1} DPDC)
+                (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
+                (mg:guard (create-capability-guard (P|DEMIPAD|CALLER)))
+            )
+            (ref-P|DALOS::A_P|AddIMP mg)
+            (ref-P|TFT::A_P|AddIMP mg)
+            (ref-P|LIQUID::A_P|AddIMP mg)
+            (ref-P|DPDC::A_P|AddIMP mg)
+            (ref-P|DPDC-T::A_P|AddIMP mg)
+        )
+    )
     ;;
     (defun A_RegisterAssetToLaunchpad (patron:string asset-id:string fungibility:[bool])
         (UEV_IMC)
@@ -1282,7 +1293,6 @@
             (format "Asset {} Retrieval succesfuly set to {}" [asset-id toggle])
         )
     )
-    ;;{F8}  User [C]
     (defun C_Deposit:object{IgnisCollectorV1.OutputCumulator}
         (donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal)
         @doc "Deposits Funds into the Launchpad, for a registered Asset \
@@ -1463,8 +1473,7 @@
             (XI_TransmitCollectables client asset-id false nonces amounts fuel-or-retrieve)
         )
     )
-    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
-    ;;
+
 )
 
 (create-table P|T)

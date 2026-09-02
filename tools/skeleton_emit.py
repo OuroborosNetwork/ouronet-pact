@@ -46,13 +46,15 @@ MARK_RE = re.compile(r'^\s*;;(<=|\{|[A-Z]{3,})')   # old block/sub markers to dr
 
 def emit_module(block):
     """block = lines from '(module …' through its closing ')'.  Returns new lines."""
-    # header: module-open line + @doc lines up to first form/marker
+    # header: module-open line + the module @doc (which may be a multi-line string)
     hdr=[block[0]]; i=1
-    while i < len(block):
-        s=block[i].strip()
-        if s.startswith('@doc') or (hdr and hdr[-1].strip().startswith('@doc') and s and not s.startswith(';;') and not FORM_RE.match(block[i]) and s.startswith('\\')):
-            hdr.append(block[i]); i+=1; continue
-        break
+    while i < len(block) and block[i].strip()=='':
+        hdr.append(block[i]); i+=1
+    if i < len(block) and block[i].strip().startswith('@doc'):
+        in_str=False
+        while i < len(block):
+            hdr.append(block[i]); _,in_str=_pd(block[i],in_str); i+=1
+            if not in_str: break
     close_i = max(j for j in range(len(block)) if block[j].startswith(')'))
     body = block[i:close_i]; trailing = block[close_i:]
     # parse forms with attached leading comments; drop old markers/blank noise

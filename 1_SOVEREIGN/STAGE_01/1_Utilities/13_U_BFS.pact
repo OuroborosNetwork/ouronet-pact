@@ -1,11 +1,17 @@
 (module U|BFS GOV
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
     ;;
     (implements BreadthFirstSearchV1)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
     ;;
-    ;;<========>
-    ;;GOVERNANCE
-    ;;{G1}
-    ;;{G2}
     (defcap GOV ()                  (compose-capability (GOV|U|BFS_ADMIN)))
     (defcap GOV|U|BFS_ADMIN ()
         (let
@@ -16,21 +22,19 @@
             (enforce-guard g)
         )
     )
-    ;;{G3}
-    ;;
-    ;;<====>
-    ;;POLICY
-    ;;{P1}
-    ;;{P2}
-    ;;{P3}
-    ;;{P4}
-    ;;
-    ;;<======================>
-    ;;SCHEMAS-TABLES-CONSTANTS
-    ;;{1}
-    ;;{2}
-    ;;{3}
-    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
     (defconst BAR (CT_Bar))
     (defconst EQE
         [
@@ -47,18 +51,65 @@
             "chains":   [[BAR]]
         }
     )
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
     ;;
-    ;;<==========>
-    ;;CAPABILITIES
-    ;;{C1}
-    ;;{C2}
-    ;;{C3}
-    ;;{C4}
     ;;
-    ;;<=======>
-    ;;FUNCTIONS
-    ;;{F1}  Construct [UDC]
-    ;;{F2}  Compute [UC]
+    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun UDCx_ExtendChain:object{BreadthFirstSearchV1.QE} (input:object{BreadthFirstSearchV1.QE} element:string)
+        @doc "Extends a Que Element with a new element"
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV1} U|LST)
+            )
+            {
+                "node": element,
+                "chain": (ref-U|LST::UC_AppL (at "chain" input) element)
+            }
+        )
+    )
+    (defun UDCx_AddVisited:object{BreadthFirstSearchV1.BFS} (input:object{BreadthFirstSearchV1.BFS} visited:[string])
+        {
+            "visited":  (UCx_ExStrLst (at "visited" input) visited),
+            "que":      (at "que" input),
+            "chains":   (at "chains" input)
+        }
+    )
+    (defun UDCx_AddToQue:object{BreadthFirstSearchV1.BFS} (input:object{BreadthFirstSearchV1.BFS} que:[object{BreadthFirstSearchV1.QE}])
+        {
+            "visited":  (at "visited" input),
+            "que":      (UCx_ExQeLst (at "que" input) que),
+            "chains":   (at "chains" input)
+        }
+    )
+    (defun UDCx_RmFromQue:object{BreadthFirstSearchV1.BFS} (input:object{BreadthFirstSearchV1.BFS})
+        {
+            "visited":  (at "visited" input),
+            "que":      (UCx_RmFirstQeList (at "que" input)),
+            "chains":   (at "chains" input)
+        }
+    )
+    (defun UDCx_AddChains:object{BreadthFirstSearchV1.BFS} (input:object{BreadthFirstSearchV1.BFS} chains-to-add:[[string]])
+        {
+            "visited":  (at "visited" input),
+            "que":      (at "que" input),
+            "chains":   (UCx_ExStrArrLst (at "chains" input) chains-to-add)
+        }
+    )
+    ;;{5.2}  Compute [UC]
+    ;;
+    ;;
     (defun UC_BFS:object{BreadthFirstSearchV1.BFS} (graph:[object{BreadthFirstSearchV1.GraphNode}] in:string)
         @doc "Implementation of the Breadth First Search Method, outputing a BFS Object, \
         \ which ultimately contains all chains, starting from a specific <in> node"
@@ -370,52 +421,10 @@
             (+ to-extend elements)
         )
     )
-    (defun UDCx_ExtendChain:object{BreadthFirstSearchV1.QE} (input:object{BreadthFirstSearchV1.QE} element:string)
-        @doc "Extends a Que Element with a new element"
-        (let
-            (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-            )
-            {
-                "node": element,
-                "chain": (ref-U|LST::UC_AppL (at "chain" input) element)
-            }
-        )
-    )
-    (defun UDCx_AddVisited:object{BreadthFirstSearchV1.BFS} (input:object{BreadthFirstSearchV1.BFS} visited:[string])
-        {
-            "visited":  (UCx_ExStrLst (at "visited" input) visited),
-            "que":      (at "que" input),
-            "chains":   (at "chains" input)
-        }
-    )
-    (defun UDCx_AddToQue:object{BreadthFirstSearchV1.BFS} (input:object{BreadthFirstSearchV1.BFS} que:[object{BreadthFirstSearchV1.QE}])
-        {
-            "visited":  (at "visited" input),
-            "que":      (UCx_ExQeLst (at "que" input) que),
-            "chains":   (at "chains" input)
-        }
-    )
-    (defun UDCx_RmFromQue:object{BreadthFirstSearchV1.BFS} (input:object{BreadthFirstSearchV1.BFS})
-        {
-            "visited":  (at "visited" input),
-            "que":      (UCx_RmFirstQeList (at "que" input)),
-            "chains":   (at "chains" input)
-        }
-    )
-    (defun UDCx_AddChains:object{BreadthFirstSearchV1.BFS} (input:object{BreadthFirstSearchV1.BFS} chains-to-add:[[string]])
-        {
-            "visited":  (at "visited" input),
-            "que":      (at "que" input),
-            "chains":   (UCx_ExStrArrLst (at "chains" input) chains-to-add)
-        }
-    )
-    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
-    ;;{F4}  Validate [UEV/CAP]
-    ;;{F5}  Write [W]
-    ;;{F6}  Aux/Protected [X]
-    ;;{F7}  User [A]
-    ;;{F8}  User [C]
-    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
-    ;;
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
 )

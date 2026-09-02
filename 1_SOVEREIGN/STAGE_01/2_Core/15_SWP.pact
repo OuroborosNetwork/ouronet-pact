@@ -133,17 +133,22 @@
 )
 ;;
 (module SWP GOV
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV1)
     (implements BrandingUsagePrimaryV1)
     (implements SwapperV3)
-    ;;{G1}
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
     (defconst GOV|MD_SWP            (keyset-ref-guard (GOV|Demiurgoi)))
     (defconst GOV|SC_SWP            (keyset-ref-guard SWP|SC_KEY))
-    ;;
-    (defconst SWP|SC_KEY            (GOV|SwapKey))
-    (defconst SWP|SC_NAME           (GOV|SWP|SC_NAME))
-    ;;{G2}
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
     (defcap GOV ()                  (compose-capability (GOV|SWP_ADMIN)))
     (defcap GOV|SWP_ADMIN ()
         (enforce-one
@@ -154,24 +159,22 @@
             ]
         )
     )
-    (defcap SWP|GOV ()
-        @doc "Governor Capability for the Swapper Smart DALOS Account"
-        true
-    )
-    (defcap SWP|NATIVE-AUTOMATIC ()
-        @doc "Autonomic management of <stoa-konto> of SWAPPER Smart Account"
-        true
-    )
+    ;;{G5}  functions
     ;;
     (defun GOV|Demiurgoi ()         (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
     (defun GOV|SwapKey ()           (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|SwapKey)))
     (defun GOV|SWP|SC_NAME ()       (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|SWP|SC_NAME)))
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    (defconst P|I                   (P|Info))
+    ;;{P2}  schemas
+    ;;{P3}  tables
     ;;
-    ;;{P1}
-    ;;{P2}
     (deftable P|T:{OuronetPolicyV1.P|S})                        ;;Key = <policy-name>
     (deftable P|MT:{OuronetPolicyV1.P|MS})                      ;;Key = P|I (module-identity singleton constant)
-    ;;{P3}
+    ;;{P4}  capabilities
     (defcap P|SWP|CALLER ()
         true
     )
@@ -183,8 +186,7 @@
         (compose-capability (P|SWP|CALLER))
         (compose-capability (SWP|GOV))
     )
-    ;;{P4}
-    (defconst P|I                   (P|Info))
+    ;;{P5}  functions
     (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
@@ -192,71 +194,34 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|SWP_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|SWP_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (ref-P|BRD:module{OuronetPolicyV1} BRD)
-                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
-                ;(ref-P|DPOF:module{OuronetPolicyV1} DPOF)
-                (ref-P|ATS:module{OuronetPolicyV1} ATS)
-                (ref-P|TFT:module{OuronetPolicyV1} TFT)
-                (ref-P|ATSU:module{OuronetPolicyV1} ATSU)
-                (ref-P|VST:module{OuronetPolicyV1} VST)
-                (ref-P|LIQUID:module{OuronetPolicyV1} LIQUID)
-                (ref-P|ORBR:module{OuronetPolicyV1} OUROBOROS)
-                (ref-P|SWPT:module{OuronetPolicyV1} SWPT)
-                (mg:guard (create-capability-guard (P|SWP|CALLER)))
-            )
-            (ref-P|DALOS::A_P|AddIMP mg)
-            (ref-P|BRD::A_P|AddIMP mg)
-            (ref-P|DPTF::A_P|AddIMP mg)
-            ;(ref-P|DPOF::A_P|AddIMP mg)
-            (ref-P|ATS::A_P|AddIMP mg)
-            (ref-P|TFT::A_P|AddIMP mg)
-            (ref-P|ATSU::A_P|AddIMP mg)
-            (ref-P|VST::A_P|AddIMP mg)
-            (ref-P|LIQUID::A_P|AddIMP mg)
-            (ref-P|ORBR::A_P|AddIMP mg)
-            (ref-P|SWPT::A_P|AddIMP mg)
-        )
-    )
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-                (mp:[guard] (P|UR_IMP))
-                (g:guard (ref-U|G::UEV_GuardOfAny mp))
-            )
-            (enforce-guard g)
-        )
-    )
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
     ;;
-    ;;{1}
+    (defconst SWP|SC_KEY            (GOV|SwapKey))
+    (defconst SWP|SC_NAME           (GOV|SWP|SC_NAME))
+    (defconst BAR                   (CT_Bar))
+    (defconst EOC                   (CT_EmptyCumulator))
+    (defconst SWP|INFO              (CT_Info))
+    (defconst P2 "P2")
+    (defconst P3 "P3")
+    (defconst P4 "P4")
+    (defconst P5 "P5")
+    (defconst P6 "P6")
+    (defconst P7 "P7")
+    (defconst S2 "S2")
+    (defconst S3 "S3")
+    (defconst S4 "S4")
+    (defconst S5 "S5")
+    (defconst S6 "S6")
+    (defconst S7 "S7")
+    (defconst SWP|EMPTY-TARGET
+        { "target": BAR
+        , "value": 1 }
+    )
+    ;;{3.2}  schemas
+    ;;
     (defschema SWP|PropertiesSchema
         principals:[string]
         primordial-pool:string
@@ -310,40 +275,40 @@
     (defschema SWP|LpTracker
         swpair:string
     )
-    ;;{2}
+    ;;{3.3}  tables
     (deftable SWP|Properties:{SWP|PropertiesSchema})    ;;Key = SWP|INFO
     (deftable SWP|Pairs:{SWP|PairsSchemaV3})            ;;Key = <swpair>
     (deftable SWP|Pools:{SWP|PoolsSchema})              ;;Key = <pool-category>
     (deftable SWP|Asymmetry:{SWP|AsymmetrySchema})      ;;Key = SWP|INFO
     (deftable SWP|LP:{SWP|LpTracker})                   ;;Key = <LP-string>
-    ;;{3}
-    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
-    (defun CT_EmptyCumulator ()     (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_EmptyOutputCumulatorV2)))
-    (defun CT_Info ()              (at 0 ["SwapperInformation"]))
-    (defconst BAR                   (CT_Bar))
-    (defconst EOC                   (CT_EmptyCumulator))
-    (defconst SWP|INFO              (CT_Info))
-    (defconst P2 "P2")
-    (defconst P3 "P3")
-    (defconst P4 "P4")
-    (defconst P5 "P5")
-    (defconst P6 "P6")
-    (defconst P7 "P7")
-    (defconst S2 "S2")
-    (defconst S3 "S3")
-    (defconst S4 "S4")
-    (defconst S5 "S5")
-    (defconst S6 "S6")
-    (defconst S7 "S7")
-    (defconst SWP|EMPTY-TARGET
-        { "target": BAR
-        , "value": 1 }
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    (defcap SWP|GOV ()
+        @doc "Governor Capability for the Swapper Smart DALOS Account"
+        true
     )
-    ;;{C1}
+    (defcap SWP|NATIVE-AUTOMATIC ()
+        @doc "Autonomic management of <stoa-konto> of SWAPPER Smart Account"
+        true
+    )
     (defcap SECURE ()
         true
     )
-    ;;{C2}
+    ;;
+    ;;
+    (defcap AHU ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ah:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership ah)
+            (compose-capability (SECURE))
+        )
+    )
+    ;;{C2}  Simple
     (defcap SWP|S>RT_OWN (swpair:string new-owner:string)
         @event
         (let
@@ -520,18 +485,6 @@
             )
         )
     )
-    ;{C3}
-    ;{C4}
-    (defcap SWP|C>UPDATE-BRD (swpair:string)
-        @event
-        (CAP_Owner swpair)
-        (compose-capability (P|SWP|CALLER))
-    )
-    (defcap SWP|C>UPGRADE-BRD (swpair:string)
-        @event
-        (CAP_Owner swpair)
-        (compose-capability (P|SWP|CALLER))
-    )
     (defcap SWP|C>ADD-OR-SWAP (swpair:string toggle:bool add-or-swap:bool)
         @event
         (let
@@ -545,6 +498,19 @@
             )
             (CAP_Owner swpair)
         )
+    )
+    ;;{C3}  Composed
+    ;{C3}
+    ;{C4}
+    (defcap SWP|C>UPDATE-BRD (swpair:string)
+        @event
+        (CAP_Owner swpair)
+        (compose-capability (P|SWP|CALLER))
+    )
+    (defcap SWP|C>UPGRADE-BRD (swpair:string)
+        @event
+        (CAP_Owner swpair)
+        (compose-capability (P|SWP|CALLER))
     )
     (defcap SWP|C>PRINCIPAL (principal:string add-or-remove:bool)
         @doc "Adds are capped at 7 total and must not duplicate an existing \
@@ -623,7 +589,6 @@
         @event
         (compose-capability (GOV|SWP_ADMIN))
     )
-
     (defcap SWP|C>TG_FEE-LOCK (swpair:string toggle:bool)
         @event
         (UEV_FeeLockState swpair (not toggle))
@@ -686,7 +651,15 @@
             (compose-capability (P|SWP|CALLER))
         )
     )
-    ;;{FC}
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_EmptyCumulator ()     (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_EmptyOutputCumulatorV2)))
+    (defun CT_Info ()              (at 0 ["SwapperInformation"]))
+    ;;{5.2}  Compute [UC]
     (defun UC_ExtractTokens:[string] (input:[object{SwapperV3.PoolTokens}])
         (let
             (
@@ -753,7 +726,46 @@
             )
         )
     )
-    ;;{F0}
+    (defun UC_PoolTokenPosition:integer (swpair:string id:string)
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+                ;;
+                (pool-tokens:[string] (ref-U|SWP::UC_TokensFromSwpairString swpair))
+                (iz-on-pool:bool (contains id pool-tokens))
+            )
+            (enforce iz-on-pool (format "Token {} is not part of the Pool String {}" [id swpair]))
+            (at 0 (ref-U|LST::UC_Search pool-tokens id))
+        )
+    )
+    (defun UC_PoolTokenPrecisions:[integer] (swpair:string)
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                ;;
+                (pool-tokens:[string] (ref-U|SWP::UC_TokensFromSwpairString swpair))
+                (l:integer (length pool-tokens))
+                (Xp:[integer]
+                    (fold
+                        (lambda
+                            (acc:[integer] idx:integer)
+                            (ref-U|LST::UC_AppL
+                                acc
+                                (ref-DPTF::UR_Decimals (at idx pool-tokens))
+                            )
+                        )
+                        []
+                        (enumerate 0 (- l 1))
+                    )
+                )
+            )
+            Xp
+        )
+    )
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     (defun UR_Asymetric:bool ()
         (at "asymmetric" (read SWP|Asymmetry SWP|INFO ["asymmetric"]))
     )
@@ -872,19 +884,6 @@
             (at 0 (ref-U|LST::UC_Search pool-tokens id))
         )
     )
-    (defun UC_PoolTokenPosition:integer (swpair:string id:string)
-        (let
-            (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                ;;
-                (pool-tokens:[string] (ref-U|SWP::UC_TokensFromSwpairString swpair))
-                (iz-on-pool:bool (contains id pool-tokens))
-            )
-            (enforce iz-on-pool (format "Token {} is not part of the Pool String {}" [id swpair]))
-            (at 0 (ref-U|LST::UC_Search pool-tokens id))
-        )
-    )
     (defun UR_PoolTokenSupply:decimal (swpair:string id:string)
         (at (UR_PoolTokenPosition swpair id) (UR_PoolTokenSupplies swpair))
     )
@@ -913,32 +912,6 @@
             Xp
         )
     )
-    (defun UC_PoolTokenPrecisions:[integer] (swpair:string)
-        (let
-            (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                ;;
-                (pool-tokens:[string] (ref-U|SWP::UC_TokensFromSwpairString swpair))
-                (l:integer (length pool-tokens))
-                (Xp:[integer]
-                    (fold
-                        (lambda
-                            (acc:[integer] idx:integer)
-                            (ref-U|LST::UC_AppL
-                                acc
-                                (ref-DPTF::UR_Decimals (at idx pool-tokens))
-                            )
-                        )
-                        []
-                        (enumerate 0 (- l 1))
-                    )
-                )
-            )
-            Xp
-        )
-    )
     (defun UR_SpecialFeeTargets:[string] (swpair:string)
         (UC_CustomSpecialFeeTargets (UR_FeeSPT swpair))
     )
@@ -948,7 +921,6 @@
     (defun UR_GetLpSwpair:string (lp-id:string)
         (at "swpair" (read SWP|LP lp-id ["swpair"]))
     )
-    ;;{F1}
     (defun URC_IsMajorPrincipal:bool (token:string)
         @doc "True if <token> is currently a member of the primordial pool's own \
             \ token list — the 'major principal' concept: fixed, always exactly \
@@ -1106,7 +1078,181 @@
             )
         )
     )
-    ;;{F2}
+    ;;
+    ;;[URCi] cost readers — single cost source per op. Enable*/ToggleAddOrSwap composers -> Phase 1.2.
+    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator} (entity-id:string)
+        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_BrandingCumulator (UR_OwnerKonto entity-id) 4.0))
+    )
+    (defun URCi_ChangeOwnership:object{IgnisCollectorV1.OutputCumulator} (swpair:string)
+        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto swpair)))
+    )
+    (defun URCi_ModifyCanChangeOwner:object{IgnisCollectorV1.OutputCumulator} (swpair:string)
+        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto swpair)))
+    )
+    (defun URCi_ModifyWeights:object{IgnisCollectorV1.OutputCumulator} (swpair:string)
+        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto swpair)))
+    )
+    (defun URCi_UpdateAmplifier:object{IgnisCollectorV1.OutputCumulator} (swpair:string)
+        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_MediumCumulator (UR_OwnerKonto swpair)))
+    )
+    (defun URCi_UpdateFee:object{IgnisCollectorV1.OutputCumulator} (swpair:string)
+        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_SmallCumulator (UR_OwnerKonto swpair)))
+    )
+    (defun URCi_UpdateSpecialFeeTargets:object{IgnisCollectorV1.OutputCumulator} (swpair:string)
+        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_MediumCumulator (UR_OwnerKonto swpair)))
+    )
+    (defun URCi_ToggleFeeLock:object{IgnisCollectorV1.OutputCumulator} (swpair:string toggle:bool)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
+                (unlock-costs:[decimal] (if toggle [0.0 0.0] (ref-U|ATS::UC_UnlockPrice (UR_FeeUnlocks swpair))))
+                (gas-costs:decimal (+ (ref-DALOS::UR_UsagePrice "ignis|small") (at 0 unlock-costs)))
+                (output:bool (> (at 1 unlock-costs) 0.0))
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator gas-costs (UR_OwnerKonto swpair) (ref-IGNIS::URC_IsVirtualGasZero) [output])
+        )
+    )
+    (defun URCi_UpgradeBranding:decimal (months:integer)
+        (let ((ref-BRD:module{BrandingV1} BRD)) (ref-BRD::URCi_UpgradeBranding months))
+    )
+    (defun URCi_EnableFrozenLP:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string swpair:string)
+        @doc "Cost preview for C_EnableFrozenLP: if no frozen link exists yet, the VST \
+            \ create-frozen-link cost; otherwise the medium IGNIS price on the pool owner \
+            \ (output == existing link). Re-derived purely (XI_EnableFrozenLP is a free write)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-VST:module{VestingV1} VST)
+                (lp-id:string (UR_TokenLP swpair))
+                (current-frozen-link:string (ref-DPTF::UR_Frozen lp-id))
+            )
+            (if (= current-frozen-link BAR)
+                (ref-VST::URCi_CreateSpecialTrueFungibleLink lp-id)
+                (ref-IGNIS::UDC_ConstructOutputCumulator
+                    (ref-DALOS::UR_UsagePrice "ignis|medium")
+                    (UR_OwnerKonto swpair)
+                    (ref-IGNIS::URC_IsVirtualGasZero)
+                    [current-frozen-link]
+                )
+            )
+        )
+    )
+    (defun URCi_EnableSleepingLP:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string swpair:string)
+        @doc "Cost preview for C_EnableSleepingLP: if no sleeping link exists yet, the VST \
+            \ create-sleeping-link (vzh-tag 2) cost; otherwise the medium IGNIS price on the \
+            \ pool owner (output == existing link). Re-derived purely."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-VST:module{VestingV1} VST)
+                (lp-id:string (UR_TokenLP swpair))
+                (current-sleeping-link:string (ref-DPTF::UR_Sleeping lp-id))
+            )
+            (if (= current-sleeping-link BAR)
+                (ref-VST::URCi_CreateSpecialOrtoFungibleLink lp-id 2)
+                (ref-IGNIS::UDC_ConstructOutputCumulator
+                    (ref-DALOS::UR_UsagePrice "ignis|medium")
+                    (UR_OwnerKonto swpair)
+                    (ref-IGNIS::URC_IsVirtualGasZero)
+                    [current-sleeping-link]
+                )
+            )
+        )
+    )
+    (defun URCi_ToggleAddOrSwap:object{IgnisCollectorV1.OutputCumulator}
+        (swpair:string toggle:bool add-or-swap:bool)
+        @doc "Cost preview for C_ToggleAddOrSwap: the base 5x-biggest IGNIS price (ico0) plus, \
+            \ when enabling add-liquidity (toggle), the one-time LP burn/mint + per-pool-token \
+            \ fee-exemption role bootstrap that only bills for roles not already set (ico1). \
+            \ Role costs use DPTF's own toggle-role cumulators; XE_CanAddOrSwapToggle is a free \
+            \ write. Re-derived purely from the live role states."
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (biggest:decimal (ref-DALOS::UR_UsagePrice "ignis|biggest"))
+                (price:decimal (* 5.0 biggest))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                (ico0:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-IGNIS::UDC_ConstructOutputCumulator price (UR_OwnerKonto swpair) trigger [])
+                )
+                (ico1:object{IgnisCollectorV1.OutputCumulator}
+                    (if toggle
+                        (let
+                            (
+                                (pt-ids:[string] (UR_PoolTokens swpair))
+                                (amp:decimal (UR_Amplifier swpair))
+                                (ptts:[string]
+                                    (if (= amp -1.0)
+                                        (drop 1 pt-ids)
+                                        pt-ids
+                                    )
+                                )
+                                (lp-id:string (UR_TokenLP swpair))
+                                (lp-burn-role:bool (ref-DPTF::UR_AccountRoleBurn lp-id SWP|SC_NAME))
+                                (lp-mint-role:bool (ref-DPTF::UR_AccountRoleMint lp-id SWP|SC_NAME))
+                                (ico2:object{IgnisCollectorV1.OutputCumulator}
+                                    (if (not lp-burn-role)
+                                        (ref-DPTF::URCi_ToggleBurnRole lp-id)
+                                        EOC
+                                    )
+                                )
+                                (ico3:object{IgnisCollectorV1.OutputCumulator}
+                                    (if (not lp-mint-role)
+                                        (ref-DPTF::URCi_ToggleMintRole lp-id)
+                                        EOC
+                                    )
+                                )
+                                (folded-obj:[object{IgnisCollectorV1.OutputCumulator}]
+                                    (fold
+                                        (lambda
+                                            (acc:[object{IgnisCollectorV1.OutputCumulator}] idx:integer)
+                                            (ref-U|LST::UC_AppL
+                                                acc
+                                                (if (not (ref-DPTF::UR_AccountRoleFeeExemption (at idx ptts) SWP|SC_NAME))
+                                                    (ref-DPTF::URCi_ToggleFeeExemptionRole (at idx ptts))
+                                                    EOC
+                                                )
+                                            )
+                                        )
+                                        []
+                                        (enumerate 0 (- (length ptts) 1))
+                                    )
+                                )
+                                (ico4:object{IgnisCollectorV1.OutputCumulator}
+                                    (ref-IGNIS::UDC_ConcatenateOutputCumulators folded-obj [])
+                                )
+                            )
+                            (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico2 ico3 ico4] [])
+                        )
+                        EOC
+                    )
+                )
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico0 ico1] [])
+        )
+    )
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+                (mp:[guard] (P|UR_IMP))
+                (g:guard (ref-U|G::UEV_GuardOfAny mp))
+            )
+            (enforce-guard g)
+        )
+    )
     (defun UEV_FeeSplit (input:object{SwapperV3.FeeSplit})
         (let
             (
@@ -1255,8 +1401,6 @@
             (enforce (= state sleeping-lp) (format "Swpair {} must have its Sleeping-LP set to <> for this operation" [swpair state]))
         )
     )
-    ;;{F3}
-    ;;{F4}
     (defun CAP_Owner (swpair:string)
         @doc "Enforces SWPair Ownership"
         (let
@@ -1266,590 +1410,8 @@
             (ref-DALOS::CAP_EnforceAccountOwnership (UR_OwnerKonto swpair))
         )
     )
-    ;;
-    ;;{F5}
-    (defun A_UpdatePrincipal (principal:string add-or-remove:bool)
-        @doc "Adds <principal> (while under the 7 maximum) or removes it (while at \
-            \ least 2 would remain defined, AND <principal> isn't currently a \
-            \ 'major' principal — #65eL, URC_IsMajorPrincipal). SWPT's storage is \
-            \ principal-agnostic (#21H), so removal of a minor principal is safe \
-            \ — it only affects future SWPI::UEV_Issue principal-anchoring \
-            \ validation, never existing routing. Major principals (currently a \
-            \ member of the primordial pool — always OURO/WSTOA/SSTOA in practice) are \
-            \ never removable here regardless of the floor; retiring one requires \
-            \ redefining the primordial pool itself (A_SWP|DefinePrimordialPool). \
-            \ A_RotatePrincipal remains available as an atomic, count-preserving \
-            \ alternative for minor principals — it never touches the floor or \
-            \ cap, but is equally blocked from rotating a major principal away."
-        (UEV_IMC)
-        (let
-            (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-            )
-            (with-read SWP|Properties SWP|INFO
-                { "principals" := pp }
-                (with-capability (SWP|C>PRINCIPAL principal add-or-remove)
-                    (if add-or-remove
-                        (if (= pp [BAR])
-                            (update SWP|Properties SWP|INFO
-                                {"principals" : [principal]}
-                            )
-                            (update SWP|Properties SWP|INFO
-                                {"principals" : (ref-U|LST::UC_AppL pp principal)}
-                            )
-                        )
-                        (let
-                            (
-                                (pp-position:integer (at 0 (ref-U|LST::UC_Search pp principal)))
-                            )
-                            (update SWP|Properties SWP|INFO
-                                {"principals" : (ref-U|LST::UC_RemoveItem pp (at pp-position pp))}
-                            )
-                        )
-                    )
-                )
-            )
-        )
-    )
-    (defun A_RotatePrincipal (old:string new:string)
-        @doc "Atomically replaces principal <old> with <new> in one call — the \
-            \ count-preserving alternative to a separate remove-then-add via \
-            \ A_UpdatePrincipal (Fix #14/#21H second follow-up re-allowed standalone \
-            \ removal, floor-gated at 2 remaining; this doc previously claimed \
-            \ removal was disabled entirely, stale since that fix — #65dL). Never \
-            \ interacts with the 7-principal cap either way. Safe with respect to \
-            \ SWPT's routing graph (#21H fix) — SWPT's storage is principal-agnostic, \
-            \ so rotating (or removing) a MINOR principal never orphans anything \
-            \ there; the only effect is on future SWPI::UEV_Issue principal- \
-            \ anchoring validation. <old> being a 'major' principal (currently a \
-            \ member of the primordial pool — always OURO/WSTOA/SSTOA in practice) is \
-            \ rejected outright regardless of everything else (#65eL, \
-            \ URC_IsMajorPrincipal) — majors are fixed, retirable only by \
-            \ redefining the primordial pool itself (A_SWP|DefinePrimordialPool)."
-        (UEV_IMC)
-        (with-read SWP|Properties SWP|INFO
-            { "principals" := pp }
-            (with-capability (SWP|C>ROTATE-PRINCIPAL old new)
-                (let
-                    (
-                        (ref-U|LST:module{StringProcessorV1} U|LST)
-                        (pos:integer (at 0 (ref-U|LST::UC_Search pp old)))
-                    )
-                    (update SWP|Properties SWP|INFO
-                        {"principals" : (ref-U|LST::UC_ReplaceAt pp pos new)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_UpdateLimit (limit:decimal spawn:bool)
-        (UEV_IMC)
-        (with-capability (SWP|C>LIMIT)
-            (if spawn
-                (update SWP|Properties SWP|INFO
-                    {"spawn-limit" : limit}
-                )
-                (update SWP|Properties SWP|INFO
-                    {"inactive-limit" : limit}
-                )
-            )
-        )
-    )
-    (defun A_UpdateLiquidBoost (new-boost-variable:bool)
-        (UEV_IMC)
-        (with-capability (SWP|C>LQBOOST new-boost-variable)
-            (update SWP|Properties SWP|INFO
-                {"liquid-boost" : new-boost-variable}
-            )
-        )
-    )
-    (defun A_DefinePrimordialPool (primordial-pool:string)
-        (UEV_IMC)
-        (with-capability (SWP|C>DEFINE-PRIMORDIAL-POOL primordial-pool)
-            (update SWP|Properties SWP|INFO
-                {"primordial-pool" : primordial-pool}
-            )
-        )
-    )
-    (defun A_ToggleAsymetricLiquidityAddition (toggle:bool)
-        (UEV_IMC)
-        (with-capability (SWP|C>TG-ASYMETRIC-LQ toggle)
-            (let
-                (
-                    (ref-DALOS:module{OuronetDalosV1} DALOS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                    (ref-ATS:module{AutostakeV2} ATS)
-                    ;;
-                    (ignis-id:string (ref-DALOS::UR_IgnisID))
-                    (ouro-id:string (ref-DALOS::UR_OuroborosID))
-                    (vst-sc:string (ref-DALOS::GOV|VST|SC_NAME))
-                    ;;
-                    (ignis-burn-role:bool (ref-DPTF::UR_AccountRoleBurn ignis-id SWP|SC_NAME))
-                    (ouro-mint-role:bool (ref-DPTF::UR_AccountRoleMint ouro-id SWP|SC_NAME))
-                    (ignis-fee-exemption-role:bool (ref-DPTF::UR_AccountRoleFeeExemption ignis-id SWP|SC_NAME))
-                    (ignis-fee-exemption-roleV2:bool (ref-DPTF::UR_AccountRoleFeeExemption ignis-id vst-sc))
-                )
-                (if (not ignis-burn-role)
-                    (ref-ATS::C_DPTF|ToggleBurnRole ignis-id SWP|SC_NAME true)
-                    true
-                )
-                (if (not ouro-mint-role)
-                    (ref-ATS::C_DPTF|ToggleMintRole ouro-id SWP|SC_NAME true)
-                    true
-                )
-                (if (not ignis-fee-exemption-role)
-                    (ref-ATS::C_DPTF|ToggleFeeExemptionRole ignis-id SWP|SC_NAME true)
-                    true
-                )
-                (if (not ignis-fee-exemption-role)
-                    (ref-ATS::C_DPTF|ToggleFeeExemptionRole ignis-id vst-sc true)
-                    true
-                )
-                (update SWP|Asymmetry SWP|INFO
-                    {"asymmetric" : toggle}
-                )
-            )
-        )
-    )
-    ;;
-    ;;[URCi] cost readers — single cost source per op. Enable*/ToggleAddOrSwap composers -> Phase 1.2.
-    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator} (entity-id:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_BrandingCumulator (UR_OwnerKonto entity-id) 4.0))
-    )
-    (defun URCi_ChangeOwnership:object{IgnisCollectorV1.OutputCumulator} (swpair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto swpair)))
-    )
-    (defun URCi_ModifyCanChangeOwner:object{IgnisCollectorV1.OutputCumulator} (swpair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto swpair)))
-    )
-    (defun URCi_ModifyWeights:object{IgnisCollectorV1.OutputCumulator} (swpair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto swpair)))
-    )
-    (defun URCi_UpdateAmplifier:object{IgnisCollectorV1.OutputCumulator} (swpair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_MediumCumulator (UR_OwnerKonto swpair)))
-    )
-    (defun URCi_UpdateFee:object{IgnisCollectorV1.OutputCumulator} (swpair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_SmallCumulator (UR_OwnerKonto swpair)))
-    )
-    (defun URCi_UpdateSpecialFeeTargets:object{IgnisCollectorV1.OutputCumulator} (swpair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_MediumCumulator (UR_OwnerKonto swpair)))
-    )
-    (defun URCi_ToggleFeeLock:object{IgnisCollectorV1.OutputCumulator} (swpair:string toggle:bool)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
-                (unlock-costs:[decimal] (if toggle [0.0 0.0] (ref-U|ATS::UC_UnlockPrice (UR_FeeUnlocks swpair))))
-                (gas-costs:decimal (+ (ref-DALOS::UR_UsagePrice "ignis|small") (at 0 unlock-costs)))
-                (output:bool (> (at 1 unlock-costs) 0.0))
-            )
-            (ref-IGNIS::UDC_ConstructOutputCumulator gas-costs (UR_OwnerKonto swpair) (ref-IGNIS::URC_IsVirtualGasZero) [output])
-        )
-    )
-    (defun URCi_UpgradeBranding:decimal (months:integer)
-        (let ((ref-BRD:module{BrandingV1} BRD)) (ref-BRD::URCi_UpgradeBranding months))
-    )
-    ;;{F6}
-    (defun C_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator}
-        (entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}])
-        (UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-BRD:module{BrandingV1} BRD)
-            )
-            (with-capability (SWP|C>UPDATE-BRD entity-id)
-                (ref-BRD::XE_UpdatePendingBranding entity-id logo description website social)
-                (URCi_UpdatePendingBranding entity-id)
-            )
-        )
-    )
-    (defun C_UpgradeBranding (patron:string entity-id:string months:integer)
-        (UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-BRD:module{BrandingV1} BRD)
-                (owner:string (UR_OwnerKonto entity-id))
-            )
-            ;;Perform the branding upgrade (side effect); bill the STOA via the URCi (== XE_UpgradeBranding's price)
-            (with-capability (SWP|C>UPGRADE-BRD entity-id)
-                (ref-BRD::XE_UpgradeBranding entity-id owner months)
-            )
-            (ref-IGNIS::C_STOA|CollectWT patron (URCi_UpgradeBranding months) false)
-        )
-    )
-    ;;
-    (defun C_ChangeOwnership:object{IgnisCollectorV1.OutputCumulator}
-        (swpair:string new-owner:string)
-        (UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-            )
-            (with-capability (SWP|S>RT_OWN swpair new-owner)
-                (XI_ChangeOwnership swpair new-owner)
-                (URCi_ChangeOwnership swpair)
-            )
-        )
-    )
-    (defun URCi_EnableFrozenLP:object{IgnisCollectorV1.OutputCumulator}
-        (patron:string swpair:string)
-        @doc "Cost preview for C_EnableFrozenLP: if no frozen link exists yet, the VST \
-            \ create-frozen-link cost; otherwise the medium IGNIS price on the pool owner \
-            \ (output == existing link). Re-derived purely (XI_EnableFrozenLP is a free write)."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-VST:module{VestingV1} VST)
-                (lp-id:string (UR_TokenLP swpair))
-                (current-frozen-link:string (ref-DPTF::UR_Frozen lp-id))
-            )
-            (if (= current-frozen-link BAR)
-                (ref-VST::URCi_CreateSpecialTrueFungibleLink lp-id)
-                (ref-IGNIS::UDC_ConstructOutputCumulator
-                    (ref-DALOS::UR_UsagePrice "ignis|medium")
-                    (UR_OwnerKonto swpair)
-                    (ref-IGNIS::URC_IsVirtualGasZero)
-                    [current-frozen-link]
-                )
-            )
-        )
-    )
-    (defun URCi_EnableSleepingLP:object{IgnisCollectorV1.OutputCumulator}
-        (patron:string swpair:string)
-        @doc "Cost preview for C_EnableSleepingLP: if no sleeping link exists yet, the VST \
-            \ create-sleeping-link (vzh-tag 2) cost; otherwise the medium IGNIS price on the \
-            \ pool owner (output == existing link). Re-derived purely."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-VST:module{VestingV1} VST)
-                (lp-id:string (UR_TokenLP swpair))
-                (current-sleeping-link:string (ref-DPTF::UR_Sleeping lp-id))
-            )
-            (if (= current-sleeping-link BAR)
-                (ref-VST::URCi_CreateSpecialOrtoFungibleLink lp-id 2)
-                (ref-IGNIS::UDC_ConstructOutputCumulator
-                    (ref-DALOS::UR_UsagePrice "ignis|medium")
-                    (UR_OwnerKonto swpair)
-                    (ref-IGNIS::URC_IsVirtualGasZero)
-                    [current-sleeping-link]
-                )
-            )
-        )
-    )
-    (defun URCi_ToggleAddOrSwap:object{IgnisCollectorV1.OutputCumulator}
-        (swpair:string toggle:bool add-or-swap:bool)
-        @doc "Cost preview for C_ToggleAddOrSwap: the base 5x-biggest IGNIS price (ico0) plus, \
-            \ when enabling add-liquidity (toggle), the one-time LP burn/mint + per-pool-token \
-            \ fee-exemption role bootstrap that only bills for roles not already set (ico1). \
-            \ Role costs use DPTF's own toggle-role cumulators; XE_CanAddOrSwapToggle is a free \
-            \ write. Re-derived purely from the live role states."
-        (let
-            (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (biggest:decimal (ref-DALOS::UR_UsagePrice "ignis|biggest"))
-                (price:decimal (* 5.0 biggest))
-                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                (ico0:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-IGNIS::UDC_ConstructOutputCumulator price (UR_OwnerKonto swpair) trigger [])
-                )
-                (ico1:object{IgnisCollectorV1.OutputCumulator}
-                    (if toggle
-                        (let
-                            (
-                                (pt-ids:[string] (UR_PoolTokens swpair))
-                                (amp:decimal (UR_Amplifier swpair))
-                                (ptts:[string]
-                                    (if (= amp -1.0)
-                                        (drop 1 pt-ids)
-                                        pt-ids
-                                    )
-                                )
-                                (lp-id:string (UR_TokenLP swpair))
-                                (lp-burn-role:bool (ref-DPTF::UR_AccountRoleBurn lp-id SWP|SC_NAME))
-                                (lp-mint-role:bool (ref-DPTF::UR_AccountRoleMint lp-id SWP|SC_NAME))
-                                (ico2:object{IgnisCollectorV1.OutputCumulator}
-                                    (if (not lp-burn-role)
-                                        (ref-DPTF::URCi_ToggleBurnRole lp-id)
-                                        EOC
-                                    )
-                                )
-                                (ico3:object{IgnisCollectorV1.OutputCumulator}
-                                    (if (not lp-mint-role)
-                                        (ref-DPTF::URCi_ToggleMintRole lp-id)
-                                        EOC
-                                    )
-                                )
-                                (folded-obj:[object{IgnisCollectorV1.OutputCumulator}]
-                                    (fold
-                                        (lambda
-                                            (acc:[object{IgnisCollectorV1.OutputCumulator}] idx:integer)
-                                            (ref-U|LST::UC_AppL
-                                                acc
-                                                (if (not (ref-DPTF::UR_AccountRoleFeeExemption (at idx ptts) SWP|SC_NAME))
-                                                    (ref-DPTF::URCi_ToggleFeeExemptionRole (at idx ptts))
-                                                    EOC
-                                                )
-                                            )
-                                        )
-                                        []
-                                        (enumerate 0 (- (length ptts) 1))
-                                    )
-                                )
-                                (ico4:object{IgnisCollectorV1.OutputCumulator}
-                                    (ref-IGNIS::UDC_ConcatenateOutputCumulators folded-obj [])
-                                )
-                            )
-                            (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico2 ico3 ico4] [])
-                        )
-                        EOC
-                    )
-                )
-            )
-            (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico0 ico1] [])
-        )
-    )
-    (defun C_EnableFrozenLP:object{IgnisCollectorV1.OutputCumulator}
-        (patron:string swpair:string)
-        (UEV_IMC)
-        (with-capability (SWP|C>ENABLE-FROZEN swpair)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DALOS:module{OuronetDalosV1} DALOS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                    (ref-VST:module{VestingV1} VST)
-                    (lp-id:string (UR_TokenLP swpair))
-                    (current-frozen-link:string (ref-DPTF::UR_Frozen lp-id))
-                )
-                (XI_EnableFrozenLP swpair)
-                (if (= current-frozen-link BAR)
-                    (ref-VST::C_CreateFrozenLink patron lp-id)    
-                    (ref-IGNIS::UDC_ConstructOutputCumulator
-                        (ref-DALOS::UR_UsagePrice "ignis|medium")
-                        (UR_OwnerKonto swpair)
-                        (ref-IGNIS::URC_IsVirtualGasZero)
-                        [current-frozen-link]
-                    )
-                )
-            )
-        )
-    )
-    (defun C_EnableSleepingLP:object{IgnisCollectorV1.OutputCumulator}
-        (patron:string swpair:string)
-        (UEV_IMC)
-        (with-capability (SWP|C>ENABLE-SLEEPING swpair)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DALOS:module{OuronetDalosV1} DALOS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                    (ref-VST:module{VestingV1} VST)
-                    (lp-id:string (UR_TokenLP swpair))
-                    (current-sleeping-link:string (ref-DPTF::UR_Sleeping lp-id))
-                )
-                (XI_EnableSleepingLP swpair)
-                (if (= current-sleeping-link BAR)
-                    (ref-VST::C_CreateSleepingLink patron lp-id)
-                    (ref-IGNIS::UDC_ConstructOutputCumulator
-                        (ref-DALOS::UR_UsagePrice "ignis|medium")
-                        (UR_OwnerKonto swpair)
-                        (ref-IGNIS::URC_IsVirtualGasZero)
-                        [current-sleeping-link]
-                    )
-                )
-            )
-        )
-    )
-    (defun C_ModifyCanChangeOwner:object{IgnisCollectorV1.OutputCumulator}
-        (swpair:string new-boolean:bool)
-        (UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-            )
-            (with-capability (SWP|S>RT_CAN-CHANGE swpair new-boolean)
-                (XI_ModifyCanChangeOwner swpair new-boolean)
-                (URCi_ModifyCanChangeOwner swpair)
-            )
-        )
-    )
-    (defun C_ModifyWeights:object{IgnisCollectorV1.OutputCumulator}
-        (swpair:string new-weights:[decimal])
-        (UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-            )
-            (with-capability (SECURE)
-                (XB_ModifyWeights swpair new-weights)
-                (URCi_ModifyWeights swpair)
-            )
-        )
-    )
-    (defun C_ToggleAddOrSwap:object{IgnisCollectorV1.OutputCumulator}
-        (swpair:string toggle:bool add-or-swap:bool)
-        @doc "#71L: called directly (cross-module C_->C_) by SWPU::C_ToggleSwapCapability and \
-            \ SWPLC::C_ToggleAddLiquidity, instead of through an XE_* forward entrypoint — \
-            \ intentional, DESIGN-accepted, not an oversight. This function is not a plain \
-            \ toggle write: it bills real IGNIS (ico0), bootstraps LP burn/mint/fee-exemption \
-            \ roles the first time add-liquidity is enabled (ico1-ico4), and — critically — is \
-            \ the ONLY place in this call chain that enforces pool ownership, via \
-            \ SWP|C>ADD-OR-SWAP's composed CAP_Owner. The existing XE_CanAddOrSwapToggle does \
-            \ none of that (only UEV_IMC + a raw update, no ownership check) and would need to \
-            \ replicate all of the above to be a safe drop-in replacement for either caller — \
-            \ neither SWPU::SPWU|C>TOGGLE-SWAP nor SWPLC::P|SWPLC|CALLER re-derives ownership \
-            \ independently, so rerouting through the bare XE_* today would silently strip \
-            \ authorization. Left as-is; a properly-capped XE_* replacement is real design work, \
-            \ not a mechanical rename — deferred, not attempted here."
-        (UEV_IMC)
-        (let
-            (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-ATS:module{AutostakeV2} ATS)
-                (biggest:decimal (ref-DALOS::UR_UsagePrice "ignis|biggest"))
-                (price:decimal (* 5.0 biggest))
-                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                (ico0:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-IGNIS::UDC_ConstructOutputCumulator price (UR_OwnerKonto swpair) trigger [])
-                )
-                (ico1:object{IgnisCollectorV1.OutputCumulator}
-                    (with-capability (P|GOVERNING-CALLER)
-                        (if toggle
-                            (let
-                                (
-                                    (pt-ids:[string] (UR_PoolTokens swpair))
-                                    (amp:decimal (UR_Amplifier swpair))
-                                    (ptts:[string]
-                                        (if (= amp -1.0)
-                                            (drop 1 pt-ids)
-                                            pt-ids
-                                        )
-                                    )
-                                    (lp-id:string (UR_TokenLP swpair))
-                                    (lp-burn-role:bool (ref-DPTF::UR_AccountRoleBurn lp-id SWP|SC_NAME))
-                                    (lp-mint-role:bool (ref-DPTF::UR_AccountRoleMint lp-id SWP|SC_NAME))
-                                    (ico2:object{IgnisCollectorV1.OutputCumulator}
-                                        (if (not lp-burn-role)
-                                            (ref-ATS::C_DPTF|ToggleBurnRole lp-id SWP|SC_NAME true)
-                                            EOC
-                                        )
-                                    )
-                                    (ico3:object{IgnisCollectorV1.OutputCumulator}
-                                        (if (not lp-mint-role)
-                                            (ref-ATS::C_DPTF|ToggleMintRole lp-id SWP|SC_NAME true)
-                                            EOC
-                                        )
-                                    )
-                                    (folded-obj:[object{IgnisCollectorV1.OutputCumulator}]
-                                        (fold
-                                            (lambda
-                                                (acc:[object{IgnisCollectorV1.OutputCumulator}] idx:integer)
-                                                (ref-U|LST::UC_AppL
-                                                    acc
-                                                    (if (not (ref-DPTF::UR_AccountRoleFeeExemption (at idx ptts) SWP|SC_NAME))
-                                                        (ref-ATS::C_DPTF|ToggleFeeExemptionRole (at idx ptts) SWP|SC_NAME true)
-                                                        EOC
-                                                    )
-                                                )
-                                            )
-                                            []
-                                            (enumerate 0 (- (length ptts) 1))
-                                        )
-                                    )
-                                    (ico4:object{IgnisCollectorV1.OutputCumulator}
-                                        (ref-IGNIS::UDC_ConcatenateOutputCumulators folded-obj [])
-                                    )
-                                )
-                                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico2 ico3 ico4] [])
-                            )
-                            EOC
-                        )
-                    )
-                )
-            )
-            (with-capability (SWP|C>ADD-OR-SWAP swpair toggle add-or-swap)
-                (XE_CanAddOrSwapToggle swpair toggle add-or-swap)
-            )
-            (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico0 ico1] [])
-        )
-    )
-    (defun C_ToggleFeeLock:object{IgnisCollectorV1.OutputCumulator}
-        (patron:string swpair:string toggle:bool)
-        (UEV_IMC)
-        (with-capability (SWP|C>TG_FEE-LOCK swpair toggle)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (toggle-costs:[decimal] (XI_ToggleFeeLock swpair toggle))
-                    (stoa-costs:decimal (at 1 toggle-costs))
-                    ;;URCi computed HERE — reads fee-unlocks BEFORE XI_IncrementFeeUnlocks below mutates it
-                    (cumulator:object{IgnisCollectorV1.OutputCumulator} (URCi_ToggleFeeLock swpair toggle))
-                )
-                (if (> stoa-costs 0.0)
-                    (do
-                        (XI_IncrementFeeUnlocks swpair)
-                        (ref-IGNIS::C_STOA|Collect patron stoa-costs)
-                    )
-                    true
-                )
-                cumulator
-            )
-        )
-    )
-    (defun C_UpdateAmplifier:object{IgnisCollectorV1.OutputCumulator}
-        (swpair:string amp:decimal)
-        (UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-            )
-            (with-capability (SWP|S>UPDATE-AMPLIFIER swpair amp)
-                (XI_UpdateAmplifier swpair amp)
-                (URCi_UpdateAmplifier swpair)
-            )
-        )
-    )
-    (defun C_UpdateFee:object{IgnisCollectorV1.OutputCumulator}
-        (swpair:string new-fee:decimal lp-or-special:bool)
-        (UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-            )
-            (with-capability (SWP|S>UPDATE-FEE swpair new-fee)
-                (XI_UpdateFee swpair new-fee lp-or-special)
-                (URCi_UpdateFee swpair)
-            )
-        )
-    )
-    (defun C_UpdateSpecialFeeTargets:object{IgnisCollectorV1.OutputCumulator}
-        (swpair:string targets:[object{SwapperV3.FeeSplit}])
-        (UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-            )
-            (with-capability (SPW|S>UPDATE_SPECIAL-FEE-TARGETS swpair targets)
-                (XI_UpdateSpecialFeeTargets swpair targets)
-                (URCi_UpdateSpecialFeeTargets swpair)
-            )
-        )
-    )
-    ;;{F7}
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
     (defun XB_ModifyWeights (swpair:string new-weights:[decimal])
         (UEV_IMC)
         (with-capability (SWP|S>WEIGHTS swpair new-weights)
@@ -2101,17 +1663,475 @@
             {"sleeping-lp"    : true}
         )
     )
-    ;;
-    ;;{F8}  [AUP - Admin Update Functions]
-    ;;
-    (defcap AHU ()
+    ;;{5.7}  User [A/C]
+    (defun A_P|Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|SWP_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun A_P|AddIMP (policy-guard:guard)
+        (with-capability (GOV|SWP_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun A_P|Define ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ah:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
+                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
+                (ref-P|BRD:module{OuronetPolicyV1} BRD)
+                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
+                ;(ref-P|DPOF:module{OuronetPolicyV1} DPOF)
+                (ref-P|ATS:module{OuronetPolicyV1} ATS)
+                (ref-P|TFT:module{OuronetPolicyV1} TFT)
+                (ref-P|ATSU:module{OuronetPolicyV1} ATSU)
+                (ref-P|VST:module{OuronetPolicyV1} VST)
+                (ref-P|LIQUID:module{OuronetPolicyV1} LIQUID)
+                (ref-P|ORBR:module{OuronetPolicyV1} OUROBOROS)
+                (ref-P|SWPT:module{OuronetPolicyV1} SWPT)
+                (mg:guard (create-capability-guard (P|SWP|CALLER)))
             )
-            (ref-DALOS::CAP_EnforceAccountOwnership ah)
-            (compose-capability (SECURE))
+            (ref-P|DALOS::A_P|AddIMP mg)
+            (ref-P|BRD::A_P|AddIMP mg)
+            (ref-P|DPTF::A_P|AddIMP mg)
+            ;(ref-P|DPOF::A_P|AddIMP mg)
+            (ref-P|ATS::A_P|AddIMP mg)
+            (ref-P|TFT::A_P|AddIMP mg)
+            (ref-P|ATSU::A_P|AddIMP mg)
+            (ref-P|VST::A_P|AddIMP mg)
+            (ref-P|LIQUID::A_P|AddIMP mg)
+            (ref-P|ORBR::A_P|AddIMP mg)
+            (ref-P|SWPT::A_P|AddIMP mg)
+        )
+    )
+    ;;
+    (defun A_UpdatePrincipal (principal:string add-or-remove:bool)
+        @doc "Adds <principal> (while under the 7 maximum) or removes it (while at \
+            \ least 2 would remain defined, AND <principal> isn't currently a \
+            \ 'major' principal — #65eL, URC_IsMajorPrincipal). SWPT's storage is \
+            \ principal-agnostic (#21H), so removal of a minor principal is safe \
+            \ — it only affects future SWPI::UEV_Issue principal-anchoring \
+            \ validation, never existing routing. Major principals (currently a \
+            \ member of the primordial pool — always OURO/WSTOA/SSTOA in practice) are \
+            \ never removable here regardless of the floor; retiring one requires \
+            \ redefining the primordial pool itself (A_SWP|DefinePrimordialPool). \
+            \ A_RotatePrincipal remains available as an atomic, count-preserving \
+            \ alternative for minor principals — it never touches the floor or \
+            \ cap, but is equally blocked from rotating a major principal away."
+        (UEV_IMC)
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV1} U|LST)
+            )
+            (with-read SWP|Properties SWP|INFO
+                { "principals" := pp }
+                (with-capability (SWP|C>PRINCIPAL principal add-or-remove)
+                    (if add-or-remove
+                        (if (= pp [BAR])
+                            (update SWP|Properties SWP|INFO
+                                {"principals" : [principal]}
+                            )
+                            (update SWP|Properties SWP|INFO
+                                {"principals" : (ref-U|LST::UC_AppL pp principal)}
+                            )
+                        )
+                        (let
+                            (
+                                (pp-position:integer (at 0 (ref-U|LST::UC_Search pp principal)))
+                            )
+                            (update SWP|Properties SWP|INFO
+                                {"principals" : (ref-U|LST::UC_RemoveItem pp (at pp-position pp))}
+                            )
+                        )
+                    )
+                )
+            )
+        )
+    )
+    (defun A_RotatePrincipal (old:string new:string)
+        @doc "Atomically replaces principal <old> with <new> in one call — the \
+            \ count-preserving alternative to a separate remove-then-add via \
+            \ A_UpdatePrincipal (Fix #14/#21H second follow-up re-allowed standalone \
+            \ removal, floor-gated at 2 remaining; this doc previously claimed \
+            \ removal was disabled entirely, stale since that fix — #65dL). Never \
+            \ interacts with the 7-principal cap either way. Safe with respect to \
+            \ SWPT's routing graph (#21H fix) — SWPT's storage is principal-agnostic, \
+            \ so rotating (or removing) a MINOR principal never orphans anything \
+            \ there; the only effect is on future SWPI::UEV_Issue principal- \
+            \ anchoring validation. <old> being a 'major' principal (currently a \
+            \ member of the primordial pool — always OURO/WSTOA/SSTOA in practice) is \
+            \ rejected outright regardless of everything else (#65eL, \
+            \ URC_IsMajorPrincipal) — majors are fixed, retirable only by \
+            \ redefining the primordial pool itself (A_SWP|DefinePrimordialPool)."
+        (UEV_IMC)
+        (with-read SWP|Properties SWP|INFO
+            { "principals" := pp }
+            (with-capability (SWP|C>ROTATE-PRINCIPAL old new)
+                (let
+                    (
+                        (ref-U|LST:module{StringProcessorV1} U|LST)
+                        (pos:integer (at 0 (ref-U|LST::UC_Search pp old)))
+                    )
+                    (update SWP|Properties SWP|INFO
+                        {"principals" : (ref-U|LST::UC_ReplaceAt pp pos new)}
+                    )
+                )
+            )
+        )
+    )
+    (defun A_UpdateLimit (limit:decimal spawn:bool)
+        (UEV_IMC)
+        (with-capability (SWP|C>LIMIT)
+            (if spawn
+                (update SWP|Properties SWP|INFO
+                    {"spawn-limit" : limit}
+                )
+                (update SWP|Properties SWP|INFO
+                    {"inactive-limit" : limit}
+                )
+            )
+        )
+    )
+    (defun A_UpdateLiquidBoost (new-boost-variable:bool)
+        (UEV_IMC)
+        (with-capability (SWP|C>LQBOOST new-boost-variable)
+            (update SWP|Properties SWP|INFO
+                {"liquid-boost" : new-boost-variable}
+            )
+        )
+    )
+    (defun A_DefinePrimordialPool (primordial-pool:string)
+        (UEV_IMC)
+        (with-capability (SWP|C>DEFINE-PRIMORDIAL-POOL primordial-pool)
+            (update SWP|Properties SWP|INFO
+                {"primordial-pool" : primordial-pool}
+            )
+        )
+    )
+    (defun A_ToggleAsymetricLiquidityAddition (toggle:bool)
+        (UEV_IMC)
+        (with-capability (SWP|C>TG-ASYMETRIC-LQ toggle)
+            (let
+                (
+                    (ref-DALOS:module{OuronetDalosV1} DALOS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                    (ref-ATS:module{AutostakeV2} ATS)
+                    ;;
+                    (ignis-id:string (ref-DALOS::UR_IgnisID))
+                    (ouro-id:string (ref-DALOS::UR_OuroborosID))
+                    (vst-sc:string (ref-DALOS::GOV|VST|SC_NAME))
+                    ;;
+                    (ignis-burn-role:bool (ref-DPTF::UR_AccountRoleBurn ignis-id SWP|SC_NAME))
+                    (ouro-mint-role:bool (ref-DPTF::UR_AccountRoleMint ouro-id SWP|SC_NAME))
+                    (ignis-fee-exemption-role:bool (ref-DPTF::UR_AccountRoleFeeExemption ignis-id SWP|SC_NAME))
+                    (ignis-fee-exemption-roleV2:bool (ref-DPTF::UR_AccountRoleFeeExemption ignis-id vst-sc))
+                )
+                (if (not ignis-burn-role)
+                    (ref-ATS::C_DPTF|ToggleBurnRole ignis-id SWP|SC_NAME true)
+                    true
+                )
+                (if (not ouro-mint-role)
+                    (ref-ATS::C_DPTF|ToggleMintRole ouro-id SWP|SC_NAME true)
+                    true
+                )
+                (if (not ignis-fee-exemption-role)
+                    (ref-ATS::C_DPTF|ToggleFeeExemptionRole ignis-id SWP|SC_NAME true)
+                    true
+                )
+                (if (not ignis-fee-exemption-role)
+                    (ref-ATS::C_DPTF|ToggleFeeExemptionRole ignis-id vst-sc true)
+                    true
+                )
+                (update SWP|Asymmetry SWP|INFO
+                    {"asymmetric" : toggle}
+                )
+            )
+        )
+    )
+    (defun C_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator}
+        (entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}])
+        (UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-BRD:module{BrandingV1} BRD)
+            )
+            (with-capability (SWP|C>UPDATE-BRD entity-id)
+                (ref-BRD::XE_UpdatePendingBranding entity-id logo description website social)
+                (URCi_UpdatePendingBranding entity-id)
+            )
+        )
+    )
+    (defun C_UpgradeBranding (patron:string entity-id:string months:integer)
+        (UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-BRD:module{BrandingV1} BRD)
+                (owner:string (UR_OwnerKonto entity-id))
+            )
+            ;;Perform the branding upgrade (side effect); bill the STOA via the URCi (== XE_UpgradeBranding's price)
+            (with-capability (SWP|C>UPGRADE-BRD entity-id)
+                (ref-BRD::XE_UpgradeBranding entity-id owner months)
+            )
+            (ref-IGNIS::C_STOA|CollectWT patron (URCi_UpgradeBranding months) false)
+        )
+    )
+    ;;
+    (defun C_ChangeOwnership:object{IgnisCollectorV1.OutputCumulator}
+        (swpair:string new-owner:string)
+        (UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+            )
+            (with-capability (SWP|S>RT_OWN swpair new-owner)
+                (XI_ChangeOwnership swpair new-owner)
+                (URCi_ChangeOwnership swpair)
+            )
+        )
+    )
+    (defun C_EnableFrozenLP:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string swpair:string)
+        (UEV_IMC)
+        (with-capability (SWP|C>ENABLE-FROZEN swpair)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-DALOS:module{OuronetDalosV1} DALOS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                    (ref-VST:module{VestingV1} VST)
+                    (lp-id:string (UR_TokenLP swpair))
+                    (current-frozen-link:string (ref-DPTF::UR_Frozen lp-id))
+                )
+                (XI_EnableFrozenLP swpair)
+                (if (= current-frozen-link BAR)
+                    (ref-VST::C_CreateFrozenLink patron lp-id)    
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                        (ref-DALOS::UR_UsagePrice "ignis|medium")
+                        (UR_OwnerKonto swpair)
+                        (ref-IGNIS::URC_IsVirtualGasZero)
+                        [current-frozen-link]
+                    )
+                )
+            )
+        )
+    )
+    (defun C_EnableSleepingLP:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string swpair:string)
+        (UEV_IMC)
+        (with-capability (SWP|C>ENABLE-SLEEPING swpair)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-DALOS:module{OuronetDalosV1} DALOS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                    (ref-VST:module{VestingV1} VST)
+                    (lp-id:string (UR_TokenLP swpair))
+                    (current-sleeping-link:string (ref-DPTF::UR_Sleeping lp-id))
+                )
+                (XI_EnableSleepingLP swpair)
+                (if (= current-sleeping-link BAR)
+                    (ref-VST::C_CreateSleepingLink patron lp-id)
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                        (ref-DALOS::UR_UsagePrice "ignis|medium")
+                        (UR_OwnerKonto swpair)
+                        (ref-IGNIS::URC_IsVirtualGasZero)
+                        [current-sleeping-link]
+                    )
+                )
+            )
+        )
+    )
+    (defun C_ModifyCanChangeOwner:object{IgnisCollectorV1.OutputCumulator}
+        (swpair:string new-boolean:bool)
+        (UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+            )
+            (with-capability (SWP|S>RT_CAN-CHANGE swpair new-boolean)
+                (XI_ModifyCanChangeOwner swpair new-boolean)
+                (URCi_ModifyCanChangeOwner swpair)
+            )
+        )
+    )
+    (defun C_ModifyWeights:object{IgnisCollectorV1.OutputCumulator}
+        (swpair:string new-weights:[decimal])
+        (UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+            )
+            (with-capability (SECURE)
+                (XB_ModifyWeights swpair new-weights)
+                (URCi_ModifyWeights swpair)
+            )
+        )
+    )
+    (defun C_ToggleAddOrSwap:object{IgnisCollectorV1.OutputCumulator}
+        (swpair:string toggle:bool add-or-swap:bool)
+        @doc "#71L: called directly (cross-module C_->C_) by SWPU::C_ToggleSwapCapability and \
+            \ SWPLC::C_ToggleAddLiquidity, instead of through an XE_* forward entrypoint — \
+            \ intentional, DESIGN-accepted, not an oversight. This function is not a plain \
+            \ toggle write: it bills real IGNIS (ico0), bootstraps LP burn/mint/fee-exemption \
+            \ roles the first time add-liquidity is enabled (ico1-ico4), and — critically — is \
+            \ the ONLY place in this call chain that enforces pool ownership, via \
+            \ SWP|C>ADD-OR-SWAP's composed CAP_Owner. The existing XE_CanAddOrSwapToggle does \
+            \ none of that (only UEV_IMC + a raw update, no ownership check) and would need to \
+            \ replicate all of the above to be a safe drop-in replacement for either caller — \
+            \ neither SWPU::SPWU|C>TOGGLE-SWAP nor SWPLC::P|SWPLC|CALLER re-derives ownership \
+            \ independently, so rerouting through the bare XE_* today would silently strip \
+            \ authorization. Left as-is; a properly-capped XE_* replacement is real design work, \
+            \ not a mechanical rename — deferred, not attempted here."
+        (UEV_IMC)
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-ATS:module{AutostakeV2} ATS)
+                (biggest:decimal (ref-DALOS::UR_UsagePrice "ignis|biggest"))
+                (price:decimal (* 5.0 biggest))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                (ico0:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-IGNIS::UDC_ConstructOutputCumulator price (UR_OwnerKonto swpair) trigger [])
+                )
+                (ico1:object{IgnisCollectorV1.OutputCumulator}
+                    (with-capability (P|GOVERNING-CALLER)
+                        (if toggle
+                            (let
+                                (
+                                    (pt-ids:[string] (UR_PoolTokens swpair))
+                                    (amp:decimal (UR_Amplifier swpair))
+                                    (ptts:[string]
+                                        (if (= amp -1.0)
+                                            (drop 1 pt-ids)
+                                            pt-ids
+                                        )
+                                    )
+                                    (lp-id:string (UR_TokenLP swpair))
+                                    (lp-burn-role:bool (ref-DPTF::UR_AccountRoleBurn lp-id SWP|SC_NAME))
+                                    (lp-mint-role:bool (ref-DPTF::UR_AccountRoleMint lp-id SWP|SC_NAME))
+                                    (ico2:object{IgnisCollectorV1.OutputCumulator}
+                                        (if (not lp-burn-role)
+                                            (ref-ATS::C_DPTF|ToggleBurnRole lp-id SWP|SC_NAME true)
+                                            EOC
+                                        )
+                                    )
+                                    (ico3:object{IgnisCollectorV1.OutputCumulator}
+                                        (if (not lp-mint-role)
+                                            (ref-ATS::C_DPTF|ToggleMintRole lp-id SWP|SC_NAME true)
+                                            EOC
+                                        )
+                                    )
+                                    (folded-obj:[object{IgnisCollectorV1.OutputCumulator}]
+                                        (fold
+                                            (lambda
+                                                (acc:[object{IgnisCollectorV1.OutputCumulator}] idx:integer)
+                                                (ref-U|LST::UC_AppL
+                                                    acc
+                                                    (if (not (ref-DPTF::UR_AccountRoleFeeExemption (at idx ptts) SWP|SC_NAME))
+                                                        (ref-ATS::C_DPTF|ToggleFeeExemptionRole (at idx ptts) SWP|SC_NAME true)
+                                                        EOC
+                                                    )
+                                                )
+                                            )
+                                            []
+                                            (enumerate 0 (- (length ptts) 1))
+                                        )
+                                    )
+                                    (ico4:object{IgnisCollectorV1.OutputCumulator}
+                                        (ref-IGNIS::UDC_ConcatenateOutputCumulators folded-obj [])
+                                    )
+                                )
+                                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico2 ico3 ico4] [])
+                            )
+                            EOC
+                        )
+                    )
+                )
+            )
+            (with-capability (SWP|C>ADD-OR-SWAP swpair toggle add-or-swap)
+                (XE_CanAddOrSwapToggle swpair toggle add-or-swap)
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico0 ico1] [])
+        )
+    )
+    (defun C_ToggleFeeLock:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string swpair:string toggle:bool)
+        (UEV_IMC)
+        (with-capability (SWP|C>TG_FEE-LOCK swpair toggle)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (toggle-costs:[decimal] (XI_ToggleFeeLock swpair toggle))
+                    (stoa-costs:decimal (at 1 toggle-costs))
+                    ;;URCi computed HERE — reads fee-unlocks BEFORE XI_IncrementFeeUnlocks below mutates it
+                    (cumulator:object{IgnisCollectorV1.OutputCumulator} (URCi_ToggleFeeLock swpair toggle))
+                )
+                (if (> stoa-costs 0.0)
+                    (do
+                        (XI_IncrementFeeUnlocks swpair)
+                        (ref-IGNIS::C_STOA|Collect patron stoa-costs)
+                    )
+                    true
+                )
+                cumulator
+            )
+        )
+    )
+    (defun C_UpdateAmplifier:object{IgnisCollectorV1.OutputCumulator}
+        (swpair:string amp:decimal)
+        (UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+            )
+            (with-capability (SWP|S>UPDATE-AMPLIFIER swpair amp)
+                (XI_UpdateAmplifier swpair amp)
+                (URCi_UpdateAmplifier swpair)
+            )
+        )
+    )
+    (defun C_UpdateFee:object{IgnisCollectorV1.OutputCumulator}
+        (swpair:string new-fee:decimal lp-or-special:bool)
+        (UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+            )
+            (with-capability (SWP|S>UPDATE-FEE swpair new-fee)
+                (XI_UpdateFee swpair new-fee lp-or-special)
+                (URCi_UpdateFee swpair)
+            )
+        )
+    )
+    (defun C_UpdateSpecialFeeTargets:object{IgnisCollectorV1.OutputCumulator}
+        (swpair:string targets:[object{SwapperV3.FeeSplit}])
+        (UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+            )
+            (with-capability (SPW|S>UPDATE_SPECIAL-FEE-TARGETS swpair targets)
+                (XI_UpdateSpecialFeeTargets swpair targets)
+                (URCi_UpdateSpecialFeeTargets swpair)
+            )
         )
     )
     (defun AU_SwapPairs (ids:[string])
@@ -2126,7 +2146,7 @@
             {"id"       : id}
         )
     )
-    ;;
+
 )
 
 (create-table P|T)
