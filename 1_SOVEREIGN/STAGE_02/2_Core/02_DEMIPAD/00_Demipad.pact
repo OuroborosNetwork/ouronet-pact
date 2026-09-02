@@ -504,6 +504,55 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
+    ;;{F1}  Construct [UDC]
+    (defun UDC_Costs:object{DemiourgosLaunchpadV1.Costs} 
+        (a:decimal b:decimal)
+        {"pid"  : a
+        ,"wstoa" : b}
+    )
+    (defun UDC_DEMIPAD|Holdings:object{DemiourgosLaunchpadV1.DEMIPAD|Holdings}
+        (
+            a:decimal b:decimal c:decimal d:decimal
+            e:decimal f:decimal g:decimal
+            h:bool i:bool
+            j:[bool] k:bool l:object m:bool
+        )
+        {"total-dollarz-raised"         : a
+        ,"total-wstoa-raised"            : b
+        ,"total-sstoa-raised"            : c
+        ,"total-ouro-raised"            : d
+        ,"funds-wstoa"                   : e
+        ,"funds-sstoa"                   : f
+        ,"funds-ouro"                   : g
+        ;;
+        ,"iz-sstoa"                      : h
+        ,"iz-ouro"                      : i
+        ;;
+        ,"fungibility"                  : j
+        ,"open-for-business"            : k
+        ,"price"                        : l
+        ,"retrieval"                    : m
+        }
+    )
+    (defun UDC_LaunchpadPrices:object{DemiourgosLaunchpadV1.DEMIPAD|Prices}
+        (
+            a:string b:string c:string d:string
+            e:decimal f:decimal g:decimal h:decimal
+            j:decimal k:decimal l:decimal
+        )
+        {"receiver-one"         : a
+        ,"receiver-two"         : b
+        ,"receiver-three"       : c
+        ,"receiver-four"        : d
+        ,"amount-one"           : e
+        ,"amount-two"           : f
+        ,"amount-three"         : g
+        ,"amount-four"          : h
+        ,"enviroment-amount"    : j
+        ,"coding-amount"        : k
+        ,"remainder-amount"     : l}
+    )
+    ;;{F2}  Compute [UC]
     (defun UC_Type:string (asset-id:string fungibility:[bool])
         (cond
             ((= fungibility TF) "True Fungible")
@@ -641,7 +690,7 @@
             (ref-U|DALOS::UC_TenTwentyThirtyFourtySplit amount-in-stoa stoa-prec)
         )
     )
-    ;;{F0}  [UR]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     (defun UR_LaunchpadState:object{DemiourgosLaunchpadV1.DEMIPAD|Properties} ()
         (read DEMIPAD|T|Properties PP)
     )
@@ -729,7 +778,6 @@
             )
         )
     )
-    ;;{F1}  [URC]
     (defun URC_Prices:object{DemiourgosLaunchpadV1.DEMIPAD|Prices} 
         (asset-id:string amount-in-dollars:decimal type:integer)
         (let
@@ -847,199 +895,6 @@
             )
         )
     )
-    (defun CAP_Acquire
-        (buyer:string asset-id:string buy-amount-in-dollarz:decimal type:integer)
-        (let
-            (
-                (ref-coin:module{stoa-ns.fungible-v1} coin)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-LIQUID:module{StoaLiquidStakingV1} LIQUID)
-                ;;
-                (buyer-stoa:string (ref-DALOS::UR_AccountStoa buyer))
-                (lq-stoa:string (ref-LIQUID::GOV|LIQUID|SC_STOA-NAME))
-                (prices:object{DemiourgosLaunchpadV1.DEMIPAD|Prices} (URC_Prices asset-id buy-amount-in-dollarz type))
-                ;;
-
-                (r1:string (at "receiver-one" prices))
-                (r2:string (at "receiver-two" prices))
-                (r3:string (at "receiver-three" prices))
-                (r4:string (at "receiver-four" prices))
-                (a1:decimal (at "amount-one" prices))
-                (a2:decimal (at "amount-two" prices))
-                (a3:decimal (at "amount-three" prices))
-                (a4:decimal (at "amount-four" prices))
-                (enviroment:decimal (at "enviroment-amount" prices))
-                (coding:decimal (at "coding-amount" prices))
-                (remainder:decimal (at "remainder-amount" prices))
-            )
-            (if (= type 0)
-                (do
-                    (install-capability (ref-coin::TRANSFER buyer-stoa lq-stoa (+ coding remainder)))
-                    (install-capability (ref-coin::TRANSFER buyer-stoa r1 a1))
-                    (install-capability (ref-coin::TRANSFER buyer-stoa r2 a2))
-                    (install-capability (ref-coin::TRANSFER buyer-stoa r3 a3))
-                    (install-capability (ref-coin::TRANSFER buyer-stoa r4 a4))
-
-                )
-                (if (= type 1)
-                    (do
-                        (install-capability (ref-coin::TRANSFER lq-stoa buyer-stoa enviroment))
-                        (install-capability (ref-coin::TRANSFER buyer-stoa r1 a1))
-                        (install-capability (ref-coin::TRANSFER buyer-stoa r2 a2))
-                        (install-capability (ref-coin::TRANSFER buyer-stoa r3 a3))
-                        (install-capability (ref-coin::TRANSFER buyer-stoa r4 a4))
-                    )
-                    (do
-                        (install-capability (ref-coin::TRANSFER buyer-stoa r1 a1))
-                        (install-capability (ref-coin::TRANSFER buyer-stoa r2 a2))
-                        (install-capability (ref-coin::TRANSFER buyer-stoa r3 a3))
-                        (install-capability (ref-coin::TRANSFER buyer-stoa r4 a4))
-                    )
-                )
-            )
-        )
-    )
-    ;;{F2}  [UEV]
-    (defun UEV_AssetFungibility (asset-id:string fungibility-to-check:[bool])
-        (let
-            (
-                (type:string (UC_Type asset-id fungibility-to-check))
-                (fungibility:[bool] (UR_Fungibility asset-id))
-            )
-            (enforce (= fungibility fungibility-to-check) (format "ID {} fungibility as {} is invalid" [asset-id type]))
-        )
-    )
-    (defun UEV_Fungibility (fungibility:[bool])
-        (let
-            (
-                (l:integer (length fungibility))
-            )
-            (enforce (= l 2) "Invalid Fungibility variable")
-        )
-    )
-    (defun UEV_DirectInjection (direct-injection:bool)
-        @doc "Direct-Injection is an unbuilt feature: once AQP vaults are live it will route the \
-            \ <cod> royalty portion of a deposit into an injection profile (or collect-then-drip \
-            \ once/day via an automaton). Until it is built it is HARD-BLOCKED here — this enforces \
-            \ a deposit does not request it, UNCONDITIONALLY (no admin flag can enable the \
-            \ unfinished path). This is what prevents the half-wired branch from crediting seller \
-            \ funds with no tokens in custody (phantom funds). The <UR_DirectInjection> state is \
-            \ kept reserved to gate the real path when it is implemented."
-        (enforce (not direct-injection) "Direct Injection is not yet available")
-    )
-    (defun UEV_SlippageCost (amount-in-dollars:decimal max-cost:decimal)
-        @doc "Slippage guard for a buy (Variant 1). The dollar cost computed live at execution \
-            \ (<amount-in-dollars>) must not exceed the buyer's signed ceiling <max-cost>, which the UI \
-            \ sets to displayed-cost x (1 + slippage/100). A sentinel <max-cost> below zero means NO \
-            \ bound — the slippage-off path (Variant 2), where the buyer accepts the live price via \
-            \ install-capability and is warned by the UI. Mirrors SWP's slippage protection, adapted to \
-            \ bound a cost instead of a min output; the 50%% tolerance ceiling is a UI policy (the \
-            \ on-chain code holds no poll-time baseline to recover the percent from)."
-        (enforce
-            (or (< max-cost 0.0) (<= amount-in-dollars max-cost))
-            (format "Slippage: live cost {} exceeds the accepted maximum {}" [amount-in-dollars max-cost])
-        )
-    )
-    ;;{F3}  [UDC]
-    (defun UDC_Costs:object{DemiourgosLaunchpadV1.Costs} 
-        (a:decimal b:decimal)
-        {"pid"  : a
-        ,"wstoa" : b}
-    )
-    (defun UDC_DEMIPAD|Holdings:object{DemiourgosLaunchpadV1.DEMIPAD|Holdings}
-        (
-            a:decimal b:decimal c:decimal d:decimal
-            e:decimal f:decimal g:decimal
-            h:bool i:bool
-            j:[bool] k:bool l:object m:bool
-        )
-        {"total-dollarz-raised"         : a
-        ,"total-wstoa-raised"            : b
-        ,"total-sstoa-raised"            : c
-        ,"total-ouro-raised"            : d
-        ,"funds-wstoa"                   : e
-        ,"funds-sstoa"                   : f
-        ,"funds-ouro"                   : g
-        ;;
-        ,"iz-sstoa"                      : h
-        ,"iz-ouro"                      : i
-        ;;
-        ,"fungibility"                  : j
-        ,"open-for-business"            : k
-        ,"price"                        : l
-        ,"retrieval"                    : m
-        }
-    )
-    (defun UDC_LaunchpadPrices:object{DemiourgosLaunchpadV1.DEMIPAD|Prices}
-        (
-            a:string b:string c:string d:string
-            e:decimal f:decimal g:decimal h:decimal
-            j:decimal k:decimal l:decimal
-        )
-        {"receiver-one"         : a
-        ,"receiver-two"         : b
-        ,"receiver-three"       : c
-        ,"receiver-four"        : d
-        ,"amount-one"           : e
-        ,"amount-two"           : f
-        ,"amount-three"         : g
-        ,"amount-four"          : h
-        ,"enviroment-amount"    : j
-        ,"coding-amount"        : k
-        ,"remainder-amount"     : l}
-    )
-    ;;{F4}  [CAP]
-    (defun CAP_Owner (asset-id:string)
-        @doc "Enforces <asset-id> ownership \
-        \ Automaticaly enforces <asset-id> is registered, via <UR_Fungibility>"
-        (let
-            (
-                (fungibility:[bool] (UR_Fungibility asset-id))
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
-                (ref-DPDC:module{DpdcV1} DPDC)
-            )
-            (cond
-                ((= fungibility TF) (ref-DPTF::CAP_Owner asset-id))
-                ((= fungibility OF) (ref-DPOF::CAP_Owner asset-id))
-                ((= fungibility SF) (ref-DPDC::CAP_OwnerOrCreator asset-id true))
-                ((= fungibility NF) (ref-DPDC::CAP_OwnerOrCreator asset-id false))
-                true
-            )
-        )
-    )
-    ;;
-    ;;{F5}  [A]
-    (defun A_RegisterAssetToLaunchpad (patron:string asset-id:string fungibility:[bool])
-        (UEV_IMC)
-        (with-capability (DEMIPAD|C>REGISTER asset-id fungibility)
-            (XI_RegisterAsset asset-id fungibility)
-            (format "{} {} registered succesfuly to Demiourgos Launchpad!" [(UC_Type asset-id fungibility) asset-id])
-        )
-    )
-    ;;
-    (defun A_ToggleOpenForBusiness (asset-id:string toggle:bool)
-        (UEV_IMC)
-        (with-capability (DEMIPAD|C>TOGGLE-SALE asset-id toggle)
-            (XI_U|OpenForBusiness asset-id toggle)
-            (format "Asset {} sale succesfully toggled to {}" [asset-id toggle])
-        )
-    )
-    (defun A_DefinePrice (asset-id:string price:object)
-        (UEV_IMC)
-        (with-capability (DEMIPAD|C>DEFINE-PRICE asset-id price)
-            (XI_U|Price asset-id price)
-            (format "Asset {} price succesfully updated with the Price Object {}" [asset-id price])
-        )
-    )
-    (defun A_ToggleRetrieval (asset-id:string toggle:bool)
-        (UEV_IMC)
-        (with-capability (DEMIPAD|C>TOGGLE-RETRIEVAL asset-id toggle)
-            (XI_U|Retrieval asset-id toggle)
-            (format "Asset {} Retrieval succesfuly set to {}" [asset-id toggle])
-        )
-    )
-    ;;{F6}  [C]
     (defun URCi_Deposit:object{IgnisCollectorV1.OutputCumulator}
         (donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool)
         @doc "Cost preview for C_Deposit: (type 0) wrap-STOA of the non-environment amount, \
@@ -1098,7 +953,7 @@
     )
     (defun URCi_TransmitCollectables:object{IgnisCollectorV1.OutputCumulator}
         (client:string asset-id:string son:bool nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
-        @doc "Shared cost preview for the collectable transmit legs (mirrors X_TransmitCollectables): \
+        @doc "Shared cost preview for the collectable transmit legs (mirrors XI_TransmitCollectables): \
             \ one DPDC-T multi-transfer, sender/receiver flipped by fuel-or-retrieve."
         (let
             (
@@ -1111,6 +966,323 @@
             )
         )
     )
+    ;;{F4}  Validate [UEV/CAP]
+    (defun CAP_Acquire
+        (buyer:string asset-id:string buy-amount-in-dollarz:decimal type:integer)
+        (let
+            (
+                (ref-coin:module{stoa-ns.fungible-v1} coin)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-LIQUID:module{StoaLiquidStakingV1} LIQUID)
+                ;;
+                (buyer-stoa:string (ref-DALOS::UR_AccountStoa buyer))
+                (lq-stoa:string (ref-LIQUID::GOV|LIQUID|SC_STOA-NAME))
+                (prices:object{DemiourgosLaunchpadV1.DEMIPAD|Prices} (URC_Prices asset-id buy-amount-in-dollarz type))
+                ;;
+
+                (r1:string (at "receiver-one" prices))
+                (r2:string (at "receiver-two" prices))
+                (r3:string (at "receiver-three" prices))
+                (r4:string (at "receiver-four" prices))
+                (a1:decimal (at "amount-one" prices))
+                (a2:decimal (at "amount-two" prices))
+                (a3:decimal (at "amount-three" prices))
+                (a4:decimal (at "amount-four" prices))
+                (enviroment:decimal (at "enviroment-amount" prices))
+                (coding:decimal (at "coding-amount" prices))
+                (remainder:decimal (at "remainder-amount" prices))
+            )
+            (if (= type 0)
+                (do
+                    (install-capability (ref-coin::TRANSFER buyer-stoa lq-stoa (+ coding remainder)))
+                    (install-capability (ref-coin::TRANSFER buyer-stoa r1 a1))
+                    (install-capability (ref-coin::TRANSFER buyer-stoa r2 a2))
+                    (install-capability (ref-coin::TRANSFER buyer-stoa r3 a3))
+                    (install-capability (ref-coin::TRANSFER buyer-stoa r4 a4))
+
+                )
+                (if (= type 1)
+                    (do
+                        (install-capability (ref-coin::TRANSFER lq-stoa buyer-stoa enviroment))
+                        (install-capability (ref-coin::TRANSFER buyer-stoa r1 a1))
+                        (install-capability (ref-coin::TRANSFER buyer-stoa r2 a2))
+                        (install-capability (ref-coin::TRANSFER buyer-stoa r3 a3))
+                        (install-capability (ref-coin::TRANSFER buyer-stoa r4 a4))
+                    )
+                    (do
+                        (install-capability (ref-coin::TRANSFER buyer-stoa r1 a1))
+                        (install-capability (ref-coin::TRANSFER buyer-stoa r2 a2))
+                        (install-capability (ref-coin::TRANSFER buyer-stoa r3 a3))
+                        (install-capability (ref-coin::TRANSFER buyer-stoa r4 a4))
+                    )
+                )
+            )
+        )
+    )
+    (defun UEV_AssetFungibility (asset-id:string fungibility-to-check:[bool])
+        (let
+            (
+                (type:string (UC_Type asset-id fungibility-to-check))
+                (fungibility:[bool] (UR_Fungibility asset-id))
+            )
+            (enforce (= fungibility fungibility-to-check) (format "ID {} fungibility as {} is invalid" [asset-id type]))
+        )
+    )
+    (defun UEV_Fungibility (fungibility:[bool])
+        (let
+            (
+                (l:integer (length fungibility))
+            )
+            (enforce (= l 2) "Invalid Fungibility variable")
+        )
+    )
+    (defun UEV_DirectInjection (direct-injection:bool)
+        @doc "Direct-Injection is an unbuilt feature: once AQP vaults are live it will route the \
+            \ <cod> royalty portion of a deposit into an injection profile (or collect-then-drip \
+            \ once/day via an automaton). Until it is built it is HARD-BLOCKED here — this enforces \
+            \ a deposit does not request it, UNCONDITIONALLY (no admin flag can enable the \
+            \ unfinished path). This is what prevents the half-wired branch from crediting seller \
+            \ funds with no tokens in custody (phantom funds). The <UR_DirectInjection> state is \
+            \ kept reserved to gate the real path when it is implemented."
+        (enforce (not direct-injection) "Direct Injection is not yet available")
+    )
+    (defun UEV_SlippageCost (amount-in-dollars:decimal max-cost:decimal)
+        @doc "Slippage guard for a buy (Variant 1). The dollar cost computed live at execution \
+            \ (<amount-in-dollars>) must not exceed the buyer's signed ceiling <max-cost>, which the UI \
+            \ sets to displayed-cost x (1 + slippage/100). A sentinel <max-cost> below zero means NO \
+            \ bound — the slippage-off path (Variant 2), where the buyer accepts the live price via \
+            \ install-capability and is warned by the UI. Mirrors SWP's slippage protection, adapted to \
+            \ bound a cost instead of a min output; the 50%% tolerance ceiling is a UI policy (the \
+            \ on-chain code holds no poll-time baseline to recover the percent from)."
+        (enforce
+            (or (< max-cost 0.0) (<= amount-in-dollars max-cost))
+            (format "Slippage: live cost {} exceeds the accepted maximum {}" [amount-in-dollars max-cost])
+        )
+    )
+    (defun CAP_Owner (asset-id:string)
+        @doc "Enforces <asset-id> ownership \
+        \ Automaticaly enforces <asset-id> is registered, via <UR_Fungibility>"
+        (let
+            (
+                (fungibility:[bool] (UR_Fungibility asset-id))
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (cond
+                ((= fungibility TF) (ref-DPTF::CAP_Owner asset-id))
+                ((= fungibility OF) (ref-DPOF::CAP_Owner asset-id))
+                ((= fungibility SF) (ref-DPDC::CAP_OwnerOrCreator asset-id true))
+                ((= fungibility NF) (ref-DPDC::CAP_OwnerOrCreator asset-id false))
+                true
+            )
+        )
+    )
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    ;;
+    ;;
+    (defun XI_RegisterAsset (asset-id:string fungibility:[bool])
+        (require-capability (SECURE))
+        (insert DEMIPAD|T|Ledger asset-id 
+            (UDC_DEMIPAD|Holdings 
+                0.0 0.0 0.0 0.0
+                0.0 0.0 0.0
+                false false
+                fungibility false {} false
+            )
+        )
+    )
+    (defun XI_U|TotalDollarzRaised (asset-id:string value:decimal)
+        (require-capability (SECURE))
+        (update DEMIPAD|T|Ledger asset-id {"total-dollarz-raised" : value})
+    )
+    (defun XI_U|TotalRaised (asset-id:string value:decimal type:integer)
+        (cond
+            ((= type 1) (XI_U|TotalWSTOARaised asset-id value))
+            ((= type 2) (XI_U|TotalSSTOARaised asset-id value))
+            ((= type 3) (XI_U|TotalOURORaised asset-id value))
+            true
+        )
+    )
+    (defun XI_U|Funds (asset-id:string value:decimal type:integer)
+        (cond
+            ((= type 1) (XI_U|FundsWSTOA asset-id value))
+            ((= type 2) (XI_U|FundsSSTOA asset-id value))
+            ((= type 3) (XI_U|FundsOURO asset-id value))
+            true
+        )
+    )
+    (defun XI_U|TotalWSTOARaised (asset-id:string value:decimal)
+        (require-capability (SECURE))
+        (update DEMIPAD|T|Ledger asset-id {"total-wstoa-raised" : value})
+    )
+    (defun XI_U|TotalSSTOARaised (asset-id:string value:decimal)
+        (require-capability (SECURE))
+        (update DEMIPAD|T|Ledger asset-id {"total-sstoa-raised" : value})
+    )
+    (defun XI_U|TotalOURORaised (asset-id:string value:decimal)
+        (require-capability (SECURE))
+        (update DEMIPAD|T|Ledger asset-id {"total-ouro-raised" : value})
+    )
+    (defun XI_U|FundsWSTOA (asset-id:string value:decimal)
+        (require-capability (SECURE))
+        (update DEMIPAD|T|Ledger asset-id {"funds-wstoa" : value})
+    )
+    (defun XI_U|FundsSSTOA (asset-id:string value:decimal)
+        (require-capability (SECURE))
+        (update DEMIPAD|T|Ledger asset-id {"funds-sstoa" : value})
+    )
+    (defun XI_U|FundsOURO (asset-id:string value:decimal)
+        (require-capability (SECURE))
+        (update DEMIPAD|T|Ledger asset-id {"funds-ouro" : value})
+    )
+    ;;
+    (defun XI_U|OpenForBusiness (asset-id:string toggle:bool)
+        (require-capability (SECURE))
+        (update DEMIPAD|T|Ledger asset-id {"open-for-business" : toggle})
+    )
+    (defun XI_U|Price (asset-id:string price:object)
+        (require-capability (SECURE))
+        (update DEMIPAD|T|Ledger asset-id {"price" : price})
+    )
+    (defun XI_U|Retrieval (asset-id:string retrieval:bool)
+        (require-capability (SECURE))
+        (update DEMIPAD|T|Ledger asset-id {"retrieval" : retrieval})
+    )
+    ;;
+    (defun XI_W|DirectInjection (value:decimal)
+        (require-capability (SECURE))
+        (update DEMIPAD|T|Properties PP {"direct-injection" : value})
+    )
+    (defun XI_U|WSTOA (value:decimal)
+        (require-capability (SECURE))
+        (update DEMIPAD|T|Properties PP {"resident-wstoa" : value})
+    )
+    (defun XI_U|SSTOA (value:decimal)
+        (require-capability (SECURE))
+        (update DEMIPAD|T|Properties PP {"resident-sstoa" : value})
+    )
+    (defun XI_U|OURO (value:decimal)
+        (require-capability (SECURE))
+        (update DEMIPAD|T|Properties PP {"resident-ouro" : value})
+    )
+    ;;
+    (defun XI_SatisfyEnviroment (donor:string prices:object{DemiourgosLaunchpadV1.DEMIPAD|Prices})
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-coin:module{stoa-ns.fungible-v1} coin)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                ;;
+                (donor-stoa:string (ref-DALOS::UR_AccountStoa donor))
+            )
+            (ref-coin::transfer donor-stoa (at "receiver-one" prices)    (at "amount-one" prices))       ;;for GasStation
+            (ref-coin::transfer donor-stoa (at "receiver-two" prices)    (at "amount-two" prices))       ;;for HOV
+            (ref-coin::transfer donor-stoa (at "receiver-three" prices)  (at "amount-three" prices))     ;;for CTO
+            (ref-coin::transfer donor-stoa (at "receiver-four" prices)   (at "amount-four" prices))      ;;for LQ-St
+        )
+    )
+    (defun XI_DepositResidents (prices:object{DemiourgosLaunchpadV1.DEMIPAD|Prices} type:integer)
+        (require-capability (SECURE))
+        (with-capability (SECURE)
+            (let
+                (
+                    (v0:decimal (at "coding-amount" prices))
+                    (v1:decimal (UR_WSTOA))
+                    (v2:decimal (UR_SSTOA))
+                    (v3:decimal (UR_OURO))
+                )
+                (if (or (= type 0) (= type 1))
+                    (XI_U|WSTOA (+ v0 v1))
+                    (if (= type 2)
+                        (XI_U|SSTOA (+ v0 v2))
+                        (XI_U|OURO (+ v0 v3))
+                    )
+                )
+            )
+        ) 
+    )
+    (defun XI_DepositForAsset 
+        (asset-id:string amount-in-dollars:decimal remainder:decimal type:integer)
+        (let
+            (
+                (used-type:integer (if (= type 0) 1 type))
+            )
+            (XI_U|TotalDollarzRaised asset-id (+ (UR_TotalDollarzRaised asset-id) amount-in-dollars))
+            (XI_U|TotalRaised asset-id (+ remainder (UR_TotalRaised asset-id used-type)) used-type)
+            (XI_U|Funds asset-id (+ remainder (UR_Funds asset-id used-type)) used-type)
+        )
+    )
+    ;;
+    (defun XI_TransmitCollectables:object{IgnisCollectorV1.OutputCumulator}
+        (client:string asset-id:string son:bool nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-DPDC-T:module{DpdcTransferV1} DPDC-T)
+                (lpad:string DEMIPAD|SC_NAME)
+                (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount client))
+            )
+            ;;#7M: open the capability matching the collectable KIND (son true = Semi-Fungible [false true],
+            ;;     false = Non-Fungible [false false]). Previously both branches hardcoded the SEMI cap, so a
+            ;;     real NF asset always failed UEV_AssetFungibility (dead) and an SF routed via the NF entry
+            ;;     transferred with son=false (type mismatch). The NON caps existed but were wired to nothing.
+            (if fuel-or-retrieve
+                ;;FUEL — deposit collectables INTO the launchpad
+                (if son
+                    (with-capability (DEMIPAD|C>FUEL-SEMI-FUNGIBLE asset-id)
+                        (ref-DPDC-T::C_Transfer [asset-id] [son] client lpad [nonces] [amounts] true)
+                    )
+                    (with-capability (DEMIPAD|C>FUEL-NON-FUNGIBLE asset-id)
+                        (ref-DPDC-T::C_Transfer [asset-id] [son] client lpad [nonces] [amounts] true)
+                    )
+                )
+                ;;RETRIEVE — withdraw collectables FROM the launchpad (NF path now also inherits the #2H lock)
+                (if son
+                    (with-capability (DEMIPAD|C>RETRIEVE-SEMI-FUNGIBLE asset-id)
+                        (ref-DPDC-T::C_Transfer [asset-id] [son] lpad client [nonces] [amounts] true)
+                    )
+                    (with-capability (DEMIPAD|C>RETRIEVE-NON-FUNGIBLE asset-id)
+                        (ref-DPDC-T::C_Transfer [asset-id] [son] lpad client [nonces] [amounts] true)
+                    )
+                )
+            )
+        )
+    )
+    ;;{F7}  User [A]
+    ;;
+    (defun A_RegisterAssetToLaunchpad (patron:string asset-id:string fungibility:[bool])
+        (UEV_IMC)
+        (with-capability (DEMIPAD|C>REGISTER asset-id fungibility)
+            (XI_RegisterAsset asset-id fungibility)
+            (format "{} {} registered succesfuly to Demiourgos Launchpad!" [(UC_Type asset-id fungibility) asset-id])
+        )
+    )
+    ;;
+    (defun A_ToggleOpenForBusiness (asset-id:string toggle:bool)
+        (UEV_IMC)
+        (with-capability (DEMIPAD|C>TOGGLE-SALE asset-id toggle)
+            (XI_U|OpenForBusiness asset-id toggle)
+            (format "Asset {} sale succesfully toggled to {}" [asset-id toggle])
+        )
+    )
+    (defun A_DefinePrice (asset-id:string price:object)
+        (UEV_IMC)
+        (with-capability (DEMIPAD|C>DEFINE-PRICE asset-id price)
+            (XI_U|Price asset-id price)
+            (format "Asset {} price succesfully updated with the Price Object {}" [asset-id price])
+        )
+    )
+    (defun A_ToggleRetrieval (asset-id:string toggle:bool)
+        (UEV_IMC)
+        (with-capability (DEMIPAD|C>TOGGLE-RETRIEVAL asset-id toggle)
+            (XI_U|Retrieval asset-id toggle)
+            (format "Asset {} Retrieval succesfuly set to {}" [asset-id toggle])
+        )
+    )
+    ;;{F8}  User [C]
     (defun C_Deposit:object{IgnisCollectorV1.OutputCumulator}
         (donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal)
         @doc "Deposits Funds into the Launchpad, for a registered Asset \
@@ -1281,189 +1453,17 @@
         (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
         (UEV_IMC)
         (with-capability (P|SECURE-CALLER)
-            (X_TransmitCollectables client asset-id true nonces amounts fuel-or-retrieve)
+            (XI_TransmitCollectables client asset-id true nonces amounts fuel-or-retrieve)
         )
     )
     (defun C_TransmitNonFungibles:object{IgnisCollectorV1.OutputCumulator}
         (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
         (UEV_IMC)
         (with-capability (P|SECURE-CALLER)
-            (X_TransmitCollectables client asset-id false nonces amounts fuel-or-retrieve)
+            (XI_TransmitCollectables client asset-id false nonces amounts fuel-or-retrieve)
         )
     )
-    ;;
-    ;;{F7}  [X]
-    ;;
-    (defun XI_RegisterAsset (asset-id:string fungibility:[bool])
-        (require-capability (SECURE))
-        (insert DEMIPAD|T|Ledger asset-id 
-            (UDC_DEMIPAD|Holdings 
-                0.0 0.0 0.0 0.0
-                0.0 0.0 0.0
-                false false
-                fungibility false {} false
-            )
-        )
-    )
-    (defun XI_U|TotalDollarzRaised (asset-id:string value:decimal)
-        (require-capability (SECURE))
-        (update DEMIPAD|T|Ledger asset-id {"total-dollarz-raised" : value})
-    )
-    (defun XI_U|TotalRaised (asset-id:string value:decimal type:integer)
-        (cond
-            ((= type 1) (XI_U|TotalWSTOARaised asset-id value))
-            ((= type 2) (XI_U|TotalSSTOARaised asset-id value))
-            ((= type 3) (XI_U|TotalOURORaised asset-id value))
-            true
-        )
-    )
-    (defun XI_U|Funds (asset-id:string value:decimal type:integer)
-        (cond
-            ((= type 1) (XI_U|FundsWSTOA asset-id value))
-            ((= type 2) (XI_U|FundsSSTOA asset-id value))
-            ((= type 3) (XI_U|FundsOURO asset-id value))
-            true
-        )
-    )
-    (defun XI_U|TotalWSTOARaised (asset-id:string value:decimal)
-        (require-capability (SECURE))
-        (update DEMIPAD|T|Ledger asset-id {"total-wstoa-raised" : value})
-    )
-    (defun XI_U|TotalSSTOARaised (asset-id:string value:decimal)
-        (require-capability (SECURE))
-        (update DEMIPAD|T|Ledger asset-id {"total-sstoa-raised" : value})
-    )
-    (defun XI_U|TotalOURORaised (asset-id:string value:decimal)
-        (require-capability (SECURE))
-        (update DEMIPAD|T|Ledger asset-id {"total-ouro-raised" : value})
-    )
-    
-    (defun XI_U|FundsWSTOA (asset-id:string value:decimal)
-        (require-capability (SECURE))
-        (update DEMIPAD|T|Ledger asset-id {"funds-wstoa" : value})
-    )
-    (defun XI_U|FundsSSTOA (asset-id:string value:decimal)
-        (require-capability (SECURE))
-        (update DEMIPAD|T|Ledger asset-id {"funds-sstoa" : value})
-    )
-    (defun XI_U|FundsOURO (asset-id:string value:decimal)
-        (require-capability (SECURE))
-        (update DEMIPAD|T|Ledger asset-id {"funds-ouro" : value})
-    )
-    ;;
-    (defun XI_U|OpenForBusiness (asset-id:string toggle:bool)
-        (require-capability (SECURE))
-        (update DEMIPAD|T|Ledger asset-id {"open-for-business" : toggle})
-    )
-    (defun XI_U|Price (asset-id:string price:object)
-        (require-capability (SECURE))
-        (update DEMIPAD|T|Ledger asset-id {"price" : price})
-    )
-    (defun XI_U|Retrieval (asset-id:string retrieval:bool)
-        (require-capability (SECURE))
-        (update DEMIPAD|T|Ledger asset-id {"retrieval" : retrieval})
-    )
-    ;;
-    (defun XI_W|DirectInjection (value:decimal)
-        (require-capability (SECURE))
-        (update DEMIPAD|T|Properties PP {"direct-injection" : value})
-    )
-    (defun XI_U|WSTOA (value:decimal)
-        (require-capability (SECURE))
-        (update DEMIPAD|T|Properties PP {"resident-wstoa" : value})
-    )
-    (defun XI_U|SSTOA (value:decimal)
-        (require-capability (SECURE))
-        (update DEMIPAD|T|Properties PP {"resident-sstoa" : value})
-    )
-    (defun XI_U|OURO (value:decimal)
-        (require-capability (SECURE))
-        (update DEMIPAD|T|Properties PP {"resident-ouro" : value})
-    )
-    ;;
-    (defun XI_SatisfyEnviroment (donor:string prices:object{DemiourgosLaunchpadV1.DEMIPAD|Prices})
-        (require-capability (SECURE))
-        (let
-            (
-                (ref-coin:module{stoa-ns.fungible-v1} coin)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                ;;
-                (donor-stoa:string (ref-DALOS::UR_AccountStoa donor))
-            )
-            (ref-coin::transfer donor-stoa (at "receiver-one" prices)    (at "amount-one" prices))       ;;for GasStation
-            (ref-coin::transfer donor-stoa (at "receiver-two" prices)    (at "amount-two" prices))       ;;for HOV
-            (ref-coin::transfer donor-stoa (at "receiver-three" prices)  (at "amount-three" prices))     ;;for CTO
-            (ref-coin::transfer donor-stoa (at "receiver-four" prices)   (at "amount-four" prices))      ;;for LQ-St
-        )
-    )
-    (defun XI_DepositResidents (prices:object{DemiourgosLaunchpadV1.DEMIPAD|Prices} type:integer)
-        (require-capability (SECURE))
-        (with-capability (SECURE)
-            (let
-                (
-                    (v0:decimal (at "coding-amount" prices))
-                    (v1:decimal (UR_WSTOA))
-                    (v2:decimal (UR_SSTOA))
-                    (v3:decimal (UR_OURO))
-                )
-                (if (or (= type 0) (= type 1))
-                    (XI_U|WSTOA (+ v0 v1))
-                    (if (= type 2)
-                        (XI_U|SSTOA (+ v0 v2))
-                        (XI_U|OURO (+ v0 v3))
-                    )
-                )
-            )
-        ) 
-    )
-    (defun XI_DepositForAsset 
-        (asset-id:string amount-in-dollars:decimal remainder:decimal type:integer)
-        (let
-            (
-                (used-type:integer (if (= type 0) 1 type))
-            )
-            (XI_U|TotalDollarzRaised asset-id (+ (UR_TotalDollarzRaised asset-id) amount-in-dollars))
-            (XI_U|TotalRaised asset-id (+ remainder (UR_TotalRaised asset-id used-type)) used-type)
-            (XI_U|Funds asset-id (+ remainder (UR_Funds asset-id used-type)) used-type)
-        )
-    )
-    ;;
-    (defun X_TransmitCollectables:object{IgnisCollectorV1.OutputCumulator}
-        (client:string asset-id:string son:bool nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
-        (require-capability (SECURE))
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                (ref-DPDC-T:module{DpdcTransferV1} DPDC-T)
-                (lpad:string DEMIPAD|SC_NAME)
-                (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount client))
-            )
-            ;;#7M: open the capability matching the collectable KIND (son true = Semi-Fungible [false true],
-            ;;     false = Non-Fungible [false false]). Previously both branches hardcoded the SEMI cap, so a
-            ;;     real NF asset always failed UEV_AssetFungibility (dead) and an SF routed via the NF entry
-            ;;     transferred with son=false (type mismatch). The NON caps existed but were wired to nothing.
-            (if fuel-or-retrieve
-                ;;FUEL — deposit collectables INTO the launchpad
-                (if son
-                    (with-capability (DEMIPAD|C>FUEL-SEMI-FUNGIBLE asset-id)
-                        (ref-DPDC-T::C_Transfer [asset-id] [son] client lpad [nonces] [amounts] true)
-                    )
-                    (with-capability (DEMIPAD|C>FUEL-NON-FUNGIBLE asset-id)
-                        (ref-DPDC-T::C_Transfer [asset-id] [son] client lpad [nonces] [amounts] true)
-                    )
-                )
-                ;;RETRIEVE — withdraw collectables FROM the launchpad (NF path now also inherits the #2H lock)
-                (if son
-                    (with-capability (DEMIPAD|C>RETRIEVE-SEMI-FUNGIBLE asset-id)
-                        (ref-DPDC-T::C_Transfer [asset-id] [son] lpad client [nonces] [amounts] true)
-                    )
-                    (with-capability (DEMIPAD|C>RETRIEVE-NON-FUNGIBLE asset-id)
-                        (ref-DPDC-T::C_Transfer [asset-id] [son] lpad client [nonces] [amounts] true)
-                    )
-                )
-            )
-        )
-    )
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )
 

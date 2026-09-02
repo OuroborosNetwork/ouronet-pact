@@ -297,7 +297,7 @@
     )
     (defun UC_ReshapeUnstakeObject:object{UtilityAtsV2.Awo} (input:object{UtilityAtsV2.Awo} remove-position:integer)
         @doc "Drops <remove-position> from <input>'s reward-tokens array and folds its value into slot 0 \
-            \ (the primal RT), mirroring the pool-level primal-RT swap in ATSU.X_RemoveSecondary. \
+            \ (the primal RT), mirroring the pool-level primal-RT swap in ATSU.XI_RemoveSecondary. \
             \ Fix (audit finding #1C / C2c): this MUST run unconditionally — an all-zero (never-touched) \
             \ Awo still needs its array shrunk to match the post-removal reward-token list, or every later \
             \ read (URCx_PosObjSt, XI_StoreUnstakeObject) that structurally compares it against a freshly \
