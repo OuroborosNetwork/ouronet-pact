@@ -197,6 +197,8 @@
     (defun UEV_BalancedLiquidity (swpair:string input-id:string input-amount:decimal))
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
+    (defun XE_STOA-PID|AddLiquidity (account:string swpair:string asymmetric-collection:bool gaseous-collection:bool stoa-pid:decimal ld:object{LiquidityData} clad:object{CompleteLiquidityAdditionData}))
+    (defun XE_AutonomousSwapManagement (swpair:string))
     ;;{5.7}  User [A/C]
 
 )
