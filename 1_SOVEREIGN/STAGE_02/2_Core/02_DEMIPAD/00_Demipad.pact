@@ -2,11 +2,12 @@
 (interface DemiourgosLaunchpadV2
 
 
+
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;{G2}  schemas
-    ;;{G3}  tables
+    ;;{G3}  tables  ⟨cannot exist in an interface⟩
     ;;{G4}  capabilities
     ;;{G5}  functions
     ;;
@@ -16,7 +17,7 @@
     ;;{2}  POLICY
     ;;{P1}  constants
     ;;{P2}  schemas
-    ;;{P3}  tables
+    ;;{P3}  tables  ⟨cannot exist in an interface⟩
     ;;{P4}  capabilities
     ;;{P5}  functions
 
@@ -74,7 +75,7 @@
         end:decimal
         fee-promille:decimal
     )
-    ;;{3.3}  tables
+    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -242,27 +243,27 @@
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;
-    (defconst GOV|MD_DEMIPAD                (keyset-ref-guard (GOV|Demiurgoi)))
+    (defconst GOV|MD_DEMIPAD                            (keyset-ref-guard (GOV|Demiurgoi)))
     ;;{G2}  schemas
     ;;{G3}  tables
     ;;{G4}  capabilities
-    (defcap GOV ()                          (compose-capability (GOV|DEMIPAD_ADMIN)))
-    (defcap GOV|DEMIPAD_ADMIN ()            (enforce-guard GOV|MD_DEMIPAD))
+    (defcap GOV ()                                      (compose-capability (GOV|DEMIPAD_ADMIN)))
+    (defcap GOV|DEMIPAD_ADMIN ()                        (enforce-guard GOV|MD_DEMIPAD))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
-    (defun GOV|LaunchpadKey ()              (+ (CT_Namespace) ".dh_sc_mb-keyset"))
+    (defun GOV|Demiurgoi ()                             (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|LaunchpadKey ()                          (+ (CT_Namespace) ".dh_sc_mb-keyset"))
     ;;(defun GOV|LaunchpadKey ()              (+ (CT_Namespace) ".dh_sc_demipad-keyset"))
     ;;
     ;; [SC-Names]
-    (defun GOV|DEMIPAD|SC_NAME ()           (at 0 ["Σ.Îäć$ЬчýφVεÎÿůпΨÖůηüηŞйnюŽXΣşpЩß5ςĂκ£RäbE₳èËłŹŘYшÆgлoюýRαѺÑÏρζt∇ŹÏýжIŒațэVÞÛщŹЭδźvëȘĂтPЖÃÇЭiërđÈÝДÖšжzČđзUĚĂsкιnãñOÔIKпŞΛI₳zÄû$ρśθ6ΨЬпYпĞHöÝйÏюşí2ćщÞΔΔŻTж€₿ŞhTțŽ"]))
+    (defun GOV|DEMIPAD|SC_NAME ()                       (at 0 ["Σ.Îäć$ЬчýφVεÎÿůпΨÖůηüηŞйnюŽXΣşpЩß5ςĂκ£RäbE₳èËłŹŘYшÆgлoюýRαѺÑÏρζt∇ŹÏýжIŒațэVÞÛщŹЭδźvëȘĂтPЖÃÇЭiërđÈÝДÖšжzČđзUĚĂsкιnãñOÔIKпŞΛI₳zÄû$ρśθ6ΨЬпYпĞHöÝйÏюşí2ćщÞΔΔŻTж€₿ŞhTțŽ"]))
     ;;
     ;; [PBLs]
-    (defun GOV|DEMIPAD|PBL ()               (at 0 ["9F.gGCkuc2wMAnFAjuFphikftLdl6qFqBD4yfeMEe9u65yMqf4r340Jd6dphh1d7E1cE20btMwl4HJ2cBEMvp209GA1eD4syB96hu4nmpFbB7dKnJEMz4p8fGLcmhvrBCfDmM0axnGin8qedl5vDtwbgL3l1aK5BsmjkEEJartqCH8qG8ialtjxwCcIMf50t2lkeww6Dct5LlmmLG25FmfpcgnwMMnkJl4Gfn9gwoA6vm0jKebjhodeJLjxnh9L11ss8f26866dqv1tEphxFFqutGetH4Itj3rHkrcrGsnlqpf4gfJp94b0gBwIBe4vCj6ha8jm6kd3f8B6pEaJtkJ3fbs6rCcGibltz1BAMn0vvKME5ddFyGBnzssk1s2s0vFzwxs6vjC61Ma2l1xDxqdg1thAk2u01hDiGndLhzK73HAfgtk7bxscn0qKhymG6JAqnEFt282pyHAq5nIthK9bA8nH76x7FEpLz4eK9tLIBsyjb8M5DxaeEei6pEnLxFCAg7ulacgtjjpjMiAaqhpmM1jEHqjt4G85q4L33zrME7whgIkIpIgwnF2qKd4"]))
+    (defun GOV|DEMIPAD|PBL ()                           (at 0 ["9F.gGCkuc2wMAnFAjuFphikftLdl6qFqBD4yfeMEe9u65yMqf4r340Jd6dphh1d7E1cE20btMwl4HJ2cBEMvp209GA1eD4syB96hu4nmpFbB7dKnJEMz4p8fGLcmhvrBCfDmM0axnGin8qedl5vDtwbgL3l1aK5BsmjkEEJartqCH8qG8ialtjxwCcIMf50t2lkeww6Dct5LlmmLG25FmfpcgnwMMnkJl4Gfn9gwoA6vm0jKebjhodeJLjxnh9L11ss8f26866dqv1tEphxFFqutGetH4Itj3rHkrcrGsnlqpf4gfJp94b0gBwIBe4vCj6ha8jm6kd3f8B6pEaJtkJ3fbs6rCcGibltz1BAMn0vvKME5ddFyGBnzssk1s2s0vFzwxs6vjC61Ma2l1xDxqdg1thAk2u01hDiGndLhzK73HAfgtk7bxscn0qKhymG6JAqnEFt282pyHAq5nIthK9bA8nH76x7FEpLz4eK9tLIBsyjb8M5DxaeEei6pEnLxFCAg7ulacgtjjpjMiAaqhpmM1jEHqjt4G85q4L33zrME7whgIkIpIgwnF2qKd4"]))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
     ;;{P1}  constants
-    (defconst P|I                   (P|Info))
+    (defconst P|I                                       (P|Info))
     ;;{P2}  schemas
     ;;{P3}  tables
     ;;
@@ -277,7 +278,7 @@
         (compose-capability (SECURE))
     )
     ;;{P5}  functions
-    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()                                    (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -338,17 +339,17 @@
     ;;{3}  CST
     ;;{3.1}  constants
     ;;
-    (defconst DEMIPAD|SC_KEY                (GOV|LaunchpadKey))
-    (defconst DEMIPAD|SC_NAME               (GOV|DEMIPAD|SC_NAME))
-    (defconst MB|SC_STOA-NAME                "k:xxx")
-    (defconst BAR                   (CT_Bar))
-    (defconst EOC                   (CT_EmptyCumulator))
-    (defconst TF                    [true true])
-    (defconst OF                    [true false])
-    (defconst SF                    [false true])
-    (defconst NF                    [false false])
+    (defconst DEMIPAD|SC_KEY                            (GOV|LaunchpadKey))
+    (defconst DEMIPAD|SC_NAME                           (GOV|DEMIPAD|SC_NAME))
+    (defconst MB|SC_STOA-NAME                           "k:xxx")
+    (defconst BAR                                       (CT_Bar))
+    (defconst EOC                                       (CT_EmptyCumulator))
+    (defconst TF                                        [true true])
+    (defconst OF                                        [true false])
+    (defconst SF                                        [false true])
+    (defconst NF                                        [false false])
     ;;
-    (defconst PP                    "Launchpad-Properties")
+    (defconst PP                                        "Launchpad-Properties")
     ;;{3.2}  schemas
     ;;{3.3}  tables
     ;;
@@ -552,9 +553,9 @@
     ;;{5.1}  Construct [CT/UDC]
     ;;
     ;; [Keys]
-    (defun CT_Namespace ()                    (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_NS_USE)))
-    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
-    (defun CT_EmptyCumulator ()     (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_EmptyOutputCumulatorV2)))
+    (defun CT_Namespace ()                              (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_NS_USE)))
+    (defun CT_Bar ()                                    (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_EmptyCumulator ()                         (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_EmptyOutputCumulatorV2)))
     ;;
     ;;
     (defun UDC_Costs:object{DemiourgosLaunchpadV2.Costs} 

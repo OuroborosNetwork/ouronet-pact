@@ -9,7 +9,7 @@
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;{G2}  schemas
-    ;;{G3}  tables
+    ;;{G3}  tables  ⟨cannot exist in an interface⟩
     ;;{G4}  capabilities
     ;;{G5}  functions
 
@@ -17,7 +17,7 @@
     ;;{2}  POLICY
     ;;{P1}  constants
     ;;{P2}  schemas
-    ;;{P3}  tables
+    ;;{P3}  tables  ⟨cannot exist in an interface⟩
     ;;{P4}  capabilities
     ;;{P5}  functions
 
@@ -25,7 +25,7 @@
     ;;{3}  CST
     ;;{3.1}  constants
     ;;{3.2}  schemas
-    ;;{3.3}  tables
+    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -45,7 +45,7 @@
     ;;{5.7}  User [A/C]
     ;;
     (defun C_UpdatePendingBranding:object{IgnisCollectorV2.OutputCumulator} (entity-id:string son:bool logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
-    (defun C_UpgradeBranding (patron:string entity-id:string son:bool  months:integer))
+    (defun C_UpgradeBranding (patron:string entity-id:string son:bool months:integer))
 
 )
 
@@ -57,7 +57,7 @@
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;{G2}  schemas
-    ;;{G3}  tables
+    ;;{G3}  tables  ⟨cannot exist in an interface⟩
     ;;{G4}  capabilities
     ;;{G5}  functions
     (defun GOV|DPDC|SC_NAME ())
@@ -66,7 +66,7 @@
     ;;{2}  POLICY
     ;;{P1}  constants
     ;;{P2}  schemas
-    ;;{P3}  tables
+    ;;{P3}  tables  ⟨cannot exist in an interface⟩
     ;;{P4}  capabilities
     ;;{P5}  functions
 
@@ -74,7 +74,7 @@
     ;;{3}  CST
     ;;{3.1}  constants
     ;;{3.2}  schemas
-    ;;{3.3}  tables
+    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -290,6 +290,7 @@
 
 
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -301,27 +302,27 @@
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;
-    (defconst GOV|MD_DPDC                   (keyset-ref-guard (GOV|Demiurgoi)))
+    (defconst GOV|MD_DPDC                               (keyset-ref-guard (GOV|Demiurgoi)))
     ;;{G2}  schemas
     ;;{G3}  tables
     ;;{G4}  capabilities
-    (defcap GOV ()                          (compose-capability (GOV|DPDC_ADMIN)))
-    (defcap GOV|DPDC_ADMIN ()               (enforce-guard GOV|MD_DPDC))
+    (defcap GOV ()                                      (compose-capability (GOV|DPDC_ADMIN)))
+    (defcap GOV|DPDC_ADMIN ()                           (enforce-guard GOV|MD_DPDC))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
-    (defun GOV|CollectiblesKey ()           (+ (CT_Namespace) ".dh_sc_dpdc-keyset"))
+    (defun GOV|Demiurgoi ()                             (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|CollectiblesKey ()                       (+ (CT_Namespace) ".dh_sc_dpdc-keyset"))
     ;;
     ;; [SC-Names]
-    (defun GOV|DPDC|SC_NAME ()              (at 0 ["Σ.μЖâAáпδÃàźфнMAŸôIÌjȘЛδεЬÍБЮoзξ4κΩøΠÒçѺłœщÌĘчoãueUøVlßHšδLτε£σž£ЙLÛòCÎcďьčfğÅηвČïnÊвÞIwÇÝмÉŠвRмWć5íЮzGWYвьżΨπûEÃdйdGЫŁŤČçПχĘŚślьЙŤğLУ0SýЭψȘÔÜнìÆkČѺȘÍÍΛ4шεнÄtИςȘ4"]))
+    (defun GOV|DPDC|SC_NAME ()                          (at 0 ["Σ.μЖâAáпδÃàźфнMAŸôIÌjȘЛδεЬÍБЮoзξ4κΩøΠÒçѺłœщÌĘчoãueUøVlßHšδLτε£σž£ЙLÛòCÎcďьčfğÅηвČïnÊвÞIwÇÝмÉŠвRмWć5íЮzGWYвьżΨπûEÃdйdGЫŁŤČçПχĘŚślьЙŤğLУ0SýЭψȘÔÜнìÆkČѺȘÍÍΛ4шεнÄtИςȘ4"]))
     ;;
     ;;
     ;; [PBLs]
-    (defun GOV|DPDC|PBL ()                  (at 0 ["9G.2j95rkomKqd207CDg5yycyKcAy1AqFhjy6D0rCr0Kbwe9E6libtveIHsAIw9F2c43v6IHILIBf62r2LD58xHE09kypyoevL62E81wHL4zj9tIyspf5df82upuBGGKmIsHGuvH86fHMMi99n0htsypL9h3dMHFCIx8ogeynkmCIghxK871rlkas8iDfce7AwAbiajr7H1LHi17mLD7aJu6m7xmcAABkhxtwb4Kqbk8xLpehakyu3AvajgJvtfeysoH67irvplA0as86Jls1r3d3oHms9Maaja9856wzybpthMGs6qDAzacE24skcA30wvm77BLhrdh0ymkl3vbJ9lG641J7ofg5K9gEbHD4ioFHLEajL28qsD4cFEhdDthDzwF8EnBBc74Dikqn9xixFap5Jxhl7D0owz5d9MDJzfjgx3jbdpD3zglsq83iC4fhcpbz3KeAi11Ig2pgIqnmwwqA0Exr5073w7lgzlrw3Ff7Co9uuxbnLuJvlFzgfGeIwM2Dmev1JskqEGK0Ck0B87iagsHFI76HC6sKnwrHnkl0sl8pAf0pbBaw9MbqLs"]))
+    (defun GOV|DPDC|PBL ()                              (at 0 ["9G.2j95rkomKqd207CDg5yycyKcAy1AqFhjy6D0rCr0Kbwe9E6libtveIHsAIw9F2c43v6IHILIBf62r2LD58xHE09kypyoevL62E81wHL4zj9tIyspf5df82upuBGGKmIsHGuvH86fHMMi99n0htsypL9h3dMHFCIx8ogeynkmCIghxK871rlkas8iDfce7AwAbiajr7H1LHi17mLD7aJu6m7xmcAABkhxtwb4Kqbk8xLpehakyu3AvajgJvtfeysoH67irvplA0as86Jls1r3d3oHms9Maaja9856wzybpthMGs6qDAzacE24skcA30wvm77BLhrdh0ymkl3vbJ9lG641J7ofg5K9gEbHD4ioFHLEajL28qsD4cFEhdDthDzwF8EnBBc74Dikqn9xixFap5Jxhl7D0owz5d9MDJzfjgx3jbdpD3zglsq83iC4fhcpbz3KeAi11Ig2pgIqnmwwqA0Exr5073w7lgzlrw3Ff7Co9uuxbnLuJvlFzgfGeIwM2Dmev1JskqEGK0Ck0B87iagsHFI76HC6sKnwrHnkl0sl8pAf0pbBaw9MbqLs"]))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
     ;;{P1}  constants
-    (defconst P|I                   (P|Info))
+    (defconst P|I                                       (P|Info))
     ;;{P2}  schemas
     ;;{P3}  tables
     ;;
@@ -336,7 +337,7 @@
         (compose-capability (SECURE))
     )
     ;;{P5}  functions
-    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()                                    (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -391,11 +392,11 @@
     ;;{3}  CST
     ;;{3.1}  constants
     ;;
-    (defconst DPDC|SC_KEY                   (GOV|CollectiblesKey))
-    (defconst DPDC|SC_NAME                  (GOV|DPDC|SC_NAME))
-    (defconst DPDC|SC_STOA-NAME              "k:xxx")
-    (defconst BAR                   (CT_Bar))
-    (defconst FRG                   1000)
+    (defconst DPDC|SC_KEY                               (GOV|CollectiblesKey))
+    (defconst DPDC|SC_NAME                              (GOV|DPDC|SC_NAME))
+    (defconst DPDC|SC_STOA-NAME                         "k:xxx")
+    (defconst BAR                                       (CT_Bar))
+    (defconst FRG                                       1000)
     ;;{3.2}  schemas
     ;;{3.3}  tables
     ;;
@@ -422,6 +423,8 @@
     (defcap SECURE ()
         true
     )
+    ;;{C2}  Simple
+    ;;{C3}  Composed
     ;;
     ;;
     (defcap AHU ()
@@ -434,8 +437,6 @@
             (compose-capability (SECURE))
         )
     )
-    ;;{C2}  Simple
-    ;;{C3}  Composed
     (defcap DPDC|C>UPDATE-BRD (entity-id:string son:bool)
         @event
         (CAP_Owner entity-id son)
@@ -453,8 +454,8 @@
     ;;{5.1}  Construct [CT/UDC]
     ;;
     ;; [Keys]
-    (defun CT_Namespace ()                    (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_NS_USE)))
-    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_Namespace ()                              (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_NS_USE)))
+    (defun CT_Bar ()                                    (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
     ;;
     (defun UDC_Control:object{DpdcUdcV2.DPDC|Properties}
         (id:string son:bool cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool)

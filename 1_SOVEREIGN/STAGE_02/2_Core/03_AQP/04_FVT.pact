@@ -2,11 +2,12 @@
 (interface AcquisitionFarmsVaultsTreasuriesV2
 
 
+
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;{G2}  schemas
-    ;;{G3}  tables
+    ;;{G3}  tables  ⟨cannot exist in an interface⟩
     ;;{G4}  capabilities
     ;;{G5}  functions
     (defun GOV|Demiurgoi ())
@@ -15,7 +16,7 @@
     ;;{2}  POLICY
     ;;{P1}  constants
     ;;{P2}  schemas
-    ;;{P3}  tables
+    ;;{P3}  tables  ⟨cannot exist in an interface⟩
     ;;{P4}  capabilities
     ;;{P5}  functions
 
@@ -23,7 +24,7 @@
     ;;{3}  CST
     ;;{3.1}  constants
     ;;{3.2}  schemas
-    ;;{3.3}  tables
+    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -297,6 +298,7 @@
 
 
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -308,19 +310,19 @@
     ;;{G1}  constants
     ;(implements DemiourgosPactDigitalCollectibles-UtilityPrototype)
     ;;
-    (defconst GOV|MD_FVT                    (keyset-ref-guard (GOV|Demiurgoi)))
+    (defconst GOV|MD_FVT                                (keyset-ref-guard (GOV|Demiurgoi)))
     ;;{G2}  schemas
     ;;{G3}  tables
     ;;{G4}  capabilities
-    (defcap GOV ()                          (compose-capability (GOV|FVT_ADMIN)))
-    (defcap GOV|FVT_ADMIN ()                (enforce-guard GOV|MD_FVT))
+    (defcap GOV ()                                      (compose-capability (GOV|FVT_ADMIN)))
+    (defcap GOV|FVT_ADMIN ()                            (enforce-guard GOV|MD_FVT))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()                             (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
     ;;{P1}  constants
-    (defconst P|I                   (P|Info))
+    (defconst P|I                                       (P|Info))
     ;;{P2}  schemas
     ;;{P3}  tables
     ;;
@@ -341,7 +343,7 @@
         (compose-capability (SECURE))
     )
     ;;{P5}  functions
-    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()                                    (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -470,38 +472,38 @@
     ;; M3 #12 2e — IGNIS charged per inject-forced deb-fix, at the user's next collect (non-discountable). Governance
     ;; param (placeholder); set ≥ the IGNIS cost of self-fixing one score so self-fixing is always cheaper. ~10 IGNIS.
     (defconst CT_FORCED_FIX_RATE:decimal 10.0)
-    (defconst BAR                                               (CT_Bar))
-    (defconst AQP|SC_NAME                                       (CT_AqpScName))
-    (defconst GAS|ISSUE-FVT                                     1000.0)
-    (defconst GAS|ADD-SCORE-ENTITY                              500.0)
-    (defconst GAS|ISSUE-MULTIPLET-FAMILY                        500.0)
-    (defconst GAS|TOGGLE-SCORE-ENTITY-LINK                      500.0)
-    (defconst GAS|SET-MOSAIC                                    500.0)
-    (defconst GAS|ADD-REWARD-LINK                               500.0)
-    (defconst GAS|TOGGLE-REWARD-LINK                            500.0)
-    (defconst GAS|SET-QUALITY-SPLIT                             500.0)
-    (defconst GAS|SET-COMMON-DENOMINATOR                        500.0)
-    (defconst GAS|SET-SPLIT-MODE                                500.0)
-    (defconst GAS|INJECT                                        500.0)
-    (defconst GAS|COLLECT                                       500.0)
-    (defconst GAS|UNSTALE                                       500.0)
-    (defconst CT_REWARD_KIND_PLAIN                              "PLAIN")
-    (defconst CT_REWARD_KIND_MULTIPLET_BASE                     "MULTIPLET_BASE")
+    (defconst BAR                                       (CT_Bar))
+    (defconst AQP|SC_NAME                               (CT_AqpScName))
+    (defconst GAS|ISSUE-FVT                             1000.0)
+    (defconst GAS|ADD-SCORE-ENTITY                      500.0)
+    (defconst GAS|ISSUE-MULTIPLET-FAMILY                500.0)
+    (defconst GAS|TOGGLE-SCORE-ENTITY-LINK              500.0)
+    (defconst GAS|SET-MOSAIC                            500.0)
+    (defconst GAS|ADD-REWARD-LINK                       500.0)
+    (defconst GAS|TOGGLE-REWARD-LINK                    500.0)
+    (defconst GAS|SET-QUALITY-SPLIT                     500.0)
+    (defconst GAS|SET-COMMON-DENOMINATOR                500.0)
+    (defconst GAS|SET-SPLIT-MODE                        500.0)
+    (defconst GAS|INJECT                                500.0)
+    (defconst GAS|COLLECT                               500.0)
+    (defconst GAS|UNSTALE                               500.0)
+    (defconst CT_REWARD_KIND_PLAIN                      "PLAIN")
+    (defconst CT_REWARD_KIND_MULTIPLET_BASE             "MULTIPLET_BASE")
     ;; Round B: a MULTIPLET_BASE triplet reward line can split each lane HOMOGENEOUSLY (each lane → one ladder
     ;; token: bronze→token-0, silver→token-1, gold→token-2) or HETEROGENEOUSLY (each lane → all 3 ladder tokens
     ;; per a stored per-mille matrix). Absent config ⇒ HOMOGENEOUS (unchanged behavior).
-    (defconst CT_REWARD_MODE_HOMOGENEOUS                        "HOMOGENEOUS")
-    (defconst CT_REWARD_MODE_HETEROGENEOUS                      "HETEROGENEOUS")
-    (defconst CT_SCORE_ENTITY_SCORE                             1)
-    (defconst CT_SCORE_ENTITY_TRIPLET                           3)
-    (defconst CT_MEMBERSHIP_MODE_BAR                            "BAR")
-    (defconst CT_MEMBERSHIP_MODE_SCORE                          "SCORE")
-    (defconst CT_MEMBERSHIP_MODE_TRUE_TRIPLET                   "TRUE-TRIPLET")
-    (defconst CT_MEMBERSHIP_MODE_STANDARD_TRIPLET               "STANDARD-TRIPLET")
+    (defconst CT_REWARD_MODE_HOMOGENEOUS                "HOMOGENEOUS")
+    (defconst CT_REWARD_MODE_HETEROGENEOUS              "HETEROGENEOUS")
+    (defconst CT_SCORE_ENTITY_SCORE                     1)
+    (defconst CT_SCORE_ENTITY_TRIPLET                   3)
+    (defconst CT_MEMBERSHIP_MODE_BAR                    "BAR")
+    (defconst CT_MEMBERSHIP_MODE_SCORE                  "SCORE")
+    (defconst CT_MEMBERSHIP_MODE_TRUE_TRIPLET           "TRUE-TRIPLET")
+    (defconst CT_MEMBERSHIP_MODE_STANDARD_TRIPLET       "STANDARD-TRIPLET")
     ;; Farm reward-split modes (D1-G2). Level-2 W_i source at inject; per-farm, freely mutable.
-    (defconst CT_SPLIT_MODE_STAKED                             "SPLIT|STAKED") ;; Variant 1 — participation (farm default): W_i = member STAKED value (URC_MemberStakedStoaValue)
-    (defconst CT_SPLIT_MODE_TVL                                "SPLIT|TVL")    ;; Variant 2 — pool-size: W_i = whole swpair TVL (UR_StoaValue)
-    (defconst CT_SPLIT_MODE_NA                                 "|")            ;; sentinel — split-mode is farm-only; vaults/treasuries store this and never consult it
+    (defconst CT_SPLIT_MODE_STAKED                      "SPLIT|STAKED") ;; Variant 1 — participation (farm default): W_i = member STAKED value (URC_MemberStakedStoaValue)
+    (defconst CT_SPLIT_MODE_TVL                         "SPLIT|TVL")    ;; Variant 2 — pool-size: W_i = whole swpair TVL (UR_StoaValue)
+    (defconst CT_SPLIT_MODE_NA                          "|")            ;; sentinel — split-mode is farm-only; vaults/treasuries store this and never consult it
     ;;{3.2}  schemas
     ;;
     (defschema FVT|Schema

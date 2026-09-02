@@ -6,7 +6,7 @@
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;{G2}  schemas
-    ;;{G3}  tables
+    ;;{G3}  tables  ⟨cannot exist in an interface⟩
     ;;{G4}  capabilities
     ;;{G5}  functions
 
@@ -14,7 +14,7 @@
     ;;{2}  POLICY
     ;;{P1}  constants
     ;;{P2}  schemas
-    ;;{P3}  tables
+    ;;{P3}  tables  ⟨cannot exist in an interface⟩
     ;;{P4}  capabilities
     ;;{P5}  functions
 
@@ -22,7 +22,7 @@
     ;;{3}  CST
     ;;{3.1}  constants
     ;;{3.2}  schemas
-    ;;{3.3}  tables
+    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -53,7 +53,7 @@
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;{G2}  schemas
-    ;;{G3}  tables
+    ;;{G3}  tables  ⟨cannot exist in an interface⟩
     ;;{G4}  capabilities
     ;;{G5}  functions
 
@@ -61,7 +61,7 @@
     ;;{2}  POLICY
     ;;{P1}  constants
     ;;{P2}  schemas
-    ;;{P3}  tables
+    ;;{P3}  tables  ⟨cannot exist in an interface⟩
     ;;{P4}  capabilities
     ;;{P5}  functions
 
@@ -69,7 +69,7 @@
     ;;{3}  CST
     ;;{3.1}  constants
     ;;{3.2}  schemas
-    ;;{3.3}  tables
+    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -185,6 +185,7 @@
 
 
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -195,12 +196,12 @@
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;
-    (defconst GOV|DEMIURGOI         (+ (CT_NS_USE) ".dh_master-keyset"))
+    (defconst GOV|DEMIURGOI                             (+ (CT_NS_USE) ".dh_master-keyset"))
     ;;{G2}  schemas
     ;;{G3}  tables
     ;;{G4}  capabilities
-    (defcap GOV ()                  (compose-capability (GOV|U|CT_ADMIN)))
-    (defcap GOV|U|CT_ADMIN ()       (enforce-guard (CT_GOV|UTILS)))
+    (defcap GOV ()                                      (compose-capability (GOV|U|CT_ADMIN)))
+    (defcap GOV|U|CT_ADMIN ()                           (enforce-guard (CT_GOV|UTILS)))
     ;;{G5}  functions
 
     ;;<=========================================================================>
@@ -228,10 +229,10 @@
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
     ;;
-    (defun CT_NamespaceMain ()               (at 0 ["ouronet-ns"]))
-    (defun CT_NamespaceTest ()               (at 0 ["free"]))
-    (defun CT_NS_USE  ()            (CT_NamespaceMain))
-    (defun CT_GOV|UTILS ()          (keyset-ref-guard GOV|DEMIURGOI))
+    (defun CT_NamespaceMain ()                          (at 0 ["ouronet-ns"]))
+    (defun CT_NamespaceTest ()                          (at 0 ["free"]))
+    (defun CT_NS_USE                                    ()            (CT_NamespaceMain))
+    (defun CT_GOV|UTILS ()                              (keyset-ref-guard GOV|DEMIURGOI))
     ;;
     ;;
     ;;#73L fix: removed the tautological `or` - `(CT_NamespaceTest)` is itself defined as

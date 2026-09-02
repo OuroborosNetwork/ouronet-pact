@@ -1,11 +1,12 @@
 (interface Bloodshed
 
 
+
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;{G2}  schemas
-    ;;{G3}  tables
+    ;;{G3}  tables  ⟨cannot exist in an interface⟩
     ;;{G4}  capabilities
     ;;{G5}  functions
 
@@ -13,95 +14,95 @@
     ;;{2}  POLICY
     ;;{P1}  constants
     ;;{P2}  schemas
-    ;;{P3}  tables
+    ;;{P3}  tables  ⟨cannot exist in an interface⟩
     ;;{P4}  capabilities
     ;;{P5}  functions
 
     ;;<=========================================================================>
     ;;{3}  CST
     ;;{3.1}  constants
-    (defconst IPFS                  "https://ipfs.io/ipfs/QmYjHPWPxCeHGu9vgYUbzjmWo34A2z3CNuYmU6MEzgUSzP/")
-    (defconst LEGENDARY             277.0)      ;;Legendary BS Score
-    (defconst EPIC                  43.0)       ;;Epic BS Score
-    (defconst RARE                  25.0)       ;;Rare BS Score
-    (defconst COMMON                11.0)       ;;Common BS Score
+    (defconst IPFS                                      "https://ipfs.io/ipfs/QmYjHPWPxCeHGu9vgYUbzjmWo34A2z3CNuYmU6MEzgUSzP/")
+    (defconst LEGENDARY                                 277.0)      ;;Legendary BS Score
+    (defconst EPIC                                      43.0)       ;;Epic BS Score
+    (defconst RARE                                      25.0)       ;;Rare BS Score
+    (defconst COMMON                                    11.0)       ;;Common BS Score
     ;;
-    (defconst LEGENDARY-S           160)        ;;Legendary Supply
-    (defconst EPIC-S                1536)       ;;Epic Supply
-    (defconst RARE-S                3168)       ;:Rare Supply
-    (defconst COMMON-S              8064)       ;;Common Supply
+    (defconst LEGENDARY-S                               160)        ;;Legendary Supply
+    (defconst EPIC-S                                    1536)       ;;Epic Supply
+    (defconst RARE-S                                    3168)       ;:Rare Supply
+    (defconst COMMON-S                                  8064)       ;;Common Supply
     ;;
-    (defconst R                     150.0)      ;;Native Bloodshed Royalty
-    (defconst IR-L                  110.0)      ;;Legendary Ignis Royalty
-    (defconst IR-E                  50.0)       ;;Epic Ignis Royalty
-    (defconst IR-R                  30.0)       ;;Rare Ignis Royalty
-    (defconst IR-C                  10.0)       ;;Common Ignis Royalty
+    (defconst R                                         150.0)      ;;Native Bloodshed Royalty
+    (defconst IR-L                                      110.0)      ;;Legendary Ignis Royalty
+    (defconst IR-E                                      50.0)       ;;Epic Ignis Royalty
+    (defconst IR-R                                      30.0)       ;;Rare Ignis Royalty
+    (defconst IR-C                                      10.0)       ;;Common Ignis Royalty
     ;;
-    (defconst BS-PREC               6)          ;;
+    (defconst BS-PREC                                   6)          ;;
     ;;Rarity
-    (defconst R1                    "Common")
-    (defconst R2                    "Rare")
-    (defconst R3                    "Epic")
-    (defconst R4                    "Legendary")
+    (defconst R1                                        "Common")
+    (defconst R2                                        "Rare")
+    (defconst R3                                        "Epic")
+    (defconst R4                                        "Legendary")
     ;;Dacian
-    (defconst D1                    "Comati")
-    (defconst D2                    "Ursoi")
-    (defconst D3                    "Pileati")
-    (defconst D4                    "Smardoi")
-    (defconst D5                    "Carpian")
-    (defconst D6                    "Tarabostes")
-    (defconst D7                    "Costoboc")
-    (defconst D8                    "Buridavens")
+    (defconst D1                                        "Comati")
+    (defconst D2                                        "Ursoi")
+    (defconst D3                                        "Pileati")
+    (defconst D4                                        "Smardoi")
+    (defconst D5                                        "Carpian")
+    (defconst D6                                        "Tarabostes")
+    (defconst D7                                        "Costoboc")
+    (defconst D8                                        "Buridavens")
     ;;Potency
-    (defconst P1                    "Standard" )
-    (defconst P2                    "Premium")
-    (defconst P3                    "Elite")
+    (defconst P1                                        "Standard" )
+    (defconst P2                                        "Premium")
+    (defconst P3                                        "Elite")
     ;;Bloodshed
-    (defconst B0                    "Tier-0")
-    (defconst B1                    "Tier-1")
-    (defconst B2                    "Tier-2")
-    (defconst B3                    "Tier-3")
-    (defconst B4                    "Tier-4")
-    (defconst B5                    "Tier-5")
+    (defconst B0                                        "Tier-0")
+    (defconst B1                                        "Tier-1")
+    (defconst B2                                        "Tier-2")
+    (defconst B3                                        "Tier-3")
+    (defconst B4                                        "Tier-4")
+    (defconst B5                                        "Tier-5")
     ;;Backgrounds
-    (defconst CC1                   "Storm")
-    (defconst CC2                   "Grainfield")
-    (defconst CC3                   "Alpine")
-    (defconst CC4                   "Swamp")
-    (defconst CC5                   "Panonic")
-    (defconst CC6                   "Continental")
-    (defconst RR1                   "Rain")
-    (defconst RR2                   "Steppe")
-    (defconst RR3                   "Pontic")
-    (defconst EP1                   "Fire")
-    (defconst EP2                   "Lightning")
-    (defconst LG1                   "WolvenTrinity")
-    (defconst LG2                   "DacianGryphon")
-    (defconst LG3                   "GryphonPhalera")
-    (defconst LG4                   "UnicornBird")
-    (defconst LG5                   "EightLeggedStag")
-    (defconst LG6                   "RamSacrifice")
-    (defconst LG7                   "SwirlingHorses")
-    (defconst LG8                   "TwinRams")
+    (defconst CC1                                       "Storm")
+    (defconst CC2                                       "Grainfield")
+    (defconst CC3                                       "Alpine")
+    (defconst CC4                                       "Swamp")
+    (defconst CC5                                       "Panonic")
+    (defconst CC6                                       "Continental")
+    (defconst RR1                                       "Rain")
+    (defconst RR2                                       "Steppe")
+    (defconst RR3                                       "Pontic")
+    (defconst EP1                                       "Fire")
+    (defconst EP2                                       "Lightning")
+    (defconst LG1                                       "WolvenTrinity")
+    (defconst LG2                                       "DacianGryphon")
+    (defconst LG3                                       "GryphonPhalera")
+    (defconst LG4                                       "UnicornBird")
+    (defconst LG5                                       "EightLeggedStag")
+    (defconst LG6                                       "RamSacrifice")
+    (defconst LG7                                       "SwirlingHorses")
+    (defconst LG8                                       "TwinRams")
     ;;MainProtection
-    (defconst MP1                   "Bear-Skin")
-    (defconst MP2                   "Armor")
+    (defconst MP1                                       "Bear-Skin")
+    (defconst MP2                                       "Armor")
     ;;SecondaryProtection
-    (defconst SP1                   "DacianSkin")
-    (defconst SP2                   "Shield")
+    (defconst SP1                                       "DacianSkin")
+    (defconst SP2                                       "Shield")
     ;;MainHand
-    (defconst MH1                   "Cosor")
-    (defconst MH2                   "Falx")
-    (defconst MH3                   "DacianDraco")
+    (defconst MH1                                       "Cosor")
+    (defconst MH2                                       "Falx")
+    (defconst MH3                                       "DacianDraco")
     ;;OffHand
-    (defconst OH1                   "Cosor")
-    (defconst OH2                   "Falx")
-    (defconst OH3                   "Sicae")
-    (defconst OH4                   "Pavaza")
-    (defconst OH5                   "Howler")
+    (defconst OH1                                       "Cosor")
+    (defconst OH2                                       "Falx")
+    (defconst OH3                                       "Sicae")
+    (defconst OH4                                       "Pavaza")
+    (defconst OH5                                       "Howler")
     ;;
-    (defconst NAME                  "Bloodshed")
-    (defconst DS                    "A Collection of 12928 NFTs depicting 272 unique Dacian Warriors, representing Bloodshed.gg, a gaming Guild within Age of Zalmoxis - a Web3 MMORPG, spawned on Ouronet, powered by Stoa")
+    (defconst NAME                                      "Bloodshed")
+    (defconst DS                                        "A Collection of 12928 NFTs depicting 272 unique Dacian Warriors, representing Bloodshed.gg, a gaming Guild within Age of Zalmoxis - a Web3 MMORPG, spawned on Ouronet, powered by Stoa")
     ;;{3.2}  schemas
     (defschema MD
         Rarity:string
@@ -114,7 +115,7 @@
         MainHand:string
         OffHand:string
     )
-    ;;{3.3}  tables
+    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -140,6 +141,7 @@
 
 
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
 
@@ -147,14 +149,14 @@
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;
-    (defconst GOV|MD_BLOODSHED-L            (keyset-ref-guard (GOV|Demiurgoi)))
+    (defconst GOV|MD_BLOODSHED-L                        (keyset-ref-guard (GOV|Demiurgoi)))
     ;;{G2}  schemas
     ;;{G3}  tables
     ;;{G4}  capabilities
-    (defcap GOV ()                          (compose-capability (GOV|BLOODSHED-L_ADMIN)))
-    (defcap GOV|BLOODSHED-L_ADMIN ()        (enforce-guard GOV|MD_BLOODSHED-L))
+    (defcap GOV ()                                      (compose-capability (GOV|BLOODSHED-L_ADMIN)))
+    (defcap GOV|BLOODSHED-L_ADMIN ()                    (enforce-guard GOV|MD_BLOODSHED-L))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()                             (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
@@ -167,91 +169,91 @@
     ;;<=========================================================================>
     ;;{3}  CST
     ;;{3.1}  constants
-    (defconst BAR                   (CT_Bar))
-    (defconst IPFS                  Bloodshed.IPFS)
+    (defconst BAR                                       (CT_Bar))
+    (defconst IPFS                                      Bloodshed.IPFS)
     ;;
-    (defconst LEGENDARY             Bloodshed.LEGENDARY)    ;;Legendary BS Score
-    (defconst EPIC                  Bloodshed.EPIC)         ;;Epic BS Score
-    (defconst RARE                  Bloodshed.RARE)         ;;Rare BS Score
-    (defconst COMMON                Bloodshed.COMMON)       ;;Common BS Score
+    (defconst LEGENDARY                                 Bloodshed.LEGENDARY)    ;;Legendary BS Score
+    (defconst EPIC                                      Bloodshed.EPIC)         ;;Epic BS Score
+    (defconst RARE                                      Bloodshed.RARE)         ;;Rare BS Score
+    (defconst COMMON                                    Bloodshed.COMMON)       ;;Common BS Score
     ;;
-    (defconst LEGENDARY-S           Bloodshed.LEGENDARY-S)  ;;Legendary Supply
-    (defconst EPIC-S                Bloodshed.EPIC-S)       ;;Epic Supply
-    (defconst RARE-S                Bloodshed.RARE-S)       ;:Rare Supply
-    (defconst COMMON-S              Bloodshed.COMMON-S)     ;;Common Supply
+    (defconst LEGENDARY-S                               Bloodshed.LEGENDARY-S)  ;;Legendary Supply
+    (defconst EPIC-S                                    Bloodshed.EPIC-S)       ;;Epic Supply
+    (defconst RARE-S                                    Bloodshed.RARE-S)       ;:Rare Supply
+    (defconst COMMON-S                                  Bloodshed.COMMON-S)     ;;Common Supply
     ;;
-    (defconst R                     Bloodshed.R)            ;;Native Bloodshed Royalty
-    (defconst IR-L                  Bloodshed.IR-L)         ;;Legendary Ignis Royalty
-    (defconst IR-E                  Bloodshed.IR-E)         ;;Epic Ignis Royalty
-    (defconst IR-R                  Bloodshed.IR-R)         ;;Rare Ignis Royalty
-    (defconst IR-C                  Bloodshed.IR-C)         ;;Common Ignis Royalty
+    (defconst R                                         Bloodshed.R)            ;;Native Bloodshed Royalty
+    (defconst IR-L                                      Bloodshed.IR-L)         ;;Legendary Ignis Royalty
+    (defconst IR-E                                      Bloodshed.IR-E)         ;;Epic Ignis Royalty
+    (defconst IR-R                                      Bloodshed.IR-R)         ;;Rare Ignis Royalty
+    (defconst IR-C                                      Bloodshed.IR-C)         ;;Common Ignis Royalty
     ;;
-    (defconst BS-PREC               Bloodshed.BS-PREC)      ;;Score Precision
+    (defconst BS-PREC                                   Bloodshed.BS-PREC)      ;;Score Precision
     ;;
-    (defconst NAME                  Bloodshed.NAME)         ;;Collection Name
-    (defconst DS                    Bloodshed.DS)           ;;Colelction Description
+    (defconst NAME                                      Bloodshed.NAME)         ;;Collection Name
+    (defconst DS                                        Bloodshed.DS)           ;;Colelction Description
     ;;
     ;;Rarity
-    (defconst R1                    Bloodshed.R1)
-    (defconst R2                    Bloodshed.R2)
-    (defconst R3                    Bloodshed.R3)
-    (defconst R4                    Bloodshed.R4)
+    (defconst R1                                        Bloodshed.R1)
+    (defconst R2                                        Bloodshed.R2)
+    (defconst R3                                        Bloodshed.R3)
+    (defconst R4                                        Bloodshed.R4)
     ;;Dacian
-    (defconst D1                    Bloodshed.D1)
-    (defconst D2                    Bloodshed.D2)
-    (defconst D3                    Bloodshed.D3)
-    (defconst D4                    Bloodshed.D4)
-    (defconst D5                    Bloodshed.D5)
-    (defconst D6                    Bloodshed.D6)
-    (defconst D7                    Bloodshed.D7)
-    (defconst D8                    Bloodshed.D8)
+    (defconst D1                                        Bloodshed.D1)
+    (defconst D2                                        Bloodshed.D2)
+    (defconst D3                                        Bloodshed.D3)
+    (defconst D4                                        Bloodshed.D4)
+    (defconst D5                                        Bloodshed.D5)
+    (defconst D6                                        Bloodshed.D6)
+    (defconst D7                                        Bloodshed.D7)
+    (defconst D8                                        Bloodshed.D8)
     ;;Potency
-    (defconst P1                    Bloodshed.P1)
-    (defconst P2                    Bloodshed.P2)
-    (defconst P3                    Bloodshed.P3)
+    (defconst P1                                        Bloodshed.P1)
+    (defconst P2                                        Bloodshed.P2)
+    (defconst P3                                        Bloodshed.P3)
     ;;Bloodshed
-    (defconst B0                    Bloodshed.B0)
-    (defconst B1                    Bloodshed.B1)
-    (defconst B2                    Bloodshed.B2)
-    (defconst B3                    Bloodshed.B3)
-    (defconst B4                    Bloodshed.B4)
-    (defconst B5                    Bloodshed.B5)
+    (defconst B0                                        Bloodshed.B0)
+    (defconst B1                                        Bloodshed.B1)
+    (defconst B2                                        Bloodshed.B2)
+    (defconst B3                                        Bloodshed.B3)
+    (defconst B4                                        Bloodshed.B4)
+    (defconst B5                                        Bloodshed.B5)
     ;;Backgrounds
-    (defconst CC1                   Bloodshed.CC1)
-    (defconst CC2                   Bloodshed.CC2)
-    (defconst CC3                   Bloodshed.CC3)
-    (defconst CC4                   Bloodshed.CC4)
-    (defconst CC5                   Bloodshed.CC5)
-    (defconst CC6                   Bloodshed.CC6)
-    (defconst RR1                   Bloodshed.RR1)
-    (defconst RR2                   Bloodshed.RR2)
-    (defconst RR3                   Bloodshed.RR3)
-    (defconst EP1                   Bloodshed.EP1)
-    (defconst EP2                   Bloodshed.EP2)
-    (defconst LG1                   Bloodshed.LG1)
-    (defconst LG2                   Bloodshed.LG2)
-    (defconst LG3                   Bloodshed.LG3)
-    (defconst LG4                   Bloodshed.LG4)
-    (defconst LG5                   Bloodshed.LG5)
-    (defconst LG6                   Bloodshed.LG6)
-    (defconst LG7                   Bloodshed.LG7)
-    (defconst LG8                   Bloodshed.LG8)
+    (defconst CC1                                       Bloodshed.CC1)
+    (defconst CC2                                       Bloodshed.CC2)
+    (defconst CC3                                       Bloodshed.CC3)
+    (defconst CC4                                       Bloodshed.CC4)
+    (defconst CC5                                       Bloodshed.CC5)
+    (defconst CC6                                       Bloodshed.CC6)
+    (defconst RR1                                       Bloodshed.RR1)
+    (defconst RR2                                       Bloodshed.RR2)
+    (defconst RR3                                       Bloodshed.RR3)
+    (defconst EP1                                       Bloodshed.EP1)
+    (defconst EP2                                       Bloodshed.EP2)
+    (defconst LG1                                       Bloodshed.LG1)
+    (defconst LG2                                       Bloodshed.LG2)
+    (defconst LG3                                       Bloodshed.LG3)
+    (defconst LG4                                       Bloodshed.LG4)
+    (defconst LG5                                       Bloodshed.LG5)
+    (defconst LG6                                       Bloodshed.LG6)
+    (defconst LG7                                       Bloodshed.LG7)
+    (defconst LG8                                       Bloodshed.LG8)
     ;;MainProtection
-    (defconst MP1                   Bloodshed.MP1)
-    (defconst MP2                   Bloodshed.MP2)
+    (defconst MP1                                       Bloodshed.MP1)
+    (defconst MP2                                       Bloodshed.MP2)
     ;;SecondaryProtection
-    (defconst SP1                   Bloodshed.SP1)
-    (defconst SP2                   Bloodshed.SP2)
+    (defconst SP1                                       Bloodshed.SP1)
+    (defconst SP2                                       Bloodshed.SP2)
     ;;MainHand
-    (defconst MH1                   Bloodshed.MH1)
-    (defconst MH2                   Bloodshed.MH2)
-    (defconst MH3                   Bloodshed.MH2)
+    (defconst MH1                                       Bloodshed.MH1)
+    (defconst MH2                                       Bloodshed.MH2)
+    (defconst MH3                                       Bloodshed.MH2)
     ;;OffHand
-    (defconst OH1                   Bloodshed.OH1)
-    (defconst OH2                   Bloodshed.OH2)
-    (defconst OH3                   Bloodshed.OH3)
-    (defconst OH4                   Bloodshed.OH4)
-    (defconst OH5                   Bloodshed.OH5)
+    (defconst OH1                                       Bloodshed.OH1)
+    (defconst OH2                                       Bloodshed.OH2)
+    (defconst OH3                                       Bloodshed.OH3)
+    (defconst OH4                                       Bloodshed.OH4)
+    (defconst OH5                                       Bloodshed.OH5)
     ;;{3.2}  schemas
     ;;{3.3}  tables
 
@@ -271,7 +273,7 @@
     ;;{5.1}  Construct [CT/UDC]
     ;;
     ;;
-    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_Bar ()                                    (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
     ;;
     ;;
     (defun UDC_MetaData:object{Bloodshed.MD}

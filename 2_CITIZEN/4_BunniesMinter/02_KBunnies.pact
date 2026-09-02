@@ -3,6 +3,7 @@
 
 
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
 
@@ -11,15 +12,15 @@
     ;;{G1}  constants
     ;;
     ;;
-    (defconst GOV|MD_KBN                    (keyset-ref-guard (GOV|Demiurgoi)))
+    (defconst GOV|MD_KBN                                (keyset-ref-guard (GOV|Demiurgoi)))
     ;;{G2}  schemas
     ;;{G3}  tables
     ;;{G4}  capabilities
     ;;
-    (defcap GOV ()                          (compose-capability (GOV|DPL_NFT_ADMIN)))
-    (defcap GOV|DPL_NFT_ADMIN ()            (enforce-guard GOV|MD_KBN))
+    (defcap GOV ()                                      (compose-capability (GOV|DPL_NFT_ADMIN)))
+    (defcap GOV|DPL_NFT_ADMIN ()                        (enforce-guard GOV|MD_KBN))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()                             (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
@@ -32,11 +33,11 @@
     ;;<=========================================================================>
     ;;{3}  CST
     ;;{3.1}  constants
-    (defconst B                             (CT_Bar))
+    (defconst B                                         (CT_Bar))
     ;;
-    (defconst R     100.0)  ;;Native Bunny Royalty
-    (defconst IR-L  1600.0) ;;Legendary Ignis Royalty
-    (defconst IR-C  20.0)   ;;Common Ignis Royalty
+    (defconst R                                         100.0)  ;;Native Bunny Royalty
+    (defconst IR-L                                      1600.0) ;;Legendary Ignis Royalty
+    (defconst IR-C                                      20.0)   ;;Common Ignis Royalty
     ;;
     (defconst T true)
     (defconst F false)
@@ -44,8 +45,8 @@
     (defconst D-L "Golden Bunnies, the most precious Bunnies in the whole of Existance, makes the dreams come true for their Owners")
     (defconst D-C "Born on MultiversX, fled to Ouronet, ready for Unity, primed for Cryptoplasm, the Bunny Collection is here to make your dreams come true.")
     ;;
-    (defconst TYPE                          (let ((ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)) (ref-DPDC-UDC::UDC_URI|Type T F F F F F F)))
-    (defconst ZD                            (let ((ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    (defconst TYPE                                      (let ((ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)) (ref-DPDC-UDC::UDC_URI|Type T F F F F F F)))
+    (defconst ZD                                        (let ((ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
     ;;{3.2}  schemas
     ;;
     ;;
@@ -74,8 +75,8 @@
     ;;<=========================================================================>
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
-    (defun CT_Namespace ()                    (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_NS_USE)))
-    (defun CT_Bar ()                        (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_Namespace ()                              (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_NS_USE)))
+    (defun CT_Bar ()                                    (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
     ;;
     (defun UDC_MetaData:object{BunnyMetaData} (a:[string])
         {"Rarity"       : (at 0 a)

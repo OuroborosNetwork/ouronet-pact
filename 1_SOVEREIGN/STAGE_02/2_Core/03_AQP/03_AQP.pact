@@ -2,11 +2,12 @@
 (interface AcquisitionPoolsV2
 
 
+
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;{G2}  schemas
-    ;;{G3}  tables
+    ;;{G3}  tables  ⟨cannot exist in an interface⟩
     ;;{G4}  capabilities
     ;;{G5}  functions
     (defun GOV|Demiurgoi ())
@@ -15,7 +16,7 @@
     ;;{2}  POLICY
     ;;{P1}  constants
     ;;{P2}  schemas
-    ;;{P3}  tables
+    ;;{P3}  tables  ⟨cannot exist in an interface⟩
     ;;{P4}  capabilities
     ;;{P5}  functions
 
@@ -23,7 +24,7 @@
     ;;{3}  CST
     ;;{3.1}  constants
     ;;{3.2}  schemas
-    ;;{3.3}  tables
+    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -259,6 +260,7 @@
 
 
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -270,19 +272,19 @@
     ;;{G1}  constants
     ;(implements DemiourgosPactDigitalCollectibles-UtilityPrototype)
     ;;
-    (defconst GOV|MD_AQP                    (keyset-ref-guard (GOV|Demiurgoi)))
+    (defconst GOV|MD_AQP                                (keyset-ref-guard (GOV|Demiurgoi)))
     ;;{G2}  schemas
     ;;{G3}  tables
     ;;{G4}  capabilities
-    (defcap GOV ()                          (compose-capability (GOV|AQP_ADMIN)))
-    (defcap GOV|AQP_ADMIN ()                (enforce-guard GOV|MD_AQP))
+    (defcap GOV ()                                      (compose-capability (GOV|AQP_ADMIN)))
+    (defcap GOV|AQP_ADMIN ()                            (enforce-guard GOV|MD_AQP))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()                             (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
     ;;{P1}  constants
-    (defconst P|I                   (P|Info))
+    (defconst P|I                                       (P|Info))
     ;;{P2}  schemas
     ;;{P3}  tables
     ;;
@@ -301,7 +303,7 @@
         (compose-capability (SECURE))
     )
     ;;{P5}  functions
-    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()                                    (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -364,15 +366,15 @@
     ;;<=========================================================================>
     ;;{3}  CST
     ;;{3.1}  constants
-    (defconst BAR                                                       (CT_Bar))
-    (defconst GAS|ISSUE-POOL                                            1000.0)
-    (defconst GAS|ADD-SCORE                                             500.0)
-    (defconst GAS|REVOKE-SCORE                                          500.0)
-    (defconst GAS|SET-POOL-STAKE                                        500.0)
-    (defconst GAS|SYNC-TF-ANCHORS                                       50.0)
-    (defconst GAS|SYNC-COLLECTABLE-ANCHORS                              50.0)
-    (defconst EOC                                                       (CT_EmptyCumulator))
-    (defconst AQP|SC_NAME                                               (CT_AqpScName))
+    (defconst BAR                                       (CT_Bar))
+    (defconst GAS|ISSUE-POOL                            1000.0)
+    (defconst GAS|ADD-SCORE                             500.0)
+    (defconst GAS|REVOKE-SCORE                          500.0)
+    (defconst GAS|SET-POOL-STAKE                        500.0)
+    (defconst GAS|SYNC-TF-ANCHORS                       50.0)
+    (defconst GAS|SYNC-COLLECTABLE-ANCHORS              50.0)
+    (defconst EOC                                       (CT_EmptyCumulator))
+    (defconst AQP|SC_NAME                               (CT_AqpScName))
     ;;{3.2}  schemas
     ;;
     ;; [1] AQP|T|Pool

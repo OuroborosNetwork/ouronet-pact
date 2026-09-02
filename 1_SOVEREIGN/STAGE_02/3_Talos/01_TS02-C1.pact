@@ -10,7 +10,7 @@
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;{G2}  schemas
-    ;;{G3}  tables
+    ;;{G3}  tables  ⟨cannot exist in an interface⟩
     ;;{G4}  capabilities
     ;;{G5}  functions
 
@@ -18,7 +18,7 @@
     ;;{2}  POLICY
     ;;{P1}  constants
     ;;{P2}  schemas
-    ;;{P3}  tables
+    ;;{P3}  tables  ⟨cannot exist in an interface⟩
     ;;{P4}  capabilities
     ;;{P5}  functions
 
@@ -26,7 +26,7 @@
     ;;{3}  CST
     ;;{3.1}  constants
     ;;{3.2}  schemas
-    ;;{3.3}  tables
+    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -146,16 +146,16 @@
     (defun C_DPSF|RenameSet (patron:string id:string set-class:integer new-name:string))
     ;; DPSF|C_UpdateSetMultiplier removed — DPDC Audit #15H: score-multiplier is immutable after Define.
     ;;
-    (defun C_DPSF|UpdateSetNonce                (patron:string id:string account:string set-class:integer nos:bool new-nonce-data:object{DpdcUdcV2.DPDC|NonceData}))
-    (defun C_DPSF|UpdateSetNonces               (patron:string id:string account:string set-classes:[integer] nos:bool new-nonces-data:[object{DpdcUdcV2.DPDC|NonceData}]))
-    (defun C_DPSF|UpdateSetNonceRoyalty         (patron:string id:string account:string set-class:integer nos:bool royalty-value:decimal))
-    (defun C_DPSF|UpdateSetNonceIgnisRoyalty    (patron:string id:string account:string set-class:integer nos:bool royalty-value:decimal))
-    (defun C_DPSF|UpdateSetNonceName            (patron:string id:string account:string set-class:integer nos:bool name:string))
-    (defun C_DPSF|UpdateSetNonceDescription     (patron:string id:string account:string set-class:integer nos:bool description:string))
-    (defun C_DPSF|UpdateSetNonceScore           (patron:string id:string account:string set-class:integer nos:bool score:decimal))
-    (defun C_DPSF|RemoveSetNonceScore           (patron:string id:string account:string set-class:integer nos:bool))
-    (defun C_DPSF|UpdateSetNonceMetaData        (patron:string id:string account:string set-class:integer nos:bool meta-data:object))
-    (defun C_DPSF|UpdateSetNonceURI             (patron:string id:string account:string set-class:integer nos:bool ay:object{DpdcUdcV2.URI|Type} u1:object{DpdcUdcV2.URI|Data} u2:object{DpdcUdcV2.URI|Data} u3:object{DpdcUdcV2.URI|Data}))
+    (defun C_DPSF|UpdateSetNonce                        (patron:string id:string account:string set-class:integer nos:bool new-nonce-data:object{DpdcUdcV2.DPDC|NonceData}))
+    (defun C_DPSF|UpdateSetNonces                       (patron:string id:string account:string set-classes:[integer] nos:bool new-nonces-data:[object{DpdcUdcV2.DPDC|NonceData}]))
+    (defun C_DPSF|UpdateSetNonceRoyalty                 (patron:string id:string account:string set-class:integer nos:bool royalty-value:decimal))
+    (defun C_DPSF|UpdateSetNonceIgnisRoyalty            (patron:string id:string account:string set-class:integer nos:bool royalty-value:decimal))
+    (defun C_DPSF|UpdateSetNonceName                    (patron:string id:string account:string set-class:integer nos:bool name:string))
+    (defun C_DPSF|UpdateSetNonceDescription             (patron:string id:string account:string set-class:integer nos:bool description:string))
+    (defun C_DPSF|UpdateSetNonceScore                   (patron:string id:string account:string set-class:integer nos:bool score:decimal))
+    (defun C_DPSF|RemoveSetNonceScore                   (patron:string id:string account:string set-class:integer nos:bool))
+    (defun C_DPSF|UpdateSetNonceMetaData                (patron:string id:string account:string set-class:integer nos:bool meta-data:object))
+    (defun C_DPSF|UpdateSetNonceURI                     (patron:string id:string account:string set-class:integer nos:bool ay:object{DpdcUdcV2.URI|Type} u1:object{DpdcUdcV2.URI|Data} u2:object{DpdcUdcV2.URI|Data} u3:object{DpdcUdcV2.URI|Data}))
     ;;
     ;;  [9] DPDC-F
     ;;
@@ -166,16 +166,16 @@
     ;;
     ;;  [10] DPDC-N
     ;;
-    (defun C_DPSF|UpdateNonce               (patron:string id:string account:string nonce:integer nos:bool new-nonce-data:object{DpdcUdcV2.DPDC|NonceData}))
-    (defun C_DPSF|UpdateNonces              (patron:string id:string account:string nonces:[integer] nos:bool new-nonces-data:[object{DpdcUdcV2.DPDC|NonceData}]))
-    (defun C_DPSF|UpdateNonceRoyalty        (patron:string id:string account:string nonce:integer nos:bool royalty-value:decimal))
-    (defun C_DPSF|UpdateNonceIgnisRoyalty   (patron:string id:string account:string nonce:integer nos:bool royalty-value:decimal))
-    (defun C_DPSF|UpdateNonceName           (patron:string id:string account:string nonce:integer nos:bool name:string))
-    (defun C_DPSF|UpdateNonceDescription    (patron:string id:string account:string nonce:integer nos:bool description:string))
-    (defun C_DPSF|UpdateNonceScore          (patron:string id:string account:string nonce:integer nos:bool score:decimal))
-    (defun C_DPSF|RemoveNonceScore          (patron:string id:string account:string nonce:integer nos:bool))
-    (defun C_DPSF|UpdateNonceMetaData       (patron:string id:string account:string nonce:integer nos:bool meta-data:object))
-    (defun C_DPSF|UpdateNonceURI            (patron:string id:string account:string nonce:integer nos:bool ay:object{DpdcUdcV2.URI|Type} u1:object{DpdcUdcV2.URI|Data} u2:object{DpdcUdcV2.URI|Data} u3:object{DpdcUdcV2.URI|Data}))
+    (defun C_DPSF|UpdateNonce                           (patron:string id:string account:string nonce:integer nos:bool new-nonce-data:object{DpdcUdcV2.DPDC|NonceData}))
+    (defun C_DPSF|UpdateNonces                          (patron:string id:string account:string nonces:[integer] nos:bool new-nonces-data:[object{DpdcUdcV2.DPDC|NonceData}]))
+    (defun C_DPSF|UpdateNonceRoyalty                    (patron:string id:string account:string nonce:integer nos:bool royalty-value:decimal))
+    (defun C_DPSF|UpdateNonceIgnisRoyalty               (patron:string id:string account:string nonce:integer nos:bool royalty-value:decimal))
+    (defun C_DPSF|UpdateNonceName                       (patron:string id:string account:string nonce:integer nos:bool name:string))
+    (defun C_DPSF|UpdateNonceDescription                (patron:string id:string account:string nonce:integer nos:bool description:string))
+    (defun C_DPSF|UpdateNonceScore                      (patron:string id:string account:string nonce:integer nos:bool score:decimal))
+    (defun C_DPSF|RemoveNonceScore                      (patron:string id:string account:string nonce:integer nos:bool))
+    (defun C_DPSF|UpdateNonceMetaData                   (patron:string id:string account:string nonce:integer nos:bool meta-data:object))
+    (defun C_DPSF|UpdateNonceURI                        (patron:string id:string account:string nonce:integer nos:bool ay:object{DpdcUdcV2.URI|Type} u1:object{DpdcUdcV2.URI|Data} u2:object{DpdcUdcV2.URI|Data} u3:object{DpdcUdcV2.URI|Data}))
     ;;
     ;;
     ;;  [10] EQUITY
@@ -209,19 +209,19 @@
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;
-    (defconst GOV|MD_TS02-C1        (keyset-ref-guard (GOV|Demiurgoi)))
+    (defconst GOV|MD_TS02-C1                            (keyset-ref-guard (GOV|Demiurgoi)))
     ;;{G2}  schemas
     ;;{G3}  tables
     ;;{G4}  capabilities
-    (defcap GOV ()                  (compose-capability (GOV|TS02-C1_ADMIN)))
-    (defcap GOV|TS02-C1_ADMIN ()    (enforce-guard GOV|MD_TS02-C1))
+    (defcap GOV ()                                      (compose-capability (GOV|TS02-C1_ADMIN)))
+    (defcap GOV|TS02-C1_ADMIN ()                        (enforce-guard GOV|MD_TS02-C1))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()         (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()                             (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
     ;;{P1}  constants
-    (defconst P|I                   (P|Info))
+    (defconst P|I                                       (P|Info))
     ;;{P2}  schemas
     ;;{P3}  tables
     ;;
@@ -243,7 +243,7 @@
         true
     )
     ;;{P5}  functions
-    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()                                    (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )

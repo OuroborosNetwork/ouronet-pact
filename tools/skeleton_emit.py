@@ -16,6 +16,27 @@ import skeleton, cap_band
 RULE = "    ;;<" + "="*73 + ">"
 GAS_MEMBERS = {"GAS_PAYER", "create-gas-payer-guard", "CT_VirtualGasData"}
 
+# ── Observational distancing (canon §7): a single-line form's second part opens
+#    at this 0-based column, uniformly across every module. Heads longer than
+#    ALIGN_COL-1 fall back to a 1-space gap. Whitespace-only → invariant-safe.
+ALIGN_COL = 56
+_ALIGN_RE = re.compile(r'^(    \((?:defun|defconst|defcap|defschema)\b.*?\S)( {2,})(\S.*)$')
+
+# Tables cannot be declared in an interface; the marker is kept for structural
+# parallelism but annotated so the reader knows it can never hold a form.
+IFACE_NO_TABLE = {"G3", "3.3", "P3"}
+IFACE_TABLE_NOTE = "⟨cannot exist in an interface⟩"
+
+def _align(line):
+    m = _ALIGN_RE.match(line)
+    if not m: return line
+    d, ins = _pd(line, False)
+    if d != 0 or ins: return line               # only complete one-line forms
+    head, body = m.group(1), m.group(3)
+    pad = ALIGN_COL - len(head)
+    if pad < 1: pad = 1
+    return head + (' ' * pad) + body
+
 SUBS = {
  "1":("GOVERNANCE",[("G1","constants"),("G2","schemas"),("G3","tables"),("G4","capabilities"),("G5","functions")]),
  "2":("POLICY",[("P1","constants"),("P2","schemas"),("P3","tables"),("P4","capabilities"),("P5","functions")]),
@@ -107,10 +128,11 @@ def emit_module(block):
             emit_forms(buckets.get(blk,[]))
         else:
             for tag,label in SUBS[blk][1]:
-                out.append(f"    ;;{{{tag}}}  {label}")
+                note = f"  {IFACE_TABLE_NOTE}" if (is_iface and tag in IFACE_NO_TABLE) else ""
+                out.append(f"    ;;{{{tag}}}  {label}{note}")
                 emit_forms(buckets.get(tag,[]))
     out.append(""); out += trailing
-    return out
+    return [_align(l) for l in out]
 
 def main(path):
     lines=open(path,encoding='utf-8').read().split('\n')

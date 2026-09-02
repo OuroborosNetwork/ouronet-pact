@@ -3,6 +3,7 @@
 
 
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
 
@@ -11,15 +12,15 @@
     ;;{G1}  constants
     ;;
     ;;
-    (defconst GOV|MD_NOSFERATU              (keyset-ref-guard (GOV|Demiurgoi)))
+    (defconst GOV|MD_NOSFERATU                          (keyset-ref-guard (GOV|Demiurgoi)))
     ;;{G2}  schemas
     ;;{G3}  tables
     ;;{G4}  capabilities
     ;;
-    (defcap GOV ()                          (compose-capability (GOV|DPL_NFT_ADMIN)))
-    (defcap GOV|DPL_NFT_ADMIN ()            (enforce-guard GOV|MD_NOSFERATU))
+    (defcap GOV ()                                      (compose-capability (GOV|DPL_NFT_ADMIN)))
+    (defcap GOV|DPL_NFT_ADMIN ()                        (enforce-guard GOV|MD_NOSFERATU))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()                             (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
@@ -32,14 +33,14 @@
     ;;<=========================================================================>
     ;;{3}  CST
     ;;{3.1}  constants
-    (defconst B                             (CT_Bar))
+    (defconst B                                         (CT_Bar))
     ;;
     (defconst IPFS "Ouronet-IPFS Link")
-    (defconst R     100.0)  ;;Native Nosferatu Royalty
-    (defconst IR-L  160.0)  ;;Legendary Ignis Royalty
-    (defconst IR-E  80.0)   ;;Epic Ignis Royalty
-    (defconst IR-R  40.0)   ;;Rare Ignis Royalty
-    (defconst IR-C  20.0)   ;;Common Ignis Royalty
+    (defconst R                                         100.0)  ;;Native Nosferatu Royalty
+    (defconst IR-L                                      160.0)  ;;Legendary Ignis Royalty
+    (defconst IR-E                                      80.0)   ;;Epic Ignis Royalty
+    (defconst IR-R                                      40.0)   ;;Rare Ignis Royalty
+    (defconst IR-C                                      20.0)   ;;Common Ignis Royalty
     ;;
     (defconst T true)
     (defconst F false)
@@ -49,8 +50,8 @@
     (defconst D-R "Rare Nosferat Earning 0.1 Percent of Nosferatu Movie Profits, and 0.0625 Promile of all Future Movie Profits")
     (defconst D-C "Common Nosferat Earning 0.5 Promile of Nosferatu Movie Profits, and 0.03125 Promile of all Future Movie Profits")
     ;;
-    (defconst TYPE                          (let ((ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)) (ref-DPDC-UDC::UDC_URI|Type T F F F F F F)))
-    (defconst ZD                            (let ((ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    (defconst TYPE                                      (let ((ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)) (ref-DPDC-UDC::UDC_URI|Type T F F F F F F)))
+    (defconst ZD                                        (let ((ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
     ;;{3.2}  schemas
     ;;
     ;;
@@ -85,8 +86,8 @@
     ;;<=========================================================================>
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
-    (defun CT_Namespace ()                    (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_NS_USE)))
-    (defun CT_Bar ()                        (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_Namespace ()                              (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_NS_USE)))
+    (defun CT_Bar ()                                    (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
     ;;
     (defun UDC_MetaData:object{NosferatuMetaData} (a:[string])
         {"Backgrounds"      : (at 0 a)

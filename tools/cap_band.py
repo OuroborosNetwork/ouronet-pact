@@ -20,7 +20,11 @@ ownership set) are returned classified C2 with a `review` flag so a human can co
 """
 import re
 
-MODFN = re.compile(r'\((CAP_[A-Za-z0-9_|>-]*|UEV_[A-Za-z0-9_|>-]*|UR[CHUi]*_[A-Za-z0-9_|>-]*|UC[kxv]*_[A-Za-z0-9_|>-]*|UDC[x]*_[A-Za-z0-9_|>-]*|WI_[A-Za-z0-9_|>-]*|WU[0-9]*_[A-Za-z0-9_|>-]*|WW_[A-Za-z0-9_|>-]*|XI_[A-Za-z0-9_|>-]*|XE_[A-Za-z0-9_|>-]*|XB_[A-Za-z0-9_|>-]*)')
+# NOTE: allow an optional module-ref qualifier before the token, e.g.
+#   (ref-DALOS::CAP_EnforceAccountOwnership ah)  ->  CAP_EnforceAccountOwnership
+# Without this, cross-module ownership/validation calls are invisible and a cap
+# that composes only bronze + does modref ownership work is wrongly seen as C1.
+MODFN = re.compile(r'\((?:[A-Za-z0-9_-]+::)?(CAP_[A-Za-z0-9_|>-]*|UEV_[A-Za-z0-9_|>-]*|UR[CHUi]*_[A-Za-z0-9_|>-]*|UC[kxv]*_[A-Za-z0-9_|>-]*|UDC[x]*_[A-Za-z0-9_|>-]*|WI_[A-Za-z0-9_|>-]*|WU[0-9]*_[A-Za-z0-9_|>-]*|WW_[A-Za-z0-9_|>-]*|XI_[A-Za-z0-9_|>-]*|XE_[A-Za-z0-9_|>-]*|XB_[A-Za-z0-9_|>-]*)')
 COMPOSE = re.compile(r'\(compose-capability\s+\(([A-Za-z0-9_|>-]+)')
 OWNERSHIP_OK = lambda t: t.startswith('CAP_') or t == 'UEV_EnforceAccountType'
 

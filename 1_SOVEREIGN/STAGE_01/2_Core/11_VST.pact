@@ -10,7 +10,7 @@
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;{G2}  schemas
-    ;;{G3}  tables
+    ;;{G3}  tables  ⟨cannot exist in an interface⟩
     ;;{G4}  capabilities
     ;;{G5}  functions
 
@@ -18,7 +18,7 @@
     ;;{2}  POLICY
     ;;{P1}  constants
     ;;{P2}  schemas
-    ;;{P3}  tables
+    ;;{P3}  tables  ⟨cannot exist in an interface⟩
     ;;{P4}  capabilities
     ;;{P5}  functions
 
@@ -37,7 +37,7 @@
         mint-time:time
         release-date:time
     )
-    ;;{3.3}  tables
+    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -141,6 +141,7 @@
 
 
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -151,12 +152,12 @@
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;
-    (defconst GOV|MD_VST            (keyset-ref-guard (GOV|Demiurgoi)))
-    (defconst GOV|SC_VST            (keyset-ref-guard VST|SC_KEY))
+    (defconst GOV|MD_VST                                (keyset-ref-guard (GOV|Demiurgoi)))
+    (defconst GOV|SC_VST                                (keyset-ref-guard VST|SC_KEY))
     ;;{G2}  schemas
     ;;{G3}  tables
     ;;{G4}  capabilities
-    (defcap GOV ()                  (compose-capability (GOV|VESTING_ADMIN)))
+    (defcap GOV ()                                      (compose-capability (GOV|VESTING_ADMIN)))
     (defcap GOV|VESTING_ADMIN ()
         (enforce-one
             "VESTING Admin not satisfed"
@@ -167,14 +168,14 @@
         )
     )
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()         (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
-    (defun GOV|VestingKey ()        (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|VestingKey)))
-    (defun GOV|VST|SC_NAME ()       (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|VST|SC_NAME)))
+    (defun GOV|Demiurgoi ()                             (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|VestingKey ()                            (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|VestingKey)))
+    (defun GOV|VST|SC_NAME ()                           (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|VST|SC_NAME)))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
     ;;{P1}  constants
-    (defconst P|I                   (P|Info))
+    (defconst P|I                                       (P|Info))
     ;;{P2}  schemas
     ;;{P3}  tables
     ;;
@@ -194,7 +195,7 @@
         (compose-capability (P|VST|REMOTE-GOV))
     )
     ;;{P5}  functions
-    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()                                    (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -263,11 +264,11 @@
     ;;{3}  CST
     ;;{3.1}  constants
     ;;
-    (defconst VST|SC_KEY            (GOV|VestingKey))
-    (defconst VST|SC_NAME           (GOV|VST|SC_NAME))
-    (defconst BAR                   (CT_Bar))
-    (defconst EOC                   (CT_EmptyCumulator))
-    (defconst ATS|SC_NAME           (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|ATS|SC_NAME)))
+    (defconst VST|SC_KEY                                (GOV|VestingKey))
+    (defconst VST|SC_NAME                               (GOV|VST|SC_NAME))
+    (defconst BAR                                       (CT_Bar))
+    (defconst EOC                                       (CT_EmptyCumulator))
+    (defconst ATS|SC_NAME                               (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|ATS|SC_NAME)))
     ;;{3.2}  schemas
     ;;{3.3}  tables
 
@@ -625,8 +626,8 @@
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
     ;;
-    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
-    (defun CT_EmptyCumulator ()     (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_EmptyOutputCumulatorV2)))
+    (defun CT_Bar ()                                    (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_EmptyCumulator ()                         (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_EmptyOutputCumulatorV2)))
     ;;
     (defun UDC_ComposeVestingMetaData:[object{VestingV2.VST|MetaDataSchema}]
         (dptf:string amount:decimal offset:integer duration:integer milestones:integer)

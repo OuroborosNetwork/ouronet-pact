@@ -8,11 +8,12 @@
 (interface CodexV2
 
 
+
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;{G2}  schemas
-    ;;{G3}  tables
+    ;;{G3}  tables  ⟨cannot exist in an interface⟩
     ;;{G4}  capabilities
     ;;{G5}  functions
     (defun GOV|CodexKey ())
@@ -21,7 +22,7 @@
     ;;{2}  POLICY
     ;;{P1}  constants
     ;;{P2}  schemas
-    ;;{P3}  tables
+    ;;{P3}  tables  ⟨cannot exist in an interface⟩
     ;;{P4}  capabilities
     ;;{P5}  functions
 
@@ -29,7 +30,7 @@
     ;;{3}  CST
     ;;{3.1}  constants
     ;;{3.2}  schemas
-    ;;{3.3}  tables
+    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -134,20 +135,20 @@
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;
-    (defconst GOV|MD_CODEX                  (keyset-ref-guard (GOV|Demiurgoi)))
+    (defconst GOV|MD_CODEX                              (keyset-ref-guard (GOV|Demiurgoi)))
     ;;{G2}  schemas
     ;;{G3}  tables
     ;;{G4}  capabilities
-    (defcap GOV ()                          (compose-capability (GOV|CODEX_ADMIN)))
-    (defcap GOV|CODEX_ADMIN ()              (enforce-guard GOV|MD_CODEX))
+    (defcap GOV ()                                      (compose-capability (GOV|CODEX_ADMIN)))
+    (defcap GOV|CODEX_ADMIN ()                          (enforce-guard GOV|MD_CODEX))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
-    (defun GOV|CodexKey ()                  (+ (CT_Namespace) ".codex-keyset"))
+    (defun GOV|Demiurgoi ()                             (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|CodexKey ()                              (+ (CT_Namespace) ".codex-keyset"))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
     ;;{P1}  constants
-    (defconst P|I                           (P|Info))
+    (defconst P|I                                       (P|Info))
     ;;{P2}  schemas
     ;;{P3}  tables
     ;;
@@ -158,7 +159,7 @@
         true
     )
     ;;{P5}  functions
-    (defun P|Info ()                        (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()                                    (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -205,10 +206,10 @@
     ;;<=========================================================================>
     ;;{3}  CST
     ;;{3.1}  constants
-    (defconst BAR                             (CT_Bar))
-    (defconst CODEX|EPOCH:time                (time "1970-01-01T00:00:00Z"))
-    (defconst CODEX|APOLLO-HALF-LEN:integer   162)
-    (defconst CODEX|COMPOSITE-SEP:string      ":")
+    (defconst BAR                                       (CT_Bar))
+    (defconst CODEX|EPOCH:time                          (time "1970-01-01T00:00:00Z"))
+    (defconst CODEX|APOLLO-HALF-LEN:integer             162)
+    (defconst CODEX|COMPOSITE-SEP:string                ":")
     (defconst CODEX|APOLLO-COMPOSITE-LEN:integer
         (fold (+) 0 [CODEX|APOLLO-HALF-LEN 1 CODEX|APOLLO-HALF-LEN])
     )
@@ -267,19 +268,13 @@
         true
     )
     ;;{C2}  Simple
-    (defcap CODEX|ADMIN ()                  (enforce-guard (keyset-ref-guard (GOV|CodexKey))))
+    (defcap CODEX|ADMIN ()                              (enforce-guard (keyset-ref-guard (GOV|CodexKey))))
     (defcap CODEX|OWNER (codex-id:string)
         (let 
             (
                 (codex-guard:guard (UR_CIX|CodexGuard codex-id))
             )
             (enforce-guard codex-guard)
-        )
-    )
-    (defcap CODEX|STOICTAG-DALOS-OWNER (account-address:string)
-        @doc "Caller controls the Ouronet (DALOS) account — Standard or Smart, not Stoa coin.details."
-        (let ((ref-DALOS:module{OuronetDalosV2} DALOS))
-            (ref-DALOS::CAP_EnforceAccountOwnership account-address)
         )
     )
     ;;{C3}  Composed
@@ -411,12 +406,18 @@
         )
     )
     ;;{C4}  Ownership [gold]
+    (defcap CODEX|STOICTAG-DALOS-OWNER (account-address:string)
+        @doc "Caller controls the Ouronet (DALOS) account — Standard or Smart, not Stoa coin.details."
+        (let ((ref-DALOS:module{OuronetDalosV2} DALOS))
+            (ref-DALOS::CAP_EnforceAccountOwnership account-address)
+        )
+    )
 
     ;;<=========================================================================>
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
-    (defun CT_Namespace ()                    (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_NS_USE)))
-    (defun CT_Bar ()                          (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_Namespace ()                              (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_NS_USE)))
+    (defun CT_Bar ()                                    (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
     ;;
     (defun UDC_CIX|Identity:object{CODEX|S|Identity}
         ( codex-id-standard:string

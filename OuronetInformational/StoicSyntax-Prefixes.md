@@ -359,10 +359,15 @@ body. Precedence, top to bottom:
    body does nothing but `compose-capability` other **bronze** caps — composing only simple/`true` caps is still
    simple (resolved to a **fixpoint**). (A cap whose body *calls* a real function — e.g.
    `(CAP_EnforceAccountOwnership account)` — is **not** trivial.) **Bronze is strictly highest priority: a
-   simple/`true` cap stays bronze EVEN inside the `;;{C4}` or governance `;;{G2}` block — it does NOT go gold.**
-2. **Under `;;{C4}` OR a governance cap (`;;{G2}`) → GOLD** — *only if it is not bronze by rule 1.* The
-   ownership/governance/authority band; declared by the marker because it isn't inferable.
-3. **Anything else (a non-`true` cap that isn't a pure compose-of-bronze) → SILVER.**
+   simple/`true` cap stays bronze EVEN inside the `;;{C4}` or the GOVERNANCE region — it does NOT go gold.**
+2. **GOLD — *only if not bronze by rule 1* — when EITHER:** the cap is under `;;{C4}` (the region-4 authority
+   cap sub-block), **OR** it is a **`GOV`-named capability inside the GOVERNANCE region** (any `;;{Gx}` marker).
+   A non-trivial governance cap *is* authority, so a `GOV` / `GOV|…` cap in the governance block with real logic
+   (or that composes a non-trivial cap) is GOLD — declared by placement + the `GOV` prefix, not inferable from
+   the body alone.
+3. **Anything else → SILVER** — a non-`true` cap that isn't a pure compose-of-bronze and is neither under
+   `;;{C4}` nor a `GOV` cap in the governance region (e.g. a custom C2/C3 cap, or a **non-`GOV`** cap that
+   happens to sit in the governance block).
 
 So the **`;;{C1}` / `;;{C2}` / `;;{C3}` markers organise the file but do NOT drive the colour** — a C1 block holds
 true caps (→ bronze) but a non-true cap sitting there is silver; C2/C3 are silver by construction.
@@ -375,7 +380,21 @@ true caps (→ bronze) but a non-true cap sitting there is silver; C2/C3 are sil
 > (a `true`/simple cap under `;;{G2}`/`;;{C4}` stays bronze). The classifier now reads three signals: *does the body
 > reduce to `true`?* · *does it only compose bronze caps?* · *(only if neither) is it under `;;{C4}`/`;;{G2}`?*
 
+> **Amendment (2026-09-02b).** Governance-cap gold is **rule-based, not marker-number-based**: a **`GOV`-named**
+> cap **inside the GOVERNANCE region** (under any `;;{Gx}` marker) that is **not** bronze (not trivial-`true`,
+> not a pure compose-of-trivial) is **GOLD** — a non-trivial governance capability *is* authority. This fixes
+> governance caps like `GOV|DALOS_ADMIN` / `GOV|GAP` / `GOV|MIGRATE`, which were mislabelled **silver**. A
+> **non-`GOV`** cap in the block (or a custom cap outside `{C4}`) stays SILVER; trivial / compose-of-trivial
+> stays BRONZE. So the two gold triggers the classifier now reads are: **`;;{C4}`**, or **(`GOV`-name ∧ inside
+> the `;;{Gx}` GOVERNANCE region)**. (Supersedes the earlier "governance `;;{G2}` → gold" — gov caps are `;;{G4}`
+> now anyway, per §7.2, and gold is driven by the GOV-name + region rule, not the marker number.)
+
 ### 5.2.1 The GOVERNANCE region (`;;GOVERNANCE`, sub-blocks G1–G3)
+
+> **Superseded by §7.2 (G1..G5): `G1` constants · `G2` schemas · `G3` tables · `G4` capabilities · `G5`
+> functions.** Governance **capabilities** are now `;;{G4}` (not `{G2}`), and they are **gold** by the rule in
+> §5.2 (a `GOV`-named non-bronze cap in the GOVERNANCE region), not by the marker number. The table below is
+> the historical 3-sub-block layout — keep for reference; follow §7.2.
 
 The governance region at the top of a module has three marked sub-blocks:
 
@@ -574,6 +593,15 @@ separator: `<component>|<component>|<component>`. The `|` bar is the one canonic
   `GOV|`-named caps sitting in the cap block relocate to the GOVERNANCE block.
 - Silver ({C2}/{C3}) is inferred (not colour-bearing); `{C4}` and the GASSTATION block are the gold-bearing markers.
 
+> **Amendment (2026-09-02c) — module-ref-qualified calls count as logic.** A cap that calls a validator/writer
+> through a **module reference** — e.g. `(ref-DALOS::CAP_EnforceAccountOwnership ah)` or `(ref-X::UEV_… …)` —
+> is doing **real work**; it is **not** trivial. The classifier (`tools/cap_band.py`) now strips an optional
+> `word::` qualifier before matching the `CAP_`/`UEV_`/`UR*`/`W*`/`X*` token, so such caps are no longer seen
+> as "composes-only-bronze, no logic". Effect: the client-cap idiom **`(compose-capability (SECURE))` + a
+> `ref-X::CAP_EnforceAccountOwnership`** is now correctly **C3** (was mis-**C1**) — e.g. `AHU` across DALOS/DPTF/
+> DPOF/ATS/SWP/DPDC, `IGNIS|C>DEBIT`/`C>CREDIT`, `ANK|C>UPDATE-*`; and non-composing pure-ownership caps that
+> only call `ref-X::CAP_…` (e.g. `CODEX|STOICTAG-DALOS-OWNER`, `PYTHIA|OWNER`) are now correctly **C4**.
+
 ### 7.6 FUNCTIONS 5.1..5.7 (build order; strongest→lightest within each)
 | Sub | Class | Prefixes (ordered) | Family colour |
 |---|---|---|---|
@@ -672,6 +700,12 @@ FUNCTION → `{5.4}` with the `UEV_`s** (the old separate `[CAP]` group is gone)
 skeleton emitter (`tools/skeleton_emit.py`) sweeps `(interface …)` blocks the same
 way it sweeps `(module …)`.
 
+> **Amendment (2026-09-02c) — tables cannot exist in an interface.** An interface may declare **constants,
+> schemas, capability headers, and function headers** — **never a `deftable`**. The emitter keeps the table
+> sub-block markers (`{G3}` / `{3.3}` / `{P3}`) in interfaces for structural parallelism but annotates them
+> `⟨cannot exist in an interface⟩` so the reader knows the slot can never hold a form. Module table blocks are
+> left unannotated (tables are allowed there).
+
 ### 7.13 Enforcement & authoring (Phase 7 — the drift gate)
 Canon is now **self-enforcing** so future work can't silently drift (no re-sweep needed):
 - **`tools/skeleton_emit.py`** — the *fixer*: re-lays any module/interface into canonical form.
@@ -689,3 +723,23 @@ Canon is now **self-enforcing** so future work can't silently drift (no re-sweep
 **Colour maintainer sync:** when marker spellings change, tell the highlighter maintainer — current
 colour-bearing markers are `{C4}` (gold caps), `{G4}` (gold gov caps), `{G1}` (grey-bold gov consts),
 the GASSTATION block (gold caps), and the grey `GOV|`/`P|` structural-prefix filters.
+
+### 7.14 Observational distancing (global alignment) — amendment 2026-09-02c
+Every **single-line form** (`defconst` / one-line `defun` / one-line `defcap` / one-line `defschema`) opens its
+**second part** — the value / body / `compose-capability` — at a **single global column, 0-based `56`** (the
+`(` sits at the 57th character; 52 columns past the 4-space module indent). One size for **all modules** so the
+bodies line up at the same mid-page column everywhere ("the red-line column"). Rules:
+- Head ≤ column 54 → pad with spaces so the second part starts at column 56.
+- Head reaches column 55+ (rare — the ~5 longest scoped names, up to 86 chars) → fall back to a **1-space gap**
+  (or break the form onto multiple lines).
+- Multi-line forms are untouched (only complete one-line forms are aligned).
+- It is **whitespace-only** → the non-comment-char invariant still passes; the aligner lives in
+  `skeleton_emit.py` (`ALIGN_COL = 56`, run on every emit) and is checked by `canon_check`. Tune by changing the
+  one constant and re-emitting.
+
+### 7.15 Module & interface `@doc` (mandatory) — amendment 2026-09-02c
+**Every `(module …)` and every `(interface …)` must carry a `@doc`** immediately after the header line,
+describing what the unit is and what it is for (house style: one continued string, phrase-broken with `\`…`\`).
+Sovereign modules/interfaces are **required**; citizen `@doc` is **optional / need-basis**. `canon_check` flags
+a module/interface with no `@doc` as a violation. (The emitter preserves an existing `@doc`; it does not invent
+one — authoring is manual, after reading the unit.)

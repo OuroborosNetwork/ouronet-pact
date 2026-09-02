@@ -6,7 +6,7 @@
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;{G2}  schemas
-    ;;{G3}  tables
+    ;;{G3}  tables  ⟨cannot exist in an interface⟩
     ;;{G4}  capabilities
     ;;{G5}  functions
 
@@ -14,7 +14,7 @@
     ;;{2}  POLICY
     ;;{P1}  constants
     ;;{P2}  schemas
-    ;;{P3}  tables
+    ;;{P3}  tables  ⟨cannot exist in an interface⟩
     ;;{P4}  capabilities
     ;;{P5}  functions
 
@@ -22,7 +22,7 @@
     ;;{3}  CST
     ;;{3.1}  constants
     ;;{3.2}  schemas
-    ;;{3.3}  tables
+    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -62,6 +62,7 @@
 
 
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -74,7 +75,7 @@
     ;;{G3}  tables
     ;;{G4}  capabilities
     ;;
-    (defcap GOV ()                  (compose-capability (GOV|U|VST_ADMIN)))
+    (defcap GOV ()                                      (compose-capability (GOV|U|VST_ADMIN)))
     (defcap GOV|U|VST_ADMIN ()
         (let
             (
@@ -97,7 +98,7 @@
     ;;<=========================================================================>
     ;;{3}  CST
     ;;{3.1}  constants
-    (defconst BAR                   (CT_Bar))
+    (defconst BAR                                       (CT_Bar))
     ;;{3.2}  schemas
     ;;{3.3}  tables
 
@@ -113,7 +114,7 @@
     ;;{5.1}  Construct [CT/UDC]
     ;;
     ;;
-    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_Bar ()                                    (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
     ;;{5.2}  Compute [UC]
     ;;
     ;;

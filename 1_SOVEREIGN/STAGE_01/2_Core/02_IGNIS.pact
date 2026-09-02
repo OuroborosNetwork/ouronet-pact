@@ -3,11 +3,12 @@
 (interface IgnisCollectorV2
 
 
+
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;{G2}  schemas
-    ;;{G3}  tables
+    ;;{G3}  tables  ⟨cannot exist in an interface⟩
     ;;{G4}  capabilities
     ;;{G5}  functions
 
@@ -15,7 +16,7 @@
     ;;{2}  POLICY
     ;;{P1}  constants
     ;;{P2}  schemas
-    ;;{P3}  tables
+    ;;{P3}  tables  ⟨cannot exist in an interface⟩
     ;;{P4}  capabilities
     ;;{P5}  functions
 
@@ -41,7 +42,7 @@
         ignis:decimal
         interactor:string
     )
-    ;;{3.3}  tables
+    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -109,7 +110,7 @@
     ;;  [C]
     ;;
     (defun C_TransferDalosFuel (sender:string receiver:string amount:decimal))
-    (defun C_Collect  (patron:string input-output-cumulator:object{OutputCumulator}))
+    (defun C_Collect                                    (patron:string input-output-cumulator:object{OutputCumulator}))
     (defun C_STOA|Collect (sender:string amount:decimal))
     (defun C_STOA|CollectWT (sender:string amount:decimal trigger:bool))
     (defun C_STOA|CollectWTEx (payer:string discount-account:string amount:decimal trigger:bool))
@@ -124,7 +125,7 @@
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;{G2}  schemas
-    ;;{G3}  tables
+    ;;{G3}  tables  ⟨cannot exist in an interface⟩
     ;;{G4}  capabilities
     ;;{G5}  functions
 
@@ -132,7 +133,7 @@
     ;;{2}  POLICY
     ;;{P1}  constants
     ;;{P2}  schemas
-    ;;{P3}  tables
+    ;;{P3}  tables  ⟨cannot exist in an interface⟩
     ;;{P4}  capabilities
     ;;{P5}  functions
 
@@ -164,7 +165,7 @@
         stoa-targets:[string]
         stoa-text:string
     )
-    ;;{3.3}  tables
+    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -220,6 +221,7 @@
 
 
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -231,19 +233,19 @@
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;
-    (defconst GOV|MD_IGNIS                  (keyset-ref-guard (GOV|Demiurgoi)))
+    (defconst GOV|MD_IGNIS                              (keyset-ref-guard (GOV|Demiurgoi)))
     ;;{G2}  schemas
     ;;{G3}  tables
     ;;{G4}  capabilities
-    (defcap GOV ()                          (compose-capability (GOV|IGNIS_ADMIN)))
-    (defcap GOV|IGNIS_ADMIN ()              (enforce-guard GOV|MD_IGNIS))
+    (defcap GOV ()                                      (compose-capability (GOV|IGNIS_ADMIN)))
+    (defcap GOV|IGNIS_ADMIN ()                          (enforce-guard GOV|MD_IGNIS))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()                             (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
     ;;{P1}  constants
-    (defconst P|I                   (P|Info))
+    (defconst P|I                                       (P|Info))
     ;;{P2}  schemas
     ;;{P3}  tables
     ;;
@@ -259,7 +261,7 @@
         (compose-capability (SECURE))
     )
     ;;{P5}  functions
-    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()                                    (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -311,11 +313,11 @@
     ;;<=========================================================================>
     ;;{3}  CST
     ;;{3.1}  constants
-    (defconst BAR                           (CT_Bar))
-    (defconst STOAPREC                       (CT_StoaPrec))
+    (defconst BAR                                       (CT_Bar))
+    (defconst STOAPREC                                  (CT_StoaPrec))
     ;;
-    (defconst DALOS|SC_NAME                 (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|DALOS|SC_NAME)))
-    (defconst OUROBOROS|SC_NAME             (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|OUROBOROS|SC_NAME)))
+    (defconst DALOS|SC_NAME                             (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|DALOS|SC_NAME)))
+    (defconst OUROBOROS|SC_NAME                         (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|OUROBOROS|SC_NAME)))
     (defconst GAS_QUARTER 0.25)
     (defconst GAS_EXCEPTION
         [
@@ -349,6 +351,8 @@
         @event
         true
     )
+    ;;{C2}  Simple
+    ;;{C3}  Composed
     (defcap IGNIS|C>DEBIT (sender:string ta:decimal)
         (let
             (
@@ -370,8 +374,6 @@
             (compose-capability (SECURE))
         )
     )
-    ;;{C2}  Simple
-    ;;{C3}  Composed
     (defcap IGNIS|C>DC (patron:string)
         (let
             (
@@ -418,8 +420,8 @@
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
     ;;
-    (defun CT_Bar ()                        (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
-    (defun CT_StoaPrec ()                    (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_STOA_PRECISION)))
+    (defun CT_Bar ()                                    (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_StoaPrec ()                               (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_STOA_PRECISION)))
     (defun UDC_EmptyOutputCumulatorV2:object{IgnisCollectorV2.OutputCumulator} ()
         {"cumulator-chain"      :
             [

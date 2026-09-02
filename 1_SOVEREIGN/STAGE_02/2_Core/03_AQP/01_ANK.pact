@@ -2,11 +2,12 @@
 (interface AcquisitionAnchorsV2
 
 
+
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;{G2}  schemas
-    ;;{G3}  tables
+    ;;{G3}  tables  ⟨cannot exist in an interface⟩
     ;;{G4}  capabilities
     ;;{G5}  functions
     (defun GOV|AqpKey ())
@@ -17,7 +18,7 @@
     ;;{2}  POLICY
     ;;{P1}  constants
     ;;{P2}  schemas
-    ;;{P3}  tables
+    ;;{P3}  tables  ⟨cannot exist in an interface⟩
     ;;{P4}  capabilities
     ;;{P5}  functions
     ;;
@@ -27,7 +28,7 @@
     ;;{3}  CST
     ;;{3.1}  constants
     ;;{3.2}  schemas
-    ;;{3.3}  tables
+    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -158,6 +159,7 @@
 
 
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;; REPL observability: REPL/Stage_02/[6.2.1]_AQP-ANK.repl tags each intra-tx group as TXnnn · mm · <slug> in ;;==== … ==== and (print "--- [TXnnn · mm · …] ---"); mm is 01.. within each begin-tx.
@@ -169,12 +171,12 @@
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;
-    (defconst GOV|MD_AQP-ANK                (keyset-ref-guard (GOV|Demiurgoi)))
+    (defconst GOV|MD_AQP-ANK                            (keyset-ref-guard (GOV|Demiurgoi)))
     ;;{G2}  schemas
     ;;{G3}  tables
     ;;{G4}  capabilities
-    (defcap GOV ()                          (compose-capability (GOV|ANK_ADMIN)))
-    (defcap GOV|ANK_ADMIN ()                (enforce-guard GOV|MD_AQP-ANK))
+    (defcap GOV ()                                      (compose-capability (GOV|ANK_ADMIN)))
+    (defcap GOV|ANK_ADMIN ()                            (enforce-guard GOV|MD_AQP-ANK))
     ;;{G5}  functions
     (defun GOV|Demiurgoi ()
         @doc "Resolves the governance keyset from DALOS."
@@ -196,7 +198,7 @@
     ;;<=========================================================================>
     ;;{2}  POLICY
     ;;{P1}  constants
-    (defconst P|I                   (P|Info))
+    (defconst P|I                                       (P|Info))
     ;;{P2}  schemas
     ;;{P3}  tables
     ;;
@@ -268,20 +270,20 @@
     ;;<=========================================================================>
     ;;{3}  CST
     ;;{3.1}  constants
-    (defconst AQP|SC_KEY                    (GOV|AqpKey))
-    (defconst AQP|SC_NAME                   (GOV|AQP|SC_NAME))
-    (defconst BAR                   (CT_Bar))
+    (defconst AQP|SC_KEY                                (GOV|AqpKey))
+    (defconst AQP|SC_NAME                               (GOV|AQP|SC_NAME))
+    (defconst BAR                                       (CT_Bar))
     (defconst E-ANK
         {"promile"                  : 0.0
         ,"ouronet-account"          : BAR
         ,"anchor-id"                : BAR}
     )
     ;; M6 #15 — anchor-definition sanity bounds enforced at issue (UEV_Promile + ANK|C>ISSUE-DPTF).
-    (defconst CT_ANK_PRECISION:integer          3)          ;; anchors use exactly 3 decimals of promile precision
-    (defconst CT_ANK_MIN_PROMILE:decimal        1.0)        ;; minimum anchor promile
-    (defconst CT_ANK_MAX_PROMILE:decimal        10000.0)    ;; maximum anchor promile (caps a single anchor's boost)
-    (defconst CT_ANK_MIN_DPTF_AMOUNT:decimal    1000.0)     ;; minimum TF-anchor denominated amount
-    (defconst CT_ANK_MAX_DPTF_AMOUNT:decimal    1000000.0)  ;; maximum TF-anchor denominated amount
+    (defconst CT_ANK_PRECISION:integer                  3)          ;; anchors use exactly 3 decimals of promile precision
+    (defconst CT_ANK_MIN_PROMILE:decimal                1.0)        ;; minimum anchor promile
+    (defconst CT_ANK_MAX_PROMILE:decimal                10000.0)    ;; maximum anchor promile (caps a single anchor's boost)
+    (defconst CT_ANK_MIN_DPTF_AMOUNT:decimal            1000.0)     ;; minimum TF-anchor denominated amount
+    (defconst CT_ANK_MAX_DPTF_AMOUNT:decimal            1000000.0)  ;; maximum TF-anchor denominated amount
     ;;{3.2}  schemas
     ;;
     ;;1]General Anchor Definition
@@ -416,6 +418,13 @@
             \ aggregate-promile refold + swept anchor removal. NO fund movement. Composes SECURE."
         (compose-capability (SECURE))
     )
+    ;;{C2}  Simple
+    (defcap AQP|GOV ()
+        @doc "Interface/deploy surface for AQP|SC_NAME governor rotate. Runtime compose: AQP-POOL.AQP|GOV only — \
+            \ do not compose this cap from other modules."
+        true
+    )
+    ;;{C3}  Composed
     (defcap ANK|C>UPDATE-DPTF (account:string dptf-id:string total-dptf-amount:decimal)
         @doc "Authorizes updating user promile for all live DPTF-backed anchors on <dptf-id> after stake/unstake."
         @event
@@ -464,13 +473,6 @@
         )
         (compose-capability (SECURE))
     )
-    ;;{C2}  Simple
-    (defcap AQP|GOV ()
-        @doc "Interface/deploy surface for AQP|SC_NAME governor rotate. Runtime compose: AQP-POOL.AQP|GOV only — \
-            \ do not compose this cap from other modules."
-        true
-    )
-    ;;{C3}  Composed
     (defcap ANK|C>REVOKE-BOOST-CLASS (boost-class-id:string)
         @doc "Authorizes revoking an empty BoostClass."
         @event

@@ -2,11 +2,12 @@
 (interface StoicPayV3
 
 
+
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;{G2}  schemas
-    ;;{G3}  tables
+    ;;{G3}  tables  ⟨cannot exist in an interface⟩
     ;;{G4}  capabilities
     ;;{G5}  functions
 
@@ -14,7 +15,7 @@
     ;;{2}  POLICY
     ;;{P1}  constants
     ;;{P2}  schemas
-    ;;{P3}  tables
+    ;;{P3}  tables  ⟨cannot exist in an interface⟩
     ;;{P4}  capabilities
     ;;{P5}  functions
 
@@ -22,7 +23,7 @@
     ;;{3}  CST
     ;;{3.1}  constants
     ;;{3.2}  schemas
-    ;;{3.3}  tables
+    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -80,28 +81,28 @@
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;
-    (defconst GOV|MD_KPAY                       (keyset-ref-guard (GOV|Demiurgoi)))
+    (defconst GOV|MD_KPAY                               (keyset-ref-guard (GOV|Demiurgoi)))
     ;;{G2}  schemas
     ;;{G3}  tables
     ;;{G4}  capabilities
-    (defcap GOV ()                              (compose-capability (GOV|KPAY_ADMIN)))
-    (defcap GOV|KPAY_ADMIN ()                   (enforce-guard GOV|MD_KPAY))
+    (defcap GOV ()                                      (compose-capability (GOV|KPAY_ADMIN)))
+    (defcap GOV|KPAY_ADMIN ()                           (enforce-guard GOV|MD_KPAY))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()                     (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
-    (defun GOV|DEMIPAD|SC_NAME ()               (let ((ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)) (ref-DEMIPAD::GOV|DEMIPAD|SC_NAME)))
+    (defun GOV|Demiurgoi ()                             (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|DEMIPAD|SC_NAME ()                       (let ((ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)) (ref-DEMIPAD::GOV|DEMIPAD|SC_NAME)))
     ;;Team allocation recipients (LIVE deployed set — identical to on-chain ouronet-ns.DEMIPAD-STOICPAY).
     ;;60% team share = COMPANY (30%) + VENTURE1..4 (7.5% each) = 1.5x the buyer amount per sale (40/60 split;
     ;;250M end supply). The REPL fixture creates these five accounts so the buy-side MultiBulkTransfer resolves.
-    (defun GOV|COMPANY ()                       (at 0 ["Ѻ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ"]))
-    (defun GOV|VENTURE1 ()                      (at 0 ["Ѻ.CЭΞŸNGúůρhãmИΘÛ¢₳šШдìAÚwŚGýηЗПAÊУÔȘřŽÍζЗηmΔφDmcдΛъ₳tĂýăŮsПÞ$öœGθeBŽvąαÃfçл¢ĎĆď$şbsЦэΘNÄëÍĂνуãöž¥àZjÆůšÁœôñχŽâЩåτâн4μфAOçĎΓuЗŮnøЙãĚè6Дżîþż$цÑûρψŻïZÉλûæřΨeèÎígςeL"]))
-    (defun GOV|VENTURE2 ()                      (at 0 ["Ѻ.ĄÀтмωωàŹČлďÜhÍηЛνÙνûĘõțЫåÒÛHážNÍЧψξïžŹЬΛξП¥ЮςĄEйNĄЧ9óпиÃЗ2äÔвœ₿£ČóΩÞдréě7νшDÅЬXтBørŸĂBςąЙęìvÆлμЛáΩγĘЗôåУțτжéδÚνpÍżȘĘï4ąŹȘkφNθþÀωΞÀWžIи5ь€ÊOôΣëñэÔÿνÜw1юÔzźцξńѺfś"]))
-    (defun GOV|VENTURE3 ()                      (at 0 ["Ѻ.ìѺďΘčμЮÚşŁì92lźřWмPòíFùЛgßCÊȚδğďŘTπΠrπмЮ6ŁYŘэHóęÀSăλьПO€ЮrØòш2ΓεîțůOÂŁŻДÍ¥ôWxí4ïçдå₿ЙÒεЗzÝăÚÆπБцìcÕyьΘæěЖù₱фщđÝKÚßzUÉÍЬŒΠYvVŻUЫýčWŘвůćCČΦú2ãбşèуÓçË€ïmôrýмúüÄЬáó"]))
-    (defun GOV|VENTURE4 ()                      (at 0 ["Ѻ.BPΩÉ5eønDMRзΣÛł4áÃÄПNΩFзÌõãBЙĞńŒμЗŽτЯÈЙÓDд5țσÆďΔÂиĂqtVŒ3ЦтòȚиåâ8юđhýZNтě∇ŹÀĂkÖѺζEğOüбĆ6мθÈSoш∇ŠmHŒДiÖĎďнÈèTuĎSжğĎЫěIťčç$ÇíżùàĐZξÁτÞFxPÎÎπÿWÖàыДŤγEψàýÔу€эjĆ2ĎżÃς"]))
+    (defun GOV|COMPANY ()                               (at 0 ["Ѻ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ"]))
+    (defun GOV|VENTURE1 ()                              (at 0 ["Ѻ.CЭΞŸNGúůρhãmИΘÛ¢₳šШдìAÚwŚGýηЗПAÊУÔȘřŽÍζЗηmΔφDmcдΛъ₳tĂýăŮsПÞ$öœGθeBŽvąαÃfçл¢ĎĆď$şbsЦэΘNÄëÍĂνуãöž¥àZjÆůšÁœôñχŽâЩåτâн4μфAOçĎΓuЗŮnøЙãĚè6Дżîþż$цÑûρψŻïZÉλûæřΨeèÎígςeL"]))
+    (defun GOV|VENTURE2 ()                              (at 0 ["Ѻ.ĄÀтмωωàŹČлďÜhÍηЛνÙνûĘõțЫåÒÛHážNÍЧψξïžŹЬΛξП¥ЮςĄEйNĄЧ9óпиÃЗ2äÔвœ₿£ČóΩÞдréě7νшDÅЬXтBørŸĂBςąЙęìvÆлμЛáΩγĘЗôåУțτжéδÚνpÍżȘĘï4ąŹȘkφNθþÀωΞÀWžIи5ь€ÊOôΣëñэÔÿνÜw1юÔzźцξńѺfś"]))
+    (defun GOV|VENTURE3 ()                              (at 0 ["Ѻ.ìѺďΘčμЮÚşŁì92lźřWмPòíFùЛgßCÊȚδğďŘTπΠrπмЮ6ŁYŘэHóęÀSăλьПO€ЮrØòш2ΓεîțůOÂŁŻДÍ¥ôWxí4ïçдå₿ЙÒεЗzÝăÚÆπБцìcÕyьΘæěЖù₱фщđÝKÚßzUÉÍЬŒΠYvVŻUЫýčWŘвůćCČΦú2ãбşèуÓçË€ïmôrýмúüÄЬáó"]))
+    (defun GOV|VENTURE4 ()                              (at 0 ["Ѻ.BPΩÉ5eønDMRзΣÛł4áÃÄПNΩFзÌõãBЙĞńŒμЗŽτЯÈЙÓDд5țσÆďΔÂиĂqtVŒ3ЦтòȚиåâ8юđhýZNтě∇ŹÀĂkÖѺζEğOüбĆ6мθÈSoш∇ŠmHŒДiÖĎďнÈèTuĎSжğĎЫěIťčç$ÇíżùàĐZξÁτÞFxPÎÎπÿWÖàыДŤγEψàýÔу€эjĆ2ĎżÃς"]))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
     ;;{P1}  constants
-    (defconst P|I                   (P|Info))
+    (defconst P|I                                       (P|Info))
     ;;{P2}  schemas
     ;;{P3}  tables
     ;;
@@ -119,7 +120,7 @@
         (compose-capability (SECURE))
     )
     ;;{P5}  functions
-    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()                                    (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -178,9 +179,9 @@
     ;;{3}  CST
     ;;{3.1}  constants
     ;;
-    (defconst DEMIPAD|SC_NAME                   (GOV|DEMIPAD|SC_NAME))
-    (defconst KPAY|INFO                     (CT_Info))
-    (defconst BAR                           (CT_Bar))
+    (defconst DEMIPAD|SC_NAME                           (GOV|DEMIPAD|SC_NAME))
+    (defconst KPAY|INFO                                 (CT_Info))
+    (defconst BAR                                       (CT_Bar))
     ;;{3.2}  schemas
     ;;
     (defschema KPAY|PropertiesSchema
@@ -225,8 +226,8 @@
     ;;<=========================================================================>
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
-    (defun CT_Info ()                     (at 0 ["StoicPayV3"]))
-    (defun CT_Bar ()                        (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_Info ()                                   (at 0 ["StoicPayV3"]))
+    (defun CT_Bar ()                                    (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
     ;;{5.2}  Compute [UC]
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;

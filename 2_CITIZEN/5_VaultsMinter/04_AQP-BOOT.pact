@@ -20,11 +20,12 @@
 (interface AcquisitionPoolBootV2
 
 
+
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;{G2}  schemas
-    ;;{G3}  tables
+    ;;{G3}  tables  ⟨cannot exist in an interface⟩
     ;;{G4}  capabilities
     ;;{G5}  functions
     (defun GOV|Demiurgoi ())
@@ -33,7 +34,7 @@
     ;;{2}  POLICY
     ;;{P1}  constants
     ;;{P2}  schemas
-    ;;{P3}  tables
+    ;;{P3}  tables  ⟨cannot exist in an interface⟩
     ;;{P4}  capabilities
     ;;{P5}  functions
 
@@ -41,7 +42,7 @@
     ;;{3}  CST
     ;;{3.1}  constants
     ;;{3.2}  schemas
-    ;;{3.3}  tables
+    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -107,6 +108,7 @@
 
 
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -116,14 +118,14 @@
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;
-    (defconst GOV|MD_AQP-BOOT               (keyset-ref-guard (GOV|Demiurgoi)))
+    (defconst GOV|MD_AQP-BOOT                           (keyset-ref-guard (GOV|Demiurgoi)))
     ;;{G2}  schemas
     ;;{G3}  tables
     ;;{G4}  capabilities
-    (defcap GOV ()                          (compose-capability (GOV|AQP_BOOT_ADMIN)))
-    (defcap GOV|AQP_BOOT_ADMIN ()           (enforce-guard GOV|MD_AQP-BOOT))
+    (defcap GOV ()                                      (compose-capability (GOV|AQP_BOOT_ADMIN)))
+    (defcap GOV|AQP_BOOT_ADMIN ()                       (enforce-guard GOV|MD_AQP-BOOT))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()                             (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
@@ -137,18 +139,18 @@
     ;;{3}  CST
     ;;{3.1}  constants
     ;;
-    (defconst BOOT|SCORE_SILVER:string      "SilverSnakePower")
-    (defconst BOOT|SCORE_BRONZE:string      "BronzeSnakePower")
-    (defconst BOOT|SCORE_GOLDEN:string      "GoldenSnakePower")
-    (defconst BOOT|PRECISION:integer        6)
-    (defconst BOOT|MX_FROZEN:decimal        2.0)
-    (defconst BOOT|MX_SLEEPING:decimal      2.0)
-    (defconst BOOT|FVT_OURO_LP_FARM:string  "OuroLpFarm")
+    (defconst BOOT|SCORE_SILVER:string                  "SilverSnakePower")
+    (defconst BOOT|SCORE_BRONZE:string                  "BronzeSnakePower")
+    (defconst BOOT|SCORE_GOLDEN:string                  "GoldenSnakePower")
+    (defconst BOOT|PRECISION:integer                    6)
+    (defconst BOOT|MX_FROZEN:decimal                    2.0)
+    (defconst BOOT|MX_SLEEPING:decimal                  2.0)
+    (defconst BOOT|FVT_OURO_LP_FARM:string              "OuroLpFarm")
     (defconst BOOT|FVT_SUBSIDIARY_TREASURY:string "SubsidiaryTreasury")
     (defconst BOOT|FVT_CODING_TREASURY:string "CodingDivisionTreasury")
     (defconst BOOT|FVT_SNAKES_TREASURY:string "SnakesTreasury")
     (defconst BOOT|FVT_SHARES_TREASURY:string "CompanySharesTreasury")
-    (defconst BOOT|TREASURY_COMMON:string   "|")
+    (defconst BOOT|TREASURY_COMMON:string               "|")
     (defconst BOOT|SCORE_ENTITY_SCORE:integer 1)
     (defconst BOOT|SCORE_ENTITY_TRIPLET:integer 3)
     ;;{3.2}  schemas

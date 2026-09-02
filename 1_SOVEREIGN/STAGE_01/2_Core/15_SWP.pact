@@ -12,7 +12,7 @@
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;{G2}  schemas
-    ;;{G3}  tables
+    ;;{G3}  tables  ⟨cannot exist in an interface⟩
     ;;{G4}  capabilities
     ;;{G5}  functions
 
@@ -20,7 +20,7 @@
     ;;{2}  POLICY
     ;;{P1}  constants
     ;;{P2}  schemas
-    ;;{P3}  tables
+    ;;{P3}  tables  ⟨cannot exist in an interface⟩
     ;;{P4}  capabilities
     ;;{P5}  functions
 
@@ -37,7 +37,7 @@
         target:string
         value:integer
     )
-    ;;{3.3}  tables
+    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -178,6 +178,7 @@
 
 
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -188,12 +189,12 @@
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
-    (defconst GOV|MD_SWP            (keyset-ref-guard (GOV|Demiurgoi)))
-    (defconst GOV|SC_SWP            (keyset-ref-guard SWP|SC_KEY))
+    (defconst GOV|MD_SWP                                (keyset-ref-guard (GOV|Demiurgoi)))
+    (defconst GOV|SC_SWP                                (keyset-ref-guard SWP|SC_KEY))
     ;;{G2}  schemas
     ;;{G3}  tables
     ;;{G4}  capabilities
-    (defcap GOV ()                  (compose-capability (GOV|SWP_ADMIN)))
+    (defcap GOV ()                                      (compose-capability (GOV|SWP_ADMIN)))
     (defcap GOV|SWP_ADMIN ()
         (enforce-one
             "SWP Swapper Admin not satisfed"
@@ -205,14 +206,14 @@
     )
     ;;{G5}  functions
     ;;
-    (defun GOV|Demiurgoi ()         (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
-    (defun GOV|SwapKey ()           (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|SwapKey)))
-    (defun GOV|SWP|SC_NAME ()       (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|SWP|SC_NAME)))
+    (defun GOV|Demiurgoi ()                             (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|SwapKey ()                               (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|SwapKey)))
+    (defun GOV|SWP|SC_NAME ()                           (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|SWP|SC_NAME)))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
     ;;{P1}  constants
-    (defconst P|I                   (P|Info))
+    (defconst P|I                                       (P|Info))
     ;;{P2}  schemas
     ;;{P3}  tables
     ;;
@@ -231,7 +232,7 @@
         (compose-capability (SWP|GOV))
     )
     ;;{P5}  functions
-    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()                                    (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -306,11 +307,11 @@
     ;;{3}  CST
     ;;{3.1}  constants
     ;;
-    (defconst SWP|SC_KEY            (GOV|SwapKey))
-    (defconst SWP|SC_NAME           (GOV|SWP|SC_NAME))
-    (defconst BAR                   (CT_Bar))
-    (defconst EOC                   (CT_EmptyCumulator))
-    (defconst SWP|INFO              (CT_Info))
+    (defconst SWP|SC_KEY                                (GOV|SwapKey))
+    (defconst SWP|SC_NAME                               (GOV|SWP|SC_NAME))
+    (defconst BAR                                       (CT_Bar))
+    (defconst EOC                                       (CT_EmptyCumulator))
+    (defconst SWP|INFO                                  (CT_Info))
     (defconst P2 "P2")
     (defconst P3 "P3")
     (defconst P4 "P4")
@@ -402,18 +403,6 @@
     )
     (defcap SECURE ()
         true
-    )
-    ;;
-    ;;
-    (defcap AHU ()
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ah:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
-            )
-            (ref-DALOS::CAP_EnforceAccountOwnership ah)
-            (compose-capability (SECURE))
-        )
     )
     ;;{C2}  Simple
     (defcap SWP|S>RT_OWN (swpair:string new-owner:string)
@@ -607,6 +596,18 @@
         )
     )
     ;;{C3}  Composed
+    ;;
+    ;;
+    (defcap AHU ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ah:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership ah)
+            (compose-capability (SECURE))
+        )
+    )
     ;{C3}
     ;{C4}
     (defcap SWP|C>UPDATE-BRD (swpair:string)
@@ -763,9 +764,9 @@
     ;;<=========================================================================>
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
-    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
-    (defun CT_EmptyCumulator ()     (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_EmptyOutputCumulatorV2)))
-    (defun CT_Info ()              (at 0 ["SwapperInformation"]))
+    (defun CT_Bar ()                                    (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_EmptyCumulator ()                         (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_EmptyOutputCumulatorV2)))
+    (defun CT_Info ()                                   (at 0 ["SwapperInformation"]))
     ;;{5.2}  Compute [UC]
     (defun UC_ExtractTokens:[string] (input:[object{SwapperV4.PoolTokens}])
         (let

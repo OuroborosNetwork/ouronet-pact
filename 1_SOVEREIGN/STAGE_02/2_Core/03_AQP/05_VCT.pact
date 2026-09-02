@@ -2,11 +2,12 @@
 (interface AcquisitionVacateV2
 
 
+
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;{G2}  schemas
-    ;;{G3}  tables
+    ;;{G3}  tables  ⟨cannot exist in an interface⟩
     ;;{G4}  capabilities
     ;;{G5}  functions
     (defun GOV|Demiurgoi ())
@@ -15,7 +16,7 @@
     ;;{2}  POLICY
     ;;{P1}  constants
     ;;{P2}  schemas
-    ;;{P3}  tables
+    ;;{P3}  tables  ⟨cannot exist in an interface⟩
     ;;{P4}  capabilities
     ;;{P5}  functions
 
@@ -23,7 +24,7 @@
     ;;{3}  CST
     ;;{3.1}  constants
     ;;{3.2}  schemas
-    ;;{3.3}  tables
+    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -121,6 +122,7 @@
 ;; =============================================================================
 
 (module AQP-VCT GOV
+
 
 
 
@@ -255,8 +257,8 @@
     (defconst VACATE-MAX-NONCES 64)
     (defconst VACATE-FULL-MAX-LEGS 128)
     (defconst VACATE-FULL-MAX-NONCES 512)
-    (defconst VACATE-GAS-MAX-TF 24)     ;; legacy flat caps — superseded by the beneficiary-aware model below,
-    (defconst VACATE-GAS-MAX-OF 33)     ;; kept for UC_ComputeMinSliceCount / slice-plan references.
+    (defconst VACATE-GAS-MAX-TF 24)                     ;; legacy flat caps — superseded by the beneficiary-aware model below,
+    (defconst VACATE-GAS-MAX-OF 33)                     ;; kept for UC_ComputeMinSliceCount / slice-plan references.
     (defconst VACATE-GAS-MAX-DPSF 29)
     (defconst VACATE-GAS-MAX-DPNF 30)
     ;; Vacate-v2 Phase 2 — beneficiary-aware gas model (measured; applies to BOTH v1 vacate and v2 drain).

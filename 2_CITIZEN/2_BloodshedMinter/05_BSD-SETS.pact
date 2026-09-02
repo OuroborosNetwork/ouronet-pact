@@ -3,6 +3,7 @@
 
 
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
 
@@ -10,14 +11,14 @@
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;
-    (defconst GOV|MD_BLOODSHED-SETS         (keyset-ref-guard (GOV|Demiurgoi)))
+    (defconst GOV|MD_BLOODSHED-SETS                     (keyset-ref-guard (GOV|Demiurgoi)))
     ;;{G2}  schemas
     ;;{G3}  tables
     ;;{G4}  capabilities
-    (defcap GOV ()                          (compose-capability (GOV|BLOODSHED-SETS_ADMIN)))
-    (defcap GOV|BLOODSHED-SETS_ADMIN ()     (enforce-guard GOV|MD_BLOODSHED-SETS))
+    (defcap GOV ()                                      (compose-capability (GOV|BLOODSHED-SETS_ADMIN)))
+    (defcap GOV|BLOODSHED-SETS_ADMIN ()                 (enforce-guard GOV|MD_BLOODSHED-SETS))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()                             (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
@@ -30,15 +31,15 @@
     ;;<=========================================================================>
     ;;{3}  CST
     ;;{3.1}  constants
-    (defconst BAR                   (CT_Bar))
-    (defconst IPFS                  Bloodshed.IPFS)
+    (defconst BAR                                       (CT_Bar))
+    (defconst IPFS                                      Bloodshed.IPFS)
     ;;
     ;;
-    (defconst R                     Bloodshed.R)            ;;Native Bloodshed Royalty
-    (defconst IR-L                  Bloodshed.IR-L)         ;;Legendary Ignis Royalty
-    (defconst IR-E                  Bloodshed.IR-E)         ;;Epic Ignis Royalty
-    (defconst IR-R                  Bloodshed.IR-R)         ;;Rare Ignis Royalty
-    (defconst IR-C                  Bloodshed.IR-C)         ;;Common Ignis Royalty
+    (defconst R                                         Bloodshed.R)            ;;Native Bloodshed Royalty
+    (defconst IR-L                                      Bloodshed.IR-L)         ;;Legendary Ignis Royalty
+    (defconst IR-E                                      Bloodshed.IR-E)         ;;Epic Ignis Royalty
+    (defconst IR-R                                      Bloodshed.IR-R)         ;;Rare Ignis Royalty
+    (defconst IR-C                                      Bloodshed.IR-C)         ;;Common Ignis Royalty
     ;;{3.2}  schemas
     ;;{3.3}  tables
 
@@ -57,7 +58,7 @@
     ;;{5.1}  Construct [CT/UDC]
     ;;
     ;;
-    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_Bar ()                                    (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
     ;;
     (defun UDC_AllowedNonce:object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition} (lst:[integer])
         (let

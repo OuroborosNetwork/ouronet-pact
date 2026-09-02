@@ -25,7 +25,7 @@
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;{G2}  schemas
-    ;;{G3}  tables
+    ;;{G3}  tables  ⟨cannot exist in an interface⟩
     ;;{G4}  capabilities
     ;;{G5}  functions
 
@@ -33,7 +33,7 @@
     ;;{2}  POLICY
     ;;{P1}  constants
     ;;{P2}  schemas
-    ;;{P3}  tables
+    ;;{P3}  tables  ⟨cannot exist in an interface⟩
     ;;{P4}  capabilities
     ;;{P5}  functions
 
@@ -89,7 +89,7 @@
         node:string
         neighbours:[object{NeighbourEdge}]
     )
-    ;;{3.3}  tables
+    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -191,6 +191,7 @@
 
 
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -201,19 +202,19 @@
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;
-    (defconst GOV|MD_SWPT           (keyset-ref-guard (GOV|Demiurgoi)))
+    (defconst GOV|MD_SWPT                               (keyset-ref-guard (GOV|Demiurgoi)))
     ;;{G2}  schemas
     ;;{G3}  tables
     ;;{G4}  capabilities
-    (defcap GOV ()                  (compose-capability (GOV|SWPT_ADMIN)))
-    (defcap GOV|SWPT_ADMIN ()       (enforce-guard GOV|MD_SWPT))
+    (defcap GOV ()                                      (compose-capability (GOV|SWPT_ADMIN)))
+    (defcap GOV|SWPT_ADMIN ()                           (enforce-guard GOV|MD_SWPT))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()         (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()                             (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
     ;;{P1}  constants
-    (defconst P|I                   (P|Info))
+    (defconst P|I                                       (P|Info))
     ;;{P2}  schemas
     ;;{P3}  tables
     ;;
@@ -224,7 +225,7 @@
         true
     )
     ;;{P5}  functions
-    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()                                    (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -294,20 +295,20 @@
     ;;<=========================================================================>
     ;;{3}  CST
     ;;{3.1}  constants
-    (defconst BAR                   (CT_Bar))
+    (defconst BAR                                       (CT_Bar))
     ;;#65bL Phase 1: singleton key for SWPT|TopologyVersion — same pattern as this
     ;;codebase's other singleton-row tables (e.g. policy's P|I).
-    (defconst TOPOLOGY_VERSION_KEY   "topology-version")
+    (defconst TOPOLOGY_VERSION_KEY                      "topology-version")
     ;;#34 Phase 11: P0.4's depth cap (7 tokens / 6 hops, "the sexy number 7") — same
     ;;value URC_ValidatePathStructure already enforces on submitted bundles, reused
     ;;here as a post-discovery filter in URC_ComputeAllRoutes (see that function's own
     ;;doc for why post-filter, not baked into U|BFS's traversal itself).
-    (defconst MAX_ROUTE_NODES        7)
+    (defconst MAX_ROUTE_NODES                           7)
     ;;#34 Phase 11: P0.2's genuine outer hard stop on max-attempts, independent of
     ;;whatever a caller requests — placeholder value, not researched/considered,
     ;;owner may override. URC_ComputeAllRoutes clamps to this regardless of the
     ;;caller's own max-attempts argument.
-    (defconst MAX_ATTEMPTS_HARD_CAP  50000)
+    (defconst MAX_ATTEMPTS_HARD_CAP                     50000)
     ;;{3.2}  schemas
     ;;
     (defschema SWPT|GraphSchema
@@ -335,7 +336,7 @@
     ;;<=========================================================================>
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
-    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_Bar ()                                    (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
     ;;{5.2}  Compute [UC]
     ;;
     (defun UC_FindNeighbourIndex:[integer] (neighbours:[object{SwapTracerV3.NeighbourEdge}] token:string)

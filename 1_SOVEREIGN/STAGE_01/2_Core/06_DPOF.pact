@@ -9,7 +9,7 @@
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;{G2}  schemas
-    ;;{G3}  tables
+    ;;{G3}  tables  ⟨cannot exist in an interface⟩
     ;;{G4}  capabilities
     ;;{G5}  functions
 
@@ -17,7 +17,7 @@
     ;;{2}  POLICY
     ;;{P1}  constants
     ;;{P2}  schemas
-    ;;{P3}  tables
+    ;;{P3}  tables  ⟨cannot exist in an interface⟩
     ;;{P4}  capabilities
     ;;{P5}  functions
 
@@ -89,7 +89,7 @@
         r-nonces:[integer]
         r-amounts:[decimal]
     )
-    ;;{3.3}  tables
+    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -127,7 +127,7 @@
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;{G2}  schemas
-    ;;{G3}  tables
+    ;;{G3}  tables  ⟨cannot exist in an interface⟩
     ;;{G4}  capabilities
     ;;{G5}  functions
 
@@ -135,7 +135,7 @@
     ;;{2}  POLICY
     ;;{P1}  constants
     ;;{P2}  schemas
-    ;;{P3}  tables
+    ;;{P3}  tables  ⟨cannot exist in an interface⟩
     ;;{P4}  capabilities
     ;;{P5}  functions
 
@@ -143,7 +143,7 @@
     ;;{3}  CST
     ;;{3.1}  constants
     ;;{3.2}  schemas
-    ;;{3.3}  tables
+    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -388,6 +388,7 @@
 
 
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -399,20 +400,20 @@
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;
-    (defconst GOV|MD_DPOF                   (keyset-ref-guard (GOV|Demiurgoi)))
+    (defconst GOV|MD_DPOF                               (keyset-ref-guard (GOV|Demiurgoi)))
     ;;{G2}  schemas
     ;;{G3}  tables
     ;;{G4}  capabilities
-    (defcap GOV ()                          (compose-capability (GOV|DPOF_ADMIN)))
-    (defcap GOV|DPOF_ADMIN ()               (enforce-guard GOV|MD_DPOF))
+    (defcap GOV ()                                      (compose-capability (GOV|DPOF_ADMIN)))
+    (defcap GOV|DPOF_ADMIN ()                           (enforce-guard GOV|MD_DPOF))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
-    (defun GOV|CollectiblesKey ()           (+ (CT_Namespace) ".dh_sc_dpdc-keyset"))
+    (defun GOV|Demiurgoi ()                             (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|CollectiblesKey ()                       (+ (CT_Namespace) ".dh_sc_dpdc-keyset"))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
     ;;{P1}  constants
-    (defconst P|I                   (P|Info))
+    (defconst P|I                                       (P|Info))
     ;;{P2}  schemas
     ;;{P3}  tables
     ;;
@@ -427,7 +428,7 @@
         (compose-capability (SECURE))
     )
     ;;{P5}  functions
-    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()                                    (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -483,9 +484,9 @@
     ;;<=========================================================================>
     ;;{3}  CST
     ;;{3.1}  constants
-    (defconst BAR           (CT_Bar))
-    (defconst OF            (at 0 ["Orto-Fungible"]))
-    (defconst ATS|SC_NAME   (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|ATS|SC_NAME)))
+    (defconst BAR                                       (CT_Bar))
+    (defconst OF                                        (at 0 ["Orto-Fungible"]))
+    (defconst ATS|SC_NAME                               (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|ATS|SC_NAME)))
     ;;{3.2}  schemas
     ;;
     (defschema TransmitData
@@ -506,27 +507,6 @@
     ;;
     (defcap SECURE ()
         true
-    )
-    ;;
-    ;;#33M (audit note, 2026-08-28): AHU/AU_OrtoFungible(s)/AU_OrtoFungibleAccount(s) are a
-    ;;orto-fungible) migration, to batch-repair "id"/"account" key fields on rows carried over
-    ;;from that migration. Not a general-purpose admin backdoor: the hardcoded account (AH,
-    ;;"AncientHodler"/patron) was intentionally scoped to that one-time historical operation,
-    ;;which is now complete - not a substitute for GOV|DPOF_ADMIN and not meant to be a
-    ;;permanent alternate admin path. Owner (2026-08-28): "It's that way by design, and I think
-    ;;everything is migrated anyway... this was used when migrating from meta to orto fungible."
-    ;;Kept for historical reference, same retention rationale as DPMF itself (see #1C). No
-    ;;functional change made - documentation only.
-    ;;
-    (defcap AHU ()
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ah:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
-            )
-            (ref-DALOS::CAP_EnforceAccountOwnership ah)
-            (compose-capability (SECURE))
-        )
     )
     ;;{C2}  Simple
     (defcap DPOF|S>ROTATE-OWNERSHIP (id:string new-owner:string)
@@ -712,6 +692,27 @@
         )
     )
     ;;{C3}  Composed
+    ;;
+    ;;#33M (audit note, 2026-08-28): AHU/AU_OrtoFungible(s)/AU_OrtoFungibleAccount(s) are a
+    ;;orto-fungible) migration, to batch-repair "id"/"account" key fields on rows carried over
+    ;;from that migration. Not a general-purpose admin backdoor: the hardcoded account (AH,
+    ;;"AncientHodler"/patron) was intentionally scoped to that one-time historical operation,
+    ;;which is now complete - not a substitute for GOV|DPOF_ADMIN and not meant to be a
+    ;;permanent alternate admin path. Owner (2026-08-28): "It's that way by design, and I think
+    ;;everything is migrated anyway... this was used when migrating from meta to orto fungible."
+    ;;Kept for historical reference, same retention rationale as DPMF itself (see #1C). No
+    ;;functional change made - documentation only.
+    ;;
+    (defcap AHU ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ah:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership ah)
+            (compose-capability (SECURE))
+        )
+    )
     (defcap SECURE-ADMIN ()
         (compose-capability (SECURE))
         (compose-capability (GOV|DPOF_ADMIN))
@@ -1070,8 +1071,8 @@
     ;;{5.1}  Construct [CT/UDC]
     ;;
     ;; [Keys]
-    (defun CT_Namespace ()                    (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_NS_USE)))
-    (defun CT_Bar ()        (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_Namespace ()                              (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_NS_USE)))
+    (defun CT_Bar ()                                    (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
     ;;
     (defun UDC_NonceElement:object{DpofUdcV2.DPOF|NonceElement}
         (a:string b:string c:integer d:decimal e:[object])

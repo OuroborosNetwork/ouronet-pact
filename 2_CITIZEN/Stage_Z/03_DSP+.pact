@@ -1,11 +1,12 @@
 (interface Dispenser
 
 
+
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;{G2}  schemas
-    ;;{G3}  tables
+    ;;{G3}  tables  ⟨cannot exist in an interface⟩
     ;;{G4}  capabilities
     ;;{G5}  functions
 
@@ -13,7 +14,7 @@
     ;;{2}  POLICY
     ;;{P1}  constants
     ;;{P2}  schemas
-    ;;{P3}  tables
+    ;;{P3}  tables  ⟨cannot exist in an interface⟩
     ;;{P4}  capabilities
     ;;{P5}  functions
 
@@ -21,7 +22,7 @@
     ;;{3}  CST
     ;;{3.1}  constants
     ;;{3.2}  schemas
-    ;;{3.3}  tables
+    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -63,6 +64,7 @@
 
 
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -73,13 +75,13 @@
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;
-    (defconst GOV|MD_DSP                    (keyset-ref-guard (GOV|Demiurgoi)))
-    (defconst GOV|SC_DSP                    (keyset-ref-guard DSP|SC_KEY))
+    (defconst GOV|MD_DSP                                (keyset-ref-guard (GOV|Demiurgoi)))
+    (defconst GOV|SC_DSP                                (keyset-ref-guard DSP|SC_KEY))
     ;;{G2}  schemas
     ;;{G3}  tables
     ;;{G4}  capabilities
     ;;
-    (defcap GOV ()                          (compose-capability (GOV|DSP_ADMIN)))
+    (defcap GOV ()                                      (compose-capability (GOV|DSP_ADMIN)))
     (defcap GOV|DSP_ADMIN ()
         (enforce-one
             "DSP Dispencer Admin not satisfed"
@@ -90,26 +92,26 @@
         )
     )
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()                             (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
     ;;
     ;;  [Keys]
-    (defun GOV|DSPKey ()                    (+ (CT_Namespace) ".dh_sc_dispenser-keyset"))
-    (defun GOV|CSTKey ()                    (+ (CT_Namespace) ".dh_sc_custodians-keyset"))
+    (defun GOV|DSPKey ()                                (+ (CT_Namespace) ".dh_sc_dispenser-keyset"))
+    (defun GOV|CSTKey ()                                (+ (CT_Namespace) ".dh_sc_custodians-keyset"))
     ;;
     ;;  [SC-Names]
-    (defun GOV|DSP1|SC_NAME ()              (at 0 ["Ѻ.hÜ5ĞÊÜεŞΓõè1Ă₳äàÄìãÓЦφLÕзЯŮμĞ₿мK6àŘуVćχδдзηφыβэÎχUHRêγBğΛ∇VŒižďЬШ£îOÜøE4ÖFSõЩЩAłκè1ččΨΦŻЖэч6Iчη₱ØćнúŒψУćÀyпãЗцÚäδÏÍtςřïçγț6γÎęôigFzÝûηы₿ÏЬüБэΞčмŃт₳ŘчjζsŠȚHъĘïЦ0"]))
-    (defun GOV|CST1|SC_NAME ()              (at 0 ["Ѻ.Щę7ãŽÓλ4ěПîЭđЮЫAďбQOχnиИДχѺNŽł6ПžιéИąĞuπЙůÞ1ęrПΔżæÍžăζàïαŮŘDzΘ€ЦBGÝŁЭЭςșúÜđŻõËŻκΩÎzŁÇÉΠмłÔÝÖθσ7₱в£μŻzéΘÚĂИüyćťξюWc2И7кςαTnÿЩE3MVTÀεPβafÖôoъBσÂбýжõÞ7ßzŁŞε0âłXâÃЛ"]))
-    (defun GOV|DSP2|SC_NAME ()              (+ "Σ" (drop 1 (GOV|DSP1|SC_NAME))))
-    (defun GOV|CST2|SC_NAME ()              (+ "Σ" (drop 1 (GOV|CST1|SC_NAME))))
+    (defun GOV|DSP1|SC_NAME ()                          (at 0 ["Ѻ.hÜ5ĞÊÜεŞΓõè1Ă₳äàÄìãÓЦφLÕзЯŮμĞ₿мK6àŘуVćχδдзηφыβэÎχUHRêγBğΛ∇VŒižďЬШ£îOÜøE4ÖFSõЩЩAłκè1ččΨΦŻЖэч6Iчη₱ØćнúŒψУćÀyпãЗцÚäδÏÍtςřïçγț6γÎęôigFzÝûηы₿ÏЬüБэΞčмŃт₳ŘчjζsŠȚHъĘïЦ0"]))
+    (defun GOV|CST1|SC_NAME ()                          (at 0 ["Ѻ.Щę7ãŽÓλ4ěПîЭđЮЫAďбQOχnиИДχѺNŽł6ПžιéИąĞuπЙůÞ1ęrПΔżæÍžăζàïαŮŘDzΘ€ЦBGÝŁЭЭςșúÜđŻõËŻκΩÎzŁÇÉΠмłÔÝÖθσ7₱в£μŻzéΘÚĂИüyćťξюWc2И7кςαTnÿЩE3MVTÀεPβafÖôoъBσÂбýжõÞ7ßzŁŞε0âłXâÃЛ"]))
+    (defun GOV|DSP2|SC_NAME ()                          (+ "Σ" (drop 1 (GOV|DSP1|SC_NAME))))
+    (defun GOV|CST2|SC_NAME ()                          (+ "Σ" (drop 1 (GOV|CST1|SC_NAME))))
     ;;
     ;;  [PBLs]
-    (defun GOV|DSP|PBL ()                   (at 0 ["9G.o0n0iHmGhkch5aEqr0wcpEKpuqgGt5uvFapDLb94GwCbJvBga5H4xrFAx41CbMMH0M7AHmqFnrafceFmaHBfjsH51ggCxJmu5DMpK4jGg0rpogpD26r4yiykAIkaqDz61sHGewpxl1tly780ahKxbEB7uD8FlvA1nGppsttz3AhIhbxlhJ3BpI3Hehf5tCM6bfqF9o6ryb3bErqJwEDJmMGFC9HEeDiLKAtMgqaajzK2b0yg2sE0lJMp2K8I6sjfwnyhyL5vnycpMpeCgagdlnbMMMaA9trHLx4FxLym6KqCFAxCFwFHohfbcolG3u5wGo06M1fMBKpC64Mgm4584tH93Hpmop4tLpD7157GLo7mejJk8ryrA229K07D2hbhtanzCgdtjziBs9yqvHLq78EFEsD1fpEeD0pMhJeLEMEsqu8zf816cLErk4aDC22GnsC9774C59iaLFKkzKzh11xnAEalcpGcLf7aecGBHu5IABIGq8sEFa9Ahi5inermzrys3HcLpz2degMmAEy8hKsI83zvaCta8Ksimgn3qmv4r4jocMsIAwDeEfzE"]))
-    (defun GOV|CST|PBL ()                   (at 0 ["9H.abeq3vvcwJp9gl2Kdt5xb7djJwdB35bCgkIaF3r0k38kBF6La1M6ci0ma2e5exMehsmwe1x3d6EpsIjxv95hAvc3uJweirnitcAAryxn9HaHJ1f0ya36BDfsrfaIBL4moIF3B8glb5pDBhta7pyxigEdt13ccEIKtCdyC6krMhB5iyqfEyB70zf5tjqn2xpDDzg9nA7auzzjxxtwLH80Lmdp4wAEcnqprGishhMLLefMnzDv9dFyM0n31fAcziHogCIM4kktFgydhHah7hmJurs3xCrGrs5qAEtjid0zioLHM58l8wogL2j0L9LIH21wI4lD1BlKq4445nos849CEzcm3DC9t67IH1r63pkgc9xFEGr8K6H3CCfg9aqDcApxaDuEomaKjEj6ft71gtEwbEJJmrAzfDolHrFfubcertjF2rE2wMywhv7HqIoHMCKEznMFCy2C6eyGyh1mIMeKJDDhwqIDIA5a2wvtt0HedKxmgDldafrrGdn5yDGHMexLFCrGv9aG50G82zIlE5z7cksfplf5taeiz8vlydDKmLaCcMgA7ne77hsbGHuu"]))
+    (defun GOV|DSP|PBL ()                               (at 0 ["9G.o0n0iHmGhkch5aEqr0wcpEKpuqgGt5uvFapDLb94GwCbJvBga5H4xrFAx41CbMMH0M7AHmqFnrafceFmaHBfjsH51ggCxJmu5DMpK4jGg0rpogpD26r4yiykAIkaqDz61sHGewpxl1tly780ahKxbEB7uD8FlvA1nGppsttz3AhIhbxlhJ3BpI3Hehf5tCM6bfqF9o6ryb3bErqJwEDJmMGFC9HEeDiLKAtMgqaajzK2b0yg2sE0lJMp2K8I6sjfwnyhyL5vnycpMpeCgagdlnbMMMaA9trHLx4FxLym6KqCFAxCFwFHohfbcolG3u5wGo06M1fMBKpC64Mgm4584tH93Hpmop4tLpD7157GLo7mejJk8ryrA229K07D2hbhtanzCgdtjziBs9yqvHLq78EFEsD1fpEeD0pMhJeLEMEsqu8zf816cLErk4aDC22GnsC9774C59iaLFKkzKzh11xnAEalcpGcLf7aecGBHu5IABIGq8sEFa9Ahi5inermzrys3HcLpz2degMmAEy8hKsI83zvaCta8Ksimgn3qmv4r4jocMsIAwDeEfzE"]))
+    (defun GOV|CST|PBL ()                               (at 0 ["9H.abeq3vvcwJp9gl2Kdt5xb7djJwdB35bCgkIaF3r0k38kBF6La1M6ci0ma2e5exMehsmwe1x3d6EpsIjxv95hAvc3uJweirnitcAAryxn9HaHJ1f0ya36BDfsrfaIBL4moIF3B8glb5pDBhta7pyxigEdt13ccEIKtCdyC6krMhB5iyqfEyB70zf5tjqn2xpDDzg9nA7auzzjxxtwLH80Lmdp4wAEcnqprGishhMLLefMnzDv9dFyM0n31fAcziHogCIM4kktFgydhHah7hmJurs3xCrGrs5qAEtjid0zioLHM58l8wogL2j0L9LIH21wI4lD1BlKq4445nos849CEzcm3DC9t67IH1r63pkgc9xFEGr8K6H3CCfg9aqDcApxaDuEomaKjEj6ft71gtEwbEJJmrAzfDolHrFfubcertjF2rE2wMywhv7HqIoHMCKEznMFCy2C6eyGyh1mIMeKJDDhwqIDIA5a2wvtt0HedKxmgDldafrrGdn5yDGHMexLFCrGv9aG50G82zIlE5z7cksfplf5taeiz8vlydDKmLaCcMgA7ne77hsbGHuu"]))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
     ;;{P1}  constants
-    (defconst P|I                   (P|Info))
+    (defconst P|I                                       (P|Info))
     ;;{P2}  schemas
     ;;{P3}  tables
     ;;
@@ -124,7 +126,7 @@
         true
     )
     ;;{P5}  functions
-    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()                                    (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -182,21 +184,21 @@
     ;;{3.1}  constants
     ;;
     ;; STOA Accounts
-    (defconst DSP|SC_STOA-NAME               "k:78567097b68c98bf0c86a1938e60111a3bfc0ccadb858cc7f3630bc9da9dad99")
-    (defconst CST|SC_STOA-NAME               "k:309a1052856018a954d9692560934a3b8bb6fd0f283ab6eee5fc192b61c119a7")
+    (defconst DSP|SC_STOA-NAME                          "k:78567097b68c98bf0c86a1938e60111a3bfc0ccadb858cc7f3630bc9da9dad99")
+    (defconst CST|SC_STOA-NAME                          "k:309a1052856018a954d9692560934a3b8bb6fd0f283ab6eee5fc192b61c119a7")
     ;;
     ;;  Dispenser
-    (defconst DSP|SC_KEY                    (GOV|DSPKey))
-    (defconst DSP1|SC_NAME                  (GOV|DSP1|SC_NAME))
-    (defconst DSP2|SC_NAME                  (GOV|DSP2|SC_NAME))
-    (defconst DSP|PBL                       (GOV|DSP|PBL))
+    (defconst DSP|SC_KEY                                (GOV|DSPKey))
+    (defconst DSP1|SC_NAME                              (GOV|DSP1|SC_NAME))
+    (defconst DSP2|SC_NAME                              (GOV|DSP2|SC_NAME))
+    (defconst DSP|PBL                                   (GOV|DSP|PBL))
     ;;
     ;;  Custodians
-    (defconst CST|SC_KEY                    (GOV|CSTKey))
-    (defconst CST1|SC_NAME                  (GOV|CST1|SC_NAME))
-    (defconst CST2|SC_NAME                  (GOV|CST2|SC_NAME))
-    (defconst CST|PBL                       (GOV|CST|PBL))
-    (defconst GASLESS-PATRON                (URC_Gassless))
+    (defconst CST|SC_KEY                                (GOV|CSTKey))
+    (defconst CST1|SC_NAME                              (GOV|CST1|SC_NAME))
+    (defconst CST2|SC_NAME                              (GOV|CST2|SC_NAME))
+    (defconst CST|PBL                                   (GOV|CST|PBL))
+    (defconst GASLESS-PATRON                            (URC_Gassless))
     ;;{3.2}  schemas
     ;;{3.3}  tables
 
@@ -235,7 +237,7 @@
     ;;<=========================================================================>
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
-    (defun CT_Namespace ()                    (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_NS_USE)))
+    (defun CT_Namespace ()                              (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_NS_USE)))
     ;;{5.2}  Compute [UC]
     ;;
     (defun UC_KosonicAutostakeSplit:[decimal] (input:decimal ip:integer)
@@ -254,7 +256,7 @@
     )
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
-    (defun URC_Gassless ()                (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|DALOS|SC_NAME)))
+    (defun URC_Gassless ()                              (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|DALOS|SC_NAME)))
     (defun URC_DailyOURO ()
         (let
             (
