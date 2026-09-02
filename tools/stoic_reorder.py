@@ -57,20 +57,19 @@ def is_aux(name):
     tok = prefix_of(name)
     return tok in AUX_MARK
 
-def main(path):
-    text = open(path, encoding='utf-8').read()
-    lines = text.split('\n')
-    # locate ;;FUNCTIONS header and the module-close ')' at column 0
-    fstart = next((i for i,l in enumerate(lines) if l.strip()==';;FUNCTIONS'), None)
+def reorder_block(block):
+    """Reorder the FUNCTIONS region of ONE module block (list of lines).
+    Returns (new_block_lines, forms_count, ncls_dict, unknown_names)."""
+    # locate ;;FUNCTIONS header and the module-close ')' at column 0 (within this block)
+    fstart = next((i for i,l in enumerate(block) if l.strip()==';;FUNCTIONS'), None)
     if fstart is None:
-        print(f"  SKIP {path}: no ;;FUNCTIONS header"); return
-    # module close: last line that is exactly ')' at col 0
-    close = next((i for i in range(len(lines)-1, fstart, -1) if lines[i].startswith(')')), None)
+        return block, 0, {}, []
+    close = next((i for i in range(len(block)-1, fstart, -1) if block[i].startswith(')')), None)
     if close is None:
-        print(f"  SKIP {path}: no module-close"); return
-    preamble = lines[:fstart+1]
-    region   = lines[fstart+1:close]
-    trailing = lines[close:]
+        return block, 0, {}, []
+    preamble = block[:fstart+1]
+    region   = block[fstart+1:close]
+    trailing = block[close:]
     # parse region into forms with attached leading comments; drop old ;;{Fx} markers & blank noise
     forms=[]; i=0; pending_comments=[]
     def is_marker(s): return re.match(r';;\{F\d', s.strip())
@@ -127,9 +126,35 @@ def main(path):
                 out.extend(f["comments"]); out.extend(f["body"])
     out.append("    ;;")
     out += trailing
-    open(path,'w',encoding='utf-8').write('\n'.join(out))
-    nf=len(forms); ncls={CLASSES[i][0]:len(by_class[i]) for i in range(len(CLASSES)) if by_class[i]}
-    print(f"  {path.split('/')[-1]}: {nf} forms -> {ncls}" + (f"  UNKNOWN={[u['name'] for u in unknowns]}" if unknowns else ""))
+    ncls={CLASSES[k][0]:len(by_class[k]) for k in range(len(CLASSES)) if by_class[k]}
+    return out, len(forms), ncls, [u['name'] for u in unknowns]
+
+def main(path):
+    lines = open(path, encoding='utf-8').read().split('\n')
+    # segment file into top-level (module …) blocks and raw lines; reorder each block
+    segments=[]; i=0
+    while i < len(lines):
+        if lines[i].startswith('(module '):
+            j=i+1
+            while j < len(lines) and not lines[j].startswith(')'):
+                j+=1
+            segments.append(('mod', lines[i:j+1])); i=j+1
+        else:
+            segments.append(('raw',[lines[i]])); i+=1
+    total=0; ncls_all={}; unknown_all=[]; nmods=0; new_lines=[]
+    for kind, seg in segments:
+        if kind=='mod':
+            newseg, nf, ncls, unk = reorder_block(seg)
+            new_lines += newseg
+            if nf: nmods+=1
+            total+=nf
+            for k,v in ncls.items(): ncls_all[k]=ncls_all.get(k,0)+v
+            unknown_all += unk
+        else:
+            new_lines += seg
+    open(path,'w',encoding='utf-8').write('\n'.join(new_lines))
+    tag = f" [{nmods} modules]" if nmods>1 else ""
+    print(f"  {path.split('/')[-1]}: {total} forms{tag} -> {ncls_all}" + (f"  UNKNOWN={unknown_all}" if unknown_all else ""))
 
 if __name__=="__main__":
     for p in sys.argv[1:]: main(p)

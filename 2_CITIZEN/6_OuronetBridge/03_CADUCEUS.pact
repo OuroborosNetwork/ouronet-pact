@@ -47,14 +47,15 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    ;;{F0}  [UR]
-    ;;{F1}  [URC]
-    ;;{F2}  [UEV]
-    ;;{F3}  [UDC]
-    ;;{F4}  [CAP]
-    ;;{F5}  [A]
-    ;;{F6}  [C]
-    ;;{F7}  [X]
+    ;;{F1}  Construct [UDC]
+    ;;{F2}  Compute [UC]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{F4}  Validate [UEV/CAP]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    ;;{F7}  User [A]
+    ;;{F8}  User [C]
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )
 (module CADUCEUS GOV
@@ -124,7 +125,9 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    ;;{F0}  [UR]
+    ;;{F1}  Construct [UDC]
+    ;;{F2}  Compute [UC]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     (defun UR_BridgeConfigured:bool ()
         (contains CFG_KEY (keys CADUCEUS|ConfigTable))
     )
@@ -143,8 +146,7 @@
     (defun UR_SignalProcessed:bool (signal-id:string)
         (contains signal-id (keys CADUCEUS|SignalTable))
     )
-    ;;{F1}  [URC]
-    ;;{F2}  [UEV]
+    ;;{F4}  Validate [UEV/CAP]
     (defun UEV_Ready:bool ()
         (let
             (
@@ -172,9 +174,9 @@
             true
         )
     )
-    ;;{F3}  [UDC]
-    ;;{F4}  [CAP]
-    ;;{F5}  [A]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    ;;{F7}  User [A]
     (defun A_SetBridgeConfig
         (
             bridge-account:string
@@ -252,7 +254,7 @@
             )
         )
     )
-    ;;{F6}  [C]
+    ;;{F8}  User [C]
     (defun C_MintToUserFromBridgeSignal
         (
             signal-id:string
@@ -325,6 +327,6 @@
             )
         )
     )
-    ;;{F7}  [X]
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )
