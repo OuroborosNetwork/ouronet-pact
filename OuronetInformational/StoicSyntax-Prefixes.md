@@ -353,15 +353,27 @@ Capabilities are written in four bands, in order **C1 → C2 → C3 → C4**, ea
 a plain custom cap by its body, so **gold** is the one band that must be declared. Everything else follows from the
 body. Precedence, top to bottom:
 
-1. **`true`-only body → BRONZE.** `(defcap X (…) true)` — a literal `true` and nothing else. (A cap whose body
-   merely *calls* one function — e.g. `(CAP_EnforceAccountOwnership account)` — is **not** trivial.) Highest priority.
-2. **Under `;;{C4}` OR a governance cap (`;;{G2}`) → GOLD.** The ownership/governance/authority band — declared by
-   the marker, because it isn't inferable.
-3. **Anything else (any non-`true` cap, with or without `compose-capability`) → SILVER.**
+1. **`true`-only body → BRONZE — and this WINS over everything below.** A `(defcap X (…) true)` whose body is the
+   literal `true`, checked **after stripping `@doc`/`@model`/`@managed`/`@event` metadata and the arg list** — so
+   `(defcap X () @doc "…" true)` is still bronze (the `@doc` must not hide the `true`). **Also bronze:** a cap whose
+   body does nothing but `compose-capability` other **bronze** caps — composing only simple/`true` caps is still
+   simple (resolved to a **fixpoint**). (A cap whose body *calls* a real function — e.g.
+   `(CAP_EnforceAccountOwnership account)` — is **not** trivial.) **Bronze is strictly highest priority: a
+   simple/`true` cap stays bronze EVEN inside the `;;{C4}` or governance `;;{G2}` block — it does NOT go gold.**
+2. **Under `;;{C4}` OR a governance cap (`;;{G2}`) → GOLD** — *only if it is not bronze by rule 1.* The
+   ownership/governance/authority band; declared by the marker because it isn't inferable.
+3. **Anything else (a non-`true` cap that isn't a pure compose-of-bronze) → SILVER.**
 
 So the **`;;{C1}` / `;;{C2}` / `;;{C3}` markers organise the file but do NOT drive the colour** — a C1 block holds
-true caps (→ bronze) but a non-true cap sitting there is silver; C2/C3 are silver by construction. The classifier
-reads exactly two signals: *is the body literally `true`?* and *is it under `;;{C4}`/`;;{G2}`?*
+true caps (→ bronze) but a non-true cap sitting there is silver; C2/C3 are silver by construction.
+
+> **Amendment (2026-09-02).** Bronze is now resolved to a **fixpoint FIRST**, then gold/silver are assigned to what
+> remains. Three corrections, all so a *simple* cap can never masquerade as authority: (a) the literal-`true` test
+> **ignores `@doc`/`@model`/`@managed`/`@event` metadata + the arg list** (an `@doc`'d true cap was wrongly
+> rendering **gold** in the governance block — the reported bug); (b) bronze is **transitive** — a cap that only
+> `compose-capability`s bronze caps is itself bronze; (c) bronze takes **strict precedence over the gold marker**
+> (a `true`/simple cap under `;;{G2}`/`;;{C4}` stays bronze). The classifier now reads three signals: *does the body
+> reduce to `true`?* · *does it only compose bronze caps?* · *(only if neither) is it under `;;{C4}`/`;;{G2}`?*
 
 ### 5.2.1 The GOVERNANCE region (`;;GOVERNANCE`, sub-blocks G1–G3)
 
@@ -501,3 +513,90 @@ first** (e.g. `URHC_` before `URH_`, `URCi_` before `URC_` before `UR_`, `CC_` b
 `i`): `k` key-build · `x` auxiliary · `v` intrinsic-validating · ~~`cap`~~ **retired 2026-08-31 → use `CAP_`**
 (ENFORCE) · `i` **IGNIS-cost-emitting (own COST hue)** · `p` Hydra-parallel-slice (on recipes) ·
 doubled base letter (`CC`/`AA`) = heavy.
+
+---
+
+## §7. Canonical module skeleton — FULL settle (amendment 2026-09-02)
+
+**Authoritative.** Supersedes the partial schemes in §5.1/§5.2/§5.2.1/§5.4 where they differ.
+Source: `docs/STOICSYNTAX-MODULE-MARKERS-HANDOFF.md`. The empty-block start-point template is
+[`canon.pact`](canon.pact). The highlighter reads these markers + composition — **markers are syntax, not decoration.**
+
+### 7.1 Block order (per logical module UNIT)
+A module *file* may hold several *logical units* (`coin` = 3; almost every Ouronet module = 1); a multi-unit
+file repeats the whole skeleton once per unit. `@doc "…"` is optional, **per file**, first thing, **not a block**.
+
+| # | Block | Contents |
+|---|---|---|
+| `{0}` | **IMPLEMENTERS** | only `(implements <interface>)` |
+| `{#}` | **GASSTATION** | optional · **unnumbered** · rare (DALOS only) · named gas-payer surface · ⟨COLOUR⟩ **all caps GOLD** · omit entirely unless present |
+| `{1}` | **GOVERNANCE** | sub-blocks G1..G5, all members `GOV|` |
+| `{2}` | **POLICY** | sub-blocks P1..P5, all functions `P|`-led |
+| `{3}` | **CST** | 3.1 constants · 3.2 schemas · 3.3 tables |
+| `{4}` | **CAPABILITIES** | sub-blocks C1..C4 |
+| `{5}` | **FUNCTIONS** | 7 classes, sub-blocks 5.1..5.7 |
+| `{6}` | **REPL** | test-only `REPL_*`; **added only when present, DELETED at deploy, NOT in `canon.pact`** (no empty-6 to strip) |
+
+Every block/sub-block is marked **even when empty** (except `{#}` and `{6}`, which are added only when present).
+
+### 7.2 GOVERNANCE G1..G5 — **gov caps move `{G2}`→`{G4}`**
+G1 constants (⟨COLOUR⟩ grey+BOLD) · G2 schemas · G3 tables (key-shape comment) · **G4 capabilities**
+(⟨COLOUR⟩ GOLD unless bronze by composition; order class-1-first…class-4-last, no `{Cx}` markers in-block) ·
+G5 functions (all `GOV|`; may carry camelCase custom designators — Keys / SmartContractNames / PublicKey —
+each on its own sub-sub line). *This replaces the prior §5.2.1 "G1 const · G2 caps · G3 defuns".*
+⟨COLOUR dep⟩ the classifier's gold-gov-cap check moves from `{G2}` to **`{G4}`**.
+
+### 7.3 POLICY P1..P5 — `P|` leads
+P1 const · P2 schemas · P3 tables (in use today) · P4 caps (none today) · P5 functions. **Every policy function
+is `P|`-first then the normal StoicSyntax name**: `P|UR_IMP`, `P|A_AddIMP`, `P|UEV_IMC`.
+- **Rename:** today's `A_P|AddIMP` → **`P|A_AddIMP`** (policy prefix leads); the **policy interface is rewritten** to match.
+- ⟨COLOUR dep⟩ **new rule:** filter the leading `P|` (renders grey/structural) and colour the *remainder* by its
+  real prefix — same as the `::` split and the `GOV|` grey.
+
+### 7.4 CST — key-shape comments
+3.3 tables: on the `deftable` line, a comment giving the **key shape** with `|` as the semantic component
+separator: `<component>|<component>|<component>`. The `|` bar is the one canonical separator everywhere
+(key shapes, `GOV|`/`P|`, `MODULE|MEMBER`).
+
+### 7.5 CAPABILITIES C1..C4 (composition-based; composition wins over placement)
+- **C1 · Trivial — ⟨BRONZE⟩**: body is `true` (metadata `@doc` ignored) **or** composes **only** bronze/C1
+  caps (transitive) **with no other logic**. Bronze is resolved to a fixpoint FIRST and **wins even under a `{C4}` marker**.
+- **C2 · Simple — silver**: own logic, composes **no** caps.
+- **C3 · Composed — silver**: composes **≥1 non-bronze** cap (may compose a C4 cap and **still be C3**).
+- **C4 · Ownership — ⟨GOLD⟩**: **non-composing**, body is **ONLY ownership/authority validation** (e.g. just
+  `CAP_EnforceAccountOwnership`). A cap that enforces ownership **plus other logic/validation** is **not** C4
+  (→ C2 if non-composing, C3 if composing). *Worked example (DALOS): `F>OWNER`,`F>GOV`→C4; `S>ROTATE-OA-SOVEREIGN`
+  (CAP_ + extra validators)→C2; `C>DEPLOY-*` (compose SECURE + own logic)→C3; `SECURE`→C1.*
+  `GOV|`-named caps sitting in the cap block relocate to the GOVERNANCE block.
+- Silver ({C2}/{C3}) is inferred (not colour-bearing); `{C4}` and the GASSTATION block are the gold-bearing markers.
+
+### 7.6 FUNCTIONS 5.1..5.7 (build order; strongest→lightest within each)
+| Sub | Class | Prefixes (ordered) | Family colour |
+|---|---|---|---|
+| 5.1 | **Construct** | `UDC_` · `UDCx_` | yellow |
+| 5.2 | **Compute** | `UC_` · `UCk_` · `UCx_`/`UCkx_` | teal |
+| 5.3 | **Read** | `UR_` · `URC_` · `URU_` · `URCx_` · `URH_`/`URHC_`(heavy) · `URCi_`(cost) · `INFO_` | tan/amber |
+| 5.4 | **Validate** | `UEV_` · `UEV_IMC` · `CAP_` (a Validate **function**, not a `{C4}` cap) | red |
+| 5.5 | **Write** | `WI_` · `WU_`/`WU2_`/`WU3_`/`WU4_` · `WW_` | magenta |
+| 5.6 | **Aux/X** | `XI_` · `XE_` · `XB_` | purple |
+| 5.7 | **User** | `A_`·`AA_`·`Ap_`·`AAp_`·`AU_` **then** `C_`·`CC_`·`Cp_`·`CCp_` | green |
+Class order 1→7 is build order (Construct leads). *This replaces the earlier `{F1..F9}` numbering — functions
+are now `{5.1..5.7}`; admin+client are one class (5.7), REPL is block `{6}`.*
+
+### 7.7 Marker glyphs (Placement-Marker Registry)
+- **BLOCK**: a rule line `;;<` + `=`×73 + `>` immediately followed by `;;{N}  NAME` (N ∈ `0 # 1 2 3 4 5 6`).
+- **SUB-BLOCK**: `;;{tag}  label` — tags `G1..G5` · `P1..P5` · `3.1..3.3` · `C1..C4` · `5.1..5.7`.
+- **SUB-SUB (variant / G5 designator)**: `;;  · label` (indented middle-dot; lighter than a sub-block).
+- All markers appear in canonical order; the sweep re-lays a file's markers to it.
+
+### 7.8 Colour-bearing markers (keep classifier ↔ canon in lockstep)
+`{C4}` (gold caps) · **`{G4}`** (gold gov caps — moved from `{G2}`) · `{G1}` (grey-bold gov constants) ·
+the **GASSTATION block** (gold caps) · grey structural **`GOV|`** and **`P|`** prefix filters. Everything else
+(`{C1..C3}`, `{P1..P5}`, `{3.1..3.3}`, block/variant separators) is organizational. When marker spellings are
+finalized, notify the colouring maintainer so `{G4}` / GASSTATION / `P|`-filter land in the highlighter.
+
+### 7.9 Scope
+This pass = **complete rename + reorder + refactor of every Pact module AND interface** to this skeleton
+(interfaces mirror the module: implementers, then GOV members, then POLICY, CST, caps, and all functions except
+`XI_`/`W*_`, in the same order — and must be **complete**). **REPL test code has no canon** — written however
+makes the test work.
