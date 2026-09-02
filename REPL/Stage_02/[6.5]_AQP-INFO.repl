@@ -175,11 +175,11 @@
             (i-scent:object (AQP-INFO.INFO_AQP-FVT|AddScoreEntity anhd "FVT-x" 3 "T-x"))
             (i-rwd:object (AQP-INFO.INFO_AQP-FVT|AddRewardLink anhd "FVT-x" "OURO-x" false "BAR"))
             (i-qs:object (AQP-INFO.INFO_AQP-FVT|SetQualitySplit anhd "FVT-x" "OURO-x" "HOMOGENEOUS" [1000 0 0] [1000 0 0] [1000 0 0]))
-            (i-inj:object (AQP-INFO.INFO_AQP-FVT|CC_Inject anhd "FVT-x" "OURO-x" 100.0))
+            (i-inj:object (AQP-INFO.INFO_AQP-FVT|Inject anhd "FVT-x" "OURO-x" 100.0))
             (i-col:object (AQP-INFO.INFO_AQP-FVT|Collect anhd "FVT-x" 3 "T-x" "OURO-x"))
             (i-unst:object (AQP-INFO.INFO_AQP-FVT|UnstaleMyScores anhd ["FVT-x"]))
-            (i-fix:object (AQP-INFO.INFO_AQP-FVT|CCp_InjectFixChunk anhd "FVT-x" "OURO-x" 10))
-            (i-sweep:object (AQP-INFO.INFO_AQP-FVT|CC_SweepRevokeAnchor anhd "ANK-x"))
+            (i-fix:object (AQP-INFO.INFO_AQP-FVT|InjectFixChunk anhd "FVT-x" "OURO-x" 10))
+            (i-sweep:object (AQP-INFO.INFO_AQP-FVT|SweepRevokeAnchor anhd "ANK-x"))
         )
         (map print
             [

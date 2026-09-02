@@ -868,7 +868,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount]))
     )
-    (defun INFO_AQP-FVT|CC_Inject:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-FVT|Inject:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "Cost preview for CC_AQP-FVT|Inject (enforced-fresh single-tx inject). IGNIS GAS|INJECT; STOA none."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -880,7 +880,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount]))
     )
-    (defun INFO_AQP-FVT|CC_InjectFinalize:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-FVT|InjectFinalize:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "Cost preview for CC_AQP-FVT|InjectFinalize. IGNIS GAS|INJECT; STOA none."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -892,7 +892,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount]))
     )
-    (defun INFO_AQP-FVT|CCp_InjectFixChunk:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-FVT|InjectFixChunk:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
         @doc "Cost preview for CCp_AQP-FVT|InjectFixChunk. Gas-station subsidised — no IGNIS/STOA to the patron."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -905,7 +905,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun INFO_AQP-FVT|CCp_UnstaleAll:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-FVT|UnstaleAll:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
         @doc "Cost preview for CCp_AQP-FVT|UnstaleAll. Gas-station subsidised — no IGNIS/STOA to the patron."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -944,7 +944,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun INFO_AQP-FVT|CC_SweepRevokeAnchor:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-FVT|SweepRevokeAnchor:object{OuronetInfoV1.ClientInfo}
         (patron:string anchor-id:string)
         @doc "Cost preview for CC_AQP-FVT|SweepRevokeAnchor. Gas-station subsidised — no IGNIS/STOA to the patron."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -957,7 +957,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun INFO_AQP-FVT|CC_SweepBegin:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-FVT|SweepBegin:object{OuronetInfoV1.ClientInfo}
         (patron:string anchor-id:string)
         @doc "Cost preview for CC_AQP-FVT|SweepBegin. Gas-station subsidised — no IGNIS/STOA to the patron."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -970,7 +970,7 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    (defun INFO_AQP-FVT|CCp_SweepRecomputeChunk:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_AQP-FVT|SweepRecomputeChunk:object{OuronetInfoV1.ClientInfo}
         (patron:string anchor-id:string chunk:integer)
         @doc "Cost preview for CCp_AQP-FVT|SweepRecomputeChunk. Gas-station subsidised — no IGNIS/STOA to the patron."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
