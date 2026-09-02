@@ -336,7 +336,7 @@
         (nonce-b:integer 2)
         (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
         (ref-DPDC:module{DpdcV1} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
         (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)

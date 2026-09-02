@@ -145,7 +145,7 @@
         ;(ref-TS01-A:module{TalosStageOne_Admin} TS01-A)
         ;(ref-DPTF:module{DemiourgosPactTrueFungible} DPTF)
         (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
-        (ref-TS01-C1-V2:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-TS01-C1-V2:module{TalosStageOne_ClientOneV1} TS01-C1)
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)

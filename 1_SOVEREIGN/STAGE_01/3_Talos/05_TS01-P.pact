@@ -4,64 +4,6 @@
 ;; (frozen in 04_TS01-C3.pact for the same reason) rather than the central registry — kept
 ;; together with its always-paired sibling rather than split across files.
 ;;
-(interface TalosStageOne_ClientPactsV2
-    @doc "Frozen — pre-V3 surface; pooled issue caps typed against SwapperV3.PoolTokens \
-        \ (superseded when SwapperV3 shipped, interface bump per versioning rule — no \
-        \ functional surface change). Currently including functions from SWP Module."
-
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;{3.3}  tables
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;{5.2}  Compute [UC]
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;{5.7}  User [A/C]
-    ;;
-    ;;
-    ;;Issue
-    (defun C_SWP|IssueStablePool (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
-    (defun C_SWP|IssueWeightedPool (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
-    (defun C_SWP|IssueStandardPool (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal p:bool))
-    ;;
-    (defun C_SWP|AddStandardLiquidity (patron:string account:string swpair:string input-amounts:[decimal]))
-    (defun C_SWP|AddIcedLiquidity (patron:string account:string swpair:string input-amounts:[decimal]))
-    (defun C_SWP|AddGlacialLiquidity (patron:string account:string swpair:string input-amounts:[decimal]))
-    (defun C_SWP|AddFrozenLiquidity (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal))
-    (defun C_SWP|AddSleepingLiquidity (patron:string account:string swpair:string sleeping-dpof:string nonce:integer))
-
-)
-;;
 (interface TalosStageOne_ClientPactsV3
     @doc "Exposes Ouronet Stage One Client Multistep Functions \
         \ Currently including functions from SWP Module. \
