@@ -524,7 +524,9 @@ Source: `docs/STOICSYNTAX-MODULE-MARKERS-HANDOFF.md`. The empty-block start-poin
 
 ### 7.1 Block order (per logical module UNIT)
 A module *file* may hold several *logical units* (`coin` = 3; almost every Ouronet module = 1); a multi-unit
-file repeats the whole skeleton once per unit. `@doc "…"` is optional, **per file**, first thing, **not a block**.
+file repeats the whole skeleton once per unit. The optional **`@doc "…"` is the *module's* @doc** — module
+metadata in the module header (right after `(module NAME GOV`), **one per logical unit**, sitting before block
+`{0}`; it carries **no block marker**. *(The handoff's "per file" was a 1-module-per-file shorthand; it is the module @doc.)*
 
 | # | Block | Contents |
 |---|---|---|

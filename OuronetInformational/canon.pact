@@ -1,5 +1,3 @@
-;; @doc "…"                                     ;; OPTIONAL, per FILE, first thing before block {0}. Metadata, NOT a block, no marker.
-;;
 ;; ============================================================================
 ;;  CANONICAL MODULE SKELETON  —  StoicSyntax (settled 2026-09-02)
 ;; ----------------------------------------------------------------------------
@@ -8,8 +6,9 @@
 ;;  no body) — that is what makes a module scannable + diffable.
 ;;
 ;;  Block order per logical module UNIT (a multi-unit file, e.g. `coin` = 3
-;;  units, repeats this whole skeleton once per unit):
-;;      @doc(file) → {0} IMPLEMENTERS → {#} GASSTATION(opt) → {1} GOVERNANCE
+;;  units, repeats this whole skeleton once per unit; each unit has its OWN
+;;  module @doc):
+;;      (module) @doc → {0} IMPLEMENTERS → {#} GASSTATION(opt) → {1} GOVERNANCE
 ;;      → {2} POLICY → {3} CST → {4} CAPABILITIES → {5} FUNCTIONS → {6} REPL(opt)
 ;;
 ;;  Marker tiers:
@@ -24,6 +23,8 @@
 ;;  stays BRONZE even under a {C4} marker.
 ;; ============================================================================
 (module NAME GOV
+    @doc "…"                                      ;; OPTIONAL module @doc — the module's metadata, ONE per logical
+                                                  ;; module unit, in the module header before block {0}; carries no block marker.
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
