@@ -1427,7 +1427,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
                     (ref-ELITE:module{EliteV1} ELITE)
                     ;;
                     (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount sender))

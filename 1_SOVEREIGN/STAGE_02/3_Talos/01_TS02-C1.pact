@@ -955,7 +955,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                    (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
+                    (ref-DPDC-T:module{DpdcTransferV1} DPDC-T)
                     ;;
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount sender))
                     (l:integer (length receiver-lst))

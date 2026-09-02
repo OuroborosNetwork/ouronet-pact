@@ -8,7 +8,6 @@
     ;;
     (implements OuronetPolicyV1)
     (implements IgnisCollectorV1)
-    (implements IgnisCollectorV2)
     (implements OuronetInfoV1)
 
     ;;<=========================================================================>

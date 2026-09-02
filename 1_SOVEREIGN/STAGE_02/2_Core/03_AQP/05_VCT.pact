@@ -2782,7 +2782,7 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
                 (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 ;;
                 (bulk-oc:object{IgnisCollectorV1.OutputCumulator}
@@ -2814,7 +2814,7 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
+                (ref-DPDC-T:module{DpdcTransferV1} DPDC-T)
                 (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 ;;
                 (bulk-oc:object{IgnisCollectorV1.OutputCumulator}
@@ -2900,7 +2900,7 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
                 ;;
                 (bulk-oc:object{IgnisCollectorV1.OutputCumulator}
                     (ref-DPOF::C_BulkTransfer dpof-id nonces-array AQP|SC_NAME owner-ids true)
@@ -3002,7 +3002,7 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
+                (ref-DPDC-T:module{DpdcTransferV1} DPDC-T)
                 ;;
                 (bulk-oc:object{IgnisCollectorV1.OutputCumulator}
                     (ref-DPDC-T::C_BulkTransfer
