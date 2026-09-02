@@ -1,7 +1,11 @@
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
 (interface AcquisitionAnchorsV2
-
-
+    @doc "Interface for the AQP anchor layer. Declares the public surface for \
+        \ issuing/revoking anchors (per-user boost multipliers on DPTF/DPSF/DPNF holdings) \
+        \ and heterogeneous BoostClasses that group up to 7 anchors for score boosting. \
+        \ Exposes UR_/URC_ readers of anchor definitions, per-user promile, and boost-class \
+        \ score-links, plus XE_ update/sync/sweep hooks and C_Issue/C_Revoke client \
+        \ entrypoints returning IGNIS OutputCumulators."
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -155,10 +159,12 @@
 
 )
 (module AQP-ANK GOV
-
-
-
-
+    @doc "Sovereign anchor module for AQP. Stores anchor definitions, BoostClasses (7-slot \
+        \ groupings), per-asset anchor bookkeeping, per-user anchor promile, \
+        \ per-user/boost-class aggregates, and a reverse score-link index. Issues \
+        \ true/semi/non-fungible (trait or set) anchors, revokes anchors/BoostClasses, and \
+        \ updates each holder's aggregate promile on stake/unstake. Includes the revoke-lock \
+        \ and re-score sweep hooks; anchors feed score boosting in AQP-SCORE."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

@@ -187,10 +187,13 @@
 )
 ;;
 (module SWPT GOV
-
-
-
-
+    @doc "SWPT (SwapTracerV3) is the swap-graph tracer for the SWP liquidity-pool family. It \
+        \ stores plain token-to-token adjacency (SWPT|Graph), a first-write path cache \
+        \ (SWPT|PathCache), and a global topology-version counter, and exposes BFS-based \
+        \ routing helpers (URC_ComputeGraphPath, alternate/exhaustive route discovery, \
+        \ raw-graph fetch/filter variants) plus XE_/XI_ entrypoints to register paths and \
+        \ update the graph. It computes multi-hop swap routes between tokens without holding \
+        \ value data, so every real swap re-derives outputs from live reserves."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

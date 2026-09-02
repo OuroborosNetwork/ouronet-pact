@@ -88,10 +88,11 @@
 )
 
 (module BRD GOV
-
-
-
-
+    @doc "BRD — the branding core for all Ouronet entities (DPTF, DPOF, ATS pairs, SWP pairs \
+        \ and future ones), implementing BrandingV2. It stores per-entity live and pending \
+        \ branding (logo, description, website, socials, flag, genesis, premium-until) in \
+        \ BRD|BrandingTable; owners edit pending data then push it live, an admin sets \
+        \ flags, and blue-flag premium upgrades are priced in STOA by Elite tier."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

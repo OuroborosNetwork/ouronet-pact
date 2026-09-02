@@ -286,10 +286,13 @@
 )
 ;;
 (module DPDC GOV
-
-
-
-
+    @doc "DPDC is the central collectables (NFT/SFT) state module, implementing DpdcV2, \
+        \ BrandingUsageTertiaryV2 and OuronetPolicyV2. It owns all the domain tables — \
+        \ separate DPSF (SFT) and DPNF (NFT) tables for Properties, Nonces, VerumRoles, \
+        \ per-account Roles and AccountSupplies — and is the sole home of the UR_/URH_ \
+        \ readers, UEV_ validators, CAP_Owner/Creator gates, and the XE_/XI_/XB_ write \
+        \ primitives every other DPDC module routes persistence through. It also handles \
+        \ collection branding and exposes the DPDC smart-account governor."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

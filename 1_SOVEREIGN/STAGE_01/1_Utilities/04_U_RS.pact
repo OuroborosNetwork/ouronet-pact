@@ -47,10 +47,11 @@
 )
 
 (module U|RS GOV
-
-
-
-
+    @doc "Reserved-account helpers (implements ReservedAccountsV2). UEV_CheckReserved \
+        \ detects a single-char reserved prefix like 'c:foo' and returns its type; \
+        \ UEV_EnforceReserved validates an account against principal/reserved-name \
+        \ protocols, rejecting single-key and other reserved-guard violations. Guards \
+        \ Ouronet account-name conventions."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

@@ -164,10 +164,13 @@
 )
 ;;
 (module SWPU GOV
-
-
-
-
+    @doc "SWPU (SwapperUsageV3) is the user-facing swapping module for SWP. It provides \
+        \ single/multi-token swaps and SmartSwap (multi-hop) — both a self-searching path \
+        \ (CC_SmartSwap, via Hopper/BFS) and a dirty-read bundle-injected path (C_SmartSwap \
+        \ using a client-supplied path bundle to avoid on-chain graph search) — plus \
+        \ slippage-bound construction and swap-capability toggling. It handles per-hop fee \
+        \ splitting, special-fee-target flushing, and liquid-boost pumps, with STOA-value \
+        \ repricing of touched pools."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

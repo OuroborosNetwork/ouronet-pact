@@ -292,10 +292,13 @@
 )
 
 (module DPDC-UDC GOV
-
-
-
-
+    @doc "DPDC-UDC is the data-construction module for the DPDC collectables family, \
+        \ implementing DpdcUdcV2 and OuronetPolicyV2. It defines the core collectables \
+        \ schemas (Properties, NonceElement/NonceData, VerumRoles, per-account roles, \
+        \ AccountSupply, Set definitions, URI type/data, metadata) and exposes named UDC_ \
+        \ constructors for each — including zero/default builders. It holds no domain tables \
+        \ (only its policy tables), serving purely as the shared object-builder layer other \
+        \ DPDC modules call."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

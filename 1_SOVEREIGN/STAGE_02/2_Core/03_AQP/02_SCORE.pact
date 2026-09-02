@@ -1,7 +1,11 @@
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
 (interface AcquisitionScoresV2
-
-
+    @doc "Interface for the AQP scoring layer. Declares readers for score config/totals, \
+        \ per-(account,pool,score) user weights, SF nonce weights, and NF trait/class \
+        \ definitions with revision nonces; stake-weight URC_ deltas; XE_ hooks for \
+        \ aqpool/fvt links and applying stake deltas; and \
+        \ C_Issue/C_Control/C_CreateBoostLink/C_IssueTriplet/score-definition and \
+        \ score-model client entrypoints returning IGNIS OutputCumulators."
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE

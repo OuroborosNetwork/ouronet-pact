@@ -6,8 +6,13 @@
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
 (interface CodexV2
-
-
+    @doc "CodexV2 is the interface for the CODEX module — the on-chain Codex Identity \
+        \ registry, Arweave upload audit log, and StoicTag name registry. It declares UC \
+        \ validators (Apollo composite id, Arweave tx-id, StoicTag name/fee), UR field \
+        \ accessors and DataOrNull readers over the CODEX tables, URCi cost single-sources \
+        \ and INFO_ previews for StoicTag register/release, plus A_/C_ entrypoints to \
+        \ register identities, rotate codex guards, record Arweave uploads, and \
+        \ register/release StoicTags. Client entrypoints are wired through Talos TS01-C4."
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE

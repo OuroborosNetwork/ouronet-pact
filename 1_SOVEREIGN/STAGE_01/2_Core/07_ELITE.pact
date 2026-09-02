@@ -57,10 +57,12 @@
 )
 ;;
 (module ELITE GOV
-
-
-
-
+    @doc "ELITE — the Elite-account helper core, implementing EliteV2. It holds no domain \
+        \ tables of its own, instead providing Elite-Aurynz supply reads (summing the \
+        \ Elite-Auryn token plus its frozen/reserved/vesting/sleeping counterparts) and \
+        \ XE_UpdateElite entrypoints that recompute an account's Elite tier when Elite-Auryn \
+        \ balances move. Other modules call it on transfers/mints to keep Elite tiers \
+        \ current."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

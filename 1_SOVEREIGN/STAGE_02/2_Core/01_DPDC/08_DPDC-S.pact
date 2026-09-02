@@ -143,10 +143,15 @@
 )
 ;;
 (module DPDC-S GOV
-
-
-
-
+    @doc "DPDC-S is the Sets module of the DPDC collectables family, managing groups of \
+        \ nonces composed into higher-order set-classes. It stores set definitions in \
+        \ DPSF/DPNF SetsTables (Primordial, Composite, or Hybrid, each with a \
+        \ score-multiplier). Owners define set-classes via \
+        \ C_DefinePrimordialSet/C_DefineCompositeSet/C_DefineHybridSet and can enable \
+        \ fragmentation, toggle and rename them. Users compose and decompose via \
+        \ C_MakeSemiFungibleSet/C_BreakSemiFungibleSet (SFT, quantity) and \
+        \ C_MakeNonFungibleSet/C_BreakNonFungibleSet (NFT, minting/burning a set nonce whose \
+        \ score sums its constituents)."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

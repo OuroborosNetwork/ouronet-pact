@@ -75,10 +75,11 @@
 )
 ;;
 (module OUROBOROS GOV
-
-
-
-
+    @doc "OUROBOROS — the OURO token / exchange core at the top of the Stage 1 stack, \
+        \ implementing OuroborosV2. It compresses IGNIS gas into OURO and sublimates OURO \
+        \ back out (C_Compress, C_Sublimate/C_SublimateV2), fuels the liquid Stoa index, \
+        \ projects the Stoa liquindex and withdraws fees (C_Fuel, C_WithdrawFees). It acts \
+        \ as the protocol's gas-to-token sink and treasury exchange."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

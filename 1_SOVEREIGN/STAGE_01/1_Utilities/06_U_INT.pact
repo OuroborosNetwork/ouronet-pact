@@ -71,10 +71,11 @@
 )
 
 (module U|INT GOV
-
-
-
-
+    @doc "Integer-list utilities (implements OuronetIntegersV2). Splits integer lists into \
+        \ negative/positive partitions and pairs nonces with amounts (UC_NonceSplitter), \
+        \ returning SplitIntegers / NonceSplitter objects built by UDC constructors. \
+        \ Validators cover UEV_ContainsAll, UEV_PositionalVariable, UEV_UniformList, and \
+        \ UEV_MaxInteger (enforced max, rejecting empty lists)."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

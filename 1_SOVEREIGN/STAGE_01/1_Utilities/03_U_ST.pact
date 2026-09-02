@@ -59,10 +59,11 @@
 )
 
 (module U|ST GOV
-
-
-
-
+    @doc "Gas-station helper library (implements OuronetGasStationV2). Reads gas price and \
+        \ gas limit from chain-data, derives the gas notional (price * limit), and exposes a \
+        \ family of UEV_ enforcers and user-guard builders that cap gas notional, gas price, \
+        \ and gas limit (below vs below-or-at variants). Underpins Ouronet gas-station \
+        \ spending limits."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

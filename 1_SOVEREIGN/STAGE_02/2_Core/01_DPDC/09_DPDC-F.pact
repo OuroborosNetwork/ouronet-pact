@@ -73,10 +73,14 @@
 )
 ;;
 (module DPDC-F GOV
-
-
-
-
+    @doc "DPDC-F is the Fragments module of the DPDC collectables family, handling \
+        \ fractionalization of class-0 collectable nonces into fragment pieces in units of \
+        \ 1000. Owners first enable per-nonce fragmentation via C_EnableNonceFragmentation. \
+        \ Users then fractionalize and defractionalize with C_MakeFragments (locks a native \
+        \ nonce, credits 1000x negative fragment nonces) and C_MergeFragments (burns \
+        \ multiples of 1000 to reclaim whole nonces), plus C_RepurposeCollectableFragments \
+        \ to move fragment balances. It carries no persistent set state, delegating \
+        \ reads/writes to the core DPDC modules."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

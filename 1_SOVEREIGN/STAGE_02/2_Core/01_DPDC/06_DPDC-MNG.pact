@@ -98,10 +98,14 @@
 )
 ;;
 (module DPDC-MNG GOV
-
-
-
-
+    @doc "Management module for the DPDC collectables (NFT/SFT) family, implementing \
+        \ DpdcManagementV2 and OuronetPolicyV2. Its client entrypoints let a collectable \
+        \ owner control specs and roles (C_Control, C_TogglePause), credit supply \
+        \ (C_AddQuantity for SFTs, C_RespawnNFT), and debit/burn/wipe holdings (C_BurnSFT, \
+        \ C_BurnNFT, C_WipeSlim, C_WipeNonce, plus multi-nonce wipes). It only operates on \
+        \ Class-0 nonces, updates nonce supplies via DPDC-C, guards the DPDC system account \
+        \ against wiping collateral backing outstanding fragments, and returns IGNIS gas \
+        \ cumulators."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

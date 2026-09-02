@@ -181,10 +181,12 @@
 )
 
 (module U|CT GOV
-
-
-
-
+    @doc "Constants library: exposes Ouronet's global constants as nullary functions \
+        \ (implements OuronetConstantsV2 and DiaStoaPidV2). Provides namespace/keyset roots, \
+        \ fee locks, precision/length limits, the alphabet and prohibited-char sets, the ET \
+        \ (elite-auryn thresholds) and DEB (elite bonus multipliers) arrays, and elite \
+        \ class/tier name strings. Also holds UR_STOA-PID|Price, a stubbed STOA/USD oracle \
+        \ price."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

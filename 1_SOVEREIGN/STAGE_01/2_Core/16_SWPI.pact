@@ -223,10 +223,11 @@
 )
 ;;
 (module SWPI GOV
-
-
-
-
+    @doc "SWPI (SwapperIssueV4) handles SWP pool issuance and the swap-math/pricing engine. \
+        \ It computes direct and inverse swaps with fees across Stable/Weighted/standard \
+        \ pool types, runs the Hopper multi-hop router (best-of-candidate selection), and \
+        \ prices tokens/pools in WSTOA. C_Issue/XE_IssueWrite mint the LP token and register \
+        \ the pool (folding in XE_AddLPTracker so every issuance path registers)."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

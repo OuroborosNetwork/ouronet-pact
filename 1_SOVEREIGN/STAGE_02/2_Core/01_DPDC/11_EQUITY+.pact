@@ -1,7 +1,12 @@
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
 (interface EquityV2
-
-
+    @doc "EquityV2 is the interface contract for the EQUITY shareholder/equity-collection \
+        \ policy, declaring the signatures every implementer must provide. It specifies \
+        \ compute helpers, read/cost-preview functions (tier supplies, share \
+        \ package/per-million math, combine capacity, URCi_ cost readers), validators (share \
+        \ package tier, share amounts, equity SF id, convert, morph), and the two user \
+        \ entrypoints C_IssueShareholderCollection and C_MorphPackageShares. It defines no \
+        \ tables or state, only the equity API surface."
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -81,15 +86,18 @@
 
 )
 (module EQUITY GOV
-
-
-
-
+    @doc "EQUITY implements OuronetPolicyV2 and EquityV2 to create and manage Shareholder \
+        \ DPSF (SFT) collections representing company equity, where nonce 1 is the barebone \
+        \ share and nonces 2-8 are packaged share tiers. Its main entrypoints are \
+        \ C_IssueShareholderCollection (issues an Elite equity SFT collection via \
+        \ DPDC-I/DPDC-C, populating 8 nonces with tiered royalties) and C_MorphPackageShares \
+        \ (Make/Break/Convert between share tiers via SECURE-gated XI_ helpers over \
+        \ DPDC-MNG/DPDC-T). It enforces packaging caps, tier/divisibility validators, owns \
+        \ policy tables, acts as a remote DPDC governor, and returns IGNIS cost cumulators."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    @doc "Defines the rules for creating Shareholder DPSF Collections"
     (implements OuronetPolicyV2)
     (implements EquityV2)
 

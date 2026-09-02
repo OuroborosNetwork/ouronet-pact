@@ -1,7 +1,11 @@
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
 (interface AcquisitionFarmsVaultsTreasuriesV2
-
-
+    @doc "Interface for the AQP reward-distribution layer (Farms/Vaults/Treasuries). \
+        \ Declares readers for FVT config, member score-entity links, RPS (reward-per-share) \
+        \ global/member/user/stream accumulators, and per-user presence/weight state; UC_ \
+        \ key builders; and the CC_*StakeFlow, CC_Inject/InjectStream/InjectFinalize, \
+        \ CC_Collect, CC_SweepRevokeAnchor/SweepBegin, CC_UnstaleMyScores and FVT config C_ \
+        \ entrypoints returning IGNIS OutputCumulators."
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -294,10 +298,13 @@
 
 )
 (module AQP-FVT GOV
-
-
-
-
+    @doc "Large sovereign reward-accounting module for AQP farms (class 0), vaults (1) and \
+        \ treasuries (2). Uses a UrStoa-style RPS (reward-per-share) model across \
+        \ global/member/user/stream tables plus member vaults, user presence/weight mirrors, \
+        \ quality-splits, forced-fix counts, vacate-freeze and DSA agency-fee/oracle rows. \
+        \ Drives the multi-phase stake/unstake settle, reward inject (incl. streamed and \
+        \ enforced-fresh), collect, deb-staleness fixes, and the re-score anchor-sweep \
+        \ recompute; composes AQP-POOL/SCORE/ANK."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

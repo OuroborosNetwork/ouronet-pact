@@ -51,10 +51,11 @@
 )
 
 (module U|G GOV
-
-
-
-
+    @doc "Guard-combinator helpers (implements OuronetGuardsV2). Provides UEV_All (enforce \
+        \ every guard in a list), UEV_Any (succeed if at least one passes, via the UC_Try \
+        \ try-wrapper), and UEV_GuardOfAll / UEV_GuardOfAny which package those into \
+        \ composite user-guards. Used wherever multiple guards must be enforced together or \
+        \ as an either/or."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

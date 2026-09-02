@@ -51,10 +51,12 @@
 )
 ;;
 (module MTX-AQP GOV
-
-
-
-
+    @doc "Holds all AQP multi-transaction (defpact) flows. Provides C_2|Inject — a 2-step \
+        \ enforced-fresh vault/treasury reward inject that is the spike fallback for \
+        \ AQP-FVT::CC_Inject when the deb-stale staker set exceeds one tx — and \
+        \ C_2|SweepRevokeAnchor — a 2-step paginated re-score sweep that retires an employed \
+        \ anchor. Each step atomically fixes/recomputes a bounded window of holders via \
+        \ AQP-FVT XE_ building blocks under its own policy caller guard."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

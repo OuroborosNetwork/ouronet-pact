@@ -116,10 +116,11 @@
 )
 ;;
 (module TFT GOV
-
-
-
-
+    @doc "TFT — the True-Fungible transfer core, the movement layer over DPTF, implementing \
+        \ TrueFungibleTransferV2. It computes transfer classes, fees and remainders \
+        \ (including Elite-Auryn detection) and exposes client ops C_Transfer, \
+        \ C_MultiTransfer, C_MultiBulkTransfer, C_Transmute (mint/burn conversion) and \
+        \ C_ClearDispo, handling fee-bearing transfers and multi-token batched sends."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

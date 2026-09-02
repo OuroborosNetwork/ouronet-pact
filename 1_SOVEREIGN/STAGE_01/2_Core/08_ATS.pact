@@ -266,8 +266,11 @@
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
 (interface AutostakeComputerV2
-
-
+    @doc "AutostakeComputerV2 — the read/compute interface for ATS staking eligibility. It \
+        \ defines the CanCoil/CanConstrict/CanCurl/CanBrumate schemas (a boolean plus \
+        \ where-lists of eligible pools), exposing the pure computation surface the ATS \
+        \ module and Talos consult to decide which autostake pools an account may coil, \
+        \ constrict, curl or brumate into."
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -332,10 +335,13 @@
 )
 ;;
 (module ATS GOV
-
-
-
-
+    @doc "ATS — the autostake pool core, implementing AutostakeV3, AutostakeComputerV2 and \
+        \ branding. It owns ATS|Pairs (pool config: owner, reward tokens, royalty/syphon, \
+        \ cold/hot/direct recovery settings, hibernation, parameter locks) and ATS|Ledger \
+        \ (per-account staked positions P0-P7). Owner/admin client ops configure pairs — \
+        \ issue, control, royalty/syphon, recovery fees/durations/toggles, secondary reward \
+        \ tokens, hot-RBT, elite mode and locks — while token-moving stake actions live in \
+        \ ATSU."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

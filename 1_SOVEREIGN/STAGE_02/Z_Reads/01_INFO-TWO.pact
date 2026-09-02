@@ -64,10 +64,12 @@
 ;;INFO_LIQUID|WrapStoa
 ;;INFO_LIQUID|UnwrapUrStoa
 (module INFO-TWO GOV
-
-
-
-
+    @doc "INFO-TWO (InfoTwoV2) is the read-only Stage-2 UI info module exposing INFO_ \
+        \ preview functions returning ClientInfo objects (description, result, IGNIS/STOA \
+        \ cost) for Stage-2 client ops: DPDC collectables (roles, management, nonce/set \
+        \ updates, wipes, burns, transfers, sets), the DEMIPAD sovereign launchpad, EQUITY, \
+        \ and AQP. Each preview wraps the corresponding core module's URCi_ cost reader via \
+        \ shared helpers; it holds no tables and does no writes."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

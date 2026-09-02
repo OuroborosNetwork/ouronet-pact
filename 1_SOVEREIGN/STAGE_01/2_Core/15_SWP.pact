@@ -174,10 +174,14 @@
 )
 ;;
 (module SWP GOV
-
-
-
-
+    @doc "SWP (SwapperV4) is the core swapper/liquidity-pool module holding all per-pool \
+        \ state in SWP|Pairs (owner, weights, token supplies, fees, amplifier, STOA value, \
+        \ flags) plus global properties (principals, primordial pool, limits) and pool/LP \
+        \ indexes. It provides the pool read surface (UR_/URC_ for tokens, supplies, fees, \
+        \ LP capacity, swpairs) and admin/owner client ops: change ownership, modify \
+        \ weights/amplifier/fees/special-fee targets, toggle add-or-swap, enable \
+        \ frozen/sleeping LP, and manage principals and the primordial pool. Serves Stable, \
+        \ Weighted, and standard pool curves."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

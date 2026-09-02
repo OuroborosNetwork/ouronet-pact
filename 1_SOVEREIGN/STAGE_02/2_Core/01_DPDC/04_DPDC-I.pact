@@ -69,10 +69,13 @@
 )
 ;;
 (module DPDC-I GOV
-
-
-
-
+    @doc "DPDC-I is the Collectables Issue module of the DPDC family, implementing \
+        \ DpdcIssueV2 and OuronetPolicyV2. Its flagship entrypoint C_IssueDigitalCollection \
+        \ creates a new digital collection (SFT if son=true, else NFT): it charges IGNIS and \
+        \ STOA usage fees, writes the collection record and its initial Verum role-chain via \
+        \ DPDC, and auto-deploys owner and creator collection accounts with distinct default \
+        \ role sets. URCi_ functions provide cost previews; it manages only its own policy \
+        \ tables and gates issuance on owner-account ownership."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

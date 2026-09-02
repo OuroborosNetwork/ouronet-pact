@@ -137,10 +137,13 @@
 )
 ;;
 (module SWPLC GOV
-
-
-
-
+    @doc "SWPLC (SwapperLiquidityClientV2 + BrandingUsageSecondaryV2) is the \
+        \ liquidity-client module for SWP pools. It exposes C_ entrypoints to add liquidity \
+        \ in several modes (standard, iced, glacial, frozen, sleeping) and remove liquidity, \
+        \ plus fuel pools and update/upgrade LP-token branding, each with a matching URCi_ \
+        \ cost-preview reader that composes IGNIS OutputCumulators. It wires LP-token \
+        \ transfers, VST freeze/sleep, and complete-liquidity-addition-data fee handling, \
+        \ with UEV_ validators gating each liquidity path."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

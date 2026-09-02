@@ -76,10 +76,14 @@
 )
 ;;
 (module DPDC-N GOV
-
-
-
-
+    @doc "DPDC-N is the DPDC-family module for updating the mutable metadata of existing \
+        \ NFT/SFT nonces (and set-classes). It exposes C_ entrypoints to update full nonce \
+        \ data in bulk plus single fields — native/ignis royalty, name, description, score, \
+        \ meta-data and URIs — each gated by role checks \
+        \ (Recreate/Update/ModifyRoyalties/SetUri), account-ownership enforcement, and a \
+        \ guard blocking edits to already-minted NFT Set instances. It implements \
+        \ OuronetPolicyV2 and DpdcNonceV2, owns policy tables, routes writes through SECURE \
+        \ XI_ helpers into DPDC/DPDC-S/DPDC-F, and computes IGNIS cost previews via URCi_."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

@@ -257,10 +257,12 @@
 ;;INFO_LIQUID|WrapStoa
 ;;INFO_LIQUID|UnwrapUrStoa
 (module INFO-ONE GOV
-
-
-
-
+    @doc "INFO-ONE (InfoOneV2) is a read-only Stage-1 UI info module exposing INFO_ preview \
+        \ functions that return ClientInfo objects (operation description, result text, \
+        \ IGNIS/STOA cost estimates) for client operations across DALOS, DPTF, DPOF, VST, \
+        \ ATS, SWP, LIQUID and ORBR. It re-derives costs purely via gas-price helpers and \
+        \ each core module's URCi_ cost readers, with UC helpers for gas-price triggering \
+        \ and output formatting; it performs no state writes."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

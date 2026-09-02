@@ -91,10 +91,13 @@
 )
 ;;
 (module AQP-DSA GOV
-
-
-
-
+    @doc "Delegated Staking Agencies — a delegation layer over AQP-FVT's two-tier farm \
+        \ settle. An agency is one FVT member (a triplet for Custodians): delegators stake \
+        \ into it, an operator runs nodes to capture reward units and takes a per-mille fee. \
+        \ Provides A_DefineDelegationVault, C_AdmitAgency, C_RecomputeCapture, oracle \
+        \ auth/write, and royalty withdraw/burn/fuel/fee ops; it writes the member's \
+        \ delegation/capture fields through FVT XE_ and reads them at inject. First client: \
+        \ Custodians."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

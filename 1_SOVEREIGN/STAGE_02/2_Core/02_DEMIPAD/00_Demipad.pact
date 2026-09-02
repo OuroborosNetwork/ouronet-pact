@@ -1,7 +1,15 @@
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
 (interface DemiourgosLaunchpadV2
-
-
+    @doc "Sovereign interface defining the API for the DemiPad launchpad, a permissioned \
+        \ venue where Demiourgos.Holdings sells assets (true/orto/semi/non-fungibles) for \
+        \ WSTOA, SSTOA or OURO while retaining a decreasing royalty fee. It declares schemas \
+        \ for Costs, launchpad Properties, per-asset Holdings, Prices and RoyaltyInterval, \
+        \ plus constructors, compute helpers (royalty intervals, deposit royalty, \
+        \ environment split), and readers for launchpad and asset state. It also exposes \
+        \ acquire/price computation, IGNIS cost-preview deposit/transmit functions, \
+        \ fungibility validators, owner capabilities, admin operations (register asset, \
+        \ toggle sale/retrieval, define price), and client deposit/withdraw/transmit \
+        \ entrypoints."
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE

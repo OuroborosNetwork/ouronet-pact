@@ -318,10 +318,13 @@
 )
 ;;
 (module DPTF GOV
-
-
-
-
+    @doc "DPTF — the True-Fungible token core, implementing DemiourgosPactTrueFungibleV2 and \
+        \ the primary branding interface. It owns a properties table (ownership, decimals, \
+        \ control flags, supply, fee config, reward-token/RBT and \
+        \ vesting/sleeping/frozen/reservation links), a role table and a balance table. \
+        \ Client ops include issue, mint/burn, control flags, pause, reservation, fee \
+        \ set/target/lock/exemption, account freeze, mint/burn/transfer roles, wipe, \
+        \ ownership rotation and treasury-debt admin."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

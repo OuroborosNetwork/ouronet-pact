@@ -13,10 +13,12 @@
 ;; No interface: this is a leaf read-only preview module — nothing references it via module{}.
 ;; ================================================================================
 (module AQP-INFO GOV
-
-
-
-
+    @doc "Read-only pre-execution cost-preview module for the AQP family. Each INFO_ \
+        \ function mirrors a TS02-C3 execution wrapper and returns an \
+        \ OuronetInfoV2.ClientInfo describing the operation, its execution function, and the \
+        \ exact IGNIS+STOA price for an account — sourced from each AQP module's URCi_ cost \
+        \ readers so previews match execution byte-for-byte. A leaf module with no \
+        \ interface; never writes; deploys after all AQP cores and TS02-C3."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

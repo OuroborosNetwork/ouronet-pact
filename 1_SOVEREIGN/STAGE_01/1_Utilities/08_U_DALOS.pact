@@ -1,7 +1,9 @@
 ;; net: v2   ·   dev: v3   ;; bumped by the StoicSyntax refactor — deploy v3 then set net: v3
 (interface UtilityDalosGlyphsV3
-
-
+    @doc "Interface for DALOS glyph/account-format helpers implemented by U|DALOS. Declares \
+        \ StoicTag name checks and account-string validators for DALOS accounts and Apollo \
+        \ accounts, plus a multi-char DALOS-charset verifier. Separated from UtilityDalosV2 \
+        \ as the glyph-validation half of the DALOS utility surface."
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -115,10 +117,11 @@
 )
 
 (module U|DALOS GOV
-
-
-
-
+    @doc "DALOS glyph/format utility (implements UtilityDalosV2 and UtilityDalosGlyphsV3). \
+        \ Defines the DALOS charset constants and helpers to build token ids/nonces, concat \
+        \ with the bar separator, compute elite gas costs/discounts, split amounts, and \
+        \ manage role lists. Validators enforce 162-char DALOS/Apollo account formats, \
+        \ StoicTag names, decimals, fees, and token name/ticker rules."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

@@ -63,10 +63,11 @@
 )
 
 (module U|LST GOV
-
-
-
-
+    @doc "List and string processing library (implements StringProcessorV2). Provides pure \
+        \ list ops (append, chain, insert, first/last, remove, replace, search) plus \
+        \ UC_SplitString for tokenizing on a separator. Validators include UEV_NotEmpty, \
+        \ UEV_StringPresence, and UEV_IzUnique (aborts on duplicates). Heavily reused across \
+        \ the codebase for building and filtering lists."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

@@ -79,10 +79,12 @@
 )
 
 (module U|ATS GOV
-
-
-
-
+    @doc "Autostake (ATS/ATSU) utility library (implements UtilityAtsV3). Core piece is \
+        \ UDC_Elite, mapping a decimal auryn amount to an elite class/name/tier/DEB object. \
+        \ Provides unstake-object reshaping, reward-token splitting, cold-recovery interval \
+        \ builders, unlock pricing, StoicTag index checks, and a large set of UEV validators \
+        \ for atspair ids, cold-recovery fees/thresholds/arrays, decay, and hibernation \
+        \ fees."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

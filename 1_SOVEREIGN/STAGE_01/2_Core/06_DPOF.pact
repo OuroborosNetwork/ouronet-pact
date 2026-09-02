@@ -384,10 +384,13 @@
 )
 ;;
 (module DPOF GOV
-
-
-
-
+    @doc "DPOF — the OrtoFungible token core, the modern successor to DPMF for \
+        \ metadata-rich, NFT-like fungibles; implements DemiourgosPactOrtoFungibleV2 and \
+        \ DpofUdcV2. Tables hold token properties, per-nonce elements \
+        \ (holder/value/supply/metadata, each nonce single-held), verum roles and \
+        \ per-account roles. Client ops cover issue, mint, add-quantity, burn, \
+        \ transfer/transmit/bulk-transfer, move-create-role, role and pause/freeze toggles, \
+        \ several wipe variants and ownership rotation."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

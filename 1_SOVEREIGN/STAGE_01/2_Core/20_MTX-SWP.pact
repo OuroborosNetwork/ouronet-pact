@@ -76,10 +76,12 @@
 ;;registration into XE_Issue itself, in 1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact, so every issuance path
 ;;gets it "for free" and this class of per-caller-remembers-it gap can't recur here.)
 (module MTX-SWP GOV
-
-
-
-
+    @doc "MTX-SWP (SwapperMtxV4) provides multi-step (defpact) versions of SWP pool issuance \
+        \ and liquidity addition, originally to split work under an old per-transaction gas \
+        \ ceiling (now kept for continuity/example, no longer strictly required). Its \
+        \ defpacts stage validation, IGNIS/STOA collection, LP minting, and LP \
+        \ transfer/freeze/sleep across steps with rollback, delegating writes to SWPL and \
+        \ SWPI::XE_IssueWrite."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

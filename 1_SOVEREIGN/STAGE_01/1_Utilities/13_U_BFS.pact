@@ -64,10 +64,11 @@
 )
 
 (module U|BFS GOV
-
-
-
-
+    @doc "Breadth-first-search library over token graphs (implements BreadthFirstSearchV2), \
+        \ used by the SWP modules to find swap paths between pool tokens. UC_BFS folds over \
+        \ a graph-node list from a start node, building a BFS object (visited set, queue, \
+        \ discovered chains); UC_BFSTargeted adds early-exit once a target node is reached. \
+        \ Backed by internal queue/chain constructors and node-lookup/filter helpers."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

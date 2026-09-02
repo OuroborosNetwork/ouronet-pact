@@ -102,10 +102,12 @@
 )
 ;;
 (module ATSU GOV
-
-
-
-
+    @doc "ATSU — the Autostake usage core, performing the token-moving operations on ATS \
+        \ pools; implements AutostakeUsageV2. It provides URCi cost readers plus client ops \
+        \ KickStart, Fuel, Coil, Curl, ColdRecovery, Cull, HotRecovery, Recover, Redeem, \
+        \ DirectRecovery, Syphon, WithdrawRoyalties and RemoveSecondary. It complements ATS \
+        \ (pool configuration) by executing the actual reward-token staking, recovery and \
+        \ reward withdrawals."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

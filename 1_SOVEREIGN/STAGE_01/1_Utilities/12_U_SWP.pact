@@ -182,10 +182,11 @@
 )
 
 (module U|SWP GOV
-
-
-
-
+    @doc "Swap-pool math and helper library (implements UtilitySwpV2). Defines swap \
+        \ input/output schemas with UDC constructors, and implements the pool invariant \
+        \ solvers: Curve-style stable-pool math, weighted and equal-weight constant-product \
+        \ swaps and inverses, plus LP and pool-id helpers and swpair/token routing \
+        \ utilities."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

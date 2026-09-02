@@ -82,10 +82,11 @@
 )
 ;;
 (module LIQUID GOV
-
-
-
-
+    @doc "LIQUID — the Stoa liquid-staking core, implementing StoaLiquidStakingV2. It wraps \
+        \ and unwraps native STOA into liquid-staking tokens and their URSTOA counterparts \
+        \ (C_WrapStoa/C_UnwrapStoa and C_WrapUrStoa/C_UnwrapUrStoa, with matching URCi cost \
+        \ readers), gated by a liquid-staking-live check, plus an A_MigrateLiquidFunds admin \
+        \ migration path."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

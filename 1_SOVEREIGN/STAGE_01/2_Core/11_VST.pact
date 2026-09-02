@@ -137,10 +137,12 @@
 )
 ;;
 (module VST GOV
-
-
-
-
+    @doc "VST — the vesting/lockup core that mints special DPTF/DPOF derivative tokens; \
+        \ implements VestingV2. It creates link tokens (frozen, reservation, vesting, \
+        \ sleeping, hibernating) for a DPTF, then Freezes/Reserves/Vests/Sleeps/Hibernates \
+        \ amounts into schedule-bearing DPOF nonces (release amounts and dates). \
+        \ Unvest/Unsleep/Awake/Merge/Slumber/Constrict/Brumate release or combine them, \
+        \ alongside repurpose and transfer-role toggles."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

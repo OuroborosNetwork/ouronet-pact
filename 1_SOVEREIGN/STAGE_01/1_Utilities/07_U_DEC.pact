@@ -53,10 +53,10 @@
 )
 
 (module U|DEC GOV
-
-
-
-
+    @doc "Decimal math helpers (implements OuronetDecimalsV2). Column-wise adds decimal \
+        \ arrays (equal-length and ragged rows), plus UC_Max, UC_Percent, UC_Promille, and \
+        \ UC_UnlockPrice (computes ATS/DPTF unlock gas costs as [IGNIS STOA]). \
+        \ UEV_DecimalArray enforces that all inner fee-array lists share one length."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

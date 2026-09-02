@@ -66,10 +66,11 @@
 )
 
 (module U|DPTF GOV
-
-
-
-
+    @doc "DPTF fungible-token utility library (implements UtilityDptfV2). Provides \
+        \ even-split helpers that divide an integer into 2/4/8 near-equal parts, the \
+        \ DispoData schema plus helpers for computing an account's max negative-Ouro \
+        \ overconsumption, UC_UnlockPrice (DPTF unlock gas costs), and UC_VolumetricTax for \
+        \ the logarithmic volumetric transaction tax."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

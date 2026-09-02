@@ -177,10 +177,13 @@
 )
 ;;
 (module DPMF GOV
-
-
-
-
+    @doc "DPMF — the legacy MetaFungible token core, implementing \
+        \ DemiourgosPactMetaFungibleV7. Owns a properties table (ownership, \
+        \ name/ticker/decimals, control flags, supply, nonces-used, vesting/sleeping links), \
+        \ a per-account balance table of nonce units, and a role table. Client ops cover \
+        \ issue, mint, add-quantity, burn, single/multi batch transfer, pause, freeze, \
+        \ roles, wipe and ownership rotation. Superseded by DPOF (OrtoFungible) for live \
+        \ use; retained for history and migration."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

@@ -1,8 +1,12 @@
 
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
 (interface IgnisCollectorV2
-
-
+    @doc "IgnisCollectorV2 — the interface defining Ouronet's virtual-gas (IGNIS) data model \
+        \ and collection API. Declares the cumulator schemas \
+        \ (OutputCumulator/ModularCumulator per-interactor legs, plus Compressed and Primed \
+        \ forms), UDC cumulator constructors and tier presets, URC zero-gas readers, DALOS \
+        \ cost readers, and the C_Collect / STOA-collect entrypoints that every core C_ \
+        \ returns and Talos uses to bill gas."
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -217,10 +221,13 @@
 )
 
 (module IGNIS GOV
-
-
-
-
+    @doc "IGNIS — the virtual-chain gas collector, implementing IgnisCollectorV2 and \
+        \ OuronetInfoV2. It compresses and primes OutputCumulators into per-interactor \
+        \ charges, splitting a GAS_QUARTER cut between smart-account interactors and the \
+        \ principal; C_Collect debits the patron and credits collectors via DALOS balance \
+        \ updates, while STOA collection splits native STOA 10/20/30/40 across \
+        \ Demiourgos/Dalos/maintenance/Ouroboros. Also hosts shared cost/format helpers and \
+        \ the DALOS per-op tier cost readers."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

@@ -58,10 +58,11 @@
 )
 
 (module U|VST GOV
-
-
-
-
+    @doc "Vesting (VST) utility library (implements UtilityVstV2). Builds milestone date \
+        \ lists and splits balances across milestones, and generates special token \
+        \ name/ticker id pairs for the various locked states — Vested, Sleeping, \
+        \ Hibernating, Frozen, Reserved, and Equity — via a shared helper. Validators bound \
+        \ milestone counts (1-250) and durations (max 25 years)."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

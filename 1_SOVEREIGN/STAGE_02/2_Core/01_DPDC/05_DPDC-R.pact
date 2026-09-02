@@ -75,10 +75,14 @@
 )
 ;;
 (module DPDC-R GOV
-
-
-
-
+    @doc "DPDC-R is the Collectables Roles module of the DPDC family, implementing \
+        \ DpdcRolesV2 and OuronetPolicyV2, managing the special roles on a collection's \
+        \ accounts. Its C_ entrypoints toggle per-account roles (add-quantity, freeze, \
+        \ exemption, burn, update, modify-creator, modify-royalties, transfer) and move \
+        \ singleton roles (create, recreate, set-URI) between accounts. Each op is \
+        \ owner-gated via DPDC::CAP_Owner plus role/state validators, ensures the target \
+        \ account is deployed, then writes state and updates the Verum role-chain through \
+        \ DPDC; URCi_ give IGNIS cost previews."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

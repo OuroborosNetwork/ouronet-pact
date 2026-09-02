@@ -1,7 +1,10 @@
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
 (interface AcquisitionVacateV2
-
-
+    @doc "Interface for the AQP pool-vacate subsystem. Declares UC_ helpers for slice \
+        \ sizing, URC_/URH_ readers for vacate progress, per-asset inventory and gas-bounded \
+        \ owner-array checks, URHC_ slice-plan builders, per-fungibility XB_Vacate leg \
+        \ writers, the CC_FullVacate drain flow, and C_AbortVacate/C_FinalizeVacate client \
+        \ entrypoints returning IGNIS OutputCumulators."
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -122,10 +125,12 @@
 ;; =============================================================================
 
 (module AQP-VCT GOV
-
-
-
-
+    @doc "Sovereign vacate module that unwinds an AQP pool by returning every staked \
+        \ position to owners. Works over slice-payload/plan and per-leg inventory/lane \
+        \ schemas to batch-drain TF/OF/SF/NF stakes in gas-bounded slices. Provides \
+        \ XB_Vacate per-fungibility leg writers, the CC_FullVacate paginated drain, and \
+        \ owner-gated C_AbortVacate / C_FinalizeVacate; finalize requires the pool empty and \
+        \ nukes the employed scores' totals via AQP-SCORE."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

@@ -1,7 +1,11 @@
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
 (interface AcquisitionPoolsV2
-
-
+    @doc "Interface for AQP acquisition pools and staking. Declares tracker key builders and \
+        \ readers for pool config, per-(pool,asset,owner,beneficiary) stake trackers \
+        \ (DPTF/DPOF/DPSF/DPNF), and per-beneficiary rollups/anchor-sync state; URC_ \
+        \ stake/unstake admission checks; URH_ heavy stake enumerations; XE_/XB_ transfer, \
+        \ pool-tracker, rollup, vacate-state and sync building blocks; and \
+        \ C_Issue/C_AddScore/C_*PoolStake/C_Sync client entrypoints."
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -256,10 +260,13 @@
 
 )
 (module AQP-POOL GOV
-
-
-
-
+    @doc "Sovereign acquisition-pool module. Owns pool definitions (asset, aqp-class, up to \
+        \ 7 employed scores, stake-enabled/vacate/sweep state, occupancy counts), \
+        \ per-position stake trackers for TF/OF/SF/NF assets, and per-beneficiary balance \
+        \ rollups with anchor-sync counters. Handles pool issuance, add/revoke score, \
+        \ enable/disable staking, custody transfers and anchor sync; stake/unstake token \
+        \ movement and tracker/rollup writes flow through its XE_/XB_ blocks driven by \
+        \ Talos/FVT."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

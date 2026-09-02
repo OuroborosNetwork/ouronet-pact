@@ -87,10 +87,13 @@
 )
 ;;
 (module DPDC-T GOV
-
-
-
-
+    @doc "Transfer module for the DPDC collectables (NFT/SFT) family, implementing \
+        \ DpdcTransferV2 and OuronetPolicyV2. Client entrypoints move native and fragment \
+        \ nonces between accounts: C_Transfer (multi id/son, single receiver), \
+        \ C_BulkTransfer (one id/son, many receivers), and C_RepurposeCollectable. It \
+        \ enforces transfer roles, pause/freeze states, transferability and account \
+        \ ownership, computes and collects IGNIS creator royalties \
+        \ (C_IgnisRoyaltyCollector), and returns IGNIS gas cumulators."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS

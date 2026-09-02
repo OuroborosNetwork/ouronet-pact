@@ -105,10 +105,13 @@
 )
 ;;
 (module DPDC-C GOV
-
-
-
-
+    @doc "DPDC-C is the collectables create/credit/debit engine, implementing DpdcCreateV2 \
+        \ and OuronetPolicyV2. It registers new nonces on a collection \
+        \ (C_CreateNewNonce/C_CreateNewNonces) and provides the XE_/XB_ credit and debit \
+        \ primitives for native and fragment (negative, /1000) nonces across SFT and NFT, \
+        \ single/multi/hybrid, with a capability-dispatch matrix that selects the right \
+        \ guard per nonce/amount shape. Supply writes go through DPDC and NFT-holder \
+        \ updates; it returns IGNIS OutputCumulators for billing."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
