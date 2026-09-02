@@ -52,7 +52,7 @@
     ;;{F2}  Compute [UC]
     ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     ;;   (AQP-{ANK,SCORE,POOL,FVT,VCT,DSA}.URCi_*, via OI|UC_IfpFromOutputCumulator / OI|UDC_DynamicStoaCost),
-    ;;   so the local price-tier gates (UC|GasPrice / SIP|URC_* / SKP|URC_*) are no longer used here.
+    ;;   so the local price-tier gates (UC_GasPrice / SIP|URC_* / SKP|URC_*) are no longer used here.
     ;;
     ;;<====================>
     ;;[AQP-ANK] Anchors

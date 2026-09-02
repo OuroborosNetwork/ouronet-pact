@@ -4,7 +4,7 @@
     ;;
     ;;  [UC] Functions
     ;;
-    (defun UC|GasPrice:decimal (full-price:decimal trigger:bool))
+    (defun UC_GasPrice:decimal (full-price:decimal trigger:bool))
     ;;
     ;;
     ;;  [SIP|URC] Functions
@@ -266,7 +266,20 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    (defun UC|GasPrice:decimal (full-price:decimal trigger:bool)
+    ;;{F1}  Construct [UDC]
+    ;;
+    (defun UDC_HibernatedNoncesView:object{HibernatedNoncesView}
+        (n:integer a:decimal b:time c:time d:decimal e:decimal f:decimal)
+        {"nonce"                    : n
+        ,"nonce-supply"             : a
+        ,"mint-time"                : b
+        ,"release-time"             : c
+        ,"hibernating-fee-promile"  : d
+        ,"remainder"                : e
+        ,"hibernating-fee"          : f}
+    )
+    ;;{F2}  Compute [UC]
+    (defun UC_GasPrice:decimal (full-price:decimal trigger:bool)
         (if trigger 0.0 full-price)
     )
     (defun UCx_ToggleAddOrSwapIfp:decimal (swpair:string toggle:bool)
@@ -280,7 +293,7 @@
                 (swp-sc:string (ref-DALOS::GOV|SWP|SC_NAME))
                 (biggest:decimal (ref-DALOS::UR_UsagePrice "ignis|biggest"))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                (ifp0:decimal (UC|GasPrice (* 5.0 biggest) trigger))
+                (ifp0:decimal (UC_GasPrice (* 5.0 biggest) trigger))
             )
             (if toggle
                 (let
@@ -365,10 +378,10 @@
                 (ifp:decimal (+ ifp1 ifp2))
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
-            (UCXX_AddLiquidityClientInfo patron ifp swpair (ref-DALOS::UR_IgnisID) clad asymmetric-collection false false)
+            (UCxx_AddLiquidityClientInfo patron ifp swpair (ref-DALOS::UR_IgnisID) clad asymmetric-collection false false)
         )
     )
-    (defun UCXX_AddLiquidityClientInfo
+    (defun UCxx_AddLiquidityClientInfo
         (
             patron:string ifp:decimal swpair:string ignis-id:string 
             clad:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
@@ -584,8 +597,7 @@
             resulted-string
         )
     )
-    ;;{F0}  [UR]
-    ;;{F1}  [URC]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     ;;
     ;;  [SIP|URC] - Simple Ignis Price >> dependent on a single trigger
     ;;
@@ -605,7 +617,7 @@
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
             )
-            (UC|GasPrice 
+            (UC_GasPrice 
                 (ref-DALOS::UR_UsagePrice "ignis|small")
                 (ref-IGNIS::URC_IsVirtualGasZero)
             )
@@ -621,7 +633,7 @@
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
             )
-            (UC|GasPrice 
+            (UC_GasPrice 
                 (ref-DALOS::UR_UsagePrice "ignis|medium")
                 (ref-IGNIS::URC_IsVirtualGasZero)
             )
@@ -634,7 +646,7 @@
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
             )
-            (UC|GasPrice 
+            (UC_GasPrice 
                 (ref-DALOS::UR_UsagePrice "ignis|big")
                 (ref-IGNIS::URC_IsVirtualGasZero)
             )
@@ -654,7 +666,7 @@
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
             )
-            (UC|GasPrice 
+            (UC_GasPrice 
                 (ref-DALOS::UR_UsagePrice "ignis|biggest")
                 (ref-IGNIS::URC_IsVirtualGasZero)
             )
@@ -667,7 +679,7 @@
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
             )
-            (UC|GasPrice 
+            (UC_GasPrice 
                 (* m (ref-DALOS::UR_UsagePrice "ignis|branding"))
                 (ref-IGNIS::URC_IsVirtualGasZero)
             )
@@ -680,7 +692,7 @@
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
             )
-            (UC|GasPrice 
+            (UC_GasPrice 
                 (ref-DALOS::UR_UsagePrice "ignis|small")
                 (ref-IGNIS::URC_ZeroGAS id account)
             )
@@ -693,7 +705,7 @@
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
             )
-            (UC|GasPrice 
+            (UC_GasPrice 
                 (* (dec (length name)) (ref-DALOS::UR_UsagePrice "ignis|token-issue"))
                 (ref-IGNIS::URC_IsVirtualGasZero)
             )
@@ -706,7 +718,7 @@
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
             )
-            (UC|GasPrice 
+            (UC_GasPrice 
                 (if origin (ref-DALOS::UR_UsagePrice "ignis|biggest") (ref-DALOS::UR_UsagePrice "ignis|small"))
                 (ref-IGNIS::URC_ZeroGAS id account)
             )
@@ -737,7 +749,7 @@
                 (dpof:decimal (ref-DALOS::UR_UsagePrice "dpmf"))
                 (kfp:decimal (if dptf-or-dpof dptf dpof))
             )
-            (UC|GasPrice
+            (UC_GasPrice
                 (* (dec l1) kfp)
                 (ref-IGNIS::URC_IsNativeGasZero)
             )
@@ -756,7 +768,7 @@
                     )
                 )
             )
-            (UC|GasPrice
+            (UC_GasPrice
                 (at 1 prices)
                 (ref-IGNIS::URC_IsNativeGasZero)
             )
@@ -3838,20 +3850,6 @@
         )
     )
     ;;
-    ;;{F2}  [UEV]
-    ;;{F3}  [UDC]
-    (defun UDC_HibernatedNoncesView:object{HibernatedNoncesView}
-        (n:integer a:decimal b:time c:time d:decimal e:decimal f:decimal)
-        {"nonce"                    : n
-        ,"nonce-supply"             : a
-        ,"mint-time"                : b
-        ,"release-time"             : c
-        ,"hibernating-fee-promile"  : d
-        ,"remainder"                : e
-        ,"hibernating-fee"          : f}
-    )
-    ;;{F4}  [CAP]
-    ;;
     ;;<======================>
     ;;[DALOS-INFO] — relocated from INFO-ZERO (Phase 1.2). Pure presentation; wrap IGNIS's DALOS|URCi_*.
     ;;<======================>
@@ -4036,9 +4034,11 @@
             )
         )
     )
-    ;;
-    ;;{F5}  [A]
-    ;;{F6}  [C]
-    ;;{F7}  [X]
+    ;;{F4}  Validate [UEV/CAP]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    ;;{F7}  User [A]
+    ;;{F8}  User [C]
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )
