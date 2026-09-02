@@ -1,6 +1,114 @@
 ;; Deploy: load THIS file — interface(s) + module ship together.
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
 ;;
+(interface DpofUdcV1
+    @doc "Exposes DPOF UDC Constructors"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;
+    ;;  SCHEMAS
+    ;;
+    (defschema DPOF|Properties
+        id:string
+        owner-konto:string
+        name:string
+        ticker:string
+        decimals:integer
+        ;;
+        can-upgrade:bool
+        can-change-owner:bool
+        can-add-special-role:bool
+        can-transfer-oft-create-role:bool
+        can-freeze:bool
+        can-wipe:bool
+        can-pause:bool
+        segmentation:bool
+        ;;
+        is-paused:bool
+        nonces-used:integer
+        nonces-excluded:integer
+        ;;
+        supply:decimal
+        ;;
+        reward-bearing-token:string
+        vesting-link:string
+        sleeping-link:string
+        hibernation-link:string
+        ;;
+    )
+    ;;Nonces cant be separated. A Ortofungible Nonce has one unique holder.
+    (defschema DPOF|NonceElement
+        holder:string                       ;;Stores the <OuronetAccount> holding the nonce - mutable
+        id:string                           ;;ID of the Ortofungible - immutable.
+        value:integer                       ;;Stores the Nonce value itself - immutable.
+        supply:decimal                      ;;Nonce Supply - mutable
+        meta-data-chain:[object]            ;;Stores Nonce Metadata - immutable
+    )
+    (defschema DPOF|VerumRoles
+        a-frozen:[string]
+        r-oft-add-quantity:[string]
+        r-oft-burn:[string]
+        r-oft-create:string
+        r-transfer:[string]
+    )
+    (defschema DPOF|AccountRoles
+        total-account-supply:decimal        ;; Holds the Total Account Supply for id
+        frozen:bool                         ;; multiple
+        role-oft-add-quantity:bool          ;; multiple
+        role-oft-burn:bool                  ;; multiple
+        role-oft-create:bool                ;; single
+        role-transfer:bool                  ;; multiple
+        ;;
+        ;;ForSelect, store Key Make-up
+        id:string
+        account:string
+    )
+    (defschema RemovableNonces
+        @doc "Removable Nonces are Class 0 Nonces held by a given Account with greater than 0 supply \
+        \ Given an <account>, a dpdc <id>, and a list of <nonces>, they can be filtered to Removable Nonces"
+        r-nonces:[integer]
+        r-amounts:[decimal]
+    )
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
+)
+
 (interface DemiourgosPactOrtoFungibleV1
     @doc "Exposes Functions related to Orto-Fungibles \
         \ Orto-Fungibles are the next Evoloution of the Meta-Fungibles \

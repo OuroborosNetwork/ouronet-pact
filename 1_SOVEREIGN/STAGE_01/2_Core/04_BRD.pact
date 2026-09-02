@@ -1,3 +1,91 @@
+(interface BrandingV1
+    @doc "Interface Exposing the Branding Functions needed to create the Branding Functionality \
+        \ Entities are DPTF DPMF DPSF DPNF ATSPairs SWPairs \
+        \ Should Future entities be added, they too can be branded via this module \
+        \ UR(Utility-Read), URC(Utility-Read-Compute), UDC(Utility-Data-Composition) \
+        \ are NOT sorted alphabetically"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;
+    (defschema Schema
+        logo:string
+        description:string
+        website:string
+        social:[object{SocialSchema}]
+        flag:integer
+        genesis:time
+        premium-until:time
+    )
+    (defschema SocialSchema
+        social-media-name:string
+        social-media-link:string
+    )
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;
+    (defun UDC_BrandingLogo:object{Schema} (input:object{Schema} logo:string))
+    (defun UDC_BrandingDescription:object{Schema} (input:object{Schema} description:string))
+    (defun UDC_BrandingWebsite:object{Schema} (input:object{Schema} website:string))
+    (defun UDC_BrandingSocial:object{Schema} (input:object{Schema} social:[object{SocialSchema}]))
+    (defun UDC_BrandingFlag:object{Schema} (input:object{Schema} flag:integer))
+    (defun UDC_BrandingPremium:object{Schema} (input:object{Schema} premium:time))
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;
+    (defun UR_Branding:object{Schema} (id:string pending:bool))
+    (defun UR_Logo:string (id:string pending:bool))
+    (defun UR_Description:string (id:string pending:bool))
+    (defun UR_Website:string (id:string pending:bool))
+    (defun UR_Social:[object{SocialSchema}] (id:string pending:bool))
+    (defun UR_Flag:integer (id:string pending:bool))
+    (defun UR_Genesis:time (id:string pending:bool))
+    (defun UR_PremiumUntil:time (id:string pending:bool))
+    ;;
+    (defun URC_MaxBluePayment (account:string))
+    (defun URCi_UpgradeBranding:decimal (months:integer))
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;
+    (defun XE_Issue (entity-id:string))
+    (defun XE_UpdatePendingBranding (entity-id:string logo:string description:string website:string social:[object{SocialSchema}]))
+    (defun XE_UpgradeBranding:decimal (entity-id:string entity-owner-account:string months:integer))
+    ;;{5.7}  User [A/C]
+    ;;
+    (defun A_Live (entity-id:string))
+    (defun A_SetFlag (entity-id:string flag:integer))
+
+)
+
 (module BRD GOV
 
 

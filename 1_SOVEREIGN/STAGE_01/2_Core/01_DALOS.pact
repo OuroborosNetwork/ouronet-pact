@@ -1,6 +1,76 @@
 ;; Deploy: load THIS file — interface(s) + module ship together.
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
 ;;
+(interface OuronetPolicyV1
+    @doc "Interface exposing OuronetPolicyV1 Functions, which are needed for intermodule communication \
+        \ Each Module must have these Functions for these Purposes"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;
+    (defschema P|S
+        policy:guard
+    )
+    (defschema P|MS
+        m-policies:[guard]
+    )
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+    (defun P|UR:guard (policy-name:string)
+        @doc "Reads a Policy from the local module Policy Table"
+    )
+    (defun P|UR_IMP:[guard] ()
+        @doc "Reads the whole Intermodule Policy Guard Chain"
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        @doc "Adds a Policy in the local module Policy Table"
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        @doc "Add a Policy in the local Policy Guard Chain"
+    )
+    (defun P|A_Define ()
+        @doc "Defines in each module the policies that are needed for intermodule communication"
+    )
+    (defun P|UEV_IMC ()
+        @doc "Defines the Intermodule Guards"
+    )
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
+)
+
 (interface OuronetDalosV1
 
     ;;<=========================================================================>

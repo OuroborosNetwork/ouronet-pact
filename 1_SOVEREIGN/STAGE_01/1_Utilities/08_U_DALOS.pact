@@ -1,3 +1,115 @@
+(interface UtilityDalosGlyphsV2
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    (defun UC_IzStoicTagName:bool (name:string))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun GLYPH|UEV_DalosAccountCheck (account:string))
+    (defun GLYPH|UEV_DalosAccount (account:string))
+    (defun GLYPH|UEV_ApolloAccountCheck (account:string smart:bool))
+    (defun GLYPH|UEV_ApolloAccount (account:string smart:bool))
+    (defun GLYPH|UEV_MsDc:bool (multi-s:string))
+    (defun UEV_StoicTagName (name:string))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
+)
+
+(interface UtilityDalosV1
+    @doc "Exported Utility Functions for the DALOS Module"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;
+    (defun UDC_Makeid:string (ticker:string))
+    (defun UDC_MakeMVXNonce:string (nonce:integer))
+    ;;{5.2}  Compute [UC]
+    ;;
+    (defun UC_TenTwentyThirtyFourtySplit:[decimal] (input:decimal ip:integer))
+    (defun UC_DirectFilterId:[string] (listoflists:[[string]] account:string))
+    (defun UC_InverseFilterId:[string] (listoflists:[[string]] account:string))
+    (defun UC_ConcatWithBar:string (input:[string]))
+    ;;
+    (defun UC_GasCost (base-cost:decimal major:integer minor:integer native:bool))
+    (defun UC_GasDiscount (major:integer minor:integer native:bool))
+    (defun UC_IzCharacterANC:bool (c:string capital:bool iz-special:bool))
+    (defun UC_IzStringANC:bool (s:string capital:bool iz-special:bool))
+    (defun UC_NewRoleList (current-lst:[string] account:string direction:bool))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;
+    (defun UEV_Decimals:bool (decimals:integer))
+    (defun UEV_Fee (fee:decimal))
+    (defun UEV_NameOrTicker:bool (name-ticker:string name-or-ticker:bool iz-special:bool))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
+)
+
 (module U|DALOS GOV
 
 

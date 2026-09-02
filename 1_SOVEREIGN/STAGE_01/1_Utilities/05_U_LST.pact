@@ -1,3 +1,66 @@
+(interface StringProcessorV1
+    @doc "Exported List and String Processor Functions"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;
+    (defun UC_AppL:list (in:list item))
+    (defun UC_Chain:list (in:list))
+    (defun UC_FE (in:list))
+    (defun UC_InsertFirst:list (in:list item))
+    (defun UC_IsNotEmpty:bool (x:list))
+    (defun UC_LE (in:list))
+    (defun UC_RemoveItem:list (in:list item))
+    (defun UC_RemoveItemAt:list (in:list position:integer))
+    (defun UC_ReplaceAt:list (in:list idx:integer item))
+    (defun UC_ReplaceItem:list (in:list old-item new-item))
+    (defun UC_Search:[integer] (searchee:list item))
+    (defun UC_SecondListElement (in:list))
+    (defun UC_SplitString:[string] (splitter:string splitee:string))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;
+    (defun UEV_NotEmpty:bool (x:list))
+    (defun UEV_StringPresence (item:string item-lst:[string]))
+    ;;#44M fix: moved from [UC] - was UC_IzUnique, enforces (violates UC_ contract), renamed.
+    (defun UEV_IzUnique (lst:[string]))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
+)
+
 (module U|LST GOV
 
 

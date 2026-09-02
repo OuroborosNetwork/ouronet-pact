@@ -1,4 +1,69 @@
 
+(interface UtilityDptfV1
+    @doc "Exported Utility Functions for the DPTF Module \
+        \ Commented Functions are internal use only and have no use outside the module"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;
+    (defschema DispoData
+        @doc "Stores the information needed to compute the maximum Negative Ouro an Account is allowed to overconsume"
+        elite-auryn-amount:decimal
+        auryndex-value:decimal
+        elite-auryndex-value:decimal
+        major-tier:integer
+        minor-tier:integer
+        ouroboros-precision:integer
+    )
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;
+    (defun UDC_EmptyDispo:object{DispoData} ())
+    ;;{5.2}  Compute [UC]
+    ;;
+    (defun UC_TwoSplitter:[integer] (input:integer))
+    (defun UC_FourSplitter:[integer] (input:integer))
+    (defun UC_EightSplitter:[integer] (input:integer))
+    ;;
+    (defun UC_OuroDispo:decimal (input:object{DispoData}))
+    (defun UC_UnlockPrice:[decimal] (unlocks:integer))
+    (defun UC_VolumetricTax (precision:integer amount:decimal))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
+)
+
 (module U|DPTF GOV
 
 

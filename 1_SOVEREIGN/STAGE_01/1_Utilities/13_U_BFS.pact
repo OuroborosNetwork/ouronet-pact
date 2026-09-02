@@ -1,3 +1,67 @@
+(interface BreadthFirstSearchV1
+    @doc "Interface exposing a Breadth-First-Search Implementation on Pact \
+    \ Used in the SWP Modules to compute Paths between SWPair Tokens."
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;
+    (defschema GraphNode
+        node:string
+        links:[string]
+    )
+    (defschema BFS
+        visited:[string]
+        que:[object{QE}]
+        chains:[[string]]
+    )
+    (defschema QE
+        node:string
+        chain:[string]
+    )
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;
+    (defun UC_BFS:object{BFS} (graph:[object{GraphNode}] in:string))
+    ;;#65hL: UC_BFS, with an early-exit once <target> has been reached — see the
+    ;;defun's own doc for the full rationale. Additive, not a replacement.
+    (defun UC_BFSTargeted:object{BFS} (graph:[object{GraphNode}] in:string target:string))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
+)
+
 (module U|BFS GOV
 
 

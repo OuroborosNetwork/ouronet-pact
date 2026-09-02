@@ -1,4 +1,217 @@
 
+(interface IgnisCollectorV1
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;
+    ;;  SCHEMAS
+    ;;
+    (defschema PrimedCumulator
+        primed-cumulator:object{CompressedCumulator}
+    )
+    (defschema CompressedCumulator
+        ignis-prices:[decimal]
+        interactors:[string]
+    )
+    (defschema OutputCumulator
+        cumulator-chain:[object{ModularCumulator}]
+        output:list
+    )
+    (defschema ModularCumulator
+        ignis:decimal
+        interactor:string
+    )
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;
+    ;;  [UDC]
+    ;;
+    (defun UDC_MakeIDP:string (ignis-discount:decimal))
+    (defun UDC_ConstructOutputCumulator:object{OutputCumulator} (price:decimal active-account:string trigger:bool output-lst:list))
+    (defun UDC_BrandingCumulator:object{OutputCumulator} (active-account:string multiplier:decimal))
+    (defun UDC_SmallestCumulator:object{OutputCumulator} (active-account:string))
+    (defun UDC_SmallCumulator:object{OutputCumulator} (active-account:string))
+    (defun UDC_MediumCumulator:object{OutputCumulator} (active-account:string))
+    (defun UDC_BigCumulator:object{OutputCumulator} (active-account:string))
+    (defun UDC_BiggestCumulator:object{OutputCumulator} (active-account:string))
+    (defun UDC_CustomCodeCumulator:object{OutputCumulator} ())
+        ;;
+    (defun UDC_MakeModularCumulator:object{ModularCumulator} (price:decimal active-account:string trigger:bool))
+    (defun UDC_MakeOutputCumulator:object{OutputCumulator} (input-modular-cumulator-chain:[object{ModularCumulator}] output-lst:list))
+    (defun UDC_ConcatenateOutputCumulators:object{OutputCumulator} (input-output-cumulator-chain:[object{OutputCumulator}] new-output-lst:list))
+    (defun UDC_CompressOutputCumulator:object{CompressedCumulator} (input-output-cumulator:object{OutputCumulator}))
+    (defun UDC_PrimeIgnisCumulator:object{PrimedCumulator} (patron:string input:object{CompressedCumulator}))
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;
+    ;;  [URC]
+    ;;
+    (defun URC_Exception (account:string))
+    (defun URC_ZeroEliteGAZ (sender:string receiver:string))
+    (defun URC_ZeroGAZ:bool (id:string sender:string receiver:string))
+    (defun URC_ZeroGAS:bool (id:string sender:string))
+    (defun URC_IsVirtualGasZeroAbsolutely:bool (id:string))
+    (defun URC_IsVirtualGasZero:bool ())
+    (defun URC_IsNativeGasZero:bool ())
+    ;;
+    ;;  [DALOS-URCi] cost readers — single-source the tier choice for DALOS client ops.
+    ;;  DALOS deploys below IGNIS so it hosts these here; Talos bills through them and the
+    ;;  Z_Reads presentation derives its preview from the same source (kills tier-choice drift).
+    (defun DALOS|URCi_ControlSmartAccount:object{OutputCumulator} (account:string))
+    (defun DALOS|URCi_RotateGovernor:object{OutputCumulator} (account:string))
+    (defun DALOS|URCi_RotateGuard:object{OutputCumulator} (account:string))
+    (defun DALOS|URCi_RotateStoa:object{OutputCumulator} (account:string))
+    (defun DALOS|URCi_RotateSovereign:object{OutputCumulator} (account:string))
+    (defun DALOS|URCi_UpdateEliteAccount:object{OutputCumulator} (patron:string))
+    (defun DALOS|URCi_UpdateEliteAccountSquared:object{OutputCumulator} (patron:string))
+    (defun DALOS|URCi_DeploySmartAccount:decimal ())
+    (defun DALOS|URCi_DeployStandardAccount:decimal ())
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;
+    ;;  [UEV]
+    ;;
+    (defun UEV_TwentyFourPrecision (amount:decimal))
+    (defun UEV_Patron (patron:string))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+    ;;
+    ;;  [C]
+    ;;
+    (defun C_TransferDalosFuel (sender:string receiver:string amount:decimal))
+    (defun C_Collect  (patron:string input-output-cumulator:object{OutputCumulator}))
+    (defun C_STOA|Collect (sender:string amount:decimal))
+    (defun C_STOA|CollectWT (sender:string amount:decimal trigger:bool))
+    (defun C_STOA|CollectWTEx (payer:string discount-account:string amount:decimal trigger:bool))
+
+)
+
+(interface OuronetInfoV1
+    @doc "Holds Information Schemas"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;
+    ;;  SCHEMAS
+    ;;
+    (defschema ClientInfo
+        pre-text:[string]
+        post-text:[string]
+        ignis:object{ClientIgnisCosts}
+        stoa:object{ClientStoaCosts}
+        output:list
+    )
+    (defschema ClientIgnisCosts
+        ignis-discount:decimal
+        ignis-full:decimal
+        ignis-need:decimal
+        ignis-text:string
+    )
+    (defschema ClientStoaCosts
+        stoa-discount:decimal
+        stoa-full:decimal
+        stoa-need:decimal
+        stoa-split:[decimal]
+        stoa-targets:[string]
+        stoa-text:string
+    )
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;
+    ;;
+    ;;  [UDC] Functions
+    ;;
+    (defun OI|UDC_ClientInfo:object{ClientInfo} (a:[string] b:[string] c:object{ClientIgnisCosts} d:object{ClientStoaCosts} e:list))
+    (defun OI|UDC_ClientIgnisCosts:object{ClientIgnisCosts} (a:decimal b:decimal c:decimal d:string))
+    (defun OI|UDC_ClientStoaCosts:object{ClientStoaCosts} (a:decimal b:decimal c:decimal d:[decimal] e:[string] f:string))
+        ;;
+    (defun OI|UDC_FullStoaCosts:object{ClientStoaCosts} (kfp:decimal))
+    (defun OI|UDC_StoaCosts:object{ClientStoaCosts} (patron:string kfp:decimal))
+    (defun OI|UDC_NoStoaCosts:object{ClientStoaCosts} ())
+    (defun OI|UDC_DynamicStoaCost:object{ClientStoaCosts} (patron:string kfp:decimal))
+        ;;
+    (defun OI|UDC_IgnisCosts:object{ClientIgnisCosts} (patron:string ifp:decimal))
+    (defun OI|UDC_NoIgnisCosts:object{ClientIgnisCosts} ())
+    (defun OI|UDC_DynamicIgnisCost:object{ClientIgnisCosts} (patron:string ifp:decimal))
+    ;;{5.2}  Compute [UC]
+    ;;
+    ;;
+    ;;  [UC] Functions
+    ;;
+    (defun OI|UC_IfpFromOutputCumulator:decimal (input:object{IgnisCollectorV1.OutputCumulator}))
+    (defun OI|UC_ShortAccount:string (account:string))
+    (defun OI|UC_ConvertPrice:string (input-price:decimal))
+    (defun OI|UC_FormatIndex:string (index:decimal))
+    (defun OI|UC_FormatTokenAmount:string (amount:decimal))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;
+    ;;
+    ;;  [UR] Functions
+    ;;
+    (defun OI|UR_StoaTargets:[string] ())
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
+)
+
 (module IGNIS GOV
 
 

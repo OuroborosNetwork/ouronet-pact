@@ -1,3 +1,61 @@
+(interface UtilityVstV1
+    @doc "Exported Utility Functions for the VST Module"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;
+    (defun UC_MakeVestingDateList:[time] (offset:integer duration:integer milestones:integer))
+    (defun UC_SplitBalanceForVesting:[decimal] (precision:integer amount:decimal milestones:integer))
+    (defun UC_VestingID:[string] (dptf-name:string dptf-ticker:string))
+    (defun UC_SleepingID:[string] (dptf-name:string dptf-ticker:string))
+    (defun UC_HibernationID:[string] (dptf-name:string dptf-ticker:string))
+        ;;
+    (defun UC_FrozenID:[string] (dptf-name:string dptf-ticker:string))
+    (defun UC_ReservedID:[string] (dptf-name:string dptf-ticker:string))
+        ;;
+    (defun UC_EquityID:[string] (sft-name:string sft-ticker:string))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;
+    (defun UEV_Milestone (milestones:integer))
+    (defun UEV_MilestoneWithTime (offset:integer duration:integer milestones:integer upper-limit-in-seconds:integer))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
+)
+
 (module U|VST GOV
 
 

@@ -1,3 +1,183 @@
+(interface DiaStoaPidV1
+    @doc "Exposes the UR Function that Reads STOA Price in Dollars (STOA-PID) via Dia Oracle on Chain 2"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;
+    (defun UR_STOA-PID|Price:decimal ())
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
+)
+
+(interface OuronetConstantsV1
+    @doc "Exported Constants as Functions from this Module via interface"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;
+    (defun CT_NS_USE ())
+    (defun CT_GOV|UTILS ())
+    ;;
+    (defun CT_DPTF-FeeLock ())
+    (defun CT_ATS-FeeLock ())
+    ;;
+    (defun CT_STOA_PRECISION ())
+    (defun CT_MIN_PRECISION ())
+    (defun CT_MAX_PRECISION ())
+    (defun CT_FEE_PRECISION ())
+    (defun CT_MIN_DESIGNATION_LENGTH ())
+    (defun CT_MAX_TOKEN_NAME_LENGTH ())
+    (defun CT_MAX_TOKEN_TICKER_LENGTH ())
+    (defun CT_ACCOUNT_ID_PROH-CHAR ())
+    (defun CT_ACCOUNT_ID_MAX_LENGTH ())
+    (defun CT_BAR ())
+    (defun CT_NUMBERS ())
+    (defun CT_CAPITAL_LETTERS ())
+    (defun CT_NON_CAPITAL_LETTERS ())
+    (defun CT_SPECIAL ())
+    ;;
+    (defun CT_ET ())
+    (defun CT_DEB ())
+    ;;
+    (defun CT_C1 ())
+    (defun CT_C2 ())
+    (defun CT_C3 ())
+    (defun CT_C4 ())
+    (defun CT_C5 ())
+    (defun CT_C6 ())
+    (defun CT_C7 ())
+    ;;
+    (defun CT_N00 ())
+    (defun CT_N01 ())
+    (defun CT_N11 ())
+    (defun CT_N12 ())
+    (defun CT_N13 ())
+    (defun CT_N14 ())
+    (defun CT_N15 ())
+    (defun CT_N16 ())
+    (defun CT_N17 ())
+    ;;
+    (defun CT_N21 ())
+    (defun CT_N22 ())
+    (defun CT_N23 ())
+    (defun CT_N24 ())
+    (defun CT_N25 ())
+    (defun CT_N26 ())
+    (defun CT_N27 ())
+    ;;
+    (defun CT_N31 ())
+    (defun CT_N32 ())
+    (defun CT_N33 ())
+    (defun CT_N34 ())
+    (defun CT_N35 ())
+    (defun CT_N36 ())
+    (defun CT_N37 ())
+    ;;
+    (defun CT_N41 ())
+    (defun CT_N42 ())
+    (defun CT_N43 ())
+    (defun CT_N44 ())
+    (defun CT_N45 ())
+    (defun CT_N46 ())
+    (defun CT_N47 ())
+    ;;
+    (defun CT_N51 ())
+    (defun CT_N52 ())
+    (defun CT_N53 ())
+    (defun CT_N54 ())
+    (defun CT_N55 ())
+    (defun CT_N56 ())
+    (defun CT_N57 ())
+    ;;
+    (defun CT_N61 ())
+    (defun CT_N62 ())
+    (defun CT_N63 ())
+    (defun CT_N64 ())
+    (defun CT_N65 ())
+    (defun CT_N66 ())
+    (defun CT_N67 ())
+    ;;
+    (defun CT_N71 ())
+    (defun CT_N72 ())
+    (defun CT_N73 ())
+    (defun CT_N74 ())
+    (defun CT_N75 ())
+    (defun CT_N76 ())
+    (defun CT_N77 ())
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
+)
+
 (module U|CT GOV
 
 

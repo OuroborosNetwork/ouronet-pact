@@ -1,3 +1,185 @@
+(interface UtilitySwpV1
+    @doc "Exported Utility Functions for the SWP Module"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;
+    ;;Raw Swap INPUT Data - <drsi> and <irsi>
+    ;;Data needed to perform the actual swap computation with no fees.
+    (defschema DirectRawSwapInput
+        A:decimal
+        X:[decimal]
+        input-amounts:[decimal]
+        input-positions:[integer]
+        output-position:integer
+        output-precision:integer
+        weights:[decimal]
+    )
+    (defschema InverseRawSwapInput
+        A:decimal
+        X:[decimal]
+        output-amount:decimal
+        output-position:integer
+        input-position:integer
+        input-precision:integer
+        weights:[decimal]
+    )
+    ;;Swap INPUT Data - <dsid> and <rsid>
+    (defschema DirectSwapInputData
+        ;;Stores Input Data for a Direct Swap
+        input-ids:[string]
+        input-amounts:[decimal]
+        output-id:string
+    )
+    (defschema ReverseSwapInputData
+        ;;Stores Input Data fora Reverse Swap
+        output-id:string
+        output-amount:decimal
+        input-id:string
+    )
+    ;;Swap OUTPUT Data - Always Taxed (with swap fees)
+    (defschema DirectTaxedSwapOutput
+        ;;Direct Taxed Swap starts from <Brutto Input-IDs Amounts>:[decimal] and yields in this order:
+        lp-fuel:[decimal]           ;;<Input-IDs-Amounts> going fueling the Pool, in a full List, that is:
+                                    ;;Contains 0.0 for Pool Token IDs not involved in the Input.
+        o-id:string                 ;;Output-ID of the Direct-Swap
+        o-id-special:decimal        ;;Output-ID-amount that goes to Special-Targets
+        o-id-liquid:decimal         ;;Output-ID-amount that is used for Stoa Liquid Staking Boost
+        o-id-netto:decimal          ;;Output-ID-amount resulted after the Direct Taxed Swap (END-RESULT)
+    )
+    (defschema InverseTaxedSwapOutput
+        ;;Reverse Taxed Swap starts from <Netto Output-ID Amount>:decimal and yields
+        o-id-liquid:decimal         ;;Output-ID-amount that would be used by Stoa Liquid Staking
+        o-id-special:decimal        ;;Output-ID-amount that would go to Special-Targets
+        lp-fuel:[decimal]           ;;Since the Inverse Swap can be computed for a single Input,
+                                    ;;Contains the <Input-ID-Amount> of the Pool Token the Reverse Swap computes for
+                                    ;;Therefore the List contains a single non zero element, 
+                                    ;;filled with 0.0 for the rest of the Pool Tokens
+        i-id:string                 ;;Input-ID of the Reverse Swap; It is also the id of the Single non Zero Value in <lp-fuel>
+        i-id-brutto:decimal         ;;Input-ID-amount of the Token the Reverse Taxed Swap computed for (END-RESULT).
+    )
+    ;;
+    (defschema SwapFeez
+        lp:decimal
+        special:decimal
+        boost:decimal
+    )
+    ;;Virtual Swap Engine (VSE) Schema
+    ;;The Virtual Swap Engine is used to perform Swap Computations on Data 
+    ;;(that can be either true Swap Pool Data or Virtual Data), Performing always Direct Swaps, 
+    ;;The Swaps being carried out are stored in the <swaps> field in an Object{VirtualSwap}
+    ;;with their Input-Ids, Input-Amounts, and Output-ID;
+    ;;As Supply, it always stores the "current" state of the virtual swap in the <account-supply> and <pool-supply>
+    (defschema VirtualSwapEngine
+        ;;Virtual Token IDs
+        v-tokens:[string]           ;;Stores the Token IDs the VSE is operating with.
+                                    ;;These are also the Pool Tokens, in this exact order
+        v-prec:[integer]            ;;Decimal Precision of the Pool Tokens
+        ;;
+        ;;Virtual Account
+        account:string              ;;The Account Performing the Virtual Swap (needed to fetch its Tier for Fee Reduction Purposes)
+        account-supply:[decimal]    ;;The Virtual Token Supply of the Virtual Account. Gets updated with every Virtual Swap being executed
+        ;;
+        ;;Virtual Pool
+        swpair:string               ;;While the VirtualSwapEngine doesnt operate on Swpair Data, storing the swpair ID is necesary
+                                    ;;Because through it, the Pool Tokens can be known, and through them
+                                    ;;the positions of the <input-ids>
+        X:[decimal]                 ;;Token Supply of the Virtual Pool
+        A:decimal                   ;;Amplifier supply of the Virtual Pool
+        W:[decimal]                 ;;Weights of the Virtual Pool
+        F:object{SwapFeez}          ;;Fee Values of the Virtual Pool
+        ;;
+        ;;Swap-Results - use <v-tokens> ID Order
+        fuel:[decimal]              ;;Stores the Amounts that would go as Fuel for the Pool, boosting LP Token Value
+        special:[decimal]           ;;Stores the Amounts that would go to the Pool Special Targets
+        boost:[decimal]             ;;Stores the Amounts that would go to Stoa Liquid Staking Boost
+        ;;
+        ;;Virtual Swap Chains
+        swaps:[object{DirectSwapInputData}] ;;Stores the Data of the Swaps in a Chain
+    )
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;
+    ;;
+    (defun UDC_DirectRawSwapInput:object{DirectRawSwapInput} (a:decimal b:[decimal] c:[decimal] d:[integer] e:integer f:integer g:[decimal]))
+    (defun UDC_InverseRawSwapInput:object{InverseRawSwapInput} (a:decimal b:[decimal] c:decimal d:integer e:integer f:integer g:[decimal]))
+    (defun UDC_DirectSwapInputData:object{DirectSwapInputData} (a:[string] b:[decimal] c:string))
+    (defun UDC_ReverseSwapInputData:object{ReverseSwapInputData} (a:string b:decimal c:string))
+    (defun UDC_DirectTaxedSwapOutput:object{DirectTaxedSwapOutput} (a:[decimal] b:string c:decimal d:decimal e:decimal))
+    (defun UDC_InverseTaxedSwapOutput:object{InverseTaxedSwapOutput} (a:decimal b:decimal c:[decimal] d:string e:decimal))
+    (defun UDC_SwapFeez:object{SwapFeez} (a:decimal b:decimal c:decimal))
+    (defun UDC_VirtualSwapEngine:object{VirtualSwapEngine} (a:[string] b:[integer] c:string d:[decimal] e:string f:[decimal] g:decimal h:[decimal] i:object{SwapFeez} j:[decimal] k:[decimal] l:[decimal] m:[object{DirectSwapInputData}]))
+    ;;{5.2}  Compute [UC]
+    ;;
+    (defun UC_ComputeY (drsi:object{DirectRawSwapInput}))
+    (defun UC_ComputeInverseY (irsi:object{InverseRawSwapInput}))
+    (defun UC_YNext (Y:decimal A:decimal D:decimal n:decimal S-Prime:decimal P-Prime:decimal))
+    (defun UC_ZNext (Y:decimal A:decimal D:decimal n:decimal S-Prime:decimal P-Prime:decimal))
+    (defun UC_ComputeD:decimal (A:decimal X:[decimal]))
+    (defun UC_DNext (D:decimal A:decimal X:[decimal]))
+        ;;
+    (defun UC_ComputeWP (drsi:object{DirectRawSwapInput}))
+    (defun UC_ComputeInverseWP (irsi:object{InverseRawSwapInput}))
+        ;;
+    (defun UC_ComputeEP:decimal (drsi:object{DirectRawSwapInput}))
+    (defun UC_ComputeInverseEP:decimal (irsi:object{InverseRawSwapInput}))
+    ;;
+    ;;
+    (defun UC_BalancedLiquidity:[decimal] (ia:decimal ip:integer i-prec X:[decimal] Xp:[integer]))
+    (defun UC_LP:decimal (input-amounts:[decimal] pts:[decimal] lps:decimal lpp:integer))
+    (defun UC_LpID:[string] (token-names:[string] token-tickers:[string] weights:[decimal] amp:decimal))
+    (defun UC_AddSupply:[decimal] (X:[decimal] input-amounts:[decimal] ip:[integer]))
+    (defun UC_RemoveSupply:[decimal] (X:[decimal] output-amount:decimal op:integer))
+    (defun UC_PoolID:string (token-ids:[string] weights:[decimal] amp:decimal))
+    (defun UC_Prefix:string (weights:[decimal] amp:decimal))
+    ;;
+    (defun UC_AreOnPools:[bool] (id1:string id2:string swpairs:[string]))
+    (defun UC_FilterOne:[string] (swpairs:[string] id:string))
+    (defun UC_FilterTwo:[string] (swpairs:[string] id1:string id2:string))
+    (defun UC_IzOnPool:bool (id:string swpair:string))
+    (defun UC_IzOnPools:[bool] (id:string swpairs:[string]))
+    (defun UC_MakeGraphNodes:[string] (input-id:string output-id:string swpairs:[string]))
+    (defun UC_PoolTokensFromPairs:[[string]] (swpairs:[string]))
+    (defun UC_SpecialFeeOutputs:[decimal] (sftp:[decimal] input-amount:decimal output-precision:integer))
+    (defun UC_TokensFromSwpairString:[string] (swpair:string))
+    (defun UC_UniqueTokens:[string] (swpairs:[string]))
+    (defun UC_MakeLiquidityList (swpair:string ptp:integer amount:decimal))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
+)
+
 (module U|SWP GOV
 
 

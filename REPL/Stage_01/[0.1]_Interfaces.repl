@@ -36,7 +36,6 @@
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
 ;;==== TX-01 [0.01] - Deploy Stage One Utility Interfaces · 02 · load module ==== =================
 (print "--- [TX-01 [0.01] - Deploy Stage One Utility Interfaces · 02 · load module] ---")
-(load "../../1_SOVEREIGN/STAGE_01/0_Interfaces/01_Utilities.pact")
 ;;==== TX-01 [0.01] - Deploy Stage One Utility Interfaces · 03 · gas echo ==== ====================
 (print "--- [TX-01 [0.01] - Deploy Stage One Utility Interfaces · 03 · gas echo] ---")
 (format "<<<<<<<Stage One Utility Interfaces Costs {} GAS>>>>>>>" [(env-gas)])
@@ -58,7 +57,6 @@
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
 ;;==== TX-02 [0.02] - Deploy Stage One Core Interfaces · 02 · load module ==== ====================
 (print "--- [TX-02 [0.02] - Deploy Stage One Core Interfaces · 02 · load module] ---")
-(load "../../1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact")
 ;;==== TX-02 [0.02] - Deploy Stage One Core Interfaces · 03 · gas echo ==== =======================
 (print "--- [TX-02 [0.02] - Deploy Stage One Core Interfaces · 03 · gas echo] ---")
 (format "<<<<<<<Core Interfaces Costs {} GAS>>>>>>>" [(env-gas)])
@@ -80,7 +78,6 @@
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
 ;;==== TX-03 [0.03] - Deploy Stage One Talos Interfaces · 02 · load module ==== ===================
 (print "--- [TX-03 [0.03] - Deploy Stage One Talos Interfaces · 02 · load module] ---")
-(load "../../1_SOVEREIGN/STAGE_01/0_Interfaces/03_Talos.pact")
 ;;==== TX-03 [0.03] - Deploy Stage One Talos Interfaces · 03 · gas echo ==== ======================
 (print "--- [TX-03 [0.03] - Deploy Stage One Talos Interfaces · 03 · gas echo] ---")
 (format "<<<<<<<Talos Interfaces Costs {} GAS>>>>>>>" [(env-gas)])
