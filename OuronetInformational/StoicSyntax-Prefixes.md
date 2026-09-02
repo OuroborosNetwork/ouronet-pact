@@ -671,3 +671,21 @@ function signatures `{5.1..5.7}` (and `{G5}`/`{P5}`). Notably **`CAP_` is a Vali
 FUNCTION → `{5.4}` with the `UEV_`s** (the old separate `[CAP]` group is gone). The
 skeleton emitter (`tools/skeleton_emit.py`) sweeps `(interface …)` blocks the same
 way it sweeps `(module …)`.
+
+### 7.13 Enforcement & authoring (Phase 7 — the drift gate)
+Canon is now **self-enforcing** so future work can't silently drift (no re-sweep needed):
+- **`tools/skeleton_emit.py`** — the *fixer*: re-lays any module/interface into canonical form.
+- **`tools/cap_band.py`** — the composition-based cap classifier (C1–C4, §7.5).
+- **`tools/canon_check.py`** — the *verifier*: runs the fixer in a temp copy and asserts the file is
+  already canonical **up to blank lines** (blank spacing is cosmetic, not a canon rule). Exit 1 on any real
+  drift (member re-ordered, wrong marker/band, unknown prefix, `CAP_` outside `{5.4}`, …).
+- **`tools/gate.sh`** — the hard gate: **`canon_check` clean AND `Z.repl` green**. Run before committing / in CI.
+- **`tools/hooks/pre-commit`** — blocks a commit whose staged `.pact` drift (install:
+  `ln -sf ../../tools/hooks/pre-commit .git/hooks/pre-commit`).
+
+**Writing a new module:** copy [`canon.pact`](canon.pact) as the start-point, fill the blocks, and run
+`tools/gate.sh` before committing. Load this file (the canon) first. Citizen modules get the same gate.
+
+**Colour maintainer sync:** when marker spellings change, tell the highlighter maintainer — current
+colour-bearing markers are `{C4}` (gold caps), `{G4}` (gold gov caps), `{G1}` (grey-bold gov consts),
+the GASSTATION block (gold caps), and the grey `GOV|`/`P|` structural-prefix filters.

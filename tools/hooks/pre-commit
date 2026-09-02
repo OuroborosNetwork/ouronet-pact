@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Install: ln -sf ../../tools/hooks/pre-commit .git/hooks/pre-commit
+staged=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.pact$' | grep -vE '0_Sample|canon\.pact' || true)
+[ -z "$staged" ] && exit 0
+python3 tools/canon_check.py $staged || { echo "pre-commit: canon drift in staged .pact — fix with tools/skeleton_emit.py"; exit 1; }
