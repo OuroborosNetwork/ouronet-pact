@@ -281,7 +281,7 @@
                 (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
                 ;;
                 (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))
-                (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                 ;;
                 (KpayID:string (UR_KpayID))
                 (Kpay-price:decimal (UR_KpayPID offset))
@@ -323,7 +323,7 @@
                 ;;
                 ;;
                 (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))
-                (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                 ;;
                 (k-account:string (ref-DALOS::UR_AccountStoa account))
                 (wstoa:string (ref-DALOS::UR_WrappedStoaID))

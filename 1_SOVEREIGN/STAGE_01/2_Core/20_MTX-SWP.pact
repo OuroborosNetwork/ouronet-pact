@@ -397,7 +397,7 @@
                         (ref-SWPL::URC_LD swpair input-amounts)
                     )
                     (clad:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
-                        (ref-SWPL::URC|STOA-PID_CLAD 
+                        (ref-SWPL::URC_STOA-PID|CLAD 
                             account swpair ld asymmetric-collection gaseous-collection stoa-pid
                         )
                     )
@@ -441,20 +441,20 @@
                     (if (and asymmetric-collection gaseous-collection)
                         (with-capability (MTX-SWP|C>ADD-STANDARD-LQ swpair ld)
                             ;;<asymmetric-collection=true> <gaseous-collection=true>
-                            (ref-SWPL::XE|STOA-PID_AddLiqudity 
+                            (ref-SWPL::XE_STOA-PID|AddLiquidity 
                                 account swpair asymmetric-collection gaseous-collection stoa-pid ld clad
                             )
                         )
                         (if gaseous-collection
                             (with-capability (MTX-SWP|C>ADD-ICED-LQ swpair ld)
                                 ;;<asymmetric-collection=false> <gaseous-collection=true>
-                                (ref-SWPL::XE|STOA-PID_AddLiqudity 
+                                (ref-SWPL::XE_STOA-PID|AddLiquidity 
                                     account swpair asymmetric-collection gaseous-collection stoa-pid ld clad
                                 )
                             )
                             (with-capability (MTX-SWP|C>ADD-GLACIAL-LQ swpair ld)
                                 ;;<asymmetric-collection=false> <gaseous-collection=false>
-                                (ref-SWPL::XE|STOA-PID_AddLiqudity 
+                                (ref-SWPL::XE_STOA-PID|AddLiquidity 
                                     account swpair asymmetric-collection gaseous-collection stoa-pid ld clad
                                 )
                             )
@@ -549,7 +549,7 @@
                         (ref-SWPL::URC_LD swpair lq-lst)
                     )
                     (clad:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
-                        (ref-SWPL::URC|STOA-PID_CLAD account swpair ld false false stoa-pid)
+                        (ref-SWPL::URC_STOA-PID|CLAD account swpair ld false false stoa-pid)
                     )
                 )
                 (require-capability (MTX-SWP|S>ADD-LQ stoa-pid))
@@ -607,7 +607,7 @@
                                     [ico1 ico2 ico3] []
                                 )
                             )
-                            (ref-SWPL::XE|STOA-PID_AddLiqudity vst-sc swpair false false stoa-pid ld clad)
+                            (ref-SWPL::XE_STOA-PID|AddLiquidity vst-sc swpair false false stoa-pid ld clad)
                             (yield
                                 {"secondary-lp-amount"  : secondary}
                             )
@@ -679,7 +679,7 @@
                         (ref-SWPL::URC_LD swpair lq-lst)
                     )
                     (clad:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
-                        (ref-SWPL::URC|STOA-PID_CLAD account swpair ld true true stoa-pid)
+                        (ref-SWPL::URC_STOA-PID|CLAD account swpair ld true true stoa-pid)
                     )
                 )
                 (require-capability (MTX-SWP|S>ADD-LQ stoa-pid))
@@ -751,7 +751,7 @@
                                     [ico1 ico2 ico3 ico4] []
                                 )
                             )
-                            (ref-SWPL::XE|STOA-PID_AddLiqudity vst-sc swpair true true stoa-pid ld clad)
+                            (ref-SWPL::XE_STOA-PID|AddLiquidity vst-sc swpair true true stoa-pid ld clad)
                             (yield
                                 {"primary-lp-amount"    : primary
                                 ,"time-diff"            : dt}

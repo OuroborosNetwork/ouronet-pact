@@ -2094,11 +2094,11 @@
         ;    (ref-SWPL::URC_Liquidity pool8 ia)
         ;)
         ;(clad:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
-        ;    (ref-SWPL::URC|STOA-PID_CompleteLiquidityAdditionData patron pool8 ld true true 1.0)
+        ;    (ref-SWPL::URC_STOA-PID|CompleteLiquidityAdditionData patron pool8 ld true true 1.0)
         ;)
         ;(ico1:object{OuronetDalosV4.OutputCumulatorV2}
         ;    (with-capability (ouronet-ns.SWPL.SWPL|C>ADD-STANDARD-LQ pool8 ld)
-        ;        (ref-SWPL::X|STOA-PID_AddLiqudityV2 patron pool8 true true 1.0 ld clad)
+        ;        (ref-SWPL::X|STOA-PID_AddLiquidityV2 patron pool8 true true 1.0 ld clad)
         ;    )
         ;)
     )
@@ -2298,7 +2298,7 @@
         ;    (ref-SWPL::URC_LD pool8 bl)
         ;)
         ;(clad:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
-        ;    (ref-SWPL::URC|STOA-PID_CLAD patron pool8 ld true true 1.0)
+        ;    (ref-SWPL::URC_STOA-PID|CLAD patron pool8 ld true true 1.0)
         ;)
         
     )
@@ -6256,7 +6256,7 @@
             (ref-SWPL::URC_LD pool lq-lst)
         )
         (clad:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
-            (ref-SWPL::URC|STOA-PID_CLAD vst-sc pool ld true true 1.0)
+            (ref-SWPL::URC_STOA-PID|CLAD vst-sc pool ld true true 1.0)
         )
         (pt-current-amounts:[decimal] (ref-SWP::UR_PoolTokenSupplies pool))
         (asmt2:object{SwapperLiquidityV1.AsymmetricTax}

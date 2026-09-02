@@ -276,7 +276,7 @@
                 (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
                 ;;
                 (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))
-                (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                 ;;
                 (k-account:string (ref-DALOS::UR_AccountStoa account))
                 (wstoa:string (ref-DALOS::UR_WrappedStoaID))
@@ -310,7 +310,7 @@
                 (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
                 ;;
                 (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))
-                (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                 ;;
                 (spark-id:string (UR_SparkID))
                 (spark-price:decimal (at "pid" (ref-DEMIPAD::UR_Price spark-id)))
@@ -325,7 +325,7 @@
                 (ref-U|CT:module{OuronetConstantsV1} U|CT)
                 (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
                 (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))
-                (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                 (boost:decimal (UR_BoostPromille))
             )
             (floor (/ (+ 1.0 (/ boost 1000.0)) stoa-pid) stoa-prec)
@@ -365,7 +365,7 @@
                 (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
                 ;;
                 (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))
-                (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                 ;;
                 (spark-id:string (UR_SparkID))
                 (spark-price:decimal (at "pid" (ref-DEMIPAD::UR_Price spark-id)))

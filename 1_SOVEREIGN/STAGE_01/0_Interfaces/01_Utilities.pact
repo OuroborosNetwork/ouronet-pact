@@ -97,7 +97,7 @@
 (interface DiaStoaPidV1
     @doc "Exposes the UR Function that Reads STOA Price in Dollars (STOA-PID) via Dia Oracle on Chain 2"
     ;;
-    (defun UR|STOA-PID:decimal ())
+    (defun UR_STOA-PID|Price:decimal ())
 )
 ;;
 ;;  [2]      [U|G]

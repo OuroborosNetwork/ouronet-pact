@@ -207,7 +207,7 @@
             (let
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
-                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (ref-MTX-SWP:module{SwapperMtxV3} MTX-SWP)
                 )
                 (ref-MTX-SWP::C_AddStandardLiquidity 
@@ -222,7 +222,7 @@
             (let
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
-                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (ref-MTX-SWP:module{SwapperMtxV3} MTX-SWP)
                 )
                 (ref-MTX-SWP::C_AddIcedLiquidity 
@@ -237,7 +237,7 @@
             (let
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
-                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (ref-MTX-SWP:module{SwapperMtxV3} MTX-SWP)
                 )
                 (ref-MTX-SWP::C_AddGlacialLiquidity 
@@ -252,7 +252,7 @@
             (let
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
-                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (ref-MTX-SWP:module{SwapperMtxV3} MTX-SWP)
                 )
                 (ref-MTX-SWP::C_AddFrozenLiquidity
@@ -267,7 +267,7 @@
             (let
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
-                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (ref-MTX-SWP:module{SwapperMtxV3} MTX-SWP)
                 )
                 (ref-MTX-SWP::C_AddSleepingLiquidity

@@ -208,7 +208,7 @@
                 (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
                 ;;
                 (share-pid:decimal (UR_DollarSharePrice))
-                (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                 ;;
                 (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
                 (wstoa-prec:integer (ref-DPTF::UR_Decimals wstoa-id))

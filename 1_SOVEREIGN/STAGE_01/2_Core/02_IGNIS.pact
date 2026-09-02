@@ -524,7 +524,7 @@
                 (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
                 (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
                 ;;
-                (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                 (stoa-split:[decimal] (ref-U|DALOS::UC_TenTwentyThirtyFourtySplit kfp STOAPREC))
                 (stoa-targets:[string] (OI|UR_StoaTargets))
                 (stoa-price:string (OI|UC_ConvertPrice (* kfp stoa-pid)))
@@ -549,7 +549,7 @@
                 (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 ;;
-                (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                 (stoa-discount:decimal (ref-DALOS::URC_StoaGasDiscount patron))
                 (discount-percent:string (format "{}%" [(* 100.0 (- 1.0 stoa-discount))]))
                 (stoa-need:decimal (floor (* stoa-discount kfp) STOAPREC))

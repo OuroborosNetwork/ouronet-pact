@@ -341,7 +341,7 @@
                 (ref-ATS:module{AutostakeV2} ATS)
                 (ref-SWPI:module{SwapperIssueV3} SWPI)
                 ;;
-                (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                 (p-ids:[string] (URC_PrimordialIDs))
                 (ouro:string (at 0 p-ids))
                 (ignis:string (at 1 p-ids))
@@ -428,7 +428,7 @@
                 (pool-value:[decimal] (ref-SWPI::URC_PoolValue swpair))
                 (pool-value-in-dwk:decimal (at 0 pool-value))
                 (lp-value-in-dwk:decimal (at 1 pool-value))
-                (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
             )
             {"pool-type"                        : (at 0 ptp)
             ,"pool-type-word"                   : (at 1 ptp)
@@ -532,7 +532,7 @@
                 (price-ouro:decimal (ref-SWPI::URC_OuroPrimordialPrice))
                 (price-auryn:decimal (floor (* price-ouro ih-auryndex) 24))
                 (price-elite-auryn:decimal (floor (* price-auryn ih-elite-auryndex) 24))
-                (price-wstoa:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                (price-wstoa:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                 (price-sstoa:decimal (floor (* price-wstoa ih-liquid) 24))
                 (price-gstoa:decimal (floor (* price-sstoa ih-kori) 24))
                 ;;
@@ -1037,7 +1037,7 @@
                 (ref-SWPI:module{SwapperIssueV3} SWPI)
                 ;;
                 (ignis-id:string (ref-DALOS::UR_IgnisID))
-                (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                 (dptf-id:string (ref-DPTF::URC_Parent dptf))
                 (wallet-supply:decimal (ref-DPTF::UR_AccountSupply dptf account))
                 (dptf-supply:decimal (ref-DPTF::UR_Supply dptf))
@@ -1121,7 +1121,7 @@
                             lp-id-frozen-counterpart
                         )
                     )
-                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (wallet-supply:decimal (ref-DPTF::UR_AccountSupply lp-id-used account))
                     (lp-supply:decimal (ref-DPTF::UR_Supply lp-id-used))
                     ;;
@@ -1190,7 +1190,7 @@
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
                 (ref-SWPI:module{SwapperIssueV3} SWPI)
                 ;;
-                (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                 ;;
                 (dptf-id:string (ref-DPOF::URC_Parent dpof-id))
                 (wallet-supply:decimal (ref-DPOF::UR_AccountSupply dpof-id account))
@@ -1261,7 +1261,7 @@
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
                     (ref-SWPI:module{SwapperIssueV3} SWPI)
                     ;;
-                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (wallet-supply:decimal (ref-DPOF::UR_AccountSupply lp-id-sleeping-counterpart account))
                     (lp-supply:decimal(ref-DPOF::UR_Supply lp-id-sleeping-counterpart))
                     (wallet-nonces:[integer] (ref-DPOF::URH_AccountNonces account lp-id-sleeping-counterpart))

@@ -802,7 +802,7 @@
                 (remainder-percent-dollarz:decimal (- amount-in-dollars deposit-royalty))
 
                 ;;
-                (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                 (wstoa-pid:decimal (ref-SWPI::URC_TokenDollarPrice wstoa-id stoa-pid))
                 (sstoa-pid:decimal (ref-SWPI::URC_TokenDollarPrice sstoa-id stoa-pid))
                 (ouro-pid:decimal (ref-SWPI::URC_OuroPrimordialPrice))

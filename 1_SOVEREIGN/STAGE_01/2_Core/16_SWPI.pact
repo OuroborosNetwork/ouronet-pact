@@ -1673,7 +1673,7 @@
         (let
             (
                 (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
-                (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                 (pv:[decimal] (URCx_PrimordialValueAndOuroSupply))
                 (primordial-wstoa-value:decimal (at 0 pv))
                 (ouro-supply:decimal (at 1 pv))

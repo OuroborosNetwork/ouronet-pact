@@ -481,6 +481,98 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
+    ;;{F1}  Construct [UDC]
+    (defun UDC_SpawnSmartSwapSlippageBounds:object{SwapperUsageV2.Slippage}
+        (
+            input-id:string 
+            input-amount:decimal 
+            output-id:string 
+            slippage:decimal
+        )
+        @doc "Creates a Slippage object for Smart Swap, using fee-less multi-hop output via URC_Hopper. \
+            \ Called by the UI to generate the slippage-bounds object before submitting the Smart Swap transaction."
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-SWPI:module{SwapperIssueV3} SWPI)
+                (h-obj:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_HopperActive input-id output-id input-amount))
+                (ovs:[decimal] (at "output-values" h-obj))
+                (expected:decimal (at 0 (take -1 ovs)))
+                (o-prec:integer (ref-DPTF::UR_Decimals output-id))
+            )
+            (enforce
+                (= (floor slippage 2) slippage)
+                (format "{} is not slippage conform decimal wise (max 2 decimals allowed)" [slippage])
+            )
+            (enforce
+                (or
+                    (= slippage -1.0)
+                    (and
+                        (> slippage 0.0)
+                        (<= slippage 50.0)
+                    )
+                )
+                "Slippage must be greater than 0.0 and maximum 50.0, or -1.0 for no slippage"
+            )
+            (UDC_Slippage expected o-prec slippage)
+        )
+    )
+    (defun UDC_SpawnSlippageBounds:object{SwapperUsageV2.Slippage}
+        (
+            swpair:string 
+            input-ids:[string]
+            input-amounts:[decimal]
+            output-id:string
+            slippage:decimal
+        )
+        @doc "Creates the <slippage-bounds:object{SwapperUsageV2.Slippage}> \
+            \ that needs to be passed to the Slippage Swap Functions,\
+            \ using data from the UI"
+        (let
+            (
+                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+                (dsid:object{UtilitySwpV1.DirectSwapInputData}
+                    (ref-U|SWP::UDC_DirectSwapInputData input-ids input-amounts output-id)
+                )
+            )
+            (UDC_SlippageObject swpair dsid slippage)
+        )
+    )
+    (defun UDC_Slippage:object{SwapperUsageV2.Slippage}
+        (a:decimal b:integer c:decimal)
+        {"expected-output-amount"   : a
+        ,"output-precision"         : b
+        ,"slippage-percent"         : c}
+    )
+    (defun UDC_SlippageObject:object{SwapperUsageV2.Slippage}
+        (swpair:string dsid:object{UtilitySwpV1.DirectSwapInputData} slippage-value:decimal)
+        @doc "Makes a Slippage Object from <input amounts>"
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-SWPI:module{SwapperIssueV3} SWPI)
+                (o-prec:integer (ref-DPTF::UR_Decimals (at "output-id" dsid)))
+                (expected:decimal (ref-SWPI::URC_Swap swpair dsid false))
+            )
+            (enforce
+                (= (floor slippage-value 2) slippage-value)
+                (format "{} is not slippage conform decimal wise (max 2 decimals allowed)" [slippage-value])
+            )
+            (enforce
+                (or
+                    (= slippage-value -1.0)
+                    (and
+                        (> slippage-value 0.0)
+                        (<= slippage-value 50.0)
+                    )
+                )
+                
+                "Slippage must be greater than 0.0 and maximum 50.0, or -1.0 for no slippage"
+            )
+            (UDC_Slippage expected o-prec slippage-value)
+        )
+    )
+    ;;{F2}  Compute [UC]
     (defun UC_SlippageMinMax:[decimal] (input:object{SwapperUsageV2.Slippage})
         (let
             (
@@ -539,8 +631,7 @@
             )
         )
     )
-    ;;{F0}  [UR]
-    ;;{F1}  [URC]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     (defun URC_DedupFirstTokens:[string] (distinct-edges:[string])
         @doc "#34 Phase 7 (validated with real evidence, P0.6/Phase 5): given the swap's \
             \ own <distinct-edges> (the pools actually traversed), returns the DEDUPED \
@@ -703,120 +794,13 @@
             )
         )
     )
-    ;;{F2}  [UEV]
-    ;;{F3}  [UDC]
-    (defun UDC_SpawnSmartSwapSlippageBounds:object{SwapperUsageV2.Slippage}
-        (
-            input-id:string 
-            input-amount:decimal 
-            output-id:string 
-            slippage:decimal
-        )
-        @doc "Creates a Slippage object for Smart Swap, using fee-less multi-hop output via URC_Hopper. \
-            \ Called by the UI to generate the slippage-bounds object before submitting the Smart Swap transaction."
-        (let
-            (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-SWPI:module{SwapperIssueV3} SWPI)
-                (h-obj:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_HopperActive input-id output-id input-amount))
-                (ovs:[decimal] (at "output-values" h-obj))
-                (expected:decimal (at 0 (take -1 ovs)))
-                (o-prec:integer (ref-DPTF::UR_Decimals output-id))
-            )
-            (enforce
-                (= (floor slippage 2) slippage)
-                (format "{} is not slippage conform decimal wise (max 2 decimals allowed)" [slippage])
-            )
-            (enforce
-                (or
-                    (= slippage -1.0)
-                    (and
-                        (> slippage 0.0)
-                        (<= slippage 50.0)
-                    )
-                )
-                "Slippage must be greater than 0.0 and maximum 50.0, or -1.0 for no slippage"
-            )
-            (UDC_Slippage expected o-prec slippage)
-        )
-    )
-    (defun UDC_SpawnSlippageBounds:object{SwapperUsageV2.Slippage}
-        (
-            swpair:string 
-            input-ids:[string]
-            input-amounts:[decimal]
-            output-id:string
-            slippage:decimal
-        )
-        @doc "Creates the <slippage-bounds:object{SwapperUsageV2.Slippage}> \
-            \ that needs to be passed to the Slippage Swap Functions,\
-            \ using data from the UI"
-        (let
-            (
-                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                (dsid:object{UtilitySwpV1.DirectSwapInputData}
-                    (ref-U|SWP::UDC_DirectSwapInputData input-ids input-amounts output-id)
-                )
-            )
-            (UDC_SlippageObject swpair dsid slippage)
-        )
-    )
-    (defun UDC_Slippage:object{SwapperUsageV2.Slippage}
-        (a:decimal b:integer c:decimal)
-        {"expected-output-amount"   : a
-        ,"output-precision"         : b
-        ,"slippage-percent"         : c}
-    )
-    (defun UDC_SlippageObject:object{SwapperUsageV2.Slippage}
-        (swpair:string dsid:object{UtilitySwpV1.DirectSwapInputData} slippage-value:decimal)
-        @doc "Makes a Slippage Object from <input amounts>"
-        (let
-            (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-SWPI:module{SwapperIssueV3} SWPI)
-                (o-prec:integer (ref-DPTF::UR_Decimals (at "output-id" dsid)))
-                (expected:decimal (ref-SWPI::URC_Swap swpair dsid false))
-            )
-            (enforce
-                (= (floor slippage-value 2) slippage-value)
-                (format "{} is not slippage conform decimal wise (max 2 decimals allowed)" [slippage-value])
-            )
-            (enforce
-                (or
-                    (= slippage-value -1.0)
-                    (and
-                        (> slippage-value 0.0)
-                        (<= slippage-value 50.0)
-                    )
-                )
-                
-                "Slippage must be greater than 0.0 and maximum 50.0, or -1.0 for no slippage"
-            )
-            (UDC_Slippage expected o-prec slippage-value)
-        )
-    )
-    ;;{F4}  [CAP]
     ;;
-    ;;{F5}  [A]
-    ;;{F6}  [C]
     (defun URCi_ToggleSwapCapability:object{IgnisCollectorV1.OutputCumulator}
         (swpair:string toggle:bool)
         @doc "Cost preview for C_ToggleSwapCapability: delegates to SWP's add-or-swap toggle \
             \ cost (add-or-swap = false)."
         (let ((ref-SWP:module{SwapperV3} SWP))
             (ref-SWP::URCi_ToggleAddOrSwap swpair toggle false)
-        )
-    )
-    (defun C_ToggleSwapCapability:object{IgnisCollectorV1.OutputCumulator}
-        (swpair:string toggle:bool)
-        (UEV_IMC)
-        (let
-            (
-                (ref-SWP:module{SwapperV3} SWP)
-            )
-            (with-capability (SPWU|C>TOGGLE-SWAP swpair toggle)
-                (ref-SWP::C_ToggleAddOrSwap swpair toggle false)
-            )
         )
     )
     (defun URCi_SmartSwapCore:list
@@ -1013,116 +997,6 @@
             )
         )
     )
-    (defun CC_SmartSwap:object{IgnisCollectorV1.OutputCumulator}
-        (account:string input-id:string input-amount:decimal output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{SwapperUsageV2.Slippage})
-        @doc "Executes a Smart Swap from <input-id> to <output-id> across multiple pools using BFS path tracing. \
-            \ Each hop executes a full swap with fees (LP, special, boost via Option B). \
-            \ When slippage != -1.0, slippage-bounds must be the pre-computed object from UDC_SpawnSmartSwapSlippageBounds. \
-            \ When slippage == -1.0, pass a dummy object (e.g. UDC_Slippage 0.0 0 0.0). \
-            \ #34 Phase 8: renamed from C_SmartSwap — this is the self-searching (BFS in-transaction) \
-            \ variant, kept for comparison/fallback. The bundle-based, dirty-read-injected variant \
-            \ takes the freed C_SmartSwap name. \
-            \ #65L fix: the BFS path search (<h-obj>) is computed exactly ONCE here and \
-            \ threaded through the defcap and XI_SmartSwapRouter, instead of each \
-            \ independently re-running SWPI::URC_HopperActive's full-graph search."
-        (UEV_IMC)
-        (let
-            (
-                (ref-SWPI:module{SwapperIssueV3} SWPI)
-                (h-obj:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_HopperActive input-id output-id input-amount))
-            )
-            (if (!= slippage -1.0)
-                (with-capability (SWPU|C>SMART-SWAP-WITH-SLIPPAGE account input-id input-amount output-id slippage slippage-bounds h-obj)
-                    (XI_SmartSwapRouter account input-id input-amount output-id slippage stoa-pid slippage-bounds h-obj)
-                )
-                (with-capability (SWPU|C>SMART-SWAP-NO-SLIPPAGE account input-id input-amount output-id slippage h-obj)
-                    (XI_SmartSwapRouter account input-id input-amount output-id slippage stoa-pid slippage-bounds h-obj)
-                )
-            )
-        )
-    )
-    (defun C_SmartSwap:list
-        (
-            account:string input-id:string input-amount:decimal output-id:string slippage:decimal
-            stoa-pid:decimal slippage-bounds:object{SwapperUsageV2.Slippage} bundle:object{SwapperUsageV2.SmartSwapPathBundle}
-        )
-        @doc "#34 Phase 8 — the bundle-based, dirty-read-injected SmartSwap: performs \
-            \ ZERO internal searching. <bundle> (SmartSwapPathBundle) is assembled \
-            \ entirely client-side per the exhaustive-path-search HANDOFF doc's P3.7 \
-            \ orchestration sequence — swap-route (A->B), boost-path (B->SSTOA) and \
-            \ stoa-paths (each distinct pool's first-token->WSTOA) are all dirty-read \
-            \ off-chain before this transaction is ever submitted. Built ALONGSIDE, not \
-            \ replacing, CC_SmartSwap (the original self-searching variant) for direct \
-            \ A/B gas comparison (P3.5.2) — same slippage/no-slippage split, same \
-            \ IGNIS-billing shape at the Talos layer. \
-            \ Returns [ico stoa-results] — a WIDER container, not a schema change to the \
-            \ shared IgnisCollectorV1.OutputCumulator (P3.10, settled 2026-08-21): <ico> \
-            \ carries the same [final-netto hops pools distinct-edges] output shape \
-            \ CC_SmartSwap already does (for like-for-like comparison), <stoa-results> is \
-            \ the P3.4 dumb-writer's precomputed [{pool, stoa-value}, ...] list — Talos \
-            \ maps it straight into XE_UpdateStoaValue with no URC_PoolValue re-derivation \
-            \ at all, for every pool this call actually priced. \
-            \ Cache self-warming: after a real execution, XI_RegisterBundlePaths \
-            \ registers whichever of <swap-route>/<boost-path>/<stoa-paths> are valid \
-            \ and actually used this round — via SWPT::XE_RegisterPath (the proper \
-            \ forward-module writer), never a caller-side grant of SWPT's own SECURE \
-            \ cap directly (see XE_RegisterPath's own doc for why that would be unsafe — \
-            \ confirmed against this codebase's own ATS audit findings before landing). \
-            \ #65bL fix: <swap-route> registration is new — see SwapRoute's own doc for \
-            \ why it's now safe to cache (Phase 5 dropped the live default from best-of-3 \
-            \ to first-found, making the structural route amount-independent). \
-            \ Runs INSIDE the with-capability block below via XI_SmartSwapAndRegister — \
-            \ a granted capability's scope is its own dynamic extent, not the rest of \
-            \ the transaction (confirmed the hard way: 'require-capability: not granted' \
-            \ when this was first tried as a separate call after the with-capability \
-            \ block had already returned)."
-        (UEV_IMC)
-        (if (!= slippage -1.0)
-            (with-capability
-                (SWPU|C>SMART-SWAP-EXPLICIT-ROUTE-WITH-SLIPPAGE account input-id input-amount output-id slippage slippage-bounds bundle)
-                (XI_SmartSwapAndRegister account input-id input-amount output-id slippage stoa-pid slippage-bounds bundle)
-            )
-            (with-capability
-                (SWPU|C>SMART-SWAP-EXPLICIT-ROUTE-NO-SLIPPAGE account input-id input-amount output-id slippage bundle)
-                (XI_SmartSwapAndRegister account input-id input-amount output-id slippage stoa-pid slippage-bounds bundle)
-            )
-        )
-    )
-    (defun XI_SmartSwapAndRegister:list
-        (
-            account:string input-id:string input-amount:decimal output-id:string slippage:decimal
-            stoa-pid:decimal slippage-bounds:object{SwapperUsageV2.Slippage} bundle:object{SwapperUsageV2.SmartSwapPathBundle}
-        )
-        @doc "#34 Phase 8: C_SmartSwap's body, factored out so it runs entirely INSIDE \
-            \ the caller's with-capability block (required for XI_RegisterBundlePaths' \
-            \ own require-capability (SECURE) to see a granted capability — see \
-            \ C_SmartSwap's doc for why this had to be restructured this way)."
-        (require-capability (SECURE))
-        (let*
-            (
-                (ico:object{IgnisCollectorV1.OutputCumulator}
-                    (XI_SmartSwapExplicitRoute account input-id input-amount output-id slippage stoa-pid slippage-bounds bundle)
-                )
-                (out:list (at "output" ico))
-                ;;A slippage-exceeded soft-fail (matching CC_SmartSwap's own established
-                ;;shape) returns a 1-element <output> ([exceed-message]) instead of the
-                ;;successful [final-netto hops pools distinct-edges] 4-element shape — no
-                ;;swap happened, so there's nothing to price or register, <stoa-results>
-                ;;is [] and no registration call fires.
-                (stoa-results:list
-                    (if (= (length out) 4)
-                        (URC_ComputeStoaValueResults (at 3 out) (at "stoa-paths" bundle))
-                        []
-                    )
-                )
-            )
-            (if (= (length out) 4)
-                (XI_RegisterBundlePaths input-id output-id (at 3 out) bundle)
-                "no registration — swap did not execute"
-            )
-            [ico stoa-results]
-        )
-    )
     (defun URCi_RawLiquidPump:object{IgnisCollectorV1.OutputCumulator}
         (id:string amount:decimal boost-path:object{SwapperUsageV2.CachedPathOrMiss})
         @doc "Exact cost of XI_RawLiquidPump's boost leg. The whole boost — regardless of route \
@@ -1268,62 +1142,44 @@
             )
         )
     )
-    (defun C_Swap:object{IgnisCollectorV1.OutputCumulator}
-        (account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{SwapperUsageV2.Slippage})
-        @doc "Execute swap. When slippage != -1.0, slippage-bounds must be the pre-computed slippage object from quote time (e.g. UDC_SlippageObject); when slippage == -1.0, pass a dummy object (e.g. UDC_Slippage 0.0 0 0.0)."
-        (UEV_IMC)
-        (let
+    ;;{F4}  Validate [UEV/CAP]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    (defun XI_SmartSwapAndRegister:list
+        (
+            account:string input-id:string input-amount:decimal output-id:string slippage:decimal
+            stoa-pid:decimal slippage-bounds:object{SwapperUsageV2.Slippage} bundle:object{SwapperUsageV2.SmartSwapPathBundle}
+        )
+        @doc "#34 Phase 8: C_SmartSwap's body, factored out so it runs entirely INSIDE \
+            \ the caller's with-capability block (required for XI_RegisterBundlePaths' \
+            \ own require-capability (SECURE) to see a granted capability — see \
+            \ C_SmartSwap's doc for why this had to be restructured this way)."
+        (require-capability (SECURE))
+        (let*
             (
-                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                (ref-SWP:module{SwapperV3} SWP)
-                (dsid:object{UtilitySwpV1.DirectSwapInputData}
-                    (ref-U|SWP::UDC_DirectSwapInputData input-ids input-amounts output-id)
+                (ico:object{IgnisCollectorV1.OutputCumulator}
+                    (XI_SmartSwapExplicitRoute account input-id input-amount output-id slippage stoa-pid slippage-bounds bundle)
                 )
-                (pp:string (ref-SWP::UR_PrimordialPool))
-                (l:integer (length input-ids))
-                (s-or-m:bool (if (= l 1) true false))
-            )
-            (if (= swpair pp)
-                (if s-or-m
-                    (if (!= slippage -1.0)
-                        (with-capability (SWPU|OPU|C>SINGL-SWAP-WITH-SLIPPAGE account swpair dsid slippage slippage-bounds)
-                            (XI|STOA-PID_Swap account swpair dsid slippage stoa-pid slippage-bounds)
-                        )
-                        (with-capability (SWPU|OPU|C>SINGL-SWAP-NO-SLIPPAGE account swpair dsid slippage)
-                            (XI|STOA-PID_Swap account swpair dsid slippage stoa-pid slippage-bounds)
-                        )
-                    )
-                    (if (!= slippage -1.0)
-                        (with-capability (SWPU|OPU|C>MULTI-SWAP-WITH-SLIPPAGE account swpair dsid slippage slippage-bounds)
-                            (XI|STOA-PID_Swap account swpair dsid slippage stoa-pid slippage-bounds)
-                        )
-                        (with-capability (SWPU|OPU|C>MULTI-SWAP-NO-SLIPPAGE account swpair dsid slippage)
-                            (XI|STOA-PID_Swap account swpair dsid slippage stoa-pid slippage-bounds)
-                        )
-                    )
-                )
-                (if s-or-m
-                    (if (!= slippage -1.0)
-                        (with-capability (SWPU|C>SINGL-SWAP-WITH-SLIPPAGE account swpair dsid slippage slippage-bounds)
-                            (XI|STOA-PID_Swap account swpair dsid slippage -1.0 slippage-bounds)
-                        )
-                        (with-capability (SWPU|C>SINGL-SWAP-NO-SLIPPAGE account swpair dsid slippage)
-                            (XI|STOA-PID_Swap account swpair dsid slippage -1.0 slippage-bounds)
-                        )
-                    )
-                    (if (!= slippage -1.0)
-                        (with-capability (SWPU|C>MULTI-SWAP-WITH-SLIPPAGE account swpair dsid slippage slippage-bounds)
-                            (XI|STOA-PID_Swap account swpair dsid slippage -1.0 slippage-bounds)
-                        )
-                        (with-capability (SWPU|C>MULTI-SWAP-NO-SLIPPAGE account swpair dsid slippage)
-                            (XI|STOA-PID_Swap account swpair dsid slippage -1.0 slippage-bounds)
-                        )
+                (out:list (at "output" ico))
+                ;;A slippage-exceeded soft-fail (matching CC_SmartSwap's own established
+                ;;shape) returns a 1-element <output> ([exceed-message]) instead of the
+                ;;successful [final-netto hops pools distinct-edges] 4-element shape — no
+                ;;swap happened, so there's nothing to price or register, <stoa-results>
+                ;;is [] and no registration call fires.
+                (stoa-results:list
+                    (if (= (length out) 4)
+                        (URC_ComputeStoaValueResults (at 3 out) (at "stoa-paths" bundle))
+                        []
                     )
                 )
             )
+            (if (= (length out) 4)
+                (XI_RegisterBundlePaths input-id output-id (at 3 out) bundle)
+                "no registration — swap did not execute"
+            )
+            [ico stoa-results]
         )
     )
-    ;;{F7}
     (defun XI_SmartSwapRouter:object{IgnisCollectorV1.OutputCumulator}
         (
             account:string input-id:string input-amount:decimal output-id:string slippage:decimal
@@ -1582,7 +1438,7 @@
                         )
                     )
                     (if iz-on-path
-                        (XI|STOA-PID_OPU pp stoa-pid)
+                        (XI_STOA-PID|OPU pp stoa-pid)
                         true
                     )
                 )
@@ -1812,7 +1668,7 @@
             )
         )
     )
-    (defun XI|STOA-PID_Swap:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_STOA-PID|Swap:object{IgnisCollectorV1.OutputCumulator}
         (
             account:string swpair:string dsid:object{UtilitySwpV1.DirectSwapInputData}
             slippage:decimal stoa-pid:decimal slippage-bounds:object{SwapperUsageV2.Slippage}
@@ -1884,7 +1740,7 @@
                 )
             )
             (if (> stoa-pid 0.0)
-                (XI|STOA-PID_OPU swpair stoa-pid)
+                (XI_STOA-PID|OPU swpair stoa-pid)
                 true
             )
             ico
@@ -2173,7 +2029,7 @@
             true
         )
     )
-    (defun XI|STOA-PID_OPU (swpair:string stoa-pid:decimal)
+    (defun XI_STOA-PID|OPU (swpair:string stoa-pid:decimal)
         @doc "If <swpair> is primordial, <ouro-auto-price-via-swaps> is true, and \
             \ Ouro price moves more that 1 promile, update price"
         (let
@@ -2208,6 +2064,152 @@
             )
         )
     )
+    ;;{F7}  User [A]
+    ;;{F8}  User [C]
+    (defun C_ToggleSwapCapability:object{IgnisCollectorV1.OutputCumulator}
+        (swpair:string toggle:bool)
+        (UEV_IMC)
+        (let
+            (
+                (ref-SWP:module{SwapperV3} SWP)
+            )
+            (with-capability (SPWU|C>TOGGLE-SWAP swpair toggle)
+                (ref-SWP::C_ToggleAddOrSwap swpair toggle false)
+            )
+        )
+    )
+    (defun CC_SmartSwap:object{IgnisCollectorV1.OutputCumulator}
+        (account:string input-id:string input-amount:decimal output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{SwapperUsageV2.Slippage})
+        @doc "Executes a Smart Swap from <input-id> to <output-id> across multiple pools using BFS path tracing. \
+            \ Each hop executes a full swap with fees (LP, special, boost via Option B). \
+            \ When slippage != -1.0, slippage-bounds must be the pre-computed object from UDC_SpawnSmartSwapSlippageBounds. \
+            \ When slippage == -1.0, pass a dummy object (e.g. UDC_Slippage 0.0 0 0.0). \
+            \ #34 Phase 8: renamed from C_SmartSwap — this is the self-searching (BFS in-transaction) \
+            \ variant, kept for comparison/fallback. The bundle-based, dirty-read-injected variant \
+            \ takes the freed C_SmartSwap name. \
+            \ #65L fix: the BFS path search (<h-obj>) is computed exactly ONCE here and \
+            \ threaded through the defcap and XI_SmartSwapRouter, instead of each \
+            \ independently re-running SWPI::URC_HopperActive's full-graph search."
+        (UEV_IMC)
+        (let
+            (
+                (ref-SWPI:module{SwapperIssueV3} SWPI)
+                (h-obj:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_HopperActive input-id output-id input-amount))
+            )
+            (if (!= slippage -1.0)
+                (with-capability (SWPU|C>SMART-SWAP-WITH-SLIPPAGE account input-id input-amount output-id slippage slippage-bounds h-obj)
+                    (XI_SmartSwapRouter account input-id input-amount output-id slippage stoa-pid slippage-bounds h-obj)
+                )
+                (with-capability (SWPU|C>SMART-SWAP-NO-SLIPPAGE account input-id input-amount output-id slippage h-obj)
+                    (XI_SmartSwapRouter account input-id input-amount output-id slippage stoa-pid slippage-bounds h-obj)
+                )
+            )
+        )
+    )
+    (defun C_SmartSwap:list
+        (
+            account:string input-id:string input-amount:decimal output-id:string slippage:decimal
+            stoa-pid:decimal slippage-bounds:object{SwapperUsageV2.Slippage} bundle:object{SwapperUsageV2.SmartSwapPathBundle}
+        )
+        @doc "#34 Phase 8 — the bundle-based, dirty-read-injected SmartSwap: performs \
+            \ ZERO internal searching. <bundle> (SmartSwapPathBundle) is assembled \
+            \ entirely client-side per the exhaustive-path-search HANDOFF doc's P3.7 \
+            \ orchestration sequence — swap-route (A->B), boost-path (B->SSTOA) and \
+            \ stoa-paths (each distinct pool's first-token->WSTOA) are all dirty-read \
+            \ off-chain before this transaction is ever submitted. Built ALONGSIDE, not \
+            \ replacing, CC_SmartSwap (the original self-searching variant) for direct \
+            \ A/B gas comparison (P3.5.2) — same slippage/no-slippage split, same \
+            \ IGNIS-billing shape at the Talos layer. \
+            \ Returns [ico stoa-results] — a WIDER container, not a schema change to the \
+            \ shared IgnisCollectorV1.OutputCumulator (P3.10, settled 2026-08-21): <ico> \
+            \ carries the same [final-netto hops pools distinct-edges] output shape \
+            \ CC_SmartSwap already does (for like-for-like comparison), <stoa-results> is \
+            \ the P3.4 dumb-writer's precomputed [{pool, stoa-value}, ...] list — Talos \
+            \ maps it straight into XE_UpdateStoaValue with no URC_PoolValue re-derivation \
+            \ at all, for every pool this call actually priced. \
+            \ Cache self-warming: after a real execution, XI_RegisterBundlePaths \
+            \ registers whichever of <swap-route>/<boost-path>/<stoa-paths> are valid \
+            \ and actually used this round — via SWPT::XE_RegisterPath (the proper \
+            \ forward-module writer), never a caller-side grant of SWPT's own SECURE \
+            \ cap directly (see XE_RegisterPath's own doc for why that would be unsafe — \
+            \ confirmed against this codebase's own ATS audit findings before landing). \
+            \ #65bL fix: <swap-route> registration is new — see SwapRoute's own doc for \
+            \ why it's now safe to cache (Phase 5 dropped the live default from best-of-3 \
+            \ to first-found, making the structural route amount-independent). \
+            \ Runs INSIDE the with-capability block below via XI_SmartSwapAndRegister — \
+            \ a granted capability's scope is its own dynamic extent, not the rest of \
+            \ the transaction (confirmed the hard way: 'require-capability: not granted' \
+            \ when this was first tried as a separate call after the with-capability \
+            \ block had already returned)."
+        (UEV_IMC)
+        (if (!= slippage -1.0)
+            (with-capability
+                (SWPU|C>SMART-SWAP-EXPLICIT-ROUTE-WITH-SLIPPAGE account input-id input-amount output-id slippage slippage-bounds bundle)
+                (XI_SmartSwapAndRegister account input-id input-amount output-id slippage stoa-pid slippage-bounds bundle)
+            )
+            (with-capability
+                (SWPU|C>SMART-SWAP-EXPLICIT-ROUTE-NO-SLIPPAGE account input-id input-amount output-id slippage bundle)
+                (XI_SmartSwapAndRegister account input-id input-amount output-id slippage stoa-pid slippage-bounds bundle)
+            )
+        )
+    )
+    (defun C_Swap:object{IgnisCollectorV1.OutputCumulator}
+        (account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{SwapperUsageV2.Slippage})
+        @doc "Execute swap. When slippage != -1.0, slippage-bounds must be the pre-computed slippage object from quote time (e.g. UDC_SlippageObject); when slippage == -1.0, pass a dummy object (e.g. UDC_Slippage 0.0 0 0.0)."
+        (UEV_IMC)
+        (let
+            (
+                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+                (ref-SWP:module{SwapperV3} SWP)
+                (dsid:object{UtilitySwpV1.DirectSwapInputData}
+                    (ref-U|SWP::UDC_DirectSwapInputData input-ids input-amounts output-id)
+                )
+                (pp:string (ref-SWP::UR_PrimordialPool))
+                (l:integer (length input-ids))
+                (s-or-m:bool (if (= l 1) true false))
+            )
+            (if (= swpair pp)
+                (if s-or-m
+                    (if (!= slippage -1.0)
+                        (with-capability (SWPU|OPU|C>SINGL-SWAP-WITH-SLIPPAGE account swpair dsid slippage slippage-bounds)
+                            (XI_STOA-PID|Swap account swpair dsid slippage stoa-pid slippage-bounds)
+                        )
+                        (with-capability (SWPU|OPU|C>SINGL-SWAP-NO-SLIPPAGE account swpair dsid slippage)
+                            (XI_STOA-PID|Swap account swpair dsid slippage stoa-pid slippage-bounds)
+                        )
+                    )
+                    (if (!= slippage -1.0)
+                        (with-capability (SWPU|OPU|C>MULTI-SWAP-WITH-SLIPPAGE account swpair dsid slippage slippage-bounds)
+                            (XI_STOA-PID|Swap account swpair dsid slippage stoa-pid slippage-bounds)
+                        )
+                        (with-capability (SWPU|OPU|C>MULTI-SWAP-NO-SLIPPAGE account swpair dsid slippage)
+                            (XI_STOA-PID|Swap account swpair dsid slippage stoa-pid slippage-bounds)
+                        )
+                    )
+                )
+                (if s-or-m
+                    (if (!= slippage -1.0)
+                        (with-capability (SWPU|C>SINGL-SWAP-WITH-SLIPPAGE account swpair dsid slippage slippage-bounds)
+                            (XI_STOA-PID|Swap account swpair dsid slippage -1.0 slippage-bounds)
+                        )
+                        (with-capability (SWPU|C>SINGL-SWAP-NO-SLIPPAGE account swpair dsid slippage)
+                            (XI_STOA-PID|Swap account swpair dsid slippage -1.0 slippage-bounds)
+                        )
+                    )
+                    (if (!= slippage -1.0)
+                        (with-capability (SWPU|C>MULTI-SWAP-WITH-SLIPPAGE account swpair dsid slippage slippage-bounds)
+                            (XI_STOA-PID|Swap account swpair dsid slippage -1.0 slippage-bounds)
+                        )
+                        (with-capability (SWPU|C>MULTI-SWAP-NO-SLIPPAGE account swpair dsid slippage)
+                            (XI_STOA-PID|Swap account swpair dsid slippage -1.0 slippage-bounds)
+                        )
+                    )
+                )
+            )
+        )
+    )
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
+    ;;
 )
 
 (create-table P|T)

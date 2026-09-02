@@ -344,7 +344,7 @@
                 ;;
                 ;;Compute Liquidity Addition Data
                 (clad:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
-                    (ref-SWPL::URC|STOA-PID_CLAD account swpair ld asymmetric-collection gaseous-collection stoa-pid)
+                    (ref-SWPL::URC_STOA-PID|CLAD account swpair ld asymmetric-collection gaseous-collection stoa-pid)
                 )
                 (native-lp-transfer-amount:decimal (at "primary-lp" clad))
                 (ifp1:decimal 

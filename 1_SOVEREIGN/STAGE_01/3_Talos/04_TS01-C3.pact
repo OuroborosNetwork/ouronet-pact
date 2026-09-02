@@ -629,9 +629,9 @@
                     (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC)
                     (ref-SWP:module{SwapperV3} SWP)
                     (ref-SWPI:module{SwapperIssueV3} SWPI)
-                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (ico:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-SWPLC::C|STOA-PID_AddStandardLiquidity account swpair input-amounts stoa-pid)
+                        (ref-SWPLC::C_STOA-PID|AddStandardLiquidity account swpair input-amounts stoa-pid)
                     )
                 )
                 (ref-IGNIS::C_Collect patron ico)
@@ -662,9 +662,9 @@
                     (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC)
                     (ref-SWP:module{SwapperV3} SWP)
                     (ref-SWPI:module{SwapperIssueV3} SWPI)
-                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (ico:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-SWPLC::C|STOA-PID_AddIcedLiquidity account swpair input-amounts stoa-pid)
+                        (ref-SWPLC::C_STOA-PID|AddIcedLiquidity account swpair input-amounts stoa-pid)
                     )
                 )
                 (ref-IGNIS::C_Collect patron ico)
@@ -693,9 +693,9 @@
                     (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC)
                     (ref-SWP:module{SwapperV3} SWP)
                     (ref-SWPI:module{SwapperIssueV3} SWPI)
-                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (ico:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-SWPLC::C|STOA-PID_AddGlacialLiquidity account swpair input-amounts stoa-pid)
+                        (ref-SWPLC::C_STOA-PID|AddGlacialLiquidity account swpair input-amounts stoa-pid)
                     )
                 )
                 (ref-IGNIS::C_Collect patron ico)
@@ -723,9 +723,9 @@
                     (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC)
                     (ref-SWP:module{SwapperV3} SWP)
                     (ref-SWPI:module{SwapperIssueV3} SWPI)
-                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (ico:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-SWPLC::C|STOA-PID_AddFrozenLiquidity account swpair frozen-dptf input-amount stoa-pid)
+                        (ref-SWPLC::C_STOA-PID|AddFrozenLiquidity account swpair frozen-dptf input-amount stoa-pid)
                     )
                 )
                 (ref-IGNIS::C_Collect patron ico)
@@ -753,9 +753,9 @@
                     (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC)
                     (ref-SWP:module{SwapperV3} SWP)
                     (ref-SWPI:module{SwapperIssueV3} SWPI)
-                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (ico:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-SWPLC::C|STOA-PID_AddSleepingLiquidity account swpair sleeping-dpof nonce stoa-pid)
+                        (ref-SWPLC::C_STOA-PID|AddSleepingLiquidity account swpair sleeping-dpof nonce stoa-pid)
                     )
                 )
                 (ref-IGNIS::C_Collect patron ico)
@@ -819,7 +819,7 @@
                 )
                 (let
                     (
-                        (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                        (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                         (wstoa:string (ref-DALOS::UR_WrappedStoaID))
                         (ref-SWPI:module{SwapperIssueV3} SWPI)
                         (ico1:object{IgnisCollectorV1.OutputCumulator}
@@ -881,7 +881,7 @@
                     (ref-SWPU:module{SwapperUsageV2} SWPU)
                     (ref-SWPT:module{SwapTracerV2} SWPT)
                     (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (slippage:decimal (at "slippage-percent" slippage-bounds))
                     (ico:object{IgnisCollectorV1.OutputCumulator}
                         (ref-SWPU::CC_SmartSwap
@@ -945,7 +945,7 @@
                     (ref-SWPU:module{SwapperUsageV2} SWPU)
                     (ref-SWPT:module{SwapTracerV2} SWPT)
                     (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (slippage-bounds:object{SwapperUsageV2.Slippage}
                         (ref-SWPU::UDC_SpawnSmartSwapSlippageBounds input-id input-amount output-id -1.0)
                     )
@@ -1015,7 +1015,7 @@
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-SWP:module{SwapperV3} SWP)
                     (ref-SWPU:module{SwapperUsageV2} SWPU)
-                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (slippage:decimal (at "slippage-percent" slippage-bounds))
                     (result:list
                         (ref-SWPU::C_SmartSwap
@@ -1060,7 +1060,7 @@
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-SWP:module{SwapperV3} SWP)
                     (ref-SWPU:module{SwapperUsageV2} SWPU)
-                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (slippage-bounds:object{SwapperUsageV2.Slippage} (ref-SWPU::UDC_Slippage 0.0 0 0.0))
                     (result:list
                         (ref-SWPU::C_SmartSwap
@@ -1103,7 +1103,7 @@
                     (ref-SWP:module{SwapperV3} SWP)
                     (ref-SWPI:module{SwapperIssueV3} SWPI)
                     (ref-SWPU:module{SwapperUsageV2} SWPU)
-                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (slippage:decimal (at "slippage-percent" slippage-bounds))
                     (ico:object{IgnisCollectorV1.OutputCumulator}
                         (ref-SWPU::C_Swap 
@@ -1136,7 +1136,7 @@
                     (ref-SWP:module{SwapperV3} SWP)
                     (ref-SWPI:module{SwapperIssueV3} SWPI)
                     (ref-SWPU:module{SwapperUsageV2} SWPU)
-                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (slippage-bounds:object{SwapperUsageV2.Slippage}
                         (ref-SWPU::UDC_SpawnSlippageBounds swpair [input-id] [input-amount] output-id -1.0)
                     )
@@ -1172,7 +1172,7 @@
                     (ref-SWP:module{SwapperV3} SWP)
                     (ref-SWPI:module{SwapperIssueV3} SWPI)
                     (ref-SWPU:module{SwapperUsageV2} SWPU)
-                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (slippage:decimal (at "slippage-percent" slippage-bounds))
                     (ico:object{IgnisCollectorV1.OutputCumulator}
                         (ref-SWPU::C_Swap 
@@ -1205,7 +1205,7 @@
                     (ref-SWP:module{SwapperV3} SWP)
                     (ref-SWPI:module{SwapperIssueV3} SWPI)
                     (ref-SWPU:module{SwapperUsageV2} SWPU)
-                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (slippage-bounds:object{SwapperUsageV2.Slippage}
                         (ref-SWPU::UDC_SpawnSlippageBounds swpair input-ids input-amounts output-id -1.0)
                     )

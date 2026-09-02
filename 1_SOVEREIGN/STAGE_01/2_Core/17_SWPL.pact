@@ -100,9 +100,9 @@
     ;;
     ;;  [URC] Functions
     ;;
-    (defun URC|STOA-PID_LpToIgnis:decimal (swpair:string amount:decimal stoa-pid:decimal))
-    (defun URC|STOA-PID_TokenToIgnis (id:string amount:decimal stoa-pid:decimal))
-    (defun URC|STOA-PID_CLAD:object{CompleteLiquidityAdditionData}
+    (defun URC_STOA-PID|LpToIgnis:decimal (swpair:string amount:decimal stoa-pid:decimal))
+    (defun URC_STOA-PID|TokenToIgnis (id:string amount:decimal stoa-pid:decimal))
+    (defun URC_STOA-PID|CLAD:object{CompleteLiquidityAdditionData}
         (
             account:string swpair:string ld:object{LiquidityData} 
             asymmetric-collection:bool gaseous-collection:bool stoa-pid:decimal
@@ -438,6 +438,151 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
+    ;;{F1}  Construct [UDC]
+    (defun UDC_VirtualSwapEngineSwpair:object{UtilitySwpV1.VirtualSwapEngine}
+        (account:string account-liq:[decimal] swpair:string pool-liq:[decimal])
+        (let
+            (
+                (ref-SWP:module{SwapperV3} SWP)
+                (A:decimal (ref-SWP::UR_Amplifier swpair))
+                (W:[decimal] (ref-SWP::UR_Weigths swpair))
+            )
+            (UDC_VirtualSwapEngine
+                account account-liq swpair pool-liq
+                A W (UDC_PoolFees swpair)
+            )
+        )
+    )
+    (defun UDC_VirtualSwapEngine:object{UtilitySwpV1.VirtualSwapEngine}
+        (
+            account:string account-liq:[decimal] swpair:string starting-liq:[decimal]
+            A:decimal W:[decimal] F:object{UtilitySwpV1.SwapFeez}
+        )
+        (let
+            (
+                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+                (ref-SWP:module{SwapperV3} SWP)
+                (pool-tokens:[string] (ref-U|SWP::UC_TokensFromSwpairString swpair))
+                (zero-lst:[decimal] (make-list (length pool-tokens) 0.0))
+            )
+            (ref-U|SWP::UDC_VirtualSwapEngine
+                pool-tokens
+                (ref-SWP::UC_PoolTokenPrecisions swpair)
+                account account-liq swpair starting-liq
+                A W F
+                zero-lst zero-lst zero-lst []
+            )
+        )
+    )
+    (defun UDC_PoolFees:object{UtilitySwpV1.SwapFeez} (swpair:string)
+        (let
+            (
+                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+                (ref-SWP:module{SwapperV3} SWP)
+                (lb:bool (ref-SWP::UR_LiquidBoost))
+                (lp-fee:decimal (ref-SWP::UR_FeeLP swpair))
+                (special-fee:decimal (ref-SWP::UR_FeeSP swpair))
+                (boost-fee:decimal (if lb lp-fee 0.0))
+            )
+            (ref-U|SWP::UDC_SwapFeez lp-fee special-fee boost-fee)
+        )
+    )
+    (defun UDC_OutputLP:object{SwapperLiquidityV1.OutputLP} (a:decimal b:decimal)
+        {"primary"                  : a
+        ,"secondary"                : b}
+    )
+    (defun UDC_LiquiditySplit:object{SwapperLiquidityV1.LiquiditySplit} (a:[decimal] b:[decimal])
+        {"balanced"                 : a
+        ,"asymmetric"               : b}
+    )
+    (defun UDC_LiquiditySplitType:object{SwapperLiquidityV1.LiquiditySplitType} (a:bool b:bool)
+        {"iz-balanced"              : a
+        ,"iz-asymmetric"            : b}
+    )
+    (defun UDC_LiquidityData:object{SwapperLiquidityV1.LiquidityData}
+        (a:object{SwapperLiquidityV1.LiquiditySplit} b:object{SwapperLiquidityV1.LiquiditySplitType} c:decimal d:decimal e:decimal)
+        {"sorted-lq"                : a
+        ,"sorted-lq-type"           : b
+        ,"balanced"                 : c
+        ,"asymmetric"               : d
+        ,"asymmetric-fee"           : e}
+    )
+    (defun UDC_LiquidityComputationData:object{SwapperLiquidityV1.LiquidityComputationData}
+        (a:integer b:string c:integer d:decimal e:decimal f:[decimal])
+        {"li"                       : a
+        ,"pool-type"                : b
+        ,"lp-prec"                  : c
+        ,"current-lp-supply"        : d
+        ,"lp-supply"                : e
+        ,"pool-token-supplies"      : f}
+    )
+    (defun UDC_AsymmetricTax:object{SwapperLiquidityV1.AsymmetricTax}
+        (a:decimal b:decimal c:decimal d:decimal e:decimal f:decimal)
+        {"tad"                      : a
+        ,"tad-diff"                 : b
+        ,"fuel"                     : c
+        ,"special"                  : d
+        ,"boost"                    : e
+        ,"fuel-to-lp"               : f}
+    )
+    (defun UDC_CompleteLiquidityAdditionData:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
+        (
+            a:[decimal] b:[decimal] c:[decimal] d:[decimal]
+            e:decimal f:decimal
+            g:decimal
+            h:decimal i:decimal j:decimal k:decimal l:decimal
+            m:string n:string o:string p:string q:string
+            r:object{SwapperLiquidityV1.CladOperation}
+        )
+        {"total-input-liquidity"    : a
+        ,"balanced-liquidity"       : b
+        ,"asymmetric-liquidity"     : c
+        ,"asymmetric-deviation"     : d
+        ;;
+        ,"primary-lp"               : e
+        ,"secondary-lp"             : f
+        ;;
+        ,"total-ignis-tax-needed"   : g
+        ;;
+        ,"gaseous-ignis-fee"        : h
+        ,"deficit-ignis-tax"        : i
+        ,"special-ignis-tax"        : j
+        ,"lqboost-ignis-tax"        : k
+        ,"relinquish-lp"            : l
+        ;;
+        ,"gaseous-text"             : m
+        ,"deficit-text"             : n
+        ,"special-text"             : o
+        ,"lqboost-text"             : p
+        ,"fueling-text"             : q
+        ;;
+        ,"clad-op"                  : r}
+    )
+    (defun UDC_CladOperation:object{SwapperLiquidityV1.CladOperation}
+        (a:object{IgnisCollectorV1.OutputCumulator} b:[string] c:[decimal] d:bool e:[string] f:[decimal] g:[decimal] h:[decimal])
+        {"perfect-ignis-fee"        : a
+        ;;
+        ,"mt-ids"                   : b
+        ,"mt-amt"                   : c
+        ,"lp-mint"                  : d
+        ,"bk-ids"                   : e
+        ,"bk-amt"                   : f
+        ;;
+        ,"ppb"                      : g
+        ,"ppa"                      : h}
+    )
+    (defun UDC_PoolState:object{SwapperLiquidityV1.PoolState}
+        (a:decimal b:object{UtilitySwpV1.SwapFeez} c:[decimal] d:[decimal] e:decimal f:[string] g:[decimal])
+        {"A"    : a
+        ,"F"    : b
+        ,"X"    : c
+        ,"W"    : d
+        ;;
+        ,"LP"   : e
+        ,"FT"   : f
+        ,"FTP"  : g}
+    )
+    ;;{F2}  Compute [UC]
     (defun UC_DetermineLiquidity:object{SwapperLiquidityV1.LiquiditySplitType}
         (input-lqs:object{SwapperLiquidityV1.LiquiditySplit})
         (UDC_LiquiditySplitType
@@ -445,10 +590,9 @@
             (!= (at "asymmetric" input-lqs) (make-list (length (at "asymmetric" input-lqs)) 0.0))
         )
     )
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     ;;
-    ;;{F0}  [UR]
-    ;;{F1}  [URC]
-    (defun URC|STOA-PID_LpToIgnis:decimal (swpair:string amount:decimal stoa-pid:decimal)
+    (defun URC_STOA-PID|LpToIgnis:decimal (swpair:string amount:decimal stoa-pid:decimal)
         (let
             (
                 (ref-SWPI:module{SwapperIssueV3} SWPI)
@@ -460,7 +604,7 @@
             (floor (fold (*) 100.0 [amount lp-value-in-dwk stoa-pid]) 2)
         )
     )
-    (defun URC|STOA-PID_TokenToIgnis (id:string amount:decimal stoa-pid:decimal)
+    (defun URC_STOA-PID|TokenToIgnis (id:string amount:decimal stoa-pid:decimal)
         (let
             (
                 (ref-SWPI:module{SwapperIssueV3} SWPI)
@@ -471,7 +615,7 @@
             (floor (fold (*) 1.0 [100.0 a-price amount]) ignis-prec)
         )
     )
-    (defun URC|STOA-PID_CLAD:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
+    (defun URC_STOA-PID|CLAD:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
         (
             account:string swpair:string ld:object{SwapperLiquidityV1.LiquidityData} 
             asymmetric-collection:bool gaseous-collection:bool stoa-pid:decimal
@@ -530,7 +674,7 @@
                         (asymmetric-lp-fee-amount:decimal (at "asymmetric-fee" ld))
                         (full-asymmetric-deviation:[decimal] (UEV_Liquidity swpair ld))
                         (asymmetric-deviation:decimal (at 0 full-asymmetric-deviation))
-                        (computed-gaseous-fee:decimal (URC|STOA-PID_LpToIgnis swpair asymmetric-lp-fee-amount stoa-pid))
+                        (computed-gaseous-fee:decimal (URC_STOA-PID|LpToIgnis swpair asymmetric-lp-fee-amount stoa-pid))
                         (raw-gaseous-fee:decimal
                             (if (< computed-gaseous-fee 50.0)
                                 50.0
@@ -575,7 +719,7 @@
                                 (tad-diff-fillup:decimal (+ asymmetric-deviation 0.5))
                                 (tad-diff:decimal (at "tad-diff" asymmetric-tax))
                                 (tad-diff-fillup-as-a:decimal (floor (* tad-diff tad-diff-fillup) a-prec))
-                                (raw-deficit-ignis-tax:decimal (URC|STOA-PID_TokenToIgnis a-id tad-diff-fillup-as-a stoa-pid))
+                                (raw-deficit-ignis-tax:decimal (URC_STOA-PID|TokenToIgnis a-id tad-diff-fillup-as-a stoa-pid))
                                 (deficit-ignis-tax:decimal
                                     (if (< raw-deficit-ignis-tax 50.0)
                                         50.0 (ceiling raw-deficit-ignis-tax 2)
@@ -587,7 +731,7 @@
                                 ;;
                                 ;;ASYMMETRIC-LQ-SPECIAL-TAX
                                 (special-as-a:decimal (at "special" asymmetric-tax))
-                                (raw-special-ignis-tax:decimal (URC|STOA-PID_TokenToIgnis a-id special-as-a stoa-pid))
+                                (raw-special-ignis-tax:decimal (URC_STOA-PID|TokenToIgnis a-id special-as-a stoa-pid))
                                 (special-ignis-tax:decimal
                                     (if (and (> raw-special-ignis-tax 0.0) (< raw-special-ignis-tax 50.0))
                                         50.0 (ceiling raw-special-ignis-tax 2)
@@ -599,7 +743,7 @@
                                 (raw-lqboost-ignis-tax:decimal 
                                     (if (= boost-as-a 0.0)
                                         0.0
-                                        (URC|STOA-PID_TokenToIgnis a-id boost-as-a stoa-pid)
+                                        (URC_STOA-PID|TokenToIgnis a-id boost-as-a stoa-pid)
                                     )
                                 )
                                 (lqboost-ignis-tax:decimal
@@ -987,7 +1131,7 @@
                 (d1:decimal
                     (if (= pool-type "S")
                         (ref-U|SWP::UC_ComputeD amp new-balances)
-                        (+ 5040000.0 (URCXX_D1forWP swpair pool-token-supplies asymmetric-lq))
+                        (+ 5040000.0 (URC_D1forWP swpair pool-token-supplies asymmetric-lq))
                     )
                 )
                 (dr:decimal (floor (/ d0 d1) 24))
@@ -1032,7 +1176,7 @@
                                 (-
                                     (if (= pool-type "S")
                                         (ref-U|SWP::UC_ComputeD amp adjusted-balances) 
-                                        (URCXX_D1forWP swpair pool-token-supplies adjusted-balances)
+                                        (URC_D1forWP swpair pool-token-supplies adjusted-balances)
                                     )
                                     d0
                                 ) 
@@ -1047,7 +1191,7 @@
             [full-asymmetric-lp taxed-asymmetric-lp]
         )
     )
-    (defun URCXX_D1forWP:decimal (swpair:string current:[decimal] input:[decimal])
+    (defun URC_D1forWP:decimal (swpair:string current:[decimal] input:[decimal])
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
@@ -1551,7 +1695,7 @@
             )
         )
     )
-    ;;{F2}  [UEV]
+    ;;{F4}  Validate [UEV/CAP]
     (defun UEV_Liquidity:[decimal]
         (swpair:string ld:object{SwapperLiquidityV1.LiquidityData})
             @doc "Validates the asymmetric Liquidity amount, if it exists within the LD Object. \
@@ -1612,158 +1756,11 @@
             (ref-DPTF::UEV_Amount input-id input-amount)
         )
     )
-    
-    ;;{F3}  [UDC]
-    (defun UDC_VirtualSwapEngineSwpair:object{UtilitySwpV1.VirtualSwapEngine}
-        (account:string account-liq:[decimal] swpair:string pool-liq:[decimal])
-        (let
-            (
-                (ref-SWP:module{SwapperV3} SWP)
-                (A:decimal (ref-SWP::UR_Amplifier swpair))
-                (W:[decimal] (ref-SWP::UR_Weigths swpair))
-            )
-            (UDC_VirtualSwapEngine
-                account account-liq swpair pool-liq
-                A W (UDC_PoolFees swpair)
-            )
-        )
-    )
-    (defun UDC_VirtualSwapEngine:object{UtilitySwpV1.VirtualSwapEngine}
-        (
-            account:string account-liq:[decimal] swpair:string starting-liq:[decimal]
-            A:decimal W:[decimal] F:object{UtilitySwpV1.SwapFeez}
-        )
-        (let
-            (
-                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                (ref-SWP:module{SwapperV3} SWP)
-                (pool-tokens:[string] (ref-U|SWP::UC_TokensFromSwpairString swpair))
-                (zero-lst:[decimal] (make-list (length pool-tokens) 0.0))
-            )
-            (ref-U|SWP::UDC_VirtualSwapEngine
-                pool-tokens
-                (ref-SWP::UC_PoolTokenPrecisions swpair)
-                account account-liq swpair starting-liq
-                A W F
-                zero-lst zero-lst zero-lst []
-            )
-        )
-    )
-    (defun UDC_PoolFees:object{UtilitySwpV1.SwapFeez} (swpair:string)
-        (let
-            (
-                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                (ref-SWP:module{SwapperV3} SWP)
-                (lb:bool (ref-SWP::UR_LiquidBoost))
-                (lp-fee:decimal (ref-SWP::UR_FeeLP swpair))
-                (special-fee:decimal (ref-SWP::UR_FeeSP swpair))
-                (boost-fee:decimal (if lb lp-fee 0.0))
-            )
-            (ref-U|SWP::UDC_SwapFeez lp-fee special-fee boost-fee)
-        )
-    )
-    (defun UDC_OutputLP:object{SwapperLiquidityV1.OutputLP} (a:decimal b:decimal)
-        {"primary"                  : a
-        ,"secondary"                : b}
-    )
-    (defun UDC_LiquiditySplit:object{SwapperLiquidityV1.LiquiditySplit} (a:[decimal] b:[decimal])
-        {"balanced"                 : a
-        ,"asymmetric"               : b}
-    )
-    (defun UDC_LiquiditySplitType:object{SwapperLiquidityV1.LiquiditySplitType} (a:bool b:bool)
-        {"iz-balanced"              : a
-        ,"iz-asymmetric"            : b}
-    )
-    (defun UDC_LiquidityData:object{SwapperLiquidityV1.LiquidityData}
-        (a:object{SwapperLiquidityV1.LiquiditySplit} b:object{SwapperLiquidityV1.LiquiditySplitType} c:decimal d:decimal e:decimal)
-        {"sorted-lq"                : a
-        ,"sorted-lq-type"           : b
-        ,"balanced"                 : c
-        ,"asymmetric"               : d
-        ,"asymmetric-fee"           : e}
-    )
-    (defun UDC_LiquidityComputationData:object{SwapperLiquidityV1.LiquidityComputationData}
-        (a:integer b:string c:integer d:decimal e:decimal f:[decimal])
-        {"li"                       : a
-        ,"pool-type"                : b
-        ,"lp-prec"                  : c
-        ,"current-lp-supply"        : d
-        ,"lp-supply"                : e
-        ,"pool-token-supplies"      : f}
-    )
-    (defun UDC_AsymmetricTax:object{SwapperLiquidityV1.AsymmetricTax}
-        (a:decimal b:decimal c:decimal d:decimal e:decimal f:decimal)
-        {"tad"                      : a
-        ,"tad-diff"                 : b
-        ,"fuel"                     : c
-        ,"special"                  : d
-        ,"boost"                    : e
-        ,"fuel-to-lp"               : f}
-    )
-    (defun UDC_CompleteLiquidityAdditionData:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
-        (
-            a:[decimal] b:[decimal] c:[decimal] d:[decimal]
-            e:decimal f:decimal
-            g:decimal
-            h:decimal i:decimal j:decimal k:decimal l:decimal
-            m:string n:string o:string p:string q:string
-            r:object{SwapperLiquidityV1.CladOperation}
-        )
-        {"total-input-liquidity"    : a
-        ,"balanced-liquidity"       : b
-        ,"asymmetric-liquidity"     : c
-        ,"asymmetric-deviation"     : d
-        ;;
-        ,"primary-lp"               : e
-        ,"secondary-lp"             : f
-        ;;
-        ,"total-ignis-tax-needed"   : g
-        ;;
-        ,"gaseous-ignis-fee"        : h
-        ,"deficit-ignis-tax"        : i
-        ,"special-ignis-tax"        : j
-        ,"lqboost-ignis-tax"        : k
-        ,"relinquish-lp"            : l
-        ;;
-        ,"gaseous-text"             : m
-        ,"deficit-text"             : n
-        ,"special-text"             : o
-        ,"lqboost-text"             : p
-        ,"fueling-text"             : q
-        ;;
-        ,"clad-op"                  : r}
-    )
-    (defun UDC_CladOperation:object{SwapperLiquidityV1.CladOperation}
-        (a:object{IgnisCollectorV1.OutputCumulator} b:[string] c:[decimal] d:bool e:[string] f:[decimal] g:[decimal] h:[decimal])
-        {"perfect-ignis-fee"        : a
-        ;;
-        ,"mt-ids"                   : b
-        ,"mt-amt"                   : c
-        ,"lp-mint"                  : d
-        ,"bk-ids"                   : e
-        ,"bk-amt"                   : f
-        ;;
-        ,"ppb"                      : g
-        ,"ppa"                      : h}
-    )
-    (defun UDC_PoolState:object{SwapperLiquidityV1.PoolState}
-        (a:decimal b:object{UtilitySwpV1.SwapFeez} c:[decimal] d:[decimal] e:decimal f:[string] g:[decimal])
-        {"A"    : a
-        ,"F"    : b
-        ,"X"    : c
-        ,"W"    : d
-        ;;
-        ,"LP"   : e
-        ,"FT"   : f
-        ,"FTP"  : g}
-    )
-    ;;{F4}  [CAP]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
     ;;
-    ;;{F5}  [A]
-    ;;{F6}  [C]
-    ;;{F7}  [X]
     ;;
-    (defun XE|STOA-PID_AddLiqudity
+    (defun XE_STOA-PID|AddLiquidity
         (
             account:string swpair:string asymmetric-collection:bool gaseous-collection:bool stoa-pid:decimal
             ld:object{SwapperLiquidityV1.LiquidityData} clad:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
@@ -1936,6 +1933,9 @@
             )
         )
     )
+    ;;{F7}  User [A]
+    ;;{F8}  User [C]
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )
 

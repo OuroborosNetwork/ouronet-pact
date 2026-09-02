@@ -163,7 +163,7 @@
     ;;FUNCTIONS
     ;;{F0}  [UR]
     ;;{F1}  [URC]
-    (defun UR|STOA-PID:decimal ()
+    (defun UR_STOA-PID|Price:decimal ()
         ;;(at "value" (n_bfb76eab37bf8c84359d6552a1d96a309e030b71.dia-oracle.get-value "STOA/USD"))
         ;;#19H: no live oracle wired up yet - hardcoded to mainnet's approximate STOA/USD price
         ;;(owner, 2026-08-27) as an interim placeholder. Wire the real oracle call above once
