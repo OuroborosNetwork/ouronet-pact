@@ -308,6 +308,7 @@
     ;;  [CAP]
     ;;
     (defun CAP_Owner (id:string))
+    (defun UEV_EnforceSegmentationForTransmit (id:string))
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     ;;
@@ -374,14 +375,14 @@
         ;;
     (defun C_Transmit:object{IgnisCollectorV1.OutputCumulator} (id:string nonces:[integer] amounts:[decimal] sender:string receiver:string method:bool))
     (defun C_Transfer:object{IgnisCollectorV1.OutputCumulator} (id:string nonces:[integer] sender:string receiver:string method:bool))
-
-    (defun UEV_EnforceSegmentationForTransmit (id:string))
     (defun C_BulkTransfer:object{IgnisCollectorV1.OutputCumulator}
         (id:string nonces-array:[[integer]] sender:string receiver-lst:[string] method:bool)
     )
+
 )
 ;;
 (module DPOF GOV
+
 
 
 

@@ -58,6 +58,9 @@
     ;;
     (defun URCi_MultiTransferCumulator:object{IgnisCollectorV1.OutputCumulator} (ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]]))
     (defun URCi_RepurposeCollectable:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool amounts:[integer]))
+    (defun URCi_BulkTransferCumulator:object{IgnisCollectorV1.OutputCumulator}
+        (id:string son:bool sender:string receiver-lst:[string] nonces-array:[[integer]] amounts-array:[[integer]])
+    )
     ;;{5.4}  Validate [UEV/CAP]
     ;;
     ;;  [UEV]
@@ -76,16 +79,14 @@
     )
     (defun C_Transfer:object{IgnisCollectorV1.OutputCumulator} (ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]] method:bool))
     (defun C_IgnisRoyaltyCollector:object{AggregatedRoyalties} (patron:string sender:string ids:[string] sons:[bool] nonces-array:[[integer]] amounts-array:[[integer]]))
-
-    (defun URCi_BulkTransferCumulator:object{IgnisCollectorV1.OutputCumulator}
-        (id:string son:bool sender:string receiver-lst:[string] nonces-array:[[integer]] amounts-array:[[integer]])
-    )
     (defun C_BulkTransfer:object{IgnisCollectorV1.OutputCumulator}
         (id:string son:bool nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
     )
+
 )
 ;;
 (module DPDC-T GOV
+
 
 
 

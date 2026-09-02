@@ -172,10 +172,10 @@
     (defun C_DPNF|RemoveNonceScore          (patron:string id:string account:string nonce:integer nos:bool))
     (defun C_DPNF|UpdateNonceMetaData       (patron:string id:string account:string nonce:integer nos:bool meta-data:object))
     (defun C_DPNF|UpdateNonceURI            (patron:string id:string account:string nonce:integer nos:bool ay:object{DpdcUdcV1.URI|Type} u1:object{DpdcUdcV1.URI|Data} u2:object{DpdcUdcV1.URI|Data} u3:object{DpdcUdcV1.URI|Data}))
-
     (defun C_DPNF|BulkTransfer
         (patron:string id:string nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
     )
+
 )
 ;;
 (module TS02-C2 GOV

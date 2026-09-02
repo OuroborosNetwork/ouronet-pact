@@ -117,10 +117,10 @@
         ;;
     (defun C_DPOF|Transmit (patron:string id:string nonces:[integer] amounts:[decimal] sender:string receiver:string method:bool))
     (defun C_DPOF|Transfer (patron:string id:string nonces:[integer] sender:string receiver:string method:bool))    
-
     (defun C_DPOF|BulkTransfer
         (patron:string id:string nonces-array:[[integer]] sender:string receiver-lst:[string] method:bool)
     )
+
 )
 ;;
 (module TS01-C1 GOV

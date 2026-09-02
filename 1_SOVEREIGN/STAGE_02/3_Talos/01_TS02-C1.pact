@@ -186,13 +186,13 @@
         )
     )
     (defun C_DPSF|MorphEquity (patron:string account:string id:string input-nonce:integer input-amount:integer output-nonce:integer))
-
     (defun C_DPDC|BulkTransfer
         (patron:string id:string son:bool nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
     )
     (defun C_DPSF|BulkTransfer
         (patron:string id:string nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
     )
+
 )
 ;;
 (module TS02-C1 GOV
