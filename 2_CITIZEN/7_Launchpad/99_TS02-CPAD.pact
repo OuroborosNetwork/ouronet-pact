@@ -12,13 +12,13 @@
     ;;
     ;;  [C]
     ;;
-    (defun SPARK|C_BuySparks (patron:string buyer:string sparks-amount:integer iz-native:bool max-cost:decimal))
-    (defun SPARK|C_RedemAllSparks (patron:string redemption-payer:string account-to-redeem:string))
-    (defun SPARK|C_RedemFewSparks (patron:string redemption-payer:string account-to-redeem:string redemption-quantity:decimal))
-    (defun SNAKES|C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal))
-    (defun CUSTODIANS|C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal))
-    (defun KPAY|C_BuyStoicPay (patron:string buyer:string kpay-amount:integer iz-native:bool max-cost:decimal))
-    (defun STOAICO|C_Collect (patron:string account:string))
+    (defun C_SPARK|BuySparks (patron:string buyer:string sparks-amount:integer iz-native:bool max-cost:decimal))
+    (defun C_SPARK|RedemAllSparks (patron:string redemption-payer:string account-to-redeem:string))
+    (defun C_SPARK|RedemFewSparks (patron:string redemption-payer:string account-to-redeem:string redemption-quantity:decimal))
+    (defun C_SNAKES|Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal))
+    (defun C_CUSTODIANS|Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal))
+    (defun C_KPAY|BuyStoicPay (patron:string buyer:string kpay-amount:integer iz-native:bool max-cost:decimal))
+    (defun C_STOAICO|Collect (patron:string account:string))
     ;;
 )
 ;;
@@ -68,14 +68,14 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
+    (defun A_P|Add (policy-name:string policy-guard:guard)
         (with-capability (GOV|TS02-CPAD_ADMIN)
             (write P|T policy-name
                 {"policy" : policy-guard}
             )
         )
     )
-    (defun P|A_AddIMP (policy-guard:guard)
+    (defun A_P|AddIMP (policy-guard:guard)
         (with-capability (GOV|TS02-CPAD_ADMIN)
             (let
                 (
@@ -92,7 +92,7 @@
             )
         )
     )
-    (defun P|A_Define ()
+    (defun A_P|Define ()
         @doc "Registers THIS citizen Talos' summoner guard as a trusted IMP peer of the per-sale \
             \ citizen modules it wraps (Spark/Snakes/Custodians/StoicPay/StoicIco), so their UEV_IMC \
             \ recognizes calls from this Talos."
@@ -107,13 +107,13 @@
                 (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
             )
             ;;register into the sale modules (their UEV_IMC recognizes this Talos)
-            (ref-P|SPARK::P|A_AddIMP mg)
-            (ref-P|SNAKES::P|A_AddIMP mg)
-            (ref-P|CUSTODIANS::P|A_AddIMP mg)
-            (ref-P|KPAY::P|A_AddIMP mg)
-            (ref-P|STOAICO::P|A_AddIMP mg)
+            (ref-P|SPARK::A_P|AddIMP mg)
+            (ref-P|SNAKES::A_P|AddIMP mg)
+            (ref-P|CUSTODIANS::A_P|AddIMP mg)
+            (ref-P|KPAY::A_P|AddIMP mg)
+            (ref-P|STOAICO::A_P|AddIMP mg)
             ;;register into TS01-A so the wrappers' XB_DynamicFuelSTOA gas-station refuel passes UEV_IMC
-            (ref-P|TS01-A::P|A_AddIMP mg)
+            (ref-P|TS01-A::A_P|AddIMP mg)
         )
     )
     (defun UEV_IMC ()
@@ -160,7 +160,7 @@
     ;;{F7}  User [A]
     ;;{F8}  User [C]
     ;;
-    (defun SPARK|C_BuySparks (patron:string buyer:string sparks-amount:integer iz-native:bool max-cost:decimal)
+    (defun C_SPARK|BuySparks (patron:string buyer:string sparks-amount:integer iz-native:bool max-cost:decimal)
         @doc "<max-cost> = buyer's dollar slippage ceiling (Variant 1). Pass a sentinel < 0 for slippage \
             \ off (Variant 2, live price via install-capability, UI-warned)."
         (with-capability (P|TS)
@@ -174,7 +174,7 @@
             )
         )
     )
-    (defun SPARK|C_RedemAllSparks (patron:string redemption-payer:string account-to-redeem:string)
+    (defun C_SPARK|RedemAllSparks (patron:string redemption-payer:string account-to-redeem:string)
         (with-capability (P|TS)
             (let
                 (
@@ -184,7 +184,7 @@
             )
         )
     )
-    (defun SPARK|C_RedemFewSparks (patron:string redemption-payer:string account-to-redeem:string redemption-quantity:decimal)
+    (defun C_SPARK|RedemFewSparks (patron:string redemption-payer:string account-to-redeem:string redemption-quantity:decimal)
         (with-capability (P|TS)
             (let
                 (
@@ -195,7 +195,7 @@
         )
     )
     ;;
-    (defun SNAKES|C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal)
+    (defun C_SNAKES|Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal)
         @doc "<max-cost> = buyer's dollar slippage ceiling (Variant 1). Sentinel < 0 = slippage off (Variant 2)."
         (with-capability (P|TS)
             (let
@@ -208,7 +208,7 @@
             )
         )
     )
-    (defun CUSTODIANS|C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal)
+    (defun C_CUSTODIANS|Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal)
         @doc "<max-cost> = buyer's dollar slippage ceiling (Variant 1). Sentinel < 0 = slippage off (Variant 2)."
         (with-capability (P|TS)
             (let
@@ -221,7 +221,7 @@
             )
         )
     )
-    (defun KPAY|C_BuyStoicPay (patron:string buyer:string kpay-amount:integer iz-native:bool max-cost:decimal)
+    (defun C_KPAY|BuyStoicPay (patron:string buyer:string kpay-amount:integer iz-native:bool max-cost:decimal)
         @doc "<max-cost> = buyer's dollar slippage ceiling (Variant 1). Sentinel < 0 = slippage off (Variant 2)."
         (with-capability (P|TS)
             (let
@@ -235,7 +235,7 @@
             )
         )
     )
-    (defun STOAICO|C_Collect (patron:string account:string)
+    (defun C_STOAICO|Collect (patron:string account:string)
         @doc "Gas-funded entry for the StoicIco reward self-collect. No STOA inflow (it is a payout), so \
             \ no XB_DynamicFuelSTOA refuel. Cost preview: STOAICO.URCi_Collect / STOAICO.INFO_Collect."
         (with-capability (P|TS)

@@ -215,14 +215,14 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
+    (defun A_P|Add (policy-name:string policy-guard:guard)
         (with-capability (GOV|AQP-SCORE_ADMIN)
             (write P|T policy-name
                 {"policy" : policy-guard}
             )
         )
     )
-    (defun P|A_AddIMP (policy-guard:guard)
+    (defun A_P|AddIMP (policy-guard:guard)
         (with-capability (GOV|AQP-SCORE_ADMIN)
             (let
                 (
@@ -240,7 +240,7 @@
             )
         )
     )
-    (defun P|A_Define ()
+    (defun A_P|Define ()
         @doc "Post-deploy hook (AQP-BOOT Step 0). No cross-module IMP registration required — \
             \ SCORE calls DALOS UR_*/CAP_*/UEV_* only (no DALOS UEV_IMC on those paths); client entry is Talos P|TALOS-SUMMONER."
         true
@@ -3620,7 +3620,7 @@
                     (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
-                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueScoreStoa))
+                (ref-IGNIS::C_STOA|Collect patron (URCi_IssueScoreStoa))
                 (XI_Issue score-name owner-konto precision 0 lp-denominator mx-frozen mx-sleeping 1.0 true -1)
                 (URCi_IssueScore owner-konto [score-id])
             )
@@ -3641,7 +3641,7 @@
                     (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
-                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueScoreStoa))
+                (ref-IGNIS::C_STOA|Collect patron (URCi_IssueScoreStoa))
                 (XI_Issue score-name owner-konto precision 1 BAR mx-frozen 1.0 1.0 true -1)
                 (URCi_IssueScore owner-konto [score-id])
             )
@@ -3663,7 +3663,7 @@
                     (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
-                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueScoreStoa))
+                (ref-IGNIS::C_STOA|Collect patron (URCi_IssueScoreStoa))
                 (XI_Issue score-name owner-konto precision 2 BAR 2.0 mx-sleeping mx-hibernated true -1)
                 (URCi_IssueScore owner-konto [score-id])
             )
@@ -3684,7 +3684,7 @@
                     (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
-                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueScoreStoa))
+                (ref-IGNIS::C_STOA|Collect patron (URCi_IssueScoreStoa))
                 (XI_Issue score-name owner-konto precision 3 BAR 2.0 1.0 1.0 sft-equality -1)
                 (URCi_IssueScore owner-konto [score-id])
             )
@@ -3705,7 +3705,7 @@
                     (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
-                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueScoreStoa))
+                (ref-IGNIS::C_STOA|Collect patron (URCi_IssueScoreStoa))
                 (XI_Issue score-name owner-konto precision 4 BAR 2.0 1.0 1.0 true nft-score-model)
                 (URCi_IssueScore owner-konto [score-id])
             )

@@ -32,25 +32,25 @@
             ;;#47L: empty repurpose (0 nonces/amounts) rejected with the clear "Invalid Repurpose data"
             ;;message, not an opaque out-of-bounds crash several hops downstream.
             (expect-failure
-                "<<PROBE-47L>> empty DPSF|C_RepurposeFragments (0 nonces) rejected cleanly"
-                (ref-TS02-C1::DPSF|C_RepurposeFragments owner id owner lumy [] [])
+                "<<PROBE-47L>> empty C_DPSF|RepurposeFragments (0 nonces) rejected cleanly"
+                (ref-TS02-C1::C_DPSF|RepurposeFragments owner id owner lumy [] [])
             )
             ;;#51L: empty Primordial set-definition rejected cleanly (previously crashed with an opaque
             ;;out-of-bounds error, since (enumerate 0 -1) = [0 -1], not []).
             (expect-failure
                 "<<PROBE-51L>> empty Primordial set-definition rejected cleanly (was an opaque crash)"
-                (ref-TS02-C1::DPSF|C_DefinePrimordialSet owner id "EmptyProbe" 1.0 [] nd)
+                (ref-TS02-C1::C_DPSF|DefinePrimordialSet owner id "EmptyProbe" 1.0 [] nd)
             )
             ;;#51L: empty Composite set-definition rejected cleanly.
             (expect-failure
                 "<<PROBE-51L>> empty Composite set-definition rejected cleanly (was an opaque crash)"
-                (ref-TS02-C1::DPSF|C_DefineCompositeSet owner id "EmptyProbe2" 1.0 [] nd)
+                (ref-TS02-C1::C_DPSF|DefineCompositeSet owner id "EmptyProbe2" 1.0 [] nd)
             )
             ;;#51L: an oversized Primordial set-definition (21 positions > MAX_SET_DEFINITION_SIZE=20)
             ;;is rejected cleanly.
             (expect-failure
                 "<<PROBE-51L>> oversized (21-position) Primordial set-definition rejected"
-                (ref-TS02-C1::DPSF|C_DefinePrimordialSet owner id "OversizedProbe" 1.0
+                (ref-TS02-C1::C_DPSF|DefinePrimordialSet owner id "OversizedProbe" 1.0
                     (make-list 21 (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1])) nd)
             )
         ]

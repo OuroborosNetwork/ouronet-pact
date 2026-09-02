@@ -118,12 +118,12 @@
                     )
                     (if (not (contains auryn-rain-nonce anhd-kbn))
                         (print (format "<(DPNF transfer AurynRain nonce {} EMMA→ANHD)> => \"{}\"" [auryn-rain-nonce
-                            (ref-TS02-C2::DPNF|C_TransferNonce patron kbn-id emma owner auryn-rain-nonce 1 false)
+                            (ref-TS02-C2::C_DPNF|TransferNonce patron kbn-id emma owner auryn-rain-nonce 1 false)
                         ]))
                         true
                     )
                     (print (format "<(C_StakeNonFungible DHBunnies KBN nonce {})> => \"{}\"" [auryn-rain-nonce
-                        (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable
+                        (ref-TS02-C3::CC_AQP-POOL|StakeNonFungibleCollectable
                             patron bunnies-pool owner owner kbn-id [auryn-rain-nonce]
                         )
                     ]))
@@ -137,7 +137,7 @@
                 )
             (print (format "<(pre-stake base)> => \"{}\" <(boost)> => \"{}\"" [base-pre boost-pre]))
             (print (format "<(CC_StakeTrueFungible DHOuroLp LP {})> => \"{}\"" [stake-amt
-                (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner owner lp-id stake-amt)
+                (ref-TS02-C3::CC_AQP-POOL|StakeTrueFungible patron pool-id owner owner lp-id stake-amt)
             ]))
             (let
                 (
@@ -207,7 +207,7 @@
             )
             ;; stake a CONFORMING Elk0nite bunny → the NF-stake anchor sync must grant EMMA the Elk0nite promile
             (print (format "<(C_StakeNonFungible KBN Elk0nite bunny nonce={})> => \"{}\"" [elk-nonce
-                (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id owner beneficiary kbn-id [elk-nonce])
+                (ref-TS02-C3::CC_AQP-POOL|StakeNonFungibleCollectable patron pool-id owner beneficiary kbn-id [elk-nonce])
             ]))
             (let
                 (
@@ -258,7 +258,7 @@
     (if (> (length single-nonces) 0)
         (let ((n:integer (at 0 single-nonces)))
             (env-gas 0)
-            (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id owner beneficiary kbn-id [n])
+            (ref-TS02-C3::CC_AQP-POOL|StakeNonFungibleCollectable patron pool-id owner beneficiary kbn-id [n])
             (print (format "<(A05a SINGLE-anchor stake nonce={} · GAS)> => {}" [n (env-gas)])))
         (print "SKIP TX-AQP-A05a: EMMA owns no unstaked Common Elk0nite bunny"))
 )
@@ -319,7 +319,7 @@
         (let ((n:integer (at 0 multi-nonces)))
             ;; stake the multi-trait bunny (measure gas around JUST the stake)
             (env-gas 0)
-            (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id owner beneficiary kbn-id [n])
+            (ref-TS02-C3::CC_AQP-POOL|StakeNonFungibleCollectable patron pool-id owner beneficiary kbn-id [n])
             (let
                 (
                     (g-multi:integer (env-gas))

@@ -92,7 +92,7 @@
             }
         ]
     )
-    (ref-TS01-C1::DPOF|C_Issue
+    (ref-TS01-C1::C_DPOF|Issue
         emma
         emma
         ["MetaVesta"]
@@ -152,43 +152,43 @@
         (dpmf:string "MVST-98c486052a51")
 
     )
-    ;(ref-TS01-C1::DPTF|C_ToggleBurnRole patron dptf patron true)
-    ;(ref-TS01-C1::DPTF|C_Burn patron dptf patron 10.0)
-    ;(ref-TS01-C1::DPTF|C_Control patron dptf true true true true true true)
-    ;(ref-TS01-C1::DPTF|C_DonateFees patron dptf)
-    ;(ref-TS01-C1::DPTF|C_ResetFeeTarget patron dptf)
-    ;(ref-TS01-C1::DPTF|C_RotateOwnership patron dptf emma)
-    ;(ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron dptf patron true)
-    ;(ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron dptf patron false)
-    ;(ref-TS01-C1::DPTF|C_TogglePause patron dptf true)
-    ;(ref-TS01-C1::DPTF|C_Transfer patron dptf patron emma 10.0 false)
-    ;(ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron dptf patron true)
-    ;(ref-TS01-C1::DPTF|C_Wipe patron dptf patron)
+    ;(ref-TS01-C1::C_DPTF|ToggleBurnRole patron dptf patron true)
+    ;(ref-TS01-C1::C_DPTF|Burn patron dptf patron 10.0)
+    ;(ref-TS01-C1::C_DPTF|Control patron dptf true true true true true true)
+    ;(ref-TS01-C1::C_DPTF|DonateFees patron dptf)
+    ;(ref-TS01-C1::C_DPTF|ResetFeeTarget patron dptf)
+    ;(ref-TS01-C1::C_DPTF|RotateOwnership patron dptf emma)
+    ;(ref-TS01-C1::C_DPTF|ToggleFreezeAccount patron dptf patron true)
+    ;(ref-TS01-C1::C_DPTF|ToggleFreezeAccount patron dptf patron false)
+    ;(ref-TS01-C1::C_DPTF|TogglePause patron dptf true)
+    ;(ref-TS01-C1::C_DPTF|Transfer patron dptf patron emma 10.0 false)
+    ;(ref-TS01-C1::C_DPTF|ToggleFreezeAccount patron dptf patron true)
+    ;(ref-TS01-C1::C_DPTF|Wipe patron dptf patron)
     ;(ref-TS01-C1::DPTF|C_WipePartial patron dptf patron 1777.0)
-    (ref-TS01-C1::DPOF|C_ToggleAddQuantityRole patron dpmf emma true)
-    (ref-TS01-C1::DPOF|C_ToggleBurnRole patron dpmf emma true)
-    ;(ref-TS01-C1::DPOF|C_ToggleTransferRole patron dpmf emma true)
-    ;(ref-TS01-C1::DPOF|C_MoveCreateRole patron dpmf patron)
-    (ref-TS01-C1::DPOF|C_Mint patron dpmf emma 2500.0 
+    (ref-TS01-C1::C_DPOF|ToggleAddQuantityRole patron dpmf emma true)
+    (ref-TS01-C1::C_DPOF|ToggleBurnRole patron dpmf emma true)
+    ;(ref-TS01-C1::C_DPOF|ToggleTransferRole patron dpmf emma true)
+    ;(ref-TS01-C1::C_DPOF|MoveCreateRole patron dpmf patron)
+    (ref-TS01-C1::C_DPOF|Mint patron dpmf emma 2500.0 
         [
             {"wing-span" : 230.0, "weight" : 123.32, "passanger-capacity" : 573, "fuel-capacity" : 1250}
             {"wing-span" : 30.0, "weight" : 23.32, "passanger-capacity" : 73, "fuel-capacity" : 250}
         ]
     )
-    (ref-TS01-C1::DPOF|C_Mint patron dpmf emma 3500.0 
+    (ref-TS01-C1::C_DPOF|Mint patron dpmf emma 3500.0 
         [
             {"wing-span" : 1230.0, "weight" : 1243.32, "passanger-capacity" : 5373, "fuel-capacity" : 1250}
             {"wing-span" : 230.0, "weight" : 233.32, "passanger-capacity" : 733, "fuel-capacity" : 2503}
         ]
     )
-    (ref-TS01-C1::DPOF|C_Mint patron dpmf emma 3500.0 
+    (ref-TS01-C1::C_DPOF|Mint patron dpmf emma 3500.0 
         [
             {"wing-span" : 12330.0, "weight" : 1243.32, "passanger-capacity" : 5373, "fuel-capacity" : 12530}
             {"wing-span" : 2330.0, "weight" : 2333.32, "passanger-capacity" : 7333, "fuel-capacity" : 25303}
         ]
     )
-    (ref-TS01-C1::DPOF|C_AddQuantity patron dpmf emma 3 555.0)
-    (ref-TS01-C1::DPOF|C_Control patron dpmf
+    (ref-TS01-C1::C_DPOF|AddQuantity patron dpmf emma 3 555.0)
+    (ref-TS01-C1::C_DPOF|Control patron dpmf
         true    ;;can upgrade
         true    ;;can change owner
         
@@ -200,17 +200,17 @@
         true    ;;can-segregate
         
     )
-    (ref-TS01-C1::DPOF|C_RotateOwnership patron dpmf patron)
-    (ref-TS01-C1::DPOF|C_Burn patron dpmf emma 3 200.0)
+    (ref-TS01-C1::C_DPOF|RotateOwnership patron dpmf patron)
+    (ref-TS01-C1::C_DPOF|Burn patron dpmf emma 3 200.0)
 
-    (ref-TS01-C1::DPOF|C_TogglePause patron dpmf true)
-    (ref-TS01-C1::DPOF|C_TogglePause patron dpmf false)
+    (ref-TS01-C1::C_DPOF|TogglePause patron dpmf true)
+    (ref-TS01-C1::C_DPOF|TogglePause patron dpmf false)
 
-    (ref-TS01-C1-V2::DPOF|C_BulkTransfer patron dpmf [[1 2]] emma [patron] false)
-    ;(ref-TS01-C1::DPOF|C_Transfer patron dpmf [1 2] emma patron false)
-    (ref-TS01-C1::DPOF|C_Transfer patron dpmf [2] patron emma false)
-    ;(ref-TS01-C1::DPOF|C_Transfer patron dpmf [2] emma patron 777.0 false)
-    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpmf patron true)
+    (ref-TS01-C1-V2::C_DPOF|BulkTransfer patron dpmf [[1 2]] emma [patron] false)
+    ;(ref-TS01-C1::C_DPOF|Transfer patron dpmf [1 2] emma patron false)
+    (ref-TS01-C1::C_DPOF|Transfer patron dpmf [2] patron emma false)
+    ;(ref-TS01-C1::C_DPOF|Transfer patron dpmf [2] emma patron 777.0 false)
+    (ref-TS01-C1::C_DPOF|ToggleFreezeAccount patron dpmf patron true)
     ;(ref-TS01-C1::DPOF|C_Wipe patron dpmf patron)
     ;(ref-TS01-C1::DPOF|C_WipePartial patron dpmf patron [1])
     [

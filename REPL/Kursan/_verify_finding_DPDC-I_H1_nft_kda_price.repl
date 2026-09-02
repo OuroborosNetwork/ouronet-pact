@@ -50,7 +50,7 @@
             (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
         )
         (print (format "ISSUE RESULT = {}"
-            [(ref-TS02-C2::DPNF|C_Issue issuing-account issuing-account issuing-account
+            [(ref-TS02-C2::C_DPNF|Issue issuing-account issuing-account issuing-account
                 "FreshProbeNFTCollection" "FPNC"
                 true true true true true true true true)]))
     )

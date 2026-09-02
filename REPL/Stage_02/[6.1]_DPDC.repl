@@ -112,34 +112,34 @@
         (t:bool true)
         (f:bool false)
     )
-    (ref-TS02-C1::DPSF|C_Control patron id t f t t t t t t)
-    (ref-TS02-C1::DPSF|C_TogglePause patron id t)
-    (ref-TS02-C1::DPSF|C_ToggleAddQuantityRole patron id emma t)
-    (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron id emma t)
-    (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron id emma f)
+    (ref-TS02-C1::C_DPSF|Control patron id t f t t t t t t)
+    (ref-TS02-C1::C_DPSF|TogglePause patron id t)
+    (ref-TS02-C1::C_DPSF|ToggleAddQuantityRole patron id emma t)
+    (ref-TS02-C1::C_DPSF|ToggleFreezeAccount patron id emma t)
+    (ref-TS02-C1::C_DPSF|ToggleFreezeAccount patron id emma f)
     ;;DPSF|C_DeployAccount removed — DPDC Audit #35M (standalone deploy, no ownership check). This file
     ;;is already disabled/unreachable from the active pipeline (see file header); noted here only so a
     ;;future resurrection attempt doesn't hit a silent "undefined function" surprise on this line.
     ;(ref-TS02-C1::DPSF|C_DeployAccount patron orbr id)
-    (ref-TS02-C1::DPSF|C_ToggleExemptionRole patron id orbr t)
-    (ref-TS02-C1::DPSF|C_ToggleExemptionRole patron id orbr f)
-    (ref-TS02-C1::DPSF|C_ToggleBurnRole patron id emma t)
-    ;(ref-TS02-C1::DPSF|C_ToggleBurnRole patron id emma f)
-    (ref-TS02-C1::DPSF|C_ToggleUpdateRole patron id emma t)
-    ;(ref-TS02-C1::DPSF|C_ToggleUpdateRole patron id emma f)
-    (ref-TS02-C1::DPSF|C_ToggleModifyCreatorRole patron id emma t)
-    (ref-TS02-C1::DPSF|C_ToggleModifyCreatorRole patron id emma f)
-    (ref-TS02-C1::DPSF|C_ToggleModifyRoyaltiesRole patron id emma t)
-    ;(ref-TS02-C1::DPSF|C_ToggleModifyRoyaltiesRole patron id emma f)
-    (ref-TS02-C1::DPSF|C_ToggleTransferRole patron id emma t)
-    (ref-TS02-C1::DPSF|C_ToggleTransferRole patron id emma f)
+    (ref-TS02-C1::C_DPSF|ToggleExemptionRole patron id orbr t)
+    (ref-TS02-C1::C_DPSF|ToggleExemptionRole patron id orbr f)
+    (ref-TS02-C1::C_DPSF|ToggleBurnRole patron id emma t)
+    ;(ref-TS02-C1::C_DPSF|ToggleBurnRole patron id emma f)
+    (ref-TS02-C1::C_DPSF|ToggleUpdateRole patron id emma t)
+    ;(ref-TS02-C1::C_DPSF|ToggleUpdateRole patron id emma f)
+    (ref-TS02-C1::C_DPSF|ToggleModifyCreatorRole patron id emma t)
+    (ref-TS02-C1::C_DPSF|ToggleModifyCreatorRole patron id emma f)
+    (ref-TS02-C1::C_DPSF|ToggleModifyRoyaltiesRole patron id emma t)
+    ;(ref-TS02-C1::C_DPSF|ToggleModifyRoyaltiesRole patron id emma f)
+    (ref-TS02-C1::C_DPSF|ToggleTransferRole patron id emma t)
+    (ref-TS02-C1::C_DPSF|ToggleTransferRole patron id emma f)
     ;;
-    (ref-TS02-C1::DPSF|C_MoveCreateRole patron id lumy)
-    (ref-TS02-C1::DPSF|C_MoveCreateRole patron id emma)
-    (ref-TS02-C1::DPSF|C_MoveRecreateRole patron id lumy)
-    (ref-TS02-C1::DPSF|C_MoveRecreateRole patron id emma)
-    (ref-TS02-C1::DPSF|C_MoveSetUriRole patron id lumy)
-    (ref-TS02-C1::DPSF|C_MoveSetUriRole patron id emma)
+    (ref-TS02-C1::C_DPSF|MoveCreateRole patron id lumy)
+    (ref-TS02-C1::C_DPSF|MoveCreateRole patron id emma)
+    (ref-TS02-C1::C_DPSF|MoveRecreateRole patron id lumy)
+    (ref-TS02-C1::C_DPSF|MoveRecreateRole patron id emma)
+    (ref-TS02-C1::C_DPSF|MoveSetUriRole patron id lumy)
+    (ref-TS02-C1::C_DPSF|MoveSetUriRole patron id emma)
     [
         [
             (ref-DPDC::UR_CA|R-AddQuantity id lumy)
@@ -311,22 +311,22 @@
             )
         )
     )
-    (ref-TS02-C1::DPSF|C_UpdateNonceScore patron id emma 1 true 25.0)
+    (ref-TS02-C1::C_DPSF|UpdateNonceScore patron id emma 1 true 25.0)
     ;; L7 #19: DPDC must reject a real negative score (only exactly -1.0 sentinel or >= 0 allowed).
     (expect-failure "<<DPDC L7#19>> negative nonce score (-5.0) rejected by UEV_Score"
-        (ref-TS02-C1::DPSF|C_UpdateNonceScore patron id emma 1 true -5.0))
-    ;(ref-TS02-C1::DPSF|C_RemoveNonceScore patron id emma 1)
-    (ref-TS02-C1::DPSF|C_UpdateNonceMetaData patron id emma 1 true
+        (ref-TS02-C1::C_DPSF|UpdateNonceScore patron id emma 1 true -5.0))
+    ;(ref-TS02-C1::C_DPSF|RemoveNonceScore patron id emma 1)
+    (ref-TS02-C1::C_DPSF|UpdateNonceMetaData patron id emma 1 true
         {"eye"      : "red"
         ,"age"      : 24.3
         ,"value"    : 123.3}
     )
-    (ref-TS02-C1::DPSF|C_UpdateNonceName patron id emma 1  true "Snake Eyez")
-    (ref-TS02-C1::DPSF|C_UpdateNonceDescription patron id emma 1 true "Long dormant sentient AI, Snake Eye. Coded by a mad developer back in the 80s. Awakened by DemiourgosHoldings. With the help of our Coding Division it searches for his creatorz.")
-    (ref-TS02-C1::DPSF|C_UpdateNonceRoyalty patron id emma 1 true 133.0)
-    (ref-TS02-C1::DPSF|C_UpdateNonceIgnisRoyalty patron id emma 1 true 50.0)
+    (ref-TS02-C1::C_DPSF|UpdateNonceName patron id emma 1  true "Snake Eyez")
+    (ref-TS02-C1::C_DPSF|UpdateNonceDescription patron id emma 1 true "Long dormant sentient AI, Snake Eye. Coded by a mad developer back in the 80s. Awakened by DemiourgosHoldings. With the help of our Coding Division it searches for his creatorz.")
+    (ref-TS02-C1::C_DPSF|UpdateNonceRoyalty patron id emma 1 true 133.0)
+    (ref-TS02-C1::C_DPSF|UpdateNonceIgnisRoyalty patron id emma 1 true 50.0)
     
-    ;(ref-TS02-C1::DPSF|C_UpdateNonceURI patron id emma 1 true
+    ;(ref-TS02-C1::C_DPSF|UpdateNonceURI patron id emma 1 true
     ;    {"image"    : t
     ;    ,"audio"    : t
     ;    ,"video"    : t
@@ -377,7 +377,7 @@
         [
             ;(ref-DPDC::P|UR_IMP)
             ;(ref-DPDC::UEV_IMC)
-            (ref-TS02-C1::DPSF|C_EnableNonceFragmentation patron id 1 snake-eye-fragmentation-data)
+            (ref-TS02-C1::C_DPSF|EnableNonceFragmentation patron id 1 snake-eye-fragmentation-data)
             (ref-DPDC::UR_N|Royalty (ref-DPDC::UR_NonceData id true -1))
             (ref-DPDC::UR_N|IgnisRoyalty (ref-DPDC::UR_NonceData id true -1))
             (ref-DPDC::UR_N|Name (ref-DPDC::UR_NonceData id true -1))
@@ -438,27 +438,27 @@
     )
     [       
             ;:Freeze Emma
-            (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron id emma t)
-        (ref-TS02-C1::DPSF|C_AddQuantity patron id emma 1 20)
-        ;(ref-TS02-C1::DPSF|C_AddQuantity patron id emma 11 20)
+            (ref-TS02-C1::C_DPSF|ToggleFreezeAccount patron id emma t)
+        (ref-TS02-C1::C_DPSF|AddQuantity patron id emma 1 20)
+        ;(ref-TS02-C1::C_DPSF|AddQuantity patron id emma 11 20)
             (format "Emma Nonce 1 Supply is {}" [(ref-DPDC::UR_AccountNonceSupply emma id true 1)])
             (format "After Add Q, Nonce 1 Supply is {}" [(ref-DPDC::UR_NonceSupply id true 1)])
-        (ref-TS02-C1::DPSF|C_Burn patron id emma 1 7)
+        (ref-TS02-C1::C_DPSF|Burn patron id emma 1 7)
             (format "Emma Nonce 1 Supply is {}" [(ref-DPDC::UR_AccountNonceSupply emma id true 1)])
             (format "After Burn, Nonce 1 Supply is {}" [(ref-DPDC::UR_NonceSupply id true 1)])
-        (ref-TS02-C1::DPSF|C_WipeNoncePartialy patron id emma 1 6)
+        (ref-TS02-C1::C_DPSF|WipeNoncePartialy patron id emma 1 6)
             (format "Emma Nonce 1 Supply is {}" [(ref-DPDC::UR_AccountNonceSupply emma id true 1)])
             (format "After Wipe, Nonce 1 Supply is {}" [(ref-DPDC::UR_NonceSupply id true 1)])
-        (ref-TS02-C1::DPSF|C_WipeNonce patron id emma 1)
+        (ref-TS02-C1::C_DPSF|WipeNonce patron id emma 1)
             (format "Emma Nonce 1 Supply is {}" [(ref-DPDC::UR_AccountNonceSupply emma id true 1)])
             (format "After Total Wipe of Nonce, Nonce 1 Supply is {}" [(ref-DPDC::UR_NonceSupply id true 1)])
-        (ref-TS02-C1::DPSF|C_AddQuantity patron id emma 1 500)
+        (ref-TS02-C1::C_DPSF|AddQuantity patron id emma 1 500)
             (format "Emma Nonce 1 Supply is {}" [(ref-DPDC::UR_AccountNonceSupply emma id true 1)])
             (format "After Remake of Nonce, Nonce 1 Supply is {}" [(ref-DPDC::UR_NonceSupply id true 1)])
         
 
             ;:Unfreeze Emma
-            (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron id emma f)
+            (ref-TS02-C1::C_DPSF|ToggleFreezeAccount patron id emma f)
         ;;
         (format "Emma Nonces are {}" [(ref-DPDC::URH_AccountNonces emma id true)])
 
@@ -520,21 +520,21 @@
         ;wipe-obj
 
         ;;Block 1 of Testing
-        ;(ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron id patron t)
-        ;    (ref-TS02-C1::DPSF|C_WipeHeavy patron patron id)
-        ;(ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron id patron f)
+        ;(ref-TS02-C1::C_DPSF|ToggleFreezeAccount patron id patron t)
+        ;    (ref-TS02-C1::C_DPSF|WipeHeavy patron patron id)
+        ;(ref-TS02-C1::C_DPSF|ToggleFreezeAccount patron id patron f)
 
         ;;Block 2 of Testing
-        ;(ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron id patron t)
-        ;    (ref-TS02-C1::DPSF|C_WipePure patron patron id
+        ;(ref-TS02-C1::C_DPSF|ToggleFreezeAccount patron id patron t)
+        ;    (ref-TS02-C1::C_DPSF|WipePure patron patron id
         ;        {"r-nonces": [1 2 3 4 5 6 7 8 9 10]
         ;        ,"r-amounts": [300 500 500 500 500 500 500 500 500 200]}
         ;    )
-        ;(ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron id patron f)
+        ;(ref-TS02-C1::C_DPSF|ToggleFreezeAccount patron id patron f)
 
         
-        ;(ref-TS02-C1::DPSF|C_WipeClean patron emma id [1 2 3 4 5 6 7 8 9 10])
-        ;(ref-TS02-C1::DPSF|C_WipeDirty patron emma id [1 2 3 4 5 6 7 8 9 10])
+        ;(ref-TS02-C1::C_DPSF|WipeClean patron emma id [1 2 3 4 5 6 7 8 9 10])
+        ;(ref-TS02-C1::C_DPSF|WipeDirty patron emma id [1 2 3 4 5 6 7 8 9 10])
         (format "Wipe Tests executed here and are {}" [true])
     ]
 )
@@ -657,13 +657,13 @@
         (emma:string KST.EMMA)
         (lumy:string KST.LUMY)
     )
-    ;(ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron id emma false)
-    (ref-TS02-C1::DPSF|C_TogglePause patron id false)
+    ;(ref-TS02-C1::C_DPSF|ToggleFreezeAccount patron id emma false)
+    (ref-TS02-C1::C_DPSF|TogglePause patron id false)
     [
         (format "Patron has {} IGNIS" [(ref-DALOS::UR_TF_AccountSupply patron false)])
         (format "Summed Ignis Royalty is {}" [(ref-DPDC-T::URC_SummedIgnisRoyalty patron id true [1] [7])])
         (format "Transfer Cumulator is {}" [(ref-DPDC-T::URCi_MultiTransferCumulator [id] [true] patron emma [[1]] [[7]])])
-        (ref-TS02-C1::DPSF|C_TransferNonce patron id patron lumy 1 7 false)
+        (ref-TS02-C1::C_DPSF|TransferNonce patron id patron lumy 1 7 false)
         (format "Patron has after transfer {} IGNIS" [(ref-DALOS::UR_TF_AccountSupply patron false)])
         (ref-DPDC::URH_AccountNoncesWithSupplies lumy id true)
         (ref-DPDC::URH_AccountNoncesWithSupplies emma id true)
@@ -716,10 +716,10 @@
         (lumy:string KST.LUMY)
     )
     [
-        ;(ref-TS02-C1::DPSF|C_TransferNonces patron id1 patron lumy [1 2 3 4 5 6 7 8 9 10] [7 7 7 7 7 7 7 7 7 7] false)
-        (ref-TS02-C2::DPNF|C_TransferNonce patron id2 emma patron 1 1 false)
-        ;(ref-TS02-C1::DPSF|C_Repurpose patron id1 patron lumy [1] [2])
-        ;(ref-TS02-C2::DPNF|C_Repurpose patron id2 emma lumy [1] [1])
+        ;(ref-TS02-C1::C_DPSF|TransferNonces patron id1 patron lumy [1 2 3 4 5 6 7 8 9 10] [7 7 7 7 7 7 7 7 7 7] false)
+        (ref-TS02-C2::C_DPNF|TransferNonce patron id2 emma patron 1 1 false)
+        ;(ref-TS02-C1::C_DPSF|Repurpose patron id1 patron lumy [1] [2])
+        ;(ref-TS02-C2::C_DPNF|Repurpose patron id2 emma lumy [1] [1])
 
         ;;
         (ref-DPDC::UR_AccountSupply emma id1 true 1)
@@ -730,8 +730,8 @@
         (ref-DPDC::URH_AccountNonces lumy id1 true)
         (ref-DPDC::URH_AccountNonces emma id1 true)
 
-        ;(ref-TS01-C2::ATS|C_Curl patron patron "Auryndex-98c486052a51" "EliteAuryndex-98c486052a51" "OURO-98c486052a51" 5.0)
-        (ref-TS02-C1::DPDC|C_MultiTransfer
+        ;(ref-TS01-C2::C_ATS|Curl patron patron "Auryndex-98c486052a51" "EliteAuryndex-98c486052a51" "OURO-98c486052a51" 5.0)
+        (ref-TS02-C1::C_DPDC|MultiTransfer
             patron
             [id1 id2]
             [true false]
@@ -789,8 +789,8 @@
         (lumy:string KST.LUMY)
         (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
     )
-    (ref-TS02-C1::DPSF|C_MakeFragments patron patron id 1 3)
-    (ref-TS02-C1::DPSF|C_MergeFragments patron patron id -1 3000)
+    (ref-TS02-C1::C_DPSF|MakeFragments patron patron id 1 3)
+    (ref-TS02-C1::C_DPSF|MergeFragments patron patron id -1 3000)
     [
         (ref-DPDC::URH_AccountNoncesWithSupplies patron id true)
         (ref-DPDC::URH_AccountNonces patron id true)
@@ -837,7 +837,7 @@
     )
     [
     [
-        (ouronet-ns.TS02-C1.DPSF|C_Make
+        (ouronet-ns.TS02-C1.C_DPSF|Make
             patron
             patron
             id
@@ -860,7 +860,7 @@
         (ref-DPDC::UR_AccountNonceSupply patron id true 11)
     ]
     [
-        (ouronet-ns.TS02-C1.DPSF|C_Make
+        (ouronet-ns.TS02-C1.C_DPSF|Make
             patron
             patron
             id
@@ -880,7 +880,7 @@
         (ref-DPDC::UR_AccountNonceSupply patron id true 9)
         (ref-DPDC::UR_AccountNonceSupply patron id true 10)
         (ref-DPDC::UR_AccountNonceSupply patron id true 11)
-        (ouronet-ns.TS02-C1.DPSF|C_Break
+        (ouronet-ns.TS02-C1.C_DPSF|Break
             patron
             patron
             id
@@ -944,7 +944,7 @@
         (ouro:string "OURO-98c486052a51")
     )
     [
-        (ref-TS02-C1::DPSF|C_MorphEquity patron patron id 1 500000 4)
+        (ref-TS02-C1::C_DPSF|MorphEquity patron patron id 1 500000 4)
         [
             (ref-DPDC::UR_AccountNonceSupply patron id true 1)
             (ref-DPDC::UR_AccountNonceSupply patron id true 2)
@@ -955,9 +955,9 @@
             (ref-DPDC::UR_AccountNonceSupply patron id true 7)
             (ref-DPDC::UR_AccountNonceSupply patron id true 8)
         ]
-        (ref-TS02-C1::DPSF|C_MorphEquity patron patron id 4 40 8)
-        (ref-TS02-C1::DPSF|C_MorphEquity patron patron id 4 2 3)
-        (ref-TS02-C1::DPSF|C_MorphEquity patron patron id 8 1 6)
+        (ref-TS02-C1::C_DPSF|MorphEquity patron patron id 4 40 8)
+        (ref-TS02-C1::C_DPSF|MorphEquity patron patron id 4 2 3)
+        (ref-TS02-C1::C_DPSF|MorphEquity patron patron id 8 1 6)
         [
             (ref-DPDC::UR_AccountNonceSupply patron id true 1)
             (ref-DPDC::UR_AccountNonceSupply patron id true 2)
@@ -1020,23 +1020,23 @@
     [
         ;;
         ;;Fragment Some DHOC to Fuel Launchpad
-        (ref-TS02-C1::DPSF|C_MakeFragments patron patron dhoc 1 10000)
-        (ref-TS02-C1::DPSF|C_MakeFragments patron patron dhoc 2 1000)
-        (ref-TS02-C1::DPSF|C_MakeFragments patron patron dhoc 3 100)
-        (ref-TS02-C1::DPSF|C_TransferNonce patron dhoc patron emma -2 25 false)
+        (ref-TS02-C1::C_DPSF|MakeFragments patron patron dhoc 1 10000)
+        (ref-TS02-C1::C_DPSF|MakeFragments patron patron dhoc 2 1000)
+        (ref-TS02-C1::C_DPSF|MakeFragments patron patron dhoc 3 100)
+        (ref-TS02-C1::C_DPSF|TransferNonce patron dhoc patron emma -2 25 false)
         ;;
         ;;Fuel Launchpad with OURO, E|DH and DHOC
         (ref-TS02-DPAD::A_RegisterAssetToLaunchpad patron "OURO-98c486052a51" [true true])
         (ref-TS02-DPAD::A_ToggleOpenForBusiness "OURO-98c486052a51" true)
         (ref-TS02-DPAD::A_DefinePrice "OURO-98c486052a51" {"ouro-price" : 1.22})
-        (ref-TS02-DPAD::DEMIPAD|C_FuelTrueFungible patron patron ouro 1500.0)
+        (ref-TS02-DPAD::C_DEMIPAD|FuelTrueFungible patron patron ouro 1500.0)
 
 
 
-        (ref-TS02-DPAD::DEMIPAD|C_FuelSemiFungible patron patron id [4] [240])
-        (ref-TS02-DPAD::DEMIPAD|C_FuelSemiFungible patron patron dhoc [-1] [4500000])
-        (ref-TS02-DPAD::DEMIPAD|C_FuelSemiFungible patron patron dhoc [-3] [45000])
-        (ref-TS02-DPAD::DEMIPAD|C_FuelSemiFungible patron patron dhoc [-2] [450000])
+        (ref-TS02-DPAD::C_DEMIPAD|FuelSemiFungible patron patron id [4] [240])
+        (ref-TS02-DPAD::C_DEMIPAD|FuelSemiFungible patron patron dhoc [-1] [4500000])
+        (ref-TS02-DPAD::C_DEMIPAD|FuelSemiFungible patron patron dhoc [-3] [45000])
+        (ref-TS02-DPAD::C_DEMIPAD|FuelSemiFungible patron patron dhoc [-2] [450000])
         ;(ref-DPDC-T::UDC_MultiTransferCumulator [dhoc] [true] patron lpad [[-1]] [[4500000]])
         ;(ref-DPDC-T::UDC_MultiTransferCumulator [dhoc] [true] patron lpad [[-3]] [[45000]])
         ;(ref-DPDC-T::UDC_MultiTransferCumulator [dhoc] [true] patron lpad [[-2]] [[450000]])
@@ -1084,7 +1084,7 @@
     [
         ;;
         (format "Lumy has {} GAS" [(ref-DPTF::UR_AccountSupply gas lumy)])
-        (ref-TS02-C1::DPSF|C_RepurposeFragments lumy dhoc emma lumy [-2] [10])
+        (ref-TS02-C1::C_DPSF|RepurposeFragments lumy dhoc emma lumy [-2] [10])
     ]
     
 )
@@ -1206,7 +1206,7 @@
             (format "Acquire String LIST is {}" [aquire-snakes])
         ]
         ;[
-        ;    (ref-TS01-C2::LQD|C_WrapStoa patron patron total-stoa-amount)
+        ;    (ref-TS01-C2::C_LQD|WrapStoa patron patron total-stoa-amount)
         ;]
         [
             (format "AH has Native Stoa {}" [(ref-coin::get-balance patron-stoa)])
@@ -1216,14 +1216,14 @@
             ;;iz native False requires unwrapping, therefore the proper transfer capability must be set
             ;;<iz-native> = false => input WSTOA, which will be unwrapped to STOA to satisfz enviroment
             ;;PURE-CITIZEN GAS-delta ground truth: INFO_Acquire.ignis-need == real IGNIS balance delta
-            ;;of the Sigma-billed SNAKES|C_Acquire (DEMIPAD|C_Deposit + DPDC|C_MultiTransfer).
+            ;;of the Sigma-billed C_SNAKES|Acquire (C_DEMIPAD|Deposit + C_DPDC|MultiTransfer).
             (let
                 (
                     (predicted-gt:decimal
                         (at "ignis-need" (at "ignis" (DEMIPAD-SNAKES.INFO_Acquire patron patron 4 1 false))))
                     (pre-gas-gt:decimal (ref-DPTF-GT::UR_AccountSupply "GAS-98c486052a51" patron))
                 )
-                (ref-TS02-CPAD::SNAKES|C_Acquire patron patron 4 1 false -1.0)
+                (ref-TS02-CPAD::C_SNAKES|Acquire patron patron 4 1 false -1.0)
                 (let ((post-gas-gt:decimal (ref-DPTF-GT::UR_AccountSupply "GAS-98c486052a51" patron)))
                     (map print
                         [ (format "<(SNAKES-BUY-GT)> predicted ignis-need = {} ; real GAS delta = {}"
@@ -1244,11 +1244,11 @@
         ;; DPL-UR not loaded in this REPL chain — exercise URC_0030 only after deploying DPL-UR (e.g. StageZZ).
         ;(ouronet-ns.DPL-UR.URC_0030_StoicPay KST.ANHD)
         [
-            ;(ref-TS01-C1::DPTF|C_Transfer patron wstoa-id patron KST.EMMA 
+            ;(ref-TS01-C1::C_DPTF|Transfer patron wstoa-id patron KST.EMMA 
             ;    2500.0
             ;    false
             ;)
-            ;(ref-TS02-DPAD::SPARK|C_RedemAllSparks
+            ;(ref-TS02-DPAD::C_SPARK|RedemAllSparks
             ;    patron KST.EMMA patron
             ;)
             (format "AH should have no WSTOA {}" [(ref-DPTF::UR_AccountSupply wstoa-id patron)])
@@ -1432,7 +1432,7 @@
             ;(format "Before Asset State is {}" [(ref-DPAD::UR_AssetState KpayID)])
             ;(format "Left to buy {}" [(ouronet-ns.DEMIPAD-STOICPAY.UR_KpayLeft)])
             ;;
-            (ref-TS02-DPAD::KPAY|C_BuyStoicPay KST.ANHD KST.ANHD kpay-amount false (* correct-pid 1.01))
+            (ref-TS02-DPAD::C_KPAY|BuyStoicPay KST.ANHD KST.ANHD kpay-amount false (* correct-pid 1.01))
             ;(format "Resident WSTOA after buy is {}" [(ref-DPAD::UR_WSTOA)])
             ;(format "After Asset State is {}" [(ref-DPAD::UR_AssetState KpayID)])
         ]
@@ -1448,7 +1448,7 @@
 ;(n_7d40ccda457e374d8eb07b658fd38c282c545038.DPL-UR.URC_0030_StoicPay
 ;    "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî"
 ;)
-;(n_7d40ccda457e374d8eb07b658fd38c282c545038.TS02-DPAD.KPAY|C_BuyStoicPay <patron:string> <user:string> <kpay-amount:integer> <iz-native:bool>)
+;(n_7d40ccda457e374d8eb07b658fd38c282c545038.TS02-DPAD.C_KPAY|BuyStoicPay <patron:string> <user:string> <kpay-amount:integer> <iz-native:bool>)
 
 (print "")
 (print "")
@@ -1511,7 +1511,7 @@
             (expect "#12M: 1% slippage padding raises the cap ceilings vs 0% (different cap set)" false (= caps0 caps1))
             (expect-failure "#12M: buy REJECTED on-chain when max-cost < live cost (UEV_SlippageCost)"
                 "Slippage"
-                (ref-TS02-DPAD::KPAY|C_BuyStoicPay KST.ANHD KST.ANHD 1 false (* pid1 0.0000001)))
+                (ref-TS02-DPAD::C_KPAY|BuyStoicPay KST.ANHD KST.ANHD 1 false (* pid1 0.0000001)))
             ""
         ]
     )

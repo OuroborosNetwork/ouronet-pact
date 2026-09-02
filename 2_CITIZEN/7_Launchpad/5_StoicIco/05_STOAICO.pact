@@ -50,14 +50,14 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
+    (defun A_P|Add (policy-name:string policy-guard:guard)
         (with-capability (GOV|STOAICO_ADMIN)
             (write P|T policy-name
                 {"policy" : policy-guard}
             )
         )
     )
-    (defun P|A_AddIMP (policy-guard:guard)
+    (defun A_P|AddIMP (policy-guard:guard)
         (with-capability (GOV|STOAICO_ADMIN)
             (let
                 (
@@ -74,17 +74,17 @@
             )
         )
     )
-    (defun P|A_Define ()
+    (defun A_P|Define ()
         (let
             (
                 (ref-P|DPAD:module{OuronetPolicyV1} DEMIPAD)
                 (mg:guard (create-capability-guard (P|STOAICO|CALLER)))
             )
-            (ref-P|DPAD::P|A_Add
+            (ref-P|DPAD::A_P|Add
                 "STOAICO|RemoteGov"
                 (create-capability-guard (P|PAD-STOAICO|REMOTE-GOV))
             )
-            (ref-P|DPAD::P|A_AddIMP mg)
+            (ref-P|DPAD::A_P|AddIMP mg)
         )
     )
     (defun UEV_IMC ()
@@ -409,7 +409,7 @@
         )
     )
     (defun INFO_Collect:object{OuronetInfoV1.ClientInfo} (patron:string account:string)
-        @doc "Cost preview for the STOAICO|C_Collect pure-citizen reward collect (sole gas-funded path = \
+        @doc "Cost preview for the C_STOAICO|Collect pure-citizen reward collect (sole gas-funded path = \
             \ the TS02-CPAD Talos wrapper). IGNIS = URCi_Collect. No protocol STOA fee; the collect DELIVERS \
             \ wSTOA + urSTOA rewards to the account (a payout, not a cost)."
         (let
@@ -450,13 +450,13 @@
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
             ;;1]Collect wSTOA and URSTOA Rewards — delivered to <account>, the rightful owner
-            (ref-TS01-C1::DPTF|C_Mint patron urSTOA-id DEMIPAD|SC_NAME urSTOA-supply false)
+            (ref-TS01-C1::C_DPTF|Mint patron urSTOA-id DEMIPAD|SC_NAME urSTOA-supply false)
             (if (!= urSTOA-supply 0.0)
-                (ref-TS01-C1::DPTF|C_MultiTransfer patron
+                (ref-TS01-C1::C_DPTF|MultiTransfer patron
                     [wSTOA-id urSTOA-id] DEMIPAD|SC_NAME account
                     [wSTOA-supply urSTOA-supply] true
                 )
-                (ref-TS01-C1::DPTF|C_Transfer patron wSTOA-id DEMIPAD|SC_NAME account wSTOA-supply true)
+                (ref-TS01-C1::C_DPTF|Transfer patron wSTOA-id DEMIPAD|SC_NAME account wSTOA-supply true)
             )
             ;;2]Reset <pending-rewards> to 0
             (XI_ResetPendingRewards account)
@@ -710,7 +710,7 @@
                     (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
                     (ref-P|DPAD:module{OuronetPolicyV1} DEMIPAD)
                     (dptf-ids:list 
-                        (ref-TS01-C1::DPTF|C_Issue account account
+                        (ref-TS01-C1::C_DPTF|Issue account account
                             ["WrappedUrStoa" "VirtualIcoDollars"]
                             ["WURSTOA" "VUSDC"]
                             [3 2]
@@ -729,12 +729,12 @@
                 ;;1]Issue wURSTOA as DPTF
                 ;;2]Issue vUSD as mockup virtual Dollarz
                 ;;3]Toggle mint and burn roles
-                (ref-TS01-C1::DPTF|C_ToggleMintRole account vusd-id DEMIPAD|SC_NAME true)
-                (ref-TS01-C1::DPTF|C_ToggleBurnRole account vusd-id DEMIPAD|SC_NAME true)
-                (ref-TS01-C1::DPTF|C_ToggleMintRole account wstoa-id account true)
-                (ref-TS01-C1::DPTF|C_ToggleMintRole account wurstoa-id DEMIPAD|SC_NAME true)
+                (ref-TS01-C1::C_DPTF|ToggleMintRole account vusd-id DEMIPAD|SC_NAME true)
+                (ref-TS01-C1::C_DPTF|ToggleBurnRole account vusd-id DEMIPAD|SC_NAME true)
+                (ref-TS01-C1::C_DPTF|ToggleMintRole account wstoa-id account true)
+                (ref-TS01-C1::C_DPTF|ToggleMintRole account wurstoa-id DEMIPAD|SC_NAME true)
                 ;;4]Mint 10 mil wSTOA (injection will follow after ICO concludes)    
-                (ref-TS01-C1::DPTF|C_Mint account wstoa-id account 10000000.0 true)
+                (ref-TS01-C1::C_DPTF|Mint account wstoa-id account 10000000.0 true)
                 ;;5]Initialises the distribution Vault
                 (XI_InitialiseDistributionVault [wstoa-id wurstoa-id vusd-id])
                 ;;6]Output Message
@@ -767,7 +767,7 @@
                             (= (UR_Global7) 0)
                             "STOAICO: previous distribution-round not fully collected — flush the stragglers (or wait for collections) before injecting again")
                         ;;0]Move wSTOA from <account> to the D-Vault
-                        (ref-TS01-C1::DPTF|C_Transfer patron wSTOA-ID account DEMIPAD|SC_NAME wstoa-amount true)
+                        (ref-TS01-C1::C_DPTF|Transfer patron wSTOA-ID account DEMIPAD|SC_NAME wstoa-amount true)
                         ;;1]Count it in <wstoa-supply> (total held by the vault)
                         (XI_UpdateVaultSupply wstoa-amount true)
                         ;;2]Advance <current-rps> by the EFFECTIVE amount (new + escrowed zombie) / vault-score.
@@ -785,7 +785,7 @@
                     ;;    so the division is never reached with a zero denominator.
                     (do
                         ;;0]Move wSTOA from <account> to the D-Vault (held, not yet distributed)
-                        (ref-TS01-C1::DPTF|C_Transfer patron wSTOA-ID account DEMIPAD|SC_NAME wstoa-amount true)
+                        (ref-TS01-C1::C_DPTF|Transfer patron wSTOA-ID account DEMIPAD|SC_NAME wstoa-amount true)
                         ;;1]Count it in <wstoa-supply> (held by the vault)
                         (XI_UpdateVaultSupply wstoa-amount true)
                         ;;2]Escrow: postpone distribution to the next injection when vault-score is non-zero
@@ -811,7 +811,7 @@
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
                 ;;0]Mint the v-USD amount to the <DEMIPAD|SC_NAME>
-                (ref-TS01-C1::DPTF|C_Mint patron v-usd-id DEMIPAD|SC_NAME v-usd-amount false)
+                (ref-TS01-C1::C_DPTF|Mint patron v-usd-id DEMIPAD|SC_NAME v-usd-amount false)
                 ;;0.1]If New Account
                 (if (not (UR_IzAccount account))
                     (do
@@ -865,7 +865,7 @@
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
                 ;;0]Burn the v-USD amount from the <DEMIPAD|SC_NAME> that is to be removed
-                (ref-TS01-C1::DPTF|C_Burn patron v-usd-id DEMIPAD|SC_NAME v-usd-amount)
+                (ref-TS01-C1::C_DPTF|Burn patron v-usd-id DEMIPAD|SC_NAME v-usd-amount)
                 ;;1.1]Update Pending Rewards
                 (XI_UpdatePendingRewards account)
                 ;;1.2]If remaining <user-score> becomes 0, decrement <nzs-count>

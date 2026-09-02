@@ -699,7 +699,7 @@
         )
     )
     (defun SIP|URC_Issue:decimal (name:[string])
-        @doc "<DPTF|C_Issue"
+        @doc "<C_DPTF|Issue"
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)

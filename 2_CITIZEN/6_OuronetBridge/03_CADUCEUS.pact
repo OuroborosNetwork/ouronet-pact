@@ -218,7 +218,7 @@
                     (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
                 )
                 (UEV_Ready)
-                (ref-TS01-C1::DALOS|C_DeploySmartAccount
+                (ref-TS01-C1::C_DALOS|DeploySmartAccount
                     (UR_BridgeAccount)
                     guard
                     (at "bridge-stoa" (read CADUCEUS|ConfigTable CFG_KEY ["bridge-stoa"]))
@@ -243,13 +243,13 @@
                 [
                     ;;#N2 fix: bridge-account is CADUCEUS's own system smart account (not
                     ;;patron's) - admin variant (TS01-A, no ownership check on <account>),
-                    ;;replaces the self-service DPTF|C_DeployAccount (TS01-C1), which now
+                    ;;replaces the self-service C_DPTF|DeployAccount (TS01-C1), which now
                     ;;requires the caller to own <account>. Running this still requires
                     ;;holding both GOV|CADUCEUS_ADMIN and TS01-A's own admin keyset.
-                    (ref-TS01-A::DPTF|A_DeployAccount patron dptf-id bridge-account)
-                    (ref-TS01-C1::DPTF|C_ToggleMintRole patron dptf-id bridge-account true)
-                    (ref-TS01-C1::DPTF|C_ToggleBurnRole patron dptf-id bridge-account true)
-                    (ref-TS01-C1::DPTF|C_ToggleTransferRole patron dptf-id bridge-account true)
+                    (ref-TS01-A::A_DPTF|DeployAccount patron dptf-id bridge-account)
+                    (ref-TS01-C1::C_DPTF|ToggleMintRole patron dptf-id bridge-account true)
+                    (ref-TS01-C1::C_DPTF|ToggleBurnRole patron dptf-id bridge-account true)
+                    (ref-TS01-C1::C_DPTF|ToggleTransferRole patron dptf-id bridge-account true)
                 ]
             )
         )
@@ -275,8 +275,8 @@
                 (UEV_Ready)
                 (UEV_Active)
                 (UEV_FreshSignal signal-id)
-                (ref-TS01-C1::DPTF|C_Mint patron dptf-id bridge-account amount false)
-                (ref-TS01-C1::DPTF|C_Transfer patron dptf-id bridge-account receiver amount true)
+                (ref-TS01-C1::C_DPTF|Mint patron dptf-id bridge-account amount false)
+                (ref-TS01-C1::C_DPTF|Transfer patron dptf-id bridge-account receiver amount true)
                 (write CADUCEUS|SignalTable signal-id
                     {
                         "signal-id"      : signal-id
@@ -311,7 +311,7 @@
                 (UEV_Ready)
                 (UEV_Active)
                 (UEV_FreshSignal signal-id)
-                (ref-TS01-C1::DPTF|C_Burn patron dptf-id bridge-account amount)
+                (ref-TS01-C1::C_DPTF|Burn patron dptf-id bridge-account amount)
                 (write CADUCEUS|SignalTable signal-id
                     {
                         "signal-id"      : signal-id

@@ -47,6 +47,6 @@
             )
         )
     )
-    (ref-TS02-C1::DPSF|C_DefineCompositeSet KST.ANHD id "BadSet" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 0)] ind)
+    (ref-TS02-C1::C_DPSF|DefineCompositeSet KST.ANHD id "BadSet" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 0)] ind)
 )
 (commit-tx)

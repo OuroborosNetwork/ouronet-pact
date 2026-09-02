@@ -4,7 +4,7 @@
 ;; then COMBINE them into a TRIPLET model; the rows persist with the right shape; and the guards
 ;; reject a duplicate model-id + a triplet referencing a non-existent (or non-single) sub-model.
 ;; Source: 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/02_SCORE.pact (SCR|ScoreEntityModel + C_IssueSingleScoreModel
-;;         + C_CombineTripletScoreModel), 3_Talos/04_TS02-C3.pact (AQP-SCR|C_IssueSingleScoreModel / ...Combine...).
+;;         + C_CombineTripletScoreModel), 3_Talos/04_TS02-C3.pact (C_AQP-SCR|IssueSingleScoreModel / ...Combine...).
 ;;
 (print "")
 (print "================================================================")
@@ -50,11 +50,11 @@
             (model-id:string  (ref-U|DALOS::UDC_Makeid "DsaCustModel"))
         )
         ;; define the three SINGLE models (Custodians fragment nonces → quintessence)
-        (print (format "<(bronze)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "DsaCustBronze" 3 cust 24 [-1] [1.0])]))
-        (print (format "<(silver)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "DsaCustSilver" 3 cust 24 [-2] [10.0])]))
-        (print (format "<(gold)>   => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "DsaCustGold"   3 cust 24 [-3] [100.0])]))
+        (print (format "<(bronze)> => \"{}\"" [(ref-TS02-C3::C_AQP-SCR|IssueSingleScoreModel anhd "DsaCustBronze" 3 cust 24 [-1] [1.0])]))
+        (print (format "<(silver)> => \"{}\"" [(ref-TS02-C3::C_AQP-SCR|IssueSingleScoreModel anhd "DsaCustSilver" 3 cust 24 [-2] [10.0])]))
+        (print (format "<(gold)>   => \"{}\"" [(ref-TS02-C3::C_AQP-SCR|IssueSingleScoreModel anhd "DsaCustGold"   3 cust 24 [-3] [100.0])]))
         ;; combine into a TRIPLET model
-        (print (format "<(combine)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel anhd "DsaCustModel" bronze-id silver-id gold-id)]))
+        (print (format "<(combine)> => \"{}\"" [(ref-TS02-C3::C_AQP-SCR|CombineTripletScoreModel anhd "DsaCustModel" bronze-id silver-id gold-id)]))
         (let
             (
                 (bronze:object{AQP-SCORE.SCR|ScoreEntityModel} (AQP-SCORE.UR_SCR|ScoreEntityModel bronze-id))
@@ -105,13 +105,13 @@
         [
             ;; re-defining DsaCustBronze → model-id already exists
             (expect-failure "<<DSA-MODEL-02>> duplicate model-id rejected"
-                (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "DsaCustBronze" 3 cust 24 [-1] [1.0]))
+                (ref-TS02-C3::C_AQP-SCR|IssueSingleScoreModel anhd "DsaCustBronze" 3 cust 24 [-1] [1.0]))
             ;; combine over a non-existent sub-model → rejected
             (expect-failure "<<DSA-MODEL-02>> triplet over a missing sub-model rejected"
-                (ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel anhd "DsaBadModel" "Nonexistent-Model-Id" "Nonexistent-Model-Id" "Nonexistent-Model-Id"))
+                (ref-TS02-C3::C_AQP-SCR|CombineTripletScoreModel anhd "DsaBadModel" "Nonexistent-Model-Id" "Nonexistent-Model-Id" "Nonexistent-Model-Id"))
             ;; nonces/values length mismatch → rejected
             (expect-failure "<<DSA-MODEL-02>> nonces/values length mismatch rejected"
-                (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "DsaMismatch" 3 cust 24 [-1 -2] [1.0]))
+                (ref-TS02-C3::C_AQP-SCR|IssueSingleScoreModel anhd "DsaMismatch" 3 cust 24 [-1 -2] [1.0]))
         ]
     )
 )
@@ -148,7 +148,7 @@
             (gold-model-id:string   (ref-U|DALOS::UDC_Makeid "DsaCustGold"))
         )
         ;; FACTORY — issue ANHD's conforming agency score entity (a triplet) from the model, named "AnhdAgency"
-        (print (format "<(factory)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueScoreFromModel anhd anhd model-id "AnhdAgency")]))
+        (print (format "<(factory)> => \"{}\"" [(ref-TS02-C3::C_AQP-SCR|IssueScoreFromModel anhd anhd model-id "AnhdAgency")]))
         (let
             (
                 ;; the score ids the factory produced (sub-score-name = concat[agency-name role])
@@ -170,7 +170,7 @@
                         (expect "<<DSA-MODEL-03>> factory bundled the 3 scores into a triplet" true (ref-SCR::URC_TripletExists triplet-id))
                         ;; idempotent: re-issuing the same (operator, model) collides on the score-id ⇒ rejected
                         (expect-failure "<<DSA-MODEL-03>> re-issuing the same agency-name is rejected (score-id collision)"
-                            (ref-TS02-C3::AQP-SCR|C_IssueScoreFromModel anhd anhd model-id "AnhdAgency"))
+                            (ref-TS02-C3::C_AQP-SCR|IssueScoreFromModel anhd anhd model-id "AnhdAgency"))
                     ]
                 )
             )

@@ -166,14 +166,14 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
+    (defun A_P|Add (policy-name:string policy-guard:guard)
         (with-capability (GOV|SWPU_ADMIN)
             (write P|T policy-name
                 {"policy" : policy-guard}
             )
         )
     )
-    (defun P|A_AddIMP (policy-guard:guard)
+    (defun A_P|AddIMP (policy-guard:guard)
         (with-capability (GOV|SWPU_ADMIN)
             (let
                 (
@@ -190,7 +190,7 @@
             )
         )
     )
-    (defun P|A_Define ()
+    (defun A_P|Define ()
         (let
             (
                 (ref-U|G:module{OuronetGuardsV1} U|G)
@@ -208,30 +208,30 @@
                 (ref-P|SWP:module{OuronetPolicyV1} SWP)
                 (mg:guard (create-capability-guard (P|SWPU|CALLER)))
             )
-            (ref-P|DALOS::P|A_Add
+            (ref-P|DALOS::A_P|Add
                 "SWPU|RemoteDalosGov"
                 (create-capability-guard (P|SWPU|REMOTE-GOV))
             )
-            (ref-P|VST::P|A_Add
+            (ref-P|VST::A_P|Add
                 "SWPU|RemoteSwpGov"
                 (create-capability-guard (P|SWPU|REMOTE-GOV))
             )
-            (ref-P|SWP::P|A_Add
+            (ref-P|SWP::A_P|Add
                 "SWPU|RemoteSwpGov"
                 (create-capability-guard (P|SWPU|REMOTE-GOV))
             )
-            (ref-P|DALOS::P|A_AddIMP mg)
-            (ref-P|BRD::P|A_AddIMP mg)
-            (ref-P|DPTF::P|A_AddIMP mg)
-            ;(ref-P|DPOF::P|A_AddIMP mg)
-            (ref-P|ATS::P|A_AddIMP mg)
-            (ref-P|TFT::P|A_AddIMP mg)
-            (ref-P|ATSU::P|A_AddIMP mg)
-            (ref-P|VST::P|A_AddIMP mg)
-            (ref-P|LIQUID::P|A_AddIMP mg)
-            (ref-P|ORBR::P|A_AddIMP mg)
-            (ref-P|SWPT::P|A_AddIMP mg)
-            (ref-P|SWP::P|A_AddIMP mg)
+            (ref-P|DALOS::A_P|AddIMP mg)
+            (ref-P|BRD::A_P|AddIMP mg)
+            (ref-P|DPTF::A_P|AddIMP mg)
+            ;(ref-P|DPOF::A_P|AddIMP mg)
+            (ref-P|ATS::A_P|AddIMP mg)
+            (ref-P|TFT::A_P|AddIMP mg)
+            (ref-P|ATSU::A_P|AddIMP mg)
+            (ref-P|VST::A_P|AddIMP mg)
+            (ref-P|LIQUID::A_P|AddIMP mg)
+            (ref-P|ORBR::A_P|AddIMP mg)
+            (ref-P|SWPT::A_P|AddIMP mg)
+            (ref-P|SWP::A_P|AddIMP mg)
         )
     )
     (defun UEV_IMC ()

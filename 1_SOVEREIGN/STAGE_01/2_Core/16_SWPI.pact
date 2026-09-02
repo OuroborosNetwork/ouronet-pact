@@ -177,13 +177,13 @@
     ;;  [X] Functions
     ;;
     ;;#36M/M5 fix: forward-module entrypoint for the shared pool-issuance write
-    ;;sequence — SWPI's own C_Issue and MTX-SWP::MTX|C_Issue's Step 3 both call this
+    ;;sequence — SWPI's own C_Issue and MTX-SWP::C_MTX|Issue's Step 3 both call this
     ;;instead of each independently reimplementing the same mint/transfer/tracker
     ;;writes. Returns [swpair token-lp ico-lp ico-transfer-in ico-mint ico-transfer-out]
     ;;— a wider list, not an IgnisCollectorV1.OutputCumulator (matches this codebase's
     ;;XE_* convention: the forward module's own C_ composes IGNIS, not this function) —
     ;;so C_Issue can still aggregate every sub-call's own cumulator into its single
-    ;;billed response exactly as before, while MTX|C_Issue (which already bills
+    ;;billed response exactly as before, while C_MTX|Issue (which already bills
     ;;separately in its own Step 2) can just take swpair/token-lp and ignore the rest.
     (defun XE_IssueWrite:list (account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool))
 )
@@ -236,14 +236,14 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
+    (defun A_P|Add (policy-name:string policy-guard:guard)
         (with-capability (GOV|SWPI_ADMIN)
             (write P|T policy-name
                 {"policy" : policy-guard}
             )
         )
     )
-    (defun P|A_AddIMP (policy-guard:guard)
+    (defun A_P|AddIMP (policy-guard:guard)
         (with-capability (GOV|SWPI_ADMIN)
             (let
                 (
@@ -260,7 +260,7 @@
             )
         )
     )
-    (defun P|A_Define ()
+    (defun A_P|Define ()
         (let
             (
                 (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
@@ -272,17 +272,17 @@
                 (ref-P|SWPT:module{OuronetPolicyV1} SWPT)
                 (mg:guard (create-capability-guard (P|SWPI|CALLER)))
             )
-            (ref-P|SWP::P|A_Add
+            (ref-P|SWP::A_P|Add
                 "SWPI|RemoteSwpGov"
                 (create-capability-guard (P|SWPI|REMOTE-GOV))
             )
-            (ref-P|DALOS::P|A_AddIMP mg)
-            (ref-P|BRD::P|A_AddIMP mg)
-            (ref-P|DPTF::P|A_AddIMP mg)
-            (ref-P|TFT::P|A_AddIMP mg)
-            (ref-P|ORBR::P|A_AddIMP mg)
-            (ref-P|SWP::P|A_AddIMP mg)
-            (ref-P|SWPT::P|A_AddIMP mg)
+            (ref-P|DALOS::A_P|AddIMP mg)
+            (ref-P|BRD::A_P|AddIMP mg)
+            (ref-P|DPTF::A_P|AddIMP mg)
+            (ref-P|TFT::A_P|AddIMP mg)
+            (ref-P|ORBR::A_P|AddIMP mg)
+            (ref-P|SWP::A_P|AddIMP mg)
+            (ref-P|SWPT::A_P|AddIMP mg)
         )
     )
     (defun UEV_IMC ()
@@ -312,7 +312,7 @@
     (defconst BAR                   (CT_Bar))
     ;;#36M/M5 fix: named, single source of truth for the genesis LP mint amount —
     ;;was a bare 10000000.0 literal duplicated independently in both C_Issue and
-    ;;MTX|C_Issue's own write sequences; now lives once, inside the shared
+    ;;C_MTX|Issue's own write sequences; now lives once, inside the shared
     ;;XE_IssueWrite both call.
     (defconst GENESIS_LP_SUPPLY     10000000.0)
     ;;
@@ -2460,14 +2460,14 @@
             \ write sequence — mint the LP token, register the pool, transfer pool tokens \
             \ in, mint genesis LP supply, transfer LP out to the account, register the \
             \ swap-tracer graph edge. Both SWPI::C_Issue (this module) and \
-            \ MTX-SWP::MTX|C_Issue's Step 3 (a different module, reached via a \
+            \ MTX-SWP::C_MTX|Issue's Step 3 (a different module, reached via a \
             \ module{SwapperIssueV3} ref) call this instead of each independently \
             \ reimplementing it. \
             \ Returns [swpair token-lp ico-lp ico-transfer-in ico-mint ico-transfer-out] — \
             \ a wider list, not an IgnisCollectorV1.OutputCumulator (this codebase's XE_* \
             \ convention: the forward module's own C_ composes IGNIS, not this function). \
             \ C_Issue aggregates all four sub-cumulators into its own single billed \
-            \ response; MTX|C_Issue's Step 3 only needs swpair/token-lp (it already billed \
+            \ response; C_MTX|Issue's Step 3 only needs swpair/token-lp (it already billed \
             \ separately, in its own Step 2, before Step 3 ever runs) and ignores the rest."
         (UEV_IMC)
         (with-capability (SWPI|XE>ISSUE-WRITE account pool-tokens fee-lp weights amp p)
@@ -2530,7 +2530,7 @@
             \ principal-keyed SWPT|Tracer storage."
         (with-capability (GOV|SWPI_ADMIN)
             ;;XE_UpdateGraph's own UEV_IMC checks that P|SWPI|CALLER (the guard SWPI
-            ;;registers with SWPT via P|A_Define) is actively composed — true when
+            ;;registers with SWPT via A_P|Define) is actively composed — true when
             ;;reached via C_Issue's cap chain (SWPI|C>ISSUE -> P|DT), not true by
             ;;default just because this code happens to live in SWPI's module.
             (with-capability (P|SECURE-CALLER)
@@ -2549,9 +2549,9 @@
         (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
         @doc "Issues a new SWPair (Liquidty Pool). \
             \ #36M/M5 fix: the write sequence itself (mint/transfer/tracker) now lives in \
-            \ the shared XE_IssueWrite — MTX-SWP::MTX|C_Issue's own Step 3 calls the same \
+            \ the shared XE_IssueWrite — MTX-SWP::C_MTX|Issue's own Step 3 calls the same \
             \ function instead of independently reimplementing it. This function still \
-            \ owns all of ITS OWN IGNIS billing/aggregation (MTX|C_Issue bills separately, \
+            \ owns all of ITS OWN IGNIS billing/aggregation (C_MTX|Issue bills separately, \
             \ in its own Step 2, before Step 3 ever runs)."
         (UEV_IMC)
         (with-capability (SWPI|C>ISSUE account pool-tokens fee-lp weights amp p)
@@ -2575,7 +2575,7 @@
                         (ref-IGNIS::UDC_ConstructOutputCumulator gas-swp-cost SWP|SC_NAME trigger [])
                     )
                 )
-                (ref-IGNIS::STOA|C_Collect patron stoa-costs)
+                (ref-IGNIS::C_STOA|Collect patron stoa-costs)
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3 ico4 ico5] [swpair token-lp])
             )
         )

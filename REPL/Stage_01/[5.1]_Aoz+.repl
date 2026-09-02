@@ -193,7 +193,7 @@
             (patron:string AOZ.AOZ|SC_NAME)
             ;;
             (tf-ids:[string]
-                (ref-TS01-C1::DPTF|C_Issue
+                (ref-TS01-C1::C_DPTF|Issue
                     patron
                     patron
                     ["PrimordialKoson" "EsothericKoson" "AncientKoson" "PlebiumDenarius" "ComatusAureus" "PileatusSolidus" "TarabostesStater" "StrategonDrachma" "BasileonAs"]
@@ -255,29 +255,29 @@
         (StrategonDrachmaID:string  (ref-AOZ::UR_PrimalTrueFungible 8))
         (BasileonAsID:string        (ref-AOZ::UR_PrimalTrueFungible 9))        
     )
-    (ref-TS01-C1::DPTF|C_SetFee patron PlebiumDenariusID 10.0)
-    (ref-TS01-C1::DPTF|C_ToggleFee patron PlebiumDenariusID true)
-    (ref-TS01-C1::DPTF|C_ToggleFeeLock patron PlebiumDenariusID true)
+    (ref-TS01-C1::C_DPTF|SetFee patron PlebiumDenariusID 10.0)
+    (ref-TS01-C1::C_DPTF|ToggleFee patron PlebiumDenariusID true)
+    (ref-TS01-C1::C_DPTF|ToggleFeeLock patron PlebiumDenariusID true)
 
-    (ref-TS01-C1::DPTF|C_SetFee patron ComatusAureusID 20.0)
-    (ref-TS01-C1::DPTF|C_ToggleFee patron ComatusAureusID true)
-    (ref-TS01-C1::DPTF|C_ToggleFeeLock patron ComatusAureusID true)
+    (ref-TS01-C1::C_DPTF|SetFee patron ComatusAureusID 20.0)
+    (ref-TS01-C1::C_DPTF|ToggleFee patron ComatusAureusID true)
+    (ref-TS01-C1::C_DPTF|ToggleFeeLock patron ComatusAureusID true)
 
-    (ref-TS01-C1::DPTF|C_SetFee patron PileatusSolidusID 30.0)
-    (ref-TS01-C1::DPTF|C_ToggleFee patron PileatusSolidusID true)
-    (ref-TS01-C1::DPTF|C_ToggleFeeLock patron PileatusSolidusID true)
+    (ref-TS01-C1::C_DPTF|SetFee patron PileatusSolidusID 30.0)
+    (ref-TS01-C1::C_DPTF|ToggleFee patron PileatusSolidusID true)
+    (ref-TS01-C1::C_DPTF|ToggleFeeLock patron PileatusSolidusID true)
 
-    (ref-TS01-C1::DPTF|C_SetFee patron TarabostesStaterID 40.0)
-    (ref-TS01-C1::DPTF|C_ToggleFee patron TarabostesStaterID true)
-    (ref-TS01-C1::DPTF|C_ToggleFeeLock patron TarabostesStaterID true)
+    (ref-TS01-C1::C_DPTF|SetFee patron TarabostesStaterID 40.0)
+    (ref-TS01-C1::C_DPTF|ToggleFee patron TarabostesStaterID true)
+    (ref-TS01-C1::C_DPTF|ToggleFeeLock patron TarabostesStaterID true)
 
-    (ref-TS01-C1::DPTF|C_SetFee patron StrategonDrachmaID 50.0)
-    (ref-TS01-C1::DPTF|C_ToggleFee patron StrategonDrachmaID true)
-    (ref-TS01-C1::DPTF|C_ToggleFeeLock patron StrategonDrachmaID true)
+    (ref-TS01-C1::C_DPTF|SetFee patron StrategonDrachmaID 50.0)
+    (ref-TS01-C1::C_DPTF|ToggleFee patron StrategonDrachmaID true)
+    (ref-TS01-C1::C_DPTF|ToggleFeeLock patron StrategonDrachmaID true)
 
-    (ref-TS01-C1::DPTF|C_SetFee patron BasileonAsID 60.0)
-    (ref-TS01-C1::DPTF|C_ToggleFee patron BasileonAsID true)
-    (ref-TS01-C1::DPTF|C_ToggleFeeLock patron BasileonAsID true)    
+    (ref-TS01-C1::C_DPTF|SetFee patron BasileonAsID 60.0)
+    (ref-TS01-C1::C_DPTF|ToggleFee patron BasileonAsID true)
+    (ref-TS01-C1::C_DPTF|ToggleFeeLock patron BasileonAsID true)    
 
 )
 
@@ -346,7 +346,7 @@
             (patron:string AOZ.AOZ|SC_NAME)
             ;;
             (of-ids:[string]
-                (ref-TS01-C1::DPOF|C_Issue
+                (ref-TS01-C1::C_DPOF|Issue
                     patron
                     patron
                     ["DenariusDebilis" "AureusFragilis" "SolidusFractus" "StaterTenuulus" "DrachmaMinima" "AsInfinimus"]
@@ -442,7 +442,7 @@
             (ComatusAureusID:string (ref-AOZ::UR_PrimalTrueFungible 5))
             ;;
             (ats-ids:[string]
-                (ref-TS01-C2::ATS|C_Issue
+                (ref-TS01-C2::C_ATS|Issue
                     patron
                     patron
                     ["PlebeicStrength" "ComatiCommand"]
@@ -533,7 +533,7 @@
             (TarabostesStaterID:string (ref-AOZ::UR_PrimalTrueFungible 7))
             ;;
             (ats-ids:[string]
-                (ref-TS01-C2::ATS|C_Issue
+                (ref-TS01-C2::C_ATS|Issue
                     patron
                     patron
                     ["PileatiPower" "TarabostesTenacity"]
@@ -624,7 +624,7 @@
             (BasileonAsID:string (ref-AOZ::UR_PrimalTrueFungible 9))
             ;;
             (ats-ids:[string]
-                (ref-TS01-C2::ATS|C_Issue
+                (ref-TS01-C2::C_ATS|Issue
                     patron
                     patron
                     ["StrategonVigor" "AsAuthority"]
@@ -682,7 +682,7 @@
 
     )
     (ref-AOZ::C_SetupKosonicATS PlebeicStrengthID DenariusDebilisID decay)
-    (ref-TS01-C2::ATS|C_SwitchColdRecovery patron PlebeicStrengthID true)  ;;REPL-ONLY >> When deploying on mainnet must be removed
+    (ref-TS01-C2::C_ATS|SwitchColdRecovery patron PlebeicStrengthID true)  ;;REPL-ONLY >> When deploying on mainnet must be removed
 )
 
 ;;==== TX-09 [3.8] - AOZ Init [08]: Setup ATS-Pair 1 · 03 · gas echo ==== =========================
@@ -903,9 +903,9 @@
         (ak-amount:decimal 50000.0)     ;;Differs on Main-Net
 
     )
-    (ref-TS01-C1::DPTF|C_Mint patron PrimordialKosonID  patron pk-amount true)
-    (ref-TS01-C1::DPTF|C_Mint patron EsothericKosonID   patron ek-amount true)
-    (ref-TS01-C1::DPTF|C_Mint patron AncientKosonID     patron ak-amount true)
+    (ref-TS01-C1::C_DPTF|Mint patron PrimordialKosonID  patron pk-amount true)
+    (ref-TS01-C1::C_DPTF|Mint patron EsothericKosonID   patron ek-amount true)
+    (ref-TS01-C1::C_DPTF|Mint patron AncientKosonID     patron ak-amount true)
 )
 
 ;;==== TX-15 [3.14] - AOZ Init [14]: Mint Kosons · 03 · gas echo ==== =============================
@@ -951,29 +951,29 @@
         ;;
         (a:decimal 250.0)   ;; May Differ on Main-Net
     )
-    (ref-TS01-C2::ATS|C_Coil patron patron PlebeicStrengthID    PrimordialKosonID   a)
-    (ref-TS01-C2::ATS|C_Coil patron patron PlebeicStrengthID    EsothericKosonID    a)
-    (ref-TS01-C2::ATS|C_Coil patron patron PlebeicStrengthID    AncientKosonID      a)
+    (ref-TS01-C2::C_ATS|Coil patron patron PlebeicStrengthID    PrimordialKosonID   a)
+    (ref-TS01-C2::C_ATS|Coil patron patron PlebeicStrengthID    EsothericKosonID    a)
+    (ref-TS01-C2::C_ATS|Coil patron patron PlebeicStrengthID    AncientKosonID      a)
 
-    (ref-TS01-C2::ATS|C_Coil patron patron ComatiCommandID      PrimordialKosonID   a)
-    (ref-TS01-C2::ATS|C_Coil patron patron ComatiCommandID      EsothericKosonID    a)
-    (ref-TS01-C2::ATS|C_Coil patron patron ComatiCommandID      AncientKosonID      a)
+    (ref-TS01-C2::C_ATS|Coil patron patron ComatiCommandID      PrimordialKosonID   a)
+    (ref-TS01-C2::C_ATS|Coil patron patron ComatiCommandID      EsothericKosonID    a)
+    (ref-TS01-C2::C_ATS|Coil patron patron ComatiCommandID      AncientKosonID      a)
 
-    (ref-TS01-C2::ATS|C_Coil patron patron PileatiPowerID       PrimordialKosonID   a)
-    (ref-TS01-C2::ATS|C_Coil patron patron PileatiPowerID       EsothericKosonID    a)
-    (ref-TS01-C2::ATS|C_Coil patron patron PileatiPowerID       AncientKosonID      a)
+    (ref-TS01-C2::C_ATS|Coil patron patron PileatiPowerID       PrimordialKosonID   a)
+    (ref-TS01-C2::C_ATS|Coil patron patron PileatiPowerID       EsothericKosonID    a)
+    (ref-TS01-C2::C_ATS|Coil patron patron PileatiPowerID       AncientKosonID      a)
 
-    (ref-TS01-C2::ATS|C_Coil patron patron TarabostesTenacityID PrimordialKosonID   a)
-    (ref-TS01-C2::ATS|C_Coil patron patron TarabostesTenacityID EsothericKosonID    a)
-    (ref-TS01-C2::ATS|C_Coil patron patron TarabostesTenacityID AncientKosonID      a)
+    (ref-TS01-C2::C_ATS|Coil patron patron TarabostesTenacityID PrimordialKosonID   a)
+    (ref-TS01-C2::C_ATS|Coil patron patron TarabostesTenacityID EsothericKosonID    a)
+    (ref-TS01-C2::C_ATS|Coil patron patron TarabostesTenacityID AncientKosonID      a)
 
-    (ref-TS01-C2::ATS|C_Coil patron patron StrategonVigorID     PrimordialKosonID   a)
-    (ref-TS01-C2::ATS|C_Coil patron patron StrategonVigorID     EsothericKosonID    a)
-    (ref-TS01-C2::ATS|C_Coil patron patron StrategonVigorID     AncientKosonID      a)
+    (ref-TS01-C2::C_ATS|Coil patron patron StrategonVigorID     PrimordialKosonID   a)
+    (ref-TS01-C2::C_ATS|Coil patron patron StrategonVigorID     EsothericKosonID    a)
+    (ref-TS01-C2::C_ATS|Coil patron patron StrategonVigorID     AncientKosonID      a)
 
-    (ref-TS01-C2::ATS|C_Coil patron patron AsAuthorityID        PrimordialKosonID   a)
-    (ref-TS01-C2::ATS|C_Coil patron patron AsAuthorityID        EsothericKosonID    a)
-    (ref-TS01-C2::ATS|C_Coil patron patron AsAuthorityID        AncientKosonID      a)
+    (ref-TS01-C2::C_ATS|Coil patron patron AsAuthorityID        PrimordialKosonID   a)
+    (ref-TS01-C2::C_ATS|Coil patron patron AsAuthorityID        EsothericKosonID    a)
+    (ref-TS01-C2::C_ATS|Coil patron patron AsAuthorityID        AncientKosonID      a)
 )
 
 ;;==== TX-16 [3.15] - AOZ Init [15]: Coil in each ATS Pair 250 of Each Type of Koson · 03 · gas echo ==== 

@@ -62,15 +62,15 @@
         )
     )
     (print (format "ISSUE = {}"
-        [(ref-TS02-C2::DPNF|C_Issue owner owner creator "FragCreditProbeNFT" "FCPN"
+        [(ref-TS02-C2::C_DPNF|Issue owner owner creator "FragCreditProbeNFT" "FCPN"
             true true true true true true true true)]))
     (let ((id:string "FCPN-98c486052a51"))
-        (print (format "CREATE 1 = {}" [(ref-TS02-C2::DPNF|C_Create owner id [nd])]))
+        (print (format "CREATE 1 = {}" [(ref-TS02-C2::C_DPNF|Create owner id [nd])]))
         (print (format "ENABLE FRAGMENTATION = {}"
-            [(ref-TS02-C2::DPNF|C_EnableNonceFragmentation owner id 1 nd)]))
+            [(ref-TS02-C2::C_DPNF|EnableNonceFragmentation owner id 1 nd)]))
         ;; #24M positive control: the real Make-Fragments flow always produces exactly 1000 -- still works.
         (print (format "<<24M-1>> MAKE FRAGMENTS (real flow, must succeed) RESULT = {}"
-            [(ref-TS02-C2::DPNF|C_MakeFragments owner owner id 1 1)]))
+            [(ref-TS02-C2::C_DPNF|MakeFragments owner owner id 1 1)]))
         (print (format "ANHD fragment (-1) balance after Make = {}"
             [(ref-DPDC::UR_AccountNonceSupply owner id false -1)]))
         ;; #24M negative, corrected methodology: XE_CreditNFT-FragmentNonce is UEV_IMC-gated -- ANY direct

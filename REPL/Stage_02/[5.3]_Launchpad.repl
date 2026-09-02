@@ -81,14 +81,14 @@
             ,"resident-ouro"    : 0.0}
         )
         ;;IMC
-        (ref-P|DPAD::P|A_Define)
-        (ref-P|SPARK::P|A_Define)
-        (ref-P|SNAKES::P|A_Define)
-        (ref-P|CUSTODIANS::P|A_Define)
-        (ref-P|TS02-DPAD::P|A_Define)
+        (ref-P|DPAD::A_P|Define)
+        (ref-P|SPARK::A_P|Define)
+        (ref-P|SNAKES::A_P|Define)
+        (ref-P|CUSTODIANS::A_P|Define)
+        (ref-P|TS02-DPAD::A_P|Define)
         ;;
         ;;Governor
-        (ref-TS01-C1::DALOS|C_RotateGovernor
+        (ref-TS01-C1::C_DALOS|RotateGovernor
             KST.ANHD
             lpad-sc
             (ref-U|G::UEV_GuardOfAny
@@ -173,7 +173,7 @@
                 }
             ]
         )
-        (ref-TS01-C1::DPTF|C_Issue
+        (ref-TS01-C1::C_DPTF|Issue
             patron
             patron
             ["Spark"]
@@ -259,7 +259,7 @@
                 }
             ]
         )
-        (ref-TS01-C2::VST|C_CreateFrozenLink patron SparkID)
+        (ref-TS01-C2::C_VST|CreateFrozenLink patron SparkID)
     )
     
 (print "")
@@ -325,9 +325,9 @@
             ;;Check Role
             (format "Frozen Token Role on VST|SC_NAME after issue is {}" [tr])
             ;;Permissions
-            (ref-TS01-C1::DPTF|C_Mint patron SparkID lpad-sc 35000.0 true)
-            (ref-TS01-C1::DPTF|C_ToggleMintRole patron SparkID lpad-sc true)
-            (ref-TS01-C1::DPTF|C_ToggleBurnRole patron SparkID lpad-sc true)
+            (ref-TS01-C1::C_DPTF|Mint patron SparkID lpad-sc 35000.0 true)
+            (ref-TS01-C1::C_DPTF|ToggleMintRole patron SparkID lpad-sc true)
+            (ref-TS01-C1::C_DPTF|ToggleBurnRole patron SparkID lpad-sc true)
             ;;REPL-VARIANT:
             (acquire-module-admin ouronet-ns.DEMIPAD-SPARK)
             ;;MAIN-NET VARIANT
@@ -779,7 +779,7 @@
                 }
             ]
         )
-        (ref-TS01-C1::DPTF|C_Issue
+        (ref-TS01-C1::C_DPTF|Issue
             patron
             patron
             ["StoicPayV2"]
@@ -825,11 +825,11 @@
     )
     (map print
         [
-            (ref-TS01-A::DALOS|A_DeployStandardAccount (DEMIPAD-STOICPAY.GOV|VENTURE2)
+            (ref-TS01-A::A_DALOS|DeployStandardAccount (DEMIPAD-STOICPAY.GOV|VENTURE2)
                 (keyset-ref-guard ah-key) "k:00000000000000000000000000000000000000000000000000000000000000c3" fake-pbl)
-            (ref-TS01-A::DALOS|A_DeployStandardAccount (DEMIPAD-STOICPAY.GOV|VENTURE3)
+            (ref-TS01-A::A_DALOS|DeployStandardAccount (DEMIPAD-STOICPAY.GOV|VENTURE3)
                 (keyset-ref-guard ah-key) "k:00000000000000000000000000000000000000000000000000000000000000c4" fake-pbl)
-            (ref-TS01-A::DALOS|A_DeployStandardAccount (DEMIPAD-STOICPAY.GOV|VENTURE4)
+            (ref-TS01-A::A_DALOS|DeployStandardAccount (DEMIPAD-STOICPAY.GOV|VENTURE4)
                 (keyset-ref-guard ah-key) "k:00000000000000000000000000000000000000000000000000000000000000c5" fake-pbl)
             (expect "TX-11M: VENTURE4 registered as a standard (non-smart) Ouronet account"
                 false (ouronet-ns.DALOS.UR_AccountType (DEMIPAD-STOICPAY.GOV|VENTURE4)))
@@ -891,11 +891,11 @@
         )
         [
             ;;Backward IMC
-            (ref-P|KPAY::P|A_Define)
+            (ref-P|KPAY::A_P|Define)
             ;;Forward IMC
-            ;(ref-P|KPAY::P|A_AddIMP mg)    ;;Needed on Mainnet
+            ;(ref-P|KPAY::A_P|AddIMP mg)    ;;Needed on Mainnet
             ;;Governor
-            (ref-TS01-C1::DALOS|C_RotateGovernor
+            (ref-TS01-C1::C_DALOS|RotateGovernor
                 KST.ANHD
                 lpad-sc
                 (ref-U|G::UEV_GuardOfAny
@@ -911,8 +911,8 @@
             ;;
             ;;
             ;;Permissions
-            (ref-TS01-C1::DPTF|C_Mint patron KpayID lpad-sc 250000000.0 true)
-            (ref-TS01-C1::DPTF|C_ToggleBurnRole patron KpayID lpad-sc true)
+            (ref-TS01-C1::C_DPTF|Mint patron KpayID lpad-sc 250000000.0 true)
+            (ref-TS01-C1::C_DPTF|ToggleBurnRole patron KpayID lpad-sc true)
             ;;REPL-VARIANT:
             (acquire-module-admin ouronet-ns.DEMIPAD-STOICPAY)
             ;;MAIN-NET VARIANT

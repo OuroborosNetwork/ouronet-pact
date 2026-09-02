@@ -71,14 +71,14 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
+    (defun A_P|Add (policy-name:string policy-guard:guard)
         (with-capability (GOV|SNAKES_ADMIN)
             (write P|T policy-name
                 {"policy" : policy-guard}
             )
         )
     )
-    (defun P|A_AddIMP (policy-guard:guard)
+    (defun A_P|AddIMP (policy-guard:guard)
         (with-capability (GOV|SNAKES_ADMIN)
             (let
                 (
@@ -95,19 +95,19 @@
             )
         )
     )
-    (defun P|A_Define ()
+    (defun A_P|Define ()
         (let
             (
                 (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
                 (ref-P|DPAD:module{OuronetPolicyV1} DEMIPAD)
                 (mg:guard (create-capability-guard (P|SNAKES|CALLER)))
             )
-            (ref-P|DPAD::P|A_Add
+            (ref-P|DPAD::A_P|Add
                 "SNAKES|RemoteGov"
                 (create-capability-guard (P|SNAKES|REMOTE-GOV))
             )
-            (ref-P|DPDC-T::P|A_AddIMP mg)
-            (ref-P|DPAD::P|A_AddIMP mg)
+            (ref-P|DPDC-T::A_P|AddIMP mg)
+            (ref-P|DPAD::A_P|AddIMP mg)
         )
     )
     (defun UEV_IMC ()
@@ -276,7 +276,7 @@
         )
     )
     (defun INFO_Acquire:object{OuronetInfoV1.ClientInfo} (patron:string buyer:string nonce:integer amount:integer iz-native:bool)
-        @doc "Cost preview for the SNAKES|C_Acquire pure-citizen buy (sole gas-funded path = the \
+        @doc "Cost preview for the C_SNAKES|Acquire pure-citizen buy (sole gas-funded path = the \
             \ TS02-CPAD Talos wrapper). IGNIS = URCi_Acquire (Sigma of the two Talos ops). Launchpad ops \
             \ carry NO protocol STOA fee; the ACQUISITION cost (dollar pid + STOA wstoa) is declared in \
             \ the description as the good bought, not a fee-to-execute (protocol stoa = none)."
@@ -293,7 +293,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [ (format "Operation: Acquire {} of {} nonce {} for {} (pure-citizen, Sigma-billed)." [amount asset nonce sb])
                   (format "Acquisition cost: {} $ paid as {} {} (not a protocol fee)." [pid wstoa pay])
-                  "Executes via TS02-CPAD.SNAKES|C_Acquire (the sole gas-funded path)." ]
+                  "Executes via TS02-CPAD.C_SNAKES|Acquire (the sole gas-funded path)." ]
                 [ (format "Acquired {} of {} nonce {}." [amount asset nonce]) ]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (URCi_Acquire buyer nonce amount iz-native))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
@@ -363,9 +363,9 @@
                     (sb:string (ref-I|OURONET::OI|UC_ShortAccount buyer))
                 )
                 ;;1] SOVEREIGN deposit Talos op — buyer's STOA into the Launchpad; self-collects IGNIS on patron
-                (ref-TS02-DPAD::DEMIPAD|C_Deposit patron buyer asset pid type false max-cost)
+                (ref-TS02-DPAD::C_DEMIPAD|Deposit patron buyer asset pid type false max-cost)
                 ;;2] SOVEREIGN DPDC collectable transfer Talos op — SFT nonce(s) from the Launchpad SC to the buyer; self-collects IGNIS
-                (ref-TS02-C1::DPDC|C_MultiTransfer patron [asset] [true] DEMIPAD|SC_NAME buyer [[nonce]] [[amount]] true)
+                (ref-TS02-C1::C_DPDC|MultiTransfer patron [asset] [true] DEMIPAD|SC_NAME buyer [[nonce]] [[amount]] true)
                 (format "User {} succesfuly acquired {} Nonce {} {} SFTs" [sb amount nonce asset])
             )
         )

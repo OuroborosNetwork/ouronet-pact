@@ -40,14 +40,14 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
+    (defun A_P|Add (policy-name:string policy-guard:guard)
         (with-capability (GOV|IGNIS_ADMIN)
             (write P|T policy-name
                 {"policy" : policy-guard}
             )
         )
     )
-    (defun P|A_AddIMP (policy-guard:guard)
+    (defun A_P|AddIMP (policy-guard:guard)
         (with-capability (GOV|IGNIS_ADMIN)
             (let
                 (
@@ -64,13 +64,13 @@
             )
         )
     )
-    (defun P|A_Define ()
+    (defun A_P|Define ()
         (let
             (
                 (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
                 (mg:guard (create-capability-guard (P|IGNIS|CALLER)))
             )
-            (ref-P|DALOS::P|A_AddIMP mg)
+            (ref-P|DALOS::A_P|AddIMP mg)
         )
     )
     (defun UEV_IMC ()
@@ -977,13 +977,13 @@
             )
         )
     )
-    (defun STOA|C_Collect (sender:string amount:decimal)
-        (STOA|C_CollectWT sender amount (URC_IsNativeGasZero))
+    (defun C_STOA|Collect (sender:string amount:decimal)
+        (C_STOA|CollectWT sender amount (URC_IsNativeGasZero))
     )
-    (defun STOA|C_CollectWT (sender:string amount:decimal trigger:bool)
-        (STOA|C_CollectWTEx sender sender amount trigger)
+    (defun C_STOA|CollectWT (sender:string amount:decimal trigger:bool)
+        (C_STOA|CollectWTEx sender sender amount trigger)
     )
-    (defun STOA|C_CollectWTEx (payer:string discount-account:string amount:decimal trigger:bool)
+    (defun C_STOA|CollectWTEx (payer:string discount-account:string amount:decimal trigger:bool)
         @doc "Collect native STOA from payer Stoa account; Elite split from discount-account."
         (let
             (

@@ -8,7 +8,7 @@
 (interface TalosStageOne_ClientFourV7
     @doc "Talos Stage One Client Four V7 — patronless Cronoton A_RevokeLink (no IGNIS); C_RevokeLink still 1 IGNIS."
     ;;
-    (defun CODEX|A_RegisterCodexIdentity:string
+    (defun A_CODEX|RegisterCodexIdentity:string
         (
             codex-id:string
             public-standard:string
@@ -16,44 +16,44 @@
             codex-guard:guard
             registered-by:string
         ))
-    (defun CODEX|C_RotateCodexGuard:string (codex-id:string new-codex-guard:guard))
-    (defun CODEX|C_RecordArweaveUpload:string (codex-id:string arweave-tx-id:string uploaded-bytes:integer))
-    (defun CODEX|C_RegisterStoicTag:string (patron:string tag-name:string account-address:string))
-    (defun CODEX|C_ReleaseStoicTag:string (patron:string tag-name:string))
+    (defun C_CODEX|RotateCodexGuard:string (codex-id:string new-codex-guard:guard))
+    (defun C_CODEX|RecordArweaveUpload:string (codex-id:string arweave-tx-id:string uploaded-bytes:integer))
+    (defun C_CODEX|RegisterStoicTag:string (patron:string tag-name:string account-address:string))
+    (defun C_CODEX|ReleaseStoicTag:string (patron:string tag-name:string))
     ;;
-    (defun PYTHIA|C_DeployApiKey:string
+    (defun C_PYTHIA|DeployApiKey:string
         (
             patron:string
             owner-account:string
             apollo-account:string
             public:string
         ))
-    (defun PYTHIA|C_UpdateDualConsumerLane:string
+    (defun C_PYTHIA|UpdateDualConsumerLane:string
         (
             patron:string
             dual-link-key:string
             new-name:string
         ))
-    (defun PYTHIA|C_Link:string
+    (defun C_PYTHIA|Link:string
         (
             standard-apollo:string
             smart-apollo:string
             consumer-lane:string
         ))
-    (defun PYTHIA|A_Link:string (standard-apollo:string smart-apollo:string))
-    (defun PYTHIA|C_RevokeLink:string
+    (defun A_PYTHIA|Link:string (standard-apollo:string smart-apollo:string))
+    (defun C_PYTHIA|RevokeLink:string
         (
             patron:string
             dual-link-key:string
         ))
-    (defun PYTHIA|A_RevokeLink:string (dual-link-key:string))
-    (defun PYTHIA|A_Flush:string
+    (defun A_PYTHIA|RevokeLink:string (dual-link-key:string))
+    (defun A_PYTHIA|Flush:string
         (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]))
-    ;;#17H fix: PYTHIA|A_UpdateDeployPrice/A_UpdateRenamePrice were never wired into any Talos
+    ;;#17H fix: A_PYTHIA|UpdateDeployPrice/A_UpdateRenamePrice were never wired into any Talos
     ;;module - the core PYTHIA functions (GOV|PYTHIA_ADMIN-gated) existed but had no reachable
     ;;client path, permanently frozen at their hardcoded defaults for anyone, even the admin.
-    (defun PYTHIA|A_UpdateDeployPrice:string (new-price:decimal))
-    (defun PYTHIA|A_UpdateRenamePrice:string (new-price:decimal))
+    (defun A_PYTHIA|UpdateDeployPrice:string (new-price:decimal))
+    (defun A_PYTHIA|UpdateRenamePrice:string (new-price:decimal))
 )
 ;;
 (module TS01-C4 GOV
@@ -102,14 +102,14 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
+    (defun A_P|Add (policy-name:string policy-guard:guard)
         (with-capability (GOV|TS01-C1_ADMIN)
             (write P|T policy-name
                 {"policy" : policy-guard}
             )
         )
     )
-    (defun P|A_AddIMP (policy-guard:guard)
+    (defun A_P|AddIMP (policy-guard:guard)
         (with-capability (GOV|TS01-C1_ADMIN)
             (let
                 (
@@ -126,7 +126,7 @@
             )
         )
     )
-    (defun P|A_Define ()
+    (defun A_P|Define ()
         (let
             (
                 (ref-P|CODEX:module{OuronetPolicyV1} CODEX)
@@ -136,11 +136,11 @@
                 (ref-P|TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                 (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
             )
-            (ref-P|CODEX::P|A_AddIMP mg)
-            (ref-P|PYTHIA::P|A_AddIMP mg)
-            (ref-P|IGNIS::P|A_AddIMP mg)
-            (ref-P|DALOS::P|A_AddIMP mg)
-            (ref-P|TS01-A::P|A_AddIMP mg)
+            (ref-P|CODEX::A_P|AddIMP mg)
+            (ref-P|PYTHIA::A_P|AddIMP mg)
+            (ref-P|IGNIS::A_P|AddIMP mg)
+            (ref-P|DALOS::A_P|AddIMP mg)
+            (ref-P|TS01-A::A_P|AddIMP mg)
         )
     )
     (defun UEV_IMC ()
@@ -180,7 +180,7 @@
     ;;{F6}  Aux/Protected [X]
     ;;{F7}  User [A]
     ;;
-    (defun CODEX|A_RegisterCodexIdentity:string
+    (defun A_CODEX|RegisterCodexIdentity:string
         ( codex-id:string
           public-standard:string
           public-smart:string
@@ -198,7 +198,7 @@
             )
         )
     )
-    (defun PYTHIA|A_Link:string (standard-apollo:string smart-apollo:string)
+    (defun A_PYTHIA|Link:string (standard-apollo:string smart-apollo:string)
         @doc "Cronoton activates dual link after off-chain Apollo proof (no fee)."
         (with-capability (P|TS)
             (let ((ref-PYTHIA:module{PythiaV4} PYTHIA))
@@ -206,7 +206,7 @@
             )
         )
     )
-    (defun PYTHIA|A_RevokeLink:string (dual-link-key:string)
+    (defun A_PYTHIA|RevokeLink:string (dual-link-key:string)
         @doc "Cronoton revokes active dual link (no fee; patronless)."
         (with-capability (P|TS)
             (let
@@ -217,7 +217,7 @@
             )
         )
     )
-    (defun PYTHIA|A_Flush:string
+    (defun A_PYTHIA|Flush:string
         (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}])
         @doc "Khronoton batch Pyth ledger flush (order-independent day entries; no fee)."
         (with-capability (P|TS)
@@ -229,7 +229,7 @@
             )
         )
     )
-    (defun PYTHIA|A_UpdateDeployPrice:string (new-price:decimal)
+    (defun A_PYTHIA|UpdateDeployPrice:string (new-price:decimal)
         @doc "Updates the PYTHIA Codex/Apollo deploy price (no fee)."
         (with-capability (P|TS)
             (let ((ref-PYTHIA:module{PythiaV4} PYTHIA))
@@ -237,7 +237,7 @@
             )
         )
     )
-    (defun PYTHIA|A_UpdateRenamePrice:string (new-price:decimal)
+    (defun A_PYTHIA|UpdateRenamePrice:string (new-price:decimal)
         @doc "Updates the PYTHIA Codex/Apollo rename price (no fee)."
         (with-capability (P|TS)
             (let ((ref-PYTHIA:module{PythiaV4} PYTHIA))
@@ -246,7 +246,7 @@
         )
     )
     ;;{F8}  User [C]
-    (defun CODEX|C_RotateCodexGuard:string (codex-id:string new-codex-guard:guard)
+    (defun C_CODEX|RotateCodexGuard:string (codex-id:string new-codex-guard:guard)
         @doc "Rotate codex-guard for <codex-id>."
         (with-capability (P|TS)
             (let 
@@ -257,7 +257,7 @@
             )
         )
     )
-    (defun CODEX|C_RecordArweaveUpload:string (codex-id:string arweave-tx-id:string uploaded-bytes:integer)
+    (defun C_CODEX|RecordArweaveUpload:string (codex-id:string arweave-tx-id:string uploaded-bytes:integer)
         @doc "Append Arweave upload audit row for <codex-id>."
         (with-capability (P|TS)
             (let 
@@ -268,8 +268,8 @@
             )
         )
     )
-    (defun CODEX|C_RegisterStoicTag:string (patron:string tag-name:string account-address:string)
-        @doc "Register StoicTag; STOA from patron Stoa, Elite discount from account-address (STOA|C_CollectWTEx trigger false)."
+    (defun C_CODEX|RegisterStoicTag:string (patron:string tag-name:string account-address:string)
+        @doc "Register StoicTag; STOA from patron Stoa, Elite discount from account-address (C_STOA|CollectWTEx trigger false)."
         (with-capability (P|TS)
             (let
                 (
@@ -281,12 +281,12 @@
                         (ref-CODEX::C_RegisterStoicTag tag-name account-address)
                     )
                 )
-                (ref-IGNIS|V2::STOA|C_CollectWTEx patron account-address stoa-fee false)
+                (ref-IGNIS|V2::C_STOA|CollectWTEx patron account-address stoa-fee false)
                 msg
             )
         )
     )
-    (defun CODEX|C_ReleaseStoicTag:string (patron:string tag-name:string)
+    (defun C_CODEX|ReleaseStoicTag:string (patron:string tag-name:string)
         @doc "Release StoicTag; collects UC_StoicTagStoaFee(tag-name) as IGNIS (1 per glyph) from patron."
         (with-capability (P|TS)
             (let
@@ -308,7 +308,7 @@
             )
         )
     )
-    (defun PYTHIA|C_DeployApiKey:string
+    (defun C_PYTHIA|DeployApiKey:string
         ( patron:string
           owner-account:string
           apollo-account:string
@@ -328,12 +328,12 @@
                         )
                     )
                 )
-                (ref-IGNIS|V2::STOA|C_CollectWTEx patron fee-anchor deploy-fee false)
+                (ref-IGNIS|V2::C_STOA|CollectWTEx patron fee-anchor deploy-fee false)
                 msg
             )
         )
     )
-    (defun PYTHIA|C_UpdateDualConsumerLane:string
+    (defun C_PYTHIA|UpdateDualConsumerLane:string
         ( patron:string
           dual-link-key:string
           new-name:string )
@@ -352,12 +352,12 @@
                         )
                     )
                 )
-                (ref-IGNIS|V2::STOA|C_CollectWTEx patron fee-anchor rename-fee false)
+                (ref-IGNIS|V2::C_STOA|CollectWTEx patron fee-anchor rename-fee false)
                 msg
             )
         )
     )
-    (defun PYTHIA|C_Link:string
+    (defun C_PYTHIA|Link:string
         ( standard-apollo:string
           smart-apollo:string
           consumer-lane:string )
@@ -368,7 +368,7 @@
             )
         )
     )
-    (defun PYTHIA|C_RevokeLink:string
+    (defun C_PYTHIA|RevokeLink:string
         ( patron:string
           dual-link-key:string )
         @doc "Both half-owners revoke active dual link; collects UC_RevokeIgnisFee IGNIS from patron."

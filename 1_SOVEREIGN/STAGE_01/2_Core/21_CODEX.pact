@@ -71,7 +71,7 @@
     (defun C_RegisterStoicTag:string (tag-name:string account-address:string))
     (defun C_ReleaseStoicTag:string (tag-name:string))
     ;;
-    ;; [INFO] UI previews — register: STOA always (STOA|C_CollectWT false); release: IGNIS per virtual-gas rules
+    ;; [INFO] UI previews — register: STOA always (C_STOA|CollectWT false); release: IGNIS per virtual-gas rules
     (defun INFO_CODEX|RegisterStoicTag:object{OuronetInfoV1.ClientInfo}
         (patron:string tag-name:string account-address:string))
     (defun INFO_CODEX|ReleaseStoicTag:object{OuronetInfoV1.ClientInfo}
@@ -117,12 +117,12 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
+    (defun A_P|Add (policy-name:string policy-guard:guard)
         (with-capability (GOV|CODEX_ADMIN)
             (write P|T policy-name {"policy" : policy-guard})
         )
     )
-    (defun P|A_AddIMP (policy-guard:guard)
+    (defun A_P|AddIMP (policy-guard:guard)
         (with-capability (GOV|CODEX_ADMIN)
             (let
                 (
@@ -139,13 +139,13 @@
             )
         )
     )
-    (defun P|A_Define ()
+    (defun A_P|Define ()
         (let
             (
                 (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
                 (mg:guard (create-capability-guard (P|CODEX|CALLER)))
             )
-            (ref-P|DALOS::P|A_AddIMP mg)
+            (ref-P|DALOS::A_P|AddIMP mg)
         )
     )
     (defun UEV_IMC ()
@@ -526,13 +526,13 @@
     )
     ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     (defun URCi_RegisterStoicTag:decimal (tag-name:string)
-        @doc "Cost single-source for CODEX|C_RegisterStoicTag — RAW native STOA toll \
+        @doc "Cost single-source for C_CODEX|RegisterStoicTag — RAW native STOA toll \
             \ (1/glyph). Elite discount is applied at collect against the tagged account, \
             \ so this returns the pre-discount amount. Consumed by TS01-C4 exec + INFO."
         (UC_StoicTagStoaFee tag-name)
     )
     (defun URCi_ReleaseStoicTag:decimal (tag-name:string)
-        @doc "Cost single-source for CODEX|C_ReleaseStoicTag — flat IGNIS toll (1/glyph), \
+        @doc "Cost single-source for C_CODEX|ReleaseStoicTag — flat IGNIS toll (1/glyph), \
             \ collected via IGNIS::C_Collect in TS01-C4. Consumed by exec + INFO."
         (UC_StoicTagStoaFee tag-name)
     )
@@ -676,7 +676,7 @@
     ;;
     (defun INFO_CODEX|RegisterStoicTag:object{OuronetInfoV1.ClientInfo}
         (patron:string tag-name:string account-address:string)
-        @doc "ClientInfo preview for TS01-C4 CODEX|C_RegisterStoicTag — STOA from patron; Elite discount on account-address."
+        @doc "ClientInfo preview for TS01-C4 C_CODEX|RegisterStoicTag — STOA from patron; Elite discount on account-address."
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
@@ -698,7 +698,7 @@
     )
     (defun INFO_CODEX|ReleaseStoicTag:object{OuronetInfoV1.ClientInfo}
         (patron:string tag-name:string)
-        @doc "ClientInfo preview for TS01-C4 CODEX|C_ReleaseStoicTag (IGNIS = UC_StoicTagStoaFee per glyph)."
+        @doc "ClientInfo preview for TS01-C4 C_CODEX|ReleaseStoicTag (IGNIS = UC_StoicTagStoaFee per glyph)."
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)

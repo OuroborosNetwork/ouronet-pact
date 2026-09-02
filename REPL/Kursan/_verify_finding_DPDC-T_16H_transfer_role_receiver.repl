@@ -61,20 +61,20 @@
         )
     )
     (print (format "ISSUE RESULT = {}"
-        [(ref-TS02-C2::DPNF|C_Issue owner owner creator "TransferRoleProbeNFT" "TRPN"
+        [(ref-TS02-C2::C_DPNF|Issue owner owner creator "TransferRoleProbeNFT" "TRPN"
             true true true true true true true true)]))
     (let ((id:string "TRPN-98c486052a51"))
-        (print (format "CREATE 1 = {}" [(ref-TS02-C2::DPNF|C_Create owner id [nd])]))
+        (print (format "CREATE 1 = {}" [(ref-TS02-C2::C_DPNF|Create owner id [nd])]))
         ;; Activate role-restricted transfers by granting the transfer role to Lumy ONLY -- owner/sender
         ;; (ANHD) never gets it. Once >=1 account holds the role, URC_TransferRoleChecker's
         ;; "are-transfer-roles-active" gate flips on and every transfer must satisfy sender-OR-receiver.
         (print (format "GRANT transfer-role to Lumy RESULT = {}"
-            [(ref-TS02-C2::DPNF|C_ToggleTransferRole owner id lumy true)]))
+            [(ref-TS02-C2::C_DPNF|ToggleTransferRole owner id lumy true)]))
         (print (format "ANHD has transfer-role? {}" [(ref-DPDC::UR_CA|R-Transfer id false owner)]))
         (print (format "Lumy has transfer-role? {}" [(ref-DPDC::UR_CA|R-Transfer id false lumy)]))
         ;; #16H proof: ANHD (sender, no role) -> Lumy (receiver, HAS role) must be ALLOWED.
         (print (format "<<16H-1>> Transfer ANHD(no role)->Lumy(has role) RESULT = {}"
-            [(ref-TS02-C2::DPNF|C_TransferNonce owner id owner lumy 1 1 false)]))
+            [(ref-TS02-C2::C_DPNF|TransferNonce owner id owner lumy 1 1 false)]))
         ""
     )
 )

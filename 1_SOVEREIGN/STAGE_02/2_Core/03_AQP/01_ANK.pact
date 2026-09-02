@@ -181,7 +181,7 @@
         @doc "Reads imported policy guards list."
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
+    (defun A_P|Add (policy-name:string policy-guard:guard)
         @doc "Writes or updates one local policy guard entry."
         (with-capability (GOV|ANK_ADMIN)
             (write P|T policy-name
@@ -189,7 +189,7 @@
             )
         )
     )
-    (defun P|A_AddIMP (policy-guard:guard)
+    (defun A_P|AddIMP (policy-guard:guard)
         @doc "Appends one imported policy guard entry."
         (with-capability (GOV|ANK_ADMIN)
             (let
@@ -208,7 +208,7 @@
             )
         )
     )
-    (defun P|A_Define ()
+    (defun A_P|Define ()
         @doc "Post-deploy hook (AQP-BOOT Step 0). No cross-module IMP registration required — \
             \ ANK calls DALOS UR_*/CAP_*/UEV_* only (no DALOS UEV_IMC on those paths); client entry is Talos P|TALOS-SUMMONER."
         true
@@ -2171,7 +2171,7 @@
                     )
                 )
                 (XI_PlaceAnchorInBookkeeping anchor-id dptf-id boost-class-id)
-                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueAnchorStoa acnoi))
+                (ref-IGNIS::C_STOA|Collect patron (URCi_IssueAnchorStoa acnoi))
                 (URCi_IssueAnchor (if acnoi [anchor-id boost-class-id] [anchor-id]))
             )
         )
@@ -2196,7 +2196,7 @@
                     )
                 )
                 (XI_PlaceAnchorInBookkeeping anchor-id dpsf-id boost-class-id)
-                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueAnchorStoa acnoi))
+                (ref-IGNIS::C_STOA|Collect patron (URCi_IssueAnchorStoa acnoi))
                 (URCi_IssueAnchor (if acnoi [anchor-id boost-class-id] [anchor-id]))
             )
         )
@@ -2221,7 +2221,7 @@
                     )
                 )
                 (XI_PlaceAnchorInBookkeeping anchor-id dpnf-id boost-class-id)
-                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueAnchorStoa acnoi))
+                (ref-IGNIS::C_STOA|Collect patron (URCi_IssueAnchorStoa acnoi))
                 (URCi_IssueAnchor (if acnoi [anchor-id boost-class-id] [anchor-id]))
             )
         )
@@ -2246,7 +2246,7 @@
                     )
                 )
                 (XI_PlaceAnchorInBookkeeping anchor-id dpnf-id boost-class-id)
-                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueAnchorStoa acnoi))
+                (ref-IGNIS::C_STOA|Collect patron (URCi_IssueAnchorStoa acnoi))
                 (URCi_IssueAnchor (if acnoi [anchor-id boost-class-id] [anchor-id]))
             )
         )

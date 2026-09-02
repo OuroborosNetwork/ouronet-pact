@@ -65,17 +65,17 @@
         )
     )
     (print (format "ISSUE NFT = {}"
-        [(ref-TS02-C2::DPNF|C_Issue owner owner creator "ScoreSentinelNFT" "SSNF"
+        [(ref-TS02-C2::C_DPNF|Issue owner owner creator "ScoreSentinelNFT" "SSNF"
             true true true true true true true true)]))
     (let ((nid:string "SSNF-98c486052a51"))
-        (print (format "CREATE 1 = {}" [(ref-TS02-C2::DPNF|C_Create owner nid [nd])]))
+        (print (format "CREATE 1 = {}" [(ref-TS02-C2::C_DPNF|Create owner nid [nd])]))
         (print (format "<<19H-1>> Branch B (class-0, native) unscored -> {}"
             [(ref-DPDC-S::URC_N|Score nid false 1)]))
         (print (format "<<19H-2>> Branch A (class-0, fragment) unscored -> {}"
             [(ref-DPDC-S::URC_N|Score nid false -1)]))
         ;; Sanity: a real score still comes back correctly through both class-0 branches.
         (print (format "SET real score 40.0 = {}"
-            [(ref-TS02-C2::DPNF|C_UpdateNonceScore owner nid owner 1 true 40.0)]))
+            [(ref-TS02-C2::C_DPNF|UpdateNonceScore owner nid owner 1 true 40.0)]))
         (print (format "<<19H-3>> Branch B real score (40.0) -> {}"
             [(ref-DPDC-S::URC_N|Score nid false 1)]))
         (print (format "<<19H-4>> Branch A real score, fragment (40.0/1000) -> {}"
@@ -135,14 +135,14 @@
         )
     )
     (print (format "ISSUE SFT = {}"
-        [(ref-TS02-C1::DPSF|C_Issue owner owner creator "ScoreSentinelSFT" "SSSF"
+        [(ref-TS02-C1::C_DPSF|Issue owner owner creator "ScoreSentinelSFT" "SSSF"
             true true true true true true true true)]))
     (let ((sid:string "SSSF-98c486052a51"))
-        (print (format "CREATE 1 = {}" [(ref-TS02-C1::DPSF|C_Create owner sid [5] [nd])]))
-        (print (format "CREATE 2 = {}" [(ref-TS02-C1::DPSF|C_Create owner sid [5] [nd])]))
+        (print (format "CREATE 1 = {}" [(ref-TS02-C1::C_DPSF|Create owner sid [5] [nd])]))
+        (print (format "CREATE 2 = {}" [(ref-TS02-C1::C_DPSF|Create owner sid [5] [nd])]))
         ;; Define with nd (UDC_NoMetaData -> raw score = -1.0 sentinel) and multiplier 2.5.
         (print (format "DEFINE = {}"
-            [(ref-TS02-C1::DPSF|C_DefinePrimordialSet owner sid "PairSet" 2.5
+            [(ref-TS02-C1::C_DPSF|DefinePrimordialSet owner sid "PairSet" 2.5
                 [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1]) (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [2])] nd)]))
         (let ((set-nonce:integer (ref-DPDC-S::UR_NonceOfSet sid 1)))
             (print (format "set-nonce = {}" [set-nonce]))
@@ -153,7 +153,7 @@
             ;; Sanity: a real score is still correctly multiplied (40.0 * 2.5 = 100.0) and fragment-divided
             ;; (100.0 / 1000 = 0.1).
             (print (format "SET real score 40.0 on set-nonce = {}"
-                [(ref-TS02-C1::DPSF|C_UpdateNonceScore owner sid owner set-nonce true 40.0)]))
+                [(ref-TS02-C1::C_DPSF|UpdateNonceScore owner sid owner set-nonce true 40.0)]))
             (print (format "<<19H-7>> Branch D real score (40.0 x 2.5 = 100.0) -> {}"
                 [(ref-DPDC-S::URC_N|Score sid true set-nonce)]))
             (print (format "<<19H-8>> Branch C real score, fragment (100.0/1000 = 0.1) -> {}"

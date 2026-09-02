@@ -52,14 +52,14 @@
         (id:string "DHOC-98c486052a51")
     )
     (print (format "LEGIT TRANSFER RESULT = {}"
-        [(ref-TS02-C1::DPSF|C_TransferNonce KST.ANHD id KST.ANHD KST.EMMA 1 25 false)]))
+        [(ref-TS02-C1::C_DPSF|TransferNonce KST.ANHD id KST.ANHD KST.EMMA 1 25 false)]))
     (print (format "AFTER legit transfer anhd nonce1 supply = {}" [(ref-DPDC::UR_AccountNonceSupply KST.ANHD id true 1)]))
     (print (format "AFTER legit transfer emma nonce1 supply = {}" [(ref-DPDC::UR_AccountNonceSupply KST.EMMA id true 1)]))
 )
 (commit-tx)
 
 ;;|| NEXT >
-;; The exploit, submitted for real: one ordinary-looking DPSF|C_TransferNonces call, one legit leg
+;; The exploit, submitted for real: one ordinary-looking C_DPSF|TransferNonces call, one legit leg
 ;; (nonce1=100, included only to keep the tx's own aggregate IGNIS fee positive — an unrelated, separate
 ;; guard) + one malicious leg (nonce2=-50). Deliberately NOT wrapped in expect-failure — this is exactly
 ;; how an attacker would submit it. EXPECTED OUTCOME: this whole script now terminates with "Load failed"
@@ -75,6 +75,6 @@
         (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
         (id:string "DHOC-98c486052a51")
     )
-    (ref-TS02-C1::DPSF|C_TransferNonces KST.ANHD id KST.ANHD KST.EMMA [1 2] [100 -50] false)
+    (ref-TS02-C1::C_DPSF|TransferNonces KST.ANHD id KST.ANHD KST.EMMA [1 2] [100 -50] false)
 )
 (commit-tx)

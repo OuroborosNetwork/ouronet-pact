@@ -2457,7 +2457,7 @@
         { "key": "PK_Emma", "caps": [] }
     ]
 )
-(ouronet-ns.TS02-C2.DPNF|C_TransferNonces
+(ouronet-ns.TS02-C2.C_DPNF|TransferNonces
     KST.ANHD
     "DHN-98c486052a51"
     KST.EMMA
@@ -2466,7 +2466,7 @@
     (make-list 125 1)
     false
 )
-;(ouronet-ns.TS02-C2.DPNF|C_TransferNonces
+;(ouronet-ns.TS02-C2.C_DPNF|TransferNonces
 ;    KST.ANHD
 ;    "DHB-98c486052a51"
 ;    KST.EMMA

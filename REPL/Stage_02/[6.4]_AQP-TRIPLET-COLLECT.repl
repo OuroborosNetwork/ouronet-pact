@@ -67,8 +67,8 @@
                         (stoa-pre:decimal (ref-SWP::UR_StoaValue swpair))
                     )
                     (print (format "<(seed LP: StoaValue pre)> => \"{}\" lp-bal={}" [stoa-pre lp-bal-work]))
-                    (print (format "<(SWP|C_AddLiquidity seed)> => \"{}\"" [
-                        (ref-TS01-C3::SWP|C_AddLiquidity patron patron swpair [50.0 50.0 50.0])
+                    (print (format "<(C_SWP|AddLiquidity seed)> => \"{}\"" [
+                        (ref-TS01-C3::C_SWP|AddLiquidity patron patron swpair [50.0 50.0 50.0])
                     ]))
                     (print (format "<(post-seed lp-bal)> => \"{}\"" [(ref-DPTF::UR_AccountSupply lp-id owner)]))
                 )
@@ -98,12 +98,12 @@
                             )
                             (if (not (contains auryn-rain-nonce anhd-kbn))
                                 (print (format "<(DPNF transfer AurynRain nonce {} EMMA→ANHD)> => \"{}\"" [auryn-rain-nonce
-                                    (ref-TS02-C2::DPNF|C_TransferNonce patron kbn-id emma owner auryn-rain-nonce 1 false)
+                                    (ref-TS02-C2::C_DPNF|TransferNonce patron kbn-id emma owner auryn-rain-nonce 1 false)
                                 ]))
                                 true
                             )
                             (print (format "<(C_StakeNonFungible DHBunnies KBN nonce {})> => \"{}\"" [auryn-rain-nonce
-                                (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable
+                                (ref-TS02-C3::CC_AQP-POOL|StakeNonFungibleCollectable
                                     patron bunnies-pool owner owner kbn-id [auryn-rain-nonce]
                                 )
                             ]))
@@ -119,7 +119,7 @@
                     )
                 )
                 (print (format "<(CC_StakeTrueFungible DHOuroLp LP {})> => \"{}\"" [stake-amt
-                    (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner owner lp-id stake-amt)
+                    (ref-TS02-C3::CC_AQP-POOL|StakeTrueFungible patron pool-id owner owner lp-id stake-amt)
                 ]))
                 (let
                     (
@@ -163,7 +163,7 @@
                     (expect (format "<<TX-AQP-CL03>> farm ghost S>0 got={}" [ghost-s]) true (> ghost-s 0.0))
                     (expect (format "<<TX-AQP-CL03>> inject denom>0 got={}" [denom]) true (> denom 0.0))
                     (print (format "<(C_Inject OURO farm {})> => \"{}\"" [inject-amt
-                        (ref-TS02-C3::AQP-FVT|CC_Inject patron farm-id ouro-id inject-amt)
+                        (ref-TS02-C3::CC_AQP-FVT|Inject patron farm-id ouro-id inject-amt)
                     ]))
                     (let
                         (
@@ -183,7 +183,7 @@
                             (expect (format "<<TX-AQP-CL03>> member L_i advanced by inject got={}" [li-pre]) true (> li-pre 0.0))
                           ])
                         (print (format "<(CC_Collect farm triplet OURO)> => \"{}\"" [
-                            (ref-TS02-C3::AQP-FVT|CC_Collect owner farm-id 3 triplet-id ouro-id)
+                            (ref-TS02-C3::CC_AQP-FVT|Collect owner farm-id 3 triplet-id ouro-id)
                         ]))
                         (let
                             (
@@ -301,7 +301,7 @@
             (print "--- [TX-AQP-CL04 · 01 · EMMA AurynRain bunny stake (promile → W_user)] ---")
             (enforce (contains bunny-nonce emma-kbn) "CL04: EMMA needs Auryn Rain KBN nonce 85 from PopulateBunnies")
             (print (format "<(C_StakeNonFungible DHBunnies EMMA nonce {})> => \"{}\"" [bunny-nonce
-                (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable
+                (ref-TS02-C3::CC_AQP-POOL|StakeNonFungibleCollectable
                     patron bunnies-pool emma emma kbn-id [bunny-nonce]
                 )
             ]))
@@ -322,8 +322,8 @@
                         (need:decimal (- stake-e lp-emma))
                     )
                     (if (< lp-anhd need)
-                        (print (format "<(SWP|C_AddLiquidity seed for EMMA)> => \"{}\"" [
-                            (ref-TS01-C3::SWP|C_AddLiquidity patron patron swpair [30.0 30.0 30.0])
+                        (print (format "<(C_SWP|AddLiquidity seed for EMMA)> => \"{}\"" [
+                            (ref-TS01-C3::C_SWP|AddLiquidity patron patron swpair [30.0 30.0 30.0])
                         ]))
                         true
                     )
@@ -334,14 +334,14 @@
                         )
                         (enforce (>= xfer need) "CL04: ANHD needs LP to fund EMMA stake")
                         (print (format "<(DPTF C_Transfer LP ANHD→EMMA {})> => \"{}\"" [xfer
-                            (ref-TS01-C1::DPTF|C_Transfer patron lp-id anhd emma xfer true)
+                            (ref-TS01-C1::C_DPTF|Transfer patron lp-id anhd emma xfer true)
                         ]))
                     )
                 )
                 true
             )
             (print (format "<(CC_StakeTrueFungible EMMA LP {})> => \"{}\"" [stake-e
-                (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id emma emma lp-id stake-e)
+                (ref-TS02-C3::CC_AQP-POOL|StakeTrueFungible patron pool-id emma emma lp-id stake-e)
             ]))
             (let
                 (
@@ -368,7 +368,7 @@
                 )
                 (print "--- [TX-AQP-CL04 · 03 · inject + both collect] ---")
                 (print (format "<(C_Inject OURO farm {})> => \"{}\"" [inject-amt
-                    (ref-TS02-C3::AQP-FVT|CC_Inject patron farm-id ouro-id inject-amt)
+                    (ref-TS02-C3::CC_AQP-FVT|Inject patron farm-id ouro-id inject-amt)
                 ]))
                 (let
                     (
@@ -380,10 +380,10 @@
                         (elite-e0:decimal (ref-DPTF::UR_AccountSupply elite-auryn-id emma))
                     )
                     (print (format "<(CC_Collect ANHD)> => \"{}\"" [
-                        (ref-TS02-C3::AQP-FVT|CC_Collect anhd farm-id 3 triplet-id ouro-id)
+                        (ref-TS02-C3::CC_AQP-FVT|Collect anhd farm-id 3 triplet-id ouro-id)
                     ]))
                     (print (format "<(CC_Collect EMMA)> => \"{}\"" [
-                        (ref-TS02-C3::AQP-FVT|CC_Collect emma farm-id 3 triplet-id ouro-id)
+                        (ref-TS02-C3::CC_AQP-FVT|Collect emma farm-id 3 triplet-id ouro-id)
                     ]))
                     (let
                         (
@@ -428,9 +428,9 @@
                         ;; #10 wind-down: EMMA fully exits, then ANHD (sole claimant, gc==1) collects → the
                         ;; two-tier sweep drains both vaults. Dust lanes fall back to token-0 (Ouro) so it never reverts.
                         (print "--- [TX-AQP-CL04 · 04 · two-tier sweep drain proof] ---")
-                        (ref-TS02-C3::AQP-POOL|CC_UnstakeTrueFungible patron pool-id emma emma lp-id stake-e)
-                        (ref-TS02-C3::AQP-FVT|CC_Collect emma farm-id 3 triplet-id ouro-id)
-                        (ref-TS02-C3::AQP-FVT|CC_Collect anhd farm-id 3 triplet-id ouro-id)
+                        (ref-TS02-C3::CC_AQP-POOL|UnstakeTrueFungible patron pool-id emma emma lp-id stake-e)
+                        (ref-TS02-C3::CC_AQP-FVT|Collect emma farm-id 3 triplet-id ouro-id)
+                        (ref-TS02-C3::CC_AQP-FVT|Collect anhd farm-id 3 triplet-id ouro-id)
                         (let
                             (
                                 (ar-final:decimal (ref-FVT::UR_FVT-RG|AvailableRewards farm-id ouro-id))
@@ -516,8 +516,8 @@
                 (sleeping-pre:string (ref-DPTF::UR_Sleeping lp-id))
             )
             (if (= sleeping-pre bar)
-                (print (format "<(SWP|C_EnableSleepingLP)> => \"{}\"" [
-                    (ref-TS01-C3::SWP|C_EnableSleepingLP patron swpair)
+                (print (format "<(C_SWP|EnableSleepingLP)> => \"{}\"" [
+                    (ref-TS01-C3::C_SWP|EnableSleepingLP patron swpair)
                 ]))
                 (print (format "<(sleeping LP already)> => \"{}\"" [sleeping-pre]))
             )
@@ -529,12 +529,12 @@
                     (aqp-sc:string (ref-ANK::GOV|AQP|SC_NAME))
                 )
                 (enforce (!= z-lp-id bar) "CL05: sleeping LP link missing after EnableSleepingLP")
-                (print (format "<(VST|C_ToggleTransferRoleSleepingDPOF AQP SC)> => \"{}\"" [
-                    (ref-TS01-C2::VST|C_ToggleTransferRoleSleepingDPOF patron z-lp-id aqp-sc true)
+                (print (format "<(C_VST|ToggleTransferRoleSleepingDPOF AQP SC)> => \"{}\"" [
+                    (ref-TS01-C2::C_VST|ToggleTransferRoleSleepingDPOF patron z-lp-id aqp-sc true)
                 ]))
                 (if (< lp-free sleep-amt)
-                    (print (format "<(SWP|C_AddLiquidity for sleep seed)> => \"{}\"" [
-                        (ref-TS01-C3::SWP|C_AddLiquidity patron patron swpair [50.0 50.0 50.0])
+                    (print (format "<(C_SWP|AddLiquidity for sleep seed)> => \"{}\"" [
+                        (ref-TS01-C3::C_SWP|AddLiquidity patron patron swpair [50.0 50.0 50.0])
                     ]))
                     true
                 )
@@ -546,8 +546,8 @@
                     )
                     (enforce (> sleep-use 0.0) "CL05: need free LP to sleep for Z| stream")
                     (enforce (> tf-pre 0.0) "CL05: need existing TF LP stake (run CL03 first)")
-                    (print (format "<(VST|C_Sleep LP {}s)> => \"{}\"" [sleep-use
-                        (ref-TS01-C2::VST|C_Sleep patron owner owner lp-id sleep-use 86400)
+                    (print (format "<(C_VST|Sleep LP {}s)> => \"{}\"" [sleep-use
+                        (ref-TS01-C2::C_VST|Sleep patron owner owner lp-id sleep-use 86400)
                     ]))
                     (let
                         (
@@ -556,13 +556,13 @@
                         )
                         (enforce (> (length z-nonces) z-pre-count) "CL05: sleep did not mint Z| nonce")
                         (if (not (ref-AQP::UR_AQP|PoolStakeEnabled pool-id))
-                            (print (format "<(AQP-POOL|C_EnablePoolStake)> => \"{}\"" [
-                                (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+                            (print (format "<(C_AQP-POOL|EnablePoolStake)> => \"{}\"" [
+                                (ref-TS02-C3::C_AQP-POOL|EnablePoolStake patron pool-id)
                             ]))
                             true
                         )
                         (print (format "<(CC_StakeOrtoFungible Z|LP nonce {})> => \"{}\"" [stake-nonce
-                            (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron pool-id owner owner z-lp-id [stake-nonce])
+                            (ref-TS02-C3::CC_AQP-POOL|StakeOrtoFungible patron pool-id owner owner z-lp-id [stake-nonce])
                         ]))
                         (let
                             (
@@ -588,8 +588,8 @@
                                 (enforce (> native-lp-bal 0.0) "CL05: native LP lane must be live pre-vacate")
                                 (enforce (> of-pre 0.0) "CL05: Z| satellite must be live pre-vacate")
                                 (print (format "<(pre lanes native-LP-bal={} Z|-sat-bal={})> " [native-lp-bal of-pre]))
-                                (print (format "<(AQP-POOL|CC_FullVacate — agnostic dual-lane, pool-id only)> => \"{}\"" [
-                                    (ref-TS02-C3::AQP-POOL|CC_FullVacate patron pool-id)
+                                (print (format "<(CC_AQP-POOL|FullVacate — agnostic dual-lane, pool-id only)> => \"{}\"" [
+                                    (ref-TS02-C3::CC_AQP-POOL|FullVacate patron pool-id)
                                 ]))
                             )
                             (let

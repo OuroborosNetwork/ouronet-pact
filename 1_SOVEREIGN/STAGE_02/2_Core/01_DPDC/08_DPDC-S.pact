@@ -144,14 +144,14 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
+    (defun A_P|Add (policy-name:string policy-guard:guard)
         (with-capability (GOV|DPDC-S_ADMIN)
             (write P|T policy-name
                 {"policy" : policy-guard}
             )
         )
     )
-    (defun P|A_AddIMP (policy-guard:guard)
+    (defun A_P|AddIMP (policy-guard:guard)
         (with-capability (GOV|DPDC-S_ADMIN)
             (let
                 (
@@ -168,7 +168,7 @@
             )
         )
     )
-    (defun P|A_Define ()
+    (defun A_P|Define ()
         (let
             (
                 (ref-P|DPDC:module{OuronetPolicyV1} DPDC)
@@ -176,13 +176,13 @@
                 (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
                 (mg:guard (create-capability-guard (P|DPDC-S|CALLER)))
             )
-            (ref-P|DPDC::P|A_Add
+            (ref-P|DPDC::A_P|Add
                 "DPDC-S|RemoteDpdcGov"
                 (create-capability-guard (P|DPDC-S|REMOTE-GOV))
             )
-            (ref-P|DPDC::P|A_AddIMP mg)
-            (ref-P|DPDC-C::P|A_AddIMP mg)
-            (ref-P|DPDC-T::P|A_AddIMP mg)
+            (ref-P|DPDC::A_P|AddIMP mg)
+            (ref-P|DPDC-C::A_P|AddIMP mg)
+            (ref-P|DPDC-T::A_P|AddIMP mg)
         )
     )
     (defun UEV_IMC ()

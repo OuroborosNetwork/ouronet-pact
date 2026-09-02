@@ -283,14 +283,14 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
+    (defun A_P|Add (policy-name:string policy-guard:guard)
         (with-capability (GOV|DPTF_ADMIN)
             (write P|T policy-name
                 {"policy" : policy-guard}
             )
         )
     )
-    (defun P|A_AddIMP (policy-guard:guard)
+    (defun A_P|AddIMP (policy-guard:guard)
         (with-capability (GOV|DPTF_ADMIN)
             (let
                 (
@@ -307,15 +307,15 @@
             )
         )
     )
-    (defun P|A_Define ()
+    (defun A_P|Define ()
         (let
             (
                 (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
                 (ref-P|BRD:module{OuronetPolicyV1} BRD)
                 (mg:guard (create-capability-guard (P|DPTF|CALLER)))
             )
-            (ref-P|DALOS::P|A_AddIMP mg)
-            (ref-P|BRD::P|A_AddIMP mg)
+            (ref-P|DALOS::A_P|AddIMP mg)
+            (ref-P|BRD::A_P|AddIMP mg)
         )
     )
     (defun UEV_IMC ()
@@ -2447,7 +2447,7 @@
             (with-capability (DPTF|C>UPGRADE-BRD entity-id)
                 (ref-BRD::XE_UpgradeBranding entity-id parent-owner months)
             )
-            (ref-IGNIS::STOA|C_CollectWT patron (URCi_UpgradeBranding months) false)
+            (ref-IGNIS::C_STOA|CollectWT patron (URCi_UpgradeBranding months) false)
         )
     )
     ;;
@@ -2467,7 +2467,7 @@
                     )
                 )
             )
-            (ref-IGNIS::STOA|C_Collect patron stoa-costs)
+            (ref-IGNIS::C_STOA|Collect patron stoa-costs)
             ico
         )
     )
@@ -2591,7 +2591,7 @@
                 (if (> stoa-costs 0.0)
                     (do
                         (XI_IncrementFeeUnlocks id)
-                        (ref-IGNIS::STOA|C_Collect patron stoa-costs)
+                        (ref-IGNIS::C_STOA|Collect patron stoa-costs)
                     )
                     true
                 )

@@ -79,14 +79,14 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
+    (defun A_P|Add (policy-name:string policy-guard:guard)
         (with-capability (GOV|KPAY_ADMIN)
             (write P|T policy-name
                 {"policy" : policy-guard}
             )
         )
     )
-    (defun P|A_AddIMP (policy-guard:guard)
+    (defun A_P|AddIMP (policy-guard:guard)
         (with-capability (GOV|KPAY_ADMIN)
             (let
                 (
@@ -103,19 +103,19 @@
             )
         )
     )
-    (defun P|A_Define ()
+    (defun A_P|Define ()
         (let
             (
                 (ref-P|TFT:module{OuronetPolicyV1} TFT)
                 (ref-P|DPAD:module{OuronetPolicyV1} DEMIPAD)
                 (mg:guard (create-capability-guard (P|KPAY|CALLER)))
             )
-            (ref-P|DPAD::P|A_Add
+            (ref-P|DPAD::A_P|Add
                 "KPAY|RemoteGov"
                 (create-capability-guard (P|PAD-KPAY|REMOTE-GOV))
             )
-            (ref-P|TFT::P|A_AddIMP mg)
-            (ref-P|DPAD::P|A_AddIMP mg)
+            (ref-P|TFT::A_P|AddIMP mg)
+            (ref-P|DPAD::A_P|AddIMP mg)
         )
     )
     (defun UEV_IMC ()
@@ -388,7 +388,7 @@
         )
     )
     (defun INFO_BuyStoicPay:object{OuronetInfoV1.ClientInfo} (patron:string buyer:string kpay-amount:integer iz-native:bool)
-        @doc "Cost preview for the KPAY|C_BuyStoicPay pure-citizen buy (sole gas-funded path = the \
+        @doc "Cost preview for the C_KPAY|BuyStoicPay pure-citizen buy (sole gas-funded path = the \
             \ TS02-CPAD Talos wrapper). IGNIS = URCi_BuyStoicPay (Sigma of the three Talos ops). \
             \ Launchpad ops carry NO protocol STOA fee; the ACQUISITION cost (dollar pid + STOA wstoa) \
             \ is declared as the good bought (protocol stoa = none)."
@@ -405,7 +405,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [ (format "Operation: Buy {} {} StoicPay for {} (pure-citizen, Sigma-billed)." [kpay-amount KpayID sb])
                   (format "Acquisition cost: {} $ paid as {} {} (not a protocol fee)." [pid wstoa pay])
-                  "Executes via TS02-CPAD.KPAY|C_BuyStoicPay (the sole gas-funded path)." ]
+                  "Executes via TS02-CPAD.C_KPAY|BuyStoicPay (the sole gas-funded path)." ]
                 [ (format "Acquired {} {} StoicPay." [kpay-amount KpayID]) ]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (URCi_BuyStoicPay buyer kpay-amount iz-native))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
@@ -454,11 +454,11 @@
                     (paid:decimal (at "wstoa" costs))
                 )
                 ;;1] SOVEREIGN deposit Talos op — buyer's STOA into the Launchpad; self-collects IGNIS on patron
-                (ref-TS02-DPAD::DEMIPAD|C_Deposit patron buyer KpayID pid type false max-cost)
+                (ref-TS02-DPAD::C_DEMIPAD|Deposit patron buyer KpayID pid type false max-cost)
                 ;;2] SOVEREIGN DPTF transfer Talos op — StoicPay from the Launchpad SC to the buyer; self-collects IGNIS
-                (ref-TS01-C1::DPTF|C_Transfer patron KpayID DEMIPAD|SC_NAME buyer (dec kpay-amount) true)
+                (ref-TS01-C1::C_DPTF|Transfer patron KpayID DEMIPAD|SC_NAME buyer (dec kpay-amount) true)
                 ;;3] SOVEREIGN DPTF multi-bulk transfer Talos op — venture split (company 50% + 4 ventures); self-collects IGNIS
-                (ref-TS01-C1::DPTF|C_MultiBulkTransfer patron [KpayID] DEMIPAD|SC_NAME
+                (ref-TS01-C1::C_DPTF|MultiBulkTransfer patron [KpayID] DEMIPAD|SC_NAME
                     [[(GOV|COMPANY) (GOV|VENTURE1) (GOV|VENTURE2) (GOV|VENTURE3) (GOV|VENTURE4)]]
                     [[twenty-p ten-p ten-p ten-p ten-p]])
                 (if iz-native

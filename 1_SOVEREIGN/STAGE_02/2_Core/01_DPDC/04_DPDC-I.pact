@@ -66,14 +66,14 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
+    (defun A_P|Add (policy-name:string policy-guard:guard)
         (with-capability (GOV|DPDC-I_ADMIN)
             (write P|T policy-name
                 {"policy" : policy-guard}
             )
         )
     )
-    (defun P|A_AddIMP (policy-guard:guard)
+    (defun A_P|AddIMP (policy-guard:guard)
         (with-capability (GOV|DPDC-I_ADMIN)
             (let
                 (
@@ -90,15 +90,15 @@
             )
         )
     )
-    (defun P|A_Define ()
+    (defun A_P|Define ()
         (let
             (
                 (ref-P|BRD:module{OuronetPolicyV1} BRD)
                 (ref-P|DPDC:module{OuronetPolicyV1} DPDC)
                 (mg:guard (create-capability-guard (P|DPDC-I|CALLER)))
             )
-            (ref-P|BRD::P|A_AddIMP mg)
-            (ref-P|DPDC::P|A_AddIMP mg)
+            (ref-P|BRD::A_P|AddIMP mg)
+            (ref-P|DPDC::A_P|AddIMP mg)
         )
     )
     (defun UEV_IMC ()
@@ -170,7 +170,7 @@
     (defun URCi_IssueCollectionStoa:decimal
         (son:bool)
         @doc "STOA side-cost for a digital-collection issue (dpsf for SFT, dpnf for NFT). \
-            \ Single source for STOA|C_Collect and the INFO preview."
+            \ Single source for C_STOA|Collect and the INFO preview."
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -419,7 +419,7 @@
                         )
                     )
                 )
-                (ref-IGNIS::STOA|C_Collect patron stoa-cost)
+                (ref-IGNIS::C_STOA|Collect patron stoa-cost)
                 (ref-IGNIS::UDC_ConstructOutputCumulator ignis-price owner-account trigger [id])
             )
         )

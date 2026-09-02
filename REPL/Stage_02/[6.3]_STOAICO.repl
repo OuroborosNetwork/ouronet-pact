@@ -59,17 +59,17 @@
         )
         ;;Register the DEMIPAD sale-module IMC policies the governor guard references below
         ;;(idempotent write; also performed by [5.3]_Launchpad in a full run).
-        (DEMIPAD-SPARK.P|A_Define)
-        (DEMIPAD-SNAKES.P|A_Define)
-        (DEMIPAD-CUSTODIANS.P|A_Define)
-        (DEMIPAD-STOICPAY.P|A_Define)
+        (DEMIPAD-SPARK.A_P|Define)
+        (DEMIPAD-SNAKES.A_P|Define)
+        (DEMIPAD-CUSTODIANS.A_P|Define)
+        (DEMIPAD-STOICPAY.A_P|Define)
         ;;Backward IMC                      Sets IMC for backward Modules
-        (ref-P|STOAICO::P|A_Define)
+        (ref-P|STOAICO::A_P|Define)
         ;;Forward IMC                       Sets IMC for forward Modules
-        ;(ref-P|STOAICO::P|A_AddIMP mg)     Needed on Mainnet
+        ;(ref-P|STOAICO::A_P|AddIMP mg)     Needed on Mainnet
         ;                                   Not needed on repl because it is already added on TS02-DPAD
         ;;Governor Update for <lpad-sc>
-        (ref-TS01-C1::DALOS|C_RotateGovernor
+        (ref-TS01-C1::C_DALOS|RotateGovernor
             KST.ANHD
             lpad-sc
             (ref-U|G::UEV_GuardOfAny

@@ -192,14 +192,14 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
+    (defun A_P|Add (policy-name:string policy-guard:guard)
         (with-capability (GOV|SWP_ADMIN)
             (write P|T policy-name
                 {"policy" : policy-guard}
             )
         )
     )
-    (defun P|A_AddIMP (policy-guard:guard)
+    (defun A_P|AddIMP (policy-guard:guard)
         (with-capability (GOV|SWP_ADMIN)
             (let
                 (
@@ -216,7 +216,7 @@
             )
         )
     )
-    (defun P|A_Define ()
+    (defun A_P|Define ()
         (let
             (
                 (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
@@ -232,17 +232,17 @@
                 (ref-P|SWPT:module{OuronetPolicyV1} SWPT)
                 (mg:guard (create-capability-guard (P|SWP|CALLER)))
             )
-            (ref-P|DALOS::P|A_AddIMP mg)
-            (ref-P|BRD::P|A_AddIMP mg)
-            (ref-P|DPTF::P|A_AddIMP mg)
-            ;(ref-P|DPOF::P|A_AddIMP mg)
-            (ref-P|ATS::P|A_AddIMP mg)
-            (ref-P|TFT::P|A_AddIMP mg)
-            (ref-P|ATSU::P|A_AddIMP mg)
-            (ref-P|VST::P|A_AddIMP mg)
-            (ref-P|LIQUID::P|A_AddIMP mg)
-            (ref-P|ORBR::P|A_AddIMP mg)
-            (ref-P|SWPT::P|A_AddIMP mg)
+            (ref-P|DALOS::A_P|AddIMP mg)
+            (ref-P|BRD::A_P|AddIMP mg)
+            (ref-P|DPTF::A_P|AddIMP mg)
+            ;(ref-P|DPOF::A_P|AddIMP mg)
+            (ref-P|ATS::A_P|AddIMP mg)
+            (ref-P|TFT::A_P|AddIMP mg)
+            (ref-P|ATSU::A_P|AddIMP mg)
+            (ref-P|VST::A_P|AddIMP mg)
+            (ref-P|LIQUID::A_P|AddIMP mg)
+            (ref-P|ORBR::A_P|AddIMP mg)
+            (ref-P|SWPT::A_P|AddIMP mg)
         )
     )
     (defun UEV_IMC ()
@@ -1277,7 +1277,7 @@
             \ validation, never existing routing. Major principals (currently a \
             \ member of the primordial pool — always OURO/WSTOA/SSTOA in practice) are \
             \ never removable here regardless of the floor; retiring one requires \
-            \ redefining the primordial pool itself (SWP|A_DefinePrimordialPool). \
+            \ redefining the primordial pool itself (A_SWP|DefinePrimordialPool). \
             \ A_RotatePrincipal remains available as an atomic, count-preserving \
             \ alternative for minor principals — it never touches the floor or \
             \ cap, but is equally blocked from rotating a major principal away."
@@ -1325,7 +1325,7 @@
             \ member of the primordial pool — always OURO/WSTOA/SSTOA in practice) is \
             \ rejected outright regardless of everything else (#65eL, \
             \ URC_IsMajorPrincipal) — majors are fixed, retirable only by \
-            \ redefining the primordial pool itself (SWP|A_DefinePrimordialPool)."
+            \ redefining the primordial pool itself (A_SWP|DefinePrimordialPool)."
         (UEV_IMC)
         (with-read SWP|Properties SWP|INFO
             { "principals" := pp }
@@ -1390,19 +1390,19 @@
                     (ignis-fee-exemption-roleV2:bool (ref-DPTF::UR_AccountRoleFeeExemption ignis-id vst-sc))
                 )
                 (if (not ignis-burn-role)
-                    (ref-ATS::DPTF|C_ToggleBurnRole ignis-id SWP|SC_NAME true)
+                    (ref-ATS::C_DPTF|ToggleBurnRole ignis-id SWP|SC_NAME true)
                     true
                 )
                 (if (not ouro-mint-role)
-                    (ref-ATS::DPTF|C_ToggleMintRole ouro-id SWP|SC_NAME true)
+                    (ref-ATS::C_DPTF|ToggleMintRole ouro-id SWP|SC_NAME true)
                     true
                 )
                 (if (not ignis-fee-exemption-role)
-                    (ref-ATS::DPTF|C_ToggleFeeExemptionRole ignis-id SWP|SC_NAME true)
+                    (ref-ATS::C_DPTF|ToggleFeeExemptionRole ignis-id SWP|SC_NAME true)
                     true
                 )
                 (if (not ignis-fee-exemption-role)
-                    (ref-ATS::DPTF|C_ToggleFeeExemptionRole ignis-id vst-sc true)
+                    (ref-ATS::C_DPTF|ToggleFeeExemptionRole ignis-id vst-sc true)
                     true
                 )
                 (update SWP|Asymmetry SWP|INFO
@@ -1477,7 +1477,7 @@
             (with-capability (SWP|C>UPGRADE-BRD entity-id)
                 (ref-BRD::XE_UpgradeBranding entity-id owner months)
             )
-            (ref-IGNIS::STOA|C_CollectWT patron (URCi_UpgradeBranding months) false)
+            (ref-IGNIS::C_STOA|CollectWT patron (URCi_UpgradeBranding months) false)
         )
     )
     ;;
@@ -1744,13 +1744,13 @@
                                     (lp-mint-role:bool (ref-DPTF::UR_AccountRoleMint lp-id SWP|SC_NAME))
                                     (ico2:object{IgnisCollectorV1.OutputCumulator}
                                         (if (not lp-burn-role)
-                                            (ref-ATS::DPTF|C_ToggleBurnRole lp-id SWP|SC_NAME true)
+                                            (ref-ATS::C_DPTF|ToggleBurnRole lp-id SWP|SC_NAME true)
                                             EOC
                                         )
                                     )
                                     (ico3:object{IgnisCollectorV1.OutputCumulator}
                                         (if (not lp-mint-role)
-                                            (ref-ATS::DPTF|C_ToggleMintRole lp-id SWP|SC_NAME true)
+                                            (ref-ATS::C_DPTF|ToggleMintRole lp-id SWP|SC_NAME true)
                                             EOC
                                         )
                                     )
@@ -1761,7 +1761,7 @@
                                                 (ref-U|LST::UC_AppL
                                                     acc
                                                     (if (not (ref-DPTF::UR_AccountRoleFeeExemption (at idx ptts) SWP|SC_NAME))
-                                                        (ref-ATS::DPTF|C_ToggleFeeExemptionRole (at idx ptts) SWP|SC_NAME true)
+                                                        (ref-ATS::C_DPTF|ToggleFeeExemptionRole (at idx ptts) SWP|SC_NAME true)
                                                         EOC
                                                     )
                                                 )
@@ -1802,7 +1802,7 @@
                 (if (> stoa-costs 0.0)
                     (do
                         (XI_IncrementFeeUnlocks swpair)
-                        (ref-IGNIS::STOA|C_Collect patron stoa-costs)
+                        (ref-IGNIS::C_STOA|Collect patron stoa-costs)
                     )
                     true
                 )
@@ -1903,7 +1903,7 @@
         @doc "Forward writer: inserts the new SWP|Pairs row, registers the LP tracker \
             \ (C9 fix), saves the pool, and deploys token accounts. \
             \ #52L fix (R4): returns the newly-constructed <swpair> ID — callers \
-            \ (e.g. SWPI::C_Issue, MTX-SWP::MTX|C_Issue) need it back to finish \
+            \ (e.g. SWPI::C_Issue, MTX-SWP::C_MTX|Issue) need it back to finish \
             \ building their own response/continue the issuance flow."
         (UEV_IMC)
         (let
@@ -1950,7 +1950,7 @@
             )
             ;;C9 fix: SWP|LP must be populated by EVERY issuance path. Folded here (both <token-lp> and
             ;;<swpair> are already in scope) instead of leaving it a standalone call each caller must
-            ;;remember — 16_SWPI.pact::C_Issue did remember; 20_MTX-SWP.pact::MTX|C_Issue (the defpact
+            ;;remember — 16_SWPI.pact::C_Issue did remember; 20_MTX-SWP.pact::C_MTX|Issue (the defpact
             ;;path, which also calls XE_Issue) never did, so every pool issued through it had an LP token
             ;;that could never be resolved back to its swpair (UR_GetLpSwpair hard-aborts on the missing
             ;;row), permanently blocking AQP LP-stake admission for that pool.

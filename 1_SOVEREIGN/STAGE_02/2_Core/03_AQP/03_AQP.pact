@@ -260,14 +260,14 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
+    (defun A_P|Add (policy-name:string policy-guard:guard)
         (with-capability (GOV|AQP_ADMIN)
             (write P|T policy-name
                 {"policy" : policy-guard}
             )
         )
     )
-    (defun P|A_AddIMP (policy-guard:guard)
+    (defun A_P|AddIMP (policy-guard:guard)
         (with-capability (GOV|AQP_ADMIN)
             (let
                 (
@@ -285,7 +285,7 @@
             )
         )
     )
-    (defun P|A_Define ()
+    (defun A_P|Define ()
         @doc "Post-deploy IMC wiring (AQP-BOOT Step 0). TFT + DPOF vault transfer/receive on AQP|SC_NAME."
         (let
             (
@@ -296,11 +296,11 @@
                 (mg:guard (create-capability-guard (P|AQP|CALLER)))
             )
             ;; AQP-POOL → TFT: XE_TrueFungibleTransfer calls TFT::C_Transfer; TFT UEV_IMC requires this guard.
-            (ref-P|TFT::P|A_AddIMP mg)
+            (ref-P|TFT::A_P|AddIMP mg)
             ;; AQP-POOL → DPOF: XE_OrtoFungibleTransfer calls DPOF::C_Transfer; vacate batch is AQP-VCT → DPOF::C_BulkTransfer.
-            (ref-P|DPOF::P|A_AddIMP mg)
+            (ref-P|DPOF::A_P|AddIMP mg)
             ;; AQP-POOL → DPDC-T: XE_CollectableTransfer calls DPDC-T::C_Transfer; vacate batch is AQP-VCT → DPDC-T::C_BulkTransfer.
-            (ref-P|DPDC-T::P|A_AddIMP mg)
+            (ref-P|DPDC-T::A_P|AddIMP mg)
             true
         )
     )
@@ -3104,7 +3104,7 @@
                     (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
-                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueStoa))
+                (ref-IGNIS::C_STOA|Collect patron (URCi_IssueStoa))
                 (XI_IssuePool pool-id aqp-class asset-id)
                 (URCi_Issue [pool-id])
             )

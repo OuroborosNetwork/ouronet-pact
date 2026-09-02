@@ -87,7 +87,7 @@
         (
             (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
             (issued-ids:[string]
-                (ref-TS01-C1::DPTF|C_Issue
+                (ref-TS01-C1::C_DPTF|Issue
                     patron
                     patron
                     ["BinanceUSD" "TrueUSD" "TetherUSD" "CircleUSD" "DemiourgosUSD" "AustralianUSD" "CanadianUSD"]
@@ -176,7 +176,7 @@
         (
             (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
             (issued-ids:[string]
-                (ref-TS01-C1::DPTF|C_Issue
+                (ref-TS01-C1::C_DPTF|Issue
                     patron
                     patron
                     ["BinanceEUR" "TrueEUR" "TetherEUR" "CircleEUR" "DemiourgosEUR" "AustralianEUR" "CanadianEUR"]
@@ -275,7 +275,7 @@
             (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
             (info:string (ref-DALOS::DALOS|Info))
             (issued-ids:[string]
-                (ref-TS01-C1::DPTF|C_Issue
+                (ref-TS01-C1::C_DPTF|Issue
                     patron
                     patron
                     ["Unity", "Lithium", "Magnesium", "Aluminium", "Titanium", "Germanium", "Gallium", "Indium", "Tellurium", "Bismuth", "Cobalt", "Copper", "Ruthenium", "Palladium", "Silver", "Osmium", "Iridium", "Platinum", "Gold", "Mercury", "Rhenium"]  
@@ -295,10 +295,10 @@
         (update ref-DALOS::DALOS|PropertiesTable info
             { "unity-id" : unity-id}
         )
-        (ref-TS01-C1::DPTF|C_SetFee patron unity-id -1.0)
-        (ref-TS01-C1::DPTF|C_DonateFees patron unity-id)
-        (ref-TS01-C1::DPTF|C_ToggleFee patron unity-id true)
-        (ref-TS01-C1::DPTF|C_ToggleFeeLock patron unity-id true)
+        (ref-TS01-C1::C_DPTF|SetFee patron unity-id -1.0)
+        (ref-TS01-C1::C_DPTF|DonateFees patron unity-id)
+        (ref-TS01-C1::C_DPTF|ToggleFee patron unity-id true)
+        (ref-TS01-C1::C_DPTF|ToggleFeeLock patron unity-id true)
         [
             issued-ids
             (format "AH has {} GAS" [(ref-DPTF::UR_AccountSupply (ref-DALOS::UR_IgnisID) KST.ANHD)])
@@ -341,43 +341,43 @@
         (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
     )
     
-    (ref-TS01-C1::DPTF|C_Mint patron "BUSD-98c486052a51" patron 10000000.0 true)
-    (ref-TS01-C1::DPTF|C_Mint patron "TUSD-98c486052a51" patron 10000000.0 true)
-    (ref-TS01-C1::DPTF|C_Mint patron "USDT-98c486052a51" patron 10000000.0 true)
-    (ref-TS01-C1::DPTF|C_Mint patron "USDC-98c486052a51" patron 10000000.0 true)
-    (ref-TS01-C1::DPTF|C_Mint patron "USDD-98c486052a51" patron 10000000.0 true)
-    (ref-TS01-C1::DPTF|C_Mint patron "AUSD-98c486052a51" patron 10000000.0 true)
-    (ref-TS01-C1::DPTF|C_Mint patron "CUSD-98c486052a51" patron 10000000.0 true)
+    (ref-TS01-C1::C_DPTF|Mint patron "BUSD-98c486052a51" patron 10000000.0 true)
+    (ref-TS01-C1::C_DPTF|Mint patron "TUSD-98c486052a51" patron 10000000.0 true)
+    (ref-TS01-C1::C_DPTF|Mint patron "USDT-98c486052a51" patron 10000000.0 true)
+    (ref-TS01-C1::C_DPTF|Mint patron "USDC-98c486052a51" patron 10000000.0 true)
+    (ref-TS01-C1::C_DPTF|Mint patron "USDD-98c486052a51" patron 10000000.0 true)
+    (ref-TS01-C1::C_DPTF|Mint patron "AUSD-98c486052a51" patron 10000000.0 true)
+    (ref-TS01-C1::C_DPTF|Mint patron "CUSD-98c486052a51" patron 10000000.0 true)
 
-    (ref-TS01-C1::DPTF|C_Mint patron "BEUR-98c486052a51" patron 10000000.0 true)
-    (ref-TS01-C1::DPTF|C_Mint patron "TEUR-98c486052a51" patron 10000000.0 true)
-    (ref-TS01-C1::DPTF|C_Mint patron "EURT-98c486052a51" patron 10000000.0 true)
-    (ref-TS01-C1::DPTF|C_Mint patron "EURC-98c486052a51" patron 10000000.0 true)
-    (ref-TS01-C1::DPTF|C_Mint patron "EURD-98c486052a51" patron 10000000.0 true)
-    (ref-TS01-C1::DPTF|C_Mint patron "AEUR-98c486052a51" patron 10000000.0 true)
-    (ref-TS01-C1::DPTF|C_Mint patron "CEUR-98c486052a51" patron 10000000.0 true)
+    (ref-TS01-C1::C_DPTF|Mint patron "BEUR-98c486052a51" patron 10000000.0 true)
+    (ref-TS01-C1::C_DPTF|Mint patron "TEUR-98c486052a51" patron 10000000.0 true)
+    (ref-TS01-C1::C_DPTF|Mint patron "EURT-98c486052a51" patron 10000000.0 true)
+    (ref-TS01-C1::C_DPTF|Mint patron "EURC-98c486052a51" patron 10000000.0 true)
+    (ref-TS01-C1::C_DPTF|Mint patron "EURD-98c486052a51" patron 10000000.0 true)
+    (ref-TS01-C1::C_DPTF|Mint patron "AEUR-98c486052a51" patron 10000000.0 true)
+    (ref-TS01-C1::C_DPTF|Mint patron "CEUR-98c486052a51" patron 10000000.0 true)
 
-    (ref-TS01-C1::DPTF|C_Mint patron "UNITY-98c486052a51" emma 10000000.0 true)
-    (ref-TS01-C1::DPTF|C_Mint patron "LI-98c486052a51" patron 10000000.0 true)
-    (ref-TS01-C1::DPTF|C_Mint patron "MG-98c486052a51" patron 10000000.0 true)  
-    (ref-TS01-C1::DPTF|C_Mint patron "AL-98c486052a51" patron 10000000.0 true)  
-    (ref-TS01-C1::DPTF|C_Mint patron "TI-98c486052a51" patron 10000000.0 true)  
-    (ref-TS01-C1::DPTF|C_Mint patron "GE-98c486052a51" patron 10000000.0 true)  
-    (ref-TS01-C1::DPTF|C_Mint patron "GA-98c486052a51" patron 10000000.0 true)  
-    (ref-TS01-C1::DPTF|C_Mint patron "IN-98c486052a51" patron 10000000.0 true)  
-    (ref-TS01-C1::DPTF|C_Mint patron "TE-98c486052a51" patron 10000000.0 true)  
-    (ref-TS01-C1::DPTF|C_Mint patron "BI-98c486052a51" patron 10000000.0 true)  
-    (ref-TS01-C1::DPTF|C_Mint patron "CO-98c486052a51" patron 10000000.0 true)  
-    (ref-TS01-C1::DPTF|C_Mint patron "CU-98c486052a51" patron 10000000.0 true)  
-    (ref-TS01-C1::DPTF|C_Mint patron "RU-98c486052a51" patron 10000000.0 true)  
-    (ref-TS01-C1::DPTF|C_Mint patron "PD-98c486052a51" patron 10000000.0 true)  
-    (ref-TS01-C1::DPTF|C_Mint patron "AG-98c486052a51" patron 10000000.0 true)  
-    (ref-TS01-C1::DPTF|C_Mint patron "OS-98c486052a51" patron 10000000.0 true)  
-    (ref-TS01-C1::DPTF|C_Mint patron "IR-98c486052a51" patron 10000000.0 true)  
-    (ref-TS01-C1::DPTF|C_Mint patron "PT-98c486052a51" patron 10000000.0 true)  
-    (ref-TS01-C1::DPTF|C_Mint patron "AU-98c486052a51" patron 10000000.0 true)  
-    (ref-TS01-C1::DPTF|C_Mint patron "HG-98c486052a51" patron 10000000.0 true)  
-    (ref-TS01-C1::DPTF|C_Mint patron "RE-98c486052a51" patron 10000000.0 true)  
+    (ref-TS01-C1::C_DPTF|Mint patron "UNITY-98c486052a51" emma 10000000.0 true)
+    (ref-TS01-C1::C_DPTF|Mint patron "LI-98c486052a51" patron 10000000.0 true)
+    (ref-TS01-C1::C_DPTF|Mint patron "MG-98c486052a51" patron 10000000.0 true)  
+    (ref-TS01-C1::C_DPTF|Mint patron "AL-98c486052a51" patron 10000000.0 true)  
+    (ref-TS01-C1::C_DPTF|Mint patron "TI-98c486052a51" patron 10000000.0 true)  
+    (ref-TS01-C1::C_DPTF|Mint patron "GE-98c486052a51" patron 10000000.0 true)  
+    (ref-TS01-C1::C_DPTF|Mint patron "GA-98c486052a51" patron 10000000.0 true)  
+    (ref-TS01-C1::C_DPTF|Mint patron "IN-98c486052a51" patron 10000000.0 true)  
+    (ref-TS01-C1::C_DPTF|Mint patron "TE-98c486052a51" patron 10000000.0 true)  
+    (ref-TS01-C1::C_DPTF|Mint patron "BI-98c486052a51" patron 10000000.0 true)  
+    (ref-TS01-C1::C_DPTF|Mint patron "CO-98c486052a51" patron 10000000.0 true)  
+    (ref-TS01-C1::C_DPTF|Mint patron "CU-98c486052a51" patron 10000000.0 true)  
+    (ref-TS01-C1::C_DPTF|Mint patron "RU-98c486052a51" patron 10000000.0 true)  
+    (ref-TS01-C1::C_DPTF|Mint patron "PD-98c486052a51" patron 10000000.0 true)  
+    (ref-TS01-C1::C_DPTF|Mint patron "AG-98c486052a51" patron 10000000.0 true)  
+    (ref-TS01-C1::C_DPTF|Mint patron "OS-98c486052a51" patron 10000000.0 true)  
+    (ref-TS01-C1::C_DPTF|Mint patron "IR-98c486052a51" patron 10000000.0 true)  
+    (ref-TS01-C1::C_DPTF|Mint patron "PT-98c486052a51" patron 10000000.0 true)  
+    (ref-TS01-C1::C_DPTF|Mint patron "AU-98c486052a51" patron 10000000.0 true)  
+    (ref-TS01-C1::C_DPTF|Mint patron "HG-98c486052a51" patron 10000000.0 true)  
+    (ref-TS01-C1::C_DPTF|Mint patron "RE-98c486052a51" patron 10000000.0 true)  
 
 )
 
@@ -421,7 +421,7 @@
     (
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
     )
-    (ref-TS01-C2::LQD|C_WrapStoa KST.ANHD KST.ANHD 20000.0)
+    (ref-TS01-C2::C_LQD|WrapStoa KST.ANHD KST.ANHD 20000.0)
 )
 (print "")
 (print "")
@@ -462,7 +462,7 @@
         (ats-pairs-with-dlk-id:[string] (ref-DPTF::UR_RewardBearingToken dlk-id))
         (stoaliquindex:string (at 0 ats-pairs-with-dlk-id))
     )
-    (ref-TS01-C2::ATS|C_Coil
+    (ref-TS01-C2::C_ATS|Coil
         KST.ANHD
         KST.ANHD
         stoaliquindex
@@ -511,7 +511,7 @@
     (
         (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
     )
-    (ref-TS01-C1::DPTF|C_Transfer 
+    (ref-TS01-C1::C_DPTF|Transfer 
         KST.ANHD
         "OURO-98c486052a51"
         KST.ANHD
@@ -587,7 +587,7 @@
     (let
         (
             (pool
-                (ref-TS01-C3::SWP|C_IssueWeighted
+                (ref-TS01-C3::C_SWP|IssueWeighted
                     KST.ANHD
                     KST.ANHD
                     [
@@ -751,7 +751,7 @@
             (t2a:decimal 900.0)
             (t3a:decimal 850.0)
             (pool
-                (ref-TS01-C3::SWP|C_IssueStable
+                (ref-TS01-C3::C_SWP|IssueStable
                     KST.ANHD
                     KST.ANHD
                     [
@@ -841,7 +841,7 @@
     (let
         (
             (pool
-                (ref-TS01-C3::SWP|C_IssueStandard
+                (ref-TS01-C3::C_SWP|IssueStandard
                     KST.AOZT
                     KST.AOZT
                     [
@@ -929,7 +929,7 @@
     (let
         (
             (pool
-                (ref-TS01-C3::SWP|C_IssueStable
+                (ref-TS01-C3::C_SWP|IssueStable
                     KST.AOZT
                     KST.AOZT
                     [
@@ -1020,7 +1020,7 @@
     (let
         (
             (pool
-                (ref-TS01-C3::SWP|C_IssueStandard
+                (ref-TS01-C3::C_SWP|IssueStandard
                     KST.ANHD
                     KST.ANHD
                     [
@@ -1076,7 +1076,7 @@
         (patron:string KST.ANHD)
     )
     ;;Mint 100 mil VST
-    (ref-TS01-C1::DPTF|C_Mint patron vst patron 200000000.0 true)
+    (ref-TS01-C1::C_DPTF|Mint patron vst patron 200000000.0 true)
 )
 
 (print "")
@@ -1150,7 +1150,7 @@
     (let
         (
             (pool
-                (ref-TS01-C3::SWP|C_IssueStandard
+                (ref-TS01-C3::C_SWP|IssueStandard
                     KST.ANHD
                     KST.ANHD
                     [
@@ -1246,7 +1246,7 @@
     (let
         (
             (pool
-                (ref-TS01-C3::SWP|C_IssueStandard
+                (ref-TS01-C3::C_SWP|IssueStandard
                     KST.ANHD
                     KST.ANHD
                     [
@@ -1320,7 +1320,7 @@
         (amp:decimal 85.0)
         (p:bool false)
     )
-    ;(ref-TS01-CP::SWP|C_IssueStablePool
+    ;(ref-TS01-CP::C_SWP|IssueStablePool
     ;    patron
     ;    patron
     ;    pool-tokens
@@ -1328,7 +1328,7 @@
     ;    amp
     ;    p
     ;)
-    ;(ref-TS01-CP::SWP|C_IssueWeightedPool
+    ;(ref-TS01-CP::C_SWP|IssueWeightedPool
     ;    patron
     ;    patron
     ;    pool-tokens
@@ -1336,7 +1336,7 @@
     ;    w-weigths
     ;    p
     ;)
-    ;(ref-TS01-CP::SWP|C_IssueStandardPool
+    ;(ref-TS01-CP::C_SWP|IssueStandardPool
     ;    patron
     ;    patron
     ;    pool-tokens
@@ -1347,7 +1347,7 @@
     
     [
         (format "AH has {} GAS" [(ref-DPTF::UR_AccountSupply (ref-DALOS::UR_IgnisID) KST.ANHD)])
-        (ref-TS01-CP::SWP|C_IssueStablePool
+        (ref-TS01-CP::C_SWP|IssueStablePool
             patron
             patron
             pool-tokens
@@ -1517,7 +1517,7 @@
     (let
         (
             (pool
-                (ref-TS01-C3::SWP|C_IssueWeighted
+                (ref-TS01-C3::C_SWP|IssueWeighted
                     KST.ANHD
                     KST.ANHD
                     [
@@ -1619,48 +1619,48 @@
         )
     )
     ;;Add Special Fee
-    (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD pool1 20.0 false)
-    (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD pool2 20.0 false)
-    (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD pool3 20.0 false)
-    (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD pool4 20.0 false)
-    (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD pool5 20.0 false)
-    (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD pool6 20.0 false)
-    (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD pool6a 50.0 false)
-    (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD pool7 20.0 false)
-    (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD pool8 20.0 false)
+    (ref-TS01-C3::C_SWP|UpdateFee KST.ANHD pool1 20.0 false)
+    (ref-TS01-C3::C_SWP|UpdateFee KST.ANHD pool2 20.0 false)
+    (ref-TS01-C3::C_SWP|UpdateFee KST.ANHD pool3 20.0 false)
+    (ref-TS01-C3::C_SWP|UpdateFee KST.ANHD pool4 20.0 false)
+    (ref-TS01-C3::C_SWP|UpdateFee KST.ANHD pool5 20.0 false)
+    (ref-TS01-C3::C_SWP|UpdateFee KST.ANHD pool6 20.0 false)
+    (ref-TS01-C3::C_SWP|UpdateFee KST.ANHD pool6a 50.0 false)
+    (ref-TS01-C3::C_SWP|UpdateFee KST.ANHD pool7 20.0 false)
+    (ref-TS01-C3::C_SWP|UpdateFee KST.ANHD pool8 20.0 false)
     ;;Add Fee Targets
-    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD pool1 spt2)
-    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD pool2 spt2)
-    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD pool3 spt1)
-    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD pool4 spt1)
-    ;(ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD pool5 spt2)
-    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD pool6 spt2)
-    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD pool6a spt2)
-    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD pool7 spt2)
-    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD pool8 spt2)
+    (ref-TS01-C3::C_SWP|UpdateSpecialFeeTargets KST.ANHD pool1 spt2)
+    (ref-TS01-C3::C_SWP|UpdateSpecialFeeTargets KST.ANHD pool2 spt2)
+    (ref-TS01-C3::C_SWP|UpdateSpecialFeeTargets KST.ANHD pool3 spt1)
+    (ref-TS01-C3::C_SWP|UpdateSpecialFeeTargets KST.ANHD pool4 spt1)
+    ;(ref-TS01-C3::C_SWP|UpdateSpecialFeeTargets KST.ANHD pool5 spt2)
+    (ref-TS01-C3::C_SWP|UpdateSpecialFeeTargets KST.ANHD pool6 spt2)
+    (ref-TS01-C3::C_SWP|UpdateSpecialFeeTargets KST.ANHD pool6a spt2)
+    (ref-TS01-C3::C_SWP|UpdateSpecialFeeTargets KST.ANHD pool7 spt2)
+    (ref-TS01-C3::C_SWP|UpdateSpecialFeeTargets KST.ANHD pool8 spt2)
     ;;Enable Asymetric Liquidity Addition and Primordial Pool
-    (ref-TS01-A::SWP|A_DefinePrimordialPool pool1)
-    (ref-TS01-A::SWP|A_ToggleAsymetricLiquidityAddition true)
+    (ref-TS01-A::A_SWP|DefinePrimordialPool pool1)
+    (ref-TS01-A::A_SWP|ToggleAsymetricLiquidityAddition true)
     ;;Toggle Add Liquidity
-    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD pool1 true)
-    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD pool2 true)
-    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD pool3 true)
-    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD pool4 true)
-    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD pool5 true)
-    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD pool6 true)
-    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD pool6a true)
-    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD pool7 true)
-    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD pool8 true)
+    (ref-TS01-C3::C_SWP|ToggleAddLiquidity KST.ANHD pool1 true)
+    (ref-TS01-C3::C_SWP|ToggleAddLiquidity KST.ANHD pool2 true)
+    (ref-TS01-C3::C_SWP|ToggleAddLiquidity KST.ANHD pool3 true)
+    (ref-TS01-C3::C_SWP|ToggleAddLiquidity KST.ANHD pool4 true)
+    (ref-TS01-C3::C_SWP|ToggleAddLiquidity KST.ANHD pool5 true)
+    (ref-TS01-C3::C_SWP|ToggleAddLiquidity KST.ANHD pool6 true)
+    (ref-TS01-C3::C_SWP|ToggleAddLiquidity KST.ANHD pool6a true)
+    (ref-TS01-C3::C_SWP|ToggleAddLiquidity KST.ANHD pool7 true)
+    (ref-TS01-C3::C_SWP|ToggleAddLiquidity KST.ANHD pool8 true)
     ;;Toggle Swap Functionality
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool1 true)
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool2 true)
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool3 true)
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool4 true)
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool5 true)
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool6 true)
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool6a true)
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool7 true)
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool8 true)
+    (ref-TS01-C3::C_SWP|ToggleSwapCapability KST.ANHD pool1 true)
+    (ref-TS01-C3::C_SWP|ToggleSwapCapability KST.ANHD pool2 true)
+    (ref-TS01-C3::C_SWP|ToggleSwapCapability KST.ANHD pool3 true)
+    (ref-TS01-C3::C_SWP|ToggleSwapCapability KST.ANHD pool4 true)
+    (ref-TS01-C3::C_SWP|ToggleSwapCapability KST.ANHD pool5 true)
+    (ref-TS01-C3::C_SWP|ToggleSwapCapability KST.ANHD pool6 true)
+    (ref-TS01-C3::C_SWP|ToggleSwapCapability KST.ANHD pool6a true)
+    (ref-TS01-C3::C_SWP|ToggleSwapCapability KST.ANHD pool7 true)
+    (ref-TS01-C3::C_SWP|ToggleSwapCapability KST.ANHD pool8 true)
 )
 
 (print "")
@@ -2035,16 +2035,16 @@
     (map print
         [
             (expect-failure "C7 fix — length mismatch (2 weights on a 3-token pool) is rejected"
-                (ref-TS01-C3::SWP|C_ModifyWeights patron pool1 [0.5 0.5]))
+                (ref-TS01-C3::C_SWP|ModifyWeights patron pool1 [0.5 0.5]))
             (expect-failure "C7 fix — a weight below the 0.1 floor is rejected"
-                (ref-TS01-C3::SWP|C_ModifyWeights patron pool1 [0.05 0.45 0.5]))
+                (ref-TS01-C3::C_SWP|ModifyWeights patron pool1 [0.05 0.45 0.5]))
             (expect-failure "C7 fix — a negative weight (cancelling to sum=1.0) is rejected"
-                (ref-TS01-C3::SWP|C_ModifyWeights patron pool1 [1.2 0.3 -0.5]))
+                (ref-TS01-C3::C_SWP|ModifyWeights patron pool1 [1.2 0.3 -0.5]))
             (expect-failure "C7 fix — a weight violating fee precision (5 decimals) is rejected"
-                (ref-TS01-C3::SWP|C_ModifyWeights patron pool1 [0.30001 0.5 0.19999]))
+                (ref-TS01-C3::C_SWP|ModifyWeights patron pool1 [0.30001 0.5 0.19999]))
         ]
     )
-    (ref-TS01-C3::SWP|C_ModifyWeights patron pool1 [0.4 0.4 0.2])
+    (ref-TS01-C3::C_SWP|ModifyWeights patron pool1 [0.4 0.4 0.2])
     (print (format "C7 — legitimate reweight succeeded, pool1 weights now: {}" [(ref-SWP::UR_Weigths pool1)]))
 )
 (print "")
@@ -2090,27 +2090,27 @@
     ;;check from the others. Without this, a bad value that (pre-fix) actually succeeds would brick
     ;;<current-amp>, which then makes every LATER case "fail" for the wrong reason (the cap's own
     ;;pre-existing current-amp>0 check), masking whether each individual bound is independently enforced.
-    (ref-TS01-C3::SWP|C_UpdateAmplifier patron pool2 85.0)
+    (ref-TS01-C3::C_SWP|UpdateAmplifier patron pool2 85.0)
     (map print
         [(expect-failure "C8 fix — new-amplifier = 0.0 (div-by-zero bricking risk) is rejected"
-            (ref-TS01-C3::SWP|C_UpdateAmplifier patron pool2 0.0))]
+            (ref-TS01-C3::C_SWP|UpdateAmplifier patron pool2 0.0))]
     )
-    (ref-TS01-C3::SWP|C_UpdateAmplifier patron pool2 85.0)
+    (ref-TS01-C3::C_SWP|UpdateAmplifier patron pool2 85.0)
     (map print
         [(expect-failure "C8 fix — new-amplifier = -1.0 (the non-stable-pool sentinel) is rejected"
-            (ref-TS01-C3::SWP|C_UpdateAmplifier patron pool2 -1.0))]
+            (ref-TS01-C3::C_SWP|UpdateAmplifier patron pool2 -1.0))]
     )
-    (ref-TS01-C3::SWP|C_UpdateAmplifier patron pool2 85.0)
+    (ref-TS01-C3::C_SWP|UpdateAmplifier patron pool2 85.0)
     (map print
         [(expect-failure "C8 fix — a negative new-amplifier is rejected"
-            (ref-TS01-C3::SWP|C_UpdateAmplifier patron pool2 -5.0))]
+            (ref-TS01-C3::C_SWP|UpdateAmplifier patron pool2 -5.0))]
     )
-    (ref-TS01-C3::SWP|C_UpdateAmplifier patron pool2 85.0)
+    (ref-TS01-C3::C_SWP|UpdateAmplifier patron pool2 85.0)
     (map print
         [(expect-failure "C8 fix — new-amplifier above the 2000.0 ceiling is rejected"
-            (ref-TS01-C3::SWP|C_UpdateAmplifier patron pool2 5000.0))]
+            (ref-TS01-C3::C_SWP|UpdateAmplifier patron pool2 5000.0))]
     )
-    (ref-TS01-C3::SWP|C_UpdateAmplifier patron pool2 150.0)
+    (ref-TS01-C3::C_SWP|UpdateAmplifier patron pool2 150.0)
     (print (format "C8 — legitimate amplifier update succeeded, pool2 amplifier now: {}" [(ref-SWP::UR_Amplifier pool2)]))
 )
 (print "")
@@ -2200,20 +2200,20 @@
         (patron-lp-before:decimal (ref-DPTF::UR_AccountSupply lp-id patron))
     )
     ;;Pause new deposits on pool1.
-    (ref-TS01-C3::SWP|C_ToggleAddLiquidity patron pool1 false)
+    (ref-TS01-C3::C_SWP|ToggleAddLiquidity patron pool1 false)
     (map print
         [
             ;;can-add=false must still block a NEW deposit — unchanged, legitimate behavior.
             (expect-failure "H11 fix — can-add=false still blocks a new deposit, as intended"
-                (ref-TS01-C3::SWP|C_AddLiquidity patron patron pool1 [10.0 10.0 10.0]))
+                (ref-TS01-C3::C_SWP|AddLiquidity patron patron pool1 [10.0 10.0 10.0]))
         ]
     )
     ;;can-add=false must NOT block removing existing LP principal — the actual fix.
-    (ref-TS01-C3::SWP|C_RemoveLiquidity patron patron pool1 (floor (* patron-lp-before 0.01) 6))
+    (ref-TS01-C3::C_SWP|RemoveLiquidity patron patron pool1 (floor (* patron-lp-before 0.01) 6))
     (print (format "H11 fix — removal succeeded despite can-add=false; patron LP before={} after={}"
         [patron-lp-before (ref-DPTF::UR_AccountSupply lp-id patron)]))
     ;;Restore pool1 to its normal (add-enabled) state so nothing downstream is perturbed.
-    (ref-TS01-C3::SWP|C_ToggleAddLiquidity patron pool1 true)
+    (ref-TS01-C3::C_SWP|ToggleAddLiquidity patron pool1 true)
 )
 (print "")
 (print "")
@@ -2266,7 +2266,7 @@
     )
     ;;Regression check: the real, primality=true primordial pool must still be (re-)designatable with the
     ;;new primality enforce in place.
-    (ref-TS01-A::SWP|A_DefinePrimordialPool pool1)
+    (ref-TS01-A::A_SWP|DefinePrimordialPool pool1)
     (print (format "H6 fix — real primordial pool re-designation still works: {}" [(ref-SWP::UR_PrimordialPool)]))
 )
 (print "")
@@ -2324,7 +2324,7 @@
             (ouro:string (ref-DALOS::UR_OuroborosID))
             (ag:string "AG-98c486052a51")
             (pool
-                (ref-TS01-C3::SWP|C_IssueStable
+                (ref-TS01-C3::C_SWP|IssueStable
                     KST.ANHD KST.ANHD
                     [ { "token-id": ouro, "token-supply": 800.0}
                       { "token-id": ag,   "token-supply": 800.0} ]
@@ -2386,17 +2386,17 @@
         (
             (ouro:string (ref-DALOS::UR_OuroborosID))
         )
-        (ref-TS01-C3::SWP|C_IssueStable KST.ANHD KST.ANHD
+        (ref-TS01-C3::C_SWP|IssueStable KST.ANHD KST.ANHD
             [ { "token-id": ouro, "token-supply": 800.0}
               { "token-id": "AL-98c486052a51", "token-supply": 800.0} ]
             10.0 10.0 false
         )
-        (ref-TS01-C3::SWP|C_IssueStable KST.ANHD KST.ANHD
+        (ref-TS01-C3::C_SWP|IssueStable KST.ANHD KST.ANHD
             [ { "token-id": ouro, "token-supply": 800.0}
               { "token-id": "AU-98c486052a51", "token-supply": 800.0} ]
             10.0 10.0 false
         )
-        (ref-TS01-C3::SWP|C_IssueStable KST.ANHD KST.ANHD
+        (ref-TS01-C3::C_SWP|IssueStable KST.ANHD KST.ANHD
             [ { "token-id": ouro, "token-supply": 800.0}
               { "token-id": "BI-98c486052a51", "token-supply": 800.0} ]
             10.0 10.0 false
@@ -2446,7 +2446,7 @@
             (ag:string "AG-98c486052a51")
             (al:string "AL-98c486052a51")
             (pool
-                (ref-TS01-C3::SWP|C_IssueStable
+                (ref-TS01-C3::C_SWP|IssueStable
                     KST.ANHD KST.ANHD
                     [ { "token-id": ag, "token-supply": 800.0}
                       { "token-id": al, "token-supply": 800.0} ]
@@ -2499,7 +2499,7 @@
             (al:string "AL-98c486052a51")
             (au:string "AU-98c486052a51")
             (pool
-                (ref-TS01-C3::SWP|C_IssueStable
+                (ref-TS01-C3::C_SWP|IssueStable
                     KST.ANHD KST.ANHD
                     [ { "token-id": al, "token-supply": 800.0}
                       { "token-id": au, "token-supply": 800.0} ]
@@ -2552,7 +2552,7 @@
             (au:string "AU-98c486052a51")
             (bi:string "BI-98c486052a51")
             (pool
-                (ref-TS01-C3::SWP|C_IssueStable
+                (ref-TS01-C3::C_SWP|IssueStable
                     KST.ANHD KST.ANHD
                     [ { "token-id": au, "token-supply": 800.0}
                       { "token-id": bi, "token-supply": 800.0} ]
@@ -2605,7 +2605,7 @@
             (bi:string "BI-98c486052a51")
             (co:string "CO-98c486052a51")
             (pool
-                (ref-TS01-C3::SWP|C_IssueStable
+                (ref-TS01-C3::C_SWP|IssueStable
                     KST.ANHD KST.ANHD
                     [ { "token-id": bi, "token-supply": 800.0}
                       { "token-id": co, "token-supply": 800.0} ]
@@ -2640,8 +2640,8 @@
               "S|BI-98c486052a51|CO-98c486052a51" ]
         )
     )
-    (map (lambda (p:string) (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD p true)) chain)
-    (map (lambda (p:string) (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD p true)) chain)
+    (map (lambda (p:string) (ref-TS01-C3::C_SWP|ToggleAddLiquidity KST.ANHD p true)) chain)
+    (map (lambda (p:string) (ref-TS01-C3::C_SWP|ToggleSwapCapability KST.ANHD p true)) chain)
 )
 (print "")
 (print "--- [SWP|TX 025 - Enable Chain Pools · 03 · gas echo] ---")
@@ -2727,7 +2727,7 @@
             (ag:string "AG-98c486052a51")
             (co:string "CO-98c486052a51")
             (pool
-                (ref-TS01-C3::SWP|C_IssueStable
+                (ref-TS01-C3::C_SWP|IssueStable
                     KST.ANHD KST.ANHD
                     [ { "token-id": ag, "token-supply": 800.0}
                       { "token-id": co, "token-supply": 800.0} ]
@@ -2746,8 +2746,8 @@
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
         (shortcut:string "S|AG-98c486052a51|CO-98c486052a51")
     )
-    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD shortcut true)
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD shortcut true)
+    (ref-TS01-C3::C_SWP|ToggleAddLiquidity KST.ANHD shortcut true)
+    (ref-TS01-C3::C_SWP|ToggleSwapCapability KST.ANHD shortcut true)
 )
 (format "<<<<<<<SWP|TX 027 Issue+Enable Shortcut S|AG|CO ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "===^^^===")
@@ -2774,7 +2774,7 @@
         (shortcut:string "S|AG-98c486052a51|CO-98c486052a51")
         (expected-chain-nodes:[string] ["AG-98c486052a51" "AL-98c486052a51" "AU-98c486052a51" "BI-98c486052a51" "CO-98c486052a51"])
     )
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD shortcut false)
+    (ref-TS01-C3::C_SWP|ToggleSwapCapability KST.ANHD shortcut false)
     (let
         (
             (h-obj:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_HopperActive ag co 10.0))
@@ -2822,7 +2822,7 @@
               "S|BI-98c486052a51|CO-98c486052a51" ]
         )
     )
-    (map (lambda (p:string) (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD p false)) pools-to-disable)
+    (map (lambda (p:string) (ref-TS01-C3::C_SWP|ToggleSwapCapability KST.ANHD p false)) pools-to-disable)
 )
 (let
     (
@@ -2899,11 +2899,11 @@
             [
                 (expect-failure
                     "#11C fix — a 0.0-weight token is rejected, not just the sum check"
-                    (ref-TS01-C3::SWP|C_IssueWeighted KST.ANHD KST.ANHD tokens 10.0 [0.9 0.1 0.0] false)
+                    (ref-TS01-C3::C_SWP|IssueWeighted KST.ANHD KST.ANHD tokens 10.0 [0.9 0.1 0.0] false)
                 )
                 (expect-failure
                     "#11C fix — a weight below the 0.1 floor is rejected"
-                    (ref-TS01-C3::SWP|C_IssueWeighted KST.ANHD KST.ANHD tokens 10.0 [0.85 0.1 0.05] false)
+                    (ref-TS01-C3::C_SWP|IssueWeighted KST.ANHD KST.ANHD tokens 10.0 [0.85 0.1 0.05] false)
                 )
             ]
         )
@@ -2911,7 +2911,7 @@
         (print "--- [SWP|TX 030 - #11C Reproduction · 03 · legitimate issuance still works] ---")
         (print
             (format "#11C proof — legitimate weights [0.5 0.3 0.2] (all >=0.1): {}"
-                [ (ref-TS01-C3::SWP|C_IssueWeighted KST.ANHD KST.ANHD tokens 10.0 [0.5 0.3 0.2] false) ]
+                [ (ref-TS01-C3::C_SWP|IssueWeighted KST.ANHD KST.ANHD tokens 10.0 [0.5 0.3 0.2] false) ]
             )
         )
     )
@@ -2993,7 +2993,7 @@
             [ "PD-98c486052a51" "OS-98c486052a51" "IR-98c486052a51" "PT-98c486052a51" "HG-98c486052a51" ]
         )
     )
-    (map (lambda (p:string) (ref-TS01-A::SWP|A_UpdatePrincipal p true)) new-principals)
+    (map (lambda (p:string) (ref-TS01-A::A_SWP|UpdatePrincipal p true)) new-principals)
     (print (format "Principal cap proof — count after adding 5: {}" [(length (ref-SWP::UR_Principals))]))
 )
 (print "")
@@ -3027,15 +3027,15 @@
     )
     (print (expect-failure
         "Principal cap fix — an 8th principal is rejected (7 maximum already defined)"
-        (ref-TS01-A::SWP|A_UpdatePrincipal eighth true)
+        (ref-TS01-A::A_SWP|UpdatePrincipal eighth true)
     ))
-    (map (lambda (p:string) (ref-TS01-A::SWP|A_UpdatePrincipal p false)) test-principals)
+    (map (lambda (p:string) (ref-TS01-A::A_SWP|UpdatePrincipal p false)) test-principals)
     (print (format "Removal-floor proof — count after draining all 5 test principals (7 -> 2): {}" [(length (ref-SWP::UR_Principals))]))
     (print (expect-failure
         "Removal-floor fix — removing below 2 principals is rejected, even a genuine genesis principal (OURO)"
-        (ref-TS01-A::SWP|A_UpdatePrincipal ouro false)
+        (ref-TS01-A::A_SWP|UpdatePrincipal ouro false)
     ))
-    (map (lambda (p:string) (ref-TS01-A::SWP|A_UpdatePrincipal p true)) test-principals)
+    (map (lambda (p:string) (ref-TS01-A::A_SWP|UpdatePrincipal p true)) test-principals)
     (print (format "Removal-floor proof — count after restoring all 5 (2 -> 7): {}" [(length (ref-SWP::UR_Principals))]))
 )
 (print "")
@@ -3084,7 +3084,7 @@
                 ;;routes, so URC_WorthWSTOA can't price it yet (chicken-and-egg) — the
                 ;;p=false spawn-limit worth check is irrelevant to what this test is
                 ;;actually proving, so skip it via the admin path.
-                (ref-TS01-C3::SWP|C_IssueStandard
+                (ref-TS01-C3::C_SWP|IssueStandard
                     KST.ANHD KST.ANHD
                     [ { "token-id": hg, "token-supply": 500.0}
                       { "token-id": te, "token-supply": 500.0} ]
@@ -3129,12 +3129,12 @@
     )
     (map print
         [
-            (expect-failure "Rotate fix — rotating a non-principal is rejected" (ref-TS01-A::SWP|A_RotatePrincipal "PT-98c486052a51_typo" ti))
-            (expect-failure "Rotate fix — rotating into an already-existing principal is rejected" (ref-TS01-A::SWP|A_RotatePrincipal hg ouro))
-            (expect-failure "Rotate fix — rotating a principal into itself is rejected" (ref-TS01-A::SWP|A_RotatePrincipal hg hg))
+            (expect-failure "Rotate fix — rotating a non-principal is rejected" (ref-TS01-A::A_SWP|RotatePrincipal "PT-98c486052a51_typo" ti))
+            (expect-failure "Rotate fix — rotating into an already-existing principal is rejected" (ref-TS01-A::A_SWP|RotatePrincipal hg ouro))
+            (expect-failure "Rotate fix — rotating a principal into itself is rejected" (ref-TS01-A::A_SWP|RotatePrincipal hg hg))
         ]
     )
-    (ref-TS01-A::SWP|A_RotatePrincipal hg ti)
+    (ref-TS01-A::A_SWP|RotatePrincipal hg ti)
     (let
         (
             (after-principals:[string] (ref-SWP::UR_Principals))
@@ -3190,7 +3190,7 @@
             [
                 (expect-failure
                     "Rotate fix — a NEW pool can no longer anchor to HG (retired as principal)"
-                    (ref-TS01-C3::SWP|C_IssueStandard KST.ANHD KST.ANHD [ { "token-id": hg, "token-supply": 500.0} { "token-id": ga, "token-supply": 500.0} ] 10.0 false)
+                    (ref-TS01-C3::C_SWP|IssueStandard KST.ANHD KST.ANHD [ { "token-id": hg, "token-supply": 500.0} { "token-id": ga, "token-supply": 500.0} ] 10.0 false)
                 )
             ]
         )
@@ -3229,7 +3229,7 @@
             (pool
                 ;;p=true — TI is a brand-new principal (as of this same TX's rotation),
                 ;;same chicken-and-egg reasoning as the P|HG|TE setup above.
-                (ref-TS01-C3::SWP|C_IssueStandard
+                (ref-TS01-C3::C_SWP|IssueStandard
                     KST.ANHD KST.ANHD
                     [ { "token-id": ti, "token-supply": 500.0}
                       { "token-id": ga, "token-supply": 500.0} ]
@@ -3289,13 +3289,13 @@
             (expect "#65eL — DWK is major by primordial-pool membership, even though not currently a registered principal" true (ref-SWP::URC_IsMajorPrincipal dwk))
             (expect "#65eL — a genuine minor principal is NOT major" false (ref-SWP::URC_IsMajorPrincipal minor))
             (expect "#65eL — principal count is well above the floor (7), so the next 2 checks genuinely test the NEW major-principal guard, not the pre-existing floor guard" true (> before-count 2))
-            (expect-failure "#65eL — removing a major principal (OURO) is rejected outright, even with headroom above the floor" (ref-TS01-A::SWP|A_UpdatePrincipal ouro false))
-            (expect-failure "#65eL — rotating a major principal (OURO) away is rejected outright" (ref-TS01-A::SWP|A_RotatePrincipal ouro real-non-principal))
+            (expect-failure "#65eL — removing a major principal (OURO) is rejected outright, even with headroom above the floor" (ref-TS01-A::A_SWP|UpdatePrincipal ouro false))
+            (expect-failure "#65eL — rotating a major principal (OURO) away is rejected outright" (ref-TS01-A::A_SWP|RotatePrincipal ouro real-non-principal))
         ]
     )
-    (ref-TS01-A::SWP|A_UpdatePrincipal minor false)
+    (ref-TS01-A::A_SWP|UpdatePrincipal minor false)
     (print (format "#65eL — minor principal removal still works (count {} -> {})" [before-count (length (ref-SWP::UR_Principals))]))
-    (ref-TS01-A::SWP|A_UpdatePrincipal minor true)
+    (ref-TS01-A::A_SWP|UpdatePrincipal minor true)
     (print
         (expect "#65eL — minor principal restored, count back to baseline, later tests' dependencies unaffected"
             before-count
@@ -3410,7 +3410,7 @@
             (let
                 (
                     (result:string
-                        (ref-TS01-C3::SWP|C_SingleSwapWithSlippage
+                        (ref-TS01-C3::C_SWP|SingleSwapWithSlippage
                             KST.ANHD KST.ANHD swpair ouro input-amount pkoson slippage-bounds
                         )
                     )

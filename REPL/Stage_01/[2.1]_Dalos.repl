@@ -217,7 +217,7 @@
 ;;==== TX-04 [C3.2] - Guard-type policy · 02 · IMC for C_* rotation paths ==== ====================
 (print "--- [TX-04 [C3.2] - Guard-type policy · 02 · IMC for C_* rotation paths] ---")
 (acquire-module-admin DALOS)
-(DALOS.P|A_AddIMP (keyset-ref-guard "ouronet-ns.dh_master-keyset"))
+(DALOS.A_P|AddIMP (keyset-ref-guard "ouronet-ns.dh_master-keyset"))
 ;;==== TX-04 [C3.2] - Guard-type policy · 03 · helper unit expects ==== =============================
 (print "--- [TX-04 [C3.2] - Guard-type policy · 03 · helper unit expects] ---")
 (let
@@ -287,11 +287,11 @@
     (map print
         [
             (expect
-                (format "<<TX-04 expect>> <(DALOS|C_RotateGovernor BJ capability-guard)> must succeed" [])
+                (format "<<TX-04 expect>> <(C_DALOS|RotateGovernor BJ capability-guard)> must succeed" [])
                 "Write succeeded"
                 (ref-DALOS::C_RotateGovernor KC.BJ cap-gov))
             (expect-failure
-                (format "<<TX-04 expect-failure>> <(DALOS|C_RotateGovernor BJ keyset-ref)> must reject r:" [])
+                (format "<<TX-04 expect-failure>> <(C_DALOS|RotateGovernor BJ keyset-ref)> must reject r:" [])
                 (ref-DALOS::C_RotateGovernor KC.BJ key-gov))
         ]
     )
@@ -314,14 +314,14 @@
     (map print
         [
             (expect
-                (format "<<TX-04 expect>> <(DALOS|C_RotateGuard EMMA keyset-ref safe)> must succeed" [])
+                (format "<<TX-04 expect>> <(C_DALOS|RotateGuard EMMA keyset-ref safe)> must succeed" [])
                 "Write succeeded"
                 (ref-DALOS::C_RotateGuard KC.EMMA key-guard true))
             (expect-failure
-                (format "<<TX-04 expect-failure>> <(DALOS|C_RotateGuard EMMA user-guard)> must reject u:" [])
+                (format "<<TX-04 expect-failure>> <(C_DALOS|RotateGuard EMMA user-guard)> must reject u:" [])
                 (ref-DALOS::C_RotateGuard KC.EMMA user-g false))
             (expect-failure
-                (format "<<TX-04 expect-failure>> <(DALOS|C_RotateGuard EMMA capability-guard)> must reject c:" [])
+                (format "<<TX-04 expect-failure>> <(C_DALOS|RotateGuard EMMA capability-guard)> must reject c:" [])
                 (ref-DALOS::C_RotateGuard KC.EMMA (create-capability-guard (ref-DALOS::SECURE)) false))
         ]
     )

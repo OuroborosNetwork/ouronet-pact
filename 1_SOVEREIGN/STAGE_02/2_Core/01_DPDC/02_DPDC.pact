@@ -254,14 +254,14 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
+    (defun A_P|Add (policy-name:string policy-guard:guard)
         (with-capability (GOV|DPDC_ADMIN)
             (write P|T policy-name
                 {"policy" : policy-guard}
             )
         )
     )
-    (defun P|A_AddIMP (policy-guard:guard)
+    (defun A_P|AddIMP (policy-guard:guard)
         (with-capability (GOV|DPDC_ADMIN)
             (let
                 (
@@ -278,15 +278,15 @@
             )
         )
     )
-    (defun P|A_Define ()
+    (defun A_P|Define ()
         (let
             (
                 (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
                 (ref-P|BRD:module{OuronetPolicyV1} BRD)
                 (mg:guard (create-capability-guard (P|DPDC|CALLER)))
             )
-            (ref-P|DALOS::P|A_AddIMP mg)
-            (ref-P|BRD::P|A_AddIMP mg)
+            (ref-P|DALOS::A_P|AddIMP mg)
+            (ref-P|BRD::A_P|AddIMP mg)
         )
     )
     (defun UEV_IMC ()
@@ -1727,7 +1727,7 @@
                     )
                 )
             )
-            (ref-IGNIS::STOA|C_CollectWT patron stoa-payment false)
+            (ref-IGNIS::C_STOA|CollectWT patron stoa-payment false)
         )
     )
     ;;

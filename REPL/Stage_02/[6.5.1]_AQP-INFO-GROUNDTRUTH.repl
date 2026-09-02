@@ -4,7 +4,7 @@
 ;; (i.e. after [6.2.4]_AQP-FVT) and AFTER AQP-INFO is deployed.
 ;;
 ;; Proof: AQP-INFO.INFO_AQP-POOL|StakeTrueFungible.ignis-need == the REAL IGNIS (GAS token)
-;; balance delta the patron pays for the actual TS02-C3.AQP-POOL|CC_StakeTrueFungible. The
+;; balance delta the patron pays for the actual TS02-C3.CC_AQP-POOL|StakeTrueFungible. The
 ;; preview is computed on pre-stake state; the execution acts on the same state → exact match.
 ;; Same for unstake (transfer leg reversed).
 ;;
@@ -42,8 +42,8 @@
     (print (format "<(INFO_StakeTrueFungible)> predicted ignis-need = {} ; patron pre-gas = {}"
         [predicted pre-gas]))
     ;; 2) EXECUTE the real stake (bills the patron the exact flow cost)
-    (print (format "<(TS02-C3.AQP-POOL|CC_StakeTrueFungible)> => \"{}\""
-        [(ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id amount)]))
+    (print (format "<(TS02-C3.CC_AQP-POOL|StakeTrueFungible)> => \"{}\""
+        [(ref-TS02-C3::CC_AQP-POOL|StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id amount)]))
     ;; 3) ASSERT predicted == actual GAS balance delta
     (let ((post-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron)))
         (print (format "<(post-gas)> = {} ; actual delta = {}" [post-gas (- pre-gas post-gas)]))
@@ -80,8 +80,8 @@
     )
     (print (format "<(INFO_UnstakeTrueFungible)> predicted ignis-need = {} ; patron pre-gas = {}"
         [predicted pre-gas]))
-    (print (format "<(TS02-C3.AQP-POOL|CC_UnstakeTrueFungible)> => \"{}\""
-        [(ref-TS02-C3::AQP-POOL|CC_UnstakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id amount)]))
+    (print (format "<(TS02-C3.CC_AQP-POOL|UnstakeTrueFungible)> => \"{}\""
+        [(ref-TS02-C3::CC_AQP-POOL|UnstakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id amount)]))
     (let ((post-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron)))
         (print (format "<(post-gas)> = {} ; actual delta = {}" [post-gas (- pre-gas post-gas)]))
         (map print
@@ -138,11 +138,11 @@
     )
     ;; ensure ANHD holds MVST nonces to stake
     (if (= (length (ref-DPOF::URH_AccountNonces owner-konto dpof-id)) 0)
-        (ref-TS01-C1::DPOF|C_Mint patron dpof-id owner-konto 1000.0 [{"test": "info-gt-of"}])
+        (ref-TS01-C1::C_DPOF|Mint patron dpof-id owner-konto 1000.0 [{"test": "info-gt-of"}])
         "already has MVST")
-    (ref-TS02-C3::AQP-SCR|C_IssueOrtoFungibleScore patron owner-konto score-name 12 1.0 1.0)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpof-id 2)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::C_AQP-SCR|IssueOrtoFungibleScore patron owner-konto score-name 12 1.0 1.0)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name dpof-id 2)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (print "<(fresh OF fixture provisioned)>")
 )
@@ -177,8 +177,8 @@
     )
     (print (format "<(INFO_StakeOrtoFungible)> predicted ignis-need = {} ; nonce = {} ; pre-gas = {}"
         [predicted stake-nonce pre-gas]))
-    (print (format "<(TS02-C3.AQP-POOL|CC_StakeOrtoFungible)> => \"{}\""
-        [(ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron pool-id owner-id beneficiary-id dpof-id nonces)]))
+    (print (format "<(TS02-C3.CC_AQP-POOL|StakeOrtoFungible)> => \"{}\""
+        [(ref-TS02-C3::CC_AQP-POOL|StakeOrtoFungible patron pool-id owner-id beneficiary-id dpof-id nonces)]))
     (let ((post-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron)))
         (print (format "<(post-gas)> = {} ; actual delta = {}" [post-gas (- pre-gas post-gas)]))
         (map print
@@ -231,9 +231,9 @@
             }
         ]
     )
-    (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron owner-konto score-name 3 true)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpsf-id 3)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::C_AQP-SCR|IssueSemiFungibleScore patron owner-konto score-name 3 true)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name dpsf-id 3)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (print "<(fresh SF fixture provisioned)>")
 )
@@ -270,8 +270,8 @@
     (enforce (> (length owned) 0) "TX906: ANHD needs a DHCD nonce")
     (print (format "<(INFO_StakeSemiFungibleCollectable)> predicted ignis-need = {} ; nonce = {} ; pre-gas = {}"
         [predicted stake-nonce pre-gas]))
-    (print (format "<(TS02-C3.AQP-POOL|CC_StakeSemiFungibleCollectable)> => \"{}\""
-        [(ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id owner-id beneficiary-id dpsf-id nonces)]))
+    (print (format "<(TS02-C3.CC_AQP-POOL|StakeSemiFungibleCollectable)> => \"{}\""
+        [(ref-TS02-C3::CC_AQP-POOL|StakeSemiFungibleCollectable patron pool-id owner-id beneficiary-id dpsf-id nonces)]))
     (let ((post-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron)))
         (print (format "<(post-gas)> = {} ; actual delta = {}" [post-gas (- pre-gas post-gas)]))
         (map print
@@ -303,7 +303,7 @@
     )
     ;; 1) Re-stake a fresh TF position so there is something to vacate (TfStakePool is restakeable).
     (print (format "<(re-stake)> => \"{}\""
-        [(ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id amount)]))
+        [(ref-TS02-C3::CC_AQP-POOL|StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id amount)]))
     ;; 2) PREVIEW on the post-stake state, fed the SAME dirty-read legs the exec will build.
     ;;    Vacate requires the FULL tracked balance (TfStakePool carries residual from the earlier
     ;;    stake/unstake tests), so read the real per-pool DPTF tracker balance and vacate exactly that.
@@ -326,8 +326,8 @@
             (print (format "<(INFO_BatchVacateTrueFungible)> predicted ignis-need = {} ; staked-bal = {} ; patron pre-gas = {}"
                 [predicted staked-bal pre-gas]))
             ;; 3) EXECUTE the real batch-vacate (bills the patron the exact flow cost).
-            (print (format "<(TS02-C3.AQP-POOL|CCp_BatchVacateTrueFungible)> => \"{}\""
-                [(ref-TS02-C3::AQP-POOL|CCp_BatchVacateTrueFungible
+            (print (format "<(TS02-C3.CCp_AQP-POOL|BatchVacateTrueFungible)> => \"{}\""
+                [(ref-TS02-C3::CCp_AQP-POOL|BatchVacateTrueFungible
                     patron pool-id ouro-id [owner-id] [beneficiary-id] [staked-bal])]))
             ;; 4) ASSERT predicted == actual GAS balance delta.
             (let ((post-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron)))
@@ -377,8 +377,8 @@
                 )
                 (print (format "<(INFO_BatchVacateOrtoFungible)> predicted ignis-need = {} ; legs = {} ; pre-gas = {}"
                     [predicted (length legs) pre-gas]))
-                (print (format "<(TS02-C3.AQP-POOL|CCp_BatchVacateOrtoFungible)> => \"{}\""
-                    [(ref-TS02-C3::AQP-POOL|CCp_BatchVacateOrtoFungible
+                (print (format "<(TS02-C3.CCp_AQP-POOL|BatchVacateOrtoFungible)> => \"{}\""
+                    [(ref-TS02-C3::CCp_AQP-POOL|BatchVacateOrtoFungible
                         patron pool-id dpof-id
                         (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (at "owner-id" l)) legs)
                         (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)
@@ -430,8 +430,8 @@
                 )
                 (print (format "<(INFO_BatchVacateCollectables)> predicted ignis-need = {} ; legs = {} ; pre-gas = {}"
                     [predicted (length legs) pre-gas]))
-                (print (format "<(TS02-C3.AQP-POOL|CCp_BatchVacateCollectables)> => \"{}\""
-                    [(ref-TS02-C3::AQP-POOL|CCp_BatchVacateCollectables
+                (print (format "<(TS02-C3.CCp_AQP-POOL|BatchVacateCollectables)> => \"{}\""
+                    [(ref-TS02-C3::CCp_AQP-POOL|BatchVacateCollectables
                         patron pool-id dpsf-id son
                         (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (at "owner-id" l)) legs)
                         (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)
@@ -483,9 +483,9 @@
                     "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-smart))
                 (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                     "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-smart)) ] } ])
-    (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron owner-konto score-name 12 1.0)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name ouro-id 1)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::C_AQP-SCR|IssueTrueFungibleScore patron owner-konto score-name 12 1.0)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name ouro-id 1)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (print "<(fresh TF drain fixture provisioned)>")
 )
@@ -506,7 +506,7 @@
         (pool-id:string (ref-U|DALOS::UDC_Makeid "InfoGtTfDrPool"))
     )
     (print (format "<(stake)> => \"{}\""
-        [(ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id patron patron ouro-id 100.0)]))
+        [(ref-TS02-C3::CC_AQP-POOL|StakeTrueFungible patron pool-id patron patron ouro-id 100.0)]))
 )
 (commit-tx)
 (print "")
@@ -543,8 +543,8 @@
                 )
                 (print (format "<(INFO_BatchDrainTrueFungible)> predicted ignis-need = {} ; legs = {} ; pre-gas = {}"
                     [predicted (length legs) pre-gas]))
-                (print (format "<(TS02-C3.AQP-POOL|CCp_BatchDrainTrueFungible)> => \"{}\""
-                    [(ref-TS02-C3::AQP-POOL|CCp_BatchDrainTrueFungible
+                (print (format "<(TS02-C3.CCp_AQP-POOL|BatchDrainTrueFungible)> => \"{}\""
+                    [(ref-TS02-C3::CCp_AQP-POOL|BatchDrainTrueFungible
                         patron pool-id dptf-id
                         (map (lambda (l:object{AQP-VCT.VCT|VacateTfLeg}) (at "owner-id" l)) legs)
                         (map (lambda (l:object{AQP-VCT.VCT|VacateTfLeg}) (at "beneficiary-id" l)) legs)
@@ -594,9 +594,9 @@
                 (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                     "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-smart)) ] } ])
     ;; reuse an owned MVST nonce (the OF vacate returned its nonce to the owner) — drain takes the full tracked position
-    (ref-TS02-C3::AQP-SCR|C_IssueOrtoFungibleScore patron owner-konto score-name 12 1.0 1.0)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpof-id 2)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::C_AQP-SCR|IssueOrtoFungibleScore patron owner-konto score-name 12 1.0 1.0)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name dpof-id 2)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (print "<(fresh OF drain fixture provisioned)>")
 )
@@ -622,7 +622,7 @@
     (enforce (> (length owned) 0) "TX912: ANHD needs an MVST nonce")
     (let ((fresh-nonce:integer (at 0 owned)))
         (print (format "<(stake nonce {})> => \"{}\""
-            [fresh-nonce (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron pool-id patron patron dpof-id [fresh-nonce])])))
+            [fresh-nonce (ref-TS02-C3::CC_AQP-POOL|StakeOrtoFungible patron pool-id patron patron dpof-id [fresh-nonce])])))
 )
 (commit-tx)
 (print "")
@@ -656,7 +656,7 @@
                 (print (format "<(INFO_BatchDrainOrtoFungible)> predicted ignis-need = {} ; legs = {} ; pre-gas = {}"
                     [predicted (length legs) pre-gas]))
                 (print (format "<(CCp_BatchDrainOrtoFungible)> => \"{}\""
-                    [(ref-TS02-C3::AQP-POOL|CCp_BatchDrainOrtoFungible
+                    [(ref-TS02-C3::CCp_AQP-POOL|BatchDrainOrtoFungible
                         patron pool-id dpof-id
                         (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (at "owner-id" l)) legs)
                         (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)
@@ -703,9 +703,9 @@
                     "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-smart))
                 (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                     "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-smart)) ] } ])
-    (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron owner-konto score-name 3 true)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpsf-id 3)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::C_AQP-SCR|IssueSemiFungibleScore patron owner-konto score-name 3 true)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name dpsf-id 3)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (print "<(fresh SF drain fixture provisioned)>")
 )
@@ -730,7 +730,7 @@
     (enforce (> (length owned) 0) "TX913: ANHD needs a DHCD nonce")
     (let ((fresh-nonce:integer (at 0 owned)))
         (print (format "<(stake nonce {})> => \"{}\""
-            [fresh-nonce (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id patron patron dpsf-id [fresh-nonce])])))
+            [fresh-nonce (ref-TS02-C3::CC_AQP-POOL|StakeSemiFungibleCollectable patron pool-id patron patron dpsf-id [fresh-nonce])])))
 )
 (commit-tx)
 (print "")
@@ -764,7 +764,7 @@
                 (print (format "<(INFO_BatchDrainCollectable)> predicted ignis-need = {} ; legs = {} ; pre-gas = {}"
                     [predicted (length legs) pre-gas]))
                 (print (format "<(CCp_BatchDrainCollectable)> => \"{}\""
-                    [(ref-TS02-C3::AQP-POOL|CCp_BatchDrainCollectable
+                    [(ref-TS02-C3::CCp_AQP-POOL|BatchDrainCollectable
                         patron pool-id coll-id son
                         (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (at "owner-id" l)) legs)
                         (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)
@@ -813,9 +813,9 @@
                     "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-smart))
                 (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                     "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-smart)) ] } ])
-    (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron owner-konto score-name 12 1.0)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name ouro-id 1)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::C_AQP-SCR|IssueTrueFungibleScore patron owner-konto score-name 12 1.0)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name ouro-id 1)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (print "<(fresh full-vacate fixture provisioned)>")
 )
@@ -836,7 +836,7 @@
         (pool-id:string (ref-U|DALOS::UDC_Makeid "InfoGtFvPool"))
     )
     (print (format "<(stake)> => \"{}\""
-        [(ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id patron patron ouro-id 100.0)]))
+        [(ref-TS02-C3::CC_AQP-POOL|StakeTrueFungible patron pool-id patron patron ouro-id 100.0)]))
 )
 (commit-tx)
 (print "")
@@ -872,7 +872,7 @@
             (print (format "<(INFO_FullVacate)> predicted ignis-need = {} ; lanes = {}tf/{}of/{}coll ; pre-gas = {}"
                 [predicted (length tf-lanes) (length of-lanes) (length coll-lanes) pre-gas]))
             (print (format "<(CC_FullVacate)> => \"{}\""
-                [(ref-TS02-C3::AQP-POOL|CC_FullVacate patron pool-id)]))
+                [(ref-TS02-C3::CC_AQP-POOL|FullVacate patron pool-id)]))
             (let ((post-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron)))
                 (print (format "<(post-gas)> = {} ; actual delta = {}" [post-gas (- pre-gas post-gas)]))
                 (map print

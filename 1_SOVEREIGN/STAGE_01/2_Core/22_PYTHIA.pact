@@ -212,12 +212,12 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
+    (defun A_P|Add (policy-name:string policy-guard:guard)
         (with-capability (GOV|PYTHIA_ADMIN)
             (write P|T policy-name {"policy" : policy-guard})
         )
     )
-    (defun P|A_AddIMP (policy-guard:guard)
+    (defun A_P|AddIMP (policy-guard:guard)
         (with-capability (GOV|PYTHIA_ADMIN)
             (let
                 (
@@ -234,13 +234,13 @@
             )
         )
     )
-    (defun P|A_Define ()
+    (defun A_P|Define ()
         (let
             (
                 (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
                 (mg:guard (create-capability-guard (P|PYTHIA|CALLER)))
             )
-            (ref-P|DALOS::P|A_AddIMP mg)
+            (ref-P|DALOS::A_P|AddIMP mg)
         )
     )
     (defun UEV_IMC ()
@@ -721,18 +721,18 @@
     )
     ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     (defun URCi_DeployApiKey:decimal ()
-        @doc "Cost single-source for PYTHIA|C_DeployApiKey — RAW native STOA toll \
+        @doc "Cost single-source for C_PYTHIA|DeployApiKey — RAW native STOA toll \
             \ (UC_DeployPrice, default 500). Discount anchor is BAR (no Elite discount). \
             \ Consumed by TS01-C4 exec collect + INFO preview."
         (UC_DeployPrice)
     )
     (defun URCi_UpdateDualConsumerLane:decimal ()
-        @doc "Cost single-source for PYTHIA|C_UpdateDualConsumerLane — RAW native STOA \
+        @doc "Cost single-source for C_PYTHIA|UpdateDualConsumerLane — RAW native STOA \
             \ rename toll (UC_RenamePrice). Consumed by exec collect + INFO preview."
         (UC_RenamePrice)
     )
     (defun URCi_RevokeLink:decimal ()
-        @doc "Cost single-source for PYTHIA|C_RevokeLink — flat IGNIS toll \
+        @doc "Cost single-source for C_PYTHIA|RevokeLink — flat IGNIS toll \
             \ (UC_RevokeIgnisFee), collected via IGNIS::C_Collect in TS01-C4. \
             \ Consumed by exec + INFO."
         (UC_RevokeIgnisFee)
@@ -1046,7 +1046,7 @@
             apollo-account:string
             public:string
         )
-        @doc "ClientInfo for TS01-C4 PYTHIA|C_DeployApiKey (500 STOA per half)."
+        @doc "ClientInfo for TS01-C4 C_PYTHIA|DeployApiKey (500 STOA per half)."
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
@@ -1077,7 +1077,7 @@
             smart-apollo:string
             consumer-lane:string
         )
-        @doc "ClientInfo for TS01-C4 PYTHIA|C_Link (inactive dual row; no fee)."
+        @doc "ClientInfo for TS01-C4 C_PYTHIA|Link (inactive dual row; no fee)."
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
@@ -1108,7 +1108,7 @@
             patron:string
             dual-link-key:string
         )
-        @doc "ClientInfo for TS01-C4 PYTHIA|C_RevokeLink / A_RevokeLink (1 IGNIS)."
+        @doc "ClientInfo for TS01-C4 C_PYTHIA|RevokeLink / A_RevokeLink (1 IGNIS)."
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -1146,7 +1146,7 @@
             dual-link-key:string
             new-name:string
         )
-        @doc "ClientInfo for TS01-C4 PYTHIA|C_UpdateDualConsumerLane."
+        @doc "ClientInfo for TS01-C4 C_PYTHIA|UpdateDualConsumerLane."
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)

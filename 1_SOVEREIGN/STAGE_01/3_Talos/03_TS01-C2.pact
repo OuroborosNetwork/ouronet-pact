@@ -6,110 +6,110 @@
         \ Modules: ATS, VST, LQD and ORBR are included in the Second Batch"
     ;;
     ;;ATS (Autostake) Functions
-    (defun ATS|C_UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}]))
-    (defun ATS|C_UpgradeBranding (patron:string entity-id:string months:integer))
+    (defun C_ATS|UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}]))
+    (defun C_ATS|UpgradeBranding (patron:string entity-id:string months:integer))
     ;;
     ;;Hot Rbt Management
-    (defun ATS|C_HOT-RBT|UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}]))
-    (defun ATS|C_HOT-RBT|UpgradeBranding (patron:string entity-id:string months:integer))
-    (defun ATS|C_HOT-RBT|Repurpose (patron:string hot-rbt:string nonce:integer repurpose-to:string))
+    (defun C_ATS|HOT-RBT|UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}]))
+    (defun C_ATS|HOT-RBT|UpgradeBranding (patron:string entity-id:string months:integer))
+    (defun C_ATS|HOT-RBT|Repurpose (patron:string hot-rbt:string nonce:integer repurpose-to:string))
         ;;
-    (defun ATS|C_Issue:list (patron:string account:string ats:[string] index-decimals:[integer] reward-token:[string] rt-nfr:[bool] reward-bearing-token:[string] rbt-nfr:[bool]))
-    (defun ATS|C_RotateOwnership (patron:string ats:string new-owner:string))
-    (defun ATS|C_Control (patron:string ats:string can-change-owner:bool syphoning:bool hibernate:bool))
-    (defun ATS|C_UpdateRoyalty (patron:string ats:string royalty:decimal))
-    (defun ATS|C_UpdateSyphon (patron:string ats:string syphon:decimal))
-    (defun ATS|C_SetHibernationFees (patron:string ats:string peak:decimal decay:decimal))
+    (defun C_ATS|Issue:list (patron:string account:string ats:[string] index-decimals:[integer] reward-token:[string] rt-nfr:[bool] reward-bearing-token:[string] rbt-nfr:[bool]))
+    (defun C_ATS|RotateOwnership (patron:string ats:string new-owner:string))
+    (defun C_ATS|Control (patron:string ats:string can-change-owner:bool syphoning:bool hibernate:bool))
+    (defun C_ATS|UpdateRoyalty (patron:string ats:string royalty:decimal))
+    (defun C_ATS|UpdateSyphon (patron:string ats:string syphon:decimal))
+    (defun C_ATS|SetHibernationFees (patron:string ats:string peak:decimal decay:decimal))
         ;;
-    (defun ATS|C_ToggleParameterLock (patron:string ats:string toggle:bool))
-    (defun ATS|C_AddSecondary (patron:string ats:string reward-token:string rt-nfr:bool))
+    (defun C_ATS|ToggleParameterLock (patron:string ats:string toggle:bool))
+    (defun C_ATS|AddSecondary (patron:string ats:string reward-token:string rt-nfr:bool))
         ;;
-    (defun ATS|C_ControlColdRecoveryFees (patron:string ats:string c-nfr:bool c-fr:bool))
-    (defun ATS|C_SetColdRecoveryFees (patron:string ats:string fee-positions:integer fee-thresholds:[decimal] fee-array:[[decimal]]))
-    (defun ATS|C_SetColdRecoveryDuration (patron:string ats:string soft-or-hard:bool base:integer growth:integer))
-    (defun ATS|C_ToggleElite (patron:string ats:string toggle:bool))
-    (defun ATS|C_ToggleUpgrade (patron:string ats:string toggle:bool))
-    (defun ATS|C_SwitchColdRecovery (patron:string ats:string toggle:bool))
+    (defun C_ATS|ControlColdRecoveryFees (patron:string ats:string c-nfr:bool c-fr:bool))
+    (defun C_ATS|SetColdRecoveryFees (patron:string ats:string fee-positions:integer fee-thresholds:[decimal] fee-array:[[decimal]]))
+    (defun C_ATS|SetColdRecoveryDuration (patron:string ats:string soft-or-hard:bool base:integer growth:integer))
+    (defun C_ATS|ToggleElite (patron:string ats:string toggle:bool))
+    (defun C_ATS|ToggleUpgrade (patron:string ats:string toggle:bool))
+    (defun C_ATS|SwitchColdRecovery (patron:string ats:string toggle:bool))
         ;;
-    (defun ATS|C_AddHotRBT (patron:string ats:string hot-rbt:string))
-    (defun ATS|C_ControlHotRecoveryFee (patron:string ats:string h-fr:bool))
-    (defun ATS|C_SetHotRecoveryFee (patron:string ats:string promile:decimal decay:integer))
-    (defun ATS|C_SwitchHotRecovery (patron:string ats:string toggle:bool))
+    (defun C_ATS|AddHotRBT (patron:string ats:string hot-rbt:string))
+    (defun C_ATS|ControlHotRecoveryFee (patron:string ats:string h-fr:bool))
+    (defun C_ATS|SetHotRecoveryFee (patron:string ats:string promile:decimal decay:integer))
+    (defun C_ATS|SwitchHotRecovery (patron:string ats:string toggle:bool))
         ;;
-    (defun ATS|C_SetDirectRecoveryFee (patron:string ats:string promile:decimal))
-    (defun ATS|C_SwitchDirectRecovery (patron:string ats:string toggle:bool))
+    (defun C_ATS|SetDirectRecoveryFee (patron:string ats:string promile:decimal))
+    (defun C_ATS|SwitchDirectRecovery (patron:string ats:string toggle:bool))
         ;;
-    (defun ATS|C_RemoveSecondary (patron:string remover:string ats:string reward-token:string))
-    (defun ATS|C_WithdrawRoyalties (patron:string ats:string target:string))
-    (defun ATS|C_KickStart (patron:string kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
-    (defun ATS|C_Fuel (patron:string fueler:string ats:string reward-token:string amount:decimal))
-    (defun ATS|C_Coil (patron:string coiler:string ats:string rt:string amount:decimal))
-    (defun ATS|C_Curl (patron:string curler:string ats1:string ats2:string rt:string amount:decimal))
-    (defun ATS|C_VestedCoil (patron:string coiler-vester:string ats:string coil-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer))
-    (defun ATS|C_VestedCurl (patron:string curler-vester:string ats1:string ats2:string curl-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer))
-    (defun ATS|C_Constrict (patron:string constricter:string ats:string rt:string amount:decimal dayz:integer))
-    (defun ATS|C_Brumate (patron:string brumator:string ats1:string ats2:string rt:string amount:decimal dayz:integer))
-    (defun ATS|C_Syphon (patron:string syphon-target:string ats:string syphon-amounts:[decimal]))
+    (defun C_ATS|RemoveSecondary (patron:string remover:string ats:string reward-token:string))
+    (defun C_ATS|WithdrawRoyalties (patron:string ats:string target:string))
+    (defun C_ATS|KickStart (patron:string kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
+    (defun C_ATS|Fuel (patron:string fueler:string ats:string reward-token:string amount:decimal))
+    (defun C_ATS|Coil (patron:string coiler:string ats:string rt:string amount:decimal))
+    (defun C_ATS|Curl (patron:string curler:string ats1:string ats2:string rt:string amount:decimal))
+    (defun C_ATS|VestedCoil (patron:string coiler-vester:string ats:string coil-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer))
+    (defun C_ATS|VestedCurl (patron:string curler-vester:string ats1:string ats2:string curl-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer))
+    (defun C_ATS|Constrict (patron:string constricter:string ats:string rt:string amount:decimal dayz:integer))
+    (defun C_ATS|Brumate (patron:string brumator:string ats1:string ats2:string rt:string amount:decimal dayz:integer))
+    (defun C_ATS|Syphon (patron:string syphon-target:string ats:string syphon-amounts:[decimal]))
         ;;
-    (defun ATS|C_ColdRecovery (patron:string recoverer:string ats:string ra:decimal))
-    (defun ATS|C_Cull (patron:string culler:string ats:string))
+    (defun C_ATS|ColdRecovery (patron:string recoverer:string ats:string ra:decimal))
+    (defun C_ATS|Cull (patron:string culler:string ats:string))
         ;;
-    (defun ATS|C_HotRecovery (patron:string recoverer:string ats:string ra:decimal))
-    (defun ATS|C_Reverse (patron:string recoverer:string id:string nonce:integer))
-    (defun ATS|C_Redeem (patron:string redeemer:string id:string nonce:integer))
+    (defun C_ATS|HotRecovery (patron:string recoverer:string ats:string ra:decimal))
+    (defun C_ATS|Reverse (patron:string recoverer:string id:string nonce:integer))
+    (defun C_ATS|Redeem (patron:string redeemer:string id:string nonce:integer))
         ;;
-    (defun ATS|C_DirectRecovery (patron:string recoverer:string ats:string ra:decimal))
+    (defun C_ATS|DirectRecovery (patron:string recoverer:string ats:string ra:decimal))
     ;;
     ;;
     ;;VST (Vesting) Functions
-    (defun VST|C_CreateFrozenLink:[string] (patron:string dptf:string))
-    (defun VST|C_CreateReservationLink:[string] (patron:string dptf:string))
-    (defun VST|C_CreateVestingLink:[string] (patron:string dptf:string))
-    (defun VST|C_CreateSleepingLink:[string] (patron:string dptf:string))
-    (defun VST|C_CreateHibernatingLink:[string] (patron:string dptf:string))
+    (defun C_VST|CreateFrozenLink:[string] (patron:string dptf:string))
+    (defun C_VST|CreateReservationLink:[string] (patron:string dptf:string))
+    (defun C_VST|CreateVestingLink:[string] (patron:string dptf:string))
+    (defun C_VST|CreateSleepingLink:[string] (patron:string dptf:string))
+    (defun C_VST|CreateHibernatingLink:[string] (patron:string dptf:string))
         ;;Frozen
-    (defun VST|C_Freeze (patron:string freezer:string freeze-output:string dptf:string amount:decimal))
-    (defun VST|C_RepurposeFrozen (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string))
-    (defun VST|C_ToggleTransferRoleFrozenDPTF (patron:string s-dptf:string target:string toggle:bool))
+    (defun C_VST|Freeze (patron:string freezer:string freeze-output:string dptf:string amount:decimal))
+    (defun C_VST|RepurposeFrozen (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string))
+    (defun C_VST|ToggleTransferRoleFrozenDPTF (patron:string s-dptf:string target:string toggle:bool))
         ;;Reservation
-    (defun VST|C_Reserve (patron:string reserver:string dptf:string amount:decimal))
-    (defun VST|C_Unreserve (patron:string unreserver:string r-dptf:string amount:decimal))
-    (defun VST|C_RepurposeReserved (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string))
-    (defun VST|C_ToggleTransferRoleReservedDPTF (patron:string s-dptf:string target:string toggle:bool))
+    (defun C_VST|Reserve (patron:string reserver:string dptf:string amount:decimal))
+    (defun C_VST|Unreserve (patron:string unreserver:string r-dptf:string amount:decimal))
+    (defun C_VST|RepurposeReserved (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string))
+    (defun C_VST|ToggleTransferRoleReservedDPTF (patron:string s-dptf:string target:string toggle:bool))
         ;;Vesting
-    (defun VST|C_Vest (patron:string vester:string target-account:string dptf:string amount:decimal offset:integer seconds:integer milestones:integer))
-    (defun VST|C_Unvest (patron:string unvester:string dpof:string nonce:integer))
-    (defun VST|C_RepurposeVested (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
+    (defun C_VST|Vest (patron:string vester:string target-account:string dptf:string amount:decimal offset:integer seconds:integer milestones:integer))
+    (defun C_VST|Unvest (patron:string unvester:string dpof:string nonce:integer))
+    (defun C_VST|RepurposeVested (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
         ;;Sleeping
-    (defun VST|C_Sleep (patron:string sleeper:string target-account:string dptf:string amount:decimal seconds:integer))
-    (defun VST|C_Unsleep (patron:string unsleeper:string dpof:string nonce:integer))
-    (defun VST|C_Merge(patron:string merger:string dpof:string nonces:[integer]))
-    (defun VST|C_RepurposeMerge (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string))
-    (defun VST|C_RepurposeSleeping (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
-    (defun VST|C_ToggleTransferRoleSleepingDPOF (patron:string s-dpof:string target:string toggle:bool))
+    (defun C_VST|Sleep (patron:string sleeper:string target-account:string dptf:string amount:decimal seconds:integer))
+    (defun C_VST|Unsleep (patron:string unsleeper:string dpof:string nonce:integer))
+    (defun C_VST|Merge(patron:string merger:string dpof:string nonces:[integer]))
+    (defun C_VST|RepurposeMerge (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string))
+    (defun C_VST|RepurposeSleeping (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
+    (defun C_VST|ToggleTransferRoleSleepingDPOF (patron:string s-dpof:string target:string toggle:bool))
         ;;Hibernating
-    (defun VST|C_Hibernate (patron:string hibernator:string target-account:string dptf:string amount:decimal dayz:integer))
-    (defun VST|C_Awake (patron:string awaker:string dpof:string nonce:integer))
-    (defun VST|C_Slumber (patron:string merger:string dpof:string nonces:[integer]))
-    (defun VST|C_RepurposeSlumber (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string))
-    (defun VST|C_RepurposeHibernating (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
-    (defun VST|C_ToggleTransferRoleHibernatedDPOF (patron:string s-dpof:string target:string toggle:bool))
+    (defun C_VST|Hibernate (patron:string hibernator:string target-account:string dptf:string amount:decimal dayz:integer))
+    (defun C_VST|Awake (patron:string awaker:string dpof:string nonce:integer))
+    (defun C_VST|Slumber (patron:string merger:string dpof:string nonces:[integer]))
+    (defun C_VST|RepurposeSlumber (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string))
+    (defun C_VST|RepurposeHibernating (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
+    (defun C_VST|ToggleTransferRoleHibernatedDPOF (patron:string s-dpof:string target:string toggle:bool))
     ;;
     ;;
     ;;LQD (Liquid-Staking STOA) Functions
-    (defun LQD|C_UnwrapStoa (patron:string unwrapper:string amount:decimal))
-    (defun LQD|C_WrapStoa (patron:string wrapper:string amount:decimal))
+    (defun C_LQD|UnwrapStoa (patron:string unwrapper:string amount:decimal))
+    (defun C_LQD|WrapStoa (patron:string wrapper:string amount:decimal))
     ;;#13H fix: LQD|C_RegisterOuronetAccountForUrstoaHoldings removed (2026-08-27) - see
     ;;12_LIQUID.pact's matching note; account creation is UI-constructed, not a Pact function.
-    (defun LQD|C_UnwrapUrStoa (patron:string unwrapper:string amount:decimal))
-    (defun LQD|C_WrapUrStoa (patron:string wrapper:string amount:decimal))
+    (defun C_LQD|UnwrapUrStoa (patron:string unwrapper:string amount:decimal))
+    (defun C_LQD|WrapUrStoa (patron:string wrapper:string amount:decimal))
     ;;
     ;;
     ;;ORBR (Ouroboros) Functions
-    (defun ORBR|C_Compress (client:string ignis-amount:decimal))
-    (defun ORBR|C_Sublimate (client:string target:string ouro-amount:decimal))
-    (defun ORBR|C_SublimateV2 (client:string target:string ouro-amount:decimal))
-    (defun ORBR|C_WithdrawFees (patron:string id:string target:string))
+    (defun C_ORBR|Compress (client:string ignis-amount:decimal))
+    (defun C_ORBR|Sublimate (client:string target:string ouro-amount:decimal))
+    (defun C_ORBR|SublimateV2 (client:string target:string ouro-amount:decimal))
+    (defun C_ORBR|WithdrawFees (patron:string id:string target:string))
     ;;
 )
 ;;
@@ -159,14 +159,14 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
+    (defun A_P|Add (policy-name:string policy-guard:guard)
         (with-capability (GOV|TS01-C1_ADMIN)
             (write P|T policy-name
                 {"policy" : policy-guard}
             )
         )
     )
-    (defun P|A_AddIMP (policy-guard:guard)
+    (defun A_P|AddIMP (policy-guard:guard)
         (with-capability (GOV|TS01-C1_ADMIN)
             (let
                 (
@@ -183,7 +183,7 @@
             )
         )
     )
-    (defun P|A_Define ()
+    (defun A_P|Define ()
         (let
             (
                 (ref-P|IGNIS:module{OuronetPolicyV1} IGNIS)
@@ -202,21 +202,21 @@
                 (ref-P|TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                 (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
             )
-            (ref-P|IGNIS::P|A_AddIMP mg)
-            (ref-P|DPOF::P|A_AddIMP mg)
-            (ref-P|ATS::P|A_AddIMP mg)
-            (ref-P|ATSU::P|A_AddIMP mg)
-            (ref-P|VST::P|A_AddIMP mg)
-            (ref-P|LIQUID::P|A_AddIMP mg)
-            (ref-P|ORBR::P|A_AddIMP mg)
+            (ref-P|IGNIS::A_P|AddIMP mg)
+            (ref-P|DPOF::A_P|AddIMP mg)
+            (ref-P|ATS::A_P|AddIMP mg)
+            (ref-P|ATSU::A_P|AddIMP mg)
+            (ref-P|VST::A_P|AddIMP mg)
+            (ref-P|LIQUID::A_P|AddIMP mg)
+            (ref-P|ORBR::A_P|AddIMP mg)
             ;;
-            (ref-P|SWPT::P|A_AddIMP mg)
-            (ref-P|SWP::P|A_AddIMP mg)
-            (ref-P|SWPI::P|A_AddIMP mg)
-            (ref-P|SWPL::P|A_AddIMP mg)
-            (ref-P|SWPLC::P|A_AddIMP mg)
-            (ref-P|SWPU::P|A_AddIMP mg)
-            (ref-P|TS01-A::P|A_AddIMP mg)
+            (ref-P|SWPT::A_P|AddIMP mg)
+            (ref-P|SWP::A_P|AddIMP mg)
+            (ref-P|SWPI::A_P|AddIMP mg)
+            (ref-P|SWPL::A_P|AddIMP mg)
+            (ref-P|SWPLC::A_P|AddIMP mg)
+            (ref-P|SWPU::A_P|AddIMP mg)
+            (ref-P|TS01-A::A_P|AddIMP mg)
         )
     )
     (defun UEV_IMC ()
@@ -258,7 +258,7 @@
     ;;{F8}  User [C]
     ;;
     ;;  [ATS_Client]
-    (defun ATS|C_UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}])
+    (defun C_ATS|UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}])
         @doc "Updates <pending-branding> for ATSPair <entity-id> costing 500 IGNIS"
         (with-capability (P|TS)
             (let
@@ -272,7 +272,7 @@
             )
         )
     )
-    (defun ATS|C_UpgradeBranding (patron:string entity-id:string months:integer)
+    (defun C_ATS|UpgradeBranding (patron:string entity-id:string months:integer)
         @doc "Similar to its DPTF, DPOF Variants"
         (with-capability (P|TS)
             (let
@@ -286,7 +286,7 @@
         )
     )
     ;;
-    (defun ATS|C_HOT-RBT|UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}])
+    (defun C_ATS|HOT-RBT|UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}])
         @doc "Updates <pending-branding> for a HOT-RBT <entity-id> costing 150 IGNIS (Standard DPOF Costs)"
         (with-capability (P|TS)
             (let
@@ -300,7 +300,7 @@
             )
         )
     )
-    (defun ATS|C_HOT-RBT|UpgradeBranding (patron:string entity-id:string months:integer)
+    (defun C_ATS|HOT-RBT|UpgradeBranding (patron:string entity-id:string months:integer)
         @doc "Similar to its DPTF, DPOF Variants"
         (with-capability (P|TS)
             (let
@@ -313,7 +313,7 @@
             )
         )
     )
-    (defun ATS|C_HOT-RBT|Repurpose (patron:string hot-rbt:string nonce:integer repurpose-to:string)
+    (defun C_ATS|HOT-RBT|Repurpose (patron:string hot-rbt:string nonce:integer repurpose-to:string)
         @doc "Repurposes a Hot-Rbt to a another Account, Can only be done by atspair owner"
         (with-capability (P|TS)
             (let
@@ -331,7 +331,7 @@
         )
     )
     ;;
-    (defun ATS|C_Issue:list (patron:string account:string ats:[string] index-decimals:[integer] reward-token:[string] rt-nfr:[bool] reward-bearing-token:[string] rbt-nfr:[bool])
+    (defun C_ATS|Issue:list (patron:string account:string ats:[string] index-decimals:[integer] reward-token:[string] rt-nfr:[bool] reward-bearing-token:[string] rbt-nfr:[bool])
         @doc "Issues and Autostake Pair"
         (with-capability (P|TS)
             (let
@@ -349,7 +349,7 @@
             )
         )
     )
-    (defun ATS|C_RotateOwnership (patron:string ats:string new-owner:string)
+    (defun C_ATS|RotateOwnership (patron:string ats:string new-owner:string)
         @doc "Rotates ATSPair Ownership"
         (with-capability (P|TS)
             (let
@@ -364,7 +364,7 @@
             )
         )
     )
-    (defun ATS|C_Control (patron:string ats:string can-change-owner:bool syphoning:bool hibernate:bool)
+    (defun C_ATS|Control (patron:string ats:string can-change-owner:bool syphoning:bool hibernate:bool)
         @doc "Controls the Properties of an ATS-Pair"
         (with-capability (P|TS)
             (let
@@ -379,7 +379,7 @@
             )
         )
     )
-    (defun ATS|C_UpdateRoyalty (patron:string ats:string royalty:decimal)
+    (defun C_ATS|UpdateRoyalty (patron:string ats:string royalty:decimal)
         @doc "Updates the Royalty value for an ATS-Pair"
         (with-capability (P|TS)
             (let
@@ -394,7 +394,7 @@
             )
         )
     )
-    (defun ATS|C_UpdateSyphon (patron:string ats:string syphon:decimal)
+    (defun C_ATS|UpdateSyphon (patron:string ats:string syphon:decimal)
         @doc "Updates the Syphoning Index value for an ATS-Pair"
         (with-capability (P|TS)
             (let
@@ -409,7 +409,7 @@
             )
         )
     )
-    (defun ATS|C_SetHibernationFees (patron:string ats:string peak:decimal decay:decimal)
+    (defun C_ATS|SetHibernationFees (patron:string ats:string peak:decimal decay:decimal)
         @doc "Updates the Hibernation Fees an ATS-Pair"
         (with-capability (P|TS)
             (let
@@ -425,7 +425,7 @@
         )
     )
     ;;
-    (defun ATS|C_ToggleParameterLock (patron:string ats:string toggle:bool)
+    (defun C_ATS|ToggleParameterLock (patron:string ats:string toggle:bool)
         @doc "Toggle ATSPair Parameter Lock"
         (with-capability (P|TS)
             (let
@@ -443,7 +443,7 @@
             )
         )
     )
-    (defun ATS|C_AddSecondary (patron:string ats:string reward-token:string rt-nfr:bool)
+    (defun C_ATS|AddSecondary (patron:string ats:string reward-token:string rt-nfr:bool)
         @doc "Adds a Secondary RT to an ATSPair"
         (with-capability (P|TS)
             (let
@@ -463,7 +463,7 @@
         )
     )
     ;;
-    (defun ATS|C_ControlColdRecoveryFees (patron:string ats:string c-nfr:bool c-fr:bool)
+    (defun C_ATS|ControlColdRecoveryFees (patron:string ats:string c-nfr:bool c-fr:bool)
         @doc "Adds a Secondary RT to an ATSPair"
         (with-capability (P|TS)
             (let
@@ -479,7 +479,7 @@
             )
         )
     )
-    (defun ATS|C_SetColdRecoveryFees (patron:string ats:string fee-positions:integer fee-thresholds:[decimal] fee-array:[[decimal]])
+    (defun C_ATS|SetColdRecoveryFees (patron:string ats:string fee-positions:integer fee-thresholds:[decimal] fee-array:[[decimal]])
         @doc "Adds a Secondary RT to an ATSPair"
         (with-capability (P|TS)
             (let
@@ -495,7 +495,7 @@
             )
         )
     )
-    (defun ATS|C_SetColdRecoveryDuration (patron:string ats:string soft-or-hard:bool base:integer growth:integer)
+    (defun C_ATS|SetColdRecoveryDuration (patron:string ats:string soft-or-hard:bool base:integer growth:integer)
         @doc "Adds a Secondary RT to an ATSPair"
         (with-capability (P|TS)
             (let
@@ -511,7 +511,7 @@
             )
         )
     )
-    (defun ATS|C_ToggleElite (patron:string ats:string toggle:bool)
+    (defun C_ATS|ToggleElite (patron:string ats:string toggle:bool)
         @doc "Toggles ATSPair Elite Functionality"
         (with-capability (P|TS)
             (let
@@ -529,7 +529,7 @@
             )
         )
     )
-    (defun ATS|C_ToggleUpgrade (patron:string ats:string toggle:bool)
+    (defun C_ATS|ToggleUpgrade (patron:string ats:string toggle:bool)
         @doc "Sets can-upgrade for an ATS-Pair (audit finding #21L / L3). Gates C_Control \
             \ (can-change-owner/syphoning/hibernate) - false blocks C_Control entirely \
             \ until set back to true."
@@ -549,7 +549,7 @@
             )
         )
     )
-    (defun ATS|C_SwitchColdRecovery (patron:string ats:string toggle:bool)
+    (defun C_ATS|SwitchColdRecovery (patron:string ats:string toggle:bool)
         @doc "Switches on or off Cold Recovery"
         (with-capability (P|TS)
             (let
@@ -569,7 +569,7 @@
         )
     )
     ;;
-    (defun ATS|C_AddHotRBT (patron:string ats:string hot-rbt:string)
+    (defun C_ATS|AddHotRBT (patron:string ats:string hot-rbt:string)
         @doc "Adds a Hot-RBT to an ATS-Pair immutably \
             \ Must be a non special DPOF Token with zero Supply \
             \ Ownership of this Token is transfered to the ATS|SC_NAME"
@@ -586,7 +586,7 @@
             )
         )
     )
-    (defun ATS|C_ControlHotRecoveryFee (patron:string ats:string h-fr:bool)
+    (defun C_ATS|ControlHotRecoveryFee (patron:string ats:string h-fr:bool)
         @doc "Controls Hot Recovery Fees"
         (with-capability (P|TS)
             (let
@@ -601,7 +601,7 @@
             )
         )
     )
-    (defun ATS|C_SetHotRecoveryFee (patron:string ats:string promile:decimal decay:integer)
+    (defun C_ATS|SetHotRecoveryFee (patron:string ats:string promile:decimal decay:integer)
         @doc "Controls Hot Recovery Fees"
         (with-capability (P|TS)
             (let
@@ -616,7 +616,7 @@
             )
         )
     )
-    (defun ATS|C_SwitchHotRecovery (patron:string ats:string toggle:bool)
+    (defun C_ATS|SwitchHotRecovery (patron:string ats:string toggle:bool)
         @doc "Switches on or off Hot Recovery"
         (with-capability (P|TS)
             (let
@@ -636,7 +636,7 @@
         )
     )
     ;;
-    (defun ATS|C_SetDirectRecoveryFee (patron:string ats:string promile:decimal)
+    (defun C_ATS|SetDirectRecoveryFee (patron:string ats:string promile:decimal)
         @doc "Controls Direct Recovery Fees"
         (with-capability (P|TS)
             (let
@@ -651,7 +651,7 @@
             )
         )
     )
-    (defun ATS|C_SwitchDirectRecovery (patron:string ats:string toggle:bool)
+    (defun C_ATS|SwitchDirectRecovery (patron:string ats:string toggle:bool)
         @doc "Switches on or off Direct Recovery"
         (with-capability (P|TS)
             (let
@@ -672,7 +672,7 @@
     )
     ;;
     ;;
-    (defun ATS|C_RemoveSecondary (patron:string remover:string ats:string reward-token:string)
+    (defun C_ATS|RemoveSecondary (patron:string remover:string ats:string reward-token:string)
         @doc "Controls Direct Recovery Fees"
         (with-capability (P|TS)
             (let
@@ -687,7 +687,7 @@
             )
         )
     )
-    (defun ATS|C_WithdrawRoyalties (patron:string ats:string target:string)
+    (defun C_ATS|WithdrawRoyalties (patron:string ats:string target:string)
         @doc "Withdraws ATS-Pair Royalties, if non-zero"
         (with-capability (P|TS)
             (let
@@ -704,7 +704,7 @@
             )
         )
     )
-    (defun ATS|C_KickStart (patron:string kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
+    (defun C_ATS|KickStart (patron:string kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
         @doc "Kickstarst an ATSPair, so that it starts at a given Index \
             \ Can only be done on a freshly created ATS-Pair"
         (with-capability (P|TS)
@@ -721,7 +721,7 @@
             )
         )
     )
-    (defun ATS|C_Fuel (patron:string fueler:string ats:string reward-token:string amount:decimal)
+    (defun C_ATS|Fuel (patron:string fueler:string ats:string reward-token:string amount:decimal)
         @doc "Fuels an ATSPair with RT Tokens, increasing its Index"
         (with-capability (P|TS)
             (let
@@ -740,7 +740,7 @@
             )
         )
     )
-    (defun ATS|C_Coil (patron:string coiler:string ats:string rt:string amount:decimal)
+    (defun C_ATS|Coil (patron:string coiler:string ats:string rt:string amount:decimal)
         @doc "Coils an RT Token from a specific ATS-Pair, generating a RBT Token \
         \ Only works if <ats> has hibernation off."
         (with-capability (P|TS)
@@ -757,7 +757,7 @@
             )
         )
     )
-    (defun ATS|C_Curl (patron:string curler:string ats1:string ats2:string rt:string amount:decimal)
+    (defun C_ATS|Curl (patron:string curler:string ats1:string ats2:string rt:string amount:decimal)
         @doc "Curl double coils an RT Token in 2 chained ATS-Pairs \
             \ The RBT Token of <ats1> must be RBT Token in <ats2> \
             \ Both ATS-Pairs must have hibernation off for this to work."
@@ -777,7 +777,7 @@
             )
         )
     )
-    (defun ATS|C_VestedCoil (patron:string coiler-vester:string ats:string coil-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer)
+    (defun C_ATS|VestedCoil (patron:string coiler-vester:string ats:string coil-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer)
         @doc "Coils a DPTF Token and Vests its output to <target-account> \
             \ Requires that: \
             \ *]Input DPTF is part of an ATSPair, the <ats> \
@@ -813,7 +813,7 @@
             )
         )
     )
-    (defun ATS|C_VestedCurl (patron:string curler-vester:string ats1:string ats2:string curl-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer)
+    (defun C_ATS|VestedCurl (patron:string curler-vester:string ats1:string ats2:string curl-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer)
         @doc "Same as <ATS|C_VestedCoil> but instead Curls the input Token. \
             \ Requires that : \
             \ *]Input DPTF is part of an ATSPair, the <ats1> \
@@ -852,7 +852,7 @@
             )
         )
     )
-    (defun ATS|C_Constrict (patron:string constricter:string ats:string rt:string amount:decimal dayz:integer)
+    (defun C_ATS|Constrict (patron:string constricter:string ats:string rt:string amount:decimal dayz:integer)
         @doc "Constricts an RT Token from a specific ATS-Pair, generating a RBT Token in HIbernated Form \
         \ Only works if <ats> has hibernation on."
         (with-capability (P|TS)
@@ -871,7 +871,7 @@
             )
         )
     )
-    (defun ATS|C_Brumate (patron:string brumator:string ats1:string ats2:string rt:string amount:decimal dayz:integer)
+    (defun C_ATS|Brumate (patron:string brumator:string ats1:string ats2:string rt:string amount:decimal dayz:integer)
         @doc "Brumate double coils an RT Token in 2 chained ATS-Pairs \
             \ The RBT Token of <ats1> must be RBT Token in <ats2> \
             \ Second ATS-Pair must have hibernation on for this to work."
@@ -891,7 +891,7 @@
             )
         )
     )
-    (defun ATS|C_Syphon (patron:string syphon-target:string ats:string syphon-amounts:[decimal])
+    (defun C_ATS|Syphon (patron:string syphon-target:string ats:string syphon-amounts:[decimal])
         @doc "Syphons from an ATS Pair, extracting RTs and decreasing ATSPair Index. \
             \ Syphoning can be executed until the set up Syphon limit is achieved"
         (with-capability (P|TS)
@@ -910,7 +910,7 @@
         )
     )
     ;;
-    (defun ATS|C_ColdRecovery (patron:string recoverer:string ats:string ra:decimal)
+    (defun C_ATS|ColdRecovery (patron:string recoverer:string ats:string ra:decimal)
         @doc "Recovers Cold-RBT, disolving it, generating RTs cullable in the future. \
         \ Amount of RTs is determined by the ATS-Pair Index at the Cold Recovery Moment"
         (with-capability (P|TS)
@@ -926,7 +926,7 @@
             )
         )
     )
-    (defun ATS|C_Cull (patron:string culler:string ats:string)
+    (defun C_ATS|Cull (patron:string culler:string ats:string)
         @doc "Culls an ATSPair, extracting RTs that are cullable. Fix (audit finding \
             \ #32N / N1): reports a distinct 'nothing to cull yet' message when nothing \
             \ was actually culled, instead of always claiming success - the underlying \
@@ -952,7 +952,7 @@
         )
     )
     ;;
-    (defun ATS|C_HotRecovery (patron:string recoverer:string ats:string ra:decimal)
+    (defun C_ATS|HotRecovery (patron:string recoverer:string ats:string ra:decimal)
         @doc "Converts a Cold-RBT to a Hot-RBT, preparing it for Hot Recovery"
         (with-capability (P|TS)
             (let
@@ -967,7 +967,7 @@
             )
         )
     )
-    (defun ATS|C_Reverse (patron:string recoverer:string id:string nonce:integer)
+    (defun C_ATS|Reverse (patron:string recoverer:string id:string nonce:integer)
         @doc "Reverses a Hot-RBT Nonce, converting it to Cold-RBT in its entirety \
             \ as the Hot-RBT doesnt have segmentation turned on"
         (with-capability (P|TS)
@@ -985,7 +985,7 @@
             )
         )
     )
-    (defun ATS|C_Redeem (patron:string redeemer:string id:string nonce:integer)
+    (defun C_ATS|Redeem (patron:string redeemer:string id:string nonce:integer)
         @doc "Redeems a Hot-RBT, recovering RTs"
         (with-capability (P|TS)
             (let
@@ -1003,7 +1003,7 @@
         )
     )
     ;;
-    (defun ATS|C_DirectRecovery (patron:string recoverer:string ats:string ra:decimal)
+    (defun C_ATS|DirectRecovery (patron:string recoverer:string ats:string ra:decimal)
         @doc "Directly Recovers RBT to RTs using Direct Recovery"
         (with-capability (P|TS)
             (let
@@ -1019,7 +1019,7 @@
         )
     )
     ;;  [VST_Client]
-    (defun VST|C_CreateFrozenLink:[string] (patron:string dptf:string)
+    (defun C_VST|CreateFrozenLink:[string] (patron:string dptf:string)
         @doc "Creates a Frozen Link, issuing a Special-DPTF as a frozen counterpart for another DPTF \
             \ A Frozen Link is immutable, and noted in the Token Properties of both DPTFs \
             \ A Special DPTF of the Frozen variety, is used for implementing the FROZEN Functionality for a DPTF Token \
@@ -1060,7 +1060,7 @@
             )
         )
     )
-    (defun VST|C_CreateReservationLink:[string] (patron:string dptf:string)
+    (defun C_VST|CreateReservationLink:[string] (patron:string dptf:string)
         @doc "Creates a Reservation Link, issuing a Special-DPTF as a reserved counterpart for another DPTF \
             \ A Reservation Link is immutable, and noted in the Token Properties of both DPTFs \
             \ A Special DPTF of the Reserved variety, is used for implementing the RESERVED Functionality for a DPTF Token \
@@ -1100,7 +1100,7 @@
             )
         )
     )
-    (defun VST|C_CreateVestingLink:[string] (patron:string dptf:string)
+    (defun C_VST|CreateVestingLink:[string] (patron:string dptf:string)
         @doc "Creates a Vesting Link, issuing a Special-DPOF as a vested counterpart for another DPTF \
             \ A Vesting Link is immutable, and noted in the Token Properties of both the DPTF and the Special DPOF \
             \ A Special DPOF of the Vested variety, is used for implementing the Vesting Functionality for a DPTF Token \
@@ -1139,7 +1139,7 @@
             )
         )
     )
-    (defun VST|C_CreateSleepingLink:[string] (patron:string dptf:string)
+    (defun C_VST|CreateSleepingLink:[string] (patron:string dptf:string)
         @doc "Creates a Sleeping Link, issuing a Special-DPOF as a sleeping counterpart for another DPTF \
             \ A Sleeping Link is immutable, and noted in the Token Properties of both the DPTF and the Special DPOF \
             \ A Special DPOF of the Sleeping variety, is used for implementing the Sleeping Functionality for a DPTF Token \
@@ -1178,7 +1178,7 @@
             )
         )
     )
-    (defun VST|C_CreateHibernatingLink:[string] (patron:string dptf:string)
+    (defun C_VST|CreateHibernatingLink:[string] (patron:string dptf:string)
         @doc "Creates a Hibernating Link, issuing a Special-DPOF as a hibernating counterpart for another DPTF \
             \ A Hibernating Link is immutable, and noted in the Token Properties of both DPTF and the Special DPOF \
             \ A Special DPOF of the Hibernating variety, is used for implementing the Hibernating Functionality for a DPTF Token \
@@ -1214,7 +1214,7 @@
         )
     )
     ;;  [VST Freezing]
-    (defun VST|C_Freeze (patron:string freezer:string freeze-output:string dptf:string amount:decimal)
+    (defun C_VST|Freeze (patron:string freezer:string freeze-output:string dptf:string amount:decimal)
         @doc "Freezes a DPTF Token"
         (with-capability (P|TS)
             (let
@@ -1231,7 +1231,7 @@
             )
         )
     )
-    (defun VST|C_RepurposeFrozen (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string)
+    (defun C_VST|RepurposeFrozen (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string)
         @doc "Repurposes a Frozen DPTF to another account"
         (with-capability (P|TS)
             (let
@@ -1249,7 +1249,7 @@
             )
         )
     )
-    (defun VST|C_ToggleTransferRoleFrozenDPTF (patron:string s-dptf:string target:string toggle:bool)
+    (defun C_VST|ToggleTransferRoleFrozenDPTF (patron:string s-dptf:string target:string toggle:bool)
         @doc "Toggles Transfer Role for a Frozen DPTF"
         (with-capability (P|TS)
             (let
@@ -1265,7 +1265,7 @@
         )
     )
     ;;  [VST Reserving]
-    (defun VST|C_Reserve (patron:string reserver:string dptf:string amount:decimal)
+    (defun C_VST|Reserve (patron:string reserver:string dptf:string amount:decimal)
         @doc "Reserves a DPTF Token"
         (with-capability (P|TS)
             (let
@@ -1282,7 +1282,7 @@
             )
         )
     )
-    (defun VST|C_Unreserve (patron:string unreserver:string r-dptf:string amount:decimal)
+    (defun C_VST|Unreserve (patron:string unreserver:string r-dptf:string amount:decimal)
         @doc "Unreserves a DPTF Token"
         (with-capability (P|TS)
             (let
@@ -1299,7 +1299,7 @@
             )
         )
     )
-    (defun VST|C_RepurposeReserved (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string)
+    (defun C_VST|RepurposeReserved (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string)
         @doc "Repurposes a Reserved DPTF to another account"
         (with-capability (P|TS)
             (let
@@ -1317,7 +1317,7 @@
             )
         )
     )
-    (defun VST|C_ToggleTransferRoleReservedDPTF (patron:string s-dptf:string target:string toggle:bool)
+    (defun C_VST|ToggleTransferRoleReservedDPTF (patron:string s-dptf:string target:string toggle:bool)
         @doc "Toggles Transfer Role for a Reserved DPTF"
         (with-capability (P|TS)
             (let
@@ -1333,7 +1333,7 @@
         )
     )
     ;;  [VST Vesting]
-    (defun VST|C_Vest (patron:string vester:string target-account:string dptf:string amount:decimal offset:integer seconds:integer milestones:integer)
+    (defun C_VST|Vest (patron:string vester:string target-account:string dptf:string amount:decimal offset:integer seconds:integer milestones:integer)
         @doc "Vests a DPTF Token, generating ist Vested DPOF Counterspart"
         (with-capability (P|TS)
             (let
@@ -1351,7 +1351,7 @@
             )
         )
     )
-    (defun VST|C_Unvest (patron:string unvester:string dpof:string nonce:integer)
+    (defun C_VST|Unvest (patron:string unvester:string dpof:string nonce:integer)
         @doc "Culls the Vested DPOF Token, recovering its DPTF counterpart."
         (with-capability (P|TS)
             (let
@@ -1368,7 +1368,7 @@
             )
         )
     )
-    (defun VST|C_RepurposeVested (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string)
+    (defun C_VST|RepurposeVested (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string)
         @doc "Repurposes a Vested DPOF to another account"
         (with-capability (P|TS)
             (let
@@ -1387,7 +1387,7 @@
         )
     )
     ;;  [VST Sleeping]
-    (defun VST|C_Sleep (patron:string sleeper:string target-account:string dptf:string amount:decimal seconds:integer)
+    (defun C_VST|Sleep (patron:string sleeper:string target-account:string dptf:string amount:decimal seconds:integer)
         @doc "Sleeps a DPTF Token, generating its Sleeping DPOF Counterpart"
         (with-capability (P|TS)
             (let
@@ -1404,7 +1404,7 @@
             )
         )
     )
-    (defun VST|C_Unsleep (patron:string unsleeper:string dpof:string nonce:integer)
+    (defun C_VST|Unsleep (patron:string unsleeper:string dpof:string nonce:integer)
         @doc "Culls the Sleeping DPOF Token, recovering its DPTF counterpart."
         (with-capability (P|TS)
             (let
@@ -1421,7 +1421,7 @@
             )
         )
     )
-    (defun VST|C_Merge(patron:string merger:string dpof:string nonces:[integer])
+    (defun C_VST|Merge(patron:string merger:string dpof:string nonces:[integer])
         @doc "Merges selected sleeping Tokens of an account, \
             \ releasing them if expired sleeping dpof-s exist within the selected tokens \
             \ Multiple existing Batches can be merged this way."
@@ -1440,7 +1440,7 @@
             )
         )
     )
-    (defun VST|C_RepurposeMerge (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string)
+    (defun C_VST|RepurposeMerge (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string)
         @doc "Repurposes multiple Sleeping DPOFs from <repurpose-from> to <repurpose-to>, while merging them"
         (with-capability (P|TS)
             (let
@@ -1460,7 +1460,7 @@
             )
         )
     )
-    (defun VST|C_RepurposeSleeping (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string)
+    (defun C_VST|RepurposeSleeping (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string)
         @doc "Repurposes a single Sleeping DPOF from <repurpose-from> to <repurpose-to>"
         (with-capability (P|TS)
             (let
@@ -1480,7 +1480,7 @@
             )
         )
     )
-    (defun VST|C_ToggleTransferRoleSleepingDPOF (patron:string s-dpof:string target:string toggle:bool)
+    (defun C_VST|ToggleTransferRoleSleepingDPOF (patron:string s-dpof:string target:string toggle:bool)
         @doc "Toggles Transfer Role for a Sleeping DPOF"
         (with-capability (P|TS)
             (let
@@ -1496,7 +1496,7 @@
         )
     )
     ;;  [VST Hibernating]
-    (defun VST|C_Hibernate (patron:string hibernator:string target-account:string dptf:string amount:decimal dayz:integer)
+    (defun C_VST|Hibernate (patron:string hibernator:string target-account:string dptf:string amount:decimal dayz:integer)
         @doc "Hibernates a DPTF Token, generating its Hibernated DPOF Counterpart"
         (with-capability (P|TS)
             (let
@@ -1513,7 +1513,7 @@
             )
         )
     )
-    (defun VST|C_Awake (patron:string awaker:string dpof:string nonce:integer)
+    (defun C_VST|Awake (patron:string awaker:string dpof:string nonce:integer)
         @doc "Culls the Hibernated DPOF Token, recovering its DPTF counterpart."
         (with-capability (P|TS)
             (let
@@ -1538,7 +1538,7 @@
             )
         )
     )
-    (defun VST|C_Slumber (patron:string merger:string dpof:string nonces:[integer])
+    (defun C_VST|Slumber (patron:string merger:string dpof:string nonces:[integer])
         @doc "Merges selected hibernated Tokens of an account, \
             \ releasing them if expired sleeping dpof-s exist within the selected tokens \
             \ Multiple existing Batches can be merged this way."
@@ -1557,7 +1557,7 @@
             )
         )
     )
-    (defun VST|C_RepurposeSlumber (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string)
+    (defun C_VST|RepurposeSlumber (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string)
         @doc "Repurposes multiple Hibernated DPOFs from <repurpose-from> to <repurpose-to>, while merging them"
         (with-capability (P|TS)
             (let
@@ -1577,7 +1577,7 @@
             )
         )
     )
-    (defun VST|C_RepurposeHibernating (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string)
+    (defun C_VST|RepurposeHibernating (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string)
         @doc "Repurposes a single Hibernating DPOF from <repurpose-from> to <repurpose-to>"
         (with-capability (P|TS)
             (let
@@ -1597,7 +1597,7 @@
             )
         )
     )
-    (defun VST|C_ToggleTransferRoleHibernatedDPOF (patron:string s-dpof:string target:string toggle:bool)
+    (defun C_VST|ToggleTransferRoleHibernatedDPOF (patron:string s-dpof:string target:string toggle:bool)
         @doc "Toggles Transfer Role for a Hibernated DPOF"
         (with-capability (P|TS)
             (let
@@ -1613,7 +1613,7 @@
         )
     )
     ;;  [LIQUID_Client]
-    (defun LQD|C_UnwrapStoa (patron:string unwrapper:string amount:decimal)
+    (defun C_LQD|UnwrapStoa (patron:string unwrapper:string amount:decimal)
         @doc "Unwraps DPTF Stoa to Native Stoa"
         (with-capability (P|TS)
             (let
@@ -1630,7 +1630,7 @@
             )
         )
     )
-    (defun LQD|C_WrapStoa (patron:string wrapper:string amount:decimal)
+    (defun C_LQD|WrapStoa (patron:string wrapper:string amount:decimal)
         @doc "Wraps Native Stoa to DPTF Stoa"
         (with-capability (P|TS)
             (let
@@ -1647,7 +1647,7 @@
             )
         )
     )
-    (defun LQD|C_UnwrapUrStoa (patron:string unwrapper:string amount:decimal)
+    (defun C_LQD|UnwrapUrStoa (patron:string unwrapper:string amount:decimal)
         @doc "Unwrapper is the Ouronet Account doing the Unwrapping. \
             \ Its attached Stoa address k:xxx must be registered in the UrStoa Account Table for this to work. \
             \ If its not registered there yet, the UI constructs a bespoke tx that creates the \
@@ -1671,7 +1671,7 @@
             )
         )
     )
-    (defun LQD|C_WrapUrStoa (patron:string wrapper:string amount:decimal)
+    (defun C_LQD|WrapUrStoa (patron:string wrapper:string amount:decimal)
         @doc "Wrapper is the Ouronet Account doing the Wrapping. \
             \ Its attached Stoa address k:xxx must be registered in the UrStoa Account Table for this to work. \
             \ If its not registered there yet, the UI constructs a bespoke tx that creates the \
@@ -1696,7 +1696,7 @@
         )
     )
     ;;  [OUROBOROS_Client]
-    (defun ORBR|C_Compress (client:string ignis-amount:decimal)
+    (defun C_ORBR|Compress (client:string ignis-amount:decimal)
         @doc "Compresses IGNIS - Ouronet Gas Token, generating OUROBOROS \
             \ Only whole IGNIS Amounts greater than or equal to 1.0 can be used for compression \
             \ Similar to Sublimation, the output amount is dependent on OUROBOROS price, set at a minimum of 1$ \
@@ -1714,7 +1714,7 @@
             )
         )
     )
-    (defun ORBR|C_Sublimate (client:string target:string ouro-amount:decimal)
+    (defun C_ORBR|Sublimate (client:string target:string ouro-amount:decimal)
         @doc "Sublimates OUROBOROS, generating Ouronet Gas, in form of IGNIS Token \
             \ A minimum amount of 1 input OUROBOROS is required. Amount of IGNIS generated depends on OUROBOROS Price in $, \
             \ with the minimum value being set at 1$ (in case the actual value is lower than 1$ \
@@ -1733,7 +1733,7 @@
             )
         )
     )
-    (defun ORBR|C_SublimateV2 (client:string target:string ouro-amount:decimal)
+    (defun C_ORBR|SublimateV2 (client:string target:string ouro-amount:decimal)
         @doc "Sublimates OUROBOROS, generating Ouronet Gas, in form of IGNIS Token \
             \ A minimum amount of 1 input OUROBOROS is required. Amount of IGNIS generated depends on OUROBOROS Price in $, \
             \ with the minimum value being set at 1$ (in case the actual value is lower than 1$ \
@@ -1753,7 +1753,7 @@
             )
         )
     )
-    (defun ORBR|C_WithdrawFees (patron:string id:string target:string)
+    (defun C_ORBR|WithdrawFees (patron:string id:string target:string)
         @doc "Withdraws collected DPTF Fees collected in standard mode \
         \ DPTF Fees collected in standard mode cumullate on the OUROBOROS Smart Account \
         \ Only the Token Owner can withdraw these fees."

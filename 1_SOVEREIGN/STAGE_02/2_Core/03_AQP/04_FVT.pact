@@ -295,14 +295,14 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
+    (defun A_P|Add (policy-name:string policy-guard:guard)
         (with-capability (GOV|FVT_ADMIN)
             (write P|T policy-name
                 {"policy" : policy-guard}
             )
         )
     )
-    (defun P|A_AddIMP (policy-guard:guard)
+    (defun A_P|AddIMP (policy-guard:guard)
         (with-capability (GOV|FVT_ADMIN)
             (let
                 (
@@ -320,7 +320,7 @@
             )
         )
     )
-    (defun P|A_Define ()
+    (defun A_P|Define ()
         @doc "Post-deploy (AQP-BOOT Step 0): FVT SECURE on AQP-SCORE + AQP-POOL IMP; \
             \ P|FVT|CALLER on TFT/DPOF/DPDC-T; FVT|RemoteAqpGov on AQP-POOL for inject/collect vault legs. \
             \ Vacate recipes live in AQP-VCT."
@@ -340,19 +340,19 @@
                 (mg:guard (create-capability-guard (P|FVT|CALLER)))
                 (rg:guard (create-capability-guard (P|FVT|REMOTE-GOV)))
             )
-            (ref-P|SCR::P|A_AddIMP dg)
-            (ref-P|AQP::P|A_AddIMP dg)
-            (ref-P|AQP::P|A_Add "FVT|RemoteAqpGov" rg)
-            (ref-P|TFT::P|A_AddIMP mg)
-            (ref-P|DPOF::P|A_AddIMP mg)
-            (ref-P|DPDC-T::P|A_AddIMP mg)
+            (ref-P|SCR::A_P|AddIMP dg)
+            (ref-P|AQP::A_P|AddIMP dg)
+            (ref-P|AQP::A_P|Add "FVT|RemoteAqpGov" rg)
+            (ref-P|TFT::A_P|AddIMP mg)
+            (ref-P|DPOF::A_P|AddIMP mg)
+            (ref-P|DPDC-T::A_P|AddIMP mg)
             ;; DPTF: FVT burns the royalty pool in place from AQP|SC_NAME (DSA royalty burn disposal).
-            (ref-P|DPTF::P|A_AddIMP mg)
+            (ref-P|DPTF::A_P|AddIMP mg)
             ;; SWPLC: FVT fuels a swpair with the royalty pool from AQP|SC_NAME (DSA royalty fuel disposal).
-            (ref-P|SWPLC::P|A_AddIMP mg)
+            (ref-P|SWPLC::A_P|AddIMP mg)
             ;; OUROBOROS: FVT normalizes an IGNIS royalty leg to OURO (XB_Compress) before disposal.
-            (ref-P|ORBR::P|A_AddIMP mg)
-            (ref-P|ATSU::P|A_AddIMP mg)
+            (ref-P|ORBR::A_P|AddIMP mg)
+            (ref-P|ATSU::A_P|AddIMP mg)
         )
     )
     (defun UEV_IMC ()
@@ -1002,7 +1002,7 @@
         @doc "Protects the single-tx re-score sweep (CC_SweepRevokeAnchor). Composes P|SECURE-CALLER so SECURE is \
             \ granted for the intra-module recompute (XI_*) AND FVT's registered SECURE guard is satisfied for the \
             \ cross-module XE calls into AQP-ANK (aggregate refold + swept anchor removal) and AQP-POOL (freeze) — \
-            \ FVT is in both IMPs (P|A_Define). The anchor owner (= anchored-asset owner) is enforced inside \
+            \ FVT is in both IMPs (A_P|Define). The anchor owner (= anchored-asset owner) is enforced inside \
             \ ANK|XE>SWEEP-REVOKE."
         @event
         (compose-capability (P|SECURE-CALLER))
@@ -6146,7 +6146,7 @@
                     (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
-                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueStoa))
+                (ref-IGNIS::C_STOA|Collect patron (URCi_IssueStoa))
                 (XI_IssueFvt fvt-id fvt-class owner-konto common-denominator)
                 (URCi_Issue owner-konto [fvt-id])
             )
@@ -6415,8 +6415,8 @@
     ;; INJECT FUNCTION MATRIX — all three route through the ONE core XI_FvtInjectCore
     ;; ───────────────────────────────────────────────────────────────────────────
     ;;   Entrypoint (Talos wrapper)        Farm(0,LP)  Vault(1,TF/SF/NF)  Treasury(2,OF)  Divisor  Tx
-    ;;   C_Inject   (AQP-FVT|CC_Inject)        yes           yes               yes          naive    1
-    ;;   CC_Inject  (AQP-FVT|CC_Inject)       yes           yes               yes          fresh    1
+    ;;   C_Inject   (CC_AQP-FVT|Inject)        yes           yes               yes          naive    1
+    ;;   CC_Inject  (CC_AQP-FVT|Inject)       yes           yes               yes          fresh    1
     ;;   MTX|2|C_Inject defpact (C_2|Inject)  yes           yes               yes          fresh    2*
     ;;   (* spike fallback for CC_Inject — up to 2×N_FIX stale stakers across 2 steps)
     ;;

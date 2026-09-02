@@ -32,10 +32,10 @@
         ]
     )
     (print (format "<(C_StakeSemiFungible ANHD nonce-5)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id anhd anhd dhcd-id [5])
+        (ref-TS02-C3::CC_AQP-POOL|StakeSemiFungibleCollectable patron pool-id anhd anhd dhcd-id [5])
     ]))
     (print (format "<(C_StakeSemiFungible LUMY nonce-5)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id lumy lumy dhcd-id [5])
+        (ref-TS02-C3::CC_AQP-POOL|StakeSemiFungibleCollectable patron pool-id lumy lumy dhcd-id [5])
     ]))
     (let
         (
@@ -84,7 +84,7 @@
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (print (format "<(claimable-pre ANHD)> => \"{}\"" [claimable-pre]))
     (print (format "<(C_Inject Wstoa {})> => \"{}\"" [inject-1
-        (ref-TS02-C3::AQP-FVT|CC_Inject patron fvt-id wstoa-id inject-1)
+        (ref-TS02-C3::CC_AQP-FVT|Inject patron fvt-id wstoa-id inject-1)
     ]))
     (let
         (
@@ -112,7 +112,7 @@
             (g-post:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id wstoa-id))
         )
         (print (format "<(CC_Collect ANHD Wstoa)> => \"{}\"" [
-            (ref-TS02-C3::AQP-FVT|CC_Collect patron fvt-id 1 score-id wstoa-id)
+            (ref-TS02-C3::CC_AQP-FVT|Collect patron fvt-id 1 score-id wstoa-id)
         ]))
         (let
             (
@@ -174,7 +174,7 @@
     )
     (print (format "<(available-rewards pre-inject-2)> => \"{}\"" [ar-pre]))
     (print (format "<(C_Inject Wstoa {})> => \"{}\"" [inject-2
-        (ref-TS02-C3::AQP-FVT|CC_Inject patron fvt-id wstoa-id inject-2)
+        (ref-TS02-C3::CC_AQP-FVT|Inject patron fvt-id wstoa-id inject-2)
     ]))
     (let
         (
@@ -184,7 +184,7 @@
         )
         (print (format "<(claimable-pre LUMY)> => \"{}\"" [claimable-pre]))
         (print (format "<(CC_Collect LUMY Wstoa)> => \"{}\"" [
-            (ref-TS02-C3::AQP-FVT|CC_Collect lumy fvt-id 1 score-id wstoa-id)
+            (ref-TS02-C3::CC_AQP-FVT|Collect lumy fvt-id 1 score-id wstoa-id)
         ]))
         (let
             (
@@ -237,7 +237,7 @@
         ]
     )
     (print (format "<(C_StakeSemiFungible LUMY E|DH tier-6)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id lumy lumy edh-id [6])
+        (ref-TS02-C3::CC_AQP-POOL|StakeSemiFungibleCollectable patron pool-id lumy lumy edh-id [6])
     ]))
     (let
         (
@@ -256,10 +256,10 @@
                     (pre-auryn:decimal (ref-DPTF::UR_AccountSupply auryn-id anhd))
                 )
                 (print (format "<(C_Inject Auryn {})> => \"{}\"" [inject-amt
-                    (ref-TS02-C3::AQP-FVT|CC_Inject patron fvt-id auryn-id inject-amt)
+                    (ref-TS02-C3::CC_AQP-FVT|Inject patron fvt-id auryn-id inject-amt)
                 ]))
                 (print (format "<(CC_Collect ANHD Auryn snakes)> => \"{}\"" [
-                    (ref-TS02-C3::AQP-FVT|CC_Collect patron fvt-id 1 snakes-score auryn-id)
+                    (ref-TS02-C3::CC_AQP-FVT|Collect patron fvt-id 1 snakes-score auryn-id)
                 ]))
                 (let
                     (

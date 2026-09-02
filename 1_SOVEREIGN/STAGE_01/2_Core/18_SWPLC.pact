@@ -119,14 +119,14 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
+    (defun A_P|Add (policy-name:string policy-guard:guard)
         (with-capability (GOV|SWPLC_ADMIN)
             (write P|T policy-name
                 {"policy" : policy-guard}
             )
         )
     )
-    (defun P|A_AddIMP (policy-guard:guard)
+    (defun A_P|AddIMP (policy-guard:guard)
         (with-capability (GOV|SWPLC_ADMIN)
             (let
                 (
@@ -143,7 +143,7 @@
             )
         )
     )
-    (defun P|A_Define ()
+    (defun A_P|Define ()
         (let
             (
                 (ref-P|BRD:module{OuronetPolicyV1} BRD)
@@ -156,22 +156,22 @@
                 (ref-P|SWPL:module{OuronetPolicyV1} SWPL)
                 (mg:guard (create-capability-guard (P|SWPLC|CALLER)))
             )
-            (ref-P|VST::P|A_Add
+            (ref-P|VST::A_P|Add
                 "SWPLC|RemoteSwpGov"
                 (create-capability-guard (P|SWPLC|REMOTE-GOV))
             )
-            (ref-P|SWP::P|A_Add
+            (ref-P|SWP::A_P|Add
                 "SWPLC|RemoteSwpGov"
                 (create-capability-guard (P|SWPLC|REMOTE-GOV))
             )
-            (ref-P|DALOS::P|A_AddIMP mg)
-            (ref-P|BRD::P|A_AddIMP mg)
-            (ref-P|DPTF::P|A_AddIMP mg)
-            (ref-P|DPOF::P|A_AddIMP mg)
-            (ref-P|TFT::P|A_AddIMP mg)
-            (ref-P|VST::P|A_AddIMP mg)
-            (ref-P|SWP::P|A_AddIMP mg)
-            (ref-P|SWPL::P|A_AddIMP mg)
+            (ref-P|DALOS::A_P|AddIMP mg)
+            (ref-P|BRD::A_P|AddIMP mg)
+            (ref-P|DPTF::A_P|AddIMP mg)
+            (ref-P|DPOF::A_P|AddIMP mg)
+            (ref-P|TFT::A_P|AddIMP mg)
+            (ref-P|VST::A_P|AddIMP mg)
+            (ref-P|SWP::A_P|AddIMP mg)
+            (ref-P|SWPL::A_P|AddIMP mg)
         )
     )
     (defun UEV_IMC ()
@@ -746,7 +746,7 @@
                     )
                 )
             )
-            (ref-IGNIS::STOA|C_CollectWT patron stoa-payment false)
+            (ref-IGNIS::C_STOA|CollectWT patron stoa-payment false)
         )
     )
     (defun C_ToggleAddLiquidity:object{IgnisCollectorV1.OutputCumulator}

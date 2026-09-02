@@ -71,14 +71,14 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
+    (defun A_P|Add (policy-name:string policy-guard:guard)
         (with-capability (GOV|MTX-AQP_ADMIN)
             (write P|T policy-name
                 {"policy" : policy-guard}
             )
         )
     )
-    (defun P|A_AddIMP (policy-guard:guard)
+    (defun A_P|AddIMP (policy-guard:guard)
         (with-capability (GOV|MTX-AQP_ADMIN)
             (let
                 (
@@ -95,7 +95,7 @@
             )
         )
     )
-    (defun P|A_Define ()
+    (defun A_P|Define ()
         (let
             (
                 (ref-P|FVT:module{OuronetPolicyV1} AQP-FVT)
@@ -104,7 +104,7 @@
             ;; MTX-AQP calls AQP-FVT's XE_ building blocks (UEV_IMC) — register as an allowed IMC caller.
             ;; (The re-score sweep's ANK/POOL calls live in AQP-FVT::CC_SweepRevokeAnchor, which is already in
             ;;  ANK's + POOL's IMP — so MTX-AQP itself does not call ANK/POOL directly.)
-            (ref-P|FVT::P|A_AddIMP mg)
+            (ref-P|FVT::A_P|AddIMP mg)
         )
     )
     (defun UEV_IMC ()
@@ -145,14 +145,14 @@
     (defcap MTX-AQP|C>INJECT (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "Protects the MTX|n|C_Inject multistep flow. Composes P|SECURE-CALLER so P|MTX-AQP|CALLER is ACTIVE \
             \ while the steps call AQP-FVT's XE_ building blocks (FVT's UEV_IMC checks MTX-AQP's registered caller \
-            \ guard — see P|A_Define). Acquired fresh per step (steps are separate txs; the pact-id gates continuation)."
+            \ guard — see A_P|Define). Acquired fresh per step (steps are separate txs; the pact-id gates continuation)."
         @event
         (compose-capability (P|SECURE-CALLER))
     )
     (defcap MTX-AQP|C>SWEEP-REVOKE (patron:string anchor-id:string)
         @doc "Protects the MTX|n|C_SweepRevokeAnchor multistep flow. Composes P|SECURE-CALLER so P|MTX-AQP|CALLER is \
             \ ACTIVE while the steps call AQP-FVT's XE_ bracket (freeze/revoke/unfreeze) + recompute-chunk building \
-            \ blocks (FVT's UEV_IMC checks MTX-AQP's registered caller guard — see P|A_Define). Acquired fresh per \
+            \ blocks (FVT's UEV_IMC checks MTX-AQP's registered caller guard — see A_P|Define). Acquired fresh per \
             \ step (steps are separate txs; the pact-id gates continuation). The anchor owner (= anchored-asset \
             \ owner) is enforced downstream inside ANK|XE>SWEEP-REVOKE."
         @event

@@ -71,7 +71,7 @@
     )
     ;; re-stake 100 OURO so the rehaul path has inventory to scan + vacate
     (print (format "<(restake 100 for rehaul vacate)> => \"{}\""
-        [(ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id 100.0)]))
+        [(ref-TS02-C3::CC_AQP-POOL|StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id 100.0)]))
     (let
         (
             (tracker-work:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id beneficiary-id))
@@ -128,7 +128,7 @@
     (enforce (= 1 (ref-AQP::UR_AQP|PoolAqpClass pool-id)) "TX-VCT-CC01: expected a class-1 pool")
     ;; re-stake 100 OURO so the agnostic dispatcher has native-TF inventory to scan + vacate
     (print (format "<(restake 100 for CC_FullVacate)> => \"{}\""
-        [(ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id 100.0)]))
+        [(ref-TS02-C3::CC_AQP-POOL|StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id 100.0)]))
     (let
         (
             (tracker-pre:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id beneficiary-id))
@@ -137,8 +137,8 @@
         (print (format "<(pre native-TF tracker)> => {}" [tracker-pre]))
         ;; THE AGNOSTIC REHAUL VACATE — JUST the pool-id; VCT reads aqp-class, dispatches the family branch,
         ;; vacates the native TF (satellites derived from asset-id). Real Z|-satellite drain proven by [6.4] CL05.
-        (print (format "<(AQP-POOL|CC_FullVacate pool-id-only)> => \"{}\""
-            [(ref-TS02-C3::AQP-POOL|CC_FullVacate patron pool-id)]))
+        (print (format "<(CC_AQP-POOL|FullVacate pool-id-only)> => \"{}\""
+            [(ref-TS02-C3::CC_AQP-POOL|FullVacate patron pool-id)]))
         (let
             (
                 (tracker-post:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id beneficiary-id))
@@ -189,8 +189,8 @@
             ]
         )
         ;; the proof: this call must SUCCEED (return a string), not abort on the empty native lane
-        (print (format "<(AQP-POOL|CC_FullVacate on empty pool)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|CC_FullVacate patron pool-id)
+        (print (format "<(CC_AQP-POOL|FullVacate on empty pool)> => \"{}\"" [
+            (ref-TS02-C3::CC_AQP-POOL|FullVacate patron pool-id)
         ]))
     )
 )
@@ -224,11 +224,11 @@
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
     )
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (print (format "<(TS02-C3.AQP-POOL|C_EnablePoolStake)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+    (print (format "<(TS02-C3.C_AQP-POOL|EnablePoolStake)> => \"{}\"" [
+        (ref-TS02-C3::C_AQP-POOL|EnablePoolStake patron pool-id)
     ]))
-    (print (format "<(TS02-C3.AQP-POOL|CC_StakeTrueFungible)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id stake-amount)
+    (print (format "<(TS02-C3.CC_AQP-POOL|StakeTrueFungible)> => \"{}\"" [
+        (ref-TS02-C3::CC_AQP-POOL|StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id stake-amount)
     ]))
     (let
         (
@@ -236,8 +236,8 @@
             (plan:object (ref-VCT::URHC_BuildVacateSlicePlan pool-id ouro-id vacate-kind-tf 1))
             (slice0:object (at 0 (at "slices" plan)))
         )
-        (print (format "<(TS02-C3.AQP-POOL|CCp_BatchVacateTrueFungible single-batch → auto-finalize)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|CCp_BatchVacateTrueFungible
+        (print (format "<(TS02-C3.CCp_AQP-POOL|BatchVacateTrueFungible single-batch → auto-finalize)> => \"{}\"" [
+            (ref-TS02-C3::CCp_AQP-POOL|BatchVacateTrueFungible
                 patron pool-id ouro-id
                 (at "owner-ids" slice0)
                 (at "beneficiary-ids" slice0)
@@ -292,10 +292,10 @@
     )
     ;; re-enable stake + re-stake the OF nonce so the rehaul path has inventory to scan
     (if (ref-DPOF::UR_R-Frozen dpof-id owner-id)
-        (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id owner-id false) true)
-    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+        (ref-TS01-C1::C_DPOF|ToggleFreezeAccount patron dpof-id owner-id false) true)
+    (ref-TS02-C3::C_AQP-POOL|EnablePoolStake patron pool-id)
     (print (format "<(restake OF nonce {})> => \"{}\"" [stake-nonce
-        (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron pool-id owner-id beneficiary-id dpof-id [stake-nonce])]))
+        (ref-TS02-C3::CC_AQP-POOL|StakeOrtoFungible patron pool-id owner-id beneficiary-id dpof-id [stake-nonce])]))
     (let ((tracker-pre:decimal (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id dpof-id owner-id beneficiary-id stake-nonce)))
         (enforce (> tracker-pre 0.0) "TX-VCT-L01b: need OF stake inventory")
         (print (format "<(pre OF tracker)> => {}" [tracker-pre]))
@@ -353,26 +353,26 @@
             (amt-b:integer (ref-DPDC::UR_AccountNonceSupply owner-a dpsf-id true nonce-b))
         )
         (if (> amt-b 0)
-            (ref-TS02-C1::DPSF|C_TransferNonces patron dpsf-id owner-a owner-b [nonce-b] [amt-b] false)
+            (ref-TS02-C1::C_DPSF|TransferNonces patron dpsf-id owner-a owner-b [nonce-b] [amt-b] false)
             true
         )
     )
-    (print (format "<(TS02-C3.AQP-POOL|C_EnablePoolStake)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+    (print (format "<(TS02-C3.C_AQP-POOL|EnablePoolStake)> => \"{}\"" [
+        (ref-TS02-C3::C_AQP-POOL|EnablePoolStake patron pool-id)
     ]))
-    (print (format "<(TS02-C3.AQP-POOL|CC_StakeSemiFungibleCollectable owner-a)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id owner-a beneficiary-a dpsf-id [nonce-a])
+    (print (format "<(TS02-C3.CC_AQP-POOL|StakeSemiFungibleCollectable owner-a)> => \"{}\"" [
+        (ref-TS02-C3::CC_AQP-POOL|StakeSemiFungibleCollectable patron pool-id owner-a beneficiary-a dpsf-id [nonce-a])
     ]))
-    (print (format "<(TS02-C3.AQP-POOL|CC_StakeSemiFungibleCollectable owner-b)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id owner-b beneficiary-b dpsf-id [nonce-b])
+    (print (format "<(TS02-C3.CC_AQP-POOL|StakeSemiFungibleCollectable owner-b)> => \"{}\"" [
+        (ref-TS02-C3::CC_AQP-POOL|StakeSemiFungibleCollectable patron pool-id owner-b beneficiary-b dpsf-id [nonce-b])
     ]))
     (let
         (
             (plan2:object (ref-VCT::URHC_BuildVacateSlicePlan pool-id dpsf-id vacate-kind-dpsf 2))
             (slice0:object (at 0 (at "slices" plan2)))
         )
-        (print (format "<(TS02-C3.AQP-POOL|CCp_BatchVacateCollectables batch0 partial)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|CCp_BatchVacateCollectables
+        (print (format "<(TS02-C3.CCp_AQP-POOL|BatchVacateCollectables batch0 partial)> => \"{}\"" [
+            (ref-TS02-C3::CCp_AQP-POOL|BatchVacateCollectables
                 patron pool-id dpsf-id true
                 (at "owner-ids" slice0)
                 (at "beneficiary-ids" slice0)
@@ -399,8 +399,8 @@
                 (plan1:object (ref-VCT::URHC_BuildVacateSlicePlan pool-id dpsf-id vacate-kind-dpsf 1))
                 (slice0n:object (at 0 (at "slices" plan1)))
             )
-            (print (format "<(TS02-C3.AQP-POOL|CCp_BatchVacateCollectables batch1 drains → auto-finalize)> => \"{}\"" [
-                (ref-TS02-C3::AQP-POOL|CCp_BatchVacateCollectables
+            (print (format "<(TS02-C3.CCp_AQP-POOL|BatchVacateCollectables batch1 drains → auto-finalize)> => \"{}\"" [
+                (ref-TS02-C3::CCp_AQP-POOL|BatchVacateCollectables
                     patron pool-id dpsf-id true
                     (at "owner-ids" slice0n)
                     (at "beneficiary-ids" slice0n)
@@ -459,11 +459,11 @@
         ]
     )
     ;; re-enable stake + re-stake both owners' nonces so the rehaul path has a full collection to scan
-    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+    (ref-TS02-C3::C_AQP-POOL|EnablePoolStake patron pool-id)
     (print (format "<(restake SF owner-a)> => \"{}\""
-        [(ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id owner-a beneficiary-a dpsf-id [nonce-a])]))
+        [(ref-TS02-C3::CC_AQP-POOL|StakeSemiFungibleCollectable patron pool-id owner-a beneficiary-a dpsf-id [nonce-a])]))
     (print (format "<(restake SF owner-b)> => \"{}\""
-        [(ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id owner-b beneficiary-b dpsf-id [nonce-b])]))
+        [(ref-TS02-C3::CC_AQP-POOL|StakeSemiFungibleCollectable patron pool-id owner-b beneficiary-b dpsf-id [nonce-b])]))
     (let ((legs-pre:integer (at "leg-count" (ref-VCT::URH_VacateCollectableInventory pool-id dpsf-id true))))
         (enforce (> legs-pre 0) "TX-VCT-L02b: need SF stake inventory")
         (print (format "<(pre SF legs)> => {}" [legs-pre]))
@@ -522,11 +522,11 @@
     )
     ;; SfStakePool is empty + stake-enabled after L02b. Re-stake two owner legs (ANHD n1 + EMMA n2) so a
     ;; PARTIAL batch can open a vacate campaign without draining the pool — the leftover leg keeps it open.
-    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+    (ref-TS02-C3::C_AQP-POOL|EnablePoolStake patron pool-id)
     (print (format "<(restake SF owner-a)> => \"{}\""
-        [(ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id owner-a beneficiary-a dpsf-id [nonce-a])]))
+        [(ref-TS02-C3::CC_AQP-POOL|StakeSemiFungibleCollectable patron pool-id owner-a beneficiary-a dpsf-id [nonce-a])]))
     (print (format "<(restake SF owner-b)> => \"{}\""
-        [(ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id owner-b beneficiary-b dpsf-id [nonce-b])]))
+        [(ref-TS02-C3::CC_AQP-POOL|StakeSemiFungibleCollectable patron pool-id owner-b beneficiary-b dpsf-id [nonce-b])]))
     (let
         (
             (plan:object (ref-VCT::URHC_BuildVacateSlicePlan pool-id dpsf-id vacate-kind-dpsf 2))
@@ -534,8 +534,8 @@
         )
         (enforce (= 2 (at "slice-count" plan)) "TX-VCT-L03: expected 2 slices")
         ;; PARTIAL batch: drain slice0 only. VIP opens (freeze); auto-finalize does NOT fire (leftover leg).
-        (print (format "<(TS02-C3.AQP-POOL|CCp_BatchVacateCollectables partial slice0)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|CCp_BatchVacateCollectables
+        (print (format "<(TS02-C3.CCp_AQP-POOL|BatchVacateCollectables partial slice0)> => \"{}\"" [
+            (ref-TS02-C3::CCp_AQP-POOL|BatchVacateCollectables
                 patron pool-id dpsf-id true
                 (at "owner-ids" slice0)
                 (at "beneficiary-ids" slice0)
@@ -556,8 +556,8 @@
             )
         )
         ;; Abort the campaign: VIP clears, but stake STAYS disabled (ops must re-enable — see L04).
-        (print (format "<(TS02-C3.AQP-POOL|C_AbortVacate)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|C_AbortVacate patron pool-id)
+        (print (format "<(TS02-C3.C_AQP-POOL|AbortVacate)> => \"{}\"" [
+            (ref-TS02-C3::C_AQP-POOL|AbortVacate patron pool-id)
         ]))
         (let
             (
@@ -593,8 +593,8 @@
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
     )
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (print (format "<(TS02-C3.AQP-POOL|C_EnablePoolStake)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+    (print (format "<(TS02-C3.C_AQP-POOL|EnablePoolStake)> => \"{}\"" [
+        (ref-TS02-C3::C_AQP-POOL|EnablePoolStake patron pool-id)
     ]))
     (let
         (
@@ -637,13 +637,13 @@
         [
             (expect-failure
                 (format "<<TX-VCT-L04b expect-failure>> non-owner CC_FullVacate rejected (pool-owner gate)" [])
-                (ref-TS02-C3::AQP-POOL|CC_FullVacate foreign pool-id))
+                (ref-TS02-C3::CC_AQP-POOL|FullVacate foreign pool-id))
             (expect-failure
                 (format "<<TX-VCT-L04b expect-failure>> non-owner C_AbortVacate rejected (pool-owner gate)" [])
-                (ref-TS02-C3::AQP-POOL|C_AbortVacate foreign pool-id))
+                (ref-TS02-C3::C_AQP-POOL|AbortVacate foreign pool-id))
             (expect-failure
                 (format "<<TX-VCT-L04b expect-failure>> non-owner C_EnablePoolStake rejected (pool-owner gate)" [])
-                (ref-TS02-C3::AQP-POOL|C_EnablePoolStake foreign pool-id))
+                (ref-TS02-C3::C_AQP-POOL|EnablePoolStake foreign pool-id))
         ]
     )
 )
@@ -706,33 +706,33 @@
             }
         ]
     )
-    (print (format "<(TS02-C3.AQP-SCR|C_IssueNonFungibleScore)> => \"{}\"" [
-        (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron owner-id score-name 6 0)
+    (print (format "<(TS02-C3.C_AQP-SCR|IssueNonFungibleScore)> => \"{}\"" [
+        (ref-TS02-C3::C_AQP-SCR|IssueNonFungibleScore patron owner-id score-name 6 0)
     ]))
-    (print (format "<(TS02-C3.AQP-POOL|C_Issue class=4 DHB)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpnf-id aqp-class)
+    (print (format "<(TS02-C3.C_AQP-POOL|Issue class=4 DHB)> => \"{}\"" [
+        (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name dpnf-id aqp-class)
     ]))
-    (print (format "<(TS02-C3.AQP-POOL|C_AddScore)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (print (format "<(TS02-C3.C_AQP-POOL|AddScore)> => \"{}\"" [
+        (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     ]))
     (print (format "<(TS02-C3.AQP-FVT|REPL_BootstrapVault)> => \"{}\"" [
         (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     ]))
     (print "--- [TX-VCT-DPNF01 · mint DHB + transfer EMMA→ANHD] ---")
-    (print (format "<(DPNF|C_Create 1)> => \"{}\"" [
-        (ref-TS02-C2::DPNF|C_Create patron dpnf-id (VacateDpnfProbe.UC_DpnfNonceRows 1))
+    (print (format "<(C_DPNF|Create 1)> => \"{}\"" [
+        (ref-TS02-C2::C_DPNF|Create patron dpnf-id (VacateDpnfProbe.UC_DpnfNonceRows 1))
     ]))
     (let
         (
             (stake-nonce:integer (at pre-count (ref-DPDC::URH_AccountNonces source dpnf-id false)))
             (pre-supply:integer 1)
         )
-        (print (format "<(DPNF|C_TransferNonces nonce {})> => \"{}\"" [stake-nonce
-            (ref-TS02-C2::DPNF|C_TransferNonces patron dpnf-id source owner-id [stake-nonce] [1] false)
+        (print (format "<(C_DPNF|TransferNonces nonce {})> => \"{}\"" [stake-nonce
+            (ref-TS02-C2::C_DPNF|TransferNonces patron dpnf-id source owner-id [stake-nonce] [1] false)
         ]))
-        (print (format "<(TS02-C3.AQP-POOL|CC_StakeNonFungibleCollectable nonce {})> => \"{}\"" [
+        (print (format "<(TS02-C3.CC_AQP-POOL|StakeNonFungibleCollectable nonce {})> => \"{}\"" [
             stake-nonce
-            (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id owner-id beneficiary-id dpnf-id [stake-nonce])
+            (ref-TS02-C3::CC_AQP-POOL|StakeNonFungibleCollectable patron pool-id owner-id beneficiary-id dpnf-id [stake-nonce])
         ]))
         (let
             (
@@ -744,8 +744,8 @@
             (map print
                 [(expect "<<TX-VCT-DPNF01 L7#19>> unscored nonce (sentinel -1.0) contributes base 0, not negative"
                     0.0 (ref-SCR::UR_U-SCR|UserScoreBaseScore beneficiary-id pool-id score-id))])
-            (print (format "<(TS02-C3.AQP-POOL|CC_FullVacate agnostic class-4)> => \"{}\"" [
-                (ref-TS02-C3::AQP-POOL|CC_FullVacate patron pool-id)
+            (print (format "<(TS02-C3.CC_AQP-POOL|FullVacate agnostic class-4)> => \"{}\"" [
+                (ref-TS02-C3::CC_AQP-POOL|FullVacate patron pool-id)
             ]))
             (let
                 (
@@ -825,40 +825,40 @@
             }
         ]
     )
-    (print (format "<(TS02-C3.AQP-SCR|C_IssueNonFungibleScore)> => \"{}\"" [
-        (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron owner-id score-name 6 0)
+    (print (format "<(TS02-C3.C_AQP-SCR|IssueNonFungibleScore)> => \"{}\"" [
+        (ref-TS02-C3::C_AQP-SCR|IssueNonFungibleScore patron owner-id score-name 6 0)
     ]))
-    (print (format "<(TS02-C3.AQP-POOL|C_Issue class=4 DHN)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpnf-id aqp-class)
+    (print (format "<(TS02-C3.C_AQP-POOL|Issue class=4 DHN)> => \"{}\"" [
+        (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name dpnf-id aqp-class)
     ]))
-    (print (format "<(TS02-C3.AQP-POOL|C_AddScore)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (print (format "<(TS02-C3.C_AQP-POOL|AddScore)> => \"{}\"" [
+        (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     ]))
     (print (format "<(TS02-C3.AQP-FVT|REPL_BootstrapVault)> => \"{}\"" [
         (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     ]))
     (print "--- [TX-VCT-DPNF02 · mint DHN + transfer EMMA→ANHD] ---")
-    (print (format "<(DPNF|C_Create 1)> => \"{}\"" [
-        (ref-TS02-C2::DPNF|C_Create patron dpnf-id (VacateDpnfProbe.UC_DpnfNonceRows 1))
+    (print (format "<(C_DPNF|Create 1)> => \"{}\"" [
+        (ref-TS02-C2::C_DPNF|Create patron dpnf-id (VacateDpnfProbe.UC_DpnfNonceRows 1))
     ]))
     (let
         (
             (stake-nonce:integer (at pre-count (ref-DPDC::URH_AccountNonces source dpnf-id false)))
             (pre-supply:integer 1)
         )
-        (print (format "<(DPNF|C_TransferNonces nonce {})> => \"{}\"" [stake-nonce
-            (ref-TS02-C2::DPNF|C_TransferNonces patron dpnf-id source owner-id [stake-nonce] [1] false)
+        (print (format "<(C_DPNF|TransferNonces nonce {})> => \"{}\"" [stake-nonce
+            (ref-TS02-C2::C_DPNF|TransferNonces patron dpnf-id source owner-id [stake-nonce] [1] false)
         ]))
-        (print (format "<(TS02-C3.AQP-POOL|CC_StakeNonFungibleCollectable)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id owner-id beneficiary-id dpnf-id [stake-nonce])
+        (print (format "<(TS02-C3.CC_AQP-POOL|StakeNonFungibleCollectable)> => \"{}\"" [
+            (ref-TS02-C3::CC_AQP-POOL|StakeNonFungibleCollectable patron pool-id owner-id beneficiary-id dpnf-id [stake-nonce])
         ]))
         (let
             (
                 (plan:object (ref-VCT::URHC_BuildVacateSlicePlan pool-id dpnf-id vacate-kind-dpnf 1))
                 (slice0:object (at 0 (at "slices" plan)))
             )
-            (print (format "<(TS02-C3.AQP-POOL|CCp_BatchVacateCollectables DHN son=false → auto-finalize)> => \"{}\"" [
-                (ref-TS02-C3::AQP-POOL|CCp_BatchVacateCollectables
+            (print (format "<(TS02-C3.CCp_AQP-POOL|BatchVacateCollectables DHN son=false → auto-finalize)> => \"{}\"" [
+                (ref-TS02-C3::CCp_AQP-POOL|BatchVacateCollectables
                     patron pool-id dpnf-id false
                     (at "owner-ids" slice0)
                     (at "beneficiary-ids" slice0)
@@ -920,7 +920,7 @@
     )
     ;; stake already enabled after DPNF02's finalize — just re-stake the DHN nonce (owned by ANHD)
     (print (format "<(restake DHN nonce {})> => \"{}\"" [stake-nonce
-        (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id owner-id beneficiary-id dpnf-id [stake-nonce])]))
+        (ref-TS02-C3::CC_AQP-POOL|StakeNonFungibleCollectable patron pool-id owner-id beneficiary-id dpnf-id [stake-nonce])]))
     (let ((legs-pre:integer (at "leg-count" (ref-VCT::URH_VacateCollectableInventory pool-id dpnf-id false))))
         (enforce (> legs-pre 0) "TX-VCT-DPNF02b: need NF stake inventory")
         (print (format "<(pre NF legs)> => {}" [legs-pre]))
@@ -1002,40 +1002,40 @@
             }
         ]
     )
-    (print (format "<(TS02-C3.AQP-SCR|C_IssueNonFungibleScore)> => \"{}\"" [
-        (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron owner-id score-name 6 0)
+    (print (format "<(TS02-C3.C_AQP-SCR|IssueNonFungibleScore)> => \"{}\"" [
+        (ref-TS02-C3::C_AQP-SCR|IssueNonFungibleScore patron owner-id score-name 6 0)
     ]))
-    (print (format "<(TS02-C3.AQP-POOL|C_Issue class=4 KBN)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpnf-id aqp-class)
+    (print (format "<(TS02-C3.C_AQP-POOL|Issue class=4 KBN)> => \"{}\"" [
+        (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name dpnf-id aqp-class)
     ]))
-    (print (format "<(TS02-C3.AQP-POOL|C_AddScore)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (print (format "<(TS02-C3.C_AQP-POOL|AddScore)> => \"{}\"" [
+        (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     ]))
     (print (format "<(TS02-C3.AQP-FVT|REPL_BootstrapVault)> => \"{}\"" [
         (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     ]))
     (print "--- [TX-VCT-DPNF03 · mint KBN + transfer EMMA→ANHD] ---")
-    (print (format "<(DPNF|C_Create 1)> => \"{}\"" [
-        (ref-TS02-C2::DPNF|C_Create patron dpnf-id (VacateDpnfProbe.UC_DpnfNonceRows 1))
+    (print (format "<(C_DPNF|Create 1)> => \"{}\"" [
+        (ref-TS02-C2::C_DPNF|Create patron dpnf-id (VacateDpnfProbe.UC_DpnfNonceRows 1))
     ]))
     (let
         (
             (stake-nonce:integer (at pre-count (ref-DPDC::URH_AccountNonces source dpnf-id false)))
             (pre-supply:integer 1)
         )
-        (print (format "<(DPNF|C_TransferNonces nonce {})> => \"{}\"" [stake-nonce
-            (ref-TS02-C2::DPNF|C_TransferNonces patron dpnf-id source owner-id [stake-nonce] [1] false)
+        (print (format "<(C_DPNF|TransferNonces nonce {})> => \"{}\"" [stake-nonce
+            (ref-TS02-C2::C_DPNF|TransferNonces patron dpnf-id source owner-id [stake-nonce] [1] false)
         ]))
-        (print (format "<(TS02-C3.AQP-POOL|CC_StakeNonFungibleCollectable)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id owner-id beneficiary-id dpnf-id [stake-nonce])
+        (print (format "<(TS02-C3.CC_AQP-POOL|StakeNonFungibleCollectable)> => \"{}\"" [
+            (ref-TS02-C3::CC_AQP-POOL|StakeNonFungibleCollectable patron pool-id owner-id beneficiary-id dpnf-id [stake-nonce])
         ]))
         (let
             (
                 (plan:object (ref-VCT::URHC_BuildVacateSlicePlan pool-id dpnf-id vacate-kind-dpnf 1))
                 (slice0:object (at 0 (at "slices" plan)))
             )
-            (print (format "<(TS02-C3.AQP-POOL|CCp_BatchVacateCollectables KBN son=false → auto-finalize)> => \"{}\"" [
-                (ref-TS02-C3::AQP-POOL|CCp_BatchVacateCollectables
+            (print (format "<(TS02-C3.CCp_AQP-POOL|BatchVacateCollectables KBN son=false → auto-finalize)> => \"{}\"" [
+                (ref-TS02-C3::CCp_AQP-POOL|BatchVacateCollectables
                     patron pool-id dpnf-id false
                     (at "owner-ids" slice0)
                     (at "beneficiary-ids" slice0)
@@ -1087,17 +1087,17 @@
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
     )
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (print (format "<(TS02-C3.AQP-POOL|C_EnablePoolStake)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+    (print (format "<(TS02-C3.C_AQP-POOL|EnablePoolStake)> => \"{}\"" [
+        (ref-TS02-C3::C_AQP-POOL|EnablePoolStake patron pool-id)
     ]))
-    (print (format "<(TS02-C3.AQP-POOL|CC_StakeTrueFungible)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id stake-amount)
+    (print (format "<(TS02-C3.CC_AQP-POOL|StakeTrueFungible)> => \"{}\"" [
+        (ref-TS02-C3::CC_AQP-POOL|StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id stake-amount)
     ]))
     (map print
         [
             (expect-failure
                 (format "<<TX-VCT-N01 expect-failure>> empty batch arrays rejected (gas-ok requires l>0)" [])
-                (ref-TS02-C3::AQP-POOL|CCp_BatchVacateTrueFungible
+                (ref-TS02-C3::CCp_AQP-POOL|BatchVacateTrueFungible
                     patron pool-id ouro-id [] [] []
                 )
             )
@@ -1105,8 +1105,8 @@
     )
     ;; Empty arrays fail batch validation (gas-ok requires l>0). The stake stays — clean up with
     ;; CC_FullVacate so later TfStakePool tests see empty inventory.
-    (print (format "<(TS02-C3.AQP-POOL|CC_FullVacate cleanup)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_FullVacate patron pool-id)
+    (print (format "<(TS02-C3.CC_AQP-POOL|FullVacate cleanup)> => \"{}\"" [
+        (ref-TS02-C3::CC_AQP-POOL|FullVacate patron pool-id)
     ]))
 )
 (env-sigs [])
@@ -1135,16 +1135,16 @@
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
     )
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (print (format "<(TS02-C3.AQP-POOL|C_EnablePoolStake)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+    (print (format "<(TS02-C3.C_AQP-POOL|EnablePoolStake)> => \"{}\"" [
+        (ref-TS02-C3::C_AQP-POOL|EnablePoolStake patron pool-id)
     ]))
     ;; Two stakes → two TF legs if different beneficiaries; same owner×ben collapses to one row.
     ;; Use amount-only: stake once, then try finalize with a zeroed amount batch that doesn't clear inventory.
-    (print (format "<(TS02-C3.AQP-POOL|CC_StakeTrueFungible)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id stake-amount)
+    (print (format "<(TS02-C3.CC_AQP-POOL|StakeTrueFungible)> => \"{}\"" [
+        (ref-TS02-C3::CC_AQP-POOL|StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id stake-amount)
     ]))
-    (print (format "<(TS02-C3.AQP-POOL|CC_StakeTrueFungible second)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id stake-amount)
+    (print (format "<(TS02-C3.CC_AQP-POOL|StakeTrueFungible second)> => \"{}\"" [
+        (ref-TS02-C3::CC_AQP-POOL|StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id stake-amount)
     ]))
     (let
         (
@@ -1157,14 +1157,14 @@
             [
                 (expect-failure
                     (format "<<TX-VCT-N02 expect-failure>> batch amount mismatch vs tracker must fail" [])
-                    (ref-TS02-C3::AQP-POOL|CCp_BatchVacateTrueFungible
+                    (ref-TS02-C3::CCp_AQP-POOL|BatchVacateTrueFungible
                         patron pool-id ouro-id [owner-id] [beneficiary-id] [1.0]
                     )
                 )
             ]
         )
-        (print (format "<(TS02-C3.AQP-POOL|CC_FullVacate cleanup)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|CC_FullVacate patron pool-id)
+        (print (format "<(TS02-C3.CC_AQP-POOL|FullVacate cleanup)> => \"{}\"" [
+            (ref-TS02-C3::CC_AQP-POOL|FullVacate patron pool-id)
         ]))
     )
 )
@@ -1193,11 +1193,11 @@
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
     )
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (print (format "<(TS02-C3.AQP-POOL|C_EnablePoolStake)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+    (print (format "<(TS02-C3.C_AQP-POOL|EnablePoolStake)> => \"{}\"" [
+        (ref-TS02-C3::C_AQP-POOL|EnablePoolStake patron pool-id)
     ]))
-    (print (format "<(TS02-C3.AQP-POOL|CC_StakeTrueFungible)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id stake-amount)
+    (print (format "<(TS02-C3.CC_AQP-POOL|StakeTrueFungible)> => \"{}\"" [
+        (ref-TS02-C3::CC_AQP-POOL|StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id stake-amount)
     ]))
     (let
         (
@@ -1217,8 +1217,8 @@
             ]
         )
     )
-    (print (format "<(TS02-C3.AQP-POOL|CC_FullVacate cleanup)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_FullVacate patron pool-id)
+    (print (format "<(TS02-C3.CC_AQP-POOL|FullVacate cleanup)> => \"{}\"" [
+        (ref-TS02-C3::CC_AQP-POOL|FullVacate patron pool-id)
     ]))
 )
 (env-sigs [])
@@ -1257,15 +1257,15 @@
             (emma-bal:decimal (ref-DPTF::UR_AccountSupply ouro-id owner-b))
         )
         (if (< emma-bal stake-amount)
-            (ref-TS01-C1::DPTF|C_Transfer patron ouro-id owner-a owner-b stake-amount true)
+            (ref-TS01-C1::C_DPTF|Transfer patron ouro-id owner-a owner-b stake-amount true)
             true
         )
     )
-    (print (format "<(TS02-C3.AQP-POOL|C_EnablePoolStake)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+    (print (format "<(TS02-C3.C_AQP-POOL|EnablePoolStake)> => \"{}\"" [
+        (ref-TS02-C3::C_AQP-POOL|EnablePoolStake patron pool-id)
     ]))
-    (print (format "<(TS02-C3.AQP-POOL|CC_StakeTrueFungible owner-a)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-a beneficiary-a ouro-id stake-amount)
+    (print (format "<(TS02-C3.CC_AQP-POOL|StakeTrueFungible owner-a)> => \"{}\"" [
+        (ref-TS02-C3::CC_AQP-POOL|StakeTrueFungible patron pool-id owner-a beneficiary-a ouro-id stake-amount)
     ]))
     ;; Patron IGNIS + EMMA owner: both keys (same pattern as TX-VCT-L02).
     (env-sigs
@@ -1274,8 +1274,8 @@
             { "key": "PK_Emma", "caps": [] }
         ]
     )
-    (print (format "<(TS02-C3.AQP-POOL|CC_StakeTrueFungible owner-b)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-b beneficiary-b ouro-id stake-amount)
+    (print (format "<(TS02-C3.CC_AQP-POOL|StakeTrueFungible owner-b)> => \"{}\"" [
+        (ref-TS02-C3::CC_AQP-POOL|StakeTrueFungible patron pool-id owner-b beneficiary-b ouro-id stake-amount)
     ]))
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (let
@@ -1285,8 +1285,8 @@
             (slice1:object (at 1 (at "slices" plan2)))
         )
         (enforce (= 2 (at "slice-count" plan2)) "TX-VCT-L05: expected 2 slices")
-        (print (format "<(TS02-C3.AQP-POOL|CCp_BatchVacateTrueFungible batch0 partial)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|CCp_BatchVacateTrueFungible
+        (print (format "<(TS02-C3.CCp_AQP-POOL|BatchVacateTrueFungible batch0 partial)> => \"{}\"" [
+            (ref-TS02-C3::CCp_AQP-POOL|BatchVacateTrueFungible
                 patron pool-id ouro-id
                 (at "owner-ids" slice0)
                 (at "beneficiary-ids" slice0)
@@ -1305,8 +1305,8 @@
                 ]
             )
         )
-        (print (format "<(TS02-C3.AQP-POOL|CCp_BatchVacateTrueFungible batch1 drains → auto-finalize)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|CCp_BatchVacateTrueFungible
+        (print (format "<(TS02-C3.CCp_AQP-POOL|BatchVacateTrueFungible batch1 drains → auto-finalize)> => \"{}\"" [
+            (ref-TS02-C3::CCp_AQP-POOL|BatchVacateTrueFungible
                 patron pool-id ouro-id
                 (at "owner-ids" slice1)
                 (at "beneficiary-ids" slice1)
@@ -1364,15 +1364,15 @@
             (emma-bal:decimal (ref-DPTF::UR_AccountSupply ouro-id owner-b))
         )
         (if (< emma-bal stake-amount)
-            (ref-TS01-C1::DPTF|C_Transfer patron ouro-id owner-a owner-b stake-amount true)
+            (ref-TS01-C1::C_DPTF|Transfer patron ouro-id owner-a owner-b stake-amount true)
             true
         )
     )
-    (print (format "<(TS02-C3.AQP-POOL|C_EnablePoolStake)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+    (print (format "<(TS02-C3.C_AQP-POOL|EnablePoolStake)> => \"{}\"" [
+        (ref-TS02-C3::C_AQP-POOL|EnablePoolStake patron pool-id)
     ]))
-    (print (format "<(TS02-C3.AQP-POOL|CC_StakeTrueFungible owner-a)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-a beneficiary-a ouro-id stake-amount)
+    (print (format "<(TS02-C3.CC_AQP-POOL|StakeTrueFungible owner-a)> => \"{}\"" [
+        (ref-TS02-C3::CC_AQP-POOL|StakeTrueFungible patron pool-id owner-a beneficiary-a ouro-id stake-amount)
     ]))
     (env-sigs
         [
@@ -1380,8 +1380,8 @@
             { "key": "PK_Emma", "caps": [] }
         ]
     )
-    (print (format "<(TS02-C3.AQP-POOL|CC_StakeTrueFungible owner-b)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-b beneficiary-b ouro-id stake-amount)
+    (print (format "<(TS02-C3.CC_AQP-POOL|StakeTrueFungible owner-b)> => \"{}\"" [
+        (ref-TS02-C3::CC_AQP-POOL|StakeTrueFungible patron pool-id owner-b beneficiary-b ouro-id stake-amount)
     ]))
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (let
@@ -1392,8 +1392,8 @@
         ;; Vacate ONLY the first slice — owner-b's leg stays staked. There is no finalize flag:
         ;; XI_MaybeFinalizeVacate auto-finalizes ONLY when URC_PoolFullyVacated (H3/#6). With leftover it
         ;; does NOT fire, so vacate STAYS in progress and stake STAYS disabled.
-        (print (format "<(TS02-C3.AQP-POOL|CCp_BatchVacateTrueFungible partial slice0)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|CCp_BatchVacateTrueFungible
+        (print (format "<(TS02-C3.CCp_AQP-POOL|BatchVacateTrueFungible partial slice0)> => \"{}\"" [
+            (ref-TS02-C3::CCp_AQP-POOL|BatchVacateTrueFungible
                 patron pool-id ouro-id
                 (at "owner-ids" slice0)
                 (at "beneficiary-ids" slice0)
@@ -1414,8 +1414,8 @@
                 ]
             )
         )
-        (print (format "<(TS02-C3.AQP-POOL|CC_FullVacate cleanup)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|CC_FullVacate patron pool-id)
+        (print (format "<(TS02-C3.CC_AQP-POOL|FullVacate cleanup)> => \"{}\"" [
+            (ref-TS02-C3::CC_AQP-POOL|FullVacate patron pool-id)
         ]))
     )
 )
@@ -1455,38 +1455,38 @@
         ]
     )
     (if (ref-DPOF::UR_R-Frozen dpof-id owner-a)
-        (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id owner-a false)
+        (ref-TS01-C1::C_DPOF|ToggleFreezeAccount patron dpof-id owner-a false)
         true
     )
     (if (ref-DPOF::UR_R-Frozen dpof-id owner-b)
-        (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id owner-b false)
+        (ref-TS01-C1::C_DPOF|ToggleFreezeAccount patron dpof-id owner-b false)
         true
     )
     (if (not (ref-DPOF::UR_R-AddQuantity dpof-id patron))
-        (ref-TS01-C1::DPOF|C_ToggleAddQuantityRole patron dpof-id patron true)
+        (ref-TS01-C1::C_DPOF|ToggleAddQuantityRole patron dpof-id patron true)
         true
     )
-    (print (format "<(TS02-C3.AQP-POOL|C_EnablePoolStake)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+    (print (format "<(TS02-C3.C_AQP-POOL|EnablePoolStake)> => \"{}\"" [
+        (ref-TS02-C3::C_AQP-POOL|EnablePoolStake patron pool-id)
     ]))
     ;; Owner-a: existing nonce-a. Owner-b: mint → transfer → stake (2 owner-rows for N=2).
-    (print (format "<(TS02-C3.AQP-POOL|CC_StakeOrtoFungible owner-a)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron pool-id owner-a beneficiary-a dpof-id [nonce-a])
+    (print (format "<(TS02-C3.CC_AQP-POOL|StakeOrtoFungible owner-a)> => \"{}\"" [
+        (ref-TS02-C3::CC_AQP-POOL|StakeOrtoFungible patron pool-id owner-a beneficiary-a dpof-id [nonce-a])
     ]))
-    (print (format "<(DPOF|C_Mint L06 emma)> => \"{}\"" [
-        (ref-TS01-C1::DPOF|C_Mint patron dpof-id patron 1.0 [{"vct-l06": true}])
+    (print (format "<(C_DPOF|Mint L06 emma)> => \"{}\"" [
+        (ref-TS01-C1::C_DPOF|Mint patron dpof-id patron 1.0 [{"vct-l06": true}])
     ]))
     (let
         (
             (patron-nonces:[integer] (ref-DPOF::URH_AccountNonces patron dpof-id))
             (nonce-b:integer (at (- (length patron-nonces) 1) patron-nonces))
         )
-        (print (format "<(DPOF|C_Transfer nonce-b={} → EMMA)> => \"{}\"" [
+        (print (format "<(C_DPOF|Transfer nonce-b={} → EMMA)> => \"{}\"" [
             nonce-b
-            (ref-TS01-C1::DPOF|C_Transfer patron dpof-id [nonce-b] patron owner-b true)
+            (ref-TS01-C1::C_DPOF|Transfer patron dpof-id [nonce-b] patron owner-b true)
         ]))
-        (print (format "<(TS02-C3.AQP-POOL|CC_StakeOrtoFungible owner-b)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron pool-id owner-b beneficiary-b dpof-id [nonce-b])
+        (print (format "<(TS02-C3.CC_AQP-POOL|StakeOrtoFungible owner-b)> => \"{}\"" [
+            (ref-TS02-C3::CC_AQP-POOL|StakeOrtoFungible patron pool-id owner-b beneficiary-b dpof-id [nonce-b])
         ]))
     )
     (let
@@ -1501,8 +1501,8 @@
             )
             (enforce (= 1 (length (at "owner-ids" slice0))) "TX-VCT-L06: slice0 owner-count")
             (enforce (= 1 (length (at "owner-ids" slice1))) "TX-VCT-L06: slice1 owner-count")
-            (print (format "<(TS02-C3.AQP-POOL|CCp_BatchVacateOrtoFungible batch0 partial)> => \"{}\"" [
-                (ref-TS02-C3::AQP-POOL|CCp_BatchVacateOrtoFungible
+            (print (format "<(TS02-C3.CCp_AQP-POOL|BatchVacateOrtoFungible batch0 partial)> => \"{}\"" [
+                (ref-TS02-C3::CCp_AQP-POOL|BatchVacateOrtoFungible
                     patron pool-id dpof-id
                     (at "owner-ids" slice0)
                     (at "beneficiary-ids" slice0)
@@ -1521,8 +1521,8 @@
                     ]
                 )
             )
-            (print (format "<(TS02-C3.AQP-POOL|CCp_BatchVacateOrtoFungible batch1 drains → auto-finalize)> => \"{}\"" [
-                (ref-TS02-C3::AQP-POOL|CCp_BatchVacateOrtoFungible
+            (print (format "<(TS02-C3.CCp_AQP-POOL|BatchVacateOrtoFungible batch1 drains → auto-finalize)> => \"{}\"" [
+                (ref-TS02-C3::CCp_AQP-POOL|BatchVacateOrtoFungible
                     patron pool-id dpof-id
                     (at "owner-ids" slice1)
                     (at "beneficiary-ids" slice1)
@@ -1610,22 +1610,22 @@
             }
         ]
     )
-    (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron owner-id score-name 12 1.0)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name ouro-id 1)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::C_AQP-SCR|IssueTrueFungibleScore patron owner-id score-name 12 1.0)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name ouro-id 1)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     ;; 3 scored TF legs (owner ANHD; beneficiaries ANHD / EMMA / LUMY)
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id ben-a ouro-id amt)
-    (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id ben-b ouro-id amt)
-    (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id ben-c ouro-id amt)
+    (ref-TS02-C3::CC_AQP-POOL|StakeTrueFungible patron pool-id owner-id ben-a ouro-id amt)
+    (ref-TS02-C3::CC_AQP-POOL|StakeTrueFungible patron pool-id owner-id ben-b ouro-id amt)
+    (ref-TS02-C3::CC_AQP-POOL|StakeTrueFungible patron pool-id owner-id ben-c ouro-id amt)
     (let
         (
             (legs-staked:integer (at "leg-count" (ref-VCT::URH_VacateTfInventory pool-id ouro-id)))
         )
         (enforce (= legs-staked 3) "TX-VCT-RESUME-A: expected exactly our 3 legs (dedicated pool)")
         (print "--- [TX-VCT-RESUME-A · 01 · ROUND 1 batch: drain leg (owner,ANHD) only] ---")
-        (ref-TS02-C3::AQP-POOL|CCp_BatchVacateTrueFungible patron pool-id ouro-id [owner-id] [ben-a] [amt])
+        (ref-TS02-C3::CCp_AQP-POOL|BatchVacateTrueFungible patron pool-id ouro-id [owner-id] [ben-a] [amt])
         (let
             (
                 (bal-a:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id ben-a))
@@ -1687,7 +1687,7 @@
         (enforce (= remaining-pre 2) "TX-VCT-RESUME-B: expected 2 legs left from the failed round")
         (print "--- [TX-VCT-RESUME-B · 01 · new-round batch continues the SAME frozen campaign] ---")
         ;; This batch's XI_EnsureVacateBegun sees vacate-in-progress already true → no-op (continue).
-        (ref-TS02-C3::AQP-POOL|CCp_BatchVacateTrueFungible patron pool-id ouro-id [owner-id] [ben-b] [amt])
+        (ref-TS02-C3::CCp_AQP-POOL|BatchVacateTrueFungible patron pool-id ouro-id [owner-id] [ben-b] [amt])
         (let
             (
                 (bal-b:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id ben-b))
@@ -1738,7 +1738,7 @@
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
     )
     (print "--- [TX-VCT-RESUME-C · 01 · final batch drains the last leg (LUMY)] ---")
-    (ref-TS02-C3::AQP-POOL|CCp_BatchVacateTrueFungible patron pool-id ouro-id [owner-id] [ben-c] [amt])
+    (ref-TS02-C3::CCp_AQP-POOL|BatchVacateTrueFungible patron pool-id ouro-id [owner-id] [ben-c] [amt])
     (let
         (
             (bal-c:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id ben-c))
@@ -1816,13 +1816,13 @@
             }
         ]
     )
-    (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron owner-id score-name 12 1.0)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name ouro-id 1)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::C_AQP-SCR|IssueTrueFungibleScore patron owner-id score-name 12 1.0)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name ouro-id 1)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id ben-a ouro-id amt)
-    (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id ben-b ouro-id amt)
+    (ref-TS02-C3::CC_AQP-POOL|StakeTrueFungible patron pool-id owner-id ben-a ouro-id amt)
+    (ref-TS02-C3::CC_AQP-POOL|StakeTrueFungible patron pool-id owner-id ben-b ouro-id amt)
     (print "--- [TX-VCT-DRAIN · 01 · pre-drain snapshot] ---")
     (let
         (
@@ -1835,7 +1835,7 @@
         ;; must not carry two same-owner legs (inherited v1 constraint — the UI slices by unique owner). We drain
         ;; one leg per batch, which ALSO proves settle-per-beneficiary + drain-never-finalizes.
         (print "--- [TX-VCT-DRAIN · 02 · BATCH 1: fast-drain ANHD's leg only] ---")
-        (ref-TS02-C3::AQP-POOL|CCp_BatchDrainTrueFungible patron pool-id ouro-id [owner-id] [ben-a] [amt])
+        (ref-TS02-C3::CCp_AQP-POOL|BatchDrainTrueFungible patron pool-id ouro-id [owner-id] [ben-a] [amt])
         (let
             (
                 (bal-a1:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id ben-a))
@@ -1861,7 +1861,7 @@
             )
         )
         (print "--- [TX-VCT-DRAIN · 03 · BATCH 2: fast-drain EMMA's leg -> pool empty] ---")
-        (ref-TS02-C3::AQP-POOL|CCp_BatchDrainTrueFungible patron pool-id ouro-id [owner-id] [ben-b] [amt])
+        (ref-TS02-C3::CCp_AQP-POOL|BatchDrainTrueFungible patron pool-id ouro-id [owner-id] [ben-b] [amt])
         (let
             (
                 (bal-b2:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id ben-b))
@@ -1934,7 +1934,7 @@
             (nns-pre:integer (ref-AQP::UR_AQP|PoolNns pool-id))
         )
         (print "--- [TX-VCT-FINALIZE · 02 · C_FinalizeVacate (the nuke)] ---")
-        (ref-TS02-C3::AQP-POOL|C_FinalizeVacate patron pool-id)
+        (ref-TS02-C3::C_AQP-POOL|FinalizeVacate patron pool-id)
         (let
             (
                 ;; per-user rows are now STALE (row-gen < score-gen) -> read as 0 lazily, WITHOUT any per-user write
@@ -1962,7 +1962,7 @@
             )
         )
         (print "--- [TX-VCT-FINALIZE · 03 · re-stake proves the pool is reusable + generation reset] ---")
-        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id ben-a ouro-id amt)
+        (ref-TS02-C3::CC_AQP-POOL|StakeTrueFungible patron pool-id owner-id ben-a ouro-id amt)
         (let
             (
                 ;; the re-stake rewrites ANHD's row at the CURRENT generation -> reads live (fresh 20) again

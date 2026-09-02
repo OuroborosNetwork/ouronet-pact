@@ -65,14 +65,14 @@
             }
         ]
     )
-    (print (format "<(TS02-C3.AQP-SCR|C_IssueSemiFungibleScore sft-equality=true)> => \"{}\"" [
-        (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron owner-konto score-name 3 true)
+    (print (format "<(TS02-C3.C_AQP-SCR|IssueSemiFungibleScore sft-equality=true)> => \"{}\"" [
+        (ref-TS02-C3::C_AQP-SCR|IssueSemiFungibleScore patron owner-konto score-name 3 true)
     ]))
-    (print (format "<(TS02-C3.AQP-POOL|C_Issue class=3 DHCD)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpsf-id aqp-class)
+    (print (format "<(TS02-C3.C_AQP-POOL|Issue class=3 DHCD)> => \"{}\"" [
+        (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name dpsf-id aqp-class)
     ]))
-    (print (format "<(TS02-C3.AQP-POOL|C_AddScore)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (print (format "<(TS02-C3.C_AQP-POOL|AddScore)> => \"{}\"" [
+        (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     ]))
     (print (format "<(TS02-C3.AQP-FVT|REPL_BootstrapVault reward=OURO)> => \"{}\"" [
         (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
@@ -145,8 +145,8 @@
         (print (format "<(stake-nonce stake-amount)> => {} / {}" [stake-nonce stake-amount]))
         (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
         (print "--- [TX-FVT-DC-02 · 02 · CC_StakeSemiFungibleCollectable] ---")
-        (print (format "<(TS02-C3.AQP-POOL|CC_StakeSemiFungibleCollectable)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable
+        (print (format "<(TS02-C3.CC_AQP-POOL|StakeSemiFungibleCollectable)> => \"{}\"" [
+            (ref-TS02-C3::CC_AQP-POOL|StakeSemiFungibleCollectable
                 patron pool-id owner-id beneficiary-id dpsf-id [stake-nonce]
             )
         ]))
@@ -232,8 +232,8 @@
             }
         ]
     )
-    (print (format "<(AQP-ANK|C_IssueSemiFungibleAnchor SfStakeAnchor)> => \"{}\"" [
-        (ref-TS02-C3::AQP-ANK|C_IssueSemiFungibleAnchor patron "SfStakeAnchor" dpsf-id true boost-class-name 3 50.0 1)
+    (print (format "<(C_AQP-ANK|IssueSemiFungibleAnchor SfStakeAnchor)> => \"{}\"" [
+        (ref-TS02-C3::C_AQP-ANK|IssueSemiFungibleAnchor patron "SfStakeAnchor" dpsf-id true boost-class-name 3 50.0 1)
     ]))
     (let
         (
@@ -264,8 +264,8 @@
                 (pre-gas:decimal (ref-DPTF2::UR_AccountSupply "GAS-98c486052a51" patron))
             )
             (print (format "<(URCi_SyncCollectableAnchorsFull SF→ignis-need)> = {} ; patron pre-gas = {}" [predicted pre-gas]))
-            (print (format "<(AQP-POOL|C_SyncSemiFungibleAnchors)> => \"{}\"" [
-                (ref-TS02-C3::AQP-POOL|C_SyncSemiFungibleAnchors patron beneficiary-id dpsf-id)
+            (print (format "<(C_AQP-POOL|SyncSemiFungibleAnchors)> => \"{}\"" [
+                (ref-TS02-C3::C_AQP-POOL|SyncSemiFungibleAnchors patron beneficiary-id dpsf-id)
             ]))
             (let ((post-gas:decimal (ref-DPTF2::UR_AccountSupply "GAS-98c486052a51" patron)))
                 (map print
@@ -333,8 +333,8 @@
     (print (format "<(unstake-nonce stake-amount vault-konto)> => {} / {} / {}" [stake-nonce stake-amount vault-konto]))
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (print "--- [TX-FVT-DC-03 · 01 · CC_UnstakeSemiFungibleCollectable] ---")
-    (print (format "<(TS02-C3.AQP-POOL|CC_UnstakeSemiFungibleCollectable)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_UnstakeSemiFungibleCollectable
+    (print (format "<(TS02-C3.CC_AQP-POOL|UnstakeSemiFungibleCollectable)> => \"{}\"" [
+        (ref-TS02-C3::CC_AQP-POOL|UnstakeSemiFungibleCollectable
             patron pool-id owner-id owner-id dpsf-id [stake-nonce] [stake-amount]
         )
     ]))
@@ -413,7 +413,7 @@
             )
             ;;==== TX-FVT-DC-03b · 01 · owner ANHD stakes FOR foreign beneficiary EMMA ====
             (print "--- [TX-FVT-DC-03b · 01 · stake owner=ANHD, beneficiary=EMMA] ---")
-            (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id owner-id foreign-ben dpsf-id [stake-nonce])
+            (ref-TS02-C3::CC_AQP-POOL|StakeSemiFungibleCollectable patron pool-id owner-id foreign-ben dpsf-id [stake-nonce])
             (let
                 (
                     (ben-bal:decimal (ref-AQP::UR_AQP|DPSFTrackerBalance pool-id dpsf-id owner-id foreign-ben stake-nonce))
@@ -438,12 +438,12 @@
                 [
                     (expect-failure
                         "<<TX-FVT-DC-03b>> unstake naming beneficiary=owner (the OLD self-key) finds NO row → must fail"
-                        (ref-TS02-C3::AQP-POOL|CC_UnstakeSemiFungibleCollectable patron pool-id owner-id owner-id dpsf-id [stake-nonce] [stake-amount]))
+                        (ref-TS02-C3::CC_AQP-POOL|UnstakeSemiFungibleCollectable patron pool-id owner-id owner-id dpsf-id [stake-nonce] [stake-amount]))
                 ]
             )
             ;;==== TX-FVT-DC-03b · 03 · unstake naming the REAL beneficiary EMMA restores state ====
             (print "--- [TX-FVT-DC-03b · 03 · unstake owner=ANHD, beneficiary=EMMA] ---")
-            (ref-TS02-C3::AQP-POOL|CC_UnstakeSemiFungibleCollectable patron pool-id owner-id foreign-ben dpsf-id [stake-nonce] [stake-amount])
+            (ref-TS02-C3::CC_AQP-POOL|UnstakeSemiFungibleCollectable patron pool-id owner-id foreign-ben dpsf-id [stake-nonce] [stake-amount])
             (let
                 (
                     (ben-bal-after:decimal (ref-AQP::UR_AQP|DPSFTrackerBalance pool-id dpsf-id owner-id foreign-ben stake-nonce))
@@ -501,8 +501,8 @@
     )
     (print "--- [TX-FVT-DC-04 · 01 · re-stake after TX-FVT-DC-03 round-trip] ---")
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (print (format "<(TS02-C3.AQP-POOL|CC_StakeSemiFungibleCollectable)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable
+    (print (format "<(TS02-C3.CC_AQP-POOL|StakeSemiFungibleCollectable)> => \"{}\"" [
+        (ref-TS02-C3::CC_AQP-POOL|StakeSemiFungibleCollectable
             patron pool-id owner-id beneficiary-id dpsf-id [stake-nonce]
         )
     ]))
@@ -515,8 +515,8 @@
         (enforce (> vacate-amount 0) "tracker must hold stake before vacate")
         (print (format "<(vacate-nonce vacate-amount)> => {} / {}" [stake-nonce vacate-amount]))
         (print "--- [TX-FVT-DC-04 · 02 · CC_FullVacate (agnostic, class-3 DPSF; pool-id only)] ---")
-        (print (format "<(TS02-C3.AQP-POOL|CC_FullVacate)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|CC_FullVacate patron pool-id)
+        (print (format "<(TS02-C3.CC_AQP-POOL|FullVacate)> => \"{}\"" [
+            (ref-TS02-C3::CC_AQP-POOL|FullVacate patron pool-id)
         ]))
         (print "--- [TX-FVT-DC-04 · 03 · post-vacate expects] ---")
         (let
@@ -589,8 +589,8 @@
     )
     (print "--- [TX-FVT-DC-05 · 00 · re-enable stake after TX-FVT-DC-04 vacate (XB disable)] ---")
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (print (format "<(TS02-C3.AQP-POOL|C_EnablePoolStake)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+    (print (format "<(TS02-C3.C_AQP-POOL|EnablePoolStake)> => \"{}\"" [
+        (ref-TS02-C3::C_AQP-POOL|EnablePoolStake patron pool-id)
     ]))
     (print "--- [TX-FVT-DC-05 · 01 · transfer DHCD nonce 2 to EMMA + dual stake] ---")
     (env-sigs
@@ -604,17 +604,17 @@
             (amt-b:integer (ref-DPDC::UR_AccountNonceSupply owner-a dpsf-id true nonce-b))
         )
         (enforce (> amt-b 0) "owner-a must hold DHCD nonce 2 for multi-owner vacate setup")
-        (print (format "<(TS02-C1.DPSF|C_TransferNonces owner-a→owner-b)> => {}" [
-            (ref-TS02-C1::DPSF|C_TransferNonces patron dpsf-id owner-a owner-b [nonce-b] [amt-b] false)
+        (print (format "<(TS02-C1.C_DPSF|TransferNonces owner-a→owner-b)> => {}" [
+            (ref-TS02-C1::C_DPSF|TransferNonces patron dpsf-id owner-a owner-b [nonce-b] [amt-b] false)
         ]))
     )
-    (print (format "<(TS02-C3.AQP-POOL|CC_StakeSemiFungibleCollectable owner-a)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable
+    (print (format "<(TS02-C3.CC_AQP-POOL|StakeSemiFungibleCollectable owner-a)> => \"{}\"" [
+        (ref-TS02-C3::CC_AQP-POOL|StakeSemiFungibleCollectable
             patron pool-id owner-a beneficiary-a dpsf-id [nonce-a]
         )
     ]))
-    (print (format "<(TS02-C3.AQP-POOL|CC_StakeSemiFungibleCollectable owner-b)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable
+    (print (format "<(TS02-C3.CC_AQP-POOL|StakeSemiFungibleCollectable owner-b)> => \"{}\"" [
+        (ref-TS02-C3::CC_AQP-POOL|StakeSemiFungibleCollectable
             patron pool-id owner-b beneficiary-b dpsf-id [nonce-b]
         )
     ]))
@@ -633,8 +633,8 @@
         (enforce (> vacate-b 0) "owner-b tracker must hold stake")
         (print (format "<(URD vacate legs)> => {}" [inventory]))
         (print "--- [TX-FVT-DC-05 · 02 · CCp_BatchVacateCollectables (2 legs, 1 batch → auto-finalize)] ---")
-        (print (format "<(TS02-C3.AQP-POOL|CCp_BatchVacateCollectables)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|CCp_BatchVacateCollectables
+        (print (format "<(TS02-C3.CCp_AQP-POOL|BatchVacateCollectables)> => \"{}\"" [
+            (ref-TS02-C3::CCp_AQP-POOL|BatchVacateCollectables
                 patron pool-id dpsf-id true
                 (at "owner-ids" slice0)
                 (at "beneficiary-ids" slice0)
@@ -722,16 +722,16 @@
             )
             (if (< supply 2)
                 (print (format "SKIP TX-FVT-DC-NNS: DHCD nonce {} supply {} < 2 (need >1 for a partial)" [nonce supply]))
-                (let ((x:string (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id owner-id beneficiary-id dpsf-id [nonce])))
+                (let ((x:string (ref-TS02-C3::CC_AQP-POOL|StakeSemiFungibleCollectable patron pool-id owner-id beneficiary-id dpsf-id [nonce])))
                     (let
                         (
                             (nns1:integer (ref-AQP::UR_AQP|PoolNns pool-id))
-                            (y:string (ref-TS02-C3::AQP-POOL|CC_UnstakeSemiFungibleCollectable patron pool-id owner-id beneficiary-id dpsf-id [nonce] [1]))
+                            (y:string (ref-TS02-C3::CC_AQP-POOL|UnstakeSemiFungibleCollectable patron pool-id owner-id beneficiary-id dpsf-id [nonce] [1]))
                         )
                         (let
                             (
                                 (nns2:integer (ref-AQP::UR_AQP|PoolNns pool-id))
-                                (z:string (ref-TS02-C3::AQP-POOL|CC_UnstakeSemiFungibleCollectable patron pool-id owner-id beneficiary-id dpsf-id [nonce] [(- supply 1)]))
+                                (z:string (ref-TS02-C3::CC_AQP-POOL|UnstakeSemiFungibleCollectable patron pool-id owner-id beneficiary-id dpsf-id [nonce] [(- supply 1)]))
                             )
                             (let ((nns3:integer (ref-AQP::UR_AQP|PoolNns pool-id)))
                                 (map print

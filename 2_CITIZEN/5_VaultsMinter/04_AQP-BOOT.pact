@@ -119,9 +119,9 @@
         (patron:string)
         @doc "Step 0 — AQP-POOL TFT + DPOF IMC + AQP|SC_NAME governor rotate. \
             \ Run once after all four sovereign AQP modules are on chain (before stake/unstake or Step 1+). \
-            \ Prerequisite: AQP|SC_NAME smart account deployed (DALOS|A_DeploySmartAccount). \
-            \ Talos TS02-C3 P|A_Define (P|TALOS-SUMMONER) is separate — sovereign executor / [4.0]. \
-            \ FVT + VCT P|A_Define register IMP; FVT|RemoteAqpGov + VCT|RemoteAqpGov on AQP-POOL for vault legs."
+            \ Prerequisite: AQP|SC_NAME smart account deployed (A_DALOS|DeploySmartAccount). \
+            \ Talos TS02-C3 A_P|Define (P|TALOS-SUMMONER) is separate — sovereign executor / [4.0]. \
+            \ FVT + VCT A_P|Define register IMP; FVT|RemoteAqpGov + VCT|RemoteAqpGov on AQP-POOL for vault legs."
         ;; INPUT
         ;;   patron — gas payer konto (REPL: KST.ANHD)
         ;; REPL: (AQP-BOOT.C_Step0_WireImcAndGovernor KST.ANHD)
@@ -136,11 +136,11 @@
                     ;;
                     (aqp-sc:string (ref-ANK::GOV|AQP|SC_NAME))
                 )
-                (ref-P|AQP::P|A_Define)
-                (ref-P|FVT::P|A_Define)
-                (ref-P|VCT::P|A_Define)
+                (ref-P|AQP::A_P|Define)
+                (ref-P|FVT::A_P|Define)
+                (ref-P|VCT::A_P|Define)
                 ;; C_RotateGovernor — AQP|SC_NAME: AQP-POOL.AQP|GOV (stake) + FVT|RemoteAqpGov + VCT|RemoteAqpGov.
-                (ref-TS01-C1::DALOS|C_RotateGovernor patron aqp-sc
+                (ref-TS01-C1::C_DALOS|RotateGovernor patron aqp-sc
                     (let
                         (
                             (ref-U|G:module{OuronetGuardsV1} U|G)
@@ -201,10 +201,10 @@
                     (anchor-elite-auryn-rain-id:string (ref-U|DALOS::UDC_Makeid "EliteAurynRain"))
                     (anchor-legendary-snake-token-rain-id:string (ref-U|DALOS::UDC_Makeid "LegendarySnakeTokenRain"))
                 )
-                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "OuroborosRain" kbn-id true "BronzeSnakePower" 3 50.0 "Background" "Ouroboros Rain")
-                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "AurynRain" kbn-id true "SilverSnakePower" 3 100.0 "Background" "Auryn Rain")
-                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "EliteAurynRain" kbn-id true "GoldenSnakePower" 3 200.0 "Background" "Elite-Auryn Rain")
-                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "LegendarySnakeTokenRain" kbn-id false golden-boost-class-id 3 400.0 "Rarity" "Legendary")
+                (ref-TS02-C3::C_AQP-ANK|IssueNonFungibleAnchor patron "OuroborosRain" kbn-id true "BronzeSnakePower" 3 50.0 "Background" "Ouroboros Rain")
+                (ref-TS02-C3::C_AQP-ANK|IssueNonFungibleAnchor patron "AurynRain" kbn-id true "SilverSnakePower" 3 100.0 "Background" "Auryn Rain")
+                (ref-TS02-C3::C_AQP-ANK|IssueNonFungibleAnchor patron "EliteAurynRain" kbn-id true "GoldenSnakePower" 3 200.0 "Background" "Elite-Auryn Rain")
+                (ref-TS02-C3::C_AQP-ANK|IssueNonFungibleAnchor patron "LegendarySnakeTokenRain" kbn-id false golden-boost-class-id 3 400.0 "Rarity" "Legendary")
                 (format "AQP-BOOT Step 2 done. kbn-id={}. anchor-ids=[{} {} {} {}]. boost-class-ids=[bronze={} silver={} golden={}]. NEXT=Step6:boost-class-ids=[{} {} {}]."
                     [
                         kbn-id
@@ -248,19 +248,19 @@
                     (anchor-rgb-eyes-id:string (ref-U|DALOS::UDC_Makeid "RGBEyes"))
                 )
                 ;; Unity
-                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "Elk0nite" kbn-id true "UnityBooster" 3 100.0 "Eyes" "Elk0nite Unity Glasses")
-                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "Osmiridium" kbn-id false unity-boost-class-id 3 300.0 "Eyes" "Osmiridium Unity Glasses")
-                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "Titanium" kbn-id false unity-boost-class-id 3 900.0 "Eyes" "Titaniumgold Unity Glasses")
-                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "LegendaryUnityBooster" kbn-id false unity-boost-class-id 3 1000.0 "Rarity" "Legendary")
+                (ref-TS02-C3::C_AQP-ANK|IssueNonFungibleAnchor patron "Elk0nite" kbn-id true "UnityBooster" 3 100.0 "Eyes" "Elk0nite Unity Glasses")
+                (ref-TS02-C3::C_AQP-ANK|IssueNonFungibleAnchor patron "Osmiridium" kbn-id false unity-boost-class-id 3 300.0 "Eyes" "Osmiridium Unity Glasses")
+                (ref-TS02-C3::C_AQP-ANK|IssueNonFungibleAnchor patron "Titanium" kbn-id false unity-boost-class-id 3 900.0 "Eyes" "Titaniumgold Unity Glasses")
+                (ref-TS02-C3::C_AQP-ANK|IssueNonFungibleAnchor patron "LegendaryUnityBooster" kbn-id false unity-boost-class-id 3 1000.0 "Rarity" "Legendary")
                 ;; Stoa
-                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "VegoldEyes" kbn-id true "StoaBooster" 3 1000.0 "Eyes" "vEGLD Focus")
-                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "LegendaryStoaBooster" kbn-id false stoa-boost-class-id 3 3500.0 "Rarity" "Legendary")
+                (ref-TS02-C3::C_AQP-ANK|IssueNonFungibleAnchor patron "VegoldEyes" kbn-id true "StoaBooster" 3 1000.0 "Eyes" "vEGLD Focus")
+                (ref-TS02-C3::C_AQP-ANK|IssueNonFungibleAnchor patron "LegendaryStoaBooster" kbn-id false stoa-boost-class-id 3 3500.0 "Rarity" "Legendary")
                 ;; Vesta
-                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "RedEyes" kbn-id true "VestaBooster" 3 250.0 "Eyes" "Red")
-                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "GreenEyes" kbn-id false vesta-boost-class-id 3 250.0 "Eyes" "Green")
-                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "BlueEyes" kbn-id false vesta-boost-class-id 3 250.0 "Eyes" "Blue")
-                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "LegendaryVestaBooster" kbn-id false vesta-boost-class-id 3 3500.0 "Rarity" "Legendary")
-                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleSetAnchor patron "RGBEyes" kbn-id false vesta-boost-class-id 3 1000.0 1)
+                (ref-TS02-C3::C_AQP-ANK|IssueNonFungibleAnchor patron "RedEyes" kbn-id true "VestaBooster" 3 250.0 "Eyes" "Red")
+                (ref-TS02-C3::C_AQP-ANK|IssueNonFungibleAnchor patron "GreenEyes" kbn-id false vesta-boost-class-id 3 250.0 "Eyes" "Green")
+                (ref-TS02-C3::C_AQP-ANK|IssueNonFungibleAnchor patron "BlueEyes" kbn-id false vesta-boost-class-id 3 250.0 "Eyes" "Blue")
+                (ref-TS02-C3::C_AQP-ANK|IssueNonFungibleAnchor patron "LegendaryVestaBooster" kbn-id false vesta-boost-class-id 3 3500.0 "Rarity" "Legendary")
+                (ref-TS02-C3::C_AQP-ANK|IssueNonFungibleSetAnchor patron "RGBEyes" kbn-id false vesta-boost-class-id 3 1000.0 1)
                 (format "AQP-BOOT Step 3 done. kbn-id={}. anchor-ids=[{} {} {} {} {} {} {} {} {} {} {}]. boost-class-ids=[unity={} stoa={} vesta={}]. NEXT=none-for-Steps4-7."
                     [
                         kbn-id
@@ -292,10 +292,10 @@
                     (score-company-share:string (ref-U|DALOS::UDC_Makeid "DemiourgosShareholder"))
                     (score-company-snakes:string (ref-U|DALOS::UDC_Makeid "DemiourgosSnakes"))
                 )
-                (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron owner-konto "TheCodingDivision" 3 false)
-                (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron owner-konto "Bloodshed" 6 0)
-                (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron owner-konto "DemiourgosShareholder" 6 true)
-                (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron owner-konto "DemiourgosSnakes" 6 false)
+                (ref-TS02-C3::C_AQP-SCR|IssueSemiFungibleScore patron owner-konto "TheCodingDivision" 3 false)
+                (ref-TS02-C3::C_AQP-SCR|IssueNonFungibleScore patron owner-konto "Bloodshed" 6 0)
+                (ref-TS02-C3::C_AQP-SCR|IssueSemiFungibleScore patron owner-konto "DemiourgosShareholder" 6 true)
+                (ref-TS02-C3::C_AQP-SCR|IssueSemiFungibleScore patron owner-konto "DemiourgosSnakes" 6 false)
                 (format "AQP-BOOT Step 4 done. score-ids=[coding={} bloodshed={} company-share={} company-snakes={}]. NEXT=Step7:dh-score-ids[0,2,4,5]=[{} {} {} {}]."
                     [
                         score-coding score-bloodshed score-company-share score-company-snakes
@@ -325,16 +325,16 @@
                     (score-sub-nosferatu:string (ref-U|DALOS::UDC_Makeid "SubsidiaryNosferatu"))
                     (score-sub-bunnies:string (ref-U|DALOS::UDC_Makeid "SubsidiaryBunnies"))
                 )
-                (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron owner-konto "SubsidiaryCodingDivision" 6 true)
-                (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron owner-konto "SubsidiaryWonderCoach" 6 false)
-                (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron owner-konto "SubsidiaryBloodshed" 6 -1)
-                (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron owner-konto "SubsidiaryNosferatu" 6 -1)
-                (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron owner-konto "SubsidiaryBunnies" 6 -1)
-                (ref-TS02-C3::AQP-SCR|C_EnableDebBoost patron score-sub-coding)
-                (ref-TS02-C3::AQP-SCR|C_EnableDebBoost patron score-sub-wondercoach)
-                (ref-TS02-C3::AQP-SCR|C_EnableDebBoost patron score-sub-bloodshed)
-                (ref-TS02-C3::AQP-SCR|C_EnableDebBoost patron score-sub-nosferatu)
-                (ref-TS02-C3::AQP-SCR|C_EnableDebBoost patron score-sub-bunnies)
+                (ref-TS02-C3::C_AQP-SCR|IssueSemiFungibleScore patron owner-konto "SubsidiaryCodingDivision" 6 true)
+                (ref-TS02-C3::C_AQP-SCR|IssueSemiFungibleScore patron owner-konto "SubsidiaryWonderCoach" 6 false)
+                (ref-TS02-C3::C_AQP-SCR|IssueNonFungibleScore patron owner-konto "SubsidiaryBloodshed" 6 -1)
+                (ref-TS02-C3::C_AQP-SCR|IssueNonFungibleScore patron owner-konto "SubsidiaryNosferatu" 6 -1)
+                (ref-TS02-C3::C_AQP-SCR|IssueNonFungibleScore patron owner-konto "SubsidiaryBunnies" 6 -1)
+                (ref-TS02-C3::C_AQP-SCR|EnableDebBoost patron score-sub-coding)
+                (ref-TS02-C3::C_AQP-SCR|EnableDebBoost patron score-sub-wondercoach)
+                (ref-TS02-C3::C_AQP-SCR|EnableDebBoost patron score-sub-bloodshed)
+                (ref-TS02-C3::C_AQP-SCR|EnableDebBoost patron score-sub-nosferatu)
+                (ref-TS02-C3::C_AQP-SCR|EnableDebBoost patron score-sub-bunnies)
                 (format "AQP-BOOT Step 5 done. score-ids=[sub-coding={} sub-wondercoach={} sub-bloodshed={} sub-nosferatu={} sub-bunnies={}] deb-boost=enabled×5. NEXT=Step7:dh-score-ids[1,3,6,7,8]=[{} {} {} {} {}]."
                     [
                         score-sub-coding score-sub-wondercoach score-sub-bloodshed score-sub-nosferatu score-sub-bunnies
@@ -403,22 +403,22 @@
                 )
                 (enforce (= (length boost-class-ids) 3) "Step 6 expects boost-class-ids=[silver bronze golden].")
                 ;; [1..2] Silver
-                (ref-TS02-C3::AQP-SCR|C_IssueLiquidityScore
+                (ref-TS02-C3::C_AQP-SCR|IssueLiquidityScore
                     patron owner-konto BOOT|SCORE_SILVER BOOT|PRECISION lp-denominator BOOT|MX_FROZEN BOOT|MX_SLEEPING
                 )
-                (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostClassLink patron silver-id silver-boost-class-id)
+                (ref-TS02-C3::C_AQP-SCR|CreateScoreBoostClassLink patron silver-id silver-boost-class-id)
                 ;; [3..5] Bronze
-                (ref-TS02-C3::AQP-SCR|C_IssueLiquidityScore
+                (ref-TS02-C3::C_AQP-SCR|IssueLiquidityScore
                     patron owner-konto BOOT|SCORE_BRONZE BOOT|PRECISION lp-denominator BOOT|MX_FROZEN BOOT|MX_SLEEPING
                 )
-                (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostClassLink patron bronze-id bronze-boost-class-id)
-                (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostLink patron bronze-id silver-id)
+                (ref-TS02-C3::C_AQP-SCR|CreateScoreBoostClassLink patron bronze-id bronze-boost-class-id)
+                (ref-TS02-C3::C_AQP-SCR|CreateScoreBoostLink patron bronze-id silver-id)
                 ;; [6..8] Golden
-                (ref-TS02-C3::AQP-SCR|C_IssueLiquidityScore
+                (ref-TS02-C3::C_AQP-SCR|IssueLiquidityScore
                     patron owner-konto BOOT|SCORE_GOLDEN BOOT|PRECISION lp-denominator BOOT|MX_FROZEN BOOT|MX_SLEEPING
                 )
-                (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostClassLink patron golden-id golden-boost-class-id)
-                (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostLink patron golden-id silver-id)
+                (ref-TS02-C3::C_AQP-SCR|CreateScoreBoostClassLink patron golden-id golden-boost-class-id)
+                (ref-TS02-C3::C_AQP-SCR|CreateScoreBoostLink patron golden-id silver-id)
                 ;;
                 (format "AQP-BOOT Step 6 done. lp-denominator={}. score-ids=[silver={} bronze={} golden={}]. boost-class-ids=[{} {} {}]. boost-links=[{}->{} {}->{}]. NEXT=Step7:ouro-triplet-score-ids=[{} {} {}]. NEXT=Step11:C_IssueTriplet+AddTriplet."
                     [
@@ -521,31 +521,31 @@
                 (enforce (= (length ouro-triplet-score-ids) 3) "Step 7 expects ouro-triplet-score-ids=[silver bronze golden].")
                 ;;
                 ;; [1] DHCodingDivision — aqp-class 3 (DPSF)
-                (ref-TS02-C3::AQP-POOL|C_Issue patron "DHCodingDivision" asset-coding 3)
-                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-coding score-coding)
-                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-coding score-sub-coding)
+                (ref-TS02-C3::C_AQP-POOL|Issue patron "DHCodingDivision" asset-coding 3)
+                (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-coding score-coding)
+                (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-coding score-sub-coding)
                 ;; [2] DHBloodshed — aqp-class 4 (DPNF)
-                (ref-TS02-C3::AQP-POOL|C_Issue patron "DHBloodshed" asset-bloodshed 4)
-                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-bloodshed score-bloodshed)
-                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-bloodshed score-sub-bloodshed)
+                (ref-TS02-C3::C_AQP-POOL|Issue patron "DHBloodshed" asset-bloodshed 4)
+                (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-bloodshed score-bloodshed)
+                (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-bloodshed score-sub-bloodshed)
                 ;; [3] DHCompany — aqp-class 3 (DPSF)
-                (ref-TS02-C3::AQP-POOL|C_Issue patron "DHCompany" asset-company 3)
-                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-company score-company-share)
-                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-company score-company-snakes)
+                (ref-TS02-C3::C_AQP-POOL|Issue patron "DHCompany" asset-company 3)
+                (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-company score-company-share)
+                (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-company score-company-snakes)
                 ;; [4] DHWonderCoach — aqp-class 3 (DPSF)
-                (ref-TS02-C3::AQP-POOL|C_Issue patron "DHWonderCoach" asset-wondercoach 3)
-                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-wondercoach score-sub-wondercoach)
+                (ref-TS02-C3::C_AQP-POOL|Issue patron "DHWonderCoach" asset-wondercoach 3)
+                (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-wondercoach score-sub-wondercoach)
                 ;; [5] DHNosferatu — aqp-class 4 (DPNF)
-                (ref-TS02-C3::AQP-POOL|C_Issue patron "DHNosferatu" asset-nosferatu 4)
-                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-nosferatu score-sub-nosferatu)
+                (ref-TS02-C3::C_AQP-POOL|Issue patron "DHNosferatu" asset-nosferatu 4)
+                (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-nosferatu score-sub-nosferatu)
                 ;; [6] DHBunnies — aqp-class 4 (DPNF)
-                (ref-TS02-C3::AQP-POOL|C_Issue patron "DHBunnies" asset-bunnies 4)
-                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-bunnies score-sub-bunnies)
+                (ref-TS02-C3::C_AQP-POOL|Issue patron "DHBunnies" asset-bunnies 4)
+                (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-bunnies score-sub-bunnies)
                 ;; [7] DHOuroLp — aqp-class 0 (LP); triplet from Step 6 — see Step 6 ;; for OURO LP flow
-                (ref-TS02-C3::AQP-POOL|C_Issue patron "DHOuroLp" ouro-lp-asset-id 0)
-                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-ouro-lp score-silver)
-                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-ouro-lp score-bronze)
-                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-ouro-lp score-golden)
+                (ref-TS02-C3::C_AQP-POOL|Issue patron "DHOuroLp" ouro-lp-asset-id 0)
+                (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-ouro-lp score-silver)
+                (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-ouro-lp score-bronze)
+                (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-ouro-lp score-golden)
                 ;;
                 (format "AQP-BOOT Step 7 done. pool-ids=[coding={} bloodshed={} company={} wondercoach={} nosferatu={} bunnies={} ouro-lp={}]. ouro-lp-asset-id={}. score-slots-wired=12. NEXT=Step8:C_Step8_IssueFvtEntities."
                     [
@@ -581,13 +581,13 @@
                     (shares-treasury-id:string (ref-U|DALOS::UDC_Makeid BOOT|FVT_SHARES_TREASURY))
                 )
                 (if (!= lp-denominator "")
-                    (ref-TS02-C3::AQP-FVT|C_Issue patron BOOT|FVT_OURO_LP_FARM owner-konto 0 lp-denominator)
+                    (ref-TS02-C3::C_AQP-FVT|Issue patron BOOT|FVT_OURO_LP_FARM owner-konto 0 lp-denominator)
                     true
                 )
-                (ref-TS02-C3::AQP-FVT|C_Issue patron BOOT|FVT_SUBSIDIARY_TREASURY owner-konto 1 BOOT|TREASURY_COMMON)
-                (ref-TS02-C3::AQP-FVT|C_Issue patron BOOT|FVT_CODING_TREASURY owner-konto 1 BOOT|TREASURY_COMMON)
-                (ref-TS02-C3::AQP-FVT|C_Issue patron BOOT|FVT_SNAKES_TREASURY owner-konto 1 BOOT|TREASURY_COMMON)
-                (ref-TS02-C3::AQP-FVT|C_Issue patron BOOT|FVT_SHARES_TREASURY owner-konto 1 BOOT|TREASURY_COMMON)
+                (ref-TS02-C3::C_AQP-FVT|Issue patron BOOT|FVT_SUBSIDIARY_TREASURY owner-konto 1 BOOT|TREASURY_COMMON)
+                (ref-TS02-C3::C_AQP-FVT|Issue patron BOOT|FVT_CODING_TREASURY owner-konto 1 BOOT|TREASURY_COMMON)
+                (ref-TS02-C3::C_AQP-FVT|Issue patron BOOT|FVT_SNAKES_TREASURY owner-konto 1 BOOT|TREASURY_COMMON)
+                (ref-TS02-C3::C_AQP-FVT|Issue patron BOOT|FVT_SHARES_TREASURY owner-konto 1 BOOT|TREASURY_COMMON)
                 (format "AQP-BOOT Step 8 done. fvt-ids=[farm={} sub-treasury={} coding-treasury={} snakes-treasury={} shares-treasury={}]. NEXT=Step9:C_AddScoreEntity."
                     [
                         (if (!= lp-denominator "") farm-id "skipped")
@@ -615,13 +615,13 @@
                 (enforce (= (length subsidiary-score-ids) 5) "Step 9 expects subsidiary-score-ids×5.")
                 (map
                     (lambda (score-id:string)
-                        (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron sub-treasury-id BOOT|SCORE_ENTITY_SCORE score-id)
+                        (ref-TS02-C3::C_AQP-FVT|AddScoreEntity patron sub-treasury-id BOOT|SCORE_ENTITY_SCORE score-id)
                     )
                     subsidiary-score-ids
                 )
-                (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron coding-treasury-id BOOT|SCORE_ENTITY_SCORE coding-score-id)
-                (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron snakes-treasury-id BOOT|SCORE_ENTITY_SCORE snakes-score-id)
-                (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron shares-treasury-id BOOT|SCORE_ENTITY_SCORE shares-score-id)
+                (ref-TS02-C3::C_AQP-FVT|AddScoreEntity patron coding-treasury-id BOOT|SCORE_ENTITY_SCORE coding-score-id)
+                (ref-TS02-C3::C_AQP-FVT|AddScoreEntity patron snakes-treasury-id BOOT|SCORE_ENTITY_SCORE snakes-score-id)
+                (ref-TS02-C3::C_AQP-FVT|AddScoreEntity patron shares-treasury-id BOOT|SCORE_ENTITY_SCORE shares-score-id)
                 (format "AQP-BOOT Step 9 done. score-entities=[sub=5 coding=1 snakes=1 shares=1]. fvt-ids=[sub-treasury={} coding-treasury={} snakes-treasury={} shares-treasury={}]. NEXT=Step10:C_IssueMultipletFamily."
                     [
                         sub-treasury-id coding-treasury-id snakes-treasury-id shares-treasury-id
@@ -643,7 +643,7 @@
                     (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
                     (family-id:string (concat ["F" "|" ouro-id "|" auryn-id "|" elite-auryn-id]))
                 )
-                (ref-TS02-C3::AQP-FVT|C_IssueMultipletFamily
+                (ref-TS02-C3::C_AQP-FVT|IssueMultipletFamily
                     patron ouro-id auryn-id elite-auryn-id ats-0-1-id ats-1-2-id
                 )
                 (format "AQP-BOOT Step 10 done. multiplet-family-id={}. tokens=[ouro={} auryn={} elite={}] ats=[{} {}]. NEXT=Step11:C_IssueTriplet+AddScoreEntity."
@@ -673,9 +673,9 @@
                 )
                 (if wire-farm
                     (do
-                        (ref-TS02-C3::AQP-SCR|C_IssueTriplet patron bronze-score-id silver-score-id golden-score-id)
-                        (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron farm-id BOOT|SCORE_ENTITY_TRIPLET triplet-id)
-                        (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron farm-id ouro-id false multiplet-family-id)
+                        (ref-TS02-C3::C_AQP-SCR|IssueTriplet patron bronze-score-id silver-score-id golden-score-id)
+                        (ref-TS02-C3::C_AQP-FVT|AddScoreEntity patron farm-id BOOT|SCORE_ENTITY_TRIPLET triplet-id)
+                        (ref-TS02-C3::C_AQP-FVT|AddRewardLink patron farm-id ouro-id false multiplet-family-id)
                     )
                     true
                 )
@@ -705,10 +705,10 @@
                     (ref-U|CT:module{OuronetConstantsV1} U|CT)
                     (bar:string (ref-U|CT::CT_BAR))
                 )
-                (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron sub-treasury-id reward-auryn-id false bar)
-                (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron coding-treasury-id reward-wstoa-id false bar)
-                (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron snakes-treasury-id reward-auryn-id false bar)
-                (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron shares-treasury-id reward-ouroboros-id false bar)
+                (ref-TS02-C3::C_AQP-FVT|AddRewardLink patron sub-treasury-id reward-auryn-id false bar)
+                (ref-TS02-C3::C_AQP-FVT|AddRewardLink patron coding-treasury-id reward-wstoa-id false bar)
+                (ref-TS02-C3::C_AQP-FVT|AddRewardLink patron snakes-treasury-id reward-auryn-id false bar)
+                (ref-TS02-C3::C_AQP-FVT|AddRewardLink patron shares-treasury-id reward-ouroboros-id false bar)
                 (format "AQP-BOOT Step 12 done. reward-links=[sub={} coding={} snakes={} shares={}]. rewards=[auryn={} wstoa={} ouroboros={}]. Bootstrap complete — ready for inject/stake/collect."
                     [
                         reward-auryn-id reward-wstoa-id reward-auryn-id reward-ouroboros-id

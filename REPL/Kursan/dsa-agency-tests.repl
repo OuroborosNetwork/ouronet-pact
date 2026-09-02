@@ -6,7 +6,7 @@
 ;; Phase 3 once the Custodians fragment→stake fixture exists — here the operator's factory triplet is
 ;; unstaked (Q=0), so the gate is proven by its rejection.
 ;; Source: 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/07_DSA.pact (A_DefineDelegationVault / C_OpenAgency),
-;;         3_Talos/04_TS02-C3.pact (AQP-DSA|A_DefineDelegationVault / AQP-DSA|C_OpenAgency).
+;;         3_Talos/04_TS02-C3.pact (A_AQP-DSA|DefineDelegationVault / C_AQP-DSA|OpenAgency).
 ;;
 (print "")
 (print "================================================================")
@@ -53,14 +53,14 @@
             (gold-id:string   (ref-U|DALOS::UDC_Makeid "DsaAgnGold"))
         )
         ;; 1. the score-entity model (Custodians fragment nonces → quintessence)
-        (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "DsaAgnBronze" 3 cust 24 [-1] [1.0])
-        (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "DsaAgnSilver" 3 cust 24 [-2] [10.0])
-        (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "DsaAgnGold"   3 cust 24 [-3] [100.0])
-        (ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel anhd "DsaAgnModel" bronze-id silver-id gold-id)
+        (ref-TS02-C3::C_AQP-SCR|IssueSingleScoreModel anhd "DsaAgnBronze" 3 cust 24 [-1] [1.0])
+        (ref-TS02-C3::C_AQP-SCR|IssueSingleScoreModel anhd "DsaAgnSilver" 3 cust 24 [-2] [10.0])
+        (ref-TS02-C3::C_AQP-SCR|IssueSingleScoreModel anhd "DsaAgnGold"   3 cust 24 [-3] [100.0])
+        (ref-TS02-C3::C_AQP-SCR|CombineTripletScoreModel anhd "DsaAgnModel" bronze-id silver-id gold-id)
         ;; 2. FACTORY — ANHD's operator triplet (unstaked, Q=0)
-        (print (format "<(factory)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueScoreFromModel anhd anhd (ref-U|DALOS::UDC_Makeid "DsaAgnModel") "AnhdOperator")]))
+        (print (format "<(factory)> => \"{}\"" [(ref-TS02-C3::C_AQP-SCR|IssueScoreFromModel anhd anhd (ref-U|DALOS::UDC_Makeid "DsaAgnModel") "AnhdOperator")]))
         ;; 3. the class-0 FVT this vault binds (owner = ANHD, common-denom = OURO — an LP-farm denom)
-        (print (format "<(fvt)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_Issue anhd "DsaAgnVault" anhd 0 ouro-id)]))
+        (print (format "<(fvt)> => \"{}\"" [(ref-TS02-C3::C_AQP-FVT|Issue anhd "DsaAgnVault" anhd 0 ouro-id)]))
         (let
             (
                 (fvt-id:string (ref-U|DALOS::UDC_Makeid "DsaAgnVault"))
@@ -102,7 +102,7 @@
             (model-id:string  (ref-U|DALOS::UDC_Makeid "DsaAgnModel"))
         )
         ;; define the vault (unit-score 20000 → open gate = 10000 quintessence)
-        (print (format "<(define)> => \"{}\"" [(ref-TS02-C3::AQP-DSA|A_DefineDelegationVault anhd fvt-id model-id 20000)]))
+        (print (format "<(define)> => \"{}\"" [(ref-TS02-C3::A_AQP-DSA|DefineDelegationVault anhd fvt-id model-id 20000)]))
         (map print
             [ (expect "<<DSA-VAULT-01>> template records the model" model-id (at "model-id" (ref-DSA::UR_DSA-TMP|Template fvt-id)))
               (expect "<<DSA-VAULT-01>> template unit-score" 20000 (ref-DSA::UR_DSA-TMP|UnitScore fvt-id))
@@ -111,13 +111,13 @@
         (map print
             [ ;; a non-owner cannot define the vault (patron != FVT owner)
               (expect-failure "<<DSA-VAULT-01>> non-owner define rejected"
-                  (ref-TS02-C3::AQP-DSA|A_DefineDelegationVault "k:not-the-owner" fvt-id model-id 20000))
+                  (ref-TS02-C3::A_AQP-DSA|DefineDelegationVault "k:not-the-owner" fvt-id model-id 20000))
               ;; unit-score must be positive
               (expect-failure "<<DSA-VAULT-01>> zero unit-score rejected"
-                  (ref-TS02-C3::AQP-DSA|A_DefineDelegationVault anhd fvt-id model-id 0))
+                  (ref-TS02-C3::A_AQP-DSA|DefineDelegationVault anhd fvt-id model-id 0))
               ;; re-defining an already-bound vault is rejected
               (expect-failure "<<DSA-VAULT-01>> duplicate vault-define rejected"
-                  (ref-TS02-C3::AQP-DSA|A_DefineDelegationVault anhd fvt-id model-id 20000)) ])
+                  (ref-TS02-C3::A_AQP-DSA|DefineDelegationVault anhd fvt-id model-id 20000)) ])
         ""
     )
 )
@@ -165,16 +165,16 @@
             (map print
                 [ ;; fee below the floor (10 = 1%) — rejected in the cap, before the body
                   (expect-failure "<<DSA-VAULT-02>> open rejected — fee below floor"
-                      (ref-TS02-C3::AQP-DSA|C_OpenAgency anhd fvt-id "dummy-pool" triplet-id 5 "DHOC-98c486052a51" []))
+                      (ref-TS02-C3::C_AQP-DSA|OpenAgency anhd fvt-id "dummy-pool" triplet-id 5 "DHOC-98c486052a51" []))
                   ;; fee above the ceiling (500 = 50%) — rejected in the cap
                   (expect-failure "<<DSA-VAULT-02>> open rejected — fee above ceiling"
-                      (ref-TS02-C3::AQP-DSA|C_OpenAgency anhd fvt-id "dummy-pool" triplet-id 600 "DHOC-98c486052a51" []))
+                      (ref-TS02-C3::C_AQP-DSA|OpenAgency anhd fvt-id "dummy-pool" triplet-id 600 "DHOC-98c486052a51" []))
                   ;; opening on a non-vault FVT (no template) — rejected in the cap (vault-active)
                   (expect-failure "<<DSA-VAULT-02>> open rejected — FVT is not a DSA vault"
-                      (ref-TS02-C3::AQP-DSA|C_OpenAgency anhd "not-a-vault-fvt" "dummy-pool" triplet-id 100 "DHOC-98c486052a51" []))
+                      (ref-TS02-C3::C_AQP-DSA|OpenAgency anhd "not-a-vault-fvt" "dummy-pool" triplet-id 100 "DHOC-98c486052a51" []))
                   ;; triplet not employed in a pool (silver has no aqpool) — admit precondition fails in the body
                   (expect-failure "<<DSA-VAULT-02>> open rejected — triplet not set up (no pool employ)"
-                      (ref-TS02-C3::AQP-DSA|C_OpenAgency anhd fvt-id "dummy-pool" triplet-id 100 "DHOC-98c486052a51" [])) ])
+                      (ref-TS02-C3::C_AQP-DSA|OpenAgency anhd fvt-id "dummy-pool" triplet-id 100 "DHOC-98c486052a51" [])) ])
             ""
         )
     )

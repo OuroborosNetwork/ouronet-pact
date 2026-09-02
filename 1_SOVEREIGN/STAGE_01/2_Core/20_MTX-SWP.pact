@@ -99,14 +99,14 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
+    (defun A_P|Add (policy-name:string policy-guard:guard)
         (with-capability (GOV|MTX-SWP_ADMIN)
             (write P|T policy-name
                 {"policy" : policy-guard}
             )
         )
     )
-    (defun P|A_AddIMP (policy-guard:guard)
+    (defun A_P|AddIMP (policy-guard:guard)
         (with-capability (GOV|MTX-SWP_ADMIN)
             (let
                 (
@@ -123,7 +123,7 @@
             )
         )
     )
-    (defun P|A_Define ()
+    (defun A_P|Define ()
         (let
             (
                 (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
@@ -137,30 +137,30 @@
                 (ref-P|SWP:module{OuronetPolicyV1} SWP)
                 (ref-P|SWPL:module{OuronetPolicyV1} SWPL)
                 ;;#36M/M5 fix: MTX-SWP now calls SWPI::XE_IssueWrite (UEV_IMC-gated)
-                ;;directly from MTX|C_Issue's Step 3, so MTX-SWP must register itself
+                ;;directly from C_MTX|Issue's Step 3, so MTX-SWP must register itself
                 ;;as an approved IMC caller on SWPI too — same as every other module
                 ;;it already calls into below.
                 (ref-P|SWPI:module{OuronetPolicyV1} SWPI)
                 (mg:guard (create-capability-guard (P|MTX-SWP|CALLER)))
             )
-            (ref-P|VST::P|A_Add
+            (ref-P|VST::A_P|Add
                 "MTX-SWP|RemoteSwpGov"
                 (create-capability-guard (P|MTX-SWP|REMOTE-GOV))
             )
-            (ref-P|SWP::P|A_Add
+            (ref-P|SWP::A_P|Add
                 "MTX-SWP|RemoteSwpGov"
                 (create-capability-guard (P|MTX-SWP|REMOTE-GOV))
             )
-            (ref-P|BRD::P|A_AddIMP mg)
-            (ref-P|DPTF::P|A_AddIMP mg)
-            (ref-P|DPOF::P|A_AddIMP mg)
-            (ref-P|TFT::P|A_AddIMP mg)
-            (ref-P|ORBR::P|A_AddIMP mg)
-            (ref-P|VST::P|A_AddIMP mg)
-            (ref-P|SWPT::P|A_AddIMP mg)
-            (ref-P|SWP::P|A_AddIMP mg)
-            (ref-P|SWPL::P|A_AddIMP mg)
-            (ref-P|SWPI::P|A_AddIMP mg)
+            (ref-P|BRD::A_P|AddIMP mg)
+            (ref-P|DPTF::A_P|AddIMP mg)
+            (ref-P|DPOF::A_P|AddIMP mg)
+            (ref-P|TFT::A_P|AddIMP mg)
+            (ref-P|ORBR::A_P|AddIMP mg)
+            (ref-P|VST::A_P|AddIMP mg)
+            (ref-P|SWPT::A_P|AddIMP mg)
+            (ref-P|SWP::A_P|AddIMP mg)
+            (ref-P|SWPL::A_P|AddIMP mg)
+            (ref-P|SWPI::A_P|AddIMP mg)
         )
     )
     (defun UEV_IMC ()
@@ -311,7 +311,7 @@
         (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal amp:decimal p:bool)
         (UEV_IMC)
         (with-capability (MTX-SWP|C>ISSUE-S-POOL pool-tokens)
-            (MTX|C_Issue
+            (C_MTX|Issue
                 patron account pool-tokens fee-lp
                 (make-list (length pool-tokens) 1.0)
                 amp p
@@ -322,7 +322,7 @@
         (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool)
         (UEV_IMC)
         (with-capability (MTX-SWP|C>ISSUE-W-POOL pool-tokens)
-            (MTX|C_Issue
+            (C_MTX|Issue
                 patron account pool-tokens fee-lp
                 weights
                 -1.0 p
@@ -333,7 +333,7 @@
         (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal p:bool)
         (UEV_IMC)
         (with-capability (MTX-SWP|C>ISSUE-P-POOL pool-tokens)
-            (MTX|C_Issue
+            (C_MTX|Issue
                 patron account pool-tokens fee-lp
                 (make-list (length pool-tokens) 1.0)
                 -1.0 p
@@ -345,38 +345,38 @@
         (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
         (UEV_IMC)
         (with-capability (MTX-SWP|S>ADD-LQ stoa-pid)
-            (MTX|C_AddLiquidity patron account swpair input-amounts true true stoa-pid)
+            (C_MTX|AddLiquidity patron account swpair input-amounts true true stoa-pid)
         )
     )
     (defun C_AddIcedLiquidity
         (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
         (UEV_IMC)
         (with-capability (MTX-SWP|S>ADD-LQ stoa-pid)
-            (MTX|C_AddLiquidity patron account swpair input-amounts false true stoa-pid)
+            (C_MTX|AddLiquidity patron account swpair input-amounts false true stoa-pid)
         )
     )
     (defun C_AddGlacialLiquidity
         (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
         (UEV_IMC)
         (with-capability (MTX-SWP|S>ADD-LQ stoa-pid)
-            (MTX|C_AddLiquidity patron account swpair input-amounts false false stoa-pid)
+            (C_MTX|AddLiquidity patron account swpair input-amounts false false stoa-pid)
         )
     )
     (defun C_AddFrozenLiquidity
         (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal)
         (UEV_IMC)
         (with-capability (MTX-SWP|S>ADD-LQ stoa-pid)
-            (MTX|C_AddFrozenLiquidity patron account swpair frozen-dptf input-amount stoa-pid)
+            (C_MTX|AddFrozenLiquidity patron account swpair frozen-dptf input-amount stoa-pid)
         )
     )
     (defun C_AddSleepingLiquidity
         (patron:string account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal)
         (UEV_IMC)
         (with-capability (MTX-SWP|S>ADD-LQ stoa-pid)
-            (MTX|C_AddSleepingLiquidity patron account swpair sleeping-dpof nonce stoa-pid)
+            (C_MTX|AddSleepingLiquidity patron account swpair sleeping-dpof nonce stoa-pid)
         )
     )
-    (defpact MTX|C_AddLiquidity 
+    (defpact C_MTX|AddLiquidity 
         (
             patron:string account:string swpair:string input-amounts:[decimal] 
             asymmetric-collection:bool gaseous-collection:bool stoa-pid:decimal
@@ -524,7 +524,7 @@
             )
         )
     )
-    (defpact MTX|C_AddFrozenLiquidity
+    (defpact C_MTX|AddFrozenLiquidity
         (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal)
         ;;Adds Frozen Liquidity, as an MTX in 3 Steps
         ;;
@@ -653,7 +653,7 @@
             )
         )
     )
-    (defpact MTX|C_AddSleepingLiquidity
+    (defpact C_MTX|AddSleepingLiquidity
         (patron:string account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal)
         ;;Adds Frozen Liquidity, as an MTX in 3 Steps
         ;;
@@ -799,7 +799,7 @@
             )
         )
     )
-    (defpact MTX|C_Issue
+    (defpact C_MTX|Issue
         (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
         ;;Issues an SWPair, as MultiStep Transaction, to be used in case <C_Issue> cant fit inside one TX.
         ;;
@@ -855,7 +855,7 @@
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico0 ico1] [])
                 )
                 ;;Collect STOA for Issuance
-                (ref-IGNIS::STOA|C_Collect patron stoa-costs)
+                (ref-IGNIS::C_STOA|Collect patron stoa-costs)
                 (let
                     (
                         (ref-ORBR:module{OuroborosV1} OUROBOROS)

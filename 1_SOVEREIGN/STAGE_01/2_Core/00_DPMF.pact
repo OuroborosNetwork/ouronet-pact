@@ -174,14 +174,14 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
+    (defun A_P|Add (policy-name:string policy-guard:guard)
         (with-capability (GOV|DPMF_ADMIN)
             (write P|T policy-name
                 {"policy" : policy-guard}
             )
         )
     )
-    (defun P|A_AddIMP (policy-guard:guard)
+    (defun A_P|AddIMP (policy-guard:guard)
         (with-capability (GOV|DPMF_ADMIN)
             (let
                 (
@@ -198,7 +198,7 @@
             )
         )
     )
-    (defun P|A_Define ()
+    (defun A_P|Define ()
         (let
             (
                 (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
@@ -206,9 +206,9 @@
                 (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
                 (mg:guard (create-capability-guard (P|DPMF|CALLER)))
             )
-            (ref-P|DALOS::P|A_AddIMP mg)
-            (ref-P|BRD::P|A_AddIMP mg)
-            (ref-P|DPTF::P|A_AddIMP mg)
+            (ref-P|DALOS::A_P|AddIMP mg)
+            (ref-P|BRD::A_P|AddIMP mg)
+            (ref-P|DPTF::A_P|AddIMP mg)
         )
     )
     (defun UEV_IMC ()
@@ -1937,7 +1937,7 @@
                     )
                 )
             )
-            (ref-DALOS::STOA|C_CollectWT patron stoa-payment false)
+            (ref-DALOS::C_STOA|CollectWT patron stoa-payment false)
         )
     )
     ;;
@@ -2051,7 +2051,7 @@
                     )
                 )
             )
-            (ref-DALOS::STOA|C_Collect patron stoa-costs)
+            (ref-DALOS::C_STOA|Collect patron stoa-costs)
             ico
         )
     )

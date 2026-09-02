@@ -76,7 +76,7 @@
         (ea-bal:decimal (ref-DPTF::UR_AccountSupply ea-id anhd))
     )
     ;; drop ANHD's EliteAuryn to ~1% of holdings → live deb falls a tier or more
-    (ref-TS01-C1::DPTF|C_Transfer anhd ea-id anhd emma (floor (* ea-bal 0.99) 4) false)
+    (ref-TS01-C1::C_DPTF|Transfer anhd ea-id anhd emma (floor (* ea-bal 0.99) 4) false)
     (let
         (
             (deb-post:decimal (ref-DALOS::UR_Elite-DEB anhd))
@@ -119,7 +119,7 @@
         (mirror-pre:decimal (ref-FVT::UR_FVT|TotalDebScore fvt-id))
     )
     (print (format "<(DEB01 CC_Collect treasury Auryn)> => \"{}\""
-        [(ref-TS02-C3::AQP-FVT|CC_Collect anhd fvt-id 1 score-id auryn-id)]))
+        [(ref-TS02-C3::CC_AQP-FVT|Collect anhd fvt-id 1 score-id auryn-id)]))
     (let
         (
             (stored-post:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore anhd pool-id score-id))
@@ -168,7 +168,7 @@
     )
     (expect "<<TX-AQP-DEB03>> EMMA ABSENT from the FVT before any stake"
         false (ref-FVT::UR_FVT-UP|IsPresent fvt-id emma))
-    (ref-TS02-C1::DPSF|C_TransferNonce anhd dhwc-id anhd emma nonce amt false)
+    (ref-TS02-C1::C_DPSF|TransferNonce anhd dhwc-id anhd emma nonce amt false)
     (expect "<<TX-AQP-DEB03>> EMMA still ABSENT after receiving the nonce (no stake yet)"
         false (ref-FVT::UR_FVT-UP|IsPresent fvt-id emma))
 )
@@ -193,14 +193,14 @@
         (amt:integer (ref-DPDC::UR_AccountNonceSupply emma dhwc-id true nonce))
     )
     ;; STAKE — EMMA's only position in the FVT
-    (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable emma pool-id emma emma dhwc-id [nonce])
+    (ref-TS02-C3::CC_AQP-POOL|StakeSemiFungibleCollectable emma pool-id emma emma dhwc-id [nonce])
     (let
         (
             (present-after-stake:bool (ref-FVT::UR_FVT-UP|IsPresent fvt-id emma))
             (enum-after-stake:bool (contains emma (ref-FVT::URH_FvtPresentUsers fvt-id)))
         )
         ;; FULL UNSTAKE — drops EMMA's last (only) position
-        (ref-TS02-C3::AQP-POOL|CC_UnstakeSemiFungibleCollectable emma pool-id emma emma dhwc-id [nonce] [amt])
+        (ref-TS02-C3::CC_AQP-POOL|UnstakeSemiFungibleCollectable emma pool-id emma emma dhwc-id [nonce] [amt])
         (let
             (
                 (present-after-unstake:bool (ref-FVT::UR_FVT-UP|IsPresent fvt-id emma))
@@ -255,7 +255,7 @@
     (expect "<<TX-AQP-DEB04>> ANHD WonderCoach weight >0 before"
         true (> (ref-SCR::UR_U-SCR|UserScoreDebScore anhd pool-id score-id) 0.0))
     ;; fully unstake ONLY the WonderCoach member
-    (ref-TS02-C3::AQP-POOL|CC_UnstakeSemiFungibleCollectable anhd pool-id anhd anhd dhwc-id [nonce] [amt])
+    (ref-TS02-C3::CC_AQP-POOL|UnstakeSemiFungibleCollectable anhd pool-id anhd anhd dhwc-id [nonce] [amt])
     (let
         (
             (wc-after:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore anhd pool-id score-id))
@@ -302,9 +302,9 @@
     )
     (expect "<<TX-AQP-DEB05>> EMMA absent before the 2-member setup"
         false (ref-FVT::UR_FVT-UP|IsPresent fvt-id emma))
-    (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable emma wc-pool emma emma dhwc-id [2])
+    (ref-TS02-C3::CC_AQP-POOL|StakeSemiFungibleCollectable emma wc-pool emma emma dhwc-id [2])
     (let ((after-wc:bool (ref-FVT::UR_FVT-UP|IsPresent fvt-id emma)))
-        (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable emma bunnies-pool emma emma kbn-id [1])
+        (ref-TS02-C3::CC_AQP-POOL|StakeNonFungibleCollectable emma bunnies-pool emma emma kbn-id [1])
         (let ((after-both:bool (ref-FVT::UR_FVT-UP|IsPresent fvt-id emma)))
             (map print
                 [
@@ -335,7 +335,7 @@
         (dhwc-id:string "DHWC-98c486052a51")
         (amt:integer (round (ref-AQP::UR_AQP|DPSFTrackerBalance wc-pool dhwc-id emma emma 2)))
     )
-    (ref-TS02-C3::AQP-POOL|CC_UnstakeSemiFungibleCollectable emma wc-pool emma emma dhwc-id [2] [amt])
+    (ref-TS02-C3::CC_AQP-POOL|UnstakeSemiFungibleCollectable emma wc-pool emma emma dhwc-id [2] [amt])
     (map print
         [
             (format "<(DEB05 present after unstaking WonderCoach)> => {}" [(ref-FVT::UR_FVT-UP|IsPresent fvt-id emma)])
@@ -363,7 +363,7 @@
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
         (kbn-id:string "KBN-98c486052a51")
     )
-    (ref-TS02-C3::AQP-POOL|CC_UnstakeNonFungibleCollectable emma bunnies-pool emma emma kbn-id [1] [1])
+    (ref-TS02-C3::CC_AQP-POOL|UnstakeNonFungibleCollectable emma bunnies-pool emma emma kbn-id [1] [1])
     (map print
         [
             (format "<(DEB05 present after unstaking Bunnies — the last)> => {}" [(ref-FVT::UR_FVT-UP|IsPresent fvt-id emma)])
@@ -411,7 +411,7 @@
     )
     (expect "<<TX-AQP-DEB06>> pre: ANHD Bunnies score STALE" true (ref-SCR::URC_U-SCR|UserScoreDebStale anhd bunnies-pool bunnies-score))
     (expect "<<TX-AQP-DEB06>> pre: ANHD CodingDivision score STALE" true (ref-SCR::URC_U-SCR|UserScoreDebStale anhd coding-pool coding-score))
-    (print (format "<(DEB06 CC_Inject)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|CC_Inject anhd fvt-id auryn-id inject-amt)]))
+    (print (format "<(DEB06 CC_Inject)> => \"{}\"" [(ref-TS02-C3::CC_AQP-FVT|Inject anhd fvt-id auryn-id inject-amt)]))
     (let
         (
             (bunnies-post:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore anhd bunnies-pool bunnies-score))
@@ -469,7 +469,7 @@
             ;; CC_Inject (DEB06) forced 2 fixes for ANHD on the auryn lane
             (expect "<<TX-AQP-DEB07>> CC_Inject recorded 2 forced fixes for ANHD (Bunnies + CodingDivision)" 2 ffc-pre)
             (format "<(DEB07 CC_Collect Bunnies auryn)> => \"{}\""
-                [(ref-TS02-C3::AQP-FVT|CC_Collect anhd fvt-id 1 bunnies-score auryn-id)])
+                [(ref-TS02-C3::CC_AQP-FVT|Collect anhd fvt-id 1 bunnies-score auryn-id)])
             ;; the collect charged count×RATE non-discountable IGNIS and ZEROED the count
             (expect "<<TX-AQP-DEB07>> forced-fix count ZEROED after collect (penalty charged)"
                 0 (ref-FVT::UR_FVT-FFC|Count fvt-id auryn-id anhd))
@@ -482,7 +482,7 @@
 ;; ============================================================================
 ;; TX-AQP-DEB08 — the MTX|2|C_Inject DEFPACT end-to-end (via Talos + continue-pact).
 ;; Re-stale ANHD (move his deb again), then run the 2-step enforced-fresh inject:
-;; step 0 (Talos MTX-AQP|C_2|Inject) scans, finds S ≤ N_FIX → fixes all + injects
+;; step 0 (Talos C_MTX-AQP|2|Inject) scans, finds S ≤ N_FIX → fixes all + injects
 ;; (terminal); continue-pact 1 resumes {injected:true} → no-op. Proves the defpact
 ;; path fixes stale stakers + injects on a fresh divisor, same as CC_Inject.
 ;; ============================================================================
@@ -505,7 +505,7 @@
         (ea-bal:decimal (ref-DPTF::UR_AccountSupply ea-id anhd))
         (deb-pre:decimal (ref-DALOS::UR_Elite-DEB anhd))
     )
-    (ref-TS01-C1::DPTF|C_Transfer anhd ea-id anhd emma (floor (* ea-bal 0.99) 4) false)
+    (ref-TS01-C1::C_DPTF|Transfer anhd ea-id anhd emma (floor (* ea-bal 0.99) 4) false)
     (map print
         [
             (format "<(DEB08 elite-deb {} -> {})> " [deb-pre (ref-DALOS::UR_Elite-DEB anhd)])
@@ -517,7 +517,7 @@
 (commit-tx)
 (print "")
 ;;
-(begin-tx "TX-AQP-DEB08b - MTX defpact STEP 0 (Talos MTX-AQP|C_2|Inject) + assert the fix")
+(begin-tx "TX-AQP-DEB08b - MTX defpact STEP 0 (Talos C_MTX-AQP|2|Inject) + assert the fix")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;; force a known pact-id so continue-pact below matches (default REPL tx hash)
@@ -536,8 +536,8 @@
     )
     (map print
         [
-            (format "<(DEB08 MTX-AQP|C_2|Inject step 0)> => \"{}\""
-                [(ref-TS02-C3::MTX-AQP|C_2|Inject anhd fvt-id auryn-id 8.0)])
+            (format "<(DEB08 C_MTX-AQP|2|Inject step 0)> => \"{}\""
+                [(ref-TS02-C3::C_MTX-AQP|2|Inject anhd fvt-id auryn-id 8.0)])
             ;; step 0 found S ≤ N_FIX ⟹ it fixed ANHD + injected in this tx (terminal)
             (expect "<<TX-AQP-DEB08>> defpact step 0 FIXED ANHD Bunnies (now FRESH)"
                 false (ref-SCR::URC_U-SCR|UserScoreDebStale anhd bunnies-pool bunnies-score))
@@ -594,15 +594,15 @@
                 ;; M4 #13 core: (re)configuring a populated score is BLOCKED — must vacate first.
                 (expect-failure
                     "<<TX-AQP-DEB09>> boost-link on a POPULATED score must fail (nzs>0 ⇒ vacate to reconfigure)"
-                    (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostLink anhd bunnies-score wc-score))
+                    (ref-TS02-C3::C_AQP-SCR|CreateScoreBoostLink anhd bunnies-score wc-score))
                 (expect-failure
                     "<<TX-AQP-DEB09>> enable-deb-boost on a POPULATED score must fail (nzs>0 ⇒ vacate to reconfigure)"
-                    (ref-TS02-C3::AQP-SCR|C_EnableDebBoost anhd bunnies-score))
+                    (ref-TS02-C3::C_AQP-SCR|EnableDebBoost anhd bunnies-score))
             ]
         )
         ;; M4 #13 re-settable side: the SAME config on the VACATED WonderCoach (nzs=0) SUCCEEDS,
         ;; and the boost-link slot actually moves to Bunnies — proving reconfigure-after-vacate.
-        (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostLink anhd wc-score bunnies-score)
+        (ref-TS02-C3::C_AQP-SCR|CreateScoreBoostLink anhd wc-score bunnies-score)
         (map print
             [
                 (format "<(DEB09 WonderCoach boost-link after re-set)> => {}"
@@ -645,8 +645,8 @@
         (amt-anhd:integer (round (ref-AQP::UR_AQP|DPSFTrackerBalance pool-id dhcd-id anhd anhd 5)))
         (amt-lumy:integer (round (ref-AQP::UR_AQP|DPSFTrackerBalance pool-id dhcd-id lumy lumy 5)))
     )
-    (ref-TS02-C3::AQP-POOL|CC_UnstakeSemiFungibleCollectable anhd pool-id anhd anhd dhcd-id [5] [amt-anhd])
-    (ref-TS02-C3::AQP-POOL|CC_UnstakeSemiFungibleCollectable anhd pool-id lumy lumy dhcd-id [5] [amt-lumy])
+    (ref-TS02-C3::CC_AQP-POOL|UnstakeSemiFungibleCollectable anhd pool-id anhd anhd dhcd-id [5] [amt-anhd])
+    (ref-TS02-C3::CC_AQP-POOL|UnstakeSemiFungibleCollectable anhd pool-id lumy lumy dhcd-id [5] [amt-lumy])
     (map print
         [
             (format "<(DEB10a unstaked ANHD/LUMY nonce5)> => {} / {}" [amt-anhd amt-lumy])
@@ -679,8 +679,8 @@
             (ar-pre:decimal (ref-FVT::UR_FVT-RG|AvailableRewards fvt-id wstoa-id))
             (zb-pre:decimal (ref-FVT::UR_FVT-RG|ZombieRewards fvt-id wstoa-id))
         )
-        (ref-TS02-C3::AQP-FVT|CC_Inject anhd fvt-id wstoa-id 10.0)
-        (ref-TS02-C3::AQP-FVT|CC_Inject anhd fvt-id wstoa-id 15.0)
+        (ref-TS02-C3::CC_AQP-FVT|Inject anhd fvt-id wstoa-id 10.0)
+        (ref-TS02-C3::CC_AQP-FVT|Inject anhd fvt-id wstoa-id 15.0)
         (let
             (
                 (g-post:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id wstoa-id))
@@ -725,21 +725,21 @@
         (dhcd-id:string "DHCD-98c486052a51")
     )
     ;; ANHD re-enters as the SOLE staker (LUMY stays out).
-    (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable anhd pool-id anhd anhd dhcd-id [5])
+    (ref-TS02-C3::CC_AQP-POOL|StakeSemiFungibleCollectable anhd pool-id anhd anhd dhcd-id [5])
     (let
         (
             (zb-pre:decimal (ref-FVT::UR_FVT-RG|ZombieRewards fvt-id wstoa-id))
             (denom:decimal (ref-FVT::URC_InjectDenominator fvt-id))
         )
         ;; The first NON-zero inject: R_eff = 5 (this amount) + 25 (escrow) = 30, distributed to ANHD.
-        (ref-TS02-C3::AQP-FVT|CC_Inject anhd fvt-id wstoa-id 5.0)
+        (ref-TS02-C3::CC_AQP-FVT|Inject anhd fvt-id wstoa-id 5.0)
         (let
             (
                 (zb-post:decimal (ref-FVT::UR_FVT-RG|ZombieRewards fvt-id wstoa-id))
                 ;; measure the COLLECT payout in isolation: balance immediately before vs after the collect.
                 (wstoa-pre-collect:decimal (ref-DPTF::UR_AccountSupply wstoa-id anhd))
             )
-            (ref-TS02-C3::AQP-FVT|CC_Collect anhd fvt-id 1 score-id wstoa-id)
+            (ref-TS02-C3::CC_AQP-FVT|Collect anhd fvt-id 1 score-id wstoa-id)
             (let
                 (
                     (payout:decimal (- (ref-DPTF::UR_AccountSupply wstoa-id anhd) wstoa-pre-collect))
@@ -796,7 +796,7 @@
     ;; 1] re-stale ANHD's farm member: pull EliteAuryn back from EMMA → Elite-DEB moves → stale
     (let ((emma-ea:decimal (ref-DPTF::UR_AccountSupply ea-id emma)))
         (if (> emma-ea 0.0)
-            (ref-TS01-C1::DPTF|C_Transfer emma ea-id emma anhd (floor (* emma-ea 0.99) 4) false)
+            (ref-TS01-C1::C_DPTF|Transfer emma ea-id emma anhd (floor (* emma-ea 0.99) 4) false)
             true))
     (let
         (
@@ -809,7 +809,7 @@
         (expect "<<TX-AQP-DEB11>> OuroLpFarm is class 0 (farm)" 0 class)
         (let
             (
-                (r:string (ref-TS02-C3::AQP-FVT|CC_Inject anhd farm-id ouro-id inject-amt))
+                (r:string (ref-TS02-C3::CC_AQP-FVT|Inject anhd farm-id ouro-id inject-amt))
             )
             (let
                 (
@@ -843,7 +843,7 @@
 ;; enforced-fresh spike-fallback path is no longer vault/treasury-only: step 0 scans
 ;; (0 stale ≤ N_FIX) → fixes all + injects (terminal) on the farm; step 1 = no-op.
 ;; ============================================================================
-(begin-tx "TX-AQP-DEB12a - MTX defpact step 0 on the FARM (Talos MTX-AQP|C_2|Inject)")
+(begin-tx "TX-AQP-DEB12a - MTX defpact step 0 on the FARM (Talos C_MTX-AQP|2|Inject)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (env-hash (hash "deb12-farm-mtx-inject"))
@@ -861,8 +861,8 @@
     )
     (map print
         [
-            (format "<(DEB12 MTX-AQP|C_2|Inject farm step 0)> => \"{}\""
-                [(ref-TS02-C3::MTX-AQP|C_2|Inject anhd farm-id ouro-id defpact-amt)])
+            (format "<(DEB12 C_MTX-AQP|2|Inject farm step 0)> => \"{}\""
+                [(ref-TS02-C3::C_MTX-AQP|2|Inject anhd farm-id ouro-id defpact-amt)])
             ;; the defpact ran the shared inject-core on the farm ⟹ available-rewards flushed by the amount
             (expect (format "<<TX-AQP-DEB12>> farm defpact flushed available-rewards +{} ({}->{})" [defpact-amt ar-pre (ref-FVT::UR_FVT-RG|AvailableRewards farm-id ouro-id)])
                 defpact-amt (- (ref-FVT::UR_FVT-RG|AvailableRewards farm-id ouro-id) ar-pre))
@@ -978,8 +978,8 @@
         )
         ;; THE PAGINATED SWEEP — the anchor owner (LUMY = KBN asset owner) retires the employed AurynRain
         ;; anchor via the 2-step defpact. ANHD is the only present holder (≤ N_SWEEP) ⇒ step 0 is terminal.
-        (print (format "<(SWEEP01 MTX-AQP|C_2|SweepRevokeAnchor step 0)> => \"{}\""
-            [(ref-TS02-C3::MTX-AQP|C_2|SweepRevokeAnchor lumy anchor-id)]))
+        (print (format "<(SWEEP01 C_MTX-AQP|2|SweepRevokeAnchor step 0)> => \"{}\""
+            [(ref-TS02-C3::C_MTX-AQP|2|SweepRevokeAnchor lumy anchor-id)]))
         (let
             (
                 (agg-post:decimal (ref-ANK::UR_UB|AggregatePromile anhd silver-class))

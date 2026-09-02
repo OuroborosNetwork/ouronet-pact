@@ -246,14 +246,14 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
+    (defun A_P|Add (policy-name:string policy-guard:guard)
         (with-capability (GOV|DEMIPAD_ADMIN)
             (write P|T policy-name
                 {"policy" : policy-guard}
             )
         )
     )
-    (defun P|A_AddIMP (policy-guard:guard)
+    (defun A_P|AddIMP (policy-guard:guard)
         (with-capability (GOV|DEMIPAD_ADMIN)
             (let
                 (
@@ -270,7 +270,7 @@
             )
         )
     )
-    (defun P|A_Define ()
+    (defun A_P|Define ()
         (let
             (
                 (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
@@ -280,11 +280,11 @@
                 (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
                 (mg:guard (create-capability-guard (P|DEMIPAD|CALLER)))
             )
-            (ref-P|DALOS::P|A_AddIMP mg)
-            (ref-P|TFT::P|A_AddIMP mg)
-            (ref-P|LIQUID::P|A_AddIMP mg)
-            (ref-P|DPDC::P|A_AddIMP mg)
-            (ref-P|DPDC-T::P|A_AddIMP mg)
+            (ref-P|DALOS::A_P|AddIMP mg)
+            (ref-P|TFT::A_P|AddIMP mg)
+            (ref-P|LIQUID::A_P|AddIMP mg)
+            (ref-P|DPDC::A_P|AddIMP mg)
+            (ref-P|DPDC-T::A_P|AddIMP mg)
         )
     )
     (defun UEV_IMC ()
@@ -1399,7 +1399,7 @@
                         )
                     )
                     ;;1]Withdraw Tokens to Destination
-                    (ref-TS01-C1::DPTF|C_Transfer patron working-id DEMIPAD|SC_NAME destination retrieval-amount true)
+                    (ref-TS01-C1::C_DPTF|Transfer patron working-id DEMIPAD|SC_NAME destination retrieval-amount true)
                     ;;2]Reset Holdings to 0.0 after withdrawal
                     (XI_U|Funds asset-id 0.0 type)
                 )
@@ -1418,11 +1418,11 @@
             )
             (if fuel-or-retrieve
                 (with-capability (DEMIPAD|C>FUEL-TRUE-FUNGIBLE asset-id)
-                    (ref-TS01-C1::DPTF|C_Transfer patron asset-id client lpad amount true)
+                    (ref-TS01-C1::C_DPTF|Transfer patron asset-id client lpad amount true)
                     (format "Succesfuly fueled {} {} to Demiourgos Launchpad from Account {}" [amount asset-id sa-s])
                 )
                 (with-capability (DEMIPAD|C>RETRIEVE-TRUE-FUNGIBLE asset-id)
-                    (ref-TS01-C1::DPTF|C_Transfer patron asset-id lpad client amount true)
+                    (ref-TS01-C1::C_DPTF|Transfer patron asset-id lpad client amount true)
                     (format "Succesfuly retrieved {} {} from Demiourgos Launchpad to Account {}" [amount asset-id sa-s])
                 )
             )
@@ -1439,11 +1439,11 @@
             )
             (if fuel-or-retrieve
                 (with-capability (DEMIPAD|C>FUEL-ORTO-FUNGIBLE asset-id)
-                    (ref-TS01-C1::DPOF|C_Transfer patron asset-id nonces client lpad true)
+                    (ref-TS01-C1::C_DPOF|Transfer patron asset-id nonces client lpad true)
                     (format "Succesfuly fueled {} Nonces {} to Demiourgos Launchpad from Account {}" [asset-id nonces sa-s])
                 )
                 (with-capability (DEMIPAD|C>RETRIEVE-ORTO-FUNGIBLE asset-id)
-                    (ref-TS01-C1::DPOF|C_Transfer patron asset-id nonces lpad client true)
+                    (ref-TS01-C1::C_DPOF|Transfer patron asset-id nonces lpad client true)
                     (format "Succesfuly retrieved {} Nonces {} from Demiourgos Launchpad to Account {}" [asset-id nonces sa-s])
                 )
             )

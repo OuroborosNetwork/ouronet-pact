@@ -29,9 +29,9 @@
                 ]
             }
     ])
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name ouro-id 1)
-    (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron score-name 12 1.0)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name ouro-id 1)
+    (ref-TS02-C3::C_AQP-SCR|IssueTrueFungibleScore patron patron score-name 12 1.0)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (AQPGAS.XI_AddTrueFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
@@ -62,7 +62,7 @@
                 ]
             }
     ])
-    (ref-TS01-C1::DPTF|C_Transfer patron ouro-id patron owner amt true)
+    (ref-TS01-C1::C_DPTF|Transfer patron ouro-id patron owner amt true)
     (let
         (
             (stake-gas:integer (AQPGAS.XI_MeasureStakeTf patron pool-id ouro-id amt))
@@ -101,9 +101,9 @@
                 ]
             }
     ])
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name ouro-id 1)
-    (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron score-name 12 1.0)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name ouro-id 1)
+    (ref-TS02-C3::C_AQP-SCR|IssueTrueFungibleScore patron patron score-name 12 1.0)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (AQPGAS.XI_AddTrueFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
@@ -134,7 +134,7 @@
                 ]
             }
     ])
-    (ref-TS01-C1::DPTF|C_Transfer patron ouro-id patron owner amt true)
+    (ref-TS01-C1::C_DPTF|Transfer patron ouro-id patron owner amt true)
     (let
         (
             (stake-gas:integer (AQPGAS.XI_MeasureStakeTf patron pool-id ouro-id amt))
@@ -173,9 +173,9 @@
                 ]
             }
     ])
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name ouro-id 1)
-    (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron score-name 12 1.0)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name ouro-id 1)
+    (ref-TS02-C3::C_AQP-SCR|IssueTrueFungibleScore patron patron score-name 12 1.0)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (AQPGAS.XI_AddTrueFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
@@ -206,7 +206,7 @@
                 ]
             }
     ])
-    (ref-TS01-C1::DPTF|C_Transfer patron ouro-id patron owner amt true)
+    (ref-TS01-C1::C_DPTF|Transfer patron ouro-id patron owner amt true)
     (let
         (
             (stake-gas:integer (AQPGAS.XI_MeasureStakeTf patron pool-id ouro-id amt))
@@ -245,9 +245,9 @@
                 ]
             }
     ])
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name ouro-id 1)
-    (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron score-name 12 1.0)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name ouro-id 1)
+    (ref-TS02-C3::C_AQP-SCR|IssueTrueFungibleScore patron patron score-name 12 1.0)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (AQPGAS.XI_AddTrueFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
@@ -278,7 +278,7 @@
                 ]
             }
     ])
-    (ref-TS01-C1::DPTF|C_Transfer patron ouro-id patron owner amt true)
+    (ref-TS01-C1::C_DPTF|Transfer patron ouro-id patron owner amt true)
     (let
         (
             (stake-gas:integer (AQPGAS.XI_MeasureStakeTf patron pool-id ouro-id amt))
@@ -317,9 +317,9 @@
                 ]
             }
     ])
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name ouro-id 1)
-    (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron score-name 12 1.0)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name ouro-id 1)
+    (ref-TS02-C3::C_AQP-SCR|IssueTrueFungibleScore patron patron score-name 12 1.0)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (AQPGAS.XI_AddTrueFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
@@ -350,7 +350,7 @@
                 ]
             }
     ])
-    (ref-TS01-C1::DPTF|C_Transfer patron ouro-id patron owner amt true)
+    (ref-TS01-C1::C_DPTF|Transfer patron ouro-id patron owner amt true)
     (let
         (
             (stake-gas:integer (AQPGAS.XI_MeasureStakeTf patron pool-id ouro-id amt))
@@ -389,9 +389,9 @@
                 ]
             }
     ])
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name ouro-id 1)
-    (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron score-name 12 1.0)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name ouro-id 1)
+    (ref-TS02-C3::C_AQP-SCR|IssueTrueFungibleScore patron patron score-name 12 1.0)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (AQPGAS.XI_AddTrueFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
@@ -422,7 +422,7 @@
                 ]
             }
     ])
-    (ref-TS01-C1::DPTF|C_Transfer patron ouro-id patron owner amt true)
+    (ref-TS01-C1::C_DPTF|Transfer patron ouro-id patron owner amt true)
     (let
         (
             (stake-gas:integer (AQPGAS.XI_MeasureStakeTf patron pool-id ouro-id amt))
@@ -461,9 +461,9 @@
                 ]
             }
     ])
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name ouro-id 1)
-    (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron score-name 12 1.0)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name ouro-id 1)
+    (ref-TS02-C3::C_AQP-SCR|IssueTrueFungibleScore patron patron score-name 12 1.0)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (AQPGAS.XI_AddTrueFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
@@ -494,7 +494,7 @@
                 ]
             }
     ])
-    (ref-TS01-C1::DPTF|C_Transfer patron ouro-id patron owner amt true)
+    (ref-TS01-C1::C_DPTF|Transfer patron ouro-id patron owner amt true)
     (let
         (
             (stake-gas:integer (AQPGAS.XI_MeasureStakeTf patron pool-id ouro-id amt))
@@ -535,9 +535,9 @@
             }
     ])
     (VCTGAS.XI_OfEnsurePatronReady patron dpof-id)
-    (ref-TS02-C3::AQP-SCR|C_IssueOrtoFungibleScore patron patron score-name 12 1.0 1.0)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpof-id 2)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::C_AQP-SCR|IssueOrtoFungibleScore patron patron score-name 12 1.0 1.0)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name dpof-id 2)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapTreasury patron fvt-id patron score-id ouro-id)
     (AQPGAS.XI_AddOrtoFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
@@ -568,10 +568,10 @@
                 ]
             }
     ])
-    (ref-TS01-C1::DPOF|C_Mint patron dpof-id patron 1.0 [{"aqp-gas-stake": true}])
+    (ref-TS01-C1::C_DPOF|Mint patron dpof-id patron 1.0 [{"aqp-gas-stake": true}])
     (let ((mint-nonce:integer (at (- (length (ref-DPOF::URH_AccountNonces patron dpof-id)) 1) (ref-DPOF::URH_AccountNonces patron dpof-id))))
-        (ref-TS01-C1::DPOF|C_Transfer patron dpof-id [mint-nonce] patron owner true)
-        (if (ref-DPOF::UR_R-Frozen dpof-id owner) (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id owner false) true)
+        (ref-TS01-C1::C_DPOF|Transfer patron dpof-id [mint-nonce] patron owner true)
+        (if (ref-DPOF::UR_R-Frozen dpof-id owner) (ref-TS01-C1::C_DPOF|ToggleFreezeAccount patron dpof-id owner false) true)
         (let
             (
                 (nonces:[integer] [mint-nonce])
@@ -614,9 +614,9 @@
             }
     ])
     (VCTGAS.XI_OfEnsurePatronReady patron dpof-id)
-    (ref-TS02-C3::AQP-SCR|C_IssueOrtoFungibleScore patron patron score-name 12 1.0 1.0)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpof-id 2)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::C_AQP-SCR|IssueOrtoFungibleScore patron patron score-name 12 1.0 1.0)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name dpof-id 2)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapTreasury patron fvt-id patron score-id ouro-id)
     (AQPGAS.XI_AddOrtoFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
@@ -647,10 +647,10 @@
                 ]
             }
     ])
-    (ref-TS01-C1::DPOF|C_Mint patron dpof-id patron 1.0 [{"aqp-gas-stake": true}])
+    (ref-TS01-C1::C_DPOF|Mint patron dpof-id patron 1.0 [{"aqp-gas-stake": true}])
     (let ((mint-nonce:integer (at (- (length (ref-DPOF::URH_AccountNonces patron dpof-id)) 1) (ref-DPOF::URH_AccountNonces patron dpof-id))))
-        (ref-TS01-C1::DPOF|C_Transfer patron dpof-id [mint-nonce] patron owner true)
-        (if (ref-DPOF::UR_R-Frozen dpof-id owner) (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id owner false) true)
+        (ref-TS01-C1::C_DPOF|Transfer patron dpof-id [mint-nonce] patron owner true)
+        (if (ref-DPOF::UR_R-Frozen dpof-id owner) (ref-TS01-C1::C_DPOF|ToggleFreezeAccount patron dpof-id owner false) true)
         (let
             (
                 (nonces:[integer] [mint-nonce])
@@ -693,9 +693,9 @@
             }
     ])
     (VCTGAS.XI_OfEnsurePatronReady patron dpof-id)
-    (ref-TS02-C3::AQP-SCR|C_IssueOrtoFungibleScore patron patron score-name 12 1.0 1.0)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpof-id 2)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::C_AQP-SCR|IssueOrtoFungibleScore patron patron score-name 12 1.0 1.0)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name dpof-id 2)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapTreasury patron fvt-id patron score-id ouro-id)
     (AQPGAS.XI_AddOrtoFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
@@ -726,10 +726,10 @@
                 ]
             }
     ])
-    (ref-TS01-C1::DPOF|C_Mint patron dpof-id patron 1.0 [{"aqp-gas-stake": true}])
+    (ref-TS01-C1::C_DPOF|Mint patron dpof-id patron 1.0 [{"aqp-gas-stake": true}])
     (let ((mint-nonce:integer (at (- (length (ref-DPOF::URH_AccountNonces patron dpof-id)) 1) (ref-DPOF::URH_AccountNonces patron dpof-id))))
-        (ref-TS01-C1::DPOF|C_Transfer patron dpof-id [mint-nonce] patron owner true)
-        (if (ref-DPOF::UR_R-Frozen dpof-id owner) (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id owner false) true)
+        (ref-TS01-C1::C_DPOF|Transfer patron dpof-id [mint-nonce] patron owner true)
+        (if (ref-DPOF::UR_R-Frozen dpof-id owner) (ref-TS01-C1::C_DPOF|ToggleFreezeAccount patron dpof-id owner false) true)
         (let
             (
                 (nonces:[integer] [mint-nonce])
@@ -772,9 +772,9 @@
             }
     ])
     (VCTGAS.XI_OfEnsurePatronReady patron dpof-id)
-    (ref-TS02-C3::AQP-SCR|C_IssueOrtoFungibleScore patron patron score-name 12 1.0 1.0)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpof-id 2)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::C_AQP-SCR|IssueOrtoFungibleScore patron patron score-name 12 1.0 1.0)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name dpof-id 2)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapTreasury patron fvt-id patron score-id ouro-id)
     (AQPGAS.XI_AddOrtoFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
@@ -805,10 +805,10 @@
                 ]
             }
     ])
-    (ref-TS01-C1::DPOF|C_Mint patron dpof-id patron 1.0 [{"aqp-gas-stake": true}])
+    (ref-TS01-C1::C_DPOF|Mint patron dpof-id patron 1.0 [{"aqp-gas-stake": true}])
     (let ((mint-nonce:integer (at (- (length (ref-DPOF::URH_AccountNonces patron dpof-id)) 1) (ref-DPOF::URH_AccountNonces patron dpof-id))))
-        (ref-TS01-C1::DPOF|C_Transfer patron dpof-id [mint-nonce] patron owner true)
-        (if (ref-DPOF::UR_R-Frozen dpof-id owner) (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id owner false) true)
+        (ref-TS01-C1::C_DPOF|Transfer patron dpof-id [mint-nonce] patron owner true)
+        (if (ref-DPOF::UR_R-Frozen dpof-id owner) (ref-TS01-C1::C_DPOF|ToggleFreezeAccount patron dpof-id owner false) true)
         (let
             (
                 (nonces:[integer] [mint-nonce])
@@ -851,9 +851,9 @@
             }
     ])
     (VCTGAS.XI_OfEnsurePatronReady patron dpof-id)
-    (ref-TS02-C3::AQP-SCR|C_IssueOrtoFungibleScore patron patron score-name 12 1.0 1.0)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpof-id 2)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::C_AQP-SCR|IssueOrtoFungibleScore patron patron score-name 12 1.0 1.0)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name dpof-id 2)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapTreasury patron fvt-id patron score-id ouro-id)
     (AQPGAS.XI_AddOrtoFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
@@ -884,10 +884,10 @@
                 ]
             }
     ])
-    (ref-TS01-C1::DPOF|C_Mint patron dpof-id patron 1.0 [{"aqp-gas-stake": true}])
+    (ref-TS01-C1::C_DPOF|Mint patron dpof-id patron 1.0 [{"aqp-gas-stake": true}])
     (let ((mint-nonce:integer (at (- (length (ref-DPOF::URH_AccountNonces patron dpof-id)) 1) (ref-DPOF::URH_AccountNonces patron dpof-id))))
-        (ref-TS01-C1::DPOF|C_Transfer patron dpof-id [mint-nonce] patron owner true)
-        (if (ref-DPOF::UR_R-Frozen dpof-id owner) (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id owner false) true)
+        (ref-TS01-C1::C_DPOF|Transfer patron dpof-id [mint-nonce] patron owner true)
+        (if (ref-DPOF::UR_R-Frozen dpof-id owner) (ref-TS01-C1::C_DPOF|ToggleFreezeAccount patron dpof-id owner false) true)
         (let
             (
                 (nonces:[integer] [mint-nonce])
@@ -930,9 +930,9 @@
             }
     ])
     (VCTGAS.XI_OfEnsurePatronReady patron dpof-id)
-    (ref-TS02-C3::AQP-SCR|C_IssueOrtoFungibleScore patron patron score-name 12 1.0 1.0)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpof-id 2)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::C_AQP-SCR|IssueOrtoFungibleScore patron patron score-name 12 1.0 1.0)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name dpof-id 2)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapTreasury patron fvt-id patron score-id ouro-id)
     (AQPGAS.XI_AddOrtoFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
@@ -963,10 +963,10 @@
                 ]
             }
     ])
-    (ref-TS01-C1::DPOF|C_Mint patron dpof-id patron 1.0 [{"aqp-gas-stake": true}])
+    (ref-TS01-C1::C_DPOF|Mint patron dpof-id patron 1.0 [{"aqp-gas-stake": true}])
     (let ((mint-nonce:integer (at (- (length (ref-DPOF::URH_AccountNonces patron dpof-id)) 1) (ref-DPOF::URH_AccountNonces patron dpof-id))))
-        (ref-TS01-C1::DPOF|C_Transfer patron dpof-id [mint-nonce] patron owner true)
-        (if (ref-DPOF::UR_R-Frozen dpof-id owner) (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id owner false) true)
+        (ref-TS01-C1::C_DPOF|Transfer patron dpof-id [mint-nonce] patron owner true)
+        (if (ref-DPOF::UR_R-Frozen dpof-id owner) (ref-TS01-C1::C_DPOF|ToggleFreezeAccount patron dpof-id owner false) true)
         (let
             (
                 (nonces:[integer] [mint-nonce])
@@ -1009,9 +1009,9 @@
             }
     ])
     (VCTGAS.XI_OfEnsurePatronReady patron dpof-id)
-    (ref-TS02-C3::AQP-SCR|C_IssueOrtoFungibleScore patron patron score-name 12 1.0 1.0)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpof-id 2)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::C_AQP-SCR|IssueOrtoFungibleScore patron patron score-name 12 1.0 1.0)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name dpof-id 2)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapTreasury patron fvt-id patron score-id ouro-id)
     (AQPGAS.XI_AddOrtoFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
@@ -1042,10 +1042,10 @@
                 ]
             }
     ])
-    (ref-TS01-C1::DPOF|C_Mint patron dpof-id patron 1.0 [{"aqp-gas-stake": true}])
+    (ref-TS01-C1::C_DPOF|Mint patron dpof-id patron 1.0 [{"aqp-gas-stake": true}])
     (let ((mint-nonce:integer (at (- (length (ref-DPOF::URH_AccountNonces patron dpof-id)) 1) (ref-DPOF::URH_AccountNonces patron dpof-id))))
-        (ref-TS01-C1::DPOF|C_Transfer patron dpof-id [mint-nonce] patron owner true)
-        (if (ref-DPOF::UR_R-Frozen dpof-id owner) (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id owner false) true)
+        (ref-TS01-C1::C_DPOF|Transfer patron dpof-id [mint-nonce] patron owner true)
+        (if (ref-DPOF::UR_R-Frozen dpof-id owner) (ref-TS01-C1::C_DPOF|ToggleFreezeAccount patron dpof-id owner false) true)
         (let
             (
                 (nonces:[integer] [mint-nonce])
@@ -1087,9 +1087,9 @@
                 ]
             }
     ])
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpsf-id 3)
-    (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron patron score-name 3 true)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name dpsf-id 3)
+    (ref-TS02-C3::C_AQP-SCR|IssueSemiFungibleScore patron patron score-name 3 true)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (AQPGAS.XI_AddSemiFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
@@ -1120,7 +1120,7 @@
                 ]
             }
     ])
-    (ref-TS02-C1::DPSF|C_TransferNonces patron dpsf-id patron owner [nonce] [1] false)
+    (ref-TS02-C1::C_DPSF|TransferNonces patron dpsf-id patron owner [nonce] [1] false)
     (let
         (
             (nonces:[integer] [nonce])
@@ -1161,9 +1161,9 @@
                 ]
             }
     ])
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpsf-id 3)
-    (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron patron score-name 3 true)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name dpsf-id 3)
+    (ref-TS02-C3::C_AQP-SCR|IssueSemiFungibleScore patron patron score-name 3 true)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (AQPGAS.XI_AddSemiFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
@@ -1194,7 +1194,7 @@
                 ]
             }
     ])
-    (ref-TS02-C1::DPSF|C_TransferNonces patron dpsf-id patron owner [nonce] [1] false)
+    (ref-TS02-C1::C_DPSF|TransferNonces patron dpsf-id patron owner [nonce] [1] false)
     (let
         (
             (nonces:[integer] [nonce])
@@ -1235,9 +1235,9 @@
                 ]
             }
     ])
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpsf-id 3)
-    (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron patron score-name 3 true)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name dpsf-id 3)
+    (ref-TS02-C3::C_AQP-SCR|IssueSemiFungibleScore patron patron score-name 3 true)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (AQPGAS.XI_AddSemiFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
@@ -1268,7 +1268,7 @@
                 ]
             }
     ])
-    (ref-TS02-C1::DPSF|C_TransferNonces patron dpsf-id patron owner [nonce] [1] false)
+    (ref-TS02-C1::C_DPSF|TransferNonces patron dpsf-id patron owner [nonce] [1] false)
     (let
         (
             (nonces:[integer] [nonce])
@@ -1309,9 +1309,9 @@
                 ]
             }
     ])
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpsf-id 3)
-    (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron patron score-name 3 true)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name dpsf-id 3)
+    (ref-TS02-C3::C_AQP-SCR|IssueSemiFungibleScore patron patron score-name 3 true)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (AQPGAS.XI_AddSemiFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
@@ -1342,7 +1342,7 @@
                 ]
             }
     ])
-    (ref-TS02-C1::DPSF|C_TransferNonces patron dpsf-id patron owner [nonce] [1] false)
+    (ref-TS02-C1::C_DPSF|TransferNonces patron dpsf-id patron owner [nonce] [1] false)
     (let
         (
             (nonces:[integer] [nonce])
@@ -1383,9 +1383,9 @@
                 ]
             }
     ])
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpsf-id 3)
-    (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron patron score-name 3 true)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name dpsf-id 3)
+    (ref-TS02-C3::C_AQP-SCR|IssueSemiFungibleScore patron patron score-name 3 true)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (AQPGAS.XI_AddSemiFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
@@ -1416,7 +1416,7 @@
                 ]
             }
     ])
-    (ref-TS02-C1::DPSF|C_TransferNonces patron dpsf-id patron owner [nonce] [1] false)
+    (ref-TS02-C1::C_DPSF|TransferNonces patron dpsf-id patron owner [nonce] [1] false)
     (let
         (
             (nonces:[integer] [nonce])
@@ -1457,9 +1457,9 @@
                 ]
             }
     ])
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpsf-id 3)
-    (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron patron score-name 3 true)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name dpsf-id 3)
+    (ref-TS02-C3::C_AQP-SCR|IssueSemiFungibleScore patron patron score-name 3 true)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (AQPGAS.XI_AddSemiFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
@@ -1490,7 +1490,7 @@
                 ]
             }
     ])
-    (ref-TS02-C1::DPSF|C_TransferNonces patron dpsf-id patron owner [nonce] [1] false)
+    (ref-TS02-C1::C_DPSF|TransferNonces patron dpsf-id patron owner [nonce] [1] false)
     (let
         (
             (nonces:[integer] [nonce])
@@ -1531,9 +1531,9 @@
                 ]
             }
     ])
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpsf-id 3)
-    (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron patron score-name 3 true)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name dpsf-id 3)
+    (ref-TS02-C3::C_AQP-SCR|IssueSemiFungibleScore patron patron score-name 3 true)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (AQPGAS.XI_AddSemiFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
@@ -1564,7 +1564,7 @@
                 ]
             }
     ])
-    (ref-TS02-C1::DPSF|C_TransferNonces patron dpsf-id patron owner [nonce] [1] false)
+    (ref-TS02-C1::C_DPSF|TransferNonces patron dpsf-id patron owner [nonce] [1] false)
     (let
         (
             (nonces:[integer] [nonce])
@@ -1607,9 +1607,9 @@
                 ]
             }
     ])
-    (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron patron score-name 6 0)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpnf-id 4)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::C_AQP-SCR|IssueNonFungibleScore patron patron score-name 6 0)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name dpnf-id 4)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (AQPGAS.XI_AddNonFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
@@ -1644,9 +1644,9 @@
                 ]
             }
     ])
-    (ref-TS02-C2::DPNF|C_Create patron dpnf-id (VCTGAS.UC_DpnfNonceRows 1))
+    (ref-TS02-C2::C_DPNF|Create patron dpnf-id (VCTGAS.UC_DpnfNonceRows 1))
     (let ((picked-nonce:integer (at pre-count (ref-DPDC::URH_AccountNonces source dpnf-id false))))
-        (ref-TS02-C2::DPNF|C_TransferNonces patron dpnf-id source owner [picked-nonce] [1] false)
+        (ref-TS02-C2::C_DPNF|TransferNonces patron dpnf-id source owner [picked-nonce] [1] false)
         (let
             (
                 (nonces:[integer] [picked-nonce])
@@ -1690,9 +1690,9 @@
                 ]
             }
     ])
-    (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron patron score-name 6 0)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpnf-id 4)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::C_AQP-SCR|IssueNonFungibleScore patron patron score-name 6 0)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name dpnf-id 4)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (AQPGAS.XI_AddNonFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
@@ -1727,9 +1727,9 @@
                 ]
             }
     ])
-    (ref-TS02-C2::DPNF|C_Create patron dpnf-id (VCTGAS.UC_DpnfNonceRows 1))
+    (ref-TS02-C2::C_DPNF|Create patron dpnf-id (VCTGAS.UC_DpnfNonceRows 1))
     (let ((picked-nonce:integer (at pre-count (ref-DPDC::URH_AccountNonces source dpnf-id false))))
-        (ref-TS02-C2::DPNF|C_TransferNonces patron dpnf-id source owner [picked-nonce] [1] false)
+        (ref-TS02-C2::C_DPNF|TransferNonces patron dpnf-id source owner [picked-nonce] [1] false)
         (let
             (
                 (nonces:[integer] [picked-nonce])
@@ -1773,9 +1773,9 @@
                 ]
             }
     ])
-    (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron patron score-name 6 0)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpnf-id 4)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::C_AQP-SCR|IssueNonFungibleScore patron patron score-name 6 0)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name dpnf-id 4)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (AQPGAS.XI_AddNonFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
@@ -1810,9 +1810,9 @@
                 ]
             }
     ])
-    (ref-TS02-C2::DPNF|C_Create patron dpnf-id (VCTGAS.UC_DpnfNonceRows 1))
+    (ref-TS02-C2::C_DPNF|Create patron dpnf-id (VCTGAS.UC_DpnfNonceRows 1))
     (let ((picked-nonce:integer (at pre-count (ref-DPDC::URH_AccountNonces source dpnf-id false))))
-        (ref-TS02-C2::DPNF|C_TransferNonces patron dpnf-id source owner [picked-nonce] [1] false)
+        (ref-TS02-C2::C_DPNF|TransferNonces patron dpnf-id source owner [picked-nonce] [1] false)
         (let
             (
                 (nonces:[integer] [picked-nonce])
@@ -1856,9 +1856,9 @@
                 ]
             }
     ])
-    (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron patron score-name 6 0)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpnf-id 4)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::C_AQP-SCR|IssueNonFungibleScore patron patron score-name 6 0)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name dpnf-id 4)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (AQPGAS.XI_AddNonFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
@@ -1893,9 +1893,9 @@
                 ]
             }
     ])
-    (ref-TS02-C2::DPNF|C_Create patron dpnf-id (VCTGAS.UC_DpnfNonceRows 1))
+    (ref-TS02-C2::C_DPNF|Create patron dpnf-id (VCTGAS.UC_DpnfNonceRows 1))
     (let ((picked-nonce:integer (at pre-count (ref-DPDC::URH_AccountNonces source dpnf-id false))))
-        (ref-TS02-C2::DPNF|C_TransferNonces patron dpnf-id source owner [picked-nonce] [1] false)
+        (ref-TS02-C2::C_DPNF|TransferNonces patron dpnf-id source owner [picked-nonce] [1] false)
         (let
             (
                 (nonces:[integer] [picked-nonce])
@@ -1939,9 +1939,9 @@
                 ]
             }
     ])
-    (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron patron score-name 6 0)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpnf-id 4)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::C_AQP-SCR|IssueNonFungibleScore patron patron score-name 6 0)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name dpnf-id 4)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (AQPGAS.XI_AddNonFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
@@ -1976,9 +1976,9 @@
                 ]
             }
     ])
-    (ref-TS02-C2::DPNF|C_Create patron dpnf-id (VCTGAS.UC_DpnfNonceRows 1))
+    (ref-TS02-C2::C_DPNF|Create patron dpnf-id (VCTGAS.UC_DpnfNonceRows 1))
     (let ((picked-nonce:integer (at pre-count (ref-DPDC::URH_AccountNonces source dpnf-id false))))
-        (ref-TS02-C2::DPNF|C_TransferNonces patron dpnf-id source owner [picked-nonce] [1] false)
+        (ref-TS02-C2::C_DPNF|TransferNonces patron dpnf-id source owner [picked-nonce] [1] false)
         (let
             (
                 (nonces:[integer] [picked-nonce])
@@ -2022,9 +2022,9 @@
                 ]
             }
     ])
-    (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron patron score-name 6 0)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpnf-id 4)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::C_AQP-SCR|IssueNonFungibleScore patron patron score-name 6 0)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name dpnf-id 4)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (AQPGAS.XI_AddNonFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
@@ -2059,9 +2059,9 @@
                 ]
             }
     ])
-    (ref-TS02-C2::DPNF|C_Create patron dpnf-id (VCTGAS.UC_DpnfNonceRows 1))
+    (ref-TS02-C2::C_DPNF|Create patron dpnf-id (VCTGAS.UC_DpnfNonceRows 1))
     (let ((picked-nonce:integer (at pre-count (ref-DPDC::URH_AccountNonces source dpnf-id false))))
-        (ref-TS02-C2::DPNF|C_TransferNonces patron dpnf-id source owner [picked-nonce] [1] false)
+        (ref-TS02-C2::C_DPNF|TransferNonces patron dpnf-id source owner [picked-nonce] [1] false)
         (let
             (
                 (nonces:[integer] [picked-nonce])
@@ -2105,9 +2105,9 @@
                 ]
             }
     ])
-    (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron patron score-name 6 0)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpnf-id 4)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::C_AQP-SCR|IssueNonFungibleScore patron patron score-name 6 0)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name dpnf-id 4)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (AQPGAS.XI_AddNonFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
@@ -2142,9 +2142,9 @@
                 ]
             }
     ])
-    (ref-TS02-C2::DPNF|C_Create patron dpnf-id (VCTGAS.UC_DpnfNonceRows 1))
+    (ref-TS02-C2::C_DPNF|Create patron dpnf-id (VCTGAS.UC_DpnfNonceRows 1))
     (let ((picked-nonce:integer (at pre-count (ref-DPDC::URH_AccountNonces source dpnf-id false))))
-        (ref-TS02-C2::DPNF|C_TransferNonces patron dpnf-id source owner [picked-nonce] [1] false)
+        (ref-TS02-C2::C_DPNF|TransferNonces patron dpnf-id source owner [picked-nonce] [1] false)
         (let
             (
                 (nonces:[integer] [picked-nonce])

@@ -62,7 +62,7 @@
         ]
     )
 )
-;;==== TX-EQUITY-001 · 02 · Talos DPSF|C_IssueCompany + baseline reads ====
+;;==== TX-EQUITY-001 · 02 · Talos C_DPSF|IssueCompany + baseline reads ====
 (print "--- [TX-EQUITY-001 · 02 · issue + baseline reads] ---")
 (let
     (
@@ -74,8 +74,8 @@
     )
     (map print
         [
-            (format "<(TS02-C1.DPSF|C_IssueCompany TestStageEquity/TSEQ)> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_IssueCompany owner owner "TestStageEquity" "TSEQ" 5.0 100.0 links)])
+            (format "<(TS02-C1.C_DPSF|IssueCompany TestStageEquity/TSEQ)> => \"{}\""
+                [(ref-TS02-C1::C_DPSF|IssueCompany owner owner "TestStageEquity" "TSEQ" 5.0 100.0 links)])
         ]
     )
     (let ((id:string "E|TSEQ-98c486052a51"))
@@ -137,8 +137,8 @@
     )
     (map print
         [
-            (format "<(TS02-C1.DPSF|C_MorphEquity Make 100000 shares->Tier1)> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_MorphEquity owner owner id 1 100000 2)])
+            (format "<(TS02-C1.C_DPSF|MorphEquity Make 100000 shares->Tier1)> => \"{}\""
+                [(ref-TS02-C1::C_DPSF|MorphEquity owner owner id 1 100000 2)])
         ]
     )
     (map print
@@ -170,8 +170,8 @@
     )
     (map print
         [
-            (format "<(TS02-C1.DPSF|C_MorphEquity Convert Tier1->Tier2)> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_MorphEquity owner owner id 2 1000 3)])
+            (format "<(TS02-C1.C_DPSF|MorphEquity Convert Tier1->Tier2)> => \"{}\""
+                [(ref-TS02-C1::C_DPSF|MorphEquity owner owner id 2 1000 3)])
         ]
     )
     (map print
@@ -200,8 +200,8 @@
     )
     (map print
         [
-            (format "<(TS02-C1.DPSF|C_MorphEquity Break Tier2->shares)> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_MorphEquity owner owner id 3 500 1)])
+            (format "<(TS02-C1.C_DPSF|MorphEquity Break Tier2->shares)> => \"{}\""
+                [(ref-TS02-C1::C_DPSF|MorphEquity owner owner id 3 500 1)])
         ]
     )
     (map print
@@ -249,23 +249,23 @@
         [
             (expect-failure
                 "<<TX-EQUITY-003>> Make beyond the 500,000-share combine capacity (50% cap) rejected"
-                (ref-TS02-C1::DPSF|C_MorphEquity owner owner id 1 600000 2)
+                (ref-TS02-C1::C_DPSF|MorphEquity owner owner id 1 600000 2)
             )
             (expect-failure
                 "<<TX-EQUITY-003>> Make with an amount not evenly divisible by the tier's shares-per-unit rejected"
-                (ref-TS02-C1::DPSF|C_MorphEquity owner owner id 1 150 2)
+                (ref-TS02-C1::C_DPSF|MorphEquity owner owner id 1 150 2)
             )
             (expect-failure
                 "<<TX-EQUITY-003>> Morph with input nonce == output nonce rejected"
-                (ref-TS02-C1::DPSF|C_MorphEquity owner owner id 1 1000 1)
+                (ref-TS02-C1::C_DPSF|MorphEquity owner owner id 1 1000 1)
             )
             (expect-failure
                 "<<TX-EQUITY-003>> Morph with an out-of-range nonce (9, only 1-8 valid) rejected"
-                (ref-TS02-C1::DPSF|C_MorphEquity owner owner id 1 1000 9)
+                (ref-TS02-C1::C_DPSF|MorphEquity owner owner id 1 1000 9)
             )
             (expect-failure
                 "<<TX-EQUITY-003>> Morph with an out-of-range nonce (0, only 1-8 valid) rejected"
-                (ref-TS02-C1::DPSF|C_MorphEquity owner owner id 1 1000 0)
+                (ref-TS02-C1::C_DPSF|MorphEquity owner owner id 1 1000 0)
             )
         ]
     )

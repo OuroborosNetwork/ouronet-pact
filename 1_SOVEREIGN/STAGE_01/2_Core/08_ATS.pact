@@ -305,14 +305,14 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
+    (defun A_P|Add (policy-name:string policy-guard:guard)
         (with-capability (GOV|ATS_ADMIN)
             (write P|T policy-name
                 {"policy" : policy-guard}
             )
         )
     )
-    (defun P|A_AddIMP (policy-guard:guard)
+    (defun A_P|AddIMP (policy-guard:guard)
         (with-capability (GOV|ATS_ADMIN)
             (let
                 (
@@ -329,7 +329,7 @@
             )
         )
     )
-    (defun P|A_Define ()
+    (defun A_P|Define ()
         (let
             (
                 (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
@@ -338,10 +338,10 @@
                 (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
                 (mg:guard (create-capability-guard (P|ATS|CALLER)))
             )
-            (ref-P|DALOS::P|A_AddIMP mg)
-            (ref-P|BRD::P|A_AddIMP mg)
-            (ref-P|DPTF::P|A_AddIMP mg)
-            (ref-P|DPOF::P|A_AddIMP mg)
+            (ref-P|DALOS::A_P|AddIMP mg)
+            (ref-P|BRD::A_P|AddIMP mg)
+            (ref-P|DPTF::A_P|AddIMP mg)
+            (ref-P|DPOF::A_P|AddIMP mg)
         )
     )
     (defun UEV_IMC ()
@@ -2638,7 +2638,7 @@
             (with-capability (ATS|C>UPGRADE-BRD entity-id)
                 (ref-BRD::XE_UpgradeBranding entity-id owner months)
             )
-            (ref-IGNIS::STOA|C_CollectWT patron (URCi_UpgradeBranding months) false)
+            (ref-IGNIS::C_STOA|CollectWT patron (URCi_UpgradeBranding months) false)
         )
     )
     ;;Hot RBT Management
@@ -2729,7 +2729,7 @@
                         (XI_FoldedIssue account atspair index-decimals reward-token rt-nfr reward-bearing-token rbt-nfr)
                     )
                 )
-                (ref-IGNIS::STOA|C_Collect patron stoa-costs)
+                (ref-IGNIS::C_STOA|Collect patron stoa-costs)
                 (ref-IGNIS::UDC_ConstructOutputCumulator gas-costs ATS|SC_NAME trigger ats-ids)
                 
             )
@@ -2817,7 +2817,7 @@
                 (if (> stoa-costs 0.0)
                     (do
                         (XI_IncrementParameterUnlocks atspair)
-                        (ref-IGNIS::STOA|C_Collect patron stoa-costs)
+                        (ref-IGNIS::C_STOA|Collect patron stoa-costs)
                     )
                     true
                 )

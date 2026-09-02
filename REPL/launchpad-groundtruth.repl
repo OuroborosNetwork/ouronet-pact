@@ -3,7 +3,7 @@
 ;; launchpad buys. Boots the base stack through [4.0] (which now deploys the split sovereign
 ;; TS02-DPAD + citizen TS02-CPAD in the correct order), loads [5.3]_Launchpad (issues/funds/opens
 ;; the Spark sale), then asserts INFO_BuySparks.ignis-need == the real IGNIS balance delta of the
-;; pure-citizen SPARK|C_BuySparks execution (Sigma-billed across DEMIPAD|C_Deposit + DPTF|C_Transfer).
+;; pure-citizen C_SPARK|BuySparks execution (Sigma-billed across C_DEMIPAD|Deposit + C_DPTF|Transfer).
 ;;
 ;; Run:  cd REPL && pact launchpad-groundtruth.repl
 ;;
@@ -30,7 +30,7 @@
 (print "")
 ;;
 ;;==== SPARK-BUY-GT · pure-citizen buy functional + GAS-delta ground truth ====
-(begin-tx "TX-SPARK-BUY-GT - pure-citizen SPARK|C_BuySparks executes + INFO_BuySparks == real gas delta")
+(begin-tx "TX-SPARK-BUY-GT - pure-citizen C_SPARK|BuySparks executes + INFO_BuySparks == real gas delta")
 (print "--- [SPARK-BUY-GT] pure-citizen Spark buy + GAS-delta ---")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
@@ -85,8 +85,8 @@
             )
             (print (format "<(INFO_BuySparks)> predicted ignis-need = {} ; pre-gas = {} ; pre-sparks = {}"
                 [predicted pre-gas pre-sparks]))
-            (print (format "<(TS02-CPAD.SPARK|C_BuySparks)> => \"{}\""
-                [(ref-TS02-CPAD::SPARK|C_BuySparks patron patron amount iz-native -1.0)]))
+            (print (format "<(TS02-CPAD.C_SPARK|BuySparks)> => \"{}\""
+                [(ref-TS02-CPAD::C_SPARK|BuySparks patron patron amount iz-native -1.0)]))
             (let
                 (
                     (post-gas:decimal (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" patron))
@@ -120,7 +120,7 @@
         (predicted:decimal (at "ignis-need" (at "ignis" (ref-SPARK::INFO_RedeemSparks patron patron redeemer qty))))
         (urci:decimal (ref-SPARK::URCi_RedeemSparks patron redeemer qty))
     )
-    ;; The exec (SPARK|C_RedemFewSparks) routes correctly through the pure-citizen Talos ops (proven by the
+    ;; The exec (C_SPARK|RedemFewSparks) routes correctly through the pure-citizen Talos ops (proven by the
     ;; SPARK-BUY-GT pattern); an exec GAS-delta here needs a funded payer!=redeemer wSTOA fixture. The reader
     ;; is validated to compute the 6-leg Sigma (transfer + 2x freeze + wipe + remint + VST re-freeze).
     (map print
@@ -131,7 +131,7 @@
 (commit-tx)
 (print "")
 ;;==== STOICPAY-BUY-GT · pure-citizen 3-leg buy functional + GAS-delta ground truth ====
-(begin-tx "TX-STOICPAY-BUY-GT - pure-citizen KPAY|C_BuyStoicPay + INFO_BuyStoicPay == real gas delta")
+(begin-tx "TX-STOICPAY-BUY-GT - pure-citizen C_KPAY|BuyStoicPay + INFO_BuyStoicPay == real gas delta")
 (print "--- [STOICPAY-BUY-GT] pure-citizen StoicPay buy (deposit + transfer + venture split) + GAS-delta ---")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
@@ -182,8 +182,8 @@
             )
             (print (format "<(INFO_BuyStoicPay)> predicted ignis-need = {} ; pre-gas = {} ; pre-kpay = {}"
                 [predicted pre-gas pre-kpay]))
-            (print (format "<(TS02-CPAD.KPAY|C_BuyStoicPay)> => \"{}\""
-                [(ref-TS02-CPAD::KPAY|C_BuyStoicPay patron patron amount iz-native -1.0)]))
+            (print (format "<(TS02-CPAD.C_KPAY|BuyStoicPay)> => \"{}\""
+                [(ref-TS02-CPAD::C_KPAY|BuyStoicPay patron patron amount iz-native -1.0)]))
             (let
                 (
                     (post-gas:decimal (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" patron))

@@ -25,7 +25,7 @@
     (print (format "BEFORE anhd nonce1 (constituent) = {}" [(ref-DPDC::UR_AccountNonceSupply KST.ANHD id true 1)]))
     (print (format "BEFORE anhd BRONZE SET nonce = {}" [(ref-DPDC::UR_AccountNonceSupply KST.ANHD id true (ref-DPDC-S::UR_NonceOfSet id 1))]))
     (print (format "MAKE 0 SETS RESULT = {}"
-        [(ref-TS02-C1::DPSF|C_Make KST.ANHD KST.ANHD id [1 2 3 4 5 6 7 8 9 10] 1 0)]))
+        [(ref-TS02-C1::C_DPSF|Make KST.ANHD KST.ANHD id [1 2 3 4 5 6 7 8 9 10] 1 0)]))
     (print (format "AFTER anhd nonce1 (constituent) = {}" [(ref-DPDC::UR_AccountNonceSupply KST.ANHD id true 1)]))
     (print (format "AFTER anhd BRONZE SET nonce = {}" [(ref-DPDC::UR_AccountNonceSupply KST.ANHD id true (ref-DPDC-S::UR_NonceOfSet id 1))]))
     (print (format "AFTER dpdc escrow nonce1 = {}" [(ref-DPDC::UR_AccountNonceSupply dpdc id true 1)]))

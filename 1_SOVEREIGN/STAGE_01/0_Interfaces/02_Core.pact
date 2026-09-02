@@ -18,13 +18,13 @@
     (defun P|UR_IMP:[guard] ()
         @doc "Reads the whole Intermodule Policy Guard Chain"
     )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
+    (defun A_P|Add (policy-name:string policy-guard:guard)
         @doc "Adds a Policy in the local module Policy Table"
     )
-    (defun P|A_AddIMP (policy-guard:guard)
+    (defun A_P|AddIMP (policy-guard:guard)
         @doc "Add a Policy in the local Policy Guard Chain"
     )
-    (defun P|A_Define ()
+    (defun A_P|Define ()
         @doc "Defines in each module the policies that are needed for intermodule communication"
     )
     (defun UEV_IMC ()
@@ -101,13 +101,13 @@
     ;;
     (defun C_TransferDalosFuel (sender:string receiver:string amount:decimal))
     (defun C_Collect  (patron:string input-output-cumulator:object{OutputCumulator}))
-    (defun STOA|C_Collect (sender:string amount:decimal))
-    (defun STOA|C_CollectWT (sender:string amount:decimal trigger:bool))
+    (defun C_STOA|Collect (sender:string amount:decimal))
+    (defun C_STOA|CollectWT (sender:string amount:decimal trigger:bool))
     ;;
 )
 (interface IgnisCollectorV2
     @doc "Additive IGNIS surface — opt-in per consumer; does not replace IgnisCollectorV1."
-    (defun STOA|C_CollectWTEx (payer:string discount-account:string amount:decimal trigger:bool))
+    (defun C_STOA|CollectWTEx (payer:string discount-account:string amount:decimal trigger:bool))
 )
 (interface OuronetInfoV1
     @doc "Holds Information Schemas"
@@ -696,7 +696,7 @@
     (defun URH_ListActivatedApiKeys:[object] ())
     (defun URH_ListInactiveApiKeys:[object] ())
     ;;
-    ;; [INFO] UI previews — deploy/rename: STOA via STOA|C_CollectWTEx in TS01-C4
+    ;; [INFO] UI previews — deploy/rename: STOA via C_STOA|CollectWTEx in TS01-C4
     (defun INFO_PYTHIA|DeployApiKey:object{OuronetInfoV1.ClientInfo}
         ( patron:string
           owner-account:string
@@ -762,7 +762,7 @@
     (defun URH_ListActivatedApiKeys:[object] ())
     (defun URH_ListInactiveApiKeys:[object] ())
     ;;
-    ;; [INFO] UI previews — deploy/rename: STOA via STOA|C_CollectWTEx; deactivate: IGNIS via C_Collect
+    ;; [INFO] UI previews — deploy/rename: STOA via C_STOA|CollectWTEx; deactivate: IGNIS via C_Collect
     (defun INFO_PYTHIA|DeployApiKey:object{OuronetInfoV1.ClientInfo}
         ( patron:string
           owner-account:string

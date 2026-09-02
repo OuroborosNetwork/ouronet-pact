@@ -84,14 +84,14 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
+    (defun A_P|Add (policy-name:string policy-guard:guard)
         (with-capability (GOV|EQUITY_ADMIN)
             (write P|T policy-name
                 {"policy" : policy-guard}
             )
         )
     )
-    (defun P|A_AddIMP (policy-guard:guard)
+    (defun A_P|AddIMP (policy-guard:guard)
         (with-capability (GOV|EQUITY_ADMIN)
             (let
                 (
@@ -108,7 +108,7 @@
             )
         )
     )
-    (defun P|A_Define ()
+    (defun A_P|Define ()
         (let
             (
                 (ref-P|DPDC:module{OuronetPolicyV1} DPDC)
@@ -117,14 +117,14 @@
                 (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
                 (mg:guard (create-capability-guard (P|EQUITY|CALLER)))
             )
-            (ref-P|DPDC::P|A_Add
+            (ref-P|DPDC::A_P|Add
                 "EQUITY|RemoteDpdcGov"
                 (create-capability-guard (P|EQUITY|REMOTE-GOV))
             )
-            (ref-P|DPDC::P|A_AddIMP mg)
-            (ref-P|DPDC-C::P|A_AddIMP mg)
-            (ref-P|DPDC-I::P|A_AddIMP mg)
-            (ref-P|DPDC-T::P|A_AddIMP mg)
+            (ref-P|DPDC::A_P|AddIMP mg)
+            (ref-P|DPDC-C::A_P|AddIMP mg)
+            (ref-P|DPDC-I::A_P|AddIMP mg)
+            (ref-P|DPDC-T::A_P|AddIMP mg)
         )
     )
     (defun UEV_IMC ()
@@ -312,7 +312,7 @@
             \ NOTE: the SWPI-style ground-truth (compare vs the real reader post-issue) does NOT apply \
             \ — post-populate nonces-used=8, so a live URCi_CreateNewNonces reads the UNdiscounted \
             \ price; the equality is code-proven, not test-arbitrated. A GAS-delta harness on the \
-            \ real DPSF|C_IssueCompany would confirm empirically. The discount itself (equity always \
+            \ real C_DPSF|IssueCompany would confirm empirically. The discount itself (equity always \
             \ Elite) is intended-behavior to confirm under task #76 (IGNIS re-pricing)."
         (let
             (

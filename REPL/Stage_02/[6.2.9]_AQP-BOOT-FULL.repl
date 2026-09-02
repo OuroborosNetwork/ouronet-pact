@@ -189,14 +189,14 @@
         ]
     )
     (print (format "<(ouro-lp-asset-id from SWP)> => \"{}\"" [ouro-lp-asset-id]))
-    (ref-TS02-C3::AQP-POOL|C_Issue patron "DHCodingDivision" "DHCD-98c486052a51" 3)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-coding score-coding)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-coding score-sub-coding)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron "DHCompany" "E|DH-98c486052a51" 3)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-company score-company-share)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-company score-company-snakes)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron "DHWonderCoach" "DHWC-98c486052a51" 3)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-wondercoach score-sub-wondercoach)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron "DHCodingDivision" "DHCD-98c486052a51" 3)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-coding score-coding)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-coding score-sub-coding)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron "DHCompany" "E|DH-98c486052a51" 3)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-company score-company-share)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-company score-company-snakes)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron "DHWonderCoach" "DHWC-98c486052a51" 3)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-wondercoach score-sub-wondercoach)
     (let
         (
             (lp-uev-ok:bool
@@ -207,11 +207,11 @@
         )
         (if lp-uev-ok
             (do
-                (print (format "<(AQP-POOL|C_Issue DHOuroLp lp-id={})>" [ouro-lp-asset-id]))
-                (ref-TS02-C3::AQP-POOL|C_Issue patron "DHOuroLp" ouro-lp-asset-id 0)
-                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-ouro-lp score-silver)
-                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-ouro-lp score-bronze)
-                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-ouro-lp score-golden)
+                (print (format "<(C_AQP-POOL|Issue DHOuroLp lp-id={})>" [ouro-lp-asset-id]))
+                (ref-TS02-C3::C_AQP-POOL|Issue patron "DHOuroLp" ouro-lp-asset-id 0)
+                (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-ouro-lp score-silver)
+                (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-ouro-lp score-bronze)
+                (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-ouro-lp score-golden)
                 (print "AQP-BOOT Step7 ANHD pools done (incl. DHOuroLp).")
             )
             (print (format "NOTE: DHOuroLp skipped — SWP|LP tracker roundtrip failed for {}" [ouro-lp-asset-id]))
@@ -260,12 +260,12 @@
             }
         ]
     )
-    (ref-TS02-C3::AQP-POOL|C_Issue patron "DHBloodshed" "DHB-98c486052a51" 4)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-bloodshed score-sub-bloodshed)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron "DHNosferatu" "DHN-98c486052a51" 4)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-nosferatu score-sub-nosferatu)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron "DHBunnies" "KBN-98c486052a51" 4)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-bunnies score-sub-bunnies)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron "DHBloodshed" "DHB-98c486052a51" 4)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-bloodshed score-sub-bloodshed)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron "DHNosferatu" "DHN-98c486052a51" 4)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-nosferatu score-sub-nosferatu)
+    (ref-TS02-C3::C_AQP-POOL|Issue patron "DHBunnies" "KBN-98c486052a51" 4)
+    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-bunnies score-sub-bunnies)
     (print "AQP-BOOT Step7 DPNF pools done.")
 )
 (env-sigs [])
@@ -334,8 +334,8 @@
             (
                 (stoa-post:decimal (ref-SWP::UR_StoaValue swpair))
             )
-            (print (format "<(SWP|C_AddLiquidity OURO pool)> => \"{}\"" [
-                (ref-TS01-C3::SWP|C_AddLiquidity patron patron swpair [300.0 500.0 200.0])
+            (print (format "<(C_SWP|AddLiquidity OURO pool)> => \"{}\"" [
+                (ref-TS01-C3::C_SWP|AddLiquidity patron patron swpair [300.0 500.0 200.0])
             ]))
             (print (format "<(SWP|UR_StoaValue post-seed)> => \"{}\"" [(ref-SWP::UR_StoaValue swpair)]))
         )
@@ -550,10 +550,10 @@
         ;; default mode (SPLIT|STAKED) — member staked value
         (w-staked:decimal (ref-FVT::URC_MemberLevel2Weight farm-id mtype m swp))
         ;; flip to SPLIT|TVL — whole-pool TVL
-        (set-tvl:string (ref-TS02-C3::AQP-FVT|C_SetSplitMode patron farm-id "SPLIT|TVL"))
+        (set-tvl:string (ref-TS02-C3::C_AQP-FVT|SetSplitMode patron farm-id "SPLIT|TVL"))
         (w-tvl:decimal (ref-FVT::URC_MemberLevel2Weight farm-id mtype m swp))
         ;; restore SPLIT|STAKED
-        (set-staked:string (ref-TS02-C3::AQP-FVT|C_SetSplitMode patron farm-id "SPLIT|STAKED"))
+        (set-staked:string (ref-TS02-C3::C_AQP-FVT|SetSplitMode patron farm-id "SPLIT|STAKED"))
         (w-restored:decimal (ref-FVT::URC_MemberLevel2Weight farm-id mtype m swp))
     )
     (map print

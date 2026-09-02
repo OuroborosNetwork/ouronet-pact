@@ -157,14 +157,14 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
+    (defun A_P|Add (policy-name:string policy-guard:guard)
         (with-capability (GOV|VESTING_ADMIN)
             (write P|T policy-name
                 {"policy" : policy-guard}
             )
         )
     )
-    (defun P|A_AddIMP (policy-guard:guard)
+    (defun A_P|AddIMP (policy-guard:guard)
         (with-capability (GOV|VESTING_ADMIN)
             (let
                 (
@@ -181,7 +181,7 @@
             )
         )
     )
-    (defun P|A_Define ()
+    (defun A_P|Define ()
         (let
             (
                 (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
@@ -193,17 +193,17 @@
                 (ref-P|ATSU:module{OuronetPolicyV1} ATSU)
                 (mg:guard (create-capability-guard (P|VST|CALLER)))
             )
-            (ref-P|ATS::P|A_Add
+            (ref-P|ATS::A_P|Add
                 "VST|RemoteAtsGov"
                 (create-capability-guard (P|VST|REMOTE-GOV))
             )
-            (ref-P|DALOS::P|A_AddIMP mg)
-            (ref-P|BRD::P|A_AddIMP mg)
-            (ref-P|DPTF::P|A_AddIMP mg)
-            (ref-P|DPOF::P|A_AddIMP mg)
-            (ref-P|ATS::P|A_AddIMP mg)
-            (ref-P|TFT::P|A_AddIMP mg)
-            (ref-P|ATSU::P|A_AddIMP mg)
+            (ref-P|DALOS::A_P|AddIMP mg)
+            (ref-P|BRD::A_P|AddIMP mg)
+            (ref-P|DPTF::A_P|AddIMP mg)
+            (ref-P|DPOF::A_P|AddIMP mg)
+            (ref-P|ATS::A_P|AddIMP mg)
+            (ref-P|TFT::A_P|AddIMP mg)
+            (ref-P|ATSU::A_P|AddIMP mg)
         )
     )
     (defun UEV_IMC ()
@@ -1328,7 +1328,7 @@
             )
             ;;Create DPTF Account
             (ref-DPTF::C_DeployAccount dptf VST|SC_NAME)
-            (ref-IGNIS::STOA|C_Collect patron stoa-costs)
+            (ref-IGNIS::C_STOA|Collect patron stoa-costs)
             (ref-IGNIS::UDC_ConcatenateOutputCumulators 
                 [
                     ico0 
@@ -1391,7 +1391,7 @@
             )
             ;;Create DPTF Account 
             (ref-DPTF::C_DeployAccount dptf VST|SC_NAME)
-            (ref-IGNIS::STOA|C_Collect patron stoa-costs)
+            (ref-IGNIS::C_STOA|Collect patron stoa-costs)
             (ref-IGNIS::UDC_ConcatenateOutputCumulators 
                 [
                     ico0 

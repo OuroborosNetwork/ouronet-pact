@@ -286,14 +286,14 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
+    (defun A_P|Add (policy-name:string policy-guard:guard)
         (with-capability (GOV|DPOF_ADMIN)
             (write P|T policy-name
                 {"policy" : policy-guard}
             )
         )
     )
-    (defun P|A_AddIMP (policy-guard:guard)
+    (defun A_P|AddIMP (policy-guard:guard)
         (with-capability (GOV|DPOF_ADMIN)
             (let
                 (
@@ -310,7 +310,7 @@
             )
         )
     )
-    (defun P|A_Define ()
+    (defun A_P|Define ()
         (let
             (
                 (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
@@ -318,9 +318,9 @@
                 (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
                 (mg:guard (create-capability-guard (P|DPOF|CALLER)))
             )
-            (ref-P|DALOS::P|A_AddIMP mg)
-            (ref-P|BRD::P|A_AddIMP mg)
-            (ref-P|DPTF::P|A_AddIMP mg)
+            (ref-P|DALOS::A_P|AddIMP mg)
+            (ref-P|BRD::A_P|AddIMP mg)
+            (ref-P|DPTF::A_P|AddIMP mg)
         )
     )
     (defun UEV_IMC ()
@@ -2375,7 +2375,7 @@
             (with-capability (DPOF|C>UPGRADE-BRD entity-id)
                 (ref-BRD::XE_UpgradeBranding entity-id parent-owner months)
             )
-            (ref-IGNIS::STOA|C_CollectWT patron (URCi_UpgradeBranding months) false)
+            (ref-IGNIS::C_STOA|CollectWT patron (URCi_UpgradeBranding months) false)
         )
     )
     ;;
@@ -2404,7 +2404,7 @@
                     )
                 )
             )
-            (ref-IGNIS::STOA|C_Collect patron stoa-costs)
+            (ref-IGNIS::C_STOA|Collect patron stoa-costs)
             ico
         )
     )

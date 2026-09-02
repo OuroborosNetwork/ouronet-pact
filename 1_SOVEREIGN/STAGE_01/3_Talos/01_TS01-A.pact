@@ -5,51 +5,51 @@
     @doc "Exposes Ouronet Administrative Functions"
     ;;
     ;;DALOS Functions
-    (defun DALOS|A_MigrateLiquidFunds:decimal (migration-target-stoa-account:string))
-    (defun DALOS|A_ToggleOAPU (oapu:bool))
-    (defun DALOS|A_ToggleGAP (gap:bool))
-    (defun DALOS|A_DeploySmartAccount (account:string guard:guard stoa:string sovereign:string public:string))
-    (defun DALOS|A_DeployStandardAccount (account:string guard:guard stoa:string public:string))
-    (defun DALOS|A_IgnisToggle (native:bool toggle:bool))
-    (defun DALOS|A_SetIgnisSourcePrice (price:decimal))
-    (defun DALOS|A_SetAutoFueling (toggle:bool))
-    (defun DALOS|A_UpdatePublicKey (account:string new-public:string))
-    (defun DALOS|A_UpdateUsagePrice (action:string new-price:decimal))
+    (defun A_DALOS|MigrateLiquidFunds:decimal (migration-target-stoa-account:string))
+    (defun A_DALOS|ToggleOAPU (oapu:bool))
+    (defun A_DALOS|ToggleGAP (gap:bool))
+    (defun A_DALOS|DeploySmartAccount (account:string guard:guard stoa:string sovereign:string public:string))
+    (defun A_DALOS|DeployStandardAccount (account:string guard:guard stoa:string public:string))
+    (defun A_DALOS|IgnisToggle (native:bool toggle:bool))
+    (defun A_DALOS|SetIgnisSourcePrice (price:decimal))
+    (defun A_DALOS|SetAutoFueling (toggle:bool))
+    (defun A_DALOS|UpdatePublicKey (account:string new-public:string))
+    (defun A_DALOS|UpdateUsagePrice (action:string new-price:decimal))
     ;;
     ;;
     ;;BRD Functions
-    (defun BRD|A_Live (entity-id:string))
-    (defun BRD|A_SetFlag (entity-id:string flag:integer))
+    (defun A_BRD|Live (entity-id:string))
+    (defun A_BRD|SetFlag (entity-id:string flag:integer))
     ;;
     ;;
     ;;DPTF Functions
-    (defun DPTF|A_UpdateTreasuryDispoParameters (type:integer tdp:decimal tds:decimal))
-    (defun DPTF|A_WipeTreasuryDebt ())
-    (defun DPTF|A_WipeTreasuryDebtPartial (debt-to-be-wiped:decimal))
-    (defun DPTF|A_DeployAccount (patron:string id:string account:string))
+    (defun A_DPTF|UpdateTreasuryDispoParameters (type:integer tdp:decimal tds:decimal))
+    (defun A_DPTF|WipeTreasuryDebt ())
+    (defun A_DPTF|WipeTreasuryDebtPartial (debt-to-be-wiped:decimal))
+    (defun A_DPTF|DeployAccount (patron:string id:string account:string))
     ;;
     ;;DPOF Functions
-    (defun DPOF|A_DeployAccount (patron:string id:string account:string))
+    (defun A_DPOF|DeployAccount (patron:string id:string account:string))
     ;;
     ;;ATS Functions
-    (defun ATS|A_RemoveSecondary (patron:string remover:string ats:string reward-token:string accounts-with-ats-data:[string]))
-    (defun ATS|A_KickStart (patron:string kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
+    (defun A_ATS|RemoveSecondary (patron:string remover:string ats:string reward-token:string accounts-with-ats-data:[string]))
+    (defun A_ATS|KickStart (patron:string kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
     ;;
     ;;LIQUID Functions
-    (defun LIQUID|A_MigrateLiquidFunds:decimal (migration-target-stoa-account:string))
+    (defun A_LIQUID|MigrateLiquidFunds:decimal (migration-target-stoa-account:string))
     ;;
     ;;
     ;;ORBR Functions
-    (defun ORBR|A_Fuel ())
+    (defun A_ORBR|Fuel ())
     ;;
     ;;
     ;;SWP Functions
-    (defun SWP|A_UpdatePrincipal (principal:string add-or-remove:bool))
-    (defun SWP|A_RotatePrincipal (old:string new:string))
-    (defun SWP|A_UpdateLimit (limit:decimal spawn:bool))
-    (defun SWP|A_UpdateLiquidBoost (new-boost-variable:bool))
-    (defun SWP|A_DefinePrimordialPool (primordial-pool:string))
-    (defun SWP|A_ToggleAsymetricLiquidityAddition (toggle:bool))
+    (defun A_SWP|UpdatePrincipal (principal:string add-or-remove:bool))
+    (defun A_SWP|RotatePrincipal (old:string new:string))
+    (defun A_SWP|UpdateLimit (limit:decimal spawn:bool))
+    (defun A_SWP|UpdateLiquidBoost (new-boost-variable:bool))
+    (defun A_SWP|DefinePrimordialPool (primordial-pool:string))
+    (defun A_SWP|ToggleAsymetricLiquidityAddition (toggle:bool))
     ;;
     ;;
     ;;Fueling Functions
@@ -111,14 +111,14 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
+    (defun A_P|Add (policy-name:string policy-guard:guard)
         (with-capability (GOV|TS01-A_ADMIN)
             (write P|T policy-name
                 {"policy" : policy-guard}
             )
         )
     )
-    (defun P|A_AddIMP (policy-guard:guard)
+    (defun A_P|AddIMP (policy-guard:guard)
         (with-capability (GOV|TS01-A_ADMIN)
             (let
                 (
@@ -135,14 +135,14 @@
             )
         )
     )
-    (defun P|A_Define ()
+    (defun A_P|Define ()
         @doc "Fix (audit finding #22L test-coverage sweep): ATS and ATSU were never \
             \ registered as permitted callers here (ATS was even bound - ref-P|ATS - \
             \ but never used), so any TS01-A admin function routing into either module \
-            \ (e.g. ATS|A_RemoveSecondary, ATS|A_KickStart) always failed UEV_IMC's \
+            \ (e.g. A_ATS|RemoveSecondary, A_ATS|KickStart) always failed UEV_IMC's \
             \ whitelist check - unconditionally, regardless of caller/key. Never caught \
             \ because those functions had zero test coverage. Every other Talos module's \
-            \ own P|A_Define already registers into both ATS and ATSU; this just matches \
+            \ own A_P|Define already registers into both ATS and ATSU; this just matches \
             \ that existing pattern."
         (let
             (
@@ -158,20 +158,20 @@
                 (ref-P|SWP:module{OuronetPolicyV1} SWP)
                 (mg:guard (create-capability-guard (P|TS)))
             )
-            (ref-P|DALOS::P|A_Add
+            (ref-P|DALOS::A_P|Add
                 "TS01-A|RemoteDalosGov"
                 (create-capability-guard (P|TRG))
             )
-            (ref-P|DALOS::P|A_AddIMP mg)
-            (ref-P|IGNIS::P|A_AddIMP mg)
-            (ref-P|BRD::P|A_AddIMP mg)
-            (ref-P|DPTF::P|A_AddIMP mg)
-            (ref-P|DPOF::P|A_AddIMP mg)
-            (ref-P|ATS::P|A_AddIMP mg)
-            (ref-P|ATSU::P|A_AddIMP mg)
-            (ref-P|LIQUID::P|A_AddIMP mg)
-            (ref-P|ORBR::P|A_AddIMP mg)
-            (ref-P|SWP::P|A_AddIMP mg)
+            (ref-P|DALOS::A_P|AddIMP mg)
+            (ref-P|IGNIS::A_P|AddIMP mg)
+            (ref-P|BRD::A_P|AddIMP mg)
+            (ref-P|DPTF::A_P|AddIMP mg)
+            (ref-P|DPOF::A_P|AddIMP mg)
+            (ref-P|ATS::A_P|AddIMP mg)
+            (ref-P|ATSU::A_P|AddIMP mg)
+            (ref-P|LIQUID::A_P|AddIMP mg)
+            (ref-P|ORBR::A_P|AddIMP mg)
+            (ref-P|SWP::A_P|AddIMP mg)
         )
     )
     (defun UEV_IMC ()
@@ -249,7 +249,7 @@
     ;;{F7}  User [A]
     ;;
     ;;  [DALOS_Administrator]
-    (defun DALOS|A_MigrateLiquidFunds:decimal (migration-target-stoa-account:string)
+    (defun A_DALOS|MigrateLiquidFunds:decimal (migration-target-stoa-account:string)
         @doc "Migrates Ouronet Gas Station Funds, to another stoa adress, \
         \ if needed due to a migration to a new namespace and new module code \
         \ Outputs the migrated amount"
@@ -263,7 +263,7 @@
             )
         )
     )
-    (defun DALOS|A_ToggleOAPU (oapu:bool)
+    (defun A_DALOS|ToggleOAPU (oapu:bool)
         @doc "Toggles the Ouroboros Autonomous Price Update to <oapu>"
         (with-capability (P|TS)
             (let
@@ -278,7 +278,7 @@
             )
         )
     )
-    (defun DALOS|A_ToggleGAP (gap:bool)
+    (defun A_DALOS|ToggleGAP (gap:bool)
         @doc "Toggles the Global administrative Pause, the GAP, to <toggle>"
         (with-capability (P|TS)
             (let
@@ -293,7 +293,7 @@
             )
         )
     )
-    (defun DALOS|A_DeploySmartAccount (account:string guard:guard stoa:string sovereign:string public:string)
+    (defun A_DALOS|DeploySmartAccount (account:string guard:guard stoa:string sovereign:string public:string)
         @doc "Deploys a Smart Ouronet Account in Administrator Mode, without collection STOA"
         (with-capability (P|TS)
             (let
@@ -307,7 +307,7 @@
             )
         )
     )
-    (defun DALOS|A_DeployStandardAccount (account:string guard:guard stoa:string public:string)
+    (defun A_DALOS|DeployStandardAccount (account:string guard:guard stoa:string public:string)
         @doc "Deploys a Standard Ouronet Account in Administrator Mode, without collection STOA"
         (with-capability (P|TS)
             (let
@@ -321,7 +321,7 @@
             )
         )
     )
-    (defun DALOS|A_IgnisToggle (native:bool toggle:bool)
+    (defun A_DALOS|IgnisToggle (native:bool toggle:bool)
         @doc "Toggles Ouronet Gas Collection \
         \ <native> true is STOA Collection for Specific Usage Actions \
         \ <native> false is IGNIS Collection for Client Functions"
@@ -344,7 +344,7 @@
             )
         )
     )
-    (defun DALOS|A_SetIgnisSourcePrice (price:decimal)
+    (defun A_DALOS|SetIgnisSourcePrice (price:decimal)
         @doc "Sets OUROBOROS Price in $. Used in Compresion and Sublimation"
         (with-capability (P|TS)
             (let
@@ -356,7 +356,7 @@
             )
         )
     )
-    (defun DALOS|A_SetAutoFueling (toggle:bool)
+    (defun A_DALOS|SetAutoFueling (toggle:bool)
         @doc "Sets Automatic fueling of Collected STOA for the Increase of the <StoaLiquindex>"
         (with-capability (P|TS)
             (let
@@ -371,7 +371,7 @@
             )
         )
     )
-    (defun DALOS|A_UpdatePublicKey (account:string new-public:string)
+    (defun A_DALOS|UpdatePublicKey (account:string new-public:string)
         @doc "Updates Public Key; To be used only as failsafe by the Admin"
         (with-capability (P|TS)
             (let
@@ -385,7 +385,7 @@
             )
         )
     )
-    (defun DALOS|A_UpdateUsagePrice (action:string new-price:decimal)
+    (defun A_DALOS|UpdateUsagePrice (action:string new-price:decimal)
         @doc "Updates specific Usage Price in STOA"
         (with-capability (P|TS)
             (let
@@ -398,7 +398,7 @@
         )
     )
     ;;  [BRD_Administrator]
-    (defun BRD|A_Live (entity-id:string)
+    (defun A_BRD|Live (entity-id:string)
         @doc "Sets <pending-branding> for an <entity-id> to <live-branding>, reseting <pending-branding> data \
             \ Resetting <pending-branding> data does not reset its last 3 keys \
             \ Can only be done by Branding Administrator"
@@ -411,7 +411,7 @@
             )
         )
     )
-    (defun BRD|A_SetFlag (entity-id:string flag:integer)
+    (defun A_BRD|SetFlag (entity-id:string flag:integer)
         @doc "Forcibly (in administrator mode) sets a Branding Flag for <entity-id> \
             \ <0> Flag = Golden Flag        Premium Flag reserved for Demiourgos Entity IDs \
             \ <1> Flag = Blue Flag          Premium Flag for Entity IDs (non-Demiourgos); \
@@ -430,7 +430,7 @@
         )
     )
     ;;  [DPTF_Administrator]
-    (defun DPTF|A_UpdateTreasuryDispoParameters (type:integer tdp:decimal tds:decimal)
+    (defun A_DPTF|UpdateTreasuryDispoParameters (type:integer tdp:decimal tds:decimal)
         @doc "Updates Treasury Dispo Parameters, that dictate how much OURO Debt the Treasury can incurr \
             \ Type can only be 0 1 2 3 \
             \ Type 0 = No Treasury Dispo \
@@ -446,7 +446,7 @@
             )
         )
     )
-    (defun DPTF|A_WipeTreasuryDebt ()
+    (defun A_DPTF|WipeTreasuryDebt ()
         @doc "Wipes all Treasury Debt, increasing OURO supply by the Debt Amount, \
             \ and setting Treasury Dispo Parameters to neutral (no overspend capability)"
         (with-capability (P|TS)
@@ -458,7 +458,7 @@
             )
         )
     )
-    (defun DPTF|A_WipeTreasuryDebtPartial (debt-to-be-wiped:decimal)
+    (defun A_DPTF|WipeTreasuryDebtPartial (debt-to-be-wiped:decimal)
         @doc "Wipes all partialy the Treasury Debt, increasing OURO supply by the <debt-to-be-wiped> amount \
         \ Treasury Dispo Parameters are left as they are, this function simply wipe a part of the Treasury Debt through mint."
         (with-capability (P|TS)
@@ -470,13 +470,13 @@
             )
         )
     )
-    (defun DPTF|A_DeployAccount (patron:string id:string account:string)
-        @doc "Administrative variant of DPTF|C_DeployAccount (TS01-C1) - deploys a DPTF \
+    (defun A_DPTF|DeployAccount (patron:string id:string account:string)
+        @doc "Administrative variant of C_DPTF|DeployAccount (TS01-C1) - deploys a DPTF \
             \ Account for <account> with no ownership check on <account>. For \
             \ system/infrastructure account setup only (a smart account governed by \
             \ another module, e.g. a pool/vault/dispenser account), where the caller \
             \ legitimately cannot hold <account>'s own guard. End-user self-service \
-            \ activation must use the ownership-gated DPTF|C_DeployAccount instead."
+            \ activation must use the ownership-gated C_DPTF|DeployAccount instead."
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
@@ -495,13 +495,13 @@
     )
     ;;
     ;;  [DPOF_Administrator]
-    (defun DPOF|A_DeployAccount (patron:string id:string account:string)
-        @doc "Administrative variant of DPOF|C_DeployAccount (TS01-C1) - deploys a DPOF \
+    (defun A_DPOF|DeployAccount (patron:string id:string account:string)
+        @doc "Administrative variant of C_DPOF|DeployAccount (TS01-C1) - deploys a DPOF \
             \ Account for <account> with no ownership check on <account>. For \
             \ system/infrastructure account setup only (a smart account governed by \
             \ another module, e.g. a pool/vault/dispenser account), where the caller \
             \ legitimately cannot hold <account>'s own guard. End-user self-service \
-            \ activation must use the ownership-gated DPOF|C_DeployAccount instead."
+            \ activation must use the ownership-gated C_DPOF|DeployAccount instead."
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
@@ -519,7 +519,7 @@
         )
     )
     ;;  [ATS_Administrator]
-    (defun ATS|A_RemoveSecondary (patron:string remover:string ats:string reward-token:string accounts-with-ats-data:[string])
+    (defun A_ATS|RemoveSecondary (patron:string remover:string ats:string reward-token:string accounts-with-ats-data:[string])
         @doc "Administrative Variant, queries <accounts-with-ats-data> via <DPTF-DPOF-ATS|UR_FilterKeysForInfo>"
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
@@ -533,11 +533,11 @@
             )
         )
     )
-    (defun ATS|A_KickStart (patron:string kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
+    (defun A_ATS|KickStart (patron:string kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
         @doc "Administrative Variant (audit finding #11M / M2): forgoes pool ownership \
             \ for module governance, with no upper bound on the resulting KickStart \
             \ index (still subject to the shared 0.1 floor) - for legitimate ratios \
-            \ above the owner-facing ATS|C_KickStart's 100.0 ceiling."
+            \ above the owner-facing C_ATS|KickStart's 100.0 ceiling."
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
@@ -551,7 +551,7 @@
         )
     )
     ;;  [LIQUID_Administrator]
-    (defun LIQUID|A_MigrateLiquidFunds:decimal (migration-target-stoa-account:string)
+    (defun A_LIQUID|MigrateLiquidFunds:decimal (migration-target-stoa-account:string)
         @doc "Migrates Stoa Liquid Staking STOA Funds, to another stoa adress, \
         \ if needed due to a migration to a new namespace and new module code \
         \ Outputs the migrated amount"
@@ -565,7 +565,7 @@
         )
     )
     ;;  [OUROBOROS_Administrator]
-    (defun ORBR|A_Fuel ()
+    (defun A_ORBR|Fuel ()
         @doc "Uses up all collected Native STOA on the Ouroboros Account, wraps it, and fuels the Stoa Liquid Index \
             \ Transaction fee must be paid for by the Ouronet Gas Station, so that all available balance may be used. \
             \ Is Part of all the Functions that collect native STOA as fee, \
@@ -579,7 +579,7 @@
         )
     )
     ;;  [SWP_Administrator]
-    (defun SWP|A_UpdatePrincipal (principal:string add-or-remove:bool)
+    (defun A_SWP|UpdatePrincipal (principal:string add-or-remove:bool)
         @doc "Adds <principal> (while under the 7 maximum) or removes it (while at \
         \ least 2 would remain defined, and <principal> isn't a 'major' principal \
         \ — #65eL). A principal is a token that must exist once in every W or P \
@@ -590,7 +590,7 @@
         \ existing routing. A major principal (currently a member of the \
         \ primordial pool — always OURO/WSTOA/SSTOA in practice) can never be removed \
         \ this way; retiring one requires redefining the primordial pool itself \
-        \ (SWP|A_DefinePrimordialPool). SWP|A_RotatePrincipal remains available as \
+        \ (A_SWP|DefinePrimordialPool). A_SWP|RotatePrincipal remains available as \
         \ an atomic, count-preserving alternative for minor principals — it never \
         \ touches the floor or cap, but is equally blocked from rotating a major \
         \ principal away."
@@ -603,7 +603,7 @@
             )
         )
     )
-    (defun SWP|A_RotatePrincipal (old:string new:string)
+    (defun A_SWP|RotatePrincipal (old:string new:string)
         @doc "Atomically replaces principal <old> with <new> in one step, without \
         \ touching the 2-minimum floor or 7-maximum cap. Safe with respect to \
         \ SWPT's routing graph (#21H fix): SWPT's storage is principal-agnostic, \
@@ -613,7 +613,7 @@
         \ rejects <old> being a 'major' principal (currently a member of the \
         \ primordial pool — always OURO/WSTOA/SSTOA in practice, #65eL) — majors are \
         \ fixed, retirable only by redefining the primordial pool itself \
-        \ (SWP|A_DefinePrimordialPool)."
+        \ (A_SWP|DefinePrimordialPool)."
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
@@ -623,7 +623,7 @@
             )
         )
     )
-    (defun SWP|A_UpdateLimit (limit:decimal spawn:bool)
+    (defun A_SWP|UpdateLimit (limit:decimal spawn:bool)
         @doc "Updates either the <spawn-limit> or <inactive-limit> for the SWP Module \
         \ The <spawn-limit> is the minimum number in STOA that a pool must be created with, in order to be opened for swap \
         \ The <inactive-limit> is the minimum number in STOA as total pool liquidity value, that trigger autonomic disable of the swap mechanism"
@@ -636,7 +636,7 @@
             )
         )
     )
-    (defun SWP|A_UpdateLiquidBoost (new-boost-variable:bool)
+    (defun A_SWP|UpdateLiquidBoost (new-boost-variable:bool)
         @doc "Updates Liquid Boost switch. When set to true, every swap is set to pump the Index for Stoa Liquid Staking"
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
@@ -647,7 +647,7 @@
             )
         )
     )
-    (defun SWP|A_DefinePrimordialPool (primordial-pool:string)
+    (defun A_SWP|DefinePrimordialPool (primordial-pool:string)
         @doc "Updates the Primordial Pool"
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
@@ -658,7 +658,7 @@
             )
         )
     )
-    (defun SWP|A_ToggleAsymetricLiquidityAddition (toggle:bool)
+    (defun A_SWP|ToggleAsymetricLiquidityAddition (toggle:bool)
         @doc "Updates the Primordial Pool"
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let

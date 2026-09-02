@@ -100,14 +100,14 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
+    (defun A_P|Add (policy-name:string policy-guard:guard)
         (with-capability (GOV|DSP_ADMIN)
             (write P|T policy-name
                 {"policy" : policy-guard}
             )
         )
     )
-    (defun P|A_AddIMP (policy-guard:guard)
+    (defun A_P|AddIMP (policy-guard:guard)
         (with-capability (GOV|DSP_ADMIN)
             (let
                 (
@@ -124,17 +124,17 @@
             )
         )
     )
-    (defun P|A_Define ()
+    (defun A_P|Define ()
         (let
             (
                 (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
                 (mg:guard (create-capability-guard (P|DSP|CALLER)))
             )
-            (ref-P|DALOS::P|A_Add
+            (ref-P|DALOS::A_P|Add
                 "DSP|RemoteDalosGov"
                 (create-capability-guard (P|DRG))
             )
-            (ref-P|DALOS::P|A_AddIMP mg)
+            (ref-P|DALOS::A_P|AddIMP mg)
         )
     )
     (defun UEV_IMC ()
@@ -274,9 +274,9 @@
                     (format "No stoicism to mint or distribute")
                     [
                       ;;Mints Stoicism
-                      (ref-TS01-C1::DPTF|C_Mint GASLESS-PATRON stoicism-id dispenser total-stoicism-amount false)
+                      (ref-TS01-C1::C_DPTF|Mint GASLESS-PATRON stoicism-id dispenser total-stoicism-amount false)
                       ;;Moves Stoicism to Targets
-                      (ref-TS01-C1::DPTF|C_BulkTransfer GASLESS-PATRON stoicism-id dispenser stoicism-targets stoicism-amounts)
+                      (ref-TS01-C1::C_DPTF|BulkTransfer GASLESS-PATRON stoicism-id dispenser stoicism-targets stoicism-amounts)
                     ]
                 )
             )
@@ -314,18 +314,18 @@
                     (elite-auryndex:string (at 0 (ref-DPTF::UR_RewardBearingToken elite-auryn)))
                 )
                 ;;Mints whole daily on Dispencer
-                (ref-TS01-C1::DPTF|C_Mint GASLESS-PATRON ouro dispenser daily false)
+                (ref-TS01-C1::C_DPTF|Mint GASLESS-PATRON ouro dispenser daily false)
                 ;;Moves 10% To Treasury and 20% to Validators
-                (ref-TS01-C1::DPTF|C_BulkTransfer GASLESS-PATRON ouro dispenser [treasury validators] [s1-10p s1-20p])
+                (ref-TS01-C1::C_DPTF|BulkTransfer GASLESS-PATRON ouro dispenser [treasury validators] [s1-10p s1-20p])
                 ;;Uses 30% to Fuel the Auryndex
-                (ref-TS01-C2::ATS|C_Fuel GASLESS-PATRON dispenser auryndex ouro s1-30p)
+                (ref-TS01-C2::C_ATS|Fuel GASLESS-PATRON dispenser auryndex ouro s1-30p)
                 ;;Uses 40% to Coil to Auryn and then use Auryn to Fuel Elite-Auryndex
                 (let
                     (
                         (c-rbt-amount:decimal (ref-ATS::URC_RBT auryndex ouro s1-40p))
                     )
-                    (ref-TS01-C2::ATS|C_Coil GASLESS-PATRON dispenser auryndex ouro s1-40p)
-                    (ref-TS01-C2::ATS|C_Fuel GASLESS-PATRON dispenser elite-auryndex auryn c-rbt-amount)
+                    (ref-TS01-C2::C_ATS|Coil GASLESS-PATRON dispenser auryndex ouro s1-40p)
+                    (ref-TS01-C2::C_ATS|Fuel GASLESS-PATRON dispenser elite-auryndex auryn c-rbt-amount)
                     [
                         (format "Minted {} OURO into with a 10/20/30/40 split." [daily])
                         (format "{} (10%) OURO to Treasury" [s1-10p])
@@ -367,8 +367,8 @@
                     (dispenser:string DSP1|SC_NAME)
                 )
                 ;;Mints Primordial Koson and Esoteric Koson Amounts
-                (ref-TS01-C1::DPTF|C_Mint GASLESS-PATRON PrimordialKosonID dispenser (at 0 daily) false)
-                (ref-TS01-C1::DPTF|C_Mint GASLESS-PATRON EsothericKosonID dispenser (at 1 daily) false)
+                (ref-TS01-C1::C_DPTF|Mint GASLESS-PATRON PrimordialKosonID dispenser (at 0 daily) false)
+                (ref-TS01-C1::C_DPTF|Mint GASLESS-PATRON EsothericKosonID dispenser (at 1 daily) false)
                 ;;Moves Primordial Kosons: 10% To Standard-Treasury, 20% to Smart-Treasury, 40% to Custodians(Validators)
                 ;;Leaving 30% of the Primordial Kosons to <dispenser>
                 (let
@@ -388,19 +388,19 @@
                         (esoteric-split-for-ats:[decimal] (UC_KosonicAutostakeSplit daily-esoteric op1))
                     )
                 ;;Splits the 30% of Primordial Kosons from Dispenser into 6 parts to Fuel Autostake Pools
-                    (ref-TS01-C2::ATS|C_Fuel GASLESS-PATRON dispenser PlebeicStrengthID     PrimordialKosonID (at 0 primordial-split-for-ats))
-                    (ref-TS01-C2::ATS|C_Fuel GASLESS-PATRON dispenser ComatiCommandID       PrimordialKosonID (at 1 primordial-split-for-ats))
-                    (ref-TS01-C2::ATS|C_Fuel GASLESS-PATRON dispenser PileatiPowerID        PrimordialKosonID (at 2 primordial-split-for-ats))
-                    (ref-TS01-C2::ATS|C_Fuel GASLESS-PATRON dispenser TarabostesTenacityID  PrimordialKosonID (at 3 primordial-split-for-ats))
-                    (ref-TS01-C2::ATS|C_Fuel GASLESS-PATRON dispenser StrategonVigorID      PrimordialKosonID (at 4 primordial-split-for-ats))
-                    (ref-TS01-C2::ATS|C_Fuel GASLESS-PATRON dispenser AsAuthorityID         PrimordialKosonID (at 5 primordial-split-for-ats))
+                    (ref-TS01-C2::C_ATS|Fuel GASLESS-PATRON dispenser PlebeicStrengthID     PrimordialKosonID (at 0 primordial-split-for-ats))
+                    (ref-TS01-C2::C_ATS|Fuel GASLESS-PATRON dispenser ComatiCommandID       PrimordialKosonID (at 1 primordial-split-for-ats))
+                    (ref-TS01-C2::C_ATS|Fuel GASLESS-PATRON dispenser PileatiPowerID        PrimordialKosonID (at 2 primordial-split-for-ats))
+                    (ref-TS01-C2::C_ATS|Fuel GASLESS-PATRON dispenser TarabostesTenacityID  PrimordialKosonID (at 3 primordial-split-for-ats))
+                    (ref-TS01-C2::C_ATS|Fuel GASLESS-PATRON dispenser StrategonVigorID      PrimordialKosonID (at 4 primordial-split-for-ats))
+                    (ref-TS01-C2::C_ATS|Fuel GASLESS-PATRON dispenser AsAuthorityID         PrimordialKosonID (at 5 primordial-split-for-ats))
                 ;;Splits the Esoteric Kosons using the same split, and fuels the Autostake Pools
-                    (ref-TS01-C2::ATS|C_Fuel GASLESS-PATRON dispenser PlebeicStrengthID     EsothericKosonID (at 0 esoteric-split-for-ats))
-                    (ref-TS01-C2::ATS|C_Fuel GASLESS-PATRON dispenser ComatiCommandID       EsothericKosonID (at 1 esoteric-split-for-ats))
-                    (ref-TS01-C2::ATS|C_Fuel GASLESS-PATRON dispenser PileatiPowerID        EsothericKosonID (at 2 esoteric-split-for-ats))
-                    (ref-TS01-C2::ATS|C_Fuel GASLESS-PATRON dispenser TarabostesTenacityID  EsothericKosonID (at 3 esoteric-split-for-ats))
-                    (ref-TS01-C2::ATS|C_Fuel GASLESS-PATRON dispenser StrategonVigorID      EsothericKosonID (at 4 esoteric-split-for-ats))
-                    (ref-TS01-C2::ATS|C_Fuel GASLESS-PATRON dispenser AsAuthorityID         EsothericKosonID (at 5 esoteric-split-for-ats))
+                    (ref-TS01-C2::C_ATS|Fuel GASLESS-PATRON dispenser PlebeicStrengthID     EsothericKosonID (at 0 esoteric-split-for-ats))
+                    (ref-TS01-C2::C_ATS|Fuel GASLESS-PATRON dispenser ComatiCommandID       EsothericKosonID (at 1 esoteric-split-for-ats))
+                    (ref-TS01-C2::C_ATS|Fuel GASLESS-PATRON dispenser PileatiPowerID        EsothericKosonID (at 2 esoteric-split-for-ats))
+                    (ref-TS01-C2::C_ATS|Fuel GASLESS-PATRON dispenser TarabostesTenacityID  EsothericKosonID (at 3 esoteric-split-for-ats))
+                    (ref-TS01-C2::C_ATS|Fuel GASLESS-PATRON dispenser StrategonVigorID      EsothericKosonID (at 4 esoteric-split-for-ats))
+                    (ref-TS01-C2::C_ATS|Fuel GASLESS-PATRON dispenser AsAuthorityID         EsothericKosonID (at 5 esoteric-split-for-ats))
                 )
             )
         )
@@ -432,11 +432,11 @@
                     (dispenser:string DSP1|SC_NAME)
                 )
                 ;;Mints Primordial Koson and Esoteric Koson Amounts
-                (ref-TS01-C1::DPTF|C_Mint GASLESS-PATRON PrimordialKosonID dispenser (at 0 daily) false)
-                (ref-TS01-C1::DPTF|C_Mint GASLESS-PATRON EsothericKosonID dispenser (at 1 daily) false)
+                (ref-TS01-C1::C_DPTF|Mint GASLESS-PATRON PrimordialKosonID dispenser (at 0 daily) false)
+                (ref-TS01-C1::C_DPTF|Mint GASLESS-PATRON EsothericKosonID dispenser (at 1 daily) false)
                 ;;Moves Primordial Kosons: 10% To Standard-Treasury, 20% to Smart-Treasury, 40% to Custodians(Validators)
-                (ref-TS01-C1::DPTF|C_BulkTransfer GASLESS-PATRON PrimordialKosonID dispenser [standard-treasury validators] [ps10 ps40])
-                (ref-TS01-C1::DPTF|C_Transfer GASLESS-PATRON PrimordialKosonID dispenser smart-treasury ps20 true)
+                (ref-TS01-C1::C_DPTF|BulkTransfer GASLESS-PATRON PrimordialKosonID dispenser [standard-treasury validators] [ps10 ps40])
+                (ref-TS01-C1::C_DPTF|Transfer GASLESS-PATRON PrimordialKosonID dispenser smart-treasury ps20 true)
                 
             )
         )
@@ -466,12 +466,12 @@
                     (primordial-split-for-ats:[decimal] (UC_KosonicAutostakeSplit daily-primordial-left op0))
                 )
                 ;;Fuel the 6 ATS Pools, using Primordial Kosons
-                (ref-TS01-C2::ATS|C_Fuel GASLESS-PATRON dispenser PlebeicStrengthID     PrimordialKosonID (at 0 primordial-split-for-ats))
-                (ref-TS01-C2::ATS|C_Fuel GASLESS-PATRON dispenser ComatiCommandID       PrimordialKosonID (at 1 primordial-split-for-ats))
-                (ref-TS01-C2::ATS|C_Fuel GASLESS-PATRON dispenser PileatiPowerID        PrimordialKosonID (at 2 primordial-split-for-ats))
-                (ref-TS01-C2::ATS|C_Fuel GASLESS-PATRON dispenser TarabostesTenacityID  PrimordialKosonID (at 3 primordial-split-for-ats))
-                (ref-TS01-C2::ATS|C_Fuel GASLESS-PATRON dispenser StrategonVigorID      PrimordialKosonID (at 4 primordial-split-for-ats))
-                (ref-TS01-C2::ATS|C_Fuel GASLESS-PATRON dispenser AsAuthorityID         PrimordialKosonID (at 5 primordial-split-for-ats))
+                (ref-TS01-C2::C_ATS|Fuel GASLESS-PATRON dispenser PlebeicStrengthID     PrimordialKosonID (at 0 primordial-split-for-ats))
+                (ref-TS01-C2::C_ATS|Fuel GASLESS-PATRON dispenser ComatiCommandID       PrimordialKosonID (at 1 primordial-split-for-ats))
+                (ref-TS01-C2::C_ATS|Fuel GASLESS-PATRON dispenser PileatiPowerID        PrimordialKosonID (at 2 primordial-split-for-ats))
+                (ref-TS01-C2::C_ATS|Fuel GASLESS-PATRON dispenser TarabostesTenacityID  PrimordialKosonID (at 3 primordial-split-for-ats))
+                (ref-TS01-C2::C_ATS|Fuel GASLESS-PATRON dispenser StrategonVigorID      PrimordialKosonID (at 4 primordial-split-for-ats))
+                (ref-TS01-C2::C_ATS|Fuel GASLESS-PATRON dispenser AsAuthorityID         PrimordialKosonID (at 5 primordial-split-for-ats))
             )
         )
     )
@@ -500,12 +500,12 @@
                     (esoteric-split-for-ats:[decimal] (UC_KosonicAutostakeSplit daily-esoteric op1))
                 )
                 ;;Fuel the 6 ATS Pools, using Esoteric Kosons
-                (ref-TS01-C2::ATS|C_Fuel GASLESS-PATRON dispenser PlebeicStrengthID     EsothericKosonID (at 0 esoteric-split-for-ats))
-                (ref-TS01-C2::ATS|C_Fuel GASLESS-PATRON dispenser ComatiCommandID       EsothericKosonID (at 1 esoteric-split-for-ats))
-                (ref-TS01-C2::ATS|C_Fuel GASLESS-PATRON dispenser PileatiPowerID        EsothericKosonID (at 2 esoteric-split-for-ats))
-                (ref-TS01-C2::ATS|C_Fuel GASLESS-PATRON dispenser TarabostesTenacityID  EsothericKosonID (at 3 esoteric-split-for-ats))
-                (ref-TS01-C2::ATS|C_Fuel GASLESS-PATRON dispenser StrategonVigorID      EsothericKosonID (at 4 esoteric-split-for-ats))
-                (ref-TS01-C2::ATS|C_Fuel GASLESS-PATRON dispenser AsAuthorityID         EsothericKosonID (at 5 esoteric-split-for-ats))
+                (ref-TS01-C2::C_ATS|Fuel GASLESS-PATRON dispenser PlebeicStrengthID     EsothericKosonID (at 0 esoteric-split-for-ats))
+                (ref-TS01-C2::C_ATS|Fuel GASLESS-PATRON dispenser ComatiCommandID       EsothericKosonID (at 1 esoteric-split-for-ats))
+                (ref-TS01-C2::C_ATS|Fuel GASLESS-PATRON dispenser PileatiPowerID        EsothericKosonID (at 2 esoteric-split-for-ats))
+                (ref-TS01-C2::C_ATS|Fuel GASLESS-PATRON dispenser TarabostesTenacityID  EsothericKosonID (at 3 esoteric-split-for-ats))
+                (ref-TS01-C2::C_ATS|Fuel GASLESS-PATRON dispenser StrategonVigorID      EsothericKosonID (at 4 esoteric-split-for-ats))
+                (ref-TS01-C2::C_ATS|Fuel GASLESS-PATRON dispenser AsAuthorityID         EsothericKosonID (at 5 esoteric-split-for-ats))
             )
         )
     )

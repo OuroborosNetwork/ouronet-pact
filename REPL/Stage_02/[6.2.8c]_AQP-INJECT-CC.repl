@@ -4,7 +4,7 @@
 ;; Legend: <(...)>  live call echo   ·   <<TX-INJECT-CC*>>  assertion tag.
 ;; Source: 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04_FVT.pact (CCp_InjectFixChunk +
 ;;         CC_InjectFinalize + FVT|C>INJECT-FIX + INJECT-FIX-CHUNK-MAX), 3_Talos/
-;;         04_TS02-C3.pact (AQP-FVT|CCp_InjectFixChunk / AQP-FVT|CC_InjectFinalize).
+;;         04_TS02-C3.pact (CCp_AQP-FVT|InjectFixChunk / CC_AQP-FVT|InjectFinalize).
 ;; REPL tests: deb-staleness-inject-cc.repl.
 ;;
 ;; WHAT THIS PROVES — the paginated (defun+gate) twin of the fixed 2-step MTX|2|C_Inject
@@ -51,7 +51,7 @@
         ]
     )
     ;; drop ANHD's EliteAuryn to ~1% → live Elite-DEB falls a tier ⇒ his treasury scores go stale
-    (ref-TS01-C1::DPTF|C_Transfer anhd ea-id anhd emma (floor (* ea-bal 0.99) 4) false)
+    (ref-TS01-C1::C_DPTF|Transfer anhd ea-id anhd emma (floor (* ea-bal 0.99) 4) false)
     (map print
         [
             (format "<(INJECT-CC01 post-move: elite-deb {} -> {} · stale present users = {})>" [deb-pre (ref-DALOS::UR_Elite-DEB anhd) (length (ref-FVT::URH_FvtStalePresentUsers fvt-id))])
@@ -93,7 +93,7 @@
             ;; savepoint where the enforce's URH_ select is itself disallowed, so the call fails with the DB read-only
             ;; error instead. Either way finalize cannot proceed while stale; the assertion above confirms >0 stale.)
             (expect-failure "<<TX-INJECT-CC02>> CC_InjectFinalize REFUSES while stale stakers remain"
-                (ref-TS02-C3::AQP-FVT|CC_InjectFinalize anhd fvt-id auryn-id 10.0))
+                (ref-TS02-C3::CC_AQP-FVT|InjectFinalize anhd fvt-id auryn-id 10.0))
         ]
     )
 )
@@ -121,8 +121,8 @@
         (bunnies-pool:string (ref-SCR::UR_SCR|ScoreAqpoolLink bunnies-score))
     )
     ;; chunk=100 covers the (single-staker) set; the stale set shrinks to empty
-    (print (format "<(INJECT-CC03 AQP-FVT|CCp_InjectFixChunk chunk=100)> => \"{}\""
-        [(ref-TS02-C3::AQP-FVT|CCp_InjectFixChunk anhd fvt-id auryn-id 100)]))
+    (print (format "<(INJECT-CC03 CCp_AQP-FVT|InjectFixChunk chunk=100)> => \"{}\""
+        [(ref-TS02-C3::CCp_AQP-FVT|InjectFixChunk anhd fvt-id auryn-id 100)]))
     (map print
         [
             (format "<(INJECT-CC03 post-fix: stale-count)> => {}" [(length (ref-FVT::URH_FvtStalePresentUsers fvt-id))])
@@ -154,8 +154,8 @@
         (g-pre:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id auryn-id))
     )
     (expect "<<TX-INJECT-CC04>> pre: zero stale (finalize may proceed)" 0 (length (ref-FVT::URH_FvtStalePresentUsers fvt-id)))
-    (print (format "<(INJECT-CC04 AQP-FVT|CC_InjectFinalize)> => \"{}\""
-        [(ref-TS02-C3::AQP-FVT|CC_InjectFinalize anhd fvt-id auryn-id inject-amt)]))
+    (print (format "<(INJECT-CC04 CC_AQP-FVT|InjectFinalize)> => \"{}\""
+        [(ref-TS02-C3::CC_AQP-FVT|InjectFinalize anhd fvt-id auryn-id inject-amt)]))
     (let
         (
             (g-post:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id auryn-id))

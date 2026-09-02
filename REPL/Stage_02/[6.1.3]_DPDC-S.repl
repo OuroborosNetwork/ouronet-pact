@@ -81,10 +81,10 @@
     )
     (map print
         [
-            (format "<(TS02-C1.DPSF|C_Issue TestSetsSFT/TSFS)> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_Issue owner owner owner "TestSetsSFT" "TSFS" true true true true true true true true)])
-            (format "<(TS02-C2.DPNF|C_Issue TestSetsNFT/TSFN)> => \"{}\""
-                [(ref-TS02-C2::DPNF|C_Issue owner owner owner "TestSetsNFT" "TSFN" true true true true true true true true)])
+            (format "<(TS02-C1.C_DPSF|Issue TestSetsSFT/TSFS)> => \"{}\""
+                [(ref-TS02-C1::C_DPSF|Issue owner owner owner "TestSetsSFT" "TSFS" true true true true true true true true)])
+            (format "<(TS02-C2.C_DPNF|Issue TestSetsNFT/TSFN)> => \"{}\""
+                [(ref-TS02-C2::C_DPNF|Issue owner owner owner "TestSetsNFT" "TSFN" true true true true true true true true)])
         ]
     )
     (let
@@ -100,10 +100,10 @@
         )
         (map print
             [
-                (format "<(TS02-C1.DPSF|C_Create 10 SFT nonces)> => \"{}\""
-                    [(ref-TS02-C1::DPSF|C_Create owner sft-id (make-list 10 1000) (make-list 10 nd))])
-                (format "<(TS02-C2.DPNF|C_Create 4 NFT nonces)> => \"{}\""
-                    [(ref-TS02-C2::DPNF|C_Create owner nft-id (make-list 4 nd))])
+                (format "<(TS02-C1.C_DPSF|Create 10 SFT nonces)> => \"{}\""
+                    [(ref-TS02-C1::C_DPSF|Create owner sft-id (make-list 10 1000) (make-list 10 nd))])
+                (format "<(TS02-C2.C_DPNF|Create 4 NFT nonces)> => \"{}\""
+                    [(ref-TS02-C2::C_DPNF|Create owner nft-id (make-list 4 nd))])
             ]
         )
         (map print
@@ -159,20 +159,20 @@
     (map print
         [
             ;;SC1: Primordial, positions = nonce 1, nonce 2 -> nonce-of-set = 11
-            (format "<(TS02-C1.DPSF|C_DefinePrimordialSet SC1: nonce1+nonce2)> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_DefinePrimordialSet owner sft-id "SC1-Primordial" 1.0
+            (format "<(TS02-C1.C_DPSF|DefinePrimordialSet SC1: nonce1+nonce2)> => \"{}\""
+                [(ref-TS02-C1::C_DPSF|DefinePrimordialSet owner sft-id "SC1-Primordial" 1.0
                     [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1]) (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [2])] nd)])
             ;;SC2: Composite, position = set-class 1 -> nonce-of-set = 12
-            (format "<(TS02-C1.DPSF|C_DefineCompositeSet SC2: set-class 1)> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_DefineCompositeSet owner sft-id "SC2-Composite" 1.0
+            (format "<(TS02-C1.C_DPSF|DefineCompositeSet SC2: set-class 1)> => \"{}\""
+                [(ref-TS02-C1::C_DPSF|DefineCompositeSet owner sft-id "SC2-Composite" 1.0
                     [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)] nd)])
             ;;SC3: Hybrid, primordial position = nonce 3, composite position = set-class 1 -> nonce-of-set = 13
-            (format "<(TS02-C1.DPSF|C_DefineHybridSet SC3: nonce3 + set-class 1)> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_DefineHybridSet owner sft-id "SC3-Hybrid" 1.0
+            (format "<(TS02-C1.C_DPSF|DefineHybridSet SC3: nonce3 + set-class 1)> => \"{}\""
+                [(ref-TS02-C1::C_DPSF|DefineHybridSet owner sft-id "SC3-Hybrid" 1.0
                     [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [3])] [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)] nd)])
             ;;NFT SC1: Primordial, position1 = choice of [1 2], position2 = choice of [3 4]
-            (format "<(TS02-C2.DPNF|C_DefinePrimordialSet NFT-SC1: [1 2]/[3 4])> => \"{}\""
-                [(ref-TS02-C2::DPNF|C_DefinePrimordialSet owner nft-id "NFT-SC1-Primordial" 1.0
+            (format "<(TS02-C2.C_DPNF|DefinePrimordialSet NFT-SC1: [1 2]/[3 4])> => \"{}\""
+                [(ref-TS02-C2::C_DPNF|DefinePrimordialSet owner nft-id "NFT-SC1-Primordial" 1.0
                     [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1 2]) (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [3 4])] nd)])
         ]
     )
@@ -224,8 +224,8 @@
     )
     (map print
         [
-            (format "<(TS02-C1.DPSF|C_Make SC1 x5)> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_Make owner owner sft-id [1 2] 1 5)])
+            (format "<(TS02-C1.C_DPSF|Make SC1 x5)> => \"{}\""
+                [(ref-TS02-C1::C_DPSF|Make owner owner sft-id [1 2] 1 5)])
         ]
     )
     (map print
@@ -257,8 +257,8 @@
     )
     (map print
         [
-            (format "<(TS02-C1.DPSF|C_Break SC1 x5)> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_Break owner owner sft-id 11 5)])
+            (format "<(TS02-C1.C_DPSF|Break SC1 x5)> => \"{}\""
+                [(ref-TS02-C1::C_DPSF|Break owner owner sft-id 11 5)])
         ]
     )
     (map print
@@ -305,10 +305,10 @@
     )
     (map print
         [
-            (format "<(TS02-C1.DPSF|C_Make SC1 x5)> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_Make owner owner sft-id [1 2] 1 5)])
-            (format "<(TS02-C1.DPSF|C_Make SC2 x3 from SC1)> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_Make owner owner sft-id [11] 2 3)])
+            (format "<(TS02-C1.C_DPSF|Make SC1 x5)> => \"{}\""
+                [(ref-TS02-C1::C_DPSF|Make owner owner sft-id [1 2] 1 5)])
+            (format "<(TS02-C1.C_DPSF|Make SC2 x3 from SC1)> => \"{}\""
+                [(ref-TS02-C1::C_DPSF|Make owner owner sft-id [11] 2 3)])
         ]
     )
     (map print
@@ -336,8 +336,8 @@
     )
     (map print
         [
-            (format "<(TS02-C1.DPSF|C_Break SC2 x3)> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_Break owner owner sft-id 12 3)])
+            (format "<(TS02-C1.C_DPSF|Break SC2 x3)> => \"{}\""
+                [(ref-TS02-C1::C_DPSF|Break owner owner sft-id 12 3)])
         ]
     )
     (map print
@@ -354,8 +354,8 @@
     )
     (map print
         [
-            (format "<(TS02-C1.DPSF|C_Break SC1 x5)> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_Break owner owner sft-id 11 5)])
+            (format "<(TS02-C1.C_DPSF|Break SC1 x5)> => \"{}\""
+                [(ref-TS02-C1::C_DPSF|Break owner owner sft-id 11 5)])
         ]
     )
     (map print
@@ -402,11 +402,11 @@
     )
     (map print
         [
-            (format "<(TS02-C1.DPSF|C_Make SC1 x5)> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_Make owner owner sft-id [1 2] 1 5)])
+            (format "<(TS02-C1.C_DPSF|Make SC1 x5)> => \"{}\""
+                [(ref-TS02-C1::C_DPSF|Make owner owner sft-id [1 2] 1 5)])
             ;;DPDC Audit #32M regression coverage: nonces ordered [primordial (3), composite (11)]
-            (format "<(TS02-C1.DPSF|C_Make SC3 x2 [nonce3, SC1])> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_Make owner owner sft-id [3 11] 3 2)])
+            (format "<(TS02-C1.C_DPSF|Make SC3 x2 [nonce3, SC1])> => \"{}\""
+                [(ref-TS02-C1::C_DPSF|Make owner owner sft-id [3 11] 3 2)])
         ]
     )
     (map print
@@ -438,8 +438,8 @@
     )
     (map print
         [
-            (format "<(TS02-C1.DPSF|C_Break SC3 x2)> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_Break owner owner sft-id 13 2)])
+            (format "<(TS02-C1.C_DPSF|Break SC3 x2)> => \"{}\""
+                [(ref-TS02-C1::C_DPSF|Break owner owner sft-id 13 2)])
         ]
     )
     (map print
@@ -460,8 +460,8 @@
     )
     (map print
         [
-            (format "<(TS02-C1.DPSF|C_Break SC1 x5)> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_Break owner owner sft-id 11 5)])
+            (format "<(TS02-C1.C_DPSF|Break SC1 x5)> => \"{}\""
+                [(ref-TS02-C1::C_DPSF|Break owner owner sft-id 11 5)])
         ]
     )
     (map print
@@ -512,8 +512,8 @@
     )
     (map print
         [
-            (format "<(TS02-C2.DPNF|C_Make [1 3])> => \"{}\""
-                [(ref-TS02-C2::DPNF|C_Make owner owner nft-id [1 3] 1)])
+            (format "<(TS02-C2.C_DPNF|Make [1 3])> => \"{}\""
+                [(ref-TS02-C2::C_DPNF|Make owner owner nft-id [1 3] 1)])
         ]
     )
     (map print
@@ -545,8 +545,8 @@
     )
     (map print
         [
-            (format "<(TS02-C2.DPNF|C_Break nonce 5)> => \"{}\""
-                [(ref-TS02-C2::DPNF|C_Break owner owner nft-id 5)])
+            (format "<(TS02-C2.C_DPNF|Break nonce 5)> => \"{}\""
+                [(ref-TS02-C2::C_DPNF|Break owner owner nft-id 5)])
         ]
     )
     (map print
@@ -601,8 +601,8 @@
     )
     (map print
         [
-            (format "<(TS02-C1.DPSF|C_ToggleSet SC1 off)> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_ToggleSet owner sft-id 1 false)])
+            (format "<(TS02-C1.C_DPSF|ToggleSet SC1 off)> => \"{}\""
+                [(ref-TS02-C1::C_DPSF|ToggleSet owner sft-id 1 false)])
         ]
     )
     (map print
@@ -613,14 +613,14 @@
             )
             (expect-failure
                 "<<TX-SET-007>> EnableSetClassFragmentation on a deactivated set-class is rejected (DPDC Audit #30M)"
-                (ref-TS02-C1::DPSF|C_EnableSetClassFragmentation owner sft-id 1 nd)
+                (ref-TS02-C1::C_DPSF|EnableSetClassFragmentation owner sft-id 1 nd)
             )
         ]
     )
     (map print
         [
-            (format "<(TS02-C1.DPSF|C_ToggleSet SC1 on)> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_ToggleSet owner sft-id 1 true)])
+            (format "<(TS02-C1.C_DPSF|ToggleSet SC1 on)> => \"{}\""
+                [(ref-TS02-C1::C_DPSF|ToggleSet owner sft-id 1 true)])
         ]
     )
     (map print
@@ -652,8 +652,8 @@
     )
     (map print
         [
-            (format "<(TS02-C1.DPSF|C_RenameSet SC1)> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_RenameSet owner sft-id 1 "SC1-Renamed")])
+            (format "<(TS02-C1.C_DPSF|RenameSet SC1)> => \"{}\""
+                [(ref-TS02-C1::C_DPSF|RenameSet owner sft-id 1 "SC1-Renamed")])
         ]
     )
     (map print
@@ -666,8 +666,8 @@
     )
     (map print
         [
-            (format "<(TS02-C1.DPSF|C_EnableSetClassFragmentation SC1)> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_EnableSetClassFragmentation owner sft-id 1 nd)])
+            (format "<(TS02-C1.C_DPSF|EnableSetClassFragmentation SC1)> => \"{}\""
+                [(ref-TS02-C1::C_DPSF|EnableSetClassFragmentation owner sft-id 1 nd)])
         ]
     )
     (map print

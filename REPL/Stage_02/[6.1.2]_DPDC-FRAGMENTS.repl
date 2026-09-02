@@ -67,7 +67,7 @@
         ]
     )
 )
-;;==== TX-FRAG-001 · 02 · Talos DPSF|C_Issue + DPSF|C_Create + baseline reads ====
+;;==== TX-FRAG-001 · 02 · Talos C_DPSF|Issue + C_DPSF|Create + baseline reads ====
 (print "--- [TX-FRAG-001 · 02 · issue + create + baseline reads] ---")
 (let
     (
@@ -86,15 +86,15 @@
     )
     (map print
         [
-            (format "<(TS02-C1.DPSF|C_Issue TestFragCollection/TFRG)> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_Issue owner owner owner "TestFragCollection" "TFRG" true true true true true true true true)])
+            (format "<(TS02-C1.C_DPSF|Issue TestFragCollection/TFRG)> => \"{}\""
+                [(ref-TS02-C1::C_DPSF|Issue owner owner owner "TestFragCollection" "TFRG" true true true true true true true true)])
         ]
     )
     (let ((id:string "TFRG-98c486052a51"))
         (map print
             [
-                (format "<(TS02-C1.DPSF|C_Create id=TFRG nonce-1 amount=1000)> => \"{}\""
-                    [(ref-TS02-C1::DPSF|C_Create owner id [1000] [nd])])
+                (format "<(TS02-C1.C_DPSF|Create id=TFRG nonce-1 amount=1000)> => \"{}\""
+                    [(ref-TS02-C1::C_DPSF|Create owner id [1000] [nd])])
             ]
         )
         (map print
@@ -144,10 +144,10 @@
     )
     (map print
         [
-            (format "<(TS02-C1.DPSF|C_EnableNonceFragmentation nonce=1)> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_EnableNonceFragmentation owner id 1 nd)])
-            (format "<(TS02-C1.DPSF|C_TransferNonce ANHD->LUMY 100)> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_TransferNonce owner id owner lumy 1 100 false)])
+            (format "<(TS02-C1.C_DPSF|EnableNonceFragmentation nonce=1)> => \"{}\""
+                [(ref-TS02-C1::C_DPSF|EnableNonceFragmentation owner id 1 nd)])
+            (format "<(TS02-C1.C_DPSF|TransferNonce ANHD->LUMY 100)> => \"{}\""
+                [(ref-TS02-C1::C_DPSF|TransferNonce owner id owner lumy 1 100 false)])
         ]
     )
     (map print
@@ -174,8 +174,8 @@
     )
     (map print
         [
-            (format "<(TS02-C1.DPSF|C_MakeFragments LUMY 100 native -> fragments)> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_MakeFragments lumy lumy id 1 100)])
+            (format "<(TS02-C1.C_DPSF|MakeFragments LUMY 100 native -> fragments)> => \"{}\""
+                [(ref-TS02-C1::C_DPSF|MakeFragments lumy lumy id 1 100)])
         ]
     )
     (map print
@@ -203,8 +203,8 @@
     )
     (map print
         [
-            (format "<(TS02-C1.DPSF|C_MergeFragments LUMY 100,000 fragments -> native)> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_MergeFragments lumy lumy id -1 100000)])
+            (format "<(TS02-C1.C_DPSF|MergeFragments LUMY 100,000 fragments -> native)> => \"{}\""
+                [(ref-TS02-C1::C_DPSF|MergeFragments lumy lumy id -1 100000)])
         ]
     )
     (map print
@@ -247,8 +247,8 @@
     )
     (map print
         [
-            (format "<(TS02-C1.DPSF|C_MakeFragments LUMY re-fragment 100 native)> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_MakeFragments lumy lumy id 1 100)])
+            (format "<(TS02-C1.C_DPSF|MakeFragments LUMY re-fragment 100 native)> => \"{}\""
+                [(ref-TS02-C1::C_DPSF|MakeFragments lumy lumy id 1 100)])
         ]
     )
     (map print
@@ -278,14 +278,14 @@
         [
             (expect-failure
                 "<<TX-FRAG-003>> non-owner (EMMA) repurposing LUMY's fragments to herself is rejected (CAP_Owner gate)"
-                (ref-TS02-C1::DPSF|C_RepurposeFragments emma id lumy emma [-1] [100000])
+                (ref-TS02-C1::C_DPSF|RepurposeFragments emma id lumy emma [-1] [100000])
             )
             ;;Isolation control: same call, patron=the real owner-konto (correct billing account) but the
             ;;tx is STILL only signed by EMMA's key -- proves the failure tracks the tx signer against the
             ;;owner-konto guard (CAP_Owner), not the <patron> argument used for IGNIS billing.
             (expect-failure
                 "<<TX-FRAG-003>> isolation control: patron=owner-konto but signer=EMMA is still rejected"
-                (ref-TS02-C1::DPSF|C_RepurposeFragments (ref-DPDC::UR_OwnerKonto id true) id lumy emma [-1] [100000])
+                (ref-TS02-C1::C_DPSF|RepurposeFragments (ref-DPDC::UR_OwnerKonto id true) id lumy emma [-1] [100000])
             )
         ]
     )
@@ -315,8 +315,8 @@
     )
     (map print
         [
-            (format "<(TS02-C1.DPSF|C_RepurposeFragments owner-authorized LUMY->EMMA)> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_RepurposeFragments owner id lumy emma [-1] [100000])])
+            (format "<(TS02-C1.C_DPSF|RepurposeFragments owner-authorized LUMY->EMMA)> => \"{}\""
+                [(ref-TS02-C1::C_DPSF|RepurposeFragments owner id lumy emma [-1] [100000])])
         ]
     )
     (map print

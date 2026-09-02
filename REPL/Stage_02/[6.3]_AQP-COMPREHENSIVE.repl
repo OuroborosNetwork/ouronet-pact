@@ -1,7 +1,7 @@
 ;;
 ;; REPL/Stage_02/[6.3]_AQP-COMPREHENSIVE.repl — boot FVT wiring + RPS golden paths (Steps 8–10 entities)
 ;; Requires: AQP-BOOT Steps 0–10 ([6.2.9]), sovereign executor DHCD nonces, Stage 01 DPTF balances.
-;; Exercises Talos AQP-FVT|CC_Inject / CC_Collect (new shells) on production boot FVT ids.
+;; Exercises Talos CC_AQP-FVT|Inject / CC_Collect (new shells) on production boot FVT ids.
 ;;
 (print "")
 (print "================================================================")
@@ -85,8 +85,8 @@
     )
     (enforce (> (length nonces) 0) "patron needs DHCD nonces — run sovereign executor TX 4.4")
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (print (format "<(TS02-C3.AQP-POOL|CC_StakeSemiFungibleCollectable nonce={})> => \"{}\"" [stake-nonce
-        (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable
+    (print (format "<(TS02-C3.CC_AQP-POOL|StakeSemiFungibleCollectable nonce={})> => \"{}\"" [stake-nonce
+        (ref-TS02-C3::CC_AQP-POOL|StakeSemiFungibleCollectable
             patron pool-id owner-id beneficiary-id dpsf-id [stake-nonce]
         )
     ]))
@@ -103,8 +103,8 @@
             ]
         )
     )
-    (print (format "<(TS02-C3.AQP-FVT|CC_Inject Wstoa amount={})> => \"{}\"" [inject-amount
-        (ref-TS02-C3::AQP-FVT|CC_Inject patron fvt-id wstoa-id inject-amount)
+    (print (format "<(TS02-C3.CC_AQP-FVT|Inject Wstoa amount={})> => \"{}\"" [inject-amount
+        (ref-TS02-C3::CC_AQP-FVT|Inject patron fvt-id wstoa-id inject-amount)
     ]))
     (let
         (
@@ -132,8 +132,8 @@
             (g-post:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id wstoa-id))
             (wstoa-after-inject:decimal (ref-DPTF::UR_AccountSupply wstoa-id beneficiary-id))
         )
-        (print (format "<(TS02-C3.AQP-FVT|CC_Collect Wstoa)> => \"{}\"" [
-            (ref-TS02-C3::AQP-FVT|CC_Collect patron fvt-id 1 score-id wstoa-id)
+        (print (format "<(TS02-C3.CC_AQP-FVT|Collect Wstoa)> => \"{}\"" [
+            (ref-TS02-C3::CC_AQP-FVT|Collect patron fvt-id 1 score-id wstoa-id)
         ]))
         (let
             (
@@ -196,8 +196,8 @@
                 (enforce-dhwc:bool (> (length dhwc-nonces) 0))
             )
             (enforce enforce-dhwc "patron needs DHWC nonces — sovereign executor WonderCoach mint")
-            (print (format "<(TS02-C3.AQP-POOL|CC_StakeSemiFungibleCollectable DHWC)> => \"{}\"" [
-                (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable
+            (print (format "<(TS02-C3.CC_AQP-POOL|StakeSemiFungibleCollectable DHWC)> => \"{}\"" [
+                (ref-TS02-C3::CC_AQP-POOL|StakeSemiFungibleCollectable
                     patron pool-wondercoach owner-id beneficiary-id dhwc-id [(at 0 dhwc-nonces)]
                 )
             ]))
@@ -207,8 +207,8 @@
         (print (format "SKIP C02b E|DH stake: DemiourgosShareholder deb already={}" [sh-deb]))
         (do
             (enforce (> edh-tier6-supply 0) "patron needs E|DH tier-6 — run [6.4]_AQP-EXHAUSTIVE-PREP TX-AQP-P01 first")
-            (print (format "<(TS02-C3.AQP-POOL|CC_StakeSemiFungibleCollectable E|DH tier-6)> => \"{}\"" [
-                (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable
+            (print (format "<(TS02-C3.CC_AQP-POOL|StakeSemiFungibleCollectable E|DH tier-6)> => \"{}\"" [
+                (ref-TS02-C3::CC_AQP-POOL|StakeSemiFungibleCollectable
                     patron pool-company owner-id beneficiary-id edh-id [edh-tier6-nonce]
                 )
             ]))
@@ -248,8 +248,8 @@
             (
                 (g-pre:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id auryn-id))
             )
-            (print (format "<(TS02-C3.AQP-FVT|CC_Inject Auryn {})> => \"{}\"" [inject-amount
-                (ref-TS02-C3::AQP-FVT|CC_Inject patron fvt-id auryn-id inject-amount)
+            (print (format "<(TS02-C3.CC_AQP-FVT|Inject Auryn {})> => \"{}\"" [inject-amount
+                (ref-TS02-C3::CC_AQP-FVT|Inject patron fvt-id auryn-id inject-amount)
             ]))
             (let
                 (
@@ -286,8 +286,8 @@
         (ar-before:decimal (ref-FVT::UR_FVT-RG|AvailableRewards fvt-id auryn-id))
     )
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (print (format "<(TS02-C3.AQP-FVT|CC_Inject Auryn amount={})> => \"{}\"" [inject-amount
-        (ref-TS02-C3::AQP-FVT|CC_Inject patron fvt-id auryn-id inject-amount)
+    (print (format "<(TS02-C3.CC_AQP-FVT|Inject Auryn amount={})> => \"{}\"" [inject-amount
+        (ref-TS02-C3::CC_AQP-FVT|Inject patron fvt-id auryn-id inject-amount)
     ]))
     (let
         (
@@ -343,8 +343,8 @@
             (
                 (pre-bal:decimal (ref-DPTF::UR_AccountSupply ouroboros-id patron))
             )
-            (print (format "<(TS02-C3.AQP-FVT|CC_Inject Ouroboros {})> => \"{}\"" [inject-amount
-                (ref-TS02-C3::AQP-FVT|CC_Inject patron fvt-id ouroboros-id inject-amount)
+            (print (format "<(TS02-C3.CC_AQP-FVT|Inject Ouroboros {})> => \"{}\"" [inject-amount
+                (ref-TS02-C3::CC_AQP-FVT|Inject patron fvt-id ouroboros-id inject-amount)
             ]))
             (let
                 (
@@ -357,8 +357,8 @@
                         (ref-SCR::UR_U-SCR|UserScoreDebScore patron pool-id shares-score-id)
                     ))
                 )
-                (print (format "<(TS02-C3.AQP-FVT|CC_Collect Ouroboros)> => \"{}\"" [
-                    (ref-TS02-C3::AQP-FVT|CC_Collect patron fvt-id 1 shares-score-id ouroboros-id)
+                (print (format "<(TS02-C3.CC_AQP-FVT|Collect Ouroboros)> => \"{}\"" [
+                    (ref-TS02-C3::CC_AQP-FVT|Collect patron fvt-id 1 shares-score-id ouroboros-id)
                 ]))
                 (let
                     (

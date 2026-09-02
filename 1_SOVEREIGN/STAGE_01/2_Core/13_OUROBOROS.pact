@@ -25,7 +25,7 @@
     (defun URCi_WithdrawFees:object{IgnisCollectorV1.OutputCumulator} (id:string target:string))
     (defun C_Fuel:object{IgnisCollectorV1.OutputCumulator} ())
     (defun C_Sublimate:object{IgnisCollectorV1.OutputCumulator} (client:string target:string ouro-amount:decimal))
-    ;;#23H fix: C_SublimateV2 was already live/actively-used (TS01-C2's ORBR|C_SublimateV2,
+    ;;#23H fix: C_SublimateV2 was already live/actively-used (TS01-C2's C_ORBR|SublimateV2,
     ;;TS01-C3's Firestarter path) but missing from its own interface. Cheaper alternative to
     ;;C_Sublimate (freeze+C_WipeSlim+unfreeze instead of transfer+burn) - added here, no
     ;;behavioral change, the module already implements this exact signature.
@@ -96,14 +96,14 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
+    (defun A_P|Add (policy-name:string policy-guard:guard)
         (with-capability (GOV|ORBR_ADMIN)
             (write P|T policy-name
                 {"policy" : policy-guard}
             )
         )
     )
-    (defun P|A_AddIMP (policy-guard:guard)
+    (defun A_P|AddIMP (policy-guard:guard)
         (with-capability (GOV|ORBR_ADMIN)
             (let
                 (
@@ -120,7 +120,7 @@
             )
         )
     )
-    (defun P|A_Define ()
+    (defun A_P|Define ()
         (let
             (
                 (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
@@ -134,19 +134,19 @@
                 (ref-P|LIQUID:module{OuronetPolicyV1} LIQUID)
                 (mg:guard (create-capability-guard (P|ORBR|CALLER)))
             )
-            (ref-P|DALOS::P|A_Add
+            (ref-P|DALOS::A_P|Add
                 "ORBR|RemoteDalosGov"
                 (create-capability-guard (P|DALOS|REMOTE-GOV))
             )
-            (ref-P|DALOS::P|A_AddIMP mg)
-            (ref-P|BRD::P|A_AddIMP mg)
-            (ref-P|DPTF::P|A_AddIMP mg)
-            ;(ref-P|DPOF::P|A_AddIMP mg)
-            (ref-P|ATS::P|A_AddIMP mg)
-            (ref-P|TFT::P|A_AddIMP mg)
-            (ref-P|ATSU::P|A_AddIMP mg)
-            (ref-P|VST::P|A_AddIMP mg)
-            (ref-P|LIQUID::P|A_AddIMP mg)
+            (ref-P|DALOS::A_P|AddIMP mg)
+            (ref-P|BRD::A_P|AddIMP mg)
+            (ref-P|DPTF::A_P|AddIMP mg)
+            ;(ref-P|DPOF::A_P|AddIMP mg)
+            (ref-P|ATS::A_P|AddIMP mg)
+            (ref-P|TFT::A_P|AddIMP mg)
+            (ref-P|ATSU::A_P|AddIMP mg)
+            (ref-P|VST::A_P|AddIMP mg)
+            (ref-P|LIQUID::A_P|AddIMP mg)
         )
     )
     (defun UEV_IMC ()

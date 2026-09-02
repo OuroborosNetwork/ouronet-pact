@@ -7,12 +7,12 @@
     ;;
     ;;  [2] DPDC
     ;;
-    (defun DPNF|C_UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}]))
-    (defun DPNF|C_UpgradeBranding (patron:string entity-id:string months:integer))
+    (defun C_DPNF|UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}]))
+    (defun C_DPNF|UpgradeBranding (patron:string entity-id:string months:integer))
     ;;
     ;;  [3] DPDC-C
     ;;
-    (defun DPNF|C_Create:string
+    (defun C_DPNF|Create:string
         (
             patron:string id:string
             input-nonce-data:[object{DpdcUdcV1.DPDC|NonceData}]
@@ -25,7 +25,7 @@
     ;; existing account to associate with any collection, with no ownership check. Real auto-association
     ;; (on transfer, role-toggle, Issue, set-fragmentation) always calls DPDC::XB_DeployAccountNFT
     ;; directly, module-to-module, bypassing this public entrypoint entirely.
-    (defun DPNF|C_Issue:string
+    (defun C_DPNF|Issue:string
         (
             patron:string 
             owner-account:string creator-account:string collection-name:string collection-ticker:string
@@ -36,57 +36,57 @@
     ;;
     ;;  [5] DPDC-R
     ;;
-    (defun DPNF|C_ToggleFreezeAccount (patron:string id:string account:string toggle:bool))
-    (defun DPNF|C_ToggleExemptionRole (patron:string id:string account:string toggle:bool))
-    (defun DPNF|C_ToggleBurnRole (patron:string id:string account:string toggle:bool))
-    (defun DPNF|C_ToggleUpdateRole (patron:string id:string account:string toggle:bool))
-    (defun DPNF|C_ToggleModifyCreatorRole (patron:string id:string account:string toggle:bool))
-    (defun DPNF|C_ToggleModifyRoyaltiesRole (patron:string id:string account:string toggle:bool))
-    (defun DPNF|C_ToggleTransferRole (patron:string id:string account:string toggle:bool))
-    (defun DPNF|C_MoveCreateRole (patron:string id:string new-account:string))
-    (defun DPNF|C_MoveRecreateRole (patron:string id:string new-account:string))
-    (defun DPNF|C_MoveSetUriRole (patron:string id:string new-account:string))
+    (defun C_DPNF|ToggleFreezeAccount (patron:string id:string account:string toggle:bool))
+    (defun C_DPNF|ToggleExemptionRole (patron:string id:string account:string toggle:bool))
+    (defun C_DPNF|ToggleBurnRole (patron:string id:string account:string toggle:bool))
+    (defun C_DPNF|ToggleUpdateRole (patron:string id:string account:string toggle:bool))
+    (defun C_DPNF|ToggleModifyCreatorRole (patron:string id:string account:string toggle:bool))
+    (defun C_DPNF|ToggleModifyRoyaltiesRole (patron:string id:string account:string toggle:bool))
+    (defun C_DPNF|ToggleTransferRole (patron:string id:string account:string toggle:bool))
+    (defun C_DPNF|MoveCreateRole (patron:string id:string new-account:string))
+    (defun C_DPNF|MoveRecreateRole (patron:string id:string new-account:string))
+    (defun C_DPNF|MoveSetUriRole (patron:string id:string new-account:string))
     ;;
     ;;  [6] DPDC-MNG
     ;;
-    (defun DPNF|C_Control (patron:string id:string cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool))
-    (defun DPNF|C_TogglePause (patron:string id:string toggle:bool))
+    (defun C_DPNF|Control (patron:string id:string cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool))
+    (defun C_DPNF|TogglePause (patron:string id:string toggle:bool))
         ;;
-    (defun DPNF|C_Respawn (patron:string id:string account:string nonce:integer))
-    (defun DPNF|C_Burn (patron:string id:string account:string nonce:integer))
-    (defun DPNF|C_WipeNonce (patron:string id:string account:string nonce:integer))
+    (defun C_DPNF|Respawn (patron:string id:string account:string nonce:integer))
+    (defun C_DPNF|Burn (patron:string id:string account:string nonce:integer))
+    (defun C_DPNF|WipeNonce (patron:string id:string account:string nonce:integer))
         ;;
-    (defun DPNF|C_WipeHeavy (patron:string account:string id:string))
-    (defun DPNF|C_WipePure (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV1.RemovableNonces}))
-    (defun DPNF|C_WipeClean (patron:string account:string id:string nonces:[integer]))
-    (defun DPNF|C_WipeDirty (patron:string account:string id:string nonces:[integer]))
+    (defun C_DPNF|WipeHeavy (patron:string account:string id:string))
+    (defun C_DPNF|WipePure (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV1.RemovableNonces}))
+    (defun C_DPNF|WipeClean (patron:string account:string id:string nonces:[integer]))
+    (defun C_DPNF|WipeDirty (patron:string account:string id:string nonces:[integer]))
 
     ;;
     ;;  [7] DPDC-T
     ;;
-    (defun DPNF|C_Repurpose (patron:string id:string repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer]))
-    (defun DPNF|C_TransferNonce (patron:string id:string sender:string receiver:string nonce:integer amount:integer method:bool))
-    (defun DPNF|C_TransferNonces (patron:string id:string sender:string receiver:string nonces:[integer] amounts:[integer] method:bool)) 
+    (defun C_DPNF|Repurpose (patron:string id:string repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer]))
+    (defun C_DPNF|TransferNonce (patron:string id:string sender:string receiver:string nonce:integer amount:integer method:bool))
+    (defun C_DPNF|TransferNonces (patron:string id:string sender:string receiver:string nonces:[integer] amounts:[integer] method:bool)) 
     ;;
     ;;  [8] DPDC-S
     ;;
-    (defun DPNF|C_Make (patron:string account:string id:string nonces:[integer] set-class:integer))
-    (defun DPNF|C_Break (patron:string account:string id:string nonce:integer))
-    (defun DPNF|C_DefinePrimordialSet 
+    (defun C_DPNF|Make (patron:string account:string id:string nonces:[integer] set-class:integer))
+    (defun C_DPNF|Break (patron:string account:string id:string nonce:integer))
+    (defun C_DPNF|DefinePrimordialSet 
         (
             patron:string id:string set-name:string score-multiplier:decimal
             set-definition:[object{DpdcUdcV1.DPDC|AllowedNonceForSetPosition}]
             ind:object{DpdcUdcV1.DPDC|NonceData}
         )
     )
-    (defun DPNF|C_DefineCompositeSet
+    (defun C_DPNF|DefineCompositeSet
         (
             patron:string id:string set-name:string score-multiplier:decimal
             set-definition:[object{DpdcUdcV1.DPDC|AllowedClassForSetPosition}]
             ind:object{DpdcUdcV1.DPDC|NonceData}
         )
     )
-    (defun DPNF|C_DefineHybridSet
+    (defun C_DPNF|DefineHybridSet
         (
             patron:string id:string set-name:string score-multiplier:decimal
             primordial-sd:[object{DpdcUdcV1.DPDC|AllowedNonceForSetPosition}]
@@ -94,52 +94,52 @@
             ind:object{DpdcUdcV1.DPDC|NonceData}
         )
     )
-    (defun DPNF|C_EnableSetClassFragmentation
+    (defun C_DPNF|EnableSetClassFragmentation
         (
             patron:string id:string set-class:integer
             fragmentation-ind:object{DpdcUdcV1.DPDC|NonceData}
         )
     )
-    (defun DPNF|C_ToggleSet (patron:string id:string set-class:integer toggle:bool))
-    (defun DPNF|C_RenameSet (patron:string id:string set-class:integer new-name:string))
+    (defun C_DPNF|ToggleSet (patron:string id:string set-class:integer toggle:bool))
+    (defun C_DPNF|RenameSet (patron:string id:string set-class:integer new-name:string))
     ;; DPNF|C_UpdateSetMultiplier removed — DPDC Audit #15H: score-multiplier is immutable after Define.
     ;;
-    (defun DPNF|C_UpdateSetNonce                (patron:string id:string account:string set-class:integer nos:bool new-nonce-data:object{DpdcUdcV1.DPDC|NonceData}))
-    (defun DPNF|C_UpdateSetNonces               (patron:string id:string account:string set-classes:[integer] nos:bool new-nonces-data:[object{DpdcUdcV1.DPDC|NonceData}]))
-    (defun DPNF|C_UpdateSetNonceRoyalty         (patron:string id:string account:string set-class:integer nos:bool royalty-value:decimal))
-    (defun DPNF|C_UpdateSetNonceIgnisRoyalty    (patron:string id:string account:string set-class:integer nos:bool royalty-value:decimal))
-    (defun DPNF|C_UpdateSetNonceName            (patron:string id:string account:string set-class:integer nos:bool name:string))
-    (defun DPNF|C_UpdateSetNonceDescription     (patron:string id:string account:string set-class:integer nos:bool description:string))
-    (defun DPNF|C_UpdateSetNonceScore           (patron:string id:string account:string set-class:integer nos:bool score:decimal))
-    (defun DPNF|C_RemoveSetNonceScore           (patron:string id:string account:string set-class:integer nos:bool))
-    (defun DPNF|C_UpdateSetNonceMetaData        (patron:string id:string account:string set-class:integer nos:bool meta-data:object))
-    (defun DPNF|C_UpdateSetNonceURI             (patron:string id:string account:string set-class:integer nos:bool ay:object{DpdcUdcV1.URI|Type} u1:object{DpdcUdcV1.URI|Data} u2:object{DpdcUdcV1.URI|Data} u3:object{DpdcUdcV1.URI|Data}))
+    (defun C_DPNF|UpdateSetNonce                (patron:string id:string account:string set-class:integer nos:bool new-nonce-data:object{DpdcUdcV1.DPDC|NonceData}))
+    (defun C_DPNF|UpdateSetNonces               (patron:string id:string account:string set-classes:[integer] nos:bool new-nonces-data:[object{DpdcUdcV1.DPDC|NonceData}]))
+    (defun C_DPNF|UpdateSetNonceRoyalty         (patron:string id:string account:string set-class:integer nos:bool royalty-value:decimal))
+    (defun C_DPNF|UpdateSetNonceIgnisRoyalty    (patron:string id:string account:string set-class:integer nos:bool royalty-value:decimal))
+    (defun C_DPNF|UpdateSetNonceName            (patron:string id:string account:string set-class:integer nos:bool name:string))
+    (defun C_DPNF|UpdateSetNonceDescription     (patron:string id:string account:string set-class:integer nos:bool description:string))
+    (defun C_DPNF|UpdateSetNonceScore           (patron:string id:string account:string set-class:integer nos:bool score:decimal))
+    (defun C_DPNF|RemoveSetNonceScore           (patron:string id:string account:string set-class:integer nos:bool))
+    (defun C_DPNF|UpdateSetNonceMetaData        (patron:string id:string account:string set-class:integer nos:bool meta-data:object))
+    (defun C_DPNF|UpdateSetNonceURI             (patron:string id:string account:string set-class:integer nos:bool ay:object{DpdcUdcV1.URI|Type} u1:object{DpdcUdcV1.URI|Data} u2:object{DpdcUdcV1.URI|Data} u3:object{DpdcUdcV1.URI|Data}))
     ;;
     ;;  [9] DPDC-F
     ;;
-    (defun DPNF|C_RepurposeFragments (patron:string id:string repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer]))
-    (defun DPNF|C_MakeFragments (patron:string account:string id:string nonce:integer amount:integer))
-    (defun DPNF|C_MergeFragments (patron:string account:string id:string nonce:integer amount:integer))
-    (defun DPNF|C_EnableNonceFragmentation (patron:string id:string nonce:integer fragmentation-ind:object{DpdcUdcV1.DPDC|NonceData}))
+    (defun C_DPNF|RepurposeFragments (patron:string id:string repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer]))
+    (defun C_DPNF|MakeFragments (patron:string account:string id:string nonce:integer amount:integer))
+    (defun C_DPNF|MergeFragments (patron:string account:string id:string nonce:integer amount:integer))
+    (defun C_DPNF|EnableNonceFragmentation (patron:string id:string nonce:integer fragmentation-ind:object{DpdcUdcV1.DPDC|NonceData}))
     ;;
     ;;  [10] DPDC-N
     ;;
-    (defun DPNF|C_UpdateNonce               (patron:string id:string account:string nonce:integer nos:bool new-nonce-data:object{DpdcUdcV1.DPDC|NonceData}))
-    (defun DPNF|C_UpdateNonces              (patron:string id:string account:string nonces:[integer] nos:bool new-nonces-data:[object{DpdcUdcV1.DPDC|NonceData}]))
-    (defun DPNF|C_UpdateNonceRoyalty        (patron:string id:string account:string nonce:integer nos:bool royalty-value:decimal))
-    (defun DPNF|C_UpdateNonceIgnisRoyalty   (patron:string id:string account:string nonce:integer nos:bool royalty-value:decimal))
-    (defun DPNF|C_UpdateNonceName           (patron:string id:string account:string nonce:integer nos:bool name:string))
-    (defun DPNF|C_UpdateNonceDescription    (patron:string id:string account:string nonce:integer nos:bool description:string))
-    (defun DPNF|C_UpdateNonceScore          (patron:string id:string account:string nonce:integer nos:bool score:decimal))
-    (defun DPNF|C_RemoveNonceScore          (patron:string id:string account:string nonce:integer nos:bool))
-    (defun DPNF|C_UpdateNonceMetaData       (patron:string id:string account:string nonce:integer nos:bool meta-data:object))
-    (defun DPNF|C_UpdateNonceURI            (patron:string id:string account:string nonce:integer nos:bool ay:object{DpdcUdcV1.URI|Type} u1:object{DpdcUdcV1.URI|Data} u2:object{DpdcUdcV1.URI|Data} u3:object{DpdcUdcV1.URI|Data}))
+    (defun C_DPNF|UpdateNonce               (patron:string id:string account:string nonce:integer nos:bool new-nonce-data:object{DpdcUdcV1.DPDC|NonceData}))
+    (defun C_DPNF|UpdateNonces              (patron:string id:string account:string nonces:[integer] nos:bool new-nonces-data:[object{DpdcUdcV1.DPDC|NonceData}]))
+    (defun C_DPNF|UpdateNonceRoyalty        (patron:string id:string account:string nonce:integer nos:bool royalty-value:decimal))
+    (defun C_DPNF|UpdateNonceIgnisRoyalty   (patron:string id:string account:string nonce:integer nos:bool royalty-value:decimal))
+    (defun C_DPNF|UpdateNonceName           (patron:string id:string account:string nonce:integer nos:bool name:string))
+    (defun C_DPNF|UpdateNonceDescription    (patron:string id:string account:string nonce:integer nos:bool description:string))
+    (defun C_DPNF|UpdateNonceScore          (patron:string id:string account:string nonce:integer nos:bool score:decimal))
+    (defun C_DPNF|RemoveNonceScore          (patron:string id:string account:string nonce:integer nos:bool))
+    (defun C_DPNF|UpdateNonceMetaData       (patron:string id:string account:string nonce:integer nos:bool meta-data:object))
+    (defun C_DPNF|UpdateNonceURI            (patron:string id:string account:string nonce:integer nos:bool ay:object{DpdcUdcV1.URI|Type} u1:object{DpdcUdcV1.URI|Data} u2:object{DpdcUdcV1.URI|Data} u3:object{DpdcUdcV1.URI|Data}))
     ;;
 )
 ;;
 (interface TalosStageTwo_ClientTwoV2
     @doc "Additive Talos Stage Two Client Two surface — opt-in per consumer; does not replace TalosStageTwo_ClientTwoV1."
-    (defun DPNF|C_BulkTransfer
+    (defun C_DPNF|BulkTransfer
         (patron:string id:string nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
     )
 )
@@ -191,14 +191,14 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
+    (defun A_P|Add (policy-name:string policy-guard:guard)
         (with-capability (GOV|TS02-C2_ADMIN)
             (write P|T policy-name
                 {"policy" : policy-guard}
             )
         )
     )
-    (defun P|A_AddIMP (policy-guard:guard)
+    (defun A_P|AddIMP (policy-guard:guard)
         (with-capability (GOV|TS02-C2_ADMIN)
             (let
                 (
@@ -215,7 +215,7 @@
             )
         )
     )
-    (defun P|A_Define ()
+    (defun A_P|Define ()
         (let
             (
                 (ref-P|TS01-A:module{TalosStageOne_AdminV1} TS01-A)
@@ -230,16 +230,16 @@
                 (ref-P|DPDC-S:module{OuronetPolicyV1} DPDC-S)
                 (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
             )
-            (ref-P|TS01-A::P|A_AddIMP mg)
-            (ref-P|DPDC::P|A_AddIMP mg)
-            (ref-P|DPDC-C::P|A_AddIMP mg)
-            (ref-P|DPDC-I::P|A_AddIMP mg)
-            (ref-P|DPDC-R::P|A_AddIMP mg)
-            (ref-P|DPDC-MNG::P|A_AddIMP mg)
-            (ref-P|DPDC-T::P|A_AddIMP mg)
-            (ref-P|DPDC-F::P|A_AddIMP mg)
-            (ref-P|DPDC-S::P|A_AddIMP mg)
-            (ref-P|DPDC-N::P|A_AddIMP mg)
+            (ref-P|TS01-A::A_P|AddIMP mg)
+            (ref-P|DPDC::A_P|AddIMP mg)
+            (ref-P|DPDC-C::A_P|AddIMP mg)
+            (ref-P|DPDC-I::A_P|AddIMP mg)
+            (ref-P|DPDC-R::A_P|AddIMP mg)
+            (ref-P|DPDC-MNG::A_P|AddIMP mg)
+            (ref-P|DPDC-T::A_P|AddIMP mg)
+            (ref-P|DPDC-F::A_P|AddIMP mg)
+            (ref-P|DPDC-S::A_P|AddIMP mg)
+            (ref-P|DPDC-N::A_P|AddIMP mg)
         )
     )
     (defun UEV_IMC ()
@@ -289,7 +289,7 @@
     ;;
     ;;  [2] DPDC
     ;;
-    (defun DPNF|C_UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}])
+    (defun C_DPNF|UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}])
         @doc "Updates <pending-branding> for DPNF Token <entity-id> costing 500 IGNIS"
         (with-capability (P|TS)
             (let
@@ -303,7 +303,7 @@
             )
         )
     )
-    (defun DPNF|C_UpgradeBranding (patron:string entity-id:string months:integer)
+    (defun C_DPNF|UpgradeBranding (patron:string entity-id:string months:integer)
         @doc "Upgrades Branding for DPNF Token, making it a premium BrandingV1. \
             \ Also sets pending-branding to live branding if its branding is not live yet"
         (with-capability (P|TS)
@@ -320,7 +320,7 @@
     ;;
     ;;  [3] DPDC-C
     ;;
-    (defun DPNF|C_Create:string
+    (defun C_DPNF|Create:string
         (
             patron:string id:string
             input-nonce-data:[object{DpdcUdcV1.DPDC|NonceData}]
@@ -355,7 +355,7 @@
     ;;  [4] DPDC-I
     ;;
     ;; DPNF|C_DeployAccount removed — DPDC Audit #35M: see interface-side removal note above.
-    (defun DPNF|C_Issue:string
+    (defun C_DPNF|Issue:string
         (
             patron:string 
             owner-account:string creator-account:string collection-name:string collection-ticker:string
@@ -389,7 +389,7 @@
     ;;
     ;;  [5] DPDC-R
     ;;
-    (defun DPNF|C_ToggleFreezeAccount (patron:string id:string account:string toggle:bool)
+    (defun C_DPNF|ToggleFreezeAccount (patron:string id:string account:string toggle:bool)
         @doc "Freezes a given account for a given DPNF Token. Frozen Accounts can no longer send or receive that DPNF Token"
         (with-capability (P|TS)
             (let
@@ -403,7 +403,7 @@
             )
         )
     )
-    (defun DPNF|C_ToggleExemptionRole (patron:string id:string account:string toggle:bool)
+    (defun C_DPNF|ToggleExemptionRole (patron:string id:string account:string toggle:bool)
         @doc "Toggles exemption Role for a given DPNF on a given Smart Ouronet Account (Only Smart Ouronet Accounts can accept this role) \
             \ When sending to or receiving from such Accounts, the flat IGNIS Royalty fee must not be paid."
         (with-capability (P|TS)
@@ -418,7 +418,7 @@
             )
         )
     )
-    (defun DPNF|C_ToggleBurnRole (patron:string id:string account:string toggle:bool)
+    (defun C_DPNF|ToggleBurnRole (patron:string id:string account:string toggle:bool)
         @doc "Toggles burn Role for a given DPNF on any Ouronet Account. \
             \ Such Accounts can then burn the DPNF"
         (with-capability (P|TS)
@@ -433,7 +433,7 @@
             )
         )
     )
-    (defun DPNF|C_ToggleUpdateRole (patron:string id:string account:string toggle:bool)
+    (defun C_DPNF|ToggleUpdateRole (patron:string id:string account:string toggle:bool)
         @doc "Toggles update Role for a given DPNF on any Ouronet Account. \
             \ Such Accounts can then update (modify) the Metadata on any DPNF nonce"
         (with-capability (P|TS)
@@ -448,7 +448,7 @@
             )
         )
     )
-    (defun DPNF|C_ToggleModifyCreatorRole (patron:string id:string account:string toggle:bool)
+    (defun C_DPNF|ToggleModifyCreatorRole (patron:string id:string account:string toggle:bool)
         @doc "Toggles Modify Creator Role for a given DPNF on any Ouronet Account. \
             \ Such Accounts can proceed to modify the Creator of the DPNF Collection"
         (with-capability (P|TS)
@@ -463,7 +463,7 @@
             )
         )
     )
-    (defun DPNF|C_ToggleModifyRoyaltiesRole (patron:string id:string account:string toggle:bool)
+    (defun C_DPNF|ToggleModifyRoyaltiesRole (patron:string id:string account:string toggle:bool)
         @doc "Toggles Modify Royalties Role for a given DPNF on any Ouronet Account. \
             \ Such Accounts can proceed to modify the Permille Royalty of any nonce in the  DPNF Collection"
         (with-capability (P|TS)
@@ -478,7 +478,7 @@
             )
         )
     )
-    (defun DPNF|C_ToggleTransferRole (patron:string id:string account:string toggle:bool)
+    (defun C_DPNF|ToggleTransferRole (patron:string id:string account:string toggle:bool)
         @doc "Toggles Transfer Role for a given DPNF on any Ouronet Account. \
             \ Transfers for any Nonce in the DPNF Collection are then restricted only to and from these accounts"
         (with-capability (P|TS)
@@ -493,7 +493,7 @@
             )
         )
     )
-    (defun DPNF|C_MoveCreateRole (patron:string id:string new-account:string)
+    (defun C_DPNF|MoveCreateRole (patron:string id:string new-account:string)
         @doc "Moves the Create Role to another Ouronet Account. A single Account may have this Role \
             \ This is the only account that can issue new NFTs in the Collection"
         (with-capability (P|TS)
@@ -508,7 +508,7 @@
             )
         )
     )
-    (defun DPNF|C_MoveRecreateRole (patron:string id:string new-account:string)
+    (defun C_DPNF|MoveRecreateRole (patron:string id:string new-account:string)
         @doc "Moves the Recreate Role to another Ouronet Account. A single Account may have this Role \
             \ This is the only account that can recreate any existing NFT in the Collection \
             \ Recreation reffers to a complete update (modification) of all NFT properties of a given nonce"
@@ -524,7 +524,7 @@
             )
         )
     )
-    (defun DPNF|C_MoveSetUriRole (patron:string id:string new-account:string)
+    (defun C_DPNF|MoveSetUriRole (patron:string id:string new-account:string)
         @doc "Moves the Set URI Role to another Ouronet Account. A single Account may have this Role \
             \ This is the only account that can modify the URIs of any nonce in the NFT Collection"
         (with-capability (P|TS)
@@ -542,7 +542,7 @@
     ;;
     ;;  [6] DPDC-MNG
     ;;
-    (defun DPNF|C_Control (patron:string id:string cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool)
+    (defun C_DPNF|Control (patron:string id:string cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool)
         @doc "Controls DPNF Properties"
         (with-capability (P|TS)
             (let
@@ -556,7 +556,7 @@
             )
         )
     )
-    (defun DPNF|C_TogglePause (patron:string id:string toggle:bool)
+    (defun C_DPNF|TogglePause (patron:string id:string toggle:bool)
         @doc "Pauses a DPNF Collection. Paused Collections can no longer be transfered"
         (with-capability (P|TS)
             (let
@@ -570,7 +570,7 @@
             )
         )
     )
-    (defun DPNF|C_Respawn (patron:string id:string account:string nonce:integer)
+    (defun C_DPNF|Respawn (patron:string id:string account:string nonce:integer)
         @doc "Respawns NFT <id> <nonce> on <account>"
         (with-capability (P|TS)
             (let
@@ -585,7 +585,7 @@
             )
         )
     )
-    (defun DPNF|C_Burn (patron:string id:string account:string nonce:integer)
+    (defun C_DPNF|Burn (patron:string id:string account:string nonce:integer)
         @doc "Burns NFT <id> <nonce> on <account>"
         (with-capability (P|TS)
             (let
@@ -600,7 +600,7 @@
             )
         )
     )
-    (defun DPNF|C_WipeNonce (patron:string id:string account:string nonce:integer)
+    (defun C_DPNF|WipeNonce (patron:string id:string account:string nonce:integer)
         @doc "Wipes NFT <id> <nonce> on <account>"
         (with-capability (P|TS)
             (let
@@ -615,7 +615,7 @@
             )
         )
     )
-    (defun DPNF|C_WipeHeavy (patron:string account:string id:string)
+    (defun C_DPNF|WipeHeavy (patron:string account:string id:string)
         (with-capability (P|TS)
             (let
                 (
@@ -635,7 +635,7 @@
             )
         )
     )
-    (defun DPNF|C_WipePure (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV1.RemovableNonces})
+    (defun C_DPNF|WipePure (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV1.RemovableNonces})
         (with-capability (P|TS)
             (let
                 (
@@ -655,7 +655,7 @@
             )
         )
     )
-    (defun DPNF|C_WipeClean (patron:string account:string id:string nonces:[integer])
+    (defun C_DPNF|WipeClean (patron:string account:string id:string nonces:[integer])
         (with-capability (P|TS)
             (let
                 (
@@ -675,7 +675,7 @@
             )
         )
     )
-    (defun DPNF|C_WipeDirty (patron:string account:string id:string nonces:[integer])
+    (defun C_DPNF|WipeDirty (patron:string account:string id:string nonces:[integer])
         (with-capability (P|TS)
             (let
                 (
@@ -698,7 +698,7 @@
     ;;
     ;;  [7] DPDC-T
     ;;
-    (defun DPNF|C_Repurpose (patron:string id:string repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer])
+    (defun C_DPNF|Repurpose (patron:string id:string repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer])
         @doc "Repurpose NFT(s) from <repurpose-from> to <repurpose-to>. Requires <id> ownerhsip"
         (with-capability (P|TS)
             (let
@@ -716,7 +716,7 @@
             )
         )
     )
-    (defun DPNF|C_TransferNonce (patron:string id:string sender:string receiver:string nonce:integer amount:integer method:bool)
+    (defun C_DPNF|TransferNonce (patron:string id:string sender:string receiver:string nonce:integer amount:integer method:bool)
         @doc "Transfer an NFT <nonce> of <amount> from <sender> to <receiver> using <method>"
         (with-capability (P|TS)
             (let
@@ -746,7 +746,7 @@
             )
         )
     )
-    (defun DPNF|C_TransferNonces (patron:string id:string sender:string receiver:string nonces:[integer] amounts:[integer] method:bool)
+    (defun C_DPNF|TransferNonces (patron:string id:string sender:string receiver:string nonces:[integer] amounts:[integer] method:bool)
         @doc "Transfer an NFT <nonce> of <amount> from <sender> to <receiver> using <method>"
         (with-capability (P|TS)
             (let
@@ -777,20 +777,20 @@
             )
         )
     )
-    (defun DPNF|C_BulkTransfer
+    (defun C_DPNF|BulkTransfer
         (patron:string id:string nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
-        @doc "Bulk NFT transfer — son=false wrapper over TS02-C1.DPDC|C_BulkTransfer."
+        @doc "Bulk NFT transfer — son=false wrapper over TS02-C1.C_DPDC|BulkTransfer."
         (let
             (
                 (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
             )
-            (ref-TS02-C1::DPDC|C_BulkTransfer patron id false nonces-array amounts-array sender receiver-lst method)
+            (ref-TS02-C1::C_DPDC|BulkTransfer patron id false nonces-array amounts-array sender receiver-lst method)
         )
     )
     ;;
     ;;  [8] DPDC-S
     ;;
-    (defun DPNF|C_Make
+    (defun C_DPNF|Make
         (patron:string account:string id:string nonces:[integer] set-class:integer)
         @doc "Makes a Set NFT of Class <set-class>"
         (with-capability (P|TS)
@@ -810,7 +810,7 @@
             )
         )
     )
-    (defun DPNF|C_Break
+    (defun C_DPNF|Break
         (patron:string account:string id:string nonce:integer)
         @doc "Brakes an NFT Nonce representing an NFT Set"
         (with-capability (P|TS)
@@ -830,7 +830,7 @@
             )
         )
     )
-    (defun DPNF|C_DefinePrimordialSet
+    (defun C_DPNF|DefinePrimordialSet
         (
             patron:string id:string set-name:string score-multiplier:decimal
             set-definition:[object{DpdcUdcV1.DPDC|AllowedNonceForSetPosition}]
@@ -850,7 +850,7 @@
             )
         )
     )
-    (defun DPNF|C_DefineCompositeSet
+    (defun C_DPNF|DefineCompositeSet
         (
             patron:string id:string set-name:string score-multiplier:decimal
             set-definition:[object{DpdcUdcV1.DPDC|AllowedClassForSetPosition}]
@@ -870,7 +870,7 @@
             )
         )
     )
-    (defun DPNF|C_DefineHybridSet
+    (defun C_DPNF|DefineHybridSet
         (
             patron:string id:string set-name:string score-multiplier:decimal
             primordial-sd:[object{DpdcUdcV1.DPDC|AllowedNonceForSetPosition}]
@@ -891,7 +891,7 @@
             )
         )
     )
-    (defun DPNF|C_EnableSetClassFragmentation
+    (defun C_DPNF|EnableSetClassFragmentation
         (
             patron:string id:string set-class:integer
             fragmentation-ind:object{DpdcUdcV1.DPDC|NonceData}
@@ -910,7 +910,7 @@
             )
         )
     )
-    (defun DPNF|C_ToggleSet (patron:string id:string set-class:integer toggle:bool)
+    (defun C_DPNF|ToggleSet (patron:string id:string set-class:integer toggle:bool)
         @doc "Enables or Disables a Set. A disabled Set allows only for decomposition of Set Elements, but not for composition"
         (with-capability (P|TS)
             (let
@@ -925,7 +925,7 @@
             )
         )
     )
-    (defun DPNF|C_RenameSet (patron:string id:string set-class:integer new-name:string)
+    (defun C_DPNF|RenameSet (patron:string id:string set-class:integer new-name:string)
         @doc "Renames an NFT Set"
         (with-capability (P|TS)
             (let
@@ -942,7 +942,7 @@
     )
     ;; DPNF|C_UpdateSetMultiplier removed — DPDC Audit #15H.
     ;;
-    (defun DPNF|C_UpdateSetNonce 
+    (defun C_DPNF|UpdateSetNonce 
         (patron:string id:string account:string set-class:integer nos:bool new-nonce-data:object{DpdcUdcV1.DPDC|NonceData})
         @doc "[0] Updates Full Set Nonce Data, either Native or Split, for an NFT"
         (with-capability (P|TS)
@@ -957,7 +957,7 @@
             )
         )
     )
-    (defun DPNF|C_UpdateSetNonces
+    (defun C_DPNF|UpdateSetNonces
         (patron:string id:string account:string set-classes:[integer] nos:bool new-nonces-data:[object{DpdcUdcV1.DPDC|NonceData}])
         @doc "[0] Updates Full Set Nonce Data, either Native or Split, for an NFT"
         (with-capability (P|TS)
@@ -972,7 +972,7 @@
             )
         )
     )
-    (defun DPNF|C_UpdateSetNonceRoyalty
+    (defun C_DPNF|UpdateSetNonceRoyalty
         (patron:string id:string account:string set-class:integer nos:bool royalty-value:decimal)
         @doc "[1] Updates Set Nonce Native Royalty Value, either Native or Split, for an NFT"
         (with-capability (P|TS)
@@ -987,7 +987,7 @@
             )
         )
     )
-    (defun DPNF|C_UpdateSetNonceIgnisRoyalty
+    (defun C_DPNF|UpdateSetNonceIgnisRoyalty
         (patron:string id:string account:string set-class:integer nos:bool royalty-value:decimal)
         @doc "[2] Updates Set Nonce IGNIS Royalty Value, either Native or Split, for an NFT"
         (with-capability (P|TS)
@@ -1002,7 +1002,7 @@
             )
         )
     )
-    (defun DPNF|C_UpdateSetNonceName
+    (defun C_DPNF|UpdateSetNonceName
         (patron:string id:string account:string set-class:integer nos:bool name:string)
         @doc "[3] Updates Set Nonce Name, either Native or Split, for an NFT"
         (with-capability (P|TS)
@@ -1017,7 +1017,7 @@
             )
         )
     )
-    (defun DPNF|C_UpdateSetNonceDescription
+    (defun C_DPNF|UpdateSetNonceDescription
         (patron:string id:string account:string set-class:integer nos:bool description:string)
         @doc "[4] Updates Set Nonce Description, either Native or Split, for an NFT"
         (with-capability (P|TS)
@@ -1032,7 +1032,7 @@
             )
         )
     )
-    (defun DPNF|C_UpdateSetNonceScore
+    (defun C_DPNF|UpdateSetNonceScore
         (patron:string id:string account:string set-class:integer nos:bool score:decimal)
         @doc "[5] Updates Set Nonce Score, either Native or Split, for an NFT"
         (with-capability (P|TS)
@@ -1047,11 +1047,11 @@
             )
         )
     )
-    (defun DPNF|C_RemoveSetNonceScore (patron:string id:string account:string set-class:integer nos:bool)
+    (defun C_DPNF|RemoveSetNonceScore (patron:string id:string account:string set-class:integer nos:bool)
         @doc "[5b] Removes Set Nonce Score, setting it to -1.0, either Native or Split, for an NFT"
-        (DPNF|C_UpdateNonceScore patron id account set-class nos -1.0)
+        (C_DPNF|UpdateNonceScore patron id account set-class nos -1.0)
     )
-    (defun DPNF|C_UpdateSetNonceMetaData
+    (defun C_DPNF|UpdateSetNonceMetaData
         (patron:string id:string account:string set-class:integer nos:bool meta-data:object)
         @doc "[6] Updates Set Nonce Meta-Data, either Native or Split, for an NFT"
         (with-capability (P|TS)
@@ -1066,7 +1066,7 @@
             )
         )
     )
-    (defun DPNF|C_UpdateSetNonceURI
+    (defun C_DPNF|UpdateSetNonceURI
         (
             patron:string id:string account:string set-class:integer nos:bool
             ay:object{DpdcUdcV1.URI|Type} u1:object{DpdcUdcV1.URI|Data} u2:object{DpdcUdcV1.URI|Data} u3:object{DpdcUdcV1.URI|Data}
@@ -1087,7 +1087,7 @@
     ;;
     ;;  [9] DPDC-F
     ;;
-    (defun DPNF|C_RepurposeFragments (patron:string id:string repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer])
+    (defun C_DPNF|RepurposeFragments (patron:string id:string repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer])
         @doc "Repurpose NFT Fragment(s) from <repurpose-from> to <repurpose-to>. Requires <id> ownerhsip"
         (with-capability (P|TS)
             (let
@@ -1105,7 +1105,7 @@
             )
         )
     )
-    (defun DPNF|C_MakeFragments (patron:string account:string id:string nonce:integer amount:integer)
+    (defun C_DPNF|MakeFragments (patron:string account:string id:string nonce:integer amount:integer)
         @doc "Fragments NFT nonce of the given amount into its respective Fragments."
         (with-capability (P|TS)
             (let
@@ -1120,7 +1120,7 @@
             )
         )
     )
-    (defun DPNF|C_MergeFragments (patron:string account:string id:string nonce:integer amount:integer)
+    (defun C_DPNF|MergeFragments (patron:string account:string id:string nonce:integer amount:integer)
         @doc "MErges NFT Fragments nonces of the given amount into the original NFT nonce."
         (with-capability (P|TS)
             (let
@@ -1135,7 +1135,7 @@
             )
         )
     )
-    (defun DPNF|C_EnableNonceFragmentation (patron:string id:string nonce:integer fragmentation-ind:object{DpdcUdcV1.DPDC|NonceData})
+    (defun C_DPNF|EnableNonceFragmentation (patron:string id:string nonce:integer fragmentation-ind:object{DpdcUdcV1.DPDC|NonceData})
         @doc "Enables Fragmentation for a given NFT Nonce"
         (with-capability (P|TS)
             (let
@@ -1153,7 +1153,7 @@
     ;;
     ;;  [10] DPDC-N
     ;;
-    (defun DPNF|C_UpdateNonce 
+    (defun C_DPNF|UpdateNonce 
         (patron:string id:string account:string nonce:integer nos:bool new-nonce-data:object{DpdcUdcV1.DPDC|NonceData})
         @doc "[0] Updates Full Nonce Data, either Native or Split, for an NFT"
         (with-capability (P|TS)
@@ -1169,7 +1169,7 @@
             )
         )
     )
-    (defun DPNF|C_UpdateNonces
+    (defun C_DPNF|UpdateNonces
         (patron:string id:string account:string nonces:[integer] nos:bool new-nonces-data:[object{DpdcUdcV1.DPDC|NonceData}])
         @doc "[0] Updates Full Nonce Data, either Native or Split, for an NFT"
         (with-capability (P|TS)
@@ -1185,7 +1185,7 @@
             )
         )
     )
-    (defun DPNF|C_UpdateNonceRoyalty
+    (defun C_DPNF|UpdateNonceRoyalty
         (patron:string id:string account:string nonce:integer nos:bool royalty-value:decimal)
         @doc "[1] Updates Nonce Native Royalty Value, either Native or Split, for an NFT"
         (with-capability (P|TS)
@@ -1200,7 +1200,7 @@
             )
         )
     )
-    (defun DPNF|C_UpdateNonceIgnisRoyalty
+    (defun C_DPNF|UpdateNonceIgnisRoyalty
         (patron:string id:string account:string nonce:integer nos:bool royalty-value:decimal)
         @doc "[2] Updates Nonce IGNIS Royalty Value, either Native or Split, for an NFT"
         (with-capability (P|TS)
@@ -1215,7 +1215,7 @@
             )
         )
     )
-    (defun DPNF|C_UpdateNonceName
+    (defun C_DPNF|UpdateNonceName
         (patron:string id:string account:string nonce:integer nos:bool name:string)
         @doc "[3] Updates Nonce Name, either Native or Split, for an NFT"
         (with-capability (P|TS)
@@ -1230,7 +1230,7 @@
             )
         )
     )
-    (defun DPNF|C_UpdateNonceDescription
+    (defun C_DPNF|UpdateNonceDescription
         (patron:string id:string account:string nonce:integer nos:bool description:string)
         @doc "[4] Updates Nonce Description, either Native or Split, for an NFT"
         (with-capability (P|TS)
@@ -1245,7 +1245,7 @@
             )
         )
     )
-    (defun DPNF|C_UpdateNonceScore
+    (defun C_DPNF|UpdateNonceScore
         (patron:string id:string account:string nonce:integer nos:bool score:decimal)
         @doc "[5] Updates Nonce Score, either Native or Split, for an NFT"
         (with-capability (P|TS)
@@ -1260,11 +1260,11 @@
             )
         )
     )
-    (defun DPNF|C_RemoveNonceScore (patron:string id:string account:string nonce:integer nos:bool)
+    (defun C_DPNF|RemoveNonceScore (patron:string id:string account:string nonce:integer nos:bool)
         @doc "[5b] Removes Nonce Score, setting it to -1.0, either Native or Split, for an NFT"
-        (DPNF|C_UpdateNonceScore patron id account nonce nos -1.0)
+        (C_DPNF|UpdateNonceScore patron id account nonce nos -1.0)
     )
-    (defun DPNF|C_UpdateNonceMetaData
+    (defun C_DPNF|UpdateNonceMetaData
         (patron:string id:string account:string nonce:integer nos:bool meta-data:object)
         @doc "[6] Updates Nonce Meta-Data, either Native or Split, for an NFT"
         (with-capability (P|TS)
@@ -1279,7 +1279,7 @@
             )
         )
     )
-    (defun DPNF|C_UpdateNonceURI
+    (defun C_DPNF|UpdateNonceURI
         (
             patron:string id:string account:string nonce:integer nos:bool
             ay:object{DpdcUdcV1.URI|Type} u1:object{DpdcUdcV1.URI|Data} u2:object{DpdcUdcV1.URI|Data} u3:object{DpdcUdcV1.URI|Data}
