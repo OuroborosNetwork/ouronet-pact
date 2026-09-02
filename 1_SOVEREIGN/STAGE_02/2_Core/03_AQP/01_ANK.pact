@@ -134,13 +134,13 @@
         @doc "Resolves the governance keyset from DALOS."
         (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi))
     )
-    (defun GOV|NS_Use ()
+    (defun CT_Namespace ()
         @doc "Namespace prefix for AQP governance keyset name."
         (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE))
     )
     (defun GOV|AqpKey ()
         @doc "Governance keyset name for the AQP smart account (canonical — sibling AQP modules ref AQP-ANK)."
-        (+ (GOV|NS_Use) ".dh_sc_aqp-keyset")
+        (+ (CT_Namespace) ".dh_sc_aqp-keyset")
     )
     (defconst AQP|SC_KEY                    (GOV|AqpKey))
     (defun GOV|AQP|SC_NAME ()

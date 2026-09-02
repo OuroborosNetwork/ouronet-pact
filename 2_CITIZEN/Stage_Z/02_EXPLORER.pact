@@ -13,7 +13,7 @@
     (defcap GOV ()                          (compose-capability (GOV|EXPLORER_ADMIN)))
     (defcap GOV|EXPLORER_ADMIN ()           (enforce-guard GOV|MD_EXPLORER))
     ;;{G3}
-    (defun GOV|NS_Use ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
+    (defun CT_Namespace ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
     (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
     ;;
     ;;<====>

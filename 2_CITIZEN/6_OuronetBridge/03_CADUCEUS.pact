@@ -13,7 +13,7 @@
     )
     ;;
     ;;{G3}
-    (defun GOV|NS_Use ()                     (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
+    (defun CT_Namespace ()                     (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
     (defun GOV|Demiurgoi ()                  (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
     ;;
     ;; Placeholders to be set by you.
@@ -72,12 +72,12 @@
     )
     ;; Oracle capability for bridge relayer keyset.
     (defcap BRIDGE|RELAYER ()
-        (enforce-guard (keyset-ref-guard (GOV|BridgeKey)))
+        (enforce-guard (keyset-ref-guard (CT_BridgeKey)))
     )
     ;;{G3}
-    (defun GOV|NS_Use ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
+    (defun CT_Namespace ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
     (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
-    (defun GOV|BridgeKey ()                 (+ (GOV|NS_Use) ".dh_bridge_caduceus-keyset"))
+    (defun CT_BridgeKey ()                 (+ (CT_Namespace) ".dh_bridge_caduceus-keyset"))
     ;;
     ;;<====>
     ;;POLICY

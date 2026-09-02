@@ -330,15 +330,15 @@
     (defun GOV|DALOS|GUARD ()               (create-capability-guard (DALOS|NATIVE-AUTOMATIC)))
     ;;
     ;; [Keys]
-    (defun GOV|NS_Use ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
-    (defun GOV|Demiurgoi ()                 (+ (GOV|NS_Use) ".dh_master-keyset"))
-    (defun GOV|DalosKey ()                  (+ (GOV|NS_Use) ".dh_sc_dalos-keyset"))
-    (defun GOV|AutostakeKey ()              (+ (GOV|NS_Use) ".dh_sc_autostake-keyset"))
-    (defun GOV|VestingKey ()                (+ (GOV|NS_Use) ".dh_sc_vesting-keyset"))
-    (defun GOV|LiquidKey ()                 (+ (GOV|NS_Use) ".dh_sc_stoaliquidstaking-keyset"))
-    (defun GOV|OuroborosKey ()              (+ (GOV|NS_Use) ".dh_sc_ouroboros-keyset"))
-    (defun GOV|SwapKey ()                   (+ (GOV|NS_Use) ".dh_sc_swapper-keyset"))
-    (defun GOV|DHVKey ()                    (+ (GOV|NS_Use) ".dh_sc_dhvault-keyset"))
+    (defun CT_Namespace ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
+    (defun GOV|Demiurgoi ()                 (+ (CT_Namespace) ".dh_master-keyset"))
+    (defun GOV|DalosKey ()                  (+ (CT_Namespace) ".dh_sc_dalos-keyset"))
+    (defun GOV|AutostakeKey ()              (+ (CT_Namespace) ".dh_sc_autostake-keyset"))
+    (defun GOV|VestingKey ()                (+ (CT_Namespace) ".dh_sc_vesting-keyset"))
+    (defun GOV|LiquidKey ()                 (+ (CT_Namespace) ".dh_sc_stoaliquidstaking-keyset"))
+    (defun GOV|OuroborosKey ()              (+ (CT_Namespace) ".dh_sc_ouroboros-keyset"))
+    (defun GOV|SwapKey ()                   (+ (CT_Namespace) ".dh_sc_swapper-keyset"))
+    (defun GOV|DHVKey ()                    (+ (CT_Namespace) ".dh_sc_dhvault-keyset"))
     ;;
     ;; [SC-Names]
     (defun GOV|DALOS|SC_NAME ()             (at 0 ["Σ.W∇ЦwÏξБØnζΦψÕłěîбηжÛśTã∇țâĆã4ЬĚIŽȘØíÕlÛřбΩцμCšιÄиMkλ€УщшàфGřÞыÎäY8È₳BDÏÚmßOozBτòÊŸŹjПкцğ¥щóиś4h4ÑþююqςA9ÆúÛȚβжéÑψéУoЭπÄЩψďşõшżíZtZuψ4ѺËxЖψУÌбЧλüșěđΔjÈt0ΛŽZSÿΞЩŠ"]))

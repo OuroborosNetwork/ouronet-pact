@@ -10,7 +10,7 @@
     (defcap GOV ()                          (compose-capability (GOV|DPL_NFT_ADMIN)))
     (defcap GOV|DPL_NFT_ADMIN ()            (enforce-guard GOV|MD_KBN))
     ;;{G3}
-    (defun GOV|NS_Use ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
+    (defun CT_Namespace ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
     (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
     ;;
     ;;<====>

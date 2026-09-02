@@ -190,8 +190,8 @@
     (defcap PYTHIA|CRONOTON ()                  (enforce-guard (keyset-ref-guard (GOV|CronotonKey))))
     ;;{G3}
     (defun GOV|Demiurgoi ()                     (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
-    (defun GOV|NS_Use ()                        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
-    (defun GOV|CronotonKey ()                   (+ (GOV|NS_Use) ".pythia-cronoton-keyset"))
+    (defun CT_Namespace ()                        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
+    (defun GOV|CronotonKey ()                   (+ (CT_Namespace) ".pythia-cronoton-keyset"))
     ;;
     ;;<====>
     ;;POLICY

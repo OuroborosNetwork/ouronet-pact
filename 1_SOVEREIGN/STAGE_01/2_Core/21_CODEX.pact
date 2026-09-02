@@ -95,8 +95,8 @@
     (defcap CODEX|ADMIN ()                  (enforce-guard (keyset-ref-guard (GOV|CodexKey))))
     ;;{G3}
     (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
-    (defun GOV|NS_Use ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
-    (defun GOV|CodexKey ()                  (+ (GOV|NS_Use) ".codex-keyset"))
+    (defun CT_Namespace ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
+    (defun GOV|CodexKey ()                  (+ (CT_Namespace) ".codex-keyset"))
     ;;
     ;;<====>
     ;;POLICY
