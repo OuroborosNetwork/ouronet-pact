@@ -508,7 +508,7 @@
     (defconst GAS|ISSUE-SCORE-MODEL                             500.0)
     (defconst CT_SCORE_MODEL_SINGLE:integer                     1)
     (defconst CT_SCORE_MODEL_TRIPLET:integer                    3)
-    (defun CT_EmptyCumulator ()     (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::DALOS|EmptyOutputCumulatorV2)))
+    (defun CT_EmptyCumulator ()     (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_EmptyOutputCumulatorV2)))
     (defconst EOC                                               (CT_EmptyCumulator))
     (defun CT_AqpScName:string
         ()

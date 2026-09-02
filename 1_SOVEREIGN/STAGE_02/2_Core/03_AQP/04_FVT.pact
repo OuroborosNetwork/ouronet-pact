@@ -1537,7 +1537,7 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
             )
-            (ref-IGNIS::DALOS|EmptyOutputCumulatorV2)
+            (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
         )
     )
     (defun UC_PerMilleRow:bool (row:[integer])

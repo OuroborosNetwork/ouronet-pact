@@ -518,7 +518,7 @@
     (defconst GAS|SYNC-COLLECTABLE-ANCHORS                              50.0)
     (defun CT_EmptyCumulator ()
         @doc "Empty IGNIS OutputCumulator for stub transfer legs."
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::DALOS|EmptyOutputCumulatorV2))
+        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_EmptyOutputCumulatorV2))
     )
     (defconst EOC                                                       (CT_EmptyCumulator))
     (defun CT_AqpScName:string

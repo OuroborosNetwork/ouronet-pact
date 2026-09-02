@@ -134,8 +134,8 @@
     ;;{2}
     (deftable CUSTODIANS|T|Properties:{CUSTODIANS|PropertiesSchema})
     ;;{3}
-    (defun CUSTODIANS|Info ()                   (at 0 ["Custodians"]))
-    (defconst CUSTODIANS|INFO                   (CUSTODIANS|Info))
+    (defun CT_Info ()                   (at 0 ["Custodians"]))
+    (defconst CUSTODIANS|INFO                   (CT_Info))
     (defun CT_Bar ()                                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
     (defconst BAR                                   (CT_Bar))
     

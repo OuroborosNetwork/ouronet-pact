@@ -273,7 +273,7 @@
         (
             (ref-DALOS:module{OuronetDalosV1} DALOS)
             (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
-            (info:string (ref-DALOS::DALOS|Info))
+            (info:string (ref-DALOS::CT_Info))
             (issued-ids:[string]
                 (ref-TS01-C1::C_DPTF|Issue
                     patron

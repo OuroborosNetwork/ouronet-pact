@@ -345,7 +345,7 @@
         ouroboros-precision:integer
     )
     ;;
-    (defun EmptyDispo:object{DispoData} ())
+    (defun UDC_EmptyDispo:object{DispoData} ())
     ;;
     (defun UC_TwoSplitter:[integer] (input:integer))
     (defun UC_FourSplitter:[integer] (input:integer))

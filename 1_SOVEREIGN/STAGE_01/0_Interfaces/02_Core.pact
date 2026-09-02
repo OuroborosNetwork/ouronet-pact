@@ -550,7 +550,7 @@
         target:string
         value:integer
     )
-    (defun SWP|Info ())
+    (defun CT_Info ())
     ;;
     ;;
     (defun UC_ExtractTokens:[string] (input:[object{PoolTokens}]))

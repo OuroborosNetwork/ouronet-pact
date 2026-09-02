@@ -65,8 +65,8 @@
     (defun GOV|SWP|PBL ())
     (defun GOV|DHV|PBL ())
     ;;
-    (defun DALOS|Info ())
-    (defun DALOS|VirtualGasData ())
+    (defun CT_Info ())
+    (defun CT_VirtualGasData ())
     ;;
     ;;
     ;;  [UR]
@@ -481,11 +481,11 @@
     (deftable DALOS|AccountTable:{DALOS|AccountSchemaV2})           ;;Key = <account>
     ;;{3}
     (defun CT_Bar ()                        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
-    (defun DALOS|Info ()                    (at 0 ["DalosInformation"]))
-    (defun DALOS|VirtualGasData ()          (at 0 ["VirtualGasData"]))
+    (defun CT_Info ()                    (at 0 ["DalosInformation"]))
+    (defun CT_VirtualGasData ()          (at 0 ["VirtualGasData"]))
     (defconst BAR                           (CT_Bar))
-    (defconst DALOS|INFO                    (DALOS|Info))
-    (defconst DALOS|VGD                     (DALOS|VirtualGasData))
+    (defconst DALOS|INFO                    (CT_Info))
+    (defconst DALOS|VGD                     (CT_VirtualGasData))
     (defconst DALOS|PLEB
         {"class"    : "NOVICE"
         ,"name"     : "Infidel"

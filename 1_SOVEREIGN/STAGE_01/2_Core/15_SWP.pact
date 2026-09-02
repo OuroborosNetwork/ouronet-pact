@@ -16,7 +16,7 @@
         value:integer
     )
     ;;
-    (defun SWP|Info ())
+    (defun CT_Info ())
     ;;
     ;;
     (defun UC_ExtractTokens:[string] (input:[object{PoolTokens}]))
@@ -318,11 +318,11 @@
     (deftable SWP|LP:{SWP|LpTracker})                   ;;Key = <LP-string>
     ;;{3}
     (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
-    (defun CT_EmptyCumulator ()     (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::DALOS|EmptyOutputCumulatorV2)))
-    (defun SWP|Info ()              (at 0 ["SwapperInformation"]))
+    (defun CT_EmptyCumulator ()     (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_EmptyOutputCumulatorV2)))
+    (defun CT_Info ()              (at 0 ["SwapperInformation"]))
     (defconst BAR                   (CT_Bar))
     (defconst EOC                   (CT_EmptyCumulator))
-    (defconst SWP|INFO              (SWP|Info))
+    (defconst SWP|INFO              (CT_Info))
     (defconst P2 "P2")
     (defconst P3 "P3")
     (defconst P4 "P4")

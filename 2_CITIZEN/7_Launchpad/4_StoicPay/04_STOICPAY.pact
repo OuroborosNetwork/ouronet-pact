@@ -136,8 +136,8 @@
     ;;{2}
     (deftable KPAY|T|Properties:{KPAY|PropertiesSchema})
     ;;{3}
-    (defun KPAY|Info ()                     (at 0 ["StoicPayV2"]))
-    (defconst KPAY|INFO                     (KPAY|Info))
+    (defun CT_Info ()                     (at 0 ["StoicPayV2"]))
+    (defconst KPAY|INFO                     (CT_Info))
     (defun CT_Bar ()                        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
     (defconst BAR                           (CT_Bar))
     

@@ -137,8 +137,8 @@
     ;;{3}
     (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
     (defconst BAR                   (CT_Bar))
-    (defun STOAICO|Info ()          (at 0 ["StoaIcoInformation"]))
-    (defconst STOAICO|INFO          (STOAICO|Info))
+    (defun CT_Info ()          (at 0 ["StoaIcoInformation"]))
+    (defconst STOAICO|INFO          (CT_Info))
     (defconst STOA_PREC             12)
     ;;
     ;;<==========>

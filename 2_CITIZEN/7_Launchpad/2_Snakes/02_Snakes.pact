@@ -128,8 +128,8 @@
     ;;{2}
     (deftable SNAKES|T|Properties:{SNAKES|PropertiesSchema})
     ;;{3}
-    (defun SNAKES|Info ()                   (at 0 ["Shareholders"]))
-    (defconst SNAKES|INFO                   (SNAKES|Info))
+    (defun CT_Info ()                   (at 0 ["Shareholders"]))
+    (defconst SNAKES|INFO                   (CT_Info))
     (defun CT_Bar ()                        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
     (defconst BAR                           (CT_Bar))
     

@@ -31,7 +31,7 @@
     ;;{1}
     ;;{2}
     ;;{3}
-    (defun EmptyDispo:object{UtilityDptfV1.DispoData} ()
+    (defun UDC_EmptyDispo:object{UtilityDptfV1.DispoData} ()
         {"elite-auryn-amount"           :0.0
         ,"auryndex-value"               :-1.0
         ,"elite-auryndex-value"         :-1.0

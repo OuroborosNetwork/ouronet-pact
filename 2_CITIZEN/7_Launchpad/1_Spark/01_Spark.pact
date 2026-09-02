@@ -137,8 +137,8 @@
     ;;{2}
     (deftable SPARK|T|Properties:{SPARK|PropertiesSchema})
     ;;{3}
-    (defun SPARK|Info ()                        (at 0 ["spark-data-key"]))
-    (defconst SPARK|INFO                        (SPARK|Info))
+    (defun CT_Info ()                        (at 0 ["spark-data-key"]))
+    (defconst SPARK|INFO                        (CT_Info))
     (defun CT_Bar ()                            (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
     (defconst BAR                               (CT_Bar))
     ;;

@@ -161,9 +161,9 @@
     ;;{2}
     ;;{3}
     (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
-    (defun LIQUID|Info ()           (at 0 ["LiquidInformation"]))
+    (defun CT_Info ()           (at 0 ["LiquidInformation"]))
     (defconst BAR                   (CT_Bar))
-    (defconst LIQUID|INFO           (LIQUID|Info))
+    (defconst LIQUID|INFO           (CT_Info))
     ;;
     ;;<==========>
     ;;CAPABILITIES

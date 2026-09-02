@@ -101,7 +101,7 @@
             OUROBOROS|SC_NAME
         ]
     )
-    (defun DALOS|EmptyOutputCumulatorV2:object{IgnisCollectorV1.OutputCumulator} ()
+    (defun UDC_EmptyOutputCumulatorV2:object{IgnisCollectorV1.OutputCumulator} ()
         {"cumulator-chain"      :
             [
                 {"ignis"        : 0.0

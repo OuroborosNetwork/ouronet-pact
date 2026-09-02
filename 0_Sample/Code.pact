@@ -259,7 +259,7 @@
                                         (with-capability (DPTF.DPTF|C>BURN id-x account-x amount-x)
                                             (with-capability (DPTF.SECURE)
                                                 (DPTF.UEV_IMC)
-                                                (with-capability (DPTF|C>DEBIT account-x id-x amount-x (ref-U|DPTF::EmptyDispo) false)
+                                                (with-capability (DPTF|C>DEBIT account-x id-x amount-x (ref-U|DPTF::UDC_EmptyDispo) false)
                                                     (let
                                                         (
                                                             (current-supply:decimal (DPTF.UR_AccountSupply id-x account-x))

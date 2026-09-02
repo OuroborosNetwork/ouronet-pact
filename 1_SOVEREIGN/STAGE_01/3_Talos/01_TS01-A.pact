@@ -188,8 +188,8 @@
     ;;{1}
     ;;{2}
     ;;{3}
-    (defun TALOS|Gassless ()        (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|DALOS|SC_NAME)))
-    (defconst GASLESS-PATRON        (TALOS|Gassless))
+    (defun URC_Gassless ()        (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|DALOS|SC_NAME)))
+    (defconst GASLESS-PATRON        (URC_Gassless))
     ;;
     ;;<==========>
     ;;CAPABILITIES

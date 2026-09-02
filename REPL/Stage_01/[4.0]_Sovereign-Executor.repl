@@ -218,9 +218,9 @@
         (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
         ;;
         (bar:string (ref-U|CT::CT_BAR))
-        (info:string (ref-DALOS::DALOS|Info))
-        (vgd:string (ref-DALOS::DALOS|VirtualGasData))
-        (lqd:string (ref-LIQUID::LIQUID|Info))
+        (info:string (ref-DALOS::CT_Info))
+        (vgd:string (ref-DALOS::CT_VirtualGasData))
+        (lqd:string (ref-LIQUID::CT_Info))
     )
     [
         ;;Stoa Prices (Main-Net Prices x1000)
@@ -513,7 +513,7 @@
         (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
         ;;
         (patron:string KST.ANHD)
-        (info:string (ref-DALOS::DALOS|Info))
+        (info:string (ref-DALOS::CT_Info))
         (dalos:string (ref-DALOS::GOV|DALOS|SC_NAME))
         (ouroboros:string (ref-DALOS::GOV|OUROBOROS|SC_NAME))
         (ids:list
