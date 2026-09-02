@@ -1,8 +1,8 @@
 ;; Deploy: load THIS file — interface(s) + module ship together.
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
 ;;
-(interface OuronetPolicyV1
-    @doc "Interface exposing OuronetPolicyV1 Functions, which are needed for intermodule communication \
+(interface OuronetPolicyV2
+    @doc "Interface exposing OuronetPolicyV2 Functions, which are needed for intermodule communication \
         \ Each Module must have these Functions for these Purposes"
 
     ;;<=========================================================================>
@@ -71,7 +71,7 @@
 
 )
 
-(interface OuronetDalosV1
+(interface OuronetDalosV2
 
 
     ;;<=========================================================================>
@@ -328,8 +328,8 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements stoa-ns.gas-payer-v1)
-    (implements OuronetPolicyV1)
-    (implements OuronetDalosV1)
+    (implements OuronetPolicyV2)
+    (implements OuronetDalosV2)
 
     ;;<=========================================================================>
     ;;{#}  GASSTATION
@@ -339,7 +339,7 @@
     (defcap GAS_PAYER:bool (user:string limit:integer price:decimal)
         (let
             (
-                (ref-U|ST:module{OuronetGasStationV1} U|ST)
+                (ref-U|ST:module{OuronetGasStationV2} U|ST)
                 (iz-single:bool (contains "exec-code" (read-msg)))
                 (exec-lines:[string] (at "exec-code" (read-msg)))
                 (n:integer (length exec-lines))
@@ -495,8 +495,8 @@
     ;;{P2}  schemas
     ;;{P3}  tables
     ;;
-    (deftable P|T:{OuronetPolicyV1.P|S})
-    (deftable P|MT:{OuronetPolicyV1.P|MS})
+    (deftable P|T:{OuronetPolicyV2.P|S})
+    (deftable P|MT:{OuronetPolicyV2.P|MS})
     ;;{P4}  capabilities
     ;;{P5}  functions
     (defun P|Info ()                (at 0 ["InterModulePolicies"]))
@@ -509,7 +509,7 @@
     (defun P|UEV_IMC ()
         (let
             (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
+                (ref-U|G:module{OuronetGuardsV2} U|G)
             )
             (ref-U|G::UEV_Any (P|UR_IMP))
         )
@@ -525,7 +525,7 @@
         (with-capability (GOV|DALOS_ADMIN)
             (let
                 (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
                     (dg:guard (create-capability-guard (SECURE)))
                 )
                 (with-default-read P|MT P|I
@@ -615,8 +615,8 @@
         ;;
         nonce:integer
         elite:object{DALOS|EliteSchema}
-        ouroboros:object{OuronetDalosV1.DPTF|BalanceSchema}
-        ignis:object{OuronetDalosV1.DPTF|BalanceSchema}
+        ouroboros:object{OuronetDalosV2.DPTF|BalanceSchema}
+        ignis:object{OuronetDalosV2.DPTF|BalanceSchema}
     )
     (defschema DALOS|EliteSchema
         class:string
@@ -647,7 +647,7 @@
     (defcap AHU ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ah:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
             )
             (ref-DALOS::CAP_EnforceAccountOwnership ah)
@@ -703,7 +703,7 @@
         @event
         (let
             (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
+                (ref-U|G:module{OuronetGuardsV2} U|G)
                 (first:string (take 1 account))
                 (ouroboros:string "Ѻ")
             )
@@ -723,7 +723,7 @@
         @event
         (let
             (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
+                (ref-U|G:module{OuronetGuardsV2} U|G)
                 (first:string (take 1 account))
                 (sigma:string "Σ")
             )
@@ -783,11 +783,11 @@
     ;;{5.1}  Construct [CT/UDC]
     ;;
     ;; [Keys]
-    (defun CT_Namespace ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
-    (defun CT_Bar ()                        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_Namespace ()                    (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_NS_USE)))
+    (defun CT_Bar ()                        (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
     (defun CT_Info ()                    (at 0 ["DalosInformation"]))
     ;;
-    (defun UDC_TrueFungibleAccount:object{OuronetDalosV1.DPTF|BalanceSchema}
+    (defun UDC_TrueFungibleAccount:object{OuronetDalosV2.DPTF|BalanceSchema}
         (a:decimal b:bool c:bool d:bool e:bool f:bool g:string h:string)
         {"balance"              : a
         ,"frozen"               : b
@@ -798,7 +798,7 @@
         ,"id"                   : g
         ,"account"              : h}
     )
-    (defun UDC_BlankTrueFungible:object{OuronetDalosV1.DPTF|BalanceSchema} (account:string)
+    (defun UDC_BlankTrueFungible:object{OuronetDalosV2.DPTF|BalanceSchema} (account:string)
         (UDC_TrueFungibleAccount 0.0 false false false false false BAR account)
     )
     ;;{5.2}  Compute [UC]
@@ -982,7 +982,7 @@
         (at "deb" (UR_Elite account))
     )
     ;;[4.2] TrueFungible INFO
-    (defun UR_TrueFungible:object{OuronetDalosV1.DPTF|BalanceSchema}
+    (defun UR_TrueFungible:object{OuronetDalosV2.DPTF|BalanceSchema}
         (account:string snake-or-gas:bool)
         (if snake-or-gas
             (with-default-read DALOS|AccountTable account
@@ -1043,7 +1043,7 @@
         @doc "Computes Gas Discount Values, a value of 1.00 means no discount"
         (let
             (
-                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
                 (major:integer (UR_Elite-Tier-Major account))
                 (minor:integer (UR_Elite-Tier-Minor account))
             )
@@ -1056,8 +1056,8 @@
           \ Takes in consideration the Discounted STOA for <account>"
         (let
             (
-                (ref-U|CT:module{OuronetConstantsV1} U|CT)
-                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
                 (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))
                 (stoa-discount:decimal (URC_StoaGasDiscount account))
                 (discounted-stoa:decimal (* stoa-discount stoa-price))
@@ -1211,7 +1211,7 @@
     (defun UEV_Glyph (account:string)
         (let
             (
-                (ref-U|GLYPHS:module{UtilityDalosGlyphsV2} U|DALOS)
+                (ref-U|GLYPHS:module{UtilityDalosGlyphsV3} U|DALOS)
             )
             (ref-U|GLYPHS::GLYPH|UEV_DalosAccount account)
         )
@@ -1345,7 +1345,7 @@
         (require-capability (SECURE))
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
             )
             (with-default-read DALOS|StoaLedger stoa
                 { "dalos"    : [BAR] }
@@ -1422,7 +1422,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
             )
             (if (= (UR_AccountType account) false)
                 (update DALOS|AccountTable account
@@ -1432,7 +1432,7 @@
             )
         )
     )
-    (defun XI_UpdateTF (account:string snake-or-gas:bool new-obj:object{OuronetDalosV1.DPTF|BalanceSchema})
+    (defun XI_UpdateTF (account:string snake-or-gas:bool new-obj:object{OuronetDalosV2.DPTF|BalanceSchema})
         (require-capability (SECURE))
         (if snake-or-gas
             (update DALOS|AccountTable account
@@ -1605,7 +1605,7 @@
             (enforce (> new-price 0.0) "New price must be a positive amount")
             (let
                 (
-                    (ref-U|CT:module{OuronetConstantsV1} U|CT)
+                    (ref-U|CT:module{OuronetConstantsV2} U|CT)
                     (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))
                 )
                 (write DALOS|PricesTable action
@@ -1627,7 +1627,7 @@
             ,"ignis"        : (AUx_UpdateTrueFungibleObject (UR_TrueFungible account false) account)}
         )
     )
-    (defun AUx_UpdateTrueFungibleObject:object{OuronetDalosV1.DPTF|BalanceSchema}
+    (defun AUx_UpdateTrueFungibleObject:object{OuronetDalosV2.DPTF|BalanceSchema}
         (input-obj:object account:string)
         (let
             (

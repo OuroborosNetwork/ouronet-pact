@@ -16,7 +16,7 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
     (
-        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
         (issuing-account:string KST.ANHD)
         (stoa-account:string (ref-DALOS::UR_AccountStoa issuing-account))
         (dpsf-price:decimal (ref-DALOS::UR_UsagePrice "dpsf"))
@@ -47,7 +47,7 @@
     )
     (let
         (
-            (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+            (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
         )
         (print (format "ISSUE RESULT = {}"
             [(ref-TS02-C2::C_DPNF|Issue issuing-account issuing-account issuing-account

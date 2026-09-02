@@ -143,7 +143,7 @@
     )
     (let
         (
-            (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+            (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
             (patron:string KST.ANHD)
         )
         (ref-TS01-A::A_DALOS|DeploySmartAccount KC2.DPTS_NAME_0001 (keyset-ref-guard "ouronet-ns.dh_sc_dpdc-keyset")  KC2.KADN_NAME_0001 patron KC2.PBLC_0001)

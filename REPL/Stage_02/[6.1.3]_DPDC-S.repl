@@ -38,7 +38,7 @@
 (print "--- [TX-SET-001 · 01 · env-sigs (caps)] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
         (owner:string KST.ANHD)
         (dpsf-price:decimal (ref-DALOS::UR_UsagePrice "dpsf"))
         (dpnf-price:decimal (ref-DALOS::UR_UsagePrice "dpnf"))
@@ -72,12 +72,12 @@
 (print "--- [TX-SET-001 · 02 · issue + create native nonces] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV1} DPDC)
-        (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
         (owner:string KST.ANHD)
-        (type:object{DpdcUdcV1.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (type:object{DpdcUdcV2.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
     )
     (map print
         [
@@ -91,7 +91,7 @@
         (
             (sft-id:string "TSFS-98c486052a51")
             (nft-id:string "TSFN-98c486052a51")
-            (nd:object{DpdcUdcV1.DPDC|NonceData}
+            (nd:object{DpdcUdcV2.DPDC|NonceData}
                 (ref-DPDC-UDC::UDC_NonceData
                     0.0 0.0 "N" "N" (ref-DPDC-UDC::UDC_NoMetaData) type
                     (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
@@ -140,16 +140,16 @@
 (print "--- [TX-SET-002 · 02 · define SC1 Primordial / SC2 Composite / SC3 Hybrid / NFT-SC1 Primordial] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV1} DPDC)
-        (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
-        (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
         (owner:string KST.ANHD)
         (sft-id:string "TSFS-98c486052a51")
         (nft-id:string "TSFN-98c486052a51")
-        (type:object{DpdcUdcV1.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
-        (nd:object{DpdcUdcV1.DPDC|NonceData}
+        (type:object{DpdcUdcV2.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
             (ref-DPDC-UDC::UDC_NonceData
                 0.0 0.0 "N" "N" (ref-DPDC-UDC::UDC_NoMetaData) type
                 (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
@@ -217,8 +217,8 @@
 (print "--- [TX-SET-003 · 02 · Make 5 SC1 (Primordial) sets from nonce 1 + nonce 2] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV1} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
         (owner:string KST.ANHD)
         (sft-id:string "TSFS-98c486052a51")
     )
@@ -250,8 +250,8 @@
 (print "--- [TX-SET-003 · 03 · Break the 5 SC1 sets; full-circle conservation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV1} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
         (owner:string KST.ANHD)
         (sft-id:string "TSFS-98c486052a51")
     )
@@ -298,8 +298,8 @@
 (print "--- [TX-SET-004 · 02 · re-make 5 SC1 units; Make 3 SC2 (Composite) sets from 3 of them] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV1} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
         (owner:string KST.ANHD)
         (sft-id:string "TSFS-98c486052a51")
     )
@@ -329,8 +329,8 @@
 (print "--- [TX-SET-004 · 03 · Break 3 SC2 sets, then remaining 5 SC1; full-circle conservation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV1} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
         (owner:string KST.ANHD)
         (sft-id:string "TSFS-98c486052a51")
     )
@@ -395,8 +395,8 @@
 (print "--- [TX-SET-005 · 02 · re-make 5 SC1 units; Make 2 SC3 (Hybrid: nonce 3 + SC1) sets] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV1} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
         (owner:string KST.ANHD)
         (sft-id:string "TSFS-98c486052a51")
     )
@@ -431,8 +431,8 @@
 (print "--- [TX-SET-005 · 03 · Break 2 SC3 sets, then remaining 5 SC1; full-circle conservation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV1} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
         (owner:string KST.ANHD)
         (sft-id:string "TSFS-98c486052a51")
     )
@@ -505,8 +505,8 @@
 (print "--- [TX-SET-006 · 02 · Make: choose nonce 1 (of [1 2]) + nonce 3 (of [3 4])] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV1} DPDC)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
         (owner:string KST.ANHD)
         (nft-id:string "TSFN-98c486052a51")
     )
@@ -538,8 +538,8 @@
 (print "--- [TX-SET-006 · 03 · Break the spawned instance (nonce 5); exact conservation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV1} DPDC)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
         (owner:string KST.ANHD)
         (nft-id:string "TSFN-98c486052a51")
     )
@@ -586,13 +586,13 @@
 (print "--- [TX-SET-007 · 02 · ToggleSet off rejects EnableFragmentation (#30M); ToggleSet back on] ---")
 (let
     (
-        (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
-        (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
         (owner:string KST.ANHD)
         (sft-id:string "TSFS-98c486052a51")
-        (type:object{DpdcUdcV1.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
-        (nd:object{DpdcUdcV1.DPDC|NonceData}
+        (type:object{DpdcUdcV2.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
             (ref-DPDC-UDC::UDC_NonceData
                 0.0 0.0 "FragSC1" "Fragmentation marker" (ref-DPDC-UDC::UDC_NoMetaData) type
                 (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
@@ -637,13 +637,13 @@
 (print "--- [TX-SET-007 · 03 · RenameSet; EnableSetClassFragmentation on the now-active SC1 succeeds] ---")
 (let
     (
-        (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
-        (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
         (owner:string KST.ANHD)
         (sft-id:string "TSFS-98c486052a51")
-        (type:object{DpdcUdcV1.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
-        (nd:object{DpdcUdcV1.DPDC|NonceData}
+        (type:object{DpdcUdcV2.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
             (ref-DPDC-UDC::UDC_NonceData
                 0.0 0.0 "FragSC1" "Fragmentation marker" (ref-DPDC-UDC::UDC_NoMetaData) type
                 (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)

@@ -30,7 +30,7 @@
     (defun UC_SmartSplit:[decimal] (patron:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (ref-DALOS::URC_SplitSTOAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
         )
@@ -54,7 +54,7 @@
         )
     )
     (defun UC_ProbeSliceCount:integer (unit-count:integer vacate-kind:integer)
-        (let ((ref-VCT:module{AcquisitionVacateV1} AQP-VCT))
+        (let ((ref-VCT:module{AcquisitionVacateV2} AQP-VCT))
             (ref-VCT::UC_ComputeMinSliceCount unit-count vacate-kind)
         )
     )
@@ -85,7 +85,7 @@
     (defun XI_DeploySynthAccount:string (idx:integer)
         (let
             (
-                (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 (acct:string (UC_SynthAccount idx))
             )
             (ref-TS01-A::A_DALOS|DeployStandardAccount acct SYNTH-GUARD (UC_StoaForIdx idx) acct)
@@ -107,8 +107,8 @@
         @doc "Measure one Legs batch (finalize=false — probes use fresh pools)."
         (let
             (
-                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
-                (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+                (ref-VCT:module{AcquisitionVacateV2} AQP-VCT)
                 (kind:integer (at "vacate-kind" payload))
                 (pool-id:string (at "pool-id" payload))
                 (asset-id:string (at "asset-id" payload))
@@ -147,15 +147,15 @@
             )
         )
     )
-    (defun UC_MinDpnfNonceRow:object{DpdcUdcV1.DPDC|NonceData} (idx:integer)
+    (defun UC_MinDpnfNonceRow:object{DpdcUdcV2.DPDC|NonceData} (idx:integer)
         (let
             (
-                (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
-                (md:object{DpdcUdcV1.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
-                (i-asset-type:object{DpdcUdcV1.URI|Type}
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+                (md:object{DpdcUdcV2.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
+                (i-asset-type:object{DpdcUdcV2.URI|Type}
                     (ref-DPDC-UDC::UDC_URI|Type true false false false false false false)
                 )
-                (zd:object{DpdcUdcV1.URI|Data} (ref-DPDC-UDC::UDC_ZeroURI|Data))
+                (zd:object{DpdcUdcV2.URI|Data} (ref-DPDC-UDC::UDC_ZeroURI|Data))
             )
             (ref-DPDC-UDC::UDC_NonceData
                 0.0 0.0
@@ -165,7 +165,7 @@
             )
         )
     )
-    (defun UC_DpnfNonceRows:[object{DpdcUdcV1.DPDC|NonceData}] (count:integer)
+    (defun UC_DpnfNonceRows:[object{DpdcUdcV2.DPDC|NonceData}] (count:integer)
         (map UC_MinDpnfNonceRow (enumerate 1 count))
     )
     (defun XI_DpsfProbeSetup:object{vacate-chunk-payload}
@@ -177,9 +177,9 @@
         )
         (let
             (
-                (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
-                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
-                (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+                (ref-VCT:module{AcquisitionVacateV2} AQP-VCT)
                 (nonce:integer 1)
             )
             (fold
@@ -236,9 +236,9 @@
         )
         (let
             (
-                (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
-                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
-                (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+                (ref-VCT:module{AcquisitionVacateV2} AQP-VCT)
             )
             (fold
                 (lambda (acc:bool idx:integer)
@@ -294,10 +294,10 @@
         )
         (let
             (
-                (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
-                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
-                (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-VCT:module{AcquisitionVacateV2} AQP-VCT)
             )
             (if (not (ref-DPOF::UR_R-AddQuantity dpof-id patron))
                 (ref-TS01-C1::C_DPOF|ToggleAddQuantityRole patron dpof-id patron true)
@@ -371,10 +371,10 @@
         )
         (let
             (
-                (ref-DPDC:module{DpdcV1} DPDC)
-                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
-                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
-                (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+                (ref-VCT:module{AcquisitionVacateV2} AQP-VCT)
                 (source:string KST.EMMA)
                 (pre-count:integer (length (ref-DPDC::URH_AccountNonces source dpnf-id false)))
             )
@@ -442,7 +442,7 @@
         @doc "Offline plan slice-0 payload from live inventory (stateless Legs)."
         (let
             (
-                (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                (ref-VCT:module{AcquisitionVacateV2} AQP-VCT)
                 (unit-count:integer (ref-VCT::URHC_VacateUnitCountForKind pool-id asset-id vacate-kind))
                 (slice-count:integer (UC_ProbeSliceCount unit-count vacate-kind))
                 (plan:object (ref-VCT::URHC_BuildVacateSlicePlan pool-id asset-id vacate-kind slice-count))
@@ -489,8 +489,8 @@
         (patron:string dpsf-id:string ouro-id:string n:integer)
         (let
             (
-                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                 (pool-name:string (format "VctGasDpsf{}" [n]))
                 (score-name:string (format "VctGasSfScore{}" [n]))
                 (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
@@ -516,8 +516,8 @@
         (patron:string ouro-id:string n:integer stake-amt:decimal)
         (let
             (
-                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                 (pool-name:string (format "VctGasTf{}" [n]))
                 (score-name:string (format "VctGasTfScore{}" [n]))
                 (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
@@ -544,8 +544,8 @@
         (patron:string dpof-id:string ouro-id:string n:integer)
         (let
             (
-                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                 (pool-name:string (format "VctGasOf{}" [n]))
                 (score-name:string (format "VctGasOfScore{}" [n]))
                 (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
@@ -571,8 +571,8 @@
         (patron:string dpnf-id:string ouro-id:string n:integer)
         (let
             (
-                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                 (pool-name:string (format "VctGasDpnf{}" [n]))
                 (score-name:string (format "VctGasNfScore{}" [n]))
                 (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
@@ -602,8 +602,8 @@
     (defun XI_OfEnsurePatronReady:bool (patron:string dpof-id:string)
         (let
             (
-                (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
             )
             (if (not (ref-DPOF::UR_R-AddQuantity dpof-id patron))
                 (ref-TS01-C1::C_DPOF|ToggleAddQuantityRole patron dpof-id patron true)
@@ -620,8 +620,8 @@
         (patron:string dpof-id:string owner:string)
         (let
             (
-                (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
             )
             (ref-TS01-C1::C_DPOF|Mint patron dpof-id patron 1.0 [{"vct-gas": true}])
             (let
@@ -648,8 +648,8 @@
         )
         (let
             (
-                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
-                (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+                (ref-VCT:module{AcquisitionVacateV2} AQP-VCT)
                 (unit-total:integer (* owner-count nonces-per-owner))
             )
             (XI_OfEnsurePatronReady patron dpof-id)
@@ -709,8 +709,8 @@
         )
         (let
             (
-                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                 (pool-name:string (format "VctGasOf7x{}{}" [owner-count nonces-per-owner]))
                 (score-name:string (format "VctGasOf7xScore{}{}" [owner-count nonces-per-owner]))
                 (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
@@ -745,7 +745,7 @@
         )
         (let
             (
-                (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+                (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
                 (receivers:[string] (UC_SynthAccounts receiver-count))
                 (amounts:[decimal] (UC_MakeDecimals receiver-count amt))
                 (g-before:integer (env-gas))
@@ -766,8 +766,8 @@
         (patron:string pool-id:string ouro-id:string n:integer stake-amt:decimal)
         (let
             (
-                (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
-                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
             )
             (fold
                 (lambda (acc:bool idx:integer)
@@ -786,9 +786,9 @@
         (patron:string pool-id:string dpof-id:string n:integer)
         (let
             (
-                (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
-                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
             )
             (XI_OfEnsurePatronReady patron dpof-id)
             (fold
@@ -819,8 +819,8 @@
         (patron:string pool-id:string dpsf-id:string n:integer)
         (let
             (
-                (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
-                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                 (nonce:integer 1)
             )
             (fold
@@ -840,9 +840,9 @@
         (patron:string pool-id:string dpnf-id:string n:integer)
         (let
             (
-                (ref-DPDC:module{DpdcV1} DPDC)
-                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
-                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                 (source:string KST.EMMA)
                 (pre-count:integer (length (ref-DPDC::URH_AccountNonces source dpnf-id false)))
             )
@@ -894,8 +894,8 @@
         (patron:string KST.ANHD)
         (owner-konto:string KST.ANHD)
         (ouro-id:string "OURO-98c486052a51")
-        (ref-DALOS:module{OuronetDalosV1} DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (split-std:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "standard")))
         )

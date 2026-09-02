@@ -33,8 +33,8 @@
 
 (module INFO-ZERO GOV
     ;;
-    (implements OuronetPolicyV1)
-    (implements OuronetInfoV1)
+    (implements OuronetPolicyV2)
+    (implements OuronetInfoV2)
     (implements DalosInfoV1)
     ;;
     ;;<========>
@@ -45,15 +45,15 @@
     (defcap GOV ()                          (compose-capability (GOV|INFO-ZERO_ADMIN)))
     (defcap GOV|INFO-ZERO_ADMIN ()          (enforce-guard GOV|MD_INFO-ZERO))
     ;;{G3}
-    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
     ;;
     ;;
     ;;<====>
     ;;POLICY
     ;;{P1}
     ;;{P2}
-    (deftable P|T:{OuronetPolicyV1.P|S})
-    (deftable P|MT:{OuronetPolicyV1.P|MS})
+    (deftable P|T:{OuronetPolicyV2.P|S})
+    (deftable P|MT:{OuronetPolicyV2.P|MS})
     ;;{P3}
     (defcap P|INFO-ZERO|CALLER ()
         true
@@ -64,7 +64,7 @@
     )
     ;;{P4}
     (defconst P|I                   (P|Info))
-    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -82,7 +82,7 @@
         (with-capability (GOV|INFO-ZERO_ADMIN)
             (let
                 (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
                     (dg:guard (create-capability-guard (SECURE)))
                 )
                 (with-default-read P|MT P|I
@@ -98,7 +98,7 @@
     (defun P|A_Define ()
         (let
             (
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
+                (ref-P|DALOS:module{OuronetPolicyV2} DALOS)
                 (mg:guard (create-capability-guard (P|INFO-ZERO|CALLER)))
             )
             (ref-P|DALOS::P|A_AddIMP mg)
@@ -107,7 +107,7 @@
     (defun P|UEV_IMC ()
         (let
             (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
+                (ref-U|G:module{OuronetGuardsV2} U|G)
             )
             (ref-U|G::UEV_Any (P|UR_IMP))
         )
@@ -130,21 +130,21 @@
     )
     ;;{C2}
     ;;{C3}
-    (defun CT_KdaPrec ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_KDA_PRECISION)))
-    (defun CT_Bar ()                        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_KdaPrec ()                    (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_KDA_PRECISION)))
+    (defun CT_Bar ()                        (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
     (defconst KDAPREC                       (CT_KdaPrec))
     (defconst BAR                           (CT_Bar))
     ;;
-    (defconst DALOS|SC_NAME                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|DALOS|SC_NAME)))
-    (defconst OUROBOROS|SC_NAME             (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|OUROBOROS|SC_NAME)))
+    (defconst DALOS|SC_NAME                 (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|DALOS|SC_NAME)))
+    (defconst OUROBOROS|SC_NAME             (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|OUROBOROS|SC_NAME)))
     ;;{C4}
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    (defun OI|UC_IfpFromOutputCumulator:decimal (input:object{IgnisCollectorV1.OutputCumulator})
+    (defun OI|UC_IfpFromOutputCumulator:decimal (input:object{IgnisCollectorV2.OutputCumulator})
         (let
             (
-                (cc:[object{IgnisCollectorV1.ModularCumulator}] (at "cumulator-chain" input))
+                (cc:[object{IgnisCollectorV2.ModularCumulator}] (at "cumulator-chain" input))
             )
             (fold
                 (lambda
@@ -212,7 +212,7 @@
     (defun OI|UR_KadenaTargets:[string] ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             [
                 (at 2 (ref-DALOS::UR_DemiurgoiID))
@@ -225,22 +225,22 @@
     ;;{F1}  [URC]
     ;;{F2}  [UEV]
     ;;{F3}  [UDC]
-    (defun OI|UDC_ClientInfo:object{OuronetInfoV1.ClientInfo}
-        (a:[string] b:[string] c:object{OuronetInfoV1.ClientIgnisCosts} d:object{OuronetInfoV1.ClientKadenaCosts} e:list)
+    (defun OI|UDC_ClientInfo:object{OuronetInfoV2.ClientInfo}
+        (a:[string] b:[string] c:object{OuronetInfoV2.ClientIgnisCosts} d:object{OuronetInfoV2.ClientKadenaCosts} e:list)
         {"pre-text"         : a
         ,"post-text"        : b
         ,"ignis"            : c
         ,"kadena"           : d
         ,"output"           : e}
     )
-    (defun OI|UDC_ClientIgnisCosts:object{OuronetInfoV1.ClientIgnisCosts}
+    (defun OI|UDC_ClientIgnisCosts:object{OuronetInfoV2.ClientIgnisCosts}
         (a:decimal b:decimal c:decimal d:string)
         {"ignis-discount"   : a
         ,"ignis-full"       : b
         ,"ignis-need"       : c
         ,"ignis-text"       : d}
     )
-    (defun OI|UDC_ClientKadenaCosts:object{OuronetInfoV1.ClientKadenaCosts}
+    (defun OI|UDC_ClientKadenaCosts:object{OuronetInfoV2.ClientKadenaCosts}
         (a:decimal b:decimal c:decimal d:[decimal] e:[string] f:string)
         {"kadena-discount"  : a
         ,"kadena-full"      : b
@@ -249,11 +249,11 @@
         ,"kadena-targets"   : e
         ,"kadena-text"      : f}
     )
-    (defun OI|UDC_FullKadenaCosts:object{OuronetInfoV1.ClientKadenaCosts} (kfp:decimal)
+    (defun OI|UDC_FullKadenaCosts:object{OuronetInfoV2.ClientKadenaCosts} (kfp:decimal)
         (let
             (
                 (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
-                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
                 ;;
                 (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
                 (kadena-split:[decimal] (ref-U|DALOS::UC_TenTwentyThirtyFourtySplit kfp KDAPREC))
@@ -273,12 +273,12 @@
             )
         )
     )
-    (defun OI|UDC_KadenaCosts:object{OuronetInfoV1.ClientKadenaCosts} (patron:string kfp:decimal)
+    (defun OI|UDC_KadenaCosts:object{OuronetInfoV2.ClientKadenaCosts} (patron:string kfp:decimal)
         (let
             (
                 (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
-                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 ;;
                 (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
                 (kadena-discount:decimal (ref-DALOS::URC_KadenaGasDiscount patron))
@@ -306,7 +306,7 @@
             )
         )
     )
-    (defun OI|UDC_NoKadenaCosts:object{OuronetInfoV1.ClientKadenaCosts} ()
+    (defun OI|UDC_NoKadenaCosts:object{OuronetInfoV2.ClientKadenaCosts} ()
         (OI|UDC_ClientKadenaCosts
             1.0
             0.0
@@ -316,17 +316,17 @@
             "Operation is free of native Stoa (STOA)"
         )
     )
-    (defun OI|UDC_DynamicKadenaCost:object{OuronetInfoV1.ClientKadenaCosts} (patron:string kfp:decimal)
+    (defun OI|UDC_DynamicKadenaCost:object{OuronetInfoV2.ClientKadenaCosts} (patron:string kfp:decimal)
         (if (= kfp 0.0)
             (OI|UDC_NoKadenaCosts)
             (OI|UDC_KadenaCosts patron kfp)
         )
     )
     ;;
-    (defun OI|UDC_IgnisCosts:object{OuronetInfoV1.ClientIgnisCosts} (patron:string ifp:decimal)
+    (defun OI|UDC_IgnisCosts:object{OuronetInfoV2.ClientIgnisCosts} (patron:string ifp:decimal)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 ;;
                 (ignis-discount:decimal (ref-DALOS::URC_IgnisGasDiscount patron))
                 (discount-percent:string (format "{}%" [(* 100.0 (- 1.0 ignis-discount))]))
@@ -349,7 +349,7 @@
             )
         )
     )
-    (defun OI|UDC_NoIgnisCosts:object{OuronetInfoV1.ClientIgnisCosts} ()
+    (defun OI|UDC_NoIgnisCosts:object{OuronetInfoV2.ClientIgnisCosts} ()
         (OI|UDC_ClientIgnisCosts
             1.0
             0.0
@@ -357,7 +357,7 @@
             "Operation is free of Ouronet GAS (IGNIS)"
         )
     )
-    (defun OI|UDC_DynamicIgnisCost:object{OuronetInfoV1.ClientIgnisCosts} (patron:string ifp:decimal)
+    (defun OI|UDC_DynamicIgnisCost:object{OuronetInfoV2.ClientIgnisCosts} (patron:string ifp:decimal)
         (if (= ifp 0.0)
             (OI|UDC_NoIgnisCosts)
             (OI|UDC_IgnisCosts patron ifp)
@@ -391,11 +391,11 @@
     ;;FUNCTIONS
     ;;{F0}  [UR]
     ;;{F1}  [URC]
-    (defun DALOS-INFO|URC_ControlSmartAccount:object{OuronetInfoV1.ClientInfo} (patron:string account:string)
+    (defun DALOS-INFO|URC_ControlSmartAccount:object{OuronetInfoV2.ClientInfo} (patron:string account:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 ;;
                 (is-ignis:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 (ifp:decimal (ref-DALOS::UR_UsagePrice "ignis|small"))
@@ -410,11 +410,11 @@
             )
         )
     )
-    (defun DALOS-INFO|URC_DeploySmartAccount:object{OuronetInfoV1.ClientInfo} (account:string)
+    (defun DALOS-INFO|URC_DeploySmartAccount:object{OuronetInfoV2.ClientInfo} (account:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 ;;
                 (is-kadena:bool (ref-IGNIS::URC_IsNativeGasZero))
                 (kfp:decimal (ref-DALOS::UR_UsagePrice "smart"))
@@ -429,11 +429,11 @@
             )
         )
     )
-    (defun DALOS-INFO|URC_DeployStandardAccount:object{OuronetInfoV1.ClientInfo} (account:string)
+    (defun DALOS-INFO|URC_DeployStandardAccount:object{OuronetInfoV2.ClientInfo} (account:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 ;;
                 (is-kadena:bool (ref-IGNIS::URC_IsNativeGasZero))
                 (kfp:decimal (ref-DALOS::UR_UsagePrice "standard"))
@@ -448,11 +448,11 @@
             )
         )
     )
-    (defun DALOS-INFO|URC_RotateGovernor:object{OuronetInfoV1.ClientInfo} (patron:string account:string)
+    (defun DALOS-INFO|URC_RotateGovernor:object{OuronetInfoV2.ClientInfo} (patron:string account:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 ;;
                 (is-ignis:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 (ifp:decimal (ref-DALOS::UR_UsagePrice "ignis|small"))
@@ -467,11 +467,11 @@
             )
         )
     )
-    (defun DALOS-INFO|URC_RotateGuard:object{OuronetInfoV1.ClientInfo} (patron:string account:string)
+    (defun DALOS-INFO|URC_RotateGuard:object{OuronetInfoV2.ClientInfo} (patron:string account:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 ;;
                 (is-ignis:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 (ifp:decimal (ref-DALOS::UR_UsagePrice "ignis|small"))
@@ -486,11 +486,11 @@
             )
         )
     )
-    (defun DALOS-INFO|URC_RotateKadena:object{OuronetInfoV1.ClientInfo} (patron:string account:string)
+    (defun DALOS-INFO|URC_RotateKadena:object{OuronetInfoV2.ClientInfo} (patron:string account:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 ;;
                 (is-ignis:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 (ifp:decimal (ref-DALOS::UR_UsagePrice "ignis|small"))
@@ -505,11 +505,11 @@
             )
         )
     )
-    (defun DALOS-INFO|URC_RotateSovereign:object{OuronetInfoV1.ClientInfo} (patron:string account:string)
+    (defun DALOS-INFO|URC_RotateSovereign:object{OuronetInfoV2.ClientInfo} (patron:string account:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 ;;
                 (is-ignis:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 (ifp:decimal (ref-DALOS::UR_UsagePrice "ignis|small"))
@@ -524,11 +524,11 @@
             )
         )
     )
-    (defun DALOS-INFO|URC_UpdateEliteAccount:object{OuronetInfoV1.ClientInfo} (patron:string account:string)
+    (defun DALOS-INFO|URC_UpdateEliteAccount:object{OuronetInfoV2.ClientInfo} (patron:string account:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 ;;
                 (is-ignis:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 (ifp:decimal (ref-DALOS::UR_UsagePrice "ignis|small"))
@@ -543,11 +543,11 @@
             )
         )
     )
-    (defun DALOS-INFO|URC_UpdateEliteAccountSquared:object{OuronetInfoV1.ClientInfo} (patron:string sender:string receiver:string)
+    (defun DALOS-INFO|URC_UpdateEliteAccountSquared:object{OuronetInfoV2.ClientInfo} (patron:string sender:string receiver:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 ;;
                 (is-ignis:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 (ifp:decimal (ref-DALOS::UR_UsagePrice "ignis|medium"))

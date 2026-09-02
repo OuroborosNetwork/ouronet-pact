@@ -19,7 +19,7 @@
     (defcap GOV ()                          (compose-capability (GOV|DPL_NFT_ADMIN)))
     (defcap GOV|DPL_NFT_ADMIN ()            (enforce-guard GOV|MD_NOSFERATU))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
@@ -49,8 +49,8 @@
     (defconst D-R "Rare Nosferat Earning 0.1 Percent of Nosferatu Movie Profits, and 0.0625 Promile of all Future Movie Profits")
     (defconst D-C "Common Nosferat Earning 0.5 Promile of Nosferatu Movie Profits, and 0.03125 Promile of all Future Movie Profits")
     ;;
-    (defconst TYPE                          (let ((ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)) (ref-DPDC-UDC::UDC_URI|Type T F F F F F F)))
-    (defconst ZD                            (let ((ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    (defconst TYPE                          (let ((ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)) (ref-DPDC-UDC::UDC_URI|Type T F F F F F F)))
+    (defconst ZD                            (let ((ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
     ;;{3.2}  schemas
     ;;
     ;;
@@ -85,8 +85,8 @@
     ;;<=========================================================================>
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
-    (defun CT_Namespace ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
-    (defun CT_Bar ()                        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_Namespace ()                    (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_NS_USE)))
+    (defun CT_Bar ()                        (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
     ;;
     (defun UDC_MetaData:object{NosferatuMetaData} (a:[string])
         {"Backgrounds"      : (at 0 a)
@@ -104,12 +104,12 @@
         ,"Tooth"            : (at 12 a)}
     )
     ;;
-    (defun UDC_NonceData:[object{DpdcUdcV1.DPDC|NonceData}]
+    (defun UDC_NonceData:[object{DpdcUdcV2.DPDC|NonceData}]
         (rarity:string starting-position:integer mdm:[[string]])
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-                (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
                 (rarities:[string] ["Legendary" "Epic" "Rare" "Common"])
                 (iz-rarity-ok:bool (contains rarity rarities))
                 (IR:decimal
@@ -134,7 +134,7 @@
             (enforce iz-rarity-ok "Rarity string is invalid")
             (fold
                 (lambda
-                    (acc:[object{DpdcUdcV1.DPDC|NonceData}] idx:integer)
+                    (acc:[object{DpdcUdcV2.DPDC|NonceData}] idx:integer)
                     (ref-U|LST::UC_AppL acc
                         (ref-DPDC-UDC::UDC_NonceData
                             R
@@ -394,7 +394,7 @@
     (defun C_Spawn (patron:string dhn-id:string rarity:string starting-position:integer number-of-positions:integer mdm:[[string]])
         (let
             (
-                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
                 (l:integer (length mdm))
             )
             (enforce (= l number-of-positions) "Invalid Number of Positions")
@@ -406,7 +406,7 @@
     (defun C_Fix (patron:string dhn-id:string account:string rarity:string starting-position:integer number-of-positions:integer mdm:[[string]])
         (let
             (
-                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
                 (l:integer (length mdm))
                 (nonces:[integer] (UC_Nonces rarity starting-position number-of-positions))
             )

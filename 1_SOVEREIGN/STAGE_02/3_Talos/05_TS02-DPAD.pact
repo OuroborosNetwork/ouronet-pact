@@ -8,7 +8,7 @@
 ;; citizen sales. Deploy order: DEMIPAD core -> TS02-C1/C2/C3 -> THIS (sovereign)
 ;; -> citizen sales -> TS02-CPAD (citizen Talos).
 ;;
-(interface TalosStageTwo_DemiPadV1
+(interface TalosStageTwo_DemiPadV2
     @doc "Exposes Ouronet Stage Two Demipad SOVEREIGN Client Functions"
 
     ;;<=========================================================================>
@@ -80,8 +80,8 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements OuronetPolicyV1)
-    (implements TalosStageTwo_DemiPadV1)
+    (implements OuronetPolicyV2)
+    (implements TalosStageTwo_DemiPadV2)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -94,7 +94,7 @@
     (defcap GOV ()                      (compose-capability (GOV|TS02-DPAD_ADMIN)))
     (defcap GOV|TS02-DPAD_ADMIN ()      (enforce-guard GOV|MD_TS02-DPAD))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()             (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()             (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
@@ -103,13 +103,13 @@
     ;;{P2}  schemas
     ;;{P3}  tables
     ;;
-    (deftable P|T:{OuronetPolicyV1.P|S})
-    (deftable P|MT:{OuronetPolicyV1.P|MS})
+    (deftable P|T:{OuronetPolicyV2.P|S})
+    (deftable P|MT:{OuronetPolicyV2.P|MS})
     ;;{P4}  capabilities
     (defcap P|TS ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (gap:bool (ref-DALOS::UR_GAP))
             )
             (enforce (not gap) "While Global Administrative Pause is online, no client Functions can be executed")
@@ -121,7 +121,7 @@
         true
     )
     ;;{P5}  functions
-    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -131,7 +131,7 @@
     (defun P|UEV_IMC ()
         (let
             (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
+                (ref-U|G:module{OuronetGuardsV2} U|G)
             )
             (ref-U|G::UEV_Any (P|UR_IMP))
         )
@@ -147,7 +147,7 @@
         (with-capability (GOV|TS02-DPAD_ADMIN)
             (let
                 (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
                     (dg:guard (create-capability-guard (SECURE)))
                 )
                 (with-default-read P|MT P|I
@@ -166,9 +166,9 @@
             \ per-sale CITIZEN modules are registered by the citizen Talos (TS02-CPAD)."
         (let
             (
-                (ref-P|TS01-A:module{TalosStageOne_AdminV1} TS01-A)
-                (ref-P|DPAD:module{OuronetPolicyV1} DEMIPAD)
-                (ref-P|DPDC:module{OuronetPolicyV1} DPDC)
+                (ref-P|TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                (ref-P|DPAD:module{OuronetPolicyV2} DEMIPAD)
+                (ref-P|DPDC:module{OuronetPolicyV2} DPDC)
                 (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
             )
             (ref-P|TS01-A::P|A_AddIMP mg)
@@ -207,7 +207,7 @@
     (defun UC_ShortAccount:string (account:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
             (ref-I|OURONET::OI|UC_ShortAccount account)
         )
@@ -230,9 +230,9 @@
         (with-capability (P|TALOS-SUMMONER)
             (let
                 (
-                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
-                    (ref-DPDC:module{DpdcV1} DPDC)
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                    (ref-DPDC:module{DpdcV2} DPDC)
+                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                     (lpad:string (ref-DEMIPAD::GOV|DEMIPAD|SC_NAME))
                     (tf:[bool] [true true])
                     (of:[bool] [true false])
@@ -264,7 +264,7 @@
         (with-capability (P|TALOS-SUMMONER)
             (let
                 (
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
+                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                 )
                 (ref-DEMIPAD::A_ToggleOpenForBusiness asset-id toggle)
             )
@@ -275,7 +275,7 @@
         (with-capability (P|TALOS-SUMMONER)
             (let
                 (
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
+                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                 )
                 (ref-DEMIPAD::A_DefinePrice asset-id price)
             )
@@ -286,7 +286,7 @@
         (with-capability (P|TALOS-SUMMONER)
             (let
                 (
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
+                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                 )
                 (ref-DEMIPAD::A_ToggleRetrieval asset-id toggle)
             )
@@ -301,9 +301,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                     (sd:string (ref-I|OURONET::OI|UC_ShortAccount donor))
                 )
                 (ref-IGNIS::C_Collect patron
@@ -322,9 +322,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV1} DALOS)
-                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
+                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                     (retrieval-amount:decimal (ref-DEMIPAD::UR_Funds asset-id type))
                     (working-id:string
                         (if (= type 1)
@@ -347,7 +347,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
+                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                 )
                 (ref-DEMIPAD::C_TransmitTrueFungible patron client asset-id amount true)
             )
@@ -357,7 +357,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
+                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                 )
                 (ref-DEMIPAD::C_TransmitOrtoFungible patron client asset-id nonces true)
             )
@@ -367,9 +367,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                     (c:string (ref-I|OURONET::OI|UC_ShortAccount client))
                 )
                 (ref-IGNIS::C_Collect patron
@@ -383,9 +383,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                     (c:string (ref-I|OURONET::OI|UC_ShortAccount client))
                 )
                 (ref-IGNIS::C_Collect patron
@@ -400,7 +400,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
+                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                 )
                 (ref-DEMIPAD::C_TransmitTrueFungible patron client asset-id amount false)
             )
@@ -410,7 +410,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
+                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                 )
                 (ref-DEMIPAD::C_TransmitOrtoFungible patron client asset-id nonces false)
             )
@@ -420,9 +420,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                     (c:string (ref-I|OURONET::OI|UC_ShortAccount client))
                 )
                 (ref-IGNIS::C_Collect patron
@@ -436,9 +436,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                     (c:string (ref-I|OURONET::OI|UC_ShortAccount client))
                 )
                 (ref-IGNIS::C_Collect patron

@@ -20,7 +20,7 @@
 
 (begin-tx "PROBE-C6 - baseline read on the real, genesis-defined Wonder Coach collection")
 (namespace "ouronet-ns")
-(let ((ref-DPDC:module{DpdcV1} DPDC) (id:string "DHWC-98c486052a51"))
+(let ((ref-DPDC:module{DpdcV2} DPDC) (id:string "DHWC-98c486052a51"))
     (print (format "set-classes-used (should be 4: Bronze/Silver/Golden primordial + Movie composite) = {}"
         [(ref-DPDC::UR_SetClassesUsed id true)]))
 )
@@ -36,10 +36,10 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
         (id:string "DHWC-98c486052a51")
-        (ind:object{DpdcUdcV1.DPDC|NonceData}
+        (ind:object{DpdcUdcV2.DPDC|NonceData}
             (ref-DPDC-UDC::UDC_NonceData
                 0.0 0.0 "BadSet" "bar" (ref-DPDC-UDC::UDC_NoMetaData)
                 (ref-DPDC-UDC::UDC_ZeroURI|Type) (ref-DPDC-UDC::UDC_ZeroURI|Data)

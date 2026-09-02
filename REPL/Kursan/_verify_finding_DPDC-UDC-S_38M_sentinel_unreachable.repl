@@ -17,11 +17,11 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
-        (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (owner:string KST.ANHD)
         (id:string "DHCD-98c486052a51")
-        (nd:object{DpdcUdcV1.DPDC|NonceData}
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
             (ref-DPDC-UDC::UDC_NonceData
                 0.0 0.0 "SentinelProbeSet" "Set matching an internal sentinel value"
                 (ref-DPDC-UDC::UDC_NoMetaData)

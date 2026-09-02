@@ -1,7 +1,7 @@
 ;; Deploy: load THIS file — interface(s) + module ship together.
 ;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact
 ;;
-(interface BrandingUsageTertiaryV1
+(interface BrandingUsageTertiaryV2
     @doc "Exposes Branding Functions for Semi-Fungibles (S) and Non-Fungibles (N)"
 
     ;;<=========================================================================>
@@ -43,12 +43,12 @@
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
     ;;
-    (defun C_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator} (entity-id:string son:bool logo:string description:string website:string social:[object{BrandingV1.SocialSchema}]))
+    (defun C_UpdatePendingBranding:object{IgnisCollectorV2.OutputCumulator} (entity-id:string son:bool logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
     (defun C_UpgradeBranding (patron:string entity-id:string son:bool  months:integer))
 
 )
 
-(interface DpdcV1
+(interface DpdcV2
     @doc "Exposes Collectables Functions"
 
     ;;<=========================================================================>
@@ -87,14 +87,14 @@
     ;;
     ;; [UDC]
     ;;
-    (defun UDC_Control:object{DpdcUdcV1.DPDC|Properties} (id:string son:bool cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool))
+    (defun UDC_Control:object{DpdcUdcV2.DPDC|Properties} (id:string son:bool cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool))
     ;;{5.2}  Compute [UC]
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
     ;;  [UR]
     ;;
     ;;  [1]
-    (defun UR_Properties:object{DpdcUdcV1.DPDC|Properties} (id:string son:bool))
+    (defun UR_Properties:object{DpdcUdcV2.DPDC|Properties} (id:string son:bool))
     (defun UR_OwnerKonto:string (id:string son:bool))
     (defun UR_CreatorKonto:string (id:string son:bool))
     (defun UR_Name:string (id:string son:bool))
@@ -111,30 +111,30 @@
     (defun UR_NoncesUsed:integer (id:string son:bool))
     (defun UR_SetClassesUsed:integer (id:string son:bool))
     ;;  [2]
-    (defun UR_NonceElement:object{DpdcUdcV1.DPDC|NonceElement} (id:string son:bool nonce:integer))
+    (defun UR_NonceElement:object{DpdcUdcV2.DPDC|NonceElement} (id:string son:bool nonce:integer))
     (defun UR_NonceClass:integer (id:string son:bool nonce:integer))
     (defun UR_NonceValue:integer (id:string son:bool nonce:integer))
     (defun UR_NonceSupply:integer (id:string son:bool nonce:integer))
     (defun UR_NonceHolder:string (id:string son:bool nonce:integer))
-    (defun UR_NativeNonceData:object{DpdcUdcV1.DPDC|NonceData} (id:string son:bool nonce:integer))
-    (defun UR_SplitNonceData:object{DpdcUdcV1.DPDC|NonceData} (id:string son:bool nonce:integer))
-    (defun UR_NonceData:object{DpdcUdcV1.DPDC|NonceData} (id:string son:bool nonce:integer))
+    (defun UR_NativeNonceData:object{DpdcUdcV2.DPDC|NonceData} (id:string son:bool nonce:integer))
+    (defun UR_SplitNonceData:object{DpdcUdcV2.DPDC|NonceData} (id:string son:bool nonce:integer))
+    (defun UR_NonceData:object{DpdcUdcV2.DPDC|NonceData} (id:string son:bool nonce:integer))
     ;;  [2.1]
-    (defun UR_N|Royalty:decimal (n:object{DpdcUdcV1.DPDC|NonceData}))
-    (defun UR_N|IgnisRoyalty:decimal (n:object{DpdcUdcV1.DPDC|NonceData}))
-    (defun UR_N|Name:string (n:object{DpdcUdcV1.DPDC|NonceData}))
-    (defun UR_N|Description:string (n:object{DpdcUdcV1.DPDC|NonceData}))
-    (defun UR_N|MetaData:object{DpdcUdcV1.NonceMetaData} (n:object{DpdcUdcV1.DPDC|NonceData}))
-    (defun UR_N|AssetType:object{DpdcUdcV1.URI|Type} (n:object{DpdcUdcV1.DPDC|NonceData}))
-    (defun UR_N|Primary:object{DpdcUdcV1.URI|Data} (n:object{DpdcUdcV1.DPDC|NonceData}))
-    (defun UR_N|Secondary:object{DpdcUdcV1.URI|Data} (n:object{DpdcUdcV1.DPDC|NonceData}))
-    (defun UR_N|Tertiary:object{DpdcUdcV1.URI|Data} (n:object{DpdcUdcV1.DPDC|NonceData}))
+    (defun UR_N|Royalty:decimal (n:object{DpdcUdcV2.DPDC|NonceData}))
+    (defun UR_N|IgnisRoyalty:decimal (n:object{DpdcUdcV2.DPDC|NonceData}))
+    (defun UR_N|Name:string (n:object{DpdcUdcV2.DPDC|NonceData}))
+    (defun UR_N|Description:string (n:object{DpdcUdcV2.DPDC|NonceData}))
+    (defun UR_N|MetaData:object{DpdcUdcV2.NonceMetaData} (n:object{DpdcUdcV2.DPDC|NonceData}))
+    (defun UR_N|AssetType:object{DpdcUdcV2.URI|Type} (n:object{DpdcUdcV2.DPDC|NonceData}))
+    (defun UR_N|Primary:object{DpdcUdcV2.URI|Data} (n:object{DpdcUdcV2.DPDC|NonceData}))
+    (defun UR_N|Secondary:object{DpdcUdcV2.URI|Data} (n:object{DpdcUdcV2.DPDC|NonceData}))
+    (defun UR_N|Tertiary:object{DpdcUdcV2.URI|Data} (n:object{DpdcUdcV2.DPDC|NonceData}))
     ;;  [2.1.1]
-    (defun UR_N|RawScore:decimal (n:object{DpdcUdcV1.DPDC|NonceData}))
-    (defun UR_N|Composition:[integer] (n:object{DpdcUdcV1.DPDC|NonceData}))
-    (defun UR_N|RawMetaData:object (n:object{DpdcUdcV1.DPDC|NonceData}))
+    (defun UR_N|RawScore:decimal (n:object{DpdcUdcV2.DPDC|NonceData}))
+    (defun UR_N|Composition:[integer] (n:object{DpdcUdcV2.DPDC|NonceData}))
+    (defun UR_N|RawMetaData:object (n:object{DpdcUdcV2.DPDC|NonceData}))
     ;;  [3]
-    (defun UR_VerumRoles:object{DpdcUdcV1.DPDC|VerumRoles} (id:string son:bool))
+    (defun UR_VerumRoles:object{DpdcUdcV2.DPDC|VerumRoles} (id:string son:bool))
     (defun UR_Verum1:[string] (id:string son:bool))
     (defun UR_Verum2:[string] (id:string son:bool))
     (defun UR_Verum3:[string] (id:string son:bool))
@@ -150,7 +150,7 @@
     (defun UR_GetVerumChain:[string] (id:string son:bool rp:integer))
     ;;  [4]
     (defun UR_IzAccount:bool (account:string id:string son:bool))
-    (defun UR_CA|R:object{DpdcUdcV1.AccountRoles} (id:string son:bool account:string))
+    (defun UR_CA|R:object{DpdcUdcV2.AccountRoles} (id:string son:bool account:string))
     (defun UR_CA|R-AddQuantity:bool (id:string account:string))
     (defun UR_CA|R-Frozen:bool (id:string son:bool account:string))
     (defun UR_CA|R-Exemption:bool (id:string son:bool account:string))
@@ -163,7 +163,7 @@
     (defun UR_CA|R-SetUri:bool (id:string son:bool account:string))
     (defun UR_CA|R-Transfer:bool (id:string son:bool account:string))
     ;;  [5]
-    (defun UR_AccountSupply:object{DpdcUdcV1.DPDC|AccountSupply} (account:string id:string son:bool nonce:integer))
+    (defun UR_AccountSupply:object{DpdcUdcV2.DPDC|AccountSupply} (account:string id:string son:bool nonce:integer))
     (defun UR_AccountNonceSupply:integer (account:string id:string son:bool nonce:integer))
     (defun UR_AccountNoncesSupplies:[integer] (account:string id:string son:bool nonces:[integer]))
     ;;
@@ -174,7 +174,7 @@
     (defun URH_AccountNoncesWithSupplies:[object] (account:string id:string son:bool))
     ;;
     ;;  [URCi]  Branding cost readers — single source for exec billing + INFO preview
-    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator} (entity-id:string son:bool))
+    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV2.OutputCumulator} (entity-id:string son:bool))
     (defun URCi_UpgradeBranding:decimal (months:integer))
     ;;{5.4}  Validate [UEV/CAP]
     ;;
@@ -207,8 +207,8 @@
     (defun UEV_Name (name:string))
     (defun UEV_Description (description:string))
     (defun UEV_MetaDataBag (meta-data:object))
-    (defun UEV_AssetType (asset-type:object{DpdcUdcV1.URI|Type}))
-    (defun UEV_UriData (u:object{DpdcUdcV1.URI|Data}))
+    (defun UEV_AssetType (asset-type:object{DpdcUdcV2.URI|Type}))
+    (defun UEV_UriData (u:object{DpdcUdcV2.URI|Data}))
     (defun UEV_NftNonceExistance (id:string nonce:integer existance:bool))
     (defun UEV_NonceQuantityInclusion (account:string id:string son:bool nonce:integer amount:integer))
     (defun UEV_NonceQuantityInclusionMapper (account:string id:string son:bool nonces:[integer] amounts:[integer]))
@@ -241,26 +241,26 @@
     )
     (defun XE_DeployAccountWNE (account:string id:string son:bool))
     (defun XE_U|Rnaq (id:string account:string toggle))
-    (defun XI_U|AccountRoles (id:string son:bool account:string new-roles:object{DpdcUdcV1.AccountRoles}))
+    (defun XI_U|AccountRoles (id:string son:bool account:string new-roles:object{DpdcUdcV2.AccountRoles}))
     ;;
     ;; [<PropertiesTable> Writings] [1]
     ;;
-    (defun XE_I|Collection (id:string son:bool idp:object{DpdcUdcV1.DPDC|Properties}))
-    (defun XE_U|Specs (id:string son:bool specs:object{DpdcUdcV1.DPDC|Properties}))
+    (defun XE_I|Collection (id:string son:bool idp:object{DpdcUdcV2.DPDC|Properties}))
+    (defun XE_U|Specs (id:string son:bool specs:object{DpdcUdcV2.DPDC|Properties}))
     (defun XE_U|IsPaused (id:string son:bool toggle:bool))
     (defun XE_U|NoncesUsed (id:string son:bool new-nv:integer))
     (defun XE_U|SetClassesUsed (id:string son:bool new-nsc:integer))
     ;;
     ;; [<NoncesTable> Writings] [2]
     ;;
-    (defun XE_I|CollectionElement (id:string son:bool nonce-value:integer ned:object{DpdcUdcV1.DPDC|NonceElement}))
+    (defun XE_I|CollectionElement (id:string son:bool nonce-value:integer ned:object{DpdcUdcV2.DPDC|NonceElement}))
     (defun XE_U|NonceSupply (id:string nonce-value:integer new-supply:integer))
     (defun XE_U|NonceHolder (id:string nonce-value:integer new-holder-account:string))
-    (defun XE_U|NonceOrSplitData (id:string son:bool nonce-value:integer nos:bool nd:object{DpdcUdcV1.DPDC|NonceData}))
+    (defun XE_U|NonceOrSplitData (id:string son:bool nonce-value:integer nos:bool nd:object{DpdcUdcV2.DPDC|NonceData}))
     ;;
     ;; [<VerumRolesTable> Writings] [3]
     ;;
-    (defun XE_I|VerumRoles (id:string son:bool verum-chain:object{DpdcUdcV1.DPDC|VerumRoles}))
+    (defun XE_I|VerumRoles (id:string son:bool verum-chain:object{DpdcUdcV2.DPDC|VerumRoles}))
     ;;
     ;;  [Indirect Writings]
     ;;
@@ -291,9 +291,9 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements OuronetPolicyV1)
-    (implements BrandingUsageTertiaryV1)
-    (implements DpdcV1)
+    (implements OuronetPolicyV2)
+    (implements BrandingUsageTertiaryV2)
+    (implements DpdcV2)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -306,7 +306,7 @@
     (defcap GOV ()                          (compose-capability (GOV|DPDC_ADMIN)))
     (defcap GOV|DPDC_ADMIN ()               (enforce-guard GOV|MD_DPDC))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
     (defun GOV|CollectiblesKey ()           (+ (CT_Namespace) ".dh_sc_dpdc-keyset"))
     ;;
     ;; [SC-Names]
@@ -323,8 +323,8 @@
     ;;{P2}  schemas
     ;;{P3}  tables
     ;;
-    (deftable P|T:{OuronetPolicyV1.P|S})
-    (deftable P|MT:{OuronetPolicyV1.P|MS})
+    (deftable P|T:{OuronetPolicyV2.P|S})
+    (deftable P|MT:{OuronetPolicyV2.P|MS})
     ;;{P4}  capabilities
     (defcap P|DPDC|CALLER ()
         true
@@ -334,7 +334,7 @@
         (compose-capability (SECURE))
     )
     ;;{P5}  functions
-    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -344,7 +344,7 @@
     (defun P|UEV_IMC ()
         (let
             (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
+                (ref-U|G:module{OuronetGuardsV2} U|G)
             )
             (ref-U|G::UEV_Any (P|UR_IMP))
         )
@@ -360,7 +360,7 @@
         (with-capability (GOV|DPDC_ADMIN)
             (let
                 (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
                     (dg:guard (create-capability-guard (SECURE)))
                 )
                 (with-default-read P|MT P|I
@@ -376,8 +376,8 @@
     (defun P|A_Define ()
         (let
             (
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (ref-P|BRD:module{OuronetPolicyV1} BRD)
+                (ref-P|DALOS:module{OuronetPolicyV2} DALOS)
+                (ref-P|BRD:module{OuronetPolicyV2} BRD)
                 (mg:guard (create-capability-guard (P|DPDC|CALLER)))
             )
             (ref-P|DALOS::P|A_AddIMP mg)
@@ -397,17 +397,17 @@
     ;;{3.2}  schemas
     ;;{3.3}  tables
     ;;
-    (deftable DPSF|T|Properties:{DpdcUdcV1.DPDC|Properties})            ;;Key = <DPSF-id>      
-    (deftable DPSF|T|Nonces:{DpdcUdcV1.DPDC|NonceElement})              ;;Key = <DPSF-id> + BAR + <nonce>
-    (deftable DPSF|T|VerumRoles:{DpdcUdcV1.DPDC|VerumRoles})            ;;Key = <DPSF-id>
-    (deftable DPSF|T|Account:{DpdcUdcV1.DPSF|AccountRoles})             ;;Key = <DPSF-id> + BAR + <account>
-    (deftable DPSF|T|AccountSupplies:{DpdcUdcV1.DPDC|AccountSupply})    ;;Key = <account> + BAR + <DPSF-id> + BAR + <nonce>
+    (deftable DPSF|T|Properties:{DpdcUdcV2.DPDC|Properties})            ;;Key = <DPSF-id>      
+    (deftable DPSF|T|Nonces:{DpdcUdcV2.DPDC|NonceElement})              ;;Key = <DPSF-id> + BAR + <nonce>
+    (deftable DPSF|T|VerumRoles:{DpdcUdcV2.DPDC|VerumRoles})            ;;Key = <DPSF-id>
+    (deftable DPSF|T|Account:{DpdcUdcV2.DPSF|AccountRoles})             ;;Key = <DPSF-id> + BAR + <account>
+    (deftable DPSF|T|AccountSupplies:{DpdcUdcV2.DPDC|AccountSupply})    ;;Key = <account> + BAR + <DPSF-id> + BAR + <nonce>
     ;;
-    (deftable DPNF|T|Properties:{DpdcUdcV1.DPDC|Properties})            ;;Key = <DPNF-id>      
-    (deftable DPNF|T|Nonces:{DpdcUdcV1.DPDC|NonceElement})              ;;Key = <DSNF-id> + BAR + <nonce>
-    (deftable DPNF|T|VerumRoles:{DpdcUdcV1.DPDC|VerumRoles})            ;;Key = <DPNF-id>
-    (deftable DPNF|T|Account:{DpdcUdcV1.DPNF|AccountRoles})             ;;Key = <DPNF-id> + BAR + <account> 
-    (deftable DPNF|T|AccountSupplies:{DpdcUdcV1.DPDC|AccountSupply})    ;;Key = <account> + BAR + <DPNF-id> + BAR + <nonce>
+    (deftable DPNF|T|Properties:{DpdcUdcV2.DPDC|Properties})            ;;Key = <DPNF-id>      
+    (deftable DPNF|T|Nonces:{DpdcUdcV2.DPDC|NonceElement})              ;;Key = <DSNF-id> + BAR + <nonce>
+    (deftable DPNF|T|VerumRoles:{DpdcUdcV2.DPDC|VerumRoles})            ;;Key = <DPNF-id>
+    (deftable DPNF|T|Account:{DpdcUdcV2.DPNF|AccountRoles})             ;;Key = <DPNF-id> + BAR + <account> 
+    (deftable DPNF|T|AccountSupplies:{DpdcUdcV2.DPDC|AccountSupply})    ;;Key = <account> + BAR + <DPNF-id> + BAR + <nonce>
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -425,7 +425,7 @@
     (defcap AHU ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ah:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
             )
             (ref-DALOS::CAP_EnforceAccountOwnership ah)
@@ -451,14 +451,14 @@
     ;;{5.1}  Construct [CT/UDC]
     ;;
     ;; [Keys]
-    (defun CT_Namespace ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
-    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_Namespace ()                    (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_NS_USE)))
+    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
     ;;
-    (defun UDC_Control:object{DpdcUdcV1.DPDC|Properties}
+    (defun UDC_Control:object{DpdcUdcV2.DPDC|Properties}
         (id:string son:bool cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool)
         (let
             (
-                (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
             )
             (ref-DPDC-UDC::UDC_DPDC|Properties
                 id
@@ -495,7 +495,7 @@
     )
     ;;
     ;; [1] - [Properties]
-    (defun UR_Properties:object{DpdcUdcV1.DPDC|Properties} (id:string son:bool)
+    (defun UR_Properties:object{DpdcUdcV2.DPDC|Properties} (id:string son:bool)
         (read (if son DPSF|T|Properties DPNF|T|Properties) id)
     )
     (defun UR_OwnerKonto:string (id:string son:bool)
@@ -544,7 +544,7 @@
         (at "set-classes-used" (UR_Properties id son))
     )
     ;; [2] - [Nonce Element] - Only positive nonces can be read this way; Negative Nonces will error out except for <UR_NonceSupply>
-    (defun UR_NonceElement:object{DpdcUdcV1.DPDC|NonceElement} (id:string son:bool nonce:integer)
+    (defun UR_NonceElement:object{DpdcUdcV2.DPDC|NonceElement} (id:string son:bool nonce:integer)
         (read (if son DPSF|T|Nonces DPNF|T|Nonces) (concat [id BAR (format "{}" [nonce])]))
     )
     (defun UR_NonceClass:integer (id:string son:bool nonce:integer)
@@ -569,13 +569,13 @@
     (defun UR_NonceHolder:string (id:string son:bool nonce:integer)
         (at "nonce-holder" (UR_NonceElement id son nonce))
     )
-    (defun UR_NativeNonceData:object{DpdcUdcV1.DPDC|NonceData} (id:string son:bool nonce:integer)
+    (defun UR_NativeNonceData:object{DpdcUdcV2.DPDC|NonceData} (id:string son:bool nonce:integer)
         (at "nonce-data" (UR_NonceElement id son nonce))
     )
-    (defun UR_SplitNonceData:object{DpdcUdcV1.DPDC|NonceData} (id:string son:bool nonce:integer)
+    (defun UR_SplitNonceData:object{DpdcUdcV2.DPDC|NonceData} (id:string son:bool nonce:integer)
         (at "split-data" (UR_NonceElement id son nonce))
     )
-    (defun UR_NonceData:object{DpdcUdcV1.DPDC|NonceData} (id:string son:bool nonce:integer)
+    (defun UR_NonceData:object{DpdcUdcV2.DPDC|NonceData} (id:string son:bool nonce:integer)
         (if (< nonce 0)
             (UR_SplitNonceData id son (abs nonce))
             (UR_NativeNonceData id son nonce)
@@ -583,51 +583,51 @@
     )
     ;;
     ;; [2.1] - [Generic Nonce-Data Read]
-    (defun UR_N|Royalty:decimal (n:object{DpdcUdcV1.DPDC|NonceData})
+    (defun UR_N|Royalty:decimal (n:object{DpdcUdcV2.DPDC|NonceData})
         @doc "Forward-looking hook for the upcoming Escrow/NFT marketplace (not yet built) — no on-chain \
             \ consumer reads this today, unlike UR_N|IgnisRoyalty below, which DPDC-T's transfer pricing \
             \ actively consumes. Confirmed intentional, not dead/unfinished code. DPDC Audit #26M."
         (at "royalty" n)
     )
-    (defun UR_N|IgnisRoyalty:decimal (n:object{DpdcUdcV1.DPDC|NonceData})
+    (defun UR_N|IgnisRoyalty:decimal (n:object{DpdcUdcV2.DPDC|NonceData})
         (at "ignis" n)
     )
-    (defun UR_N|Name:string (n:object{DpdcUdcV1.DPDC|NonceData})
+    (defun UR_N|Name:string (n:object{DpdcUdcV2.DPDC|NonceData})
         (at "name" n)
     )
-    (defun UR_N|Description:string (n:object{DpdcUdcV1.DPDC|NonceData})
+    (defun UR_N|Description:string (n:object{DpdcUdcV2.DPDC|NonceData})
         (at "description" n)
     )
-    (defun UR_N|MetaData:object{DpdcUdcV1.NonceMetaData} (n:object{DpdcUdcV1.DPDC|NonceData})
+    (defun UR_N|MetaData:object{DpdcUdcV2.NonceMetaData} (n:object{DpdcUdcV2.DPDC|NonceData})
         (at "meta-data" n)
     )
-    (defun UR_N|AssetType:object{DpdcUdcV1.URI|Type} (n:object{DpdcUdcV1.DPDC|NonceData})
+    (defun UR_N|AssetType:object{DpdcUdcV2.URI|Type} (n:object{DpdcUdcV2.DPDC|NonceData})
         (at "asset-type" n)
     )
-    (defun UR_N|Primary:object{DpdcUdcV1.URI|Data} (n:object{DpdcUdcV1.DPDC|NonceData})
+    (defun UR_N|Primary:object{DpdcUdcV2.URI|Data} (n:object{DpdcUdcV2.DPDC|NonceData})
         (at "uri-primary" n)
     )
-    (defun UR_N|Secondary:object{DpdcUdcV1.URI|Data} (n:object{DpdcUdcV1.DPDC|NonceData})
+    (defun UR_N|Secondary:object{DpdcUdcV2.URI|Data} (n:object{DpdcUdcV2.DPDC|NonceData})
         (at "uri-secondary" n)
     )
-    (defun UR_N|Tertiary:object{DpdcUdcV1.URI|Data} (n:object{DpdcUdcV1.DPDC|NonceData})
+    (defun UR_N|Tertiary:object{DpdcUdcV2.URI|Data} (n:object{DpdcUdcV2.DPDC|NonceData})
         (at "uri-tertiary" n)
     )
     ;;  [2.1.1] - [Generic Nonce-MetaData Read]
-    (defun UR_N|RawScore:decimal (n:object{DpdcUdcV1.DPDC|NonceData})
+    (defun UR_N|RawScore:decimal (n:object{DpdcUdcV2.DPDC|NonceData})
         (at "score" (UR_N|MetaData n))
     )
-    (defun UR_N|Composition:[integer] (n:object{DpdcUdcV1.DPDC|NonceData})
+    (defun UR_N|Composition:[integer] (n:object{DpdcUdcV2.DPDC|NonceData})
         (at "composition" (UR_N|MetaData n))
     )
-    (defun UR_N|RawMetaData:object (n:object{DpdcUdcV1.DPDC|NonceData})
+    (defun UR_N|RawMetaData:object (n:object{DpdcUdcV2.DPDC|NonceData})
         (at "meta-data" (UR_N|MetaData n))
     )
     ;;  [2.2] - [Existing Nonce-Data Read]
     ;;  [Uses Above Functions, instead of <n> would use <(UR_NativeNonceData id son nonce)> or <(UR_SplitNonceData id son nonce)>]
     ;;
     ;;  [3] - [VerumRoles]
-    (defun UR_VerumRoles:object{DpdcUdcV1.DPDC|VerumRoles} (id:string son:bool)
+    (defun UR_VerumRoles:object{DpdcUdcV2.DPDC|VerumRoles} (id:string son:bool)
         (if son
             (read DPSF|T|VerumRoles id)
             (read DPNF|T|VerumRoles id)
@@ -703,10 +703,10 @@
             (if (= (typeof trial) "bool") false true)
         )
     )
-    (defun UR_CA|R:object{DpdcUdcV1.AccountRoles} (id:string son:bool account:string)
+    (defun UR_CA|R:object{DpdcUdcV2.AccountRoles} (id:string son:bool account:string)
         (let
             (
-                (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
                 (f:bool false)
             )
             (if son
@@ -761,7 +761,7 @@
         (at "role-transfer" (UR_CA|R id son account))
     )
     ;; [5] - [AccountSupplies]
-    (defun UR_AccountSupply:object{DpdcUdcV1.DPDC|AccountSupply} (account:string id:string son:bool nonce:integer)
+    (defun UR_AccountSupply:object{DpdcUdcV2.DPDC|AccountSupply} (account:string id:string son:bool nonce:integer)
         (read
             (if son DPSF|T|AccountSupplies DPNF|T|AccountSupplies)
             (concat [account BAR id BAR (format "{}" [nonce])])
@@ -772,8 +772,8 @@
         \ If the Account exists and has no supply, it would return as 0."
         (let
             (
-                (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
-                (zs:object{DpdcUdcV1.DPDC|AccountSupply} (ref-DPDC-UDC::UDC_DPDC|AccountSupply BAR BAR -1 -1))
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+                (zs:object{DpdcUdcV2.DPDC|AccountSupply} (ref-DPDC-UDC::UDC_DPDC|AccountSupply BAR BAR -1 -1))
             )
             (at "supply" (try zs (UR_AccountSupply account id son nonce)))
         )
@@ -782,7 +782,7 @@
         @doc "Returns the Supplies of the <nonces> used in the input"
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
             )
             (fold
                 (lambda
@@ -874,12 +874,12 @@
         )
     )
     ;;
-    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator}
+    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV2.OutputCumulator}
         (entity-id:string son:bool)
         @doc "Cost preview for C_UpdatePendingBranding (Branding tier; son->4.0 else 5.0)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (owner:string (UR_OwnerKonto entity-id son))
                 (multiplier:decimal (if son 4.0 5.0))
             )
@@ -889,7 +889,7 @@
     (defun URCi_UpgradeBranding:decimal (months:integer)
         @doc "Cost preview for C_UpgradeBranding (delegates to BRD single source; \
             \ the exec path bills the same value via ref-BRD::XE_UpgradeBranding)."
-        (let ((ref-BRD:module{BrandingV1} BRD)) (ref-BRD::URCi_UpgradeBranding months))
+        (let ((ref-BRD:module{BrandingV2} BRD)) (ref-BRD::URCi_UpgradeBranding months))
     )
     ;;{5.4}  Validate [UEV/CAP]
     (defun UEV_id (id:string son:bool)
@@ -1076,7 +1076,7 @@
     (defun UEV_Royalty (royalty:decimal)
         (let
             (
-                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
             )
             (ref-U|DALOS::UEV_Fee royalty)
         )
@@ -1084,8 +1084,8 @@
     (defun UEV_IgnisRoyalty (royalty:decimal)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 ;;
                 (ignis-id:string (ref-DALOS::UR_IgnisID))
                 (ignis-pr:integer (ref-DPTF::UR_Decimals ignis-id))
@@ -1108,7 +1108,7 @@
             \ word. See DPDC Audit #12Hb."
         (let*
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
                 (words:[string]
                     (if (= (length description) 0)
                         []
@@ -1136,7 +1136,7 @@
             "Nonce meta-data is too large (8192 character serialized ceiling)"
         )
     )
-    (defun UEV_AssetType (asset-type:object{DpdcUdcV1.URI|Type})
+    (defun UEV_AssetType (asset-type:object{DpdcUdcV2.URI|Type})
         @doc "At least one of the 7 asset-type flags must be set; any combination up to all 7 \
             \ simultaneously is valid. See DPDC Audit #12Hb."
         (enforce
@@ -1151,7 +1151,7 @@
             "At least one asset-type flag must be set"
         )
     )
-    (defun UEV_UriData (u:object{DpdcUdcV1.URI|Data})
+    (defun UEV_UriData (u:object{DpdcUdcV2.URI|Data})
         @doc "Bounds every link string in a URI|Data bundle (uri-primary/secondary/tertiary each \
             \ carry one — primary/high-res/thumbnail tiers of the same element) to 2048 characters — \
             \ generous for any real link/CID, blocks raw payloads hiding in a link field. \
@@ -1183,9 +1183,9 @@
                 )
                 (let
                     (
-                        (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
-                        (split-data:object{DpdcUdcV1.DPDC|NonceData} (UR_SplitNonceData id false nonce))
-                        (znd:object{DpdcUdcV1.DPDC|NonceData} (ref-DPDC-UDC::UDC_ZeroNonceData))
+                        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+                        (split-data:object{DpdcUdcV2.DPDC|NonceData} (UR_SplitNonceData id false nonce))
+                        (znd:object{DpdcUdcV2.DPDC|NonceData} (ref-DPDC-UDC::UDC_ZeroNonceData))
                     )
                     (if existance
                         (enforce (!= split-data znd) ft)
@@ -1210,7 +1210,7 @@
                 )
                 (let
                     (
-                        (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                        (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                         (nft-holder:string (UR_NonceHolder id false nonce))
                         (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                     )
@@ -1233,7 +1233,7 @@
         @doc "Enforces DPSF or DPNF Token ID Ownership"
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership (UR_OwnerKonto id son))
         )
@@ -1242,7 +1242,7 @@
         @doc "Enforces DPSF or DPNF Token ID Creator Ownership"
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership (UR_CreatorKonto id son))
         )
@@ -1270,8 +1270,8 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
             )
             (ref-DALOS::UEV_EnforceAccountExists account)
             (UEV_id id true)
@@ -1300,8 +1300,8 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
             )
             (ref-DALOS::UEV_EnforceAccountExists account)
             (UEV_id id false)
@@ -1341,7 +1341,7 @@
             {"role-nft-add-quantity" : toggle}
         )
     )
-    (defun XI_U|AccountRoles (id:string son:bool account:string new-roles:object{DpdcUdcV1.AccountRoles})
+    (defun XI_U|AccountRoles (id:string son:bool account:string new-roles:object{DpdcUdcV2.AccountRoles})
         (require-capability (SECURE))
         (if son
             (update DPSF|T|Account (concat [id BAR account])
@@ -1354,14 +1354,14 @@
     )
     ;; [<PropertiesTable> Writings] [1]
     (defun XE_I|Collection
-        (id:string son:bool idp:object{DpdcUdcV1.DPDC|Properties})
+        (id:string son:bool idp:object{DpdcUdcV2.DPDC|Properties})
         (P|UEV_IMC)
         (if son
             (insert DPSF|T|Properties id idp)
             (insert DPNF|T|Properties id idp)
         )
     )
-    (defun XE_U|Specs (id:string son:bool specs:object{DpdcUdcV1.DPDC|Properties})
+    (defun XE_U|Specs (id:string son:bool specs:object{DpdcUdcV2.DPDC|Properties})
         (P|UEV_IMC)
         (if son
             (update DPSF|T|Properties id specs)
@@ -1390,7 +1390,7 @@
         )
     )
     ;; [<NoncesTable> Writings] [2]
-    (defun XE_I|CollectionElement (id:string son:bool nonce-value:integer ned:object{DpdcUdcV1.DPDC|NonceElement})
+    (defun XE_I|CollectionElement (id:string son:bool nonce-value:integer ned:object{DpdcUdcV2.DPDC|NonceElement})
         (P|UEV_IMC)
         (if son
             (insert DPSF|T|Nonces (concat [id BAR (format "{}" [nonce-value])]) ned)
@@ -1405,7 +1405,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 (iz-bar:bool (if (= new-holder-account BAR) true false))
                 (sh:string
                     (if iz-bar
@@ -1417,7 +1417,7 @@
             (update DPNF|T|Nonces (concat [id BAR (format "{}" [nonce-value])]) {"nonce-holder" : sh})
         )
     )
-    (defun XE_U|NonceOrSplitData (id:string son:bool nonce-value:integer nos:bool nd:object{DpdcUdcV1.DPDC|NonceData} )
+    (defun XE_U|NonceOrSplitData (id:string son:bool nonce-value:integer nos:bool nd:object{DpdcUdcV2.DPDC|NonceData} )
         (P|UEV_IMC)
         (if nos
             (if son
@@ -1431,7 +1431,7 @@
         )
     )
     ;; [<VerumRolesTable> Writings] [3]
-    (defun XE_I|VerumRoles (id:string son:bool verum-chain:object{DpdcUdcV1.DPDC|VerumRoles})
+    (defun XE_I|VerumRoles (id:string son:bool verum-chain:object{DpdcUdcV2.DPDC|VerumRoles})
         (P|UEV_IMC)
         (if son
             (insert DPSF|T|VerumRoles id verum-chain)
@@ -1644,8 +1644,8 @@
             )
             (let
                 (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
+                    (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
                     (current-verum-chain:[string] (UR_GetVerumChain id son rp))
                     (ul:[string] (ref-U|DALOS::UC_NewRoleList current-verum-chain account aor))
                 )
@@ -1670,7 +1670,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
                 (tbl (if son DPSF|T|AccountSupplies DPNF|T|AccountSupplies))
                 (ki:string (concat [account BAR id BAR (format "{}" [nonce-value])]) )
             )
@@ -1693,7 +1693,7 @@
         (with-capability (AHU)
             (let
                 (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
                 )
                 (map
                     (lambda
@@ -1735,7 +1735,7 @@
         (with-capability (AHU)
             (let
                 (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
                 )
                 (map
                     (lambda
@@ -1796,13 +1796,13 @@
             {"id"       : id}
         )
     )
-    (defun C_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator}
-        (entity-id:string son:bool logo:string description:string website:string social:[object{BrandingV1.SocialSchema}])
+    (defun C_UpdatePendingBranding:object{IgnisCollectorV2.OutputCumulator}
+        (entity-id:string son:bool logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-BRD:module{BrandingV1} BRD)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-BRD:module{BrandingV2} BRD)
                 (owner:string (UR_OwnerKonto entity-id son))
                 (multiplier:decimal (if son 4.0 5.0))
             )
@@ -1816,9 +1816,9 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-BRD:module{BrandingV1} BRD)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-BRD:module{BrandingV2} BRD)
                 (owner:string (UR_OwnerKonto entity-id son))
                 (stoa-payment:decimal
                     (with-capability (DPDC|C>UPGRADE-BRD entity-id son)

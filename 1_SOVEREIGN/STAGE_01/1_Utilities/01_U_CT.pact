@@ -1,4 +1,4 @@
-(interface DiaStoaPidV1
+(interface DiaStoaPidV2
     @doc "Exposes the UR Function that Reads STOA Price in Dollars (STOA-PID) via Dia Oracle on Chain 2"
 
     ;;<=========================================================================>
@@ -44,7 +44,7 @@
 
 )
 
-(interface OuronetConstantsV1
+(interface OuronetConstantsV2
     @doc "Exported Constants as Functions from this Module via interface"
 
     ;;<=========================================================================>
@@ -186,8 +186,8 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements OuronetConstantsV1)
-    (implements DiaStoaPidV1)
+    (implements OuronetConstantsV2)
+    (implements DiaStoaPidV2)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE

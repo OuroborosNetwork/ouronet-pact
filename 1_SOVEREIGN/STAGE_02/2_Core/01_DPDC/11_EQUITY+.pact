@@ -1,4 +1,4 @@
-(interface EquityV1
+(interface EquityV2
 
 
     ;;<=========================================================================>
@@ -52,8 +52,8 @@
     (defun URC_SharesPerMillion:[integer] (id:string))
     (defun URC_SingleSharePerMillions:integer (id:string package-share-tier:integer))
     (defun URC_CombineCapacity:integer (id:string))
-    (defun URCi_MorphPackageShares:object{IgnisCollectorV1.OutputCumulator} (account:string id:string input-nonce:integer input-amount:integer output-nonce:integer))
-    (defun URCi_IssueShareholderCollection:object{IgnisCollectorV1.OutputCumulator} ())
+    (defun URCi_MorphPackageShares:object{IgnisCollectorV2.OutputCumulator} (account:string id:string input-nonce:integer input-amount:integer output-nonce:integer))
+    (defun URCi_IssueShareholderCollection:object{IgnisCollectorV2.OutputCumulator} ())
     ;;{5.4}  Validate [UEV/CAP]
     ;;
     ;;  [UEV]
@@ -69,13 +69,13 @@
     ;;
     ;;  [C]
     ;;
-    (defun C_IssueShareholderCollection:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_IssueShareholderCollection:object{IgnisCollectorV2.OutputCumulator}
         (
             patron:string creator-account:string collection-name:string collection-ticker:string
             royalty:decimal ignis-royalty:decimal ipfs-links:[string]
         )
     )
-    (defun C_MorphPackageShares:object{IgnisCollectorV1.OutputCumulator} (account:string id:string input-nonce:integer input-amount:integer output-nonce:integer))
+    (defun C_MorphPackageShares:object{IgnisCollectorV2.OutputCumulator} (account:string id:string input-nonce:integer input-amount:integer output-nonce:integer))
 
 )
 (module EQUITY GOV
@@ -87,8 +87,8 @@
     ;;{0}  IMPLEMENTERS
     ;;
     @doc "Defines the rules for creating Shareholder DPSF Collections"
-    (implements OuronetPolicyV1)
-    (implements EquityV1)
+    (implements OuronetPolicyV2)
+    (implements EquityV2)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -101,7 +101,7 @@
     (defcap GOV ()                          (compose-capability (GOV|EQUITY_ADMIN)))
     (defcap GOV|EQUITY_ADMIN ()             (enforce-guard GOV|MD_EQUITY))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
@@ -110,8 +110,8 @@
     ;;{P2}  schemas
     ;;{P3}  tables
     ;;
-    (deftable P|T:{OuronetPolicyV1.P|S})
-    (deftable P|MT:{OuronetPolicyV1.P|MS})
+    (deftable P|T:{OuronetPolicyV2.P|S})
+    (deftable P|MT:{OuronetPolicyV2.P|MS})
     ;;{P4}  capabilities
     (defcap P|EQUITY|CALLER ()
         true
@@ -129,7 +129,7 @@
         (compose-capability (P|EQUITY|REMOTE-GOV))
     )
     ;;{P5}  functions
-    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -139,7 +139,7 @@
     (defun P|UEV_IMC ()
         (let
             (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
+                (ref-U|G:module{OuronetGuardsV2} U|G)
             )
             (ref-U|G::UEV_Any (P|UR_IMP))
         )
@@ -155,7 +155,7 @@
         (with-capability (GOV|EQUITY_ADMIN)
             (let
                 (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
                     (dg:guard (create-capability-guard (SECURE)))
                 )
                 (with-default-read P|MT P|I
@@ -171,10 +171,10 @@
     (defun P|A_Define ()
         (let
             (
-                (ref-P|DPDC:module{OuronetPolicyV1} DPDC)
-                (ref-P|DPDC-C:module{OuronetPolicyV1} DPDC-C)
-                (ref-P|DPDC-I:module{OuronetPolicyV1} DPDC-I)
-                (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
+                (ref-P|DPDC:module{OuronetPolicyV2} DPDC)
+                (ref-P|DPDC-C:module{OuronetPolicyV2} DPDC-C)
+                (ref-P|DPDC-I:module{OuronetPolicyV2} DPDC-I)
+                (ref-P|DPDC-T:module{OuronetPolicyV2} DPDC-T)
                 (mg:guard (create-capability-guard (P|EQUITY|CALLER)))
             )
             (ref-P|DPDC::P|A_Add
@@ -233,13 +233,13 @@
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
     ;;
-    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
     ;;{5.2}  Compute [UC]
     ;;
     (defun UC_Name:[string] (collection-name:string)
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
             )
             (fold
                 (lambda
@@ -259,7 +259,7 @@
     (defun UC_Description:[string] (collection-name:string)
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
             )
             (fold
                 (lambda
@@ -293,8 +293,8 @@
             \ share-equivalents), in tier order."
         (let
             (
-                (ref-DPDC:module{DpdcV1} DPDC)
-                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
             )
             (fold
                 (lambda
@@ -318,7 +318,7 @@
         @doc "Computes Tier Shares; Example for 5 mil Company Shares it would output 5*[100 200 500 1000 2000 5000 10000]"
         (let
             (
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-DPDC:module{DpdcV2} DPDC)
                 (tcs-in-millions:integer (/ (ref-DPDC::UR_NonceSupply id true 1) 1000000))
             )
             (map (* tcs-in-millions) S)
@@ -336,7 +336,7 @@
             \ (nonce 1). DPDC Audit #29M."
         (let
             (
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-DPDC:module{DpdcV2} DPDC)
                 (shares:integer (ref-DPDC::UR_NonceSupply id true 1))
                 (half-shares:integer (/ shares PACKAGING_CAP_DIVISOR))
                 (spm:[integer] (URC_SharesPerMillion id))
@@ -348,7 +348,7 @@
         )
     )
     ;;
-    (defun URCi_IssueShareholderCollection:object{IgnisCollectorV1.OutputCumulator} ()
+    (defun URCi_IssueShareholderCollection:object{IgnisCollectorV2.OutputCumulator} ()
         @doc "Cost preview for C_IssueShareholderCollection's IGNIS cumulator (the collection- \
             \ issue STOA price previews separately via DPDC-I::URCi_IssueCollectionStoa). Two legs, \
             \ ARG-INDEPENDENT: \
@@ -370,10 +370,10 @@
             \ Elite) is intended-behavior to confirm under task #76 (IGNIS re-pricing)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-DPDC:module{DpdcV1} DPDC)
-                (ref-DPDC-I:module{DpdcIssueV1} DPDC-I)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC-I:module{DpdcIssueV2} DPDC-I)
                 ;;
                 (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
                 (populate-price:decimal (/ (* (ref-DALOS::UR_UsagePrice "ignis|smallest") 1000000.0) 1000.0))
@@ -387,7 +387,7 @@
             )
         )
     )
-    (defun URCi_MorphPackageShares:object{IgnisCollectorV1.OutputCumulator}
+    (defun URCi_MorphPackageShares:object{IgnisCollectorV2.OutputCumulator}
         (account:string id:string input-nonce:integer input-amount:integer output-nonce:integer)
         @doc "Cost preview for C_MorphPackageShares, mirroring its three branches: Make \
             \ (input-nonce=1: transfer-in + add-quantity + transfer-out), Break (output-nonce=1: \
@@ -395,10 +395,10 @@
             \ transfer-out). Output matches exec ([[in-nonce out-nonce][in-amt out-amt]]). Purely derived."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DPDC:module{DpdcV1} DPDC)
-                (ref-DPDC-MNG:module{DpdcManagementV1} DPDC-MNG)
-                (ref-DPDC-T:module{DpdcTransferV1} DPDC-T)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
+                (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
                 (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
             )
             (if (= input-nonce 1)
@@ -518,36 +518,36 @@
     )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
-    (defun XI_ConvertPackageShares:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_ConvertPackageShares:object{IgnisCollectorV2.OutputCumulator}
         (account:string id:string input-package-share-tier:integer input-package-share-tier-amount:integer output-package-share-tier:integer)
         @doc "Converts any Nonce to [2 3 4 5 6 7 8] to any Nonce [2 3 4 5 6 7 8]"
         (require-capability (SECURE))
         (with-capability (EQUITY|C>CONVERT id input-package-share-tier input-package-share-tier-amount output-package-share-tier)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC:module{DpdcV1} DPDC)
-                    (ref-DPDC-MNG:module{DpdcManagementV1} DPDC-MNG) 
-                    (ref-DPDC-T:module{DpdcTransferV1} DPDC-T)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC:module{DpdcV2} DPDC)
+                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
+                    (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
                     (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
                     ;;
                     (input-nonce:integer (+ 1 input-package-share-tier))
                     (output-nonce:integer (+ 1 output-package-share-tier))
                     (output-amount:integer (UC_Convert id input-package-share-tier input-package-share-tier-amount output-package-share-tier))
                     ;;
-                    (ico1:object{IgnisCollectorV1.OutputCumulator}
+                    (ico1:object{IgnisCollectorV2.OutputCumulator}
                         ;;1]Transfer <input-package-share-tier> with <input-package-share-tier-amount> to <dpdc>
                         (ref-DPDC-T::C_Transfer [id] [true] account dpdc [[input-nonce]] [[input-package-share-tier-amount]] true)
                     )
-                    (ico2:object{IgnisCollectorV1.OutputCumulator}
+                    (ico2:object{IgnisCollectorV2.OutputCumulator}
                         ;;2]Burn it
                         (ref-DPDC-MNG::C_BurnSFT dpdc id input-nonce input-package-share-tier-amount)
                     )
-                    (ico3:object{IgnisCollectorV1.OutputCumulator}
+                    (ico3:object{IgnisCollectorV2.OutputCumulator}
                         ;;3]Add Quantity <output-quantity> for the <output-nonce> on <dpdc> Account
                         (ref-DPDC-MNG::C_AddQuantity dpdc id output-nonce output-amount)
                     )
-                    (ico4:object{IgnisCollectorV1.OutputCumulator}
+                    (ico4:object{IgnisCollectorV2.OutputCumulator}
                         ;;4]Transfer it to <account>
                         (ref-DPDC-T::C_Transfer [id] [true] dpdc account [[output-nonce]] [[output-amount]] true)
                     )
@@ -559,7 +559,7 @@
             )
         )
     )
-    (defun XI_MakePackageShares:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_MakePackageShares:object{IgnisCollectorV2.OutputCumulator}
         (account:string id:string shares-amount:integer package-share-tier:integer)
         @doc "Combines Nonce 1 to Nonce 2,3,4,5,6,7,8. \
             \ DPDC Audit #49L: this is an intentionally separate, bespoke implementation of the \
@@ -571,24 +571,24 @@
         (with-capability (EQUITY|C>MAKE id shares-amount package-share-tier)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC:module{DpdcV1} DPDC)
-                    (ref-DPDC-MNG:module{DpdcManagementV1} DPDC-MNG) 
-                    (ref-DPDC-T:module{DpdcTransferV1} DPDC-T)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC:module{DpdcV2} DPDC)
+                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
+                    (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
                     (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
                     ;;
                     (output-nonce:integer (+ 1 package-share-tier))
                     (output-amount:integer (URC_MakeSharePackage id shares-amount package-share-tier))
                     ;;
-                    (ico1:object{IgnisCollectorV1.OutputCumulator}
+                    (ico1:object{IgnisCollectorV2.OutputCumulator}
                         ;;1]Transfer Shares to <dpdc>
                         (ref-DPDC-T::C_Transfer [id] [true] account dpdc [[1]] [[shares-amount]] true)
                     )
-                    (ico2:object{IgnisCollectorV1.OutputCumulator}
+                    (ico2:object{IgnisCollectorV2.OutputCumulator}
                         ;;2]Add Quantity for the Package-Share on <dpdc> Account
                         (ref-DPDC-MNG::C_AddQuantity dpdc id output-nonce output-amount)
                     )
-                    (ico3:object{IgnisCollectorV1.OutputCumulator}
+                    (ico3:object{IgnisCollectorV2.OutputCumulator}
                         ;;3]Transfer it to <account>
                         (ref-DPDC-T::C_Transfer [id] [true] dpdc account [[output-nonce]] [[output-amount]] true)
                     )
@@ -600,7 +600,7 @@
             )
         )
     )
-    (defun XI_BreakPackageShares:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_BreakPackageShares:object{IgnisCollectorV2.OutputCumulator}
         (account:string id:string package-share-tier:integer amount:integer)
         @doc "Brakes Nonce 2,3,4,5,6,7,8 to Nonce 1. \
             \ DPDC Audit #49L: see XI_MakePackageShares's @doc -- intentionally bespoke vs. DPDC-S, \
@@ -609,25 +609,25 @@
         (with-capability (EQUITY|C>BREAK id package-share-tier)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC:module{DpdcV1} DPDC)
-                    (ref-DPDC-MNG:module{DpdcManagementV1} DPDC-MNG) 
-                    (ref-DPDC-T:module{DpdcTransferV1} DPDC-T)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC:module{DpdcV2} DPDC)
+                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
+                    (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
                     (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
                     ;;
                     (sspm:integer (URC_SingleSharePerMillions id package-share-tier))
                     (nonce-to-break:integer (+ package-share-tier 1))
                     (output-shares:integer (* sspm amount))
                     ;;
-                    (ico1:object{IgnisCollectorV1.OutputCumulator}
+                    (ico1:object{IgnisCollectorV2.OutputCumulator}
                         ;;1]Transfer Package-Share-Tier nonce to dpdc
                         (ref-DPDC-T::C_Transfer [id] [true] account dpdc [[nonce-to-break]] [[amount]] true)
                     )
-                    (ico2:object{IgnisCollectorV1.OutputCumulator}
+                    (ico2:object{IgnisCollectorV2.OutputCumulator}
                         ;;2]Burn it
                         (ref-DPDC-MNG::C_BurnSFT dpdc id nonce-to-break amount)
                     )
-                    (ico3:object{IgnisCollectorV1.OutputCumulator}
+                    (ico3:object{IgnisCollectorV2.OutputCumulator}
                         ;;3]Release Shares to <account>
                         (ref-DPDC-T::C_Transfer [id] [true] dpdc account [[1]] [[output-shares]] true)
                     )
@@ -640,7 +640,7 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun C_IssueShareholderCollection:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_IssueShareholderCollection:object{IgnisCollectorV2.OutputCumulator}
         (
             patron:string creator-account:string collection-name:string collection-ticker:string
             royalty:decimal ignis-royalty:decimal ipfs-links:[string]
@@ -650,12 +650,12 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-U|VST:module{UtilityVstV1} U|VST)
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
-                (ref-DPDC:module{DpdcV1} DPDC)
-                (ref-DPDC-C:module{DpdcCreateV1} DPDC-C)
-                (ref-DPDC-I:module{DpdcIssueV1} DPDC-I)
+                (ref-U|VST:module{UtilityVstV2} U|VST)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
+                (ref-DPDC-I:module{DpdcIssueV2} DPDC-I)
                 ;;
                 (special-sft:[string] (ref-U|VST::UC_EquityID collection-name collection-ticker))
                 (name:string (at 0 special-sft))
@@ -663,13 +663,13 @@
                 (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
                 ;;
                 (b:string BAR)
-                (zd:object{DpdcUdcV1.URI|Data} (ref-DPDC-UDC::UDC_ZeroURI|Data))
-                (md:object{DpdcUdcV1.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
+                (zd:object{DpdcUdcV2.URI|Data} (ref-DPDC-UDC::UDC_ZeroURI|Data))
+                (md:object{DpdcUdcV2.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
                 (n:[string] (UC_Name collection-name))
                 (d:[string] (UC_Description collection-name))
-                (type:object{DpdcUdcV1.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+                (type:object{DpdcUdcV2.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
                 ;;
-                (ico:object{IgnisCollectorV1.OutputCumulator}
+                (ico:object{IgnisCollectorV2.OutputCumulator}
                     ;;1]Issue Equity SFT Collection; <dpdc> automatically gets <role-nft-add-quantity> and <role-nft-burn>
                     (ref-DPDC-I::C_IssueDigitalCollection
                         patron true
@@ -745,7 +745,7 @@
             )
         )
     )
-    (defun C_MorphPackageShares:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_MorphPackageShares:object{IgnisCollectorV2.OutputCumulator}
         (account:string id:string input-nonce:integer input-amount:integer output-nonce:integer)
         (P|UEV_IMC)
         (UEV_Morph input-nonce output-nonce)

@@ -83,8 +83,8 @@
         (public-smart:string (read-string "CODEX|PUBLIC-SMART"))
         (registered-by:string (read-string "CODEX|REGISTERED-BY"))
         (codex-guard:guard (read-keyset "KEY_CODEX_GUARD"))
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV7} TS01-C4)
-        (ref-CODEX:module{CodexV1} CODEX)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
+        (ref-CODEX:module{CodexV2} CODEX)
         (reg-msg:string
             (ref-TS01-C4::A_CODEX|RegisterCodexIdentity
                 composite-id
@@ -149,8 +149,8 @@
     (
         (composite-id:string (read-string "CODEX|COMPOSITE-ID"))
         (new-codex-guard:guard (read-keyset "KEY_CODEX_GUARD_NEW"))
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV7} TS01-C4)
-        (ref-CODEX:module{CodexV1} CODEX)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
+        (ref-CODEX:module{CodexV2} CODEX)
         (rot-msg:string
             (ref-TS01-C4::C_CODEX|RotateCodexGuard composite-id new-codex-guard)
         )
@@ -196,8 +196,8 @@
         (composite-id:string (read-string "CODEX|COMPOSITE-ID"))
         (arweave-tx-id:string (read-string "CODEX|ARWEAVE-TX-ID"))
         (uploaded-bytes:integer 1024)
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV7} TS01-C4)
-        (ref-CODEX:module{CodexV1} CODEX)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
+        (ref-CODEX:module{CodexV2} CODEX)
         (arw-msg:string
             (ref-TS01-C4::C_CODEX|RecordArweaveUpload composite-id arweave-tx-id uploaded-bytes)
         )
@@ -248,9 +248,9 @@
                 account-raw
             )
         )
-        (ref-DALOS:module{OuronetDalosV1} DALOS)
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV7} TS01-C4)
-        (ref-CODEX:module{CodexV1} CODEX)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
+        (ref-CODEX:module{CodexV2} CODEX)
         (stoa-fee:decimal (ref-CODEX::UC_StoicTagStoaFee tag-name))
         (patron-stoa:string (ref-DALOS::UR_AccountStoa patron))
         (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))
@@ -356,8 +356,8 @@
                 account-raw
             )
         )
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV7} TS01-C4)
-        (ref-CODEX:module{CodexV1} CODEX)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
+        (ref-CODEX:module{CodexV2} CODEX)
         (tag-fee:decimal (ref-CODEX::UC_StoicTagStoaFee tag-name))
         (rel-msg:string (ref-TS01-C4::C_CODEX|ReleaseStoicTag patron tag-name))
     )
@@ -420,9 +420,9 @@
                 account-raw
             )
         )
-        (ref-DALOS:module{OuronetDalosV1} DALOS)
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV7} TS01-C4)
-        (ref-CODEX:module{CodexV1} CODEX)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
+        (ref-CODEX:module{CodexV2} CODEX)
         (stoa-fee:decimal (ref-CODEX::UC_StoicTagStoaFee tag-name))
         (patron-stoa:string (ref-DALOS::UR_AccountStoa patron))
         (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))

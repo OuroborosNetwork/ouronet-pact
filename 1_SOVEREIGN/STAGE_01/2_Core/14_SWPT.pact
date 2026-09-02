@@ -2,7 +2,7 @@
 ;; Deploy: load THIS file — interface(s) + module ship together.
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
 ;;
-(interface SwapTracerV2
+(interface SwapTracerV3
     @doc "Exposes Tracer Functions, needed to compute Paths between Tokens existing on \
         \ Liquidity Pools. \
         \ \
@@ -101,7 +101,7 @@
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
     ;;{5.2}  Compute [UC]
-    (defun UC_MakeGraphFromRaw:[object{BreadthFirstSearchV1.GraphNode}]
+    (defun UC_MakeGraphFromRaw:[object{BreadthFirstSearchV2.GraphNode}]
         (input:string output:string swpairs:[string] raw-graph:[object{RawGraphNode}])
     )
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
@@ -113,7 +113,7 @@
     ;;#45L fix: renamed from URC_AllGraphPaths — misleading, doesn't return all
     ;;paths (one shortest BFS chain per reached node, not every simple path).
     (defun URC_ShortestChainPerNode:[[string]] (input:string output:string swpairs:[string]))
-    (defun URC_MakeGraph:[object{BreadthFirstSearchV1.GraphNode}] (input:string output:string swpairs:[string]))
+    (defun URC_MakeGraph:[object{BreadthFirstSearchV2.GraphNode}] (input:string output:string swpairs:[string]))
     ;;#65bL Phase 2: raw-fetch/pure-filter split, used by URC_ComputeAlternateRoutes/
     ;;per transaction and reuse it across every best-of-K attempt, instead of each
     ;;attempt calling URC_MakeGraph (a fresh read per node, every time).
@@ -136,10 +136,10 @@
     ;;every query — only the BFS traversal itself (genuinely <input>-dependent) still
     ;;runs per query.
     (defun URC_ShortestChainPerNodeFromGraph:[[string]]
-        (input:string graph:[object{BreadthFirstSearchV1.GraphNode}])
+        (input:string graph:[object{BreadthFirstSearchV2.GraphNode}])
     )
     (defun URC_ComputeGraphPathFromGraph:[string]
-        (input:string output:string graph:[object{BreadthFirstSearchV1.GraphNode}])
+        (input:string output:string graph:[object{BreadthFirstSearchV2.GraphNode}])
     )
     ;;#34M/M2 fix: additive — finds up to 3 edge-disjoint candidate routes instead
     ;;of just the single first-found one; see the defun's own @doc for the full
@@ -193,8 +193,8 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements OuronetPolicyV1)
-    (implements SwapTracerV2)
+    (implements OuronetPolicyV2)
+    (implements SwapTracerV3)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -207,7 +207,7 @@
     (defcap GOV ()                  (compose-capability (GOV|SWPT_ADMIN)))
     (defcap GOV|SWPT_ADMIN ()       (enforce-guard GOV|MD_SWPT))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()         (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()         (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
@@ -216,14 +216,14 @@
     ;;{P2}  schemas
     ;;{P3}  tables
     ;;
-    (deftable P|T:{OuronetPolicyV1.P|S})                        ;;Key = <policy-name>
-    (deftable P|MT:{OuronetPolicyV1.P|MS})                      ;;Key = P|I (module-identity singleton constant)
+    (deftable P|T:{OuronetPolicyV2.P|S})                        ;;Key = <policy-name>
+    (deftable P|MT:{OuronetPolicyV2.P|MS})                      ;;Key = P|I (module-identity singleton constant)
     ;;{P4}  capabilities
     (defcap P|SWPT|CALLER ()
         true
     )
     ;;{P5}  functions
-    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -233,7 +233,7 @@
     (defun P|UEV_IMC ()
         (let
             (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
+                (ref-U|G:module{OuronetGuardsV2} U|G)
             )
             (ref-U|G::UEV_Any (P|UR_IMP))
         )
@@ -249,7 +249,7 @@
         (with-capability (GOV|SWPT_ADMIN)
             (let
                 (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
                     (dg:guard (create-capability-guard (SECURE)))
                 )
                 (with-default-read P|MT P|I
@@ -265,16 +265,16 @@
     (defun P|A_Define ()
         (let
             (
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (ref-P|BRD:module{OuronetPolicyV1} BRD)
-                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
-                ;(ref-P|DPOF:module{OuronetPolicyV1} DPOF)
-                (ref-P|ATS:module{OuronetPolicyV1} ATS)
-                (ref-P|TFT:module{OuronetPolicyV1} TFT)
-                (ref-P|ATSU:module{OuronetPolicyV1} ATSU)
-                (ref-P|VST:module{OuronetPolicyV1} VST)
-                (ref-P|LIQUID:module{OuronetPolicyV1} LIQUID)
-                (ref-P|ORBR:module{OuronetPolicyV1} OUROBOROS)
+                (ref-P|DALOS:module{OuronetPolicyV2} DALOS)
+                (ref-P|BRD:module{OuronetPolicyV2} BRD)
+                (ref-P|DPTF:module{OuronetPolicyV2} DPTF)
+                ;(ref-P|DPOF:module{OuronetPolicyV2} DPOF)
+                (ref-P|ATS:module{OuronetPolicyV2} ATS)
+                (ref-P|TFT:module{OuronetPolicyV2} TFT)
+                (ref-P|ATSU:module{OuronetPolicyV2} ATSU)
+                (ref-P|VST:module{OuronetPolicyV2} VST)
+                (ref-P|LIQUID:module{OuronetPolicyV2} LIQUID)
+                (ref-P|ORBR:module{OuronetPolicyV2} OUROBOROS)
                 (mg:guard (create-capability-guard (P|SWPT|CALLER)))
             )
             (ref-P|DALOS::P|A_AddIMP mg)
@@ -310,15 +310,15 @@
     ;;{3.2}  schemas
     ;;
     (defschema SWPT|GraphSchema
-        neighbours:[object{SwapTracerV2.NeighbourEdge}]
+        neighbours:[object{SwapTracerV3.NeighbourEdge}]
     )
     ;;{3.3}  tables
     (deftable SWPT|Graph:{SWPT|GraphSchema})                    ;;Key = <token>
-    (deftable SWPT|PathCache:{SwapTracerV2.PathCacheRow})       ;;Key = <token-a>|<token-b> (insertion-order, reversed-lookup at read time)
+    (deftable SWPT|PathCache:{SwapTracerV3.PathCacheRow})       ;;Key = <token-a>|<token-b> (insertion-order, reversed-lookup at read time)
     ;;#65bL Phase 1: own table per this codebase's storage-pattern rule (never
     ;;co-locate a row read for other reasons — segregated so only the path that
     ;;needs the counter pays to deserialize it).
-    (deftable SWPT|TopologyVersion:{SwapTracerV2.TopologyVersionRow})  ;;Key = TOPOLOGY_VERSION_KEY (singleton)
+    (deftable SWPT|TopologyVersion:{SwapTracerV3.TopologyVersionRow})  ;;Key = TOPOLOGY_VERSION_KEY (singleton)
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -334,10 +334,10 @@
     ;;<=========================================================================>
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
-    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
     ;;{5.2}  Compute [UC]
     ;;
-    (defun UC_FindNeighbourIndex:[integer] (neighbours:[object{SwapTracerV2.NeighbourEdge}] token:string)
+    (defun UC_FindNeighbourIndex:[integer] (neighbours:[object{SwapTracerV3.NeighbourEdge}] token:string)
         @doc "Returns [idx] of the entry in <neighbours> whose token field matches \
             \ <token>, or [] if no such entry exists yet."
         (let
@@ -368,7 +368,7 @@
             \ rediscovering the same route."
         (filter (lambda (s:string) (not (contains s exclude))) swpairs)
     )
-    (defun UC_MakeGraphFromRaw:[object{BreadthFirstSearchV1.GraphNode}]
+    (defun UC_MakeGraphFromRaw:[object{BreadthFirstSearchV2.GraphNode}]
         (input:string output:string swpairs:[string] raw-graph:[object{RawGraphNode}])
         @doc "#65bL Phase 2: pure (zero table reads) equivalent of <URC_MakeGraph> — \
             \ builds the identical active-filtered [GraphNode] shape, but derives \
@@ -387,15 +387,15 @@
             \ across every attempt's own shrinking exclusion universe)."
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
                 (nodes:[string] (ref-U|SWP::UC_MakeGraphNodes input output swpairs))
             )
             (if (= 0 (length nodes))
                 []
                 (fold
                     (lambda
-                        (acc:[object{BreadthFirstSearchV1.GraphNode}] idx:integer)
+                        (acc:[object{BreadthFirstSearchV2.GraphNode}] idx:integer)
                         (let*
                             (
                                 (this-node:string (at idx nodes))
@@ -440,14 +440,14 @@
         )
     )
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    (defun UR_Graph:[object{SwapTracerV2.NeighbourEdge}] (token:string)
+    (defun UR_Graph:[object{SwapTracerV3.NeighbourEdge}] (token:string)
         (with-default-read SWPT|Graph token
             {"neighbours" : []}
             {"neighbours" := n}
             n
         )
     )
-    (defun UR_PathCacheRaw:object{SwapTracerV2.PathCacheRow} (key:string)
+    (defun UR_PathCacheRaw:object{SwapTracerV3.PathCacheRow} (key:string)
         @doc "#34 Phase 7: raw keyed read against SWPT|PathCache, [BAR]-sentinel default \
             \ for a missing row. Internal — callers go through <URC_ReadPathCache> for the \
             \ reversed-lookup logic, never this directly. \
@@ -479,7 +479,7 @@
             \ table scan."
         (let*
             (
-                (neighbours:[object{SwapTracerV2.NeighbourEdge}] (UR_Graph t1))
+                (neighbours:[object{SwapTracerV3.NeighbourEdge}] (UR_Graph t1))
                 (idx:[integer] (UC_FindNeighbourIndex neighbours t2))
             )
             (if (= (length idx) 0)
@@ -509,9 +509,9 @@
             \ every reachable node, not just one target."
         (let
             (
-                (ref-U|BFS:module{BreadthFirstSearchV1} U|BFS)
-                (graph:[object{BreadthFirstSearchV1.GraphNode}] (URC_MakeGraph input output swpairs))
-                (bfs-obj:object{BreadthFirstSearchV1.BFS} (ref-U|BFS::UC_BFSTargeted graph input output))
+                (ref-U|BFS:module{BreadthFirstSearchV2} U|BFS)
+                (graph:[object{BreadthFirstSearchV2.GraphNode}] (URC_MakeGraph input output swpairs))
+                (bfs-obj:object{BreadthFirstSearchV2.BFS} (ref-U|BFS::UC_BFSTargeted graph input output))
             )
             (at "chains" bfs-obj)
         )
@@ -529,7 +529,7 @@
         \ actually found instead of exploring the whole reachable set first."
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
                 (shortest-chains:[[string]] (URCx_ShortestChainToTarget input output swpairs))
 
             )
@@ -577,9 +577,9 @@
             \ which explores every reachable node from <input> regardless of <output>."
         (let
             (
-                (ref-U|BFS:module{BreadthFirstSearchV1} U|BFS)
-                (graph:[object{BreadthFirstSearchV1.GraphNode}] (URC_MakeGraph input output swpairs))
-                (bfs-obj:object{BreadthFirstSearchV1.BFS} (ref-U|BFS::UC_BFS graph input))
+                (ref-U|BFS:module{BreadthFirstSearchV2} U|BFS)
+                (graph:[object{BreadthFirstSearchV2.GraphNode}] (URC_MakeGraph input output swpairs))
+                (bfs-obj:object{BreadthFirstSearchV2.BFS} (ref-U|BFS::UC_BFS graph input))
             )
             (at "chains" bfs-obj)
         )
@@ -626,7 +626,7 @@
             \ function directly instead, to skip this self-fetch."
         (let*
             (
-                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
                 (full-nodes:[string] (ref-U|SWP::UC_MakeGraphNodes input output swpairs))
                 (raw-graph:[object{RawGraphNode}] (URC_FetchRawGraph full-nodes))
             )
@@ -779,7 +779,7 @@
             )
         )
     )
-    (defun URC_MakeGraph:[object{BreadthFirstSearchV1.GraphNode}] (input:string output:string swpairs:[string])
+    (defun URC_MakeGraph:[object{BreadthFirstSearchV2.GraphNode}] (input:string output:string swpairs:[string])
         @doc "#13C fix + #19H fix, carried over unchanged by the #21H storage redesign: \
             \ a node's links must be genuine active edges (<URC_EdgesActive> non-empty), \
             \ not just 'is this token a valid node somewhere' — a neighbor token can be \
@@ -795,15 +795,15 @@
             \ <UC_MakeGraphNodes>. Short-circuits to [] instead of crashing."
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
                 (nodes:[string] (ref-U|SWP::UC_MakeGraphNodes input output swpairs))
             )
             (if (= 0 (length nodes))
                 []
                 (fold
                     (lambda
-                        (acc:[object{BreadthFirstSearchV1.GraphNode}] idx:integer)
+                        (acc:[object{BreadthFirstSearchV2.GraphNode}] idx:integer)
                         (ref-U|LST::UC_AppL
                             acc
                             {
@@ -851,11 +851,11 @@
             \ <URC_MakeGraph> (a fresh read per node, every call)."
         (let
             (
-                (ref-U|BFS:module{BreadthFirstSearchV1} U|BFS)
-                (graph:[object{BreadthFirstSearchV1.GraphNode}]
+                (ref-U|BFS:module{BreadthFirstSearchV2} U|BFS)
+                (graph:[object{BreadthFirstSearchV2.GraphNode}]
                     (UC_MakeGraphFromRaw input output swpairs raw-graph)
                 )
-                (bfs-obj:object{BreadthFirstSearchV1.BFS} (ref-U|BFS::UC_BFS graph input))
+                (bfs-obj:object{BreadthFirstSearchV2.BFS} (ref-U|BFS::UC_BFS graph input))
             )
             (at "chains" bfs-obj)
         )
@@ -869,11 +869,11 @@
             \ only, used exclusively by <URC_ComputeGraphPathFromRaw>."
         (let
             (
-                (ref-U|BFS:module{BreadthFirstSearchV1} U|BFS)
-                (graph:[object{BreadthFirstSearchV1.GraphNode}]
+                (ref-U|BFS:module{BreadthFirstSearchV2} U|BFS)
+                (graph:[object{BreadthFirstSearchV2.GraphNode}]
                     (UC_MakeGraphFromRaw input output swpairs raw-graph)
                 )
-                (bfs-obj:object{BreadthFirstSearchV1.BFS} (ref-U|BFS::UC_BFSTargeted graph input output))
+                (bfs-obj:object{BreadthFirstSearchV2.BFS} (ref-U|BFS::UC_BFSTargeted graph input output))
             )
             (at "chains" bfs-obj)
         )
@@ -890,7 +890,7 @@
             \ whole reachable set first."
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
                 (shortest-chains:[[string]]
                     (URCx_ShortestChainToTargetFromRaw input output swpairs raw-graph)
                 )
@@ -926,7 +926,7 @@
         )
     )
     (defun URC_ShortestChainPerNodeFromGraph:[[string]]
-        (input:string graph:[object{BreadthFirstSearchV1.GraphNode}])
+        (input:string graph:[object{BreadthFirstSearchV2.GraphNode}])
         @doc "#65bL Phase 7: <URC_ShortestChainPerNodeFromRaw>, sourcing an \
             \ ALREADY-BUILT <graph> (<UC_MakeGraphFromRaw>) instead of building it \
             \ fresh from <raw-graph>/<swpairs> on every call — for a caller making \
@@ -940,14 +940,14 @@
             \ still runs per query."
         (let
             (
-                (ref-U|BFS:module{BreadthFirstSearchV1} U|BFS)
-                (bfs-obj:object{BreadthFirstSearchV1.BFS} (ref-U|BFS::UC_BFS graph input))
+                (ref-U|BFS:module{BreadthFirstSearchV2} U|BFS)
+                (bfs-obj:object{BreadthFirstSearchV2.BFS} (ref-U|BFS::UC_BFS graph input))
             )
             (at "chains" bfs-obj)
         )
     )
     (defun URCx_ShortestChainToTargetFromGraph:[[string]]
-        (input:string output:string graph:[object{BreadthFirstSearchV1.GraphNode}])
+        (input:string output:string graph:[object{BreadthFirstSearchV2.GraphNode}])
         @doc "#65hL: <URCx_ShortestChainToTargetFromRaw>, sourcing an ALREADY-BUILT \
             \ <graph> instead of rebuilding it from <raw-graph>/<swpairs> — same \
             \ early-exit-on-<output> shape, mirroring \
@@ -955,14 +955,14 @@
             \ Internal only, used exclusively by <URC_ComputeGraphPathFromGraph>."
         (let
             (
-                (ref-U|BFS:module{BreadthFirstSearchV1} U|BFS)
-                (bfs-obj:object{BreadthFirstSearchV1.BFS} (ref-U|BFS::UC_BFSTargeted graph input output))
+                (ref-U|BFS:module{BreadthFirstSearchV2} U|BFS)
+                (bfs-obj:object{BreadthFirstSearchV2.BFS} (ref-U|BFS::UC_BFSTargeted graph input output))
             )
             (at "chains" bfs-obj)
         )
     )
     (defun URC_ComputeGraphPathFromGraph:[string]
-        (input:string output:string graph:[object{BreadthFirstSearchV1.GraphNode}])
+        (input:string output:string graph:[object{BreadthFirstSearchV2.GraphNode}])
         @doc "#65bL Phase 7: <URC_ComputeGraphPathFromRaw>, sourcing its graph via \
             \ <URC_ShortestChainPerNodeFromGraph> (an already-built <graph>) \
             \ instead of rebuilding it from <raw-graph>/<swpairs> on every call — \
@@ -973,7 +973,7 @@
             \ exploring the whole reachable set first."
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
                 (shortest-chains:[[string]]
                     (URCx_ShortestChainToTargetFromGraph input output graph)
                 )
@@ -1009,7 +1009,7 @@
         )
     )
     ;;#34 Phase 7: dirty-read path-cache core functions.
-    (defun URC_ReadPathCache:object{SwapTracerV2.PathCacheRow} (token-a:string token-b:string)
+    (defun URC_ReadPathCache:object{SwapTracerV3.PathCacheRow} (token-a:string token-b:string)
         @doc "Reversed-lookup read: checks <token-a>|<token-b> first, then \
             \ <token-b>|<token-a> reversed (the graph is confirmed bidirectional — \
             \ XI_UpdateGraphForSwpair's symmetric i×j registration), before concluding \
@@ -1024,14 +1024,14 @@
         (let*
             (
                 (key-fwd:string (+ (+ token-a "|") token-b))
-                (row-fwd:object{SwapTracerV2.PathCacheRow} (UR_PathCacheRaw key-fwd))
+                (row-fwd:object{SwapTracerV3.PathCacheRow} (UR_PathCacheRaw key-fwd))
             )
             (if (!= (at "nodes" row-fwd) [BAR])
                 row-fwd
                 (let*
                     (
                         (key-rev:string (+ (+ token-b "|") token-a))
-                        (row-rev:object{SwapTracerV2.PathCacheRow} (UR_PathCacheRaw key-rev))
+                        (row-rev:object{SwapTracerV3.PathCacheRow} (UR_PathCacheRaw key-rev))
                     )
                     (if (!= (at "nodes" row-rev) [BAR])
                         {
@@ -1045,7 +1045,7 @@
             )
         )
     )
-    (defun URC_ReadPathCacheFresh:object{SwapTracerV2.PathCacheRow} (token-a:string token-b:string)
+    (defun URC_ReadPathCacheFresh:object{SwapTracerV3.PathCacheRow} (token-a:string token-b:string)
         @doc "#65bL Phase 1: <URC_ReadPathCache>, additionally collapsing a STALE entry \
             \ (its <topology-version> behind the live counter) to the same [BAR] miss \
             \ sentinel a genuinely-absent entry already returns. Callers never need to \
@@ -1053,7 +1053,7 @@
             \ both mean 'don't trust this, go search live instead'."
         (let*
             (
-                (row:object{SwapTracerV2.PathCacheRow} (URC_ReadPathCache token-a token-b))
+                (row:object{SwapTracerV3.PathCacheRow} (URC_ReadPathCache token-a token-b))
                 (current-version:integer (UR_TopologyVersion))
             )
             (if (< (at "topology-version" row) current-version)
@@ -1128,7 +1128,7 @@
         (require-capability (SECURE))
         (let*
             (
-                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
                 (tokens:[string] (ref-U|SWP::UC_TokensFromSwpairString swpair))
                 (n:integer (length tokens))
             )
@@ -1162,7 +1162,7 @@
         (require-capability (SECURE))
         (let*
             (
-                (existing:[object{SwapTracerV2.NeighbourEdge}] (UR_Graph from))
+                (existing:[object{SwapTracerV3.NeighbourEdge}] (UR_Graph from))
                 (idx:[integer] (UC_FindNeighbourIndex existing to))
                 (is-new-pair:bool (= (length idx) 0))
                 (old-swpairs:[string]
@@ -1173,7 +1173,7 @@
                 )
                 (is-new-swpair:bool (not (contains swpair old-swpairs)))
                 (did-change:bool (or is-new-pair is-new-swpair))
-                (new-neighbours:[object{SwapTracerV2.NeighbourEdge}]
+                (new-neighbours:[object{SwapTracerV3.NeighbourEdge}]
                     (if is-new-pair
                         (+ existing [{"token": to, "swpairs": [swpair]}])
                         (let*
@@ -1224,12 +1224,12 @@
             (
                 (key-fwd:string (+ (+ token-a "|") token-b))
                 (key-rev:string (+ (+ token-b "|") token-a))
-                (row-fwd:object{SwapTracerV2.PathCacheRow} (UR_PathCacheRaw key-fwd))
-                (row-rev:object{SwapTracerV2.PathCacheRow} (UR_PathCacheRaw key-rev))
+                (row-fwd:object{SwapTracerV3.PathCacheRow} (UR_PathCacheRaw key-fwd))
+                (row-rev:object{SwapTracerV3.PathCacheRow} (UR_PathCacheRaw key-rev))
                 (already-fwd:bool (!= (at "nodes" row-fwd) [BAR]))
                 (already-rev:bool (!= (at "nodes" row-rev) [BAR]))
                 (current-version:integer (UR_TopologyVersion))
-                (new-row:object{SwapTracerV2.PathCacheRow}
+                (new-row:object{SwapTracerV3.PathCacheRow}
                     {"nodes": nodes, "edges": edges, "topology-version": current-version}
                 )
             )

@@ -1,7 +1,7 @@
 ;; Deploy: load THIS file — interface + module ship together (model: 1_SOVEREIGN/STAGE_01/2_Core/20_MTX-SWP.pact).
 ;; Holds ALL AQP multi-transaction (defpact) functions. M3 #12 (deb-staleness): the spike-fallback inject.
 ;;
-(interface AqpMtxV1
+(interface AqpMtxV2
     @doc "Exposes AQP MultiStep (defpact) client functions. Currently: the tiered enforced-fresh FVT inject \
         \ (MTX|n|C_Inject) — the spike fallback for CC_Inject when the stale set exceeds one transaction."
 
@@ -57,8 +57,8 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements OuronetPolicyV1)
-    (implements AqpMtxV1)
+    (implements OuronetPolicyV2)
+    (implements AqpMtxV2)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -72,7 +72,7 @@
     (defcap GOV|MTX-AQP_ADMIN ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (master:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
                 (g1:guard GOV|MD_MTX-AQP)
                 (g2:guard (ref-DALOS::UR_AccountGuard master))
@@ -87,7 +87,7 @@
         )
     )
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()         (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()         (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
@@ -96,8 +96,8 @@
     ;;{P2}  schemas
     ;;{P3}  tables
     ;;
-    (deftable P|T:{OuronetPolicyV1.P|S})
-    (deftable P|MT:{OuronetPolicyV1.P|MS})
+    (deftable P|T:{OuronetPolicyV2.P|S})
+    (deftable P|MT:{OuronetPolicyV2.P|MS})
     ;;{P4}  capabilities
     (defcap P|MTX-AQP|CALLER ()
         true
@@ -114,7 +114,7 @@
         (compose-capability (P|MTX-AQP|CALLER))
     )
     ;;{P5}  functions
-    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -124,7 +124,7 @@
     (defun P|UEV_IMC ()
         (let
             (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
+                (ref-U|G:module{OuronetGuardsV2} U|G)
             )
             (ref-U|G::UEV_Any (P|UR_IMP))
         )
@@ -140,7 +140,7 @@
         (with-capability (GOV|MTX-AQP_ADMIN)
             (let
                 (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
                     (dg:guard (create-capability-guard (SECURE)))
                 )
                 (with-default-read P|MT P|I
@@ -156,7 +156,7 @@
     (defun P|A_Define ()
         (let
             (
-                (ref-P|FVT:module{OuronetPolicyV1} AQP-FVT)
+                (ref-P|FVT:module{OuronetPolicyV2} AQP-FVT)
                 (mg:guard (create-capability-guard (P|MTX-AQP|CALLER)))
             )
             ;; MTX-AQP calls AQP-FVT's XE_ building blocks (P|UEV_IMC) — register as an allowed IMC caller.
@@ -214,8 +214,8 @@
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
     ;;
-    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
-    (defun CT_EmptyCumulator ()     (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_EmptyOutputCumulatorV2)))
+    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_EmptyCumulator ()     (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_EmptyOutputCumulatorV2)))
     ;;{5.2}  Compute [UC]
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
@@ -224,8 +224,8 @@
             \ recompute-set size. Read-only; sweep-in-progress keeps it fixed across defpact steps."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
             )
             (fold (+) 0
                 (map
@@ -248,8 +248,8 @@
                 (lambda (acc:object sid:string)
                     (let
                         (
-                            (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                            (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                            (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                            (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                             (seen-before:integer (at "seen" acc))
                             (fvt:string (ref-SCR::UR_SCR|ScoreFvtLink sid))
                             (member:string
@@ -312,12 +312,12 @@
         (step
             (let
                 (
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                 )
                 (require-capability (MTX-AQP|C>INJECT patron fvt-id reward-dptf-id amount))
               (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (stale:[string] (ref-FVT::URH_FvtStalePresentUsers fvt-id))
                 )
                 (if (<= (length stale) N_FIX)
@@ -345,8 +345,8 @@
                     (with-capability (MTX-AQP|C>INJECT patron fvt-id reward-dptf-id amount)
                         (let
                             (
-                                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                                 (stale:[string] (ref-FVT::URH_FvtStalePresentUsers fvt-id))
                             )
                             (ref-FVT::XE_FvtFixUserChunk fvt-id reward-dptf-id stale)
@@ -374,8 +374,8 @@
         (step
             (let
                 (
-                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    (ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                 )
                 (require-capability (MTX-AQP|C>SWEEP-REVOKE patron anchor-id))
                 (let
@@ -416,7 +416,7 @@
                     (with-capability (MTX-AQP|C>SWEEP-REVOKE patron anchor-id)
                         (let
                             (
-                                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                                 (total:integer (URC_SweepTotalPresent score-ids))
                             )
                             (let

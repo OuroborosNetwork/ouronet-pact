@@ -1,4 +1,4 @@
-;; REPL/Stage_01/[6.10b]_PYTHIA-ledger-v2.repl — PythiaLedgerV2 batch A_Flush (load after [6.10] TX008)
+;; REPL/Stage_01/[6.10b]_PYTHIA-ledger-v2.repl — PythiaLedgerV3 batch A_Flush (load after [6.10] TX008)
 ;; #72L fix: header previously said "TX007" - stale, [6.10]_PYTHIA.repl's real last tx is TX008
 ;; (TX007a/b/c were added after this header was originally written). Doc-only, no code change.
 ;;
@@ -8,11 +8,11 @@
 (print "=== TX009 — batch flush day 82 iz-complete false =========================")
 (let
     (
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV7} TS01-C4)
-        (ref-LEDGER:module{PythiaLedgerV2} PYTHIA)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
+        (ref-LEDGER:module{PythiaLedgerV3} PYTHIA)
         (cal-day:integer 82)
         (flushed-at:time TV.TIME00)
-        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+        (entries:[object{PythiaLedgerV3.PYTHIA|S|PythFlushEntry}]
             [
                 { "day": 82
                 , "iz-complete": false
@@ -29,8 +29,8 @@
     (let
         (
             (msg:string (ref-TS01-C4::A_PYTHIA|Flush entries))
-            (day-row:object{PythiaLedgerV2.PYTHIA|S|PythDaily} (ref-LEDGER::UR_PythDay cal-day))
-            (tm:object{PythiaLedgerV2.PYTHIA|S|PythMetrics} (ref-LEDGER::UR_PythTotal|TotalMetrics))
+            (day-row:object{PythiaLedgerV3.PYTHIA|S|PythDaily} (ref-LEDGER::UR_PythDay cal-day))
+            (tm:object{PythiaLedgerV3.PYTHIA|S|PythMetrics} (ref-LEDGER::UR_PythTotal|TotalMetrics))
         )
         (print (format "<(TS01-C4.A_PYTHIA|Flush batch day82)> => \"{}\"" [msg]))
         (map print
@@ -52,9 +52,9 @@
 (print "=== TX010 — same day 82 accumulate delta (iz-complete false) =============")
 (let
     (
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV7} TS01-C4)
-        (ref-LEDGER:module{PythiaLedgerV2} PYTHIA)
-        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
+        (ref-LEDGER:module{PythiaLedgerV3} PYTHIA)
+        (entries:[object{PythiaLedgerV3.PYTHIA|S|PythFlushEntry}]
             [
                 { "day": 82, "iz-complete": false, "petitions": 50, "pondus": 1.0
                 , "transactions": 2, "gas-reserved": 10000, "failed-transactions": 0, "wasted-gas-reserved": 0 }
@@ -80,9 +80,9 @@
 (print "=== TX011 — batch seal day 82 (+10) + insert day 83 =====================")
 (let
     (
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV7} TS01-C4)
-        (ref-LEDGER:module{PythiaLedgerV2} PYTHIA)
-        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
+        (ref-LEDGER:module{PythiaLedgerV3} PYTHIA)
+        (entries:[object{PythiaLedgerV3.PYTHIA|S|PythFlushEntry}]
             [
                 { "day": 82, "iz-complete": true, "petitions": 10, "pondus": 0.345
                 , "transactions": 0, "gas-reserved": 0, "failed-transactions": 0, "wasted-gas-reserved": 0 }
@@ -111,8 +111,8 @@
 (print "=== TX012 — reject update on sealed day 82 ==============================")
 (let
     (
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV7} TS01-C4)
-        (bad:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
+        (bad:[object{PythiaLedgerV3.PYTHIA|S|PythFlushEntry}]
             [{ "day": 82, "iz-complete": false, "petitions": 1, "pondus": 1.0
              , "transactions": 1, "gas-reserved": 1, "failed-transactions": 0, "wasted-gas-reserved": 0 }])
     )
@@ -135,12 +135,12 @@
 (print "=== TX013 — order-independent txs (day 50 then day 10) =====================")
 (let
     (
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV7} TS01-C4)
-        (ref-LEDGER:module{PythiaLedgerV2} PYTHIA)
-        (e50:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
+        (ref-LEDGER:module{PythiaLedgerV3} PYTHIA)
+        (e50:[object{PythiaLedgerV3.PYTHIA|S|PythFlushEntry}]
             [{ "day": 50, "iz-complete": true, "petitions": 5, "pondus": 1.0
              , "transactions": 1, "gas-reserved": 100, "failed-transactions": 0, "wasted-gas-reserved": 0 }])
-        (e10:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+        (e10:[object{PythiaLedgerV3.PYTHIA|S|PythFlushEntry}]
             [{ "day": 10, "iz-complete": true, "petitions": 3, "pondus": 0.5
              , "transactions": 1, "gas-reserved": 50, "failed-transactions": 0, "wasted-gas-reserved": 0 }])
     )
@@ -164,8 +164,8 @@
 (print "=== TX014 — reject pondus >3 dp ==========================================")
 (let
     (
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV7} TS01-C4)
-        (bad:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
+        (bad:[object{PythiaLedgerV3.PYTHIA|S|PythFlushEntry}]
             [{ "day": 84, "iz-complete": false, "petitions": 1, "pondus": 1.2345
              , "transactions": 1, "gas-reserved": 1, "failed-transactions": 0, "wasted-gas-reserved": 0 }])
     )

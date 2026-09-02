@@ -43,13 +43,13 @@
 (print "--- [SWP TX 001 - Admin Tests · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV1} DALOS)
-        (ref-BRD:module{BrandingV1} BRD)
-        (ref-SWP:module{SwapperV3} SWP)
-        (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-BRD:module{BrandingV2} BRD)
+        (ref-SWP:module{SwapperV4} SWP)
+        (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
         (patron:string KST.ANHD)
     )
     (ref-TS01-A::A_DALOS|SetIgnisSourcePrice 1.2)
@@ -203,7 +203,7 @@
 ;;#61L fix: C_SWP|UpgradeBrandingLPs had zero REPL coverage — the one call to it
 ;;in this file was commented out (and, it turns out, stale: it referenced
 ;;ref-TS01-C2, but C_SWP|UpdatePendingBrandingLPs/C_UpgradeBrandingLPs both
-;;actually live on TalosStageOne_ClientThreeV3 — would not have compiled as
+;;actually live on TalosStageOne_ClientThreeV4 — would not have compiled as
 ;;written even if uncommented). Real proof: propose real branding data via
 ;;C_UpdatePendingBrandingLPs, then upgrade via C_UpgradeBrandingLPs, on
 ;;pool6's own LP token (entity-pos 1 — every pool's plain LP token gets a
@@ -216,7 +216,7 @@
 ;;from loading that far; out of scope for this fix, not touched.
 (let
     (
-        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
         (patron:string KST.ANHD)
         (months:integer 3)
         (dec-months:decimal (dec months))
@@ -261,9 +261,9 @@
     (print "--- [SWP TX 002 - #61L C_UpgradeBrandingLPs Proof · 02 · let / invocation] ---")
     (let
         (
-            (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
-            (ref-SWP:module{SwapperV3} SWP)
-            (ref-BRD:module{BrandingV1} BRD)
+            (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
+            (ref-SWP:module{SwapperV4} SWP)
+            (ref-BRD:module{BrandingV2} BRD)
             (pool:string "P|OURO-98c486052a51|VST-98c486052a51")
         )
         (ref-TS01-C3::C_SWP|UpdatePendingBrandingLPs
@@ -322,12 +322,12 @@
 (print "--- [SWP TX 001 - Admin Tests · 02 · let / invocation] ---")
 (let
     (
-        (ref-U|CT:module{OuronetConstantsV1} U|CT)
-        (ref-DALOS:module{OuronetDalosV1} DALOS)
-        (ref-BRD:module{BrandingV1} BRD)
-        (ref-SWP:module{SwapperV3} SWP)
-        (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (ref-U|CT:module{OuronetConstantsV2} U|CT)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-BRD:module{BrandingV2} BRD)
+        (ref-SWP:module{SwapperV4} SWP)
+        (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
         (patron:string KST.ANHD)
         (patron:string KST.EMMA)
 
@@ -386,11 +386,11 @@
 (print "--- [SWP TX 001 - Admin Tests · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV1} DALOS)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
-        (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-        (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
         (months:integer 3)
@@ -501,13 +501,13 @@
 (print "--- [DPTF - Tests · 02 · let / invocation] ---")
 (let
     (
-        (ref-U|CT:module{OuronetConstantsV1} U|CT)
-        (ref-DALOS:module{OuronetDalosV1} DALOS)
-        (ref-BRD:module{BrandingV1} BRD)
-        (ref-SWP:module{SwapperV3} SWP)
-        (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (ref-U|CT:module{OuronetConstantsV2} U|CT)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-BRD:module{BrandingV2} BRD)
+        (ref-SWP:module{SwapperV4} SWP)
+        (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
         (dptf:string "GA-98c486052a51")

@@ -62,9 +62,9 @@
     (
         (patron:string KST.ANHD)
         (ouro-id:string "OURO-98c486052a51")
-        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpPool"))
         (score-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpScore"))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpFvt"))
@@ -125,10 +125,10 @@
 (let
     (
         (patron:string KST.ANHD)
-        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)
+        (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (anchor-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpAnchor"))
         (pool-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpPool"))
         (boost-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpBoost"))
@@ -178,9 +178,9 @@
 (let
     (
         (patron:string KST.ANHD)
-        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (anchor-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpAnchor"))
         (pool-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpPool"))
     )
@@ -227,9 +227,9 @@
 (let
     (
         (patron:string KST.ANHD)
-        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (anchor-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpAnchor"))
         (pool-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpPool"))
     )
@@ -276,9 +276,9 @@
 (let
     (
         (patron:string KST.ANHD)
-        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (anchor-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpAnchor"))
         (pool-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpPool"))
     )
@@ -325,9 +325,9 @@
 (let
     (
         (patron:string KST.ANHD)
-        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (anchor-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpAnchor"))
         (pool-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpPool"))
     )
@@ -359,9 +359,9 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
     (
-        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)
+        (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
         (anchor-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpAnchor"))
         (pool-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpPool"))
         (boost-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpBoost"))

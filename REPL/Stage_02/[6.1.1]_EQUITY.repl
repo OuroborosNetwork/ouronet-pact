@@ -38,7 +38,7 @@
 (print "--- [TX-EQUITY-001 · 01 · env-sigs (caps)] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
         (owner:string KST.ANHD)
         (dpsf-price:decimal (ref-DALOS::UR_UsagePrice "dpsf"))
         (split-stoa:[decimal] (ref-DALOS::URC_SplitSTOAPrices owner dpsf-price))
@@ -66,9 +66,9 @@
 (print "--- [TX-EQUITY-001 · 02 · issue + baseline reads] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV1} DPDC)
-        (ref-EQUITY:module{EquityV1} EQUITY)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-EQUITY:module{EquityV2} EQUITY)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
         (owner:string KST.ANHD)
         (links:[string] (make-list 24 "ipfs://EquityTestLink"))
     )
@@ -129,9 +129,9 @@
 (print "--- [TX-EQUITY-002 · 02 · Make 100,000 shares -> Tier 1 (100 shares/unit) = 1,000 units] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV1} DPDC)
-        (ref-EQUITY:module{EquityV1} EQUITY)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-EQUITY:module{EquityV2} EQUITY)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
         (owner:string KST.ANHD)
         (id:string "E|TSEQ-98c486052a51")
     )
@@ -163,8 +163,8 @@
 (print "--- [TX-EQUITY-002 · 03 · Convert 1,000 Tier-1 (100/unit) -> 500 Tier-2 (200/unit)] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV1} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
         (owner:string KST.ANHD)
         (id:string "E|TSEQ-98c486052a51")
     )
@@ -192,9 +192,9 @@
 (print "--- [TX-EQUITY-002 · 04 · Break 500 Tier-2 units -> 100,000 shares; full-circle conservation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV1} DPDC)
-        (ref-EQUITY:module{EquityV1} EQUITY)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-EQUITY:module{EquityV2} EQUITY)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
         (owner:string KST.ANHD)
         (id:string "E|TSEQ-98c486052a51")
     )
@@ -241,7 +241,7 @@
 (print "--- [TX-EQUITY-003 · 02 · capacity / modulo / morph-target validation] ---")
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
         (owner:string KST.ANHD)
         (id:string "E|TSEQ-98c486052a51")
     )

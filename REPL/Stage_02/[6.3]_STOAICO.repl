@@ -47,12 +47,12 @@
 (print "--- [TX000 - Set Intermodule Communication · 02 · let / invocation] ---")
     (let
         (
-            (ref-P|DPAD:module{OuronetPolicyV1} DEMIPAD)
-            (ref-P|STOAICO:module{OuronetPolicyV1} STOAICO)
+            (ref-P|DPAD:module{OuronetPolicyV2} DEMIPAD)
+            (ref-P|STOAICO:module{OuronetPolicyV2} STOAICO)
             ;;
-            (ref-U|G:module{OuronetGuardsV1} U|G)
-            (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
-            (ref-DPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
+            (ref-U|G:module{OuronetGuardsV2} U|G)
+            (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+            (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
             ;;
             (mg:guard (create-capability-guard (TS02-DPAD.P|TALOS-SUMMONER)))
             (lpad-sc:string (ref-DPAD::GOV|DEMIPAD|SC_NAME))
@@ -114,7 +114,7 @@
 (print "--- [TX-01 - Initialise STOA ICO · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
         (split-stoa:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices
                 KST.ANHD
@@ -311,7 +311,7 @@
     (
         (emma:string KST.EMMA)
         (lumy:string KST.LUMY)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (wstoa-id:string (STOAICO.UR_Global8))
     )
     ;; Preflight lists exactly the straggler; the admin flush push-collects it (last => dust sweep).

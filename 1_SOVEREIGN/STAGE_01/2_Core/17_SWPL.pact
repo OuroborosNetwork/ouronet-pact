@@ -1,7 +1,7 @@
 ;; Deploy: load THIS file — interface(s) + module ship together.
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
 ;;
-(interface SwapperLiquidityV1
+(interface SwapperLiquidityV2
     @doc "Exposes Liquidity Functions;"
 
     ;;<=========================================================================>
@@ -89,7 +89,7 @@
         clad-op:object{CladOperation}
     )
     (defschema CladOperation
-        perfect-ignis-fee:object{IgnisCollectorV1.OutputCumulator}   
+        perfect-ignis-fee:object{IgnisCollectorV2.OutputCumulator}   
                                     ;;Ignis Cumulator for the Operation
                                     ;;Can be used to Collect Fees in Advance
         mt-ids:[string]             ;;IDs the User Moves to swp-sc
@@ -104,7 +104,7 @@
     )
     (defschema PoolState
         A:decimal
-        F:object{UtilitySwpV1.SwapFeez}
+        F:object{UtilitySwpV2.SwapFeez}
         X:[decimal]
         W:[decimal]
         ;;
@@ -128,14 +128,14 @@
     ;;
     ;;  [UDC] Functions
     ;;
-    (defun UDC_VirtualSwapEngineSwpair:object{UtilitySwpV1.VirtualSwapEngine} (account:string account-liq:[decimal] swpair:string pool-liq:[decimal]))
-    (defun UDC_VirtualSwapEngine:object{UtilitySwpV1.VirtualSwapEngine}
+    (defun UDC_VirtualSwapEngineSwpair:object{UtilitySwpV2.VirtualSwapEngine} (account:string account-liq:[decimal] swpair:string pool-liq:[decimal]))
+    (defun UDC_VirtualSwapEngine:object{UtilitySwpV2.VirtualSwapEngine}
         (
             account:string account-liq:[decimal] swpair:string starting-liq:[decimal]
-            A:decimal W:[decimal] F:object{UtilitySwpV1.SwapFeez}
+            A:decimal W:[decimal] F:object{UtilitySwpV2.SwapFeez}
         )
     )
-    (defun UDC_PoolFees:object{UtilitySwpV1.SwapFeez} (swpair:string))
+    (defun UDC_PoolFees:object{UtilitySwpV2.SwapFeez} (swpair:string))
         ;;
     (defun UDC_OutputLP:object{OutputLP} (a:decimal b:decimal))
     (defun UDC_LiquiditySplit:object{LiquiditySplit} (a:[decimal] b:[decimal]))
@@ -153,8 +153,8 @@
             r:object{CladOperation}
         )
     )
-    (defun UDC_CladOperation:object{CladOperation} (a:object{IgnisCollectorV1.OutputCumulator} b:[string] c:[decimal] d:bool e:[string] f:[decimal] g:[decimal] h:[decimal]))
-    (defun UDC_PoolState:object{PoolState} (a:decimal b:object{UtilitySwpV1.SwapFeez} c:[decimal] d:[decimal] e:decimal f:[string] g:[decimal]))
+    (defun UDC_CladOperation:object{CladOperation} (a:object{IgnisCollectorV2.OutputCumulator} b:[string] c:[decimal] d:bool e:[string] f:[decimal] g:[decimal] h:[decimal]))
+    (defun UDC_PoolState:object{PoolState} (a:decimal b:object{UtilitySwpV2.SwapFeez} c:[decimal] d:[decimal] e:decimal f:[string] g:[decimal]))
     ;;{5.2}  Compute [UC]
     ;;
     ;;
@@ -206,8 +206,8 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements OuronetPolicyV1)
-    (implements SwapperLiquidityV1)
+    (implements OuronetPolicyV2)
+    (implements SwapperLiquidityV2)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -221,7 +221,7 @@
     (defcap GOV|SWPL_ADMIN ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (master:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
                 (g1:guard GOV|MD_SWPL)
                 (g2:guard (ref-DALOS::UR_AccountGuard master))
@@ -237,8 +237,8 @@
     )
     ;;{G5}  functions
     ;;
-    (defun GOV|SWP|SC_NAME ()       (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|SWP|SC_NAME)))
-    (defun GOV|Demiurgoi ()         (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|SWP|SC_NAME ()       (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|SWP|SC_NAME)))
+    (defun GOV|Demiurgoi ()         (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
@@ -247,8 +247,8 @@
     ;;{P2}  schemas
     ;;{P3}  tables
     ;;
-    (deftable P|T:{OuronetPolicyV1.P|S})                        ;;Key = <policy-name>
-    (deftable P|MT:{OuronetPolicyV1.P|MS})                      ;;Key = P|I (module-identity singleton constant)
+    (deftable P|T:{OuronetPolicyV2.P|S})                        ;;Key = <policy-name>
+    (deftable P|MT:{OuronetPolicyV2.P|MS})                      ;;Key = P|I (module-identity singleton constant)
     ;;{P4}  capabilities
     (defcap P|SWPL|CALLER ()
         true
@@ -258,7 +258,7 @@
         (compose-capability (SECURE))
     )
     ;;{P5}  functions
-    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -268,7 +268,7 @@
     (defun P|UEV_IMC ()
         (let
             (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
+                (ref-U|G:module{OuronetGuardsV2} U|G)
             )
             (ref-U|G::UEV_Any (P|UR_IMP))
         )
@@ -284,7 +284,7 @@
         (with-capability (GOV|SWPL_ADMIN)
             (let
                 (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
                     (dg:guard (create-capability-guard (SECURE)))
                 )
                 (with-default-read P|MT P|I
@@ -300,13 +300,13 @@
     (defun P|A_Define ()
         (let
             (
-                (ref-P|BRD:module{OuronetPolicyV1} BRD)
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
-                ;(ref-P|DPOF:module{OuronetPolicyV1} DPOF)
-                (ref-P|TFT:module{OuronetPolicyV1} TFT)
-                (ref-P|VST:module{OuronetPolicyV1} VST)
-                (ref-P|SWP:module{OuronetPolicyV1} SWP)
+                (ref-P|BRD:module{OuronetPolicyV2} BRD)
+                (ref-P|DALOS:module{OuronetPolicyV2} DALOS)
+                (ref-P|DPTF:module{OuronetPolicyV2} DPTF)
+                ;(ref-P|DPOF:module{OuronetPolicyV2} DPOF)
+                (ref-P|TFT:module{OuronetPolicyV2} TFT)
+                (ref-P|VST:module{OuronetPolicyV2} VST)
+                (ref-P|SWP:module{OuronetPolicyV2} SWP)
                 (mg:guard (create-capability-guard (P|SWPL|CALLER)))
             )
             (ref-P|DALOS::P|A_AddIMP mg)
@@ -485,14 +485,14 @@
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
     ;;
-    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
-    (defun CT_EmptyCumulator ()     (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_EmptyOutputCumulatorV2)))
+    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_EmptyCumulator ()     (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_EmptyOutputCumulatorV2)))
     ;;
-    (defun UDC_VirtualSwapEngineSwpair:object{UtilitySwpV1.VirtualSwapEngine}
+    (defun UDC_VirtualSwapEngineSwpair:object{UtilitySwpV2.VirtualSwapEngine}
         (account:string account-liq:[decimal] swpair:string pool-liq:[decimal])
         (let
             (
-                (ref-SWP:module{SwapperV3} SWP)
+                (ref-SWP:module{SwapperV4} SWP)
                 (A:decimal (ref-SWP::UR_Amplifier swpair))
                 (W:[decimal] (ref-SWP::UR_Weigths swpair))
             )
@@ -502,15 +502,15 @@
             )
         )
     )
-    (defun UDC_VirtualSwapEngine:object{UtilitySwpV1.VirtualSwapEngine}
+    (defun UDC_VirtualSwapEngine:object{UtilitySwpV2.VirtualSwapEngine}
         (
             account:string account-liq:[decimal] swpair:string starting-liq:[decimal]
-            A:decimal W:[decimal] F:object{UtilitySwpV1.SwapFeez}
+            A:decimal W:[decimal] F:object{UtilitySwpV2.SwapFeez}
         )
         (let
             (
-                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                (ref-SWP:module{SwapperV3} SWP)
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (ref-SWP:module{SwapperV4} SWP)
                 (pool-tokens:[string] (ref-U|SWP::UC_TokensFromSwpairString swpair))
                 (zero-lst:[decimal] (make-list (length pool-tokens) 0.0))
             )
@@ -523,11 +523,11 @@
             )
         )
     )
-    (defun UDC_PoolFees:object{UtilitySwpV1.SwapFeez} (swpair:string)
+    (defun UDC_PoolFees:object{UtilitySwpV2.SwapFeez} (swpair:string)
         (let
             (
-                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                (ref-SWP:module{SwapperV3} SWP)
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (ref-SWP:module{SwapperV4} SWP)
                 (lb:bool (ref-SWP::UR_LiquidBoost))
                 (lp-fee:decimal (ref-SWP::UR_FeeLP swpair))
                 (special-fee:decimal (ref-SWP::UR_FeeSP swpair))
@@ -536,27 +536,27 @@
             (ref-U|SWP::UDC_SwapFeez lp-fee special-fee boost-fee)
         )
     )
-    (defun UDC_OutputLP:object{SwapperLiquidityV1.OutputLP} (a:decimal b:decimal)
+    (defun UDC_OutputLP:object{SwapperLiquidityV2.OutputLP} (a:decimal b:decimal)
         {"primary"                  : a
         ,"secondary"                : b}
     )
-    (defun UDC_LiquiditySplit:object{SwapperLiquidityV1.LiquiditySplit} (a:[decimal] b:[decimal])
+    (defun UDC_LiquiditySplit:object{SwapperLiquidityV2.LiquiditySplit} (a:[decimal] b:[decimal])
         {"balanced"                 : a
         ,"asymmetric"               : b}
     )
-    (defun UDC_LiquiditySplitType:object{SwapperLiquidityV1.LiquiditySplitType} (a:bool b:bool)
+    (defun UDC_LiquiditySplitType:object{SwapperLiquidityV2.LiquiditySplitType} (a:bool b:bool)
         {"iz-balanced"              : a
         ,"iz-asymmetric"            : b}
     )
-    (defun UDC_LiquidityData:object{SwapperLiquidityV1.LiquidityData}
-        (a:object{SwapperLiquidityV1.LiquiditySplit} b:object{SwapperLiquidityV1.LiquiditySplitType} c:decimal d:decimal e:decimal)
+    (defun UDC_LiquidityData:object{SwapperLiquidityV2.LiquidityData}
+        (a:object{SwapperLiquidityV2.LiquiditySplit} b:object{SwapperLiquidityV2.LiquiditySplitType} c:decimal d:decimal e:decimal)
         {"sorted-lq"                : a
         ,"sorted-lq-type"           : b
         ,"balanced"                 : c
         ,"asymmetric"               : d
         ,"asymmetric-fee"           : e}
     )
-    (defun UDC_LiquidityComputationData:object{SwapperLiquidityV1.LiquidityComputationData}
+    (defun UDC_LiquidityComputationData:object{SwapperLiquidityV2.LiquidityComputationData}
         (a:integer b:string c:integer d:decimal e:decimal f:[decimal])
         {"li"                       : a
         ,"pool-type"                : b
@@ -565,7 +565,7 @@
         ,"lp-supply"                : e
         ,"pool-token-supplies"      : f}
     )
-    (defun UDC_AsymmetricTax:object{SwapperLiquidityV1.AsymmetricTax}
+    (defun UDC_AsymmetricTax:object{SwapperLiquidityV2.AsymmetricTax}
         (a:decimal b:decimal c:decimal d:decimal e:decimal f:decimal)
         {"tad"                      : a
         ,"tad-diff"                 : b
@@ -574,14 +574,14 @@
         ,"boost"                    : e
         ,"fuel-to-lp"               : f}
     )
-    (defun UDC_CompleteLiquidityAdditionData:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
+    (defun UDC_CompleteLiquidityAdditionData:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
         (
             a:[decimal] b:[decimal] c:[decimal] d:[decimal]
             e:decimal f:decimal
             g:decimal
             h:decimal i:decimal j:decimal k:decimal l:decimal
             m:string n:string o:string p:string q:string
-            r:object{SwapperLiquidityV1.CladOperation}
+            r:object{SwapperLiquidityV2.CladOperation}
         )
         {"total-input-liquidity"    : a
         ,"balanced-liquidity"       : b
@@ -607,8 +607,8 @@
         ;;
         ,"clad-op"                  : r}
     )
-    (defun UDC_CladOperation:object{SwapperLiquidityV1.CladOperation}
-        (a:object{IgnisCollectorV1.OutputCumulator} b:[string] c:[decimal] d:bool e:[string] f:[decimal] g:[decimal] h:[decimal])
+    (defun UDC_CladOperation:object{SwapperLiquidityV2.CladOperation}
+        (a:object{IgnisCollectorV2.OutputCumulator} b:[string] c:[decimal] d:bool e:[string] f:[decimal] g:[decimal] h:[decimal])
         {"perfect-ignis-fee"        : a
         ;;
         ,"mt-ids"                   : b
@@ -620,8 +620,8 @@
         ,"ppb"                      : g
         ,"ppa"                      : h}
     )
-    (defun UDC_PoolState:object{SwapperLiquidityV1.PoolState}
-        (a:decimal b:object{UtilitySwpV1.SwapFeez} c:[decimal] d:[decimal] e:decimal f:[string] g:[decimal])
+    (defun UDC_PoolState:object{SwapperLiquidityV2.PoolState}
+        (a:decimal b:object{UtilitySwpV2.SwapFeez} c:[decimal] d:[decimal] e:decimal f:[string] g:[decimal])
         {"A"    : a
         ,"F"    : b
         ,"X"    : c
@@ -632,15 +632,15 @@
         ,"FTP"  : g}
     )
     ;;{5.2}  Compute [UC]
-    (defun UC_DetermineLiquidity:object{SwapperLiquidityV1.LiquiditySplitType}
-        (input-lqs:object{SwapperLiquidityV1.LiquiditySplit})
+    (defun UC_DetermineLiquidity:object{SwapperLiquidityV2.LiquiditySplitType}
+        (input-lqs:object{SwapperLiquidityV2.LiquiditySplit})
         (UDC_LiquiditySplitType
             (!= (at "balanced" input-lqs) (make-list (length (at "balanced" input-lqs)) 0.0))
             (!= (at "asymmetric" input-lqs) (make-list (length (at "asymmetric" input-lqs)) 0.0))
         )
     )
-    (defun UCx_Step2AsymmetricTaxVirtualSwapper:object{UtilitySwpV1.VirtualSwapEngine}
-        (vse:object{UtilitySwpV1.VirtualSwapEngine} first-token-id:string liq-ids:[string] liq-amounts:[decimal])
+    (defun UCx_Step2AsymmetricTaxVirtualSwapper:object{UtilitySwpV2.VirtualSwapEngine}
+        (vse:object{UtilitySwpV2.VirtualSwapEngine} first-token-id:string liq-ids:[string] liq-amounts:[decimal])
         (let
             (
                 (l1:integer (length liq-ids))
@@ -650,26 +650,26 @@
                 vse
                 (let
                     (
-                        (ref-U|LST:module{StringProcessorV1} U|LST)
-                        (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                        (ref-SWPI:module{SwapperIssueV3} SWPI)
+                        (ref-U|LST:module{StringProcessorV2} U|LST)
+                        (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                        (ref-SWPI:module{SwapperIssueV4} SWPI)
                         ;;
                         ;;Unwrap VSE Object Data for fixed Variables
                         (account:string (at "account" vse))
                         (pool-type:string (ref-U|SWP::UC_PoolType (at "swpair" vse)))
-                        (fees:object{UtilitySwpV1.SwapFeez} (at "F" vse))
+                        (fees:object{UtilitySwpV2.SwapFeez} (at "F" vse))
                         (A:decimal (at "A" vse))
                         (X-prec:[integer] (at "v-prec" vse))
                         (v-tokens:[string] (at "v-tokens" vse))
                         (W:[decimal] (at "W" vse))
                         ;;
-                        (vse-single-chain:[object{UtilitySwpV1.VirtualSwapEngine}]
+                        (vse-single-chain:[object{UtilitySwpV2.VirtualSwapEngine}]
                             (fold
                                 (lambda
-                                    (acc:[object{UtilitySwpV1.VirtualSwapEngine}] idx:integer)
+                                    (acc:[object{UtilitySwpV2.VirtualSwapEngine}] idx:integer)
                                     (let
                                         (
-                                            (prev-vse:object{UtilitySwpV1.VirtualSwapEngine} (at 0 acc))
+                                            (prev-vse:object{UtilitySwpV2.VirtualSwapEngine} (at 0 acc))
                                             (id:string (at idx liq-ids))
                                             (amount:decimal (at idx liq-amounts))
                                             ;;
@@ -677,26 +677,26 @@
                                             (X:[decimal] (at "X" prev-vse))
                                             (output-position:integer (at 0 (ref-U|LST::UC_Search v-tokens id)))
                                             ;;
-                                            (rsid:object{UtilitySwpV1.ReverseSwapInputData}
+                                            (rsid:object{UtilitySwpV2.ReverseSwapInputData}
                                                 (ref-U|SWP::UDC_ReverseSwapInputData
                                                     id amount first-token-id
                                                 )
                                             )
-                                            (itso:object{UtilitySwpV1.InverseTaxedSwapOutput}
+                                            (itso:object{UtilitySwpV2.InverseTaxedSwapOutput}
                                                 (ref-SWPI::UC_InverseBareboneSwapWithFeez
                                                     account pool-type rsid fees A X X-prec output-position 0 W
                                                 )
                                             )
                                             (input-amount:decimal (at "i-id-brutto" itso))
                                             ;;
-                                            (dsid:object{UtilitySwpV1.DirectSwapInputData}
+                                            (dsid:object{UtilitySwpV2.DirectSwapInputData}
                                                 (ref-U|SWP::UDC_DirectSwapInputData
                                                     [first-token-id]
                                                     [input-amount]
                                                     id
                                                 )
                                             )
-                                            (new-vse:object{UtilitySwpV1.VirtualSwapEngine}
+                                            (new-vse:object{UtilitySwpV2.VirtualSwapEngine}
                                                 (ref-SWPI::UC_VirtualSwap prev-vse dsid)
                                             )
                                         )
@@ -718,7 +718,7 @@
     (defun URC_STOA-PID|LpToIgnis:decimal (swpair:string amount:decimal stoa-pid:decimal)
         (let
             (
-                (ref-SWPI:module{SwapperIssueV3} SWPI)
+                (ref-SWPI:module{SwapperIssueV4} SWPI)
                 ;;
                 (ignis-prec:integer (URC_IgnisPrecision))
                 (pool-value:[decimal] (ref-SWPI::URC_PoolValue swpair))
@@ -730,7 +730,7 @@
     (defun URC_STOA-PID|TokenToIgnis (id:string amount:decimal stoa-pid:decimal)
         (let
             (
-                (ref-SWPI:module{SwapperIssueV3} SWPI)
+                (ref-SWPI:module{SwapperIssueV4} SWPI)
                 ;;
                 (ignis-prec:integer (URC_IgnisPrecision))
                 (a-price:decimal (ref-SWPI::URC_TokenDollarPrice id stoa-pid))
@@ -738,20 +738,20 @@
             (floor (fold (*) 1.0 [100.0 a-price amount]) ignis-prec)
         )
     )
-    (defun URC_STOA-PID|CLAD:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
+    (defun URC_STOA-PID|CLAD:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
         (
-            account:string swpair:string ld:object{SwapperLiquidityV1.LiquidityData} 
+            account:string swpair:string ld:object{SwapperLiquidityV2.LiquidityData} 
             asymmetric-collection:bool gaseous-collection:bool stoa-pid:decimal
         )
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                (ref-SWP:module{SwapperV3} SWP)
-                (ref-SWPI:module{SwapperIssueV3} SWPI)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-SWP:module{SwapperV4} SWP)
+                (ref-SWPI:module{SwapperIssueV4} SWPI)
                 ;;
                 (iz-balanced:bool (at "iz-balanced" (at "sorted-lq-type" ld)))
                 (iz-asymmetric:bool (at "iz-asymmetric" (at "sorted-lq-type" ld)))
@@ -764,7 +764,7 @@
                 ;;Create <ico-flat>
                 (flat-ignis-lq-fee:decimal 1000.0)
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                (ico-flat:object{IgnisCollectorV1.OutputCumulator}
+                (ico-flat:object{IgnisCollectorV2.OutputCumulator}
                     (ref-IGNIS::UDC_ConstructOutputCumulator flat-ignis-lq-fee SWP|SC_NAME trigger [])
                 )
                 ;;Initial Transfer IDs and Amounts
@@ -810,7 +810,7 @@
                                 0.0
                             )
                         )
-                        (ico-gaseous:object{IgnisCollectorV1.OutputCumulator}
+                        (ico-gaseous:object{IgnisCollectorV2.OutputCumulator}
                             (if gaseous-collection
                                 (ref-IGNIS::UDC_ConstructOutputCumulator gaseous-ignis-fee SWP|SC_NAME trigger [])
                                 EOC
@@ -826,13 +826,13 @@
                         ;;Asymmetric Liquidity With Asymetric TAX Collection
                         (let
                             (
-                                (ref-U|LST:module{StringProcessorV1} U|LST)
-                                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+                                (ref-U|LST:module{StringProcessorV2} U|LST)
+                                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
                                 (ignis-id:string (ref-DALOS::UR_IgnisID))
                                 (ignis-prec:integer (ref-DPTF::UR_Decimals ignis-id))
                                 (sstoa-id:string (ref-DALOS::UR_SilverStoaID))
                                 ;;Compute Asymetric Tax
-                                (asymmetric-tax:object{SwapperLiquidityV1.AsymmetricTax} (URC_AsymmetricTax account swpair ld))
+                                (asymmetric-tax:object{SwapperLiquidityV2.AsymmetricTax} (URC_AsymmetricTax account swpair ld))
                                 ;;
                                 (a-id:string (at 0 pt-ids))
                                 (a-prec:integer (ref-DPTF::UR_Decimals a-id))
@@ -880,11 +880,11 @@
                                 (ouro-id:string (ref-DALOS::UR_OuroborosID))
                                 (secondary-ids-for-transfer:[string] (ref-U|LST::UC_InsertFirst input-ids-for-transfer ignis-id))
                                 (secondary-amounts-for-transfer:[decimal] (ref-U|LST::UC_InsertFirst input-amounts-for-transfer ignis-swp))
-                                (ico1:object{IgnisCollectorV1.OutputCumulator}
+                                (ico1:object{IgnisCollectorV2.OutputCumulator}
                                     ;;For initial Transfer towards the SWP|SC_NAME of input tokens and ignis (removed Ignis additions as is always zero)
                                     (ref-TFT::URCi_MultiTransferCumulator input-ids-for-transfer account SWP|SC_NAME input-amounts-for-transfer)
                                 )
-                                (ico2:object{IgnisCollectorV1.OutputCumulator}
+                                (ico2:object{IgnisCollectorV2.OutputCumulator}
                                     ;;For LP Minting (2)
                                     (ref-IGNIS::UDC_SmallCumulator SWP|SC_NAME)
                                 )
@@ -902,7 +902,7 @@
                                     )
                                 )
                                 ;;Cumulator needed if Liquid Boost is enabled and executed
-                                (ico5:object{IgnisCollectorV1.OutputCumulator}
+                                (ico5:object{IgnisCollectorV2.OutputCumulator}
                                     ;;ico3 for IGNIS to special Targets is always zero: removed
                                     ;;Ico4 for IGNIS burn is always zero;removed
                                     ;;Used for the OURO Mint (2)
@@ -912,7 +912,7 @@
                                         (ref-IGNIS::URC_ZeroGAS ouro-id account) []
                                     )
                                 )
-                                (ico6:object{IgnisCollectorV1.OutputCumulator}
+                                (ico6:object{IgnisCollectorV2.OutputCumulator}
                                     ;;Used for SSTOA Burn (2)
                                     (ref-IGNIS::UDC_ConstructOutputCumulator 
                                         (ref-DALOS::UR_UsagePrice "ignis|small") 
@@ -920,7 +920,7 @@
                                         (ref-IGNIS::URC_ZeroGAS sstoa-id account) []
                                     )
                                 )
-                                (ico56:object{IgnisCollectorV1.OutputCumulator}
+                                (ico56:object{IgnisCollectorV2.OutputCumulator}
                                     (if (= lqboost-ignis-tax 0.0)
                                         EOC
                                         (ref-IGNIS::UDC_ConcatenateOutputCumulators 
@@ -929,7 +929,7 @@
                                         )
                                     )
                                 )
-                                (s-ico1:object{IgnisCollectorV1.OutputCumulator}
+                                (s-ico1:object{IgnisCollectorV2.OutputCumulator}
                                     (ref-IGNIS::UDC_ConcatenateOutputCumulators 
                                         [ico-flat ico-gaseous ico1 ico2 ico56] 
                                         []
@@ -1096,7 +1096,7 @@
     (defun URC_TokenPrecision (id:string)
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
             )
             (ref-DPTF::UR_Decimals id)
         )
@@ -1104,13 +1104,13 @@
     (defun URC_IgnisPrecision ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (URC_TokenPrecision (ref-DALOS::UR_IgnisID))
         )
     )
     ;;
-    (defun URC_LD:object{SwapperLiquidityV1.LiquidityData} (swpair:string input-amounts:[decimal])
+    (defun URC_LD:object{SwapperLiquidityV2.LiquidityData} (swpair:string input-amounts:[decimal])
         @doc "Computes the LP amounts, valid for all 3 pool types, outputing a TripleLP object containing: \
         \ 1st Value: A Liquidity Split Object, containing the Liquidity Split \
         \ 2nd Value: The Type of Liquidity existing in the input \
@@ -1119,12 +1119,12 @@
         \ 5th Value: LP Amount as Liquidity Fee for the asymmetric Part"
         (let
             (
-                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-SWP:module{SwapperV3} SWP)
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-SWP:module{SwapperV4} SWP)
                 ;;
-                (sorted-lq:object{SwapperLiquidityV1.LiquiditySplit} (URC_SortLiquidity swpair input-amounts))
-                (sorted-lq-type:object{SwapperLiquidityV1.LiquiditySplitType} (UC_DetermineLiquidity sorted-lq))
+                (sorted-lq:object{SwapperLiquidityV2.LiquiditySplit} (URC_SortLiquidity swpair input-amounts))
+                (sorted-lq-type:object{SwapperLiquidityV2.LiquiditySplitType} (UC_DetermineLiquidity sorted-lq))
                 (balanced-lq:[decimal] (at "balanced" sorted-lq))
                 (asymmetric-lq:[decimal] (at "asymmetric" sorted-lq))
                 (iz-balanced:bool (at "iz-balanced" sorted-lq-type))
@@ -1143,7 +1143,7 @@
                         (ref-SWP::UR_PoolTokenSupplies swpair)
                     )
                 )
-                (lcd:object{SwapperLiquidityV1.LiquidityComputationData}
+                (lcd:object{SwapperLiquidityV2.LiquidityComputationData}
                     (UDC_LiquidityComputationData
                         (length input-amounts)
                         (ref-U|SWP::UC_PoolType swpair)
@@ -1184,10 +1184,10 @@
             )
         )
     )
-    (defun URCx_BalancedLP:decimal (lcd:object{SwapperLiquidityV1.LiquidityComputationData} balanced-lq:[decimal])
+    (defun URCx_BalancedLP:decimal (lcd:object{SwapperLiquidityV2.LiquidityComputationData} balanced-lq:[decimal])
         (let
             (
-                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
             )
             (ref-U|SWP::UC_LP 
                 balanced-lq 
@@ -1197,15 +1197,15 @@
             )
         )
     )
-    (defun URCx_AsymmetricLP:[decimal] (swpair:string asymmetric-lq:[decimal] lcd:object{SwapperLiquidityV1.LiquidityComputationData})
+    (defun URCx_AsymmetricLP:[decimal] (swpair:string asymmetric-lq:[decimal] lcd:object{SwapperLiquidityV2.LiquidityComputationData})
         @doc "Computes the Full LP (at 0) and Reduced LP (at 1) from Liquidity Fee for asymmetric-liquidity"
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-                (ref-U|VST:module{UtilityVstV1} U|VST)
-                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-SWP:module{SwapperV3} SWP)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-U|VST:module{UtilityVstV2} U|VST)
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-SWP:module{SwapperV4} SWP)
                 ;;
                 (li:integer (at "li" lcd))
                 (pool-type:string (at "pool-type" lcd))
@@ -1317,9 +1317,9 @@
     (defun URC_D1forWP:decimal (swpair:string current:[decimal] input:[decimal])
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                (ref-SWP:module{SwapperV3} SWP)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (ref-SWP:module{SwapperV4} SWP)
                 (pool-type:string (ref-U|SWP::UC_PoolType swpair))
                 (how-many:decimal (dec (length current)))
                 (weigths:[decimal] (ref-SWP::UR_Weigths swpair))
@@ -1350,15 +1350,15 @@
             (fold (+) 0.0 input-values)
         )
     )
-    (defun URC_AsymmetricTax:object{SwapperLiquidityV1.AsymmetricTax}
-        (account:string swpair:string ld:object{SwapperLiquidityV1.LiquidityData})
+    (defun URC_AsymmetricTax:object{SwapperLiquidityV2.AsymmetricTax}
+        (account:string swpair:string ld:object{SwapperLiquidityV2.LiquidityData})
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-SWP:module{SwapperV3} SWP)
-                (ref-SWPI:module{SwapperIssueV3} SWPI)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-SWP:module{SwapperV4} SWP)
+                (ref-SWPI:module{SwapperIssueV4} SWPI)
                 ;;
                 ;;Unwrap Object Data
                 (iz-balanced:bool (at "iz-balanced" (at "sorted-lq-type" ld)))
@@ -1429,7 +1429,7 @@
                             ;;Equal to the Asymetric Liqudity minus the A amount from ABA
                             (zip (-) asymmetric-liquidity fba-filled)
                         )
-                        (vse:object{UtilitySwpV1.VirtualSwapEngine}
+                        (vse:object{UtilitySwpV2.VirtualSwapEngine}
                             (UDC_VirtualSwapEngineSwpair 
                                 account account-starting-liq
                                 swpair virtual-pool-token-supplies
@@ -1477,7 +1477,7 @@
                             )
                         )
                         (l1:integer (length df-asymmetric-liquidity-no-zeroes))
-                        (swap-no1-data:object{UtilitySwpV1.DirectSwapInputData}
+                        (swap-no1-data:object{UtilitySwpV2.DirectSwapInputData}
                             (ref-U|SWP::UDC_DirectSwapInputData
                                 df-pool-tokens-no-zeroes
                                 df-asymmetric-liquidity-no-zeroes
@@ -1486,13 +1486,13 @@
                         )
                         ;;
                         ;;First Virtual Swap
-                        (vse1:object{UtilitySwpV1.VirtualSwapEngine}
+                        (vse1:object{UtilitySwpV2.VirtualSwapEngine}
                             (if (!= l1 0)
                                 (ref-SWPI::UC_VirtualSwap vse swap-no1-data)
                                 vse
                             )
                         )
-                        (vse2:object{UtilitySwpV1.VirtualSwapEngine}
+                        (vse2:object{UtilitySwpV2.VirtualSwapEngine}
                             (UCx_Step2AsymmetricTaxVirtualSwapper 
                                 vse1 first-pt df-pool-tokens (drop 1 aba)
                             )
@@ -1535,7 +1535,7 @@
             )
         )
     )
-    (defun URC_SortLiquidity:object{SwapperLiquidityV1.LiquiditySplit} (swpair:string input-amounts:[decimal])
+    (defun URC_SortLiquidity:object{SwapperLiquidityV2.LiquiditySplit} (swpair:string input-amounts:[decimal])
         @doc "Sorts Liquidity into a balanced part and an asymmetric part"
         (let
             (
@@ -1557,7 +1557,7 @@
                         )
                         (let
                             (
-                                (ref-SWP:module{SwapperV3} SWP)
+                                (ref-SWP:module{SwapperV4} SWP)
                                 (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
                                 (balanced-chain:[decimal]
                                     (fold
@@ -1644,8 +1644,8 @@
                     false
                     (let
                         (
-                            (ref-U|LST:module{StringProcessorV1} U|LST)
-                            (ref-SWPI:module{SwapperIssueV3} SWPI)
+                            (ref-U|LST:module{StringProcessorV2} U|LST)
+                            (ref-SWPI:module{SwapperIssueV4} SWPI)
                             (positive-amounts:[decimal] (ref-U|LST::UC_RemoveItem input-amounts 0.0))
                             (positive-ids:[string] (ref-SWPI::URC_TrimIdsWithZeroAmounts swpair input-amounts))
                         )
@@ -1676,9 +1676,9 @@
         \ <with-validation> specifies if additional validation should also be executed to validate the inputs."
         (let
             (
-                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-SWP:module{SwapperV3} SWP)
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-SWP:module{SwapperV4} SWP)
                 ;;
                 (input-position:integer (ref-SWP::UR_PoolTokenPosition swpair input-id))
                 (input-precision:integer (ref-DPTF::UR_Decimals input-id))
@@ -1700,7 +1700,7 @@
     (defun URC_LpBreakAmounts:[decimal] (swpair:string input-lp-amount:decimal)
         (let
             (
-                (ref-SWP:module{SwapperV3} SWP)
+                (ref-SWP:module{SwapperV4} SWP)
                 (pool-token-supplies:[decimal] (ref-SWP::UR_PoolTokenSupplies swpair))
                 (lp-supply:decimal (ref-SWP::URC_LpCapacity swpair))
             )
@@ -1713,8 +1713,8 @@
         \ Using Custom values for PoolTokenSupplies and PoolLPSupply"
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-                (ref-SWP:module{SwapperV3} SWP)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-SWP:module{SwapperV4} SWP)
                 (ratio:decimal (floor (/ input-lp-amount swpair-lp-supply) 24))
                 (pool-token-precisions:[integer] (ref-SWP::UR_PoolTokenPrecisions swpair))
                 (l1:integer (length swpair-pool-token-supplies))
@@ -1746,7 +1746,7 @@
     )
     ;;{5.4}  Validate [UEV/CAP]
     (defun UEV_Liquidity:[decimal]
-        (swpair:string ld:object{SwapperLiquidityV1.LiquidityData})
+        (swpair:string ld:object{SwapperLiquidityV2.LiquidityData})
             @doc "Validates the asymmetric Liquidity amount, if it exists within the LD Object. \
             \ Validation means that it doesent produce a Share Deviation \
             \ greater than 40% of the Maximum Pool Deviation \
@@ -1758,7 +1758,7 @@
             \ If no asymmetric liq exists within the LD, then outputs zero, as no Deviation would occur"
         (let
             (
-                (ref-SWP:module{SwapperV3} SWP)
+                (ref-SWP:module{SwapperV4} SWP)
                 ;;
                 ;;Unwrap Object Data
                 (balanced-liquidity:[decimal] (at "balanced" (at "sorted-lq" ld)))
@@ -1780,7 +1780,7 @@
                 [0.0 0.0]
                 (let
                     (
-                        (ref-SWPI:module{SwapperIssueV3} SWPI)
+                        (ref-SWPI:module{SwapperIssueV4} SWPI)
                         ;;
                         (w:[decimal] (ref-SWP::UR_Weigths swpair))
                         (n:decimal (dec (length w)))
@@ -1796,8 +1796,8 @@
     (defun UEV_BalancedLiquidity (swpair:string input-id:string input-amount:decimal)
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-SWP:module{SwapperV3} SWP)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-SWP:module{SwapperV4} SWP)
                 (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
                 (iz-on-pool:bool (contains input-id pool-tokens))
             )
@@ -1812,7 +1812,7 @@
     (defun XE_STOA-PID|AddLiquidity
         (
             account:string swpair:string asymmetric-collection:bool gaseous-collection:bool stoa-pid:decimal
-            ld:object{SwapperLiquidityV1.LiquidityData} clad:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
+            ld:object{SwapperLiquidityV2.LiquidityData} clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
         )
         @doc "#59L note: every branch below calls XE_UpdateSupplies (reserve bump) BEFORE \
             \ XI_AddLiqSendAndMint (the actual token transfer-in + LP mint). That ordering \
@@ -1828,7 +1828,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-SWP:module{SwapperV3} SWP)
+                (ref-SWP:module{SwapperV4} SWP)
                 ;;
                 (balanced-liquidity:[decimal] (at "balanced" (at "sorted-lq" ld)))
                 (asymmetric-liquidity:[decimal] (at "asymmetric" (at "sorted-lq" ld)))
@@ -1864,12 +1864,12 @@
                     (if asymmetric-collection
                         (let
                             (
-                                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                                (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                                (ref-ORBR:module{OuroborosV1} OUROBOROS)
-                                (ref-SWPI:module{SwapperIssueV3} SWPI)
+                                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                                (ref-ORBR:module{OuroborosV2} OUROBOROS)
+                                (ref-SWPI:module{SwapperIssueV4} SWPI)
                                 ;;
                                 (ignis-id:string (ref-DALOS::UR_IgnisID))
                                 (ouro-id:string (ref-DALOS::UR_OuroborosID))
@@ -1886,7 +1886,7 @@
                                         (at 0 (ref-ORBR::URC_Compress lqboost-ignis-tax))
                                     )
                                 )    
-                                (dsid:object{UtilitySwpV1.DirectSwapInputData}
+                                (dsid:object{UtilitySwpV2.DirectSwapInputData}
                                     (ref-U|SWP::UDC_DirectSwapInputData
                                         [ouro-id]
                                         [ouro-mint-amount]
@@ -1948,13 +1948,13 @@
     (defun XI_AddLiqSendAndMint 
         (
             account:string lp-id:string lp-amount:decimal 
-            clad:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
+            clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
         )
         (require-capability (SECURE))
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV2} TFT)
             )
             (ref-TFT::C_MultiTransfer
                 (at "mt-ids" (at "clad-op" clad))
@@ -1969,8 +1969,8 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-SWP:module{SwapperV3} SWP)
-                (ref-SWPI:module{SwapperIssueV3} SWPI)
+                (ref-SWP:module{SwapperV4} SWP)
+                (ref-SWPI:module{SwapperIssueV4} SWPI)
                 (pool-worth:decimal (at 0 (ref-SWPI::URC_PoolValue swpair)))
                 (inactive-limit:decimal (ref-SWP::UR_InactiveLimit))
             )

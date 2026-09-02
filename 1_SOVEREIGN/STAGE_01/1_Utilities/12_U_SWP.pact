@@ -1,4 +1,4 @@
-(interface UtilitySwpV1
+(interface UtilitySwpV2
     @doc "Exported Utility Functions for the SWP Module"
 
     ;;<=========================================================================>
@@ -188,7 +188,7 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements UtilitySwpV1)
+    (implements UtilitySwpV2)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -201,7 +201,7 @@
     (defcap GOV|U|SWP_ADMIN ()
         (let
             (
-                (ref-U|CT:module{OuronetConstantsV1} U|CT)
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
                 (g:guard (ref-U|CT::CT_GOV|UTILS))
             )
             (enforce-guard g)
@@ -236,10 +236,10 @@
     ;;{5.1}  Construct [CT/UDC]
     ;;
     ;;
-    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
     ;;
     ;;
-    (defun UDC_DirectRawSwapInput:object{UtilitySwpV1.DirectRawSwapInput}
+    (defun UDC_DirectRawSwapInput:object{UtilitySwpV2.DirectRawSwapInput}
         (a:decimal b:[decimal] c:[decimal] d:[integer] e:integer f:integer g:[decimal])
         {"A"                : a
         ,"X"                : b
@@ -249,7 +249,7 @@
         ,"output-precision" : f
         ,"weights"          : g}
     )
-    (defun UDC_InverseRawSwapInput:object{UtilitySwpV1.InverseRawSwapInput}
+    (defun UDC_InverseRawSwapInput:object{UtilitySwpV2.InverseRawSwapInput}
         (a:decimal b:[decimal] c:decimal d:integer e:integer f:integer g:[decimal])
         {"A"                : a
         ,"X"                : b
@@ -260,20 +260,20 @@
         ,"weights"          : g}
     )
     ;;
-    (defun UDC_DirectSwapInputData:object{UtilitySwpV1.DirectSwapInputData}
+    (defun UDC_DirectSwapInputData:object{UtilitySwpV2.DirectSwapInputData}
         (a:[string] b:[decimal] c:string)
         {"input-ids"        : a
         ,"input-amounts"    : b
         ,"output-id"        : c}
     )
-    (defun UDC_ReverseSwapInputData:object{UtilitySwpV1.ReverseSwapInputData}
+    (defun UDC_ReverseSwapInputData:object{UtilitySwpV2.ReverseSwapInputData}
         (a:string b:decimal c:string)
         {"output-id"        : a
         ,"output-amount"    : b
         ,"input-id"         : c}
     )
     ;;
-    (defun UDC_DirectTaxedSwapOutput:object{UtilitySwpV1.DirectTaxedSwapOutput}
+    (defun UDC_DirectTaxedSwapOutput:object{UtilitySwpV2.DirectTaxedSwapOutput}
         (a:[decimal] b:string c:decimal d:decimal e:decimal)
         {"lp-fuel"          : a
         ,"o-id"             : b
@@ -281,7 +281,7 @@
         ,"o-id-liquid"      : d
         ,"o-id-netto"       : e}
     )
-    (defun UDC_InverseTaxedSwapOutput:object{UtilitySwpV1.InverseTaxedSwapOutput}
+    (defun UDC_InverseTaxedSwapOutput:object{UtilitySwpV2.InverseTaxedSwapOutput}
         (a:decimal b:decimal c:[decimal] d:string e:decimal)
         {"o-id-liquid"      : a
         ,"o-id-special"     : b
@@ -289,14 +289,14 @@
         ,"i-id"             : d
         ,"i-id-brutto"      : e}
     )
-    (defun UDC_SwapFeez:object{UtilitySwpV1.SwapFeez}
+    (defun UDC_SwapFeez:object{UtilitySwpV2.SwapFeez}
         (a:decimal b:decimal c:decimal)
         {"lp"               : a
         ,"special"          : b
         ,"boost"            : c}
     )
-    (defun UDC_VirtualSwapEngine:object{UtilitySwpV1.VirtualSwapEngine}
-        (a:[string] b:[integer] c:string d:[decimal] e:string f:[decimal] g:decimal h:[decimal] i:object{UtilitySwpV1.SwapFeez} j:[decimal] k:[decimal] l:[decimal] m:[object{UtilitySwpV1.DirectSwapInputData}])
+    (defun UDC_VirtualSwapEngine:object{UtilitySwpV2.VirtualSwapEngine}
+        (a:[string] b:[integer] c:string d:[decimal] e:string f:[decimal] g:decimal h:[decimal] i:object{UtilitySwpV2.SwapFeez} j:[decimal] k:[decimal] l:[decimal] m:[object{UtilitySwpV2.DirectSwapInputData}])
         {"v-tokens"         : a
         ,"v-prec"           : b
         ,"account"          : c
@@ -314,7 +314,7 @@
     ;;{5.2}  Compute [UC]
     ;;S - Stable Pools Computation using Curve Finance original math.
     (defun UC_ComputeY 
-        (drsi:object{UtilitySwpV1.DirectRawSwapInput})
+        (drsi:object{UtilitySwpV2.DirectRawSwapInput})
         @doc "Computes <output-amount> of the Swap given the <input-amount>"
         (let
             (
@@ -326,7 +326,7 @@
                 (op:integer (at "output-position" drsi))
                 (o-prec:integer (at "output-precision" drsi))
                 ;;
-                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
                 (prec:integer 24)
                 (D:decimal (UC_ComputeD A X))
                 (n:decimal (dec (length X)))
@@ -373,7 +373,7 @@
         )
     )
     (defun UC_ComputeInverseY
-        (irsi:object{UtilitySwpV1.InverseRawSwapInput})
+        (irsi:object{UtilitySwpV2.InverseRawSwapInput})
         @doc "Computes the <input-amount> for the Swap given the <output-amount>"
         (let        
             (
@@ -385,7 +385,7 @@
                 (ip:integer (at "input-position" irsi))
                 (i-prec:integer (at "input-precision" irsi))
                 ;;
-                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
                 (prec:integer 24)
                 (D:decimal (UC_ComputeD A X))
                 (n:decimal (dec (length X)))
@@ -462,7 +462,7 @@
             \ YNext = Numerator / Denominator"
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
                 (prec:integer 24)
                 (n1:decimal (+ 1.0 n))
                 ;;C3 fix: <n>/<n1>/<Y^2> are always whole-number powers — use exact UC_IntPow / plain
@@ -522,7 +522,7 @@
         \ fixed, uniform gas cost on every call regardless of pool state."
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
                 (output-lst:[decimal]
                     (fold
                         (lambda
@@ -593,7 +593,7 @@
     ;;decimal) token precisions is routinely swallowed entirely by the final settlement-precision rounding.
     ;;Accepted as a bounded, documented limitation of the underlying language, not tracked as an open bug.
     (defun UC_ComputeWP
-        (drsi:object{UtilitySwpV1.DirectRawSwapInput})
+        (drsi:object{UtilitySwpV2.DirectRawSwapInput})
         @doc "Swapping 100A for y amount of C >> Equation in a weighted constant product pool: \
             \ How much C do you get for swapping 100A ? \
             \ xA^wA * xB^wB * xC^wC * xD^wD = (xA + 100)^wA * xB^wB * (xC - y)^wC * xD^wD \
@@ -608,7 +608,7 @@
                 (o-prec:integer (at "output-precision" drsi))
                 (w:[decimal] (at "weights" drsi))
                 ;;
-                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
                 (raised:[decimal] (zip (lambda (x:decimal y:decimal) (floor (^ x y) 24)) X w))
                 (pool-product:decimal (floor (fold (*) 1.0 raised) 24))
                 (added-supplies:[decimal] (UC_AddSupply X input-amounts ip))
@@ -630,7 +630,7 @@
         )
     )
     (defun UC_ComputeInverseWP
-        (irsi:object{UtilitySwpV1.InverseRawSwapInput})
+        (irsi:object{UtilitySwpV2.InverseRawSwapInput})
         @doc "Swapping ??A for 100C >> Equation in a weighted constant product pool: \
             \ How much A do you need to swap to get 100C ?  \
             \ xA^wA * xB^wB * xC^wC * xD^wD = (xA + y)^wA * xB^wB * (xC - 100)^wC * xD^wD \
@@ -645,7 +645,7 @@
                 (i-prec:integer (at "input-precision" irsi))
                 (w:[decimal] (at "weights" irsi))
                 ;;
-                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
                 (raised:[decimal] (zip (lambda (x:decimal y:decimal) (floor (^ x y) 24)) X w))
                 (pool-product:decimal (floor (fold (*) 1.0 raised) 24))
                 (removed-supplies:[decimal] (UC_RemoveSupply X output-amount op))
@@ -669,7 +669,7 @@
     )
     ;;W - Equal Weight Constant Product Pools Computations
     (defun UC_ComputeEP:decimal 
-        (drsi:object{UtilitySwpV1.DirectRawSwapInput})
+        (drsi:object{UtilitySwpV2.DirectRawSwapInput})
         @doc "Swapping 100A for y amount of C >> Equation in an equal weight constant product pool: \
             \ xA * xB * xC * xD = (xA + 100) * xB * (xC - y) * xD \
             \ This Functions solves for y"
@@ -682,7 +682,7 @@
                 (op:integer (at "output-position" drsi))
                 (o-prec:integer (at "output-precision" drsi))
                 ;;
-                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
                 (pool-product:decimal (floor (fold (*) 1.0 X) 24))
                 (added-supplies:[decimal] (UC_AddSupply X input-amounts ip))
                 (rm-output:[decimal] (ref-U|LST::UC_RemoveItemAt added-supplies op))
@@ -695,7 +695,7 @@
         )
     )
     (defun UC_ComputeInverseEP:decimal
-        (irsi:object{UtilitySwpV1.InverseRawSwapInput})
+        (irsi:object{UtilitySwpV2.InverseRawSwapInput})
         @doc "How Much A is needed to get 100C >> Equation in an equal weight constant product pool: \
             \ xA * xB * xC * xD = (xA + y) * xB * (xC - 100) * xD \
             \ This function solves for Y"
@@ -708,7 +708,7 @@
                 (ip:integer (at "input-position" irsi))
                 (i-prec:integer (at "input-precision" irsi))
                 ;;
-                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
                 (pool-product:decimal (floor (fold (*) 1.0 X) 24))
                 (removed-supplies:[decimal] (UC_RemoveSupply X output-amount op))
                 (rm-input:[decimal] (ref-U|LST::UC_RemoveItemAt removed-supplies ip))
@@ -725,7 +725,7 @@
         @doc "Computes Balanced Liquidity Amounts from input sources"
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
                 (ratio:decimal (floor (/ ia (at ip X)) i-prec))
                 (output:[decimal]
                     (fold
@@ -753,7 +753,7 @@
             \ Must only be used when <input-amounts> are balanced, otherwise LP computation results in an inccorect value"
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
                 (nz:[decimal] (ref-U|LST::UC_RemoveItem input-amounts 0.0))
                 (fnz:decimal (at 0 nz))
                 (fnzp:integer (at 0 (ref-U|LST::UC_Search input-amounts fnz)))
@@ -769,15 +769,15 @@
             \ not load-bearing: the only real caller (SWP::URC_LpComposer) builds both \
             \ <token-names> and <token-tickers> from the exact same source list via the \
             \ exact same enumerate range, so they can never actually differ in length. \
-            \ Residual, not pursued: UC_LpID is declared on the public UtilitySwpV1 \
+            \ Residual, not pursued: UC_LpID is declared on the public UtilitySwpV2 \
             \ interface, so a hypothetical future caller passing mismatched-length \
             \ lists would hit a plain out-of-bounds crash inside the folds below \
             \ instead of a clean enforce message — same class of residual risk as M1's \
             \ own write-up, not a live path today."
         (let
             (
-                (ref-U|CT:module{OuronetConstantsV1} U|CT)
-                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
                 (prefix:string (UC_Prefix weights amp))
                 (l1:integer (length token-names))
                 (minus:string "-")
@@ -821,7 +821,7 @@
     (defun UC_AddSupply:[decimal] (X:[decimal] input-amounts:[decimal] ip:[integer])
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
             )
             (fold
                 (lambda
@@ -845,7 +845,7 @@
     (defun UC_RemoveSupply:[decimal] (X:[decimal] output-amount:decimal op:integer)
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
             )
             (fold
                 (lambda
@@ -870,8 +870,8 @@
         @doc "Creates a Swap Pool Id from input sources"
         (let
             (
-                (ref-U|CT:module{OuronetConstantsV1} U|CT)
-                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
                 (prefix:string (UC_Prefix weights amp))
                 (swpair-elements:[string]
                     (fold
@@ -912,7 +912,7 @@
             []
             (let
                 (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
                 )
                 (fold
                     (lambda
@@ -938,7 +938,7 @@
     (defun UC_FilterOne:[string] (swpairs:[string] id:string)
         (let*
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
                 (l1:[bool] (UC_IzOnPools id swpairs))
                 (l2:[string] (zip (lambda (s:string b:bool) (if b s BAR)) swpairs l1))
                 (l3:[string] (ref-U|LST::UC_RemoveItem l2 BAR))
@@ -949,7 +949,7 @@
     (defun UC_FilterTwo:[string] (swpairs:[string] id1:string id2:string)
         (let*
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
                 (l1:[bool] (UC_AreOnPools id1 id2 swpairs))
                 (l2:[string] (zip (lambda (s:string b:bool) (if b s BAR)) swpairs l1))
                 (l3:[string] (ref-U|LST::UC_RemoveItem l2 BAR))
@@ -967,7 +967,7 @@
             []
             (let
                 (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
                 )
                 (fold
                     (lambda
@@ -1019,7 +1019,7 @@
             []
             (let
                 (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
                 )
                 (fold
                     (lambda
@@ -1040,7 +1040,7 @@
             [input-amount]
             (let
                 (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
                     (sftp-sum:decimal (fold (+) 0.0 sftp))
                     (sftp-wl:[decimal] (drop -1 sftp))
                     (ipl:[decimal]
@@ -1066,8 +1066,8 @@
     (defun UC_TokensFromSwpairString:[string] (swpair:string)
         (let
             (
-                (ref-U|CT:module{OuronetConstantsV1} U|CT)
-                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
                 (bar:string (ref-U|CT::CT_BAR))
             )
             (drop 1 (ref-U|LST::UC_SplitString bar swpair))
@@ -1079,7 +1079,7 @@
     (defun UC_MakeLiquidityList (swpair:string ptp:integer amount:decimal)
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
                 (how-many-pts:integer (length (UC_TokensFromSwpairString swpair)))
                 (zeroes:[decimal] (make-list how-many-pts 0.0))
             )

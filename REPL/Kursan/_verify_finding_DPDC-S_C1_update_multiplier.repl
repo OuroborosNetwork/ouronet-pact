@@ -19,7 +19,7 @@
 
 (begin-tx "PROBE-C7 - baseline read: Wonder Coach set-class 1 (Bronze) multiplier")
 (namespace "ouronet-ns")
-(let ((ref-DPDC-S:module{DpdcSetsV1} DPDC-S) (id:string "DHWC-98c486052a51"))
+(let ((ref-DPDC-S:module{DpdcSetsV2} DPDC-S) (id:string "DHWC-98c486052a51"))
     (print (format "BEFORE multiplier = {}" [(ref-DPDC-S::UR_SetMultiplier id true 1)]))
 )
 (commit-tx)
@@ -33,8 +33,8 @@
 ;; (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;; (let
 ;;     (
-;;         (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
-;;         (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+;;         (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+;;         (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
 ;;         (id:string "DHWC-98c486052a51")
 ;;     )
 ;;     (print (format "UPDATE RESULT = {}"

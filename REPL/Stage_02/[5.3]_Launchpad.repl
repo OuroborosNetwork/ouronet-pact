@@ -57,15 +57,15 @@
 (print "--- [TX-01 - Initialise Launchpad Properties Table · 02 · let / invocation] ---")
 (let
     (
-        (ref-U|G:module{OuronetGuardsV1} U|G)
-        (ref-TFT:module{TrueFungibleTransferV1} TFT)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
-        (ref-P|DPAD:module{OuronetPolicyV1} DEMIPAD)
-        (ref-P|SPARK:module{OuronetPolicyV1} DEMIPAD-SPARK)
-        (ref-P|SNAKES:module{OuronetPolicyV1} DEMIPAD-SNAKES)
-        (ref-P|CUSTODIANS:module{OuronetPolicyV1} DEMIPAD-CUSTODIANS)
-        (ref-P|TS02-DPAD:module{OuronetPolicyV1} TS02-DPAD)
-        (ref-DPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
+        (ref-U|G:module{OuronetGuardsV2} U|G)
+        (ref-TFT:module{TrueFungibleTransferV2} TFT)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-P|DPAD:module{OuronetPolicyV2} DEMIPAD)
+        (ref-P|SPARK:module{OuronetPolicyV2} DEMIPAD-SPARK)
+        (ref-P|SNAKES:module{OuronetPolicyV2} DEMIPAD-SNAKES)
+        (ref-P|CUSTODIANS:module{OuronetPolicyV2} DEMIPAD-CUSTODIANS)
+        (ref-P|TS02-DPAD:module{OuronetPolicyV2} TS02-DPAD)
+        (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
         (lpad-sc:string (ref-DPAD::GOV|DEMIPAD|SC_NAME))
         (pkey:string DEMIPAD.PP)
     )
@@ -132,8 +132,8 @@
 (print "--- [TX-01 - Initialise Movie Booster aka Spark · 02 · let / invocation] ---")
     (let
         (
-            (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
-            (ref-DALOS:module{OuronetDalosV1} DALOS)
+            (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+            (ref-DALOS:module{OuronetDalosV2} DALOS)
             (split-stoa:[decimal]
                 (ref-DALOS::URC_SplitSTOAPrices
                     KST.ANHD
@@ -217,8 +217,8 @@
 (print "--- [TX-01 - Initialise Movie Booster aka Spark · 02 · let / invocation] ---")
     (let
         (
-            (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
-            (ref-DALOS:module{OuronetDalosV1} DALOS)
+            (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+            (ref-DALOS:module{OuronetDalosV2} DALOS)
             (split-stoa:[decimal]
                 (ref-DALOS::URC_SplitSTOAPrices
                     KST.ANHD
@@ -290,7 +290,7 @@
 (print "--- [TX-01 - Initialise Movie Booster aka Spark · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
         (split-stoa:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices
                 KST.ANHD
@@ -305,13 +305,13 @@
     )
     (let
         (
-            (ref-VST:module{VestingV1} VST)
-            (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-            (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
-            (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
-            (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
-            (ref-DPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
-            (ref-SPARK:module{SparksV1} DEMIPAD-SPARK)
+            (ref-VST:module{VestingV2} VST)
+            (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+            (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+            (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+            (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+            (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+            (ref-SPARK:module{SparksV2} DEMIPAD-SPARK)
             (patron:string KST.ANHD)
             
             (s-key:string DEMIPAD-SPARK.SPARK|INFO)
@@ -368,7 +368,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
+        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
         (SparkID:string "SPARK-98c486052a51")
     )
     ;; admin locks retrieval (SparkID was enabled during setup)
@@ -407,7 +407,7 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;; admin re-enables retrieval
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-(let ((ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD))
+(let ((ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD))
     (ref-TS02-DPAD::A_ToggleRetrieval "SPARK-98c486052a51" true))
 (commit-tx)
 (begin-tx "TX-2H-e - non-admin passes once enabled")
@@ -437,7 +437,7 @@
 (print "--- [TX-01 - Initialise Shareholders · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
+        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
         (patron:string KST.ANHD)
         (shareholders-id "E|DH-98c486052a51")
         (s-key:string DEMIPAD-SNAKES.SNAKES|INFO)
@@ -490,7 +490,7 @@
 (print "--- [TX-01 - Initialise Custodians · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
+        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
         (patron:string KST.ANHD)
         (custodians-id "DHOC-98c486052a51")
         (s-key:string DEMIPAD-CUSTODIANS.CUSTODIANS|INFO)
@@ -737,8 +737,8 @@
 (print "--- [TX-01 - Initialise Stoa Pay · 02 · let / invocation] ---")
     (let
         (
-            (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
-            (ref-DALOS:module{OuronetDalosV1} DALOS)
+            (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+            (ref-DALOS:module{OuronetDalosV2} DALOS)
             (split-stoa:[decimal]
                 (ref-DALOS::URC_SplitSTOAPrices
                     KST.ANHD
@@ -782,7 +782,7 @@
         (ref-TS01-C1::C_DPTF|Issue
             patron
             patron
-            ["StoicPayV2"]
+            ["StoicPayV3"]
             ["KPAY"]
             [24]
             [true]
@@ -818,8 +818,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
-        (ref-U|CT:module{OuronetConstantsV1} U|CT)
+        (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+        (ref-U|CT:module{OuronetConstantsV2} U|CT)
         (ah-key:string (+ (ref-U|CT::CT_NS_USE) ".dh_ah-keyset"))
         (fake-pbl:string "9G.CgcAjiI89ICnk45mxx63hwkBe5G71sIqfEta0ugkzF7EB6cy55BtzlFa27jDGE7Kn7ChljCmkcIsrDw9JwzJECieGLB5Jlkz9Blo6iJct6uxIA1u64Hr7HKa93EAiCwJJBBKAojJtwupEsvspH1jjGxKyFsb8fbfnJm1rAKxcIzcFILmmdHFaICfFpnbJG6tJu0HM9JCJ7MBCE7C2LiqvE6Fc1hqCeAdGHxDp7sGquI0wl2l08aa6wlKvwu44jgqF8mqDnCyjpxHuttEqjs4h9IJ28kmB53ppwoznt16rjzeMl21n3rwfI2es56rp5xavCabDacyCuonniz72L5d7dq3ptIEiuggEyLIIGe9sadH6eaMyitcmKaH7orgFz6d9kL9FKorBr06owFg328wFhCIlCFpwIzokmo47xKKt5kBzhyodBAjhCqayuHBue4oDhoA21A2H9ut9gApMuxokcmsi7Bd1kitrfJAy1GkrGiBK5dvlhgshcnGaG3vhkCm6dI5idCGjDEodivvDbgyI6zaajHvIMdBtrGvuKnxvsBulkbaDbk2wIdKwrK")
     )
@@ -857,7 +857,7 @@
 (print "--- [TX-01 - Initialise Movie Booster aka Spark · 02 · let / invocation] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
         (split-stoa:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices
                 KST.ANHD
@@ -872,14 +872,14 @@
     )
     (let
         (
-            (ref-P|DPAD:module{OuronetPolicyV1} DEMIPAD)
-            (ref-P|KPAY:module{OuronetPolicyV1} DEMIPAD-STOICPAY)
-            (ref-P|TS02-DPAD:module{OuronetPolicyV1} TS02-DPAD)
+            (ref-P|DPAD:module{OuronetPolicyV2} DEMIPAD)
+            (ref-P|KPAY:module{OuronetPolicyV2} DEMIPAD-STOICPAY)
+            (ref-P|TS02-DPAD:module{OuronetPolicyV2} TS02-DPAD)
             ;;
-            (ref-U|G:module{OuronetGuardsV1} U|G)
-            (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
-            (ref-DPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
-            (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
+            (ref-U|G:module{OuronetGuardsV2} U|G)
+            (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+            (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+            (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
             ;;
             ;;
             (mg:guard (create-capability-guard (TS02-DPAD.P|TALOS-SUMMONER)))

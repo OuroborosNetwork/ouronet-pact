@@ -12,7 +12,7 @@
 
 (let
     (
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (KpayID:string "KPAY-8ogtqXeTmcSe")
         (kpay-accounts:[string] (ref-DPTF::URD_ExistingTrueFungibles KpayID))
         (supplies:[decimal]
@@ -32,9 +32,9 @@
 (namespace "n_7d40ccda457e374d8eb07b658fd38c282c545038")
 (let
     (
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-        (ref-ELITE:module{EliteV1} ELITE)
-        (ref-INFO-ZERO:module{OuronetInfoV1} INFO-ZERO)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-ELITE:module{EliteV2} ELITE)
+        (ref-INFO-ZERO:module{OuronetInfoV2} INFO-ZERO)
         (EaID:string "EliteAuryndex-ds4il5rO7vDC")
         (ea-accounts:[string] (ref-DPTF::URD_ExistingTrueFungibles EaID))
         (supplies:[decimal]
@@ -83,9 +83,9 @@
         ;;
         (function-zero:list (TS01-CP.SWP|F0|A_AddStandardLiquidity patron patron swpair la kda-pid))
         ;;
-        (yielded-pool-state:object{SwapperLiquidityV1.PoolState} (at "pool-state" (at 1 function-zero)))
-        (yielded-ld:object{SwapperLiquidityV1.LiquidityData} (at "ld" (at 1 function-zero)))
-        (yielded-clad:object{SwapperLiquidityV1.CompleteLiquidityAdditionData} (at "clad" (at 1 function-zero)))
+        (yielded-pool-state:object{SwapperLiquidityV2.PoolState} (at "pool-state" (at 1 function-zero)))
+        (yielded-ld:object{SwapperLiquidityV2.LiquidityData} (at "ld" (at 1 function-zero)))
+        (yielded-clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData} (at "clad" (at 1 function-zero)))
         ;;
         ;;
         ;;FUNCTION 1
@@ -120,15 +120,15 @@
         ;;
         (function-zero:list (TS01-CP.SWP|F0|A_AddStandardLiquidity patron patron swpair la kda-pid))
         ;;
-        (yielded-pool-state:object{SwapperLiquidityV1.PoolState} (at "pool-state" (at 1 function-zero)))
-        (yielded-ld:object{SwapperLiquidityV1.LiquidityData} (at "ld" (at 1 function-zero)))
-        (yielded-clad:object{SwapperLiquidityV1.CompleteLiquidityAdditionData} (at "clad" (at 1 function-zero)))
+        (yielded-pool-state:object{SwapperLiquidityV2.PoolState} (at "pool-state" (at 1 function-zero)))
+        (yielded-ld:object{SwapperLiquidityV2.LiquidityData} (at "ld" (at 1 function-zero)))
+        (yielded-clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData} (at "clad" (at 1 function-zero)))
         ;;
         ;;
         ;;FUNCTION 1
-        (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-        (ref-SWPL:module{SwapperLiquidityV1} SWPL)
-        (current-pool-state:object{SwapperLiquidityV1.PoolState} (MTX-SWP.UR_PoolState swpair))
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-SWPL:module{SwapperLiquidityV2} SWPL)
+        (current-pool-state:object{SwapperLiquidityV2.PoolState} (MTX-SWP.UR_PoolState swpair))
         (primary:decimal (at "primary-lp" yielded-clad))
         (secondary:decimal (at "secondary-lp" yielded-clad))
         (sum-lp:decimal (+ primary secondary))
@@ -150,11 +150,11 @@
                 (account:string patron)
                 (asymmetric-collection:bool true)
                 (gaseous-collection:bool true)
-                (ld:object{SwapperLiquidityV1.LiquidityData} yielded-ld)
-                (clad:object{SwapperLiquidityV1.CompleteLiquidityAdditionData} yielded-clad)
+                (ld:object{SwapperLiquidityV2.LiquidityData} yielded-ld)
+                (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData} yielded-clad)
                 (account:string patron)
                 ;;
-                (ref-SWP:module{SwapperV3} SWP)
+                (ref-SWP:module{SwapperV4} SWP)
                 ;;
                 (balanced-liquidity:[decimal] (at "balanced" (at "sorted-lq" ld)))
                 (asymmetric-liquidity:[decimal] (at "asymmetric" (at "sorted-lq" ld)))
@@ -190,12 +190,12 @@
                     (if asymmetric-collection
                         (let
                             (
-                                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                                (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                                (ref-ORBR:module{OuroborosV1} OUROBOROS)
-                                (ref-SWPI:module{SwapperIssueV3} SWPI)
+                                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                                (ref-ORBR:module{OuroborosV2} OUROBOROS)
+                                (ref-SWPI:module{SwapperIssueV4} SWPI)
                                 ;;
                                 (ignis-id:string (ref-DALOS::UR_IgnisID))
                                 (ouro-id:string (ref-DALOS::UR_OuroborosID))
@@ -212,7 +212,7 @@
                                         (at 0 (ref-ORBR::URC_Compress lqboost-ignis-tax))
                                     )
                                 )    
-                                (dsid:object{UtilitySwpV1.DirectSwapInputData}
+                                (dsid:object{UtilitySwpV2.DirectSwapInputData}
                                     (ref-U|SWP::UDC_DirectSwapInputData
                                         [ouro-id]
                                         [ouro-mint-amount]
@@ -252,9 +252,9 @@
                                     (DPTF.P|UEV_IMC)
                                     (let
                                         (
-                                            (ref-U|DPTF:module{UtilityDptfV1} U|DPTF)
-                                            (ref-DALOS:module{OuronetDalosV1} DALOS)
-                                            (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                                            (ref-U|DPTF:module{UtilityDptfV2} U|DPTF)
+                                            (ref-DALOS:module{OuronetDalosV2} DALOS)
+                                            (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                                         )
                                         (with-capability (DPTF.DPTF|C>BURN id-x account-x amount-x)
                                             (with-capability (DPTF.SECURE)
@@ -292,8 +292,8 @@
 (acquire-module-admin SWPLC)
 (let
     (
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-        (ref-SWP:module{SwapperV3} SWP)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-SWP:module{SwapperV4} SWP)
         (account:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
         (swpair:string "W|LKDA-slLyzPPCo22W|OURO-slLyzPPCo22W|WKDA-slLyzPPCo22W")
         (lp-id:string (ref-SWP::UR_TokenLP swpair))
@@ -303,9 +303,9 @@
     (with-capability (SWPLC.SWPLC|C>REMOVE_LQ swpair lp-amount)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                (ref-SWPL:module{SwapperLiquidityV1} SWPL)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-SWPL:module{SwapperLiquidityV2} SWPL)
                 ;;
                 (pool-token-ids:[string] (ref-SWP::UR_PoolTokens swpair))
                 (lp-id:string (ref-SWP::UR_TokenLP swpair))
@@ -318,7 +318,7 @@
                 ;;
                 (flat-ignis-lq-rm-fee:decimal 1000.0)
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                (ico-flat:object{IgnisCollectorV1.OutputCumulator}
+                (ico-flat:object{IgnisCollectorV2.OutputCumulator}
                     (ref-IGNIS::UDC_ConstructOutputCumulator flat-ignis-lq-rm-fee SWP|SC_NAME trigger [])
                 )
             )
@@ -401,13 +401,13 @@
 (namespace "n_7d40ccda457e374d8eb07b658fd38c282c545038")
 (let    
     (
-        (ref-P|VST:module{OuronetPolicyV1} VST)
-        (ref-P|SWP:module{OuronetPolicyV1} SWP)
-        (ref-U|G:module{OuronetGuardsV1} U|G)
-        (ref-DALOS:module{OuronetDalosV1} DALOS)
-        (ref-P|MTX-SWP:module{OuronetPolicyV1} MTX-SWP)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
-        (ref-P|TS01-CP:module{OuronetPolicyV1} TS01-CP)
+        (ref-P|VST:module{OuronetPolicyV2} VST)
+        (ref-P|SWP:module{OuronetPolicyV2} SWP)
+        (ref-U|G:module{OuronetGuardsV2} U|G)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-P|MTX-SWP:module{OuronetPolicyV2} MTX-SWP)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-P|TS01-CP:module{OuronetPolicyV2} TS01-CP)
         (patron:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
         (vst-sc:string (ref-DALOS::GOV|VST|SC_NAME))
         (swp-sc:string (ref-DALOS::GOV|SWP|SC_NAME))

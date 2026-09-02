@@ -18,8 +18,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-DPDC:module{DpdcV1} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
         (edh-id:string "E|DH-98c486052a51")
     )
     (print (format "BEFORE anhd tier1 supply = {}" [(ref-DPDC::UR_AccountNonceSupply KST.ANHD edh-id true 1)]))

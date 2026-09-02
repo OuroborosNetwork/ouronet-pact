@@ -17,7 +17,7 @@
     (defcap GOV ()                          (compose-capability (GOV|BLOODSHED-SETS_ADMIN)))
     (defcap GOV|BLOODSHED-SETS_ADMIN ()     (enforce-guard GOV|MD_BLOODSHED-SETS))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
@@ -57,20 +57,20 @@
     ;;{5.1}  Construct [CT/UDC]
     ;;
     ;;
-    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
     ;;
-    (defun UDC_AllowedNonce:object{DpdcUdcV1.DPDC|AllowedNonceForSetPosition} (lst:[integer])
+    (defun UDC_AllowedNonce:object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition} (lst:[integer])
         (let
             (
-                (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
             )
             (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition lst)
         )
     )
-    (defun UDC_AllowedClass:object{DpdcUdcV1.DPDC|AllowedClassForSetPosition} (input:integer)
+    (defun UDC_AllowedClass:object{DpdcUdcV2.DPDC|AllowedClassForSetPosition} (input:integer)
         (let
             (
-                (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
             )
             (ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition input)
         )
@@ -102,11 +102,11 @@
     (defun A01_TierOneCommonComati (patron:string dhb:string)
         (let
             (
-                (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
-                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
                 (r:decimal (* 0.9 R))
                 (ir:decimal (fold (*) 1.0 [18.0 0.9 IR-C]))
-                (md:object{DpdcUdcV1.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
+                (md:object{DpdcUdcV2.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
                 (b:string BAR)
             )
             ;;Set Class 1
@@ -149,11 +149,11 @@
     (defun A02_TierOneCommonUrsoi (patron:string dhb:string)
         (let
             (
-                (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
-                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
                 (r:decimal (* 0.9 R))
                 (ir:decimal (fold (*) 1.0 [18.0 0.9 IR-C]))
-                (md:object{DpdcUdcV1.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
+                (md:object{DpdcUdcV2.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
                 (b:string BAR)
             )
             ;;Set Class 2
@@ -196,11 +196,11 @@
     (defun A03_TierOneCommonPileati (patron:string dhb:string)
         (let
             (
-                (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
-                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
                 (r:decimal (* 0.9 R))
                 (ir:decimal (fold (*) 1.0 [18.0 0.9 IR-C]))
-                (md:object{DpdcUdcV1.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
+                (md:object{DpdcUdcV2.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
                 (b:string BAR)
             )
             ;;Set Class 3
@@ -243,11 +243,11 @@
     (defun A04_TierOneCommonSmardoi (patron:string dhb:string)
         (let
             (
-                (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
-                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
                 (r:decimal (* 0.9 R))
                 (ir:decimal (fold (*) 1.0 [18.0 0.9 IR-C]))
-                (md:object{DpdcUdcV1.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
+                (md:object{DpdcUdcV2.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
                 (b:string BAR)
             )
             ;;Set Class 4
@@ -290,11 +290,11 @@
     (defun A05_TierOneCommonCarpian (patron:string dhb:string)
         (let
             (
-                (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
-                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
                 (r:decimal (* 0.9 R))
                 (ir:decimal (fold (*) 1.0 [18.0 0.9 IR-C]))
-                (md:object{DpdcUdcV1.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
+                (md:object{DpdcUdcV2.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
                 (b:string BAR)
             )
             ;;Set Class 5
@@ -337,11 +337,11 @@
     (defun A06_TierOneCommonTarabostes (patron:string dhb:string)
         (let
             (
-                (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
-                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
                 (r:decimal (* 0.9 R))
                 (ir:decimal (fold (*) 1.0 [18.0 0.9 IR-C]))
-                (md:object{DpdcUdcV1.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
+                (md:object{DpdcUdcV2.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
                 (b:string BAR)
             )
             ;;Set Class 6
@@ -384,11 +384,11 @@
     (defun A07_TierOneCommonCostoboc (patron:string dhb:string)
         (let
             (
-                (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
-                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
                 (r:decimal (* 0.9 R))
                 (ir:decimal (fold (*) 1.0 [18.0 0.9 IR-C]))
-                (md:object{DpdcUdcV1.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
+                (md:object{DpdcUdcV2.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
                 (b:string BAR)
             )
             ;;Set Class 7
@@ -431,19 +431,19 @@
     (defun A08_TierOneCommonBuridavensRareComati (patron:string dhb:string)
         (let
             (
-                (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
-                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
                 (r:decimal (* 0.9 R))
                 (ir:decimal (fold (*) 1.0 [18.0 0.9 IR-C]))
                 ;;
                 (r2:decimal (* 0.85 R))
                 (ir-r:decimal (fold (*) 1.0 [9.0 0.85 IR-R]))
                 ;;
-                (md:object{DpdcUdcV1.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
+                (md:object{DpdcUdcV2.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
                 (b:string BAR)
                 ;;
-                (type:object{DpdcUdcV1.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
-                (zd:object{DpdcUdcV1.URI|Data} (ref-DPDC-UDC::UDC_ZeroURI|Data))
+                (type:object{DpdcUdcV2.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+                (zd:object{DpdcUdcV2.URI|Data} (ref-DPDC-UDC::UDC_ZeroURI|Data))
             )
             ;;Set Class 8
             [(ref-TS02-C2::C_DPNF|DefinePrimordialSet
@@ -508,15 +508,15 @@
     (defun A09a_TierOneRare (patron:string dhb:string)
         (let
             (
-                (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
-                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
                 (r:decimal (* 0.85 R))
                 (ir:decimal (fold (*) 1.0 [9.0 0.85 IR-R]))
-                (md:object{DpdcUdcV1.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
+                (md:object{DpdcUdcV2.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
                 (b:string BAR)
                 ;;
-                (type:object{DpdcUdcV1.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
-                (zd:object{DpdcUdcV1.URI|Data} (ref-DPDC-UDC::UDC_ZeroURI|Data))
+                (type:object{DpdcUdcV2.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+                (zd:object{DpdcUdcV2.URI|Data} (ref-DPDC-UDC::UDC_ZeroURI|Data))
             )
             ;;Set Class 10
             [(ref-TS02-C2::C_DPNF|DefinePrimordialSet
@@ -623,15 +623,15 @@
     (defun A09b_TierOneRare (patron:string dhb:string)
         (let
             (
-                (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
-                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
                 (r:decimal (* 0.85 R))
                 (ir:decimal (fold (*) 1.0 [9.0 0.85 IR-R]))
-                (md:object{DpdcUdcV1.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
+                (md:object{DpdcUdcV2.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
                 (b:string BAR)
                 ;;
-                (type:object{DpdcUdcV1.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
-                (zd:object{DpdcUdcV1.URI|Data} (ref-DPDC-UDC::UDC_ZeroURI|Data))
+                (type:object{DpdcUdcV2.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+                (zd:object{DpdcUdcV2.URI|Data} (ref-DPDC-UDC::UDC_ZeroURI|Data))
             )
             ;;Set Class 14
             [(ref-TS02-C2::C_DPNF|DefinePrimordialSet
@@ -713,15 +713,15 @@
     (defun A10_TierOneEpic (patron:string dhb:string)
         (let
             (
-                (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
-                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
                 (r:decimal (* 0.80 R))
                 (ir:decimal (fold (*) 1.0 [6.0 0.80 IR-E]))
-                (md:object{DpdcUdcV1.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
+                (md:object{DpdcUdcV2.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
                 (b:string BAR)
                 ;;
-                (type:object{DpdcUdcV1.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
-                (zd:object{DpdcUdcV1.URI|Data} (ref-DPDC-UDC::UDC_ZeroURI|Data))
+                (type:object{DpdcUdcV2.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+                (zd:object{DpdcUdcV2.URI|Data} (ref-DPDC-UDC::UDC_ZeroURI|Data))
             )
             ;;Set Class 17
             [(ref-TS02-C2::C_DPNF|DefinePrimordialSet
@@ -904,8 +904,8 @@
     (defun A11_TierTwoThreeFour (patron:string dhb:string)
         (let
             (
-                (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
-                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
                 (r:decimal (* 0.75 R))
                 (ir-c:decimal (* 18 IR-C))
                 (ir-r:decimal (* 9 IR-R))
@@ -923,13 +923,13 @@
                 (r3:decimal (* 0.65 R))
                 (ir4:decimal (fold (*) 1.0 [0.65 8.0 ir-s]))
                 ;;
-                (md:object{DpdcUdcV1.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
+                (md:object{DpdcUdcV2.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
                 (b:string BAR)
                 (fs:string "https://ipfs.io/ipfs/QmWjMoqfX7tunGd7krv7VrfnKPfCqZf7q9KnrzKMadXGiv/512x512.jpg")
                 (fb:string "https://ipfs.io/ipfs/QmWjMoqfX7tunGd7krv7VrfnKPfCqZf7q9KnrzKMadXGiv/FULL.jpg")
                 ;;
-                (type:object{DpdcUdcV1.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
-                (zd:object{DpdcUdcV1.URI|Data} (ref-DPDC-UDC::UDC_ZeroURI|Data))
+                (type:object{DpdcUdcV2.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+                (zd:object{DpdcUdcV2.URI|Data} (ref-DPDC-UDC::UDC_ZeroURI|Data))
                 ;;
             )
             ;;Set Class 25

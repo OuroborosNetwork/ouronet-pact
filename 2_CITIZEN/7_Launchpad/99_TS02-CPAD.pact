@@ -7,7 +7,7 @@
 ;; but ONLY these Talos wrappers are the gas-funded path — a direct citizen-module call
 ;; would not have its gas paid.
 ;;
-(interface CitizenLaunchpadTalosV1
+(interface CitizenLaunchpadTalosV2
     @doc "Exposes the Ouronet Stage Two CITIZEN launchpad user Client Functions (sole gas-funded path)."
 
     ;;<=========================================================================>
@@ -67,8 +67,8 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements OuronetPolicyV1)
-    (implements CitizenLaunchpadTalosV1)
+    (implements OuronetPolicyV2)
+    (implements CitizenLaunchpadTalosV2)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -81,7 +81,7 @@
     (defcap GOV ()                      (compose-capability (GOV|TS02-CPAD_ADMIN)))
     (defcap GOV|TS02-CPAD_ADMIN ()      (enforce-guard GOV|MD_TS02-CPAD))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()             (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()             (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
@@ -90,13 +90,13 @@
     ;;{P2}  schemas
     ;;{P3}  tables
     ;;
-    (deftable P|T:{OuronetPolicyV1.P|S})
-    (deftable P|MT:{OuronetPolicyV1.P|MS})
+    (deftable P|T:{OuronetPolicyV2.P|S})
+    (deftable P|MT:{OuronetPolicyV2.P|MS})
     ;;{P4}  capabilities
     (defcap P|TS ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (gap:bool (ref-DALOS::UR_GAP))
             )
             (enforce (not gap) "While Global Administrative Pause is online, no client Functions can be executed")
@@ -108,7 +108,7 @@
         true
     )
     ;;{P5}  functions
-    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -118,7 +118,7 @@
     (defun P|UEV_IMC ()
         (let
             (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
+                (ref-U|G:module{OuronetGuardsV2} U|G)
             )
             (ref-U|G::UEV_Any (P|UR_IMP))
         )
@@ -134,7 +134,7 @@
         (with-capability (GOV|TS02-CPAD_ADMIN)
             (let
                 (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
                     (dg:guard (create-capability-guard (SECURE)))
                 )
                 (with-default-read P|MT P|I
@@ -153,12 +153,12 @@
             \ recognizes calls from this Talos."
         (let
             (
-                (ref-P|TS01-A:module{TalosStageOne_AdminV1} TS01-A)
-                (ref-P|SPARK:module{OuronetPolicyV1} DEMIPAD-SPARK)
-                (ref-P|SNAKES:module{OuronetPolicyV1} DEMIPAD-SNAKES)
-                (ref-P|CUSTODIANS:module{OuronetPolicyV1} DEMIPAD-CUSTODIANS)
-                (ref-P|KPAY:module{OuronetPolicyV1} DEMIPAD-STOICPAY)
-                (ref-P|STOAICO:module{OuronetPolicyV1} STOAICO)
+                (ref-P|TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                (ref-P|SPARK:module{OuronetPolicyV2} DEMIPAD-SPARK)
+                (ref-P|SNAKES:module{OuronetPolicyV2} DEMIPAD-SNAKES)
+                (ref-P|CUSTODIANS:module{OuronetPolicyV2} DEMIPAD-CUSTODIANS)
+                (ref-P|KPAY:module{OuronetPolicyV2} DEMIPAD-STOICPAY)
+                (ref-P|STOAICO:module{OuronetPolicyV2} STOAICO)
                 (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
             )
             ;;register into the sale modules (their P|UEV_IMC recognizes this Talos)
@@ -198,7 +198,7 @@
     (defun UC_ShortAccount:string (account:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
             (ref-I|OURONET::OI|UC_ShortAccount account)
         )
@@ -215,8 +215,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
-                    (ref-SPARK:module{SparksV1} DEMIPAD-SPARK)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                    (ref-SPARK:module{SparksV2} DEMIPAD-SPARK)
                 )
                 (ref-SPARK::C_BuySparks patron buyer sparks-amount iz-native max-cost)
                 (ref-TS01-A::XB_DynamicFuelSTOA)
@@ -227,7 +227,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-SPARK:module{SparksV1} DEMIPAD-SPARK)
+                    (ref-SPARK:module{SparksV2} DEMIPAD-SPARK)
                 )
                 (ref-SPARK::C_RedemAllSparks patron redemption-payer account-to-redeem)
             )
@@ -237,7 +237,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-SPARK:module{SparksV1} DEMIPAD-SPARK)
+                    (ref-SPARK:module{SparksV2} DEMIPAD-SPARK)
                 )
                 (ref-SPARK::C_RedemFewSparks patron redemption-payer account-to-redeem redemption-quantity)
             )
@@ -249,8 +249,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
-                    (ref-SNAKES:module{SaleSnakesV1} DEMIPAD-SNAKES)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                    (ref-SNAKES:module{SaleSnakesV2} DEMIPAD-SNAKES)
                 )
                 (ref-SNAKES::C_Acquire patron buyer nonce amount iz-native max-cost)
                 (ref-TS01-A::XB_DynamicFuelSTOA)
@@ -262,8 +262,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
-                    (ref-CUSTODIANS:module{SaleCustodiansV1} DEMIPAD-CUSTODIANS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                    (ref-CUSTODIANS:module{SaleCustodiansV2} DEMIPAD-CUSTODIANS)
                 )
                 (ref-CUSTODIANS::C_Acquire patron buyer nonce amount iz-native max-cost)
                 (ref-TS01-A::XB_DynamicFuelSTOA)
@@ -275,8 +275,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
-                    (ref-KPAY:module{StoicPayV2} DEMIPAD-STOICPAY)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                    (ref-KPAY:module{StoicPayV3} DEMIPAD-STOICPAY)
                     (acquisition-text:string (ref-KPAY::C_BuyStoicPay patron buyer kpay-amount iz-native max-cost))
                 )
                 (ref-TS01-A::XB_DynamicFuelSTOA)

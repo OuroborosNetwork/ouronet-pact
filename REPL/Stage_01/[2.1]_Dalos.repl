@@ -222,7 +222,7 @@
 (print "--- [TX-04 [C3.2] - Guard-type policy · 03 · helper unit expects] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
         (key-ref:guard (keyset-ref-guard "ouronet-ns.dh_master-keyset"))
         (key-read:guard (read-keyset "KEY_TEST_SingleKey"))
         (user-g:guard (create-user-guard (DALOS.P|UEV_IMC)))
@@ -280,7 +280,7 @@
 )
 (let
     (
-        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
         (cap-gov:guard (create-capability-guard (ref-DALOS::SECURE)))
         (key-gov:guard (keyset-ref-guard "ouronet-ns.us-0008_bnjr-keyset"))
     )
@@ -307,7 +307,7 @@
 )
 (let
     (
-        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
         (key-guard:guard (keyset-ref-guard "ouronet-ns.us-0001_emma-keyset"))
         (user-g:guard (create-user-guard (DALOS.P|UEV_IMC)))
     )

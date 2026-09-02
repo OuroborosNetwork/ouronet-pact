@@ -17,7 +17,7 @@
     (defcap GOV ()                          (compose-capability (GOV|BLOODSHED-E_ADMIN)))
     (defcap GOV|BLOODSHED-E_ADMIN ()        (enforce-guard GOV|MD_BLOODSHED-E))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
@@ -134,7 +134,7 @@
     ;;{5.1}  Construct [CT/UDC]
     ;;
     ;;
-    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
     ;;
     (defun UDC_MetaData:object{Bloodshed.MD}
         (a:string b:string c:string d:string e:string f:string g:string h:string i:string)
@@ -255,24 +255,24 @@
         @doc "Issue Bloodshed Epic NFT"
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-                (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
-                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
                 (b:string BAR)
                 (t:bool true)
                 (f:bool false)
                 ;;
                 (d-l:string "Epic Bloodshed NFT")
                 ;;
-                (type:object{DpdcUdcV1.URI|Type} (ref-DPDC-UDC::UDC_URI|Type t f f f f f f))
-                (zd:object{DpdcUdcV1.URI|Data} (ref-DPDC-UDC::UDC_ZeroURI|Data))
+                (type:object{DpdcUdcV2.URI|Type} (ref-DPDC-UDC::UDC_URI|Type t f f f f f f))
+                (zd:object{DpdcUdcV2.URI|Data} (ref-DPDC-UDC::UDC_ZeroURI|Data))
                 ;;
             )
             (ref-TS02-C2::C_DPNF|Create
                 patron dhb
                 (fold
                     (lambda
-                        (acc:[object{DpdcUdcV1.DPDC|NonceData}] idx:integer)
+                        (acc:[object{DpdcUdcV2.DPDC|NonceData}] idx:integer)
                         (let
                             (
                                 (p:integer (at idx pos))

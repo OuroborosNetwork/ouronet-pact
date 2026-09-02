@@ -1,7 +1,7 @@
 ;; Deploy: load THIS file — interface(s) + module ship together.
 ;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/03_Talos.pact
 ;;
-(interface TalosStageTwo_ClientTwoV1
+(interface TalosStageTwo_ClientTwoV2
     @doc "Exposes Stage Two Second Batch of Client Functions: \
         \ the NonFungible Client Functions"
 
@@ -46,7 +46,7 @@
     ;;
     ;;  [2] DPDC
     ;;
-    (defun C_DPNF|UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}]))
+    (defun C_DPNF|UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
     (defun C_DPNF|UpgradeBranding (patron:string entity-id:string months:integer))
     ;;
     ;;  [3] DPDC-C
@@ -54,7 +54,7 @@
     (defun C_DPNF|Create:string
         (
             patron:string id:string
-            input-nonce-data:[object{DpdcUdcV1.DPDC|NonceData}]
+            input-nonce-data:[object{DpdcUdcV2.DPDC|NonceData}]
         )
     )
     ;;
@@ -96,7 +96,7 @@
     (defun C_DPNF|WipeNonce (patron:string id:string account:string nonce:integer))
         ;;
     (defun C_DPNF|WipeHeavy (patron:string account:string id:string))
-    (defun C_DPNF|WipePure (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV1.RemovableNonces}))
+    (defun C_DPNF|WipePure (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV2.RemovableNonces}))
     (defun C_DPNF|WipeClean (patron:string account:string id:string nonces:[integer]))
     (defun C_DPNF|WipeDirty (patron:string account:string id:string nonces:[integer]))
     ;;
@@ -113,37 +113,37 @@
     (defun C_DPNF|DefinePrimordialSet 
         (
             patron:string id:string set-name:string score-multiplier:decimal
-            set-definition:[object{DpdcUdcV1.DPDC|AllowedNonceForSetPosition}]
-            ind:object{DpdcUdcV1.DPDC|NonceData}
+            set-definition:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]
+            ind:object{DpdcUdcV2.DPDC|NonceData}
         )
     )
     (defun C_DPNF|DefineCompositeSet
         (
             patron:string id:string set-name:string score-multiplier:decimal
-            set-definition:[object{DpdcUdcV1.DPDC|AllowedClassForSetPosition}]
-            ind:object{DpdcUdcV1.DPDC|NonceData}
+            set-definition:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}]
+            ind:object{DpdcUdcV2.DPDC|NonceData}
         )
     )
     (defun C_DPNF|DefineHybridSet
         (
             patron:string id:string set-name:string score-multiplier:decimal
-            primordial-sd:[object{DpdcUdcV1.DPDC|AllowedNonceForSetPosition}]
-            composite-sd:[object{DpdcUdcV1.DPDC|AllowedClassForSetPosition}]
-            ind:object{DpdcUdcV1.DPDC|NonceData}
+            primordial-sd:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]
+            composite-sd:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}]
+            ind:object{DpdcUdcV2.DPDC|NonceData}
         )
     )
     (defun C_DPNF|EnableSetClassFragmentation
         (
             patron:string id:string set-class:integer
-            fragmentation-ind:object{DpdcUdcV1.DPDC|NonceData}
+            fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData}
         )
     )
     (defun C_DPNF|ToggleSet (patron:string id:string set-class:integer toggle:bool))
     (defun C_DPNF|RenameSet (patron:string id:string set-class:integer new-name:string))
     ;; DPNF|C_UpdateSetMultiplier removed — DPDC Audit #15H: score-multiplier is immutable after Define.
     ;;
-    (defun C_DPNF|UpdateSetNonce                (patron:string id:string account:string set-class:integer nos:bool new-nonce-data:object{DpdcUdcV1.DPDC|NonceData}))
-    (defun C_DPNF|UpdateSetNonces               (patron:string id:string account:string set-classes:[integer] nos:bool new-nonces-data:[object{DpdcUdcV1.DPDC|NonceData}]))
+    (defun C_DPNF|UpdateSetNonce                (patron:string id:string account:string set-class:integer nos:bool new-nonce-data:object{DpdcUdcV2.DPDC|NonceData}))
+    (defun C_DPNF|UpdateSetNonces               (patron:string id:string account:string set-classes:[integer] nos:bool new-nonces-data:[object{DpdcUdcV2.DPDC|NonceData}]))
     (defun C_DPNF|UpdateSetNonceRoyalty         (patron:string id:string account:string set-class:integer nos:bool royalty-value:decimal))
     (defun C_DPNF|UpdateSetNonceIgnisRoyalty    (patron:string id:string account:string set-class:integer nos:bool royalty-value:decimal))
     (defun C_DPNF|UpdateSetNonceName            (patron:string id:string account:string set-class:integer nos:bool name:string))
@@ -151,19 +151,19 @@
     (defun C_DPNF|UpdateSetNonceScore           (patron:string id:string account:string set-class:integer nos:bool score:decimal))
     (defun C_DPNF|RemoveSetNonceScore           (patron:string id:string account:string set-class:integer nos:bool))
     (defun C_DPNF|UpdateSetNonceMetaData        (patron:string id:string account:string set-class:integer nos:bool meta-data:object))
-    (defun C_DPNF|UpdateSetNonceURI             (patron:string id:string account:string set-class:integer nos:bool ay:object{DpdcUdcV1.URI|Type} u1:object{DpdcUdcV1.URI|Data} u2:object{DpdcUdcV1.URI|Data} u3:object{DpdcUdcV1.URI|Data}))
+    (defun C_DPNF|UpdateSetNonceURI             (patron:string id:string account:string set-class:integer nos:bool ay:object{DpdcUdcV2.URI|Type} u1:object{DpdcUdcV2.URI|Data} u2:object{DpdcUdcV2.URI|Data} u3:object{DpdcUdcV2.URI|Data}))
     ;;
     ;;  [9] DPDC-F
     ;;
     (defun C_DPNF|RepurposeFragments (patron:string id:string repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer]))
     (defun C_DPNF|MakeFragments (patron:string account:string id:string nonce:integer amount:integer))
     (defun C_DPNF|MergeFragments (patron:string account:string id:string nonce:integer amount:integer))
-    (defun C_DPNF|EnableNonceFragmentation (patron:string id:string nonce:integer fragmentation-ind:object{DpdcUdcV1.DPDC|NonceData}))
+    (defun C_DPNF|EnableNonceFragmentation (patron:string id:string nonce:integer fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData}))
     ;;
     ;;  [10] DPDC-N
     ;;
-    (defun C_DPNF|UpdateNonce               (patron:string id:string account:string nonce:integer nos:bool new-nonce-data:object{DpdcUdcV1.DPDC|NonceData}))
-    (defun C_DPNF|UpdateNonces              (patron:string id:string account:string nonces:[integer] nos:bool new-nonces-data:[object{DpdcUdcV1.DPDC|NonceData}]))
+    (defun C_DPNF|UpdateNonce               (patron:string id:string account:string nonce:integer nos:bool new-nonce-data:object{DpdcUdcV2.DPDC|NonceData}))
+    (defun C_DPNF|UpdateNonces              (patron:string id:string account:string nonces:[integer] nos:bool new-nonces-data:[object{DpdcUdcV2.DPDC|NonceData}]))
     (defun C_DPNF|UpdateNonceRoyalty        (patron:string id:string account:string nonce:integer nos:bool royalty-value:decimal))
     (defun C_DPNF|UpdateNonceIgnisRoyalty   (patron:string id:string account:string nonce:integer nos:bool royalty-value:decimal))
     (defun C_DPNF|UpdateNonceName           (patron:string id:string account:string nonce:integer nos:bool name:string))
@@ -171,7 +171,7 @@
     (defun C_DPNF|UpdateNonceScore          (patron:string id:string account:string nonce:integer nos:bool score:decimal))
     (defun C_DPNF|RemoveNonceScore          (patron:string id:string account:string nonce:integer nos:bool))
     (defun C_DPNF|UpdateNonceMetaData       (patron:string id:string account:string nonce:integer nos:bool meta-data:object))
-    (defun C_DPNF|UpdateNonceURI            (patron:string id:string account:string nonce:integer nos:bool ay:object{DpdcUdcV1.URI|Type} u1:object{DpdcUdcV1.URI|Data} u2:object{DpdcUdcV1.URI|Data} u3:object{DpdcUdcV1.URI|Data}))
+    (defun C_DPNF|UpdateNonceURI            (patron:string id:string account:string nonce:integer nos:bool ay:object{DpdcUdcV2.URI|Type} u1:object{DpdcUdcV2.URI|Data} u2:object{DpdcUdcV2.URI|Data} u3:object{DpdcUdcV2.URI|Data}))
     (defun C_DPNF|BulkTransfer
         (patron:string id:string nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
     )
@@ -184,8 +184,8 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements OuronetPolicyV1)
-    (implements TalosStageTwo_ClientTwoV1)
+    (implements OuronetPolicyV2)
+    (implements TalosStageTwo_ClientTwoV2)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -198,7 +198,7 @@
     (defcap GOV ()                  (compose-capability (GOV|TS02-C2_ADMIN)))
     (defcap GOV|TS02-C2_ADMIN ()    (enforce-guard GOV|MD_TS02-C2))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()         (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()         (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
@@ -207,13 +207,13 @@
     ;;{P2}  schemas
     ;;{P3}  tables
     ;;
-    (deftable P|T:{OuronetPolicyV1.P|S})
-    (deftable P|MT:{OuronetPolicyV1.P|MS})
+    (deftable P|T:{OuronetPolicyV2.P|S})
+    (deftable P|MT:{OuronetPolicyV2.P|MS})
     ;;{P4}  capabilities
     (defcap P|TS ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (gap:bool (ref-DALOS::UR_GAP))
             )
             (enforce (not gap) "While Global Administrative Pause is online, no client Functions can be executed")
@@ -225,7 +225,7 @@
         true
     )
     ;;{P5}  functions
-    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -235,7 +235,7 @@
     (defun P|UEV_IMC ()
         (let
             (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
+                (ref-U|G:module{OuronetGuardsV2} U|G)
             )
             (ref-U|G::UEV_Any (P|UR_IMP))
         )
@@ -251,7 +251,7 @@
         (with-capability (GOV|TS02-C2_ADMIN)
             (let
                 (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
                     (dg:guard (create-capability-guard (SECURE)))
                 )
                 (with-default-read P|MT P|I
@@ -267,16 +267,16 @@
     (defun P|A_Define ()
         (let
             (
-                (ref-P|TS01-A:module{TalosStageOne_AdminV1} TS01-A)
-                (ref-P|DPDC:module{OuronetPolicyV1} DPDC)
-                (ref-P|DPDC-C:module{OuronetPolicyV1} DPDC-C)
-                (ref-P|DPDC-I:module{OuronetPolicyV1} DPDC-I)
-                (ref-P|DPDC-R:module{OuronetPolicyV1} DPDC-R)
-                (ref-P|DPDC-MNG:module{OuronetPolicyV1} DPDC-MNG)
-                (ref-P|DPDC-N:module{OuronetPolicyV1} DPDC-N)
-                (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
-                (ref-P|DPDC-F:module{OuronetPolicyV1} DPDC-F)
-                (ref-P|DPDC-S:module{OuronetPolicyV1} DPDC-S)
+                (ref-P|TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                (ref-P|DPDC:module{OuronetPolicyV2} DPDC)
+                (ref-P|DPDC-C:module{OuronetPolicyV2} DPDC-C)
+                (ref-P|DPDC-I:module{OuronetPolicyV2} DPDC-I)
+                (ref-P|DPDC-R:module{OuronetPolicyV2} DPDC-R)
+                (ref-P|DPDC-MNG:module{OuronetPolicyV2} DPDC-MNG)
+                (ref-P|DPDC-N:module{OuronetPolicyV2} DPDC-N)
+                (ref-P|DPDC-T:module{OuronetPolicyV2} DPDC-T)
+                (ref-P|DPDC-F:module{OuronetPolicyV2} DPDC-F)
+                (ref-P|DPDC-S:module{OuronetPolicyV2} DPDC-S)
                 (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
             )
             (ref-P|TS01-A::P|A_AddIMP mg)
@@ -318,7 +318,7 @@
     (defun UC_ShortAccount:string (account:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
             (ref-I|OURONET::OI|UC_ShortAccount account)
         )
@@ -332,13 +332,13 @@
     ;;
     ;;  [2] DPDC
     ;;
-    (defun C_DPNF|UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}])
+    (defun C_DPNF|UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
         @doc "Updates <pending-branding> for DPNF Token <entity-id> costing 500 IGNIS"
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC:module{DpdcV1} DPDC)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC:module{DpdcV2} DPDC)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC::C_UpdatePendingBranding entity-id false logo description website social)
@@ -347,13 +347,13 @@
         )
     )
     (defun C_DPNF|UpgradeBranding (patron:string entity-id:string months:integer)
-        @doc "Upgrades Branding for DPNF Token, making it a premium BrandingV1. \
+        @doc "Upgrades Branding for DPNF Token, making it a premium BrandingV2. \
             \ Also sets pending-branding to live branding if its branding is not live yet"
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DPDC:module{DpdcV1} DPDC)
-                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                    (ref-DPDC:module{DpdcV2} DPDC)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
                 (ref-DPDC::C_UpgradeBranding patron entity-id false months)
                 (ref-TS01-A::XB_DynamicFuelSTOA)
@@ -366,17 +366,17 @@
     (defun C_DPNF|Create:string
         (
             patron:string id:string
-            input-nonce-data:[object{DpdcUdcV1.DPDC|NonceData}]
+            input-nonce-data:[object{DpdcUdcV2.DPDC|NonceData}]
         )
         @doc "Creates a new NFT Collection Element(s), having a new nonce, \
             \ of amount 1, on the <creator> account."
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-C:module{DpdcCreateV1} DPDC-C)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
                     (l:integer (length input-nonce-data))
-                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                    (ico:object{IgnisCollectorV2.OutputCumulator}
                         (if (= l 1)
                             (ref-DPDC-C::C_CreateNewNonce
                                 id false 0 1 (at 0 input-nonce-data) false
@@ -410,10 +410,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-I:module{DpdcIssueV1} DPDC-I)
-                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
-                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-I:module{DpdcIssueV2} DPDC-I)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                    (ico:object{IgnisCollectorV2.OutputCumulator}
                         (ref-DPDC-I::C_IssueDigitalCollection
                             patron false 
                             owner-account creator-account collection-name collection-ticker
@@ -437,8 +437,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-R:module{DpdcRolesV1} DPDC-R)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-R::C_ToggleFreezeAccount id false account toggle)
@@ -452,8 +452,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-R:module{DpdcRolesV1} DPDC-R)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-R::C_ToggleExemptionRole id false account toggle)
@@ -467,8 +467,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-R:module{DpdcRolesV1} DPDC-R)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-R::C_ToggleBurnRole id false account toggle)
@@ -482,8 +482,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-R:module{DpdcRolesV1} DPDC-R)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-R::C_ToggleUpdateRole id false account toggle)
@@ -497,8 +497,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-R:module{DpdcRolesV1} DPDC-R)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-R::C_ToggleModifyCreatorRole id false account toggle)
@@ -512,8 +512,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-R:module{DpdcRolesV1} DPDC-R)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-R::C_ToggleModifyRoyaltiesRole id false account toggle)
@@ -527,8 +527,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-R:module{DpdcRolesV1} DPDC-R)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-R::C_ToggleTransferRole id false account toggle)
@@ -542,8 +542,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-R:module{DpdcRolesV1} DPDC-R)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-R::C_MoveCreateRole id false new-account)
@@ -558,8 +558,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-R:module{DpdcRolesV1} DPDC-R)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-R::C_MoveRecreateRole id false new-account)
@@ -573,8 +573,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-R:module{DpdcRolesV1} DPDC-R)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-R::C_MoveSetUriRole id false new-account)
@@ -590,8 +590,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-MNG:module{DpdcManagementV1} DPDC-MNG) 
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-MNG::C_Control id false cu cco ccc casr ctncr cf cw cp)
@@ -604,8 +604,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-MNG:module{DpdcManagementV1} DPDC-MNG) 
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-MNG::C_TogglePause id false toggle)
@@ -618,8 +618,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-MNG:module{DpdcManagementV1} DPDC-MNG) 
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-MNG::C_RespawnNFT account id nonce)
@@ -633,8 +633,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-MNG:module{DpdcManagementV1} DPDC-MNG) 
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-MNG::C_BurnNFT account id nonce)
@@ -648,8 +648,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-MNG:module{DpdcManagementV1} DPDC-MNG) 
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-MNG::C_WipeNonce account id false nonce)
@@ -662,9 +662,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-MNG:module{DpdcManagementV1} DPDC-MNG)
-                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
+                    (ico:object{IgnisCollectorV2.OutputCumulator}
                         (ref-DPDC-MNG::C_WipeHeavy account id false)
                     )
                     (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
@@ -678,13 +678,13 @@
             )
         )
     )
-    (defun C_DPNF|WipePure (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV1.RemovableNonces})
+    (defun C_DPNF|WipePure (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV2.RemovableNonces})
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-MNG:module{DpdcManagementV1} DPDC-MNG)
-                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
+                    (ico:object{IgnisCollectorV2.OutputCumulator}
                         (ref-DPDC-MNG::C_WipePure account id false removable-nonces-obj) 
                     )
                     (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
@@ -702,9 +702,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-MNG:module{DpdcManagementV1} DPDC-MNG)
-                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
+                    (ico:object{IgnisCollectorV2.OutputCumulator}
                         (ref-DPDC-MNG::C_WipeClean account id false nonces) 
                     )
                     (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
@@ -722,9 +722,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-MNG:module{DpdcManagementV1} DPDC-MNG)
-                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
+                    (ico:object{IgnisCollectorV2.OutputCumulator}
                         (ref-DPDC-MNG::C_WipeDirty account id false nonces)
                     )
                     (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
@@ -746,9 +746,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                    (ref-DPDC-T:module{DpdcTransferV1} DPDC-T)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
                     (sf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
                     (st:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
@@ -764,13 +764,13 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                    (ref-DPDC-T:module{DpdcTransferV1} DPDC-T)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount sender))
                     (ra:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
                     ;;
-                    (irs:object{DpdcTransferV1.AggregatedRoyalties}
+                    (irs:object{DpdcTransferV2.AggregatedRoyalties}
                         (ref-DPDC-T::C_IgnisRoyaltyCollector patron sender [id] [false] [[nonce]] [[amount]])
                     )
                     (r:[decimal] (at "ignis-royalties" irs))
@@ -794,13 +794,13 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                    (ref-DPDC-T:module{DpdcTransferV1} DPDC-T)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount sender))
                     (ra:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
                     ;;
-                    (irs:object{DpdcTransferV1.AggregatedRoyalties}
+                    (irs:object{DpdcTransferV2.AggregatedRoyalties}
                         (ref-DPDC-T::C_IgnisRoyaltyCollector patron sender [id] [false] [nonces] [amounts])
                     )
                     (c:[string] (at "creators" irs))
@@ -825,7 +825,7 @@
         @doc "Bulk NFT transfer — son=false wrapper over TS02-C1.C_DPDC|BulkTransfer."
         (let
             (
-                (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+                (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
             )
             (ref-TS02-C1::C_DPDC|BulkTransfer patron id false nonces-array amounts-array sender receiver-lst method)
         )
@@ -839,10 +839,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                    (ref-DPDC:module{DpdcV1} DPDC)
-                    (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-DPDC:module{DpdcV2} DPDC)
+                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                     (nonce:integer (+ 1 (ref-DPDC::UR_NoncesUsed id false)))
                 )
@@ -859,10 +859,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                    (ref-DPDC:module{DpdcV1} DPDC)
-                    (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-DPDC:module{DpdcV2} DPDC)
+                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
                     (set-class:integer (ref-DPDC::UR_NonceClass id false nonce))
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
@@ -876,15 +876,15 @@
     (defun C_DPNF|DefinePrimordialSet
         (
             patron:string id:string set-name:string score-multiplier:decimal
-            set-definition:[object{DpdcUdcV1.DPDC|AllowedNonceForSetPosition}]
-            ind:object{DpdcUdcV1.DPDC|NonceData}
+            set-definition:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]
+            ind:object{DpdcUdcV2.DPDC|NonceData}
         )
         @doc "Defines a New Primordial NFT Set. Primordial Sets are composed of Class 0 Nonces"
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-S::C_DefinePrimordialSet id false set-name score-multiplier set-definition ind)
@@ -896,15 +896,15 @@
     (defun C_DPNF|DefineCompositeSet
         (
             patron:string id:string set-name:string score-multiplier:decimal
-            set-definition:[object{DpdcUdcV1.DPDC|AllowedClassForSetPosition}]
-            ind:object{DpdcUdcV1.DPDC|NonceData}
+            set-definition:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}]
+            ind:object{DpdcUdcV2.DPDC|NonceData}
         )
         @doc "Defines a New Composite NFT Set. Composite Sets are composed of Class (!=0) Nonces"
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-S::C_DefineCompositeSet id false set-name score-multiplier set-definition ind)
@@ -916,16 +916,16 @@
     (defun C_DPNF|DefineHybridSet
         (
             patron:string id:string set-name:string score-multiplier:decimal
-            primordial-sd:[object{DpdcUdcV1.DPDC|AllowedNonceForSetPosition}]
-            composite-sd:[object{DpdcUdcV1.DPDC|AllowedClassForSetPosition}]
-            ind:object{DpdcUdcV1.DPDC|NonceData}
+            primordial-sd:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]
+            composite-sd:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}]
+            ind:object{DpdcUdcV2.DPDC|NonceData}
         )
         @doc "Defines a New Hybrid NFT Set. Hybrid Sets are composed of both Class 0 and Non-0 Nonces"
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-S::C_DefineHybridSet id false set-name score-multiplier primordial-sd composite-sd ind)
@@ -937,14 +937,14 @@
     (defun C_DPNF|EnableSetClassFragmentation
         (
             patron:string id:string set-class:integer
-            fragmentation-ind:object{DpdcUdcV1.DPDC|NonceData}
+            fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData}
         )
         @doc "Enables Fragmentation for a given Set Class. This allows all NFTs of the given Set Class to be Fragmented"
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-S::C_EnableSetClassFragmentation id false set-class fragmentation-ind)
@@ -958,8 +958,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-S::C_ToggleSet id false set-class toggle)
@@ -973,8 +973,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-S::C_RenameSet id false set-class new-name)
@@ -986,13 +986,13 @@
     ;; DPNF|C_UpdateSetMultiplier removed — DPDC Audit #15H.
     ;;
     (defun C_DPNF|UpdateSetNonce 
-        (patron:string id:string account:string set-class:integer nos:bool new-nonce-data:object{DpdcUdcV1.DPDC|NonceData})
+        (patron:string id:string account:string set-class:integer nos:bool new-nonce-data:object{DpdcUdcV2.DPDC|NonceData})
         @doc "[0] Updates Full Set Nonce Data, either Native or Split, for an NFT"
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV1} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-N::C_UpdateNonces id false account [set-class] nos false [new-nonce-data])
@@ -1001,13 +1001,13 @@
         )
     )
     (defun C_DPNF|UpdateSetNonces
-        (patron:string id:string account:string set-classes:[integer] nos:bool new-nonces-data:[object{DpdcUdcV1.DPDC|NonceData}])
+        (patron:string id:string account:string set-classes:[integer] nos:bool new-nonces-data:[object{DpdcUdcV2.DPDC|NonceData}])
         @doc "[0] Updates Full Set Nonce Data, either Native or Split, for an NFT"
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV1} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-N::C_UpdateNonces id false account set-classes nos false new-nonces-data)
@@ -1021,8 +1021,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV1} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-N::C_UpdateNonceRoyalty id false account set-class nos false royalty-value)
@@ -1036,8 +1036,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV1} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-N::C_UpdateNonceIgnisRoyalty id false account set-class nos false royalty-value)
@@ -1051,8 +1051,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV1} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-N::C_UpdateNonceName id false account set-class nos false name)
@@ -1066,8 +1066,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV1} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-N::C_UpdateNonceDescription id false account set-class nos false description)
@@ -1081,8 +1081,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV1} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-N::C_UpdateNonceScore id false account set-class nos false score)
@@ -1100,8 +1100,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV1} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-N::C_UpdateNonceMetaData id false account set-class nos false meta-data)
@@ -1112,14 +1112,14 @@
     (defun C_DPNF|UpdateSetNonceURI
         (
             patron:string id:string account:string set-class:integer nos:bool
-            ay:object{DpdcUdcV1.URI|Type} u1:object{DpdcUdcV1.URI|Data} u2:object{DpdcUdcV1.URI|Data} u3:object{DpdcUdcV1.URI|Data}
+            ay:object{DpdcUdcV2.URI|Type} u1:object{DpdcUdcV2.URI|Data} u2:object{DpdcUdcV2.URI|Data} u3:object{DpdcUdcV2.URI|Data}
         )
         @doc "[7] Updates Set Nonce URI, either Native or Split, for an NFT"
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV1} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-N::C_UpdateNonceURI id false account set-class nos false ay u1 u2 u3)
@@ -1135,9 +1135,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                    (ref-DPDC-F:module{DpdcFragmentsV1} DPDC-F)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
                     (sf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
                     (st:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
@@ -1153,8 +1153,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-F:module{DpdcFragmentsV1} DPDC-F)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-F::C_MakeFragments account id false nonce amount)
@@ -1168,8 +1168,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-F:module{DpdcFragmentsV1} DPDC-F)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-F::C_MergeFragments account id false nonce amount)
@@ -1178,13 +1178,13 @@
             )
         )
     )
-    (defun C_DPNF|EnableNonceFragmentation (patron:string id:string nonce:integer fragmentation-ind:object{DpdcUdcV1.DPDC|NonceData})
+    (defun C_DPNF|EnableNonceFragmentation (patron:string id:string nonce:integer fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData})
         @doc "Enables Fragmentation for a given NFT Nonce"
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-F:module{DpdcFragmentsV1} DPDC-F)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-F::C_EnableNonceFragmentation id false nonce fragmentation-ind)
@@ -1197,13 +1197,13 @@
     ;;  [10] DPDC-N
     ;;
     (defun C_DPNF|UpdateNonce 
-        (patron:string id:string account:string nonce:integer nos:bool new-nonce-data:object{DpdcUdcV1.DPDC|NonceData})
+        (patron:string id:string account:string nonce:integer nos:bool new-nonce-data:object{DpdcUdcV2.DPDC|NonceData})
         @doc "[0] Updates Full Nonce Data, either Native or Split, for an NFT"
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV1} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-N::C_UpdateNonces id false account [nonce] nos true [new-nonce-data])
@@ -1213,13 +1213,13 @@
         )
     )
     (defun C_DPNF|UpdateNonces
-        (patron:string id:string account:string nonces:[integer] nos:bool new-nonces-data:[object{DpdcUdcV1.DPDC|NonceData}])
+        (patron:string id:string account:string nonces:[integer] nos:bool new-nonces-data:[object{DpdcUdcV2.DPDC|NonceData}])
         @doc "[0] Updates Full Nonce Data, either Native or Split, for an NFT"
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV1} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-N::C_UpdateNonces id false account nonces nos true new-nonces-data)
@@ -1234,8 +1234,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV1} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-N::C_UpdateNonceRoyalty id false account nonce nos true royalty-value)
@@ -1249,8 +1249,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV1} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-N::C_UpdateNonceIgnisRoyalty id false account nonce nos true royalty-value)
@@ -1264,8 +1264,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV1} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-N::C_UpdateNonceName id false account nonce nos true name)
@@ -1279,8 +1279,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV1} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-N::C_UpdateNonceDescription id false account nonce nos true description)
@@ -1294,8 +1294,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV1} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-N::C_UpdateNonceScore id false account nonce nos true score)
@@ -1313,8 +1313,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV1} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-N::C_UpdateNonceMetaData id false account nonce nos true meta-data)
@@ -1325,14 +1325,14 @@
     (defun C_DPNF|UpdateNonceURI
         (
             patron:string id:string account:string nonce:integer nos:bool
-            ay:object{DpdcUdcV1.URI|Type} u1:object{DpdcUdcV1.URI|Data} u2:object{DpdcUdcV1.URI|Data} u3:object{DpdcUdcV1.URI|Data}
+            ay:object{DpdcUdcV2.URI|Type} u1:object{DpdcUdcV2.URI|Data} u2:object{DpdcUdcV2.URI|Data} u3:object{DpdcUdcV2.URI|Data}
         )
         @doc "[7] Updates Nonce URI, either Native or Split, for an NFT"
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-N:module{DpdcNonceV1} DPDC-N)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-N::C_UpdateNonceURI id false account nonce nos true ay u1 u2 u3)

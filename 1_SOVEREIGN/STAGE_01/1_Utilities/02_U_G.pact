@@ -1,4 +1,4 @@
-(interface OuronetGuardsV1
+(interface OuronetGuardsV2
     @doc "Exported Functions from this Module via interface"
 
     ;;<=========================================================================>
@@ -57,7 +57,7 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements OuronetGuardsV1)
+    (implements OuronetGuardsV2)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -70,7 +70,7 @@
     (defcap GOV|U|G_ADMIN ()
         (let
             (
-                (ref-U|CT:module{OuronetConstantsV1} U|CT)
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
                 (g:guard (ref-U|CT::CT_GOV|UTILS))
             )
             (enforce-guard g)

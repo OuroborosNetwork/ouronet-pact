@@ -18,8 +18,8 @@
         (patron:string KST.ANHD)
         (lumy:string KST.LUMY)
         (edh-id:string "E|DH-98c486052a51")
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
-        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DPDC:module{DpdcV2} DPDC)
     )
     (env-sigs
         [
@@ -66,8 +66,8 @@
         (lumy:string KST.LUMY)
         (dhcd-id:string "DHCD-98c486052a51")
         (stake-nonce:integer 5)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
-        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DPDC:module{DpdcV2} DPDC)
     )
     (env-sigs
         [

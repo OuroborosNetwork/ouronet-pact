@@ -4,7 +4,7 @@
 ;; Client entrypoints: Talos TS01-C4 (StoicTag: 1 native STOA per glyph; fee wiring in TS01-C4).
 ;; Mnemosyne operator: ouronet-ns.codex-keyset (define before A_RegisterCodexIdentity).
 ;;
-(interface CodexV1
+(interface CodexV2
 
 
     ;;<=========================================================================>
@@ -92,9 +92,9 @@
     (defun URC_AWT|LatestUpload:object (codex-id:string))
     ;;
     ;; [INFO] UI previews — register: STOA always (C_STOA|CollectWT false); release: IGNIS per virtual-gas rules
-    (defun INFO_CODEX|RegisterStoicTag:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_CODEX|RegisterStoicTag:object{OuronetInfoV2.ClientInfo}
         (patron:string tag-name:string account-address:string))
-    (defun INFO_CODEX|ReleaseStoicTag:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_CODEX|ReleaseStoicTag:object{OuronetInfoV2.ClientInfo}
         (patron:string tag-name:string))
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
@@ -108,7 +108,7 @@
           codex-guard:guard
           registered-by:string ))
     ;;
-    ;;#24H fix: these four were already live/actively-called via TS01-C4's module{CodexV1}-typed
+    ;;#24H fix: these four were already live/actively-called via TS01-C4's module{CodexV2}-typed
     ;;ref, but missing from the interface itself. Added here, purely additive - the module already
     ;;implements all four with matching signatures.
     ;; [C]
@@ -126,8 +126,8 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements CodexV1)
-    (implements OuronetPolicyV1)
+    (implements CodexV2)
+    (implements OuronetPolicyV2)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -140,7 +140,7 @@
     (defcap GOV ()                          (compose-capability (GOV|CODEX_ADMIN)))
     (defcap GOV|CODEX_ADMIN ()              (enforce-guard GOV|MD_CODEX))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
     (defun GOV|CodexKey ()                  (+ (CT_Namespace) ".codex-keyset"))
 
     ;;<=========================================================================>
@@ -150,14 +150,14 @@
     ;;{P2}  schemas
     ;;{P3}  tables
     ;;
-    (deftable P|T:{OuronetPolicyV1.P|S})
-    (deftable P|MT:{OuronetPolicyV1.P|MS})
+    (deftable P|T:{OuronetPolicyV2.P|S})
+    (deftable P|MT:{OuronetPolicyV2.P|MS})
     ;;{P4}  capabilities
     (defcap P|CODEX|CALLER ()
         true
     )
     ;;{P5}  functions
-    (defun P|Info ()                        (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()                        (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -165,7 +165,7 @@
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
     (defun P|UEV_IMC ()
-        (let ((ref-U|G:module{OuronetGuardsV1} U|G))
+        (let ((ref-U|G:module{OuronetGuardsV2} U|G))
             (ref-U|G::UEV_Any (P|UR_IMP))
         )
     )
@@ -178,7 +178,7 @@
         (with-capability (GOV|CODEX_ADMIN)
             (let
                 (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
                     (dg:guard (create-capability-guard (SECURE)))
                 )
                 (with-default-read P|MT P|I
@@ -194,7 +194,7 @@
     (defun P|A_Define ()
         (let
             (
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
+                (ref-P|DALOS:module{OuronetPolicyV2} DALOS)
                 (mg:guard (create-capability-guard (P|CODEX|CALLER)))
             )
             (ref-P|DALOS::P|A_AddIMP mg)
@@ -277,7 +277,7 @@
     )
     (defcap CODEX|STOICTAG-DALOS-OWNER (account-address:string)
         @doc "Caller controls the Ouronet (DALOS) account — Standard or Smart, not Stoa coin.details."
-        (let ((ref-DALOS:module{OuronetDalosV1} DALOS))
+        (let ((ref-DALOS:module{OuronetDalosV2} DALOS))
             (ref-DALOS::CAP_EnforceAccountOwnership account-address)
         )
     )
@@ -292,7 +292,7 @@
         @event
         (let
             (
-                (ref-U|DALOS:module{UtilityDalosGlyphsV2} U|DALOS)
+                (ref-U|DALOS:module{UtilityDalosGlyphsV3} U|DALOS)
                 (codex-len:integer (length codex-id))
                 (codex-id-standard:string (UC_CodexIdStandard codex-id))
                 (codex-id-smart:string (UC_CodexIdSmart codex-id))
@@ -358,8 +358,8 @@
         @event
         (let
             (
-                (ref-U|DALOS:module{UtilityDalosGlyphsV2} U|DALOS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-U|DALOS:module{UtilityDalosGlyphsV3} U|DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 ;;
                 (tag-row-found:bool (not (= (try false (UR_STG|Data tag-name)) false)))
                 (tag-iz-active:bool
@@ -414,8 +414,8 @@
     ;;<=========================================================================>
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
-    (defun CT_Namespace ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
-    (defun CT_Bar ()                          (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_Namespace ()                    (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_NS_USE)))
+    (defun CT_Bar ()                          (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
     ;;
     (defun UDC_CIX|Identity:object{CODEX|S|Identity}
         ( codex-id-standard:string
@@ -540,7 +540,7 @@
         @doc "True when tag-name is 3–256 glyphs from DALOS|CHARSET (U|DALOS)."
         (let 
             (
-                (ref-U|DALOS:module{UtilityDalosGlyphsV2} U|DALOS)
+                (ref-U|DALOS:module{UtilityDalosGlyphsV3} U|DALOS)
             )
             (ref-U|DALOS::UC_IzStoicTagName tag-name)
         )
@@ -557,7 +557,7 @@
         @doc "True when codex-id is 325 chars: valid ₱. standard + ':' + valid Π. smart Apollo strings."
         (let
             (
-                (ref-U|DALOS:module{UtilityDalosGlyphsV2} U|DALOS)
+                (ref-U|DALOS:module{UtilityDalosGlyphsV3} U|DALOS)
                 (standard:string (UC_CodexIdStandard codex-id))
                 (smart:string (UC_CodexIdSmart codex-id))
             )
@@ -726,12 +726,12 @@
         )
     )
     ;;
-    (defun INFO_CODEX|RegisterStoicTag:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_CODEX|RegisterStoicTag:object{OuronetInfoV2.ClientInfo}
         (patron:string tag-name:string account-address:string)
         @doc "ClientInfo preview for TS01-C4 C_CODEX|RegisterStoicTag — STOA from patron; Elite discount on account-address."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 (stoa-fee:decimal (UC_StoicTagStoaFee tag-name))
                 (glyph-count:integer (length tag-name))
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account-address))
@@ -748,13 +748,13 @@
             )
         )
     )
-    (defun INFO_CODEX|ReleaseStoicTag:object{OuronetInfoV1.ClientInfo}
+    (defun INFO_CODEX|ReleaseStoicTag:object{OuronetInfoV2.ClientInfo}
         (patron:string tag-name:string)
         @doc "ClientInfo preview for TS01-C4 C_CODEX|ReleaseStoicTag (IGNIS = UC_StoicTagStoaFee per glyph)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 (tag-fee:decimal (UC_StoicTagStoaFee tag-name))
                 (glyph-count:integer (length tag-name))
                 (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))

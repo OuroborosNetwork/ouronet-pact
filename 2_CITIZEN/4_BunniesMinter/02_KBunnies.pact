@@ -19,7 +19,7 @@
     (defcap GOV ()                          (compose-capability (GOV|DPL_NFT_ADMIN)))
     (defcap GOV|DPL_NFT_ADMIN ()            (enforce-guard GOV|MD_KBN))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
@@ -44,8 +44,8 @@
     (defconst D-L "Golden Bunnies, the most precious Bunnies in the whole of Existance, makes the dreams come true for their Owners")
     (defconst D-C "Born on MultiversX, fled to Ouronet, ready for Unity, primed for Cryptoplasm, the Bunny Collection is here to make your dreams come true.")
     ;;
-    (defconst TYPE                          (let ((ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)) (ref-DPDC-UDC::UDC_URI|Type T F F F F F F)))
-    (defconst ZD                            (let ((ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    (defconst TYPE                          (let ((ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)) (ref-DPDC-UDC::UDC_URI|Type T F F F F F F)))
+    (defconst ZD                            (let ((ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
     ;;{3.2}  schemas
     ;;
     ;;
@@ -74,8 +74,8 @@
     ;;<=========================================================================>
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
-    (defun CT_Namespace ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
-    (defun CT_Bar ()                        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_Namespace ()                    (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_NS_USE)))
+    (defun CT_Bar ()                        (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
     ;;
     (defun UDC_MetaData:object{BunnyMetaData} (a:[string])
         {"Rarity"       : (at 0 a)
@@ -171,12 +171,12 @@
     (defun A_BunnyRGBSet (patron:string kbn-id:string)
         (let
             (
-                (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
-                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
                 ;;
                 (native-royalty:decimal (* 0.9R))
                 (ignis-royalty:decimal (fold (*) 1.0 [0.9 3.0 IR-C]))
-                (md:object{DpdcUdcV1.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
+                (md:object{DpdcUdcV2.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
                 (ipfs-link-one:string "SmallPhoto-IPFS-Link")
                 (ipfs-link-two:string "BiggrPhoto-IPFS-Link")
             )
@@ -208,9 +208,9 @@
     (defun C_Spawn (patron:string kbn-id:string starting-position:integer number-of-positions:integer mdm:[[string]])
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-                (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
-                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
                 ;;
                 (l:integer (length mdm))
                 (legendary:[integer] [25 175 274 388 407 873 880 954 1033 1095])
@@ -221,7 +221,7 @@
                 patron kbn-id
                 (fold
                     (lambda
-                        (acc:[object{DpdcUdcV1.DPDC|NonceData}] idx:integer)
+                        (acc:[object{DpdcUdcV2.DPDC|NonceData}] idx:integer)
                         (let
                             (
                                 (element-number:integer (+ starting-position idx))

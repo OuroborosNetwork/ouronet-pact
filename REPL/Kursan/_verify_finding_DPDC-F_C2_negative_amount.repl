@@ -16,7 +16,7 @@
 (namespace "ouronet-ns")
 (let
     (
-        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-DPDC:module{DpdcV2} DPDC)
         (id:string "DHOC-98c486052a51")
     )
     (print (format "BEFORE anhd nonce3 supply = {}" [(ref-DPDC::UR_AccountNonceSupply KST.ANHD id true 3)]))
@@ -29,8 +29,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-DPDC:module{DpdcV1} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
         (id:string "DHOC-98c486052a51")
     )
     (print (format "LEGIT MAKE-FRAGMENTS RESULT = {}"
@@ -51,7 +51,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
         (id:string "DHOC-98c486052a51")
     )
     (ref-TS02-C1::C_DPSF|MakeFragments KST.ANHD KST.ANHD id 3 -100)

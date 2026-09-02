@@ -31,7 +31,7 @@
 (namespace "ouronet-ns")
 (let
     (
-        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-DPDC:module{DpdcV2} DPDC)
         (id:string "DHOC-98c486052a51")
     )
     (print (format "BASELINE anhd nonce1 supply = {}" [(ref-DPDC::UR_AccountNonceSupply KST.ANHD id true 1)]))
@@ -47,8 +47,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-DPDC:module{DpdcV1} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
         (id:string "DHOC-98c486052a51")
     )
     (print (format "LEGIT TRANSFER RESULT = {}"
@@ -72,7 +72,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
         (id:string "DHOC-98c486052a51")
     )
     (ref-TS02-C1::C_DPSF|TransferNonces KST.ANHD id KST.ANHD KST.EMMA [1 2] [100 -50] false)

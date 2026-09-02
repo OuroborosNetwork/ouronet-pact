@@ -1,4 +1,4 @@
-(interface AcquisitionVacateV1
+(interface AcquisitionVacateV2
 
 
     ;;<=========================================================================>
@@ -56,27 +56,27 @@
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     ;; [XB]
-    (defun XB_VacateTrueFungible:object{IgnisCollectorV1.OutputCumulator} (pool-id:string))
-    (defun XB_VacateOrtoFungible:object{IgnisCollectorV1.OutputCumulator} (pool-id:string dpof-id:string))
-    (defun XB_VacateSemiFungible:object{IgnisCollectorV1.OutputCumulator} (pool-id:string dpsf-id:string))
-    (defun XB_VacateNonFungible:object{IgnisCollectorV1.OutputCumulator} (pool-id:string dpnf-id:string))
+    (defun XB_VacateTrueFungible:object{IgnisCollectorV2.OutputCumulator} (pool-id:string))
+    (defun XB_VacateOrtoFungible:object{IgnisCollectorV2.OutputCumulator} (pool-id:string dpof-id:string))
+    (defun XB_VacateSemiFungible:object{IgnisCollectorV2.OutputCumulator} (pool-id:string dpsf-id:string))
+    (defun XB_VacateNonFungible:object{IgnisCollectorV2.OutputCumulator} (pool-id:string dpnf-id:string))
     ;;{5.7}  User [A/C]
     ;; [C]   client
-    (defun CC_FullVacate:object{IgnisCollectorV1.OutputCumulator} (pool-id:string))
-    (defun CCp_BatchVacateTrueFungible:object{IgnisCollectorV1.OutputCumulator}
+    (defun CC_FullVacate:object{IgnisCollectorV2.OutputCumulator} (pool-id:string))
+    (defun CCp_BatchVacateTrueFungible:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal]))
-    (defun CCp_BatchVacateOrtoFungible:object{IgnisCollectorV1.OutputCumulator}
+    (defun CCp_BatchVacateOrtoFungible:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]]))
-    (defun CCp_BatchVacateCollectables:object{IgnisCollectorV1.OutputCumulator}
+    (defun CCp_BatchVacateCollectables:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
-    (defun CCp_BatchDrainTrueFungible:object{IgnisCollectorV1.OutputCumulator}
+    (defun CCp_BatchDrainTrueFungible:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal]))
-    (defun CCp_BatchDrainOrtoFungible:object{IgnisCollectorV1.OutputCumulator}
+    (defun CCp_BatchDrainOrtoFungible:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]]))
-    (defun CCp_BatchDrainCollectable:object{IgnisCollectorV1.OutputCumulator}
+    (defun CCp_BatchDrainCollectable:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
-    (defun C_AbortVacate:object{IgnisCollectorV1.OutputCumulator} (pool-id:string))
-    (defun C_FinalizeVacate:object{IgnisCollectorV1.OutputCumulator} (pool-id:string))
+    (defun C_AbortVacate:object{IgnisCollectorV2.OutputCumulator} (pool-id:string))
+    (defun C_FinalizeVacate:object{IgnisCollectorV2.OutputCumulator} (pool-id:string))
 
 )
 
@@ -126,8 +126,8 @@
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
-    (implements OuronetPolicyV1)
-    (implements AcquisitionVacateV1)
+    (implements OuronetPolicyV2)
+    (implements AcquisitionVacateV2)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -142,7 +142,7 @@
     (defun GOV|Demiurgoi ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (ref-DALOS::GOV|Demiurgoi)
         )
@@ -154,8 +154,8 @@
     (defconst P|I (P|Info))
     ;;{P2}  schemas
     ;;{P3}  tables
-    (deftable P|T:{OuronetPolicyV1.P|S})                          ;;Key = <Policy-Name>
-    (deftable P|MT:{OuronetPolicyV1.P|MS})                        ;;Key = module P|I singleton
+    (deftable P|T:{OuronetPolicyV2.P|S})                          ;;Key = <Policy-Name>
+    (deftable P|MT:{OuronetPolicyV2.P|MS})                        ;;Key = module P|I singleton
     ;;{P4}  capabilities
     (defcap P|VCT|CALLER ()
         true
@@ -175,7 +175,7 @@
     (defun P|Info ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (ref-DALOS::P|Info)
         )
@@ -189,7 +189,7 @@
     (defun P|UEV_IMC ()
         (let
             (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
+                (ref-U|G:module{OuronetGuardsV2} U|G)
             )
             (ref-U|G::UEV_Any (P|UR_IMP))
         )
@@ -203,7 +203,7 @@
         (with-capability (GOV|VCT_ADMIN)
             (let
                 (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
                     ;;
                     (dg:guard (create-capability-guard (SECURE)))
                 )
@@ -219,12 +219,12 @@
         @doc "Post-deploy: VCT SECURE on AQP-SCORE + AQP-POOL + AQP-FVT IMP; P|VCT|CALLER on TFT/DPOF/DPDC-T; VCT|RemoteAqpGov on AQP-POOL."
         (let
             (
-                (ref-P|SCR:module{OuronetPolicyV1} AQP-SCORE)
-                (ref-P|AQP:module{OuronetPolicyV1} AQP-POOL)
-                (ref-P|FVT:module{OuronetPolicyV1} AQP-FVT)
-                (ref-P|TFT:module{OuronetPolicyV1} TFT)
-                (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
-                (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
+                (ref-P|SCR:module{OuronetPolicyV2} AQP-SCORE)
+                (ref-P|AQP:module{OuronetPolicyV2} AQP-POOL)
+                (ref-P|FVT:module{OuronetPolicyV2} AQP-FVT)
+                (ref-P|TFT:module{OuronetPolicyV2} TFT)
+                (ref-P|DPOF:module{OuronetPolicyV2} DPOF)
+                (ref-P|DPDC-T:module{OuronetPolicyV2} DPDC-T)
                 ;;
                 (dg:guard (create-capability-guard (SECURE)))
                 (mg:guard (create-capability-guard (P|VCT|CALLER)))
@@ -356,7 +356,7 @@
             \ not reserved, and composes the P|VCT|RECIPE recipe capability for the XB write."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
                 ;;
                 (class-ok:bool (ref-AQP::URC_StakeTrueFungiblePoolClassOk pool-id))
                 (asset-ok:bool (ref-AQP::URC_StakeTrueFungibleDptfMatchesPool pool-id dptf-id))
@@ -386,7 +386,7 @@
             \ the P|VCT|RECIPE recipe capability for the XB write."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
                 ;;
                 (asset-ok:bool (ref-AQP::URC_StakeOrtoFungibleDpofMatchesPool pool-id dpof-id))
                 (gas-ok:bool (URC_BatchOwnerArraysGasOk owner-ids beneficiary-ids nonces-array VACATE-GAS-MAX-OF))
@@ -415,7 +415,7 @@
             \ pool-owner ownership and composes the P|VCT|RECIPE recipe capability for the XB write."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
                 ;;
                 (class-ok:bool (ref-AQP::URC_StakeCollectablePoolClassOk pool-id son))
                 (asset-ok:bool (ref-AQP::URC_StakeCollectableMatchesPool pool-id collectable-id))
@@ -502,7 +502,7 @@
             \ through SCORE's own IMC-gated XE_NukeScoreForVacate."
         @event
         (CAP_VctVacatePoolOwner pool-id)
-        (let ((ref-AQP:module{AcquisitionPoolsV1} AQP-POOL))
+        (let ((ref-AQP:module{AcquisitionPoolsV2} AQP-POOL))
             (enforce (ref-AQP::UR_AQP|PoolVacateInProgress pool-id) "Finalize: no vacate in progress on this pool")
             (enforce (URC_PoolFullyVacated pool-id) "Finalize: pool not fully drained (nns != 0)")
         )
@@ -518,7 +518,7 @@
         (CAP_VctVacatePoolOwner pool-id)
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
             )
             (enforce (contains (ref-AQP::UR_AQP|PoolAqpClass pool-id) [0 1 2 3 4])
                 "VCT|C>VACATE: unknown aqp-class"))
@@ -533,7 +533,7 @@
     (defun CT_Bar ()
         (let
             (
-                (ref-U|CT:module{OuronetConstantsV1} U|CT)
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
             )
             (ref-U|CT::CT_BAR)
         )
@@ -541,7 +541,7 @@
     (defun CT_AqpScName:string ()
         (let
             (
-                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                (ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)
             )
             (ref-ANK::GOV|AQP|SC_NAME)
         )
@@ -644,11 +644,11 @@
     )
     ;;{5.2}  Compute [UC]
     ;; [UC]  compute
-    (defun UC_EmptyOc:object{IgnisCollectorV1.OutputCumulator} ()
+    (defun UC_EmptyOc:object{IgnisCollectorV2.OutputCumulator} ()
         @doc "The empty OutputCumulator (no IGNIS, no STOA) — the identity result for vacate paths that bill nothing."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
             (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
         )
@@ -1105,9 +1105,9 @@
     ;;   ifp sums). Fed the SAME dirty-read legs/lanes the exec receives. Tier gates + the two score-delta
     ;;   sums are reached cross-module on AQP-FVT (AQP-FVT.URC_Tier* / AQP-FVT.URC_StakeScoreDeltaSum*),
     ;;   the single source they share with the stake readers. INFO repoints here; execs are unchanged.
-    (defun URCi_FinalizeVacate:object{IgnisCollectorV1.OutputCumulator} ()
+    (defun URCi_FinalizeVacate:object{IgnisCollectorV2.OutputCumulator} ()
         @doc "Flat 'ignis|medium' tier on AQP|SC_NAME — single source for C_FinalizeVacate + its INFO preview."
-        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_MediumCumulator AQP|SC_NAME)))
+        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_MediumCumulator AQP|SC_NAME)))
     (defun URCi_BatchVacateTrueFungible:decimal
         (pool-id:string dptf-id:string legs:[object{VCT|VacateTfLeg}])
         @doc "Variant-A shared cost estimator for CCp_BatchVacateTrueFungible. Mirrors \
@@ -1116,7 +1116,7 @@
             \ biggest] + score-delta + book + checkpoint) + the one bulk DPTF multi-transfer."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 (unique-benefs:[string] (UC_VacateUniqueBeneficiariesFromLegs legs))
                 (n-live:integer (length (AQP-ANK.UR_ANK|AnchorsForAsset dptf-id)))
                 (bulk-arr:object (UC_VacateTfLegsToTftBulkArrays legs))
@@ -1152,7 +1152,7 @@
             \ NO rollup, NO anchor (OF phase-3 N/A)."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 (nonces-array:[[integer]] (map (lambda (l:object{VCT|VacateNonceLeg}) (at "nonces" l)) legs))
                 (unique-benefs:[string]
                     (UC_VacateUniqueBeneficiaries
@@ -1186,7 +1186,7 @@
             \ checkpoint. Collectable units are whole (amounts floored, matching exec)."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 (nonces-array:[[integer]] (map (lambda (l:object{VCT|VacateNonceLeg}) (at "nonces" l)) legs))
                 (amounts-array:[[integer]]
                     (map (lambda (l:object{VCT|VacateNonceLeg})
@@ -1227,7 +1227,7 @@
             \ bulk DPTF multi-transfer. NO score-delta (drain leaves the score live for finalize)."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 (unique-benefs:[string] (UC_VacateUniqueBeneficiariesFromLegs legs))
                 (n-live:integer (length (AQP-ANK.UR_ANK|AnchorsForAsset dptf-id)))
                 (bulk-arr:object (UC_VacateTfLegsToTftBulkArrays legs))
@@ -1262,7 +1262,7 @@
             \ minus this benef's total nonce-count == 0. NO rollup, NO anchor, NO score-delta."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 (unique-benefs:[string]
                     (UC_VacateUniqueBeneficiaries
                         (map (lambda (l:object{VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)))
@@ -1297,7 +1297,7 @@
             \ only for beneficiaries whose UserUnn hits 0 (per-whole-nonce decrement). NO score-delta."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 (nonces-array:[[integer]] (map (lambda (l:object{VCT|VacateNonceLeg}) (at "nonces" l)) legs))
                 (amounts-array:[[integer]]
                     (map (lambda (l:object{VCT|VacateNonceLeg})
@@ -1408,7 +1408,7 @@
             \ OF (dpof match), DPSF/DPNF (collectable pool class + asset match); unknown kind returns false."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
             )
             (if (= vacate-kind VACATE-KIND-TF)
                 (fold
@@ -1474,8 +1474,8 @@
             \ exists (DPTF::UR_Frozen → BAR if never frozen → dropped). Same existence-filter idea as the OF variant."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (asset-id:string (ref-AQP::UR_AQP|PoolAssetId pool-id))
             )
             (+
@@ -1495,8 +1495,8 @@
             \ DPTF asset-id (class 0/1 asset-id is a DPTF); BAR (not linked) dropped."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (c:integer (ref-AQP::UR_AQP|PoolAqpClass pool-id))
                 (asset-id:string (ref-AQP::UR_AQP|PoolAssetId pool-id))
             )
@@ -1516,7 +1516,7 @@
         @doc "The pool's collectable vacate-lane id: the single collection = the pool asset-id."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
             )
             [(ref-AQP::UR_AQP|PoolAssetId pool-id)]
         )
@@ -1532,7 +1532,7 @@
         @doc "Derive whole-nonce decimal amounts from pool tracker for FVT vacate owner-row unwind."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
             )
             (map
                 (lambda (idx:integer)
@@ -1554,7 +1554,7 @@
     )
     (defun UR_VacateSessionFields:object
         (pool-id:string)
-        (let ((ref-AQP:module{AcquisitionPoolsV1} AQP-POOL))
+        (let ((ref-AQP:module{AcquisitionPoolsV2} AQP-POOL))
             (ref-AQP::UR_AQP|PoolVacateSession pool-id)
         )
     )
@@ -1563,7 +1563,7 @@
         @doc "Vacate: each DPOF nonce tracker row beneficiary-id must equal the supplied beneficiary-id."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
                 (l:integer (length nonces))
             )
             (fold
@@ -1591,7 +1591,7 @@
         @doc "Vacate: each DPOF nonce amount must equal full tracker row (no partial vacate)."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
                 (l:integer (length nonces))
             )
             (fold
@@ -1620,7 +1620,7 @@
         @doc "Vacate: amount must equal full DPTFTracker row (no partial vacate); rollup must cover amount."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
                 (staked-bal:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id dptf-id owner-id beneficiary-id))
                 (rollup-bal:decimal (ref-AQP::UR_AQP|BenDptfTotalBalance beneficiary-id dptf-id))
             )
@@ -1650,7 +1650,7 @@
         @doc "Vacate: each nonce tracker row beneficiary-id must equal the supplied beneficiary-id."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
                 (l:integer (length nonces))
             )
             (fold
@@ -1681,7 +1681,7 @@
         @doc "Vacate: each nonce amount must equal full DPSF/DPNF tracker row (no partial vacate)."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
                 (l:integer (length nonces))
             )
             (fold
@@ -1713,7 +1713,7 @@
         @doc "Vacate: each nonce has cross-pool Ben* nonce rollup amount ≥ vacate amount."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
                 (l:integer (length nonces))
             )
             (fold
@@ -1839,8 +1839,8 @@
             \ so a vacate can't finalize while ghost stake remains. Bounded point reads, no scan. Gates finalize."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 ;;
                 (nns:integer (ref-AQP::UR_AQP|PoolNns pool-id))
             )
@@ -1982,7 +1982,7 @@
         @doc "Owner-row count from live vacate inventory — UI preflight before Full/Legs."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
                 ;;
                 (son:bool (UC_VacateKindSon vacate-kind))
             )
@@ -2012,7 +2012,7 @@
         @doc "Live TF vacate inventory for <pool-id>/<dptf-id>: reads the active DPTF tracker rows and builds \
             \ per-owner TF legs. Being a live tracker read, a vacated leg zeroes its slot, so a re-read after a \
             \ partial vacate naturally returns the outstanding remains (the UI's 'construct remains' is implicit)."
-        (let ((ref-AQP:module{AcquisitionPoolsV1} AQP-POOL))
+        (let ((ref-AQP:module{AcquisitionPoolsV2} AQP-POOL))
             (UDC_VacateTfInventory
                 (map
                     (lambda (row:object)
@@ -2025,7 +2025,7 @@
     )
     (defun URH_VacateOfNonceRows:[object{VCT|VacateNonceRow}] (pool-id:string dpof-id:string)
         @doc "Live per-nonce OF vacate rows for <pool-id>/<dpof-id> from the active DPOF tracker."
-        (let ((ref-AQP:module{AcquisitionPoolsV1} AQP-POOL))
+        (let ((ref-AQP:module{AcquisitionPoolsV2} AQP-POOL))
             (map
                 (lambda (row:object)
                     (UDC_VacateNonceRow (at "owner-id" row) (at "beneficiary-id" row) (at "nonce" row) (at "balance" row))
@@ -2050,7 +2050,7 @@
         (pool-id:string collectable-id:string son:bool)
         @doc "Live per-nonce collectable vacate rows for <pool-id>/<collectable-id> (<son> selects the DPSF vs \
             \ DPNF active tracker)."
-        (let ((ref-AQP:module{AcquisitionPoolsV1} AQP-POOL))
+        (let ((ref-AQP:module{AcquisitionPoolsV2} AQP-POOL))
             (map
                 (lambda (row:object)
                     (UDC_VacateNonceRow (at "owner-id" row) (at "beneficiary-id" row) (at "nonce" row) (at "balance" row))
@@ -2089,8 +2089,8 @@
         @doc "Vacate operations require tx sender ownership of the pool's canonical owner konto."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership (ref-AQP::URC_AqpOwnerKonto pool-id))
         )
@@ -2117,9 +2117,9 @@
         ;; SECURE: granted by master vacate caps.
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                 (fvt-ids:[string]
                     (distinct
                         (filter
@@ -2147,7 +2147,7 @@
         ;; SECURE: granted by master vacate caps.
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
             )
             (if (UR_VacateInProgress pool-id)
                 "already-begun"
@@ -2169,7 +2169,7 @@
         ;; SECURE: granted by VCT|C>ABORT-VACATE-POOL / finalize path.
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
             )
             (ref-AQP::XE_SetVacateJobState pool-id false)
             (XI_SetPoolFvtsVacateFrozen pool-id false)
@@ -2191,7 +2191,7 @@
         (if (and finalize (URC_PoolFullyVacated pool-id))
             (let
                 (
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                    (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
                 )
                 (ref-AQP::XE_SetVacateJobState pool-id false)
                 (ref-AQP::XB_SetPoolStakeEnabled pool-id true)
@@ -2202,13 +2202,13 @@
         )
     )
     ;; Legs orchestration: XI_EnsureVacateBegun / XI_MaybeFinalizeVacate / XI_ClearVacateInProgress.
-    (defun XI_3|RpsVacatePreZero:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_3|RpsVacatePreZero:object{IgnisCollectorV2.OutputCumulator}
         (beneficiary-id:string pool-id:string settle-bundle:object)
         @doc "TF vacate RPS prelude: bank pending at OLD deb per score plan. Skips ghost-TVL sync and row ensure."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                 ;;
                 (settle-plans:[object] (at "settle-plans" settle-bundle))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -2227,7 +2227,7 @@
             )
         )
     )
-    (defun XI_2|SettleBeneficiaryRewardsOnly:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_2|SettleBeneficiaryRewardsOnly:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string beneficiary-id:string)
         @doc "Vacate-v2 §4 settle-on-last-drain: preserve ONE beneficiary's pending rewards into unclaimed \
             \ WITHOUT touching their score. The asset-agnostic reward triple — Bank (XI_3|RpsVacatePreZero, \
@@ -2239,8 +2239,8 @@
             \ convention as XI_2|Vacate*BeneficiaryUnwind — the XE_ forward calls each enforce their own IMC."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                 ;;
                 (settle-bundle:object (ref-FVT::URHC_BuildStakeSettleBundle pool-id beneficiary-id))
             )
@@ -2254,15 +2254,15 @@
             )
         )
     )
-    (defun XI_2|VacateTrueFungibleBeneficiaryUnwind:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_2|VacateTrueFungibleBeneficiaryUnwind:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string beneficiary-id:string dptf-id:string amount:decimal)
         @doc "TF vacate per beneficiary: rollup → RPS bank → ANK → SCORE unstake → RPS book+checkpoint."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 ;;
                 (settle-bundle:object
                     (ref-FVT::URHC_BuildStakeSettleBundle pool-id beneficiary-id)
@@ -2287,16 +2287,16 @@
             )
         )
     )
-    (defun XI_1|VacateTrueFungibleUnwindFromLegs:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_1|VacateTrueFungibleUnwindFromLegs:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string dptf-id:string legs:[object{VCT|VacateTfLeg}])
         @doc "TF vacate phases 2–4: write-only tracker zero per leg; beneficiary unwind deduped by unique beneficiary."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
                 ;;
                 (unique-beneficiaries:[string] (UC_VacateUniqueBeneficiariesFromLegs legs))
-                (tracker-ocs:[object{IgnisCollectorV1.OutputCumulator}]
+                (tracker-ocs:[object{IgnisCollectorV2.OutputCumulator}]
                     (map
                         (lambda (leg:object{VCT|VacateTfLeg})
                             (ref-AQP::XE_ZeroDptfTrackerSlot
@@ -2309,7 +2309,7 @@
                         legs
                     )
                 )
-                (score-ocs:[object{IgnisCollectorV1.OutputCumulator}]
+                (score-ocs:[object{IgnisCollectorV2.OutputCumulator}]
                     (map
                         (lambda (beneficiary-id:string)
                             (XI_2|VacateTrueFungibleBeneficiaryUnwind
@@ -2326,7 +2326,7 @@
             (ref-IGNIS::UDC_ConcatenateOutputCumulators (+ tracker-ocs score-ocs) [])
         )
     )
-    (defun XI_VacateTrueFungibleFromLegs:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_VacateTrueFungibleFromLegs:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string dptf-id:string legs:[object{VCT|VacateTfLeg}])
         @doc "TF vacate CONSUMER (per DPTF asset) — no scan. Phases 2–4 unwind from the pre-built leg list, then \
             \ phase 0 bulk TFT transfer last. Empty legs → no-op (the batch core is not empty-safe: a zero-leg \
@@ -2336,14 +2336,14 @@
             (UC_EmptyOc)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-TFT:module{TrueFungibleTransferV2} TFT)
                     ;;
-                    (unwind-oc:object{IgnisCollectorV1.OutputCumulator}
+                    (unwind-oc:object{IgnisCollectorV2.OutputCumulator}
                         (XI_1|VacateTrueFungibleUnwindFromLegs pool-id dptf-id legs)
                     )
                     (bulk-arr:object (UC_VacateTfLegsToTftBulkArrays legs))
-                    (bulk-oc:object{IgnisCollectorV1.OutputCumulator}
+                    (bulk-oc:object{IgnisCollectorV2.OutputCumulator}
                         (ref-TFT::C_MultiBulkTransfer
                             [dptf-id]
                             AQP|SC_NAME
@@ -2356,7 +2356,7 @@
             )
         )
     )
-    (defun XI_1|DrainTrueFungibleFromLegs:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_1|DrainTrueFungibleFromLegs:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string dptf-id:string legs:[object{VCT|VacateTfLeg}])
         @doc "Vacate-v2 TF DRAIN phases 2-4 (no score delta). Per leg: zero the tracker row (nns--/unn--) AND \
             \ decrement the cross-pool rollup by the leg amount (amount-linear; owner-id unused in the bump). \
@@ -2368,15 +2368,15 @@
             \ before the unn==0 gate is read."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                 (unique-beneficiaries:[string] (UC_VacateUniqueBeneficiariesFromLegs legs))
             )
             ;; Phase A — per-leg tracker-zero (nns--/unn--) + cross-pool rollup decrement (side effects first)
             (let
                 (
-                    (tracker-ocs:[object{IgnisCollectorV1.OutputCumulator}]
+                    (tracker-ocs:[object{IgnisCollectorV2.OutputCumulator}]
                         (map
                             (lambda (leg:object{VCT|VacateTfLeg})
                                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
@@ -2397,7 +2397,7 @@
                 ;; Phase B — unn now reflects the drain: settle ONLY beneficiaries fully drained this round
                 (let
                     (
-                        (settle-ocs:[object{IgnisCollectorV1.OutputCumulator}]
+                        (settle-ocs:[object{IgnisCollectorV2.OutputCumulator}]
                             (map
                                 (lambda (beneficiary-id:string)
                                     (if (= (ref-AQP::UR_AQP|UserUnn pool-id beneficiary-id) 0)
@@ -2422,7 +2422,7 @@
             )
         )
     )
-    (defun XI_DrainTrueFungibleFromLegs:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_DrainTrueFungibleFromLegs:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string dptf-id:string legs:[object{VCT|VacateTfLeg}])
         @doc "Vacate-v2 TF DRAIN CONSUMER (per DPTF asset) — no scan. Phases 2-4 drain-unwind from the pre-built \
             \ leg list, then phase 0 bulk TFT transfer back to owners last. Empty legs -> no-op. NO finalize: the \
@@ -2432,14 +2432,14 @@
             (UC_EmptyOc)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-TFT:module{TrueFungibleTransferV2} TFT)
                     ;;
-                    (unwind-oc:object{IgnisCollectorV1.OutputCumulator}
+                    (unwind-oc:object{IgnisCollectorV2.OutputCumulator}
                         (XI_1|DrainTrueFungibleFromLegs pool-id dptf-id legs)
                     )
                     (bulk-arr:object (UC_VacateTfLegsToTftBulkArrays legs))
-                    (bulk-oc:object{IgnisCollectorV1.OutputCumulator}
+                    (bulk-oc:object{IgnisCollectorV2.OutputCumulator}
                         (ref-TFT::C_MultiBulkTransfer
                             [dptf-id]
                             AQP|SC_NAME
@@ -2452,7 +2452,7 @@
             )
         )
     )
-    (defun XI_VacateOrtoFungibleFromLegs:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_VacateOrtoFungibleFromLegs:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string dpof-id:string legs:[object{VCT|VacateNonceLeg}])
         @doc "OF vacate CONSUMER (per DPOF asset) — no scan. Unpack the pre-built nonce legs (owner/beneficiary/ \
             \ nonces + the real per-nonce decimal amounts the PHASE-1 URD scan already read off the tracker) into \
@@ -2470,7 +2470,7 @@
             )
         )
     )
-    (defun XI_VacateCollectablesFromLegs:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_VacateCollectablesFromLegs:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string collectable-id:string son:bool legs:[object{VCT|VacateNonceLeg}])
         @doc "DPSF/DPNF vacate CONSUMER (per collection, son=DPSF/DPNF) — no scan. Unpack the pre-built nonce legs \
             \ into the batch arrays (collectable units are whole → floor the decimal amounts) and run bulk \
@@ -2487,14 +2487,14 @@
         )
     )
     ;; ── PHASE-2 POOL consumers: walk the PHASE-1 lanes → per-asset FromLegs consumer. No reads, no scans. ──
-    (defun XI_VacateTrueFungiblePoolLegs:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_VacateTrueFungiblePoolLegs:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string lanes:[object{VCT|VacateTfLane}])
         @doc "TF-lane POOL consumer — no scan. Run XI_VacateTrueFungibleFromLegs on every pre-scanned DPTF lane \
             \ (native / F| frozen) and concatenate. Empty lane list → empty Oc. require P|VCT|RECIPE."
         (require-capability (P|VCT|RECIPE))
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
             (if (= (length lanes) 0)
                 (UC_EmptyOc)
@@ -2507,14 +2507,14 @@
             )
         )
     )
-    (defun XI_VacateOrtoFungiblePoolLegs:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_VacateOrtoFungiblePoolLegs:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string lanes:[object{VCT|VacateNonceLane}])
         @doc "OF-lane POOL consumer — no scan. Run XI_VacateOrtoFungibleFromLegs on every pre-scanned DPOF lane \
             \ (Z|/H| satellite or class-2 standalone) and concatenate. Empty → empty Oc. require P|VCT|RECIPE."
         (require-capability (P|VCT|RECIPE))
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
             (if (= (length lanes) 0)
                 (UC_EmptyOc)
@@ -2527,14 +2527,14 @@
             )
         )
     )
-    (defun XI_VacateCollectablesPoolLegs:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_VacateCollectablesPoolLegs:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string son:bool lanes:[object{VCT|VacateNonceLane}])
         @doc "Collectable-lane POOL consumer — no scan. Run XI_VacateCollectablesFromLegs (son) on every \
             \ pre-scanned DPSF/DPNF lane and concatenate. Empty → empty Oc. require P|VCT|RECIPE."
         (require-capability (P|VCT|RECIPE))
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
             (if (= (length lanes) 0)
                 (UC_EmptyOc)
@@ -2547,7 +2547,7 @@
             )
         )
     )
-    (defun XI_2|VacateOrtoFungibleScoreUnwind:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_2|VacateOrtoFungibleScoreUnwind:object{IgnisCollectorV2.OutputCumulator}
         (
             pool-id:string
             beneficiary-id:string
@@ -2560,10 +2560,10 @@
             \ concatenated IGNIS cumulator."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 ;;
                 (settle-bundle:object
                     (ref-FVT::URHC_BuildStakeSettleBundle pool-id beneficiary-id)
@@ -2583,7 +2583,7 @@
             )
         )
     )
-    (defun XI_2|VacateCollectableScoreUnwind:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_2|VacateCollectableScoreUnwind:object{IgnisCollectorV2.OutputCumulator}
         (
             pool-id:string
             beneficiary-id:string
@@ -2597,10 +2597,10 @@
             \ counts, and re-checkpoint RPS. Returns the concatenated IGNIS cumulator."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 ;;
                 (settle-bundle:object
                     (ref-FVT::URHC_BuildStakeSettleBundle pool-id beneficiary-id)
@@ -2621,7 +2621,7 @@
             )
         )
     )
-    (defun XI_1|VacateOrtoFungibleUnwindBatch:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_1|VacateOrtoFungibleUnwindBatch:object{IgnisCollectorV2.OutputCumulator}
         (
             pool-id:string
             dpof-id:string
@@ -2634,12 +2634,12 @@
             \ the level-2 score unwind once per unique beneficiary. Concatenates every leg's IGNIS cumulator."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
                 ;;
                 (L:integer (length owner-ids))
                 (unique-beneficiaries:[string] (UC_VacateUniqueBeneficiaries beneficiary-ids))
-                (tracker-ocs:[object{IgnisCollectorV1.OutputCumulator}]
+                (tracker-ocs:[object{IgnisCollectorV2.OutputCumulator}]
                     (map
                         (lambda (idx:integer)
                             (ref-AQP::XE_OrtoFungiblePoolTracker
@@ -2655,7 +2655,7 @@
                         (enumerate 0 (- L 1))
                     )
                 )
-                (score-ocs:[object{IgnisCollectorV1.OutputCumulator}]
+                (score-ocs:[object{IgnisCollectorV2.OutputCumulator}]
                     (map
                         (lambda (beneficiary-id:string)
                             (let
@@ -2682,7 +2682,7 @@
             (ref-IGNIS::UDC_ConcatenateOutputCumulators (+ tracker-ocs score-ocs) [])
         )
     )
-    (defun XI_1|VacateCollectableUnwindBatch:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_1|VacateCollectableUnwindBatch:object{IgnisCollectorV2.OutputCumulator}
         (
             pool-id:string
             collectable-id:string
@@ -2697,12 +2697,12 @@
             \ every leg's IGNIS cumulator."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
                 ;;
                 (L:integer (length owner-ids))
                 (unique-beneficiaries:[string] (UC_VacateUniqueBeneficiaries beneficiary-ids))
-                (tracker-ocs:[object{IgnisCollectorV1.OutputCumulator}]
+                (tracker-ocs:[object{IgnisCollectorV2.OutputCumulator}]
                     (map
                         (lambda (idx:integer)
                             (let
@@ -2740,7 +2740,7 @@
                         (enumerate 0 (- L 1))
                     )
                 )
-                (score-ocs:[object{IgnisCollectorV1.OutputCumulator}]
+                (score-ocs:[object{IgnisCollectorV2.OutputCumulator}]
                     (map
                         (lambda (beneficiary-id:string)
                             (let
@@ -2768,7 +2768,7 @@
             (ref-IGNIS::UDC_ConcatenateOutputCumulators (+ tracker-ocs score-ocs) [])
         )
     )
-    (defun XI_VacateOrtoFungibleBatch:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_VacateOrtoFungibleBatch:object{IgnisCollectorV2.OutputCumulator}
         (
             pool-id:string
             dpof-id:string
@@ -2783,14 +2783,14 @@
         (require-capability (P|VCT|RECIPE))
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                 ;;
-                (bulk-oc:object{IgnisCollectorV1.OutputCumulator}
+                (bulk-oc:object{IgnisCollectorV2.OutputCumulator}
                     (ref-DPOF::C_BulkTransfer dpof-id nonces-array AQP|SC_NAME owner-ids true)
                 )
-                (unwind-oc:object{IgnisCollectorV1.OutputCumulator}
+                (unwind-oc:object{IgnisCollectorV2.OutputCumulator}
                     (XI_1|VacateOrtoFungibleUnwindBatch
                         pool-id dpof-id owner-ids beneficiary-ids nonces-array nonce-amounts-array
                     )
@@ -2799,7 +2799,7 @@
             (ref-IGNIS::UDC_ConcatenateOutputCumulators [bulk-oc unwind-oc] [])
         )
     )
-    (defun XI_VacateCollectableBatch:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_VacateCollectableBatch:object{IgnisCollectorV2.OutputCumulator}
         (
             pool-id:string
             collectable-id:string
@@ -2815,16 +2815,16 @@
         (require-capability (P|VCT|RECIPE))
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DPDC-T:module{DpdcTransferV1} DPDC-T)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                 ;;
-                (bulk-oc:object{IgnisCollectorV1.OutputCumulator}
+                (bulk-oc:object{IgnisCollectorV2.OutputCumulator}
                     (ref-DPDC-T::C_BulkTransfer
                         collectable-id son nonces-array amounts-array AQP|SC_NAME owner-ids true
                     )
                 )
-                (unwind-oc:object{IgnisCollectorV1.OutputCumulator}
+                (unwind-oc:object{IgnisCollectorV2.OutputCumulator}
                     (XI_1|VacateCollectableUnwindBatch
                         pool-id collectable-id son owner-ids beneficiary-ids nonces-array amounts-array
                     )
@@ -2834,7 +2834,7 @@
         )
     )
     ;; ══ Vacate-v2 FAST-DRAIN batch internals (OF + collectable) — score-free mirrors of the vacate batches ══
-    (defun XI_1|DrainOrtoFungibleUnwindBatch:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_1|DrainOrtoFungibleUnwindBatch:object{IgnisCollectorV2.OutputCumulator}
         (
             pool-id:string
             dpof-id:string
@@ -2850,14 +2850,14 @@
             \ Nested lets force the tracker side effects before the unn==0 gate is read."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
                 (L:integer (length owner-ids))
                 (unique-beneficiaries:[string] (UC_VacateUniqueBeneficiaries beneficiary-ids))
             )
             (let
                 (
-                    (tracker-ocs:[object{IgnisCollectorV1.OutputCumulator}]
+                    (tracker-ocs:[object{IgnisCollectorV2.OutputCumulator}]
                         (map
                             (lambda (idx:integer)
                                 (ref-AQP::XE_OrtoFungiblePoolTracker
@@ -2870,7 +2870,7 @@
                 )
                 (let
                     (
-                        (settle-ocs:[object{IgnisCollectorV1.OutputCumulator}]
+                        (settle-ocs:[object{IgnisCollectorV2.OutputCumulator}]
                             (map
                                 (lambda (beneficiary-id:string)
                                     (if (= (ref-AQP::UR_AQP|UserUnn pool-id beneficiary-id) 0)
@@ -2887,7 +2887,7 @@
             )
         )
     )
-    (defun XI_DrainOrtoFungibleBatch:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_DrainOrtoFungibleBatch:object{IgnisCollectorV2.OutputCumulator}
         (
             pool-id:string
             dpof-id:string
@@ -2901,13 +2901,13 @@
         (require-capability (P|VCT|RECIPE))
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 ;;
-                (bulk-oc:object{IgnisCollectorV1.OutputCumulator}
+                (bulk-oc:object{IgnisCollectorV2.OutputCumulator}
                     (ref-DPOF::C_BulkTransfer dpof-id nonces-array AQP|SC_NAME owner-ids true)
                 )
-                (unwind-oc:object{IgnisCollectorV1.OutputCumulator}
+                (unwind-oc:object{IgnisCollectorV2.OutputCumulator}
                     (XI_1|DrainOrtoFungibleUnwindBatch
                         pool-id dpof-id owner-ids beneficiary-ids nonces-array nonce-amounts-array)
                 )
@@ -2915,7 +2915,7 @@
             (ref-IGNIS::UDC_ConcatenateOutputCumulators [bulk-oc unwind-oc] [])
         )
     )
-    (defun XI_1|DrainCollectableUnwindBatch:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_1|DrainCollectableUnwindBatch:object{IgnisCollectorV2.OutputCumulator}
         (
             pool-id:string
             collectable-id:string
@@ -2933,15 +2933,15 @@
             \ tracker side effects before the unn==0 gate."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                 (L:integer (length owner-ids))
                 (unique-beneficiaries:[string] (UC_VacateUniqueBeneficiaries beneficiary-ids))
             )
             (let
                 (
-                    (tracker-ocs:[object{IgnisCollectorV1.OutputCumulator}]
+                    (tracker-ocs:[object{IgnisCollectorV2.OutputCumulator}]
                         (map
                             (lambda (idx:integer)
                                 (let
@@ -2970,7 +2970,7 @@
                 )
                 (let
                     (
-                        (settle-ocs:[object{IgnisCollectorV1.OutputCumulator}]
+                        (settle-ocs:[object{IgnisCollectorV2.OutputCumulator}]
                             (map
                                 (lambda (beneficiary-id:string)
                                     (if (= (ref-AQP::UR_AQP|UserUnn pool-id beneficiary-id) 0)
@@ -2987,7 +2987,7 @@
             )
         )
     )
-    (defun XI_DrainCollectableBatch:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_DrainCollectableBatch:object{IgnisCollectorV2.OutputCumulator}
         (
             pool-id:string
             collectable-id:string
@@ -3003,14 +3003,14 @@
         (require-capability (P|VCT|RECIPE))
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DPDC-T:module{DpdcTransferV1} DPDC-T)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
                 ;;
-                (bulk-oc:object{IgnisCollectorV1.OutputCumulator}
+                (bulk-oc:object{IgnisCollectorV2.OutputCumulator}
                     (ref-DPDC-T::C_BulkTransfer
                         collectable-id son nonces-array amounts-array AQP|SC_NAME owner-ids true)
                 )
-                (unwind-oc:object{IgnisCollectorV1.OutputCumulator}
+                (unwind-oc:object{IgnisCollectorV2.OutputCumulator}
                     (XI_1|DrainCollectableUnwindBatch
                         pool-id collectable-id son owner-ids beneficiary-ids nonces-array amounts-array)
                 )
@@ -3029,7 +3029,7 @@
     ;;   XB_Vacate{TF,OF,SF,NF}  — external per-kind wrappers over the same XI cores.
     ;;   (multistep defpact + OF/SF/NF dispatch land in later steps of this phase.)
     ;; ═══════════════════════════════════════════════════════════════════════════
-    (defun XB_VacateTrueFungible:object{IgnisCollectorV1.OutputCumulator}
+    (defun XB_VacateTrueFungible:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string)
         @doc "Vacate rehaul — external per-kind TF vacate for a whole pool (both internal + external, hence XB). \
             \ 2-phase: SCAN every live DPTF lane (URH_VacateTrueFungiblePoolLegs: native + F| frozen) → CONSUME \
@@ -3040,7 +3040,7 @@
             (XI_VacateTrueFungiblePoolLegs pool-id (URH_VacateTrueFungiblePoolLegs pool-id))
         )
     )
-    (defun XB_VacateOrtoFungible:object{IgnisCollectorV1.OutputCumulator}
+    (defun XB_VacateOrtoFungible:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string dpof-id:string)
         @doc "Vacate rehaul — external per-kind OF vacate for ONE OF asset of a pool (both internal + external). \
             \ 2-phase: SCAN that asset's legs (URHC_VacateNonceOwnerRowsRaw) → CONSUME (XI_VacateOrtoFungibleFromLegs). \
@@ -3051,7 +3051,7 @@
                 (URHC_VacateNonceOwnerRowsRaw pool-id dpof-id VACATE-KIND-OF))
         )
     )
-    (defun XB_VacateSemiFungible:object{IgnisCollectorV1.OutputCumulator}
+    (defun XB_VacateSemiFungible:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string dpsf-id:string)
         @doc "Vacate rehaul — external per-kind DPSF (semi-fungible collection) vacate for ONE collectable of a \
             \ pool. 2-phase: SCAN (URHC_VacateNonceOwnerRowsRaw, DPSF) → CONSUME (XI_VacateCollectablesFromLegs, \
@@ -3062,7 +3062,7 @@
                 (URHC_VacateNonceOwnerRowsRaw pool-id dpsf-id VACATE-KIND-DPSF))
         )
     )
-    (defun XB_VacateNonFungible:object{IgnisCollectorV1.OutputCumulator}
+    (defun XB_VacateNonFungible:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string dpnf-id:string)
         @doc "Vacate rehaul — external per-kind DPNF (non-fungible collection) vacate for ONE collectable of a \
             \ pool. 2-phase: SCAN (URHC_VacateNonceOwnerRowsRaw, DPNF) → CONSUME (XI_VacateCollectablesFromLegs, \
@@ -3075,7 +3075,7 @@
     )
     ;;{5.7}  User [A/C]
     ;; [C]   client
-    (defun CC_FullVacate:object{IgnisCollectorV1.OutputCumulator}
+    (defun CC_FullVacate:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string)
         @doc "HEAVY (R3 CC_) AGNOSTIC single-tx full vacate: input is JUST the pool-id. Clean 2-PHASE per aqp-class: \
             \ PHASE 1 URH_Vacate*PoolLegs SCANs the pool's legs (grouped by asset-lane); PHASE 2 XI_Vacate*PoolLegs \
@@ -3086,8 +3086,8 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
                 (c:integer (ref-AQP::UR_AQP|PoolAqpClass pool-id))
                 (son:bool (= c 3))
             )
@@ -3118,7 +3118,7 @@
     ;; only when URC_PoolFullyVacated, i.e. the genuinely-last batch, which then unfreezes). Serial block execution
     ;; makes this conflict-free; split beneficiaries drain incrementally.
     ;; ═══════════════════════════════════════════════════════════════════════════
-    (defun CCp_BatchVacateOrtoFungible:object{IgnisCollectorV1.OutputCumulator}
+    (defun CCp_BatchVacateOrtoFungible:object{IgnisCollectorV2.OutputCumulator}
         (
             pool-id:string
             dpof-id:string
@@ -3144,7 +3144,7 @@
                 (XI_EnsureVacateBegun pool-id)
                 (let
                     (
-                        (oc:object{IgnisCollectorV1.OutputCumulator}
+                        (oc:object{IgnisCollectorV2.OutputCumulator}
                             (XI_VacateOrtoFungibleBatch
                                 pool-id dpof-id owner-ids beneficiary-ids nonces-array of-amounts
                             )
@@ -3156,7 +3156,7 @@
             )
         )
     )
-    (defun CCp_BatchVacateTrueFungible:object{IgnisCollectorV1.OutputCumulator}
+    (defun CCp_BatchVacateTrueFungible:object{IgnisCollectorV2.OutputCumulator}
         (
             pool-id:string
             dptf-id:string
@@ -3174,7 +3174,7 @@
             (XI_EnsureVacateBegun pool-id)
             (let
                 (
-                    (oc:object{IgnisCollectorV1.OutputCumulator}
+                    (oc:object{IgnisCollectorV2.OutputCumulator}
                         (XI_VacateTrueFungibleFromLegs pool-id dptf-id
                             (UC_TfLegsFromParallelArrays owner-ids beneficiary-ids amounts))
                     )
@@ -3184,7 +3184,7 @@
             )
         )
     )
-    (defun CCp_BatchDrainTrueFungible:object{IgnisCollectorV1.OutputCumulator}
+    (defun CCp_BatchDrainTrueFungible:object{IgnisCollectorV2.OutputCumulator}
         (
             pool-id:string
             dptf-id:string
@@ -3207,7 +3207,7 @@
                 (UC_TfLegsFromParallelArrays owner-ids beneficiary-ids amounts))
         )
     )
-    (defun CCp_BatchDrainOrtoFungible:object{IgnisCollectorV1.OutputCumulator}
+    (defun CCp_BatchDrainOrtoFungible:object{IgnisCollectorV2.OutputCumulator}
         (
             pool-id:string
             dpof-id:string
@@ -3237,7 +3237,7 @@
             )
         )
     )
-    (defun CCp_BatchDrainCollectable:object{IgnisCollectorV1.OutputCumulator}
+    (defun CCp_BatchDrainCollectable:object{IgnisCollectorV2.OutputCumulator}
         (
             pool-id:string
             collectable-id:string
@@ -3263,7 +3263,7 @@
                 pool-id collectable-id son owner-ids beneficiary-ids nonces-array amounts-array)
         )
     )
-    (defun CCp_BatchVacateCollectables:object{IgnisCollectorV1.OutputCumulator}
+    (defun CCp_BatchVacateCollectables:object{IgnisCollectorV2.OutputCumulator}
         (
             pool-id:string
             collectable-id:string
@@ -3285,7 +3285,7 @@
             (XI_EnsureVacateBegun pool-id)
             (let
                 (
-                    (oc:object{IgnisCollectorV1.OutputCumulator}
+                    (oc:object{IgnisCollectorV2.OutputCumulator}
                         (XI_VacateCollectableBatch
                             pool-id collectable-id son owner-ids beneficiary-ids nonces-array amounts-array
                         )
@@ -3297,7 +3297,7 @@
             )
         )
     )
-    (defun C_AbortVacate:object{IgnisCollectorV1.OutputCumulator} (pool-id:string)
+    (defun C_AbortVacate:object{IgnisCollectorV2.OutputCumulator} (pool-id:string)
         @doc "Clear vacate-in-progress; stake stays disabled (ops: C_EnablePoolStake)."
         (P|UEV_IMC)
         (with-capability (VCT|C>ABORT-VACATE-POOL pool-id)
@@ -3305,7 +3305,7 @@
             (UC_EmptyOc)
         )
     )
-    (defun C_FinalizeVacate:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_FinalizeVacate:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string)
         @doc "Vacate-v2 FINALIZE (the nuke) — commit-forward terminal step of a v2 campaign. After the pool has \
             \ been fully drained (nns==0) via Cp_BatchDrain*, bulk-zero every employed score's aggregates + bump \
@@ -3316,9 +3316,9 @@
         (with-capability (VCT|C>FINALIZE-VACATE pool-id)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 )
                 ;; 1] nuke each employed score: bulk-zero aggregates + bump vacate-generation (≤7 point writes)
                 (map

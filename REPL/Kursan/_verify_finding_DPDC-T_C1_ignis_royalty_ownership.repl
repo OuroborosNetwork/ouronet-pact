@@ -25,9 +25,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-DALOS:module{OuronetDalosV1} DALOS)
-        (ref-DPDC:module{DpdcV1} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
         (id:string "DHOC-98c486052a51")
     )
     (print (format "virtual gas toggle = {}" [(ref-DALOS::UR_VirtualToggle)]))
@@ -49,8 +49,8 @@
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (let
     (
-        (ref-DALOS:module{OuronetDalosV1} DALOS)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
         (id:string "DHOC-98c486052a51")
     )
     (print (format "LEGIT RESULT (patron=Emma, Emma signs, Emma pays her own real royalty) = {}"
@@ -73,7 +73,7 @@
 (env-sigs [{ "key": "PK_Lumy", "caps": [] }])
 (let
     (
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
         (id:string "DHOC-98c486052a51")
     )
     ;; LUMY signs, but names EMMA as patron — LUMY does not own/control Emma's account.

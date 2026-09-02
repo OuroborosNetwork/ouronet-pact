@@ -1,4 +1,4 @@
-(interface UtilityVstV1
+(interface UtilityVstV2
     @doc "Exported Utility Functions for the VST Module"
 
     ;;<=========================================================================>
@@ -64,7 +64,7 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements UtilityVstV1)
+    (implements UtilityVstV2)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -77,7 +77,7 @@
     (defcap GOV|U|VST_ADMIN ()
         (let
             (
-                (ref-U|CT:module{OuronetConstantsV1} U|CT)
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
                 (g:guard (ref-U|CT::CT_GOV|UTILS))
             )
             (enforce-guard g)
@@ -112,7 +112,7 @@
     ;;{5.1}  Construct [CT/UDC]
     ;;
     ;;
-    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
     ;;{5.2}  Compute [UC]
     ;;
     ;;
@@ -190,7 +190,7 @@
     (defun UCx_SpecialID:[string] (dptf-name:string dptf-ticker:string special-name:string special-prefix:string)
         (let
             (
-                (ref-U|CT:module{OuronetConstantsV1} U|CT)
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
                 (max-name:integer (ref-U|CT::CT_MAX_TOKEN_NAME_LENGTH))
                 (max-ticker:integer (ref-U|CT::CT_MAX_TOKEN_TICKER_LENGTH))
                 (caron:string "^")

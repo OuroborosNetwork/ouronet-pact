@@ -1,4 +1,4 @@
-(interface OuronetGasStationV1
+(interface OuronetGasStationV2
     @doc "Exported Ouronet Gas Station Functions"
 
     ;;<=========================================================================>
@@ -65,7 +65,7 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements OuronetGasStationV1)
+    (implements OuronetGasStationV2)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -78,7 +78,7 @@
     (defcap GOV|U|ST_ADMIN ()
         (let
             (
-                (ref-U|CT:module{OuronetConstantsV1} U|CT)
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
                 (g:guard (ref-U|CT::CT_GOV|UTILS))
             )
             (enforce-guard g)

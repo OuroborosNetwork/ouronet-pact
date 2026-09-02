@@ -2,8 +2,8 @@
 ;; Deploy: load THIS file — interface(s) + module ship together.
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
 ;;
-(interface AutostakeV2
-    @doc "AutostakeV2 — same surface as AutostakeV1 with UtilityAtsV2.Awo typing for unstake objects."
+(interface AutostakeV3
+    @doc "AutostakeV3 — same surface as AutostakeV1 with UtilityAtsV3.Awo typing for unstake objects."
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -62,9 +62,9 @@
     ;;
     ;;  [UDC]
     ;;
-    (defun UDC_MakeUnstakeObject:object{UtilityAtsV2.Awo} (atspair:string tm:time))
-    (defun UDC_MakeZeroUnstakeObject:object{UtilityAtsV2.Awo} (atspair:string))
-    (defun UDC_MakeNegativeUnstakeObject:object{UtilityAtsV2.Awo} (atspair:string))
+    (defun UDC_MakeUnstakeObject:object{UtilityAtsV3.Awo} (atspair:string tm:time))
+    (defun UDC_MakeZeroUnstakeObject:object{UtilityAtsV3.Awo} (atspair:string))
+    (defun UDC_MakeNegativeUnstakeObject:object{UtilityAtsV3.Awo} (atspair:string))
     (defun UDC_ComposePrimaryRewardToken:object{ATS|RewardTokenSchemaV2} (token:string nfr:bool))
     (defun UDC_RT:object{ATS|RewardTokenSchemaV2} (a:string b:bool c:decimal d:decimal e:decimal))
     (defun UDC_CoilData:object{CoilData} (a:decimal b:decimal c:decimal d:decimal e:decimal f:decimal g:string))
@@ -128,8 +128,8 @@
     (defun UR_ToggleDirectRecovery:bool (atspair:string))
     ;;
     (defun UR_RtPrecisions:[integer] (atspair:string))
-    (defun UR_P0:[object{UtilityAtsV2.Awo}] (atspair:string account:string))
-    (defun UR_P1-7:object{UtilityAtsV2.Awo} (atspair:string account:string position:integer))
+    (defun UR_P0:[object{UtilityAtsV3.Awo}] (atspair:string account:string))
+    (defun UR_P1-7:object{UtilityAtsV3.Awo} (atspair:string account:string position:integer))
     ;;
     ;;  [URC]
     ;;
@@ -143,7 +143,7 @@
     (defun URC_RewardTokenPosition:integer (atspair:string reward-token:string))
         ;;
     (defun URC_AccountUnbondingBalance:decimal (atspair:string account:string reward-token:string))
-    (defun URC_CullValue:[decimal] (atspair:string input:object{UtilityAtsV2.Awo}))
+    (defun URC_CullValue:[decimal] (atspair:string input:object{UtilityAtsV3.Awo}))
     (defun URC_WhichPosition:integer (atspair:string c-rbt-amount:decimal account:string))
     (defun URC_ColdRecoveryFee (atspair:string c-rbt-amount:decimal input-position:integer))
     (defun URC_CullColdRecoveryTime:time (atspair:string account:string))
@@ -158,26 +158,26 @@
     (defun URH_ExistingAutostakePairs:[string] (ats:string))
     (defun URH_OwnedAutostakePairs:[string] (account:string))
     ;;  [URCi] cost readers — single source per op (the C_ bills them, INFO previews from them)
-    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator} (entity-id:string))
-    (defun URCi_RotateOwnership:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
-    (defun URCi_Control:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
-    (defun URCi_UpdateRoyalty:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
-    (defun URCi_UpdateSyphon:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
-    (defun URCi_SetHibernationFees:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
-    (defun URCi_ControlColdRecoveryFees:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
-    (defun URCi_SetColdRecoveryDuration:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
-    (defun URCi_ToggleElite:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
-    (defun URCi_ToggleUpgrade:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
-    (defun URCi_SwitchColdRecovery:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
-    (defun URCi_ControlHotRecoveryFee:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
-    (defun URCi_SetHotRecoveryFees:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
-    (defun URCi_SwitchHotRecovery:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
-    (defun URCi_SetDirectRecoveryFee:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
-    (defun URCi_SwitchDirectRecovery:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
-    (defun URCi_AddSecondary:object{IgnisCollectorV1.OutputCumulator} ())
-    (defun URCi_AddHotRBT:object{IgnisCollectorV1.OutputCumulator} (atspair:string hot-rbt:string))
-    (defun URCi_SetColdRecoveryFees:object{IgnisCollectorV1.OutputCumulator} ())
-    (defun URCi_ToggleParameterLock:object{IgnisCollectorV1.OutputCumulator} (atspair:string toggle:bool))
+    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV2.OutputCumulator} (entity-id:string))
+    (defun URCi_RotateOwnership:object{IgnisCollectorV2.OutputCumulator} (atspair:string))
+    (defun URCi_Control:object{IgnisCollectorV2.OutputCumulator} (atspair:string))
+    (defun URCi_UpdateRoyalty:object{IgnisCollectorV2.OutputCumulator} (atspair:string))
+    (defun URCi_UpdateSyphon:object{IgnisCollectorV2.OutputCumulator} (atspair:string))
+    (defun URCi_SetHibernationFees:object{IgnisCollectorV2.OutputCumulator} (atspair:string))
+    (defun URCi_ControlColdRecoveryFees:object{IgnisCollectorV2.OutputCumulator} (atspair:string))
+    (defun URCi_SetColdRecoveryDuration:object{IgnisCollectorV2.OutputCumulator} (atspair:string))
+    (defun URCi_ToggleElite:object{IgnisCollectorV2.OutputCumulator} (atspair:string))
+    (defun URCi_ToggleUpgrade:object{IgnisCollectorV2.OutputCumulator} (atspair:string))
+    (defun URCi_SwitchColdRecovery:object{IgnisCollectorV2.OutputCumulator} (atspair:string))
+    (defun URCi_ControlHotRecoveryFee:object{IgnisCollectorV2.OutputCumulator} (atspair:string))
+    (defun URCi_SetHotRecoveryFees:object{IgnisCollectorV2.OutputCumulator} (atspair:string))
+    (defun URCi_SwitchHotRecovery:object{IgnisCollectorV2.OutputCumulator} (atspair:string))
+    (defun URCi_SetDirectRecoveryFee:object{IgnisCollectorV2.OutputCumulator} (atspair:string))
+    (defun URCi_SwitchDirectRecovery:object{IgnisCollectorV2.OutputCumulator} (atspair:string))
+    (defun URCi_AddSecondary:object{IgnisCollectorV2.OutputCumulator} ())
+    (defun URCi_AddHotRBT:object{IgnisCollectorV2.OutputCumulator} (atspair:string hot-rbt:string))
+    (defun URCi_SetColdRecoveryFees:object{IgnisCollectorV2.OutputCumulator} ())
+    (defun URCi_ToggleParameterLock:object{IgnisCollectorV2.OutputCumulator} (atspair:string toggle:bool))
     (defun URCi_IssueGas:decimal (token-count:integer))
     (defun URCi_IssueStoa:decimal (token-count:integer))
     (defun URCi_UpgradeBranding:decimal (months:integer))
@@ -209,23 +209,23 @@
     (defun XE_UpdateRUR (atspair:string reward-token:string rur:integer direction:bool amount:decimal))
     (defun XE_SpawnAutostakeAccount (atspair:string account:string))
     (defun XE_ReshapeUnstakeAccount (atspair:string account:string rp:integer))
-    (defun XE_UpP0 (atspair:string account:string obj:[object{UtilityAtsV2.Awo}]))
-    (defun XE_UpP1 (atspair:string account:string obj:object{UtilityAtsV2.Awo}))
-    (defun XE_UpP2 (atspair:string account:string obj:object{UtilityAtsV2.Awo}))
-    (defun XE_UpP3 (atspair:string account:string obj:object{UtilityAtsV2.Awo}))
-    (defun XE_UpP4 (atspair:string account:string obj:object{UtilityAtsV2.Awo}))
-    (defun XE_UpP5 (atspair:string account:string obj:object{UtilityAtsV2.Awo}))
-    (defun XE_UpP6 (atspair:string account:string obj:object{UtilityAtsV2.Awo}))
-    (defun XE_UpP7 (atspair:string account:string obj:object{UtilityAtsV2.Awo}))
+    (defun XE_UpP0 (atspair:string account:string obj:[object{UtilityAtsV3.Awo}]))
+    (defun XE_UpP1 (atspair:string account:string obj:object{UtilityAtsV3.Awo}))
+    (defun XE_UpP2 (atspair:string account:string obj:object{UtilityAtsV3.Awo}))
+    (defun XE_UpP3 (atspair:string account:string obj:object{UtilityAtsV3.Awo}))
+    (defun XE_UpP4 (atspair:string account:string obj:object{UtilityAtsV3.Awo}))
+    (defun XE_UpP5 (atspair:string account:string obj:object{UtilityAtsV3.Awo}))
+    (defun XE_UpP6 (atspair:string account:string obj:object{UtilityAtsV3.Awo}))
+    (defun XE_UpP7 (atspair:string account:string obj:object{UtilityAtsV3.Awo}))
     ;;{5.7}  User [A/C]
     ;;
     ;;  [C]
     ;;
-    (defun C_HOT-RBT|UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator} (entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}]))
+    (defun C_HOT-RBT|UpdatePendingBranding:object{IgnisCollectorV2.OutputCumulator} (entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
     (defun C_HOT-RBT|UpgradeBranding (patron:string entity-id:string months:integer))
-    (defun C_HOT-RBT|Repurpose:object{IgnisCollectorV1.OutputCumulator} (hot-rbt:string nonce:integer repurpose-to:string))
+    (defun C_HOT-RBT|Repurpose:object{IgnisCollectorV2.OutputCumulator} (hot-rbt:string nonce:integer repurpose-to:string))
         ;;
-    (defun C_Issue:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_Issue:object{IgnisCollectorV2.OutputCumulator}
         (
             patron:string
             account:string
@@ -237,33 +237,33 @@
             rbt-nfr:[bool]
         )
     )
-    (defun C_RotateOwnership:object{IgnisCollectorV1.OutputCumulator} (atspair:string new-owner:string))
-    (defun C_Control:object{IgnisCollectorV1.OutputCumulator} (atspair:string can-change-owner:bool syphoning:bool hibernate:bool))
-    (defun C_UpdateRoyalty:object{IgnisCollectorV1.OutputCumulator} (atspair:string royalty:decimal))
-    (defun C_UpdateSyphon:object{IgnisCollectorV1.OutputCumulator} (atspair:string syphon:decimal))
-    (defun C_SetHibernationFees:object{IgnisCollectorV1.OutputCumulator} (atspair:string peak:decimal decay:decimal))
+    (defun C_RotateOwnership:object{IgnisCollectorV2.OutputCumulator} (atspair:string new-owner:string))
+    (defun C_Control:object{IgnisCollectorV2.OutputCumulator} (atspair:string can-change-owner:bool syphoning:bool hibernate:bool))
+    (defun C_UpdateRoyalty:object{IgnisCollectorV2.OutputCumulator} (atspair:string royalty:decimal))
+    (defun C_UpdateSyphon:object{IgnisCollectorV2.OutputCumulator} (atspair:string syphon:decimal))
+    (defun C_SetHibernationFees:object{IgnisCollectorV2.OutputCumulator} (atspair:string peak:decimal decay:decimal))
         ;;
-    (defun C_ToggleParameterLock:object{IgnisCollectorV1.OutputCumulator} (patron:string atspair:string toggle:bool))
-    (defun C_AddSecondary:object{IgnisCollectorV1.OutputCumulator} (atspair:string reward-token:string rt-nfr:bool))
+    (defun C_ToggleParameterLock:object{IgnisCollectorV2.OutputCumulator} (patron:string atspair:string toggle:bool))
+    (defun C_AddSecondary:object{IgnisCollectorV2.OutputCumulator} (atspair:string reward-token:string rt-nfr:bool))
         ;;
-    (defun C_ControlColdRecoveryFees:object{IgnisCollectorV1.OutputCumulator} (atspair:string c-nfr:bool c-fr:bool))
-    (defun C_SetColdRecoveryFees:object{IgnisCollectorV1.OutputCumulator} (atspair:string fee-positions:integer fee-thresholds:[decimal] fee-array:[[decimal]]))
-    (defun C_SetColdRecoveryDuration:object{IgnisCollectorV1.OutputCumulator} (atspair:string soft-or-hard:bool base:integer growth:integer))
-    (defun C_ToggleElite:object{IgnisCollectorV1.OutputCumulator} (atspair:string toggle:bool))
-    (defun C_ToggleUpgrade:object{IgnisCollectorV1.OutputCumulator} (atspair:string toggle:bool))
-    (defun C_SwitchColdRecovery:object{IgnisCollectorV1.OutputCumulator} (atspair:string toggle:bool))
+    (defun C_ControlColdRecoveryFees:object{IgnisCollectorV2.OutputCumulator} (atspair:string c-nfr:bool c-fr:bool))
+    (defun C_SetColdRecoveryFees:object{IgnisCollectorV2.OutputCumulator} (atspair:string fee-positions:integer fee-thresholds:[decimal] fee-array:[[decimal]]))
+    (defun C_SetColdRecoveryDuration:object{IgnisCollectorV2.OutputCumulator} (atspair:string soft-or-hard:bool base:integer growth:integer))
+    (defun C_ToggleElite:object{IgnisCollectorV2.OutputCumulator} (atspair:string toggle:bool))
+    (defun C_ToggleUpgrade:object{IgnisCollectorV2.OutputCumulator} (atspair:string toggle:bool))
+    (defun C_SwitchColdRecovery:object{IgnisCollectorV2.OutputCumulator} (atspair:string toggle:bool))
         ;;
-    (defun C_AddHotRBT:object{IgnisCollectorV1.OutputCumulator} (atspair:string hot-rbt:string))
-    (defun C_ControlHotRecoveryFee:object{IgnisCollectorV1.OutputCumulator} (atspair:string h-fr:bool))
-    (defun C_SetHotRecoveryFees:object{IgnisCollectorV1.OutputCumulator} (atspair:string promile:decimal decay:integer))
-    (defun C_SwitchHotRecovery:object{IgnisCollectorV1.OutputCumulator} (atspair:string toggle:bool))
+    (defun C_AddHotRBT:object{IgnisCollectorV2.OutputCumulator} (atspair:string hot-rbt:string))
+    (defun C_ControlHotRecoveryFee:object{IgnisCollectorV2.OutputCumulator} (atspair:string h-fr:bool))
+    (defun C_SetHotRecoveryFees:object{IgnisCollectorV2.OutputCumulator} (atspair:string promile:decimal decay:integer))
+    (defun C_SwitchHotRecovery:object{IgnisCollectorV2.OutputCumulator} (atspair:string toggle:bool))
         ;;
-    (defun C_SetDirectRecoveryFee:object{IgnisCollectorV1.OutputCumulator} (atspair:string promile:decimal))
-    (defun C_SwitchDirectRecovery:object{IgnisCollectorV1.OutputCumulator} (atspair:string toggle:bool))
+    (defun C_SetDirectRecoveryFee:object{IgnisCollectorV2.OutputCumulator} (atspair:string promile:decimal))
+    (defun C_SwitchDirectRecovery:object{IgnisCollectorV2.OutputCumulator} (atspair:string toggle:bool))
 
 )
 ;;
-(interface AutostakeComputerV1
+(interface AutostakeComputerV2
 
 
     ;;<=========================================================================>
@@ -336,13 +336,13 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements OuronetPolicyV1)
-    (implements BrandingUsagePrimaryV1)
-    (implements AutostakeV2)
+    (implements OuronetPolicyV2)
+    (implements BrandingUsagePrimaryV2)
+    (implements AutostakeV3)
     ;;
     ;; [AutostakeComputer]
     ;;
-    (implements AutostakeComputerV1)
+    (implements AutostakeComputerV2)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -364,9 +364,9 @@
         )
     )
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()         (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
-    (defun GOV|AutostakeKey ()      (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|AutostakeKey)))
-    (defun GOV|ATS|SC_NAME ()       (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|ATS|SC_NAME)))
+    (defun GOV|Demiurgoi ()         (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|AutostakeKey ()      (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|AutostakeKey)))
+    (defun GOV|ATS|SC_NAME ()       (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|ATS|SC_NAME)))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
@@ -375,8 +375,8 @@
     ;;{P2}  schemas
     ;;{P3}  tables
     ;;
-    (deftable P|T:{OuronetPolicyV1.P|S})
-    (deftable P|MT:{OuronetPolicyV1.P|MS})
+    (deftable P|T:{OuronetPolicyV2.P|S})
+    (deftable P|MT:{OuronetPolicyV2.P|MS})
     ;;{P4}  capabilities
     (defcap P|ATS|CALLER ()
         true
@@ -386,7 +386,7 @@
         (compose-capability (SECURE))
     )
     ;;{P5}  functions
-    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -396,7 +396,7 @@
     (defun P|UEV_IMC ()
         (let
             (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
+                (ref-U|G:module{OuronetGuardsV2} U|G)
             )
             (ref-U|G::UEV_Any (P|UR_IMP))
         )
@@ -412,7 +412,7 @@
         (with-capability (GOV|ATS_ADMIN)
             (let
                 (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
                     (dg:guard (create-capability-guard (SECURE)))
                 )
                 (with-default-read P|MT P|I
@@ -428,10 +428,10 @@
     (defun P|A_Define ()
         (let
             (
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (ref-P|BRD:module{OuronetPolicyV1} BRD)
-                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
-                (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
+                (ref-P|DALOS:module{OuronetPolicyV2} DALOS)
+                (ref-P|BRD:module{OuronetPolicyV2} BRD)
+                (ref-P|DPTF:module{OuronetPolicyV2} DPTF)
+                (ref-P|DPOF:module{OuronetPolicyV2} DPOF)
                 (mg:guard (create-capability-guard (P|ATS|CALLER)))
             )
             (ref-P|DALOS::P|A_AddIMP mg)
@@ -475,7 +475,7 @@
         parameter-lock:bool
         unlocks:integer
         ;;
-        reward-tokens:[object{AutostakeV2.ATS|RewardTokenSchemaV2}]
+        reward-tokens:[object{AutostakeV3.ATS|RewardTokenSchemaV2}]
         ;;
         ;;Cold Recovery
         c-rbt:string
@@ -503,14 +503,14 @@
     )
     (defschema ATS|BalanceSchemaV2
         @doc "Key = <ATS-Pair> + BAR + <account>"
-        P0:[object{UtilityAtsV2.Awo}]
-        P1:object{UtilityAtsV2.Awo}
-        P2:object{UtilityAtsV2.Awo}
-        P3:object{UtilityAtsV2.Awo}
-        P4:object{UtilityAtsV2.Awo}
-        P5:object{UtilityAtsV2.Awo}
-        P6:object{UtilityAtsV2.Awo}
-        P7:object{UtilityAtsV2.Awo}
+        P0:[object{UtilityAtsV3.Awo}]
+        P1:object{UtilityAtsV3.Awo}
+        P2:object{UtilityAtsV3.Awo}
+        P3:object{UtilityAtsV3.Awo}
+        P4:object{UtilityAtsV3.Awo}
+        P5:object{UtilityAtsV3.Awo}
+        P6:object{UtilityAtsV3.Awo}
+        P7:object{UtilityAtsV3.Awo}
         ;;
         ;;ForSelect, store Key Make-up
         id:string
@@ -536,7 +536,7 @@
     (defcap AHU ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ah:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
             )
             (ref-DALOS::CAP_EnforceAccountOwnership ah)
@@ -548,7 +548,7 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (ref-DALOS::UEV_SenderWithReceiver (UR_OwnerKonto atspair) new-owner)
             (ref-DALOS::UEV_EnforceAccountExists new-owner)
@@ -561,7 +561,7 @@
         (if hibernate
             (let
                 (
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                     (c-rbt:string (UR_ColdRewardBearingToken atspair))
                 )
                 (ref-DPTF::UEV_Hibernation c-rbt true)
@@ -591,7 +591,7 @@
         @event
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
             )
             (UEV_ParameterLockState atspair false)
             (ref-U|ATS::UEV_HibernationFees peak decay)
@@ -613,7 +613,7 @@
         @event
         (let
             (
-                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
             )
             (UEV_ParameterLockState atspair false)
             (ref-U|DALOS::UEV_Fee royalty)
@@ -662,7 +662,7 @@
         @event
         (let
             (
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 (atspair:string (ref-DPOF::UR_RewardBearingToken hot-rbt))
             )
             (CAP_Owner atspair)
@@ -682,7 +682,7 @@
     (defcap ATS|C>HOT-RBT-BRD (entity-id:string)
         (let
             (
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 (atspair:string (ref-DPOF::UR_RewardBearingToken entity-id))
             )
             (CAP_Owner atspair)
@@ -701,10 +701,10 @@
         @event
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-                (ref-U|INT:module{OuronetIntegersV1} U|INT)
-                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-U|INT:module{OuronetIntegersV2} U|INT)
+                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (l1:integer (length atspair))
                 (l2:integer (length index-decimals))
                 (l3:integer (length reward-token))
@@ -760,7 +760,7 @@
         @event
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (n:integer (length (UR_RewardTokens atspair)))
             )
             (enforce (<= n 6) "An ATS Pair can have a maximum of 7 RTs")
@@ -787,8 +787,8 @@
         @event
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (c-rbt-prec:integer (ref-DPTF::UR_Decimals (UR_ColdRewardBearingToken atspair)))
             )
             (ref-U|ATS::UEV_CRF|Positions fee-positions)
@@ -801,7 +801,7 @@
         @event
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
             )
             (ref-U|ATS::UEV_ColdDurationParameters soft-or-hard base growth)
             (compose-capability (ATS|C>CONTROL-COLD-RECOVERY atspair))
@@ -833,7 +833,7 @@
         @event
         (let
             (
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 (hot-rbt-supply:decimal (ref-DPOF::UR_Supply hot-rbt))
                 (hot-rbt-ftc:string (take 2 hot-rbt))
             )
@@ -864,7 +864,7 @@
         @event
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
             )
             (ref-U|ATS::UEV_Fee promile)
             (ref-U|ATS::UEV_Decay decay)
@@ -880,7 +880,7 @@
         @event
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
             )
             (ref-U|ATS::UEV_Fee promile)
             (compose-capability (ATS|S>CONTROL-RECOVERY atspair))
@@ -903,24 +903,24 @@
     ;;<=========================================================================>
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
-    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
-    (defun CT_EmptyCumulator ()     (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_EmptyOutputCumulatorV2)))
+    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_EmptyCumulator ()     (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_EmptyOutputCumulatorV2)))
     ;;
     ;;
-    (defun UDC_MakeUnstakeObject:object{UtilityAtsV2.Awo} (atspair:string tm:time)
+    (defun UDC_MakeUnstakeObject:object{UtilityAtsV3.Awo} (atspair:string tm:time)
         {"reward-tokens"    : (make-list (length (UR_RewardTokenList atspair)) 0.0)
         ,"cull-time"        : tm}
     )
-    (defun UDC_MakeZeroUnstakeObject:object{UtilityAtsV2.Awo} (atspair:string)
+    (defun UDC_MakeZeroUnstakeObject:object{UtilityAtsV3.Awo} (atspair:string)
         (UDC_MakeUnstakeObject atspair NULLTIME)
     )
-    (defun UDC_MakeNegativeUnstakeObject:object{UtilityAtsV2.Awo} (atspair:string)
+    (defun UDC_MakeNegativeUnstakeObject:object{UtilityAtsV3.Awo} (atspair:string)
         (UDC_MakeUnstakeObject atspair ANTITIME)
     )
-    (defun UDC_ComposePrimaryRewardToken:object{AutostakeV2.ATS|RewardTokenSchemaV2} (token:string nfr:bool)
+    (defun UDC_ComposePrimaryRewardToken:object{AutostakeV3.ATS|RewardTokenSchemaV2} (token:string nfr:bool)
         (UDC_RT token nfr 0.0 0.0 0.0)
     )
-    (defun UDC_RT:object{AutostakeV2.ATS|RewardTokenSchemaV2} 
+    (defun UDC_RT:object{AutostakeV3.ATS|RewardTokenSchemaV2} 
         (a:string b:bool c:decimal d:decimal e:decimal)
         (enforce 
             (fold (and) true [(>= c 0.0)(>= d 0.0)(>= e 0.0)]) 
@@ -934,10 +934,10 @@
     )
     (defun UDCx_Balance:object{ATS|BalanceSchemaV2}
         (
-            a:[object{UtilityAtsV2.Awo}] b:object{UtilityAtsV2.Awo} 
-            c:object{UtilityAtsV2.Awo} d:object{UtilityAtsV2.Awo}
-            e:object{UtilityAtsV2.Awo} f:object{UtilityAtsV2.Awo}
-            g:object{UtilityAtsV2.Awo} h:object{UtilityAtsV2.Awo}
+            a:[object{UtilityAtsV3.Awo}] b:object{UtilityAtsV3.Awo} 
+            c:object{UtilityAtsV3.Awo} d:object{UtilityAtsV3.Awo}
+            e:object{UtilityAtsV3.Awo} f:object{UtilityAtsV3.Awo}
+            g:object{UtilityAtsV3.Awo} h:object{UtilityAtsV3.Awo}
             i:string j:string
         )
         {"P0"       : a
@@ -951,7 +951,7 @@
         ,"id"       : i
         ,"account"  : j}
     )
-    (defun UDC_CoilData:object{AutostakeV2.CoilData}
+    (defun UDC_CoilData:object{AutostakeV3.CoilData}
         (a:decimal b:decimal c:decimal d:decimal e:decimal f:decimal g:string)
         {"primal-input-amount"  : a
         ,"first-input-amount"   : b
@@ -961,19 +961,19 @@
         ,"rbt-amount"           : f
         ,"rbt-id"               : g}
     )
-    (defun UDC_CanCoil:object{AutostakeComputerV1.CanCoil} (a:bool b:[string])
+    (defun UDC_CanCoil:object{AutostakeComputerV2.CanCoil} (a:bool b:[string])
         {"can-coil"     : a
         ,"where-coil"   : b}
     )
-    (defun UDC_CanConstrict:object{AutostakeComputerV1.CanConstrict} (a:bool b:[string])
+    (defun UDC_CanConstrict:object{AutostakeComputerV2.CanConstrict} (a:bool b:[string])
         {"can-constrict"    : a
         ,"where-constrict"  : b}
     )
-    (defun UDC_CanCurl:object{AutostakeComputerV1.CanCurl} (a:bool b:[[string]])
+    (defun UDC_CanCurl:object{AutostakeComputerV2.CanCurl} (a:bool b:[[string]])
         {"can-curl"     : a
         ,"where-curl"   : b}
     )
-    (defun UDC_CanBrumate:object{AutostakeComputerV1.CanBrumate} (a:bool b:[[string]])
+    (defun UDC_CanBrumate:object{AutostakeComputerV2.CanBrumate} (a:bool b:[[string]])
         {"can-brumate"      : a
         ,"where-brumate"   : b}
     )
@@ -983,12 +983,12 @@
     )
     ;;
     ;;
-    (defun UC_CanCoil:object{AutostakeComputerV1.CanCoil} (dptf:string)
+    (defun UC_CanCoil:object{AutostakeComputerV2.CanCoil} (dptf:string)
         @doc "Computes if a DPTF can be coiled, and outputs a <CanCoil> object. \
             \ This object also points the ats-pairs towards which the <dptf> can be coiled."
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (can-coil:bool (ref-DPTF::URC_IzRT dptf))
             )
             (if (not can-coil)
@@ -997,11 +997,11 @@
             )
         )
     )
-    (defun UC_CanConstrict:object{AutostakeComputerV1.CanConstrict} (dptf:string)
+    (defun UC_CanConstrict:object{AutostakeComputerV2.CanConstrict} (dptf:string)
         @doc "Like coil, but <where-constrict> lists only hibernating ATS pairs where <dptf> is RT."
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (can-constrict:bool (ref-DPTF::URC_IzRT dptf))
             )
             (if (not can-constrict)
@@ -1010,12 +1010,12 @@
             )
         )
     )
-    (defun UC_CanCurl:object{AutostakeComputerV1.CanCurl} (dptf:string)
+    (defun UC_CanCurl:object{AutostakeComputerV2.CanCurl} (dptf:string)
         @doc "Computes if a DPTF can be curled. <dptf> is a reward token in non-hibernating \
             \ ats-pair-1; that pair's cold RBT is a reward token in non-hibernating ats-pair-2."
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
             )
             (if (not (ref-DPTF::URC_IzRT dptf))
                 (UDC_CanCurl false [])
@@ -1028,11 +1028,11 @@
             )
         )
     )
-    (defun UC_CanBrumate:object{AutostakeComputerV1.CanBrumate} (dptf:string)
+    (defun UC_CanBrumate:object{AutostakeComputerV2.CanBrumate} (dptf:string)
         @doc "Like curl, but ats-pair-1 is non-hibernating and ats-pair-2 must be hibernating."
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
             )
             (if (not (ref-DPTF::URC_IzRT dptf))
                 (UDC_CanBrumate false [])
@@ -1052,7 +1052,7 @@
             \ only; false: hibernating ats2 only). Enforces ats1 != ats2."
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (pair1-candidates:[string] (UCx_RewardTokenPairsByHibernate dptf true))
             )
             (fold
@@ -1092,7 +1092,7 @@
             \ <non-hibernate> true keeps non-hibernating pairs only; false keeps hibernating only."
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
             )
             (UCx_FilterHibernatedAts (ref-DPTF::UR_RewardToken dptf) non-hibernate)
         )
@@ -1249,7 +1249,7 @@
         (at "unlocks" (read ATS|Pairs atspair ["unlocks"]))
     )
     ;;
-    (defun UR_RewardTokens:[object{AutostakeV2.ATS|RewardTokenSchemaV2}] (atspair:string)
+    (defun UR_RewardTokens:[object{AutostakeV3.ATS|RewardTokenSchemaV2}] (atspair:string)
         (let
             (
                 (temp:list (at "reward-tokens" (read ATS|Pairs atspair ["reward-tokens"])))
@@ -1261,11 +1261,11 @@
                 (let
                     (
                         (default-royalty:decimal 0.0)
-                        (ref-U|LST:module{StringProcessorV1} U|LST)
-                        (new-obj:[object{AutostakeV2.ATS|RewardTokenSchemaV2}]
+                        (ref-U|LST:module{StringProcessorV2} U|LST)
+                        (new-obj:[object{AutostakeV3.ATS|RewardTokenSchemaV2}]
                             (fold
                                 (lambda
-                                    (acc:[object{AutostakeV2.ATS|RewardTokenSchemaV2}] idx:integer)
+                                    (acc:[object{AutostakeV3.ATS|RewardTokenSchemaV2}] idx:integer)
                                     (ref-U|LST::UC_AppL acc
                                         (+
                                             (at idx temp)
@@ -1290,7 +1290,7 @@
     (defun UR_RewardTokenList:[string] (atspair:string)
         (fold
             (lambda
-                (acc:[string] item:object{AutostakeV2.ATS|RewardTokenSchemaV2})
+                (acc:[string] item:object{AutostakeV3.ATS|RewardTokenSchemaV2})
                 (+ acc [(at "token" item)])
             )
             []
@@ -1300,7 +1300,7 @@
     (defun UR_RewardTokenNFR:[bool] (atspair:string)
         (fold
             (lambda
-                (acc:[bool] item:object{AutostakeV2.ATS|RewardTokenSchemaV2})
+                (acc:[bool] item:object{AutostakeV3.ATS|RewardTokenSchemaV2})
                 (+ acc [(at "nfr" item)])
             )
             []
@@ -1314,13 +1314,13 @@
             \ <rur> = 3: <royalty>"
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-                (ref-U|INT:module{OuronetIntegersV1} U|INT)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-U|INT:module{OuronetIntegersV2} U|INT)
             )
             (ref-U|INT::UEV_PositionalVariable rur 3 "Invalid RUR Integer")
             (fold
                 (lambda
-                    (acc:[decimal] item:object{AutostakeV2.ATS|RewardTokenSchemaV2})
+                    (acc:[decimal] item:object{AutostakeV3.ATS|RewardTokenSchemaV2})
                     (ref-U|LST::UC_AppL acc
                         (cond
                             ((= rur 1) (at "resident" item))
@@ -1428,8 +1428,8 @@
     (defun UR_RtPrecisions:[integer] (atspair:string)
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
             )
             (fold
                 (lambda
@@ -1441,13 +1441,13 @@
             )
         )
     )
-    (defun UR_P0:[object{UtilityAtsV2.Awo}] (atspair:string account:string)
+    (defun UR_P0:[object{UtilityAtsV3.Awo}] (atspair:string account:string)
         (at "P0" (read ATS|Ledger (UC_AtspairAccount atspair account) ["P0"]))
     )
-    (defun UR_P1-7:object{UtilityAtsV2.Awo} (atspair:string account:string position:integer)
+    (defun UR_P1-7:object{UtilityAtsV3.Awo} (atspair:string account:string position:integer)
         (let
             (
-                (ref-U|INT:module{OuronetIntegersV1} U|INT)
+                (ref-U|INT:module{OuronetIntegersV2} U|INT)
                 (k:string (UC_AtspairAccount atspair account))
             )
             (ref-U|INT::UEV_PositionalVariable position 7 "Invalid Position Number")
@@ -1463,7 +1463,7 @@
             )
         )
     )
-    (defun UR_P-Seven:[object{UtilityAtsV2.Awo}]
+    (defun UR_P-Seven:[object{UtilityAtsV3.Awo}]
         (atspair:string account:string)
         (let
             (
@@ -1505,8 +1505,8 @@
             \ Also inludes the Hot-RBT amount"
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 (c-rbt:string (UR_ColdRewardBearingToken atspair))
                 (c-rbt-supply:decimal (ref-DPTF::UR_Supply c-rbt))
             )
@@ -1526,7 +1526,7 @@
         @doc "Computes the value in RBT of a given <rt> Token <rt-amount> for an <atspair>"
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (index:decimal (abs (URC_Index atspair)))
                 (c-rbt:string (UR_ColdRewardBearingToken atspair))
                 (p-rbt:integer (ref-DPTF::UR_Decimals c-rbt))
@@ -1542,7 +1542,7 @@
         @doc "Computes the amount of RT Tokens an <rbt-amount> of RBT would yield for an <atspair>"
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
                 (rbt-supply:decimal (URC_PairRBTSupply atspair))
                 (index:decimal (URC_Index atspair))
                 (resident-amounts:[decimal] (UR_RewardTokenRUR atspair 1))
@@ -1556,9 +1556,9 @@
         @doc "Computes the maximum amount of RTs that can be syphoned from the <atspair>"
         (let
             (
-                (ref-U|INT:module{OuronetIntegersV1} U|INT)
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-U|INT:module{OuronetIntegersV2} U|INT)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (index:decimal (URC_Index atspair))
                 (syphon:decimal (UR_Syphon atspair))
                 (resident-amounts:[decimal] (UR_RewardTokenRUR atspair 1))
@@ -1603,7 +1603,7 @@
         @doc "Computes the position of a RT in the <atspair> definition"
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
                 (reward-token-lst:[string] (UR_RewardTokenList atspair))
                 (iz-on-lst:bool (contains reward-token reward-token-lst))
             )
@@ -1617,7 +1617,7 @@
         (+
             (fold
                 (lambda
-                    (acc:decimal item:object{UtilityAtsV2.Awo})
+                    (acc:decimal item:object{UtilityAtsV3.Awo})
                     (+ acc (URCx_UnstakeObjectUnbondingValue atspair reward-token item))
                 )
                 0.0
@@ -1633,7 +1633,7 @@
             )
         )
     )
-    (defun URCx_UnstakeObjectUnbondingValue (atspair:string reward-token:string io:object{UtilityAtsV2.Awo})
+    (defun URCx_UnstakeObjectUnbondingValue (atspair:string reward-token:string io:object{UtilityAtsV3.Awo})
         (let
             (
                 (rtp:integer (URC_RewardTokenPosition atspair reward-token))
@@ -1646,13 +1646,13 @@
             )
         )
     )
-    (defun URC_CullValue:[decimal] (atspair:string input:object{UtilityAtsV2.Awo})
+    (defun URC_CullValue:[decimal] (atspair:string input:object{UtilityAtsV3.Awo})
         @doc "Computes the Cull value of an <input> unstake objected, given a specific <atspair> \
         \ Returns a list of decimal, the list having as many decimal as the <atspair> has reward tokens \
         \ Returns a list of 0.0 is nothing can be culled"
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
                 (rt-lst:[string] (UR_RewardTokenList atspair))
                 (rt-amounts:[decimal] (at "reward-tokens" input))
                 (l:integer (length rt-lst))
@@ -1679,11 +1679,11 @@
     (defun URCx_ElitePosition:integer (atspair:string c-rbt-amount:decimal account:string)
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-ELITE:module{EliteV1} ELITE)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-ELITE:module{EliteV2} ELITE)
                 (positions:integer (UR_ColdRecoveryPositions atspair))
                 (c-rbt:string (UR_ColdRewardBearingToken atspair))
                 (ea-id:string (ref-DALOS::UR_EliteAurynID))
@@ -1719,7 +1719,7 @@
     (defun URCx_NonElitePosition:integer (atspair:string account:string)
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
                 (positions:integer (UR_ColdRecoveryPositions atspair))
             )
             (if (= positions -1)
@@ -1751,17 +1751,17 @@
     (defun URCx_PosSt:integer (atspair:string account:string position:integer)
         (let
             (
-                (ref-U|INT:module{OuronetIntegersV1} U|INT)
-                (zero:object{UtilityAtsV2.Awo} 
+                (ref-U|INT:module{OuronetIntegersV2} U|INT)
+                (zero:object{UtilityAtsV3.Awo} 
                     ;;Opened
                     (UDC_MakeZeroUnstakeObject atspair)
                 )
-                (negative:object{UtilityAtsV2.Awo} 
+                (negative:object{UtilityAtsV3.Awo} 
                     ;;Closed
                     (UDC_MakeNegativeUnstakeObject atspair)
                 )
                 (elite:bool (UR_EliteMode atspair))
-                (hybrid:object{UtilityAtsV2.Awo}
+                (hybrid:object{UtilityAtsV3.Awo}
                     (if elite negative zero)
                 )
             )
@@ -1788,14 +1788,14 @@
             )
         )
     )
-    (defun URCx_PosObjSt:integer (atspair:string input-obj:object{UtilityAtsV2.Awo})
+    (defun URCx_PosObjSt:integer (atspair:string input-obj:object{UtilityAtsV3.Awo})
         @doc "Computes the state of an uncoil positional object, \
         \ to see if it the position it is on can be used for uncoiling \
         \ <-1> = closed; <0> = occupied; <1> = opened"
         (let
             (
-                (zero:object{UtilityAtsV2.Awo} (UDC_MakeZeroUnstakeObject atspair))
-                (negative:object{UtilityAtsV2.Awo} (UDC_MakeNegativeUnstakeObject atspair))
+                (zero:object{UtilityAtsV3.Awo} (UDC_MakeZeroUnstakeObject atspair))
+                (negative:object{UtilityAtsV3.Awo} (UDC_MakeNegativeUnstakeObject atspair))
             )
             (if (= input-obj zero)
                 1
@@ -1859,7 +1859,7 @@
         @doc "Computes the Cull Time for Cold Recovery for a given <atspair> and <account>"
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (major:integer (ref-DALOS::UR_Elite-Tier-Major account))
                 (minor:integer (ref-DALOS::UR_Elite-Tier-Minor account))
                 (position:integer
@@ -1883,22 +1883,22 @@
         )
     )
     ;;
-    (defun URC_RewardBearingTokenAmounts:object{AutostakeV2.CoilData}
+    (defun URC_RewardBearingTokenAmounts:object{AutostakeV3.CoilData}
         (ats:string rt:string amount:decimal)
         (URCx_RBT-Amount ats rt amount 1)
     )
-    (defun URC_RewardBearingTokenAmountsWithHibernation:object{AutostakeV2.CoilData}
+    (defun URC_RewardBearingTokenAmountsWithHibernation:object{AutostakeV3.CoilData}
         (ats:string rt:string amount:decimal hibernation-dayz:integer)
         (URCx_RBT-Amount ats rt amount hibernation-dayz)
     )
-    (defun URCx_RBT-Amount:object{AutostakeV2.CoilData} 
+    (defun URCx_RBT-Amount:object{AutostakeV3.CoilData} 
         (ats:string rt:string amount:decimal dayz:integer)
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-ATS:module{AutostakeV2} ATS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 ;;
                 (h:bool (ref-ATS::UR_Hibernate ats))
                 (royalty:decimal (ref-ATS::UR_Royalty ats))
@@ -1980,72 +1980,72 @@
     ;;
     ;;[URCi] cost readers — single cost source per op. The C_ returns/bills its URCi; Phase 1.2 INFO
     ;;  previews from the same reader. (HOT-RBT branding/Repurpose forward DPOF costs — no own URCi.)
-    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator} (entity-id:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_BrandingCumulator (UR_OwnerKonto entity-id) 5.0))
+    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV2.OutputCumulator} (entity-id:string)
+        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_BrandingCumulator (UR_OwnerKonto entity-id) 5.0))
     )
-    (defun URCi_RotateOwnership:object{IgnisCollectorV1.OutputCumulator} (atspair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto atspair)))
+    (defun URCi_RotateOwnership:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
+        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto atspair)))
     )
-    (defun URCi_Control:object{IgnisCollectorV1.OutputCumulator} (atspair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_BigCumulator (UR_OwnerKonto atspair)))
+    (defun URCi_Control:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
+        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_BigCumulator (UR_OwnerKonto atspair)))
     )
-    (defun URCi_UpdateRoyalty:object{IgnisCollectorV1.OutputCumulator} (atspair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_SmallCumulator (UR_OwnerKonto atspair)))
+    (defun URCi_UpdateRoyalty:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
+        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_SmallCumulator (UR_OwnerKonto atspair)))
     )
-    (defun URCi_UpdateSyphon:object{IgnisCollectorV1.OutputCumulator} (atspair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_SmallCumulator (UR_OwnerKonto atspair)))
+    (defun URCi_UpdateSyphon:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
+        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_SmallCumulator (UR_OwnerKonto atspair)))
     )
-    (defun URCi_SetHibernationFees:object{IgnisCollectorV1.OutputCumulator} (atspair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_SmallCumulator (UR_OwnerKonto atspair)))
+    (defun URCi_SetHibernationFees:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
+        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_SmallCumulator (UR_OwnerKonto atspair)))
     )
-    (defun URCi_ControlColdRecoveryFees:object{IgnisCollectorV1.OutputCumulator} (atspair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_MediumCumulator (UR_OwnerKonto atspair)))
+    (defun URCi_ControlColdRecoveryFees:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
+        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_MediumCumulator (UR_OwnerKonto atspair)))
     )
-    (defun URCi_SetColdRecoveryDuration:object{IgnisCollectorV1.OutputCumulator} (atspair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_SmallCumulator (UR_OwnerKonto atspair)))
+    (defun URCi_SetColdRecoveryDuration:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
+        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_SmallCumulator (UR_OwnerKonto atspair)))
     )
-    (defun URCi_ToggleElite:object{IgnisCollectorV1.OutputCumulator} (atspair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_SmallCumulator (UR_OwnerKonto atspair)))
+    (defun URCi_ToggleElite:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
+        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_SmallCumulator (UR_OwnerKonto atspair)))
     )
-    (defun URCi_ToggleUpgrade:object{IgnisCollectorV1.OutputCumulator} (atspair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_SmallCumulator (UR_OwnerKonto atspair)))
+    (defun URCi_ToggleUpgrade:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
+        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_SmallCumulator (UR_OwnerKonto atspair)))
     )
-    (defun URCi_SwitchColdRecovery:object{IgnisCollectorV1.OutputCumulator} (atspair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto atspair)))
+    (defun URCi_SwitchColdRecovery:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
+        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto atspair)))
     )
-    (defun URCi_ControlHotRecoveryFee:object{IgnisCollectorV1.OutputCumulator} (atspair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_MediumCumulator (UR_OwnerKonto atspair)))
+    (defun URCi_ControlHotRecoveryFee:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
+        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_MediumCumulator (UR_OwnerKonto atspair)))
     )
-    (defun URCi_SetHotRecoveryFees:object{IgnisCollectorV1.OutputCumulator} (atspair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto atspair)))
+    (defun URCi_SetHotRecoveryFees:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
+        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto atspair)))
     )
-    (defun URCi_SwitchHotRecovery:object{IgnisCollectorV1.OutputCumulator} (atspair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto atspair)))
+    (defun URCi_SwitchHotRecovery:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
+        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto atspair)))
     )
-    (defun URCi_SetDirectRecoveryFee:object{IgnisCollectorV1.OutputCumulator} (atspair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto atspair)))
+    (defun URCi_SetDirectRecoveryFee:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
+        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto atspair)))
     )
-    (defun URCi_SwitchDirectRecovery:object{IgnisCollectorV1.OutputCumulator} (atspair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto atspair)))
+    (defun URCi_SwitchDirectRecovery:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
+        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto atspair)))
     )
     ;;  Construct-with-price (pure): also reused for C_AddHotRBT's ico0 (identical token-issue construct).
-    (defun URCi_AddSecondary:object{IgnisCollectorV1.OutputCumulator} ()
+    (defun URCi_AddSecondary:object{IgnisCollectorV2.OutputCumulator} ()
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator (ref-DALOS::UR_UsagePrice "ignis|token-issue") ATS|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_AddHotRBT:object{IgnisCollectorV1.OutputCumulator} (atspair:string hot-rbt:string)
+    (defun URCi_AddHotRBT:object{IgnisCollectorV2.OutputCumulator} (atspair:string hot-rbt:string)
         @doc "Cost preview for C_AddHotRBT — pure re-derivation of its 3-leg concat: an \
             \ AddSecondary leg + a conditional hot-rbt RotateOwnership (only when the hot-rbt \
             \ is not already owned by ATS|SC_NAME) + the hot-rbt Control lock."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 (hot-rbt-owner:string (ref-DPOF::UR_Konto hot-rbt))
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators
@@ -2058,22 +2058,22 @@
             )
         )
     )
-    (defun URCi_SetColdRecoveryFees:object{IgnisCollectorV1.OutputCumulator} ()
+    (defun URCi_SetColdRecoveryFees:object{IgnisCollectorV2.OutputCumulator} ()
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator (* (ref-DALOS::UR_UsagePrice "ignis|biggest") 20.0) ATS|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     ;;  ToggleParameterLock: full cumulator re-derived from unlocks (read PRE-increment — see C_).
-    (defun URCi_ToggleParameterLock:object{IgnisCollectorV1.OutputCumulator} (atspair:string toggle:bool)
+    (defun URCi_ToggleParameterLock:object{IgnisCollectorV2.OutputCumulator} (atspair:string toggle:bool)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
                 (unlock-costs:[decimal] (if toggle [0.0 0.0] (ref-U|ATS::UC_UnlockPrice (UR_Unlocks atspair))))
                 (gas-costs:decimal (+ (ref-DALOS::UR_UsagePrice "ignis|small") (at 0 unlock-costs)))
                 (output:bool (> (at 1 unlock-costs) 0.0))
@@ -2083,19 +2083,19 @@
     )
     ;;  Issue/UpgradeBranding: :decimal price rails (cumulator output / write side-effect stays in the C_/XI).
     (defun URCi_IssueGas:decimal (token-count:integer)
-        (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (* (dec token-count) (ref-DALOS::UR_UsagePrice "ignis|ats-issue")))
+        (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (* (dec token-count) (ref-DALOS::UR_UsagePrice "ignis|ats-issue")))
     )
     (defun URCi_IssueStoa:decimal (token-count:integer)
-        (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (* (dec token-count) (ref-DALOS::UR_UsagePrice "ats")))
+        (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (* (dec token-count) (ref-DALOS::UR_UsagePrice "ats")))
     )
     (defun URCi_UpgradeBranding:decimal (months:integer)
-        (let ((ref-BRD:module{BrandingV1} BRD)) (ref-BRD::URCi_UpgradeBranding months))
+        (let ((ref-BRD:module{BrandingV2} BRD)) (ref-BRD::URCi_UpgradeBranding months))
     )
     ;;{5.4}  Validate [UEV/CAP]
     (defun UEV_id (atspair:string)
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
             )
             (ref-U|ATS::UEV_UniqueAtspair atspair)
             (with-default-read ATS|Pairs atspair
@@ -2130,7 +2130,7 @@
     (defun UEV_RewardTokenExistance (atspair:string reward-token:string existance:bool)
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (existance-check:bool (ref-DPTF::URC_IzRTg atspair reward-token))
             )
             (enforce 
@@ -2142,8 +2142,8 @@
     (defun UEV_RewardBearingTokenExistance (atspair:string reward-bearing-token:string existance:bool cold-or-hot:bool)
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 (existance-check:bool
                     (if cold-or-hot
                         (ref-DPTF::URC_IzRBTg atspair reward-bearing-token)
@@ -2197,8 +2197,8 @@
     (defun UEV_IssueData (atspair:string index-decimals:integer reward-token:string reward-bearing-token:string)
         (let
             (
-                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (rt-ftc:string (take 2 reward-token))
                 (rbt-ftc:string (take 2 reward-bearing-token))
             )
@@ -2222,7 +2222,7 @@
         @doc "Enforces Atspair Ownership"
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership (UR_OwnerKonto id))
         )
@@ -2241,9 +2241,9 @@
         )
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-                (ref-BRD:module{BrandingV1} BRD)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-BRD:module{BrandingV2} BRD)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
             )
             (fold
                 (lambda
@@ -2286,9 +2286,9 @@
         (require-capability (SECURE))
         (let
             (
-                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
+                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
                 (ats-sc:string ATS|SC_NAME)
                 (id:string (ref-U|DALOS::UDC_Makeid atspair))
             )
@@ -2389,7 +2389,7 @@
             [0.0 0.0]
             (let
                 (
-                    (ref-U|ATS:module{UtilityAtsV2} U|ATS)
+                    (ref-U|ATS:module{UtilityAtsV3} U|ATS)
                 )
                 (ref-U|ATS::UC_UnlockPrice (UR_Unlocks atspair))
             )
@@ -2409,7 +2409,7 @@
         (require-capability (ATS|C>ADD-REWARD-TOKEN atspair reward-token))
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
             )
             (with-read ATS|Pairs atspair
                 { "reward-tokens" := rt }
@@ -2439,7 +2439,7 @@
         (require-capability (ATS|C>SET_COLD-DURATION atspair soft-or-hard base growth))
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
             )
             (if soft-or-hard
                 (update ATS|Pairs atspair
@@ -2515,7 +2515,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
                 (rtp:integer (URC_RewardTokenPosition atspair reward-token))
             )
             (with-read ATS|Pairs atspair
@@ -2532,7 +2532,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
                 ;;
                 (rtp:integer (URC_RewardTokenPosition atspair reward-token))
                 (nfr:bool (at rtp (UR_RewardTokenNFR atspair)))
@@ -2548,7 +2548,7 @@
                         0.0
                     )
                 )
-                (new-rt-obj:object{AutostakeV2.ATS|RewardTokenSchemaV2}
+                (new-rt-obj:object{AutostakeV3.ATS|RewardTokenSchemaV2}
                     (cond
                         ((= rur 1) (UDC_RT reward-token nfr rur-amount unbonding royalty))
                         ((= rur 2) (UDC_RT reward-token nfr resident rur-amount royalty))
@@ -2569,8 +2569,8 @@
         (P|UEV_IMC)
         (let
             (
-                (zero:object{UtilityAtsV2.Awo} (UDC_MakeZeroUnstakeObject atspair))
-                (n:object{UtilityAtsV2.Awo} (UDC_MakeNegativeUnstakeObject atspair))
+                (zero:object{UtilityAtsV3.Awo} (UDC_MakeZeroUnstakeObject atspair))
+                (n:object{UtilityAtsV3.Awo} (UDC_MakeNegativeUnstakeObject atspair))
             )
             (with-default-read ATS|Ledger (UC_AtspairAccount atspair account)
                 (UDCx_Balance [zero] n n n n n n n atspair account)
@@ -2594,7 +2594,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
             )
             (with-read ATS|Ledger (UC_AtspairAccount atspair account)
                 {"P0" := p0, "P1" := p1, "P2" := p2, "P3" := p3, "P4" := p4, "P5" := p5, "P6" := p6, "P7" := p7, "id" := id, "account" := acc}
@@ -2615,49 +2615,49 @@
             )
         )
     )
-    (defun XE_UpP0 (atspair:string account:string obj:[object{UtilityAtsV2.Awo}])
+    (defun XE_UpP0 (atspair:string account:string obj:[object{UtilityAtsV3.Awo}])
         (P|UEV_IMC)
         (update ATS|Ledger (UC_AtspairAccount atspair account)
             { "P0" : obj}
         )
     )
-    (defun XE_UpP1 (atspair:string account:string obj:object{UtilityAtsV2.Awo})
+    (defun XE_UpP1 (atspair:string account:string obj:object{UtilityAtsV3.Awo})
         (P|UEV_IMC)
         (update ATS|Ledger (UC_AtspairAccount atspair account)
             { "P1"  : obj}
         )
     )
-    (defun XE_UpP2 (atspair:string account:string obj:object{UtilityAtsV2.Awo})
+    (defun XE_UpP2 (atspair:string account:string obj:object{UtilityAtsV3.Awo})
         (P|UEV_IMC)
         (update ATS|Ledger (UC_AtspairAccount atspair account)
             { "P2"  : obj}
         )
     )
-    (defun XE_UpP3 (atspair:string account:string obj:object{UtilityAtsV2.Awo})
+    (defun XE_UpP3 (atspair:string account:string obj:object{UtilityAtsV3.Awo})
         (P|UEV_IMC)
         (update ATS|Ledger (UC_AtspairAccount atspair account)
             { "P3"  : obj}
         )
     )
-    (defun XE_UpP4 (atspair:string account:string obj:object{UtilityAtsV2.Awo})
+    (defun XE_UpP4 (atspair:string account:string obj:object{UtilityAtsV3.Awo})
         (P|UEV_IMC)
         (update ATS|Ledger (UC_AtspairAccount atspair account)
             { "P4"  : obj}
         )
     )
-    (defun XE_UpP5 (atspair:string account:string obj:object{UtilityAtsV2.Awo})
+    (defun XE_UpP5 (atspair:string account:string obj:object{UtilityAtsV3.Awo})
         (P|UEV_IMC)
         (update ATS|Ledger (UC_AtspairAccount atspair account)
             { "P5"  : obj}
         )
     )
-    (defun XE_UpP6 (atspair:string account:string obj:object{UtilityAtsV2.Awo})
+    (defun XE_UpP6 (atspair:string account:string obj:object{UtilityAtsV3.Awo})
         (P|UEV_IMC)
         (update ATS|Ledger (UC_AtspairAccount atspair account)
             { "P6"  : obj}
         )
     )
-    (defun XE_UpP7 (atspair:string account:string obj:object{UtilityAtsV2.Awo})
+    (defun XE_UpP7 (atspair:string account:string obj:object{UtilityAtsV3.Awo})
         (P|UEV_IMC)
         (update ATS|Ledger (UC_AtspairAccount atspair account)
             { "P7"  : obj}
@@ -2689,13 +2689,13 @@
             {"id"       : id}
         )
     )
-    (defun C_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator}
-        (entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}])
+    (defun C_UpdatePendingBranding:object{IgnisCollectorV2.OutputCumulator}
+        (entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-BRD:module{BrandingV1} BRD)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-BRD:module{BrandingV2} BRD)
             )
             (with-capability (ATS|C>UPDATE-BRD entity-id)
                 (ref-BRD::XE_UpdatePendingBranding entity-id logo description website social)
@@ -2707,8 +2707,8 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-BRD:module{BrandingV1} BRD)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-BRD:module{BrandingV2} BRD)
                 (owner:string (UR_OwnerKonto entity-id))
             )
             ;;Perform the branding upgrade (side effect); bill the STOA via the URCi (== XE_UpgradeBranding's price)
@@ -2719,12 +2719,12 @@
         )
     )
     ;;Hot RBT Management
-    (defun C_HOT-RBT|UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator}
-        (entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}])
+    (defun C_HOT-RBT|UpdatePendingBranding:object{IgnisCollectorV2.OutputCumulator}
+        (entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
         (P|UEV_IMC)
         (let
             (
-                (ref-B|DPOF:module{BrandingUsagePrimaryV1} DPOF)
+                (ref-B|DPOF:module{BrandingUsagePrimaryV2} DPOF)
             )
             (with-capability (ATS|C>HOT-RBT-UPDATE-BRD entity-id)
                 (ref-B|DPOF::C_UpdatePendingBranding entity-id logo description website social)
@@ -2735,14 +2735,14 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-B|DPOF:module{BrandingUsagePrimaryV1} DPOF)
+                (ref-B|DPOF:module{BrandingUsagePrimaryV2} DPOF)
             )
             (with-capability (ATS|C>HOT-RBT-UPGRADE-BRD entity-id)
                 (ref-B|DPOF::C_UpgradeBranding patron entity-id months)
             )
         )
     )
-    (defun C_HOT-RBT|Repurpose:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_HOT-RBT|Repurpose:object{IgnisCollectorV2.OutputCumulator}
         (hot-rbt:string nonce:integer repurpose-to:string)
         @doc "Fix (audit finding #22L test-coverage sweep): UR_NonceMetaData was called \
             \ with zero arguments where it requires (id nonce) - an unconditional crash, \
@@ -2754,8 +2754,8 @@
         (with-capability (ATS|C>REPURPOSE-HOT-RBT hot-rbt)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                     ;;
                     (nonce-holder:string (ref-DPOF::UR_NonceHolder hot-rbt nonce))
                     (nonce-supply:decimal (ref-DPOF::UR_NonceSupply hot-rbt nonce))
@@ -2781,7 +2781,7 @@
         )
     )
     ;;
-    (defun C_Issue:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_Issue:object{IgnisCollectorV2.OutputCumulator}
         (
             patron:string
             account:string
@@ -2796,8 +2796,8 @@
         (with-capability (ATS|C>ISSUE account atspair index-decimals reward-token rt-nfr reward-bearing-token rbt-nfr)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DALOS:module{OuronetDalosV1} DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DALOS:module{OuronetDalosV2} DALOS)
                     (l1:integer (length atspair))
                     (gas-costs:decimal (URCi_IssueGas l1))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -2812,12 +2812,12 @@
             )
         )
     )
-    (defun C_RotateOwnership:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_RotateOwnership:object{IgnisCollectorV2.OutputCumulator}
         (atspair:string new-owner:string)
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
             (with-capability (ATS|S>ROTATE_OWNERSHIP atspair new-owner)
                 (XI_ChangeOwnership atspair new-owner)
@@ -2825,12 +2825,12 @@
             )
         )
     )
-    (defun C_Control:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_Control:object{IgnisCollectorV2.OutputCumulator}
         (atspair:string can-change-owner:bool syphoning:bool hibernate:bool)
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
             (with-capability (ATS|S>CONTROL atspair hibernate)
                 (XI_Control atspair can-change-owner syphoning hibernate)
@@ -2838,12 +2838,12 @@
             )
         )
     )
-    (defun C_UpdateRoyalty:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_UpdateRoyalty:object{IgnisCollectorV2.OutputCumulator}
         (atspair:string royalty:decimal)
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
             (with-capability (ATS|S>ROYALTY atspair royalty)
                 (XI_UpdateRoyalty atspair royalty)
@@ -2851,12 +2851,12 @@
             )
         )
     )
-    (defun C_UpdateSyphon:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_UpdateSyphon:object{IgnisCollectorV2.OutputCumulator}
         (atspair:string syphon:decimal)
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
             (with-capability (ATS|S>SYPHON atspair syphon)
                 (XI_UpdateSyphon atspair syphon)
@@ -2865,12 +2865,12 @@
         )
     )
     ;;
-    (defun C_SetHibernationFees:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_SetHibernationFees:object{IgnisCollectorV2.OutputCumulator}
         (atspair:string peak:decimal decay:decimal)
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
             (with-capability (ATS|S>SET-HIBERNATION-FEES atspair peak decay)
                 (XI_SetHibernationFees atspair peak decay)
@@ -2879,17 +2879,17 @@
         )
     )
     ;;
-    (defun C_ToggleParameterLock:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_ToggleParameterLock:object{IgnisCollectorV2.OutputCumulator}
         (patron:string atspair:string toggle:bool)
         (P|UEV_IMC)
         (with-capability (ATS|C>TOGGLE-PARAMETER-LOCK atspair toggle)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (toggle-costs:[decimal] (XI_ToggleParameterLock atspair toggle))
                     (stoa-costs:decimal (at 1 toggle-costs))
                     ;;URCi computed HERE — reads unlocks BEFORE XI_IncrementParameterUnlocks below mutates it
-                    (cumulator:object{IgnisCollectorV1.OutputCumulator} (URCi_ToggleParameterLock atspair toggle))
+                    (cumulator:object{IgnisCollectorV2.OutputCumulator} (URCi_ToggleParameterLock atspair toggle))
                 )
                 (if (> stoa-costs 0.0)
                     (do
@@ -2902,14 +2902,14 @@
             )
         )
     )
-    (defun C_AddSecondary:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_AddSecondary:object{IgnisCollectorV2.OutputCumulator}
         (atspair:string reward-token:string rt-nfr:bool)
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 ;;
                 (price:decimal (ref-DALOS::UR_UsagePrice "ignis|token-issue"))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -2923,12 +2923,12 @@
         )
     )
     ;;Cold Recovery Management
-    (defun C_ControlColdRecoveryFees:object{IgnisCollectorV1.OutputCumulator} 
+    (defun C_ControlColdRecoveryFees:object{IgnisCollectorV2.OutputCumulator} 
         (atspair:string c-nfr:bool c-fr:bool)
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
             (with-capability (ATS|C>CONTROL-COLD-FEES atspair)
                 (XI_ControlColdFees atspair c-nfr c-fr)
@@ -2936,13 +2936,13 @@
             )
         )
     )
-    (defun C_SetColdRecoveryFees:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_SetColdRecoveryFees:object{IgnisCollectorV2.OutputCumulator}
         (atspair:string fee-positions:integer fee-thresholds:[decimal] fee-array:[[decimal]])
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (gas-costs:decimal (* (ref-DALOS::UR_UsagePrice "ignis|biggest") 20.0))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
             )
@@ -2952,12 +2952,12 @@
             )
         )
     )
-    (defun C_SetColdRecoveryDuration:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_SetColdRecoveryDuration:object{IgnisCollectorV2.OutputCumulator}
         (atspair:string soft-or-hard:bool base:integer growth:integer)
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
             (with-capability (ATS|C>SET_COLD-DURATION atspair soft-or-hard base growth)
                 (XI_SetCRD atspair soft-or-hard base growth)
@@ -2965,12 +2965,12 @@
             )
         )
     )
-    (defun C_ToggleElite:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_ToggleElite:object{IgnisCollectorV2.OutputCumulator}
         (atspair:string toggle:bool)
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
             (with-capability (ATS|C>TOGGLE_ELITE atspair toggle)
                 (XI_ToggleElite atspair toggle)
@@ -2978,7 +2978,7 @@
             )
         )
     )
-    (defun C_ToggleUpgrade:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_ToggleUpgrade:object{IgnisCollectorV2.OutputCumulator}
         (atspair:string toggle:bool)
         @doc "Fix (audit finding #21L / L3): sets can-upgrade, which was previously \
             \ permanently true with no setter. Gates C_Control (can-change-owner/ \
@@ -2986,7 +2986,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
             (with-capability (ATS|C>TOGGLE_UPGRADE atspair toggle)
                 (XI_ToggleUpgrade atspair toggle)
@@ -2994,12 +2994,12 @@
             )
         )
     )
-    (defun C_SwitchColdRecovery:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_SwitchColdRecovery:object{IgnisCollectorV2.OutputCumulator}
         (atspair:string toggle:bool)
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
             (with-capability (ATS|S>SWITCH-COLD-RECOVERY atspair toggle)
                 (XI_SwitchColdRecovery atspair toggle)
@@ -3009,31 +3009,31 @@
     )
     ;;Hot Recovery Management
     ;;Must be modified to either add a 0 supply Orto Fungible or Issue One
-    (defun C_AddHotRBT:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_AddHotRBT:object{IgnisCollectorV2.OutputCumulator}
         (atspair:string hot-rbt:string)
         (P|UEV_IMC)
         (with-capability (ATS|C>ADD-HOT-RBT atspair hot-rbt)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DALOS:module{OuronetDalosV1} DALOS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                     ;;
                     (price:decimal (ref-DALOS::UR_UsagePrice "ignis|token-issue"))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                     (hot-rbt-owner:string (ref-DPOF::UR_Konto hot-rbt))
                     ;;
-                    (ico0:object{IgnisCollectorV1.OutputCumulator}
+                    (ico0:object{IgnisCollectorV2.OutputCumulator}
                         (URCi_AddSecondary)
                     )
-                    (ico1:object{IgnisCollectorV1.OutputCumulator}
+                    (ico1:object{IgnisCollectorV2.OutputCumulator}
                         ;;Change Ownership to ATS|SC_NAME if it is not
                         (if (!= hot-rbt-owner ATS|SC_NAME)
                             (ref-DPOF::C_RotateOwnership hot-rbt ATS|SC_NAME)
                             EOC
                         )
                     )
-                    (ico2:object{IgnisCollectorV1.OutputCumulator}
+                    (ico2:object{IgnisCollectorV2.OutputCumulator}
                         ;;Lock Properties   <cu>    <cco>   <casr>  <ctocr> <cf>    <cw>    <cp>    <sg> to
                         ;;                  <false> <false> <false> <false> <true>  <true>  <false> <false>
                         (ref-DPOF::C_Control hot-rbt false false false false true true false false)
@@ -3046,12 +3046,12 @@
             ) 
         )
     )
-    (defun C_ControlHotRecoveryFee:object{IgnisCollectorV1.OutputCumulator} 
+    (defun C_ControlHotRecoveryFee:object{IgnisCollectorV2.OutputCumulator} 
         (atspair:string h-fr:bool)
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
             (with-capability (ATS|C>CONTROL-HOT-FEE atspair)
                 (XI_ControlHotFee atspair h-fr)
@@ -3059,12 +3059,12 @@
             )
         )
     )
-    (defun C_SetHotRecoveryFees:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_SetHotRecoveryFees:object{IgnisCollectorV2.OutputCumulator}
         (atspair:string promile:decimal decay:integer)
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
             (with-capability (ATS|C>SET_HOT_FEES atspair promile decay)
                 (XI_SetHotFees atspair promile decay)
@@ -3072,12 +3072,12 @@
             )
         )
     )
-    (defun C_SwitchHotRecovery:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_SwitchHotRecovery:object{IgnisCollectorV2.OutputCumulator}
         (atspair:string toggle:bool)
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
             (with-capability (ATS|S>SWITCH-HOT-RECOVERY atspair toggle)
                 (XI_SwitchHotRecovery atspair toggle)
@@ -3086,12 +3086,12 @@
         )
     )
     ;;Direct Recovery Management
-    (defun C_SetDirectRecoveryFee:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_SetDirectRecoveryFee:object{IgnisCollectorV2.OutputCumulator}
         (atspair:string promile:decimal)
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
             (with-capability (ATS|C>SET_DIRECT_FEE atspair promile)
                 (XI_SetDirectFee atspair promile)
@@ -3099,12 +3099,12 @@
             )
         )
     )
-    (defun C_SwitchDirectRecovery:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_SwitchDirectRecovery:object{IgnisCollectorV2.OutputCumulator}
         (atspair:string toggle:bool)
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
             (with-capability (ATS|S>SWITCH-DIRECT-RECOVERY atspair toggle)
                 (XI_SwitchDirectRecovery atspair toggle)

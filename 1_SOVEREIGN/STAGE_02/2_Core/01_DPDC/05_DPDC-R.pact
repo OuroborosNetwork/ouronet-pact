@@ -1,7 +1,7 @@
 ;; Deploy: load THIS file — interface(s) + module ship together.
 ;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact
 ;;
-(interface DpdcRolesV1
+(interface DpdcRolesV2
     @doc "Exposes Collectables Role Functions"
 
     ;;<=========================================================================>
@@ -41,17 +41,17 @@
     ;;
     ;;  [URCi]
     ;;
-    (defun URCi_ToggleAddQuantityRole:object{IgnisCollectorV1.OutputCumulator} (id:string))
-    (defun URCi_ToggleFreezeAccount:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
-    (defun URCi_ToggleExemptionRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
-    (defun URCi_ToggleBurnRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
-    (defun URCi_ToggleUpdateRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
-    (defun URCi_ToggleModifyCreatorRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
-    (defun URCi_ToggleModifyRoyaltiesRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
-    (defun URCi_ToggleTransferRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
-    (defun URCi_MoveCreateRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
-    (defun URCi_MoveRecreateRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
-    (defun URCi_MoveSetUriRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
+    (defun URCi_ToggleAddQuantityRole:object{IgnisCollectorV2.OutputCumulator} (id:string))
+    (defun URCi_ToggleFreezeAccount:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool))
+    (defun URCi_ToggleExemptionRole:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool))
+    (defun URCi_ToggleBurnRole:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool))
+    (defun URCi_ToggleUpdateRole:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool))
+    (defun URCi_ToggleModifyCreatorRole:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool))
+    (defun URCi_ToggleModifyRoyaltiesRole:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool))
+    (defun URCi_ToggleTransferRole:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool))
+    (defun URCi_MoveCreateRole:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool))
+    (defun URCi_MoveRecreateRole:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool))
+    (defun URCi_MoveSetUriRole:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool))
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
@@ -59,17 +59,17 @@
     ;;
     ;;  [C]
     ;;
-    (defun C_ToggleAddQuantityRole:object{IgnisCollectorV1.OutputCumulator} (id:string account:string toggle:bool))
-    (defun C_ToggleFreezeAccount:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool account:string toggle:bool))
-    (defun C_ToggleExemptionRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool account:string toggle:bool))
-    (defun C_ToggleBurnRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool account:string toggle:bool))
-    (defun C_ToggleUpdateRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool account:string toggle:bool))
-    (defun C_ToggleModifyCreatorRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool account:string toggle:bool))
-    (defun C_ToggleModifyRoyaltiesRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool account:string toggle:bool))
-    (defun C_ToggleTransferRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool account:string toggle:bool))
-    (defun C_MoveCreateRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool new-account:string))
-    (defun C_MoveRecreateRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool new-account:string))
-    (defun C_MoveSetUriRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool new-account:string))
+    (defun C_ToggleAddQuantityRole:object{IgnisCollectorV2.OutputCumulator} (id:string account:string toggle:bool))
+    (defun C_ToggleFreezeAccount:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool account:string toggle:bool))
+    (defun C_ToggleExemptionRole:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool account:string toggle:bool))
+    (defun C_ToggleBurnRole:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool account:string toggle:bool))
+    (defun C_ToggleUpdateRole:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool account:string toggle:bool))
+    (defun C_ToggleModifyCreatorRole:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool account:string toggle:bool))
+    (defun C_ToggleModifyRoyaltiesRole:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool account:string toggle:bool))
+    (defun C_ToggleTransferRole:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool account:string toggle:bool))
+    (defun C_MoveCreateRole:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool new-account:string))
+    (defun C_MoveRecreateRole:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool new-account:string))
+    (defun C_MoveSetUriRole:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool new-account:string))
 
 )
 ;;
@@ -81,8 +81,8 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements OuronetPolicyV1)
-    (implements DpdcRolesV1)
+    (implements OuronetPolicyV2)
+    (implements DpdcRolesV2)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -95,7 +95,7 @@
     (defcap GOV ()                          (compose-capability (GOV|DPDC-R_ADMIN)))
     (defcap GOV|DPDC-R_ADMIN ()             (enforce-guard GOV|MD_DPDC-R))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
@@ -104,8 +104,8 @@
     ;;{P2}  schemas
     ;;{P3}  tables
     ;;
-    (deftable P|T:{OuronetPolicyV1.P|S})
-    (deftable P|MT:{OuronetPolicyV1.P|MS})
+    (deftable P|T:{OuronetPolicyV2.P|S})
+    (deftable P|MT:{OuronetPolicyV2.P|MS})
     ;;{P4}  capabilities
     (defcap P|DPDC-R|CALLER ()
         true
@@ -115,7 +115,7 @@
         (compose-capability (SECURE))
     )
     ;;{P5}  functions
-    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -125,7 +125,7 @@
     (defun P|UEV_IMC ()
         (let
             (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
+                (ref-U|G:module{OuronetGuardsV2} U|G)
             )
             (ref-U|G::UEV_Any (P|UR_IMP))
         )
@@ -141,7 +141,7 @@
         (with-capability (GOV|DPDC-R_ADMIN)
             (let
                 (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
                     (dg:guard (create-capability-guard (SECURE)))
                 )
                 (with-default-read P|MT P|I
@@ -157,7 +157,7 @@
     (defun P|A_Define ()
         (let
             (
-                (ref-P|DPDC:module{OuronetPolicyV1} DPDC)
+                (ref-P|DPDC:module{OuronetPolicyV2} DPDC)
                 (mg:guard (create-capability-guard (P|DPDC-R|CALLER)))
             )
             (ref-P|DPDC::P|A_AddIMP mg)
@@ -184,7 +184,7 @@
         @event
         (let
             (
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-DPDC::UEV_ToggleSpecialRole id true toggle)
             (ref-DPDC::UEV_AccountAddQuantityState id account (not toggle))
@@ -196,7 +196,7 @@
         @event
         (let
             (
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-DPDC:module{DpdcV2} DPDC)
             )
             ;; DPDC Audit #13H: <can-freeze> gates new freezes only — unfreeze is a release valve and
             ;; must stay available even after <can-freeze> has been renounced, or an already-frozen
@@ -214,8 +214,8 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DPDC:module{DpdcV2} DPDC)
                 (type:bool (ref-DALOS::UR_AccountType account))
             )
             (enforce type "Only Smart Ouronet Accounts can get this role")
@@ -228,7 +228,7 @@
         @event
         (let
             (
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-DPDC::UEV_ToggleSpecialRole id son toggle)
             (ref-DPDC::UEV_AccountBurnState id son account (not toggle))
@@ -240,7 +240,7 @@
         @event
         (let
             (
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-DPDC::UEV_ToggleSpecialRole id son toggle)
             (ref-DPDC::UEV_AccountUpdateState id son account (not toggle))
@@ -252,7 +252,7 @@
         @event
         (let
             (
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-DPDC::UEV_ToggleSpecialRole id son toggle)
             (ref-DPDC::UEV_AccountModifyCreatorState id son account (not toggle))
@@ -264,7 +264,7 @@
         @event
         (let
             (
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-DPDC::UEV_ToggleSpecialRole id son toggle)
             (ref-DPDC::UEV_AccountModifyRoyaltiesState id son account (not toggle))
@@ -276,7 +276,7 @@
         @event
         (let
             (
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-DPDC::UEV_ToggleSpecialRole id son toggle)
             (ref-DPDC::UEV_AccountTransferState id son account (not toggle))
@@ -289,7 +289,7 @@
         @event
         (let
             (
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-DPDC::UEV_CanAddSpecialRoleON id son)
             (ref-DPDC::UEV_AccountCreateState id son old-account true)
@@ -302,7 +302,7 @@
         @event
         (let
             (
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-DPDC::UEV_CanAddSpecialRoleON id son)
             (ref-DPDC::UEV_AccountRecreateState id son old-account true)
@@ -315,7 +315,7 @@
         @event
         (let
             (
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-DPDC::UEV_CanAddSpecialRoleON id son)
             (ref-DPDC::UEV_AccountSetUriState id son old-account true)
@@ -330,128 +330,128 @@
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
     ;;
-    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
     ;;{5.2}  Compute [UC]
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
     ;;
-    (defun URCi_ToggleAddQuantityRole:object{IgnisCollectorV1.OutputCumulator}
+    (defun URCi_ToggleAddQuantityRole:object{IgnisCollectorV2.OutputCumulator}
         (id:string)
         @doc "Cost preview for C_ToggleAddQuantityRole (Big tier on owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-IGNIS::UDC_BigCumulator (ref-DPDC::UR_OwnerKonto id true))
         )
     )
-    (defun URCi_ToggleFreezeAccount:object{IgnisCollectorV1.OutputCumulator}
+    (defun URCi_ToggleFreezeAccount:object{IgnisCollectorV2.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_ToggleFreezeAccount (Biggest tier on owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-IGNIS::UDC_BiggestCumulator (ref-DPDC::UR_OwnerKonto id son))
         )
     )
-    (defun URCi_ToggleExemptionRole:object{IgnisCollectorV1.OutputCumulator}
+    (defun URCi_ToggleExemptionRole:object{IgnisCollectorV2.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_ToggleExemptionRole (Biggest tier on owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-IGNIS::UDC_BiggestCumulator (ref-DPDC::UR_OwnerKonto id son))
         )
     )
-    (defun URCi_ToggleBurnRole:object{IgnisCollectorV1.OutputCumulator}
+    (defun URCi_ToggleBurnRole:object{IgnisCollectorV2.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_ToggleBurnRole (Big tier on owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-IGNIS::UDC_BigCumulator (ref-DPDC::UR_OwnerKonto id son))
         )
     )
-    (defun URCi_ToggleUpdateRole:object{IgnisCollectorV1.OutputCumulator}
+    (defun URCi_ToggleUpdateRole:object{IgnisCollectorV2.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_ToggleUpdateRole (Big tier on owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-IGNIS::UDC_BigCumulator (ref-DPDC::UR_OwnerKonto id son))
         )
     )
-    (defun URCi_ToggleModifyCreatorRole:object{IgnisCollectorV1.OutputCumulator}
+    (defun URCi_ToggleModifyCreatorRole:object{IgnisCollectorV2.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_ToggleModifyCreatorRole (Big tier on owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-IGNIS::UDC_BigCumulator (ref-DPDC::UR_OwnerKonto id son))
         )
     )
-    (defun URCi_ToggleModifyRoyaltiesRole:object{IgnisCollectorV1.OutputCumulator}
+    (defun URCi_ToggleModifyRoyaltiesRole:object{IgnisCollectorV2.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_ToggleModifyRoyaltiesRole (Big tier on owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-IGNIS::UDC_BigCumulator (ref-DPDC::UR_OwnerKonto id son))
         )
     )
-    (defun URCi_ToggleTransferRole:object{IgnisCollectorV1.OutputCumulator}
+    (defun URCi_ToggleTransferRole:object{IgnisCollectorV2.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_ToggleTransferRole (Big tier on owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-IGNIS::UDC_BigCumulator (ref-DPDC::UR_OwnerKonto id son))
         )
     )
-    (defun URCi_MoveCreateRole:object{IgnisCollectorV1.OutputCumulator}
+    (defun URCi_MoveCreateRole:object{IgnisCollectorV2.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_MoveCreateRole (Biggest tier on owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-IGNIS::UDC_BiggestCumulator (ref-DPDC::UR_OwnerKonto id son))
         )
     )
-    (defun URCi_MoveRecreateRole:object{IgnisCollectorV1.OutputCumulator}
+    (defun URCi_MoveRecreateRole:object{IgnisCollectorV2.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_MoveRecreateRole (Biggest tier on owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-IGNIS::UDC_BiggestCumulator (ref-DPDC::UR_OwnerKonto id son))
         )
     )
-    (defun URCi_MoveSetUriRole:object{IgnisCollectorV1.OutputCumulator}
+    (defun URCi_MoveSetUriRole:object{IgnisCollectorV2.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_MoveSetUriRole (Biggest tier on owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-IGNIS::UDC_BiggestCumulator (ref-DPDC::UR_OwnerKonto id son))
         )
@@ -463,7 +463,7 @@
         (require-capability (DPDC|C>TG_ADD-QTY-R id account toggle))
         (let
             (
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-DPDC::XE_U|Rnaq id account toggle)
             (ref-DPDC::XE_U|VerumRoles id true 3 toggle account)
@@ -473,7 +473,7 @@
         (require-capability (DPDC|C>FRZ-ACC id son account toggle))
         (let
             (
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-DPDC:module{DpdcV2} DPDC)
                 ;;
             )
             (ref-DPDC::XE_U|Frozen id son account toggle)
@@ -484,7 +484,7 @@
         (require-capability (DPDC|C>TG_EXEMPTION-R id son account toggle))
         (let
             (
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-DPDC:module{DpdcV2} DPDC)
                 ;;
             )
             (ref-DPDC::XE_U|Exemption id son account toggle)
@@ -495,7 +495,7 @@
         (require-capability (DPDC|C>TG_BURN-R id son account toggle))
         (let
             (
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-DPDC::XE_U|Burn id son account toggle)
             (ref-DPDC::XE_U|VerumRoles id son 4 toggle account)
@@ -505,7 +505,7 @@
         (require-capability (DPDC|C>TG_UPDATE-R id son account toggle))
         (let
             (
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-DPDC::XE_U|Update id son account toggle)
             (ref-DPDC::XE_U|VerumRoles id son 7 toggle account)
@@ -515,7 +515,7 @@
         (require-capability (DPDC|C>TG_MODIFY-CREATOR-R id son account toggle))
         (let
             (
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-DPDC::XE_U|ModifyCreator id son account toggle)
             (ref-DPDC::XE_U|VerumRoles id son 8 toggle account)
@@ -525,7 +525,7 @@
         (require-capability (DPDC|C>TG_MODIFY-ROYALTIES-R id son account toggle))
         (let
             (
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-DPDC::XE_U|ModifyRoyalties id son account toggle)
             (ref-DPDC::XE_U|VerumRoles id son 9 toggle account)
@@ -535,7 +535,7 @@
         (require-capability (DPDC|C>TG_TRANSFER-R id son account toggle))
         (let
             (
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-DPDC::XE_U|Transfer id son account toggle)
             (ref-DPDC::XE_U|VerumRoles id son 11 toggle account)
@@ -546,7 +546,7 @@
         (require-capability (DPDC|C>MV_CREATE-R id son old-account new-account))
         (let
             (
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-DPDC::XE_U|Create id son old-account false)
             (ref-DPDC::XE_U|VerumRoles id son 5 false old-account)
@@ -558,7 +558,7 @@
         (require-capability (DPDC|C>MV_RECREATE-R id son old-account new-account))
         (let
             (
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-DPDC::XE_U|Recreate id son old-account false)
             (ref-DPDC::XE_U|VerumRoles id son 6 false old-account)
@@ -570,7 +570,7 @@
         (require-capability (DPDC|C>MV_SET-URI-R id son old-account new-account))
         (let
             (
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-DPDC::XE_U|SetNewUri id son old-account false)
             (ref-DPDC::XE_U|VerumRoles id son 10 false old-account)
@@ -580,13 +580,13 @@
     )
     ;;{5.7}  User [A/C]
     ;;Role Toggling
-    (defun C_ToggleAddQuantityRole:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_ToggleAddQuantityRole:object{IgnisCollectorV2.OutputCumulator}
         (id:string account:string toggle:bool)
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DPDC:module{DpdcV2} DPDC)
             )
             (with-capability (DPDC|C>TG_ADD-QTY-R id account toggle)
                 (ref-DPDC::XE_DeployAccountWNE account id true)
@@ -595,13 +595,13 @@
             )
         )
     )
-    (defun C_ToggleFreezeAccount:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_ToggleFreezeAccount:object{IgnisCollectorV2.OutputCumulator}
         (id:string son:bool account:string toggle:bool)
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DPDC:module{DpdcV2} DPDC)
             )
             (with-capability (DPDC|C>FRZ-ACC id son account toggle)
                 (ref-DPDC::XE_DeployAccountWNE account id son)
@@ -610,13 +610,13 @@
             )
         )
     )
-    (defun C_ToggleExemptionRole:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_ToggleExemptionRole:object{IgnisCollectorV2.OutputCumulator}
         (id:string son:bool account:string toggle:bool)
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DPDC:module{DpdcV2} DPDC)
             )
             (with-capability (DPDC|C>TG_EXEMPTION-R id son account toggle)
                 (ref-DPDC::XE_DeployAccountWNE account id son)
@@ -625,13 +625,13 @@
             )
         )
     )
-    (defun C_ToggleBurnRole:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_ToggleBurnRole:object{IgnisCollectorV2.OutputCumulator}
         (id:string son:bool account:string toggle:bool)
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DPDC:module{DpdcV2} DPDC)
             )
             (with-capability (DPDC|C>TG_BURN-R id son account toggle)
                 (ref-DPDC::XE_DeployAccountWNE account id son)
@@ -640,13 +640,13 @@
             )
         )
     )
-    (defun C_ToggleUpdateRole:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_ToggleUpdateRole:object{IgnisCollectorV2.OutputCumulator}
         (id:string son:bool account:string toggle:bool)
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DPDC:module{DpdcV2} DPDC)
             )
             (with-capability (DPDC|C>TG_UPDATE-R id son account toggle)
                 (ref-DPDC::XE_DeployAccountWNE account id son)
@@ -655,13 +655,13 @@
             )
         )
     )
-    (defun C_ToggleModifyCreatorRole:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_ToggleModifyCreatorRole:object{IgnisCollectorV2.OutputCumulator}
         (id:string son:bool account:string toggle:bool)
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DPDC:module{DpdcV2} DPDC)
             )
             (with-capability (DPDC|C>TG_MODIFY-CREATOR-R id son account toggle)
                 (ref-DPDC::XE_DeployAccountWNE account id son)
@@ -670,13 +670,13 @@
             )
         )
     )
-    (defun C_ToggleModifyRoyaltiesRole:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_ToggleModifyRoyaltiesRole:object{IgnisCollectorV2.OutputCumulator}
         (id:string son:bool account:string toggle:bool)
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DPDC:module{DpdcV2} DPDC)
             )
             (with-capability (DPDC|C>TG_MODIFY-ROYALTIES-R id son account toggle)
                 (ref-DPDC::XE_DeployAccountWNE account id son)
@@ -685,13 +685,13 @@
             )
         )
     )
-    (defun C_ToggleTransferRole:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_ToggleTransferRole:object{IgnisCollectorV2.OutputCumulator}
         (id:string son:bool account:string toggle:bool)
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DPDC:module{DpdcV2} DPDC)
             )
             (with-capability (DPDC|C>TG_TRANSFER-R id son account toggle)
                 (ref-DPDC::XE_DeployAccountWNE account id son)
@@ -701,13 +701,13 @@
         )
     )
     ;;
-    (defun C_MoveCreateRole:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_MoveCreateRole:object{IgnisCollectorV2.OutputCumulator}
         (id:string son:bool new-account:string)
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DPDC:module{DpdcV2} DPDC)
                 (old-account:string (ref-DPDC::UR_Verum5 id son))
             )
             (with-capability (DPDC|C>MV_CREATE-R id son old-account new-account)
@@ -717,13 +717,13 @@
             )
         )
     )
-    (defun C_MoveRecreateRole:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_MoveRecreateRole:object{IgnisCollectorV2.OutputCumulator}
         (id:string son:bool new-account:string)
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DPDC:module{DpdcV2} DPDC)
                 (old-account:string (ref-DPDC::UR_Verum6 id son))
             )
             (with-capability (DPDC|C>MV_RECREATE-R id son old-account new-account)
@@ -733,13 +733,13 @@
             )
         )
     )
-    (defun C_MoveSetUriRole:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_MoveSetUriRole:object{IgnisCollectorV2.OutputCumulator}
         (id:string son:bool new-account:string)
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DPDC:module{DpdcV2} DPDC)
                 (old-account:string (ref-DPDC::UR_Verum10 id son))
             )
             (with-capability (DPDC|C>MV_SET-URI-R id son old-account new-account)

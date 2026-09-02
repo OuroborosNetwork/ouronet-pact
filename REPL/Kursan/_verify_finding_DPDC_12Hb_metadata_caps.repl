@@ -1,5 +1,5 @@
 ;; Verification for DPDC Audit finding #12Hb: name/description/meta-data/asset-type/uri-* fields on
-;; DpdcUdcV1.DPDC|NonceData had zero content validation anywhere (creation or update). Fix added five new
+;; DpdcUdcV2.DPDC|NonceData had zero content validation anywhere (creation or update). Fix added five new
 ;; shared validators (DPDC::UEV_Name/UEV_Description/UEV_MetaDataBag/UEV_AssetType/UEV_UriData), wired into
 ;; the single creation chokepoint (DPDC-C::UEV_NonceDataForCreation) and each DPDC-N per-field update defcap.
 ;; This script proves both the creation path and the per-field update path enforce every new cap.
@@ -17,7 +17,7 @@
 (namespace "ouronet-ns")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
         (owner:string KST.ANHD)
         (dpnf-price:decimal (ref-DALOS::UR_UsagePrice "dpnf"))
         (split-stoa:[decimal] (ref-DALOS::URC_SplitSTOAPrices owner dpnf-price))
@@ -43,9 +43,9 @@
 )
 (let
     (
-        (ref-DPDC:module{DpdcV1} DPDC)
-        (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
         (owner:string KST.ANHD)
         (creator:string KST.ANHD)
         (name256:string (fold (+) "" (make-list 256 "x")))

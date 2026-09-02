@@ -961,8 +961,8 @@
 (print "--- [TX 012 -- Make BS Set · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV1} DPDC)
-        (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
         (id:string "DHB-98c486052a51")

@@ -43,7 +43,7 @@
 (print "--- [TX-FRAG-001 · 01 · env-sigs (caps)] ---")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
         (owner:string KST.ANHD)
         (dpsf-price:decimal (ref-DALOS::UR_UsagePrice "dpsf"))
         (split-stoa:[decimal] (ref-DALOS::URC_SplitSTOAPrices owner dpsf-price))
@@ -71,11 +71,11 @@
 (print "--- [TX-FRAG-001 · 02 · issue + create + baseline reads] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV1} DPDC)
-        (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
         (owner:string KST.ANHD)
-        (nd:object{DpdcUdcV1.DPDC|NonceData}
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
             (ref-DPDC-UDC::UDC_NonceData
                 0.0 0.0 "TestFragNonce" "Test fragmentable nonce"
                 (ref-DPDC-UDC::UDC_NoMetaData)
@@ -127,13 +127,13 @@
 (print "--- [TX-FRAG-002 · 02 · owner enables fragmentation + transfers 100 units to LUMY] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV1} DPDC)
-        (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
         (owner:string KST.ANHD)
         (lumy:string KST.LUMY)
         (id:string "TFRG-98c486052a51")
-        (nd:object{DpdcUdcV1.DPDC|NonceData}
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
             (ref-DPDC-UDC::UDC_NonceData
                 0.0 0.0 "TestFragEnable" "Fragmentation enable marker"
                 (ref-DPDC-UDC::UDC_NoMetaData)
@@ -167,8 +167,8 @@
 (print "--- [TX-FRAG-002 · 04 · Make 100 native units (nonce 1) -> 100,000 fragment units (nonce -1)] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV1} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
         (lumy:string KST.LUMY)
         (id:string "TFRG-98c486052a51")
     )
@@ -196,8 +196,8 @@
 (print "--- [TX-FRAG-002 · 05 · Merge 100,000 fragment units -> 100 native units; full-circle conservation] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV1} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
         (lumy:string KST.LUMY)
         (id:string "TFRG-98c486052a51")
     )
@@ -240,8 +240,8 @@
 (print "--- [TX-FRAG-003 · 02 · re-fragment LUMY's 100 native units for the repurpose probe] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV1} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
         (lumy:string KST.LUMY)
         (id:string "TFRG-98c486052a51")
     )
@@ -268,8 +268,8 @@
 (print "--- [TX-FRAG-003 · 04 · non-owner repurpose rejected (DPDC-F|C>REPURPOSE only checks list-length; the real gate is CAP_Owner, downstream in the wipe-mode debit leg)] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV1} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
         (lumy:string KST.LUMY)
         (emma:string KST.EMMA)
         (id:string "TFRG-98c486052a51")
@@ -306,8 +306,8 @@
 (print "--- [TX-FRAG-003 · 06 · owner-authorized repurpose LUMY -> EMMA succeeds] ---")
 (let
     (
-        (ref-DPDC:module{DpdcV1} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
         (owner:string KST.ANHD)
         (lumy:string KST.LUMY)
         (emma:string KST.EMMA)

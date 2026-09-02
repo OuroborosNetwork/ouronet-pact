@@ -15,10 +15,10 @@
 (let
     (
         (patron:string KST.ANHD)
-        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-        (ref-DALOS:module{OuronetDalosV1} DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "CodingDivisionTreasury"))
         (score-id:string (ref-U|DALOS::UDC_Makeid "TheCodingDivision"))
         (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
@@ -46,9 +46,9 @@
 (let
     (
         (patron:string KST.ANHD)
-        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "SnakesTreasury"))
         (can-upgrade-pre:bool (ref-FVT::UR_FVT|CanUpgrade fvt-id))
     )
@@ -73,8 +73,8 @@
     (
         (patron:string KST.ANHD)
         (ouro-id:string "OURO-98c486052a51")
-        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
         (farm-id:string (ref-U|DALOS::UDC_Makeid "OuroLpFarm"))
         (farm-class:integer (try -1 (ref-FVT::UR_FVT|FvtClass farm-id)))
         (denom:decimal (try 0.0 (ref-FVT::URC_InjectDenominator farm-id)))

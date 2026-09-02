@@ -1,5 +1,5 @@
 
-(interface UtilityDptfV1
+(interface UtilityDptfV2
     @doc "Exported Utility Functions for the DPTF Module \
         \ Commented Functions are internal use only and have no use outside the module"
 
@@ -72,7 +72,7 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements UtilityDptfV1)
+    (implements UtilityDptfV2)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -85,7 +85,7 @@
     (defcap GOV|U|DPTF_ADMIN ()
         (let
             (
-                (ref-U|CT:module{OuronetConstantsV1} U|CT)
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
                 (g:guard (ref-U|CT::CT_GOV|UTILS))
             )
             (enforce-guard g)
@@ -119,7 +119,7 @@
     ;;{5.1}  Construct [CT/UDC]
     ;;
     ;;
-    (defun UDC_EmptyDispo:object{UtilityDptfV1.DispoData} ()
+    (defun UDC_EmptyDispo:object{UtilityDptfV2.DispoData} ()
         {"elite-auryn-amount"           :0.0
         ,"auryndex-value"               :-1.0
         ,"elite-auryndex-value"         :-1.0
@@ -180,7 +180,7 @@
             )
         )
     )
-    (defun UC_OuroDispo:decimal (input:object{UtilityDptfV1.DispoData})
+    (defun UC_OuroDispo:decimal (input:object{UtilityDptfV2.DispoData})
         (let
             (
                 (ea-amount:decimal (at "elite-auryn-amount" input))
@@ -211,7 +211,7 @@
             \ Outputs [virtual-gas-costs (IGNIS) native-gas-cost(STOA)]"
         (let
             (
-                (ref-U|DEC:module{OuronetDecimalsV1} U|DEC)
+                (ref-U|DEC:module{OuronetDecimalsV2} U|DEC)
             )
             (ref-U|DEC::UC_UnlockPrice unlocks true)
         )

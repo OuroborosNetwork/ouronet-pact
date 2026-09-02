@@ -16,7 +16,7 @@
 ;;================================================================================
 ;;                                                                              ;;
 ;;                      [2 TXs]                                                 ;;
-;;              LOAD    02_Core.pact       — SHARED DpdcUdcV1 schemas only      ;;
+;;              LOAD    02_Core.pact       — SHARED DpdcUdcV2 schemas only      ;;
 ;;              LOAD    03_Talos.pact      — HISTORICAL (empty until frozen)    ;;
 ;;                                                                              ;;
 ;;   Module-owned latest interfaces ship inside 2_Core/**/*.pact and            ;;

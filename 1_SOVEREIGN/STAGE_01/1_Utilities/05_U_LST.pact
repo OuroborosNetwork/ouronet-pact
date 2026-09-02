@@ -1,4 +1,4 @@
-(interface StringProcessorV1
+(interface StringProcessorV2
     @doc "Exported List and String Processor Functions"
 
     ;;<=========================================================================>
@@ -69,7 +69,7 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements StringProcessorV1)
+    (implements StringProcessorV2)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -82,7 +82,7 @@
     (defcap GOV|U|LST_ADMIN ()
         (let
             (
-                (ref-U|CT:module{OuronetConstantsV1} U|CT)
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
                 (g:guard (ref-U|CT::CT_GOV|UTILS))
             )
             (enforce-guard g)
@@ -252,7 +252,7 @@
     (defun UEV_StringPresence (item:string item-lst:[string])
         (let
             (
-                (ref-U|CT:module{OuronetConstantsV1} U|CT)
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
                 (bar:string (ref-U|CT::CT_BAR))
                 (iz-present:bool (contains item item-lst))
             )

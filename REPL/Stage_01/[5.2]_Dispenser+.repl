@@ -163,8 +163,8 @@
     )
     (let
         (
-            (ref-DALOS:module{OuronetDalosV1} DALOS)
-            (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+            (ref-DALOS:module{OuronetDalosV2} DALOS)
+            (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
             ;;
             (OuroID:string (ref-DALOS::UR_OuroborosID))
         )
@@ -245,13 +245,13 @@
 (print "--- [TX-03 [3.1] - DSP Init [1]: Dispenser Setup · 02 · let / invocation] ---")
 (let
     (
-        (ref-U|G:module{OuronetGuardsV1} U|G)
-        (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-        (ref-DALOS:module{OuronetDalosV1} DALOS)
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
-        (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+        (ref-U|G:module{OuronetGuardsV2} U|G)
+        (ref-P|DALOS:module{OuronetPolicyV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
         (ref-AOZ:module{AgeOfZalmoxis} AOZ)
-        (ref-P|DSP:module{OuronetPolicyV1} DSP)
+        (ref-P|DSP:module{OuronetPolicyV2} DSP)
         (ref-DSP:module{Dispenser} DSP)
         ;;
         (patron:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")

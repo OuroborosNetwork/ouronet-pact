@@ -16,7 +16,7 @@
 ;; STEP ORDER: 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11 → 12
 ;;   Step 0 — after sovereign AQP modules (ANK, SCR, AQP-POOL, FVT) are deployed: IMC + vault governor.
 ;;
-(interface AcquisitionPoolBootV1
+(interface AcquisitionPoolBootV2
 
 
     ;;<=========================================================================>
@@ -109,7 +109,7 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements AcquisitionPoolBootV1)
+    (implements AcquisitionPoolBootV2)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -122,7 +122,7 @@
     (defcap GOV ()                          (compose-capability (GOV|AQP_BOOT_ADMIN)))
     (defcap GOV|AQP_BOOT_ADMIN ()           (enforce-guard GOV|MD_AQP-BOOT))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
@@ -197,11 +197,11 @@
         (with-capability (GOV|AQP_BOOT_ADMIN)
             (let
                 (
-                    (ref-P|AQP:module{OuronetPolicyV1} AQP-POOL)
-                    (ref-P|FVT:module{OuronetPolicyV1} AQP-FVT)
-                    (ref-P|VCT:module{OuronetPolicyV1} AQP-VCT)
-                    (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
-                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                    (ref-P|AQP:module{OuronetPolicyV2} AQP-POOL)
+                    (ref-P|FVT:module{OuronetPolicyV2} AQP-FVT)
+                    (ref-P|VCT:module{OuronetPolicyV2} AQP-VCT)
+                    (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+                    (ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)
                     ;;
                     (aqp-sc:string (ref-ANK::GOV|AQP|SC_NAME))
                 )
@@ -212,7 +212,7 @@
                 (ref-TS01-C1::C_DALOS|RotateGovernor patron aqp-sc
                     (let
                         (
-                            (ref-U|G:module{OuronetGuardsV1} U|G)
+                            (ref-U|G:module{OuronetGuardsV2} U|G)
                         )
                         (ref-U|G::UEV_GuardOfAny
                             [
@@ -258,8 +258,8 @@
         (with-capability (GOV|AQP_BOOT_ADMIN)
             (let
                 (
-                    (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                    (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                     ;;
                     (bronze-boost-class-id:string (ref-U|DALOS::UDC_Makeid "BronzeSnakePower"))
                     (silver-boost-class-id:string (ref-U|DALOS::UDC_Makeid "SilverSnakePower"))
@@ -297,8 +297,8 @@
         (with-capability (GOV|AQP_BOOT_ADMIN)
             (let
                 (
-                    (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                    (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                     ;;
                     (unity-boost-class-id:string (ref-U|DALOS::UDC_Makeid "UnityBooster"))
                     (stoa-boost-class-id:string (ref-U|DALOS::UDC_Makeid "StoaBooster"))
@@ -354,8 +354,8 @@
         (with-capability (GOV|AQP_BOOT_ADMIN)
             (let
                 (
-                    (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                    (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                     (score-coding:string (ref-U|DALOS::UDC_Makeid "TheCodingDivision"))
                     (score-bloodshed:string (ref-U|DALOS::UDC_Makeid "Bloodshed"))
                     (score-company-share:string (ref-U|DALOS::UDC_Makeid "DemiourgosShareholder"))
@@ -386,8 +386,8 @@
         (with-capability (GOV|AQP_BOOT_ADMIN)
             (let
                 (
-                    (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                    (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                     (score-sub-coding:string (ref-U|DALOS::UDC_Makeid "SubsidiaryCodingDivision"))
                     (score-sub-wondercoach:string (ref-U|DALOS::UDC_Makeid "SubsidiaryWonderCoach"))
                     (score-sub-bloodshed:string (ref-U|DALOS::UDC_Makeid "SubsidiaryBloodshed"))
@@ -459,8 +459,8 @@
         (with-capability (GOV|AQP_BOOT_ADMIN)
             (let
                 (
-                    (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                    (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                     ;;
                     (silver-id:string (ref-U|DALOS::UDC_Makeid BOOT|SCORE_SILVER))
                     (bronze-id:string (ref-U|DALOS::UDC_Makeid BOOT|SCORE_BRONZE))
@@ -554,7 +554,7 @@
         (with-capability (GOV|AQP_BOOT_ADMIN)
             (let
                 (
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                     ;;
                     (asset-coding:string (at 0 dh-asset-ids))
                     (asset-bloodshed:string (at 1 dh-asset-ids))
@@ -641,8 +641,8 @@
         (with-capability (GOV|AQP_BOOT_ADMIN)
             (let
                 (
-                    (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                    (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                     (farm-id:string (ref-U|DALOS::UDC_Makeid BOOT|FVT_OURO_LP_FARM))
                     (sub-treasury-id:string (ref-U|DALOS::UDC_Makeid BOOT|FVT_SUBSIDIARY_TREASURY))
                     (coding-treasury-id:string (ref-U|DALOS::UDC_Makeid BOOT|FVT_CODING_TREASURY))
@@ -679,7 +679,7 @@
         (with-capability (GOV|AQP_BOOT_ADMIN)
             (let
                 (
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                 )
                 (enforce (= (length subsidiary-score-ids) 5) "Step 9 expects subsidiary-score-ids×5.")
                 (map
@@ -709,7 +709,7 @@
         (with-capability (GOV|AQP_BOOT_ADMIN)
             (let
                 (
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                     (family-id:string (concat ["F" "|" ouro-id "|" auryn-id "|" elite-auryn-id]))
                 )
                 (ref-TS02-C3::C_AQP-FVT|IssueMultipletFamily
@@ -731,7 +731,7 @@
         (with-capability (GOV|AQP_BOOT_ADMIN)
             (let
                 (
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                     (wire-farm:bool
                         (and
                             (!= farm-id "")
@@ -770,8 +770,8 @@
         (with-capability (GOV|AQP_BOOT_ADMIN)
             (let
                 (
-                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
-                    (ref-U|CT:module{OuronetConstantsV1} U|CT)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+                    (ref-U|CT:module{OuronetConstantsV2} U|CT)
                     (bar:string (ref-U|CT::CT_BAR))
                 )
                 (ref-TS02-C3::C_AQP-FVT|AddRewardLink patron sub-treasury-id reward-auryn-id false bar)

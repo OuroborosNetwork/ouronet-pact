@@ -1,5 +1,5 @@
 
-(interface IgnisCollectorV1
+(interface IgnisCollectorV2
 
 
     ;;<=========================================================================>
@@ -115,7 +115,7 @@
 
 )
 
-(interface OuronetInfoV1
+(interface OuronetInfoV2
     @doc "Holds Information Schemas"
 
     ;;<=========================================================================>
@@ -195,7 +195,7 @@
     ;;
     ;;  [UC] Functions
     ;;
-    (defun OI|UC_IfpFromOutputCumulator:decimal (input:object{IgnisCollectorV1.OutputCumulator}))
+    (defun OI|UC_IfpFromOutputCumulator:decimal (input:object{IgnisCollectorV2.OutputCumulator}))
     (defun OI|UC_ShortAccount:string (account:string))
     (defun OI|UC_ConvertPrice:string (input-price:decimal))
     (defun OI|UC_FormatIndex:string (index:decimal))
@@ -221,9 +221,9 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements OuronetPolicyV1)
-    (implements IgnisCollectorV1)
-    (implements OuronetInfoV1)
+    (implements OuronetPolicyV2)
+    (implements IgnisCollectorV2)
+    (implements OuronetInfoV2)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -236,7 +236,7 @@
     (defcap GOV ()                          (compose-capability (GOV|IGNIS_ADMIN)))
     (defcap GOV|IGNIS_ADMIN ()              (enforce-guard GOV|MD_IGNIS))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
@@ -246,8 +246,8 @@
     ;;{P3}  tables
     ;;
     ;;
-    (deftable P|T:{OuronetPolicyV1.P|S})
-    (deftable P|MT:{OuronetPolicyV1.P|MS})
+    (deftable P|T:{OuronetPolicyV2.P|S})
+    (deftable P|MT:{OuronetPolicyV2.P|MS})
     ;;{P4}  capabilities
     (defcap P|IGNIS|CALLER ()
         true
@@ -257,7 +257,7 @@
         (compose-capability (SECURE))
     )
     ;;{P5}  functions
-    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -267,7 +267,7 @@
     (defun P|UEV_IMC ()
         (let
             (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
+                (ref-U|G:module{OuronetGuardsV2} U|G)
             )
             (ref-U|G::UEV_Any (P|UR_IMP))
         )
@@ -283,7 +283,7 @@
         (with-capability (GOV|IGNIS_ADMIN)
             (let
                 (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
                     (dg:guard (create-capability-guard (SECURE)))
                 )
                 (with-default-read P|MT P|I
@@ -299,7 +299,7 @@
     (defun P|A_Define ()
         (let
             (
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
+                (ref-P|DALOS:module{OuronetPolicyV2} DALOS)
                 (mg:guard (create-capability-guard (P|IGNIS|CALLER)))
             )
             (ref-P|DALOS::P|A_AddIMP mg)
@@ -312,8 +312,8 @@
     (defconst BAR                           (CT_Bar))
     (defconst STOAPREC                       (CT_StoaPrec))
     ;;
-    (defconst DALOS|SC_NAME                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|DALOS|SC_NAME)))
-    (defconst OUROBOROS|SC_NAME             (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|OUROBOROS|SC_NAME)))
+    (defconst DALOS|SC_NAME                 (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|DALOS|SC_NAME)))
+    (defconst OUROBOROS|SC_NAME             (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|OUROBOROS|SC_NAME)))
     (defconst GAS_QUARTER 0.25)
     (defconst GAS_EXCEPTION
         [
@@ -350,7 +350,7 @@
     (defcap IGNIS|C>DEBIT (sender:string ta:decimal)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (read-gas:decimal (ref-DALOS::UR_TF_AccountSupply sender false))
             )
             (enforce (<= ta read-gas) "Insufficient GAS for GAS-Debiting")
@@ -362,7 +362,7 @@
     (defcap IGNIS|C>CREDIT (receiver:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (ref-DALOS::UEV_EnforceAccountExists receiver)
             (compose-capability (SECURE))
@@ -373,7 +373,7 @@
     (defcap IGNIS|C>DC (patron:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (compose-capability (IGNIS|S>DISCOUNT patron (UDC_MakeIDP (ref-DALOS::URC_IgnisGasDiscount patron))))
             (compose-capability (P|IGNIS|CALLER))
@@ -384,7 +384,7 @@
         (UEV_Patron patron)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (first:string (take 1 interactor))
                 (sigma:string "Σ")
                 (tanker:string (ref-DALOS::UR_Tanker))
@@ -416,9 +416,9 @@
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
     ;;
-    (defun CT_Bar ()                        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
-    (defun CT_StoaPrec ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_STOA_PRECISION)))
-    (defun UDC_EmptyOutputCumulatorV2:object{IgnisCollectorV1.OutputCumulator} ()
+    (defun CT_Bar ()                        (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_StoaPrec ()                    (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_STOA_PRECISION)))
+    (defun UDC_EmptyOutputCumulatorV2:object{IgnisCollectorV2.OutputCumulator} ()
         {"cumulator-chain"      :
             [
                 {"ignis"        : 0.0
@@ -430,7 +430,7 @@
     (defun UDC_MakeIDP:string (ignis-discount:decimal)
         (format "{}{}" [(* (- 1.0 ignis-discount) 100.0) "%"])
     )
-    (defun UDC_ConstructOutputCumulator:object{IgnisCollectorV1.OutputCumulator}
+    (defun UDC_ConstructOutputCumulator:object{IgnisCollectorV2.OutputCumulator}
         (price:decimal active-account:string trigger:bool output-lst:list)
         (UDC_MakeOutputCumulator
             [
@@ -443,11 +443,11 @@
             output-lst
         )
     )
-    (defun UDC_BrandingCumulator:object{IgnisCollectorV1.OutputCumulator}
+    (defun UDC_BrandingCumulator:object{IgnisCollectorV2.OutputCumulator}
         (active-account:string multiplier:decimal)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (UDC_ConstructOutputCumulator
                 (* multiplier (ref-DALOS::UR_UsagePrice "ignis|branding"))
@@ -457,11 +457,11 @@
             )
         )
     )
-    (defun UDC_SmallestCumulator:object{IgnisCollectorV1.OutputCumulator}
+    (defun UDC_SmallestCumulator:object{IgnisCollectorV2.OutputCumulator}
         (active-account:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (UDC_ConstructOutputCumulator
                 (ref-DALOS::UR_UsagePrice "ignis|smallest")
@@ -471,11 +471,11 @@
             )
         )
     )
-    (defun UDC_SmallCumulator:object{IgnisCollectorV1.OutputCumulator}
+    (defun UDC_SmallCumulator:object{IgnisCollectorV2.OutputCumulator}
         (active-account:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (UDC_ConstructOutputCumulator
                 (ref-DALOS::UR_UsagePrice "ignis|small")
@@ -485,11 +485,11 @@
             )
         )
     )
-    (defun UDC_MediumCumulator:object{IgnisCollectorV1.OutputCumulator}
+    (defun UDC_MediumCumulator:object{IgnisCollectorV2.OutputCumulator}
         (active-account:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (UDC_ConstructOutputCumulator
                 (ref-DALOS::UR_UsagePrice "ignis|medium")
@@ -499,11 +499,11 @@
             )
         )
     )
-    (defun UDC_BigCumulator:object{IgnisCollectorV1.OutputCumulator}
+    (defun UDC_BigCumulator:object{IgnisCollectorV2.OutputCumulator}
         (active-account:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (UDC_ConstructOutputCumulator
                 (ref-DALOS::UR_UsagePrice "ignis|big")
@@ -513,11 +513,11 @@
             )
         )
     )
-    (defun UDC_BiggestCumulator:object{IgnisCollectorV1.OutputCumulator}
+    (defun UDC_BiggestCumulator:object{IgnisCollectorV2.OutputCumulator}
         (active-account:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (UDC_ConstructOutputCumulator
                 (ref-DALOS::UR_UsagePrice "ignis|biggest")
@@ -527,10 +527,10 @@
             )
         )
     )
-    (defun UDC_CustomCodeCumulator:object{IgnisCollectorV1.OutputCumulator} ()
+    (defun UDC_CustomCodeCumulator:object{IgnisCollectorV2.OutputCumulator} ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (UDC_ConstructOutputCumulator
                 (* 5.0 (ref-DALOS::UR_UsagePrice "ignis|biggest"))
@@ -541,11 +541,11 @@
         )
     )
     ;;
-    (defun UDC_MakeModularCumulator:object{IgnisCollectorV1.ModularCumulator}
+    (defun UDC_MakeModularCumulator:object{IgnisCollectorV2.ModularCumulator}
         (price:decimal active-account:string trigger:bool)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (interactor:string
                     (if (ref-DALOS::UR_AccountType active-account)
                         active-account
@@ -561,20 +561,20 @@
             )
         )
     )
-    (defun UDC_MakeOutputCumulator:object{IgnisCollectorV1.OutputCumulator}
-        (input-modular-cumulator-chain:[object{IgnisCollectorV1.ModularCumulator}] output-lst:list)
+    (defun UDC_MakeOutputCumulator:object{IgnisCollectorV2.OutputCumulator}
+        (input-modular-cumulator-chain:[object{IgnisCollectorV2.ModularCumulator}] output-lst:list)
         {"cumulator-chain"  : input-modular-cumulator-chain
         ,"output"           : output-lst}
     )
-    (defun UDC_ConcatenateOutputCumulators:object{IgnisCollectorV1.OutputCumulator}
-        (input-output-cumulator-chain:[object{IgnisCollectorV1.OutputCumulator}] new-output-lst:list)
+    (defun UDC_ConcatenateOutputCumulators:object{IgnisCollectorV2.OutputCumulator}
+        (input-output-cumulator-chain:[object{IgnisCollectorV2.OutputCumulator}] new-output-lst:list)
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-                (folded-obj:[[object{IgnisCollectorV1.ModularCumulator}]]
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (folded-obj:[[object{IgnisCollectorV2.ModularCumulator}]]
                     (fold
                         (lambda
-                            (acc:[[object{IgnisCollectorV1.ModularCumulator}]] idx:integer)
+                            (acc:[[object{IgnisCollectorV2.ModularCumulator}]] idx:integer)
                             (ref-U|LST::UC_AppL
                                 acc
                                 (at "cumulator-chain" (at idx input-output-cumulator-chain))
@@ -589,8 +589,8 @@
             ,"output"           : new-output-lst}
         )
     )
-    (defun UDC_CompressOutputCumulator:object{IgnisCollectorV1.CompressedCumulator}
-        (input-output-cumulator:object{IgnisCollectorV1.OutputCumulator})
+    (defun UDC_CompressOutputCumulator:object{IgnisCollectorV2.CompressedCumulator}
+        (input-output-cumulator:object{IgnisCollectorV2.OutputCumulator})
         @doc "Merges same-interactor legs of a cumulator-chain into one (interactor, summed-ignis) \
             \ entry each. Optimized (DALOS audit, post-#8H): uses the local single-pass \
             \ UC_FindKeyIndex instead of U|LST::UC_Search (which does ~4x the traversals for a \
@@ -600,14 +600,14 @@
             \ REPL/_scratch_ignis_compress_prime_optimization.repl."
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-                (cumulator-chain-input:[object{IgnisCollectorV1.ModularCumulator}]
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (cumulator-chain-input:[object{IgnisCollectorV2.ModularCumulator}]
                     (at "cumulator-chain" input-output-cumulator)
                 )
-                (folded-obj:object{IgnisCollectorV1.CompressedCumulator}
+                (folded-obj:object{IgnisCollectorV2.CompressedCumulator}
                     (fold
                         (lambda
-                            (acc:object{IgnisCollectorV1.CompressedCumulator} idx:integer)
+                            (acc:object{IgnisCollectorV2.CompressedCumulator} idx:integer)
                             (let
                                 (
                                     (read-ignis-price:decimal (at "ignis" (at idx cumulator-chain-input)))
@@ -640,21 +640,21 @@
             folded-obj
         )
     )
-    (defun UDC_PrimeIgnisCumulator:object{IgnisCollectorV1.PrimedCumulator}
-        (patron:string input:object{IgnisCollectorV1.CompressedCumulator})
+    (defun UDC_PrimeIgnisCumulator:object{IgnisCollectorV2.PrimedCumulator}
+        (patron:string input:object{IgnisCollectorV2.CompressedCumulator})
         @doc "Splits each compressed leg into a smart-account cut and a principal/BAR cut per the \
             \ GAS_QUARTER fee-share. Optimized (DALOS audit, post-#8H) the same way as \
             \ UDC_CompressOutputCumulator above — see that function's @doc."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
                 (fll:integer (length (at "ignis-prices" input)))
                 (ignis-discount:decimal (ref-DALOS::URC_IgnisGasDiscount patron))
-                (folded-obj:object{IgnisCollectorV1.CompressedCumulator}
+                (folded-obj:object{IgnisCollectorV2.CompressedCumulator}
                     (fold
                         (lambda
-                            (acc:object{IgnisCollectorV1.CompressedCumulator} idx:integer)
+                            (acc:object{IgnisCollectorV2.CompressedCumulator} idx:integer)
                             (let
                                 (
                                     (input-ignis-price:decimal (at idx (at "ignis-prices" input)))
@@ -721,22 +721,22 @@
             {"primed-cumulator" : folded-obj}
         )
     )
-    (defun OI|UDC_ClientInfo:object{OuronetInfoV1.ClientInfo}
-        (a:[string] b:[string] c:object{OuronetInfoV1.ClientIgnisCosts} d:object{OuronetInfoV1.ClientStoaCosts} e:list)
+    (defun OI|UDC_ClientInfo:object{OuronetInfoV2.ClientInfo}
+        (a:[string] b:[string] c:object{OuronetInfoV2.ClientIgnisCosts} d:object{OuronetInfoV2.ClientStoaCosts} e:list)
         {"pre-text"         : a
         ,"post-text"        : b
         ,"ignis"            : c
         ,"stoa"           : d
         ,"output"           : e}
     )
-    (defun OI|UDC_ClientIgnisCosts:object{OuronetInfoV1.ClientIgnisCosts}
+    (defun OI|UDC_ClientIgnisCosts:object{OuronetInfoV2.ClientIgnisCosts}
         (a:decimal b:decimal c:decimal d:string)
         {"ignis-discount"   : a
         ,"ignis-full"       : b
         ,"ignis-need"       : c
         ,"ignis-text"       : d}
     )
-    (defun OI|UDC_ClientStoaCosts:object{OuronetInfoV1.ClientStoaCosts}
+    (defun OI|UDC_ClientStoaCosts:object{OuronetInfoV2.ClientStoaCosts}
         (a:decimal b:decimal c:decimal d:[decimal] e:[string] f:string)
         {"stoa-discount"  : a
         ,"stoa-full"      : b
@@ -745,11 +745,11 @@
         ,"stoa-targets"   : e
         ,"stoa-text"      : f}
     )
-    (defun OI|UDC_FullStoaCosts:object{OuronetInfoV1.ClientStoaCosts} (kfp:decimal)
+    (defun OI|UDC_FullStoaCosts:object{OuronetInfoV2.ClientStoaCosts} (kfp:decimal)
         (let
             (
-                (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
-                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+                (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
+                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
                 ;;
                 (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                 (stoa-split:[decimal] (ref-U|DALOS::UC_TenTwentyThirtyFourtySplit kfp STOAPREC))
@@ -769,12 +769,12 @@
             )
         )
     )
-    (defun OI|UDC_StoaCosts:object{OuronetInfoV1.ClientStoaCosts} (patron:string kfp:decimal)
+    (defun OI|UDC_StoaCosts:object{OuronetInfoV2.ClientStoaCosts} (patron:string kfp:decimal)
         (let
             (
-                (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
-                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
+                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 ;;
                 (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                 (stoa-discount:decimal (ref-DALOS::URC_StoaGasDiscount patron))
@@ -802,7 +802,7 @@
             )
         )
     )
-    (defun OI|UDC_NoStoaCosts:object{OuronetInfoV1.ClientStoaCosts} ()
+    (defun OI|UDC_NoStoaCosts:object{OuronetInfoV2.ClientStoaCosts} ()
         (OI|UDC_ClientStoaCosts
             1.0
             0.0
@@ -812,17 +812,17 @@
             "Operation is free of native Stoa (STOA)"
         )
     )
-    (defun OI|UDC_DynamicStoaCost:object{OuronetInfoV1.ClientStoaCosts} (patron:string kfp:decimal)
+    (defun OI|UDC_DynamicStoaCost:object{OuronetInfoV2.ClientStoaCosts} (patron:string kfp:decimal)
         (if (= kfp 0.0)
             (OI|UDC_NoStoaCosts)
             (OI|UDC_StoaCosts patron kfp)
         )
     )
     ;;
-    (defun OI|UDC_IgnisCosts:object{OuronetInfoV1.ClientIgnisCosts} (patron:string ifp:decimal)
+    (defun OI|UDC_IgnisCosts:object{OuronetInfoV2.ClientIgnisCosts} (patron:string ifp:decimal)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 ;;
                 (ignis-discount:decimal (ref-DALOS::URC_IgnisGasDiscount patron))
                 (discount-percent:string (format "{}%" [(* 100.0 (- 1.0 ignis-discount))]))
@@ -845,7 +845,7 @@
             )
         )
     )
-    (defun OI|UDC_NoIgnisCosts:object{OuronetInfoV1.ClientIgnisCosts} ()
+    (defun OI|UDC_NoIgnisCosts:object{OuronetInfoV2.ClientIgnisCosts} ()
         (OI|UDC_ClientIgnisCosts
             1.0
             0.0
@@ -853,7 +853,7 @@
             "Operation is free of Ouronet GAS (IGNIS)"
         )
     )
-    (defun OI|UDC_DynamicIgnisCost:object{OuronetInfoV1.ClientIgnisCosts} (patron:string ifp:decimal)
+    (defun OI|UDC_DynamicIgnisCost:object{OuronetInfoV2.ClientIgnisCosts} (patron:string ifp:decimal)
         (if (= ifp 0.0)
             (OI|UDC_NoIgnisCosts)
             (OI|UDC_IgnisCosts patron ifp)
@@ -880,10 +880,10 @@
     ;;
     ;;[OURONET-INFO] Functions — shared cost/format vocabulary (relocated from INFO-ZERO;
     ;;  must live pre-Talos so Talos + all cost modules + Z_Reads presentation can reach it)
-    (defun OI|UC_IfpFromOutputCumulator:decimal (input:object{IgnisCollectorV1.OutputCumulator})
+    (defun OI|UC_IfpFromOutputCumulator:decimal (input:object{IgnisCollectorV2.OutputCumulator})
         (let
             (
-                (cc:[object{IgnisCollectorV1.ModularCumulator}] (at "cumulator-chain" input))
+                (cc:[object{IgnisCollectorV2.ModularCumulator}] (at "cumulator-chain" input))
             )
             (fold
                 (lambda
@@ -981,7 +981,7 @@
     (defun URC_IsVirtualGasZeroAbsolutely:bool (id:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (t1:bool (URC_IsVirtualGasZero))
                 (gas-id:string (ref-DALOS::UR_IgnisID))
                 (t2:bool (if (or (= gas-id BAR)(= id gas-id)) true false))
@@ -992,7 +992,7 @@
     (defun URC_IsVirtualGasZero:bool ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (if (ref-DALOS::UR_VirtualToggle)
                 false
@@ -1003,7 +1003,7 @@
     (defun URC_IsNativeGasZero:bool ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (if (ref-DALOS::UR_NativeToggle)
                 false
@@ -1015,38 +1015,38 @@
     ;;[DALOS-URCi] cost readers — the single source for each DALOS client op's tier choice.
     ;;  DALOS deploys below IGNIS (cannot host these); Talos bills through them and the Z_Reads
     ;;  presentation derives its preview from the same call, so billing and preview never drift.
-    (defun DALOS|URCi_ControlSmartAccount:object{IgnisCollectorV1.OutputCumulator} (account:string)
+    (defun DALOS|URCi_ControlSmartAccount:object{IgnisCollectorV2.OutputCumulator} (account:string)
         (UDC_SmallCumulator account)
     )
-    (defun DALOS|URCi_RotateGovernor:object{IgnisCollectorV1.OutputCumulator} (account:string)
+    (defun DALOS|URCi_RotateGovernor:object{IgnisCollectorV2.OutputCumulator} (account:string)
         (UDC_SmallCumulator account)
     )
-    (defun DALOS|URCi_RotateGuard:object{IgnisCollectorV1.OutputCumulator} (account:string)
+    (defun DALOS|URCi_RotateGuard:object{IgnisCollectorV2.OutputCumulator} (account:string)
         (UDC_SmallCumulator account)
     )
-    (defun DALOS|URCi_RotateStoa:object{IgnisCollectorV1.OutputCumulator} (account:string)
+    (defun DALOS|URCi_RotateStoa:object{IgnisCollectorV2.OutputCumulator} (account:string)
         (UDC_SmallCumulator account)
     )
-    (defun DALOS|URCi_RotateSovereign:object{IgnisCollectorV1.OutputCumulator} (account:string)
+    (defun DALOS|URCi_RotateSovereign:object{IgnisCollectorV2.OutputCumulator} (account:string)
         (UDC_SmallCumulator account)
     )
-    (defun DALOS|URCi_UpdateEliteAccount:object{IgnisCollectorV1.OutputCumulator} (patron:string)
+    (defun DALOS|URCi_UpdateEliteAccount:object{IgnisCollectorV2.OutputCumulator} (patron:string)
         (UDC_SmallCumulator patron)
     )
-    (defun DALOS|URCi_UpdateEliteAccountSquared:object{IgnisCollectorV1.OutputCumulator} (patron:string)
+    (defun DALOS|URCi_UpdateEliteAccountSquared:object{IgnisCollectorV2.OutputCumulator} (patron:string)
         (UDC_MediumCumulator patron)
     )
     ;;  STOA-billed DALOS ops: the URCi returns the native fair price (the tier "key" single-sourced)
     (defun DALOS|URCi_DeploySmartAccount:decimal ()
-        (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::UR_UsagePrice "smart"))
+        (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::UR_UsagePrice "smart"))
     )
     (defun DALOS|URCi_DeployStandardAccount:decimal ()
-        (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::UR_UsagePrice "standard"))
+        (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::UR_UsagePrice "standard"))
     )
     (defun OI|UR_StoaTargets:[string] ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             [
                 (at 2 (ref-DALOS::UR_DemiurgoiID))
@@ -1068,7 +1068,7 @@
         @doc "Capability that ensures a DALOS account can act as gas payer, enforcing all necesarry restrictions"
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (if (ref-DALOS::UR_AccountType patron)
                 (do
@@ -1085,7 +1085,7 @@
         (require-capability (IGNIS|C>COLLECT patron interactor amount))
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (collector:string
                     (if (= interactor BAR)
                         (ref-DALOS::UR_Tanker)
@@ -1106,7 +1106,7 @@
         (require-capability (IGNIS|C>DEBIT sender ta))
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (ref-DALOS::XB_UpdateBalance sender false 
                 (- (ref-DALOS::UR_TF_AccountSupply sender false) ta)
@@ -1117,7 +1117,7 @@
         (require-capability (IGNIS|C>CREDIT receiver))
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (ref-DALOS::XB_UpdateBalance receiver false 
                 (+ (ref-DALOS::UR_TF_AccountSupply receiver false) ta)
@@ -1136,14 +1136,14 @@
         )
     )
     (defun C_Collect
-        (patron:string input-output-cumulator:object{IgnisCollectorV1.OutputCumulator})
+        (patron:string input-output-cumulator:object{IgnisCollectorV2.OutputCumulator})
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (compressed-cumulator:object{IgnisCollectorV1.CompressedCumulator}
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (compressed-cumulator:object{IgnisCollectorV2.CompressedCumulator}
                     (UDC_CompressOutputCumulator input-output-cumulator)
                 )
-                (primed-cumulator:object{IgnisCollectorV1.PrimedCumulator}
+                (primed-cumulator:object{IgnisCollectorV2.PrimedCumulator}
                     (UDC_PrimeIgnisCumulator patron compressed-cumulator)
                 )
                 (ignis-prices:[decimal] (at "ignis-prices" (at "primed-cumulator" primed-cumulator)))
@@ -1157,7 +1157,7 @@
                         (let
                             (
                                 (icl:integer (length ignis-prices))
-                                (primed-collector:object{IgnisCollectorV1.CompressedCumulator} 
+                                (primed-collector:object{IgnisCollectorV2.CompressedCumulator} 
                                     (at "primed-cumulator" primed-cumulator)
                                 )
                             )
@@ -1209,7 +1209,7 @@
         @doc "Collect native STOA from payer Stoa account; Elite split from discount-account."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (split-discounted-stoa:[decimal] (ref-DALOS::URC_SplitSTOAPrices discount-account amount))
                 (am0:decimal (at 0 split-discounted-stoa))
                 (am1:decimal (at 1 split-discounted-stoa))

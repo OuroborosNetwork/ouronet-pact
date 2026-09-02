@@ -3,8 +3,8 @@
 ;; leading `patron` argument in 01_TS02-C1.pact to match the correct DPNF sibling's call shape.
 ;; This probe: (1) proves the SFT path now actually succeeds (it never did before, on any input), and
 ;; (2) settles the secondary question flagged in the finding — does the cross-module call actually
-;; resolve when `ref-DPDC` is typed `module{DpdcV1}` but C_UpdatePendingBranding is declared on the
-;; different interface BrandingUsageTertiaryV1? (Answered empirically by whether this even loads.)
+;; resolve when `ref-DPDC` is typed `module{DpdcV2}` but C_UpdatePendingBranding is declared on the
+;; different interface BrandingUsageTertiaryV2? (Answered empirically by whether this even loads.)
 (load "../Stage00_Sanboxes.repl")
 (load "../Stage01_Tester.repl")
 (load "../Stage_02/[0.1]_Interfaces.repl")
@@ -20,8 +20,8 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-BRD:module{BrandingV1} BRD)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-BRD:module{BrandingV2} BRD)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
         (id:string "DHOC-98c486052a51")
     )
     (print (format "BEFORE pending logo = {}" [(ref-BRD::UR_Logo id true)]))
@@ -39,8 +39,8 @@
 (env-sigs [{ "key": "PK_Lumy", "caps": [] }])
 (let
     (
-        (ref-BRD:module{BrandingV1} BRD)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+        (ref-BRD:module{BrandingV2} BRD)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
         (id:string "DHN-98c486052a51")
     )
     ;; DHN's collection-owner is LUMY (per genesis), not ANHD

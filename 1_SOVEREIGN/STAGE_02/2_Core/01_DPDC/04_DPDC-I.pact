@@ -1,7 +1,7 @@
 ;; Deploy: load THIS file — interface(s) + module ship together.
 ;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact
 ;;
-(interface DpdcIssueV1
+(interface DpdcIssueV2
     @doc "Exposes Collectables Issue Functions"
 
     ;;<=========================================================================>
@@ -43,7 +43,7 @@
     ;;
     (defun URCi_IssueCollectionPrice:decimal (son:bool))
     (defun URCi_IssueCollectionStoa:decimal (son:bool))
-    (defun URCi_IssueDigitalCollection:object{IgnisCollectorV1.OutputCumulator} (son:bool owner-account:string))
+    (defun URCi_IssueDigitalCollection:object{IgnisCollectorV2.OutputCumulator} (son:bool owner-account:string))
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
@@ -55,7 +55,7 @@
     ;; Talos entrypoint with no ownership check, let any signer force any existing account to associate
     ;; with any collection. Real auto-association always calls DPDC::XB_DeployAccountSFT/NFT directly,
     ;; module-to-module (see DPDC-C/DPDC-F/DPDC-R/DPDC-S and this module's own Issue flow below).
-    (defun C_IssueDigitalCollection:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_IssueDigitalCollection:object{IgnisCollectorV2.OutputCumulator}
         (
             patron:string son:bool
             owner-account:string creator-account:string collection-name:string collection-ticker:string
@@ -75,8 +75,8 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements OuronetPolicyV1)
-    (implements DpdcIssueV1)
+    (implements OuronetPolicyV2)
+    (implements DpdcIssueV2)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -89,7 +89,7 @@
     (defcap GOV ()                          (compose-capability (GOV|DPDC-I_ADMIN)))
     (defcap GOV|DPDC-I_ADMIN ()             (enforce-guard GOV|MD_DPDC-I))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
@@ -98,8 +98,8 @@
     ;;{P2}  schemas
     ;;{P3}  tables
     ;;
-    (deftable P|T:{OuronetPolicyV1.P|S})
-    (deftable P|MT:{OuronetPolicyV1.P|MS})
+    (deftable P|T:{OuronetPolicyV2.P|S})
+    (deftable P|MT:{OuronetPolicyV2.P|MS})
     ;;{P4}  capabilities
     (defcap P|DPDC-I|CALLER ()
         true
@@ -109,7 +109,7 @@
         (compose-capability (SECURE))
     )
     ;;{P5}  functions
-    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -119,7 +119,7 @@
     (defun P|UEV_IMC ()
         (let
             (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
+                (ref-U|G:module{OuronetGuardsV2} U|G)
             )
             (ref-U|G::UEV_Any (P|UR_IMP))
         )
@@ -135,7 +135,7 @@
         (with-capability (GOV|DPDC-I_ADMIN)
             (let
                 (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
                     (dg:guard (create-capability-guard (SECURE)))
                 )
                 (with-default-read P|MT P|I
@@ -151,8 +151,8 @@
     (defun P|A_Define ()
         (let
             (
-                (ref-P|BRD:module{OuronetPolicyV1} BRD)
-                (ref-P|DPDC:module{OuronetPolicyV1} DPDC)
+                (ref-P|BRD:module{OuronetPolicyV2} BRD)
+                (ref-P|DPDC:module{OuronetPolicyV2} DPDC)
                 (mg:guard (create-capability-guard (P|DPDC-I|CALLER)))
             )
             (ref-P|BRD::P|A_AddIMP mg)
@@ -187,8 +187,8 @@
         @event
         (let
             (
-                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (ref-U|DALOS::UEV_NameOrTicker collection-name true iz-special)
             (ref-U|DALOS::UEV_NameOrTicker collection-ticker false iz-special)
@@ -203,7 +203,7 @@
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
     ;;
-    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
     ;;{5.2}  Compute [UC]
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
@@ -215,7 +215,7 @@
             \ Single source for the exec construct and the INFO preview."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (* (ref-DALOS::UR_UsagePrice "ignis|token-issue") (if son 5.0 10.0))
         )
@@ -226,12 +226,12 @@
             \ Single source for C_STOA|Collect and the INFO preview."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (if son (ref-DALOS::UR_UsagePrice "dpsf") (ref-DALOS::UR_UsagePrice "dpnf"))
         )
     )
-    (defun URCi_IssueDigitalCollection:object{IgnisCollectorV1.OutputCumulator}
+    (defun URCi_IssueDigitalCollection:object{IgnisCollectorV2.OutputCumulator}
         (son:bool owner-account:string)
         @doc "Cost preview for C_IssueDigitalCollection: IGNIS construct priced via \
             \ URCi_IssueCollectionPrice on the owner payer, empty output (the created \
@@ -239,7 +239,7 @@
             \ separately via URCi_IssueCollectionStoa."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (URCi_IssueCollectionPrice son)
@@ -263,12 +263,12 @@
         (require-capability (DPDC-I|C>ISSUE owner-account creator-account collection-name collection-ticker iz-special))
         (let
             (
-                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+                (ref-DPDC:module{DpdcV2} DPDC)
                 (id:string (ref-U|DALOS::UDC_Makeid collection-ticker))
-                (specifications:object{DpdcUdcV1.DPDC|Properties}
+                (specifications:object{DpdcUdcV2.DPDC|Properties}
                     (ref-DPDC-UDC::UDC_DPDC|Properties
                         id owner-account creator-account collection-name collection-ticker
                         can-upgrade can-change-owner can-change-creator can-add-special-role
@@ -276,12 +276,12 @@
                         false 0 0
                     )
                 )
-                (zne:[object{DpdcUdcV1.DPDC|NonceElement}]
+                (zne:[object{DpdcUdcV2.DPDC|NonceElement}]
                     [(ref-DPDC-UDC::UDC_ZeroNonceElement)]
                 )
                 (ca:string creator-account)
                 (oa:string owner-account)
-                (verum-chain:object{DpdcUdcV1.DPDC|VerumRoles}
+                (verum-chain:object{DpdcUdcV2.DPDC|VerumRoles}
                     (if son
                         (if (!= owner-account creator-account)
                             (ref-DPDC-UDC::UDC_DPDC|VerumRoles 
@@ -350,7 +350,7 @@
     )
     ;;{5.7}  User [A/C]
     ;; C_DeployAccountSFT/NFT removed — DPDC Audit #35M: see interface-side removal note above.
-    (defun C_IssueDigitalCollection:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_IssueDigitalCollection:object{IgnisCollectorV2.OutputCumulator}
         (
             patron:string son:bool
             owner-account:string creator-account:string collection-name:string collection-ticker:string
@@ -362,10 +362,10 @@
         (with-capability (DPDC-I|C>ISSUE owner-account creator-account collection-name collection-ticker iz-special)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV1} DALOS)
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-BRD:module{BrandingV1} BRD)
-                    (ref-DPDC:module{DpdcV1} DPDC)
+                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-BRD:module{BrandingV2} BRD)
+                    (ref-DPDC:module{DpdcV2} DPDC)
                     ;;
                     (ignis-price:decimal (URCi_IssueCollectionPrice son))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))

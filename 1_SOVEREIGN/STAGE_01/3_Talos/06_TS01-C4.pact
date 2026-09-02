@@ -1,11 +1,11 @@
 ;; TS01-C4 — Talos Stage One Client Four (CODEX + PYTHIA dual-Apollo + Pyth ledger flush).
-;; Deploy: load THIS file — TalosStageOne_ClientFourV7 + TS01-C4 module ship together.
+;; Deploy: load THIS file — TalosStageOne_ClientFourV8 + TS01-C4 module ship together.
 ;; Historical registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/03_Talos.pact (ClientFour V1–V5 + V6BlockTime).
 ;; Prior live ClientFourV6 lived only in this file (superseded by V7 — patronless A_RevokeLink).
-;; Prerequisite: PYTHIA module deployed (22_PYTHIA.pact ships PythiaV4 + PythiaLedgerV2).
+;; Prerequisite: PYTHIA module deployed (22_PYTHIA.pact ships PythiaV5 + PythiaLedgerV3).
 ;; REPL: REPL/Stage_01/[6.10]_PYTHIA.repl
 ;;
-(interface TalosStageOne_ClientFourV7
+(interface TalosStageOne_ClientFourV8
     @doc "Talos Stage One Client Four V7 — patronless Cronoton A_RevokeLink (no IGNIS); C_RevokeLink still 1 IGNIS."
 
     ;;<=========================================================================>
@@ -87,7 +87,7 @@
         ))
     (defun A_PYTHIA|RevokeLink:string (dual-link-key:string))
     (defun A_PYTHIA|Flush:string
-        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]))
+        (entries:[object{PythiaLedgerV3.PYTHIA|S|PythFlushEntry}]))
     ;;#17H fix: A_PYTHIA|UpdateDeployPrice/A_UpdateRenamePrice were never wired into any Talos
     ;;module - the core PYTHIA functions (GOV|PYTHIA_ADMIN-gated) existed but had no reachable
     ;;client path, permanently frozen at their hardcoded defaults for anyone, even the admin.
@@ -102,8 +102,8 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements OuronetPolicyV1)
-    (implements TalosStageOne_ClientFourV7)
+    (implements OuronetPolicyV2)
+    (implements TalosStageOne_ClientFourV8)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -116,7 +116,7 @@
     (defcap GOV ()                  (compose-capability (GOV|TS01-C1_ADMIN)))
     (defcap GOV|TS01-C1_ADMIN ()    (enforce-guard GOV|MD_TS01-C4))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()         (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()         (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
@@ -125,13 +125,13 @@
     ;;{P2}  schemas
     ;;{P3}  tables
     ;;
-    (deftable P|T:{OuronetPolicyV1.P|S})
-    (deftable P|MT:{OuronetPolicyV1.P|MS})
+    (deftable P|T:{OuronetPolicyV2.P|S})
+    (deftable P|MT:{OuronetPolicyV2.P|MS})
     ;;{P4}  capabilities
     (defcap P|TS ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (gap:bool (ref-DALOS::UR_GAP))
             )
             (enforce (not gap) "While Global Administrative Pause is online, no client Functions can be executed")
@@ -143,7 +143,7 @@
         true
     )
     ;;{P5}  functions
-    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -153,7 +153,7 @@
     (defun P|UEV_IMC ()
         (let
             (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
+                (ref-U|G:module{OuronetGuardsV2} U|G)
             )
             (ref-U|G::UEV_Any (P|UR_IMP))
         )
@@ -169,7 +169,7 @@
         (with-capability (GOV|TS01-C1_ADMIN)
             (let
                 (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
                     (dg:guard (create-capability-guard (SECURE)))
                 )
                 (with-default-read P|MT P|I
@@ -185,11 +185,11 @@
     (defun P|A_Define ()
         (let
             (
-                (ref-P|CODEX:module{OuronetPolicyV1} CODEX)
-                (ref-P|PYTHIA:module{OuronetPolicyV1} PYTHIA)
-                (ref-P|IGNIS:module{OuronetPolicyV1} IGNIS)
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (ref-P|TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                (ref-P|CODEX:module{OuronetPolicyV2} CODEX)
+                (ref-P|PYTHIA:module{OuronetPolicyV2} PYTHIA)
+                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
+                (ref-P|DALOS:module{OuronetPolicyV2} DALOS)
+                (ref-P|TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
             )
             (ref-P|CODEX::P|A_AddIMP mg)
@@ -222,7 +222,7 @@
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
     ;;
-    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
     ;;{5.2}  Compute [UC]
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;{5.4}  Validate [UEV/CAP]
@@ -241,7 +241,7 @@
         (with-capability (P|TS)
             (let 
                 (
-                    (ref-CODEX:module{CodexV1} CODEX)
+                    (ref-CODEX:module{CodexV2} CODEX)
                 )
                 (ref-CODEX::A_RegisterCodexIdentity
                     codex-id public-standard public-smart codex-guard registered-by
@@ -252,7 +252,7 @@
     (defun A_PYTHIA|Link:string (standard-apollo:string smart-apollo:string)
         @doc "Cronoton activates dual link after off-chain Apollo proof (no fee)."
         (with-capability (P|TS)
-            (let ((ref-PYTHIA:module{PythiaV4} PYTHIA))
+            (let ((ref-PYTHIA:module{PythiaV5} PYTHIA))
                 (ref-PYTHIA::A_LinkDualApiKey standard-apollo smart-apollo)
             )
         )
@@ -262,19 +262,19 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-PYTHIA:module{PythiaV4} PYTHIA)
+                    (ref-PYTHIA:module{PythiaV5} PYTHIA)
                 )
                 (ref-PYTHIA::A_RevokeDualLink dual-link-key)
             )
         )
     )
     (defun A_PYTHIA|Flush:string
-        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}])
+        (entries:[object{PythiaLedgerV3.PYTHIA|S|PythFlushEntry}])
         @doc "Khronoton batch Pyth ledger flush (order-independent day entries; no fee)."
         (with-capability (P|TS)
             (let
                 (
-                    (ref-LEDGER:module{PythiaLedgerV2} PYTHIA)
+                    (ref-LEDGER:module{PythiaLedgerV3} PYTHIA)
                 )
                 (ref-LEDGER::A_Flush entries)
             )
@@ -283,7 +283,7 @@
     (defun A_PYTHIA|UpdateDeployPrice:string (new-price:decimal)
         @doc "Updates the PYTHIA Codex/Apollo deploy price (no fee)."
         (with-capability (P|TS)
-            (let ((ref-PYTHIA:module{PythiaV4} PYTHIA))
+            (let ((ref-PYTHIA:module{PythiaV5} PYTHIA))
                 (ref-PYTHIA::A_UpdateDeployPrice new-price)
             )
         )
@@ -291,7 +291,7 @@
     (defun A_PYTHIA|UpdateRenamePrice:string (new-price:decimal)
         @doc "Updates the PYTHIA Codex/Apollo rename price (no fee)."
         (with-capability (P|TS)
-            (let ((ref-PYTHIA:module{PythiaV4} PYTHIA))
+            (let ((ref-PYTHIA:module{PythiaV5} PYTHIA))
                 (ref-PYTHIA::A_UpdateRenamePrice new-price)
             )
         )
@@ -301,7 +301,7 @@
         (with-capability (P|TS)
             (let 
                 (
-                    (ref-CODEX:module{CodexV1} CODEX)
+                    (ref-CODEX:module{CodexV2} CODEX)
                 )
                 (ref-CODEX::C_RotateCodexGuard codex-id new-codex-guard)
             )
@@ -312,7 +312,7 @@
         (with-capability (P|TS)
             (let 
                 (
-                    (ref-CODEX:module{CodexV1} CODEX)
+                    (ref-CODEX:module{CodexV2} CODEX)
                 )
                 (ref-CODEX::C_RecordArweaveUpload codex-id arweave-tx-id uploaded-bytes)
             )
@@ -323,9 +323,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-CODEX:module{CodexV1} CODEX)
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-IGNIS|V2:module{IgnisCollectorV1} IGNIS)
+                    (ref-CODEX:module{CodexV2} CODEX)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS|V2:module{IgnisCollectorV2} IGNIS)
                     (stoa-fee:decimal (ref-CODEX::URCi_RegisterStoicTag tag-name))
                     (msg:string
                         (ref-CODEX::C_RegisterStoicTag tag-name account-address)
@@ -341,8 +341,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-CODEX:module{CodexV1} CODEX)
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-CODEX:module{CodexV2} CODEX)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (tag-fee:decimal (ref-CODEX::URCi_ReleaseStoicTag tag-name))
                     (msg:string (ref-CODEX::C_ReleaseStoicTag tag-name))
                 )
@@ -367,9 +367,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-PYTHIA:module{PythiaV4} PYTHIA)
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-IGNIS|V2:module{IgnisCollectorV1} IGNIS)
+                    (ref-PYTHIA:module{PythiaV5} PYTHIA)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS|V2:module{IgnisCollectorV2} IGNIS)
                     (deploy-fee:decimal (ref-PYTHIA::URCi_DeployApiKey))
                     (fee-anchor:string (ref-PYTHIA::UC_FeeDiscountAnchor))
                     (msg:string
@@ -391,9 +391,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-PYTHIA:module{PythiaV4} PYTHIA)
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-IGNIS|V2:module{IgnisCollectorV1} IGNIS)
+                    (ref-PYTHIA:module{PythiaV5} PYTHIA)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS|V2:module{IgnisCollectorV2} IGNIS)
                     (rename-fee:decimal (ref-PYTHIA::URCi_UpdateDualConsumerLane))
                     (fee-anchor:string (ref-PYTHIA::UC_FeeDiscountAnchor))
                     (msg:string
@@ -413,7 +413,7 @@
           consumer-lane:string )
         @doc "Both half-owners link deployed Standard+Smart halves into inactive dual row (no fee)."
         (with-capability (P|TS)
-            (let ((ref-PYTHIA:module{PythiaV4} PYTHIA))
+            (let ((ref-PYTHIA:module{PythiaV5} PYTHIA))
                 (ref-PYTHIA::C_LinkDualApiKey standard-apollo smart-apollo consumer-lane)
             )
         )
@@ -425,8 +425,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-PYTHIA:module{PythiaV4} PYTHIA)
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-PYTHIA:module{PythiaV5} PYTHIA)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (revoke-fee:decimal (ref-PYTHIA::URCi_RevokeLink))
                     (msg:string
                         (ref-PYTHIA::C_RevokeDualLink dual-link-key)

@@ -43,8 +43,8 @@
         (anhd:string KST.ANHD)
         (cust:string "CUSTODIANS-98c486052a51")
         (ouro-id:string "OURO-98c486052a51")
-        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
     )
     (let
         (
@@ -92,9 +92,9 @@
 (let
     (
         (anhd:string KST.ANHD)
-        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-        (ref-DSA:module{DsaV1} AQP-DSA)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-DSA:module{DsaV2} AQP-DSA)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
     )
     (let
         (
@@ -142,9 +142,9 @@
 (let
     (
         (anhd:string KST.ANHD)
-        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
     )
     (let
         (

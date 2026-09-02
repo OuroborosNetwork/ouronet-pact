@@ -64,8 +64,8 @@
         (emma:string KST.EMMA)
         (lumy:string KST.LUMY)
         (dhoc:string "DHOC-98c486052a51")
-        (ref-DPDC:module{DpdcV1} DPDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
     )
     ;; 500 silver wholes -> 500000 fragment nonces (-2); each 1000-frag block = 10 quintessence when staked
     (ref-TS02-C1::C_DPSF|MakeFragments anhd anhd dhoc 2 500)
@@ -101,9 +101,9 @@
         (anhd:string KST.ANHD)
         (dhoc:string "DHOC-98c486052a51")
         (ouro:string "OURO-98c486052a51")
-        (ref-U|CT:module{OuronetConstantsV1} U|CT)
-        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-U|CT:module{OuronetConstantsV2} U|CT)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
     )
     (let
         (
@@ -157,9 +157,9 @@
     (
         (anhd:string KST.ANHD)
         (dhoc:string "DHOC-98c486052a51")
-        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
     )
     (let
         (
@@ -205,9 +205,9 @@
         (emma:string KST.EMMA)
         (lumy:string KST.LUMY)
         (dhoc:string "DHOC-98c486052a51")
-        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
     )
     (let
         (
@@ -259,10 +259,10 @@
         (emma:string KST.EMMA)
         (lumy:string KST.LUMY)
         (ouro:string "OURO-98c486052a51")
-        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
     )
     (let
         (
@@ -327,10 +327,10 @@
         (emma:string KST.EMMA)
         (lumy:string KST.LUMY)
         (ouro:string "OURO-98c486052a51")
-        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
     )
     (let
         (

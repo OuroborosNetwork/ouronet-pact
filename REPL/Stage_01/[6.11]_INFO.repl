@@ -2,7 +2,7 @@
 ;; REPL/Stage_01/[6.11]_INFO.repl — INFO-layer (#78) per-module smoke tests.
 ;;   INFO functions are URC_<MOD>|<Op> thin wrappers over the <MOD>|URCi_ readers,
 ;;   living in INFO-ONE (Stage-1) / INFO-TWO (Stage-2). Each returns an
-;;   object{OuronetInfoV1.ClientInfo}. Runs AFTER [4.0]_Sovereign-Executor (usage
+;;   object{OuronetInfoV2.ClientInfo}. Runs AFTER [4.0]_Sovereign-Executor (usage
 ;;   prices, incl ignis|medium, must be populated). Add a block per module as the
 ;;   rehaul proceeds (DALOS -> DPTF -> DPOF -> VST -> ATS -> SWP -> LIQUID -> ORBR).
 ;;

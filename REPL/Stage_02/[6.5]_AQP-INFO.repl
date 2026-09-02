@@ -18,7 +18,7 @@
 (begin-tx "AQP-INFO - confirm billing live")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
-(let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS))
+(let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS))
     (expect "virtual IGNIS billing is live (costs are real, not subsidised)" false (ref-IGNIS::URC_IsVirtualGasZero)))
 (commit-tx)
 (print "")
@@ -31,7 +31,7 @@
 (let
     (
         (anhd:string KST.ANHD)
-        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
     )
     (let
         (
@@ -80,7 +80,7 @@
 (let
     (
         (anhd:string KST.ANHD)
-        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
     )
     (let
         (
@@ -127,7 +127,7 @@
 (let
     (
         (anhd:string KST.ANHD)
-        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
     )
     (let
         (
@@ -164,7 +164,7 @@
 (let
     (
         (anhd:string KST.ANHD)
-        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
     )
     (let
         (

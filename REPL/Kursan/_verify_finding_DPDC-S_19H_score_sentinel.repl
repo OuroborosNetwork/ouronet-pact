@@ -24,7 +24,7 @@
 (namespace "ouronet-ns")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
         (owner:string KST.ANHD)
         (dpnf-price:decimal (ref-DALOS::UR_UsagePrice "dpnf"))
         (split-stoa:[decimal] (ref-DALOS::URC_SplitSTOAPrices owner dpnf-price))
@@ -50,12 +50,12 @@
 )
 (let
     (
-        (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
-        (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
-        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+        (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
         (owner:string KST.ANHD)
         (creator:string KST.ANHD)
-        (nd:object{DpdcUdcV1.DPDC|NonceData}
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
             (ref-DPDC-UDC::UDC_NonceData
                 0.0 0.0 "n" "d" (ref-DPDC-UDC::UDC_NoMetaData)
                 (ref-DPDC-UDC::UDC_URI|Type true false false false false false false)
@@ -94,7 +94,7 @@
 (namespace "ouronet-ns")
 (let
     (
-        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
         (owner:string KST.ANHD)
         (dpsf-price:decimal (ref-DALOS::UR_UsagePrice "dpsf"))
         (split-stoa:[decimal] (ref-DALOS::URC_SplitSTOAPrices owner dpsf-price))
@@ -120,12 +120,12 @@
 )
 (let
     (
-        (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
-        (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
         (owner:string KST.ANHD)
         (creator:string KST.ANHD)
-        (nd:object{DpdcUdcV1.DPDC|NonceData}
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
             (ref-DPDC-UDC::UDC_NonceData
                 0.0 0.0 "n" "d" (ref-DPDC-UDC::UDC_NoMetaData)
                 (ref-DPDC-UDC::UDC_URI|Type true false false false false false false)

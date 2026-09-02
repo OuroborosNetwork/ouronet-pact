@@ -1,4 +1,4 @@
-(interface StoicPayV2
+(interface StoicPayV3
 
 
     ;;<=========================================================================>
@@ -47,14 +47,14 @@
     ;;
     ;;  [URC]
     ;;
-    (defun URC_KpayAmountCosts:object{DemiourgosLaunchpadV1.Costs} (amount:integer offset:decimal))
+    (defun URC_KpayAmountCosts:object{DemiourgosLaunchpadV2.Costs} (amount:integer offset:decimal))
     (defun URC_Acquire:[string] (buyer:string amount:integer iz-native:bool slippage:decimal))
     (defun URC_GetMaxBuy:integer (account:string native:bool))
     ;;
     ;;  [URCi] / [INFO]  (pure-citizen cost preview: Sigma of the sovereign Talos ops' IGNIS)
     ;;
     (defun URCi_BuyStoicPay:decimal (buyer:string kpay-amount:integer iz-native:bool))
-    (defun INFO_BuyStoicPay:object{OuronetInfoV1.ClientInfo} (patron:string buyer:string kpay-amount:integer iz-native:bool))
+    (defun INFO_BuyStoicPay:object{OuronetInfoV2.ClientInfo} (patron:string buyer:string kpay-amount:integer iz-native:bool))
     ;;{5.4}  Validate [UEV/CAP]
     (defun CAP_Acquire (buyer:string amount:integer iz-native:bool))
     ;;{5.5}  Write [W]
@@ -72,8 +72,8 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements OuronetPolicyV1)
-    (implements StoicPayV2)
+    (implements OuronetPolicyV2)
+    (implements StoicPayV3)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -86,8 +86,8 @@
     (defcap GOV ()                              (compose-capability (GOV|KPAY_ADMIN)))
     (defcap GOV|KPAY_ADMIN ()                   (enforce-guard GOV|MD_KPAY))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()                     (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
-    (defun GOV|DEMIPAD|SC_NAME ()               (let ((ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)) (ref-DEMIPAD::GOV|DEMIPAD|SC_NAME)))
+    (defun GOV|Demiurgoi ()                     (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|DEMIPAD|SC_NAME ()               (let ((ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)) (ref-DEMIPAD::GOV|DEMIPAD|SC_NAME)))
     ;;Team allocation recipients (LIVE deployed set — identical to on-chain ouronet-ns.DEMIPAD-STOICPAY).
     ;;60% team share = COMPANY (30%) + VENTURE1..4 (7.5% each) = 1.5x the buyer amount per sale (40/60 split;
     ;;250M end supply). The REPL fixture creates these five accounts so the buy-side MultiBulkTransfer resolves.
@@ -104,8 +104,8 @@
     ;;{P2}  schemas
     ;;{P3}  tables
     ;;
-    (deftable P|T:{OuronetPolicyV1.P|S})
-    (deftable P|MT:{OuronetPolicyV1.P|MS})
+    (deftable P|T:{OuronetPolicyV2.P|S})
+    (deftable P|MT:{OuronetPolicyV2.P|MS})
     ;;{P4}  capabilities
     (defcap P|KPAY|CALLER ()
         true
@@ -118,7 +118,7 @@
         (compose-capability (SECURE))
     )
     ;;{P5}  functions
-    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -128,7 +128,7 @@
     (defun P|UEV_IMC ()
         (let
             (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
+                (ref-U|G:module{OuronetGuardsV2} U|G)
             )
             (ref-U|G::UEV_Any (P|UR_IMP))
         )
@@ -144,7 +144,7 @@
         (with-capability (GOV|KPAY_ADMIN)
             (let
                 (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
                     (dg:guard (create-capability-guard (SECURE)))
                 )
                 (with-default-read P|MT P|I
@@ -160,8 +160,8 @@
     (defun P|A_Define ()
         (let
             (
-                (ref-P|TFT:module{OuronetPolicyV1} TFT)
-                (ref-P|DPAD:module{OuronetPolicyV1} DEMIPAD)
+                (ref-P|TFT:module{OuronetPolicyV2} TFT)
+                (ref-P|DPAD:module{OuronetPolicyV2} DEMIPAD)
                 (mg:guard (create-capability-guard (P|KPAY|CALLER)))
             )
             (ref-P|DPAD::P|A_Add
@@ -201,7 +201,7 @@
         @event
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (KpayID:string (UR_KpayID))
                 (remaining-supply:decimal (UR_KpayLeft))
                 (amount:decimal (dec kpay-amount))
@@ -224,8 +224,8 @@
     ;;<=========================================================================>
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
-    (defun CT_Info ()                     (at 0 ["StoicPayV2"]))
-    (defun CT_Bar ()                        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_Info ()                     (at 0 ["StoicPayV3"]))
+    (defun CT_Bar ()                        (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
     ;;{5.2}  Compute [UC]
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
@@ -235,7 +235,7 @@
     (defun UR_GetPeriod:integer ()
         (let
             (
-                (ref-DPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
+                (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                 ;;
                 (KpayID:string (UR_KpayID))
                 (starting-tm:time (at "starting-time" (ref-DPAD::UR_Price KpayID)))
@@ -282,7 +282,7 @@
         @doc "Computes how much KPAY can still be bought this Period"
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 ;;
                 (KpayID:string (UR_KpayID))
                 (resident-amount:decimal (ref-DPTF::UR_AccountSupply KpayID DEMIPAD|SC_NAME))
@@ -302,7 +302,7 @@
         @doc "Offset is used to compute the time with a future offset in seconds"
         (let
             (
-                (ref-DPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
+                (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                 (KpayID:string (UR_KpayID))
                 (starting-tm:time (at "starting-time" (ref-DPAD::UR_Price KpayID)))
                 (present-tm:time (add-time (at "block-time" (chain-data)) offset))
@@ -322,13 +322,13 @@
         @doc "Launchpad ledger account (DPTF holder) for StoicPay inventory."
         DEMIPAD|SC_NAME
     )
-    (defun URC_KpayAmountCosts:object{DemiourgosLaunchpadV1.Costs} (amount:integer offset:decimal)
+    (defun URC_KpayAmountCosts:object{DemiourgosLaunchpadV2.Costs} (amount:integer offset:decimal)
         @doc "Computes Prices;"
         (let
             (
-                (ref-U|CT:module{OuronetConstantsV1} U|CT)
-                (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+                (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
+                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                 ;;
                 (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))
                 (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
@@ -348,7 +348,7 @@
             \ (1 + slippage/100). An offset of 15 minutes (900.0 s) computes the values."
         (let
             (
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
+                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                 (KpayID:string (UR_KpayID))
                 (type:integer (if iz-native 0 1))
                 (pid:decimal (at "pid" (URC_KpayAmountCosts amount 900.0)))
@@ -365,11 +365,11 @@
             (
                 (ref-coin:module{stoa-ns.fungible-v1} coin)
 
-                (ref-U|CT:module{OuronetConstantsV1} U|CT)
-                (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+                (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                 ;;
                 ;;
                 (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))
@@ -418,9 +418,9 @@
             \ multi-bulk venture-split transfer."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
-                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+                (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 (KpayID:string (UR_KpayID))
                 (pid:decimal (at "pid" (URC_KpayAmountCosts kpay-amount 0.0)))
                 (type:integer (if iz-native 0 1))
@@ -437,16 +437,16 @@
                           [[twenty-p ten-p ten-p ten-p ten-p]]))))
         )
     )
-    (defun INFO_BuyStoicPay:object{OuronetInfoV1.ClientInfo} (patron:string buyer:string kpay-amount:integer iz-native:bool)
+    (defun INFO_BuyStoicPay:object{OuronetInfoV2.ClientInfo} (patron:string buyer:string kpay-amount:integer iz-native:bool)
         @doc "Cost preview for the C_KPAY|BuyStoicPay pure-citizen buy (sole gas-funded path = the \
             \ TS02-CPAD Talos wrapper). IGNIS = URCi_BuyStoicPay (Sigma of the three Talos ops). \
             \ Launchpad ops carry NO protocol STOA fee; the ACQUISITION cost (dollar pid + STOA wstoa) \
             \ is declared as the good bought (protocol stoa = none)."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 (KpayID:string (UR_KpayID))
-                (costs:object{DemiourgosLaunchpadV1.Costs} (URC_KpayAmountCosts kpay-amount 0.0))
+                (costs:object{DemiourgosLaunchpadV2.Costs} (URC_KpayAmountCosts kpay-amount 0.0))
                 (pid:decimal (at "pid" costs))
                 (wstoa:decimal (at "wstoa" costs))
                 (pay:string (if iz-native "Native STOA" "OWS (Wrapped STOA)"))
@@ -470,7 +470,7 @@
             \ UI does NOT sign them and warns the buyer the mined price may differ."
         (let
             (
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
+                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                 (KpayID:string (UR_KpayID))
                 (type:integer (if iz-native 0 1))
                 (pid:decimal (at "pid" (URC_KpayAmountCosts amount 900.0)))
@@ -488,12 +488,12 @@
         (with-capability (KPAY|C>BUY kpay-amount)
             (let
                 (
-                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                    (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
-                    (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+                    (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
                     ;;
                     (KpayID:string (UR_KpayID))
-                    (costs:object{DemiourgosLaunchpadV1.Costs} (URC_KpayAmountCosts kpay-amount 0.0))
+                    (costs:object{DemiourgosLaunchpadV2.Costs} (URC_KpayAmountCosts kpay-amount 0.0))
                     (pid:decimal (at "pid" costs))
                     (type:integer (if iz-native 0 1))
                     (ten-p:decimal (* 0.25 (dec kpay-amount)))

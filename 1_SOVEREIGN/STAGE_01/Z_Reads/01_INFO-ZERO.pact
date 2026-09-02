@@ -12,12 +12,12 @@
 ;;     OI|UDC_*IgnisCosts / *StoaCosts, OI|UC_IfpFromOutputCumulator, …) was
 ;;     RELOCATED into the IGNIS module (02_IGNIS.pact) — the pre-Talos cost hub,
 ;;     so Talos + every cost module + the Z_Reads presentation layer can reach it.
-;;     Callers now bind `module{OuronetInfoV1} IGNIS`.
+;;     Callers now bind `module{OuronetInfoV2} IGNIS`.
 ;;   - Phase 1.2 (INFO consolidation): the 9 DALOS client-op previews that then
 ;;     lived here (DALOS-INFO|URC_ControlSmartAccount / DeploySmartAccount /
 ;;     DeployStandardAccount / RotateGovernor / RotateGuard / RotateStoa /
 ;;     RotateSovereign / UpdateEliteAccount / UpdateEliteAccountSquared) were
-;;     RELOCATED into INFO-ONE (Z_Reads/02_INFO-ONE+.pact, InfoOneV1) — the single
+;;     RELOCATED into INFO-ONE (Z_Reads/02_INFO-ONE+.pact, InfoOneV2) — the single
 ;;     Stage-1 INFO module. The `DalosInfoV1` interface was retired with them.
 ;;
 ;;  => Nothing references INFO-ZERO. Do not add functions here; new INFO wrappers
@@ -41,7 +41,7 @@
     ;;{G4}  capabilities
     (defcap GOV ()                          (enforce-guard GOV|MD_INFO-ZERO))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
 
     ;;<=========================================================================>
     ;;{2}  POLICY

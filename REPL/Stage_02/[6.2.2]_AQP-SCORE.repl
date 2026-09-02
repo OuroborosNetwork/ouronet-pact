@@ -35,10 +35,10 @@
         (patron:string KST.ANHD)
         (owner-konto:string KST.ANHD)
         (score-name:string "BootPhaseProbe")
-        (ref-DALOS:module{OuronetDalosV1} DALOS)
-        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
-        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
         (split-stoa:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices patron (ref-DALOS::UR_UsagePrice "smart"))
@@ -148,9 +148,9 @@
 (let
     (
         (patron:string KST.ANHD)
-        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
-        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
         (score-id:string (ref-U|DALOS::UDC_Makeid "BootPhaseProbe"))
     )
     ;;==== TX-SCORE-02 · 01 · score-id (U|DALOS UDC_Makeid) — REPL ====================
@@ -251,7 +251,7 @@
 (env-sigs [])
 (let
     (
-        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
         (score-ids:[string] (ref-SCR::URH_SCR|AllScoreIds))
     )
     ;;==== TX-SCORE-07 · 01 · list all issued scores (URH_SCR|AllScoreIds) =====================
@@ -285,7 +285,7 @@
     (
         (patron:string KST.ANHD)
         (owner-konto:string KST.ANHD)
-        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
         (split-stoa:[decimal] (ref-DALOS::URC_SplitSTOAPrices patron (* 4.0 (ref-DALOS::UR_UsagePrice "smart"))))
     )
     (print "--- [TX-SCORE-08 · 01 · env-sigs (4 issuances × smart fee)] ---")
@@ -329,7 +329,7 @@
     (
         (patron:string KST.ANHD)
         (owner-konto:string KST.ANHD)
-        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
         (split-stoa:[decimal] (ref-DALOS::URC_SplitSTOAPrices patron (* 5.0 (ref-DALOS::UR_UsagePrice "smart"))))
     )
     (print "--- [TX-SCORE-09 · 01 · env-sigs (5 issuances × smart fee)] ---")
@@ -376,7 +376,7 @@
 (let
     (
         (patron:string KST.ANHD)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (wc-values:[decimal]
             (fold (+) []
                 [(make-list 10 1.0) (make-list 10 2.0) (make-list 10 4.0) [15.0 28.0 52.0 114.0]]

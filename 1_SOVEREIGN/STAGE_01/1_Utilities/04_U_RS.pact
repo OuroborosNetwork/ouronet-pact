@@ -1,4 +1,4 @@
-(interface ReservedAccountsV1
+(interface ReservedAccountsV2
     @doc "Exported Reserved Account Functions"
 
     ;;<=========================================================================>
@@ -53,7 +53,7 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements ReservedAccountsV1)
+    (implements ReservedAccountsV2)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -66,7 +66,7 @@
     (defcap GOV|U|RS_ADMIN ()
         (let
             (
-                (ref-U|CT:module{OuronetConstantsV1} U|CT)
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
                 (g:guard (ref-U|CT::CT_GOV|UTILS))
             )
             (enforce-guard g)

@@ -1,4 +1,4 @@
-(interface OuronetDecimalsV1
+(interface OuronetDecimalsV2
     @doc "Exported Decimal Functions"
 
     ;;<=========================================================================>
@@ -59,7 +59,7 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements OuronetDecimalsV1)
+    (implements OuronetDecimalsV2)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -74,7 +74,7 @@
     (defcap GOV|U|DEC_ADMIN ()
         (let
             (
-                (ref-U|CT:module{OuronetConstantsV1} U|CT)
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
                 (g:guard (ref-U|CT::CT_GOV|UTILS))
             )
             (enforce-guard g)
@@ -185,7 +185,7 @@
         \ Virtual Gas Token = IGNIS; Native Gas Token = STOA"
         (let*
             (
-                (ref-U|CT:module{OuronetConstantsV1} U|CT)
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
                 (dptf:decimal (ref-U|CT::CT_DPTF-FeeLock))
                 (ats:decimal (ref-U|CT::CT_ATS-FeeLock))
                 (multiplier:decimal (dec (+ unlocks 1)))

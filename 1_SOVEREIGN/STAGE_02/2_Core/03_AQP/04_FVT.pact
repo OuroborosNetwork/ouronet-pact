@@ -1,4 +1,4 @@
-(interface AcquisitionFarmsVaultsTreasuriesV1
+(interface AcquisitionFarmsVaultsTreasuriesV2
 
 
     ;;<=========================================================================>
@@ -126,22 +126,22 @@
     (defun URCi_FuelRoyaltyCustody:decimal (fvt-id:string reward-dptf-id:string swpair:string))
     ;;
     ;; [URCi]   cost readers — single source for exec billing + INFO preview
-    (defun URCi_Issue:object{IgnisCollectorV1.OutputCumulator} (owner-konto:string output:[string]))
+    (defun URCi_Issue:object{IgnisCollectorV2.OutputCumulator} (owner-konto:string output:[string]))
     (defun URCi_IssueStoa:decimal ())
-    (defun URCi_RotateOwnership:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string))
-    (defun URCi_Control:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string))
-    (defun URCi_SetCommonDenominator:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
-    (defun URCi_SetMosaic:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
-    (defun URCi_SetSplitMode:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
-    (defun URCi_AddScoreEntity:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
-    (defun URCi_ToggleScoreEntityLink:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
-    (defun URCi_IssueMultipletFamily:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
-    (defun URCi_AddRewardLink:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
-    (defun URCi_ToggleRewardLink:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
-    (defun URCi_SetQualitySplit:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
-    (defun URCi_Inject:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
-    (defun URCi_UnstaleMyScores:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
-    (defun URCi_Collect:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
+    (defun URCi_RotateOwnership:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string))
+    (defun URCi_Control:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string))
+    (defun URCi_SetCommonDenominator:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string]))
+    (defun URCi_SetMosaic:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string]))
+    (defun URCi_SetSplitMode:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string]))
+    (defun URCi_AddScoreEntity:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string]))
+    (defun URCi_ToggleScoreEntityLink:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string]))
+    (defun URCi_IssueMultipletFamily:object{IgnisCollectorV2.OutputCumulator} (patron:string output:[string]))
+    (defun URCi_AddRewardLink:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string]))
+    (defun URCi_ToggleRewardLink:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string]))
+    (defun URCi_SetQualitySplit:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string]))
+    (defun URCi_Inject:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string]))
+    (defun URCi_UnstaleMyScores:object{IgnisCollectorV2.OutputCumulator} (patron:string output:[string]))
+    (defun URCi_Collect:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string]))
     (defun URCi_CollectFull:decimal
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string))
     (defun URCi_TrueFungibleStakeFlow:decimal
@@ -154,13 +154,13 @@
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     ;; [XE]
-    (defun XE_FvtFixUserChunk:object{IgnisCollectorV1.OutputCumulator}
+    (defun XE_FvtFixUserChunk:object{IgnisCollectorV2.OutputCumulator}
         (fvt-id:string reward-dptf-id:string users:[string])
     )
-    (defun XE_SweepSyncTripletLaneWeights:object{IgnisCollectorV1.OutputCumulator}
+    (defun XE_SweepSyncTripletLaneWeights:object{IgnisCollectorV2.OutputCumulator}
         (beneficiary-id:string fvt-id:string score-entity-id:string)
     )
-    (defun XE_FvtSweepRecomputeChunk:object{IgnisCollectorV1.OutputCumulator}
+    (defun XE_FvtSweepRecomputeChunk:object{IgnisCollectorV2.OutputCumulator}
         (fvt-id:string score-entity-id:string swept-boost-class-id:string users:[string])
     )
     (defun XE_SweepBegin:string (anchor-id:string))
@@ -173,16 +173,16 @@
     (defun XE_SetMemberDelegation:string (fvt-id:string score-entity-id:string delegation:bool))
     (defun XE_SetMemberCapture:string (fvt-id:string score-entity-id:string capture-units:decimal capture-weight:decimal oracle-ts:time))
     (defun XE_AdmitDelegationMember:string (fvt-id:string triplet-id:string operator:string))
-    (defun XE_WithdrawRoyalty:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string reward-dptf-id:string destination:string))
-    (defun XE_BurnRoyalty:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string reward-dptf-id:string))
-    (defun XE_FuelRoyalty:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string reward-dptf-id:string swpair:string))
-    (defun XE_BankScorePendingRewards:object{IgnisCollectorV1.OutputCumulator}
+    (defun XE_WithdrawRoyalty:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string reward-dptf-id:string destination:string))
+    (defun XE_BurnRoyalty:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string reward-dptf-id:string))
+    (defun XE_FuelRoyalty:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string reward-dptf-id:string swpair:string))
+    (defun XE_BankScorePendingRewards:object{IgnisCollectorV2.OutputCumulator}
         (beneficiary-id:string pool-id:string plan:object)
     )
-    (defun XE_RefreshTrueFungibleStakeAnchors:object{IgnisCollectorV1.OutputCumulator}
+    (defun XE_RefreshTrueFungibleStakeAnchors:object{IgnisCollectorV2.OutputCumulator}
         (beneficiary-id:string dptf-id:string)
     )
-    (defun XE_RefreshCollectableStakeAnchors:object{IgnisCollectorV1.OutputCumulator}
+    (defun XE_RefreshCollectableStakeAnchors:object{IgnisCollectorV2.OutputCumulator}
         (
             beneficiary-id:string
             collectable-id:string
@@ -192,29 +192,29 @@
             direction:bool
         )
     )
-    (defun XE_BookStakeUnclaimedCounts:object{IgnisCollectorV1.OutputCumulator}
+    (defun XE_BookStakeUnclaimedCounts:object{IgnisCollectorV2.OutputCumulator}
         (beneficiary-id:string pool-id:string settle-bundle:object)
     )
-    (defun XE_CheckpointStakeRps:object{IgnisCollectorV1.OutputCumulator}
+    (defun XE_CheckpointStakeRps:object{IgnisCollectorV2.OutputCumulator}
         (beneficiary-id:string pool-id:string settle-bundle:object)
     )
     ;; [XB]
-    (defun XB_FvtInject:object{IgnisCollectorV1.OutputCumulator}
+    (defun XB_FvtInject:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
     ;;{5.7}  User [A/C]
-    (defun C_SetQualitySplit:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_SetQualitySplit:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
     )
     ;; [C]   client
     ;;
-    (defun CC_TrueFungibleStakeFlow:object{IgnisCollectorV1.OutputCumulator}
+    (defun CC_TrueFungibleStakeFlow:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
     )
-    (defun CC_OrtoFungibleStakeFlow:object{IgnisCollectorV1.OutputCumulator}
+    (defun CC_OrtoFungibleStakeFlow:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
     )
-    (defun CC_CollectableStakeFlow:object{IgnisCollectorV1.OutputCumulator}
+    (defun CC_CollectableStakeFlow:object{IgnisCollectorV2.OutputCumulator}
         (
             pool-id:string
             owner-id:string
@@ -227,31 +227,31 @@
         )
     )
     ;;
-    (defun C_Issue:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_Issue:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-name:string owner-konto:string fvt-class:integer common-denominator:string)
     )
-    (defun C_RotateOwnership:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_RotateOwnership:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-id:string new-owner-konto:string)
     )
-    (defun C_Control:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_Control:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-id:string new-can-upgrade:bool new-can-change-owner:bool)
     )
-    (defun C_SetCommonDenominator:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_SetCommonDenominator:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-id:string common-denominator:string)
     )
-    (defun C_SetMosaic:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_SetMosaic:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-id:string mosaic:bool)
     )
-    (defun C_SetSplitMode:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_SetSplitMode:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-id:string split-mode:string)
     )
-    (defun C_AddScoreEntity:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_AddScoreEntity:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string)
     )
-    (defun C_ToggleScoreEntityLink:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_ToggleScoreEntityLink:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string enabled:bool)
     )
-    (defun C_IssueMultipletFamily:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_IssueMultipletFamily:object{IgnisCollectorV2.OutputCumulator}
         (
             patron:string
             token-0-id:string
@@ -261,22 +261,22 @@
             ats-1-2-id:string
         )
     )
-    (defun C_AddRewardLink:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_AddRewardLink:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string segmentation:bool multiplet-family-id:string)
     )
-    (defun C_ToggleRewardLink:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_ToggleRewardLink:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string enabled:bool)
     )
-    (defun CC_InjectStream:object{IgnisCollectorV1.OutputCumulator}
+    (defun CC_InjectStream:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
     )
-    (defun CC_Inject:object{IgnisCollectorV1.OutputCumulator}
+    (defun CC_Inject:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
     (defun CCp_InjectFixChunk:string
         (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
     )
-    (defun CC_InjectFinalize:object{IgnisCollectorV1.OutputCumulator}
+    (defun CC_InjectFinalize:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
     (defun CCp_UnstaleAll:string
@@ -285,8 +285,8 @@
     (defun CC_SweepRevokeAnchor:string (patron:string anchor-id:string))
     (defun CC_SweepBegin:string (patron:string anchor-id:string))
     (defun CCp_SweepRecomputeChunk:string (patron:string anchor-id:string chunk:integer))
-    (defun CC_UnstaleMyScores:object{IgnisCollectorV1.OutputCumulator} (patron:string fvt-ids:[string]))
-    (defun CC_Collect:object{IgnisCollectorV1.OutputCumulator}
+    (defun CC_UnstaleMyScores:object{IgnisCollectorV2.OutputCumulator} (patron:string fvt-ids:[string]))
+    (defun CC_Collect:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
     )
 
@@ -299,8 +299,8 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements OuronetPolicyV1)
-    (implements AcquisitionFarmsVaultsTreasuriesV1)
+    (implements OuronetPolicyV2)
+    (implements AcquisitionFarmsVaultsTreasuriesV2)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -314,7 +314,7 @@
     (defcap GOV ()                          (compose-capability (GOV|FVT_ADMIN)))
     (defcap GOV|FVT_ADMIN ()                (enforce-guard GOV|MD_FVT))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
@@ -323,9 +323,9 @@
     ;;{P2}  schemas
     ;;{P3}  tables
     ;;
-    (deftable P|T:{OuronetPolicyV1.P|S})                      ;; Key = <policy-name>
-    ;;  PURPOSE: Named keyset guards for this module (OuronetPolicyV1). Used by GOV|FVT_ADMIN and IMP registration.
-    (deftable P|MT:{OuronetPolicyV1.P|MS})                     ;; Key = P|I (module-identity constant)
+    (deftable P|T:{OuronetPolicyV2.P|S})                      ;; Key = <policy-name>
+    ;;  PURPOSE: Named keyset guards for this module (OuronetPolicyV2). Used by GOV|FVT_ADMIN and IMP registration.
+    (deftable P|MT:{OuronetPolicyV2.P|MS})                     ;; Key = P|I (module-identity constant)
     ;;{P4}  capabilities
     ;;  PURPOSE: Multi-policy metadata — IMP guard list for cross-module capability checks.
     (defcap P|FVT|CALLER ()
@@ -340,7 +340,7 @@
         (compose-capability (SECURE))
     )
     ;;{P5}  functions
-    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -350,7 +350,7 @@
     (defun P|UEV_IMC ()
         (let
             (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
+                (ref-U|G:module{OuronetGuardsV2} U|G)
             )
             (ref-U|G::UEV_Any (P|UR_IMP))
         )
@@ -366,7 +366,7 @@
         (with-capability (GOV|FVT_ADMIN)
             (let
                 (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
                     ;;
                     (dg:guard (create-capability-guard (SECURE)))
                 )
@@ -386,15 +386,15 @@
             \ Vacate recipes live in AQP-VCT."
         (let
             (
-                (ref-P|SCR:module{OuronetPolicyV1} AQP-SCORE)
-                (ref-P|AQP:module{OuronetPolicyV1} AQP-POOL)
-                (ref-P|TFT:module{OuronetPolicyV1} TFT)
-                (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
-                (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
-                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
-                (ref-P|SWPLC:module{OuronetPolicyV1} SWPLC)
-                (ref-P|ORBR:module{OuronetPolicyV1} OUROBOROS)
-                (ref-P|ATSU:module{OuronetPolicyV1} ATSU)
+                (ref-P|SCR:module{OuronetPolicyV2} AQP-SCORE)
+                (ref-P|AQP:module{OuronetPolicyV2} AQP-POOL)
+                (ref-P|TFT:module{OuronetPolicyV2} TFT)
+                (ref-P|DPOF:module{OuronetPolicyV2} DPOF)
+                (ref-P|DPDC-T:module{OuronetPolicyV2} DPDC-T)
+                (ref-P|DPTF:module{OuronetPolicyV2} DPTF)
+                (ref-P|SWPLC:module{OuronetPolicyV2} SWPLC)
+                (ref-P|ORBR:module{OuronetPolicyV2} OUROBOROS)
+                (ref-P|ATSU:module{OuronetPolicyV2} ATSU)
                 ;;
                 (dg:guard (create-capability-guard (SECURE)))
                 (mg:guard (create-capability-guard (P|FVT|CALLER)))
@@ -821,10 +821,10 @@
         @event
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
-                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 ;;
                 (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
             )
@@ -865,7 +865,7 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 ;;
                 (owner-now:string (UR_FVT|OwnerKonto fvt-id))
                 (can-change-owner:bool (UR_FVT|CanChangeOwner fvt-id))
@@ -884,7 +884,7 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 ;;
                 (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
                 (can-upgrade:bool (UR_FVT|CanUpgrade fvt-id))
@@ -932,7 +932,7 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
             )
             (enforce (URC_FvtScoreEntityLinkRowExists fvt-id score-entity-id) "ScoreEntityLink row must exist")
@@ -962,7 +962,7 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 ;;
                 (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
             )
@@ -981,7 +981,7 @@
         @event
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 ;;
                 (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
             )
@@ -1040,7 +1040,7 @@
             \ this standalone op is OWNER-GATED — only the FVT owner may pre-unstale their own entity. Composes \
             \ P|SECURE-CALLER for the intra-module fix + the cross-module XE_RefreshUserScoreDeb into AQP-SCORE."
         @event
-        (let ((ref-DALOS:module{OuronetDalosV1} DALOS))
+        (let ((ref-DALOS:module{OuronetDalosV2} DALOS))
             (ref-DALOS::CAP_EnforceAccountOwnership (UR_FVT|OwnerKonto fvt-id)))
         (enforce (not (UR_FVT|VacateFrozen fvt-id)) "FVT is frozen: a pool it serves is mid-vacate")
         (enforce (and (URC_FvtRpsGlobalRowExists fvt-id reward-dptf-id) (UR_FVT-RG|RewardEnabled fvt-id reward-dptf-id))
@@ -1083,8 +1083,8 @@
             \ weakened). Composes SECURE for the XE_CreateFvtLink + XI_AddScoreEntity writes."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (bronze-id:string (ref-SCR::UR_SCR|TripletBronzeScoreId triplet-id))
                 (silver-id:string (ref-SCR::UR_SCR|TripletSilverScoreId triplet-id))
                 (golden-id:string (ref-SCR::UR_SCR|TripletGoldenScoreId triplet-id))
@@ -1141,7 +1141,7 @@
             \ live value is always safe (no fund movement — pending is banked, not paid). Composes P|SECURE-CALLER \
             \ for the intra-module fix + the cross-module XE_RefreshUserScoreDeb into AQP-SCORE."
         @event
-        (let ((ref-DALOS:module{OuronetDalosV1} DALOS))
+        (let ((ref-DALOS:module{OuronetDalosV2} DALOS))
             (ref-DALOS::CAP_EnforceAccountOwnership patron))
         (compose-capability (P|SECURE-CALLER))
     )
@@ -1153,7 +1153,7 @@
             \ Phase 1 transfer/custody/balance: AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
                 ;;
                 (pool-class-ok:bool (ref-AQP::URC_StakeTrueFungiblePoolClassOk pool-id))
                 (stake-admission-ok:bool (if direction (ref-AQP::URC_PoolStakeAdmissionOk pool-id) (ref-AQP::URC_PoolUnstakeAdmissionOk pool-id)))
@@ -1225,7 +1225,7 @@
             \ Phase 1 custody: AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
                 ;;
                 (stake-admission-ok:bool (if direction (ref-AQP::URC_PoolStakeAdmissionOk pool-id) (ref-AQP::URC_PoolUnstakeAdmissionOk pool-id)))
                 (fvt-ready:bool (if direction (URC_PoolEmployedScoresFvtStakeReady pool-id) true))
@@ -1279,7 +1279,7 @@
             \ Phase 1 custody: AQP|XE>COLLECTABLE-POOL-CUSTODY."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
                 ;;
                 (stake-admission-ok:bool (if direction (ref-AQP::URC_PoolStakeAdmissionOk pool-id) (ref-AQP::URC_PoolUnstakeAdmissionOk pool-id)))
                 (fvt-ready:bool (if direction (URC_PoolEmployedScoresFvtStakeReady pool-id) true))
@@ -1315,12 +1315,12 @@
     ;;{5.1}  Construct [CT/UDC]
     (defun CT_Bar ()
         @doc "Returns CT_BAR constant."
-        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR))
+        (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR))
     )
     (defun CT_AqpScName:string
         ()
         @doc "Resolves AQP|SC_NAME from canonical AQP-ANK via interface ref."
-        (let ((ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)) (ref-ANK::GOV|AQP|SC_NAME))
+        (let ((ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)) (ref-ANK::GOV|AQP|SC_NAME))
     )
     ;;
     ;; [UDC] construct
@@ -1586,11 +1586,11 @@
             (floor (/ reward-amount denominator) CT_FVT_RPS_PREC)
         )
     )
-    (defun UC_EmptyOc:object{IgnisCollectorV1.OutputCumulator} ()
+    (defun UC_EmptyOc:object{IgnisCollectorV2.OutputCumulator} ()
         @doc "Empty OutputCumulator for write-only inject/collect phase slots."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
             (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
         )
@@ -2075,7 +2075,7 @@
             \ slots = max(1, (major-1)*7 + minor): everyone gets >= 1, capped at STREAM_MAX_LANES (49 at tier 7.7)."
         (let*
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 ;; 1. smart account → its controlling sovereign (standard) account; standard account → itself
                 (tier-acct:string
                     (if (ref-DALOS::UR_AccountType account)
@@ -2110,9 +2110,9 @@
         @doc "Farm class-0: SWP pair from native LP (score) or silver-score pool (triplet); vault/treasury |."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                (ref-SWP:module{SwapperV3} SWP)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                (ref-SWP:module{SwapperV4} SWP)
                 (sentinel:string "|")
                 (pool-score-id:string
                     (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)
@@ -2143,8 +2143,8 @@
             \ URC_ScoreEntityMemberDebWeight's triplet handling; the hub is not necessarily the silver slot)."
         (let
             (
-                (ref-SWP:module{SwapperV3} SWP)
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SWP:module{SwapperV4} SWP)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 ;;
                 (staked-amount:decimal
                     (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)
@@ -2208,7 +2208,7 @@
         @doc "Farm admission: W_i from SWP::UR_StoaValue(swpair); vault/treasury 0.0."
         (let
             (
-                (ref-SWP:module{SwapperV3} SWP)
+                (ref-SWP:module{SwapperV4} SWP)
             )
             (if (= fvt-class 0)
                 (ref-SWP::UR_StoaValue swpair)
@@ -2236,7 +2236,7 @@
         @doc "Vault/treasury Tier-2 member weight: score total-deb or sum of triplet score totals."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
             )
             (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)
                 (let
@@ -2272,7 +2272,7 @@
             \ no staker scan); non-true triplet → Σ of the 3 bundled scores' total-deb; singular score → its total-deb."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
             )
             (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)
                 (if (ref-SCR::UR_SCR|TripletTrueTriplet score-entity-id)
@@ -2288,9 +2288,9 @@
         @doc "Lane weights from silver base-score × ANK promiles on bronze/silver/golden boost-class-links."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                (ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (silver-id:string (ref-SCR::UR_SCR|TripletSilverScoreId triplet-id))
                 (bronze-id:string (ref-SCR::UR_SCR|TripletBronzeScoreId triplet-id))
                 (golden-id:string (ref-SCR::UR_SCR|TripletGoldenScoreId triplet-id))
@@ -2325,7 +2325,7 @@
             \ its own aqpool-link. Matches the non-true divisor (Σ of the 3 scores' total-deb) → conservation."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 (bronze-id:string (ref-SCR::UR_SCR|TripletBronzeScoreId triplet-id))
                 (silver-id:string (ref-SCR::UR_SCR|TripletSilverScoreId triplet-id))
                 (golden-id:string (ref-SCR::UR_SCR|TripletGoldenScoreId triplet-id))
@@ -2346,7 +2346,7 @@
             \ non-true triplet → Σ user deb over the 3 bundled scores; singular score → SCR deb-user."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
             )
             (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)
                 (if (ref-SCR::UR_SCR|TripletTrueTriplet score-entity-id)
@@ -2365,7 +2365,7 @@
             \ singular members (BAR for triplets, whose branch ignores it)."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
             )
             (fold (or) false
                 (map
@@ -2390,7 +2390,7 @@
         @doc "Map employed SCR score-id to score-entity-type + score-entity-id for RPS banking."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
             )
             (if (ref-SCR::UR_SCR|ScoreTriplet score-id)
                 {"score-entity-type" : CT_SCORE_ENTITY_TRIPLET
@@ -2404,7 +2404,7 @@
         @doc "Pool id for collect/settle SCR reads: score pool or triplet silver pool."
         (let 
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
             )
             (if (= score-entity-type CT_SCORE_ENTITY_SCORE)
                 (ref-SCR::UR_SCR|ScoreAqpoolLink score-entity-id)
@@ -2445,7 +2445,7 @@
         @doc "True when employed score maps to enabled ScoreEntityLink on issued FVT with ≥1 reward DPTF."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 (entity:object (URC_ResolveEmployedScoreEntity score-id))
                 (fvt-id:string (ref-SCR::UR_SCR|ScoreFvtLink score-id))
                 (score-entity-id:string (at "score-entity-id" entity))
@@ -2465,7 +2465,7 @@
             \ Used by FVT|C>TRUE-FUNGIBLE-STAKE-FLOW."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
                 ;;
                 (employed-ids:[string] (ref-AQP::URC_PoolActiveScoreIds pool-id))
             )
@@ -2482,7 +2482,7 @@
         @doc "Employed scores that run phase 2.1 settle — fvt-link≠BAR and parent ScoreEntityLink enabled."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
             )
             (filter
                 (lambda (score-id:string)
@@ -2509,7 +2509,7 @@
         @doc "Internal: distinct SCR|ScoreFvtLink values for settle-scores — one FVT entity counted once for IGNIS and settle scope."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
             )
             (distinct
                 ;; map: settle-eligible scores → SCR fvt-link (dedupe for URD bundle scope)
@@ -2571,7 +2571,7 @@
             \ index = L_i (farm) or G (vault/treasury). deb-user is pre-2.3 OLD SCR deb-score."
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 ;;
                 (current-pending:decimal (UR_FVT-RU|PendingRewards user-id fvt-id score-entity-id dptf-id))
                 (last-rps:decimal (UR_FVT-RU|LastRps user-id fvt-id score-entity-id dptf-id))
@@ -2618,7 +2618,7 @@
                 0.0
                 (let*
                     (
-                        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                         (now:time (at "block-time" (chain-data)))
                         (last:time (UR_FVT-RG|StreamLastRelease fvt-id dptf-id))
                         (reward-dec:integer (ref-DPTF::UR_Decimals dptf-id))
@@ -2647,7 +2647,7 @@
         (if (= (UR_FVT|FvtClass fvt-id) 0)
             (let*
                 (
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                     (reward-dec:integer (ref-DPTF::UR_Decimals dptf-id))
                     (s-farm:decimal (URC_FarmInjectDenominatorFresh fvt-id))
                     (w-i:decimal (URC_MemberLevel2Weight fvt-id score-entity-type score-entity-id (UR_FVT-SEL|Swpair fvt-id score-entity-id)))
@@ -2665,7 +2665,7 @@
             \ collect pays the whole available-rewards, so this slightly under-estimates there (a UI hint, not a promise)."
         (let*
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (reward-dec:integer (ref-DPTF::UR_Decimals dptf-id))
                 (deb-user:decimal (URC_ScoreEntityUserWeight user-id fvt-id pool-id score-entity-type score-entity-id))
                 (releasable:decimal (URC_ReleasableToNow fvt-id dptf-id))
@@ -2704,7 +2704,7 @@
         @doc "Distinct score-entity settle plans — triplet members collapse to one triplet-id plan."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 (entity-ids:[string]
                     (distinct
                         (map
@@ -2744,7 +2744,7 @@
         @doc "Internal: true when SCR|T|UserScore base, boosted, or deb is > 0 for (beneficiary, pool, score)."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
             )
             (fold (or) false
                 [
@@ -2774,7 +2774,7 @@
         @doc "Employed SCR score-ids for nz/unclaimed probes — triplet plans expand to bronze/silver/golden."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 (entity-type:integer (at "score-entity-type" plan))
                 (entity-id:string (at "score-entity-id" plan))
             )
@@ -2820,7 +2820,7 @@
             \ ignis|biggest × |settle-scores| + ignis|medium × Σ enabled-reward-count over distinct-fvts."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 ;;
                 (biggest:decimal (ref-DALOS::UR_UsagePrice "ignis|biggest"))
                 (medium:decimal (ref-DALOS::UR_UsagePrice "ignis|medium"))
@@ -2847,7 +2847,7 @@
         @doc "Internal: IGNIS for XI_BookStakeUnclaimedCounts — ignis|medium × |distinct-fvts|."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (* (ref-DALOS::UR_UsagePrice "ignis|medium") (dec (length distinct-fvts)))
         )
@@ -2857,7 +2857,7 @@
         @doc "Internal: IGNIS for XI_CheckpointStakeRps — flat 2 × ignis|biggest."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (* 2.0 (ref-DALOS::UR_UsagePrice "ignis|biggest"))
         )
@@ -2870,7 +2870,7 @@
             \ (deb-independent lanes) → always false."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 (triplet:bool (= score-entity-type CT_SCORE_ENTITY_TRIPLET))
                 (deb-based:bool (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET) (not (ref-SCR::UR_SCR|TripletTrueTriplet score-entity-id)) true))
             )
@@ -2918,7 +2918,7 @@
             \ both fold the SAME URH_FvtPresentUsers, so they agree by construction."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
             )
             (fold (+) 0
                 (map
@@ -3061,7 +3061,7 @@
             \ pre-nz-flags snapshot beneficiary nz state before SCORE."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
                 ;;
                 (employed-ids:[string] (ref-AQP::URC_PoolActiveScoreIds pool-id))
                 (settle-scores:[string] (URC_SettleEligibleEmployedScores employed-ids))
@@ -3102,41 +3102,41 @@
         )
     )
     ;; [URCi]   cost readers — single source for exec billing + INFO preview
-    (defun URCi_Issue:object{IgnisCollectorV1.OutputCumulator} (owner-konto:string output:[string])
-        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ISSUE-FVT owner-konto (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_Issue:object{IgnisCollectorV2.OutputCumulator} (owner-konto:string output:[string])
+        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ISSUE-FVT owner-konto (r::URC_IsVirtualGasZero) output)))
     (defun URCi_IssueStoa:decimal ()
-        (let ((d:module{OuronetDalosV1} DALOS)) (d::UR_UsagePrice "smart")))
-    (defun URCi_RotateOwnership:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string)
-        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_MediumCumulator (UR_FVT|OwnerKonto fvt-id))))
-    (defun URCi_Control:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string)
-        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_MediumCumulator (UR_FVT|OwnerKonto fvt-id))))
-    (defun URCi_SetCommonDenominator:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string])
-        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|SET-COMMON-DENOMINATOR (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
-    (defun URCi_SetMosaic:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string])
-        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|SET-MOSAIC (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
-    (defun URCi_SetSplitMode:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string])
-        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|SET-SPLIT-MODE (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
-    (defun URCi_AddScoreEntity:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string])
-        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ADD-SCORE-ENTITY (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
-    (defun URCi_ToggleScoreEntityLink:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string])
-        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|TOGGLE-SCORE-ENTITY-LINK (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
-    (defun URCi_IssueMultipletFamily:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string])
-        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ISSUE-MULTIPLET-FAMILY patron (r::URC_IsVirtualGasZero) output)))
-    (defun URCi_AddRewardLink:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string])
-        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ADD-REWARD-LINK (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
-    (defun URCi_ToggleRewardLink:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string])
-        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|TOGGLE-REWARD-LINK (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
-    (defun URCi_SetQualitySplit:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string])
-        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|SET-QUALITY-SPLIT (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
-    (defun URCi_Inject:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string])
+        (let ((d:module{OuronetDalosV2} DALOS)) (d::UR_UsagePrice "smart")))
+    (defun URCi_RotateOwnership:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string)
+        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_MediumCumulator (UR_FVT|OwnerKonto fvt-id))))
+    (defun URCi_Control:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string)
+        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_MediumCumulator (UR_FVT|OwnerKonto fvt-id))))
+    (defun URCi_SetCommonDenominator:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string])
+        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|SET-COMMON-DENOMINATOR (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_SetMosaic:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string])
+        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|SET-MOSAIC (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_SetSplitMode:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string])
+        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|SET-SPLIT-MODE (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_AddScoreEntity:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string])
+        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ADD-SCORE-ENTITY (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_ToggleScoreEntityLink:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string])
+        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|TOGGLE-SCORE-ENTITY-LINK (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_IssueMultipletFamily:object{IgnisCollectorV2.OutputCumulator} (patron:string output:[string])
+        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ISSUE-MULTIPLET-FAMILY patron (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_AddRewardLink:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string])
+        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ADD-REWARD-LINK (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_ToggleRewardLink:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string])
+        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|TOGGLE-REWARD-LINK (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_SetQualitySplit:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string])
+        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|SET-QUALITY-SPLIT (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_Inject:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string])
         @doc "GAS|INJECT gas leg (konto = FVT owner); shared by instant inject, stream inject, and inject-finalize."
-        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|INJECT (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
-    (defun URCi_UnstaleMyScores:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string])
+        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|INJECT (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_UnstaleMyScores:object{IgnisCollectorV2.OutputCumulator} (patron:string output:[string])
         @doc "GAS|UNSTALE gas leg (konto = patron); exec concats it with the per-fvt unstale walk."
-        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|UNSTALE patron (r::URC_IsVirtualGasZero) output)))
-    (defun URCi_Collect:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string])
+        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|UNSTALE patron (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_Collect:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string])
         @doc "GAS|COLLECT gas leg (konto = FVT owner); exec concats it with the forced-fix penalty leg and (triplet) the ATS ladder legs."
-        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|COLLECT (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
+        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|COLLECT (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
     ;; [URCi]   DSA royalty-disposal CUSTODY-move ifp readers — read-only mirror of the XE_*Royalty custody legs
     ;;   (the DSA A_*Royalty exec concats URCi_*Royalty gas leg with the FVT XE_*Royalty custody cumulator).
     ;;   The disposal amount/token are reconstructed from the live royalty pool balance + IGNIS-normalize decision.
@@ -3146,10 +3146,10 @@
             \ royalty balance from AQP|SC_NAME to <destination>."
         (let*
             (
-                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                (ref-ORBR:module{OuroborosV1} OUROBOROS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-ORBR:module{OuroborosV2} OUROBOROS)
                 ;;
                 (royalty:decimal   (UR_FVT-RG|RoyaltyRewards fvt-id reward-dptf-id))
                 (is-ignis:bool     (= reward-dptf-id (ref-DALOS::UR_IgnisID)))
@@ -3165,10 +3165,10 @@
             \ reward-dptf is IGNIS, else none) + a DPTF burn of the normalized live royalty balance from AQP|SC_NAME."
         (let*
             (
-                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-ORBR:module{OuroborosV1} OUROBOROS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-ORBR:module{OuroborosV2} OUROBOROS)
                 ;;
                 (royalty:decimal (UR_FVT-RG|RoyaltyRewards fvt-id reward-dptf-id))
                 (is-ignis:bool   (= reward-dptf-id (ref-DALOS::UR_IgnisID)))
@@ -3182,11 +3182,11 @@
             \ into <swpair> (amount in the normalized token's slot, 0 elsewhere; direct)."
         (let*
             (
-                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-ORBR:module{OuroborosV1} OUROBOROS)
-                (ref-SWP:module{SwapperV3} SWP)
-                (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-ORBR:module{OuroborosV2} OUROBOROS)
+                (ref-SWP:module{SwapperV4} SWP)
+                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
                 ;;
                 (royalty:decimal (UR_FVT-RG|RoyaltyRewards fvt-id reward-dptf-id))
                 (is-ignis:bool   (= reward-dptf-id (ref-DALOS::UR_IgnisID)))
@@ -3208,8 +3208,8 @@
             0.0
             (let
                 (
-                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                    (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 )
                 (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
                     (ref-TFT::URCi_TransferCumulator
@@ -3220,9 +3220,9 @@
         @doc "IGNIS ifp mirror of XI_1|HeterogeneousLaneRoute: pre-fund token-0 (two transfers) + Coil(total-t1) + Curl(total-t2)."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                (ref-ATSU:module{AutostakeUsageV1} ATSU)
-                (ref-ATS:module{AutostakeV2} ATS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                (ref-ATS:module{AutostakeV3} ATS)
                 (bs:[integer] (UR_FVT-QS|BronzeSplit fvt-id reward-dptf-id))
                 (ss:[integer] (UR_FVT-QS|SilverSplit fvt-id reward-dptf-id))
                 (gs:[integer] (UR_FVT-QS|GoldSplit fvt-id reward-dptf-id))
@@ -3264,10 +3264,10 @@
         @doc "IGNIS ifp mirror of XI_TransferRewardDptfFromVault (PHASE 1.1 collect payout leg)."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                (ref-ATSU:module{AutostakeUsageV1} ATSU)
-                (ref-ATS:module{AutostakeV2} ATS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (reward-kind:string (UR_FVT-RG|RewardKind fvt-id reward-dptf-id))
                 (payout:decimal (URC_CollectClaimableRewards patron pool-id fvt-id score-entity-type score-entity-id reward-dptf-id))
             )
@@ -3319,8 +3319,8 @@
             \ gated by the virtual-gas toggle; 0 when ffc<=0."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ffc:integer (UR_FVT-FFC|Count fvt-id reward-dptf-id patron))
             )
             (if (<= ffc 0)
@@ -3335,8 +3335,8 @@
             \ tier — exact only for un-streamed / already-settled lanes."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 ;;
                 (pool-id:string
                     (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)
@@ -3350,17 +3350,17 @@
                 ])))
     (defun URC_TierMedium:decimal ()
         @doc "IGNIS tier 'ignis|medium' behind the virtual-gas toggle."
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS) (ref-DALOS:module{OuronetDalosV1} DALOS))
+        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS) (ref-DALOS:module{OuronetDalosV2} DALOS))
             (UC_GasPrice (ref-DALOS::UR_UsagePrice "ignis|medium") (ref-IGNIS::URC_IsVirtualGasZero)))
     )
     (defun URC_TierBiggest:decimal ()
         @doc "IGNIS tier 'ignis|biggest' behind the virtual-gas toggle."
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS) (ref-DALOS:module{OuronetDalosV1} DALOS))
+        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS) (ref-DALOS:module{OuronetDalosV2} DALOS))
             (UC_GasPrice (ref-DALOS::UR_UsagePrice "ignis|biggest") (ref-IGNIS::URC_IsVirtualGasZero)))
     )
     (defun URC_TierFixed:decimal (gas-cost:decimal)
         @doc "A FIXED IGNIS gas cost behind the virtual-gas toggle."
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS))
+        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS))
             (UC_GasPrice gas-cost (ref-IGNIS::URC_IsVirtualGasZero)))
     )
     (defun URC_StakeScoreDeltaSum:decimal (pool-id:string)
@@ -3385,7 +3385,7 @@
             \ direction=true stake (owner→vault), false unstake (vault→owner)."
         (let*
             (
-                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 (bundle           (URHC_BuildStakeSettleBundle pool-id beneficiary-id))
                 (settle-scores:[string] (at "settle-scores" bundle))
                 (distinct-fvts:[string] (at "distinct-fvts" bundle))
@@ -3416,7 +3416,7 @@
             \ book + checkpoint. NO 1.3 rollup, NO anchor leg."
         (let*
             (
-                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 (bundle           (URHC_BuildStakeSettleBundle pool-id beneficiary-id))
                 (settle-scores:[string] (at "settle-scores" bundle))
                 (distinct-fvts:[string] (at "distinct-fvts" bundle))
@@ -3441,7 +3441,7 @@
             \ (class == son?3:4) + book + checkpoint. nonce-amounts is caller-supplied."
         (let*
             (
-                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 (bundle           (URHC_BuildStakeSettleBundle pool-id beneficiary-id))
                 (settle-scores:[string] (at "settle-scores" bundle))
                 (distinct-fvts:[string] (at "distinct-fvts" bundle))
@@ -3471,7 +3471,7 @@
         @doc "Recipe cap: owner-id must be an activated Ouronet account (signer proof in AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY)."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (ref-DALOS::UEV_EnforceAccountExists owner-id)
         )
@@ -3480,7 +3480,7 @@
         @doc "Recipe cap: beneficiary must exist and be an activated standard (non-principal) Ouronet account."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (ref-DALOS::UEV_EnforceAccountExists beneficiary-id)
             (ref-DALOS::UEV_EnforceAccountType beneficiary-id false)
@@ -3494,7 +3494,7 @@
         @doc "C_SetMosaic: owner, can-upgrade, zero member-link-count."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 ;;
                 (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
                 (can-upgrade:bool (UR_FVT|CanUpgrade fvt-id))
@@ -3526,8 +3526,8 @@
             \ ghost-weight) vs the vault/treasury rule (swpair | + zero ghost-weight). Enforces FVT-owner ownership."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (fvt-owner:string (UR_FVT|OwnerKonto fvt-id))
                 (fvt-class:integer (UR_FVT|FvtClass fvt-id))
                 (score-owner:string (ref-SCR::UR_SCR|ScoreOwnerKonto score-id))
@@ -3568,8 +3568,8 @@
             \ vault/treasury weight rule. Enforces FVT-owner ownership."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (fvt-owner:string (UR_FVT|OwnerKonto fvt-id))
                 (fvt-class:integer (UR_FVT|FvtClass fvt-id))
                 (bronze-id:string (ref-SCR::UR_SCR|TripletBronzeScoreId triplet-id))
@@ -3620,8 +3620,8 @@
         @doc "C_IssueMultipletFamily: distinct issued DPTF ids, distinct ATS pairs; ATS ladder must match Coil/Curl chain."
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-ATS:module{AutostakeV2} ATS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-ATS:module{AutostakeV3} ATS)
             )
             (enforce
                 (ref-DPTF::URC_IzRBTg ats-0-1-id token-1-id)
@@ -3662,8 +3662,8 @@
             \ vault deb-sum are both computed there); this defcap only validates the token + amount + row."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
             )
             (enforce (not (UR_FVT|VacateFrozen fvt-id)) "FVT is frozen: a pool it serves is mid-vacate")
             (enforce (> amount 0.0) "Inject amount must be positive")
@@ -3683,7 +3683,7 @@
             \ in XI_FvtAddStream AFTER the drip — a finished stream frees its slot only once the drip prunes it."
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (reward-dec:integer (ref-DPTF::UR_Decimals reward-dptf-id))
                 (min-rate:decimal (/ (dec STREAM_MIN_UPS) (dec (^ 10 reward-dec))))
                 (rate:decimal (/ amount (dec duration)))
@@ -3701,10 +3701,10 @@
         @doc "CC_Collect: dispatch by score-entity-type; MULTIPLET_BASE triplet collect requires matching global."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
                 (reward-kind:string (UR_FVT-RG|RewardKind fvt-id reward-dptf-id))
                 ;; the score's employing pool (triplet ⇒ silver leg's pool — mirrors CC_Collect's resolution)
                 (pool-id:string
@@ -3745,8 +3745,8 @@
             \ F|… registers ladder for triplet-anchor collect (score anchors still plain). Kind derived in C_AddRewardLink."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 ;;
                 (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
             )
@@ -3783,7 +3783,7 @@
             \ summing to 1000; HOMOGENEOUS ignores the rows. Owner-gated."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 ;;
                 (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
                 (heterogeneous:bool (= mode CT_REWARD_MODE_HETEROGENEOUS))
@@ -3826,8 +3826,8 @@
         @doc "C_SetCommonDenominator: farm only, can-upgrade, no ScoreEntityLinks yet, valid DPTF id."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 ;;
                 (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
                 (can-upgrade:bool (UR_FVT|CanUpgrade fvt-id))
@@ -4275,7 +4275,7 @@
     (defun XI_AddScoreEntity:string
         (fvt-id:string score-entity-type:integer score-entity-id:string swpair:string ghost-weight:decimal)
         @doc "Under SECURE: insert enabled ScoreEntityLink; farm adds W_i to S; lock membership-mode when non-mosaic."
-        (let ((ref-SCR:module{AcquisitionScoresV1} AQP-SCORE))
+        (let ((ref-SCR:module{AcquisitionScoresV2} AQP-SCORE))
             (WI_ScoreEntityLink fvt-id score-entity-id
                 (UDC_FVT|ScoreEntityLink score-entity-type true swpair ghost-weight 0.0 false 0.0 0.0 STREAM_EPOCH fvt-id score-entity-id)
             )
@@ -4399,7 +4399,7 @@
     ;;     ├ XI_BookCollectUnclaimed                    (coin 3)
     ;;     └ WU_RpsUser|LastRps checkpoint             (coin 4)
     ;;
-    (defun XI_SyncFarmGhostTvlForInject:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_SyncFarmGhostTvlForInject:object{IgnisCollectorV2.OutputCumulator}
         (fvt-id:string)
         @doc "Tier 0 inject prelude: farm ghost-TVL lazy sync when needed."
         ;; SECURE: granted by XI_1|SyncFarmGhostTvlForEmployedScores (underlying W_).
@@ -4408,17 +4408,17 @@
             (UC_EmptyOc)
         )
     )
-    (defun XI_TransferRewardDptfFromVault:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_TransferRewardDptfFromVault:object{IgnisCollectorV2.OutputCumulator}
         (patron:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         @doc "PHASE 1.1 collect — plain TFT or MULTIPLET_BASE lane split (Coil/Curl via ATSU)."
         (require-capability (SECURE))
         (let
             (
-                (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                (ref-ATSU:module{AutostakeUsageV1} ATSU)
-                (ref-ATS:module{AutostakeV2} ATS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (reward-kind:string (UR_FVT-RG|RewardKind fvt-id reward-dptf-id))
                 (payout:decimal (URC_CollectClaimableRewards patron pool-id fvt-id score-entity-type score-entity-id reward-dptf-id))
             )
@@ -4480,20 +4480,20 @@
             )
         )
     )
-    (defun XI_BookCollectUnclaimed:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_BookCollectUnclaimed:object{IgnisCollectorV2.OutputCumulator}
         (patron:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         @doc "Tier 0 collect unclaimed wrapper."
         ;; SECURE: granted by XI_1|BookCollectUnclaimed (underlying W_).
         (XI_1|BookCollectUnclaimed patron pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
     )
-    (defun XI_1|BookCollectUnclaimed:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_1|BookCollectUnclaimed:object{IgnisCollectorV2.OutputCumulator}
         (patron:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         @doc "PHASE 3.1 collect — coin step 3 · XI_URV|UpdateUnclaimedCount false when user-supply=0; \
             \ FVT adapt: deb-score=0 on this score."
         ;; SECURE: granted by XI_2|BumpRpsGlobalUnclaimed (underlying W_).
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 ;;
                 (deb:decimal (URC_ScoreEntityUserWeight patron fvt-id pool-id score-entity-type score-entity-id))
             )
@@ -4510,7 +4510,7 @@
     )
     ;;
     ;; --- Block A · Phase 4.5 FVT total-deb mirror (post-SCORE) ---
-    (defun XI_SyncFvtTotalDebMirrors:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_SyncFvtTotalDebMirrors:object{IgnisCollectorV2.OutputCumulator}
         (pre-member-debs:[object{FVT|MemberPreDeb}])
         @doc "After SCORE phase 4 (M2/#11): INCREMENTALLY update each touched vault/treasury member's FVT \
             \ total-deb-score mirror by (new live deb-weight − pre-SCORE deb-weight). No `keys` scan — only the \
@@ -4541,7 +4541,7 @@
         )
         (UC_EmptyOc)
     )
-    (defun XI_SyncTripletLaneWeights:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_SyncTripletLaneWeights:object{IgnisCollectorV2.OutputCumulator}
         (beneficiary-id:string settle-plans:[object{FVT|SettleScorePlan}])
         @doc "Phase 4.6 — after SCORE: for each TRUE-triplet member (any FVT class) the staker touched, \
             \ re-snapshot the user's Level-1 weight (live w-user) and adjust ScoreEntityLink.total-lane-weight \
@@ -4551,7 +4551,7 @@
         ;; SECURE: granted by WU_ScoreEntityLink|TotalLaneWeight / WW_MemberUserWeight (underlying W_).
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
             )
             (map
                 (lambda (plan:object{FVT|SettleScorePlan})
@@ -4592,7 +4592,7 @@
         (UC_EmptyOc)
     )
     ;; --- Block A · Phase 4.7 FVT user-presence ADD (M3 #12 / H4 sweep enumeration) ---
-    (defun XI_MarkFvtPresence:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_MarkFvtPresence:object{IgnisCollectorV2.OutputCumulator}
         (beneficiary-id:string distinct-fvts:[string])
         @doc "Phase 4.7 — mark the staker present in every FVT this stake touched (add-only, idempotent `true`). \
             \ `distinct-fvts` is already computed by the settle bundle, so this is a bounded set of point-writes, \
@@ -4602,7 +4602,7 @@
         (map (lambda (fvt-id:string) (WW_UserPresence fvt-id beneficiary-id true)) distinct-fvts)
         (UC_EmptyOc)
     )
-    (defun XI_RecomputeFvtPresence:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_RecomputeFvtPresence:object{IgnisCollectorV2.OutputCumulator}
         (beneficiary-id:string distinct-fvts:[string])
         @doc "Phase 4.7 (UNSTAKE side) — for each FVT this unstake touched, recompute the user's membership across \
             \ ALL of that FVT's score-entities (URC_FvtUserStillPresent) and write the result. Flips is-present → \
@@ -4617,7 +4617,7 @@
         )
         (UC_EmptyOc)
     )
-    (defun XI_SyncFvtPresence:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_SyncFvtPresence:object{IgnisCollectorV2.OutputCumulator}
         (beneficiary-id:string distinct-fvts:[string] direction:bool)
         @doc "Phase 4.7 dispatcher: STAKE (direction=true) → add-only mark present; UNSTAKE (false) → recompute \
             \ membership and flip to false when the last position is gone. Keeps the stake path a cheap point-write \
@@ -4632,13 +4632,13 @@
     ;;   XI_RpsPreScore — orchestrator: ghost TVL → ensure rows → bank pending
     ;;     └ (map) → XI_1|EnsureScoreRewardRows, XI_1|BankScorePendingRewards
     ;;
-    (defun XI_RpsPreScore:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_RpsPreScore:object{IgnisCollectorV2.OutputCumulator}
         (beneficiary-id:string pool-id:string settle-bundle:object{FVT|StakeSettleBundle})
         @doc "RPS prelude orchestrator — ghost TVL sync, ensure rows, bank pending at OLD deb (UrStoa UpdatePendingRewards block)."
         ;; SECURE: granted by XI_1|SyncFarmGhostTvlForEmployedScores / XI_1|EnsureScoreRewardRows / XI_1|BankScorePendingRewards (underlying W_).
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 ;;
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 (settle-scores:[string] (at "settle-scores" settle-bundle))
@@ -4722,7 +4722,7 @@
             )
         )
     )
-    (defun XI_1|SyncFarmGhostTvlForEmployedScores:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_1|SyncFarmGhostTvlForEmployedScores:object{IgnisCollectorV2.OutputCumulator}
         (score-plans:[object{FVT|SettleScorePlan}])
         @doc "Core ghost-TVL sync (phase 2.1 / inject / collect): SWP→FVT reconcile per object{FVT|SettleScorePlan}. \
             \ Caller builds plans once with reward-dptf-ids from a single URH_FVT|SettleFvtRewardBundle — no URD in child XI. \
@@ -4732,7 +4732,7 @@
         ;; SECURE: granted by XI_2|SettleMemberTier2, WU_ScoreEntityLink|GhostTvlWeight, WU_Fvt|TotalGhostTvlWeight (underlying W_).
         (let
             (
-                (ref-SWP:module{SwapperV3} SWP)
+                (ref-SWP:module{SwapperV4} SWP)
             )
             ;; map: employed score plans (farm ghost-TVL reconcile per score × FVT link)
             (map
@@ -4833,7 +4833,7 @@
         ;; SECURE: granted by WI_RpsMember / WW_RpsMember (underlying W_).
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (member-ids:[string] (URH_FvtEnabledScoreEntityIdsForFvt fvt-id))
                 (reward-prec:integer (ref-DPTF::UR_Decimals reward-dptf-id))
             )
@@ -4932,7 +4932,7 @@
             )
         )
     )
-    (defun XI_2|SettleMemberTier2:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_2|SettleMemberTier2:object{IgnisCollectorV2.OutputCumulator}
         (fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         @doc "Internal (phase 2.1 · depth 2 · 2a]): Tier-2 settle per reward DPTF on FVT|T|RPS|Member. \
             \ Farm: floor(W_i×(G−g_i), 48). Vault/Treasury: floor(D_i×(G−g_i), 48). Flush pending-member-rewards when deb > 0."
@@ -4946,8 +4946,8 @@
             )
             (let
                 (
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                     ;;
                     (fvt-class:integer (UR_FVT|FvtClass fvt-id))
                     (G:decimal (UR_FVT-RG|CurrentRps fvt-id reward-dptf-id))
@@ -5003,7 +5003,7 @@
             (UC_EmptyOc)
         )
     )
-    (defun XI_2|BankUserTier1Pending:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_2|BankUserTier1Pending:object{IgnisCollectorV2.OutputCumulator}
         (beneficiary-id:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         @doc "Internal (phase 2.1 · depth 2 · 2b]): bank user pending at OLD deb — UrStoa XI_URV|UpdatePendingRewards. \
             \ Does not advance last-rps (phase 2.4 XI_CheckpointStakeRps)."
@@ -5011,7 +5011,7 @@
         (do
             (let
                 (
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                     ;;
                     (deb-old:decimal (URC_ScoreEntityUserWeight beneficiary-id fvt-id pool-id score-entity-type score-entity-id))
                     (new-pending:decimal (URC_UserTier1AvailableRewards beneficiary-id fvt-id score-entity-id reward-dptf-id deb-old))
@@ -5022,13 +5022,13 @@
         )
     )
     ;; --- Shared deb-staleness FIX (M3 #12 — used by CC_Inject AND collect PHASE 6 backstop) ---
-    (defun XI_FixUserMemberDeb:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_FixUserMemberDeb:object{IgnisCollectorV2.OutputCumulator}
         (user-id:string fvt-id:string score-entity-type:integer score-entity-id:string)
         @doc "Single-member convenience: scans the FVT's reward rows once, then delegates to XI_FixUserMemberDebIn."
         (require-capability (SECURE))
         (XI_FixUserMemberDebIn user-id fvt-id score-entity-type score-entity-id (URH_FVT-RG|EnabledRewardRows fvt-id))
     )
-    (defun XI_FixUserMemberDebIn:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_FixUserMemberDebIn:object{IgnisCollectorV2.OutputCumulator}
         (user-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-rows:[string])
         @doc "FIX one (user, member) settling over PRE-COMPUTED `reward-rows` (the FVT's enabled reward-dptf ids — \
             \ batch-invariant), so a chunk fix scans FVT|T|RPS|Global ONCE, not per (user × member). \
@@ -5043,7 +5043,7 @@
         (require-capability (SECURE))
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 (triplet:bool (= score-entity-type CT_SCORE_ENTITY_TRIPLET))
                 (bronze-id:string (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET) (ref-SCR::UR_SCR|TripletBronzeScoreId score-entity-id) score-entity-id))
                 (silver-id:string (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET) (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id) score-entity-id))
@@ -5081,13 +5081,13 @@
             )
         )
     )
-    (defun XI_SweepRecomputeUserMember:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_SweepRecomputeUserMember:object{IgnisCollectorV2.OutputCumulator}
         (user-id:string fvt-id:string score-entity-type:integer score-entity-id:string swept-boost-class-id:string)
         @doc "Single-holder convenience: scans the FVT's reward rows once, then delegates to XI_SweepRecomputeUserMemberIn."
         (require-capability (SECURE))
         (XI_SweepRecomputeUserMemberIn user-id fvt-id score-entity-type score-entity-id swept-boost-class-id (URH_FVT-RG|EnabledRewardRows fvt-id))
     )
-    (defun XI_SweepRecomputeUserMemberIn:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_SweepRecomputeUserMemberIn:object{IgnisCollectorV2.OutputCumulator}
         (user-id:string fvt-id:string score-entity-type:integer score-entity-id:string swept-boost-class-id:string reward-rows:[string])
         @doc "Re-score sweep per-holder recompute settling over PRE-COMPUTED `reward-rows` (batch-invariant) — a \
             \ sweep chunk scans FVT|T|RPS|Global once, not per holder. \
@@ -5103,8 +5103,8 @@
         (require-capability (SECURE))
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                (ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)
                 (triplet:bool (= score-entity-type CT_SCORE_ENTITY_TRIPLET))
                 (triplet-true:bool (and (= score-entity-type CT_SCORE_ENTITY_TRIPLET) (ref-SCR::UR_SCR|TripletTrueTriplet score-entity-id)))
                 (silver-id:string (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET) (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id) score-entity-id))
@@ -5149,7 +5149,7 @@
             (UC_EmptyOc)
         )
     )
-    (defun XI_FixUserFvtDebIn:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_FixUserFvtDebIn:object{IgnisCollectorV2.OutputCumulator}
         (user-id:string fvt-id:string members:[string] reward-rows:[string])
         @doc "Fix the user's stale deb-based members among PRE-COMPUTED `members`, settling over PRE-COMPUTED \
             \ `reward-rows` — both batch-invariant, so a chunk fix scans FVT|T|ScoreEntityLink AND FVT|T|RPS|Global \
@@ -5161,14 +5161,14 @@
             members)
         (UC_EmptyOc)
     )
-    (defun XI_FixUserFvtDeb:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_FixUserFvtDeb:object{IgnisCollectorV2.OutputCumulator}
         (user-id:string fvt-id:string)
         @doc "Fix ALL of a user's stale deb-based members in the FVT. Single-user convenience (one member scan); \
             \ bulk callers use XI_FixUserFvtDebIn with a hoisted member list."
         (require-capability (SECURE))
         (XI_FixUserFvtDebIn user-id fvt-id (URH_FvtEnabledScoreEntityIdsForFvt fvt-id) (URH_FVT-RG|EnabledRewardRows fvt-id))
     )
-    (defun XI_FixUserFvtDebPenalized:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_FixUserFvtDebPenalized:object{IgnisCollectorV2.OutputCumulator}
         (fvt-id:string reward-dptf-id:string user-id:string)
         @doc "ENFORCED-INJECT variant: fix ALL the user's stale members (XI_FixUserFvtDeb) AND record the 2e \
             \ forced-fix count on (fvt, reward-dptf, user) = how many members were stale (counted BEFORE the fix). \
@@ -5177,7 +5177,7 @@
         (require-capability (SECURE))
         (XI_FixUserFvtDebPenalizedIn fvt-id reward-dptf-id user-id (URH_FvtEnabledScoreEntityIdsForFvt fvt-id) (URH_FVT-RG|EnabledRewardRows fvt-id))
     )
-    (defun XI_FixUserFvtDebPenalizedIn:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_FixUserFvtDebPenalizedIn:object{IgnisCollectorV2.OutputCumulator}
         (fvt-id:string reward-dptf-id:string user-id:string members:[string] reward-rows:[string])
         @doc "Hoisted twin of XI_FixUserFvtDebPenalized: count + fix the user's stale members among PRE-COMPUTED \
             \ `members`, settling over PRE-COMPUTED `reward-rows` (count + fix + settle all reuse the ONE member \
@@ -5193,7 +5193,7 @@
         )
     )
     ;; --- Shared inject-CORE + cross-module XE_ building blocks (CC_Inject FVT-local; MTX|n|C_Inject via MTX-AQP) ---
-    (defun XI_DistributeInjectAmount:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_DistributeInjectAmount:object{IgnisCollectorV2.OutputCumulator}
         (fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "Escrow-aware distribution of `amount` (already in AQP|SC_NAME custody) to the CURRENT stakers of one \
             \ reward lane — the shared PHASE 2+3 core used by BOTH an instant inject (XI_FvtInjectCore) and a stream \
@@ -5254,7 +5254,7 @@
             (UC_EmptyOc)
         )
     )
-    (defun XI_ReleaseStream:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_ReleaseStream:object{IgnisCollectorV2.OutputCumulator}
         (fvt-id:string reward-dptf-id:string)
         @doc "The DRIP / checkpoint for one reward lane. Releases the vested-since-last-drip slice of every active \
             \ stream and distributes it via XI_DistributeInjectAmount (so a stream === an instant inject of that \
@@ -5268,7 +5268,7 @@
                 (UC_EmptyOc)                                        ;; fast path — no stream on this lane
                 (let*
                     (
-                        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                         (now:time (at "block-time" (chain-data)))
                         (last:time (UR_FVT-RG|StreamLastRelease fvt-id reward-dptf-id))
                         ;; released amounts must be conformant to the reward token's precision — rate*elapsed is a
@@ -5330,7 +5330,7 @@
             )
         )
     )
-    (defun XI_FvtInjectCore:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_FvtInjectCore:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "THE single inject-CORE for ALL FVT classes — the ONLY place inject writes exist. C_Inject, CC_Inject \
             \ and the MTX|n|C_Inject defpact terminal step all route through here (one code path to audit/fix). \
@@ -5345,8 +5345,8 @@
         (require-capability (SECURE))
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
             )
@@ -5369,7 +5369,7 @@
             )
         )
     )
-    (defun XI_FvtAddStream:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_FvtAddStream:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
         @doc "Streamed inject CORE (linear vesting). (0) DRIP pending streams (checkpoint + prune finished → free \
             \ slots); (0b) enforce a free stream slot on the POST-DRIP count under the FVT owner konto's Elite-tier \
@@ -5380,13 +5380,13 @@
         (require-capability (SECURE))
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
             )
             ;; PHASE 0 — drip (checkpoint + prune finished streams) so the shared last-release is `now` before we add
-            (let ((drip-oc:object{IgnisCollectorV1.OutputCumulator} (XI_ReleaseStream fvt-id reward-dptf-id)))
+            (let ((drip-oc:object{IgnisCollectorV2.OutputCumulator} (XI_ReleaseStream fvt-id reward-dptf-id)))
                 ;; PHASE 0b — slot-cap on the POST-DRIP count (Elite tier of the FVT owner konto, D5)
                 (enforce (< (UR_FVT-RG|StreamCount fvt-id reward-dptf-id) (URC_MaxStreamLanes owner-konto))
                     "FVT|Stream: stream slots full for this owner's Elite tier — use a direct (instant) inject")
@@ -5419,7 +5419,7 @@
             )
         )
     )
-    (defun XI_FvtSweepRecomputeChunk:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_FvtSweepRecomputeChunk:object{IgnisCollectorV2.OutputCumulator}
         (fvt-id:string score-entity-id:string swept-boost-class-id:string users:[string])
         @doc "Intra-module chunk: recompute a chunk of holders on one (fvt, member) after the swept anchor's global \
             \ removal — per user runs XI_SweepRecomputeUserMember (settle → aggregate/lane refold → deb + mirror). \
@@ -5453,7 +5453,7 @@
                 (lambda (acc:object sid:string)
                     (let
                         (
-                            (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                            (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                             (seen-before:integer (at "seen" acc))
                             (fvt:string (ref-SCR::UR_SCR|ScoreFvtLink sid))
                             (member:string
@@ -5490,7 +5490,7 @@
     ;;     └ AQP-POOL::XB_SetBenDptfAnkSyncCount
     ;;
     ;; --- Anchors (AQP-ANK · TF stake only) ---
-    (defun XI_RefreshTrueFungibleStakeAnchors:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_RefreshTrueFungibleStakeAnchors:object{IgnisCollectorV2.OutputCumulator}
         (beneficiary-id:string dptf-id:string)
         @doc "Internal (CC_TrueFungibleStakeFlow phase 3.1 · depth 0]): read post-ico1 BenDptfTotal balance, \
             \ call backward ANK promile refresh + AQP last-ank-sync-count bump; concat IGNIS OCs. \
@@ -5498,15 +5498,15 @@
         (require-capability (SECURE))
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+                (ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 ;;
                 (total-dptf-amount:decimal (ref-AQP::UR_AQP|BenDptfTotalBalance beneficiary-id dptf-id))
-                (ico-ank:object{IgnisCollectorV1.OutputCumulator}
+                (ico-ank:object{IgnisCollectorV2.OutputCumulator}
                     (ref-ANK::XE_UpdateTrueFungibleUserAnchorValues beneficiary-id dptf-id total-dptf-amount)
                 )
-                (ico-aqp:object{IgnisCollectorV1.OutputCumulator}
+                (ico-aqp:object{IgnisCollectorV2.OutputCumulator}
                     (ref-AQP::XB_SetBenDptfAnkSyncCount beneficiary-id dptf-id)
                 )
             )
@@ -5519,7 +5519,7 @@
     ;;     ├ AQP-ANK::XE_UpdateSemiFungible* or XE_UpdateNonFungible*
     ;;     └ AQP-POOL::XB_SetBenCollectableAnkSyncCount
     ;;
-    (defun XI_RefreshCollectableStakeAnchors:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_RefreshCollectableStakeAnchors:object{IgnisCollectorV2.OutputCumulator}
         (
             beneficiary-id:string
             collectable-id:string
@@ -5532,9 +5532,9 @@
         (require-capability (SECURE))
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+                (ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
             (if son
                 (ref-ANK::XE_UpdateSemiFungibleUserAnchorValues
@@ -5666,7 +5666,7 @@
         )
     )
     ;; --- RPS post-SCORE (UrStoa unclaimed + checkpoint) ---
-    (defun XI_BookStakeUnclaimedCounts:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_BookStakeUnclaimedCounts:object{IgnisCollectorV2.OutputCumulator}
         (beneficiary-id:string pool-id:string settle-bundle:object{FVT|StakeSettleBundle})
         @doc "Internal (C_*StakeFlow phase 2.35 · depth 0]): RPS|Global unclaimed-count after SCORE (UrStoa XI_URV|UpdateUnclaimedCount). \
             \ Once per (fvt-id, reward-dptf-id) per tx — OR was/is claimant across employed scores on that fvt in this pool. \
@@ -5675,7 +5675,7 @@
         ;; SECURE: granted by XI_1|BookUnclaimedForFvtRewardLine (underlying W_).
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 ;;
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 (distinct-fvts:[string] (at "distinct-fvts" settle-bundle))
@@ -5721,7 +5721,7 @@
     ;; --- Block C · checkpoint (C_*StakeFlow) ---
     ;;   XI_CheckpointStakeRps — nested map (score plan × reward line); no child XI_*.
     ;;
-    (defun XI_CheckpointStakeRps:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_CheckpointStakeRps:object{IgnisCollectorV2.OutputCumulator}
         (beneficiary-id:string pool-id:string settle-bundle:object{FVT|StakeSettleBundle})
         @doc "Internal (C_*StakeFlow phase 2.4 · depth 0]): advance last-rps to NEW L_i after SCORE deb mutation (UrStoa XI_URV|UpdateUserRPS). \
             \ settle-bundle from URHC_BuildStakeSettleBundle (same scope as phase 2.1; no second URD). \
@@ -5730,7 +5730,7 @@
         ;; SECURE: granted by WU_RpsUser|LastRps (underlying W_).
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 ;;
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 (checkpoint-plans:[object{FVT|SettleScorePlan}] (at "settle-plans" settle-bundle))
@@ -5769,7 +5769,7 @@
             )
         )
     )
-    (defun XI_1|HeterogeneousLaneRoute:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_1|HeterogeneousLaneRoute:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string mf-id:string amt-b:decimal amt-s:decimal amt-g:decimal prec:integer)
         @doc "Heterogeneous MULTIPLET_BASE collect: split EACH lane amount across the 3 ladder tokens per the \
             \ FVT|QualitySplit matrix (per-mille rows), aggregate the 3 tokens, and route total-t0 raw / total-t1 \
@@ -5778,10 +5778,10 @@
         (require-capability (SECURE))
         (let
             (
-                (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                (ref-ATSU:module{AutostakeUsageV1} ATSU)
-                (ref-ATS:module{AutostakeV2} ATS)
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (bs:[integer] (UR_FVT-QS|BronzeSplit fvt-id reward-dptf-id))
                 (ss:[integer] (UR_FVT-QS|SilverSplit fvt-id reward-dptf-id))
                 (gs:[integer] (UR_FVT-QS|GoldSplit fvt-id reward-dptf-id))
@@ -5834,12 +5834,12 @@
         (require-capability (SECURE))
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (if (= reward-dptf-id (ref-DALOS::UR_IgnisID))
                 (let
                     (
-                        (ref-ORBR:module{OuroborosV1} OUROBOROS)
+                        (ref-ORBR:module{OuroborosV2} OUROBOROS)
                     )
                     {"token"  : (ref-DALOS::UR_OuroborosID)
                     ,"amount" : (at 0 (ref-ORBR::URC_Compress amount))
@@ -5850,7 +5850,7 @@
         )
     )
     ;; [XE]
-    (defun XE_FvtFixUserChunk:object{IgnisCollectorV1.OutputCumulator}
+    (defun XE_FvtFixUserChunk:object{IgnisCollectorV2.OutputCumulator}
         (fvt-id:string reward-dptf-id:string users:[string])
         @doc "Forward (MTX-AQP defpact step): FIX a chunk of stale stakers in the FVT (settle + refresh + \
             \ mirror-resync per user; each fresh member no-ops), recording the 2e forced-fix count per user on \
@@ -5870,7 +5870,7 @@
             (UC_EmptyOc)
         )
     )
-    (defun XE_SweepSyncTripletLaneWeights:object{IgnisCollectorV1.OutputCumulator}
+    (defun XE_SweepSyncTripletLaneWeights:object{IgnisCollectorV2.OutputCumulator}
         (beneficiary-id:string fvt-id:string score-entity-id:string)
         @doc "Forward (re-score sweep): re-snapshot a TRUE-triplet member's Level-1 lane weight for this holder at \
             \ the LIVE promile (after an anchor change) and delta-adjust ScoreEntityLink.total-lane-weight — the \
@@ -5885,7 +5885,7 @@
             (UC_EmptyOc)
         )
     )
-    (defun XE_FvtSweepRecomputeChunk:object{IgnisCollectorV1.OutputCumulator}
+    (defun XE_FvtSweepRecomputeChunk:object{IgnisCollectorV2.OutputCumulator}
         (fvt-id:string score-entity-id:string swept-boost-class-id:string users:[string])
         @doc "Forward (re-score sweep defpact — cross-module): recompute a CHUNK of holders on one (fvt, member). \
             \ Thin P|UEV_IMC + FVT|XE>SWEEP-FIX (composes SECURE) wrapper over XI_FvtSweepRecomputeChunk. Caller passes \
@@ -5903,9 +5903,9 @@
         (with-capability (FVT|XE>SWEEP-BRACKET anchor-id)
             (let
                 (
-                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                    (ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                    (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
                     (score-ids:[string]
                         (ref-ANK::UR_BC|ScoreLinks (ref-ANK::UR_ANK|BoostClassId anchor-id)))
                 )
@@ -5925,9 +5925,9 @@
         (with-capability (FVT|XE>SWEEP-BRACKET anchor-id)
             (let
                 (
-                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                    (ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                    (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
                     (score-ids:[string]
                         (ref-ANK::UR_BC|ScoreLinks (ref-ANK::UR_ANK|BoostClassId anchor-id)))
                 )
@@ -6009,7 +6009,7 @@
         (with-capability (FVT|XE>ADMIT-DELEGATION fvt-id triplet-id operator)
             (let
                 (
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 )
                 (ref-SCR::XE_CreateFvtLink (ref-SCR::UR_SCR|TripletBronzeScoreId triplet-id) fvt-id)
                 (ref-SCR::XE_CreateFvtLink (ref-SCR::UR_SCR|TripletSilverScoreId triplet-id) fvt-id)
@@ -6018,7 +6018,7 @@
             )
         )
     )
-    (defun XE_WithdrawRoyalty:object{IgnisCollectorV1.OutputCumulator}
+    (defun XE_WithdrawRoyalty:object{IgnisCollectorV2.OutputCumulator}
         (fvt-id:string reward-dptf-id:string destination:string)
         @doc "DSA royalty disposal (WITHDRAW): zero the royalty pool (reward-dptf) of <fvt-id>, IGNIS-normalize it \
             \ to OURO if needed, and move the whole balance OUT of the AQP pool-vault custody (AQP|SC_NAME) to \
@@ -6029,8 +6029,8 @@
         (with-capability (FVT|XE>DISPOSE-ROYALTY fvt-id reward-dptf-id)
             (let
                 (
-                    (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (royalty:decimal (UR_FVT-RG|RoyaltyRewards fvt-id reward-dptf-id))
                 )
                 (WU_RpsGlobal|RoyaltyRewards fvt-id reward-dptf-id 0.0)
@@ -6046,7 +6046,7 @@
             )
         )
     )
-    (defun XE_BurnRoyalty:object{IgnisCollectorV1.OutputCumulator}
+    (defun XE_BurnRoyalty:object{IgnisCollectorV2.OutputCumulator}
         (fvt-id:string reward-dptf-id:string)
         @doc "DSA royalty disposal (BURN): zero the royalty pool (reward-dptf) of <fvt-id>, IGNIS-normalize it to \
             \ OURO if needed, and BURN the whole balance in place from the AQP pool-vault custody (AQP|SC_NAME — \
@@ -6056,8 +6056,8 @@
         (with-capability (FVT|XE>DISPOSE-ROYALTY fvt-id reward-dptf-id)
             (let
                 (
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (royalty:decimal (UR_FVT-RG|RoyaltyRewards fvt-id reward-dptf-id))
                 )
                 (WU_RpsGlobal|RoyaltyRewards fvt-id reward-dptf-id 0.0)
@@ -6073,7 +6073,7 @@
             )
         )
     )
-    (defun XE_FuelRoyalty:object{IgnisCollectorV1.OutputCumulator}
+    (defun XE_FuelRoyalty:object{IgnisCollectorV2.OutputCumulator}
         (fvt-id:string reward-dptf-id:string swpair:string)
         @doc "DSA royalty disposal (FUEL): zero the royalty pool (reward-dptf) of <fvt-id>, IGNIS-normalize it to \
             \ OURO if needed, and FUEL <swpair> with the whole balance from the AQP pool-vault custody — adds \
@@ -6085,9 +6085,9 @@
         (with-capability (FVT|XE>DISPOSE-ROYALTY fvt-id reward-dptf-id)
             (let
                 (
-                    (ref-SWP:module{SwapperV3} SWP)
-                    (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC)
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (royalty:decimal (UR_FVT-RG|RoyaltyRewards fvt-id reward-dptf-id))
                 )
                 (WU_RpsGlobal|RoyaltyRewards fvt-id reward-dptf-id 0.0)
@@ -6107,7 +6107,7 @@
             )
         )
     )
-    (defun XE_BankScorePendingRewards:object{IgnisCollectorV1.OutputCumulator}
+    (defun XE_BankScorePendingRewards:object{IgnisCollectorV2.OutputCumulator}
         (beneficiary-id:string pool-id:string plan:object)
         @doc "Forward (stake/unstake/collect flow): bank the beneficiary's pending per-score rewards for \
             \ <pool-id> into the claimable ledger following <plan> (the pre-computed settle plan). P|UEV_IMC + SECURE."
@@ -6119,7 +6119,7 @@
             )
         )
     )
-    (defun XE_RefreshTrueFungibleStakeAnchors:object{IgnisCollectorV1.OutputCumulator}
+    (defun XE_RefreshTrueFungibleStakeAnchors:object{IgnisCollectorV2.OutputCumulator}
         (beneficiary-id:string dptf-id:string)
         @doc "Forward (stake/unstake flow): recompute the beneficiary's true-fungible stake-anchor values for \
             \ <dptf-id> after a stake delta, keeping the anchor aggregates in sync with the live stake. P|UEV_IMC + SECURE."
@@ -6128,7 +6128,7 @@
             (XI_RefreshTrueFungibleStakeAnchors beneficiary-id dptf-id)
         )
     )
-    (defun XE_RefreshCollectableStakeAnchors:object{IgnisCollectorV1.OutputCumulator}
+    (defun XE_RefreshCollectableStakeAnchors:object{IgnisCollectorV2.OutputCumulator}
         (
             beneficiary-id:string
             collectable-id:string
@@ -6147,7 +6147,7 @@
             )
         )
     )
-    (defun XE_BookStakeUnclaimedCounts:object{IgnisCollectorV1.OutputCumulator}
+    (defun XE_BookStakeUnclaimedCounts:object{IgnisCollectorV2.OutputCumulator}
         (beneficiary-id:string pool-id:string settle-bundle:object)
         @doc "Forward (stake/unstake/collect flow): book the beneficiary's unclaimed-reward counts for \
             \ <pool-id> from <settle-bundle> so later collects settle the correct outstanding units. P|UEV_IMC + SECURE."
@@ -6156,7 +6156,7 @@
             (XI_BookStakeUnclaimedCounts beneficiary-id pool-id settle-bundle)
         )
     )
-    (defun XE_CheckpointStakeRps:object{IgnisCollectorV1.OutputCumulator}
+    (defun XE_CheckpointStakeRps:object{IgnisCollectorV2.OutputCumulator}
         (beneficiary-id:string pool-id:string settle-bundle:object)
         @doc "Forward (stake/unstake/collect flow): checkpoint the beneficiary's reward-per-share (RPS) baseline \
             \ for <pool-id> from <settle-bundle> so subsequent accrual is measured from the new stake state. P|UEV_IMC + SECURE."
@@ -6166,7 +6166,7 @@
         )
     )
     ;; [XB]
-    (defun XB_FvtInject:object{IgnisCollectorV1.OutputCumulator}
+    (defun XB_FvtInject:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "THE single authorized inject entry — usable BOTH internally (C_Inject delegates here) and externally \
             \ (the MTX|n|C_Inject defpact terminal step calls it cross-module), hence `XB`. Just the auth wrapper: \
@@ -6184,16 +6184,16 @@
     ;;
     ;; [C]   client
     ;; --- Lifecycle (FVT|T) ---
-    (defun C_Issue:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_Issue:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-name:string owner-konto:string fvt-class:integer common-denominator:string)
         @doc "Create a new FVT (Farm | Vault | Treasury). GAS|ISSUE-FVT + smart STOA from patron; returns fvt-id in output."
         (P|UEV_IMC)
         (with-capability (FVT|C>ISSUE-FVT fvt-name owner-konto fvt-class common-denominator)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV1} DALOS)
-                    (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     ;;
                     (smart-price:decimal (ref-DALOS::UR_UsagePrice "smart"))
                     (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
@@ -6206,13 +6206,13 @@
         )
     )
     ;;Management (FVT|Schema)
-    (defun C_RotateOwnership:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_RotateOwnership:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-id:string new-owner-konto:string)
         @doc "Transfer FVT owner-konto. Validation in FVT|C>ROTATE-OWNERSHIP-FVT; medium IGNIS on pre-rotate owner."
         (P|UEV_IMC)
         (let
             (
-                (ico:object{IgnisCollectorV1.OutputCumulator} (URCi_RotateOwnership fvt-id))
+                (ico:object{IgnisCollectorV2.OutputCumulator} (URCi_RotateOwnership fvt-id))
             )
             (with-capability (FVT|C>ROTATE-OWNERSHIP-FVT fvt-id new-owner-konto)
                 (XI_RotateOwnership fvt-id new-owner-konto)
@@ -6220,13 +6220,13 @@
             ico
         )
     )
-    (defun C_Control:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_Control:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-id:string new-can-upgrade:bool new-can-change-owner:bool)
         @doc "Set can-upgrade and can-change-owner on FVT. Medium IGNIS on owner-konto."
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 ;;
                 (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
             )
@@ -6236,13 +6236,13 @@
             (URCi_Control fvt-id)
         )
     )
-    (defun C_SetCommonDenominator:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_SetCommonDenominator:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-id:string common-denominator:string)
         @doc "Farm-only: set common-denominator before any ScoreEntityLinks. GAS|SET-COMMON-DENOMINATOR on owner."
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 ;;
                 (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -6253,13 +6253,13 @@
             (URCi_SetCommonDenominator fvt-id [fvt-id])
         )
     )
-    (defun C_SetMosaic:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_SetMosaic:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-id:string mosaic:bool)
         @doc "Toggle mosaic membership policy when FVT has no ScoreEntityLink rows. GAS|SET-MOSAIC on owner."
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 ;;
                 (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -6270,7 +6270,7 @@
             (URCi_SetMosaic fvt-id [fvt-id])
         )
     )
-    (defun C_SetSplitMode:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_SetSplitMode:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-id:string split-mode:string)
         @doc "Set the farm reward-split mode (D1-G2): SPLIT|STAKED (participation, default) | SPLIT|TVL (pool-size). \
             \ Farm owner; FREELY mutable (no cooldown) — a change re-weights only FUTURE injects (RPS is \
@@ -6278,7 +6278,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 ;;
                 (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -6290,14 +6290,14 @@
         )
     )
     ;; --- Score membership (FVT|T|ScoreEntityLink) ---
-    (defun C_AddScoreEntity:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_AddScoreEntity:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string)
         @doc "Register score (type 1) or triplet (type 3) on FVT; insert ScoreEntityLink; SCR fvt-links. GAS|ADD-SCORE-ENTITY."
         (P|UEV_IMC)
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (fvt-class:integer (UR_FVT|FvtClass fvt-id))
                 (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
                 (swpair:string (URC_ResolveScoreEntitySwpair score-entity-type score-entity-id fvt-class))
@@ -6323,13 +6323,13 @@
             (URCi_AddScoreEntity fvt-id [fvt-id score-entity-id])
         )
     )
-    (defun C_ToggleScoreEntityLink:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_ToggleScoreEntityLink:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string enabled:bool)
         @doc "Turn ScoreEntityLink.enabled on/off; farm adjusts S when toggling. GAS|TOGGLE-SCORE-ENTITY-LINK."
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
             )
@@ -6339,7 +6339,7 @@
             (URCi_ToggleScoreEntityLink fvt-id [fvt-id score-entity-id])
         )
     )
-    (defun C_IssueMultipletFamily:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_IssueMultipletFamily:object{IgnisCollectorV2.OutputCumulator}
         (
             patron:string
             token-0-id:string
@@ -6352,7 +6352,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 ;;
                 (family-id:string (UCk_MultipletFamily token-0-id token-1-id token-2-id))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -6364,7 +6364,7 @@
         )
     )
     ;; --- Reward token registration (FVT|T|RPS|Global) — atomic one row per reward DPTF ---
-    (defun C_AddRewardLink:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_AddRewardLink:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string segmentation:bool multiplet-family-id:string)
         @doc "Register one reward DPTF on FVT (single RPS|Global row). multiplet-family-id BAR for plain tokens (VESTA, etc.); \
             \ F|t0|t1|t2 when reward-dptf-id is family token-0 — enables triplet lane collect on triplet anchors; score anchors stay plain. \
@@ -6372,7 +6372,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 ;;
                 (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
                 (reward-kind:string
@@ -6389,13 +6389,13 @@
             (URCi_AddRewardLink fvt-id [fvt-id reward-dptf-id multiplet-family-id])
         )
     )
-    (defun C_ToggleRewardLink:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_ToggleRewardLink:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string enabled:bool)
         @doc "Toggle reward-enabled; ±1 enabled-reward-count on flip. GAS|TOGGLE-REWARD-LINK on owner."
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 ;;
                 (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -6406,7 +6406,7 @@
             (URCi_ToggleRewardLink fvt-id [fvt-id reward-dptf-id])
         )
     )
-    (defun C_SetQualitySplit:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_SetQualitySplit:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
         @doc "Round B: set a MULTIPLET_BASE reward's quality-split MODE + heterogeneous MATRIX. HOMOGENEOUS (default \
             \ when unset) routes each quality lane to its one ladder token (bronze->t0, silver->t1, gold->t2). \
@@ -6415,7 +6415,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 ;;
                 (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -6486,7 +6486,7 @@
     ;;   costs one member-iteration more than a 3-member farm.
     ;; ───────────────────────────────────────────────────────────────────────────
     ;;
-    (defun CC_InjectStream:object{IgnisCollectorV1.OutputCumulator}
+    (defun CC_InjectStream:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
         @doc "Inject a reward DPTF as a TIME-STREAM — the DELAYED inject path (any FVT class): `amount` vests \
             \ LINEARLY over `duration` seconds (1h..365d) and whoever is staked during each slice earns that slice \
@@ -6500,7 +6500,7 @@
             (XI_FvtAddStream patron fvt-id reward-dptf-id amount duration)
         )
     )
-    (defun CC_Inject:object{IgnisCollectorV1.OutputCumulator}
+    (defun CC_Inject:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "HEAVY (R3 `CC_`) enforced-FRESH inject for ANY FVT class (farm/vault/treasury) — see the INJECT \
             \ FUNCTION MATRIX above C_Inject. Before injecting, SCAN the FVT's present users (`URH_FvtStalePresentUsers` \
@@ -6517,7 +6517,7 @@
         (with-capability (FVT|C>INJECT patron fvt-id reward-dptf-id amount)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     [
@@ -6579,7 +6579,7 @@
             )
         )
     )
-    (defun CC_InjectFinalize:object{IgnisCollectorV1.OutputCumulator}
+    (defun CC_InjectFinalize:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "FINALIZE a paginated enforced-fresh inject: enforce that NO stale present user remains (the prior \
             \ CCp_InjectFixChunk pages made the divisor live), then inject on the fresh divisor via the shared \
@@ -6659,9 +6659,9 @@
         (with-capability (FVT|C>SWEEP-REVOKE patron anchor-id)
             (let
                 (
-                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                    (ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                    (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
                     ;;
                     (boost-class-id:string (ref-ANK::UR_ANK|BoostClassId anchor-id))
                     (score-ids:[string] (ref-ANK::UR_BC|ScoreLinks boost-class-id))
@@ -6701,9 +6701,9 @@
             (enforce (not (UR_FVT|SweepActive anchor-id)) "A sweep is already in progress for this anchor")
             (let
                 (
-                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                    (ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                    (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
                     ;;
                     (boost-class-id:string (ref-ANK::UR_ANK|BoostClassId anchor-id))
                 )
@@ -6738,9 +6738,9 @@
         (with-capability (FVT|C>SWEEP-DRAIN patron anchor-id chunk)
             (let
                 (
-                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                    (ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                    (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
                     ;;
                     (cursor:object{FVT|SweepProgress} (UR_FVT|SweepProgress anchor-id))
                     (boost-class-id:string (ref-ANK::UR_ANK|BoostClassId anchor-id))
@@ -6777,7 +6777,7 @@
             )
         )
     )
-    (defun CC_UnstaleMyScores:object{IgnisCollectorV1.OutputCumulator}
+    (defun CC_UnstaleMyScores:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-ids:[string])
         @doc "User SELF-SERVICE deb-unstale: the caller refreshes THEIR OWN stale scores across `fvt-ids` — per \
             \ FVT, XI_FixUserFvtDeb settles the caller's pending at the OLD deb, refreshes each score deb to the \
@@ -6790,7 +6790,7 @@
         (with-capability (FVT|C>UNSTALE-MY-SCORES patron)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
@@ -6807,15 +6807,15 @@
             )
         )
     )
-    (defun CC_Collect:object{IgnisCollectorV1.OutputCumulator}
+    (defun CC_Collect:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         @doc "Collect reward DPTF — phases 0 → 5 — see canonical collect map above. UrStoa ≡ C_URV|Collect."
         (P|UEV_IMC)
         (with-capability (FVT|C>COLLECT patron fvt-id score-entity-type score-entity-id reward-dptf-id)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                     ;;
                     (pool-id:string
                         (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)
@@ -6901,7 +6901,7 @@
                                 (UC_EmptyOc)
                                 (let
                                     (
-                                        (ref-DALOS:module{OuronetDalosV1} DALOS)
+                                        (ref-DALOS:module{OuronetDalosV2} DALOS)
                                         (penalty:decimal (* (dec ffc) CT_FORCED_FIX_RATE))
                                     )
                                     (WU_FvtForcedFixCount|Zero fvt-id reward-dptf-id patron)
@@ -6951,16 +6951,16 @@
     ;; ═══════════════════════════════════════════════════════════════════════════
     ;;
     ;; --- TF stake/unstake recipe (Talos client → CC_TrueFungibleStakeFlow) ---
-    (defun CC_TrueFungibleStakeFlow:object{IgnisCollectorV1.OutputCumulator}
+    (defun CC_TrueFungibleStakeFlow:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
         @doc "Core TF stake/unstake recipe. Phases 1 → 2 → 3 → 4 → 5 — see canonical map above."
         (P|UEV_IMC)
         (with-capability (FVT|C>TRUE-FUNGIBLE-STAKE-FLOW pool-id owner-id beneficiary-id dptf-id amount direction)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                     ;;
                     (settle-bundle:object{FVT|StakeSettleBundle}
                         (URHC_BuildStakeSettleBundle pool-id beneficiary-id)
@@ -7017,7 +7017,7 @@
     ;;
     ;; --- OF stake/unstake recipe (Talos ×4 → CC_OrtoFungibleStakeFlow) ---
     ;;   No phase 2.2 — ANK anchors are DPTF / DPSF / DPNF only; OF custody does not refresh promile.
-    (defun CC_OrtoFungibleStakeFlow:object{IgnisCollectorV1.OutputCumulator}
+    (defun CC_OrtoFungibleStakeFlow:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
         @doc "Core OrtoFungible stake/unstake recipe. Phases 1 → 2 → 3 → 4 → 5 — see canonical map above. \
             \ OF: phase 1.3 and 3.x are N/A (comment-only in ICO list)."
@@ -7025,9 +7025,9 @@
         (with-capability (FVT|C>ORTO-FUNGIBLE-STAKE-FLOW pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts direction)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                     ;;
                     ;; M5: beneficiary-id is authoritative BOTH directions (stake and unstake). The caller supplies
                     ;; the real beneficiary on unstake too, so the exact (owner, beneficiary) tracker row is settled —
@@ -7083,7 +7083,7 @@
     )
     ;;
     ;; --- DPDC collectable stake/unstake recipe (Talos ×4 → CC_CollectableStakeFlow; son=true DPSF / false DPNF) ---
-    (defun CC_CollectableStakeFlow:object{IgnisCollectorV1.OutputCumulator}
+    (defun CC_CollectableStakeFlow:object{IgnisCollectorV2.OutputCumulator}
         (
             pool-id:string
             owner-id:string
@@ -7103,9 +7103,9 @@
             )
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                     ;;
                     ;; M5: beneficiary-id is authoritative BOTH directions (see CC_OrtoFungibleStakeFlow). The caller
                     ;; supplies the real beneficiary on unstake, so the exact (owner, beneficiary) tracker + Ben rollup
@@ -7168,13 +7168,13 @@
     ;;{6}  REPL
     ;; [REPL] dry-run helpers (not on the interface)
     ;;
-    ;; --- REPL dry-run (GOV|FVT_ADMIN; not on AcquisitionFarmsVaultsTreasuriesV1) ---
+    ;; --- REPL dry-run (GOV|FVT_ADMIN; not on AcquisitionFarmsVaultsTreasuriesV2) ---
     ;; Until C_Issue / C_AddScoreEntity / C_AddRewardLink are implemented.
     (defun REPL_BootstrapVault:string
         (fvt-id:string owner-konto:string score-id:string reward-dptf-id:string)
         @doc "REPL-only: insert class-1 vault + enabled ScoreEntityLink (type 1) + reward-enabled RPS|Global."
         (with-capability (GOV|FVT_ADMIN)
-            (let ((ref-SCR:module{AcquisitionScoresV1} AQP-SCORE))
+            (let ((ref-SCR:module{AcquisitionScoresV2} AQP-SCORE))
                 (with-capability (SECURE)
                     (WI_Fvt fvt-id
                         (UDC_FVT|Schema 1 owner-konto true true "|" 0.0 0.0 0.0 0.0 0 1 1 true CT_MEMBERSHIP_MODE_BAR false CT_SPLIT_MODE_NA fvt-id)
@@ -7197,7 +7197,7 @@
         (fvt-id:string owner-konto:string score-id:string reward-dptf-id:string)
         @doc "REPL-only: insert class-2 treasury + enabled ScoreEntityLink (type 1) + reward-enabled RPS|Global."
         (with-capability (GOV|FVT_ADMIN)
-            (let ((ref-SCR:module{AcquisitionScoresV1} AQP-SCORE))
+            (let ((ref-SCR:module{AcquisitionScoresV2} AQP-SCORE))
                 (with-capability (SECURE)
                     (WI_Fvt fvt-id
                         (UDC_FVT|Schema 2 owner-konto true true "|" 0.0 0.0 0.0 0.0 0 1 1 true CT_MEMBERSHIP_MODE_BAR false CT_SPLIT_MODE_NA fvt-id)

@@ -17,9 +17,9 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-DPDC:module{DpdcV1} DPDC)
-        (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
         (id:string "DHWC-98c486052a51")
         (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
     )

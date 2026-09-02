@@ -1,9 +1,9 @@
 ;; Deploy: load THIS file — interface(s) + module ship together.
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
 ;;
-(interface SwapperMtxV3
+(interface SwapperMtxV4
     @doc "Exposes SWP MultiStep (via defpact) Functions. \
-        \ V3: issue pool caps use SwapperV3.PoolTokens (bumped with SwapperV3 row types)."
+        \ V3: issue pool caps use SwapperV4.PoolTokens (bumped with SwapperV4 row types)."
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -48,9 +48,9 @@
     ;;  []C] Functions
     ;;
     ;;
-    (defun C_IssueStablePool (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
-    (defun C_IssueWeightedPool (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
-    (defun C_IssueStandardPool (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal p:bool))
+    (defun C_IssueStablePool (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
+    (defun C_IssueWeightedPool (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
+    (defun C_IssueStandardPool (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool))
     ;;
     (defun C_AddStandardLiquidity (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
     (defun C_AddIcedLiquidity (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
@@ -82,8 +82,8 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements OuronetPolicyV1)
-    (implements SwapperMtxV3)
+    (implements OuronetPolicyV2)
+    (implements SwapperMtxV4)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -97,7 +97,7 @@
     (defcap GOV|MTX-SWP_ADMIN ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (master:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
                 (g1:guard GOV|MD_MTX-SWP)
                 (g2:guard (ref-DALOS::UR_AccountGuard master))
@@ -113,8 +113,8 @@
     )
     ;;{G5}  functions
     ;;
-    (defun GOV|SWP|SC_NAME ()       (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|SWP|SC_NAME)))
-    (defun GOV|Demiurgoi ()         (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|SWP|SC_NAME ()       (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|SWP|SC_NAME)))
+    (defun GOV|Demiurgoi ()         (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
@@ -123,8 +123,8 @@
     ;;{P2}  schemas
     ;;{P3}  tables
     ;;
-    (deftable P|T:{OuronetPolicyV1.P|S})                        ;;Key = <policy-name>
-    (deftable P|MT:{OuronetPolicyV1.P|MS})                      ;;Key = P|I (module-identity singleton constant)
+    (deftable P|T:{OuronetPolicyV2.P|S})                        ;;Key = <policy-name>
+    (deftable P|MT:{OuronetPolicyV2.P|MS})                      ;;Key = P|I (module-identity singleton constant)
     ;;{P4}  capabilities
     (defcap P|MTX-SWP|CALLER ()
         true
@@ -141,7 +141,7 @@
         (compose-capability (P|MTX-SWP|CALLER))
     )
     ;;{P5}  functions
-    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -151,7 +151,7 @@
     (defun P|UEV_IMC ()
         (let
             (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
+                (ref-U|G:module{OuronetGuardsV2} U|G)
             )
             (ref-U|G::UEV_Any (P|UR_IMP))
         )
@@ -167,7 +167,7 @@
         (with-capability (GOV|MTX-SWP_ADMIN)
             (let
                 (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
                     (dg:guard (create-capability-guard (SECURE)))
                 )
                 (with-default-read P|MT P|I
@@ -183,21 +183,21 @@
     (defun P|A_Define ()
         (let
             (
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (ref-P|BRD:module{OuronetPolicyV1} BRD)
-                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
-                (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
-                (ref-P|TFT:module{OuronetPolicyV1} TFT)
-                (ref-P|VST:module{OuronetPolicyV1} VST)
-                (ref-P|ORBR:module{OuronetPolicyV1} OUROBOROS)
-                (ref-P|SWPT:module{OuronetPolicyV1} SWPT)
-                (ref-P|SWP:module{OuronetPolicyV1} SWP)
-                (ref-P|SWPL:module{OuronetPolicyV1} SWPL)
+                (ref-P|DALOS:module{OuronetPolicyV2} DALOS)
+                (ref-P|BRD:module{OuronetPolicyV2} BRD)
+                (ref-P|DPTF:module{OuronetPolicyV2} DPTF)
+                (ref-P|DPOF:module{OuronetPolicyV2} DPOF)
+                (ref-P|TFT:module{OuronetPolicyV2} TFT)
+                (ref-P|VST:module{OuronetPolicyV2} VST)
+                (ref-P|ORBR:module{OuronetPolicyV2} OUROBOROS)
+                (ref-P|SWPT:module{OuronetPolicyV2} SWPT)
+                (ref-P|SWP:module{OuronetPolicyV2} SWP)
+                (ref-P|SWPL:module{OuronetPolicyV2} SWPL)
                 ;;#36M/M5 fix: MTX-SWP now calls SWPI::XE_IssueWrite (P|UEV_IMC-gated)
                 ;;directly from C_MTX|Issue's Step 3, so MTX-SWP must register itself
                 ;;as an approved IMC caller on SWPI too — same as every other module
                 ;;it already calls into below.
-                (ref-P|SWPI:module{OuronetPolicyV1} SWPI)
+                (ref-P|SWPI:module{OuronetPolicyV2} SWPI)
                 (mg:guard (create-capability-guard (P|MTX-SWP|CALLER)))
             )
             (ref-P|VST::P|A_Add
@@ -237,15 +237,15 @@
     (defcap SECURE ()
         true
     )
-    (defcap MTX-SWP|C>ISSUE-S-POOL (pool-tokens:[object{SwapperV3.PoolTokens}])
+    (defcap MTX-SWP|C>ISSUE-S-POOL (pool-tokens:[object{SwapperV4.PoolTokens}])
         @event
         (compose-capability (SECURE))
     )
-    (defcap MTX-SWP|C>ISSUE-W-POOL (pool-tokens:[object{SwapperV3.PoolTokens}])
+    (defcap MTX-SWP|C>ISSUE-W-POOL (pool-tokens:[object{SwapperV4.PoolTokens}])
         @event
         (compose-capability (SECURE))
     )
-    (defcap MTX-SWP|C>ISSUE-P-POOL (pool-tokens:[object{SwapperV3.PoolTokens}])
+    (defcap MTX-SWP|C>ISSUE-P-POOL (pool-tokens:[object{SwapperV4.PoolTokens}])
         @event
         (compose-capability (SECURE))
     )
@@ -264,62 +264,62 @@
         )
     )
     ;;
-    (defcap MTX-SWP|C>ADD-STANDARD-LQ (swpair:string ld:object{SwapperLiquidityV1.LiquidityData})
+    (defcap MTX-SWP|C>ADD-STANDARD-LQ (swpair:string ld:object{SwapperLiquidityV2.LiquidityData})
         @event
         (compose-capability (MTX-SWP|C>X-ADD-LQ swpair ld))
     )
-    (defcap MTX-SWP|C>ADD-ICED-LQ (swpair:string ld:object{SwapperLiquidityV1.LiquidityData})
+    (defcap MTX-SWP|C>ADD-ICED-LQ (swpair:string ld:object{SwapperLiquidityV2.LiquidityData})
         @event
         (compose-capability (MTX-SWP|C-ADD-CHILLED-LQ swpair ld))
     )
-    (defcap MTX-SWP|C>ADD-GLACIAL-LQ (swpair:string ld:object{SwapperLiquidityV1.LiquidityData})
+    (defcap MTX-SWP|C>ADD-GLACIAL-LQ (swpair:string ld:object{SwapperLiquidityV2.LiquidityData})
         @event
         (compose-capability (MTX-SWP|C-ADD-CHILLED-LQ swpair ld))
     )
     (defcap MTX-SWP|C>ADD-FROZEN-LQ 
-        (swpair:string frozen-dptf:string ld:object{SwapperLiquidityV1.LiquidityData})
+        (swpair:string frozen-dptf:string ld:object{SwapperLiquidityV2.LiquidityData})
         @event
         (let
             (
-                (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC) 
+                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC) 
             )
             (ref-SWPLC::UEV_AddFrozenLiquidity swpair frozen-dptf)
             (compose-capability (MTX-SWP|C-ADD-CHILLED-LQ swpair ld))
         )
     )
     (defcap MTX-SWP|C>ADD-SLEEPING-LQ 
-        (account:string swpair:string sleeping-dpof:string nonce:integer ld:object{SwapperLiquidityV1.LiquidityData})
+        (account:string swpair:string sleeping-dpof:string nonce:integer ld:object{SwapperLiquidityV2.LiquidityData})
         @event
         (let
             (
-                (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC)
+                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
             )
             (ref-SWPLC::UEV_AddSleepingLiquidity account swpair sleeping-dpof nonce)
             (compose-capability (MTX-SWP|C-ADD-DORMANT-LQ swpair ld))
         )
     )
-    (defcap MTX-SWP|C-ADD-DORMANT-LQ (swpair:string ld:object{SwapperLiquidityV1.LiquidityData})
+    (defcap MTX-SWP|C-ADD-DORMANT-LQ (swpair:string ld:object{SwapperLiquidityV2.LiquidityData})
         (let
             (
-                (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC)
+                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
             )
             (ref-SWPLC::UEV_AddDormantLiquidity swpair)
             (compose-capability (MTX-SWP|C>X-ADD-LQ swpair ld))
         )
     )
-    (defcap MTX-SWP|C-ADD-CHILLED-LQ (swpair:string ld:object{SwapperLiquidityV1.LiquidityData})
+    (defcap MTX-SWP|C-ADD-CHILLED-LQ (swpair:string ld:object{SwapperLiquidityV2.LiquidityData})
         (let
             (
-                (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC) 
+                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC) 
             )
             (ref-SWPLC::UEV_AddChilledLiquidity swpair ld)
             (compose-capability (MTX-SWP|C>X-ADD-LQ swpair ld))
         )
     )
-    (defcap MTX-SWP|C>X-ADD-LQ (swpair:string ld:object{SwapperLiquidityV1.LiquidityData})
+    (defcap MTX-SWP|C>X-ADD-LQ (swpair:string ld:object{SwapperLiquidityV2.LiquidityData})
         (let
             (
-                (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC) 
+                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC) 
             )
             (ref-SWPLC::UEV_AddLiquidity swpair ld)
             (compose-capability (P|DT))
@@ -331,16 +331,16 @@
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
     ;;
-    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
-    (defun CT_EmptyCumulator ()     (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_EmptyOutputCumulatorV2)))
+    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_EmptyCumulator ()     (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_EmptyOutputCumulatorV2)))
     ;;{5.2}  Compute [UC]
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
-    (defun UR_PoolState:object{SwapperLiquidityV1.PoolState} (swpair:string)
+    (defun UR_PoolState:object{SwapperLiquidityV2.PoolState} (swpair:string)
         (let
             (
-                (ref-SWP:module{SwapperV3} SWP)
-                (ref-SWPL:module{SwapperLiquidityV1} SWPL)
+                (ref-SWP:module{SwapperV4} SWP)
+                (ref-SWPL:module{SwapperLiquidityV2} SWPL)
             )
             (ref-SWPL::UDC_PoolState
                 (ref-SWP::UR_Amplifier swpair)
@@ -360,7 +360,7 @@
     ;;{5.7}  User [A/C]
     ;;
     (defun C_IssueStablePool
-        (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal amp:decimal p:bool)
+        (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool)
         (P|UEV_IMC)
         (with-capability (MTX-SWP|C>ISSUE-S-POOL pool-tokens)
             (C_MTX|Issue
@@ -371,7 +371,7 @@
         )
     )
     (defun C_IssueWeightedPool
-        (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool)
+        (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool)
         (P|UEV_IMC)
         (with-capability (MTX-SWP|C>ISSUE-W-POOL pool-tokens)
             (C_MTX|Issue
@@ -382,7 +382,7 @@
         )
     )
     (defun C_IssueStandardPool
-        (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal p:bool)
+        (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool)
         (P|UEV_IMC)
         (with-capability (MTX-SWP|C>ISSUE-P-POOL pool-tokens)
             (C_MTX|Issue
@@ -439,16 +439,16 @@
         (step
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-SWPL:module{SwapperLiquidityV1} SWPL)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-SWPL:module{SwapperLiquidityV2} SWPL)
                     ;;
-                    (pool-state:object{SwapperLiquidityV1.PoolState}
+                    (pool-state:object{SwapperLiquidityV2.PoolState}
                         (UR_PoolState swpair)
                     )
-                    (ld:object{SwapperLiquidityV1.LiquidityData}
+                    (ld:object{SwapperLiquidityV2.LiquidityData}
                         (ref-SWPL::URC_LD swpair input-amounts)
                     )
-                    (clad:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
+                    (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
                         (ref-SWPL::URC_STOA-PID|CLAD 
                             account swpair ld asymmetric-collection gaseous-collection stoa-pid
                         )
@@ -475,10 +475,10 @@
                 }
                 (let
                     (
-                        (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                        (ref-SWPL:module{SwapperLiquidityV1} SWPL)
+                        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                        (ref-SWPL:module{SwapperLiquidityV2} SWPL)
                         ;;
-                        (current-pool-state:object{SwapperLiquidityV1.PoolState} (UR_PoolState swpair))
+                        (current-pool-state:object{SwapperLiquidityV2.PoolState} (UR_PoolState swpair))
                         (primary:decimal (at "primary-lp" clad))
                         (secondary:decimal (at "secondary-lp" clad))
                         (sum-lp:decimal (+ primary secondary))
@@ -521,7 +521,7 @@
             )
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 )
                 (ref-IGNIS::C_Collect patron 
                     (ref-IGNIS::UDC_ConstructOutputCumulator 100.0 SWP|SC_NAME false [])
@@ -538,20 +538,20 @@
                 (with-capability (P|DT)
                     (let
                         (
-                            (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                            (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                            (ref-VST:module{VestingV1} VST)
-                            (ref-SWP:module{SwapperV3} SWP)
-                            (ref-SWPL:module{SwapperLiquidityV1} SWPL)
+                            (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                            (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                            (ref-VST:module{VestingV2} VST)
+                            (ref-SWP:module{SwapperV4} SWP)
+                            (ref-SWPL:module{SwapperLiquidityV2} SWPL)
                             ;;
                             (lp-id:string (ref-SWP::UR_TokenLP swpair))
-                            (ico1:object{IgnisCollectorV1.OutputCumulator}
+                            (ico1:object{IgnisCollectorV2.OutputCumulator}
                                 (if (!= primary 0.0)
                                     (ref-TFT::C_Transfer lp-id SWP|SC_NAME account primary true)
                                     EOC
                                 )
                             )
-                            (ico2:object{IgnisCollectorV1.OutputCumulator}
+                            (ico2:object{IgnisCollectorV2.OutputCumulator}
                                 (if (not asymmetric-collection)
                                     (ref-VST::C_Freeze SWP|SC_NAME account lp-id secondary)
                                     EOC
@@ -584,23 +584,23 @@
         (step
             (let
                 (
-                    (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                    (ref-SWP:module{SwapperV3} SWP)
-                    (ref-SWPL:module{SwapperLiquidityV1} SWPL)
+                    (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-SWPL:module{SwapperLiquidityV2} SWPL)
                     ;;
-                    (pool-state:object{SwapperLiquidityV1.PoolState}
+                    (pool-state:object{SwapperLiquidityV2.PoolState}
                         (UR_PoolState swpair)
                     )
                     ;;
                     (dptf:string (ref-DPTF::UR_Frozen frozen-dptf))
                     (ptp:integer (ref-SWP::UR_PoolTokenPosition swpair dptf))
                     (lq-lst:[decimal] (ref-U|SWP::UC_MakeLiquidityList swpair ptp input-amount))
-                    (ld:object{SwapperLiquidityV1.LiquidityData}
+                    (ld:object{SwapperLiquidityV2.LiquidityData}
                         (ref-SWPL::URC_LD swpair lq-lst)
                     )
-                    (clad:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
+                    (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
                         (ref-SWPL::URC_STOA-PID|CLAD account swpair ld false false stoa-pid)
                     )
                 )
@@ -625,9 +625,9 @@
                 }
                 (let
                     (
-                        (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                         ;;
-                        (current-pool-state:object{SwapperLiquidityV1.PoolState} (UR_PoolState swpair))
+                        (current-pool-state:object{SwapperLiquidityV2.PoolState} (UR_PoolState swpair))
                         (secondary:decimal (at "secondary-lp" clad))
                     )
                     (enforce 
@@ -637,20 +637,20 @@
                     (with-capability (MTX-SWP|C>ADD-FROZEN-LQ swpair frozen-dptf ld)
                         (let
                             (
-                                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                                (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                                (ref-SWPL:module{SwapperLiquidityV1} SWPL)
+                                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                                (ref-SWPL:module{SwapperLiquidityV2} SWPL)
                                 (vst-sc:string (ref-DALOS::GOV|VST|SC_NAME))
                                 ;;
                                 ;;Move F|DPTF to vst-sc and burn it
-                                (ico1:object{IgnisCollectorV1.OutputCumulator}
+                                (ico1:object{IgnisCollectorV2.OutputCumulator}
                                     (ref-TFT::C_Transfer frozen-dptf account vst-sc input-amount true)
                                 )
-                                (ico2:object{IgnisCollectorV1.OutputCumulator}
+                                (ico2:object{IgnisCollectorV2.OutputCumulator}
                                     (ref-DPTF::C_Burn frozen-dptf vst-sc input-amount)
                                 )
-                                (ico3:object{IgnisCollectorV1.OutputCumulator}
+                                (ico3:object{IgnisCollectorV2.OutputCumulator}
                                     (at "perfect-ignis-fee" (at "clad-op" clad))
                                 )
                             )
@@ -670,7 +670,7 @@
             )
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 )
                 (ref-IGNIS::C_Collect patron 
                     (ref-IGNIS::UDC_ConstructOutputCumulator 100.0 SWP|SC_NAME false [])
@@ -685,13 +685,13 @@
                 (with-capability (P|DT)
                     (let
                         (
-                            (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                            (ref-VST:module{VestingV1} VST)
-                            (ref-SWP:module{SwapperV3} SWP)
-                            (ref-SWPL:module{SwapperLiquidityV1} SWPL)
+                            (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                            (ref-VST:module{VestingV2} VST)
+                            (ref-SWP:module{SwapperV4} SWP)
+                            (ref-SWPL:module{SwapperLiquidityV2} SWPL)
                             ;;
                             (lp-id:string (ref-SWP::UR_TokenLP swpair))
-                            (ico:object{IgnisCollectorV1.OutputCumulator}
+                            (ico:object{IgnisCollectorV2.OutputCumulator}
                                 (ref-VST::C_Freeze SWP|SC_NAME account lp-id secondary)
                             )
                         )
@@ -713,13 +713,13 @@
         (step
             (let
                 (
-                    (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
-                    (ref-SWP:module{SwapperV3} SWP)
-                    (ref-SWPL:module{SwapperLiquidityV1} SWPL)
+                    (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-SWPL:module{SwapperLiquidityV2} SWPL)
                     ;;
-                    (pool-state:object{SwapperLiquidityV1.PoolState}
+                    (pool-state:object{SwapperLiquidityV2.PoolState}
                         (UR_PoolState swpair)
                     )
                     ;;
@@ -727,10 +727,10 @@
                     (ptp:integer (ref-SWP::UR_PoolTokenPosition swpair dptf))
                     (batch-amount:decimal (ref-DPOF::UR_NonceSupply sleeping-dpof nonce))
                     (lq-lst:[decimal] (ref-U|SWP::UC_MakeLiquidityList swpair ptp batch-amount))
-                    (ld:object{SwapperLiquidityV1.LiquidityData}
+                    (ld:object{SwapperLiquidityV2.LiquidityData}
                         (ref-SWPL::URC_LD swpair lq-lst)
                     )
-                    (clad:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
+                    (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
                         (ref-SWPL::URC_STOA-PID|CLAD account swpair ld true true stoa-pid)
                     )
                 )
@@ -757,9 +757,9 @@
                 }
                 (let
                     (
-                        (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                         ;;
-                        (current-pool-state:object{SwapperLiquidityV1.PoolState} (UR_PoolState swpair))
+                        (current-pool-state:object{SwapperLiquidityV2.PoolState} (UR_PoolState swpair))
                         (primary:decimal (at "primary-lp" clad))
                     )
                     (enforce 
@@ -769,10 +769,10 @@
                     (with-capability (MTX-SWP|C>ADD-SLEEPING-LQ account swpair sleeping-dpof nonce ld)
                         (let
                             (
-                                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
-                                (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                                (ref-SWPL:module{SwapperLiquidityV1} SWPL)
+                                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                                (ref-SWPL:module{SwapperLiquidityV2} SWPL)
                                 ;;
                                 (vst-sc:string (ref-DALOS::GOV|VST|SC_NAME))
                                 (ignis-id:string (ref-DALOS::UR_IgnisID))
@@ -783,18 +783,18 @@
                                 (dt:integer (floor (diff-time release-date present-time)))
                                 ;;
                                 ;;Move Z|DPOF to vst-sc and burn it
-                                (ico1:object{IgnisCollectorV1.OutputCumulator}
+                                (ico1:object{IgnisCollectorV2.OutputCumulator}
                                     (ref-DPOF::C_Transfer sleeping-dpof [nonce] account vst-sc true)
                                 )
-                                (ico2:object{IgnisCollectorV1.OutputCumulator}
+                                (ico2:object{IgnisCollectorV2.OutputCumulator}
                                     (ref-DPOF::C_Burn sleeping-dpof vst-sc nonce batch-amount)
                                 )
-                                (ico3:object{IgnisCollectorV1.OutputCumulator}
+                                (ico3:object{IgnisCollectorV2.OutputCumulator}
                                     (at "perfect-ignis-fee" (at "clad-op" clad))
                                 )
                                 ;;
                                 ;;MOVE IGNIS to vst-sc, paying for the ignis-tax
-                                (ico4:object{IgnisCollectorV1.OutputCumulator}
+                                (ico4:object{IgnisCollectorV2.OutputCumulator}
                                     (ref-TFT::C_Transfer ignis-id account vst-sc (at "total-ignis-tax-needed" clad) true)
                                 )
                             )
@@ -815,7 +815,7 @@
             )
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 )
                 (ref-IGNIS::C_Collect patron 
                     (ref-IGNIS::UDC_ConstructOutputCumulator 100.0 SWP|SC_NAME false [])
@@ -831,13 +831,13 @@
                 (with-capability (P|DT)
                     (let
                         (
-                            (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                            (ref-VST:module{VestingV1} VST)
-                            (ref-SWP:module{SwapperV3} SWP)
-                            (ref-SWPL:module{SwapperLiquidityV1} SWPL)
+                            (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                            (ref-VST:module{VestingV2} VST)
+                            (ref-SWP:module{SwapperV4} SWP)
+                            (ref-SWPL:module{SwapperLiquidityV2} SWPL)
                             ;;
                             (lp-id:string (ref-SWP::UR_TokenLP swpair))
-                            (ico:object{IgnisCollectorV1.OutputCumulator}
+                            (ico:object{IgnisCollectorV2.OutputCumulator}
                                 (ref-VST::C_Sleep SWP|SC_NAME account lp-id primary dt)
                             )
                         )
@@ -852,14 +852,14 @@
         )
     )
     (defpact C_MTX|Issue
-        (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
+        (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
         ;;Issues an SWPair, as MultiStep Transaction, to be used in case <C_Issue> cant fit inside one TX.
         ;;
         ;;Step 1 Validation
         (step
             (let
                 (
-                    (ref-SWPI:module{SwapperIssueV3} SWPI)
+                    (ref-SWPI:module{SwapperIssueV4} SWPI)
                 )
                 (require-capability (SECURE))
                 (ref-SWPI::UEV_Issue account pool-tokens fee-lp weights amp p)
@@ -869,10 +869,10 @@
         (step-with-rollback
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DALOS:module{OuronetDalosV1} DALOS)
-                    (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                    (ref-SWP:module{SwapperV3} SWP)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                    (ref-SWP:module{SwapperV4} SWP)
                     (pool-token-ids:[string] (ref-SWP::UC_ExtractTokens pool-tokens))
                     (pool-token-amounts:[decimal] (ref-SWP::UC_ExtractTokenSupplies pool-tokens))
                     ;;
@@ -888,10 +888,10 @@
                     )
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                     ;;
-                    (ico0:object{IgnisCollectorV1.OutputCumulator}
+                    (ico0:object{IgnisCollectorV2.OutputCumulator}
                         (ref-IGNIS::UDC_ConstructOutputCumulator sum-ignis SWP|SC_NAME trigger [])
                     )
-                    (ico1:object{IgnisCollectorV1.OutputCumulator}
+                    (ico1:object{IgnisCollectorV2.OutputCumulator}
                         (ref-TFT::URCi_MultiTransferCumulator pool-token-ids account SWP|SC_NAME pool-token-amounts)
                     )
                     ;;
@@ -910,7 +910,7 @@
                 (ref-IGNIS::C_STOA|Collect patron stoa-costs)
                 (let
                     (
-                        (ref-ORBR:module{OuroborosV1} OUROBOROS)
+                        (ref-ORBR:module{OuroborosV2} OUROBOROS)
                         (auto-fuel:bool (ref-DALOS::UR_AutoFuel))
                     )
                     (if auto-fuel
@@ -926,7 +926,7 @@
             )
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 )
                 (ref-IGNIS::C_Collect patron 
                     (ref-IGNIS::UDC_ConstructOutputCumulator 100.0 SWP|SC_NAME false [])
@@ -945,7 +945,7 @@
             (with-capability (MTX-SWP|C>ISSUE p)
                 (let
                     (
-                        (ref-SWPI:module{SwapperIssueV3} SWPI)
+                        (ref-SWPI:module{SwapperIssueV4} SWPI)
                         (write-result:list (ref-SWPI::XE_IssueWrite account pool-tokens fee-lp weights amp p))
                         (swpair:string (at 0 write-result))
                         (token-lp:string (at 1 write-result))

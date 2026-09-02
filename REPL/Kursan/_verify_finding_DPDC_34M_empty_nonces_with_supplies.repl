@@ -14,7 +14,7 @@
 (namespace "ouronet-ns")
 (let
     (
-        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-DPDC:module{DpdcV2} DPDC)
         (id:string "DHCD-98c486052a51")
         ;;A synthetic account name never credited anything anywhere in the pipeline -- a genuine,
         ;;unambiguous zero-results case (EMMA/LUMY turned out to already hold real DHCD nonces from

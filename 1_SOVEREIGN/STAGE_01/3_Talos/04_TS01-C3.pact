@@ -1,17 +1,17 @@
 ;; Deploy: load THIS file — interface(s) + module ship together.
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/03_Talos.pact
 ;; #39M/M14 fix: prior live ClientThreeV2 frozen here, not in the central registry above —
-;; V2's Smart Swap functions type against SwapperUsageV2.Slippage, a module-owned interface
+;; V2's Smart Swap functions type against SwapperUsageV3.Slippage, a module-owned interface
 ;; (declared in 19_SWPU.pact) that isn't resolvable yet at the registry's early Interfaces-
 ;; load point (mirrors the same reason ClientFourV6 was left undocumented-in-full there, per
 ;; that file's own comment — module-owned-type dependency, not resolvable in the early registry).
 ;;
-(interface TalosStageOne_ClientThreeV3
+(interface TalosStageOne_ClientThreeV4
     @doc "Exposes Ouronet Stage One Third Batch of Client Functions \
         \ Modules: SWP are included in the Second Batch\
         \ V2: Added Smart Swap entry points - CC_SWP|SmartSwapWithSlippage and CC_SWP|SmartSwapNoSlippage \
         \ for multi-hop token swaps across the entire pool base using BFS path tracing. \
-        \ V3: Issue and fee-target surfaces use SwapperV3.PoolTokens / SwapperV3.FeeSplit (interface bump per versioning rule). \
+        \ V3: Issue and fee-target surfaces use SwapperV4.PoolTokens / SwapperV4.FeeSplit (interface bump per versioning rule). \
         \ #34 Phase 8: SWP|C_SmartSwap{With,No}Slippage renamed to SWP|CC_SmartSwap{With,No}Slippage \
         \ (self-searching BFS variant); SWP|C_SmartSwap{With,No}Slippage is reserved for the \
         \ bundle-based, dirty-read-injected variant."
@@ -55,18 +55,18 @@
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
     ;;
-    (defun C_SWP|UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}]))
+    (defun C_SWP|UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
     (defun C_SWP|UpgradeBranding (patron:string entity-id:string months:integer))
-    (defun C_SWP|UpdatePendingBrandingLPs (patron:string swpair:string entity-pos:integer logo:string description:string website:string social:[object{BrandingV1.SocialSchema}]))
+    (defun C_SWP|UpdatePendingBrandingLPs (patron:string swpair:string entity-pos:integer logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
     (defun C_SWP|UpgradeBrandingLPs (patron:string swpair:string entity-pos:integer months:integer))
     ;;
     (defun C_SWP|ChangeOwnership (patron:string swpair:string new-owner:string))
     (defun C_SWP|EnableFrozenLP:string (patron:string swpair:string))
     (defun C_SWP|EnableSleepingLP:string (patron:string swpair:string))
     ;;Issue
-    (defun C_SWP|IssueStable:list (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
-    (defun C_SWP|IssueStandard:list (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal p:bool))
-    (defun C_SWP|IssueWeighted:list (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
+    (defun C_SWP|IssueStable:list (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
+    (defun C_SWP|IssueStandard:list (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool))
+    (defun C_SWP|IssueWeighted:list (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
     ;;Management
     (defun C_SWP|ModifyCanChangeOwner (patron:string swpair:string new-boolean:bool))
     (defun C_SWP|ModifyWeights (patron:string swpair:string new-weights:[decimal]))
@@ -75,7 +75,7 @@
     (defun C_SWP|ToggleFeeLock (patron:string swpair:string toggle:bool))
     (defun C_SWP|UpdateAmplifier (patron:string swpair:string amp:decimal))
     (defun C_SWP|UpdateFee (patron:string swpair:string new-fee:decimal lp-or-special:bool))
-    (defun C_SWP|UpdateSpecialFeeTargets (patron:string swpair:string targets:[object{SwapperV3.FeeSplit}]))
+    (defun C_SWP|UpdateSpecialFeeTargets (patron:string swpair:string targets:[object{SwapperV4.FeeSplit}]))
     ;;Liquidity
     (defun C_SWP|AddLiquidity:string (patron:string account:string swpair:string input-amounts:[decimal]))
     (defun C_SWP|AddIcedLiquidity:string (patron:string account:string swpair:string input-amounts:[decimal]))
@@ -89,22 +89,22 @@
     (defun C_SWP|Fuel (patron:string account:string swpair:string input-amounts:[decimal]))
     (defun C_SWP|Firestarter (fire-starter:string))
     ;;Smart Swap
-    (defun CC_SWP|SmartSwapWithSlippage (patron:string account:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV2.Slippage}))
+    (defun CC_SWP|SmartSwapWithSlippage (patron:string account:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV3.Slippage}))
     (defun CC_SWP|SmartSwapNoSlippage (patron:string account:string input-id:string input-amount:decimal output-id:string))
     ;;#34 Phase 8: bundle-based, dirty-read-injected Smart Swap — built alongside, not
     ;;replacing, SWP|CC_SmartSwap{With,No}Slippage above, for direct gas comparison.
     (defun C_SWP|SmartSwapWithSlippage
         (patron:string account:string input-id:string input-amount:decimal output-id:string
-         slippage-bounds:object{SwapperUsageV2.Slippage} bundle:object{SwapperUsageV2.SmartSwapPathBundle})
+         slippage-bounds:object{SwapperUsageV3.Slippage} bundle:object{SwapperUsageV3.SmartSwapPathBundle})
     )
     (defun C_SWP|SmartSwapNoSlippage
         (patron:string account:string input-id:string input-amount:decimal output-id:string
-         bundle:object{SwapperUsageV2.SmartSwapPathBundle})
+         bundle:object{SwapperUsageV3.SmartSwapPathBundle})
     )
     ;;Swap
-    (defun C_SWP|SingleSwapWithSlippage (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV2.Slippage}))
+    (defun C_SWP|SingleSwapWithSlippage (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV3.Slippage}))
     (defun C_SWP|SingleSwapNoSlippage (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string))
-    (defun C_SWP|MultiSwapWithSlippage (patron:string account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage-bounds:object{SwapperUsageV2.Slippage}))
+    (defun C_SWP|MultiSwapWithSlippage (patron:string account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage-bounds:object{SwapperUsageV3.Slippage}))
     (defun C_SWP|MultiSwapNoSlippage (patron:string account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string))
 
 )
@@ -115,8 +115,8 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements OuronetPolicyV1)
-    (implements TalosStageOne_ClientThreeV3)
+    (implements OuronetPolicyV2)
+    (implements TalosStageOne_ClientThreeV4)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -129,7 +129,7 @@
     (defcap GOV ()                  (compose-capability (GOV|TS01-C1_ADMIN)))
     (defcap GOV|TS01-C1_ADMIN ()    (enforce-guard GOV|MD_TS01-C3))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()         (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()         (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
 
     ;;<=========================================================================>
     ;;{2}  POLICY
@@ -138,13 +138,13 @@
     ;;{P2}  schemas
     ;;{P3}  tables
     ;;
-    (deftable P|T:{OuronetPolicyV1.P|S})                        ;;Key = <policy-name>
-    (deftable P|MT:{OuronetPolicyV1.P|MS})                      ;;Key = P|I (module-identity singleton constant)
+    (deftable P|T:{OuronetPolicyV2.P|S})                        ;;Key = <policy-name>
+    (deftable P|MT:{OuronetPolicyV2.P|MS})                      ;;Key = P|I (module-identity singleton constant)
     ;;{P4}  capabilities
     (defcap P|TS ()
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (gap:bool (ref-DALOS::UR_GAP))
             )
             (enforce (not gap) "While Global Administrative Pause is online, no client Functions can be executed")
@@ -156,7 +156,7 @@
         true
     )
     ;;{P5}  functions
-    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -166,7 +166,7 @@
     (defun P|UEV_IMC ()
         (let
             (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
+                (ref-U|G:module{OuronetGuardsV2} U|G)
             )
             (ref-U|G::UEV_Any (P|UR_IMP))
         )
@@ -182,7 +182,7 @@
         (with-capability (GOV|TS01-C1_ADMIN)
             (let
                 (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
                     (dg:guard (create-capability-guard (SECURE)))
                 )
                 (with-default-read P|MT P|I
@@ -198,16 +198,16 @@
     (defun P|A_Define ()
         (let
             (
-                (ref-P|IGNIS:module{OuronetPolicyV1} IGNIS)
-                (ref-P|LIQUID:module{OuronetPolicyV1} LIQUID)
-                (ref-P|ORBR:module{OuronetPolicyV1} OUROBOROS)
-                (ref-P|SWPT:module{OuronetPolicyV1} SWPT)
-                (ref-P|SWP:module{OuronetPolicyV1} SWP)
-                (ref-P|SWPI:module{OuronetPolicyV1} SWPI)
-                (ref-P|SWPL:module{OuronetPolicyV1} SWPL)
-                (ref-P|SWPLC:module{OuronetPolicyV1} SWPLC)
-                (ref-P|SWPU:module{OuronetPolicyV1} SWPU)
-                (ref-P|TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
+                (ref-P|LIQUID:module{OuronetPolicyV2} LIQUID)
+                (ref-P|ORBR:module{OuronetPolicyV2} OUROBOROS)
+                (ref-P|SWPT:module{OuronetPolicyV2} SWPT)
+                (ref-P|SWP:module{OuronetPolicyV2} SWP)
+                (ref-P|SWPI:module{OuronetPolicyV2} SWPI)
+                (ref-P|SWPL:module{OuronetPolicyV2} SWPL)
+                (ref-P|SWPLC:module{OuronetPolicyV2} SWPLC)
+                (ref-P|SWPU:module{OuronetPolicyV2} SWPU)
+                (ref-P|TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
             )
             (ref-P|IGNIS::P|A_AddIMP mg)
@@ -246,7 +246,7 @@
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
     ;;
-    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
     ;;{5.2}  Compute [UC]
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;{5.4}  Validate [UEV/CAP]
@@ -256,13 +256,13 @@
     ;;
     ;;
     ;;  [Swapper_Client]
-    (defun C_SWP|UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}])
+    (defun C_SWP|UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
         @doc "Updates <pending-branding> for SWPair Token <entity-id> costing 400 IGNIS"
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-B|SWP:module{BrandingUsagePrimaryV1} SWP)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-B|SWP:module{BrandingUsagePrimaryV2} SWP)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-B|SWP::C_UpdatePendingBranding entity-id logo description website social)
@@ -275,15 +275,15 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-B|SWP:module{BrandingUsagePrimaryV1} SWP)
-                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                    (ref-B|SWP:module{BrandingUsagePrimaryV2} SWP)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
                 (ref-B|SWP::C_UpgradeBranding patron entity-id months)
                 (ref-TS01-A::XB_DynamicFuelSTOA)
             )
         )
     )
-    (defun C_SWP|UpdatePendingBrandingLPs (patron:string swpair:string entity-pos:integer logo:string description:string website:string social:[object{BrandingV1.SocialSchema}])
+    (defun C_SWP|UpdatePendingBrandingLPs (patron:string swpair:string entity-pos:integer logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
         @doc "Updates <pending-branding> for SWPair LPs (Native LP, Frozen LP or Sleeping LP) Token <entity-id> costing 200 IGNIS \
             \ <entity-pos> 1 = LP Token will be used \
             \ <entity-pos> 2 = Frozen-LP Token will be used \
@@ -291,8 +291,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-B|SWPLC:module{BrandingUsageSecondaryV1} SWPLC)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-B|SWPLC:module{BrandingUsageSecondaryV2} SWPLC)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-B|SWPLC::C_UpdatePendingBrandingLPs swpair entity-pos logo description website social)
@@ -305,8 +305,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-B|SWPLC:module{BrandingUsageSecondaryV1} SWPLC)
-                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                    (ref-B|SWPLC:module{BrandingUsageSecondaryV2} SWPLC)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
                 (ref-B|SWPLC::C_UpgradeBrandingLPs patron swpair entity-pos months)
                 (ref-TS01-A::XB_DynamicFuelSTOA)
@@ -318,9 +318,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-SWP:module{SwapperV3} SWP)
-                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-SWP::C_ChangeOwnership swpair new-owner)
@@ -334,14 +334,14 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                    (ref-SWP:module{SwapperV3} SWP)
-                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                     ;;
                     (lp-id:string (ref-SWP::UR_TokenLP swpair))
                     (current-frozen-link:string (ref-DPTF::UR_Frozen lp-id))
-                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                    (ico:object{IgnisCollectorV2.OutputCumulator}
                         (ref-SWP::C_EnableFrozenLP patron swpair)
                     )
                     (issued-frozen-lp-id:string (at 0 (at "output" ico)))
@@ -365,14 +365,14 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                    (ref-SWP:module{SwapperV3} SWP)
-                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                     ;;
                     (lp-id:string (ref-SWP::UR_TokenLP swpair))
                     (current-sleeping-link:string (ref-DPTF::UR_Sleeping lp-id))
-                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                    (ico:object{IgnisCollectorV2.OutputCumulator}
                         (ref-SWP::C_EnableSleepingLP patron swpair)
                     )
                     (issued-sleeping-lp-id:string (at 0 (at "output" ico)))
@@ -391,7 +391,7 @@
             )
         )
     )
-    (defun C_SWP|IssueStable:list (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal amp:decimal p:bool)
+    (defun C_SWP|IssueStable:list (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool)
         @doc "Issues a Stable Liquidity Pool. First Token in the liquidity Pool must have a connection to a principal Token \
             \ Stable Pools have the S designation. \
             \ Stable Pools can be created with up to 7 Tokens, and have by design equal weighting. \
@@ -400,11 +400,11 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-SWPI:module{SwapperIssueV3} SWPI)
-                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-SWPI:module{SwapperIssueV4} SWPI)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                     (weights:[decimal] (make-list (length pool-tokens) 1.0))
-                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                    (ico:object{IgnisCollectorV2.OutputCumulator}
                         (ref-SWPI::C_Issue patron account pool-tokens fee-lp weights amp p)
                     )
                 )
@@ -414,14 +414,14 @@
             )
         )
     )
-    (defun C_SWP|IssueStandard:list (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal p:bool)
+    (defun C_SWP|IssueStandard:list (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool)
         @doc "Issues a Standard, Constant Product Pool. \
             \ Constant Product Pools have the P Designation, and they are by design equal weigthed \
             \ Can also be created with up to 7 Tokens, also the <p> boolean determines if its a Principal Pool or not \
             \ The First Token must be a Principal Token"
         (C_SWP|IssueStable patron account pool-tokens fee-lp -1.0 p)
     )
-    (defun C_SWP|IssueWeighted:list (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool)
+    (defun C_SWP|IssueWeighted:list (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool)
         @doc "Issues a Weigthed Constant Liquidity Pool \
             \ Weigthed Pools have the W Designation, and the weights can be changed at will. \
             \ Can also be created with up to 7 Tokens, <p> boolean determines if its a Principal Pool or not \
@@ -429,10 +429,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-SWPI:module{SwapperIssueV3} SWPI)
-                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
-                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-SWPI:module{SwapperIssueV4} SWPI)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                    (ico:object{IgnisCollectorV2.OutputCumulator}
                         (ref-SWPI::C_Issue patron account pool-tokens fee-lp weights -1.0 p)
                     )
                 )
@@ -447,8 +447,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-SWP:module{SwapperV3} SWP)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-SWP:module{SwapperV4} SWP)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-SWP::C_ModifyCanChangeOwner swpair new-boolean)
@@ -462,8 +462,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-SWP:module{SwapperV3} SWP)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-SWP:module{SwapperV4} SWP)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-SWP::C_ModifyWeights swpair new-weights)
@@ -485,8 +485,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-SWPLC::C_ToggleAddLiquidity swpair toggle)
@@ -505,8 +505,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-SWPU:module{SwapperUsageV2} SWPU)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-SWPU:module{SwapperUsageV3} SWPU)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-SWPU::C_ToggleSwapCapability swpair toggle)
@@ -521,10 +521,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-SWP:module{SwapperV3} SWP)
-                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
-                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                    (ico:object{IgnisCollectorV2.OutputCumulator}
                         (ref-SWP::C_ToggleFeeLock patron swpair toggle)
                     )
                     (collect:bool (at 0 (at "output" ico)))
@@ -540,8 +540,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-SWP:module{SwapperV3} SWP)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-SWP:module{SwapperV4} SWP)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-SWP::C_UpdateAmplifier swpair amp)
@@ -562,8 +562,8 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-SWP:module{SwapperV3} SWP)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-SWP:module{SwapperV4} SWP)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-SWP::C_UpdateFee swpair new-fee lp-or-special)
@@ -572,13 +572,13 @@
             )
         )
     )
-    (defun C_SWP|UpdateSpecialFeeTargets (patron:string swpair:string targets:[object{SwapperV3.FeeSplit}])
+    (defun C_SWP|UpdateSpecialFeeTargets (patron:string swpair:string targets:[object{SwapperV4.FeeSplit}])
         @doc "Updates the Special Fee Targets, along with their Split, for an SWPair"
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-SWP:module{SwapperV3} SWP)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-SWP:module{SwapperV4} SWP)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-SWP::C_UpdateSpecialFeeTargets swpair targets)
@@ -596,10 +596,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC)
-                    (ref-SWP:module{SwapperV3} SWP)
-                    (ref-SWPI:module{SwapperIssueV3} SWPI)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-SWPI:module{SwapperIssueV4} SWPI)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-SWPLC::C_Fuel account swpair input-amounts true true)
@@ -626,13 +626,13 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC)
-                    (ref-SWP:module{SwapperV3} SWP)
-                    (ref-SWPI:module{SwapperIssueV3} SWPI)
+                    (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-SWPI:module{SwapperIssueV4} SWPI)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                    (ico:object{IgnisCollectorV2.OutputCumulator}
                         (ref-SWPLC::C_STOA-PID|AddStandardLiquidity account swpair input-amounts stoa-pid)
                     )
                 )
@@ -659,13 +659,13 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC)
-                    (ref-SWP:module{SwapperV3} SWP)
-                    (ref-SWPI:module{SwapperIssueV3} SWPI)
+                    (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-SWPI:module{SwapperIssueV4} SWPI)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                    (ico:object{IgnisCollectorV2.OutputCumulator}
                         (ref-SWPLC::C_STOA-PID|AddIcedLiquidity account swpair input-amounts stoa-pid)
                     )
                 )
@@ -690,13 +690,13 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC)
-                    (ref-SWP:module{SwapperV3} SWP)
-                    (ref-SWPI:module{SwapperIssueV3} SWPI)
+                    (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-SWPI:module{SwapperIssueV4} SWPI)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                    (ico:object{IgnisCollectorV2.OutputCumulator}
                         (ref-SWPLC::C_STOA-PID|AddGlacialLiquidity account swpair input-amounts stoa-pid)
                     )
                 )
@@ -720,13 +720,13 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC)
-                    (ref-SWP:module{SwapperV3} SWP)
-                    (ref-SWPI:module{SwapperIssueV3} SWPI)
+                    (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-SWPI:module{SwapperIssueV4} SWPI)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                    (ico:object{IgnisCollectorV2.OutputCumulator}
                         (ref-SWPLC::C_STOA-PID|AddFrozenLiquidity account swpair frozen-dptf input-amount stoa-pid)
                     )
                 )
@@ -750,13 +750,13 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC)
-                    (ref-SWP:module{SwapperV3} SWP)
-                    (ref-SWPI:module{SwapperIssueV3} SWPI)
+                    (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-SWPI:module{SwapperIssueV4} SWPI)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                    (ico:object{IgnisCollectorV2.OutputCumulator}
                         (ref-SWPLC::C_STOA-PID|AddSleepingLiquidity account swpair sleeping-dpof nonce stoa-pid)
                     )
                 )
@@ -775,11 +775,11 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC)
-                    (ref-SWP:module{SwapperV3} SWP)
-                    (ref-SWPI:module{SwapperIssueV3} SWPI)
-                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-SWPI:module{SwapperIssueV4} SWPI)
+                    (ico:object{IgnisCollectorV2.OutputCumulator}
                         (ref-SWPLC::C_RemoveLiquidity account swpair lp-amount)
                     )
                 )
@@ -795,13 +795,13 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
-                    (ref-DALOS:module{OuronetDalosV1} DALOS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                    (ref-LIQUID:module{StoaLiquidStakingV1} LIQUID)
-                    (ref-ORBR:module{OuroborosV1} OUROBOROS)
-                    (ref-SWP:module{SwapperV3} SWP)
-                    (ref-SWPU:module{SwapperUsageV2} SWPU)
+                    (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
+                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
+                    (ref-ORBR:module{OuroborosV2} OUROBOROS)
+                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-SWPU:module{SwapperUsageV3} SWPU)
                     ;;
                     (ouro:string (ref-DALOS::UR_OuroborosID))
                     (ignis:string (ref-DALOS::UR_IgnisID))
@@ -823,21 +823,21 @@
                     (
                         (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                         (wstoa:string (ref-DALOS::UR_WrappedStoaID))
-                        (ref-SWPI:module{SwapperIssueV3} SWPI)
-                        (ico1:object{IgnisCollectorV1.OutputCumulator}
+                        (ref-SWPI:module{SwapperIssueV4} SWPI)
+                        (ico1:object{IgnisCollectorV2.OutputCumulator}
                             (ref-LIQUID::C_WrapStoa fire-starter 10.0)
                         )
-                        (slippage-bounds:object{SwapperUsageV2.Slippage}
+                        (slippage-bounds:object{SwapperUsageV3.Slippage}
                             (ref-SWPU::UDC_SpawnSlippageBounds primordial [wstoa] [10.0] ouro -1.0)
                         )
-                        (ico2:object{IgnisCollectorV1.OutputCumulator}
+                        (ico2:object{IgnisCollectorV2.OutputCumulator}
                             (ref-SWPU::C_Swap 
                                 fire-starter primordial [wstoa] [10.0] ouro 
                                 -1.0 stoa-pid slippage-bounds
                             )
                         )
                         (gained-ouro:decimal (at 0 (at "output" ico2)))
-                        (ico3:object{IgnisCollectorV1.OutputCumulator}
+                        (ico3:object{IgnisCollectorV2.OutputCumulator}
                             (ref-ORBR::C_SublimateV2 fire-starter fire-starter gained-ouro)
                         )
                     )
@@ -854,7 +854,7 @@
             input-id:string
             input-amount:decimal
             output-id:string
-            slippage-bounds:object{SwapperUsageV2.Slippage}
+            slippage-bounds:object{SwapperUsageV3.Slippage}
         )
         @doc "Executes a Smart Swap from <input-id> to <output-id> with slippage protection. \
             \ Path is traced automatically via BFS across all pool bases. \
@@ -876,16 +876,16 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-SWP:module{SwapperV3} SWP)
-                    (ref-SWPI:module{SwapperIssueV3} SWPI)
-                    (ref-SWPU:module{SwapperUsageV2} SWPU)
-                    (ref-SWPT:module{SwapTracerV2} SWPT)
-                    (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+                    (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-SWPI:module{SwapperIssueV4} SWPI)
+                    (ref-SWPU:module{SwapperUsageV3} SWPU)
+                    (ref-SWPT:module{SwapTracerV3} SWPT)
+                    (ref-U|SWP:module{UtilitySwpV2} U|SWP)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (slippage:decimal (at "slippage-percent" slippage-bounds))
-                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                    (ico:object{IgnisCollectorV2.OutputCumulator}
                         (ref-SWPU::CC_SmartSwap
                             account input-id input-amount output-id
                             slippage stoa-pid slippage-bounds
@@ -904,11 +904,11 @@
                     ;;still happen live, inside the loop, per pool, as before.
                     (all-swpairs:[string] (ref-SWP::URC_Swpairs))
                     (all-nodes:[string] (ref-U|SWP::UC_MakeGraphNodes BAR BAR all-swpairs))
-                    (raw-graph:[object{SwapTracerV2.RawGraphNode}] (ref-SWPT::URC_FetchRawGraph all-nodes))
+                    (raw-graph:[object{SwapTracerV3.RawGraphNode}] (ref-SWPT::URC_FetchRawGraph all-nodes))
                     ;;#65bL Phase 7: built ONCE here too — every URC_PoolValueFromGraph
                     ;;call below reused to share the graph-BUILD step, not just the raw
                     ;;read Phase 4 already shared. See URC_HopperFromGraph's own doc.
-                    (graph:[object{BreadthFirstSearchV1.GraphNode}]
+                    (graph:[object{BreadthFirstSearchV2.GraphNode}]
                         (ref-SWPT::UC_MakeGraphFromRaw BAR BAR all-swpairs raw-graph)
                     )
                 )
@@ -940,18 +940,18 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-SWP:module{SwapperV3} SWP)
-                    (ref-SWPI:module{SwapperIssueV3} SWPI)
-                    (ref-SWPU:module{SwapperUsageV2} SWPU)
-                    (ref-SWPT:module{SwapTracerV2} SWPT)
-                    (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+                    (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-SWPI:module{SwapperIssueV4} SWPI)
+                    (ref-SWPU:module{SwapperUsageV3} SWPU)
+                    (ref-SWPT:module{SwapTracerV3} SWPT)
+                    (ref-U|SWP:module{UtilitySwpV2} U|SWP)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                    (slippage-bounds:object{SwapperUsageV2.Slippage}
+                    (slippage-bounds:object{SwapperUsageV3.Slippage}
                         (ref-SWPU::UDC_SpawnSmartSwapSlippageBounds input-id input-amount output-id -1.0)
                     )
-                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                    (ico:object{IgnisCollectorV2.OutputCumulator}
                         (ref-SWPU::CC_SmartSwap
                             account input-id input-amount output-id
                             -1.0 stoa-pid slippage-bounds
@@ -974,11 +974,11 @@
                     ;;still happen live, inside the loop, per pool, as before.
                     (all-swpairs:[string] (ref-SWP::URC_Swpairs))
                     (all-nodes:[string] (ref-U|SWP::UC_MakeGraphNodes BAR BAR all-swpairs))
-                    (raw-graph:[object{SwapTracerV2.RawGraphNode}] (ref-SWPT::URC_FetchRawGraph all-nodes))
+                    (raw-graph:[object{SwapTracerV3.RawGraphNode}] (ref-SWPT::URC_FetchRawGraph all-nodes))
                     ;;#65bL Phase 7: built ONCE here too — every URC_PoolValueFromGraph
                     ;;call below reused to share the graph-BUILD step, not just the raw
                     ;;read Phase 4 already shared. See URC_HopperFromGraph's own doc.
-                    (graph:[object{BreadthFirstSearchV1.GraphNode}]
+                    (graph:[object{BreadthFirstSearchV2.GraphNode}]
                         (ref-SWPT::UC_MakeGraphFromRaw BAR BAR all-swpairs raw-graph)
                     )
                 )
@@ -1000,8 +1000,8 @@
             input-id:string
             input-amount:decimal
             output-id:string
-            slippage-bounds:object{SwapperUsageV2.Slippage}
-            bundle:object{SwapperUsageV2.SmartSwapPathBundle}
+            slippage-bounds:object{SwapperUsageV3.Slippage}
+            bundle:object{SwapperUsageV3.SmartSwapPathBundle}
         )
         @doc "#34 Phase 8: bundle-based Smart Swap with slippage protection — the route, \
             \ boost-path and stoa-paths are all supplied by <bundle> (assembled \
@@ -1013,10 +1013,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-SWP:module{SwapperV3} SWP)
-                    (ref-SWPU:module{SwapperUsageV2} SWPU)
+                    (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-SWPU:module{SwapperUsageV3} SWPU)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (slippage:decimal (at "slippage-percent" slippage-bounds))
                     (result:list
@@ -1025,7 +1025,7 @@
                             slippage stoa-pid slippage-bounds bundle
                         )
                     )
-                    (ico:object{IgnisCollectorV1.OutputCumulator} (at 0 result))
+                    (ico:object{IgnisCollectorV2.OutputCumulator} (at 0 result))
                     (stoa-results:list (at 1 result))
                     (out:list (at "output" ico))
                 )
@@ -1048,7 +1048,7 @@
             input-id:string
             input-amount:decimal
             output-id:string
-            bundle:object{SwapperUsageV2.SmartSwapPathBundle}
+            bundle:object{SwapperUsageV3.SmartSwapPathBundle}
         )
         @doc "#34 Phase 8: bundle-based Smart Swap without slippage protection. Unlike \
             \ CC_SWP|SmartSwapNoSlippage above, the dummy slippage-bounds object is built \
@@ -1058,19 +1058,19 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-SWP:module{SwapperV3} SWP)
-                    (ref-SWPU:module{SwapperUsageV2} SWPU)
+                    (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-SWPU:module{SwapperUsageV3} SWPU)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                    (slippage-bounds:object{SwapperUsageV2.Slippage} (ref-SWPU::UDC_Slippage 0.0 0 0.0))
+                    (slippage-bounds:object{SwapperUsageV3.Slippage} (ref-SWPU::UDC_Slippage 0.0 0 0.0))
                     (result:list
                         (ref-SWPU::C_SmartSwap
                             account input-id input-amount output-id
                             -1.0 stoa-pid slippage-bounds bundle
                         )
                     )
-                    (ico:object{IgnisCollectorV1.OutputCumulator} (at 0 result))
+                    (ico:object{IgnisCollectorV2.OutputCumulator} (at 0 result))
                     (stoa-results:list (at 1 result))
                     (out:list (at "output" ico))
                 )
@@ -1094,20 +1094,20 @@
             input-id:string
             input-amount:decimal
             output-id:string
-            slippage-bounds:object{SwapperUsageV2.Slippage}
+            slippage-bounds:object{SwapperUsageV3.Slippage}
         )
         @doc "Executes A Swap from <input-id> with <input-amount> to <output-id> with <slippage>"
         (with-capability (P|TS)
             (let
                 (
-                    (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-SWP:module{SwapperV3} SWP)
-                    (ref-SWPI:module{SwapperIssueV3} SWPI)
-                    (ref-SWPU:module{SwapperUsageV2} SWPU)
+                    (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-SWPI:module{SwapperIssueV4} SWPI)
+                    (ref-SWPU:module{SwapperUsageV3} SWPU)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (slippage:decimal (at "slippage-percent" slippage-bounds))
-                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                    (ico:object{IgnisCollectorV2.OutputCumulator}
                         (ref-SWPU::C_Swap 
                             account swpair [input-id] [input-amount] output-id 
                             slippage stoa-pid slippage-bounds
@@ -1133,16 +1133,16 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-SWP:module{SwapperV3} SWP)
-                    (ref-SWPI:module{SwapperIssueV3} SWPI)
-                    (ref-SWPU:module{SwapperUsageV2} SWPU)
+                    (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-SWPI:module{SwapperIssueV4} SWPI)
+                    (ref-SWPU:module{SwapperUsageV3} SWPU)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                    (slippage-bounds:object{SwapperUsageV2.Slippage}
+                    (slippage-bounds:object{SwapperUsageV3.Slippage}
                         (ref-SWPU::UDC_SpawnSlippageBounds swpair [input-id] [input-amount] output-id -1.0)
                     )
-                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                    (ico:object{IgnisCollectorV2.OutputCumulator}
                         (ref-SWPU::C_Swap 
                             account swpair [input-id] [input-amount] output-id 
                             -1.0 stoa-pid slippage-bounds
@@ -1163,20 +1163,20 @@
             input-ids:[string]
             input-amounts:[decimal]
             output-id:string
-            slippage-bounds:object{SwapperUsageV2.Slippage}
+            slippage-bounds:object{SwapperUsageV3.Slippage}
         )
         @doc "Executes A Swap from <input-ids> with <input-amounts> to <output-id> with <slippage>"
         (with-capability (P|TS)
             (let
                 (
-                    (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-SWP:module{SwapperV3} SWP)
-                    (ref-SWPI:module{SwapperIssueV3} SWPI)
-                    (ref-SWPU:module{SwapperUsageV2} SWPU)
+                    (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-SWPI:module{SwapperIssueV4} SWPI)
+                    (ref-SWPU:module{SwapperUsageV3} SWPU)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (slippage:decimal (at "slippage-percent" slippage-bounds))
-                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                    (ico:object{IgnisCollectorV2.OutputCumulator}
                         (ref-SWPU::C_Swap 
                             account swpair input-ids input-amounts output-id 
                             slippage stoa-pid slippage-bounds
@@ -1202,16 +1202,16 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-SWP:module{SwapperV3} SWP)
-                    (ref-SWPI:module{SwapperIssueV3} SWPI)
-                    (ref-SWPU:module{SwapperUsageV2} SWPU)
+                    (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-SWPI:module{SwapperIssueV4} SWPI)
+                    (ref-SWPU:module{SwapperUsageV3} SWPU)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                    (slippage-bounds:object{SwapperUsageV2.Slippage}
+                    (slippage-bounds:object{SwapperUsageV3.Slippage}
                         (ref-SWPU::UDC_SpawnSlippageBounds swpair input-ids input-amounts output-id -1.0)
                     )
-                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                    (ico:object{IgnisCollectorV2.OutputCumulator}
                         (ref-SWPU::C_Swap 
                             account swpair input-ids input-amounts output-id 
                             -1.0 stoa-pid slippage-bounds)
