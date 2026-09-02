@@ -21,6 +21,20 @@
 ;;  caps) · grey structural `GOV|` / `P|` prefix filters. Everything else is
 ;;  organizational. Composition wins: a trivial-`true` / compose-only-bronze cap
 ;;  stays BRONZE even under a {C4} marker.
+;;
+;;  INTERFACES ARE CO-LOCATED (the 0_Interfaces/ pool is retired). Any interface
+;;  whose FIRST deploy-order implementer is this module lives HERE, ABOVE the
+;;  module, base-most first, each with the dual-version comment. Kadena interfaces
+;;  are immutable → the version stays in the name; the name = the `dev:` version.
+;;  Each interface declares constants/schemas/cap-signatures/function-signatures
+;;  (all functions EXCEPT XI_/W*_) in module order — no deftable, no bodies:
+;;
+;;   ;; net: v5        ;; live on mainnet (lags; bump only on deploy).  Pre-first-deploy: net: — (undeployed)
+;;   ;; dev: v5        ;; in this repo (name = this; the moment you modify → dev:v6, rename NAMEV5→NAMEV6, cascade consumers)
+;;   (interface NAMEV5
+;;       @doc "…"
+;;       ;; … mirror of the module's order for declarable members …
+;;   )
 ;; ============================================================================
 (module NAME GOV
     @doc "…"                                      ;; OPTIONAL module @doc — the module's metadata, ONE per logical

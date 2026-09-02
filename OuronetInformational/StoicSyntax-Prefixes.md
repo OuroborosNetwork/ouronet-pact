@@ -612,3 +612,37 @@ This pass = **complete rename + reorder + refactor of every Pact module AND inte
 (interfaces mirror the module: implementers, then GOV members, then POLICY, CST, caps, and all functions except
 `XI_`/`W*_`, in the same order — and must be **complete**). **REPL test code has no canon** — written however
 makes the test work.
+
+### 7.10 Interface location & versioning (amendment 2026-09-02)
+
+**Interfaces are co-located with the modules that use them — the `0_Interfaces/` pool is RETIRED.**
+
+- **Home = first deploy-order implementer.** Each interface lives in the `.pact` file of the **first module
+  (in deploy order) that `implements` it**, placed **above** the module form. Since deploy order already
+  respects dependencies, the interface then deploys immediately ahead of the first module that needs it —
+  self-ordering, nothing to hunt for. (Ex: `OuronetConstantsV*` → `U|CT`'s file; `OuronetDalosV*` → DALOS's
+  file; `OuronetPolicyV*` (implemented by ~51 modules) → the earliest module that implements it.)
+- **Multiple interfaces in one file** sit in **the order the module defines/uses them**, base-most first
+  (interface→interface deps deploy first). Each carries its own `@doc` + the mirror skeleton.
+- **Interface mirror** — an interface can't hold `deftable` or function bodies, so it mirrors its module's
+  order for the members it *can* declare: constants, schemas, capability signatures, and function signatures —
+  **all functions except `XI_` and `W*_`** (plus GOV/policy members, in the same order the module writes them).
+  Interfaces must be **complete** (nothing a consumer needs is missing).
+- **Deploy size** is measured **per interface** and **per module**, never per source file: if a co-located
+  `interface + module` file is too big for one tx, deploy the interface first and the module as a second tx.
+- **Retire the pool:** delete the `0_Interfaces/` files; git history preserves old versions.
+
+**Versioning — dual `net:` / `dev:` comment, name = dev version.** Two comment lines sit immediately above
+each interface (Kadena interfaces are **immutable**, so a modified interface must deploy under a new name — the
+version stays in the name):
+```
+;; net: v5          ;; live on mainnet  (lags; bumped only when you deploy the update)
+;; dev: v5          ;; in this repo      (== net when synced)
+(interface OuronetDalosV5  …)            ;; consumers: (module{OuronetDalosV5})
+```
+- **Synced:** `net: v5` / `dev: v5`, interface `…V5`.
+- **On modification:** bump `dev: v6`, rename `…V5 → …V6`, refactor **every** `module{…V5}` consumer to `…V6`
+  (deliberate cascade — `dev:` now leads `net:`). `net:` unchanged.
+- **On mainnet deploy:** set `net: v6`. Synced again.
+- **Pre-first-deploy (today):** `net: —  (undeployed)`; keep each interface's **current** version number as
+  `dev:` (V1…V12 as they stand — do **not** reset to V1). The #83 fresh redeploy records `dev:` as the initial `net:`.
