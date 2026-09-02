@@ -814,7 +814,7 @@
         )
     )
     (defun C_ATS|VestedCurl (patron:string curler-vester:string ats1:string ats2:string curl-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer)
-        @doc "Same as <ATS|C_VestedCoil> but instead Curls the input Token. \
+        @doc "Same as <C_ATS|VestedCoil> but instead Curls the input Token. \
             \ Requires that : \
             \ *]Input DPTF is part of an ATSPair, the <ats1> \
             \ *]That the Cold-RBT Token of the <ats1> is RT in <ats2> \

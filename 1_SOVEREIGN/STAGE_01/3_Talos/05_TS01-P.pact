@@ -162,7 +162,7 @@
     ;;
     ;;  [SWP PactStarters]
     (defun C_SWP|IssueStablePool (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal amp:decimal p:bool)
-        @doc "Similar outcome to <ref-TS01-C2::SWP|C_IssueStable>, but over 3 <steps> (0|1|2) via <defpact> \
+        @doc "Similar outcome to <ref-TS01-C2::C_SWP|IssueStable>, but over 3 <steps> (0|1|2) via <defpact> \
             \ Calling this function runs the Step 0 of 2. To finalize SWPair creation, Steps 1 and 2 must also be executed \
             \ \
             \ Step 0: Data Validation, makes sure the input data is correct for SWPair Creation \

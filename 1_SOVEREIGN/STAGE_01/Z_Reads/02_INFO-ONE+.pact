@@ -283,7 +283,7 @@
         (if trigger 0.0 full-price)
     )
     (defun UCx_ToggleAddOrSwapIfp:decimal (swpair:string toggle:bool)
-        @doc "Ignis preview for <SwapperV3.C_ToggleAddOrSwap> (Talos <SWP|C_ToggleAddLiquidity> / <SWP|C_ToggleSwapCapability>)."
+        @doc "Ignis preview for <SwapperV3.C_ToggleAddOrSwap> (Talos <C_SWP|ToggleAddLiquidity> / <C_SWP|ToggleSwapCapability>)."
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -602,16 +602,16 @@
     ;;  [SIP|URC] - Simple Ignis Price >> dependent on a single trigger
     ;;
     (defun SIP|URC_Small:decimal ()
-        @doc "<DPTF|C_Control> \
-            \ <DPTF|C_DeployAccount> \
-            \ <DPTF|C_SetFee> \
-            \ <DPTF|C_SetFeeTarget> \
-            \ <DPTF|C_SetMinMove> \
-            \ <DPTF|C_ToggleFee> \
-            \ <DPTF|C_ToggleFeeLock> \
-            \ <DPOF|C_AddQuantity> \
-            \ <DPOF|C_Burn> \
-            \ <DPOF|C_DeployAccount>"
+        @doc "<C_DPTF|Control> \
+            \ <C_DPTF|DeployAccount> \
+            \ <C_DPTF|SetFee> \
+            \ <C_DPTF|SetFeeTarget> \
+            \ <C_DPTF|SetMinMove> \
+            \ <C_DPTF|ToggleFee> \
+            \ <C_DPTF|ToggleFeeLock> \
+            \ <C_DPOF|AddQuantity> \
+            \ <C_DPOF|Burn> \
+            \ <C_DPOF|DeployAccount>"
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -624,10 +624,10 @@
         )
     )
     (defun SIP|URC_Medium ()
-        @doc "<DPTF|C_TogglePause> \
-            \ <DPTF|C_ToggleReservation>\
-            \ <DPOF|C_Control> \
-            \ <DPOF|C_Mint>"
+        @doc "<C_DPTF|TogglePause> \
+            \ <C_DPTF|ToggleReservation>\
+            \ <C_DPOF|Control> \
+            \ <C_DPOF|Mint>"
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -640,7 +640,7 @@
         )
     )
     (defun SIP|URC_Big:decimal ()
-        @doc "<DPTF|C_RotateOwnership>"
+        @doc "<C_DPTF|RotateOwnership>"
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -653,14 +653,14 @@
         )
     )
     (defun SIP|URC_Biggest ()
-        @doc "<DPTF|C_ToggleFreezeAccount> \
-            \ <DPOF|C_ToggleFreezeAccount> \
-            \ <DPTF|C_ToggleTransferRole> \
-            \ <DPTF|C_Wipe> \
+        @doc "<C_DPTF|ToggleFreezeAccount> \
+            \ <C_DPOF|ToggleFreezeAccount> \
+            \ <C_DPTF|ToggleTransferRole> \
+            \ <C_DPTF|Wipe> \
             \ <DPTF|C_WipePartial> \
-            \ <SwapperV3.C_ChangeOwnership> (Talos <SWP|C_ChangeOwnership>) \
-            \ <SwapperV3.C_ModifyCanChangeOwner> (Talos <SWP|C_ModifyCanChangeOwner>) \
-            \ <SwapperV3.C_ModifyWeights> (Talos <SWP|C_ModifyWeights>)"
+            \ <SwapperV3.C_ChangeOwnership> (Talos <C_SWP|ChangeOwnership>) \
+            \ <SwapperV3.C_ModifyCanChangeOwner> (Talos <C_SWP|ModifyCanChangeOwner>) \
+            \ <SwapperV3.C_ModifyWeights> (Talos <C_SWP|ModifyWeights>)"
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -673,7 +673,7 @@
         )
     )
     (defun SIP|URC_UpdatePendingBranding:decimal (m:decimal)
-        @doc "<DPTF|C_UpdatePendingBranding> >> m = 1"
+        @doc "<C_DPTF|UpdatePendingBranding> >> m = 1"
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -686,7 +686,7 @@
         )
     )
     (defun SIP|URC_Burn:decimal (id:string account:string)
-        @doc "<DPTF|C_Burn>"
+        @doc "<C_DPTF|Burn>"
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -712,7 +712,7 @@
         )
     )
     (defun SIP|URC_Mint:decimal (id:string account:string origin:bool)
-        @doc "<DPTF|C_Mint>"
+        @doc "<C_DPTF|Mint>"
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -728,7 +728,7 @@
     ;;  [SKP|URC] - Simple Stoa Price 
     ;;
     (defun SKP|URC_UpgradeBranding (months:integer)
-        @doc "<DPTF|C_UpgradeBranding>"
+        @doc "<C_DPTF|UpgradeBranding>"
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -738,8 +738,8 @@
         )
     )
     (defun SKP|URC_Issue (name:[string] dptf-or-dpof:bool)
-        @doc "<DPTF|C_Issue> \
-            \ <DPOF|C_Issue>"                
+        @doc "<C_DPTF|Issue> \
+            \ <C_DPOF|Issue>"                
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)

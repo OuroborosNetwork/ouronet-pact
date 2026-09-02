@@ -495,7 +495,7 @@
     )
     (defun C_SWP|ToggleSwapCapability (patron:string swpair:string toggle:bool)
         @doc "Toggle on or off the Functionality of swapping for an <swpair> \
-            \ When <toggle> is <true>, same setup for roles is executed as for <SWP|C_ToggleAddLiquidity> \
+            \ When <toggle> is <true>, same setup for roles is executed as for <C_SWP|ToggleAddLiquidity> \
             \ \
             \ <On> Toggle can only be executed is <swpair> surpasses <(ref-SWP::UR_InactiveLimit)> \
             \ \
@@ -643,7 +643,7 @@
         )
     )
     (defun C_SWP|AddIcedLiquidity:string (patron:string account:string swpair:string input-amounts:[decimal])
-        @doc "Same as <SWP|C_AddLiquidity>, but using ICED Mode \
+        @doc "Same as <C_SWP|AddLiquidity>, but using ICED Mode \
             \ \
             \ ICED MODE \
             \ Returns a part of the <asymmetric-lp-amount> as Frozen LP \
@@ -676,7 +676,7 @@
         )
     )
     (defun C_SWP|AddGlacialLiquidity:string (patron:string account:string swpair:string input-amounts:[decimal])
-        @doc "Same as <SWP|C_AddLiquidity>, but using GLACIAL Mode \
+        @doc "Same as <C_SWP|AddLiquidity>, but using GLACIAL Mode \
             \ \
             \ GLACIAL MODE \
             \ Returns all of the <asymmetric-lp-amount> as Frozen LP \

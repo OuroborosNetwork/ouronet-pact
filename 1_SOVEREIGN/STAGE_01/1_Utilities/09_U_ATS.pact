@@ -285,7 +285,7 @@
         )
     )
     (defun UC_PromilleSplit:[decimal] (promille:decimal input:decimal input-precision:integer)
-        @doc "Helper Function used in the <ATS|C_ColdRecovery> Function"
+        @doc "Helper Function used in the <C_ATS|ColdRecovery> Function"
         (let*
             (
                 (ref-U|DEC:module{OuronetDecimalsV1} U|DEC)

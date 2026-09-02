@@ -779,7 +779,7 @@
         )
     )
     (defun C_DPTF|WipeSlim (patron:string id:string atbw:string amtbw:decimal)
-        @doc "Similar to <DPTF|C_Wipe>, but doesnt wipe the whole existing amount"
+        @doc "Similar to <C_DPTF|Wipe>, but doesnt wipe the whole existing amount"
         (with-capability (P|TS)
             (let
                 (

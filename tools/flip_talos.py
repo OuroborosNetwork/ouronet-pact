@@ -16,7 +16,7 @@ PREFIX = r'(CCp|CC|Cp|C|AAp|AA|Ap|A)'
 DEF_RE = re.compile(r'\(def(?:un|cap|pact)\s+([A-Za-z0-9-]+\|' + PREFIX + r'_[A-Za-z0-9|_-]*)')
 # single-pipe scope, client/admin prefix, then name
 TOKEN_RE = re.compile(r'^([A-Za-z0-9-]+)\|' + PREFIX + r'_(.+)$')
-IDCHAR = r'[A-Za-z0-9|_>-]'
+IDCHAR = r'[A-Za-z0-9|_-]'  # note: '>' excluded so <Name> doc mentions also flip (map keys are _-form, never C> caps)
 
 ROOTS_DEF = ['1_SOVEREIGN', '2_CITIZEN', '0_Sample']
 ROOTS_APPLY = ['1_SOVEREIGN', '2_CITIZEN', '0_Sample', 'REPL']
