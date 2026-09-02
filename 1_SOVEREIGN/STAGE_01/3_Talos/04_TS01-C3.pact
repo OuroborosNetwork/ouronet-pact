@@ -8,7 +8,7 @@
 ;;
 (interface TalosStageOne_ClientThreeV2
     @doc "Frozen — pre-V3 surface; Issue/fee-target functions typed against \
-        \ SwapperV2.PoolTokens/SwapperV2.FeeSplit (superseded when SwapperV3 shipped, \
+        \ SwapperV3.PoolTokens/SwapperV3.FeeSplit (superseded when SwapperV3 shipped, \
         \ interface bump per versioning rule — no functional surface change). \
         \ V2: Added Smart Swap entry points - C_SWP|SmartSwapWithSlippage and \
         \ C_SWP|SmartSwapNoSlippage for multi-hop token swaps across the entire pool \
@@ -62,9 +62,9 @@
     (defun C_SWP|EnableFrozenLP:string (patron:string swpair:string))
     (defun C_SWP|EnableSleepingLP:string (patron:string swpair:string))
     ;;Issue
-    (defun C_SWP|IssueStable:list (patron:string account:string pool-tokens:[object{SwapperV2.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
-    (defun C_SWP|IssueStandard:list (patron:string account:string pool-tokens:[object{SwapperV2.PoolTokens}] fee-lp:decimal p:bool))
-    (defun C_SWP|IssueWeighted:list (patron:string account:string pool-tokens:[object{SwapperV2.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
+    (defun C_SWP|IssueStable:list (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
+    (defun C_SWP|IssueStandard:list (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal p:bool))
+    (defun C_SWP|IssueWeighted:list (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
     ;;Management
     (defun C_SWP|ModifyCanChangeOwner (patron:string swpair:string new-boolean:bool))
     (defun C_SWP|ModifyWeights (patron:string swpair:string new-weights:[decimal]))
@@ -73,7 +73,7 @@
     (defun C_SWP|ToggleFeeLock (patron:string swpair:string toggle:bool))
     (defun C_SWP|UpdateAmplifier (patron:string swpair:string amp:decimal))
     (defun C_SWP|UpdateFee (patron:string swpair:string new-fee:decimal lp-or-special:bool))
-    (defun C_SWP|UpdateSpecialFeeTargets (patron:string swpair:string targets:[object{SwapperV2.FeeSplit}]))
+    (defun C_SWP|UpdateSpecialFeeTargets (patron:string swpair:string targets:[object{SwapperV3.FeeSplit}]))
     ;;Liquidity
     (defun C_SWP|AddLiquidity:string (patron:string account:string swpair:string input-amounts:[decimal]))
     (defun C_SWP|AddIcedLiquidity:string (patron:string account:string swpair:string input-amounts:[decimal]))

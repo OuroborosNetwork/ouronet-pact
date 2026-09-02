@@ -3,8 +3,8 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
 ;;
 (interface SwapperV3
-    @doc "Swapper forward surface for module SWP (successor to SwapperV2). \
-        \ Row shapes use this interface's PoolTokens and FeeSplit schemas (field-compatible with SwapperV2). \
+    @doc "Swapper forward surface for module SWP (successor to SwapperV3). \
+        \ Row shapes use this interface's PoolTokens and FeeSplit schemas (field-compatible with SwapperV3). \
         \ V3: UR_StoaValue and XE_UpdateStoaValue for STOA pool ledger on SWP|Pairs."
 
     ;;<=========================================================================>

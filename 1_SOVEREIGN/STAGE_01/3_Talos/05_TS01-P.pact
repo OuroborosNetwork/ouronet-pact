@@ -5,7 +5,7 @@
 ;; together with its always-paired sibling rather than split across files.
 ;;
 (interface TalosStageOne_ClientPactsV2
-    @doc "Frozen — pre-V3 surface; pooled issue caps typed against SwapperV2.PoolTokens \
+    @doc "Frozen — pre-V3 surface; pooled issue caps typed against SwapperV3.PoolTokens \
         \ (superseded when SwapperV3 shipped, interface bump per versioning rule — no \
         \ functional surface change). Currently including functions from SWP Module."
 
@@ -50,9 +50,9 @@
     ;;
     ;;
     ;;Issue
-    (defun C_SWP|IssueStablePool (patron:string account:string pool-tokens:[object{SwapperV2.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
-    (defun C_SWP|IssueWeightedPool (patron:string account:string pool-tokens:[object{SwapperV2.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
-    (defun C_SWP|IssueStandardPool (patron:string account:string pool-tokens:[object{SwapperV2.PoolTokens}] fee-lp:decimal p:bool))
+    (defun C_SWP|IssueStablePool (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
+    (defun C_SWP|IssueWeightedPool (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
+    (defun C_SWP|IssueStandardPool (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal p:bool))
     ;;
     (defun C_SWP|AddStandardLiquidity (patron:string account:string swpair:string input-amounts:[decimal]))
     (defun C_SWP|AddIcedLiquidity (patron:string account:string swpair:string input-amounts:[decimal]))
