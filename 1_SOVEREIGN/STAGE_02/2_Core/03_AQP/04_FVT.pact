@@ -252,6 +252,7 @@
 )
 (module AQP-FVT GOV
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -302,6 +303,74 @@
     )
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|FVT_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|FVT_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    ;;
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        @doc "Post-deploy (AQP-BOOT Step 0): FVT SECURE on AQP-SCORE + AQP-POOL IMP; \
+            \ P|FVT|CALLER on TFT/DPOF/DPDC-T; FVT|RemoteAqpGov on AQP-POOL for inject/collect vault legs. \
+            \ Vacate recipes live in AQP-VCT."
+        (let
+            (
+                (ref-P|SCR:module{OuronetPolicyV1} AQP-SCORE)
+                (ref-P|AQP:module{OuronetPolicyV1} AQP-POOL)
+                (ref-P|TFT:module{OuronetPolicyV1} TFT)
+                (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
+                (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
+                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
+                (ref-P|SWPLC:module{OuronetPolicyV1} SWPLC)
+                (ref-P|ORBR:module{OuronetPolicyV1} OUROBOROS)
+                (ref-P|ATSU:module{OuronetPolicyV1} ATSU)
+                ;;
+                (dg:guard (create-capability-guard (SECURE)))
+                (mg:guard (create-capability-guard (P|FVT|CALLER)))
+                (rg:guard (create-capability-guard (P|FVT|REMOTE-GOV)))
+            )
+            (ref-P|SCR::P|A_AddIMP dg)
+            (ref-P|AQP::P|A_AddIMP dg)
+            (ref-P|AQP::P|A_Add "FVT|RemoteAqpGov" rg)
+            (ref-P|TFT::P|A_AddIMP mg)
+            (ref-P|DPOF::P|A_AddIMP mg)
+            (ref-P|DPDC-T::P|A_AddIMP mg)
+            ;; DPTF: FVT burns the royalty pool in place from AQP|SC_NAME (DSA royalty burn disposal).
+            (ref-P|DPTF::P|A_AddIMP mg)
+            ;; SWPLC: FVT fuels a swpair with the royalty pool from AQP|SC_NAME (DSA royalty fuel disposal).
+            (ref-P|SWPLC::P|A_AddIMP mg)
+            ;; OUROBOROS: FVT normalizes an IGNIS royalty leg to OURO (XB_Compress) before disposal.
+            (ref-P|ORBR::P|A_AddIMP mg)
+            (ref-P|ATSU::P|A_AddIMP mg)
+        )
     )
 
     ;;<=========================================================================>
@@ -941,7 +1010,7 @@
         @doc "Protects the single-tx re-score sweep (CC_SweepRevokeAnchor). Composes P|SECURE-CALLER so SECURE is \
             \ granted for the intra-module recompute (XI_*) AND FVT's registered SECURE guard is satisfied for the \
             \ cross-module XE calls into AQP-ANK (aggregate refold + swept anchor removal) and AQP-POOL (freeze) — \
-            \ FVT is in both IMPs (A_P|Define). The anchor owner (= anchored-asset owner) is enforced inside \
+            \ FVT is in both IMPs (P|A_Define). The anchor owner (= anchored-asset owner) is enforced inside \
             \ ANK|XE>SWEEP-REVOKE."
         @event
         (compose-capability (P|SECURE-CALLER))
@@ -3354,14 +3423,6 @@
         )
     )
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     ;; [UEV] enforce
     (defun UEV_TrueFungibleStakeOwnerAccount (owner-id:string)
         @doc "Recipe cap: owner-id must be an activated Ouronet account (signer proof in AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY)."
@@ -5390,7 +5451,7 @@
         (beneficiary-id:string dptf-id:string)
         @doc "Internal (CC_TrueFungibleStakeFlow phase 3.1 · depth 0]): read post-ico1 BenDptfTotal balance, \
             \ call backward ANK promile refresh + AQP last-ank-sync-count bump; concat IGNIS OCs. \
-            \ require-capability (SECURE) only — backward XE_* use UEV_IMC / domain caps."
+            \ require-capability (SECURE) only — backward XE_* use P|UEV_IMC / domain caps."
         (require-capability (SECURE))
         (let
             (
@@ -5752,8 +5813,8 @@
             \ mirror-resync per user; each fresh member no-ops), recording the 2e forced-fix count per user on \
             \ `reward-dptf-id` (the injected lane). NO fund movement. Caller passes `take N` of \
             \ URH_FvtStalePresentUsers. Computes the FVT's enabled members ONCE and reuses it across the chunk (no \
-            \ per-user FVT|T|ScoreEntityLink re-scan). UEV_IMC + FVT|XE>SWEEP-FIX (composes SECURE)."
-        (UEV_IMC)
+            \ per-user FVT|T|ScoreEntityLink re-scan). P|UEV_IMC + FVT|XE>SWEEP-FIX (composes SECURE)."
+        (P|UEV_IMC)
         (with-capability (FVT|XE>SWEEP-FIX fvt-id)
             (let
                 (
@@ -5773,8 +5834,8 @@
             \ triplet analogue of ANK::XE_RecomputeUserBoostAggregates / SCR::XE_RefreshUserScoreDeb (true-triplets \
             \ are deb-independent; their anchor staleness lives in the lanes). Self-no-ops for non-true-triplet / \
             \ singular members (XI_SyncTripletLaneWeights guards on the true-triplet flag). NO fund movement; the \
-            \ sweep defpact bills IGNIS. UEV_IMC + FVT|XE>SWEEP-FIX (composes SECURE)."
-        (UEV_IMC)
+            \ sweep defpact bills IGNIS. P|UEV_IMC + FVT|XE>SWEEP-FIX (composes SECURE)."
+        (P|UEV_IMC)
         (with-capability (FVT|XE>SWEEP-FIX fvt-id)
             (XI_SyncTripletLaneWeights beneficiary-id
                 [(UDC_FVT|SettleScorePlan (UR_FVT-SEL|ScoreEntityType fvt-id score-entity-id) score-entity-id fvt-id [])])
@@ -5784,9 +5845,9 @@
     (defun XE_FvtSweepRecomputeChunk:object{IgnisCollectorV1.OutputCumulator}
         (fvt-id:string score-entity-id:string swept-boost-class-id:string users:[string])
         @doc "Forward (re-score sweep defpact — cross-module): recompute a CHUNK of holders on one (fvt, member). \
-            \ Thin UEV_IMC + FVT|XE>SWEEP-FIX (composes SECURE) wrapper over XI_FvtSweepRecomputeChunk. Caller passes \
+            \ Thin P|UEV_IMC + FVT|XE>SWEEP-FIX (composes SECURE) wrapper over XI_FvtSweepRecomputeChunk. Caller passes \
             \ `take N` of the member's present users. Paged by MTX-AQP::C_MTX|2|SweepRevokeAnchor (XI_SweepRecomputeWindow)."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (FVT|XE>SWEEP-FIX fvt-id)
             (XI_FvtSweepRecomputeChunk fvt-id score-entity-id swept-boost-class-id users)
         )
@@ -5794,8 +5855,8 @@
     (defun XE_SweepBegin:string (anchor-id:string)
         @doc "Sweep bracket BEGIN (paginated MTX|n|C_SweepRevokeAnchor): freeze every affected pool (stake + collect \
             \ blocked) then remove the anchor globally (swept-revoke — skips the #9 score-link lock). Mirrors steps \
-            \ 1-2 of the single-tx CC_SweepRevokeAnchor. UEV_IMC + FVT|XE>SWEEP-BRACKET (P|SECURE-CALLER)."
-        (UEV_IMC)
+            \ 1-2 of the single-tx CC_SweepRevokeAnchor. P|UEV_IMC + FVT|XE>SWEEP-BRACKET (P|SECURE-CALLER)."
+        (P|UEV_IMC)
         (with-capability (FVT|XE>SWEEP-BRACKET anchor-id)
             (let
                 (
@@ -5816,8 +5877,8 @@
     (defun XE_SweepEnd:string (anchor-id:string)
         @doc "Sweep bracket END (paginated MTX|n|C_SweepRevokeAnchor terminal step): unfreeze every affected pool. \
             \ The anchor was already swept-revoked in XE_SweepBegin; the reverse index is unchanged so score-ids \
-            \ still resolve. UEV_IMC + FVT|XE>SWEEP-BRACKET (P|SECURE-CALLER)."
-        (UEV_IMC)
+            \ still resolve. P|UEV_IMC + FVT|XE>SWEEP-BRACKET (P|SECURE-CALLER)."
+        (P|UEV_IMC)
         (with-capability (FVT|XE>SWEEP-BRACKET anchor-id)
             (let
                 (
@@ -5836,23 +5897,23 @@
     ;; --- XE forwarders (AQP-VCT TF vacate composes stake/RPS primitives via IMC) ---
     (defun XE_SetFvtVacateFrozen:string (fvt-id:string frozen:bool)
         @doc "AQP-VCT begin/finalize: set this FVT's vacate-frozen flag (blocks collect + inject during a pool \
-            \ vacate). Called once per the vacating pool's employed-score FVTs. UEV_IMC + SECURE."
-        (UEV_IMC)
+            \ vacate). Called once per the vacating pool's employed-score FVTs. P|UEV_IMC + SECURE."
+        (P|UEV_IMC)
         (with-capability (SECURE)
             (WU_FvtVacateFreeze fvt-id frozen)
         )
     )
     (defun XE_SetFvtOracleOn:string (fvt-id:string oracle-on:bool)
-        @doc "DSA: toggle this FVT's node/uptime oracle (off ⇒ capture = units, uptime ≡ 1000, no expiry). UEV_IMC + SECURE."
-        (UEV_IMC)
+        @doc "DSA: toggle this FVT's node/uptime oracle (off ⇒ capture = units, uptime ≡ 1000, no expiry). P|UEV_IMC + SECURE."
+        (P|UEV_IMC)
         (with-capability (SECURE)
             (WU_Fvt|OracleOn fvt-id oracle-on)
         )
     )
     (defun XE_SetExternalOracle:string (on:bool)
         @doc "DSA (module admin): set the GLOBAL external-oracle switch. Preserves the current oracle-validity. \
-            \ UEV_IMC + SECURE."
-        (UEV_IMC)
+            \ P|UEV_IMC + SECURE."
+        (P|UEV_IMC)
         (with-capability (SECURE)
             (with-default-read FVT|T|DsaOracleConfig FVT|DSA-ORACLE-KEY
                 {"oracle-validity" : DSA_ORACLE_TTL} {"oracle-validity" := v}
@@ -5862,8 +5923,8 @@
     )
     (defun XE_SetOracleValidity:string (seconds:integer)
         @doc "DSA (module admin): set the GLOBAL oracle-validity window (seconds). Preserves the current \
-            \ external-oracle switch. UEV_IMC + SECURE."
-        (UEV_IMC)
+            \ external-oracle switch. P|UEV_IMC + SECURE."
+        (P|UEV_IMC)
         (with-capability (SECURE)
             (with-default-read FVT|T|DsaOracleConfig FVT|DSA-ORACLE-KEY
                 {"external-oracle" : true} {"external-oracle" := x}
@@ -5873,15 +5934,15 @@
     )
     (defun XE_SetAgencyFee:string (fvt-id:string score-entity-id:string operator-konto:string fee-per-mille:integer)
         @doc "DSA: set/update a delegation member's operator + fee (mirrored from DSA|Agency so the inject settle \
-            \ reads it locally). Set at open + on a fee change. UEV_IMC + SECURE."
-        (UEV_IMC)
+            \ reads it locally). Set at open + on a fee change. P|UEV_IMC + SECURE."
+        (P|UEV_IMC)
         (with-capability (SECURE)
             (WU_AgencyFee fvt-id score-entity-id operator-konto fee-per-mille)
         )
     )
     (defun XE_SetMemberDelegation:string (fvt-id:string score-entity-id:string delegation:bool)
-        @doc "DSA: flip a member to (or from) a delegation agency. UEV_IMC + SECURE."
-        (UEV_IMC)
+        @doc "DSA: flip a member to (or from) a delegation agency. P|UEV_IMC + SECURE."
+        (P|UEV_IMC)
         (with-capability (SECURE)
             (WU_ScoreEntityLink|Delegation fvt-id score-entity-id delegation)
         )
@@ -5889,8 +5950,8 @@
     (defun XE_SetMemberCapture:string (fvt-id:string score-entity-id:string capture-units:decimal capture-weight:decimal oracle-ts:time)
         @doc "DSA: set an agency's capture fields — the values the inject reads (numerator = capture-weight, \
             \ denominator term = capture-units, 25h expiry = oracle-ts). Recomputed by DSA on delegator \
-            \ stake/unstake or an oracle write. UEV_IMC + SECURE."
-        (UEV_IMC)
+            \ stake/unstake or an oracle write. P|UEV_IMC + SECURE."
+        (P|UEV_IMC)
         (with-capability (SECURE)
             (WU_ScoreEntityLink|Capture fvt-id score-entity-id capture-units capture-weight oracle-ts)
         )
@@ -5900,8 +5961,8 @@
             \ vault-like (swpair \"|\", ghost 0; inject weight = capture). Creates the three SCR fvt-links + inserts \
             \ the ScoreEntityLink via the same write path as C_AddScoreEntity, but validated by \
             \ FVT|XE>ADMIT-DELEGATION (operator ownership, LP-farm rules skipped). DSA flips `delegation` on via \
-            \ XE_SetMemberDelegation after this. UEV_IMC + FVT|XE>ADMIT-DELEGATION."
-        (UEV_IMC)
+            \ XE_SetMemberDelegation after this. P|UEV_IMC + FVT|XE>ADMIT-DELEGATION."
+        (P|UEV_IMC)
         (with-capability (FVT|XE>ADMIT-DELEGATION fvt-id triplet-id operator)
             (let
                 (
@@ -5918,10 +5979,10 @@
         (fvt-id:string reward-dptf-id:string destination:string)
         @doc "DSA royalty disposal (WITHDRAW): zero the royalty pool (reward-dptf) of <fvt-id>, IGNIS-normalize it \
             \ to OURO if needed, and move the whole balance OUT of the AQP pool-vault custody (AQP|SC_NAME) to \
-            \ <destination> via TFT. UEV_IMC + FVT|XE>DISPOSE-ROYALTY (composes P|SECURE-CALLER + P|FVT|REMOTE-GOV \
+            \ <destination> via TFT. P|UEV_IMC + FVT|XE>DISPOSE-ROYALTY (composes P|SECURE-CALLER + P|FVT|REMOTE-GOV \
             \ for the AQP custody leg). Returns the (compress + transfer) OutputCumulator. Owner authorization is \
             \ enforced upstream in DSA's A_ shell."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (FVT|XE>DISPOSE-ROYALTY fvt-id reward-dptf-id)
             (let
                 (
@@ -5947,8 +6008,8 @@
         @doc "DSA royalty disposal (BURN): zero the royalty pool (reward-dptf) of <fvt-id>, IGNIS-normalize it to \
             \ OURO if needed, and BURN the whole balance in place from the AQP pool-vault custody (AQP|SC_NAME — \
             \ which holds the autonomic burn role via DALOS UR_AutonomicRoles; FVT is a registered DPTF IMC caller). \
-            \ UEV_IMC + FVT|XE>DISPOSE-ROYALTY. Returns the (compress + burn) OutputCumulator."
-        (UEV_IMC)
+            \ P|UEV_IMC + FVT|XE>DISPOSE-ROYALTY. Returns the (compress + burn) OutputCumulator."
+        (P|UEV_IMC)
         (with-capability (FVT|XE>DISPOSE-ROYALTY fvt-id reward-dptf-id)
             (let
                 (
@@ -5974,10 +6035,10 @@
         @doc "DSA royalty disposal (FUEL): zero the royalty pool (reward-dptf) of <fvt-id>, IGNIS-normalize it to \
             \ OURO if needed, and FUEL <swpair> with the whole balance from the AQP pool-vault custody — adds \
             \ liquidity WITHOUT minting LP (SWPLC::C_Fuel), boosting LP value. The NORMALIZED token must be one of \
-            \ the swpair's tokens; the fuel amount goes in its slot, 0 in the others. UEV_IMC + FVT|XE>DISPOSE-ROYALTY \
+            \ the swpair's tokens; the fuel amount goes in its slot, 0 in the others. P|UEV_IMC + FVT|XE>DISPOSE-ROYALTY \
             \ (P|FVT|REMOTE-GOV custody authority). FVT is a registered SWPLC IMC caller. Returns the (compress + \
             \ fuel) OutputCumulator."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (FVT|XE>DISPOSE-ROYALTY fvt-id reward-dptf-id)
             (let
                 (
@@ -6006,8 +6067,8 @@
     (defun XE_BankScorePendingRewards:object{IgnisCollectorV1.OutputCumulator}
         (beneficiary-id:string pool-id:string plan:object)
         @doc "Forward (stake/unstake/collect flow): bank the beneficiary's pending per-score rewards for \
-            \ <pool-id> into the claimable ledger following <plan> (the pre-computed settle plan). UEV_IMC + SECURE."
-        (UEV_IMC)
+            \ <pool-id> into the claimable ledger following <plan> (the pre-computed settle plan). P|UEV_IMC + SECURE."
+        (P|UEV_IMC)
         (with-capability (SECURE)
             (do
                 (XI_1|BankScorePendingRewards beneficiary-id pool-id plan)
@@ -6018,8 +6079,8 @@
     (defun XE_RefreshTrueFungibleStakeAnchors:object{IgnisCollectorV1.OutputCumulator}
         (beneficiary-id:string dptf-id:string)
         @doc "Forward (stake/unstake flow): recompute the beneficiary's true-fungible stake-anchor values for \
-            \ <dptf-id> after a stake delta, keeping the anchor aggregates in sync with the live stake. UEV_IMC + SECURE."
-        (UEV_IMC)
+            \ <dptf-id> after a stake delta, keeping the anchor aggregates in sync with the live stake. P|UEV_IMC + SECURE."
+        (P|UEV_IMC)
         (with-capability (SECURE)
             (XI_RefreshTrueFungibleStakeAnchors beneficiary-id dptf-id)
         )
@@ -6035,8 +6096,8 @@
         )
         @doc "Forward (stake/unstake flow): recompute the beneficiary's collectable (SF/NF) stake-anchor values \
             \ for <collectable-id>'s <nonces>/<nonce-amounts> in <direction> (stake vs unstake), keeping the \
-            \ anchor aggregates in sync with the live nonce stake. UEV_IMC + SECURE."
-        (UEV_IMC)
+            \ anchor aggregates in sync with the live nonce stake. P|UEV_IMC + SECURE."
+        (P|UEV_IMC)
         (with-capability (SECURE)
             (XI_RefreshCollectableStakeAnchors
                 beneficiary-id collectable-id son nonces nonce-amounts direction
@@ -6046,8 +6107,8 @@
     (defun XE_BookStakeUnclaimedCounts:object{IgnisCollectorV1.OutputCumulator}
         (beneficiary-id:string pool-id:string settle-bundle:object)
         @doc "Forward (stake/unstake/collect flow): book the beneficiary's unclaimed-reward counts for \
-            \ <pool-id> from <settle-bundle> so later collects settle the correct outstanding units. UEV_IMC + SECURE."
-        (UEV_IMC)
+            \ <pool-id> from <settle-bundle> so later collects settle the correct outstanding units. P|UEV_IMC + SECURE."
+        (P|UEV_IMC)
         (with-capability (SECURE)
             (XI_BookStakeUnclaimedCounts beneficiary-id pool-id settle-bundle)
         )
@@ -6055,8 +6116,8 @@
     (defun XE_CheckpointStakeRps:object{IgnisCollectorV1.OutputCumulator}
         (beneficiary-id:string pool-id:string settle-bundle:object)
         @doc "Forward (stake/unstake/collect flow): checkpoint the beneficiary's reward-per-share (RPS) baseline \
-            \ for <pool-id> from <settle-bundle> so subsequent accrual is measured from the new stake state. UEV_IMC + SECURE."
-        (UEV_IMC)
+            \ for <pool-id> from <settle-bundle> so subsequent accrual is measured from the new stake state. P|UEV_IMC + SECURE."
+        (P|UEV_IMC)
         (with-capability (SECURE)
             (XI_CheckpointStakeRps beneficiary-id pool-id settle-bundle)
         )
@@ -6066,84 +6127,24 @@
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "THE single authorized inject entry — usable BOTH internally (C_Inject delegates here) and externally \
             \ (the MTX|n|C_Inject defpact terminal step calls it cross-module), hence `XB`. Just the auth wrapper: \
-            \ UEV_IMC + FVT|C>INJECT (validates + composes SECURE) around the one XI_FvtInjectCore. Any FVT class \
+            \ P|UEV_IMC + FVT|C>INJECT (validates + composes SECURE) around the one XI_FvtInjectCore. Any FVT class \
             \ (farm/vault/treasury); the core branches on class. Distributes over the CURRENT divisor — enforced- \
             \ fresh callers (CC_Inject / the defpact) fix stale members BEFORE calling. Replaces the former \
             \ XE_FvtInject: after the class-guard removal (N2) it was byte-identical to C_Inject's body, so the two \
             \ collapsed onto this one XB entry."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (FVT|C>INJECT patron fvt-id reward-dptf-id amount)
             (XI_FvtInjectCore patron fvt-id reward-dptf-id amount)
         )
     )
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|FVT_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|FVT_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    ;;
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        @doc "Post-deploy (AQP-BOOT Step 0): FVT SECURE on AQP-SCORE + AQP-POOL IMP; \
-            \ P|FVT|CALLER on TFT/DPOF/DPDC-T; FVT|RemoteAqpGov on AQP-POOL for inject/collect vault legs. \
-            \ Vacate recipes live in AQP-VCT."
-        (let
-            (
-                (ref-P|SCR:module{OuronetPolicyV1} AQP-SCORE)
-                (ref-P|AQP:module{OuronetPolicyV1} AQP-POOL)
-                (ref-P|TFT:module{OuronetPolicyV1} TFT)
-                (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
-                (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
-                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
-                (ref-P|SWPLC:module{OuronetPolicyV1} SWPLC)
-                (ref-P|ORBR:module{OuronetPolicyV1} OUROBOROS)
-                (ref-P|ATSU:module{OuronetPolicyV1} ATSU)
-                ;;
-                (dg:guard (create-capability-guard (SECURE)))
-                (mg:guard (create-capability-guard (P|FVT|CALLER)))
-                (rg:guard (create-capability-guard (P|FVT|REMOTE-GOV)))
-            )
-            (ref-P|SCR::A_P|AddIMP dg)
-            (ref-P|AQP::A_P|AddIMP dg)
-            (ref-P|AQP::A_P|Add "FVT|RemoteAqpGov" rg)
-            (ref-P|TFT::A_P|AddIMP mg)
-            (ref-P|DPOF::A_P|AddIMP mg)
-            (ref-P|DPDC-T::A_P|AddIMP mg)
-            ;; DPTF: FVT burns the royalty pool in place from AQP|SC_NAME (DSA royalty burn disposal).
-            (ref-P|DPTF::A_P|AddIMP mg)
-            ;; SWPLC: FVT fuels a swpair with the royalty pool from AQP|SC_NAME (DSA royalty fuel disposal).
-            (ref-P|SWPLC::A_P|AddIMP mg)
-            ;; OUROBOROS: FVT normalizes an IGNIS royalty leg to OURO (XB_Compress) before disposal.
-            (ref-P|ORBR::A_P|AddIMP mg)
-            (ref-P|ATSU::A_P|AddIMP mg)
-        )
-    )
     ;;
     ;; [C]   client
     ;; --- Lifecycle (FVT|T) ---
     (defun C_Issue:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-name:string owner-konto:string fvt-class:integer common-denominator:string)
         @doc "Create a new FVT (Farm | Vault | Treasury). GAS|ISSUE-FVT + smart STOA from patron; returns fvt-id in output."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (FVT|C>ISSUE-FVT fvt-name owner-konto fvt-class common-denominator)
             (let
                 (
@@ -6165,7 +6166,7 @@
     (defun C_RotateOwnership:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string new-owner-konto:string)
         @doc "Transfer FVT owner-konto. Validation in FVT|C>ROTATE-OWNERSHIP-FVT; medium IGNIS on pre-rotate owner."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ico:object{IgnisCollectorV1.OutputCumulator} (URCi_RotateOwnership fvt-id))
@@ -6179,7 +6180,7 @@
     (defun C_Control:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string new-can-upgrade:bool new-can-change-owner:bool)
         @doc "Set can-upgrade and can-change-owner on FVT. Medium IGNIS on owner-konto."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -6195,7 +6196,7 @@
     (defun C_SetCommonDenominator:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string common-denominator:string)
         @doc "Farm-only: set common-denominator before any ScoreEntityLinks. GAS|SET-COMMON-DENOMINATOR on owner."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -6212,7 +6213,7 @@
     (defun C_SetMosaic:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string mosaic:bool)
         @doc "Toggle mosaic membership policy when FVT has no ScoreEntityLink rows. GAS|SET-MOSAIC on owner."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -6231,7 +6232,7 @@
         @doc "Set the farm reward-split mode (D1-G2): SPLIT|STAKED (participation, default) | SPLIT|TVL (pool-size). \
             \ Farm owner; FREELY mutable (no cooldown) — a change re-weights only FUTURE injects (RPS is \
             \ checkpoint-based, past rewards untouched). GAS|SET-SPLIT-MODE on owner."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -6249,7 +6250,7 @@
     (defun C_AddScoreEntity:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string)
         @doc "Register score (type 1) or triplet (type 3) on FVT; insert ScoreEntityLink; SCR fvt-links. GAS|ADD-SCORE-ENTITY."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
@@ -6282,7 +6283,7 @@
     (defun C_ToggleScoreEntityLink:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string enabled:bool)
         @doc "Turn ScoreEntityLink.enabled on/off; farm adjusts S when toggling. GAS|TOGGLE-SCORE-ENTITY-LINK."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -6305,7 +6306,7 @@
             ats-1-2-id:string
         )
         @doc "Issue one chain-wide MultipletFamily reward ladder F|t0|t1|t2."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -6325,7 +6326,7 @@
         @doc "Register one reward DPTF on FVT (single RPS|Global row). multiplet-family-id BAR for plain tokens (VESTA, etc.); \
             \ F|t0|t1|t2 when reward-dptf-id is family token-0 — enables triplet lane collect on triplet anchors; score anchors stay plain. \
             \ One inject feeds all membership tranches; collect branches on anchor-id (score vs triplet)."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -6348,7 +6349,7 @@
     (defun C_ToggleRewardLink:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string enabled:bool)
         @doc "Toggle reward-enabled; ±1 enabled-reward-count on flip. GAS|TOGGLE-REWARD-LINK on owner."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -6368,7 +6369,7 @@
             \ when unset) routes each quality lane to its one ladder token (bronze->t0, silver->t1, gold->t2). \
             \ HETEROGENEOUS routes each lane across ALL 3 ladder tokens per its [to-t0 to-t1 to-t2] per-mille row \
             \ (each row sums to 1000). FVT owner; O(1) reprice (no per-delegator recompute). GAS|SET-QUALITY-SPLIT."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -6451,7 +6452,7 @@
             \ lane accepts only instant injects until a stream finishes. Delegates to XI_FvtAddStream under \
             \ FVT|C>INJECT-STREAM (validate + custody + SECURE). UI: URC_LiveClaimable / URC_StreamStatus show \
             \ real-time accrual. See Audit/STREAMED-INJECT-DESIGN.md."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (FVT|C>INJECT-STREAM patron fvt-id reward-dptf-id amount duration)
             (XI_FvtAddStream patron fvt-id reward-dptf-id amount duration)
         )
@@ -6469,7 +6470,7 @@
             \ mosaic farm carrying a singular score) exactly like a vault — the fix un-stales it (true-triplet members \
             \ no-op: deb-independent lanes). Same authorization as C_Inject (FVT|C>INJECT). For spike loads that exceed \
             \ one tx, use the MTX|n|C_Inject defpact (MTX-AQP). UrStoa ≡ C_URV|Inject with a pre-fresh divisor."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (FVT|C>INJECT patron fvt-id reward-dptf-id amount)
             (let
                 (
@@ -6505,10 +6506,10 @@
             \ CURRENTLY-stale present users (settle at old deb + refresh to live + resync mirror, recording the 2e \
             \ forced-fix count — same penalized fix as the single-tx CC_Inject and the defpact). No cursor: the \
             \ stale set SHRINKS as it is fixed (fixed users read fresh, so they drop out of URH_FvtStalePresentUsers) \
-            \ — repeat until none remain, then CC_InjectFinalize. UEV_IMC + FVT|C>INJECT-FIX (reward context + chunk \
+            \ — repeat until none remain, then CC_InjectFinalize. P|UEV_IMC + FVT|C>INJECT-FIX (reward context + chunk \
             \ bound). Between-tx staleness from external Elite-DEB moves is re-caught by the next scan; finalize \
             \ enforces zero-stale at inject."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (FVT|C>INJECT-FIX patron fvt-id reward-dptf-id chunk)
             (let
                 (
@@ -6541,8 +6542,8 @@
             \ CCp_InjectFixChunk pages made the divisor live), then inject on the fresh divisor via the shared \
             \ XI_FvtInjectCore — identical outcome to the single-tx CC_Inject and the C_MTX|2|Inject defpact terminal \
             \ step. The zero-stale gate is the enforced-fresh guarantee at the moment of inject (a heavy scan, so it \
-            \ lives in the body, not the defcap). UEV_IMC + FVT|C>INJECT (same auth as any inject)."
-        (UEV_IMC)
+            \ lives in the body, not the defcap). P|UEV_IMC + FVT|C>INJECT (same auth as any inject)."
+        (P|UEV_IMC)
         (with-capability (FVT|C>INJECT patron fvt-id reward-dptf-id amount)
             ;; enforced-fresh gate: refuse to inject while any present staker is stale (page CCp_InjectFixChunk first).
             ;; The URH_ scan (select) MUST be computed in a let, NOT inside the enforce — Pact evaluates an enforce
@@ -6568,9 +6569,9 @@
             \ read fresh and drop out of URH_FvtStalePresentUsers, so the stale set SHRINKS — repeat until none remain, \
             \ then a cheap light C_Inject (or CC_Inject) runs on the fresh divisor. When NO present staker is stale it \
             \ is a cheap no-op reporting `all up to date`. OWNER-GATED (contrast the permissionless inject-fix). \
-            \ UEV_IMC + FVT|C>UNSTALE-ALL (owner + reward context + chunk bound). Not IGNIS-billed (gas-station \
+            \ P|UEV_IMC + FVT|C>UNSTALE-ALL (owner + reward context + chunk bound). Not IGNIS-billed (gas-station \
             \ subsidised like the inject-fix pages; cost is recovered from the fixed users' 2e)."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (FVT|C>UNSTALE-ALL patron fvt-id reward-dptf-id chunk)
             (let
                 (
@@ -6609,9 +6610,9 @@
             \ is enforced inside ANK|XE>SWEEP-REVOKE. Scans the boost-class reverse index (ANK::UR_BC|ScoreLinks) × \
             \ each score's present users — bounded by score DEFINITIONS × stakers. For staker sets exceeding one tx, \
             \ use the paginated MTX-AQP::C_MTX|2|SweepRevokeAnchor defpact (mirrors CC_Inject → C_MTX|2|Inject). Lives in \
-            \ AQP-FVT (earliest module that can call ANK/SCR/POOL/FVT + owns the recompute). UEV_IMC + \
+            \ AQP-FVT (earliest module that can call ANK/SCR/POOL/FVT + owns the recompute). P|UEV_IMC + \
             \ FVT|C>SWEEP-REVOKE. `patron` is retained for symmetry / future IGNIS."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (FVT|C>SWEEP-REVOKE patron anchor-id)
             (let
                 (
@@ -6651,8 +6652,8 @@
             \ frozen recompute-set size in an offset-0 cursor. Recompute is deferred to repeated CCp_SweepRecomputeChunk \
             \ calls under the held freeze; the finalizing chunk unfreezes. Use this + chunking when the holder set \
             \ exceeds one tx; for small sets prefer the single-tx CC_SweepRevokeAnchor. Owner-initiated (the anchor \
-            \ owner signs; CAP_Owner enforced inside ANK|XE>SWEEP-REVOKE). UEV_IMC + FVT|C>SWEEP-REVOKE."
-        (UEV_IMC)
+            \ owner signs; CAP_Owner enforced inside ANK|XE>SWEEP-REVOKE). P|UEV_IMC + FVT|C>SWEEP-REVOKE."
+        (P|UEV_IMC)
         (with-capability (FVT|C>SWEEP-REVOKE patron anchor-id)
             (enforce (not (UR_FVT|SweepActive anchor-id)) "A sweep is already in progress for this anchor")
             (let
@@ -6689,8 +6690,8 @@
             \ is exhausted, so this chunk also UNFREEZES every affected pool and closes the cursor (completeness is \
             \ ENFORCED — pools cannot unfreeze until offset reaches total). Idempotent recompute funnels through the \
             \ SAME XI_FvtSweepRecomputeChunk as the single-tx and defpact paths. `chunk` is the UI's simulated slice \
-            \ size (bounded by the loose SWEEP-CHUNK-MAX backstop). UEV_IMC + FVT|C>SWEEP-DRAIN (active-gated)."
-        (UEV_IMC)
+            \ size (bounded by the loose SWEEP-CHUNK-MAX backstop). P|UEV_IMC + FVT|C>SWEEP-DRAIN (active-gated)."
+        (P|UEV_IMC)
         (with-capability (FVT|C>SWEEP-DRAIN patron anchor-id chunk)
             (let
                 (
@@ -6741,8 +6742,8 @@
             \ only inject-forced fixes bill the 2e penalty). Each member already fresh (or a true triplet) no-ops, \
             \ so passing a whole FVT only touches its stale members. Single-tx and bounded (a user's own FVT set is \
             \ small — no pagination needed). The UI finds the list via URC_FvtUserHasStaleMember per FVT the user \
-            \ stakes. No fund movement (pending is banked, not paid). UEV_IMC + FVT|C>UNSTALE-MY-SCORES (owner)."
-        (UEV_IMC)
+            \ stakes. No fund movement (pending is banked, not paid). P|UEV_IMC + FVT|C>UNSTALE-MY-SCORES (owner)."
+        (P|UEV_IMC)
         (with-capability (FVT|C>UNSTALE-MY-SCORES patron)
             (let
                 (
@@ -6766,7 +6767,7 @@
     (defun CC_Collect:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         @doc "Collect reward DPTF — phases 0 → 5 — see canonical collect map above. UrStoa ≡ C_URV|Collect."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (FVT|C>COLLECT patron fvt-id score-entity-type score-entity-id reward-dptf-id)
             (let
                 (
@@ -6910,7 +6911,7 @@
     (defun CC_TrueFungibleStakeFlow:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
         @doc "Core TF stake/unstake recipe. Phases 1 → 2 → 3 → 4 → 5 — see canonical map above."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (FVT|C>TRUE-FUNGIBLE-STAKE-FLOW pool-id owner-id beneficiary-id dptf-id amount direction)
             (let
                 (
@@ -6977,7 +6978,7 @@
         (pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
         @doc "Core OrtoFungible stake/unstake recipe. Phases 1 → 2 → 3 → 4 → 5 — see canonical map above. \
             \ OF: phase 1.3 and 3.x are N/A (comment-only in ICO list)."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (FVT|C>ORTO-FUNGIBLE-STAKE-FLOW pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts direction)
             (let
                 (
@@ -7052,7 +7053,7 @@
         )
         @doc "Core DPDC collectable stake/unstake recipe. Phases 1 → 2 → 3 → 4 → 5 — see canonical map above. \
             \ son=true DPSF (phase 3.2); son=false DPNF (phase 3.3). Phase 1.3 N/A."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability
             (FVT|C>COLLECTABLE-STAKE-FLOW
                 pool-id owner-id beneficiary-id collectable-id son nonces nonce-amounts direction

@@ -1,6 +1,6 @@
 (interface AcquisitionScoresV1
     ;;
-    (defun UEV_IMC ())
+    (defun P|UEV_IMC ())
     ;; [UC]  compute
     (defun UCk_UserScore:string (ouronet-account:string pool-id:string score-id:string))
     (defun UCk_SFScore:string (score-id:string dpsf-id:string nonce:integer))
@@ -222,6 +222,44 @@
     )
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|AQP-SCORE_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|AQP-SCORE_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    ;;
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        @doc "Post-deploy hook (AQP-BOOT Step 0). No cross-module IMP registration required — \
+            \ SCORE calls DALOS UR_*/CAP_*/UEV_* only (no DALOS P|UEV_IMC on those paths); client entry is Talos P|TALOS-SUMMONER."
+        true
     )
 
     ;;<=========================================================================>
@@ -2444,14 +2482,6 @@
         @doc "GAS|ISSUE-SCORE-MODEL (shared by IssueSingleScoreModel / CombineTripletScoreModel / IssueScoreFromModel)."
         (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ISSUE-SCORE-MODEL patron (r::URC_IsVirtualGasZero) output)))
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     ;; [UEV] enforce
     (defun UEV_LpStakeScoreContext
         (ouronet-account:string pool-id:string score-id:string lp-id:string)
@@ -3123,7 +3153,7 @@
             )
         )
     )
-    ;; Link fields [..] on SCR|Schema: XI under SECURE from SCR|C>*; XE from forward modules (UEV_IMC + SCR|XE>*).
+    ;; Link fields [..] on SCR|Schema: XI under SECURE from SCR|C>*; XE from forward modules (P|UEV_IMC + SCR|XE>*).
     (defun XI_CreateBoostClassLink:string
         (score-id:string boost-class-id:string)
         @doc "Under SECURE: (re)set boost-class-link + move the ANK BoostClass score-link count (H4 #9 revoke lock). \
@@ -3380,8 +3410,8 @@
     ;;
     (defun XE_ApplyTrueFungibleStakeDelta:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool employed-ids:[string] native-leg:bool)
-        @doc "UrStoa phases 2.2.1 + 2.2.2 + 2.3.1 per employed score (TF). UEV_IMC only."
-        (UEV_IMC)
+        @doc "UrStoa phases 2.2.1 + 2.2.2 + 2.3.1 per employed score (TF). P|UEV_IMC only."
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -3418,8 +3448,8 @@
             \ since the score was last checkpointed), refresh the stored deb-score to the CURRENT live deb and \
             \ delta the score totals — done via a 0-base-delta apply (recompute at live deb/promile, no base \
             \ change). No-op when already fresh. The CALLER (collect/inject) MUST have settled the user's pending \
-            \ at the OLD deb-score first. UEV_IMC + SCR|XE>REFRESH-USER-SCORE-DEB."
-        (UEV_IMC)
+            \ at the OLD deb-score first. P|UEV_IMC + SCR|XE>REFRESH-USER-SCORE-DEB."
+        (P|UEV_IMC)
         (if (URC_U-SCR|UserScoreDebStale ouronet-account pool-id score-id)
             (with-capability (SCR|XE>REFRESH-USER-SCORE-DEB ouronet-account pool-id score-id)
                 (XI_2|ApplySingularUserScoreDelta ouronet-account pool-id score-id 0.0))
@@ -3431,8 +3461,8 @@
         @doc "Forward (AQP-VCT): vacate-v2 §5 finalize nuke of ONE employed score — bulk-zero the aggregates + \
             \ nzs and bump vacate-generation (lazily invalidating all per-user rows). The CALLER (C_FinalizeVacate) \
             \ has settled every beneficiary's rewards during the drain and verified nns==0 (pool empty), so there \
-            \ is nothing left to preserve. UEV_IMC + SCR|XE>NUKE-SCORE-FOR-VACATE."
-        (UEV_IMC)
+            \ is nothing left to preserve. P|UEV_IMC + SCR|XE>NUKE-SCORE-FOR-VACATE."
+        (P|UEV_IMC)
         (with-capability (SCR|XE>NUKE-SCORE-FOR-VACATE score-id)
             (WU_Score|Nuke score-id))
     )
@@ -3446,8 +3476,8 @@
             direction:bool
             employed-ids:[string]
         )
-        @doc "UrStoa phases 2.2.1 + 2.2.2 + 2.3.1 per employed score (OF). UEV_IMC only."
-        (UEV_IMC)
+        @doc "UrStoa phases 2.2.1 + 2.2.2 + 2.3.1 per employed score (OF). P|UEV_IMC only."
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -3509,8 +3539,8 @@
             direction:bool
             employed-ids:[string]
         )
-        @doc "UrStoa SCORE triple per employed score (DPSF class-3 or DPNF class-4 per son). UEV_IMC only."
-        (UEV_IMC)
+        @doc "UrStoa SCORE triple per employed score (DPSF class-3 or DPNF class-4 per son). P|UEV_IMC only."
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -3553,8 +3583,8 @@
     ;;
     (defun XE_CreateAqpoolLink:string
         (score-id:string pool-id:string)
-        @doc "Forward entry (e.g. AQP-POOL): UEV_IMC; SCR|XE>CREATE-AQPOOL-LINK validates BAR + ownership; write aqpool-link only."
-        (UEV_IMC)
+        @doc "Forward entry (e.g. AQP-POOL): P|UEV_IMC; SCR|XE>CREATE-AQPOOL-LINK validates BAR + ownership; write aqpool-link only."
+        (P|UEV_IMC)
         (with-capability (SCR|XE>CREATE-AQPOOL-LINK score-id pool-id)
             (WU_Score|AqpoolLink score-id pool-id)
         )
@@ -3562,52 +3592,22 @@
     )
     (defun XE_RevokeAqpoolLink:string
         (score-id:string pool-id:string)
-        @doc "Forward entry (e.g. AQP-POOL): UEV_IMC; SCR|XE>REVOKE-AQPOOL-LINK validates aqpool-link = pool-id + ownership; clear to BAR."
-        (UEV_IMC)
+        @doc "Forward entry (e.g. AQP-POOL): P|UEV_IMC; SCR|XE>REVOKE-AQPOOL-LINK validates aqpool-link = pool-id + ownership; clear to BAR."
+        (P|UEV_IMC)
         (with-capability (SCR|XE>REVOKE-AQPOOL-LINK score-id pool-id)
             (WU_Score|AqpoolLink score-id BAR)
         )
     )
     (defun XE_CreateFvtLink:string
         (score-id:string fvt-id:string)
-        @doc "Forward entry (e.g. AQP-FVT): UEV_IMC; SCR|XE>CREATE-FVT-LINK validates BAR + ownership; write fvt-link only."
-        (UEV_IMC)
+        @doc "Forward entry (e.g. AQP-FVT): P|UEV_IMC; SCR|XE>CREATE-FVT-LINK validates BAR + ownership; write fvt-link only."
+        (P|UEV_IMC)
         (with-capability (SCR|XE>CREATE-FVT-LINK score-id fvt-id)
             (WU_Score|FvtLink score-id fvt-id)
         )
         fvt-id
     )
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|AQP-SCORE_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|AQP-SCORE_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    ;;
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        @doc "Post-deploy hook (AQP-BOOT Step 0). No cross-module IMP registration required — \
-            \ SCORE calls DALOS UR_*/CAP_*/UEV_* only (no DALOS UEV_IMC on those paths); client entry is Talos P|TALOS-SUMMONER."
-        true
-    )
     ;;
     ;; [C]   client
     ;;
@@ -3615,7 +3615,7 @@
     (defun C_IssueLiquidityScore:object{IgnisCollectorV1.OutputCumulator}
         (patron:string owner-konto:string score-name:string precision:integer lp-denominator:string mx-frozen:decimal mx-sleeping:decimal)
         @doc "Create score-class 0 (LP). Costs GAS|ISSUE-SCORE IGNIS and UR_UsagePrice \"smart\" STOA from patron."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (SCR|C>ISSUE-LIQUIDITY-SCORE owner-konto score-name precision lp-denominator mx-frozen mx-sleeping)
             (let
                 (
@@ -3636,7 +3636,7 @@
     (defun C_IssueTrueFungibleScore:object{IgnisCollectorV1.OutputCumulator}
         (patron:string owner-konto:string score-name:string precision:integer mx-frozen:decimal)
         @doc "Create score-class 1 (DPTF). Costs GAS|ISSUE-SCORE IGNIS and UR_UsagePrice \"smart\" STOA from patron."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (SCR|C>ISSUE-TRUE-FUNGIBLE-SCORE owner-konto score-name precision mx-frozen)
             (let
                 (
@@ -3658,7 +3658,7 @@
         (patron:string owner-konto:string score-name:string precision:integer mx-sleeping:decimal mx-hibernated:decimal)
         @doc "Create score-class 2 (DPOF, including special tokens). Caller sets mx-sleeping and mx-hibernated; mx-frozen defaults 2.0. \
             \ Costs GAS|ISSUE-SCORE IGNIS and UR_UsagePrice \"smart\" STOA from patron."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (SCR|C>ISSUE-ORTO-FUNGIBLE-SCORE owner-konto score-name precision mx-sleeping mx-hibernated)
             (let
                 (
@@ -3679,7 +3679,7 @@
     (defun C_IssueSemiFungibleScore:object{IgnisCollectorV1.OutputCumulator}
         (patron:string owner-konto:string score-name:string precision:integer sft-equality:bool)
         @doc "Create score-class 3 (DPSF). Costs GAS|ISSUE-SCORE IGNIS and UR_UsagePrice \"smart\" STOA from patron."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (SCR|C>ISSUE-SEMI-FUNGIBLE-SCORE owner-konto score-name precision sft-equality)
             (let
                 (
@@ -3700,7 +3700,7 @@
     (defun C_IssueNonFungibleScore:object{IgnisCollectorV1.OutputCumulator}
         (patron:string owner-konto:string score-name:string precision:integer nft-score-model:integer)
         @doc "Create score-class 4 (DPNF). Costs GAS|ISSUE-SCORE IGNIS and UR_UsagePrice \"smart\" STOA from patron."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (SCR|C>ISSUE-NON-FUNGIBLE-SCORE owner-konto score-name precision nft-score-model)
             (let
                 (
@@ -3722,7 +3722,7 @@
     (defun C_RotateOwnership:object{IgnisCollectorV1.OutputCumulator}
         (score-id:string new-owner-konto:string)
         @doc "Transfer score owner-konto. No native STOA; validation in SCR|C>ROTATE-OWNERSHIP-SCORE; XI writes only; medium IGNIS cumulator built here."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ico:object{IgnisCollectorV1.OutputCumulator} (URCi_RotateOwnership score-id))
@@ -3736,7 +3736,7 @@
     (defun C_Control:object{IgnisCollectorV1.OutputCumulator}
         (score-id:string new-can-upgrade:bool new-can-change-owner:bool)
         @doc "Set can-upgrade and can-change-owner. No native STOA; validation in SCR|C>CONTROL-SCORE; XI writes only; medium IGNIS cumulator built here."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -3753,7 +3753,7 @@
     (defun C_CreateBoostClassLink:object{IgnisCollectorV1.OutputCumulator}
         (score-id:string boost-class-id:string)
         @doc "Set boost-class-link once. No STOA; validation in SCR|C>CREATE-BOOST-CLASS-LINK-SCORE; XI writes only; biggest IGNIS cumulator built here."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -3769,7 +3769,7 @@
     (defun C_CreateBoostLink:object{IgnisCollectorV1.OutputCumulator}
         (score-id:string boost-score-id:string)
         @doc "Set boost-link once. No STOA; validation in SCR|C>CREATE-BOOST-LINK-SCORE; XI writes only; biggest IGNIS cumulator built here."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -3785,7 +3785,7 @@
     (defun C_EnableDebBoost:object{IgnisCollectorV1.OutputCumulator}
         (score-id:string)
         @doc "Set deb-boost true once; irreversible. No native STOA; validation in SCR|C>ENABLE-DEB-BOOST-SCORE; XI write only; medium IGNIS cumulator."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -3801,7 +3801,7 @@
     (defun C_IssueTriplet:object{IgnisCollectorV1.OutputCumulator}
         (patron:string bronze-score-id:string silver-score-id:string golden-score-id:string)
         @doc "Bundle three issued scores into one triplet T|bronze|silver|golden. Silver score owner; costs GAS|ISSUE-TRIPLET IGNIS."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -3820,7 +3820,7 @@
     (defun C_IssueSemiFungibleScoreDefinition:object{IgnisCollectorV1.OutputCumulator}
         (score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal])
         @doc "Write SCR|T|SF|Score nonce-score-value for multiple nonces in one call; increments SF DefRevision revision-nonce once."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -3841,7 +3841,7 @@
     (defun C_IssueNonFungibleScoreDefinition:object{IgnisCollectorV1.OutputCumulator}
         (score-id:string dpnf-id:string trait-keys:[string] trait-values:[string] trait-score-values:[decimal])
         @doc "Write SCR|T|NF|TraitScore trait-score-value rows for multiple trait key/value pairs in one call; bumps NF DefRevision global + trait counters."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -3864,7 +3864,7 @@
     (defun C_IssueNonFungibleSetScoreDefinition:object{IgnisCollectorV1.OutputCumulator}
         (score-id:string dpnf-id:string dpnf-nonce-classes:[integer] class-score-values:[decimal])
         @doc "Write SCR|T|NF|ClassScore set-mode definitions (one row per dpnf-nonce-class); bumps NF DefRevision global + class counters."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -3887,8 +3887,8 @@
     (defun C_IssueSingleScoreModel:object{IgnisCollectorV1.OutputCumulator}
         (patron:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal])
         @doc "Define a SINGLE score-entity model (the scoring spec for one score + its SF definition). model-id \
-            \ from model-name (UDC_Makeid). UEV_IMC + SCR|C>ISSUE-SINGLE-SCORE-MODEL. Bills GAS|ISSUE-SCORE-MODEL."
-        (UEV_IMC)
+            \ from model-name (UDC_Makeid). P|UEV_IMC + SCR|C>ISSUE-SINGLE-SCORE-MODEL. Bills GAS|ISSUE-SCORE-MODEL."
+        (P|UEV_IMC)
         (with-capability (SCR|C>ISSUE-SINGLE-SCORE-MODEL patron model-name score-class nonces nonce-score-values)
             (let
                 (
@@ -3906,8 +3906,8 @@
     (defun C_CombineTripletScoreModel:object{IgnisCollectorV1.OutputCumulator}
         (patron:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
         @doc "Combine three SINGLE models into a TRIPLET score-entity model. model-id from model-name. \
-            \ UEV_IMC + SCR|C>COMBINE-TRIPLET-SCORE-MODEL. Bills GAS|ISSUE-SCORE-MODEL."
-        (UEV_IMC)
+            \ P|UEV_IMC + SCR|C>COMBINE-TRIPLET-SCORE-MODEL. Bills GAS|ISSUE-SCORE-MODEL."
+        (P|UEV_IMC)
         (with-capability (SCR|C>COMBINE-TRIPLET-SCORE-MODEL patron model-name bronze-model-id silver-model-id golden-model-id)
             (let
                 (
@@ -3928,8 +3928,8 @@
             \ single → 1 SF score named agency-name + its definition; triplet → 3 sub-scores named \
             \ agency-name+Bronze/Silver/Golden (from the sub single-models) + XI_IssueTriplet. agency-name must be a \
             \ valid, globally-unique score-name (collision ⇒ rejected). Returns the (score | triplet) id in \
-            \ output[0]. UEV_IMC + SCR|C>ISSUE-SCORE-FROM-MODEL (composes SECURE). Bills GAS|ISSUE-SCORE-MODEL."
-        (UEV_IMC)
+            \ output[0]. P|UEV_IMC + SCR|C>ISSUE-SCORE-FROM-MODEL (composes SECURE). Bills GAS|ISSUE-SCORE-MODEL."
+        (P|UEV_IMC)
         (with-capability (SCR|C>ISSUE-SCORE-FROM-MODEL patron owner-konto model-id)
             (let
                 (

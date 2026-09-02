@@ -210,6 +210,7 @@
 (module DALOS GOV
 
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -391,6 +392,41 @@
     )
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|DALOS_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|DALOS_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                       {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        true
     )
 
     ;;<=========================================================================>
@@ -946,14 +982,6 @@
         )
     )
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     (defun UEV_NotSmartOuronetAccount (account:string)
         (enforce (not (UR_AutonomicRoles account)) "Non Smart Ouronet Accounts required for exec")
     )
@@ -1159,7 +1187,7 @@
         )
     )
     (defun XB_UpdateOuroPrice (price:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (update DALOS|PropertiesTable DALOS|INFO
             {"gas-source-id-price" : price}
         )
@@ -1250,7 +1278,7 @@
     )
     ;;      [X-DALOS|PropertiesTable]
     (defun XE_UpdateTreasury (type:integer tdp:decimal tds:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (update DALOS|PropertiesTable DALOS|INFO
             {"treasury-dispo-type"          : type
             ,"treasury-dynamic-promille"    : tdp
@@ -1259,7 +1287,7 @@
         )
     );;     [X-DALOS|GasManagementTable]
     (defun XE_IgnisIncrement (native:bool increment:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (if (= native true)
             (update DALOS|GasManagementTable DALOS|VGD
                 {"native-gas-spent" : (+ (UR_NativeSpent) increment)}
@@ -1271,14 +1299,14 @@
     )
     ;;      [X-DALOS|AccountTable]
     (defun XE_IncrementOuronetAccountNonce (account:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-read DALOS|AccountTable account
             { "nonce" := n }
             (update DALOS|AccountTable account { "nonce" : (+ n 1)})
         )
     )
     (defun XE_UpdateElite (account:string amount:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-U|ATS:module{UtilityAtsV2} U|ATS)
@@ -1303,7 +1331,7 @@
         )
     )
     (defun XB_UpdateBalance (account:string snake-or-gas:bool new-balance:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (SECURE)
             (let
                 (
@@ -1326,7 +1354,7 @@
         )
     )
     (defun XE_UpdateFreeze (account:string snake-or-gas:bool new-freeze:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (SECURE)
             (XI_UpdateTF account snake-or-gas
                 (+
@@ -1337,7 +1365,7 @@
         )
     )
     (defun XE_UpdateBurnRole (account:string snake-or-gas:bool new-burn:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (SECURE)
             (XI_UpdateTF account snake-or-gas 
                 (+
@@ -1348,7 +1376,7 @@
         )
     )
     (defun XE_UpdateMintRole (account:string snake-or-gas:bool new-mint:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (SECURE)
             (XI_UpdateTF account snake-or-gas
                 (+
@@ -1359,7 +1387,7 @@
         )
     )
     (defun XE_UpdateFeeExemptionRole (account:string snake-or-gas:bool new-fee-exemption:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (SECURE)
             (XI_UpdateTF account snake-or-gas
                 (+
@@ -1370,7 +1398,7 @@
         )
     )
     (defun XE_UpdateTransferRole (account:string snake-or-gas:bool new-transfer:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (SECURE)
             (XI_UpdateTF account snake-or-gas
                 (+
@@ -1381,36 +1409,9 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|DALOS_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|DALOS_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                       {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        true
-    )
     ;;
     (defun A_MigrateLiquidFunds:decimal (migration-target-stoa-account:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (GOV|MIGRATE migration-target-stoa-account)
             (let
                 (
@@ -1425,7 +1426,7 @@
         )
     )
     (defun A_ToggleOAPU (oapu:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (GOV|DALOS_ADMIN)
             (update DALOS|PropertiesTable DALOS|INFO
                 {"ouro-auto-price-via-swaps"    : oapu}
@@ -1433,7 +1434,7 @@
         )
     )
     (defun A_ToggleGAP (gap:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (GOV|GAP gap)
             (update DALOS|PropertiesTable DALOS|INFO
                 {"global-administrative-pause"  : gap}
@@ -1454,19 +1455,19 @@
         @doc "Enables or disable GAS Collection. \
             \ <native> true reffers to STOA Collection \
             \ <native> false reffers to IGNIS Collection"
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DALOS|C>TOGGLE-GAS-COLLECTION native toggle)
             (XI_GasToggle native toggle)
         )
     )
     (defun A_SetIgnisSourcePrice (price:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DALOS|S>SET-OURO-PRICE price)
             (XB_UpdateOuroPrice price)
         )
     )
     (defun A_SetAutoFueling (toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (GOV|DALOS_ADMIN)
             (update DALOS|GasManagementTable DALOS|VGD
                 {"native-gas-pump" : toggle}
@@ -1474,7 +1475,7 @@
         )
     )
     (defun A_UpdatePublicKey (account:string new-public:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (GOV|DALOS_ADMIN)
             (update DALOS|AccountTable account
                 {"public"     : new-public}
@@ -1486,7 +1487,7 @@
     ;;stray 0/negative price here was flagged as a contributing cause of #8H (IGNIS C_Collect's
     ;;since-fixed zero-leg abort) - purely additive, no change to the existing valid-price path.
     (defun A_UpdateUsagePrice (action:string new-price:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (GOV|DALOS_ADMIN)
             (enforce (> new-price 0.0) "New price must be a positive amount")
             (let
@@ -1539,40 +1540,40 @@
     )
     (defun C_ControlSmartAccount
         (account:string payable-as-smart-contract:bool payable-by-smart-contract:bool payable-by-method:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DALOS|C>CONTROL-SMART-OURONET-ACCOUNT account payable-as-smart-contract payable-by-smart-contract payable-by-method)
             (XI_UpdateSmartAccountParameters account payable-as-smart-contract payable-by-smart-contract payable-by-method)
         )
     )
     (defun C_DeploySmartAccount (account:string guard:guard stoa:string sovereign:string public:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DALOS|C>DEPLOY-SMART-OURONET-ACCOUNT account guard stoa sovereign)
             (XI_DeploySmartAccount account guard stoa sovereign public)
         )
     )
     (defun C_DeployStandardAccount (account:string guard:guard stoa:string public:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (SECURE)
             (XI_DeployStandardAccount account guard stoa public)
         )
     )
     (defun C_RotateGovernor
         (account:string governor:guard)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DALOS|C>ROTATE-OA_GOVERNOR account governor)
             (XI_RotateGovernor account governor)
         )
     )
     (defun C_RotateGuard
         (account:string new-guard:guard safe:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DALOS|C>ROTATE-OA-GUARD account new-guard safe)
             (XI_RotateGuard account new-guard safe)
         )
     )
     (defun C_RotateStoa
         (account:string stoa:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DALOS|C>ROTATE-OA-STOA account)
             ;;#25M fix: read the OLD stoa address before XI_RotateStoa overwrites it -
             ;;otherwise UR_AccountStoa returns the already-rotated NEW address, the ledger
@@ -1589,7 +1590,7 @@
     )
     (defun C_RotateSovereign
         (account:string new-sovereign:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DALOS|S>ROTATE-OA-SOVEREIGN account new-sovereign)
             (XI_RotateSovereign account new-sovereign)
         )

@@ -71,14 +71,14 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun A_P|Add (policy-name:string policy-guard:guard)
+    (defun P|A_Add (policy-name:string policy-guard:guard)
         (with-capability (GOV|INFO-ZERO_ADMIN)
             (write P|T policy-name
                 {"policy" : policy-guard}
             )
         )
     )
-    (defun A_P|AddIMP (policy-guard:guard)
+    (defun P|A_AddIMP (policy-guard:guard)
         (with-capability (GOV|INFO-ZERO_ADMIN)
             (let
                 (
@@ -95,16 +95,16 @@
             )
         )
     )
-    (defun A_P|Define ()
+    (defun P|A_Define ()
         (let
             (
                 (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
                 (mg:guard (create-capability-guard (P|INFO-ZERO|CALLER)))
             )
-            (ref-P|DALOS::A_P|AddIMP mg)
+            (ref-P|DALOS::P|A_AddIMP mg)
         )
     )
-    (defun UEV_IMC ()
+    (defun P|UEV_IMC ()
         (let
             (
                 (ref-U|G:module{OuronetGuardsV1} U|G)

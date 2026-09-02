@@ -81,11 +81,11 @@
             ,"resident-ouro"    : 0.0}
         )
         ;;IMC
-        (ref-P|DPAD::A_P|Define)
-        (ref-P|SPARK::A_P|Define)
-        (ref-P|SNAKES::A_P|Define)
-        (ref-P|CUSTODIANS::A_P|Define)
-        (ref-P|TS02-DPAD::A_P|Define)
+        (ref-P|DPAD::P|A_Define)
+        (ref-P|SPARK::P|A_Define)
+        (ref-P|SNAKES::P|A_Define)
+        (ref-P|CUSTODIANS::P|A_Define)
+        (ref-P|TS02-DPAD::P|A_Define)
         ;;
         ;;Governor
         (ref-TS01-C1::C_DALOS|RotateGovernor
@@ -610,7 +610,7 @@
 ;;      FIX: the block is now the unprotected UEV_DirectInjection, composed by DEMIPAD|C>DEPOSIT,
 ;;      rejecting direct-injection UNCONDITIONALLY (true stub — no admin flag can enable it), and the
 ;;      ledger credit (XI_DepositForAsset) is additionally guarded on (not direct-injection).
-;;      PROOF (mirrors #7M's UEV_AssetFungibility style — the C_ entry is UEV_IMC-gated so we assert
+;;      PROOF (mirrors #7M's UEV_AssetFungibility style — the C_ entry is P|UEV_IMC-gated so we assert
 ;;      the composed check directly): turn the admin flag ON, then show UEV_DirectInjection STILL
 ;;      rejects a direct-injection request, and passes a normal (non-direct) deposit.
 (let
@@ -891,9 +891,9 @@
         )
         [
             ;;Backward IMC
-            (ref-P|KPAY::A_P|Define)
+            (ref-P|KPAY::P|A_Define)
             ;;Forward IMC
-            ;(ref-P|KPAY::A_P|AddIMP mg)    ;;Needed on Mainnet
+            ;(ref-P|KPAY::P|A_AddIMP mg)    ;;Needed on Mainnet
             ;;Governor
             (ref-TS01-C1::C_DALOS|RotateGovernor
                 KST.ANHD

@@ -37,6 +37,7 @@
 ;;gets it "for free" and this class of per-caller-remembers-it gap can't recur here.)
 (module MTX-SWP GOV
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -105,6 +106,78 @@
     )
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|MTX-SWP_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|MTX-SWP_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
+                (ref-P|BRD:module{OuronetPolicyV1} BRD)
+                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
+                (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
+                (ref-P|TFT:module{OuronetPolicyV1} TFT)
+                (ref-P|VST:module{OuronetPolicyV1} VST)
+                (ref-P|ORBR:module{OuronetPolicyV1} OUROBOROS)
+                (ref-P|SWPT:module{OuronetPolicyV1} SWPT)
+                (ref-P|SWP:module{OuronetPolicyV1} SWP)
+                (ref-P|SWPL:module{OuronetPolicyV1} SWPL)
+                ;;#36M/M5 fix: MTX-SWP now calls SWPI::XE_IssueWrite (P|UEV_IMC-gated)
+                ;;directly from C_MTX|Issue's Step 3, so MTX-SWP must register itself
+                ;;as an approved IMC caller on SWPI too — same as every other module
+                ;;it already calls into below.
+                (ref-P|SWPI:module{OuronetPolicyV1} SWPI)
+                (mg:guard (create-capability-guard (P|MTX-SWP|CALLER)))
+            )
+            (ref-P|VST::P|A_Add
+                "MTX-SWP|RemoteSwpGov"
+                (create-capability-guard (P|MTX-SWP|REMOTE-GOV))
+            )
+            (ref-P|SWP::P|A_Add
+                "MTX-SWP|RemoteSwpGov"
+                (create-capability-guard (P|MTX-SWP|REMOTE-GOV))
+            )
+            (ref-P|BRD::P|A_AddIMP mg)
+            (ref-P|DPTF::P|A_AddIMP mg)
+            (ref-P|DPOF::P|A_AddIMP mg)
+            (ref-P|TFT::P|A_AddIMP mg)
+            (ref-P|ORBR::P|A_AddIMP mg)
+            (ref-P|VST::P|A_AddIMP mg)
+            (ref-P|SWPT::P|A_AddIMP mg)
+            (ref-P|SWP::P|A_AddIMP mg)
+            (ref-P|SWPL::P|A_AddIMP mg)
+            (ref-P|SWPI::P|A_AddIMP mg)
+        )
     )
 
     ;;<=========================================================================>
@@ -241,85 +314,13 @@
         )
     )
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|MTX-SWP_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|MTX-SWP_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (ref-P|BRD:module{OuronetPolicyV1} BRD)
-                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
-                (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
-                (ref-P|TFT:module{OuronetPolicyV1} TFT)
-                (ref-P|VST:module{OuronetPolicyV1} VST)
-                (ref-P|ORBR:module{OuronetPolicyV1} OUROBOROS)
-                (ref-P|SWPT:module{OuronetPolicyV1} SWPT)
-                (ref-P|SWP:module{OuronetPolicyV1} SWP)
-                (ref-P|SWPL:module{OuronetPolicyV1} SWPL)
-                ;;#36M/M5 fix: MTX-SWP now calls SWPI::XE_IssueWrite (UEV_IMC-gated)
-                ;;directly from C_MTX|Issue's Step 3, so MTX-SWP must register itself
-                ;;as an approved IMC caller on SWPI too — same as every other module
-                ;;it already calls into below.
-                (ref-P|SWPI:module{OuronetPolicyV1} SWPI)
-                (mg:guard (create-capability-guard (P|MTX-SWP|CALLER)))
-            )
-            (ref-P|VST::A_P|Add
-                "MTX-SWP|RemoteSwpGov"
-                (create-capability-guard (P|MTX-SWP|REMOTE-GOV))
-            )
-            (ref-P|SWP::A_P|Add
-                "MTX-SWP|RemoteSwpGov"
-                (create-capability-guard (P|MTX-SWP|REMOTE-GOV))
-            )
-            (ref-P|BRD::A_P|AddIMP mg)
-            (ref-P|DPTF::A_P|AddIMP mg)
-            (ref-P|DPOF::A_P|AddIMP mg)
-            (ref-P|TFT::A_P|AddIMP mg)
-            (ref-P|ORBR::A_P|AddIMP mg)
-            (ref-P|VST::A_P|AddIMP mg)
-            (ref-P|SWPT::A_P|AddIMP mg)
-            (ref-P|SWP::A_P|AddIMP mg)
-            (ref-P|SWPL::A_P|AddIMP mg)
-            (ref-P|SWPI::A_P|AddIMP mg)
-        )
-    )
     ;;
     (defun C_IssueStablePool
         (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal amp:decimal p:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (MTX-SWP|C>ISSUE-S-POOL pool-tokens)
             (C_MTX|Issue
                 patron account pool-tokens fee-lp
@@ -330,7 +331,7 @@
     )
     (defun C_IssueWeightedPool
         (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (MTX-SWP|C>ISSUE-W-POOL pool-tokens)
             (C_MTX|Issue
                 patron account pool-tokens fee-lp
@@ -341,7 +342,7 @@
     )
     (defun C_IssueStandardPool
         (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal p:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (MTX-SWP|C>ISSUE-P-POOL pool-tokens)
             (C_MTX|Issue
                 patron account pool-tokens fee-lp
@@ -353,35 +354,35 @@
     ;;
     (defun C_AddStandardLiquidity
         (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (MTX-SWP|S>ADD-LQ stoa-pid)
             (C_MTX|AddLiquidity patron account swpair input-amounts true true stoa-pid)
         )
     )
     (defun C_AddIcedLiquidity
         (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (MTX-SWP|S>ADD-LQ stoa-pid)
             (C_MTX|AddLiquidity patron account swpair input-amounts false true stoa-pid)
         )
     )
     (defun C_AddGlacialLiquidity
         (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (MTX-SWP|S>ADD-LQ stoa-pid)
             (C_MTX|AddLiquidity patron account swpair input-amounts false false stoa-pid)
         )
     )
     (defun C_AddFrozenLiquidity
         (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (MTX-SWP|S>ADD-LQ stoa-pid)
             (C_MTX|AddFrozenLiquidity patron account swpair frozen-dptf input-amount stoa-pid)
         )
     )
     (defun C_AddSleepingLiquidity
         (patron:string account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (MTX-SWP|S>ADD-LQ stoa-pid)
             (C_MTX|AddSleepingLiquidity patron account swpair sleeping-dpof nonce stoa-pid)
         )

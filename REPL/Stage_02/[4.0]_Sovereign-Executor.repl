@@ -92,30 +92,30 @@
     )
     [
         ;;Main
-        (ref-P|DPDC-UDC::A_P|Define)
-        (ref-P|DPDC::A_P|Define)
-        (ref-P|DPDC-C::A_P|Define)
-        (ref-P|DPDC-I::A_P|Define)
-        (ref-P|DPDC-R::A_P|Define)
-        (ref-P|DPDC-MNG::A_P|Define)
-        (ref-P|DPDC-N::A_P|Define)
-        (ref-P|DPDC-T::A_P|Define)
-        (ref-P|DPDC-F::A_P|Define)
-        (ref-P|DPDC-S::A_P|Define)
-        (ref-P|EQUITY::A_P|Define)
+        (ref-P|DPDC-UDC::P|A_Define)
+        (ref-P|DPDC::P|A_Define)
+        (ref-P|DPDC-C::P|A_Define)
+        (ref-P|DPDC-I::P|A_Define)
+        (ref-P|DPDC-R::P|A_Define)
+        (ref-P|DPDC-MNG::P|A_Define)
+        (ref-P|DPDC-N::P|A_Define)
+        (ref-P|DPDC-T::P|A_Define)
+        (ref-P|DPDC-F::P|A_Define)
+        (ref-P|DPDC-S::P|A_Define)
+        (ref-P|EQUITY::P|A_Define)
         ;;
         ;;Talos
-        (ref-P|TS02-C1::A_P|Define)
-        (ref-P|TS02-C2::A_P|Define)
-        (ref-P|TS02-C3::A_P|Define)
+        (ref-P|TS02-C1::P|A_Define)
+        (ref-P|TS02-C2::P|A_Define)
+        (ref-P|TS02-C3::P|A_Define)
         ;;Launchpad: sovereign TS02-DPAD registers into DEMIPAD/DPDC; citizen TS02-CPAD registers into the 5 sales
-        (ref-P|TS02-DPAD::A_P|Define)
-        (ref-P|TS02-CPAD::A_P|Define)
+        (ref-P|TS02-DPAD::P|A_Define)
+        (ref-P|TS02-CPAD::P|A_Define)
         ;;
-        ;;MTX-AQP — registers its caller guard in AQP-FVT's IMP so the MTX|n|C_Inject defpact's XE_ calls pass UEV_IMC
-        (ref-P|MTX-AQP::A_P|Define)
-        ;;DSA — registers its caller guard in AQP-FVT's IMP so C_OpenAgency's XE_ admit/delegation calls pass UEV_IMC
-        (ref-P|DSA::A_P|Define)
+        ;;MTX-AQP — registers its caller guard in AQP-FVT's IMP so the MTX|n|C_Inject defpact's XE_ calls pass P|UEV_IMC
+        (ref-P|MTX-AQP::P|A_Define)
+        ;;DSA — registers its caller guard in AQP-FVT's IMP so C_OpenAgency's XE_ admit/delegation calls pass P|UEV_IMC
+        (ref-P|DSA::P|A_Define)
         ;;
         ;;Set DPDC Governor
         ;;REPL-VARIANT:

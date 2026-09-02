@@ -110,6 +110,55 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|TS01-C1_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|TS01-C1_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|CODEX:module{OuronetPolicyV1} CODEX)
+                (ref-P|PYTHIA:module{OuronetPolicyV1} PYTHIA)
+                (ref-P|IGNIS:module{OuronetPolicyV1} IGNIS)
+                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
+                (ref-P|TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
+            )
+            (ref-P|CODEX::P|A_AddIMP mg)
+            (ref-P|PYTHIA::P|A_AddIMP mg)
+            (ref-P|IGNIS::P|A_AddIMP mg)
+            (ref-P|DALOS::P|A_AddIMP mg)
+            (ref-P|TS01-A::P|A_AddIMP mg)
+        )
+    )
 
     ;;<=========================================================================>
     ;;{3}  CST
@@ -137,58 +186,9 @@
     ;;{5.2}  Compute [UC]
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|TS01-C1_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|TS01-C1_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|CODEX:module{OuronetPolicyV1} CODEX)
-                (ref-P|PYTHIA:module{OuronetPolicyV1} PYTHIA)
-                (ref-P|IGNIS:module{OuronetPolicyV1} IGNIS)
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (ref-P|TS01-A:module{TalosStageOne_AdminV1} TS01-A)
-                (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
-            )
-            (ref-P|CODEX::A_P|AddIMP mg)
-            (ref-P|PYTHIA::A_P|AddIMP mg)
-            (ref-P|IGNIS::A_P|AddIMP mg)
-            (ref-P|DALOS::A_P|AddIMP mg)
-            (ref-P|TS01-A::A_P|AddIMP mg)
-        )
-    )
     ;;
     ;;
     (defun A_CODEX|RegisterCodexIdentity:string

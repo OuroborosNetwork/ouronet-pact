@@ -18,16 +18,16 @@
     (defun P|UR_IMP:[guard] ()
         @doc "Reads the whole Intermodule Policy Guard Chain"
     )
-    (defun A_P|Add (policy-name:string policy-guard:guard)
+    (defun P|A_Add (policy-name:string policy-guard:guard)
         @doc "Adds a Policy in the local module Policy Table"
     )
-    (defun A_P|AddIMP (policy-guard:guard)
+    (defun P|A_AddIMP (policy-guard:guard)
         @doc "Add a Policy in the local Policy Guard Chain"
     )
-    (defun A_P|Define ()
+    (defun P|A_Define ()
         @doc "Defines in each module the policies that are needed for intermodule communication"
     )
-    (defun UEV_IMC ()
+    (defun P|UEV_IMC ()
         @doc "Defines the Intermodule Guards"
     )
 )

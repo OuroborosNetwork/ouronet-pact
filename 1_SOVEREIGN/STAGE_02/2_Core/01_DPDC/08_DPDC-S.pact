@@ -104,6 +104,7 @@
 ;;
 (module DPDC-S GOV
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -151,6 +152,55 @@
     )
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|DPDC-S_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|DPDC-S_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|DPDC:module{OuronetPolicyV1} DPDC)
+                (ref-P|DPDC-C:module{OuronetPolicyV1} DPDC-C)
+                (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
+                (mg:guard (create-capability-guard (P|DPDC-S|CALLER)))
+            )
+            (ref-P|DPDC::P|A_Add
+                "DPDC-S|RemoteDpdcGov"
+                (create-capability-guard (P|DPDC-S|REMOTE-GOV))
+            )
+            (ref-P|DPDC::P|A_AddIMP mg)
+            (ref-P|DPDC-C::P|A_AddIMP mg)
+            (ref-P|DPDC-T::P|A_AddIMP mg)
+        )
     )
 
     ;;<=========================================================================>
@@ -679,14 +729,6 @@
         )
     )
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     (defun UEV_PrimordialSetDefinition (id:string son:bool set-definition:[object{DpdcUdcV1.DPDC|AllowedNonceForSetPosition}])
         ;;DPDC Audit #51L: reject empty/oversized definitions with a clear message before any
         ;;enumerate-based fold runs (an empty list would otherwise crash with an opaque
@@ -1072,7 +1114,7 @@
     )
     (defun XB_U|NonceOrSplitData (id:string son:bool set-class:integer nos:bool nd:object{DpdcUdcV1.DPDC|NonceData})
         ;;(require-capability (SECURE))
-        (UEV_IMC)
+        (P|UEV_IMC)
         (if nos
             (if son
                 (update DPSF|SetsTable (concat [id BAR (format "{}" [set-class])]) {"nonce-data" : nd})
@@ -1099,50 +1141,9 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|DPDC-S_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|DPDC-S_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|DPDC:module{OuronetPolicyV1} DPDC)
-                (ref-P|DPDC-C:module{OuronetPolicyV1} DPDC-C)
-                (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
-                (mg:guard (create-capability-guard (P|DPDC-S|CALLER)))
-            )
-            (ref-P|DPDC::A_P|Add
-                "DPDC-S|RemoteDpdcGov"
-                (create-capability-guard (P|DPDC-S|REMOTE-GOV))
-            )
-            (ref-P|DPDC::A_P|AddIMP mg)
-            (ref-P|DPDC-C::A_P|AddIMP mg)
-            (ref-P|DPDC-T::A_P|AddIMP mg)
-        )
-    )
     (defun C_MakeSemiFungibleSet:object{IgnisCollectorV1.OutputCumulator}
         (account:string id:string nonces:[integer] set-class:integer how-many-sets:integer)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-DPDC:module{DpdcV1} DPDC)
@@ -1162,7 +1163,7 @@
     )
     (defun C_BreakSemiFungibleSet:object{IgnisCollectorV1.OutputCumulator}
         (account:string id:string nonce:integer how-many-sets:integer)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -1196,7 +1197,7 @@
     )
     (defun C_MakeNonFungibleSet:object{IgnisCollectorV1.OutputCumulator}
         (account:string id:string nonces:[integer] set-class:integer)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -1246,7 +1247,7 @@
     )
     (defun C_BreakNonFungibleSet:object{IgnisCollectorV1.OutputCumulator}
         (account:string id:string nonce:integer)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -1284,7 +1285,7 @@
             set-definition:[object{DpdcUdcV1.DPDC|AllowedNonceForSetPosition}]
             ind:object{DpdcUdcV1.DPDC|NonceData}
         )
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPDC-S|C>DEFINE-PRIMORDIAL id son score-multiplier set-definition ind)
             (let
                 (
@@ -1316,7 +1317,7 @@
             set-definition:[object{DpdcUdcV1.DPDC|AllowedClassForSetPosition}]
             ind:object{DpdcUdcV1.DPDC|NonceData}
         )
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPDC-S|C>DEFINE-COMPOSITE id son score-multiplier set-definition ind)
             (let
                 (
@@ -1349,7 +1350,7 @@
             composite-sd:[object{DpdcUdcV1.DPDC|AllowedClassForSetPosition}]
             ind:object{DpdcUdcV1.DPDC|NonceData}
         )
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPDC-S|C>DEFINE-HYBRID id son score-multiplier primordial-sd composite-sd ind)
             (let
                 (
@@ -1384,7 +1385,7 @@
             id:string son:bool set-class:integer
             fragmentation-ind:object{DpdcUdcV1.DPDC|NonceData}
         )
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPDC-S|C>ENABLE-FRAGMENTATION id son set-class fragmentation-ind)
             (let
                 (
@@ -1397,7 +1398,7 @@
         )
     )
     (defun C_ToggleSet:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool set-class:integer toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPDC-S|C>TOGGLE id son set-class toggle)
             (let
                 (
@@ -1410,7 +1411,7 @@
         )
     )
     (defun C_RenameSet:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool set-class:integer new-name:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPDC-S|C>RENAME id son set-class new-name)
             (let
                 (

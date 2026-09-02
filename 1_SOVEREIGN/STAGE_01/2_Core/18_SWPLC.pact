@@ -56,6 +56,7 @@
 ;;
 (module SWPLC GOV
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -125,6 +126,69 @@
     )
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|SWPLC_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|SWPLC_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|BRD:module{OuronetPolicyV1} BRD)
+                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
+                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
+                (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
+                (ref-P|TFT:module{OuronetPolicyV1} TFT)
+                (ref-P|VST:module{OuronetPolicyV1} VST)
+                (ref-P|SWP:module{OuronetPolicyV1} SWP)
+                (ref-P|SWPL:module{OuronetPolicyV1} SWPL)
+                (mg:guard (create-capability-guard (P|SWPLC|CALLER)))
+            )
+            (ref-P|VST::P|A_Add
+                "SWPLC|RemoteSwpGov"
+                (create-capability-guard (P|SWPLC|REMOTE-GOV))
+            )
+            (ref-P|SWP::P|A_Add
+                "SWPLC|RemoteSwpGov"
+                (create-capability-guard (P|SWPLC|REMOTE-GOV))
+            )
+            (ref-P|DALOS::P|A_AddIMP mg)
+            (ref-P|BRD::P|A_AddIMP mg)
+            (ref-P|DPTF::P|A_AddIMP mg)
+            (ref-P|DPOF::P|A_AddIMP mg)
+            (ref-P|TFT::P|A_AddIMP mg)
+            (ref-P|VST::P|A_AddIMP mg)
+            (ref-P|SWP::P|A_AddIMP mg)
+            (ref-P|SWPL::P|A_AddIMP mg)
+        )
     )
 
     ;;<=========================================================================>
@@ -525,14 +589,6 @@
         )
     )
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     (defun UEV_InputsForLP (swpair:string input-amounts:[decimal])
         (let
             (
@@ -663,64 +719,9 @@
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|SWPLC_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|SWPLC_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|BRD:module{OuronetPolicyV1} BRD)
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
-                (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
-                (ref-P|TFT:module{OuronetPolicyV1} TFT)
-                (ref-P|VST:module{OuronetPolicyV1} VST)
-                (ref-P|SWP:module{OuronetPolicyV1} SWP)
-                (ref-P|SWPL:module{OuronetPolicyV1} SWPL)
-                (mg:guard (create-capability-guard (P|SWPLC|CALLER)))
-            )
-            (ref-P|VST::A_P|Add
-                "SWPLC|RemoteSwpGov"
-                (create-capability-guard (P|SWPLC|REMOTE-GOV))
-            )
-            (ref-P|SWP::A_P|Add
-                "SWPLC|RemoteSwpGov"
-                (create-capability-guard (P|SWPLC|REMOTE-GOV))
-            )
-            (ref-P|DALOS::A_P|AddIMP mg)
-            (ref-P|BRD::A_P|AddIMP mg)
-            (ref-P|DPTF::A_P|AddIMP mg)
-            (ref-P|DPOF::A_P|AddIMP mg)
-            (ref-P|TFT::A_P|AddIMP mg)
-            (ref-P|VST::A_P|AddIMP mg)
-            (ref-P|SWP::A_P|AddIMP mg)
-            (ref-P|SWPL::A_P|AddIMP mg)
-        )
-    )
     (defun C_UpdatePendingBrandingLPs:object{IgnisCollectorV1.OutputCumulator}
         (swpair:string entity-pos:integer logo:string description:string website:string social:[object{BrandingV1.SocialSchema}])
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -742,7 +743,7 @@
         )
     )
     (defun C_UpgradeBrandingLPs (patron:string swpair:string entity-pos:integer months:integer)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -761,7 +762,7 @@
     )
     (defun C_ToggleAddLiquidity:object{IgnisCollectorV1.OutputCumulator}
         (swpair:string toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-SWP:module{SwapperV3} SWP)
@@ -773,7 +774,7 @@
     )
     (defun C_Fuel:object{IgnisCollectorV1.OutputCumulator}
         (account:string swpair:string input-amounts:[decimal] direct-or-indirect:bool validation:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
@@ -818,7 +819,7 @@
     )
     (defun C_STOA-PID|AddStandardLiquidity:object{IgnisCollectorV1.OutputCumulator}
         (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-SWPL:module{SwapperLiquidityV1} SWPL)
@@ -866,7 +867,7 @@
     )
     (defun C_STOA-PID|AddIcedLiquidity:object{IgnisCollectorV1.OutputCumulator}
         (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-SWPL:module{SwapperLiquidityV1} SWPL)
@@ -919,7 +920,7 @@
     )
     (defun C_STOA-PID|AddGlacialLiquidity:object{IgnisCollectorV1.OutputCumulator}
         (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-SWPL:module{SwapperLiquidityV1} SWPL)
@@ -975,7 +976,7 @@
     )
     (defun C_STOA-PID|AddFrozenLiquidity:object{IgnisCollectorV1.OutputCumulator}
         (account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-U|SWP:module{UtilitySwpV1} U|SWP)
@@ -1040,7 +1041,7 @@
     )
     (defun C_STOA-PID|AddSleepingLiquidity:object{IgnisCollectorV1.OutputCumulator}
         (account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-U|SWP:module{UtilitySwpV1} U|SWP)
@@ -1120,7 +1121,7 @@
         @doc "Removes <swpair> Liquidity using <lp-amount> of LP Tokens \
             \ Always returns all Pool Tokens at current Pool Token Ratio"
         ;;
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (SWPLC|C>REMOVE_LQ swpair lp-amount)
             (let
                 (

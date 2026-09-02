@@ -34,6 +34,7 @@
 )
 (module DEMIPAD-SPARK GOV
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -81,6 +82,57 @@
     )
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|SPARK_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|SPARK_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
+                (ref-P|TFT:module{OuronetPolicyV1} TFT)
+                (ref-P|VST:module{OuronetPolicyV1} VST)
+                (ref-P|DPAD:module{OuronetPolicyV1} DEMIPAD)
+                (mg:guard (create-capability-guard (P|SPARK|CALLER)))
+            )
+            (ref-P|DPAD::P|A_Add
+                "SPARK|RemoteGov"
+                (create-capability-guard (P|PAD-SPARK|REMOTE-GOV))
+            )
+            (ref-P|DPTF::P|A_AddIMP mg)
+            (ref-P|TFT::P|A_AddIMP mg)
+            (ref-P|VST::P|A_AddIMP mg)
+            (ref-P|DPAD::P|A_AddIMP mg)
+        )
     )
 
     ;;<=========================================================================>
@@ -444,14 +496,6 @@
         )
     )
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     (defun CAP_Acquire
         (buyer:string amount:integer iz-native:bool)
         @doc "Variant 2 (slippage off) — installs the coin.TRANSFER caps in-code at the live price."
@@ -540,49 +584,6 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|SPARK_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|SPARK_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
-                (ref-P|TFT:module{OuronetPolicyV1} TFT)
-                (ref-P|VST:module{OuronetPolicyV1} VST)
-                (ref-P|DPAD:module{OuronetPolicyV1} DEMIPAD)
-                (mg:guard (create-capability-guard (P|SPARK|CALLER)))
-            )
-            (ref-P|DPAD::A_P|Add
-                "SPARK|RemoteGov"
-                (create-capability-guard (P|PAD-SPARK|REMOTE-GOV))
-            )
-            (ref-P|DPTF::A_P|AddIMP mg)
-            (ref-P|TFT::A_P|AddIMP mg)
-            (ref-P|VST::A_P|AddIMP mg)
-            (ref-P|DPAD::A_P|AddIMP mg)
-        )
-    )
     ;;
     (defun C_BuySparks (patron:string buyer:string sparks-amount:integer iz-native:bool max-cost:decimal)
         @doc "PURE CITIZEN buy. Composes two SOVEREIGN Talos ops — C_DEMIPAD|Deposit (buyer STOA -> \

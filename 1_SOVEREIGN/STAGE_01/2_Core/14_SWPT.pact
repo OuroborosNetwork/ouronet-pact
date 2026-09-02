@@ -141,7 +141,7 @@
     (defun URC_ValidatePathStructure:bool (nodes:[string] edges:[string]))
     (defun XI_RegisterPath (token-a:string token-b:string nodes:[string] edges:[string]))
     ;;#34 Phase 8: forward-module entrypoint for XI_RegisterPath — mirrors XE_UpdateGraph
-    ;;exactly (UEV_IMC gate + internal SECURE composition). Cross-module callers (SWPU)
+    ;;exactly (P|UEV_IMC gate + internal SECURE composition). Cross-module callers (SWPU)
     ;;must go through this, never grant SWPT.SECURE directly themselves — SECURE's body
     ;;is unconditionally true, so a caller-side `(with-capability (SWPT.SECURE) ...)`
     ;;would grant it to literally anyone, not just legitimate Ouronet modules (confirmed
@@ -152,6 +152,7 @@
 )
 ;;
 (module SWPT GOV
+
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
@@ -192,6 +193,65 @@
     )
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|SWPT_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|SWPT_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
+                (ref-P|BRD:module{OuronetPolicyV1} BRD)
+                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
+                ;(ref-P|DPOF:module{OuronetPolicyV1} DPOF)
+                (ref-P|ATS:module{OuronetPolicyV1} ATS)
+                (ref-P|TFT:module{OuronetPolicyV1} TFT)
+                (ref-P|ATSU:module{OuronetPolicyV1} ATSU)
+                (ref-P|VST:module{OuronetPolicyV1} VST)
+                (ref-P|LIQUID:module{OuronetPolicyV1} LIQUID)
+                (ref-P|ORBR:module{OuronetPolicyV1} OUROBOROS)
+                (mg:guard (create-capability-guard (P|SWPT|CALLER)))
+            )
+            (ref-P|DALOS::P|A_AddIMP mg)
+            (ref-P|BRD::P|A_AddIMP mg)
+            (ref-P|DPTF::P|A_AddIMP mg)
+            ;(ref-P|DPOF::P|A_AddIMP mg)
+            (ref-P|ATS::P|A_AddIMP mg)
+            (ref-P|TFT::P|A_AddIMP mg)
+            (ref-P|ATSU::P|A_AddIMP mg)
+            (ref-P|VST::P|A_AddIMP mg)
+            (ref-P|LIQUID::P|A_AddIMP mg)
+            (ref-P|ORBR::P|A_AddIMP mg)
+        )
     )
 
     ;;<=========================================================================>
@@ -1016,14 +1076,6 @@
         )
     )
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     (defun XE_UpdateGraph (swpair:string)
@@ -1031,7 +1083,7 @@
             \ every OTHER token in <swpair> appended to its neighbour list (idempotent \
             \ — safe to call more than once for the same swpair). Called once at \
             \ issuance from both SWPI::C_Issue and the MTX-SWP defpact path."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (SECURE)
             (XI_UpdateGraphForSwpair swpair)
         )
@@ -1162,70 +1214,19 @@
     )
     (defun XE_RegisterPath (token-a:string token-b:string nodes:[string] edges:[string])
         @doc "#34 Phase 8: forward-module entrypoint for XI_RegisterPath, mirroring \
-            \ XE_UpdateGraph exactly — UEV_IMC gate, then internal SECURE composition. \
+            \ XE_UpdateGraph exactly — P|UEV_IMC gate, then internal SECURE composition. \
             \ Cross-module callers (SWPU::C_SmartSwap, once wired) go through THIS, never \
             \ a caller-side (with-capability (SWPT.SECURE) ...) directly — SECURE's own \
             \ body is unconditionally true, so a direct outside grant would hand it to \
             \ any caller at all, not just legitimate Ouronet modules (this exact class of \
             \ issue is already documented, empirically, in this codebase's own ATS audit \
             \ findings)."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (SECURE)
             (XI_RegisterPath token-a token-b nodes edges)
         )
     )
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|SWPT_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|SWPT_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (ref-P|BRD:module{OuronetPolicyV1} BRD)
-                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
-                ;(ref-P|DPOF:module{OuronetPolicyV1} DPOF)
-                (ref-P|ATS:module{OuronetPolicyV1} ATS)
-                (ref-P|TFT:module{OuronetPolicyV1} TFT)
-                (ref-P|ATSU:module{OuronetPolicyV1} ATSU)
-                (ref-P|VST:module{OuronetPolicyV1} VST)
-                (ref-P|LIQUID:module{OuronetPolicyV1} LIQUID)
-                (ref-P|ORBR:module{OuronetPolicyV1} OUROBOROS)
-                (mg:guard (create-capability-guard (P|SWPT|CALLER)))
-            )
-            (ref-P|DALOS::A_P|AddIMP mg)
-            (ref-P|BRD::A_P|AddIMP mg)
-            (ref-P|DPTF::A_P|AddIMP mg)
-            ;(ref-P|DPOF::A_P|AddIMP mg)
-            (ref-P|ATS::A_P|AddIMP mg)
-            (ref-P|TFT::A_P|AddIMP mg)
-            (ref-P|ATSU::A_P|AddIMP mg)
-            (ref-P|VST::A_P|AddIMP mg)
-            (ref-P|LIQUID::A_P|AddIMP mg)
-            (ref-P|ORBR::A_P|AddIMP mg)
-        )
-    )
 
 )
 

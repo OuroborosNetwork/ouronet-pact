@@ -199,6 +199,65 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|TS02-C2_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|TS02-C2_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                (ref-P|DPDC:module{OuronetPolicyV1} DPDC)
+                (ref-P|DPDC-C:module{OuronetPolicyV1} DPDC-C)
+                (ref-P|DPDC-I:module{OuronetPolicyV1} DPDC-I)
+                (ref-P|DPDC-R:module{OuronetPolicyV1} DPDC-R)
+                (ref-P|DPDC-MNG:module{OuronetPolicyV1} DPDC-MNG)
+                (ref-P|DPDC-N:module{OuronetPolicyV1} DPDC-N)
+                (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
+                (ref-P|DPDC-F:module{OuronetPolicyV1} DPDC-F)
+                (ref-P|DPDC-S:module{OuronetPolicyV1} DPDC-S)
+                (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
+            )
+            (ref-P|TS01-A::P|A_AddIMP mg)
+            (ref-P|DPDC::P|A_AddIMP mg)
+            (ref-P|DPDC-C::P|A_AddIMP mg)
+            (ref-P|DPDC-I::P|A_AddIMP mg)
+            (ref-P|DPDC-R::P|A_AddIMP mg)
+            (ref-P|DPDC-MNG::P|A_AddIMP mg)
+            (ref-P|DPDC-T::P|A_AddIMP mg)
+            (ref-P|DPDC-F::P|A_AddIMP mg)
+            (ref-P|DPDC-S::P|A_AddIMP mg)
+            (ref-P|DPDC-N::P|A_AddIMP mg)
+        )
+    )
 
     ;;<=========================================================================>
     ;;{3}  CST
@@ -233,68 +292,9 @@
     )
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|TS02-C2_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|TS02-C2_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|TS01-A:module{TalosStageOne_AdminV1} TS01-A)
-                (ref-P|DPDC:module{OuronetPolicyV1} DPDC)
-                (ref-P|DPDC-C:module{OuronetPolicyV1} DPDC-C)
-                (ref-P|DPDC-I:module{OuronetPolicyV1} DPDC-I)
-                (ref-P|DPDC-R:module{OuronetPolicyV1} DPDC-R)
-                (ref-P|DPDC-MNG:module{OuronetPolicyV1} DPDC-MNG)
-                (ref-P|DPDC-N:module{OuronetPolicyV1} DPDC-N)
-                (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
-                (ref-P|DPDC-F:module{OuronetPolicyV1} DPDC-F)
-                (ref-P|DPDC-S:module{OuronetPolicyV1} DPDC-S)
-                (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
-            )
-            (ref-P|TS01-A::A_P|AddIMP mg)
-            (ref-P|DPDC::A_P|AddIMP mg)
-            (ref-P|DPDC-C::A_P|AddIMP mg)
-            (ref-P|DPDC-I::A_P|AddIMP mg)
-            (ref-P|DPDC-R::A_P|AddIMP mg)
-            (ref-P|DPDC-MNG::A_P|AddIMP mg)
-            (ref-P|DPDC-T::A_P|AddIMP mg)
-            (ref-P|DPDC-F::A_P|AddIMP mg)
-            (ref-P|DPDC-S::A_P|AddIMP mg)
-            (ref-P|DPDC-N::A_P|AddIMP mg)
-        )
-    )
     ;;
     ;;
     ;;  [2] DPDC

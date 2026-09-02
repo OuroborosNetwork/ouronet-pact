@@ -7,9 +7,9 @@
 ;; SFT/EQUITY collection to the launchpad via that exact call) is what caught a real regression the
 ;; redirect introduced on the first attempt: TS02-DPAD's OWN P|TALOS-SUMMONER guard had never been
 ;; registered as a trusted DPDC IMC peer (only TS02-C1's/TS02-C2's was, via the now-removed Talos
-;; wrapper's call chain) -- so the direct call failed UEV_IMC with "None of the guards passed" the first
+;; wrapper's call chain) -- so the direct call failed P|UEV_IMC with "None of the guards passed" the first
 ;; time this was tried. Fixed by adding TS02-DPAD's own guard to DPDC's registered peers in
-;; 03_TS02-DPAD.pact's A_P|Define (the same "Talos module needs its own IMC registration into the core
+;; 03_TS02-DPAD.pact's P|A_Define (the same "Talos module needs its own IMC registration into the core
 ;; module it calls directly" pattern already fixed once in the AQP audit -- see
 ;; STAGE_02/2_Core/03_AQP/Audit/ROUND-02-FIXES.md's "Reverse IMC" note -- and once in the ATS audit's
 ;; #34N/Fix #17). A "just compiles" check would NOT have caught this; only this full scenario run did.

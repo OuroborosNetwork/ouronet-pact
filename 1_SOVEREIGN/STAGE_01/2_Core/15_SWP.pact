@@ -134,6 +134,7 @@
 ;;
 (module SWP GOV
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -193,6 +194,69 @@
     )
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+                (mp:[guard] (P|UR_IMP))
+                (g:guard (ref-U|G::UEV_GuardOfAny mp))
+            )
+            (enforce-guard g)
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|SWP_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|SWP_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
+                (ref-P|BRD:module{OuronetPolicyV1} BRD)
+                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
+                ;(ref-P|DPOF:module{OuronetPolicyV1} DPOF)
+                (ref-P|ATS:module{OuronetPolicyV1} ATS)
+                (ref-P|TFT:module{OuronetPolicyV1} TFT)
+                (ref-P|ATSU:module{OuronetPolicyV1} ATSU)
+                (ref-P|VST:module{OuronetPolicyV1} VST)
+                (ref-P|LIQUID:module{OuronetPolicyV1} LIQUID)
+                (ref-P|ORBR:module{OuronetPolicyV1} OUROBOROS)
+                (ref-P|SWPT:module{OuronetPolicyV1} SWPT)
+                (mg:guard (create-capability-guard (P|SWP|CALLER)))
+            )
+            (ref-P|DALOS::P|A_AddIMP mg)
+            (ref-P|BRD::P|A_AddIMP mg)
+            (ref-P|DPTF::P|A_AddIMP mg)
+            ;(ref-P|DPOF::P|A_AddIMP mg)
+            (ref-P|ATS::P|A_AddIMP mg)
+            (ref-P|TFT::P|A_AddIMP mg)
+            (ref-P|ATSU::P|A_AddIMP mg)
+            (ref-P|VST::P|A_AddIMP mg)
+            (ref-P|LIQUID::P|A_AddIMP mg)
+            (ref-P|ORBR::P|A_AddIMP mg)
+            (ref-P|SWPT::P|A_AddIMP mg)
+        )
     )
 
     ;;<=========================================================================>
@@ -1243,16 +1307,6 @@
         )
     )
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-                (mp:[guard] (P|UR_IMP))
-                (g:guard (ref-U|G::UEV_GuardOfAny mp))
-            )
-            (enforce-guard g)
-        )
-    )
     (defun UEV_FeeSplit (input:object{SwapperV3.FeeSplit})
         (let
             (
@@ -1413,7 +1467,7 @@
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     (defun XB_ModifyWeights (swpair:string new-weights:[decimal])
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (SWP|S>WEIGHTS swpair new-weights)
             (update SWP|Pairs swpair
                 {"weights"  : new-weights}
@@ -1422,7 +1476,7 @@
     )
     ;;
     (defun XE_UpdateSupplies (swpair:string new-supplies:[decimal])
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (SWP|S>UPDATE-SUPPLIES swpair new-supplies)
             (let
                 (
@@ -1438,7 +1492,7 @@
         )
     )
     (defun XE_UpdateSupply (swpair:string id:string new-supply:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
@@ -1455,8 +1509,8 @@
         )
     )
     (defun XE_UpdateStoaValue (swpair:string new-stoa-value:decimal)
-        @doc "Forward writer: sets stoa-value on SWP|Pairs. Requires UEV_IMC; pool row must exist (UEV_id)."
-        (UEV_IMC)
+        @doc "Forward writer: sets stoa-value on SWP|Pairs. Requires P|UEV_IMC; pool row must exist (UEV_id)."
+        (P|UEV_IMC)
         (update SWP|Pairs swpair
             {"stoa-value" : new-stoa-value}
         )
@@ -1467,7 +1521,7 @@
             \ #52L fix (R4): returns the newly-constructed <swpair> ID — callers \
             \ (e.g. SWPI::C_Issue, MTX-SWP::C_MTX|Issue) need it back to finish \
             \ building their own response/continue the issuance flow."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-U|SWP:module{UtilitySwpV1} U|SWP)
@@ -1534,12 +1588,12 @@
     (defun XE_CanAddOrSwapToggle (swpair:string toggle:bool add-or-swap:bool)
         @doc "#55L fix: removed a redundant second guard check that used to sit here — \
             \ it re-ran UEV_Any against [local-guard] + (P|UR_IMP), the exact same list \
-            \ UEV_IMC (above) already checked, plus one extra local guard. Since UEV_IMC \
+            \ P|UEV_IMC (above) already checked, plus one extra local guard. Since P|UEV_IMC \
             \ is a bare statement (not wrapped in try) and aborts the whole tx on \
             \ failure, reaching this point already proves (P|UR_IMP) alone contains a \
             \ passing guard — adding local-guard to an already-guaranteed-passing OR-set \
             \ can never change the outcome. Pure dead weight, safely removed."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (if add-or-swap
             (update SWP|Pairs swpair
                 {"can-add"                      : toggle}
@@ -1550,7 +1604,7 @@
         )
     )
     (defun XE_AddLPTracker (lp-id:string swpair:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (insert SWP|LP lp-id
             {"swpair"                           : swpair}
         )
@@ -1664,59 +1718,6 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|SWP_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|SWP_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (ref-P|BRD:module{OuronetPolicyV1} BRD)
-                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
-                ;(ref-P|DPOF:module{OuronetPolicyV1} DPOF)
-                (ref-P|ATS:module{OuronetPolicyV1} ATS)
-                (ref-P|TFT:module{OuronetPolicyV1} TFT)
-                (ref-P|ATSU:module{OuronetPolicyV1} ATSU)
-                (ref-P|VST:module{OuronetPolicyV1} VST)
-                (ref-P|LIQUID:module{OuronetPolicyV1} LIQUID)
-                (ref-P|ORBR:module{OuronetPolicyV1} OUROBOROS)
-                (ref-P|SWPT:module{OuronetPolicyV1} SWPT)
-                (mg:guard (create-capability-guard (P|SWP|CALLER)))
-            )
-            (ref-P|DALOS::A_P|AddIMP mg)
-            (ref-P|BRD::A_P|AddIMP mg)
-            (ref-P|DPTF::A_P|AddIMP mg)
-            ;(ref-P|DPOF::A_P|AddIMP mg)
-            (ref-P|ATS::A_P|AddIMP mg)
-            (ref-P|TFT::A_P|AddIMP mg)
-            (ref-P|ATSU::A_P|AddIMP mg)
-            (ref-P|VST::A_P|AddIMP mg)
-            (ref-P|LIQUID::A_P|AddIMP mg)
-            (ref-P|ORBR::A_P|AddIMP mg)
-            (ref-P|SWPT::A_P|AddIMP mg)
-        )
-    )
     ;;
     (defun A_UpdatePrincipal (principal:string add-or-remove:bool)
         @doc "Adds <principal> (while under the 7 maximum) or removes it (while at \
@@ -1731,7 +1732,7 @@
             \ A_RotatePrincipal remains available as an atomic, count-preserving \
             \ alternative for minor principals — it never touches the floor or \
             \ cap, but is equally blocked from rotating a major principal away."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
@@ -1776,7 +1777,7 @@
             \ rejected outright regardless of everything else (#65eL, \
             \ URC_IsMajorPrincipal) — majors are fixed, retirable only by \
             \ redefining the primordial pool itself (A_SWP|DefinePrimordialPool)."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-read SWP|Properties SWP|INFO
             { "principals" := pp }
             (with-capability (SWP|C>ROTATE-PRINCIPAL old new)
@@ -1793,7 +1794,7 @@
         )
     )
     (defun A_UpdateLimit (limit:decimal spawn:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (SWP|C>LIMIT)
             (if spawn
                 (update SWP|Properties SWP|INFO
@@ -1806,7 +1807,7 @@
         )
     )
     (defun A_UpdateLiquidBoost (new-boost-variable:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (SWP|C>LQBOOST new-boost-variable)
             (update SWP|Properties SWP|INFO
                 {"liquid-boost" : new-boost-variable}
@@ -1814,7 +1815,7 @@
         )
     )
     (defun A_DefinePrimordialPool (primordial-pool:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (SWP|C>DEFINE-PRIMORDIAL-POOL primordial-pool)
             (update SWP|Properties SWP|INFO
                 {"primordial-pool" : primordial-pool}
@@ -1822,7 +1823,7 @@
         )
     )
     (defun A_ToggleAsymetricLiquidityAddition (toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (SWP|C>TG-ASYMETRIC-LQ toggle)
             (let
                 (
@@ -1863,7 +1864,7 @@
     )
     (defun C_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator}
         (entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}])
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -1876,7 +1877,7 @@
         )
     )
     (defun C_UpgradeBranding (patron:string entity-id:string months:integer)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -1893,7 +1894,7 @@
     ;;
     (defun C_ChangeOwnership:object{IgnisCollectorV1.OutputCumulator}
         (swpair:string new-owner:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -1906,7 +1907,7 @@
     )
     (defun C_EnableFrozenLP:object{IgnisCollectorV1.OutputCumulator}
         (patron:string swpair:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (SWP|C>ENABLE-FROZEN swpair)
             (let
                 (
@@ -1932,7 +1933,7 @@
     )
     (defun C_EnableSleepingLP:object{IgnisCollectorV1.OutputCumulator}
         (patron:string swpair:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (SWP|C>ENABLE-SLEEPING swpair)
             (let
                 (
@@ -1958,7 +1959,7 @@
     )
     (defun C_ModifyCanChangeOwner:object{IgnisCollectorV1.OutputCumulator}
         (swpair:string new-boolean:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -1971,7 +1972,7 @@
     )
     (defun C_ModifyWeights:object{IgnisCollectorV1.OutputCumulator}
         (swpair:string new-weights:[decimal])
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -1991,13 +1992,13 @@
             \ roles the first time add-liquidity is enabled (ico1-ico4), and — critically — is \
             \ the ONLY place in this call chain that enforces pool ownership, via \
             \ SWP|C>ADD-OR-SWAP's composed CAP_Owner. The existing XE_CanAddOrSwapToggle does \
-            \ none of that (only UEV_IMC + a raw update, no ownership check) and would need to \
+            \ none of that (only P|UEV_IMC + a raw update, no ownership check) and would need to \
             \ replicate all of the above to be a safe drop-in replacement for either caller — \
             \ neither SWPU::SPWU|C>TOGGLE-SWAP nor SWPLC::P|SWPLC|CALLER re-derives ownership \
             \ independently, so rerouting through the bare XE_* today would silently strip \
             \ authorization. Left as-is; a properly-capped XE_* replacement is real design work, \
             \ not a mechanical rename — deferred, not attempted here."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
@@ -2074,7 +2075,7 @@
     )
     (defun C_ToggleFeeLock:object{IgnisCollectorV1.OutputCumulator}
         (patron:string swpair:string toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (SWP|C>TG_FEE-LOCK swpair toggle)
             (let
                 (
@@ -2097,7 +2098,7 @@
     )
     (defun C_UpdateAmplifier:object{IgnisCollectorV1.OutputCumulator}
         (swpair:string amp:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -2110,7 +2111,7 @@
     )
     (defun C_UpdateFee:object{IgnisCollectorV1.OutputCumulator}
         (swpair:string new-fee:decimal lp-or-special:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -2123,7 +2124,7 @@
     )
     (defun C_UpdateSpecialFeeTargets:object{IgnisCollectorV1.OutputCumulator}
         (swpair:string targets:[object{SwapperV3.FeeSplit}])
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)

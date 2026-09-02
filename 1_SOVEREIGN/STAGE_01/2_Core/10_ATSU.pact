@@ -63,6 +63,7 @@
 ;;
 (module ATSU GOV
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -128,6 +129,62 @@
     )
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|ATSU_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|ATSU_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
+                (ref-P|BRD:module{OuronetPolicyV1} BRD)
+                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
+                (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
+                (ref-P|ATS:module{OuronetPolicyV1} ATS)
+                (ref-P|TFT:module{OuronetPolicyV1} TFT)
+                (mg:guard (create-capability-guard (P|ATSU|CALLER)))
+            )
+            (ref-P|ATS::P|A_Add
+                "ATSU|RemoteAtsGov"
+                (create-capability-guard (P|ATSU|REMOTE-GOV))
+            )
+
+            (ref-P|DALOS::P|A_AddIMP mg)
+            (ref-P|BRD::P|A_AddIMP mg)
+            (ref-P|DPTF::P|A_AddIMP mg)
+            (ref-P|DPOF::P|A_AddIMP mg)
+            (ref-P|ATS::P|A_AddIMP mg)
+            (ref-P|TFT::P|A_AddIMP mg)
+        )
     )
 
     ;;<=========================================================================>
@@ -1063,14 +1120,6 @@
         )
     )
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     (defun XI_KickStart:object{IgnisCollectorV1.OutputCumulator}
@@ -1355,54 +1404,6 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|ATSU_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|ATSU_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (ref-P|BRD:module{OuronetPolicyV1} BRD)
-                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
-                (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
-                (ref-P|ATS:module{OuronetPolicyV1} ATS)
-                (ref-P|TFT:module{OuronetPolicyV1} TFT)
-                (mg:guard (create-capability-guard (P|ATSU|CALLER)))
-            )
-            (ref-P|ATS::A_P|Add
-                "ATSU|RemoteAtsGov"
-                (create-capability-guard (P|ATSU|REMOTE-GOV))
-            )
-
-            (ref-P|DALOS::A_P|AddIMP mg)
-            (ref-P|BRD::A_P|AddIMP mg)
-            (ref-P|DPTF::A_P|AddIMP mg)
-            (ref-P|DPOF::A_P|AddIMP mg)
-            (ref-P|ATS::A_P|AddIMP mg)
-            (ref-P|TFT::A_P|AddIMP mg)
-        )
-    )
     ;;
     (defun A_RemoveSecondary:object{IgnisCollectorV1.OutputCumulator}
         (remover:string ats:string reward-token:string accounts-with-ats-data:[string])
@@ -1412,7 +1413,7 @@
             \ incomplete/stale and silently desync some accounts' stored positions. The parameter is kept \
             \ only for interface-signature compatibility (AutostakeUsageV1 is unchanged); do not rely on \
             \ its contents."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (ATSU|C>ADMINISTRATIVE-REMOVE-SECONDARY ats reward-token)
             (XI_RemoveSecondary remover ats reward-token)
         )
@@ -1422,7 +1423,7 @@
         @doc "Administrative variant (audit finding #11M / M2): forgoes pool ownership \
             \ for module governance (GOV|ATSU_ADMIN); resulting index is only bound by \
             \ the shared 0.1 floor, no ceiling - for legitimate ratios above 100.0."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (ATSU|C>ADMINISTRATIVE-KICKSTART kickstarter ats rt-amounts rbt-request-amount)
             (XI_KickStart kickstarter ats rt-amounts rbt-request-amount)
         )
@@ -1431,7 +1432,7 @@
         (remover:string ats:string reward-token:string)
         @doc "Client Variant. XI_RemoveSecondary derives the complete account list itself via \
             \ <ATS.URH_ExistingAutostakePairs ats>."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (ATSU|C>REMOVE-SECONDARY ats reward-token)
             (XI_RemoveSecondary remover ats reward-token)
         )
@@ -1445,7 +1446,7 @@
             \ filters to only the reward-token/royalty legs with a real (> 0.0) balance before \
             \ handing off to C_MultiTransfer - the RUR-reset loop below still zeroes every RT's \
             \ bucket, zero or not, so no accounting is skipped, only the doomed zero-amount leg."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (ATSU|C>WITHDRAW-ROYALTIES ats target)
             (let
                 (
@@ -1483,7 +1484,7 @@
         (kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
         @doc "Owner-facing variant. Fix (audit finding #11M / M2): resulting index now \
             \ bounded to [0.1, 100.0] via ATSU|C>KICKSTART / ATSU|C>X_KICKSTART."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (ATSU|C>KICKSTART kickstarter ats rt-amounts rbt-request-amount)
             (XI_KickStart kickstarter ats rt-amounts rbt-request-amount)
         )
@@ -1491,7 +1492,7 @@
     (defun C_Fuel:object{IgnisCollectorV1.OutputCumulator}
         (fueler:string ats:string reward-token:string amount:decimal)
         @doc "Fuels an <ats> ATS-Pair, increasing it Index."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-ATS:module{AutostakeV2} ATS)
@@ -1508,7 +1509,7 @@
         @doc "Autostakes an <rt> Token on <ats> ATS-Pair. \
             \ If Hibernate is on, retains the <c-rbt-amount>, which will then be hibernated \
             \ from the TALOS module, and sent as Hibernated H| Token to the <coiler>"
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (ATSU|C>COIL ats rt)
             (let
                 (
@@ -1549,7 +1550,7 @@
         (curler:string ats1:string ats2:string rt:string amount:decimal)
         @doc "Coils through 2 ATS-Pairs, outputting the <c-rbt2> to the <curler> \
             \ Both <ats1> and <ats2> must have <hibernation> off"
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (ATSU|C>CURL ats1 ats2 rt)
             (let
                 (
@@ -1605,7 +1606,7 @@
     )
     (defun C_ColdRecovery:object{IgnisCollectorV1.OutputCumulator}
         (recoverer:string ats:string ra:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (ATSU|C>DEPLOY ats recoverer)
             (XI_DeployAccount ats recoverer)
             (let
@@ -1716,7 +1717,7 @@
     )
     (defun C_Cull:object{IgnisCollectorV1.OutputCumulator}
         (culler:string ats:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (ATSU|C>CULL culler ats)
             (let
                 (
@@ -1775,7 +1776,7 @@
     )
     (defun C_HotRecovery:object{IgnisCollectorV1.OutputCumulator}
         (recoverer:string ats:string ra:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -1823,7 +1824,7 @@
     )
     (defun C_Recover:object{IgnisCollectorV1.OutputCumulator}
         (recoverer:string id:string nonce:integer)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -1859,7 +1860,7 @@
     )
     (defun C_Redeem:object{IgnisCollectorV1.OutputCumulator}
         (redeemer:string id:string nonce:integer)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
@@ -1953,7 +1954,7 @@
     )
     (defun C_DirectRecovery:object{IgnisCollectorV1.OutputCumulator}
         (recoverer:string ats:string ra:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (ATS|C>DIRECT_RECOVERY recoverer ats ra)
             (let
                 (
@@ -1999,7 +2000,7 @@
     )
     (defun C_Syphon:object{IgnisCollectorV1.OutputCumulator}
         (syphon-target:string ats:string syphon-amounts:[decimal])
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (ATSU|C>SYPHON ats syphon-amounts)
             (let
                 (

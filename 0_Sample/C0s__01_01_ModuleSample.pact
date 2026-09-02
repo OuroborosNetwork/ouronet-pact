@@ -46,14 +46,14 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
-    (defun A_P|Add (policy-name:string policy-guard:guard)
+    (defun P|A_Add (policy-name:string policy-guard:guard)
         (with-capability (GOV|SAMPLE_ADMIN)
             (write P|T policy-name
                 {"policy" : policy-guard}
             )
         )
     )
-    (defun A_P|AddIMP (policy-guard:guard)
+    (defun P|A_AddIMP (policy-guard:guard)
         (with-capability (GOV|SAMPLE_ADMIN)
             (let
                 (
@@ -70,16 +70,16 @@
             )
         )
     )
-    (defun A_P|Define ()
+    (defun P|A_Define ()
         (let
             (
                 (ref-P|DPDC:module{OuronetPolicyV1} DPDC)
                 (mg:guard (create-capability-guard (P|SAMPLE|CALLER)))
             )
-            (ref-P|DPDC::A_P|AddIMP mg)
+            (ref-P|DPDC::P|A_AddIMP mg)
         )
     )
-    (defun UEV_IMC ()
+    (defun P|UEV_IMC ()
         (let
             (
                 (ref-U|G:module{OuronetGuardsV1} U|G)
@@ -175,9 +175,9 @@
                 ;;2]Turn back On KDA Collection
                 (ref-TS01-A::A_DALOS|IgnisToggle true true)     ;;Turn on KDA Collection
                 ;;3]Backward IMC
-                (ref-P|KPAY::A_P|Define)
+                (ref-P|KPAY::P|A_Define)
                 ;;4]Forward IMC
-                (ref-P|KPAY::A_P|AddIMP mg)
+                (ref-P|KPAY::P|A_AddIMP mg)
                 ;;5]Demipad Governer Update
                 (ref-TS01-C1::C_DALOS|RotateGovernor
                     patron

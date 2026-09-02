@@ -198,6 +198,7 @@
 ;;
 (module DPDC GOV
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -250,6 +251,49 @@
     )
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|DPDC_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|DPDC_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
+                (ref-P|BRD:module{OuronetPolicyV1} BRD)
+                (mg:guard (create-capability-guard (P|DPDC|CALLER)))
+            )
+            (ref-P|DALOS::P|A_AddIMP mg)
+            (ref-P|BRD::P|A_AddIMP mg)
+        )
     )
 
     ;;<=========================================================================>
@@ -759,14 +803,6 @@
         (let ((ref-BRD:module{BrandingV1} BRD)) (ref-BRD::URCi_UpgradeBranding months))
     )
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     (defun UEV_id (id:string son:bool)
         (if son
             (with-default-read DPSF|T|Properties id
@@ -1142,7 +1178,7 @@
             input-rnaq:bool f:bool re:bool rnb:bool rnc:bool rnr:bool
             rnu:bool rmc:bool rmr:bool rsnu:bool rt:bool
         )
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -1172,7 +1208,7 @@
             f:bool re:bool rnb:bool rnc:bool rnr:bool
             rnu:bool rmc:bool rmr:bool rsnu:bool rt:bool
         )
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -1211,7 +1247,7 @@
     )
     ;;
     (defun XE_U|Rnaq (id:string account:string toggle)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (update DPSF|T|Account (concat [id BAR account])
             {"role-nft-add-quantity" : toggle}
         )
@@ -1230,35 +1266,35 @@
     ;; [<PropertiesTable> Writings] [1]
     (defun XE_I|Collection
         (id:string son:bool idp:object{DpdcUdcV1.DPDC|Properties})
-        (UEV_IMC)
+        (P|UEV_IMC)
         (if son
             (insert DPSF|T|Properties id idp)
             (insert DPNF|T|Properties id idp)
         )
     )
     (defun XE_U|Specs (id:string son:bool specs:object{DpdcUdcV1.DPDC|Properties})
-        (UEV_IMC)
+        (P|UEV_IMC)
         (if son
             (update DPSF|T|Properties id specs)
             (update DPNF|T|Properties id specs)
         )
     )
     (defun XE_U|IsPaused (id:string son:bool toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (if son
             (update DPSF|T|Properties id {"is-paused" : toggle})
             (update DPNF|T|Properties id {"is-paused" : toggle})
         )
     )
     (defun XE_U|NoncesUsed (id:string son:bool new-nv:integer)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (if son
             (update DPSF|T|Properties id {"nonces-used" : new-nv})
             (update DPNF|T|Properties id {"nonces-used" : new-nv})
         )
     )
     (defun XE_U|SetClassesUsed (id:string son:bool new-nsc:integer)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (if son
             (update DPSF|T|Properties id {"set-classes-used" : new-nsc})
             (update DPNF|T|Properties id {"set-classes-used" : new-nsc})
@@ -1266,18 +1302,18 @@
     )
     ;; [<NoncesTable> Writings] [2]
     (defun XE_I|CollectionElement (id:string son:bool nonce-value:integer ned:object{DpdcUdcV1.DPDC|NonceElement})
-        (UEV_IMC)
+        (P|UEV_IMC)
         (if son
             (insert DPSF|T|Nonces (concat [id BAR (format "{}" [nonce-value])]) ned)
             (insert DPNF|T|Nonces (concat [id BAR (format "{}" [nonce-value])]) ned)
         )
     )
     (defun XE_U|NonceSupply (id:string nonce-value:integer new-supply:integer)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (update DPSF|T|Nonces (concat [id BAR (format "{}" [nonce-value])]) {"nonce-supply" : new-supply})
     )
     (defun XE_U|NonceHolder (id:string nonce-value:integer new-holder-account:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
@@ -1293,7 +1329,7 @@
         )
     )
     (defun XE_U|NonceOrSplitData (id:string son:bool nonce-value:integer nos:bool nd:object{DpdcUdcV1.DPDC|NonceData} )
-        (UEV_IMC)
+        (P|UEV_IMC)
         (if nos
             (if son
                 (update DPSF|T|Nonces (concat [id BAR (format "{}" [nonce-value])]) {"nonce-data" : nd})
@@ -1307,7 +1343,7 @@
     )
     ;; [<VerumRolesTable> Writings] [3]
     (defun XE_I|VerumRoles (id:string son:bool verum-chain:object{DpdcUdcV1.DPDC|VerumRoles})
-        (UEV_IMC)
+        (P|UEV_IMC)
         (if son
             (insert DPSF|T|VerumRoles id verum-chain)
             (insert DPNF|T|VerumRoles id verum-chain)
@@ -1394,7 +1430,7 @@
     ;;  [Indirect Writings]
     ;;
     (defun XE_U|Frozen (id:string son:bool account:string toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (SECURE) 
             (XI_U|AccountRoles id son account
                 (+
@@ -1405,7 +1441,7 @@
         )
     )
     (defun XE_U|Exemption (id:string son:bool account:string toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (SECURE) 
             (XI_U|AccountRoles id son account
                 (+
@@ -1416,7 +1452,7 @@
         )
     )
     (defun XE_U|Burn (id:string son:bool account:string toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (SECURE) 
             (XI_U|AccountRoles id son account
                 (+
@@ -1427,7 +1463,7 @@
         )
     )
     (defun XE_U|Create (id:string son:bool account:string toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (SECURE) 
             (XI_U|AccountRoles id son account
                 (+
@@ -1438,7 +1474,7 @@
         )
     )
     (defun XE_U|Recreate (id:string son:bool account:string toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (SECURE) 
             (XI_U|AccountRoles id son account
                 (+
@@ -1449,7 +1485,7 @@
         )
     )
     (defun XE_U|Update (id:string son:bool account:string toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (SECURE) 
             (XI_U|AccountRoles id son account
                 (+
@@ -1460,7 +1496,7 @@
         )
     )
     (defun XE_U|ModifyCreator (id:string son:bool account:string toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (SECURE) 
             (XI_U|AccountRoles id son account
                 (+
@@ -1471,7 +1507,7 @@
         )
     )
     (defun XE_U|ModifyRoyalties (id:string son:bool account:string toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (SECURE) 
             (XI_U|AccountRoles id son account
                 (+
@@ -1482,7 +1518,7 @@
         )
     )
     (defun XE_U|SetNewUri (id:string son:bool account:string toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (SECURE) 
             (XI_U|AccountRoles id son account
                 (+
@@ -1493,7 +1529,7 @@
         )
     )
     (defun XE_U|Transfer (id:string son:bool account:string toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (SECURE) 
             (XI_U|AccountRoles id son account
                 (+
@@ -1504,7 +1540,7 @@
         )
     )
     (defun XE_U|VerumRoles (id:string son:bool rp:integer aor:bool account:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (if (contains rp [5 6 10])
             (if aor
                 (with-capability (SECURE)
@@ -1542,7 +1578,7 @@
     )
     ;;
     (defun XE_W|Supply (account:string id:string son:bool nonce-value:integer amount:integer)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
@@ -1563,41 +1599,6 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|DPDC_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|DPDC_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (ref-P|BRD:module{OuronetPolicyV1} BRD)
-                (mg:guard (create-capability-guard (P|DPDC|CALLER)))
-            )
-            (ref-P|DALOS::A_P|AddIMP mg)
-            (ref-P|BRD::A_P|AddIMP mg)
-        )
-    )
     ;;get keys with (URH_AS-Keys son)
     (defun AU_SFTs (kis:[string])
         (with-capability (AHU)
@@ -1708,7 +1709,7 @@
     )
     (defun C_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator}
         (entity-id:string son:bool logo:string description:string website:string social:[object{BrandingV1.SocialSchema}])
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -1723,7 +1724,7 @@
         )
     )
     (defun C_UpgradeBranding (patron:string entity-id:string son:bool months:integer)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)

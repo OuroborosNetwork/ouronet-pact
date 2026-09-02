@@ -77,6 +77,7 @@
 ;;
 (module TFT GOV
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -128,6 +129,63 @@
     )
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|TFT_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|TFT_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
+                (ref-P|BRD:module{OuronetPolicyV1} BRD)
+                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
+                (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
+                (ref-P|ATS:module{OuronetPolicyV1} ATS)
+                (mg:guard (create-capability-guard (P|TFT|CALLER)))
+            )
+            (ref-P|DALOS::P|A_Add
+                "TFT|RemoteDalosGov"
+                (create-capability-guard (P|DALOS|REMOTE-GOV))
+            )
+            (ref-P|ATS::P|A_Add
+                "TFT|RemoteAtsGov"
+                (create-capability-guard (P|ATS|REMOTE-GOV))
+            )
+            (ref-P|DALOS::P|A_AddIMP mg)
+            (ref-P|BRD::P|A_AddIMP mg)
+            (ref-P|DPTF::P|A_AddIMP mg)
+            (ref-P|DPOF::P|A_AddIMP mg)
+            (ref-P|ATS::P|A_AddIMP mg)
+        )
     )
 
     ;;<=========================================================================>
@@ -1116,14 +1174,6 @@
         )
     )
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     ;;
     (defun UEV_MinimumMapperForBulk
         (id:string transfer-amount-lst:[decimal])
@@ -1440,60 +1490,11 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|TFT_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|TFT_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (ref-P|BRD:module{OuronetPolicyV1} BRD)
-                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
-                (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
-                (ref-P|ATS:module{OuronetPolicyV1} ATS)
-                (mg:guard (create-capability-guard (P|TFT|CALLER)))
-            )
-            (ref-P|DALOS::A_P|Add
-                "TFT|RemoteDalosGov"
-                (create-capability-guard (P|DALOS|REMOTE-GOV))
-            )
-            (ref-P|ATS::A_P|Add
-                "TFT|RemoteAtsGov"
-                (create-capability-guard (P|ATS|REMOTE-GOV))
-            )
-            (ref-P|DALOS::A_P|AddIMP mg)
-            (ref-P|BRD::A_P|AddIMP mg)
-            (ref-P|DPTF::A_P|AddIMP mg)
-            (ref-P|DPOF::A_P|AddIMP mg)
-            (ref-P|ATS::A_P|AddIMP mg)
-        )
-    )
     ;;
     ;;Clear Dispo
     (defun C_ClearDispo:object{IgnisCollectorV1.OutputCumulator}
         (account:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPTF|C>CLEAR-DISPO account)
             (let
                 (
@@ -1573,7 +1574,7 @@
     ;;Transmute
     (defun C_Transmute:object{IgnisCollectorV1.OutputCumulator}
         (id:string transmuter:string transmute-amount:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (iz-ea:bool (URC_IzTrueFungibleEliteAuryn id))
@@ -1594,7 +1595,7 @@
     ;;Transfer
     (defun C_Transfer:object{IgnisCollectorV1.OutputCumulator}
         (id:string sender:string receiver:string transfer-amount:decimal method:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (what-type:integer (at "type" (URC_TransferClasses id sender receiver transfer-amount)))
@@ -1642,7 +1643,7 @@
     ;;Multi Transfer
     (defun C_MultiTransfer:object{IgnisCollectorV1.OutputCumulator}
         (id-lst:[string] sender:string receiver:string transfer-amount-lst:[decimal] method:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPTF|C>MULTI-TRANSFER id-lst sender receiver transfer-amount-lst method)
             (let
                 (
@@ -1702,7 +1703,7 @@
     ;;Bulk Transfer
     (defun C_MultiBulkTransfer:object{IgnisCollectorV1.OutputCumulator}
         (id-lst:[string] sender:string receiver-array:[[string]] transfer-amount-array:[[decimal]])
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)

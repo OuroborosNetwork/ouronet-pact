@@ -66,6 +66,7 @@
 ;;
 (module DPDC-C GOV
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -109,6 +110,47 @@
     )
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|DPDC-C_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|DPDC-C_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|DPDC:module{OuronetPolicyV1} DPDC)
+                (mg:guard (create-capability-guard (P|DPDC-C|CALLER)))
+            )
+            (ref-P|DPDC::P|A_AddIMP mg)
+        )
     )
 
     ;;<=========================================================================>
@@ -410,14 +452,6 @@
         )
     )
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     (defun UEV_NonceDataForCreation (ind:object{DpdcUdcV1.DPDC|NonceData})
         @doc "Validates the ind for creation of new nonce"
         (let
@@ -497,125 +531,125 @@
     ;;{5.6}  Aux/X
     ;;T3x20
     (defun XE_CreditSFT-FragmentNonce (account:string id:string nonce:integer amount:integer)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPSF|C>CREDIT-FRAGMENT-NONCE id nonce)
             (XI_CreditSFT account id [nonce] [amount])
         )
     )
     (defun XE_CreditNFT-FragmentNonce (account:string id:string nonce:integer amount:integer)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPNF|C>CREDIT-FRAGMENT-NONCE id nonce amount)
             (XI_CreditNFT account id [nonce] [amount])
         )
     )
     (defun XE_DebitSFT-FragmentNonce (account:string id:string nonce:integer amount:integer wipe-mode:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPSF|C>DEBIT-FRAGMENT-NONCE account id nonce amount wipe-mode)
             (XI_DebitSFT account id [nonce] [amount] wipe-mode)
         )
     )
     (defun XE_DebitNFT-FragmentNonce (account:string id:string nonce:integer amount:integer wipe-mode:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPNF|C>DEBIT-FRAGMENT-NONCE account id nonce amount wipe-mode)
             (XI_DebitNFT account id [nonce] [amount] wipe-mode)
         )
     )
     ;;
     (defun XB_CreditSFT-Nonce (account:string id:string nonce:integer amount:integer)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPSF|C>CREDIT-NONCE id nonce)
             (XI_CreditSFT account id [nonce] [amount])
         )
     )
     (defun XB_CreditNFT-Nonce (account:string id:string nonce:integer amount:integer)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPNF|C>CREDIT-NONCE id nonce amount)
             (XI_CreditNFT account id [nonce] [amount])
         )
     )
     (defun XE_DebitSFT-Nonce (account:string id:string nonce:integer amount:integer wipe-mode:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPSF|C>DEBIT-NONCE account id nonce amount wipe-mode)
             (XI_DebitSFT account id [nonce] [amount] wipe-mode)
         )
     )
     (defun XE_DebitNFT-Nonce (account:string id:string nonce:integer amount:integer wipe-mode:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPNF|C>DEBIT-NONCE account id nonce amount wipe-mode)
             (XI_DebitNFT account id [nonce] [amount] wipe-mode)
         )
     )
     ;;
     (defun XE_CreditSFT-FragmentNonces (account:string id:string nonces:[integer] amounts:[integer])
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPSF|C>CREDIT-FRAGMENT-NONCES id nonces amounts)
             (XI_CreditSFT account id nonces amounts)
         )
     )
     (defun XE_CreditNFT-FragmentNonces (account:string id:string nonces:[integer] amounts:[integer])
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPNF|C>CREDIT-FRAGMENT-NONCES id nonces amounts)
             (XI_CreditNFT account id nonces amounts)
         )
     )
     (defun XE_DebitSFT-FragmentNonces (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPSF|C>DEBIT-FRAGMENT-NONCES account id nonces amounts wipe-mode)
             (XI_DebitSFT account id nonces amounts wipe-mode)
         )
     )
     (defun XE_DebitNFT-FragmentNonces (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPNF|C>DEBIT-FRAGMENT-NONCES account id nonces amounts wipe-mode)
             (XI_DebitNFT account id nonces amounts wipe-mode)
         )
     )
     ;;
     (defun XB_CreditSFT-Nonces (account:string id:string nonces:[integer] amounts:[integer])
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPSF|C>CREDIT-NONCES id nonces amounts)
             (XI_CreditSFT account id nonces amounts)
         )
     )
     (defun XB_CreditNFT-Nonces (account:string id:string nonces:[integer] amounts:[integer])
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPNF|C>CREDIT-NONCES id nonces amounts)
             (XI_CreditNFT account id nonces amounts)
         )
     )
     (defun XE_DebitSFT-Nonces (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPSF|C>DEBIT-NONCES account id nonces amounts wipe-mode)
             (XI_DebitSFT account id nonces amounts wipe-mode)
         )
     )
     (defun XE_DebitNFT-Nonces (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPNF|C>DEBIT-NONCES account id nonces amounts wipe-mode)
             (XI_DebitNFT account id nonces amounts wipe-mode)
         )
     )
     ;;
     (defun XE_CreditSFT-HybridNonces (account:string id:string nonces:[integer] amounts:[integer])
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPSF|C>CREDIT-HYBRID-NONCES id nonces amounts)
             (XI_CreditSFT account id nonces amounts)
         )
     )
     (defun XE_CreditNFT-HybridNonces (account:string id:string nonces:[integer] amounts:[integer])
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPNF|C>CREDIT-HYBRID-NONCES id nonces amounts)
             (XI_CreditNFT account id nonces amounts)
         )
     )
     (defun XE_DebitSFT-HybridNonces (account:string id:string nonces:[integer] amounts:[integer])
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPSF|C>DEBIT-HYBRID-NONCES account id nonces amounts)
             (XI_DebitSFT account id nonces amounts false)
         )
     )
     (defun XE_DebitNFT-HybridNonces (account:string id:string nonces:[integer] amounts:[integer])
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPNF|C>DEBIT-HYBRID-NONCES account id nonces amounts)
             (XI_DebitNFT account id nonces amounts false)
         )
@@ -942,45 +976,12 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|DPDC-C_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|DPDC-C_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|DPDC:module{OuronetPolicyV1} DPDC)
-                (mg:guard (create-capability-guard (P|DPDC-C|CALLER)))
-            )
-            (ref-P|DPDC::A_P|AddIMP mg)
-        )
-    )
     (defun C_CreateNewNonce:object{IgnisCollectorV1.OutputCumulator}
         (
             id:string son:bool nonce-class:integer amount:integer
             input-nonce-data:object{DpdcUdcV1.DPDC|NonceData} sft-set-mode:bool
         )
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPDC-C|C>REGISTER-SINGLE-NONCE id son amount input-nonce-data sft-set-mode)
             (XI_RegisterCollectables id son [nonce-class] [amount] [input-nonce-data] sft-set-mode)
         )
@@ -990,7 +991,7 @@
             id:string son:bool amounts:[integer]
             input-nonce-datas:[object{DpdcUdcV1.DPDC|NonceData}]
         )
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPDC-C|C>REGISTER-MULTIPLE-NONCES id son amounts input-nonce-datas)
             (XI_RegisterCollectables id son 
                 (make-list (length input-nonce-datas) 0) 

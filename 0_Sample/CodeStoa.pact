@@ -1045,10 +1045,10 @@
     )
     [
         ;;Backward IMC
-        (ref-P|STOAICO::A_P|Define)
+        (ref-P|STOAICO::P|A_Define)
         ;;Forward IMC
-        (ref-P|SPAY::A_P|AddIMP mg)
-        (ref-P|STOAICO::A_P|AddIMP mg)
+        (ref-P|SPAY::P|A_AddIMP mg)
+        (ref-P|STOAICO::P|A_AddIMP mg)
         (ref-TS01-C1::C_DALOS|RotateGovernor
             patron
             lpad-sc
@@ -1124,7 +1124,7 @@
         (StoicPayID:string (at 0 issue-lst))
     )
     [
-        (ref-P|SPAY::A_P|Define)
+        (ref-P|SPAY::P|A_Define)
         (ref-TS01-C1::C_DALOS|RotateGovernor
             patron
             lpad-sc
@@ -1311,21 +1311,21 @@ DEMIPAD
     )
     [
         ;;Main
-        (ref-P|DPDC-UDC::A_P|Define)
-        (ref-P|DPDC::A_P|Define)
-        (ref-P|DPDC-C::A_P|Define)
-        (ref-P|DPDC-I::A_P|Define)
-        (ref-P|DPDC-R::A_P|Define)
-        (ref-P|DPDC-MNG::A_P|Define)
-        (ref-P|DPDC-N::A_P|Define)
-        (ref-P|DPDC-T::A_P|Define)
-        (ref-P|DPDC-F::A_P|Define)
-        (ref-P|DPDC-S::A_P|Define)
-        (ref-P|EQUITY::A_P|Define)
+        (ref-P|DPDC-UDC::P|A_Define)
+        (ref-P|DPDC::P|A_Define)
+        (ref-P|DPDC-C::P|A_Define)
+        (ref-P|DPDC-I::P|A_Define)
+        (ref-P|DPDC-R::P|A_Define)
+        (ref-P|DPDC-MNG::P|A_Define)
+        (ref-P|DPDC-N::P|A_Define)
+        (ref-P|DPDC-T::P|A_Define)
+        (ref-P|DPDC-F::P|A_Define)
+        (ref-P|DPDC-S::P|A_Define)
+        (ref-P|EQUITY::P|A_Define)
         ;;
         ;;Talos
-        (ref-P|TS02-C1::A_P|Define)
-        (ref-P|TS02-C2::A_P|Define)
+        (ref-P|TS02-C1::P|A_Define)
+        (ref-P|TS02-C2::P|A_Define)
         ;;
         ;;Set DPDC Governor
         (ref-TS01-C1::C_DALOS|RotateGovernor patron dpdc
@@ -1347,11 +1347,11 @@ DEMIPAD
             ,"resident-ouro"    : 0.0}
         )
         ;;IMC
-        (ref-P|DPAD::A_P|Define)
-        (ref-P|SPARK::A_P|Define)
-        (ref-P|SNAKES::A_P|Define)
-        (ref-P|CUSTODIANS::A_P|Define)
-        (ref-P|TS02-DPAD::A_P|Define)
+        (ref-P|DPAD::P|A_Define)
+        (ref-P|SPARK::P|A_Define)
+        (ref-P|SNAKES::P|A_Define)
+        (ref-P|CUSTODIANS::P|A_Define)
+        (ref-P|TS02-DPAD::P|A_Define)
         ;;
         (ref-TS01-C1::C_DPTF|Transfer 
             patron 
@@ -2401,35 +2401,35 @@ EliteAuryndex-ds4il5rO7vDC
             ancient
             "9F.gGCkuc2wMAnFAjuFphikftLdl6qFqBD4yfeMEe9u65yMqf4r340Jd6dphh1d7E1cE20btMwl4HJ2cBEMvp209GA1eD4syB96hu4nmpFbB7dKnJEMz4p8fGLcmhvrBCfDmM0axnGin8qedl5vDtwbgL3l1aK5BsmjkEEJartqCH8qG8ialtjxwCcIMf50t2lkeww6Dct5LlmmLG25FmfpcgnwMMnkJl4Gfn9gwoA6vm0jKebjhodeJLjxnh9L11ss8f26866dqv1tEphxFFqutGetH4Itj3rHkrcrGsnlqpf4gfJp94b0gBwIBe4vCj6ha8jm6kd3f8B6pEaJtkJ3fbs6rCcGibltz1BAMn0vvKME5ddFyGBnzssk1s2s0vFzwxs6vjC61Ma2l1xDxqdg1thAk2u01hDiGndLhzK73HAfgtk7bxscn0qKhymG6JAqnEFt282pyHAq5nIthK9bA8nH76x7FEpLz4eK9tLIBsyjb8M5DxaeEei6pEnLxFCAg7ulacgtjjpjMiAaqhpmM1jEHqjt4G85q4L33zrME7whgIkIpIgwnF2qKd4"
         )
-        (ref-P|IGNIS::A_P|Define)
+        (ref-P|IGNIS::P|A_Define)
         ;;
-        (ref-P|BRD::A_P|Define)
-        (ref-P|DPTF::A_P|Define)
-        (ref-P|DPOF::A_P|Define)
-        (ref-P|ELITE::A_P|Define)
+        (ref-P|BRD::P|A_Define)
+        (ref-P|DPTF::P|A_Define)
+        (ref-P|DPOF::P|A_Define)
+        (ref-P|ELITE::P|A_Define)
         ;;
-        (ref-P|ATS::A_P|Define)
-        (ref-P|TFT::A_P|Define)
-        (ref-P|ATSU::A_P|Define)
-        (ref-P|VST::A_P|Define)
-        (ref-P|LIQUID::A_P|Define)
-        (ref-P|ORBR::A_P|Define)
+        (ref-P|ATS::P|A_Define)
+        (ref-P|TFT::P|A_Define)
+        (ref-P|ATSU::P|A_Define)
+        (ref-P|VST::P|A_Define)
+        (ref-P|LIQUID::P|A_Define)
+        (ref-P|ORBR::P|A_Define)
         ;;
-        (ref-P|SWPT::A_P|Define)
-        (ref-P|SWP::A_P|Define)
-        (ref-P|SWPI::A_P|Define)
-        (ref-P|SWPL::A_P|Define)
-        (ref-P|SWPLC::A_P|Define)
-        (ref-P|SWPU::A_P|Define)
-        (ref-P|MTX-SWP::A_P|Define)
+        (ref-P|SWPT::P|A_Define)
+        (ref-P|SWP::P|A_Define)
+        (ref-P|SWPI::P|A_Define)
+        (ref-P|SWPL::P|A_Define)
+        (ref-P|SWPLC::P|A_Define)
+        (ref-P|SWPU::P|A_Define)
+        (ref-P|MTX-SWP::P|A_Define)
         ;;
-        (ref-P|DSP::A_P|Define)
+        (ref-P|DSP::P|A_Define)
         ;;
-        (ref-P|TS01-A::A_P|Define)
-        (ref-P|TS01-C1::A_P|Define)
-        (ref-P|TS01-C2::A_P|Define)
-        (ref-P|TS01-C3::A_P|Define)
-        (ref-P|TS01-CP::A_P|Define)
+        (ref-P|TS01-A::P|A_Define)
+        (ref-P|TS01-C1::P|A_Define)
+        (ref-P|TS01-C2::P|A_Define)
+        (ref-P|TS01-C3::P|A_Define)
+        (ref-P|TS01-CP::P|A_Define)
         ;;Define Prices
         (ref-TS01-A::A_DALOS|UpdateUsagePrice "standard"     1.0)
         (ref-TS01-A::A_DALOS|UpdateUsagePrice "smart"        2.0)

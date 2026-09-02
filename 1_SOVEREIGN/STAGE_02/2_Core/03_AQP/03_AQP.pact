@@ -214,6 +214,7 @@
 )
 (module AQP-POOL GOV
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -262,6 +263,58 @@
     )
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|AQP_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|AQP_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    ;;
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        @doc "Post-deploy IMC wiring (AQP-BOOT Step 0). TFT + DPOF vault transfer/receive on AQP|SC_NAME."
+        (let
+            (
+                (ref-P|TFT:module{OuronetPolicyV1} TFT)
+                (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
+                (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
+                ;;
+                (mg:guard (create-capability-guard (P|AQP|CALLER)))
+            )
+            ;; AQP-POOL → TFT: XE_TrueFungibleTransfer calls TFT::C_Transfer; TFT P|UEV_IMC requires this guard.
+            (ref-P|TFT::P|A_AddIMP mg)
+            ;; AQP-POOL → DPOF: XE_OrtoFungibleTransfer calls DPOF::C_Transfer; vacate batch is AQP-VCT → DPOF::C_BulkTransfer.
+            (ref-P|DPOF::P|A_AddIMP mg)
+            ;; AQP-POOL → DPDC-T: XE_CollectableTransfer calls DPDC-T::C_Transfer; vacate batch is AQP-VCT → DPDC-T::C_BulkTransfer.
+            (ref-P|DPDC-T::P|A_AddIMP mg)
+            true
+        )
     )
 
     ;;<=========================================================================>
@@ -544,7 +597,7 @@
         @doc "Forward-only (FVT::CC_TrueFungibleStakeFlow phase 1]): validation for XE_TrueFungibleTransfer. \
             \ Pool/beneficiary/tracker/rollup rules here; dptf-id/amount/debit via TFT::C_Transfer. \
             \ CAP_StakeOwner (owner wallet); compose P|AQP|CALLER (TFT IMC); compose AQP|GOV (AQP|SC_NAME smart account — \
-            \ send and receive both require governor proof). XI_* writers have no enforce. Not @event — UEV_IMC on XE entry."
+            \ send and receive both require governor proof). XI_* writers have no enforce. Not @event — P|UEV_IMC on XE entry."
         (let
             (
                 (staked-bal:decimal (UR_AQP|DPTFTrackerBalance pool-id dptf-id owner-id beneficiary-id))
@@ -688,7 +741,7 @@
         (beneficiary-id:string dptf-id:string)
         @doc "Backward-only (FVT::CC_TrueFungibleStakeFlow phase 2.2]): stamp last-ank-sync-count on BenDptfTotal. \
             \ beneficiary/dptf validation here; full stake rules in FVT|C>TRUE-FUNGIBLE-STAKE-FLOW. \
-            \ Composes SECURE for XE write body. Not @event — UEV_IMC on XE entry."
+            \ Composes SECURE for XE write body. Not @event — P|UEV_IMC on XE entry."
         (UEV_StakeBeneficiaryAccount beneficiary-id)
         (UEV_StakeTrueFungibleDptfLeg dptf-id)
         (compose-capability (SECURE))
@@ -1995,14 +2048,6 @@
                       (URCi_SyncCollectableAnchors [beneficiary-id collectable-id]))
                 ])))
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     ;; [UEV] enforce
     (defun UEV_IssuePoolClassAndAsset (aqp-class:integer asset-id:string)
         @doc "aqp-class 0..4 and asset-id existence / shape for that class (native id only at issue)."
@@ -2742,8 +2787,8 @@
     ;; [XE]
     (defun XE_SetVacateJobState:string
         (pool-id:string vacate-in-progress:bool)
-        @doc "Write vacate-in-progress on AQP|T|Pool. UEV_IMC gates AQP-VCT caller."
-        (UEV_IMC)
+        @doc "Write vacate-in-progress on AQP|T|Pool. P|UEV_IMC gates AQP-VCT caller."
+        (P|UEV_IMC)
         (with-capability (P|SECURE-CALLER)
             ;; SECURE: granted by WU4_Pool|VacateJobState (underlying W_).
             (WU4_Pool|VacateJobState pool-id vacate-in-progress)
@@ -2753,8 +2798,8 @@
     (defun XE_SetSweepInProgress:string
         (pool-id:string flag:bool)
         @doc "Forward (re-score sweep · MTX-AQP): freeze/unfreeze a pool for a sweep — blocks new stakes AND collect \
-            \ while true (D3). UEV_IMC gates the caller; P|SECURE-CALLER composes SECURE."
-        (UEV_IMC)
+            \ while true (D3). P|UEV_IMC gates the caller; P|SECURE-CALLER composes SECURE."
+        (P|UEV_IMC)
         (with-capability (P|SECURE-CALLER)
             ;; SECURE: granted by WU_Pool|SweepInProgress (underlying W_).
             (WU_Pool|SweepInProgress pool-id flag)
@@ -2771,7 +2816,7 @@
     (defun XE_TrueFungibleTransfer:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
         @doc "Phase 1.1 — UrStoa ≡ X_UR|Transfer. TFT::C_Transfer owner↔AQP|SC_NAME. Composes custody cap (validation once per tx)."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY pool-id owner-id beneficiary-id dptf-id amount direction)
             (let
                 (
@@ -2789,7 +2834,7 @@
     (defun XE_TrueFungiblePoolTracker:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
         @doc "Phase 1.2 — per-pool AQP|T|DPTFTracker row. UrStoa: N/A. P|SECURE-CALLER (no custody re-validation)."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (P|SECURE-CALLER)
             (XI_1|WriteDptfTrackerSlot pool-id owner-id beneficiary-id dptf-id amount direction)
         )
@@ -2797,7 +2842,7 @@
     (defun XE_ZeroDptfTrackerSlot:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string)
         @doc "IMC: zero one AQP|T|DPTFTracker row (write-only). Called from AQP-VCT vacate."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (P|SECURE-CALLER)
             (XI_1|ZeroDptfTrackerSlot pool-id owner-id beneficiary-id dptf-id)
         )
@@ -2805,7 +2850,7 @@
     (defun XE_TrueFungibleBeneficiaryRollup:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
         @doc "Phase 1.3 — cross-pool AQP|T|BenDptfTotal. UrStoa ≡ N/A. P|SECURE-CALLER."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (P|SECURE-CALLER)
             (XI_1|BumpBenDptfTotalSlot pool-id owner-id beneficiary-id dptf-id amount direction)
         )
@@ -2821,7 +2866,7 @@
             direction:bool
         )
         @doc "Phase 1.1 — UrStoa ≡ X_UR|Transfer. DPOF::C_Transfer whole nonces. Composes custody cap (validation once per tx)."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts direction)
             (let
                 (
@@ -2846,7 +2891,7 @@
             direction:bool
         )
         @doc "Phase 1.2 — per-pool AQP|T|DPOFTracker rows. UrStoa: N/A. P|SECURE-CALLER (no custody re-validation)."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (P|SECURE-CALLER)
             (let
                 (
@@ -2882,7 +2927,7 @@
             direction:bool
         )
         @doc "Phase 1.1 — UrStoa ≡ X_UR|Transfer. DPDC-T::C_Transfer. Composes custody cap (validation once per tx)."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability
             (AQP|XE>COLLECTABLE-POOL-CUSTODY
                 pool-id owner-id beneficiary-id collectable-id son nonces nonce-amounts direction
@@ -2911,7 +2956,7 @@
             direction:bool
         )
         @doc "Phase 1.2 — per-pool DPSF/DPNF tracker rows. UrStoa: N/A. P|SECURE-CALLER."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (P|SECURE-CALLER)
             (let
                 (
@@ -2947,7 +2992,7 @@
             direction:bool
         )
         @doc "Phase 1.3 — cross-pool BenDpsfNonceTotal / BenDpnfNonceTotal. UrStoa ≡ N/A. P|SECURE-CALLER."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (P|SECURE-CALLER)
             (let
                 (
@@ -2983,9 +3028,9 @@
     ;;
     (defun XB_SetPoolStakeEnabled:string
         (pool-id:string enabled:bool)
-        @doc "Write stake-enabled on AQP|T|Pool. UEV_IMC gates cross-module callers (e.g. AQP-VCT vacate). \
+        @doc "Write stake-enabled on AQP|T|Pool. P|UEV_IMC gates cross-module callers (e.g. AQP-VCT vacate). \
             \ Same-module C_Disable/C_Enable compose owner caps then call here."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (P|SECURE-CALLER)
             ;; SECURE: granted by WU_Pool|StakeEnabled (underlying W_).
             (WU_Pool|StakeEnabled pool-id enabled)
@@ -2999,9 +3044,9 @@
     (defun XB_SetBenDptfAnkSyncCount:object{IgnisCollectorV1.OutputCumulator}
         (beneficiary-id:string dptf-id:string)
         @doc "Backward (FVT::CC_TrueFungibleStakeFlow phase 2.2]): set last-ank-sync-count on BenDptfTotal \
-            \ (:= AQP-ANK::UR_AA|AnchorsActive dptf-id); preserve total-balance. UEV_IMC + AQP|XE>SET-BENEFICIARY-DPTF-ANK-SYNC. \
+            \ (:= AQP-ANK::UR_AA|AnchorsActive dptf-id); preserve total-balance. P|UEV_IMC + AQP|XE>SET-BENEFICIARY-DPTF-ANK-SYNC. \
             \ Same-module C_SyncTrueFungibleAnchors and cross-module FVT::XI_RefreshTrueFungibleStakeAnchors call here."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (AQP|XE>SET-BENEFICIARY-DPTF-ANK-SYNC beneficiary-id dptf-id)
             (let
                 (
@@ -3020,8 +3065,8 @@
     (defun XB_SetBenCollectableAnkSyncCount:object{IgnisCollectorV1.OutputCumulator}
         (beneficiary-id:string collectable-id:string son:bool)
         @doc "Backward (FVT collectable stake phase 3 / C_SyncCollectableAnchors): stamp last-ank-sync-count \
-            \ on BenDpsfAnkMeta or BenDpnfAnkMeta. UEV_IMC + AQP|XE>SET-BEN-COLLECTABLE-ANK-SYNC."
-        (UEV_IMC)
+            \ on BenDpsfAnkMeta or BenDpnfAnkMeta. P|UEV_IMC + AQP|XE>SET-BEN-COLLECTABLE-ANK-SYNC."
+        (P|UEV_IMC)
         (with-capability (AQP|XE>SET-BEN-COLLECTABLE-ANK-SYNC beneficiary-id collectable-id son)
             (let
                 (
@@ -3051,50 +3096,6 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|AQP_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|AQP_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    ;;
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        @doc "Post-deploy IMC wiring (AQP-BOOT Step 0). TFT + DPOF vault transfer/receive on AQP|SC_NAME."
-        (let
-            (
-                (ref-P|TFT:module{OuronetPolicyV1} TFT)
-                (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
-                (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
-                ;;
-                (mg:guard (create-capability-guard (P|AQP|CALLER)))
-            )
-            ;; AQP-POOL → TFT: XE_TrueFungibleTransfer calls TFT::C_Transfer; TFT UEV_IMC requires this guard.
-            (ref-P|TFT::A_P|AddIMP mg)
-            ;; AQP-POOL → DPOF: XE_OrtoFungibleTransfer calls DPOF::C_Transfer; vacate batch is AQP-VCT → DPOF::C_BulkTransfer.
-            (ref-P|DPOF::A_P|AddIMP mg)
-            ;; AQP-POOL → DPDC-T: XE_CollectableTransfer calls DPDC-T::C_Transfer; vacate batch is AQP-VCT → DPDC-T::C_BulkTransfer.
-            (ref-P|DPDC-T::A_P|AddIMP mg)
-            true
-        )
-    )
     ;;
     ;; [C]   client
     ;;
@@ -3103,7 +3104,7 @@
         (patron:string pool-name:string asset-id:string aqp-class:integer)
         @doc "Create a new pool (canonical native asset-id + aqp-class). Patron pays STOA smart + IGNIS; \
             \ returns pool-id in output list. Score slots start BAR."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (AQP|C>ISSUE-POOL pool-name asset-id aqp-class)
             (let
                 (
@@ -3127,7 +3128,7 @@
         @doc "Assign score-id to the first free pool slot; SCR XE_CreateAqpoolLink then XI pool slot write. \
             \ URC_FirstFreeScoreSlotIndex runs once before the cap; slot-index is passed through. \
             \ IGNIS only (GAS|ADD-SCORE 500.0 on AQP|SC_NAME); no STOA."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let 
             (
                 (slot-index:integer (URC_FirstFreeScoreSlotIndex pool-id))
@@ -3152,7 +3153,7 @@
         @doc "Clear score-id from its pool slot (compact higher slots); SCR XE_RevokeAqpoolLink then XI pool slot write. \
             \ URC_ScoreSlotIndexForScore runs once before the cap; slot-index is passed through. \
             \ IGNIS only (GAS|REVOKE-SCORE 500.0 on AQP|SC_NAME); no STOA."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (slot-index:integer (URC_ScoreSlotIndexForScore pool-id score-id))
@@ -3175,7 +3176,7 @@
     (defun C_DisablePoolStake:object{IgnisCollectorV1.OutputCumulator}
         (patron:string pool-id:string)
         @doc "Pool owner pauses new stakes (stake-enabled → false). IGNIS only (GAS|SET-POOL-STAKE); no STOA."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (AQP|C>DISABLE-POOL-STAKE pool-id)
             (let
                 (
@@ -3191,7 +3192,7 @@
     (defun C_EnablePoolStake:object{IgnisCollectorV1.OutputCumulator}
         (patron:string pool-id:string)
         @doc "Pool owner re-enables new stakes (stake-enabled → true). IGNIS only (GAS|SET-POOL-STAKE); no STOA."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (AQP|C>ENABLE-POOL-STAKE pool-id)
             (let
                 (
@@ -3208,7 +3209,7 @@
         (patron:string beneficiary-id:string dptf-id:string)
         @doc "Pool-agnostic ANK repair when new TF anchors issued after stake. Reads BenDptfTotal, \
             \ refreshes promile, stamps last-ank-sync-count. SCORE boosted unchanged (lazy on next stake)."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (AQP|C>SYNC-TF-ANCHORS patron beneficiary-id dptf-id)
             (let
                 (
@@ -3236,7 +3237,7 @@
         @doc "Pool-agnostic ANK repair for DPSF (son=true) or DPNF (son=false). Reads Ben* nonce rollup, \
             \ absolute resync via AQP-ANK::XE_Resync*, stamps Ben*AnkMeta. Talos splits SF/NF shells. \
             \ URD inventory is read before with-capability (select illegal in defcap)."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (supplies:[object]

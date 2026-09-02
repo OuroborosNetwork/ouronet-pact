@@ -30,6 +30,7 @@
 ;;
 (module DPDC-I GOV
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -73,6 +74,49 @@
     )
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|DPDC-I_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|DPDC-I_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|BRD:module{OuronetPolicyV1} BRD)
+                (ref-P|DPDC:module{OuronetPolicyV1} DPDC)
+                (mg:guard (create-capability-guard (P|DPDC-I|CALLER)))
+            )
+            (ref-P|BRD::P|A_AddIMP mg)
+            (ref-P|DPDC::P|A_AddIMP mg)
+        )
     )
 
     ;;<=========================================================================>
@@ -165,14 +209,6 @@
         )
     )
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     (defun XI_IssueDigitalCollection:string
@@ -272,41 +308,6 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|DPDC-I_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|DPDC-I_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|BRD:module{OuronetPolicyV1} BRD)
-                (ref-P|DPDC:module{OuronetPolicyV1} DPDC)
-                (mg:guard (create-capability-guard (P|DPDC-I|CALLER)))
-            )
-            (ref-P|BRD::A_P|AddIMP mg)
-            (ref-P|DPDC::A_P|AddIMP mg)
-        )
-    )
     ;; C_DeployAccountSFT/NFT removed — DPDC Audit #35M: see interface-side removal note above.
     (defun C_IssueDigitalCollection:object{IgnisCollectorV1.OutputCumulator}
         (
@@ -316,7 +317,7 @@
             can-transfer-nft-create-role:bool can-freeze:bool can-wipe:bool can-pause:bool
             iz-special:bool
         )
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPDC-I|C>ISSUE owner-account creator-account collection-name collection-ticker iz-special)
             (let
                 (

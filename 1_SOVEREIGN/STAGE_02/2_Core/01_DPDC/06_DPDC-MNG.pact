@@ -58,6 +58,7 @@
 ;;
 (module DPDC-MNG GOV
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -101,6 +102,49 @@
     )
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|DPDC-MNG_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|DPDC-MNG_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|DPDC:module{OuronetPolicyV1} DPDC)
+                (ref-P|DPDC-C:module{OuronetPolicyV1} DPDC-C)
+                (mg:guard (create-capability-guard (P|DPDC-MNG|CALLER)))
+            )
+            (ref-P|DPDC::P|A_AddIMP mg)
+            (ref-P|DPDC-C::P|A_AddIMP mg)
+        )
     )
 
     ;;<=========================================================================>
@@ -552,14 +596,6 @@
         )
     )
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     (defun XI_Control (id:string son:bool cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool)
@@ -651,44 +687,9 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|DPDC-MNG_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|DPDC-MNG_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|DPDC:module{OuronetPolicyV1} DPDC)
-                (ref-P|DPDC-C:module{OuronetPolicyV1} DPDC-C)
-                (mg:guard (create-capability-guard (P|DPDC-MNG|CALLER)))
-            )
-            (ref-P|DPDC::A_P|AddIMP mg)
-            (ref-P|DPDC-C::A_P|AddIMP mg)
-        )
-    )
     (defun C_Control:object{IgnisCollectorV1.OutputCumulator}
         (id:string son:bool cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -703,7 +704,7 @@
     )
     (defun C_TogglePause:object{IgnisCollectorV1.OutputCumulator}
         (id:string son:bool toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -721,7 +722,7 @@
     (defun C_AddQuantity:object{IgnisCollectorV1.OutputCumulator}
         (account:string id:string nonce:integer amount:integer)
         @doc "Add Quantity for an SFT"
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -736,7 +737,7 @@
     ;;  [NFT]
     (defun C_RespawnNFT:object{IgnisCollectorV1.OutputCumulator} (account:string id:string nonce:integer)
         @doc "Respawns a previously burned NFT"
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -754,7 +755,7 @@
     ;;  [SFT]
     (defun C_BurnSFT:object{IgnisCollectorV1.OutputCumulator}
         (account:string id:string nonce:integer amount:integer)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -770,7 +771,7 @@
     )
     (defun C_WipeSlim:object{IgnisCollectorV1.OutputCumulator}
         (account:string id:string nonce:integer amount:integer)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -786,7 +787,7 @@
     )
     ;;  [NFT]
     (defun C_BurnNFT:object{IgnisCollectorV1.OutputCumulator} (account:string id:string nonce:integer)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -803,7 +804,7 @@
     (defun C_WipeNonce:object{IgnisCollectorV1.OutputCumulator}
         (account:string id:string son:bool nonce:integer)
         @doc "Wipes a viable SFT or NFT Nonce in its entirety"
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -837,7 +838,7 @@
             \ |Heavy| reffers to the usage of expensive functions like <select> or <keys> \
             \ (that arent meant to be used in transactional context) to get the Account Nonces; \
             \ May fit in a single Transaction for Small Data Sets"
-        (UEV_IMC)
+        (P|UEV_IMC)
         (C_WipePure account id son (URHC_WipePure account id son))
     )
     (defun C_WipePure:object{IgnisCollectorV1.OutputCumulator}
@@ -850,7 +851,7 @@
             \ <(URHC_WipePure account id son)> ; to get the whole object \
             \ <(UC_TakePureWipe (URHC_WipePure account id son) 165)> ; to get only the first 165 units \
             \ Aproximately 167 Individual Wipes fit inside one TX (for NFTs)."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (viable-nonces:[integer] (at "r-nonces" removable-nonces-obj))
@@ -874,7 +875,7 @@
         (account:string id:string son:bool nonces:[integer])
         @doc "Wipes <id> select viable <nonces> of an SFT or NFT <account> \
             \ Fails if a single nonce is not viable"
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-DPDC:module{DpdcV1} DPDC)
@@ -890,7 +891,7 @@
     (defun C_WipeDirty:object{IgnisCollectorV1.OutputCumulator}
         (account:string id:string son:bool nonces:[integer])
         @doc "Wipes <id> select <nonces> of an SFT or NFT <account> (at least 1 nonce must be viable)"
-        (UEV_IMC)
+        (P|UEV_IMC)
         (C_WipePure account id son (URC_FilterAccountViableNonces account id son nonces))
     )
 

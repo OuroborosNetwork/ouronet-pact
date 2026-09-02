@@ -83,6 +83,53 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|CUSTODIANS_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|CUSTODIANS_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
+                (ref-P|DPAD:module{OuronetPolicyV1} DEMIPAD)
+                (mg:guard (create-capability-guard (P|CUSTODIANS|CALLER)))
+            )
+            (ref-P|DPAD::P|A_Add
+                "CUSTODIANS|RemoteGov"
+                (create-capability-guard (P|CUSTODIANS|REMOTE-GOV))
+            )
+            (ref-P|DPDC-T::P|A_AddIMP mg)
+            (ref-P|DPAD::P|A_AddIMP mg)
+        )
+    )
 
     ;;<=========================================================================>
     ;;{3}  CST
@@ -287,14 +334,6 @@
         )
     )
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     (defun CAP_Acquire
         (buyer:string nonce:integer amount:integer iz-native:bool)
         (let
@@ -325,45 +364,6 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|CUSTODIANS_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|CUSTODIANS_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
-                (ref-P|DPAD:module{OuronetPolicyV1} DEMIPAD)
-                (mg:guard (create-capability-guard (P|CUSTODIANS|CALLER)))
-            )
-            (ref-P|DPAD::A_P|Add
-                "CUSTODIANS|RemoteGov"
-                (create-capability-guard (P|CUSTODIANS|REMOTE-GOV))
-            )
-            (ref-P|DPDC-T::A_P|AddIMP mg)
-            (ref-P|DPAD::A_P|AddIMP mg)
-        )
-    )
     ;;
     (defun A_UpdateQuintessencePrice (price:decimal)
         @doc "Updates the Quintessence Price"

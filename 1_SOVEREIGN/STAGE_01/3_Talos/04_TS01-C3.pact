@@ -171,6 +171,66 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|TS01-C1_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|TS01-C1_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|IGNIS:module{OuronetPolicyV1} IGNIS)
+                (ref-P|LIQUID:module{OuronetPolicyV1} LIQUID)
+                (ref-P|ORBR:module{OuronetPolicyV1} OUROBOROS)
+                (ref-P|SWPT:module{OuronetPolicyV1} SWPT)
+                (ref-P|SWP:module{OuronetPolicyV1} SWP)
+                (ref-P|SWPI:module{OuronetPolicyV1} SWPI)
+                (ref-P|SWPL:module{OuronetPolicyV1} SWPL)
+                (ref-P|SWPLC:module{OuronetPolicyV1} SWPLC)
+                (ref-P|SWPU:module{OuronetPolicyV1} SWPU)
+                (ref-P|TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
+            )
+            (ref-P|IGNIS::P|A_AddIMP mg)
+            (ref-P|LIQUID::P|A_AddIMP mg)
+            (ref-P|ORBR::P|A_AddIMP mg)
+            ;;
+            (ref-P|SWPT::P|A_AddIMP mg)
+            (ref-P|SWP::P|A_AddIMP mg)
+            (ref-P|SWPI::P|A_AddIMP mg)
+            (ref-P|SWPL::P|A_AddIMP mg)
+            (ref-P|SWPLC::P|A_AddIMP mg)
+            (ref-P|SWPU::P|A_AddIMP mg)
+            (ref-P|TS01-A::P|A_AddIMP mg)
+        )
+    )
 
     ;;<=========================================================================>
     ;;{3}  CST
@@ -198,69 +258,9 @@
     ;;{5.2}  Compute [UC]
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|TS01-C1_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|TS01-C1_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|IGNIS:module{OuronetPolicyV1} IGNIS)
-                (ref-P|LIQUID:module{OuronetPolicyV1} LIQUID)
-                (ref-P|ORBR:module{OuronetPolicyV1} OUROBOROS)
-                (ref-P|SWPT:module{OuronetPolicyV1} SWPT)
-                (ref-P|SWP:module{OuronetPolicyV1} SWP)
-                (ref-P|SWPI:module{OuronetPolicyV1} SWPI)
-                (ref-P|SWPL:module{OuronetPolicyV1} SWPL)
-                (ref-P|SWPLC:module{OuronetPolicyV1} SWPLC)
-                (ref-P|SWPU:module{OuronetPolicyV1} SWPU)
-                (ref-P|TS01-A:module{TalosStageOne_AdminV1} TS01-A)
-                (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
-            )
-            (ref-P|IGNIS::A_P|AddIMP mg)
-            (ref-P|LIQUID::A_P|AddIMP mg)
-            (ref-P|ORBR::A_P|AddIMP mg)
-            ;;
-            (ref-P|SWPT::A_P|AddIMP mg)
-            (ref-P|SWP::A_P|AddIMP mg)
-            (ref-P|SWPI::A_P|AddIMP mg)
-            (ref-P|SWPL::A_P|AddIMP mg)
-            (ref-P|SWPLC::A_P|AddIMP mg)
-            (ref-P|SWPU::A_P|AddIMP mg)
-            (ref-P|TS01-A::A_P|AddIMP mg)
-        )
-    )
     ;;
     ;;
     ;;  [Swapper_Client]

@@ -264,7 +264,7 @@
         (AncientKosonID:string         (ref-AOZ::UR_PrimalTrueFungible 3))
     )
     ;;1]Define IMC for Dispenser
-    (ref-P|DSP::A_P|Define)
+    (ref-P|DSP::P|A_Define)
     ;;2]Reconfigure DALOS Governor, to be accesable from Dispenser, in order to use Gassless Patron for dispensing
     (ref-TS01-C1::C_DALOS|RotateGovernor patron dalos-sc
         (ref-U|G::UEV_GuardOfAny

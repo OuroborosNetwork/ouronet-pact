@@ -12,6 +12,7 @@
 ;;
 (module MTX-AQP GOV
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -79,6 +80,50 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|MTX-AQP_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|MTX-AQP_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|FVT:module{OuronetPolicyV1} AQP-FVT)
+                (mg:guard (create-capability-guard (P|MTX-AQP|CALLER)))
+            )
+            ;; MTX-AQP calls AQP-FVT's XE_ building blocks (P|UEV_IMC) — register as an allowed IMC caller.
+            ;; (The re-score sweep's ANK/POOL calls live in AQP-FVT::CC_SweepRevokeAnchor, which is already in
+            ;;  ANK's + POOL's IMP — so MTX-AQP itself does not call ANK/POOL directly.)
+            (ref-P|FVT::P|A_AddIMP mg)
+        )
+    )
 
     ;;<=========================================================================>
     ;;{3}  CST
@@ -108,15 +153,15 @@
     ;;{C3}  Composed
     (defcap MTX-AQP|C>INJECT (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "Protects the MTX|n|C_Inject multistep flow. Composes P|SECURE-CALLER so P|MTX-AQP|CALLER is ACTIVE \
-            \ while the steps call AQP-FVT's XE_ building blocks (FVT's UEV_IMC checks MTX-AQP's registered caller \
-            \ guard — see A_P|Define). Acquired fresh per step (steps are separate txs; the pact-id gates continuation)."
+            \ while the steps call AQP-FVT's XE_ building blocks (FVT's P|UEV_IMC checks MTX-AQP's registered caller \
+            \ guard — see P|A_Define). Acquired fresh per step (steps are separate txs; the pact-id gates continuation)."
         @event
         (compose-capability (P|SECURE-CALLER))
     )
     (defcap MTX-AQP|C>SWEEP-REVOKE (patron:string anchor-id:string)
         @doc "Protects the MTX|n|C_SweepRevokeAnchor multistep flow. Composes P|SECURE-CALLER so P|MTX-AQP|CALLER is \
             \ ACTIVE while the steps call AQP-FVT's XE_ bracket (freeze/revoke/unfreeze) + recompute-chunk building \
-            \ blocks (FVT's UEV_IMC checks MTX-AQP's registered caller guard — see A_P|Define). Acquired fresh per \
+            \ blocks (FVT's P|UEV_IMC checks MTX-AQP's registered caller guard — see P|A_Define). Acquired fresh per \
             \ step (steps are separate txs; the pact-id gates continuation). The anchor owner (= anchored-asset \
             \ owner) is enforced downstream inside ANK|XE>SWEEP-REVOKE."
         @event
@@ -148,14 +193,6 @@
         )
     )
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     (defun XI_SweepRecomputeWindow:integer
@@ -202,47 +239,11 @@
                 score-ids))
     )
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|MTX-AQP_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|MTX-AQP_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|FVT:module{OuronetPolicyV1} AQP-FVT)
-                (mg:guard (create-capability-guard (P|MTX-AQP|CALLER)))
-            )
-            ;; MTX-AQP calls AQP-FVT's XE_ building blocks (UEV_IMC) — register as an allowed IMC caller.
-            ;; (The re-score sweep's ANK/POOL calls live in AQP-FVT::CC_SweepRevokeAnchor, which is already in
-            ;;  ANK's + POOL's IMP — so MTX-AQP itself does not call ANK/POOL directly.)
-            (ref-P|FVT::A_P|AddIMP mg)
-        )
-    )
     (defun C_2|Inject (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "2-step enforced-fresh inject (spike fallback for AQP-FVT::CC_Inject; handles up to 2×N_FIX stale \
             \ stakers). Acquires MTX-AQP|C>INJECT, then runs the C_MTX|2|Inject defpact. Advance with \
             \ (continue-pact 1). Vault/treasury only (the defpact's inject is class≠0)."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (MTX-AQP|C>INJECT patron fvt-id reward-dptf-id amount)
             (C_MTX|2|Inject patron fvt-id reward-dptf-id amount)
         )
@@ -252,7 +253,7 @@
             \ AQP-FVT::CC_SweepRevokeAnchor when the recompute set exceeds one tx). Acquires MTX-AQP|C>SWEEP-REVOKE, \
             \ then runs the C_MTX|2|SweepRevokeAnchor defpact. Step 0 brackets (freeze + swept-revoke) + recomputes \
             \ the first window; advance with (continue-pact 1). Owner enforced downstream in ANK|XE>SWEEP-REVOKE."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (MTX-AQP|C>SWEEP-REVOKE patron anchor-id)
             (C_MTX|2|SweepRevokeAnchor patron anchor-id)
         )

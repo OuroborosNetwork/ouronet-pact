@@ -230,6 +230,7 @@
 ;;
 (module DPTF GOV
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -354,6 +355,49 @@
     )
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|DPTF_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|DPTF_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
+                (ref-P|BRD:module{OuronetPolicyV1} BRD)
+                (mg:guard (create-capability-guard (P|DPTF|CALLER)))
+            )
+            (ref-P|DALOS::P|A_AddIMP mg)
+            (ref-P|BRD::P|A_AddIMP mg)
+        )
     )
 
     ;;<=========================================================================>
@@ -1487,14 +1531,6 @@
         )
     )
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     (defun UEV_ParentOwnership (dptf:string)
         @doc "Enforces: \
             \ <dptf> Ownership, if <dptf> is pure \
@@ -1767,7 +1803,7 @@
     (defun XE_IssueLP:object{IgnisCollectorV1.OutputCumulator}
         (name:string ticker:string)
         @doc "Issues a DPTF Token as a Liquidity Pool Token. A LP DPTF follows specific rules in naming."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (SECURE)
             (let
                 (
@@ -1795,7 +1831,7 @@
             ;;
             iz-special:[bool]
         )
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPTF|C>ISSUE account name ticker decimals can-change-owner can-upgrade can-add-special-role can-freeze can-wipe can-pause)
             (let
                 (
@@ -1917,7 +1953,7 @@
         )
     )
     (defun XB_DeployAccountWNE (account:string id:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (exist-account:bool (UR_IzAccount id account))
@@ -1953,7 +1989,7 @@
         )
     )
     (defun XB_UpdateSupply (id:string amount:decimal direction:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (UEV_Amount id amount)
         (if (= direction true)
             (with-read DPTF|PropertiesTable id
@@ -2019,7 +2055,7 @@
         )
     )
     (defun XE_UpdateFeeVolume (id:string amount:decimal primary:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (UEV_Amount id amount)
         (if primary
             (with-read DPTF|PropertiesTable id
@@ -2038,7 +2074,7 @@
     )
     ;;
     (defun XE_UpdateRewardToken (atspair:string id:string direction:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
@@ -2062,7 +2098,7 @@
         )
     )
     (defun XE_UpdateRewardBearingToken (atspair:string id:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
@@ -2082,19 +2118,19 @@
     )
     ;;
     (defun XE_UpdateVesting (dptf:string dpof:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (update DPTF|PropertiesTable dptf
             {"vesting-link" : dpof}
         )
     )
     (defun XE_UpdateSleeping (dptf:string dpof:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (update DPTF|PropertiesTable dptf
             {"sleeping-link" : dpof}
         )
     )
     (defun XE_UpdateHibernation (dptf:string dpof:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (update DPTF|PropertiesTable dptf
             {"hibernation-link" : dpof}
         )
@@ -2119,7 +2155,7 @@
     )
     (defun XE_UpdateSpecialTrueFungible:object{IgnisCollectorV1.OutputCumulator}
         (main-dptf:string secondary-dptf:string fr-tag:integer)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPTF|C>UPDATE-SPECIAL main-dptf secondary-dptf fr-tag)
             (let
                 (
@@ -2262,7 +2298,7 @@
             \ Ouronet Account <account> must exist \
             \ Assumes DPTF Account with key <(UC_IdAccount id account)> exists\
             \ Only Performs Debitation, does not update supply"
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPTF|C>DEBIT account id amount dispo-data wipe-mode)
             (let
                 (
@@ -2277,7 +2313,7 @@
             \ Ouronet Account <account> must exist \
             \ DPTF Account with key <(UC_IdAccount id account)> may exist or not\
             \ Only Performs Creditation, does not update supply"
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPTF|C>CREDIT account id amount)
             (XB_DeployAccountWNE account id)
             (let
@@ -2305,44 +2341,9 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|DPTF_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|DPTF_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (ref-P|BRD:module{OuronetPolicyV1} BRD)
-                (mg:guard (create-capability-guard (P|DPTF|CALLER)))
-            )
-            (ref-P|DALOS::A_P|AddIMP mg)
-            (ref-P|BRD::A_P|AddIMP mg)
-        )
-    )
     ;;
     (defun A_UpdateTreasury (type:integer tdp:decimal tds:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -2353,7 +2354,7 @@
         )
     )
     (defun A_WipeTreasuryDebt ()
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -2368,7 +2369,7 @@
         )
     )
     (defun A_WipeTreasuryDebtPartial (debt-to-be-wiped:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -2429,7 +2430,7 @@
     )
     (defun C_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator}
         (entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}])
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -2442,7 +2443,7 @@
         )
     )
     (defun C_UpgradeBranding (patron:string entity-id:string months:integer)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -2460,7 +2461,7 @@
     ;;
     (defun C_Issue:object{IgnisCollectorV1.OutputCumulator}
         (patron:string account:string name:[string] ticker:[string] decimals:[integer] can-upgrade:[bool] can-change-owner:[bool] can-add-special-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool])
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -2480,7 +2481,7 @@
     )
     (defun C_RotateOwnership:object{IgnisCollectorV1.OutputCumulator}
         (id:string new-owner:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -2493,7 +2494,7 @@
     )
     (defun C_Control:object{IgnisCollectorV1.OutputCumulator}
         (id:string cu:bool cco:bool casr:bool cf:bool cw:bool cp:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -2506,7 +2507,7 @@
     )
     (defun C_TogglePause:object{IgnisCollectorV1.OutputCumulator}
         (id:string toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -2519,7 +2520,7 @@
     )
     (defun C_ToggleReservation:object{IgnisCollectorV1.OutputCumulator}
         (id:string toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -2533,7 +2534,7 @@
     ;;
     (defun C_ToggleFee:object{IgnisCollectorV1.OutputCumulator}
         (id:string toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -2546,7 +2547,7 @@
     )
     (defun C_SetMinMove:object{IgnisCollectorV1.OutputCumulator}
         (id:string min-move-value:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -2559,7 +2560,7 @@
     )
     (defun C_SetFee:object{IgnisCollectorV1.OutputCumulator}
         (id:string fee:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -2572,7 +2573,7 @@
     )
     (defun C_SetFeeTarget:object{IgnisCollectorV1.OutputCumulator}
         (id:string target:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -2585,7 +2586,7 @@
     )
     (defun C_ToggleFeeLock:object{IgnisCollectorV1.OutputCumulator}
         (patron:string id:string toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPTF|C>TOGGLE_FEE-LOCK id toggle)
             (let
                 (
@@ -2608,7 +2609,7 @@
     )
     ;;
     (defun C_DeployAccount (id:string account:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -2637,7 +2638,7 @@
     (defun C_ToggleFreezeAccount:object{IgnisCollectorV1.OutputCumulator}
         (id:string account:string toggle:bool)
         @doc "Toggle Verum 1"
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPTF|C>FREEZE id account toggle)
             (let
                 (
@@ -2660,7 +2661,7 @@
     (defun C_ToggleBurnRole:object{IgnisCollectorV1.OutputCumulator}
         (id:string account:string toggle:bool)
         @doc "Toggle Verum 2"
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPTF|C>TOGGLE-BURN-ROLE id account toggle)
             (let
                 (
@@ -2683,7 +2684,7 @@
     (defun C_ToggleMintRole:object{IgnisCollectorV1.OutputCumulator}
         (id:string account:string toggle:bool)
         @doc "Toggle Verum 3"
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPTF|C>TOGGLE-MINT-ROLE id account toggle)
             (let
                 (
@@ -2707,7 +2708,7 @@
     (defun C_ToggleFeeExemptionRole:object{IgnisCollectorV1.OutputCumulator}
         (id:string account:string toggle:bool)
         @doc "Toggle Verum 4"
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPTF|C>TOGGLE-FEE-EXEMPTION-ROLE id account toggle)
             (let
                 (
@@ -2731,7 +2732,7 @@
     (defun C_ToggleTransferRole:object{IgnisCollectorV1.OutputCumulator}
         (id:string account:string toggle:bool)
         @doc "Toggle Verum 5"
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPTF|C>TOGGLE_TRANSFER-ROLE id account toggle)
             (let
                 (
@@ -2754,7 +2755,7 @@
     ;;
     (defun C_Burn:object{IgnisCollectorV1.OutputCumulator}
         (id:string account:string amount:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-U|DPTF:module{UtilityDptfV1} U|DPTF)
@@ -2770,7 +2771,7 @@
     )
     (defun C_Mint:object{IgnisCollectorV1.OutputCumulator}
         (id:string account:string amount:decimal origin:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -2793,7 +2794,7 @@
     ;;
     (defun C_WipeSlim:object{IgnisCollectorV1.OutputCumulator}
         (id:string account-to-be-wiped:string amount-to-be-wiped:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-U|DPTF:module{UtilityDptfV1} U|DPTF)
@@ -2808,7 +2809,7 @@
     )
     (defun C_Wipe:object{IgnisCollectorV1.OutputCumulator}
         (id:string account-to-be-wiped:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-U|DPTF:module{UtilityDptfV1} U|DPTF)

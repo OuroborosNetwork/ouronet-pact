@@ -123,6 +123,42 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
+    (defun P|UEV_IMC ()
+        (let ((ref-U|G:module{OuronetGuardsV1} U|G))
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|CODEX_ADMIN)
+            (write P|T policy-name {"policy" : policy-guard})
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|CODEX_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
+                (mg:guard (create-capability-guard (P|CODEX|CALLER)))
+            )
+            (ref-P|DALOS::P|A_AddIMP mg)
+        )
+    )
 
     ;;<=========================================================================>
     ;;{3}  CST
@@ -698,11 +734,6 @@
         )
     )
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let ((ref-U|G:module{OuronetGuardsV1} U|G))
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     (defun XI_InsertIdentity:string
@@ -766,37 +797,6 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|CODEX_ADMIN)
-            (write P|T policy-name {"policy" : policy-guard})
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|CODEX_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (mg:guard (create-capability-guard (P|CODEX|CALLER)))
-            )
-            (ref-P|DALOS::A_P|AddIMP mg)
-        )
-    )
     (defun A_RegisterCodexIdentity:string
         ( codex-id:string
           public-standard:string
@@ -804,7 +804,7 @@
           codex-guard:guard
           registered-by:string )
         @doc "ADMIN-only insert into CODEX|T|Identities; standard/smart halves derived from codex-id."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (CODEX|A>REGISTER-IDENTITY codex-id public-standard public-smart codex-guard registered-by)
             (XI_InsertIdentity
                 codex-id public-standard public-smart codex-guard registered-by
@@ -814,7 +814,7 @@
     )
     (defun C_RotateCodexGuard:string (codex-id:string new-codex-guard:guard)
         @doc "Rotate codex-guard; validation in CODEX|C>ROTATE-GUARD; XI writes only."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (CODEX|C>ROTATE-GUARD codex-id new-codex-guard)
             (XI_UpdateCodexGuard codex-id new-codex-guard)
         )
@@ -823,7 +823,7 @@
     ;;
     (defun C_RecordArweaveUpload:string (codex-id:string arweave-tx-id:string uploaded-bytes:integer)
         @doc "Append one row to CODEX|T|ArweaveTracker; validation in CODEX|C>RECORD-ARWEAVE."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (CODEX|C>RECORD-ARWEAVE codex-id arweave-tx-id uploaded-bytes)
             (XI_InsertArweaveTracker codex-id arweave-tx-id uploaded-bytes)
         )
@@ -832,7 +832,7 @@
     ;;
     (defun C_RegisterStoicTag:string (tag-name:string account-address:string)
         @doc "Register StoicTag; validation in CODEX|C>REGISTER-STOICTAG; XI writes only (1 STOA/glyph fee in TS01-C4)."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (CODEX|C>REGISTER-STOICTAG tag-name account-address)
             (XI_UpsertStoicTag tag-name account-address)
         )
@@ -841,7 +841,7 @@
     ;;
     (defun C_ReleaseStoicTag:string (tag-name:string)
         @doc "Release StoicTag (iz-active false); validation in CODEX|C>RELEASE-STOICTAG; XI updates only."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (CODEX|C>RELEASE-STOICTAG tag-name)
             (XI_DeactivateStoicTag tag-name)
         )

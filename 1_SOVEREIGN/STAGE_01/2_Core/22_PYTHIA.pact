@@ -218,6 +218,45 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|PYTHIA_ADMIN)
+            (write P|T policy-name {"policy" : policy-guard})
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|PYTHIA_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
+                (mg:guard (create-capability-guard (P|PYTHIA|CALLER)))
+            )
+            (ref-P|DALOS::P|A_AddIMP mg)
+        )
+    )
 
     ;;<=========================================================================>
     ;;{3}  CST
@@ -1148,14 +1187,6 @@
         )
     )
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     ;;
     (defun UEV_FlushEntries:bool (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}])
         @doc "Validate flush batch: fold over entries; pure bool (no enforce)."
@@ -1492,41 +1523,10 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|PYTHIA_ADMIN)
-            (write P|T policy-name {"policy" : policy-guard})
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|PYTHIA_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (mg:guard (create-capability-guard (P|PYTHIA|CALLER)))
-            )
-            (ref-P|DALOS::A_P|AddIMP mg)
-        )
-    )
     ;;
     (defun A_LinkDualApiKey:string (standard-apollo:string smart-apollo:string)
         @doc "Cronoton create-or-activate (no fee): create active dual with auto PYTHIA-<hash12> lane, or flip inactive C_Link row to true."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (dlk:string (UC_DualLinkKey standard-apollo smart-apollo))
@@ -1561,7 +1561,7 @@
     )
     (defun A_RevokeDualLink:string (dual-link-key:string)
         @doc "Cronoton revokes active dual link."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (PYTHIA|A>REVOKE-DUAL dual-link-key)
             (WU_DualLink|IzActive dual-link-key false)
             (XI_RecordRevocationAtHeight)
@@ -1569,7 +1569,7 @@
         (format "Pythia dual link {} revoked by Cronoton" [dual-link-key])
     )
     (defun A_UpdateDeployPrice:string (new-price:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (GOV|PYTHIA_ADMIN)
             (with-capability (SECURE)
                 (WW_Config new-price (UR_RenamePrice))
@@ -1578,7 +1578,7 @@
         (format "Pythia deploy price set to {}" [new-price])
     )
     (defun A_UpdateRenamePrice:string (new-price:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (GOV|PYTHIA_ADMIN)
             (with-capability (SECURE)
                 (WW_Config (UR_DeployPrice) new-price)
@@ -1588,7 +1588,7 @@
     )
     (defun A_Flush:string (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}])
         @doc "Cronoton batch flush: each entry is a drain DELTA — ADD onto day row + grand total; iz-complete seals only."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (PYTHIA|A>FLUSH entries)
             (XI_FlushPythLedger entries)
         )
@@ -1602,7 +1602,7 @@
             public:string
         )
         @doc "Owner deploys inert Apollo half (₱. or Π.). Fee in TS01-C4."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (kind:string (if (UC_IsStandardApollo apollo-account) "Standard" "Smart"))
@@ -1622,7 +1622,7 @@
             consumer-lane:string
         )
         @doc "Both half-owners link deployed halves into inactive dual row with lane (no fee)."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (dlk:string (UC_DualLinkKey standard-apollo smart-apollo))
@@ -1640,7 +1640,7 @@
     )
     (defun C_RevokeDualLink:string (dual-link-key:string)
         @doc "Both half-owners revoke active dual link. Fee in TS01-C4 (IGNIS)."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (PYTHIA|C>REVOKE-DUAL dual-link-key)
             (WU_DualLink|IzActive dual-link-key false)
             (XI_RecordRevocationAtHeight)
@@ -1653,7 +1653,7 @@
             new-name:string
         )
         @doc "Both half-owners rename consumer-lane on dual link row. Fee in TS01-C4."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (PYTHIA|C>UPDATE-DUAL-LANE dual-link-key new-name)
             (WU_DualLink|ConsumerLane dual-link-key new-name)
         )

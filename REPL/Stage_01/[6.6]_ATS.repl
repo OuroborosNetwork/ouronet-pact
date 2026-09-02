@@ -3050,9 +3050,9 @@
 (namespace "ouronet-ns")
 ;;==== A_KickStart Proof · 01 · env-sigs (caps) ==== ===============================================
 (print "--- [A_KickStart Proof · 01 · env-sigs (caps)] ---")
-;; A_ATS|RemoveSecondary / A_ATS|KickStart regression proof — the A_P|Define fix (01_TS01-A.pact):
+;; A_ATS|RemoveSecondary / A_ATS|KickStart regression proof — the P|A_Define fix (01_TS01-A.pact):
 ;; ATS and ATSU were never registered as permitted callers there (ATS was even bound - ref-P|ATS -
-;; but never used), so this admin path used to fail unconditionally inside ATSU's own UEV_IMC with
+;; but never used), so this admin path used to fail unconditionally inside ATSU's own P|UEV_IMC with
 ;; "None of the guards passed", regardless of who signed. "DemiourgosSithMasters" (keys-any over
 ;; PK_AncientHodler / PK_Florean) is the keyset behind both the Talos-level P|ADMINISTRATIVE-SUMMONER
 ;; gate and ATSU's own GOV|ATSU_ADMIN gate — PK_AncientHodler alone satisfies both. Also exercises
@@ -3158,7 +3158,7 @@
 (namespace "ouronet-ns")
 ;;==== A_RemoveSecondary Proof 2|2 · 01 · env-sigs (caps) ==== ====================================
 (print "--- [A_RemoveSecondary Proof 2|2 · 01 · env-sigs (caps)] ---")
-;; Same admin-gate regression as A_KickStart above (A_P|Define fix).
+;; Same admin-gate regression as A_KickStart above (P|A_Define fix).
 (env-sigs
     [
         { "key": "PK_AOZ", "caps": [] }

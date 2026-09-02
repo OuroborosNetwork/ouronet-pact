@@ -98,6 +98,7 @@
 ;;
 (module VST GOV
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -157,6 +158,63 @@
     )
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|VESTING_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|VESTING_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
+                (ref-P|BRD:module{OuronetPolicyV1} BRD)
+                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
+                (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
+                (ref-P|ATS:module{OuronetPolicyV1} ATS)
+                (ref-P|TFT:module{OuronetPolicyV1} TFT)
+                (ref-P|ATSU:module{OuronetPolicyV1} ATSU)
+                (mg:guard (create-capability-guard (P|VST|CALLER)))
+            )
+            (ref-P|ATS::P|A_Add
+                "VST|RemoteAtsGov"
+                (create-capability-guard (P|VST|REMOTE-GOV))
+            )
+            (ref-P|DALOS::P|A_AddIMP mg)
+            (ref-P|BRD::P|A_AddIMP mg)
+            (ref-P|DPTF::P|A_AddIMP mg)
+            (ref-P|DPOF::P|A_AddIMP mg)
+            (ref-P|ATS::P|A_AddIMP mg)
+            (ref-P|TFT::P|A_AddIMP mg)
+            (ref-P|ATSU::P|A_AddIMP mg)
+        )
     )
 
     ;;<=========================================================================>
@@ -1214,14 +1272,6 @@
         )
     )
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     (defun UEV_NoncesForMerging (nonces:[integer])
         (let
             (
@@ -1515,93 +1565,44 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|VESTING_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|VESTING_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (ref-P|BRD:module{OuronetPolicyV1} BRD)
-                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
-                (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
-                (ref-P|ATS:module{OuronetPolicyV1} ATS)
-                (ref-P|TFT:module{OuronetPolicyV1} TFT)
-                (ref-P|ATSU:module{OuronetPolicyV1} ATSU)
-                (mg:guard (create-capability-guard (P|VST|CALLER)))
-            )
-            (ref-P|ATS::A_P|Add
-                "VST|RemoteAtsGov"
-                (create-capability-guard (P|VST|REMOTE-GOV))
-            )
-            (ref-P|DALOS::A_P|AddIMP mg)
-            (ref-P|BRD::A_P|AddIMP mg)
-            (ref-P|DPTF::A_P|AddIMP mg)
-            (ref-P|DPOF::A_P|AddIMP mg)
-            (ref-P|ATS::A_P|AddIMP mg)
-            (ref-P|TFT::A_P|AddIMP mg)
-            (ref-P|ATSU::A_P|AddIMP mg)
-        )
-    )
     (defun C_CreateFrozenLink:object{IgnisCollectorV1.OutputCumulator}
         (patron:string dptf:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (VST|C>FROZEN-LINK dptf)
             (XI_CreateSpecialTrueFungibleLink patron dptf 1)
         )
     )
     (defun C_CreateReservationLink:object{IgnisCollectorV1.OutputCumulator}
         (patron:string dptf:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (VST|C>RESERVATION-LINK dptf)
             (XI_CreateSpecialTrueFungibleLink patron dptf 2)
         )
     )
     (defun C_CreateVestingLink:object{IgnisCollectorV1.OutputCumulator}
         (patron:string dptf:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (VST|C>VESTING-LINK dptf)
             (XI_CreateSpecialOrtoFungibleLink patron dptf 1)
         )
     )
     (defun C_CreateSleepingLink:object{IgnisCollectorV1.OutputCumulator}
         (patron:string dptf:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (VST|C>SLEEPING-LINK dptf)
             (XI_CreateSpecialOrtoFungibleLink patron dptf 2)
         )
     )
     (defun C_CreateHibernatingLink:object{IgnisCollectorV1.OutputCumulator}
         (patron:string dptf:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (VST|C>SLEEPING-LINK dptf)
             (XI_CreateSpecialOrtoFungibleLink patron dptf 3)
         )
     )
     (defun C_Freeze:object{IgnisCollectorV1.OutputCumulator}
         (freezer:string freeze-output:string dptf:string amount:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (VST|C>FREEZE freezer freeze-output dptf amount)
             (let
                 (
@@ -1629,14 +1630,14 @@
     )
     (defun C_RepurposeFrozen:object{IgnisCollectorV1.OutputCumulator}
         (dptf-to-repurpose:string repurpose-from:string repurpose-to:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (VST|C>REPURPOSE-FROZEN-TF dptf-to-repurpose repurpose-from repurpose-to)
             (XI_RepurposeTrueFungible dptf-to-repurpose repurpose-from repurpose-to)
         )
     )
     (defun C_ToggleTransferRoleFrozenDPTF:object{IgnisCollectorV1.OutputCumulator}
         (s-dptf:string target:string toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (VST|C>TOGGLE-FROZEN-TF-TR s-dptf target)
             (let
                 (
@@ -1648,7 +1649,7 @@
     )
     (defun C_Reserve:object{IgnisCollectorV1.OutputCumulator}
         (reserver:string dptf:string amount:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (VST|C>RESERVE reserver dptf amount)
             (let
                 (
@@ -1676,7 +1677,7 @@
     )
     (defun C_Unreserve:object{IgnisCollectorV1.OutputCumulator}
         (unreserver:string r-dptf:string amount:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (VST|C>UNRESERVE unreserver r-dptf amount)
             (let
                 (
@@ -1701,14 +1702,14 @@
     )
     (defun C_RepurposeReserved:object{IgnisCollectorV1.OutputCumulator}
         (dptf-to-repurpose:string repurpose-from:string repurpose-to:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (VST|C>REPURPOSE-RESERVED-TF dptf-to-repurpose repurpose-from repurpose-to)
             (XI_RepurposeTrueFungible dptf-to-repurpose repurpose-from repurpose-to)
         )
     )
     (defun C_ToggleTransferRoleReservedDPTF:object{IgnisCollectorV1.OutputCumulator}
         (s-dptf:string target:string toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (VST|C>TOGGLE-RESERVED-TF-TR s-dptf target)
             (let
                 (
@@ -1720,7 +1721,7 @@
     )
     (defun C_Vest:object{IgnisCollectorV1.OutputCumulator}
         (vester:string target-account:string dptf:string amount:decimal offset:integer duration:integer milestones:integer)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (VST|C>VEST vester target-account dptf amount offset duration milestones)
             (let
                 (
@@ -1754,7 +1755,7 @@
     )
     (defun C_Unvest:object{IgnisCollectorV1.OutputCumulator}
         (unvester:string dpof:string nonce:integer)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (culled-data:list (URC_CullMetaDataAmountWithObject dpof nonce))
@@ -1819,14 +1820,14 @@
     )
     (defun C_RepurposeVested:object{IgnisCollectorV1.OutputCumulator}
         (dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (VST|C>REPURPOSE-VESTING-MF dpof-to-repurpose nonce repurpose-from repurpose-to)
             (XI_RepurposeOrtoFungible dpof-to-repurpose nonce repurpose-from repurpose-to)
         )
     )
     (defun C_Sleep:object{IgnisCollectorV1.OutputCumulator}
         (sleeper:string target-account:string dptf:string amount:decimal duration:integer)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (VST|C>SLEEP sleeper target-account dptf amount duration)
             (let
                 (
@@ -1860,7 +1861,7 @@
     )
     (defun C_Unsleep:object{IgnisCollectorV1.OutputCumulator}
         (unsleeper:string dpof:string nonce:integer)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
@@ -1892,28 +1893,28 @@
     )
     (defun C_Merge:object{IgnisCollectorV1.OutputCumulator}
         (merger:string dpof:string nonces:[integer])
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (VST|C>MERGE merger dpof nonces)
             (XI_MergeNonces dpof merger merger nonces 2)
         )
     )
     (defun C_RepurposeMerge:object{IgnisCollectorV1.OutputCumulator}
         (dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (VST|C>REPURPOSE-MERGE dpof-to-repurpose nonces repurpose-from repurpose-to)
             (XI_MergeNonces dpof-to-repurpose repurpose-from repurpose-to nonces 2)
         )
     )
     (defun C_RepurposeSleeping:object{IgnisCollectorV1.OutputCumulator}
         (dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (VST|C>REPURPOSE-SLEEPING-MF dpof-to-repurpose nonce repurpose-from repurpose-to)
             (XI_RepurposeOrtoFungible dpof-to-repurpose nonce repurpose-from repurpose-to)
         )
     )
     (defun C_ToggleTransferRoleSleepingDPOF:object{IgnisCollectorV1.OutputCumulator}
         (s-dpof:string target:string toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (VST|C>TOGGLE-SLEEPING-OF-TR s-dpof target)
             (let
                 (
@@ -1925,7 +1926,7 @@
     )
     (defun C_Hibernate:object{IgnisCollectorV1.OutputCumulator}
         (hibernator:string target-account:string dptf:string amount:decimal dayz:integer)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (VST|C>HIBERNATE hibernator target-account dptf amount dayz)
             (let
                 (
@@ -1967,7 +1968,7 @@
         @doc "Hibernated Tokens have a 80% peak awakening fee, \
             \ that goes down to zero as time elapses towards its release date.\
             \ This fee is discared (burning it), with no way of collecting it."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (VST|C>AWAKE awaker dpof nonce)
             (let
                 (
@@ -2024,28 +2025,28 @@
     )
     (defun C_Slumber:object{IgnisCollectorV1.OutputCumulator}
         (merger:string dpof:string nonces:[integer])
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (VST|C>SLUMBER merger dpof nonces)
             (XI_MergeNonces dpof merger merger nonces 3)
         )
     )
     (defun C_RepurposeSlumber:object{IgnisCollectorV1.OutputCumulator}
         (dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (VST|C>REPURPOSE-SLUMBER dpof-to-repurpose nonces repurpose-from repurpose-to)
             (XI_MergeNonces dpof-to-repurpose repurpose-from repurpose-to nonces 3)
         )
     )
     (defun C_RepurposeHibernating:object{IgnisCollectorV1.OutputCumulator}
         (dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (VST|C>REPURPOSE-HIBERNATING-MF dpof-to-repurpose nonce repurpose-from repurpose-to)
             (XI_RepurposeOrtoFungible dpof-to-repurpose nonce repurpose-from repurpose-to)
         )
     )
     (defun C_ToggleTransferRoleHibernatingDPOF:object{IgnisCollectorV1.OutputCumulator}
         (s-dpof:string target:string toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (VST|C>TOGGLE-HIBERNATING-OF-TR s-dpof target)
             (let
                 (
@@ -2059,7 +2060,7 @@
         (constricter:string ats:string rt:string amount:decimal dayz:integer)
             @doc "Constricts the <rt> Token, autostaking it in the ATS-Pair <ats>, generating Hibernated Token \
             \ Only works when <ats> has <hibernate> on"
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (ATSU|C>CONSTRICT ats rt)
             (let
                 (
@@ -2102,7 +2103,7 @@
         @doc "Brumates the <rt> through 2 ATS-Pairs, \
             \ outputting the <c-rbt2> as Hibernated Token to the <brumator> \
             \ <ats1> must have <hibernation> off, and <ats2> may on for brumation to work"
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (ATSU|C>BRUMATE ats1 ats2 rt)
             (let
                 (

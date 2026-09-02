@@ -73,7 +73,7 @@
             [(ref-TS02-C2::C_DPNF|MakeFragments owner owner id 1 1)]))
         (print (format "ANHD fragment (-1) balance after Make = {}"
             [(ref-DPDC::UR_AccountNonceSupply owner id false -1)]))
-        ;; #24M negative, corrected methodology: XE_CreditNFT-FragmentNonce is UEV_IMC-gated -- ANY direct
+        ;; #24M negative, corrected methodology: XE_CreditNFT-FragmentNonce is P|UEV_IMC-gated -- ANY direct
         ;; top-level call (legal amount or not) is rejected by "None of the guards passed" before the new
         ;; amount check ever runs (confirmed live: a direct call with the LEGAL amount 2000 fails
         ;; identically). C_MakeFragments is the only registered caller, and it can only ever produce

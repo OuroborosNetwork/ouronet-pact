@@ -1,5 +1,6 @@
 (module STOAICO GOV
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -52,6 +53,51 @@
     )
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|STOAICO_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|STOAICO_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|DPAD:module{OuronetPolicyV1} DEMIPAD)
+                (mg:guard (create-capability-guard (P|STOAICO|CALLER)))
+            )
+            (ref-P|DPAD::P|A_Add
+                "STOAICO|RemoteGov"
+                (create-capability-guard (P|PAD-STOAICO|REMOTE-GOV))
+            )
+            (ref-P|DPAD::P|A_AddIMP mg)
+        )
     )
 
     ;;<=========================================================================>
@@ -395,14 +441,6 @@
         )
     )
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     (defun XI_CollectFor:string (patron:string account:string)
@@ -673,43 +711,6 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|STOAICO_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|STOAICO_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|DPAD:module{OuronetPolicyV1} DEMIPAD)
-                (mg:guard (create-capability-guard (P|STOAICO|CALLER)))
-            )
-            (ref-P|DPAD::A_P|Add
-                "STOAICO|RemoteGov"
-                (create-capability-guard (P|PAD-STOAICO|REMOTE-GOV))
-            )
-            (ref-P|DPAD::A_P|AddIMP mg)
-        )
-    )
     ;;
     (defun A_InitialiseDistributionVault (account:string)
         @doc "Initialises the Distribuition Vault by creating and filling all necesary prerequisites"

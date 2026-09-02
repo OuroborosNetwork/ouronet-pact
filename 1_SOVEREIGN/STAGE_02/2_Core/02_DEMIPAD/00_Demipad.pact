@@ -243,6 +243,55 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|DEMIPAD_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|DEMIPAD_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
+                (ref-P|TFT:module{OuronetPolicyV1} TFT)
+                (ref-P|LIQUID:module{OuronetPolicyV1} LIQUID)
+                (ref-P|DPDC:module{OuronetPolicyV1} DPDC)
+                (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
+                (mg:guard (create-capability-guard (P|DEMIPAD|CALLER)))
+            )
+            (ref-P|DALOS::P|A_AddIMP mg)
+            (ref-P|TFT::P|A_AddIMP mg)
+            (ref-P|LIQUID::P|A_AddIMP mg)
+            (ref-P|DPDC::P|A_AddIMP mg)
+            (ref-P|DPDC-T::P|A_AddIMP mg)
+        )
+    )
 
     ;;<=========================================================================>
     ;;{3}  CST
@@ -929,14 +978,6 @@
         )
     )
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     (defun CAP_Acquire
         (buyer:string asset-id:string buy-amount-in-dollarz:decimal type:integer)
         (let
@@ -1222,50 +1263,9 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|DEMIPAD_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|DEMIPAD_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (ref-P|TFT:module{OuronetPolicyV1} TFT)
-                (ref-P|LIQUID:module{OuronetPolicyV1} LIQUID)
-                (ref-P|DPDC:module{OuronetPolicyV1} DPDC)
-                (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
-                (mg:guard (create-capability-guard (P|DEMIPAD|CALLER)))
-            )
-            (ref-P|DALOS::A_P|AddIMP mg)
-            (ref-P|TFT::A_P|AddIMP mg)
-            (ref-P|LIQUID::A_P|AddIMP mg)
-            (ref-P|DPDC::A_P|AddIMP mg)
-            (ref-P|DPDC-T::A_P|AddIMP mg)
-        )
-    )
     ;;
     (defun A_RegisterAssetToLaunchpad (patron:string asset-id:string fungibility:[bool])
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DEMIPAD|C>REGISTER asset-id fungibility)
             (XI_RegisterAsset asset-id fungibility)
             (format "{} {} registered succesfuly to Demiourgos Launchpad!" [(UC_Type asset-id fungibility) asset-id])
@@ -1273,21 +1273,21 @@
     )
     ;;
     (defun A_ToggleOpenForBusiness (asset-id:string toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DEMIPAD|C>TOGGLE-SALE asset-id toggle)
             (XI_U|OpenForBusiness asset-id toggle)
             (format "Asset {} sale succesfully toggled to {}" [asset-id toggle])
         )
     )
     (defun A_DefinePrice (asset-id:string price:object)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DEMIPAD|C>DEFINE-PRICE asset-id price)
             (XI_U|Price asset-id price)
             (format "Asset {} price succesfully updated with the Price Object {}" [asset-id price])
         )
     )
     (defun A_ToggleRetrieval (asset-id:string toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DEMIPAD|C>TOGGLE-RETRIEVAL asset-id toggle)
             (XI_U|Retrieval asset-id toggle)
             (format "Asset {} Retrieval succesfuly set to {}" [asset-id toggle])
@@ -1310,7 +1310,7 @@
             \ <type 1> = STOA Split ENV (needs unwrapping) + WSTOA for CD + WSTOA for Sale \
             \ <type 2> = STOA Split ENV + SSTOA for CD + SSTOA for Sale \
             \ <type 3> = STOA Split ENV + OURO for CD + OURO for Sale "
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DEMIPAD|C>DEPOSIT donor asset-id amount-in-dollars type direct-injection max-cost)
             (let
                 (
@@ -1388,7 +1388,7 @@
         \ Type 1 = WSTOA \
         \ Type 2 = SSTOA \
         \ Type 3 = OURO "
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (retrieval-amount:decimal (UR_Funds asset-id type))
@@ -1418,7 +1418,7 @@
     )
     ;;Fuel|Retrieve Assets to|from Launchpad to be made after Upgrade.
     (defun C_TransmitTrueFungible (patron:string client:string asset-id:string amount:decimal fuel-or-retrieve:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
@@ -1439,7 +1439,7 @@
         )
     )
     (defun C_TransmitOrtoFungible (patron:string client:string asset-id:string nonces:[integer] fuel-or-retrieve:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
@@ -1461,14 +1461,14 @@
     )
     (defun C_TransmitSemiFungibles:object{IgnisCollectorV1.OutputCumulator}
         (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (P|SECURE-CALLER)
             (XI_TransmitCollectables client asset-id true nonces amounts fuel-or-retrieve)
         )
     )
     (defun C_TransmitNonFungibles:object{IgnisCollectorV1.OutputCumulator}
         (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (P|SECURE-CALLER)
             (XI_TransmitCollectables client asset-id false nonces amounts fuel-or-retrieve)
         )

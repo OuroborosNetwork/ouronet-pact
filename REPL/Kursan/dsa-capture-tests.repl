@@ -25,7 +25,7 @@
 (load "../Stage_02/[3]_Talos.repl")
 (load "../Stage_02/[4.0]_Sovereign-Executor.repl")
 ;; AQP-BOOT Step0 — wires the AQP-family (AQP-POOL/FVT/SCORE) IMC guards (P|AQP|CALLER into DPDC-T/TFT/DPOF
-;; IMPs) so the collectable stake's deep custody transfer passes UEV_IMC. Required for any AQP stake path.
+;; IMPs) so the collectable stake's deep custody transfer passes P|UEV_IMC. Required for any AQP stake path.
 (begin-tx "P3-BOOT - KBN citizen")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")

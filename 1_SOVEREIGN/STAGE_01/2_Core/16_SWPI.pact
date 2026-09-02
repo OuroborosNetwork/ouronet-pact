@@ -190,6 +190,7 @@
 ;;
 (module SWPI GOV
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -243,6 +244,63 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|SWPI_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|SWPI_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
+                (ref-P|BRD:module{OuronetPolicyV1} BRD)
+                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
+                (ref-P|TFT:module{OuronetPolicyV1} TFT)
+                (ref-P|ORBR:module{OuronetPolicyV1} OUROBOROS)
+                (ref-P|SWP:module{OuronetPolicyV1} SWP)
+                (ref-P|SWPT:module{OuronetPolicyV1} SWPT)
+                (mg:guard (create-capability-guard (P|SWPI|CALLER)))
+            )
+            (ref-P|SWP::P|A_Add
+                "SWPI|RemoteSwpGov"
+                (create-capability-guard (P|SWPI|REMOTE-GOV))
+            )
+            (ref-P|DALOS::P|A_AddIMP mg)
+            (ref-P|BRD::P|A_AddIMP mg)
+            (ref-P|DPTF::P|A_AddIMP mg)
+            (ref-P|TFT::P|A_AddIMP mg)
+            (ref-P|ORBR::P|A_AddIMP mg)
+            (ref-P|SWP::P|A_AddIMP mg)
+            (ref-P|SWPT::P|A_AddIMP mg)
+        )
+    )
 
     ;;<=========================================================================>
     ;;{3}  CST
@@ -275,11 +333,11 @@
         true
     )
     ;;#36M/M5 fix: local cap for XE_IssueWrite (forward-module entrypoint) — no
-    ;;checks of its own beyond UEV_IMC in the defun itself. Real validation
+    ;;checks of its own beyond P|UEV_IMC in the defun itself. Real validation
     ;;(UEV_Issue) already ran in whichever caller's own defcap got here first
     ;;(SWPI|C>ISSUE for C_Issue, or MTX-SWP's own Step 1) — this function only
     ;;performs the already-validated writes, matching the XE_* contract of no
-    ;;enforce/UEV_* beyond UEV_IMC.
+    ;;enforce/UEV_* beyond P|UEV_IMC.
     (defcap SWPI|XE>ISSUE-WRITE (account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
         @event
         true
@@ -2208,14 +2266,6 @@
         )
     )
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     (defun UEV_SwapData 
         (swpair:string dsid:object{UtilitySwpV1.DirectSwapInputData})
         (let
@@ -2431,7 +2481,7 @@
             \ C_Issue aggregates all four sub-cumulators into its own single billed \
             \ response; C_MTX|Issue's Step 3 only needs swpair/token-lp (it already billed \
             \ separately, in its own Step 2, before Step 3 ever runs) and ignores the rest."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (SWPI|XE>ISSUE-WRITE account pool-tokens fee-lp weights amp p)
             (let
                 (
@@ -2473,55 +2523,6 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|SWPI_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|SWPI_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (ref-P|BRD:module{OuronetPolicyV1} BRD)
-                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
-                (ref-P|TFT:module{OuronetPolicyV1} TFT)
-                (ref-P|ORBR:module{OuronetPolicyV1} OUROBOROS)
-                (ref-P|SWP:module{OuronetPolicyV1} SWP)
-                (ref-P|SWPT:module{OuronetPolicyV1} SWPT)
-                (mg:guard (create-capability-guard (P|SWPI|CALLER)))
-            )
-            (ref-P|SWP::A_P|Add
-                "SWPI|RemoteSwpGov"
-                (create-capability-guard (P|SWPI|REMOTE-GOV))
-            )
-            (ref-P|DALOS::A_P|AddIMP mg)
-            (ref-P|BRD::A_P|AddIMP mg)
-            (ref-P|DPTF::A_P|AddIMP mg)
-            (ref-P|TFT::A_P|AddIMP mg)
-            (ref-P|ORBR::A_P|AddIMP mg)
-            (ref-P|SWP::A_P|AddIMP mg)
-            (ref-P|SWPT::A_P|AddIMP mg)
-        )
-    )
     ;;
     (defun A_RebuildGraph ()
         @doc "One-time migration/backfill utility (#21H). Rebuilds SWPT's adjacency \
@@ -2540,8 +2541,8 @@
             \ backfill every pool that was issued under the old, now-removed \
             \ principal-keyed SWPT|Tracer storage."
         (with-capability (GOV|SWPI_ADMIN)
-            ;;XE_UpdateGraph's own UEV_IMC checks that P|SWPI|CALLER (the guard SWPI
-            ;;registers with SWPT via A_P|Define) is actively composed — true when
+            ;;XE_UpdateGraph's own P|UEV_IMC checks that P|SWPI|CALLER (the guard SWPI
+            ;;registers with SWPT via P|A_Define) is actively composed — true when
             ;;reached via C_Issue's cap chain (SWPI|C>ISSUE -> P|DT), not true by
             ;;default just because this code happens to live in SWPI's module.
             (with-capability (P|SECURE-CALLER)
@@ -2563,7 +2564,7 @@
             \ function instead of independently reimplementing it. This function still \
             \ owns all of ITS OWN IGNIS billing/aggregation (C_MTX|Issue bills separately, \
             \ in its own Step 2, before Step 3 ever runs)."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (SWPI|C>ISSUE account pool-tokens fee-lp weights amp p)
             (let
                 (

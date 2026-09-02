@@ -52,6 +52,7 @@
 ;;
 (module AQP-DSA GOV
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -118,6 +119,50 @@
     )
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|DSA_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|DSA_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|FVT:module{OuronetPolicyV1} AQP-FVT)
+                (mg:guard (create-capability-guard (P|DSA|CALLER)))
+            )
+            ;; DSA calls AQP-FVT's XE_ building blocks (SetMemberCapture / SetMemberDelegation / SetFvtOracleOn,
+            ;; all P|UEV_IMC-gated) — register DSA as an allowed IMC caller of AQP-FVT. (SCORE/POOL calls for
+            ;; agency-open are added here when that path is built.)
+            (ref-P|FVT::P|A_AddIMP mg)
+        )
     )
 
     ;;<=========================================================================>
@@ -513,14 +558,6 @@
     (defun URCi_SetAgencyFee:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string])
         (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|SET-AGENCY-FEE patron (r::URC_IsVirtualGasZero) output)))
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     ;; [UEV] enforce
     (defun UEV_OpenGate:bool (fvt-id:string score-entity-id:string)
         @doc "Terminal open gate — after the operator's initial stake, the agency quintessence must clear \
@@ -574,49 +611,13 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|DSA_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|DSA_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|FVT:module{OuronetPolicyV1} AQP-FVT)
-                (mg:guard (create-capability-guard (P|DSA|CALLER)))
-            )
-            ;; DSA calls AQP-FVT's XE_ building blocks (SetMemberCapture / SetMemberDelegation / SetFvtOracleOn,
-            ;; all UEV_IMC-gated) — register DSA as an allowed IMC caller of AQP-FVT. (SCORE/POOL calls for
-            ;; agency-open are added here when that path is built.)
-            (ref-P|FVT::A_P|AddIMP mg)
-        )
-    )
     ;;
     ;; [A]   admin
     (defun A_DefineDelegationVault:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string model-id:string unit-score:integer)
         @doc "Bind a class-0 FVT as a DSA delegation vault: record the score-entity model + unit-score (active). \
-            \ Only the FVT owner may define it. UEV_IMC + DSA|C>DEFINE-VAULT. Bills GAS|DEFINE-VAULT."
-        (UEV_IMC)
+            \ Only the FVT owner may define it. P|UEV_IMC + DSA|C>DEFINE-VAULT. Bills GAS|DEFINE-VAULT."
+        (P|UEV_IMC)
         (with-capability (DSA|C>DEFINE-VAULT patron fvt-id model-id unit-score)
             (let
                 (
@@ -631,9 +632,9 @@
     (defun A_SetOracleAuth:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string oracle-guard:guard)
         @doc "Owner-only: authorize the delegated oracle key for this DSA vault (DSA|OracleAuth) and ARM the FVT \
-            \ oracle-on expiry, so stale oracle data (>25h) captures nothing. UEV_IMC + DSA|C>SET-ORACLE-AUTH. \
+            \ oracle-on expiry, so stale oracle data (>25h) captures nothing. P|UEV_IMC + DSA|C>SET-ORACLE-AUTH. \
             \ Bills GAS|SET-ORACLE-AUTH."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DSA|C>SET-ORACLE-AUTH patron fvt-id)
             (let
                 (
@@ -651,8 +652,8 @@
         (patron:string fvt-id:string score-entity-id:string nodes:integer uptime:integer)
         @doc "Delegated-oracle-only: write an agency's daily {nodes, uptime}, then recompute its capture stamped \
             \ with NOW (fresh oracle-ts resets the 25h expiry). Authorized by the registered oracle guard. \
-            \ UEV_IMC + DSA|A>ORACLE-WRITE. Bills GAS|ORACLE-WRITE."
-        (UEV_IMC)
+            \ P|UEV_IMC + DSA|A>ORACLE-WRITE. Bills GAS|ORACLE-WRITE."
+        (P|UEV_IMC)
         (with-capability (DSA|A>ORACLE-WRITE fvt-id score-entity-id nodes uptime)
             (let
                 (
@@ -695,9 +696,9 @@
         (patron:string fvt-id:string reward-dptf-id:string)
         @doc "Owner-only: dispose the whole royalty pool (uptime-shortfall custody) of <reward-dptf-id> on a DSA \
             \ vault by WITHDRAWING it to the FVT owner (delegates the AQP-custody move + zero to the FVT primitive \
-            \ FVT::XE_WithdrawRoyalty, which holds the custody-governor authority). UEV_IMC + DSA|C>WITHDRAW-ROYALTY. \
+            \ FVT::XE_WithdrawRoyalty, which holds the custody-governor authority). P|UEV_IMC + DSA|C>WITHDRAW-ROYALTY. \
             \ Bills GAS|WITHDRAW-ROYALTY merged with the custody transfer's IGNIS."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DSA|C>WITHDRAW-ROYALTY patron fvt-id)
             (let
                 (
@@ -715,8 +716,8 @@
         (patron:string fvt-id:string reward-dptf-id:string)
         @doc "Owner-only: dispose the whole royalty pool of <reward-dptf-id> on a DSA vault by BURNING it (delegates \
             \ the AQP-custody burn + zero to FVT::XE_BurnRoyalty; AQP|SC_NAME holds the autonomic burn role). \
-            \ UEV_IMC + DSA|C>BURN-ROYALTY. Bills GAS|BURN-ROYALTY merged with the burn's IGNIS."
-        (UEV_IMC)
+            \ P|UEV_IMC + DSA|C>BURN-ROYALTY. Bills GAS|BURN-ROYALTY merged with the burn's IGNIS."
+        (P|UEV_IMC)
         (with-capability (DSA|C>BURN-ROYALTY patron fvt-id)
             (let
                 (
@@ -734,8 +735,8 @@
         (patron:string fvt-id:string reward-dptf-id:string swpair:string)
         @doc "Owner-only: dispose the whole royalty pool of <reward-dptf-id> on a DSA vault by FUELING <swpair> \
             \ (add liquidity WITHOUT minting LP — delegates to FVT::XE_FuelRoyalty; the reward-dptf must be a token \
-            \ of the swpair). UEV_IMC + DSA|C>FUEL-ROYALTY. Bills GAS|FUEL-ROYALTY merged with the fuel's IGNIS."
-        (UEV_IMC)
+            \ of the swpair). P|UEV_IMC + DSA|C>FUEL-ROYALTY. Bills GAS|FUEL-ROYALTY merged with the fuel's IGNIS."
+        (P|UEV_IMC)
         (with-capability (DSA|C>FUEL-ROYALTY patron fvt-id swpair)
             (let
                 (
@@ -753,9 +754,9 @@
         (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer)
         @doc "Owner-only: change a delegation agency's operator fee-per-mille. Updates DSA|Agency + mirrors it onto \
             \ the FVT member (FVT::XE_SetAgencyFee) so the next inject uses the new split. Safe + O(1) — the fee is \
-            \ never in a stored weight, so this reprices only FUTURE injects, no per-delegator recompute. UEV_IMC + \
+            \ never in a stored weight, so this reprices only FUTURE injects, no per-delegator recompute. P|UEV_IMC + \
             \ DSA|C>SET-AGENCY-FEE. Bills GAS|SET-AGENCY-FEE."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DSA|C>SET-AGENCY-FEE patron fvt-id score-entity-id fee-per-mille)
             (let
                 (
@@ -778,8 +779,8 @@
             \ Does NOT stake or gate: the deep DPDC custody transfer of the operator's stake needs the caller's \
             \ guard registered in DPDC-T's IMP, which is P|TS (Talos) — so the Talos flow performs the stake under \
             \ P|TS after this admit, then calls UEV_OpenGate as the terminal atomic check (a short stake reverts the \
-            \ whole open). UEV_IMC + DSA|C>OPEN-AGENCY. Bills GAS|OPEN-AGENCY."
-        (UEV_IMC)
+            \ whole open). P|UEV_IMC + DSA|C>OPEN-AGENCY. Bills GAS|OPEN-AGENCY."
+        (P|UEV_IMC)
         (with-capability (DSA|C>OPEN-AGENCY patron fvt-id score-entity-id fee-per-mille)
             (let
                 (
@@ -800,8 +801,8 @@
         (patron:string fvt-id:string score-entity-id:string)
         @doc "Permissionless: recompute an agency's capture from its CURRENT quintessence (after a delegator \
             \ stake/unstake changed Q), PRESERVING the stored oracle-ts (a stake must not refresh oracle freshness). \
-            \ UEV_IMC + DSA|C>RECOMPUTE-CAPTURE. Bills GAS|RECOMPUTE-CAPTURE."
-        (UEV_IMC)
+            \ P|UEV_IMC + DSA|C>RECOMPUTE-CAPTURE. Bills GAS|RECOMPUTE-CAPTURE."
+        (P|UEV_IMC)
         (with-capability (DSA|C>RECOMPUTE-CAPTURE patron fvt-id score-entity-id)
             (let
                 (

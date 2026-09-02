@@ -62,6 +62,7 @@
 
 (module AQP-BOOT GOV
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -145,8 +146,8 @@
         @doc "Step 0 — AQP-POOL TFT + DPOF IMC + AQP|SC_NAME governor rotate. \
             \ Run once after all four sovereign AQP modules are on chain (before stake/unstake or Step 1+). \
             \ Prerequisite: AQP|SC_NAME smart account deployed (A_DALOS|DeploySmartAccount). \
-            \ Talos TS02-C3 A_P|Define (P|TALOS-SUMMONER) is separate — sovereign executor / [4.0]. \
-            \ FVT + VCT A_P|Define register IMP; FVT|RemoteAqpGov + VCT|RemoteAqpGov on AQP-POOL for vault legs."
+            \ Talos TS02-C3 P|A_Define (P|TALOS-SUMMONER) is separate — sovereign executor / [4.0]. \
+            \ FVT + VCT P|A_Define register IMP; FVT|RemoteAqpGov + VCT|RemoteAqpGov on AQP-POOL for vault legs."
         ;; INPUT
         ;;   patron — gas payer konto (REPL: KST.ANHD)
         ;; REPL: (AQP-BOOT.C_Step0_WireImcAndGovernor KST.ANHD)
@@ -161,9 +162,9 @@
                     ;;
                     (aqp-sc:string (ref-ANK::GOV|AQP|SC_NAME))
                 )
-                (ref-P|AQP::A_P|Define)
-                (ref-P|FVT::A_P|Define)
-                (ref-P|VCT::A_P|Define)
+                (ref-P|AQP::P|A_Define)
+                (ref-P|FVT::P|A_Define)
+                (ref-P|VCT::P|A_Define)
                 ;; C_RotateGovernor — AQP|SC_NAME: AQP-POOL.AQP|GOV (stake) + FVT|RemoteAqpGov + VCT|RemoteAqpGov.
                 (ref-TS01-C1::C_DALOS|RotateGovernor patron aqp-sc
                     (let

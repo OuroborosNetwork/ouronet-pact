@@ -51,6 +51,7 @@
 ;;
 (module DPDC-T GOV
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -95,6 +96,49 @@
     )
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|DPDC-T_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|DPDC-T_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
+                (ref-P|DPDC-C:module{OuronetPolicyV1} DPDC-C)
+                (mg:guard (create-capability-guard (P|DPDC-T|CALLER)))
+            )
+            (ref-P|DALOS::P|A_AddIMP mg)
+            (ref-P|DPDC-C::P|A_AddIMP mg)
+        )
     )
 
     ;;<=========================================================================>
@@ -529,14 +573,6 @@
         )
     )
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     (defun UEV_TransferRoles (id:string son:bool sender:string receiver:string)
         (let
             (
@@ -714,44 +750,9 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|DPDC-T_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|DPDC-T_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (ref-P|DPDC-C:module{OuronetPolicyV1} DPDC-C)
-                (mg:guard (create-capability-guard (P|DPDC-T|CALLER)))
-            )
-            (ref-P|DALOS::A_P|AddIMP mg)
-            (ref-P|DPDC-C::A_P|AddIMP mg)
-        )
-    )
     (defun C_RepurposeCollectable:object{IgnisCollectorV1.OutputCumulator}
         (id:string son:bool repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer])
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPDC-T|C>REPURPOSE id son repurpose-from repurpose-to nonces amounts)
             (let
                 (
@@ -808,7 +809,7 @@
     )
     (defun C_Transfer:object{IgnisCollectorV1.OutputCumulator}
         (ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (DPDC-T|C>TRANSFER ids sons sender receiver nonces-array amounts-array method)
             (map
                 (lambda
@@ -824,7 +825,7 @@
         (id:string son:bool nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
         @doc "Bulk collectable transfer: one id/son, one sender, many standard-account receivers (DpdcTransferV2). \
             \ Arg order mirrors C_Transfer: id/son, slice arrays, sender, receiver-lst, method."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability
             (DPDC-T|C>BULK-TRANSFER id son nonces-array amounts-array sender receiver-lst method)
             (do
@@ -847,7 +848,7 @@
     )
     (defun C_IgnisRoyaltyCollector:object{DpdcTransferV1.AggregatedRoyalties}
         (patron:string sender:string ids:[string] sons:[bool] nonces-array:[[integer]] amounts-array:[[integer]])
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)

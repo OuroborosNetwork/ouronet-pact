@@ -35,6 +35,7 @@
 ;;
 (module DPDC-R GOV
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -78,6 +79,47 @@
     )
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|DPDC-R_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|DPDC-R_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|DPDC:module{OuronetPolicyV1} DPDC)
+                (mg:guard (create-capability-guard (P|DPDC-R|CALLER)))
+            )
+            (ref-P|DPDC::P|A_AddIMP mg)
+        )
     )
 
     ;;<=========================================================================>
@@ -373,14 +415,6 @@
         )
     )
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     (defun XI_ToggleAddQuantityRole (id:string account:string toggle:bool)
@@ -503,43 +537,10 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|DPDC-R_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|DPDC-R_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|DPDC:module{OuronetPolicyV1} DPDC)
-                (mg:guard (create-capability-guard (P|DPDC-R|CALLER)))
-            )
-            (ref-P|DPDC::A_P|AddIMP mg)
-        )
-    )
     ;;Role Toggling
     (defun C_ToggleAddQuantityRole:object{IgnisCollectorV1.OutputCumulator}
         (id:string account:string toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -554,7 +555,7 @@
     )
     (defun C_ToggleFreezeAccount:object{IgnisCollectorV1.OutputCumulator}
         (id:string son:bool account:string toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -569,7 +570,7 @@
     )
     (defun C_ToggleExemptionRole:object{IgnisCollectorV1.OutputCumulator}
         (id:string son:bool account:string toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -584,7 +585,7 @@
     )
     (defun C_ToggleBurnRole:object{IgnisCollectorV1.OutputCumulator}
         (id:string son:bool account:string toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -599,7 +600,7 @@
     )
     (defun C_ToggleUpdateRole:object{IgnisCollectorV1.OutputCumulator}
         (id:string son:bool account:string toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -614,7 +615,7 @@
     )
     (defun C_ToggleModifyCreatorRole:object{IgnisCollectorV1.OutputCumulator}
         (id:string son:bool account:string toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -629,7 +630,7 @@
     )
     (defun C_ToggleModifyRoyaltiesRole:object{IgnisCollectorV1.OutputCumulator}
         (id:string son:bool account:string toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -644,7 +645,7 @@
     )
     (defun C_ToggleTransferRole:object{IgnisCollectorV1.OutputCumulator}
         (id:string son:bool account:string toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -660,7 +661,7 @@
     ;;
     (defun C_MoveCreateRole:object{IgnisCollectorV1.OutputCumulator}
         (id:string son:bool new-account:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -676,7 +677,7 @@
     )
     (defun C_MoveRecreateRole:object{IgnisCollectorV1.OutputCumulator}
         (id:string son:bool new-account:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -692,7 +693,7 @@
     )
     (defun C_MoveSetUriRole:object{IgnisCollectorV1.OutputCumulator}
         (id:string son:bool new-account:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)

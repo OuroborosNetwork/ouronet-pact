@@ -80,6 +80,7 @@
 
 (module AQP-VCT GOV
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     (implements OuronetPolicyV1)
@@ -141,6 +142,59 @@
     )
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|VCT_ADMIN)
+            (write P|T policy-name {"policy" : policy-guard})
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|VCT_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    ;;
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)})
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        @doc "Post-deploy: VCT SECURE on AQP-SCORE + AQP-POOL + AQP-FVT IMP; P|VCT|CALLER on TFT/DPOF/DPDC-T; VCT|RemoteAqpGov on AQP-POOL."
+        (let
+            (
+                (ref-P|SCR:module{OuronetPolicyV1} AQP-SCORE)
+                (ref-P|AQP:module{OuronetPolicyV1} AQP-POOL)
+                (ref-P|FVT:module{OuronetPolicyV1} AQP-FVT)
+                (ref-P|TFT:module{OuronetPolicyV1} TFT)
+                (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
+                (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
+                ;;
+                (dg:guard (create-capability-guard (SECURE)))
+                (mg:guard (create-capability-guard (P|VCT|CALLER)))
+                (rg:guard (create-capability-guard (P|VCT|REMOTE-GOV)))
+            )
+            (ref-P|SCR::P|A_AddIMP dg)
+            (ref-P|AQP::P|A_AddIMP dg)
+            (ref-P|FVT::P|A_AddIMP dg)
+            (ref-P|AQP::P|A_Add "VCT|RemoteAqpGov" rg)
+            (ref-P|TFT::P|A_AddIMP mg)
+            (ref-P|DPOF::P|A_AddIMP mg)
+            (ref-P|DPDC-T::P|A_AddIMP mg)
+        )
     )
 
     ;;<=========================================================================>
@@ -1979,14 +2033,6 @@
         )
     )
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     ;; MEASURED (REPL/Kursan/AQP-scale-vacate.repl, TF drain, 50 distinct-beneficiary legs — the SPREAD case):
     ;; gas(n) = 24,620 + 54,290*n → ~36 legs fit 2M. Per-distinct-ben leg = 54,290 < the model's 79,000
     ;; (PER-BEN 75k + PER-POS 4k), so the 2-D model OVER-estimates → a safe, conservative backstop (it rejects
@@ -2946,7 +2992,7 @@
             \ 2-phase: SCAN every live DPTF lane (URH_VacateTrueFungiblePoolLegs: native + F| frozen) → CONSUME \
             \ (XI_VacateTrueFungiblePoolLegs). The pool's DPOF satellites (Z|/H|) are vacated by XB_VacateOrtoFungible; \
             \ use CC_FullVacate to empty a whole pool of any class in one call."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (VCT|C>VACATE pool-id)
             (XI_VacateTrueFungiblePoolLegs pool-id (URH_VacateTrueFungiblePoolLegs pool-id))
         )
@@ -2956,7 +3002,7 @@
         @doc "Vacate rehaul — external per-kind OF vacate for ONE OF asset of a pool (both internal + external). \
             \ 2-phase: SCAN that asset's legs (URHC_VacateNonceOwnerRowsRaw) → CONSUME (XI_VacateOrtoFungibleFromLegs). \
             \ A class-1 pool has TF + ≥1 OF satellite; call per satellite, or use CC_FullVacate for the whole pool."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (VCT|C>VACATE pool-id)
             (XI_VacateOrtoFungibleFromLegs pool-id dpof-id
                 (URHC_VacateNonceOwnerRowsRaw pool-id dpof-id VACATE-KIND-OF))
@@ -2967,7 +3013,7 @@
         @doc "Vacate rehaul — external per-kind DPSF (semi-fungible collection) vacate for ONE collectable of a \
             \ pool. 2-phase: SCAN (URHC_VacateNonceOwnerRowsRaw, DPSF) → CONSUME (XI_VacateCollectablesFromLegs, \
             \ son=true). Use CC_FullVacate to empty the whole pool in one call."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (VCT|C>VACATE pool-id)
             (XI_VacateCollectablesFromLegs pool-id dpsf-id true
                 (URHC_VacateNonceOwnerRowsRaw pool-id dpsf-id VACATE-KIND-DPSF))
@@ -2978,58 +3024,13 @@
         @doc "Vacate rehaul — external per-kind DPNF (non-fungible collection) vacate for ONE collectable of a \
             \ pool. 2-phase: SCAN (URHC_VacateNonceOwnerRowsRaw, DPNF) → CONSUME (XI_VacateCollectablesFromLegs, \
             \ son=false). Use CC_FullVacate to empty the whole pool in one call."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (VCT|C>VACATE pool-id)
             (XI_VacateCollectablesFromLegs pool-id dpnf-id false
                 (URHC_VacateNonceOwnerRowsRaw pool-id dpnf-id VACATE-KIND-DPNF))
         )
     )
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|VCT_ADMIN)
-            (write P|T policy-name {"policy" : policy-guard})
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|VCT_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    ;;
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)})
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        @doc "Post-deploy: VCT SECURE on AQP-SCORE + AQP-POOL + AQP-FVT IMP; P|VCT|CALLER on TFT/DPOF/DPDC-T; VCT|RemoteAqpGov on AQP-POOL."
-        (let
-            (
-                (ref-P|SCR:module{OuronetPolicyV1} AQP-SCORE)
-                (ref-P|AQP:module{OuronetPolicyV1} AQP-POOL)
-                (ref-P|FVT:module{OuronetPolicyV1} AQP-FVT)
-                (ref-P|TFT:module{OuronetPolicyV1} TFT)
-                (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
-                (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
-                ;;
-                (dg:guard (create-capability-guard (SECURE)))
-                (mg:guard (create-capability-guard (P|VCT|CALLER)))
-                (rg:guard (create-capability-guard (P|VCT|REMOTE-GOV)))
-            )
-            (ref-P|SCR::A_P|AddIMP dg)
-            (ref-P|AQP::A_P|AddIMP dg)
-            (ref-P|FVT::A_P|AddIMP dg)
-            (ref-P|AQP::A_P|Add "VCT|RemoteAqpGov" rg)
-            (ref-P|TFT::A_P|AddIMP mg)
-            (ref-P|DPOF::A_P|AddIMP mg)
-            (ref-P|DPDC-T::A_P|AddIMP mg)
-        )
-    )
     ;; [C]   client
     (defun CC_FullVacate:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string)
@@ -3039,7 +3040,7 @@
             \ frozen TF + Z|/H| DPOF satellites (class 0 stakes a Z| sleeping-LP DPOF too, NOT TF-only) — so it runs \
             \ BOTH the TF pair AND the OF pair. class 2 → OF; class 3 → DPSF; class 4 → DPNF. Empty lanes no-op. \
             \ Owner-gated (VCT|C>VACATE)."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -3086,7 +3087,7 @@
             \ passes only owner/beneficiary/nonce arrays. Validates the slice + owner (VCT|C>LEGS-ORTO-FUNGIBLE-VACATE, \
             \ auto-finalize), EnsureVacateBegun (freeze if first), XI_VacateOrtoFungibleBatch, then MaybeFinalizeVacate \
             \ true (unfreezes + finalizes only when the whole pool is empty)."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (of-amounts:[[decimal]]
@@ -3124,7 +3125,7 @@
             \ auto-finalize), EnsureVacateBegun (freeze if first), consume (UC_TfLegsFromParallelArrays → \
             \ XI_VacateTrueFungibleFromLegs), MaybeFinalizeVacate true (unfreezes + finalizes only when the pool \
             \ is fully empty)."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability
             (VCT|C>LEGS-TRUE-FUNGIBLE-VACATE pool-id dptf-id owner-ids beneficiary-ids amounts true)
             (XI_EnsureVacateBegun pool-id)
@@ -3155,7 +3156,7 @@
             \ settle-once for beneficiaries whose last position drained). The pool stays FROZEN until \
             \ C_FinalizeVacate nukes the scores (generation bump + aggregate zero) once nns==0. Commit-forward: v1 \
             \ CCp_BatchVacateTrueFungible remains the abortable/score-delta path."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability
             (VCT|C>LEGS-TRUE-FUNGIBLE-VACATE pool-id dptf-id owner-ids beneficiary-ids amounts false)
             (XI_EnsureVacateBegun pool-id)
@@ -3177,7 +3178,7 @@
             \ (VCT|C>LEGS-ORTO-FUNGIBLE-VACATE, finalize=false), EnsureVacateBegun (freeze if first), then \
             \ XI_DrainOrtoFungibleBatch. Pool stays FROZEN until C_FinalizeVacate nukes scores once nns==0. \
             \ Commit-forward; v1 CCp_BatchVacateOrtoFungible remains the abortable/score-delta path."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (of-amounts:[[decimal]]
@@ -3209,7 +3210,7 @@
             \ finalize=false), EnsureVacateBegun (freeze if first), then XI_DrainCollectableBatch. Pool stays \
             \ FROZEN until C_FinalizeVacate nukes scores once nns==0. Commit-forward; v1 CCp_BatchVacateCollectables \
             \ remains the abortable/score-delta path."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability
             (VCT|C>LEGS-COLLECTABLE-VACATE
                 pool-id collectable-id son owner-ids beneficiary-ids nonces-array amounts-array false
@@ -3233,7 +3234,7 @@
             \ (VCT|C>LEGS-COLLECTABLE-VACATE, auto-finalize), EnsureVacateBegun (freeze if first), \
             \ XI_VacateCollectableBatch, MaybeFinalizeVacate true (unfreezes + finalizes only when the pool is \
             \ fully empty)."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability
             (VCT|C>LEGS-COLLECTABLE-VACATE
                 pool-id collectable-id son owner-ids beneficiary-ids nonces-array amounts-array true
@@ -3255,7 +3256,7 @@
     )
     (defun C_AbortVacate:object{IgnisCollectorV1.OutputCumulator} (pool-id:string)
         @doc "Clear vacate-in-progress; stake stays disabled (ops: C_EnablePoolStake)."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (VCT|C>ABORT-VACATE-POOL pool-id)
             (XI_ClearVacateInProgress pool-id)
             (UC_EmptyOc)
@@ -3268,7 +3269,7 @@
             \ their vacate-generation (lazily invalidating all per-user rows — the drained beneficiaries were \
             \ already settled during the drain), then clear vacate-in-progress, RE-ENABLE stake, and unfreeze the \
             \ pool's FVTs. Pool-owner + nns==0 gated (in the cap). v1 Cp_BatchVacate* auto-finalizes instead."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (VCT|C>FINALIZE-VACATE pool-id)
             (let
                 (

@@ -217,7 +217,7 @@
 ;;==== TX-04 [C3.2] - Guard-type policy · 02 · IMC for C_* rotation paths ==== ====================
 (print "--- [TX-04 [C3.2] - Guard-type policy · 02 · IMC for C_* rotation paths] ---")
 (acquire-module-admin DALOS)
-(DALOS.A_P|AddIMP (keyset-ref-guard "ouronet-ns.dh_master-keyset"))
+(DALOS.P|A_AddIMP (keyset-ref-guard "ouronet-ns.dh_master-keyset"))
 ;;==== TX-04 [C3.2] - Guard-type policy · 03 · helper unit expects ==== =============================
 (print "--- [TX-04 [C3.2] - Guard-type policy · 03 · helper unit expects] ---")
 (let
@@ -225,7 +225,7 @@
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (key-ref:guard (keyset-ref-guard "ouronet-ns.dh_master-keyset"))
         (key-read:guard (read-keyset "KEY_TEST_SingleKey"))
-        (user-g:guard (create-user-guard (DALOS.UEV_IMC)))
+        (user-g:guard (create-user-guard (DALOS.P|UEV_IMC)))
         (cap-g:guard (create-capability-guard (ref-DALOS::SECURE)))
     )
     (map print
@@ -309,7 +309,7 @@
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (key-guard:guard (keyset-ref-guard "ouronet-ns.us-0001_emma-keyset"))
-        (user-g:guard (create-user-guard (DALOS.UEV_IMC)))
+        (user-g:guard (create-user-guard (DALOS.P|UEV_IMC)))
     )
     (map print
         [

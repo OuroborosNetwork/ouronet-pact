@@ -1,5 +1,6 @@
 (module BRD GOV
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -39,6 +40,47 @@
     )
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|BRD_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|BRD_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
+                (mg:guard (create-capability-guard (P|BRD|CALLER)))
+            )
+            (ref-P|DALOS::P|A_AddIMP mg)
+        )
     )
 
     ;;<=========================================================================>
@@ -217,18 +259,10 @@
         )
     )
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     (defun XE_Issue (entity-id:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (insert BRD|BrandingTable entity-id
             {"branding"                 : BRD|DEFAULT
             ,"branding-pending"         : BRD|DEFAULT}
@@ -239,7 +273,7 @@
             \ This is done by <entity-id> owners to brand their <entity-id> \
             \ Branding Administrator must afterwards set this <pending-branding> data to live, \
             \ in order to activate the actual branding for the <entity-id>"
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (pending:object{BrandingV1.Schema} (UR_Branding entity-id true))
@@ -276,7 +310,7 @@
             \       Keeps branding Data as is for both <branding> and <branding-pending> \
             \ \
             \ Upgrading a <0> Golden Flag is restricted, as Golden Flags are higher in hierachy than Blue Flags"
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (BRD|C>UPGRADE entity-id entity-owner-account months)
             (let
                 (
@@ -325,42 +359,9 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|BRD_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|BRD_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (mg:guard (create-capability-guard (P|BRD|CALLER)))
-            )
-            (ref-P|DALOS::A_P|AddIMP mg)
-        )
-    )
     ;;
     (defun A_Live (entity-id:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (BRD|C>LIVE)
             (let
                 (
@@ -379,7 +380,7 @@
         )
     )
     (defun A_SetFlag (entity-id:string flag:integer)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (BRD|C>ADMIN_SET flag)
             (let
                 (

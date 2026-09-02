@@ -124,6 +124,7 @@
 ;;
 (module SWPU GOV
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -172,6 +173,84 @@
     )
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+                (mp:[guard] (P|UR_IMP))
+                (g:guard (ref-U|G::UEV_GuardOfAny mp))
+            )
+            (enforce-guard g)
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|SWPU_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|SWPU_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
+                (ref-P|BRD:module{OuronetPolicyV1} BRD)
+                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
+                ;(ref-P|DPOF:module{OuronetPolicyV1} DPOF)
+                (ref-P|ATS:module{OuronetPolicyV1} ATS)
+                (ref-P|TFT:module{OuronetPolicyV1} TFT)
+                (ref-P|ATSU:module{OuronetPolicyV1} ATSU)
+                (ref-P|VST:module{OuronetPolicyV1} VST)
+                (ref-P|LIQUID:module{OuronetPolicyV1} LIQUID)
+                (ref-P|ORBR:module{OuronetPolicyV1} OUROBOROS)
+                (ref-P|SWPT:module{OuronetPolicyV1} SWPT)
+                (ref-P|SWP:module{OuronetPolicyV1} SWP)
+                (mg:guard (create-capability-guard (P|SWPU|CALLER)))
+            )
+            (ref-P|DALOS::P|A_Add
+                "SWPU|RemoteDalosGov"
+                (create-capability-guard (P|SWPU|REMOTE-GOV))
+            )
+            (ref-P|VST::P|A_Add
+                "SWPU|RemoteSwpGov"
+                (create-capability-guard (P|SWPU|REMOTE-GOV))
+            )
+            (ref-P|SWP::P|A_Add
+                "SWPU|RemoteSwpGov"
+                (create-capability-guard (P|SWPU|REMOTE-GOV))
+            )
+            (ref-P|DALOS::P|A_AddIMP mg)
+            (ref-P|BRD::P|A_AddIMP mg)
+            (ref-P|DPTF::P|A_AddIMP mg)
+            ;(ref-P|DPOF::P|A_AddIMP mg)
+            (ref-P|ATS::P|A_AddIMP mg)
+            (ref-P|TFT::P|A_AddIMP mg)
+            (ref-P|ATSU::P|A_AddIMP mg)
+            (ref-P|VST::P|A_AddIMP mg)
+            (ref-P|LIQUID::P|A_AddIMP mg)
+            (ref-P|ORBR::P|A_AddIMP mg)
+            (ref-P|SWPT::P|A_AddIMP mg)
+            (ref-P|SWP::P|A_AddIMP mg)
+        )
     )
 
     ;;<=========================================================================>
@@ -1076,16 +1155,6 @@
         )
     )
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-                (mp:[guard] (P|UR_IMP))
-                (g:guard (ref-U|G::UEV_GuardOfAny mp))
-            )
-            (enforce-guard g)
-        )
-    )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     (defun XI_SmartSwapAndRegister:list
@@ -1233,7 +1302,7 @@
             \ real <distinct-edges>, never blindly every entry a caller stuffed into the \
             \ bundle — matches P3.1's 'writes only as a side-effect of a real, validated, \
             \ USED path' rule, not just 'a real, validated path'). Registers via \
-            \ SWPT::XE_RegisterPath (the forward-module writer, UEV_IMC + internal \
+            \ SWPT::XE_RegisterPath (the forward-module writer, P|UEV_IMC + internal \
             \ SECURE composition) — never a caller-side grant of SWPT's own SECURE cap \
             \ directly (see XE_RegisterPath's own doc for why that would be unsafe). \
             \ XI_RegisterPath's own version-checked-refresh (#65bL Phase 1) makes every \
@@ -2008,77 +2077,9 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|SWPU_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|SWPU_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (ref-P|BRD:module{OuronetPolicyV1} BRD)
-                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
-                ;(ref-P|DPOF:module{OuronetPolicyV1} DPOF)
-                (ref-P|ATS:module{OuronetPolicyV1} ATS)
-                (ref-P|TFT:module{OuronetPolicyV1} TFT)
-                (ref-P|ATSU:module{OuronetPolicyV1} ATSU)
-                (ref-P|VST:module{OuronetPolicyV1} VST)
-                (ref-P|LIQUID:module{OuronetPolicyV1} LIQUID)
-                (ref-P|ORBR:module{OuronetPolicyV1} OUROBOROS)
-                (ref-P|SWPT:module{OuronetPolicyV1} SWPT)
-                (ref-P|SWP:module{OuronetPolicyV1} SWP)
-                (mg:guard (create-capability-guard (P|SWPU|CALLER)))
-            )
-            (ref-P|DALOS::A_P|Add
-                "SWPU|RemoteDalosGov"
-                (create-capability-guard (P|SWPU|REMOTE-GOV))
-            )
-            (ref-P|VST::A_P|Add
-                "SWPU|RemoteSwpGov"
-                (create-capability-guard (P|SWPU|REMOTE-GOV))
-            )
-            (ref-P|SWP::A_P|Add
-                "SWPU|RemoteSwpGov"
-                (create-capability-guard (P|SWPU|REMOTE-GOV))
-            )
-            (ref-P|DALOS::A_P|AddIMP mg)
-            (ref-P|BRD::A_P|AddIMP mg)
-            (ref-P|DPTF::A_P|AddIMP mg)
-            ;(ref-P|DPOF::A_P|AddIMP mg)
-            (ref-P|ATS::A_P|AddIMP mg)
-            (ref-P|TFT::A_P|AddIMP mg)
-            (ref-P|ATSU::A_P|AddIMP mg)
-            (ref-P|VST::A_P|AddIMP mg)
-            (ref-P|LIQUID::A_P|AddIMP mg)
-            (ref-P|ORBR::A_P|AddIMP mg)
-            (ref-P|SWPT::A_P|AddIMP mg)
-            (ref-P|SWP::A_P|AddIMP mg)
-        )
-    )
     (defun C_ToggleSwapCapability:object{IgnisCollectorV1.OutputCumulator}
         (swpair:string toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-SWP:module{SwapperV3} SWP)
@@ -2100,7 +2101,7 @@
             \ #65L fix: the BFS path search (<h-obj>) is computed exactly ONCE here and \
             \ threaded through the defcap and XI_SmartSwapRouter, instead of each \
             \ independently re-running SWPI::URC_HopperActive's full-graph search."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-SWPI:module{SwapperIssueV3} SWPI)
@@ -2151,7 +2152,7 @@
             \ the transaction (confirmed the hard way: 'require-capability: not granted' \
             \ when this was first tried as a separate call after the with-capability \
             \ block had already returned)."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (if (!= slippage -1.0)
             (with-capability
                 (SWPU|C>SMART-SWAP-EXPLICIT-ROUTE-WITH-SLIPPAGE account input-id input-amount output-id slippage slippage-bounds bundle)
@@ -2166,7 +2167,7 @@
     (defun C_Swap:object{IgnisCollectorV1.OutputCumulator}
         (account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{SwapperUsageV2.Slippage})
         @doc "Execute swap. When slippage != -1.0, slippage-bounds must be the pre-computed slippage object from quote time (e.g. UDC_SlippageObject); when slippage == -1.0, pass a dummy object (e.g. UDC_Slippage 0.0 0 0.0)."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-U|SWP:module{UtilitySwpV1} U|SWP)

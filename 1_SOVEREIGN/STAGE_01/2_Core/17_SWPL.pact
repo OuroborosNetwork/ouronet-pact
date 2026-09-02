@@ -227,6 +227,58 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|SWPL_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|SWPL_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|BRD:module{OuronetPolicyV1} BRD)
+                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
+                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
+                ;(ref-P|DPOF:module{OuronetPolicyV1} DPOF)
+                (ref-P|TFT:module{OuronetPolicyV1} TFT)
+                (ref-P|VST:module{OuronetPolicyV1} VST)
+                (ref-P|SWP:module{OuronetPolicyV1} SWP)
+                (mg:guard (create-capability-guard (P|SWPL|CALLER)))
+            )
+            (ref-P|DALOS::P|A_AddIMP mg)
+            (ref-P|BRD::P|A_AddIMP mg)
+            (ref-P|DPTF::P|A_AddIMP mg)
+            ;(ref-P|DPOF::P|A_AddIMP mg)
+            (ref-P|TFT::P|A_AddIMP mg)
+            (ref-P|SWP::P|A_AddIMP mg)
+        )
+    )
 
     ;;<=========================================================================>
     ;;{3}  CST
@@ -1655,14 +1707,6 @@
         )
     )
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     (defun UEV_Liquidity:[decimal]
         (swpair:string ld:object{SwapperLiquidityV1.LiquidityData})
             @doc "Validates the asymmetric Liquidity amount, if it exists within the LD Object. \
@@ -1743,7 +1787,7 @@
             \ transaction, so the same guarantee holds there too. If a future caller \
             \ ever needs to split this function's bump and transfer across two separate \
             \ steps, this ordering would need re-deriving from scratch, not assumed safe."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-SWP:module{SwapperV3} SWP)
@@ -1884,7 +1928,7 @@
         )
     )
     (defun XE_AutonomousSwapManagement (swpair:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-SWP:module{SwapperV3} SWP)
@@ -1901,50 +1945,6 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|SWPL_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|SWPL_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|BRD:module{OuronetPolicyV1} BRD)
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
-                ;(ref-P|DPOF:module{OuronetPolicyV1} DPOF)
-                (ref-P|TFT:module{OuronetPolicyV1} TFT)
-                (ref-P|VST:module{OuronetPolicyV1} VST)
-                (ref-P|SWP:module{OuronetPolicyV1} SWP)
-                (mg:guard (create-capability-guard (P|SWPL|CALLER)))
-            )
-            (ref-P|DALOS::A_P|AddIMP mg)
-            (ref-P|BRD::A_P|AddIMP mg)
-            (ref-P|DPTF::A_P|AddIMP mg)
-            ;(ref-P|DPOF::A_P|AddIMP mg)
-            (ref-P|TFT::A_P|AddIMP mg)
-            (ref-P|SWP::A_P|AddIMP mg)
-        )
-    )
 
 )
 

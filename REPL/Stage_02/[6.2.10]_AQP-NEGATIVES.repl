@@ -1,8 +1,8 @@
 ;;
 ;; REPL/Stage_02/[6.2.10]_AQP-NEGATIVES.repl — AQP negative-path coverage (Track C).
 ;; IMC boundary: the ONLY supported client path is Talos. Every sovereign-core C_/CC_/X entrypoint
-;; opens with UEV_IMC, so a DIRECT ref-CORE::fn call (bypassing the TS02-C3 shell) must fail — even
-;; when made by the pool/asset OWNER (so the owner gate passes and UEV_IMC is the isolated cause).
+;; opens with P|UEV_IMC, so a DIRECT ref-CORE::fn call (bypassing the TS02-C3 shell) must fail — even
+;; when made by the pool/asset OWNER (so the owner gate passes and P|UEV_IMC is the isolated cause).
 ;; Loaded by REPL/Stage_02/[6.2]_AQP.repl after [6.2.5]. Assumes the [6.2.1-5] entities exist.
 ;;
 (print "")
@@ -12,12 +12,12 @@
 (print "Legend: <<TX-AQP-NEG-*>> expect-failure lines — direct core calls must be rejected.")
 (print "")
 ;;
-(begin-tx "TX-AQP-NEG-IMC1 - VCT/FVT/MTX core calls bypassing Talos must fail UEV_IMC")
+(begin-tx "TX-AQP-NEG-IMC1 - VCT/FVT/MTX core calls bypassing Talos must fail P|UEV_IMC")
 (print "")
 (print "=== TX-AQP-NEG-IMC1 — direct AQP-VCT / AQP-FVT / MTX-AQP calls rejected (Talos only) ==")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
-;; ANHD is the OWNER of these entities — owner gate passes, so the ONLY thing that rejects is UEV_IMC.
+;; ANHD is the OWNER of these entities — owner gate passes, so the ONLY thing that rejects is P|UEV_IMC.
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
@@ -34,19 +34,19 @@
     (map print
         [
             (expect-failure
-                (format "<<TX-AQP-NEG-IMC1>> direct AQP-VCT::CC_FullVacate rejected (UEV_IMC — Talos only)" [])
+                (format "<<TX-AQP-NEG-IMC1>> direct AQP-VCT::CC_FullVacate rejected (P|UEV_IMC — Talos only)" [])
                 (ref-VCT::CC_FullVacate pool-id))
             (expect-failure
-                (format "<<TX-AQP-NEG-IMC1>> direct AQP-VCT::C_AbortVacate rejected (UEV_IMC)" [])
+                (format "<<TX-AQP-NEG-IMC1>> direct AQP-VCT::C_AbortVacate rejected (P|UEV_IMC)" [])
                 (ref-VCT::C_AbortVacate pool-id))
             (expect-failure
-                (format "<<TX-AQP-NEG-IMC1>> direct AQP-FVT::CC_Inject rejected (UEV_IMC)" [])
+                (format "<<TX-AQP-NEG-IMC1>> direct AQP-FVT::CC_Inject rejected (P|UEV_IMC)" [])
                 (ref-FVT::CC_Inject patron fvt-id ouro-id 1.0))
             (expect-failure
-                (format "<<TX-AQP-NEG-IMC1>> direct AQP-FVT::CC_SweepRevokeAnchor rejected (UEV_IMC)" [])
+                (format "<<TX-AQP-NEG-IMC1>> direct AQP-FVT::CC_SweepRevokeAnchor rejected (P|UEV_IMC)" [])
                 (ref-FVT::CC_SweepRevokeAnchor patron anchor-id))
             (expect-failure
-                (format "<<TX-AQP-NEG-IMC1>> direct MTX-AQP::C_2|Inject rejected (UEV_IMC)" [])
+                (format "<<TX-AQP-NEG-IMC1>> direct MTX-AQP::C_2|Inject rejected (P|UEV_IMC)" [])
                 (ref-MTX::C_2|Inject patron fvt-id ouro-id 1.0))
         ]
     )
@@ -60,12 +60,12 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
 ;;
-(begin-tx "TX-AQP-NEG-IMC2 - ANK/SCORE/POOL core calls bypassing Talos must fail UEV_IMC")
+(begin-tx "TX-AQP-NEG-IMC2 - ANK/SCORE/POOL core calls bypassing Talos must fail P|UEV_IMC")
 (print "")
 (print "=== TX-AQP-NEG-IMC2 — direct AQP-ANK / AQP-SCR / AQP-POOL calls rejected (Talos only) ==")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
-;; ANHD owns these entities — owner gate passes, so UEV_IMC is the isolated rejection cause.
+;; ANHD owns these entities — owner gate passes, so P|UEV_IMC is the isolated rejection cause.
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
@@ -82,16 +82,16 @@
     (map print
         [
             (expect-failure
-                (format "<<TX-AQP-NEG-IMC2>> direct AQP-ANK::C_RevokeAnchor rejected (UEV_IMC — Talos only)" [])
+                (format "<<TX-AQP-NEG-IMC2>> direct AQP-ANK::C_RevokeAnchor rejected (P|UEV_IMC — Talos only)" [])
                 (ref-ANK::C_RevokeAnchor anchor-id))
             (expect-failure
-                (format "<<TX-AQP-NEG-IMC2>> direct AQP-SCR::C_EnableDebBoost rejected (UEV_IMC)" [])
+                (format "<<TX-AQP-NEG-IMC2>> direct AQP-SCR::C_EnableDebBoost rejected (P|UEV_IMC)" [])
                 (ref-SCR::C_EnableDebBoost score-id))
             (expect-failure
-                (format "<<TX-AQP-NEG-IMC2>> direct AQP-POOL::C_DisablePoolStake rejected (UEV_IMC)" [])
+                (format "<<TX-AQP-NEG-IMC2>> direct AQP-POOL::C_DisablePoolStake rejected (P|UEV_IMC)" [])
                 (ref-AQP::C_DisablePoolStake patron pool-id))
             (expect-failure
-                (format "<<TX-AQP-NEG-IMC2>> direct AQP-POOL::C_Issue rejected (UEV_IMC)" [])
+                (format "<<TX-AQP-NEG-IMC2>> direct AQP-POOL::C_Issue rejected (P|UEV_IMC)" [])
                 (ref-AQP::C_Issue patron "NegProbePool" ouro-id 1))
         ]
     )
@@ -213,7 +213,7 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;; EMMA signs — NOT the owner (ANHD) of AurynRain / ResumeVacScore / ResumeVacVault. Each op goes
-;; through the Talos client path (so UEV_IMC passes) and must reject at the OWNER gate specifically:
+;; through the Talos client path (so P|UEV_IMC passes) and must reject at the OWNER gate specifically:
 ;;   · AurynRain is alive → ANK|C>REVOKE's owner check precedes the #9 BoostClass lock.
 ;;   · ResumeVacScore is fully vacated (nzs=0, deb-boost false) → ENABLE-DEB-BOOST precondition passes.
 ;;   · ResumeVacVault has can-upgrade=true (default) → CONTROL-FVT precondition passes.
@@ -251,15 +251,15 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
 ;;
-(begin-tx "TX-AQP-NEG-XE - direct XE forward-entrypoint calls must fail UEV_IMC")
+(begin-tx "TX-AQP-NEG-XE - direct XE forward-entrypoint calls must fail P|UEV_IMC")
 (print "")
 (print "=== TX-AQP-NEG-XE — direct AQP-ANK/AQP-SCR/AQP-POOL XE_ forward calls rejected ==")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;; XE_ are forward-module entrypoints (called only by a peer sovereign module through the IMC boundary),
-;; each opening with UEV_IMC. A direct REPL call is not a registered IMC principal, so it must fail UEV_IMC
+;; each opening with P|UEV_IMC. A direct REPL call is not a registered IMC principal, so it must fail P|UEV_IMC
 ;; — proving the inter-module surface rejects rogue direct callers, not just the client C_/CC_ surface.
-;; Signed as OWNER ANHD so the owner half of each XE cap would pass and UEV_IMC is the isolated cause.
+;; Signed as OWNER ANHD so the owner half of each XE cap would pass and P|UEV_IMC is the isolated cause.
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
@@ -275,13 +275,13 @@
     (map print
         [
             (expect-failure
-                (format "<<TX-AQP-NEG-XE>> direct AQP-ANK::XE_SweepRevokeAnchor rejected (UEV_IMC — forward only)" [])
+                (format "<<TX-AQP-NEG-XE>> direct AQP-ANK::XE_SweepRevokeAnchor rejected (P|UEV_IMC — forward only)" [])
                 (ref-ANK::XE_SweepRevokeAnchor anchor-id))
             (expect-failure
-                (format "<<TX-AQP-NEG-XE>> direct AQP-SCR::XE_RefreshUserScoreDeb rejected (UEV_IMC)" [])
+                (format "<<TX-AQP-NEG-XE>> direct AQP-SCR::XE_RefreshUserScoreDeb rejected (P|UEV_IMC)" [])
                 (ref-SCR::XE_RefreshUserScoreDeb account pool-id score-id))
             (expect-failure
-                (format "<<TX-AQP-NEG-XE>> direct AQP-POOL::XE_SetVacateJobState rejected (UEV_IMC)" [])
+                (format "<<TX-AQP-NEG-XE>> direct AQP-POOL::XE_SetVacateJobState rejected (P|UEV_IMC)" [])
                 (ref-AQP::XE_SetVacateJobState pool-id true))
         ]
     )

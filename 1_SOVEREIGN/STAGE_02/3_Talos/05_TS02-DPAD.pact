@@ -90,6 +90,58 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|TS02-DPAD_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|TS02-DPAD_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        @doc "Registers THIS sovereign launchpad Talos' summoner guard as a trusted IMP peer of the \
+            \ sovereign modules it drives (DEMIPAD core + DPDC for direct XB_DeployAccount). The \
+            \ per-sale CITIZEN modules are registered by the citizen Talos (TS02-CPAD)."
+        (let
+            (
+                (ref-P|TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                (ref-P|DPAD:module{OuronetPolicyV1} DEMIPAD)
+                (ref-P|DPDC:module{OuronetPolicyV1} DPDC)
+                (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
+            )
+            (ref-P|TS01-A::P|A_AddIMP mg)
+            (ref-P|DPAD::P|A_AddIMP mg)
+            ;;DPDC Audit #35M: TS02-DPAD calls DPDC::XB_DeployAccountSFT/NFT directly (the removed
+            ;;DPSF|C_DeployAccount/DPNF|C_DeployAccount Talos wrappers previously carried TS02-C1/C2's
+            ;;own registered guard through the call chain instead) -- register this module's own guard
+            ;;as a trusted DPDC peer so P|UEV_IMC recognizes the direct call.
+            (ref-P|DPDC::P|A_AddIMP mg)
+        )
+    )
 
     ;;<=========================================================================>
     ;;{3}  CST
@@ -124,61 +176,9 @@
     )
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|TS02-DPAD_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|TS02-DPAD_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        @doc "Registers THIS sovereign launchpad Talos' summoner guard as a trusted IMP peer of the \
-            \ sovereign modules it drives (DEMIPAD core + DPDC for direct XB_DeployAccount). The \
-            \ per-sale CITIZEN modules are registered by the citizen Talos (TS02-CPAD)."
-        (let
-            (
-                (ref-P|TS01-A:module{TalosStageOne_AdminV1} TS01-A)
-                (ref-P|DPAD:module{OuronetPolicyV1} DEMIPAD)
-                (ref-P|DPDC:module{OuronetPolicyV1} DPDC)
-                (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
-            )
-            (ref-P|TS01-A::A_P|AddIMP mg)
-            (ref-P|DPAD::A_P|AddIMP mg)
-            ;;DPDC Audit #35M: TS02-DPAD calls DPDC::XB_DeployAccountSFT/NFT directly (the removed
-            ;;DPSF|C_DeployAccount/DPNF|C_DeployAccount Talos wrappers previously carried TS02-C1/C2's
-            ;;own registered guard through the call chain instead) -- register this module's own guard
-            ;;as a trusted DPDC peer so UEV_IMC recognizes the direct call.
-            (ref-P|DPDC::A_P|AddIMP mg)
-        )
-    )
     ;;
     (defun A_RegisterAssetToLaunchpad (patron:string asset-id:string fungibility:[bool])
         @doc "Registers an Asset to Launchpad; \

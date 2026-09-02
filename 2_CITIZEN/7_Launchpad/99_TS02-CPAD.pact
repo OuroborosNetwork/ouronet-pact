@@ -76,6 +76,62 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|TS02-CPAD_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|TS02-CPAD_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        @doc "Registers THIS citizen Talos' summoner guard as a trusted IMP peer of the per-sale \
+            \ citizen modules it wraps (Spark/Snakes/Custodians/StoicPay/StoicIco), so their P|UEV_IMC \
+            \ recognizes calls from this Talos."
+        (let
+            (
+                (ref-P|TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                (ref-P|SPARK:module{OuronetPolicyV1} DEMIPAD-SPARK)
+                (ref-P|SNAKES:module{OuronetPolicyV1} DEMIPAD-SNAKES)
+                (ref-P|CUSTODIANS:module{OuronetPolicyV1} DEMIPAD-CUSTODIANS)
+                (ref-P|KPAY:module{OuronetPolicyV1} DEMIPAD-STOICPAY)
+                (ref-P|STOAICO:module{OuronetPolicyV1} STOAICO)
+                (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
+            )
+            ;;register into the sale modules (their P|UEV_IMC recognizes this Talos)
+            (ref-P|SPARK::P|A_AddIMP mg)
+            (ref-P|SNAKES::P|A_AddIMP mg)
+            (ref-P|CUSTODIANS::P|A_AddIMP mg)
+            (ref-P|KPAY::P|A_AddIMP mg)
+            (ref-P|STOAICO::P|A_AddIMP mg)
+            ;;register into TS01-A so the wrappers' XB_DynamicFuelSTOA gas-station refuel passes P|UEV_IMC
+            (ref-P|TS01-A::P|A_AddIMP mg)
+        )
+    )
 
     ;;<=========================================================================>
     ;;{3}  CST
@@ -110,65 +166,9 @@
     )
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|TS02-CPAD_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|TS02-CPAD_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        @doc "Registers THIS citizen Talos' summoner guard as a trusted IMP peer of the per-sale \
-            \ citizen modules it wraps (Spark/Snakes/Custodians/StoicPay/StoicIco), so their UEV_IMC \
-            \ recognizes calls from this Talos."
-        (let
-            (
-                (ref-P|TS01-A:module{TalosStageOne_AdminV1} TS01-A)
-                (ref-P|SPARK:module{OuronetPolicyV1} DEMIPAD-SPARK)
-                (ref-P|SNAKES:module{OuronetPolicyV1} DEMIPAD-SNAKES)
-                (ref-P|CUSTODIANS:module{OuronetPolicyV1} DEMIPAD-CUSTODIANS)
-                (ref-P|KPAY:module{OuronetPolicyV1} DEMIPAD-STOICPAY)
-                (ref-P|STOAICO:module{OuronetPolicyV1} STOAICO)
-                (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
-            )
-            ;;register into the sale modules (their UEV_IMC recognizes this Talos)
-            (ref-P|SPARK::A_P|AddIMP mg)
-            (ref-P|SNAKES::A_P|AddIMP mg)
-            (ref-P|CUSTODIANS::A_P|AddIMP mg)
-            (ref-P|KPAY::A_P|AddIMP mg)
-            (ref-P|STOAICO::A_P|AddIMP mg)
-            ;;register into TS01-A so the wrappers' XB_DynamicFuelSTOA gas-station refuel passes UEV_IMC
-            (ref-P|TS01-A::A_P|AddIMP mg)
-        )
-    )
     ;;
     (defun C_SPARK|BuySparks (patron:string buyer:string sparks-amount:integer iz-native:bool max-cost:decimal)
         @doc "<max-cost> = buyer's dollar slippage ceiling (Variant 1). Pass a sentinel < 0 for slippage \

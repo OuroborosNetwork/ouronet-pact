@@ -36,6 +36,7 @@
 ;;
 (module DPDC-N GOV
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -79,6 +80,49 @@
     )
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|DPDC-N_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|DPDC-N_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|DPDC:module{OuronetPolicyV1} DPDC)
+                (ref-P|DPDC-S:module{OuronetPolicyV1} DPDC-S)
+                (mg:guard (create-capability-guard (P|DPDC-N|CALLER)))
+            )
+            (ref-P|DPDC::P|A_AddIMP mg)
+            (ref-P|DPDC-S::P|A_AddIMP mg)
+        )
     )
 
     ;;<=========================================================================>
@@ -292,14 +336,6 @@
         )
     )
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     (defun UEV_NonceDataUpdater
         (id:string son:bool account:string nosc:integer nos:bool nost:bool)
         (enforce (> nosc 0) "Operation requires greater than zero <nonce-or-set-class>")
@@ -549,45 +585,10 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|DPDC-N_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|DPDC-N_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|DPDC:module{OuronetPolicyV1} DPDC)
-                (ref-P|DPDC-S:module{OuronetPolicyV1} DPDC-S)
-                (mg:guard (create-capability-guard (P|DPDC-N|CALLER)))
-            )
-            (ref-P|DPDC::A_P|AddIMP mg)
-            (ref-P|DPDC-S::A_P|AddIMP mg)
-        )
-    )
     (defun C_UpdateNonces
         (id:string son:bool account:string nosc:[integer] nos:bool nost:bool new-nonces-data:[object{DpdcUdcV1.DPDC|NonceData}])
         @doc "[0] Updates Full Nonce Data for multiple Nonces at a time"
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -609,7 +610,7 @@
         @doc "[1] Updates Nonce Native Royalty Value. This field is a forward-looking hook for the \
             \ upcoming Escrow/NFT marketplace (not yet built) — no on-chain consumer reads it today; \
             \ confirmed intentional, not dead/unfinished code. See DPDC Audit #26M."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -623,7 +624,7 @@
     (defun C_UpdateNonceIgnisRoyalty
         (id:string son:bool account:string nosc:integer nos:bool nost:bool royalty-value:decimal)
         @doc "[2] Updates Nonce Ignis Royalty Value"
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -637,7 +638,7 @@
     (defun C_UpdateNonceName
         (id:string son:bool account:string nosc:integer nos:bool nost:bool name:string)
         @doc "[3] Updates Nonce Name"
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -651,7 +652,7 @@
     (defun C_UpdateNonceDescription
         (id:string son:bool account:string nosc:integer nos:bool nost:bool description:string)
         @doc "[4] Updates Nonce Description"
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -665,7 +666,7 @@
     (defun C_UpdateNonceScore
         (id:string son:bool account:string nosc:integer nos:bool nost:bool score:decimal)
         @doc "[5] Updates Nonce Score"
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -679,7 +680,7 @@
     (defun C_UpdateNonceMetaData
         (id:string son:bool account:string nosc:integer nos:bool nost:bool meta-data:object)
         @doc "[6] Updates Nonce Meta-Data"
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -696,7 +697,7 @@
             ay:object{DpdcUdcV1.URI|Type} u1:object{DpdcUdcV1.URI|Data} u2:object{DpdcUdcV1.URI|Data} u3:object{DpdcUdcV1.URI|Data}
         )
         @doc "[7] Updates Nonce URIs"
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)

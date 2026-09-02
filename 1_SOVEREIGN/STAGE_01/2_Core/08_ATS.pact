@@ -250,6 +250,7 @@
 ;;
 (module ATS GOV
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -309,6 +310,53 @@
     )
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|ATS_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|ATS_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
+                (ref-P|BRD:module{OuronetPolicyV1} BRD)
+                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
+                (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
+                (mg:guard (create-capability-guard (P|ATS|CALLER)))
+            )
+            (ref-P|DALOS::P|A_AddIMP mg)
+            (ref-P|BRD::P|A_AddIMP mg)
+            (ref-P|DPTF::P|A_AddIMP mg)
+            (ref-P|DPOF::P|A_AddIMP mg)
+        )
     )
 
     ;;<=========================================================================>
@@ -1962,14 +2010,6 @@
         (let ((ref-BRD:module{BrandingV1} BRD)) (ref-BRD::URCi_UpgradeBranding months))
     )
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     (defun UEV_id (atspair:string)
         (let
             (
@@ -2390,7 +2430,7 @@
     ;;
     ;;
     (defun XE_RemoveSecondary (atspair:string reward-token:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
@@ -2407,7 +2447,7 @@
         )
     )
     (defun XE_UpdateRUR (atspair:string reward-token:string rur:integer direction:bool amount:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
@@ -2444,7 +2484,7 @@
         )
     )
     (defun XE_SpawnAutostakeAccount (atspair:string account:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (zero:object{UtilityAtsV2.Awo} (UDC_MakeZeroUnstakeObject atspair))
@@ -2469,7 +2509,7 @@
         )
     )
     (defun XE_ReshapeUnstakeAccount (atspair:string account:string rp:integer)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-U|ATS:module{UtilityAtsV2} U|ATS)
@@ -2494,93 +2534,54 @@
         )
     )
     (defun XE_UpP0 (atspair:string account:string obj:[object{UtilityAtsV2.Awo}])
-        (UEV_IMC)
+        (P|UEV_IMC)
         (update ATS|Ledger (UC_AtspairAccount atspair account)
             { "P0" : obj}
         )
     )
     (defun XE_UpP1 (atspair:string account:string obj:object{UtilityAtsV2.Awo})
-        (UEV_IMC)
+        (P|UEV_IMC)
         (update ATS|Ledger (UC_AtspairAccount atspair account)
             { "P1"  : obj}
         )
     )
     (defun XE_UpP2 (atspair:string account:string obj:object{UtilityAtsV2.Awo})
-        (UEV_IMC)
+        (P|UEV_IMC)
         (update ATS|Ledger (UC_AtspairAccount atspair account)
             { "P2"  : obj}
         )
     )
     (defun XE_UpP3 (atspair:string account:string obj:object{UtilityAtsV2.Awo})
-        (UEV_IMC)
+        (P|UEV_IMC)
         (update ATS|Ledger (UC_AtspairAccount atspair account)
             { "P3"  : obj}
         )
     )
     (defun XE_UpP4 (atspair:string account:string obj:object{UtilityAtsV2.Awo})
-        (UEV_IMC)
+        (P|UEV_IMC)
         (update ATS|Ledger (UC_AtspairAccount atspair account)
             { "P4"  : obj}
         )
     )
     (defun XE_UpP5 (atspair:string account:string obj:object{UtilityAtsV2.Awo})
-        (UEV_IMC)
+        (P|UEV_IMC)
         (update ATS|Ledger (UC_AtspairAccount atspair account)
             { "P5"  : obj}
         )
     )
     (defun XE_UpP6 (atspair:string account:string obj:object{UtilityAtsV2.Awo})
-        (UEV_IMC)
+        (P|UEV_IMC)
         (update ATS|Ledger (UC_AtspairAccount atspair account)
             { "P6"  : obj}
         )
     )
     (defun XE_UpP7 (atspair:string account:string obj:object{UtilityAtsV2.Awo})
-        (UEV_IMC)
+        (P|UEV_IMC)
         (update ATS|Ledger (UC_AtspairAccount atspair account)
             { "P7"  : obj}
         )
     )
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|ATS_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|ATS_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (ref-P|BRD:module{OuronetPolicyV1} BRD)
-                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
-                (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
-                (mg:guard (create-capability-guard (P|ATS|CALLER)))
-            )
-            (ref-P|DALOS::A_P|AddIMP mg)
-            (ref-P|BRD::A_P|AddIMP mg)
-            (ref-P|DPTF::A_P|AddIMP mg)
-            (ref-P|DPOF::A_P|AddIMP mg)
-        )
-    )
     (defun AU_UnstakeAccounts (keyz:[string])
         @doc "Get <keyz> with <(UR_KEYS)>, or update one a time"
         (with-capability (AHU)
@@ -2608,7 +2609,7 @@
     )
     (defun C_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator}
         (entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}])
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -2621,7 +2622,7 @@
         )
     )
     (defun C_UpgradeBranding (patron:string entity-id:string months:integer)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -2638,7 +2639,7 @@
     ;;Hot RBT Management
     (defun C_HOT-RBT|UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator}
         (entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}])
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-B|DPOF:module{BrandingUsagePrimaryV1} DPOF)
@@ -2649,7 +2650,7 @@
         )
     )
     (defun C_HOT-RBT|UpgradeBranding (patron:string entity-id:string months:integer)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-B|DPOF:module{BrandingUsagePrimaryV1} DPOF)
@@ -2667,7 +2668,7 @@
             \ Fetches the ORIGINAL nonce's own metadata, so the replacement mint carries \
             \ forward the same mint-time (and any other metadata-derived math stays \
             \ correct) rather than fabricating fresh metadata for a seized position."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (ATS|C>REPURPOSE-HOT-RBT hot-rbt)
             (let
                 (
@@ -2709,7 +2710,7 @@
             reward-bearing-token:[string]
             rbt-nfr:[bool]
         )
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (ATS|C>ISSUE account atspair index-decimals reward-token rt-nfr reward-bearing-token rbt-nfr)
             (let
                 (
@@ -2731,7 +2732,7 @@
     )
     (defun C_RotateOwnership:object{IgnisCollectorV1.OutputCumulator}
         (atspair:string new-owner:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -2744,7 +2745,7 @@
     )
     (defun C_Control:object{IgnisCollectorV1.OutputCumulator}
         (atspair:string can-change-owner:bool syphoning:bool hibernate:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -2757,7 +2758,7 @@
     )
     (defun C_UpdateRoyalty:object{IgnisCollectorV1.OutputCumulator}
         (atspair:string royalty:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -2770,7 +2771,7 @@
     )
     (defun C_UpdateSyphon:object{IgnisCollectorV1.OutputCumulator}
         (atspair:string syphon:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -2784,7 +2785,7 @@
     ;;
     (defun C_SetHibernationFees:object{IgnisCollectorV1.OutputCumulator}
         (atspair:string peak:decimal decay:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -2798,7 +2799,7 @@
     ;;
     (defun C_ToggleParameterLock:object{IgnisCollectorV1.OutputCumulator}
         (patron:string atspair:string toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (ATS|C>TOGGLE-PARAMETER-LOCK atspair toggle)
             (let
                 (
@@ -2821,7 +2822,7 @@
     )
     (defun C_AddSecondary:object{IgnisCollectorV1.OutputCumulator}
         (atspair:string reward-token:string rt-nfr:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -2842,7 +2843,7 @@
     ;;Cold Recovery Management
     (defun C_ControlColdRecoveryFees:object{IgnisCollectorV1.OutputCumulator} 
         (atspair:string c-nfr:bool c-fr:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -2855,7 +2856,7 @@
     )
     (defun C_SetColdRecoveryFees:object{IgnisCollectorV1.OutputCumulator}
         (atspair:string fee-positions:integer fee-thresholds:[decimal] fee-array:[[decimal]])
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -2871,7 +2872,7 @@
     )
     (defun C_SetColdRecoveryDuration:object{IgnisCollectorV1.OutputCumulator}
         (atspair:string soft-or-hard:bool base:integer growth:integer)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -2884,7 +2885,7 @@
     )
     (defun C_ToggleElite:object{IgnisCollectorV1.OutputCumulator}
         (atspair:string toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -2900,7 +2901,7 @@
         @doc "Fix (audit finding #21L / L3): sets can-upgrade, which was previously \
             \ permanently true with no setter. Gates C_Control (can-change-owner/ \
             \ syphoning/hibernate) - false blocks C_Control entirely until true again."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -2913,7 +2914,7 @@
     )
     (defun C_SwitchColdRecovery:object{IgnisCollectorV1.OutputCumulator}
         (atspair:string toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -2928,7 +2929,7 @@
     ;;Must be modified to either add a 0 supply Orto Fungible or Issue One
     (defun C_AddHotRBT:object{IgnisCollectorV1.OutputCumulator}
         (atspair:string hot-rbt:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (ATS|C>ADD-HOT-RBT atspair hot-rbt)
             (let
                 (
@@ -2965,7 +2966,7 @@
     )
     (defun C_ControlHotRecoveryFee:object{IgnisCollectorV1.OutputCumulator} 
         (atspair:string h-fr:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -2978,7 +2979,7 @@
     )
     (defun C_SetHotRecoveryFees:object{IgnisCollectorV1.OutputCumulator}
         (atspair:string promile:decimal decay:integer)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -2991,7 +2992,7 @@
     )
     (defun C_SwitchHotRecovery:object{IgnisCollectorV1.OutputCumulator}
         (atspair:string toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -3005,7 +3006,7 @@
     ;;Direct Recovery Management
     (defun C_SetDirectRecoveryFee:object{IgnisCollectorV1.OutputCumulator}
         (atspair:string promile:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -3018,7 +3019,7 @@
     )
     (defun C_SwitchDirectRecovery:object{IgnisCollectorV1.OutputCumulator}
         (atspair:string toggle:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)

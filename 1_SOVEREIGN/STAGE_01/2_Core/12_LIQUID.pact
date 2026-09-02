@@ -42,6 +42,7 @@
 ;;
 (module LIQUID GOV
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -109,6 +110,61 @@
     )
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|LIQUID_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|LIQUID_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
+                (ref-P|BRD:module{OuronetPolicyV1} BRD)
+                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
+                ;(ref-P|DPOF:module{OuronetPolicyV1} DPOF)
+                (ref-P|ATS:module{OuronetPolicyV1} ATS)
+                (ref-P|TFT:module{OuronetPolicyV1} TFT)
+                (ref-P|ATSU:module{OuronetPolicyV1} ATSU)
+                (ref-P|VST:module{OuronetPolicyV1} VST)
+                (mg:guard (create-capability-guard (P|LQD|CALLER)))
+            )
+            (ref-P|DALOS::P|A_AddIMP mg)
+            (ref-P|BRD::P|A_AddIMP mg)
+            (ref-P|DPTF::P|A_AddIMP mg)
+            ;(ref-P|DPOF::P|A_AddIMP mg)
+            (ref-P|ATS::P|A_AddIMP mg)
+            (ref-P|TFT::P|A_AddIMP mg)
+            (ref-P|ATSU::P|A_AddIMP mg)
+            (ref-P|VST::P|A_AddIMP mg)
+        )
     )
 
     ;;<=========================================================================>
@@ -290,14 +346,6 @@
         )
     )
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     (defun UEV_IzLiquidStakingLive ()
         @doc "Enforces Liquid Staking is live with an existing Autostake Pair"
         (let
@@ -336,56 +384,9 @@
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|LIQUID_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|LIQUID_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (ref-P|BRD:module{OuronetPolicyV1} BRD)
-                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
-                ;(ref-P|DPOF:module{OuronetPolicyV1} DPOF)
-                (ref-P|ATS:module{OuronetPolicyV1} ATS)
-                (ref-P|TFT:module{OuronetPolicyV1} TFT)
-                (ref-P|ATSU:module{OuronetPolicyV1} ATSU)
-                (ref-P|VST:module{OuronetPolicyV1} VST)
-                (mg:guard (create-capability-guard (P|LQD|CALLER)))
-            )
-            (ref-P|DALOS::A_P|AddIMP mg)
-            (ref-P|BRD::A_P|AddIMP mg)
-            (ref-P|DPTF::A_P|AddIMP mg)
-            ;(ref-P|DPOF::A_P|AddIMP mg)
-            (ref-P|ATS::A_P|AddIMP mg)
-            (ref-P|TFT::A_P|AddIMP mg)
-            (ref-P|ATSU::A_P|AddIMP mg)
-            (ref-P|VST::A_P|AddIMP mg)
-        )
-    )
     ;;
     (defun A_MigrateLiquidFunds:decimal (migration-target-stoa-account:string)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (GOV|MIGRATE migration-target-stoa-account)
             (let
                 (
@@ -402,7 +403,7 @@
     )
     (defun C_UnwrapStoa:object{IgnisCollectorV1.OutputCumulator}
         (unwrapper:string amount:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-coin:module{stoa-ns.fungible-v1} coin)
@@ -439,7 +440,7 @@
     )
     (defun C_WrapStoa:object{IgnisCollectorV1.OutputCumulator}
         (wrapper:string amount:decimal)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -478,7 +479,7 @@
             \ account with the real signer's own (read-keyset \"ks\") immediately before this \
             \ call, the same pattern already used for native Stoa unwrap - there is no \
             \ standalone Pact function for this (see #13H, ROUND-02-FIXES.md)."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-ur-coin:module{stoa-ns.ur-stoic-fungible-v1} coin)
@@ -521,7 +522,7 @@
             \ account with the real signer's own (read-keyset \"ks\") immediately before this \
             \ call, the same pattern already used for native Stoa unwrap - there is no \
             \ standalone Pact function for this (see #13H, ROUND-02-FIXES.md)."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-ur-coin:module{stoa-ns.ur-stoic-fungible-v1} coin)

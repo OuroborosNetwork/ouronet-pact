@@ -249,7 +249,7 @@
                                         (account-x:string SWP|SC_NAME)
                                         (amount-x:decimal lqboost-ignis-tax)
                                     )
-                                    (DPTF.UEV_IMC)
+                                    (DPTF.P|UEV_IMC)
                                     (let
                                         (
                                             (ref-U|DPTF:module{UtilityDptfV1} U|DPTF)
@@ -258,7 +258,7 @@
                                         )
                                         (with-capability (DPTF.DPTF|C>BURN id-x account-x amount-x)
                                             (with-capability (DPTF.SECURE)
-                                                (DPTF.UEV_IMC)
+                                                (DPTF.P|UEV_IMC)
                                                 (with-capability (DPTF|C>DEBIT account-x id-x amount-x (ref-U|DPTF::UDC_EmptyDispo) false)
                                                     (let
                                                         (
@@ -413,8 +413,8 @@
         (swp-sc:string (ref-DALOS::GOV|SWP|SC_NAME))
     )
     [
-        (ref-P|MTX-SWP::A_P|Define)
-        (ref-P|TS01-CP::A_P|Define)
+        (ref-P|MTX-SWP::P|A_Define)
+        (ref-P|TS01-CP::P|A_Define)
         (ref-TS01-C1::C_DALOS|RotateGovernor patron vst-sc
             (ref-U|G::UEV_GuardOfAny
                 [

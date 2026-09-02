@@ -119,6 +119,77 @@
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|TS01-A_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|TS01-A_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        @doc "Fix (audit finding #22L test-coverage sweep): ATS and ATSU were never \
+            \ registered as permitted callers here (ATS was even bound - ref-P|ATS - \
+            \ but never used), so any TS01-A admin function routing into either module \
+            \ (e.g. A_ATS|RemoveSecondary, A_ATS|KickStart) always failed P|UEV_IMC's \
+            \ whitelist check - unconditionally, regardless of caller/key. Never caught \
+            \ because those functions had zero test coverage. Every other Talos module's \
+            \ own P|A_Define already registers into both ATS and ATSU; this just matches \
+            \ that existing pattern."
+        (let
+            (
+                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
+                (ref-P|IGNIS:module{OuronetPolicyV1} IGNIS)
+                (ref-P|BRD:module{OuronetPolicyV1} BRD)
+                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
+                (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
+                (ref-P|ATS:module{OuronetPolicyV1} ATS)
+                (ref-P|ATSU:module{OuronetPolicyV1} ATSU)
+                (ref-P|LIQUID:module{OuronetPolicyV1} LIQUID)
+                (ref-P|ORBR:module{OuronetPolicyV1} OUROBOROS)
+                (ref-P|SWP:module{OuronetPolicyV1} SWP)
+                (mg:guard (create-capability-guard (P|TS)))
+            )
+            (ref-P|DALOS::P|A_Add
+                "TS01-A|RemoteDalosGov"
+                (create-capability-guard (P|TRG))
+            )
+            (ref-P|DALOS::P|A_AddIMP mg)
+            (ref-P|IGNIS::P|A_AddIMP mg)
+            (ref-P|BRD::P|A_AddIMP mg)
+            (ref-P|DPTF::P|A_AddIMP mg)
+            (ref-P|DPOF::P|A_AddIMP mg)
+            (ref-P|ATS::P|A_AddIMP mg)
+            (ref-P|ATSU::P|A_AddIMP mg)
+            (ref-P|LIQUID::P|A_AddIMP mg)
+            (ref-P|ORBR::P|A_AddIMP mg)
+            (ref-P|SWP::P|A_AddIMP mg)
+        )
+    )
 
     ;;<=========================================================================>
     ;;{3}  CST
@@ -146,20 +217,12 @@
     ;;
     (defun URC_Gassless ()        (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|DALOS|SC_NAME)))
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     ;;
     ;;  [Fueling Functions]
     (defun XB_DynamicFuelSTOA ()
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -174,7 +237,7 @@
     )
     ;;
     (defun XE_ConditionalFuelSTOA (condition:bool)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (if condition
             (with-capability (SECURE)
                 (XB_DynamicFuelSTOA)
@@ -195,69 +258,6 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|TS01-A_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|TS01-A_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        @doc "Fix (audit finding #22L test-coverage sweep): ATS and ATSU were never \
-            \ registered as permitted callers here (ATS was even bound - ref-P|ATS - \
-            \ but never used), so any TS01-A admin function routing into either module \
-            \ (e.g. A_ATS|RemoveSecondary, A_ATS|KickStart) always failed UEV_IMC's \
-            \ whitelist check - unconditionally, regardless of caller/key. Never caught \
-            \ because those functions had zero test coverage. Every other Talos module's \
-            \ own A_P|Define already registers into both ATS and ATSU; this just matches \
-            \ that existing pattern."
-        (let
-            (
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (ref-P|IGNIS:module{OuronetPolicyV1} IGNIS)
-                (ref-P|BRD:module{OuronetPolicyV1} BRD)
-                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
-                (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
-                (ref-P|ATS:module{OuronetPolicyV1} ATS)
-                (ref-P|ATSU:module{OuronetPolicyV1} ATSU)
-                (ref-P|LIQUID:module{OuronetPolicyV1} LIQUID)
-                (ref-P|ORBR:module{OuronetPolicyV1} OUROBOROS)
-                (ref-P|SWP:module{OuronetPolicyV1} SWP)
-                (mg:guard (create-capability-guard (P|TS)))
-            )
-            (ref-P|DALOS::A_P|Add
-                "TS01-A|RemoteDalosGov"
-                (create-capability-guard (P|TRG))
-            )
-            (ref-P|DALOS::A_P|AddIMP mg)
-            (ref-P|IGNIS::A_P|AddIMP mg)
-            (ref-P|BRD::A_P|AddIMP mg)
-            (ref-P|DPTF::A_P|AddIMP mg)
-            (ref-P|DPOF::A_P|AddIMP mg)
-            (ref-P|ATS::A_P|AddIMP mg)
-            (ref-P|ATSU::A_P|AddIMP mg)
-            (ref-P|LIQUID::A_P|AddIMP mg)
-            (ref-P|ORBR::A_P|AddIMP mg)
-            (ref-P|SWP::A_P|AddIMP mg)
-        )
-    )
     ;;
     ;;  [DALOS_Administrator]
     (defun A_DALOS|MigrateLiquidFunds:decimal (migration-target-stoa-account:string)

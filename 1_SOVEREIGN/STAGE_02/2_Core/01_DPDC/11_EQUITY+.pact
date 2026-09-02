@@ -39,6 +39,7 @@
 )
 (module EQUITY GOV
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
@@ -91,6 +92,57 @@
     )
     (defun P|UR_IMP:[guard] ()
         (at "m-policies" (read P|MT P|I ["m-policies"]))
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|EQUITY_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|EQUITY_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|DPDC:module{OuronetPolicyV1} DPDC)
+                (ref-P|DPDC-C:module{OuronetPolicyV1} DPDC-C)
+                (ref-P|DPDC-I:module{OuronetPolicyV1} DPDC-I)
+                (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
+                (mg:guard (create-capability-guard (P|EQUITY|CALLER)))
+            )
+            (ref-P|DPDC::P|A_Add
+                "EQUITY|RemoteDpdcGov"
+                (create-capability-guard (P|EQUITY|REMOTE-GOV))
+            )
+            (ref-P|DPDC::P|A_AddIMP mg)
+            (ref-P|DPDC-C::P|A_AddIMP mg)
+            (ref-P|DPDC-I::P|A_AddIMP mg)
+            (ref-P|DPDC-T::P|A_AddIMP mg)
+        )
     )
 
     ;;<=========================================================================>
@@ -356,14 +408,6 @@
         )
     )
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     (defun UEV_SharePackageTier (package-share-tier:integer)
         (let
             (
@@ -553,49 +597,6 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|EQUITY_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        (with-capability (GOV|EQUITY_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        (let
-            (
-                (ref-P|DPDC:module{OuronetPolicyV1} DPDC)
-                (ref-P|DPDC-C:module{OuronetPolicyV1} DPDC-C)
-                (ref-P|DPDC-I:module{OuronetPolicyV1} DPDC-I)
-                (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
-                (mg:guard (create-capability-guard (P|EQUITY|CALLER)))
-            )
-            (ref-P|DPDC::A_P|Add
-                "EQUITY|RemoteDpdcGov"
-                (create-capability-guard (P|EQUITY|REMOTE-GOV))
-            )
-            (ref-P|DPDC::A_P|AddIMP mg)
-            (ref-P|DPDC-C::A_P|AddIMP mg)
-            (ref-P|DPDC-I::A_P|AddIMP mg)
-            (ref-P|DPDC-T::A_P|AddIMP mg)
-        )
-    )
     (defun C_IssueShareholderCollection:object{IgnisCollectorV1.OutputCumulator}
         (
             patron:string creator-account:string collection-name:string collection-ticker:string
@@ -603,7 +604,7 @@
         )
         @doc "Royalty is the standard Royalty for the Whole Collection \
             \ While <ignis-royalty> is the ignis Royalty for 1% of Company Shares"
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-U|VST:module{UtilityVstV1} U|VST)
@@ -703,7 +704,7 @@
     )
     (defun C_MorphPackageShares:object{IgnisCollectorV1.OutputCumulator}
         (account:string id:string input-nonce:integer input-amount:integer output-nonce:integer)
-        (UEV_IMC)
+        (P|UEV_IMC)
         (UEV_Morph input-nonce output-nonce)
         (with-capability (SECURE)
             (if (= input-nonce 1)

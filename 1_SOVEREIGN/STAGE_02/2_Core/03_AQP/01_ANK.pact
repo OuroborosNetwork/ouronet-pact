@@ -3,7 +3,7 @@
     (defun GOV|AQP|SC_NAME ())
     (defun GOV|AQP|PBL ())
     ;;
-    (defun UEV_IMC ())
+    (defun P|UEV_IMC ())
     ;;
     (defcap AQP|GOV ())
     ;; [UC]  compute
@@ -113,6 +113,7 @@
 )
 (module AQP-ANK GOV
 
+
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;; REPL observability: REPL/Stage_02/[6.2.1]_AQP-ANK.repl tags each intra-tx group as TXnnn · mm · <slug> in ;;==== … ==== and (print "--- [TXnnn · mm · …] ---"); mm is 01.. within each begin-tx.
@@ -177,6 +178,47 @@
     (defun P|UR_IMP:[guard] ()
         @doc "Reads imported policy guards list."
         (at "m-policies" (read P|MT P|I ["m-policies"]))
+    )
+    (defun P|UEV_IMC ()
+        @doc "Enforces that caller matches an imported policy guard."
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV1} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        @doc "Writes or updates one local policy guard entry."
+        (with-capability (GOV|ANK_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        @doc "Appends one imported policy guard entry."
+        (with-capability (GOV|ANK_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    ;;
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        @doc "Post-deploy hook (AQP-BOOT Step 0). No cross-module IMP registration required — \
+            \ ANK calls DALOS UR_*/CAP_*/UEV_* only (no DALOS P|UEV_IMC on those paths); client entry is Talos P|TALOS-SUMMONER."
+        true
     )
 
     ;;<=========================================================================>
@@ -1417,15 +1459,6 @@
         (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS))
             (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME)))
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_IMC ()
-        @doc "Enforces that caller matches an imported policy guard."
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
     ;; [UEV] enforce
     (defun UEV_AnkFungibility (asset-fungibility:[bool])
         @doc "Validates asset-fungibility tuple (TF/SF/NF discriminator) for anchor-class / asset-summary tables."
@@ -1969,8 +2002,8 @@
             \ every affected holder — set state false + remove it from its BoostClass/AssetAnchors, SKIPPING the #9 \
             \ score-link lock (which C_RevokeAnchor enforces for UNemployed anchors). The reverse-index set is \
             \ UNCHANGED: scores keep employing the class (via its other anchors, or an emptied class contributing \
-            \ 0 boost). No IGNIS (the sweep defpact bills). UEV_IMC + ANK|XE>SWEEP-REVOKE (liveness + owner + SECURE)."
-        (UEV_IMC)
+            \ 0 boost). No IGNIS (the sweep defpact bills). P|UEV_IMC + ANK|XE>SWEEP-REVOKE (liveness + owner + SECURE)."
+        (P|UEV_IMC)
         (with-capability (ANK|XE>SWEEP-REVOKE anchor-id)
             (WU_Anchor|State anchor-id false)
             (XI_RevokeAnchorBookkeeping anchor-id)
@@ -1981,8 +2014,8 @@
         (boost-class-id:string score-id:string)
         @doc "Forward (AQP-SCORE::XI_CreateBoostClassLink): register score-id in the BoostClass reverse-index set, \
             \ locking revoke of any anchor in this class while the set is non-empty (H4 #9 lock + the sweep's \
-            \ enumerable index). Idempotent. UEV_IMC + ANK|C>BUMP-BOOST-CLASS-LINKS (composes SECURE)."
-        (UEV_IMC)
+            \ enumerable index). Idempotent. P|UEV_IMC + ANK|C>BUMP-BOOST-CLASS-LINKS (composes SECURE)."
+        (P|UEV_IMC)
         (with-capability (ANK|C>BUMP-BOOST-CLASS-LINKS boost-class-id)
             (WU_BC|AddScoreLink boost-class-id score-id)
         )
@@ -1991,8 +2024,8 @@
         (boost-class-id:string score-id:string)
         @doc "Forward (AQP-SCORE::XI_CreateBoostClassLink re-point/unlink): remove score-id from the BoostClass \
             \ reverse-index set (M4 #13 / sweep unlink). Releases the class's revoke lock once the set empties. \
-            \ UEV_IMC + ANK|C>BUMP-BOOST-CLASS-LINKS (composes SECURE)."
-        (UEV_IMC)
+            \ P|UEV_IMC + ANK|C>BUMP-BOOST-CLASS-LINKS (composes SECURE)."
+        (P|UEV_IMC)
         (with-capability (ANK|C>BUMP-BOOST-CLASS-LINKS boost-class-id)
             (WU_BC|RemoveScoreLink boost-class-id score-id)
         )
@@ -2003,8 +2036,8 @@
             \ anchors CURRENTLY in each class. After a sweep removes (or re-prices) an anchor GLOBALLY, this \
             \ re-derives each holder's stored aggregate-promile so it no longer reflects the retired anchor — the \
             \ DEEPER recompute (the deb refresh alone assumes the aggregate is correct). NO fund movement; the \
-            \ sweep defpact bills IGNIS. UEV_IMC + ANK|XE>SWEEP (composes SECURE)."
-        (UEV_IMC)
+            \ sweep defpact bills IGNIS. P|UEV_IMC + ANK|XE>SWEEP (composes SECURE)."
+        (P|UEV_IMC)
         (with-capability (ANK|XE>SWEEP)
             (XI_2|RecomputeAffectedBoostAggregates account boost-class-ids)
             (format "ANK sweep: refolded {} boost aggregate(s) for {}" [(length boost-class-ids) account])
@@ -2014,10 +2047,10 @@
     ;; --- Block C · TF user promile ---
     (defun XE_UpdateTrueFungibleUserAnchorValues:object{IgnisCollectorV1.OutputCumulator}
         (account:string dptf-id:string total-dptf-amount:decimal)
-        @doc "Backward (FVT::XI_RefreshTrueFungibleStakeAnchors / C_Sync*): UEV_IMC + XI_1|UpdateTrueFungibleUserAnchorValues \
+        @doc "Backward (FVT::XI_RefreshTrueFungibleStakeAnchors / C_Sync*): P|UEV_IMC + XI_1|UpdateTrueFungibleUserAnchorValues \
             \ when n_live > 0; IGNIS = ignis|small × n_live (live anchors on dptf-id). \
             \ IGNIS interactor = AQP|SC_NAME (pool vault receiver)."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -2045,7 +2078,7 @@
     (defun XE_UpdateSemiFungibleUserAnchorValues
         (account:string dpsf-id:string nonces:[integer] nonce-amounts:[integer] direction:bool)
         @doc "Updates user promile for each live SF anchor on dpsf-id, then recomputes affected BoostClass aggregates."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (ANK|C>UPDATE-DPSF account dpsf-id nonces)
             (XI_1|UpdateSemiFungibleUserAnchorValues account dpsf-id nonces nonce-amounts direction)
         )
@@ -2055,7 +2088,7 @@
     (defun XE_UpdateNonFungibleUserAnchorValues
         (account:string dpnf-id:string nonces:[integer] direction:bool)
         @doc "Updates user promile for each live NF anchor on dpnf-id, then recomputes affected BoostClass aggregates."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (ANK|C>UPDATE-DPNF account dpnf-id nonces)
             (XI_1|UpdateNonFungibleUserAnchorValues account dpnf-id nonces direction)
         )
@@ -2065,7 +2098,7 @@
     (defun XE_ResyncSemiFungibleUserAnchorValues:object{IgnisCollectorV1.OutputCumulator}
         (account:string dpsf-id:string nonces:[integer] nonce-amounts:[integer])
         @doc "Backward (AQP::C_SyncCollectableAnchors): rewrite SF promile from full rollup inventory; IGNIS per live anchor."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -2093,7 +2126,7 @@
     (defun XE_ResyncNonFungibleUserAnchorValues:object{IgnisCollectorV1.OutputCumulator}
         (account:string dpnf-id:string nonces:[integer])
         @doc "Backward (AQP::C_SyncCollectableAnchors): rewrite NF promile from full rollup inventory; IGNIS per live anchor."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -2117,45 +2150,13 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun A_P|Add (policy-name:string policy-guard:guard)
-        @doc "Writes or updates one local policy guard entry."
-        (with-capability (GOV|ANK_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun A_P|AddIMP (policy-guard:guard)
-        @doc "Appends one imported policy guard entry."
-        (with-capability (GOV|ANK_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    ;;
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun A_P|Define ()
-        @doc "Post-deploy hook (AQP-BOOT Step 0). No cross-module IMP registration required — \
-            \ ANK calls DALOS UR_*/CAP_*/UEV_* only (no DALOS UEV_IMC on those paths); client entry is Talos P|TALOS-SUMMONER."
-        true
-    )
     ;;
     ;; [C]   client
     ;;
     (defun C_RevokeBoostClass:object{IgnisCollectorV1.OutputCumulator}
         (boost-class-id:string)
         @doc "Revokes an empty BoostClass."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (ANK|C>REVOKE-BOOST-CLASS boost-class-id)
             (WU_BoostClass|Active boost-class-id false)
             (URCi_RevokeBoostClass)
@@ -2165,7 +2166,7 @@
         (patron:string anchor-name:string dptf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dptf-amount:decimal)
         @doc "Issues a DPTF anchor. When acnoi=true creates a new BoostClass inline (2x STOA); when false links to existing (1x STOA). \
             \ IGNIS output list: [anchor-id] or [anchor-id boost-class-id] when acnoi."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (ANK|C>ISSUE-DPTF anchor-name dptf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dptf-amount)
             (let
                 (
@@ -2190,7 +2191,7 @@
         (patron:string anchor-name:string dpsf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpsf-nonce:integer)
         @doc "Issues a DPSF anchor. When acnoi=true creates a new BoostClass inline (2x STOA); when false links to existing (1x STOA). \
             \ IGNIS output list: [anchor-id] or [anchor-id boost-class-id] when acnoi."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (ANK|C>ISSUE-DPSF anchor-name dpsf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpsf-nonce)
             (let
                 (
@@ -2215,7 +2216,7 @@
         (patron:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-trait-key:string dpnf-trait-value:string)
         @doc "Issues a DPNF trait-anchor. When acnoi=true creates a new BoostClass inline (2x STOA); when false links to existing (1x STOA). \
             \ IGNIS output list: [anchor-id] or [anchor-id boost-class-id] when acnoi."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (ANK|C>ISSUE-DPNF anchor-name dpnf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpnf-trait-key dpnf-trait-value)
             (let
                 (
@@ -2240,7 +2241,7 @@
         (patron:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-nonce-class:integer)
         @doc "Issues a DPNF set-anchor. When acnoi=true creates a new BoostClass inline (2x STOA); when false links to existing (1x STOA). \
             \ IGNIS output list: [anchor-id] or [anchor-id boost-class-id] when acnoi."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (ANK|C>ISSUE-DPNF-SET anchor-name dpnf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpnf-nonce-class)
             (let
                 (
@@ -2264,7 +2265,7 @@
     (defun C_RevokeAnchor:object{IgnisCollectorV1.OutputCumulator}
         (anchor-id:string)
         @doc "Revokes an anchor and updates BoostClass and AssetAnchors bookkeeping."
-        (UEV_IMC)
+        (P|UEV_IMC)
         (with-capability (ANK|C>REVOKE anchor-id)
             (WU_Anchor|State anchor-id false)
             (XI_RevokeAnchorBookkeeping anchor-id)
