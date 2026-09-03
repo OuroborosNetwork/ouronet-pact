@@ -413,14 +413,9 @@
                     )
                     (ref-TS01-C2::C_ATS|Coil GASLESS-PATRON dispenser auryndex ouro s1-40p)
                     (ref-TS01-C2::C_ATS|Fuel GASLESS-PATRON dispenser elite-auryndex auryn c-rbt-amount)
-                    [
-                        (format "Minted {} OURO into with a 10/20/30/40 split." [daily])
-                        (format "{} (10%) OURO to Treasury" [s1-10p])
-                        (format "{} (20%) OURO to Validators Vault" [s1-20p])
-                        (format "{} (30%) OURO fueling the Auryndex" [s1-30p])
-                        (format "{} (40%) OURO coiled to {} Auryn for fueling the EliteAuryndex" [s1-40p c-rbt-amount])
-                    ]
-                    ;;[daily s1-10p s1-20p s1-30p s1-40p]
+                    ;; Interface contract is A_OuroMinterStageOne:[decimal] — return the split amounts
+                    ;; [daily 10% 20% 30% 40%] (module defuns cannot print, so no in-body log strings).
+                    [daily s1-10p s1-20p s1-30p s1-40p]
                 )
             )
         )
