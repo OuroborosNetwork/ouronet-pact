@@ -533,19 +533,12 @@
             \ Vault/Treasury: total-deb-score mirror for inject; common-denominator sentinel \"|\"; total-ghost-tvl-weight 0.0. \
             \ UrStoa analogue: vault header (urstoa-supply on SCORE side; S or total-deb here is FVT-side denominator). \
             \ Field tags: [.] fixed at issue; [..] fixed once set; [M] mutable; [Mu] mutable only under owner + can-upgrade."
-        ;; fvt-class moved to FVT|RewardAggregate (#75 B' Stage 2) — the reward engine reads it heavily.
-        owner-konto:string
         can-upgrade:bool
         can-change-owner:bool
         common-denominator:string                               ;;[Mu]  unsafe to change after ScoreEntityLinks
-        ;; reward-computation aggregates (total-ghost-tvl-weight, total-{base,boosted,deb}-score,
-        ;; total-nzs-count, enabled-reward-count, member-link-count) live in FVT|RewardAggregate (#75 B' Stage 1).
-        mosaic:bool                                             ;;[Mu]  mix score + triplet entities when true
-        membership-mode:string                                  ;;[Mu]  BAR | SCORE | TRUE-TRIPLET | STANDARD-TRIPLET
-        oracle-on:bool                                          ;;[M]   DSA: node/uptime oracle governs capture (off ⇒ capture = units, uptime ≡ 1000, no expiry). Default false.
-        split-mode:string                                       ;;[M]   Farm reward-split (D1-G2): SPLIT|STAKED (participation, farm default) | SPLIT|TVL (pool-size). The
-        ;;                                                              Level-2 W_i source at inject. Farm (class 0) only; vault/treasury store the "|" (CT_SPLIT_MODE_NA) sentinel, never consulted.
-        ;;
+        oracle-on:bool                                          ;;[M]   DSA: node/uptime oracle governs capture. Default false.
+        ;; fvt-class, owner-konto, mosaic, membership-mode, split-mode + the reward aggregates
+        ;; live in FVT|RewardAggregate (#75 B' Stage 1/2) — the reward engine reads/owns them.
         ;;Select Keys
         fvt-id:string
     )
@@ -553,6 +546,10 @@
         @doc "Key = <FVT-ID>. Reward-computation aggregates split out of FVT|Schema (#75 B' Stage 1) so \
             \ the reward orchestration owns them; identity/config stays in FVT|Schema."
         fvt-class:integer                                       ;;[.]   0=Farm · 1=Vault · 2=Treasury (moved here #75 B' Stage 2)
+        owner-konto:string                                      ;;      entity owner (moved #75 B' Stage 2b)
+        mosaic:bool                                             ;;[Mu]  mix score + triplet entities when true
+        membership-mode:string                                  ;;[Mu]  BAR | SCORE | TRUE-TRIPLET | STANDARD-TRIPLET
+        split-mode:string                                       ;;[M]   Farm reward-split: SPLIT|STAKED | SPLIT|TVL
         total-ghost-tvl-weight:decimal                          ;;[M]   Farm S = sum enabled ScoreEntityLink W_i
         total-base-score:decimal
         total-boosted-score:decimal
@@ -1379,31 +1376,27 @@
     ;; Early UDC: constructors required before UR_* with-default-read default objects.
     (defun UDC_FVT|Schema:object{FVT|Schema}
         (
-            owner-konto:string
             can-upgrade:bool
             can-change-owner:bool
             common-denominator:string
-            mosaic:bool
-            membership-mode:string
             oracle-on:bool
-            split-mode:string
             fvt-id:string
         )
-        @doc "Core constructor for object{FVT|Schema}. oracle-on (DSA node/uptime oracle toggle) passes through — \
-            \ false for every non-DSA FVT. split-mode = farm reward-split (SPLIT|STAKED default | SPLIT|TVL)."
-        {"owner-konto"              : owner-konto
-        ,"can-upgrade"              : can-upgrade
+        @doc "Core constructor for object{FVT|Schema} (identity/config). oracle-on (DSA toggle) passes through. \
+            \ owner-konto/mosaic/membership-mode/split-mode moved to FVT|RewardAggregate (#75 B' Stage 2b)."
+        {"can-upgrade"              : can-upgrade
         ,"can-change-owner"         : can-change-owner
         ,"common-denominator"       : common-denominator
-        ,"mosaic"                   : mosaic
-        ,"membership-mode"          : membership-mode
         ,"oracle-on"                : oracle-on
-        ,"split-mode"               : split-mode
         ,"fvt-id"                   : fvt-id}
     )
     (defun UDC_FVT|RewardAggregate:object{FVT|RewardAggregate}
         (
             fvt-class:integer
+            owner-konto:string
+            mosaic:bool
+            membership-mode:string
+            split-mode:string
             total-ghost-tvl-weight:decimal
             total-base-score:decimal
             total-boosted-score:decimal
@@ -1413,8 +1406,12 @@
             member-link-count:integer
             fvt-id:string
         )
-        @doc "Constructor for object{FVT|RewardAggregate} — fvt-class (identity) + reward-computation aggregates (#75 B' Stage 1/2)."
+        @doc "Constructor for object{FVT|RewardAggregate} — fvt-class + entity config the reward engine owns + reward aggregates (#75 B' Stage 1/2)."
         {"fvt-class"                : fvt-class
+        ,"owner-konto"              : owner-konto
+        ,"mosaic"                   : mosaic
+        ,"membership-mode"          : membership-mode
+        ,"split-mode"               : split-mode
         ,"total-ghost-tvl-weight"   : total-ghost-tvl-weight
         ,"total-base-score"         : total-base-score
         ,"total-boosted-score"      : total-boosted-score
@@ -1709,7 +1706,7 @@
     )
     (defun UR_FVT|OwnerKonto:string (fvt-id:string)
         @doc "Reads owner-konto from FVT row."
-        (at "owner-konto" (read FVT|T fvt-id ["owner-konto"]))
+        (at "owner-konto" (read FVT|T|RewardAggregate fvt-id ["owner-konto"]))
     )
     (defun UR_FVT|CanUpgrade:bool (fvt-id:string)
         @doc "Reads can-upgrade from FVT row."
@@ -1775,11 +1772,11 @@
     )
     (defun UR_FVT|Mosaic:bool (fvt-id:string)
         @doc "Reads mosaic from FVT row."
-        (at "mosaic" (read FVT|T fvt-id ["mosaic"]))
+        (at "mosaic" (read FVT|T|RewardAggregate fvt-id ["mosaic"]))
     )
     (defun UR_FVT|MembershipMode:string (fvt-id:string)
         @doc "Reads membership-mode from FVT row."
-        (at "membership-mode" (read FVT|T fvt-id ["membership-mode"]))
+        (at "membership-mode" (read FVT|T|RewardAggregate fvt-id ["membership-mode"]))
     )
     (defun UR_FVT|OracleOn:bool (fvt-id:string)
         @doc "DSA: does the node/uptime oracle govern capture on this FVT? false ⇒ capture = units, uptime ≡ 1000, no expiry."
@@ -1788,7 +1785,7 @@
     (defun UR_FVT|SplitMode:string (fvt-id:string)
         @doc "Reads the farm reward-split mode (D1-G2): SPLIT|STAKED (participation, default) | SPLIT|TVL (pool-size). \
             \ Farm (class 0) only consults it at inject; vault/treasury store the default but never read it."
-        (at "split-mode" (read FVT|T fvt-id ["split-mode"]))
+        (at "split-mode" (read FVT|T|RewardAggregate fvt-id ["split-mode"]))
     )
     (defun UR_FVT|FvtId:string (fvt-id:string)
         @doc "Reads fvt-id field from FVT row."
@@ -4092,7 +4089,7 @@
         (fvt-id:string owner-konto:string)
         @doc "Update owner-konto on FVT|T."
         (require-capability (SECURE))
-        (update FVT|T fvt-id {"owner-konto": owner-konto})
+        (update FVT|T|RewardAggregate fvt-id {"owner-konto": owner-konto})
     )
     (defun WU2_Fvt|Control:string
         (fvt-id:string can-upgrade:bool can-change-owner:bool)
@@ -4152,19 +4149,19 @@
         (fvt-id:string mosaic:bool)
         @doc "Update mosaic on FVT|T (C_SetMosaic only when no member links)."
         (require-capability (SECURE))
-        (update FVT|T fvt-id {"mosaic": mosaic})
+        (update FVT|T|RewardAggregate fvt-id {"mosaic": mosaic})
     )
     (defun WU2_Fvt|MosaicPolicy:string
         (fvt-id:string mosaic:bool membership-mode:string)
         @doc "Update mosaic and membership-mode together (C_SetMosaic)."
         (require-capability (SECURE))
-        (update FVT|T fvt-id {"mosaic": mosaic, "membership-mode": membership-mode})
+        (update FVT|T|RewardAggregate fvt-id {"mosaic": mosaic, "membership-mode": membership-mode})
     )
     (defun WU_Fvt|MembershipMode:string
         (fvt-id:string membership-mode:string)
         @doc "Lock membership-mode on first non-mosaic admission."
         (require-capability (SECURE))
-        (update FVT|T fvt-id {"membership-mode": membership-mode})
+        (update FVT|T|RewardAggregate fvt-id {"membership-mode": membership-mode})
     )
     (defun WU_Fvt|OracleOn:string
         (fvt-id:string oracle-on:bool)
@@ -4176,7 +4173,7 @@
         (fvt-id:string split-mode:string)
         @doc "Update the farm reward-split mode on FVT|T (C_SetSplitMode; farm-only, freely mutable)."
         (require-capability (SECURE))
-        (update FVT|T fvt-id {"split-mode": split-mode})
+        (update FVT|T|RewardAggregate fvt-id {"split-mode": split-mode})
     )
     ;; WU_Fvt|FvtId — select key; WU not needed.
     ;;
@@ -4461,15 +4458,13 @@
         @doc "Under SECURE (FVT|C>ISSUE-FVT): insert FVT|T row with zeroed aggregates and enabled-reward-count 0."
         ;; SECURE: granted by WI_Fvt (underlying W_).
         (WI_Fvt fvt-id
-            (UDC_FVT|Schema
-                owner-konto true true common-denominator
-                true CT_MEMBERSHIP_MODE_BAR false
-                ;; split-mode: farm (class 0) default participation; vault/treasury get the "|" sentinel (never read)
-                (if (= fvt-class 0) CT_SPLIT_MODE_STAKED CT_SPLIT_MODE_NA) fvt-id
-            )
+            (UDC_FVT|Schema true true common-denominator false fvt-id)
         )
         (WI_FvtRewardAggregate fvt-id
-            (UDC_FVT|RewardAggregate fvt-class 0.0 0.0 0.0 0.0 0 0 0 fvt-id)
+            ;; split-mode: farm (class 0) default participation; vault/treasury get the "|" sentinel (never read)
+            (UDC_FVT|RewardAggregate fvt-class owner-konto true CT_MEMBERSHIP_MODE_BAR
+                (if (= fvt-class 0) CT_SPLIT_MODE_STAKED CT_SPLIT_MODE_NA)
+                0.0 0.0 0.0 0.0 0 0 0 fvt-id)
         )
     )
     (defun XI_SetMosaic:string
@@ -7460,10 +7455,10 @@
                 )
                 (with-capability (SECURE)
                     (WI_Fvt fvt-id
-                        (UDC_FVT|Schema owner-konto true true "|" true CT_MEMBERSHIP_MODE_BAR false CT_SPLIT_MODE_NA fvt-id)
+                        (UDC_FVT|Schema true true "|" false fvt-id)
                     )
                     (WI_FvtRewardAggregate fvt-id
-                        (UDC_FVT|RewardAggregate 1 0.0 0.0 0.0 0.0 0 1 1 fvt-id)
+                        (UDC_FVT|RewardAggregate 1 owner-konto true CT_MEMBERSHIP_MODE_BAR CT_SPLIT_MODE_NA 0.0 0.0 0.0 0.0 0 1 1 fvt-id)
                     )
                     (WI_ScoreEntityLink fvt-id score-id
                         (UDC_FVT|ScoreEntityLink CT_SCORE_ENTITY_SCORE true "|" 0.0 0.0 false 0.0 0.0 STREAM_EPOCH fvt-id score-id)
@@ -7489,10 +7484,10 @@
                 )
                 (with-capability (SECURE)
                     (WI_Fvt fvt-id
-                        (UDC_FVT|Schema owner-konto true true "|" true CT_MEMBERSHIP_MODE_BAR false CT_SPLIT_MODE_NA fvt-id)
+                        (UDC_FVT|Schema true true "|" false fvt-id)
                     )
                     (WI_FvtRewardAggregate fvt-id
-                        (UDC_FVT|RewardAggregate 2 0.0 0.0 0.0 0.0 0 1 1 fvt-id)
+                        (UDC_FVT|RewardAggregate 2 owner-konto true CT_MEMBERSHIP_MODE_BAR CT_SPLIT_MODE_NA 0.0 0.0 0.0 0.0 0 1 1 fvt-id)
                     )
                     (WI_ScoreEntityLink fvt-id score-id
                         (UDC_FVT|ScoreEntityLink CT_SCORE_ENTITY_SCORE true "|" 0.0 0.0 false 0.0 0.0 STREAM_EPOCH fvt-id score-id)
