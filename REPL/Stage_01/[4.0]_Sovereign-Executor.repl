@@ -520,15 +520,16 @@
             (ref-TS01-C1::C_DPTF|Issue
                 patron
                 dalos
-                ["Ouroboros" "Auryn" "EliteAuryn" "Ignis" "DalosWrappedStoa" "DalosLiquidStoa"]
-                ["OURO" "AURYN" "ELITEAURYN" "GAS" "DWK" "DLK"]
-                [24 24 24 24 12 24]
-                [true true true true true true]         ;;can change owner
-                [true true true true true true]         ;;can upgrade
-                [true true true true true true]         ;;can can-add-special-role
-                [true false true true false false]      ;;can-freeze
-                [true false true false false false]     ;;can-wipe
-                [true false false true false false]     ;;can pause
+                ;; DalosUrStoa (DUK, 3 dec = URSTOA_PREC) mirrors DalosWrappedStoa (DWK) — its flags match DWK
+                ["Ouroboros" "Auryn" "EliteAuryn" "Ignis" "DalosWrappedStoa" "DalosLiquidStoa" "DalosUrStoa"]
+                ["OURO" "AURYN" "ELITEAURYN" "GAS" "DWK" "DLK" "DUK"]
+                [24 24 24 24 12 24 3]
+                [true true true true true true true]         ;;can change owner
+                [true true true true true true true]         ;;can upgrade
+                [true true true true true true true]         ;;can can-add-special-role
+                [true false true true false false false]     ;;can-freeze
+                [true false true false false false false]    ;;can-wipe
+                [true false false true false false false]    ;;can pause
             )
         )
         (OuroID:string (at 0 ids))
@@ -537,6 +538,7 @@
         (GasID:string (at 3 ids))
         (WrappedStoaID:string (at 4 ids))
         (StakedStoaID:string (at 5 ids))
+        (UrStoaID:string (at 6 ids))
         ;;
         (treasury-sc:string (ref-DALOS::GOV|DHV2|SC_NAME))        
     )
@@ -553,6 +555,7 @@
             , "elite-ats-gas-source-id" : EliteAurynID
             , "wrapped-stoa-id"          : WrappedStoaID
             , "silver-stoa-id"           : StakedStoaID
+            , "ur-stoa-id"               : UrStoaID
             }
         )
         ;;Set Token Roles Part I
@@ -830,6 +833,8 @@
         (ref-TS01-A::A_DPTF|DeployAccount patron EliteAurynID ats)
         (ref-TS01-A::A_DPTF|DeployAccount patron WrappedStoaID liquid)
         (ref-TS01-A::A_DPTF|DeployAccount patron StakedStoaID liquid)
+        ;; wrapped-UrStoa (DUK) — same liquid-SC holding account as native wrapped-Stoa (DWK)
+        (ref-TS01-A::A_DPTF|DeployAccount patron (ref-DALOS::UR_UrStoaID) liquid)
         ;;Set Token Roles Part III
         (ref-TS01-C1::C_DPTF|SetFee patron StakedStoaID -1.0)
         (ref-TS01-C1::C_DPTF|ToggleFee patron StakedStoaID true)
@@ -884,6 +889,93 @@
 ;;==== TX-11 [4.1.11] - Dalos INIT [11]: Wrap Stoa · 03 · gas echo ==== =========================
 (print "--- [TX-11 [4.1.11] - Dalos INIT [11]: Wrap Stoa · 03 · gas echo] ---")
 (format "<<<<<<<Dalos INIT [11] Costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(commit-tx)
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-11a [4.1.11a] - Dalos INIT [11a]: Setup UrStoa (parallel to WSTOA)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-11a [4.1.11a] - Setup UrStoa · 01 · env-data + env-sigs ==== ============================
+(print "--- [TX-11a [4.1.11a] - Setup UrStoa · 01 · env-data + env-sigs] ---")
+;; the patron's attached Stoa-address guard, for its UrStoa account
+(env-data
+    { "ur-sp-ks": { "keys": [ "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ], "pred": "keys-all" } })
+;; genesis foundation authorizes the UrStoa fuel to the patron (mirrors alice->k:6fa native fuel in [0.0]_Starter)
+(env-sigs
+    [
+        { "key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74",
+          "caps": [ (coin.UR|TRANSFER "stoa-foundation"
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 250000.0) ] }
+    ]
+)
+;;==== TX-11a [4.1.11a] - Setup UrStoa · 02 · liquid UR account + patron UrStoa fuel ==== =========
+(print "--- [TX-11a [4.1.11a] - Setup UrStoa · 02 · liquid UR account + patron UrStoa fuel] ---")
+(let
+    (
+        (ref-ur-coin:module{stoa-ns.ur-stoic-fungible-v1} coin)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+    )
+    ;; create the liquid smart account's UrStoa account (WrapUrStoa transfers UrStoa into it)
+    (ref-ur-coin::C_UR|CreateAccount (LIQUID.GOV|LIQUID|SC_STOA-NAME) (LIQUID.GOV|LIQUID|GUARD))
+    ;; fuel the patron's attached Stoa address with UrStoa from the genesis foundation
+    (ref-ur-coin::C_UR|TransferAnew "stoa-foundation" (ref-DALOS::UR_AccountStoa patron) (read-keyset "ur-sp-ks") 250000.0)
+)
+(commit-tx)
+(print "")
+(begin-tx "TX-11b [4.1.11b] - Dalos INIT [11b]: Wrap UrStoa (mirror WrapStoa)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-11b [4.1.11b] - Wrap UrStoa · 01 · env-sigs ==== ========================================
+(print "--- [TX-11b [4.1.11b] - Wrap UrStoa · 01 · env-sigs] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          ;; WrapUrStoa moves UrStoa from the patron's Stoa addr to the liquid SC's Stoa addr
+          "caps": [ (coin.UR|TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:ZNfuj3iZI83n7MUSKGuoXoSxFg1cyMxCzB3szUHVvrI" 1.0) ] }
+    ]
+)
+;;==== TX-11b [4.1.11b] - Wrap UrStoa · 02 · WrapUrStoa + UnwrapUrStoa ==== =======================
+(print "--- [TX-11b [4.1.11b] - Wrap UrStoa · 02 · wrap + unwrap] ---")
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-ur-coin:module{stoa-ns.ur-stoic-fungible-v1} coin)
+        (patron:string KST.ANHD)
+    )
+    (let
+        (
+            (ur-id:string (ref-DALOS::UR_UrStoaID))
+            (sp:string (ref-DALOS::UR_AccountStoa patron))
+            (ur-before:decimal (ref-ur-coin::UR_UR|Balance (ref-DALOS::UR_AccountStoa patron)))
+        )
+        ;; WrapUrStoa: patron's UrStoa -> liquid SC; mints 1.0 wrapped-UrStoa (DUK) to the patron
+        (ref-TS01-C2::C_LQD|WrapUrStoa patron patron 1.0)
+        (let
+            (
+                (duk-after-wrap:decimal (ref-DPTF::UR_AccountSupply ur-id patron))
+            )
+            ;; UnwrapUrStoa: burns the 1.0 DUK, returns 1.0 UrStoa to the patron's Stoa addr
+            (ref-TS01-C2::C_LQD|UnwrapUrStoa patron patron 1.0)
+            (map print
+                [
+                    (expect "<<TX-11b>> WrapUrStoa minted 1.0 DUK to the patron" 1.0 duk-after-wrap)
+                    (expect "<<TX-11b>> patron holds 0.0 DUK after UnwrapUrStoa" 0.0 (ref-DPTF::UR_AccountSupply ur-id patron))
+                    (expect "<<TX-11b>> UnwrapUrStoa restored the patron's UrStoa balance" ur-before (ref-ur-coin::UR_UR|Balance sp))
+                    ""
+                ]
+            )
+        )
+    )
+)
 (print "")
 (commit-tx)
 (print "")
