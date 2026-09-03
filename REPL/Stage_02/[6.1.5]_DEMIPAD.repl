@@ -96,7 +96,53 @@
 )
 (print "===^^^===")
 (commit-tx)
+;;================================================================================
+(begin-tx "TX-DP-004 - OF: issue fresh DPOF, mint, register, fuel, retrieve")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-DP-004 · 01 · env-sigs (STOA fee caps for DPOF issue) ====
+(print "--- [TX-DP-004 · 01 · env-sigs] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000.0)
+            ]
+        }
+    ]
+)
+;;==== TX-DP-004 · 02 · issue / mint / register / fuel / retrieve ====
+(print "--- [TX-DP-004 · 02 · OF issue/mint/fuel/retrieve] ---")
+(let
+    (
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+        (id:string "COF-98c486052a51")
+        (patron:string KST.ANHD)
+    )
+    ;; issue a fresh DPOF (list args); grant the owner the add-quantity role, then mint a nonce
+    (ref-TS01-C1::C_DPOF|Issue patron patron ["CoverageOF"] ["COF"] [2] [true] [true] [true] [true] [true] [true] [true])
+    (ref-TS01-C1::C_DPOF|ToggleAddQuantityRole patron id patron true)
+    (ref-TS01-C1::C_DPOF|Mint patron id patron 1000.0 [{"cov": "of"}])
+    ;; OF fungibility = [true false]; fuel nonce 1 into the launchpad, then retrieve it
+    (ref-TS02-DPAD::A_RegisterAssetToLaunchpad patron id [true false])
+    (ref-TS02-DPAD::C_DEMIPAD|FuelOrtoFungible patron patron id [1])
+    (ref-TS02-DPAD::A_ToggleRetrieval id true)
+    (ref-TS02-DPAD::C_DEMIPAD|RetrieveOrtoFungible patron patron id [1])
+    (print "<<TX-DP-004>> OF FuelOrtoFungible + RetrieveOrtoFungible OK")
+)
+(print "===^^^===")
+(commit-tx)
 (print "")
-(print "=== END FILE [6.1.5]_DEMIPAD.repl (batches 1-3: NF/SF/TF fuel+retrieve) ===")
-;; TODO (#101): OF (FuelOrtoFungible/RetrieveOrtoFungible), Deposit + Withdraw (buy flow),
-;;   StoicPay gate (StageZZ).
+(print "=== END FILE [6.1.5]_DEMIPAD.repl (batches 1-4: all 8 Fuel*/Retrieve* covered) ===")
+;; TODO (#101): Deposit + Withdraw (buy flow: price object + buyer), StoicPay gate (StageZZ).
