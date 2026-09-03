@@ -78,6 +78,7 @@
         (ref-P|DPDC-F:module{OuronetPolicyV2}     DPDC-F)
         (ref-P|DPDC-S:module{OuronetPolicyV2}     DPDC-S)
         (ref-P|EQUITY:module{OuronetPolicyV2}     EQUITY)
+        (ref-P|DEMIPAD:module{OuronetPolicyV2}    DEMIPAD)
         ;;
         (ref-P|TS02-C1:module{OuronetPolicyV2}    TS02-C1)
         (ref-P|TS02-C2:module{OuronetPolicyV2}    TS02-C2)
@@ -103,6 +104,10 @@
         (ref-P|DPDC-F::P|A_Define)
         (ref-P|DPDC-S::P|A_Define)
         (ref-P|EQUITY::P|A_Define)
+        ;;#79: DEMIPAD core module registers its caller-guard into its deps' IMC policies (DPDC-T etc.)
+        ;;so C_DEMIPAD|Fuel*/Retrieve* collectable transfers pass P|UEV_IMC. Was missing -> collectable
+        ;;launchpad fuel was IMC-blocked (a deploy-level gap, never caught with no launchpad test coverage).
+        (ref-P|DEMIPAD::P|A_Define)
         ;;
         ;;Talos
         (ref-P|TS02-C1::P|A_Define)
