@@ -1,0 +1,67 @@
+;;
+;; REPL/ats-constrict-harness.repl — ISOLATED ATS Constrict coverage harness (#79 Phase 2)
+;;   Standalone (boot → test → discard). Enables hibernation on the canonical Auryndex ATS pool
+;;   (stakes OURO -> rewards Auryn), then Constricts OURO (the pool's input/reward token, which the
+;;   patron holds) — autostaking it into hibernation and minting+hibernating the Auryn RBT.
+;;   Covers the uncovered C_ATS|Constrict client op.  Run:  cd REPL && pact ats-constrict-harness.repl
+;;
+(load "Stage00_Sanboxes.repl")
+(load "Stage01_Tester.repl")
+
+(print "")
+(print "================================================================")
+(print "FILE  REPL/ats-constrict-harness.repl  (isolated ATS Constrict)")
+(print "================================================================")
+(print "")
+
+;;================================================================================
+(begin-tx "TX-CNS-001 - enable hibernation on Auryndex, then Constrict OURO")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-CNS-001 · 01 · env-sigs (patron + STOA caps) ====
+(print "--- [TX-CNS-001 · 01 · env-sigs] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+            ]
+        }
+    ]
+)
+;;==== TX-CNS-001 · 02 · SetHibernationFees + Constrict ====
+(print "--- [TX-CNS-001 · 02 · hibernation + constrict] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (patron:string KST.ANHD)
+        (auryndex:string "Auryndex-98c486052a51")
+        (ouro-id:string (ref-DALOS::UR_OuroborosID))
+        (auryn-id:string (ref-DALOS::UR_AurynID))
+    )
+    ;; Auryndex's RBT (Auryn) needs a hibernation link before Control can flip hibernation ON
+    (ref-TS01-C2::C_VST|CreateHibernatingLink patron auryn-id)
+    ;; turn hibernation ON via Control (preserve the pool's can-change-owner + syphoning settings)
+    (ref-TS01-C2::C_ATS|Control patron auryndex
+        (ref-ATS::UR_CanChangeOwner auryndex) (ref-ATS::UR_Syphoning auryndex) true)
+    ;; set hibernation fees (peak in (0,800], decay in (0,1), prec-4) — used by the coil calc
+    (ref-TS01-C2::C_ATS|SetHibernationFees patron auryndex 100.0 0.008)
+    ;; Constrict OURO (the pool's input/reward token, held by the patron) for 30 days
+    (print (ref-TS01-C2::C_ATS|Constrict patron patron auryndex ouro-id 100.0 30))
+    (print "<<TX-CNS-001>> CreateHibernatingLink + Control(hibernate) + SetHibernationFees + Constrict OK")
+)
+(print "===^^^===")
+(commit-tx)
+(print "")
+(print "=== END FILE ats-constrict-harness.repl (C_ATS|Constrict covered) ===")
