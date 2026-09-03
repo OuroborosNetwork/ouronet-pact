@@ -69,8 +69,17 @@ shell. Measured result: **RPS ≈ 3,288 / FVT ≈ 2,765 lines, 0 DAG hazards.**
 | shared policy tables `P\|T`, `P\|MT` **duplicated** (IMC plumbing, not domain data) | |
 
 `FVT|T` (the entity identity row) stays in FVT — its config fields (denominator/class/owner/
-split-mode) are read once per op and **arg-passed** into the RPS phase entrypoints (the only
-residual coupling; DAG stays a clean leaf → `RPS` first).
+mosaic/vacate-frozen) are read once per op and **arg-passed** into the RPS phase entrypoints.
+
+**FVT|T reward-aggregate split (required for a clean DAG).** Measurement (195-fn move-set)
+shows the orchestration also *writes* 5 `FVT|T` fields — `total-deb-score`,
+`total-ghost-tvl-weight`, `member-link-count`, `enabled-reward-count`, `membership-mode`. If the
+orchestration lives in RPS those writes would be RPS→FVT (a cycle). Fix: move these 5 aggregate
+fields out of `FVT|T` into a **new RPS-owned table `FVT|T|RewardAggregate`** (key = `<FVT-ID>`).
+`FVT|T` then holds only identity/config; the orchestration writes only RPS tables → RPS stays a
+pure leaf. This is a small pre-mainnet data-model refinement (no live data). The 24-reader
+arg-pass surface (denominator/class/owner/mosaic/vacate + QualitySplit/AgencyFee/Oracle config)
+is read by FVT and threaded into the RPS phase entrypoints.
 
 ---
 
