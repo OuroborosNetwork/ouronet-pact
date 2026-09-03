@@ -1,112 +1,173 @@
-# FVT-SPLIT-DESIGN — Phase 0 (design, needs owner approval)
+# FVT-SPLIT-DESIGN — 2-module split (`RPS` + `FVT`)
 
-**Task #75.** Split `04_FVT.pact` (module `AQP-FVT`) so every module ships under Kadena's
-~150 KB deploy ceiling. Pre-mainnet, so splitting is **cheap now** (no live-data migration);
-after first deploy it becomes structurally hard (tables are module-scoped). See
-`OuronetInformational/MODULE-SIZING.md`.
+**Task #75.** `04_FVT.pact` (module `AQP-FVT`, interface `AcquisitionFarmsVaultsTreasuriesV2`)
+is **7,501 lines** — past StoaChain's deploy cliff. Split it into **two** deployable modules
+along the capability seam, pre-mainnet (cheap now; structurally hard after first deploy because
+Pact tables are module-scoped). Owner-approved shape: **two modules**, the leaf carrying its own
+`SECURE`.
 
-## 1. The sizing reality (measured)
+Supersedes the earlier 3-module draft. Names are **owner-locked**: `RPS` (the extracted leaf) and
+`FVT` (keeps its name).
 
-| Metric | Value |
+---
+
+## 1. Feasibility under the real gas model (not a byte wall)
+
+Per `MODULE-SIZING.md`, the deploy limit is **module-load gas**, and the Chainweb **size charge
+grows as the 7th power** of transaction size, against **StoaChain's 2,000,000-gas block limit**.
+The "cannot deploy at all" cliff sits at **~6,635 lines**.
+
+| | lines | ≈ load gas | % of 2M budget |
+|---|---|---|---|
+| FVT today | 7,501 | > 2,006,661 | **> 100% — undeployable** |
+| each half after split | ~3,700–3,850 | ~199–230 K | **~10–11%** |
+
+Because the charge is a 7th power, **halving a module divides its size charge by 2⁷ = 128**. Two
+~3,750-line modules deploy with ~88% headroom each. **2 modules is sufficient** — the earlier
+"need 3" used a 150 KB byte-wall framing that does not match StoaChain's gas model. Power stays
+**7** (the 7→5 idea was set aside).
+
+> Caveat: the canon §7.16 let-staircase pass added ~800 whitespace lines to FVT (6,694 → 7,501),
+> nudging each half from the `<3,500` *target* band into the `3,500–4,000` *acceptable-with-a-plan*
+> band. Still ~11% of budget. If both halves must be `<3,500`, bias the split RPS-heavy (the reward
+> math is the denser half) or trim.
+
+---
+
+## 2. The seam — an **accountant** (`RPS`) and an **estate registrar** (`FVT`)
+
+Cut at the **authorization boundary** (`MODULE-SIZING.md` §4: split by capability, never by line
+count), following the **reward-settlement pipeline**. Measured coupling is tiny: only **7 functions
+/ 34 lines (0.5%)** have names touching both reward-tables and structure-tables.
+
+### `RPS` — reward-per-share ledger / accountant  *(leaf, deploys FIRST, own `SECURE`)*
+The yield ledger and all the math that moves it. Pure leaf: inputs in, ledger writes out.
+
+### `FVT` — the estates + governance + client surface  *(deploys SECOND, keeps the name)*
+The farms/vaults/treasuries themselves, their ownership/config/topology, vacate/sweep, and **every
+client entrypoint**. Orchestrates coarsely: reads its own structure, then drives `RPS` through one
+`XE_` call per phase.
+
+---
+
+## 3. Table assignment (the 16 tables — partition anchors)
+
+| → `RPS` (reward ledger) | → `FVT` (estates + lifecycle) |
 |---|---|
-| Module bytes | **424,442 (~414 KB)** |
-| Lines | 7,249 |
-| Kadena deploy cap | ~150 KB |
-| Reduction required | **remove ~62%** (get to ≤150 KB) |
+| `FVT\|T\|RPS\|Global` | `FVT\|T` (entity: class/owner/denominator) |
+| `FVT\|T\|RPS\|Member` | `FVT\|T\|ScoreEntityLink` |
+| `FVT\|T\|RPS\|User` | `FVT\|T\|MultipletFamily` |
+| `FVT\|T\|RPS\|Stream` | `FVT\|T\|UserPresence` |
+| `FVT\|T\|MemberVault` | `FVT\|T\|AgencyFee` |
+| `FVT\|T\|MemberUserWeight` | `FVT\|T\|QualitySplit` |
+| `FVT\|T\|ForcedFixCount` | `FVT\|T\|DsaOracleConfig` |
+| | `FVT\|T\|VacateFreeze`, `FVT\|T\|SweepProgress` |
+| shared policy tables `P\|T`, `P\|MT` are **duplicated** (both modules define their own — they are IMC/policy plumbing, not domain data) | |
 
-A single reduction is not enough — this needs the module to become **~3 modules of ~140 KB each**.
+`MemberVault` + `MemberUserWeight` go with `RPS`: they are per-member reward-distribution state
+mutated by the settle/inject walk, not entity structure.
 
-## 2. Byte distribution by data domain (measured, per-defun)
+---
 
-| Bucket | Bytes | % |
-|---|---|---|
-| RPS-only functions (touch only `RPS|Global/Member/User/Stream`, `ForcedFixCount`) | 49 KB | 11% |
-| Structure-only functions (`ScoreEntityLink`, `MultipletFamily`, `MemberVault`, `MemberUserWeight`, `UserPresence`, `AgencyFee`, `QualitySplit`) | 86 KB | 20% |
-| Shared / pure-compute / cross-domain orchestration | **288 KB** | **67%** |
+## 4. Function allocation
 
-**Takeaway:** the naïve "extract RPS" seam removes only 11% → FVT stays ~366 KB. The mass is the
-67% of orchestration/compute (URC derivers, UC compute, UEV validators, settle/collect/inject
-walks) that spans domains. The seam must cut through *that*, not around it.
+**Principle:** a function follows the **tables it mutates**, not its name. Reward-math functions go
+to `RPS` even when named `FVT|…` (e.g. `XI_FvtInjectCore`, `UR_FVT|TotalDebScore`,
+`WU_Fvt|TotalDebScore`); structure functions stay in `FVT`.
 
-## 3. Table inventory (16 tables — the partition anchors)
+### → `RPS` (~150 reward fns + the settle/inject/deb math, ~3,000 lines)
+- **Ledger readers/writers by table-family:** `*FVT-RG|*` (27), `*FVT-RM|*` (13), `*FVT-RU|*` (13),
+  `*FVT-RS|*` (1), `*FVT-MV|*` (2), `*FVT-MUW|*` (1), `*ForcedFix*` (4), plus their `WU_Rps*` writers
+  (subset of the 33 `WU_`).
+- **The math / hot loops (run entirely inside `RPS`):** `XI_1|FarmSplitInject`,
+  `XI_2|SettleMemberTier2`, `XI_DistributeInjectAmount`, `XI_FvtInjectCore`, `XI_FixUser*Deb*` (all
+  variants), `XI_FixUserMemberDeb*`, `XI_SyncFvtTotalDebMirrors`, `XI_SyncFarmGhostTvlForInject`,
+  `XI_ReleaseStream`, `XI_BookCollectUnclaimed`, `XI_1|BookCollectUnclaimed`,
+  `XB_FvtInject`, and the RPS-side of `XI_RefreshCollectableStakeAnchors`.
+- **Derivers:** `URC_Settle*`, `URC_*Inject*`, `URC_CollectClaimableRewards`, `URC_*Deb*`,
+  `URC_ProjectedIndexAdvance`, `URC_LiveClaimable`, `URC_StreamStatus`, `UC_ComputeInjectGainedRps`,
+  and the index-advance compute.
+- **Own `SECURE`** + `XE_` forward-entrypoints (§5) + the `URCi_*` cost readers for reward ops.
 
-- **Structure/membership:** `FVT|T` (entity, class-discriminated farm/vault/treasury),
-  `ScoreEntityLink`, `MultipletFamily`, `MemberVault`, `MemberUserWeight`, `UserPresence`,
-  `AgencyFee`, `QualitySplit`
-- **RPS reward-accounting:** `RPS|Global`, `RPS|Member`, `RPS|User`, `RPS|Stream`, `ForcedFixCount`
-- **Vacate/sweep:** `VacateFreeze`, `SweepProgress`
-- **DSA:** `DsaOracleConfig`
+### → `FVT` (estates + lifecycle + client surface, ~3,500–3,700 lines)
+- **Structure by family:** `*FVT|*` entity readers/writers (the structural subset of the 84),
+  `*FVT-SEL|*` (22), `*FVT-MF|*` (17), `*FVT-UP|*` (1), `*FVT-AF|*` (2), `*FVT-QS|*` (4),
+  DSA-oracle-config, `Vacate*`/`Sweep*` (28).
+- **Entity lifecycle A_/C_:** `C_Issue`, `C_AddRewardLink`, `C_AddScoreEntity`, `C_RotateOwnership`,
+  `C_SetCommonDenominator`, `C_SetQualitySplit`, `C_SetSplitMode`, `C_SetMosaic`, `C_Control`,
+  `C_ToggleRewardLink`, `C_ToggleScoreEntityLink`, `C_IssueMultipletFamily`.
+- **All client orchestrators:** `CC_Collect`, `CC_Inject`, `CC_InjectFinalize`, `CC_InjectStream`,
+  `CC_*StakeFlow` (TrueFungible/OrtoFungible/Collectable), `CC_UnstaleMyScores`, `CC_SweepBegin`,
+  `CC_SweepRevokeAnchor`, `CCp_InjectFixChunk`, `CCp_UnstaleAll`. These **build the plan/slice**
+  (`URHC_BuildInjectScorePlans`, `URH_FVT|SettleFvtRewardBundle`, `URHC_BuildStakeSettleBundle`) and
+  make **one `RPS::XE_` call per phase**.
+- Registered as an **IMC caller-guard** on `RPS`.
 
-Note: `FVT|T` holds **all three entity kinds** (farm=class 0, vault=class 1, treasury) discriminated
-by a class field, so a "Farms / Vaults / Treasuries" split by entity type would require splitting the
-shared `FVT|T` table (separate tables per kind) — a data-model change, not a code move.
+---
 
-## 4. Capability-seam check (the go/no-go, per MODULE-SIZING.md §4)
+## 5. Capability model & cycle-freedom
 
-> "If the split forces a capability to cross the boundary, you cut in the wrong place."
+- **`RPS` owns its own `SECURE`.** Its `WU_Rps*` writers `require-capability` an `RPS`-local cap
+  composing that `SECURE`. This is the "second secure."
+- **`XE_` forward-entrypoints** are the only way `FVT` mutates the ledger. Each: `P|UEV_IMC` →
+  `with-capability (RPS|XE>… )` (composing the local `SECURE`) → writes only. No `enforce`/`UEV_*`
+  after `UEV_IMC`; no `OutputCumulator` (FVT's `C_` composes IGNIS).
+- **Loops live inside `RPS`.** A settle/inject/collect pass crosses the module boundary **once per
+  phase**, never once per user — `FVT` hands `RPS` the whole plan/slice and `RPS` iterates
+  internally. This neutralizes the gas-per-hop risk on the hot paths.
+- **No back-reference → clean DAG.** `RPS` never reads `FVT`'s tables. The few structure fields the
+  math needs (denominator, class, owner, split-mode) are **computed by `FVT` and passed as
+  arguments** into `RPS::XE_`. Dependency graph: `RPS → {IGNIS, DALOS, DPTF, SCORE-reads}`;
+  `FVT → RPS::XE_`. No cycle, so `RPS` deploys first. Same idiom already proven by DSA and SCORE→FVT.
 
-Measured: both RPS writers and structure writers **compose the shared `SECURE` cap**. Structure
-writers additionally use `FVT|XE>ADMIT`, `FVT|XE>SWEEP`.
-
-`SECURE` is module-scoped, so this is **resolvable, not fatal**, via the existing Ouronet idiom:
-each split-out module defines its **own** `SECURE`; the orchestrators that write across the seam
-become **`XE_` forward-entrypoints** (start with `P|UEV_IMC`, acquire the *local* SECURE-composing
-cap), invoked cross-module via `(ref-M::XE_… )`, with the caller registered as an IMC caller-guard
-(`P|A_Define`). This is exactly how DSA, SCORE→FVT, and Talos already compose across modules.
-
-**Coupling is low:** only **13 functions** touch both RPS and structure tables — and most are
-orchestrators or test helpers:
-`CC_Collect`, `XI_1|FarmSplitInject`, `XI_2|SettleMemberTier2`, `XI_FixUserFvtDebIn`,
+### The seam-crossers (each splits into an FVT orchestration part + an RPS `XE_`)
+`CC_Collect`, `CC_Inject`/`CC_InjectFinalize`/`CC_InjectStream`, `CC_*StakeFlow`,
+`CC_UnstaleMyScores`, `XI_1|FarmSplitInject`, `XI_2|SettleMemberTier2`, `XI_FixUserFvtDebIn`,
 `WI_QualitySplit`, `C_IssueMultipletFamily`, `C_SetQualitySplit`, `UR_FVT`, `URH_FvtPresentUsers`,
-`UEV_AddRewardLinkContext`, `P|A_Define`, `REPL_BootstrapVault`, `REPL_BootstrapTreasury`.
-These become the cross-module call sites.
+`UEV_AddRewardLinkContext`, `P|A_Define`, and the two `REPL_Bootstrap*` helpers. The RPS-write half
+of each becomes an `XE_`; the read/validate/structure half stays in `FVT`.
 
-## 5. Proposed decomposition (3 modules) — for owner review
+---
 
-Because 67% is cross-domain compute, the cut must follow the **reward-settlement pipeline**, not
-just table ownership:
+## 6. Interfaces, deploy order, cascade
 
-1. **`AQP-FVT`** (core structure + entity lifecycle) — owns `FVT|T`, `ScoreEntityLink`,
-   `MultipletFamily`, `MemberVault`, `MemberUserWeight`, `UserPresence`, `AgencyFee`,
-   `QualitySplit`, `VacateFreeze`, `DsaOracleConfig`; keeps Issue / AddRewardLink / AddScoreEntity /
-   RotateOwnership / SetCommonDenominator / QualitySplit / DSA config. Structure caps + own `SECURE`.
-2. **`AQP-FVT-RPS`** (reward-per-share accounting) — owns `RPS|Global/Member/User/Stream`,
-   `ForcedFixCount`; the ~51 RPS readers/writers + the dense settle/inject/drip math; own `SECURE`;
-   exposes `XE_` writers for the coupling orchestrators. This is the densest reward-math block.
-3. **`AQP-FVT-SWEEP`** (vacate + anchor-sweep) — owns `SweepProgress` (+ `VacateFreeze` if it seams
-   cleanly); the vacate-drain / sweep-revoke paths (already largely re-hosted on MTX-AQP — see
-   `SWEEP-VACATE-DESIGN.md`). Candidate to absorb the vacate/sweep byte mass.
+- **New interface `AcquisitionRewardPerShareV1`** for `RPS` (carries the ledger API + `XE_` + `URCi_`
+  + reader members). `FVT` keeps **`AcquisitionFarmsVaultsTreasuriesV2`**, edited **in-place**
+  (drop the moved RPS members, add references to `AcquisitionRewardPerShareV1`) — pre-mainnet, so no
+  version bump per repo policy.
+- **Deploy order (interface-first, leaf-first):**
+  `AcquisitionRewardPerShareV1` → `RPS` → `AcquisitionFarmsVaultsTreasuriesV2` → `FVT`.
+- **File renumber in `2_Core/03_AQP/`:** `04_RPS.pact`, `05_FVT.pact`, then `06_VCT`, `07_MTX-AQP`,
+  `08_DSA`, `09_AQP-INFO`. Update the Sovereign-Executor `[2.3]_EarningPools` deploy list + IMP/IMC
+  "Define IMC Policies" TX (register `FVT` as caller-guard on `RPS`).
+- **Cascade is small** — only 5 files name `AcquisitionFarmsVaultsTreasuriesV2` today (`TS02-C3`,
+  `MTX-AQP`, `DSA`, `VCT`, FVT). They keep referencing it (= `FVT`); only the consumers that read
+  reward-ledger state directly add an `AcquisitionRewardPerShareV1` / `RPS::` reference
+  (VCT reads vacate-drain RPS state; MTX-AQP reads inject/sweep RPS state — confirm at P1).
 
-Sizes must be **re-measured after each extraction** (`MODULE-SIZING.md` tooling) — the goal is three
-modules each < 3,500 lines / < 150 KB with ≥ 1,000-line headroom. If the RPS + SWEEP extractions
-don't get core `AQP-FVT` under cap, a further cut (the settle-walk primitives, or the URC derivers
-block) is the next seam.
+---
 
-## 6. Interface + deploy-order + cascade
+## 7. Risks
 
-- New interfaces `AcquisitionFarmsVaultsTreasuriesRpsV1`, `…SweepV1`; `AcquisitionFarmsVaults…V2`
-  loses the moved members and bumps per the **cascade rule** (every naming interface bumps in
-  lockstep — `INTERFACE_VERSIONING.md`). Since pre-mainnet, edit `V1`/`V2` in place is allowed.
-- **Deploy order:** leaf-first — `AQP-FVT-RPS` and `AQP-FVT-SWEEP` deploy **before** `AQP-FVT`
-  (core calls their `XE_`). Confirm no back-references force a cycle; if a cycle appears, the seam is
-  wrong (move it).
-- IMC: register `AQP-FVT` (and SCORE/POOL/DSA as needed) as caller-guards on the new modules via
-  their `P|A_Define`, in the Sovereign-Executor "Define IMC Policies" TX.
+1. **Hot-path gas (the real one).** Cross-module `XE_` costs gas per call. Mitigated structurally by
+   keeping loops inside `RPS` (§5): one hop per phase. Measure against the `[6.2.6]` GAS probe after
+   P1; if any per-iteration hop remains, move that loop wholly into `RPS`.
+2. **Deploy-order cycle.** If any `RPS` function is found to read an `FVT` table, the seam is
+   misplaced — convert it to an argument passed from `FVT`. P1 re-checks the dependency direction.
+3. **Line balance.** If `FVT` lands over ~3,900 lines, shift the `UC_` compute helpers (pure, no
+   table access) into `RPS` or a tiny shared util — they have no capability coupling.
 
-## 7. Phased execution plan (post-approval)
+---
 
-- **P1** — extract `AQP-FVT-RPS` (tables + schemas + 51 fns + own SECURE + XE_ writers); rewire the
-  13 coupling orchestrators to `::`; wire IMC; green-gate `Z.repl` + `[6.2.4]` FVT suites. Re-measure.
-- **P2** — extract `AQP-FVT-SWEEP` if core is still over cap; re-measure.
-- **P3** — interface cascade + deploy-order in `[3]_Talos` / `[2.3]_EarningPools` + Sovereign-Executor.
-- **P4** — full green-gate + a fresh top-to-bottom redeploy dry-run (feeds #83).
+## 8. Phased execution plan (post-approval)
 
-## 8. Risks
+- **P0 — this doc (done).**
+- **P1 — extract `RPS`:** new interface + module; move the ledger tables + schemas + reward
+  math + own `SECURE` + `XE_` writers; rewrite the seam-crossers to `FVT`-orchestration + `RPS::XE_`;
+  wire IMC; renumber files + executor. Green-gate `Z.repl` + the `[6.2.4]` FVT/`[6.2.5]` VCT suites.
+  **Re-measure both modules' lines** (the go/no-go).
+- **P2 — rebalance** if either half is out of band (move `UC_` helpers per Risk 3). Re-measure.
+- **P3 — gas check:** `[6.2.6]` GAS probe on collect/inject/stake hot paths vs pre-split baseline.
+- **P4 — full green-gate + fresh top-to-bottom redeploy dry-run** (feeds #83).
 
-- Cross-module `XE_` calls add IGNIS/gas per hop on the settle/collect hot path — measure against the
-  `[6.2.6]` GAS probe; keep hot loops single-module where possible.
-- The 67% orchestration mass means the RPS/SWEEP seams may **not** be sufficient alone; P1's
-  re-measurement is the real go/no-go for whether a 3rd seam is needed.
-- Deploy-order cycles: if core `AQP-FVT` and `AQP-FVT-RPS` mutually call, the seam is misplaced.
-
-**Status: DESIGN — awaiting owner approval on the 3-module boundary before any code moves.**
+**Status: DESIGN COMPLETE — awaiting owner GO to start P1.**
