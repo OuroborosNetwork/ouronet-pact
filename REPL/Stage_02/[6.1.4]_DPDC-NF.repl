@@ -338,9 +338,40 @@
 )
 (print "===^^^===")
 (commit-tx)
+;;================================================================================
+(begin-tx "TX-NF-008 - DPNF burn + respawn (EMMA holds 5,6; burn-role on EMMA)")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-NF-008 · 01 · env-sigs (caps) ====
+(print "--- [TX-NF-008 · 01 · env-sigs] ---")
+;; burning EMMA's nonce needs EMMA's account-ownership sig (self-burn via burn role)
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] } ])
+;;==== TX-NF-008 · 02 · burn / respawn ====
+(print "--- [TX-NF-008 · 02 · burn / respawn] ---")
+(let
+    (
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (id:string "CNF-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+    )
+    ;; enable EMMA's burn role (TX-NF-002 left it off), then burn her nonce 5
+    (ref-TS02-C2::C_DPNF|ToggleBurnRole patron id emma true)
+    (ref-TS02-C2::C_DPNF|Burn patron id emma 5)
+    ;; respawn the burned nonce 5 to the owner
+    (ref-TS02-C2::C_DPNF|Respawn patron id patron 5)
+    (map print
+        [
+            (expect "<<TX-NF-008>> nonce 5 no longer held by EMMA after burn" 0 (ref-DPDC::UR_AccountNonceSupply emma id false 5))
+            ""
+        ]
+    )
+)
+(print "===^^^===")
+(commit-tx)
 (print "")
-(print "=== END FILE [6.1.4]_DPDC-NF.repl (batches 1-3 + branding) ===")
-;; TODO batch 4 remainder (#100): Wipe{Nonce,Clean,Dirty,Heavy,Pure} (even SFT leaves these
-;;   commented — need dedicated wipe-account fixtures), Burn/Respawn (C_BurnNFT burn-state +
-;;   held-nonce precondition), fragments (MergeFragments/RepurposeFragments need MakeFragments first).
+(print "=== END FILE [6.1.4]_DPDC-NF.repl (batches 1-3 + branding + burn) ===")
+;; TODO batch 4 remainder (#100): Wipe{Nonce,Clean,Dirty,Heavy,Pure}, fragments
+;;   (MergeFragments/RepurposeFragments need MakeFragments first).
 (print "")

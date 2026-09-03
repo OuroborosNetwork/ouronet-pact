@@ -843,7 +843,13 @@
                 (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
             )
             (with-capability (DPDC-MNG|C>BURN-NFT account id nonce)
-                (ref-DPDC-C::XI_DecreaseClassZeroNonFungibles id account [nonce] false)
+                ;; #79: TWO latent bugs here, never triggered because C_DPNF|Burn had no test coverage:
+                ;;  (1) called via ref-DPDC-C:: but XI_DecreaseClassZeroNonFungibles is a LOCAL XI_ of
+                ;;      DPDC-MNG (defined above) — must be a local call;
+                ;;  (2) args were (id account …) but the signature is (account id nonces wipe-mode), so
+                ;;      account/id were swapped → the composed IZ-CLASS-ZERO cap check used the account
+                ;;      as the collection id and failed. Correct order is account first, then id.
+                (XI_DecreaseClassZeroNonFungibles account id [nonce] false)
                 (URCi_BurnNFT id)
             )
         )
