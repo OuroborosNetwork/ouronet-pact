@@ -540,19 +540,27 @@
         can-upgrade:bool
         can-change-owner:bool
         common-denominator:string                               ;;[Mu]  unsafe to change after ScoreEntityLinks
-        total-ghost-tvl-weight:decimal                          ;;[M]   Farm S = sum enabled ScoreEntityLink W_i
-        total-base-score:decimal
-        total-boosted-score:decimal
-        total-deb-score:decimal
-        total-nzs-count:integer
-        enabled-reward-count:integer
-        member-link-count:integer                               ;;[M]   ScoreEntityLink rows (gates C_SetMosaic; no keys in defcap)
+        ;; reward-computation aggregates (total-ghost-tvl-weight, total-{base,boosted,deb}-score,
+        ;; total-nzs-count, enabled-reward-count, member-link-count) live in FVT|RewardAggregate (#75 B' Stage 1).
         mosaic:bool                                             ;;[Mu]  mix score + triplet entities when true
         membership-mode:string                                  ;;[Mu]  BAR | SCORE | TRUE-TRIPLET | STANDARD-TRIPLET
         oracle-on:bool                                          ;;[M]   DSA: node/uptime oracle governs capture (off ⇒ capture = units, uptime ≡ 1000, no expiry). Default false.
         split-mode:string                                       ;;[M]   Farm reward-split (D1-G2): SPLIT|STAKED (participation, farm default) | SPLIT|TVL (pool-size). The
         ;;                                                              Level-2 W_i source at inject. Farm (class 0) only; vault/treasury store the "|" (CT_SPLIT_MODE_NA) sentinel, never consulted.
         ;;
+        ;;Select Keys
+        fvt-id:string
+    )
+    (defschema FVT|RewardAggregate
+        @doc "Key = <FVT-ID>. Reward-computation aggregates split out of FVT|Schema (#75 B' Stage 1) so \
+            \ the reward orchestration owns them; identity/config stays in FVT|Schema."
+        total-ghost-tvl-weight:decimal                          ;;[M]   Farm S = sum enabled ScoreEntityLink W_i
+        total-base-score:decimal
+        total-boosted-score:decimal
+        total-deb-score:decimal
+        total-nzs-count:integer
+        enabled-reward-count:integer
+        member-link-count:integer                               ;;[M]   ScoreEntityLink rows (gates C_SetMosaic)
         ;;Select Keys
         fvt-id:string
     )
@@ -809,6 +817,7 @@
     ;;{3.3}  tables
     ;;
     (deftable FVT|T:{FVT|Schema})                               ;; Key = <FVT-ID>
+    (deftable FVT|T|RewardAggregate:{FVT|RewardAggregate})      ;; Key = <FVT-ID>  (#75 B' Stage 1)
     (deftable FVT|T|ScoreEntityLink:{FVT|ScoreEntityLink})      ;; Key = <FVT-ID> | <Score-Entity-ID>
     (deftable FVT|T|MultipletFamily:{FVT|MultipletFamily})      ;; Key = <Multiplet-Family-ID>
     (deftable FVT|T|RPS|Global:{FVT|RPS|Global})                ;; Key = <FVT-ID> | <DPTF-ID>
@@ -1376,13 +1385,6 @@
             can-upgrade:bool
             can-change-owner:bool
             common-denominator:string
-            total-ghost-tvl-weight:decimal
-            total-base-score:decimal
-            total-boosted-score:decimal
-            total-deb-score:decimal
-            total-nzs-count:integer
-            enabled-reward-count:integer
-            member-link-count:integer
             mosaic:bool
             membership-mode:string
             oracle-on:bool
@@ -1396,17 +1398,31 @@
         ,"can-upgrade"              : can-upgrade
         ,"can-change-owner"         : can-change-owner
         ,"common-denominator"       : common-denominator
-        ,"total-ghost-tvl-weight"   : total-ghost-tvl-weight
+        ,"mosaic"                   : mosaic
+        ,"membership-mode"          : membership-mode
+        ,"oracle-on"                : oracle-on
+        ,"split-mode"               : split-mode
+        ,"fvt-id"                   : fvt-id}
+    )
+    (defun UDC_FVT|RewardAggregate:object{FVT|RewardAggregate}
+        (
+            total-ghost-tvl-weight:decimal
+            total-base-score:decimal
+            total-boosted-score:decimal
+            total-deb-score:decimal
+            total-nzs-count:integer
+            enabled-reward-count:integer
+            member-link-count:integer
+            fvt-id:string
+        )
+        @doc "Constructor for object{FVT|RewardAggregate} — the reward-computation aggregates (#75 B' Stage 1)."
+        {"total-ghost-tvl-weight"   : total-ghost-tvl-weight
         ,"total-base-score"         : total-base-score
         ,"total-boosted-score"      : total-boosted-score
         ,"total-deb-score"          : total-deb-score
         ,"total-nzs-count"          : total-nzs-count
         ,"enabled-reward-count"     : enabled-reward-count
         ,"member-link-count"        : member-link-count
-        ,"mosaic"                   : mosaic
-        ,"membership-mode"          : membership-mode
-        ,"oracle-on"                : oracle-on
-        ,"split-mode"               : split-mode
         ,"fvt-id"                   : fvt-id}
     )
     (defun UDC_FVT|ScoreEntityLink:object{FVT|ScoreEntityLink}
@@ -1732,31 +1748,31 @@
     )
     (defun UR_FVT|TotalGhostTvlWeight:decimal (fvt-id:string)
         @doc "Reads total-ghost-tvl-weight (Tier-2 sum S) from FVT row."
-        (at "total-ghost-tvl-weight" (read FVT|T fvt-id ["total-ghost-tvl-weight"]))
+        (at "total-ghost-tvl-weight" (read FVT|T|RewardAggregate fvt-id ["total-ghost-tvl-weight"]))
     )
     (defun UR_FVT|TotalBaseScore:decimal (fvt-id:string)
         @doc "Reads total-base-score mirror from FVT row."
-        (at "total-base-score" (read FVT|T fvt-id ["total-base-score"]))
+        (at "total-base-score" (read FVT|T|RewardAggregate fvt-id ["total-base-score"]))
     )
     (defun UR_FVT|TotalBoostedScore:decimal (fvt-id:string)
         @doc "Reads total-boosted-score mirror from FVT row."
-        (at "total-boosted-score" (read FVT|T fvt-id ["total-boosted-score"]))
+        (at "total-boosted-score" (read FVT|T|RewardAggregate fvt-id ["total-boosted-score"]))
     )
     (defun UR_FVT|TotalDebScore:decimal (fvt-id:string)
         @doc "Reads total-deb-score mirror from FVT row."
-        (at "total-deb-score" (read FVT|T fvt-id ["total-deb-score"]))
+        (at "total-deb-score" (read FVT|T|RewardAggregate fvt-id ["total-deb-score"]))
     )
     (defun UR_FVT|TotalNzsCount:integer (fvt-id:string)
         @doc "Reads total-nzs-count mirror from FVT row."
-        (at "total-nzs-count" (read FVT|T fvt-id ["total-nzs-count"]))
+        (at "total-nzs-count" (read FVT|T|RewardAggregate fvt-id ["total-nzs-count"]))
     )
     (defun UR_FVT|EnabledRewardCount:integer (fvt-id:string)
         @doc "Reads enabled-reward-count from FVT row."
-        (at "enabled-reward-count" (read FVT|T fvt-id ["enabled-reward-count"]))
+        (at "enabled-reward-count" (read FVT|T|RewardAggregate fvt-id ["enabled-reward-count"]))
     )
     (defun UR_FVT|MemberLinkCount:integer (fvt-id:string)
         @doc "Reads member-link-count from FVT row (ScoreEntityLink admissions)."
-        (at "member-link-count" (read FVT|T fvt-id ["member-link-count"]))
+        (at "member-link-count" (read FVT|T|RewardAggregate fvt-id ["member-link-count"]))
     )
     (defun UR_FVT|Mosaic:bool (fvt-id:string)
         @doc "Reads mosaic from FVT row."
@@ -4065,6 +4081,12 @@
         (require-capability (SECURE))
         (insert FVT|T fvt-id row)
     )
+    (defun WI_FvtRewardAggregate:string
+        (fvt-id:string row:object{FVT|RewardAggregate})
+        @doc "Insert FVT|T|RewardAggregate row (issue only) — reward aggregates (#75 B' Stage 1)."
+        (require-capability (SECURE))
+        (insert FVT|T|RewardAggregate fvt-id row)
+    )
     ;; WW_Fvt — not used: issue path is WI_Fvt; other paths use WU_*.
     ;; WU_Fvt|FvtClass — not mutable [.]
     (defun WU_Fvt|OwnerKonto:string
@@ -4093,7 +4115,7 @@
         (fvt-id:string total-ghost-tvl-weight:decimal)
         @doc "Update total-ghost-tvl-weight (farm S) on FVT|T."
         (require-capability (SECURE))
-        (update FVT|T fvt-id {"total-ghost-tvl-weight": total-ghost-tvl-weight})
+        (update FVT|T|RewardAggregate fvt-id {"total-ghost-tvl-weight": total-ghost-tvl-weight})
     )
     ;; WU_Fvt|TotalBaseScore — not yet written in this module.
     ;; WU_Fvt|TotalBoostedScore — not yet written in this module.
@@ -4101,20 +4123,20 @@
         (fvt-id:string total-deb-score:decimal)
         @doc "Update total-deb-score mirror on FVT|T (vault/treasury inject denominator reporting)."
         (require-capability (SECURE))
-        (update FVT|T fvt-id {"total-deb-score": total-deb-score})
+        (update FVT|T|RewardAggregate fvt-id {"total-deb-score": total-deb-score})
     )
     ;; WU_Fvt|TotalNzsCount — not yet written in this module.
     (defun WU_Fvt|EnabledRewardCount:string
         (fvt-id:string enabled-reward-count:integer)
         @doc "Update enabled-reward-count on FVT|T."
         (require-capability (SECURE))
-        (update FVT|T fvt-id {"enabled-reward-count": enabled-reward-count})
+        (update FVT|T|RewardAggregate fvt-id {"enabled-reward-count": enabled-reward-count})
     )
     (defun WU_Fvt|MemberLinkCount:string
         (fvt-id:string member-link-count:integer)
         @doc "Update member-link-count on FVT|T (C_AddScoreEntity / SetMosaic gate)."
         (require-capability (SECURE))
-        (update FVT|T fvt-id {"member-link-count": member-link-count})
+        (update FVT|T|RewardAggregate fvt-id {"member-link-count": member-link-count})
     )
     (defun WU_FvtVacateFreeze:string (fvt-id:string frozen:bool)
         @doc "Set the FVT vacate-frozen flag on FVT|T|VacateFreeze (write = upsert; reader defaults false)."
@@ -4442,10 +4464,13 @@
         (WI_Fvt fvt-id
             (UDC_FVT|Schema
                 fvt-class owner-konto true true common-denominator
-                0.0 0.0 0.0 0.0 0 0 0 true CT_MEMBERSHIP_MODE_BAR false
+                true CT_MEMBERSHIP_MODE_BAR false
                 ;; split-mode: farm (class 0) default participation; vault/treasury get the "|" sentinel (never read)
                 (if (= fvt-class 0) CT_SPLIT_MODE_STAKED CT_SPLIT_MODE_NA) fvt-id
             )
+        )
+        (WI_FvtRewardAggregate fvt-id
+            (UDC_FVT|RewardAggregate 0.0 0.0 0.0 0.0 0 0 0 fvt-id)
         )
     )
     (defun XI_SetMosaic:string
@@ -7436,7 +7461,10 @@
                 )
                 (with-capability (SECURE)
                     (WI_Fvt fvt-id
-                        (UDC_FVT|Schema 1 owner-konto true true "|" 0.0 0.0 0.0 0.0 0 1 1 true CT_MEMBERSHIP_MODE_BAR false CT_SPLIT_MODE_NA fvt-id)
+                        (UDC_FVT|Schema 1 owner-konto true true "|" true CT_MEMBERSHIP_MODE_BAR false CT_SPLIT_MODE_NA fvt-id)
+                    )
+                    (WI_FvtRewardAggregate fvt-id
+                        (UDC_FVT|RewardAggregate 0.0 0.0 0.0 0.0 0 1 1 fvt-id)
                     )
                     (WI_ScoreEntityLink fvt-id score-id
                         (UDC_FVT|ScoreEntityLink CT_SCORE_ENTITY_SCORE true "|" 0.0 0.0 false 0.0 0.0 STREAM_EPOCH fvt-id score-id)
@@ -7462,7 +7490,10 @@
                 )
                 (with-capability (SECURE)
                     (WI_Fvt fvt-id
-                        (UDC_FVT|Schema 2 owner-konto true true "|" 0.0 0.0 0.0 0.0 0 1 1 true CT_MEMBERSHIP_MODE_BAR false CT_SPLIT_MODE_NA fvt-id)
+                        (UDC_FVT|Schema 2 owner-konto true true "|" true CT_MEMBERSHIP_MODE_BAR false CT_SPLIT_MODE_NA fvt-id)
+                    )
+                    (WI_FvtRewardAggregate fvt-id
+                        (UDC_FVT|RewardAggregate 0.0 0.0 0.0 0.0 0 1 1 fvt-id)
                     )
                     (WI_ScoreEntityLink fvt-id score-id
                         (UDC_FVT|ScoreEntityLink CT_SCORE_ENTITY_SCORE true "|" 0.0 0.0 false 0.0 0.0 STREAM_EPOCH fvt-id score-id)
@@ -7485,6 +7516,7 @@
 (create-table P|MT)
 ;;
 (create-table FVT|T)                                            ;; Key = <FVT-ID>
+(create-table FVT|T|RewardAggregate)                            ;; Key = <FVT-ID>  (#75 B' Stage 1)
 (create-table FVT|T|ScoreEntityLink)                            ;; Key = <FVT-ID> | <Score-Entity-ID>
 (create-table FVT|T|MultipletFamily)                            ;; Key = <Multiplet-Family-ID>
 (create-table FVT|T|RPS|Global)                                 ;; Key = <FVT-ID> | <DPTF-ID>
