@@ -20,4 +20,5 @@
 (load "[6.2.5]_AQP-VCT.repl")     ;; VCT  — pool-owner vacate (Full + Legs), all asset kinds
 (load "[6.2.10]_AQP-NEGATIVES.repl") ;; NEG  - IMC boundary + owner/state negatives (Track C)
 (load "[6.2.11]_AQP-SPLIT-MODE.repl") ;; SPLIT - dual reward-split mode toggle (D1-G2, task #89)
+(load "[6.2.12]_AQP-ANCHOR-TAIL.repl") ;; ANCHOR-TAIL - SetCommonDenominator + RotateOwnership (#79 Ph2)
 

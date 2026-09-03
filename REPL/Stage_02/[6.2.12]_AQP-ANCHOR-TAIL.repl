@@ -1,0 +1,76 @@
+;;
+;; REPL/Stage_02/[6.2.12]_AQP-ANCHOR-TAIL.repl — AQP anchor tail-op coverage (#79 Phase 2)
+;;   Issues a fresh TF anchor on OURO (mirrors [6.2.1] fee/boost fixture), captures its fvt-id,
+;;   then exercises the uncovered anchor-admin ops: C_AQP-FVT|SetCommonDenominator +
+;;   C_AQP-FVT|RotateOwnership. Loaded after [6.2.1] so the AQP boot + OURO fixture exist.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[6.2.12]_AQP-ANCHOR-TAIL.repl  (AQP anchor tail)")
+(print "================================================================")
+(print "")
+
+;;================================================================================
+(begin-tx "TX-AT-001 - issue TF anchor, SetCommonDenominator, RotateOwnership")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AT-001 · 01 · env-sigs (patron only) ====
+(print "--- [TX-AT-001 · 01 · env-sigs (patron only)] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+(let
+    (
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (ouro-id:string "OURO-98c486052a51")
+        (auryn-id:string "AURYN-98c486052a51")
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (fvt-name:string "TailFarm")
+        (fvt-class:integer 0)
+        (split-stoa:[decimal]
+            (ref-DALOS::URC_SplitSTOAPrices
+                patron
+                (* (ref-DALOS::UR_UsagePrice "standard") 20.0)
+            )
+        )
+    )
+    ;;==== TX-AT-001 · 02 · env-sigs + coin caps for anchor issuance ====
+    (print "--- [TX-AT-001 · 02 · env-sigs + coin caps] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa))
+                ]
+            }
+        ]
+    )
+    ;;==== TX-AT-001 · 03 · issue FVT -> SetCommonDenominator + RotateOwnership ====
+    (print "--- [TX-AT-001 · 03 · issue FVT / set-denominator / rotate-ownership] ---")
+    (let
+        (
+            (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
+        )
+        ;; issue a class-0 FVT (farm); farms require a real native DPTF common-denominator (OURO)
+        (print (format "<(C_AQP-FVT|Issue farm)> => \"{}\"" [(ref-TS02-C3::C_AQP-FVT|Issue patron fvt-name patron fvt-class ouro-id)]))
+        ;; SetCommonDenominator while patron still owns the farm (switch OURO -> AURYN native DPTF)
+        (print (ref-TS02-C3::C_AQP-FVT|SetCommonDenominator patron fvt-id auryn-id))
+        ;; RotateOwnership: hand the FVT to EMMA (existing DALOS account from the DPDC suites)
+        (print (ref-TS02-C3::C_AQP-FVT|RotateOwnership patron fvt-id emma))
+        (print "<<TX-AT-001>> C_AQP-FVT|Issue + SetCommonDenominator + RotateOwnership OK")
+    )
+)
+(print "===^^^===")
+(commit-tx)
+(print "")
+(print "=== END FILE [6.2.12]_AQP-ANCHOR-TAIL.repl (anchor SetCommonDenominator + RotateOwnership) ===")
