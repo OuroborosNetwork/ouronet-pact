@@ -185,3 +185,28 @@ of each becomes an `XE_`; the read/validate/structure half stays in `FVT`.
 - **P4 — full green-gate + fresh top-to-bottom redeploy dry-run** (feeds #83).
 
 **Status: DESIGN COMPLETE — awaiting owner GO to start P1.**
+
+---
+
+## Stage 1 field-set (LOCKED) — `FVT|T|RewardAggregate` (key = `<FVT-ID>`)
+
+Move these 7 reward-computation aggregates out of `FVT|Schema` (all written by the reward /
+link / refresh orchestration that moves to RPS in Stage 3):
+- `total-ghost-tvl-weight`  (Farm inject denominator S; writer `WU_Fvt|TotalGhostTvlWeight`)
+- `total-deb-score`         (Vault/Treasury inject denominator; `WU_Fvt|TotalDebScore`)
+- `total-base-score`        (SCORE mirror; written via the 2b full-row refresh)
+- `total-boosted-score`     (SCORE mirror; refresh)
+- `total-nzs-count`         (SCORE mirror; refresh)
+- `enabled-reward-count`    (`WU_Fvt|EnabledRewardCount`; AddRewardLink/ToggleRewardLink)
+- `member-link-count`       (`WU_Fvt|MemberLinkCount`; AddScoreEntity)
+
+STAY in `FVT|Schema` (identity/config): `fvt-class`, `owner-konto`, `can-upgrade`,
+`can-change-owner`, `common-denominator`, `mosaic`, `membership-mode`, `oracle-on`, `split-mode`,
+`fvt-id`.
+
+Stage-1 edit surface (atomic, in-module, green-gated by the reward suites which assert these
+numbers): new schema+table+create-table; repoint the per-field `WU_Fvt|*`/`UR_FVT|*` for the 5
+writer-backed fields to the new table; repoint the 3 refresh-mirror writes + their `UR_FVT|*`
+readers; split `WI_Fvt`/`UDC_FVT|Schema` row construction into identity-row + aggregate-row; fix
+any `(at "<field>" (read FVT|T ...))` sites. `Z.repl` + `[6.2.4]/[6.2.5]/[6.2.8]` must stay green
+AND match pre-change numbers (behavioral-equivalence gate).
