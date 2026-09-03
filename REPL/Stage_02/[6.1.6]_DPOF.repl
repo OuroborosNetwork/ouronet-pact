@@ -1,0 +1,80 @@
+;;
+;; REPL/Stage_02/[6.1.6]_DPOF.repl — DPOF tail-op coverage (#79 Phase 2)
+;;   Reuses the COF DPOF from [6.1.5] (owner holds nonce 1, 1000 units). Deploys 3 accounts,
+;;   transmits units to each, then exercises the uncovered DPOF ops: A_DPOF|DeployAccount,
+;;   C_DPOF|Transmit, WipeSlim/WipeClean/WipeHeavy/WipePure, UpgradeBranding.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[6.1.6]_DPOF.repl  (DPOF tail ops)")
+(print "================================================================")
+(print "")
+
+;;================================================================================
+(begin-tx "TX-OF-001 - DPOF tail: deploy / transmit / wipes / branding on COF")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-OF-001 · 01 · env-sigs (STOA fee caps for UpgradeBranding) ====
+(print "--- [TX-OF-001 · 01 · env-sigs] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000.0)
+            ]
+        }
+    ]
+)
+;;==== TX-OF-001 · 02 · deploy / transmit / wipe / branding ====
+(print "--- [TX-OF-001 · 02 · deploy / transmit / wipe / branding] ---")
+(let
+    (
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (id:string "COF-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+        (orbr:string KST.OURBR)
+    )
+    ;; A_DPOF|DeployAccount: deploy 2 standard collection accounts (wipe needs a freezable acct)
+    (ref-TS01-A::A_DPOF|DeployAccount patron id emma)
+    (ref-TS01-A::A_DPOF|DeployAccount patron id lumy)
+    ;; enable segmentation (Control's last flag `sg`) — Transmit requires it ON
+    (ref-TS01-C1::C_DPOF|Control patron id true true true true true true true true)
+    ;; C_DPOF|Transmit: move 300 units of nonce 1 to EMMA and LUMY (owner keeps 400)
+    (ref-TS01-C1::C_DPOF|Transmit patron id [1] [300.0] patron emma false)
+    (ref-TS01-C1::C_DPOF|Transmit patron id [1] [300.0] patron lumy false)
+    ;; DPOF is single-holder-per-nonce: Transmit gave EMMA a NEW (segmented) nonce — read it.
+    ;; EMMA: freeze -> WipeSlim (partial) -> WipeClean (empties its nonce list)
+    (let ((en:integer (at 0 (ref-DPOF::URH_AccountNonces emma id))))
+        (ref-TS01-C1::C_DPOF|ToggleFreezeAccount patron id emma true)
+        (ref-TS01-C1::C_DPOF|WipeSlim patron id emma en 100.0)
+        (ref-TS01-C1::C_DPOF|WipeClean patron id emma [en])
+    )
+    ;; LUMY: freeze -> WipeHeavy (empties whole account, no nonce number needed)
+    (ref-TS01-C1::C_DPOF|ToggleFreezeAccount patron id lumy true)
+    (ref-TS01-C1::C_DPOF|WipeHeavy patron id lumy)
+    ;; re-fund EMMA (unfreeze, transmit, refreeze) -> WipePure via the computed removable obj
+    (ref-TS01-C1::C_DPOF|ToggleFreezeAccount patron id emma false)
+    (ref-TS01-C1::C_DPOF|Transmit patron id [1] [300.0] patron emma false)
+    (ref-TS01-C1::C_DPOF|ToggleFreezeAccount patron id emma true)
+    (ref-TS01-C1::C_DPOF|WipePure patron id emma (ref-DPOF::URHC_WipePure emma id))
+    ;; premium branding upgrade (STOA fee)
+    (ref-TS01-C1::C_DPOF|UpgradeBranding patron id 1)
+    (print "<<TX-OF-001>> DPOF DeployAccount/Transmit/WipeSlim/Clean/Heavy/Pure/UpgradeBranding OK")
+)
+(print "===^^^===")
+(commit-tx)
+(print "")
+(print "=== END FILE [6.1.6]_DPOF.repl (all 7 DPOF tail ops) ===")
