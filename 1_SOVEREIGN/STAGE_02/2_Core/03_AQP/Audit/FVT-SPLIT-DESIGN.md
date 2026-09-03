@@ -52,20 +52,25 @@ client entrypoint**. Orchestrates coarsely: reads its own structure, then drives
 
 ## 3. Table assignment (the 16 tables — partition anchors)
 
-| → `RPS` (reward ledger) | → `FVT` (estates + lifecycle) |
-|---|---|
-| `FVT\|T\|RPS\|Global` | `FVT\|T` (entity: class/owner/denominator) |
-| `FVT\|T\|RPS\|Member` | `FVT\|T\|ScoreEntityLink` |
-| `FVT\|T\|RPS\|User` | `FVT\|T\|MultipletFamily` |
-| `FVT\|T\|RPS\|Stream` | `FVT\|T\|UserPresence` |
-| `FVT\|T\|MemberVault` | `FVT\|T\|AgencyFee` |
-| `FVT\|T\|MemberUserWeight` | `FVT\|T\|QualitySplit` |
-| `FVT\|T\|ForcedFixCount` | `FVT\|T\|DsaOracleConfig` |
-| | `FVT\|T\|VacateFreeze`, `FVT\|T\|SweepProgress` |
-| shared policy tables `P\|T`, `P\|MT` are **duplicated** (both modules define their own — they are IMC/policy plumbing, not domain data) | |
+**REVISED after P1 measurement (2026-09-03).** The first cut (ledger-only → RPS) left FVT at
+6,435 lines / ~84% gas — deployable but no headroom — because the reward-settlement orchestration
+(67% of the mass) reads **`ScoreEntityLink`** throughout (36 fns). So the reward-*distribution
+topology* moves with the ledger: RPS becomes the reward **engine**, FVT the entity/config/client
+shell. Measured result: **RPS ≈ 3,288 / FVT ≈ 2,765 lines, 0 DAG hazards.**
 
-`MemberVault` + `MemberUserWeight` go with `RPS`: they are per-member reward-distribution state
-mutated by the settle/inject walk, not entity structure.
+| → `RPS` (reward engine: ledger + distribution topology) | → `FVT` (entity + config + client) |
+|---|---|
+| `FVT\|T\|RPS\|Global/Member/User/Stream` | `FVT\|T` (entity: class/owner/denominator) |
+| `FVT\|T\|MemberVault`, `FVT\|T\|MemberUserWeight` | `FVT\|T\|AgencyFee` |
+| `FVT\|T\|ForcedFixCount` | `FVT\|T\|QualitySplit` |
+| `FVT\|T\|ScoreEntityLink` (reward topology) | `FVT\|T\|DsaOracleConfig` |
+| `FVT\|T\|UserPresence` (per-user reward presence) | `FVT\|T\|VacateFreeze` |
+| `FVT\|T\|MultipletFamily` (reward multiplet chains) | `FVT\|T\|SweepProgress` |
+| shared policy tables `P\|T`, `P\|MT` **duplicated** (IMC plumbing, not domain data) | |
+
+`FVT|T` (the entity identity row) stays in FVT — its config fields (denominator/class/owner/
+split-mode) are read once per op and **arg-passed** into the RPS phase entrypoints (the only
+residual coupling; DAG stays a clean leaf → `RPS` first).
 
 ---
 
