@@ -414,8 +414,50 @@
 )
 (print "===^^^===")
 (commit-tx)
+;;================================================================================
+(begin-tx "TX-NF-010 - DPNF fragments (enable -> make -> merge -> repurpose)")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-NF-010 · 01 · env-sigs (caps) ====
+(print "--- [TX-NF-010 · 01 · env-sigs] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+;;==== TX-NF-010 · 02 · fragment flow ====
+(print "--- [TX-NF-010 · 02 · fragment flow] ---")
+(let
+    (
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (id:string "CNF-98c486052a51")
+        (patron:string KST.ANHD)
+        (orbr:string KST.OURBR)
+        (type:object{DpdcUdcV2.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 0.0 "N" "N" (ref-DPDC-UDC::UDC_NoMetaData) type
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
+            )
+        )
+    )
+    ;; enable fragmentation on native nonce 1 (owner holds 1,2 after the wipes)
+    (ref-TS02-C2::C_DPNF|EnableNonceFragmentation patron id 1 nd)
+    ;; make 1000 fragments of nonce 1 (NFT supply 1 -> fragment nonce -1 x1000), then merge back
+    (ref-TS02-C2::C_DPNF|MakeFragments patron patron id 1 1)
+    (ref-TS02-C2::C_DPNF|MergeFragments patron patron id -1 1000)
+    ;; re-fragment, then repurpose the fragment nonce -1 to a fresh (non-frozen) account (Ouroboros)
+    (ref-TS02-C2::C_DPNF|MakeFragments patron patron id 1 1)
+    (ref-TS02-C2::C_DPNF|ToggleUpdateRole patron id orbr true)
+    (ref-TS02-C2::C_DPNF|ToggleUpdateRole patron id orbr false)
+    (ref-TS02-C2::C_DPNF|RepurposeFragments patron id patron orbr [-1] [1000])
+    (map print
+        [
+            (expect "<<TX-NF-010>> Ouroboros holds the 1000 repurposed fragment units of nonce -1" 1000 (ref-DPDC::UR_AccountNonceSupply orbr id false -1))
+            ""
+        ]
+    )
+)
+(print "===^^^===")
+(commit-tx)
 (print "")
-(print "=== END FILE [6.1.4]_DPDC-NF.repl (batches 1-4: all except fragments) ===")
-;; TODO batch 5 (#100): fragments (MergeFragments/RepurposeFragments — need EnableNonceFragmentation
-;;   + MakeFragments first).
+(print "=== END FILE [6.1.4]_DPDC-NF.repl (COMPLETE: all 36 DPNF client ops covered) ===")
 (print "")
