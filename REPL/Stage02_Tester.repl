@@ -53,6 +53,8 @@
 ;;DPDC-S sets (Primordial/Composite/Hybrid/NFT Make+Break, admin mutations) — DPDC Audit #39L: first real,
 ;;reachable, asserted coverage.
 (load "Stage_02/[6.1.3]_DPDC-S.repl")
+;;DPNF (NFT) client-op coverage — #79 Phase 1b
+(load "Stage_02/[6.1.4]_DPDC-NF.repl")
 
 ;;CITIZEN DEPLOYER + EXECUTOR
 ;;FULL> Populate scripts — mass DPNF mint; ~minutes each (Nosferatu + Bloodshed worst offenders)
