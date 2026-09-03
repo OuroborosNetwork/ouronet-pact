@@ -1,0 +1,61 @@
+;;
+;; REPL/Stage_02/[6.2.14]_AQP-MULTIPLET.repl — AQP multiplet-family coverage (#79 Phase 2)
+;;   Issues the chain-wide MultipletFamily reward ladder OURO -> Auryn -> Elite-Auryn, wired by the
+;;   canonical Auryndex / EliteAuryndex ATS pairs (Coil/Curl outputs). Covers the uncovered
+;;   C_AQP-FVT|IssueMultipletFamily sovereign client op (fixture mirrors [6.2.9] Step10, but calls
+;;   the Talos op directly). Loaded after [6.2.4] so the FVT + Stage-1 AURYN economy exist.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[6.2.14]_AQP-MULTIPLET.repl  (AQP multiplet family)")
+(print "================================================================")
+(print "")
+
+;;================================================================================
+(begin-tx "TX-MF-001 - issue MultipletFamily OURO->Auryn->Elite-Auryn")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-MF-001 · 01 · bindings + env-sigs (3x smart STOA) ====
+(print "--- [TX-MF-001 · 01 · bindings + env-sigs] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ouro-id:string "OURO-98c486052a51")
+        (auryn-id:string (ref-DALOS::UR_AurynID))
+        (elite-auryn-id:string (ref-DALOS::UR_EliteAurynID))
+        (ats-0-1-id:string "Auryndex-98c486052a51")
+        (ats-1-2-id:string "EliteAuryndex-98c486052a51")
+        (split-smart:[decimal]
+            (ref-DALOS::URC_SplitSTOAPrices patron (* 3.0 (ref-DALOS::UR_UsagePrice "smart")))
+        )
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-smart))
+                ]
+            }
+        ]
+    )
+    ;;==== TX-MF-001 · 02 · C_AQP-FVT|IssueMultipletFamily ====
+    (print "--- [TX-MF-001 · 02 · IssueMultipletFamily] ---")
+    ;; token-1 (Auryn) must be reward-bearing on Auryndex (Coil), token-2 (Elite) on EliteAuryndex (Curl)
+    (print (ref-TS02-C3::C_AQP-FVT|IssueMultipletFamily patron ouro-id auryn-id elite-auryn-id ats-0-1-id ats-1-2-id))
+    (print "<<TX-MF-001>> C_AQP-FVT|IssueMultipletFamily OURO->Auryn->Elite OK")
+)
+(print "===^^^===")
+(commit-tx)
+(print "")
+(print "=== END FILE [6.2.14]_AQP-MULTIPLET.repl (IssueMultipletFamily) ===")
