@@ -1,0 +1,197 @@
+(load "Stage00_Sanboxes.repl")
+(load "Stage_01/[0.0]_Starter.repl")
+(load "Stage_01/[0.1]_Interfaces.repl")
+(load "Stage_01/[1]_Utilities.repl")
+(load "Stage_01/[2.1]_Dalos.repl")
+(load "Stage_01/[2.2]_Core.repl")
+(load "Stage_01/[3]_Talos.repl")
+(load "Stage_01/[4.0]_Sovereign-Executor.repl")
+(load "Stage_01/[5.1]_Aoz+.repl")
+(load "Stage_01/[5.2]_Dispenser+.repl")
+(load "Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl")
+(load "Stage_01/[6.5]_DPOF.repl")
+(load "Stage_01/[6.6]_ATS.repl")
+
+(begin-tx "COV DRAFT 0 - issue a fresh DPOF token owned directly by aoz (not a smart account)")
+(namespace "ouronet-ns")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (aoz:string KST.AOZT)
+        (split-kda:[decimal] (ref-DALOS::URC_SplitKDAPrices aoz (ref-DALOS::UR_UsagePrice "dpmf")))
+    )
+    (env-sigs
+        [
+            { "key": "PK_AOZ", "caps": [] }
+            { "key": "95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf", "caps":
+                [
+                    (coin.TRANSFER "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
+                    (coin.TRANSFER "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
+                    (coin.TRANSFER "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
+                    (coin.TRANSFER "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                ]
+            }
+        ]
+    )
+)
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (aoz:string KST.AOZT)
+        (ids:list
+            (ref-TS01-C1::DPOF|C_Issue
+                aoz aoz
+                ["TestHotToken"] ["THKOSON"] [12]
+                [true] [true] [true] [false] [false] [true] [true]
+            )
+        )
+    )
+    (print (format "issued: {}" [ids]))
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "COV DRAFT 1a - rejection checks (patron key only)")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
+        (patron:string KST.ANHD)
+        (ps:string "PlebeicStrength-98c486052a51")
+        (th-k:string "THKOSON-98c486052a51")
+    )
+    (print (expect-failure "non-owner cannot toggle can-upgrade" (ref-TS01-C2::ATS|C_ToggleUpgrade patron ps false)))
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "COV DRAFT 1b - real owner path (aoz key only)")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_AOZ", "caps": [] } ])
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (aoz:string KST.AOZT)
+        (patron:string KST.ANHD)
+        (ps:string "PlebeicStrength-98c486052a51")
+        (th-k:string "THKOSON-98c486052a51")
+    )
+    (ref-TS01-C2::ATS|C_ToggleUpgrade aoz ps false)
+    (print (format "can-upgrade now: {}" [(ATS.UR_CanUpgrade ps)]))
+    (ref-TS01-C2::ATS|C_ToggleUpgrade aoz ps true)
+    (print (format "can-upgrade restored: {}" [(ATS.UR_CanUpgrade ps)]))
+    (ref-TS01-C2::ATS|C_SetHibernationFees aoz ps 100.0 0.01)
+    (print "hibernation fees set")
+    (ref-TS01-C2::ATS|C_SwitchColdRecovery aoz ps false)
+    (ref-TS01-C2::ATS|C_SwitchHotRecovery aoz ps false)
+    (ref-TS01-C2::ATS|C_AddHotRBT aoz ps th-k)
+    (print (format "ps hot-rbt now: {}" [(ATS.UR_HotRewardBearingToken ps)]))
+    (ref-TS01-C2::ATS|C_HOT-RBT|UpdatePendingBranding aoz th-k "logo" "desc" "site" [])
+    (print "branding update ok")
+    (let
+        (
+            (blue-split:[decimal] (ref-DALOS::URC_SplitKDAPrices aoz (ref-DALOS::UR_UsagePrice "blue")))
+        )
+        (env-sigs
+            [
+                { "key": "PK_AOZ", "caps": [] }
+                { "key": "95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf", "caps":
+                    [
+                        (coin.TRANSFER "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 blue-split))
+                        (coin.TRANSFER "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 blue-split))
+                        (coin.TRANSFER "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 blue-split))
+                        (coin.TRANSFER "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 blue-split))
+                    ]
+                }
+            ]
+        )
+    )
+    (ref-TS01-C2::ATS|C_HOT-RBT|UpgradeBranding aoz th-k 1)
+    (print "branding upgrade ok")
+)
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "COV DRAFT 2 - HotRecovery (mint nonces) + Repurpose + Reverse(Recover) + SetHotRecoveryFees")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_AOZ", "caps": [] } ])
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
+        (aoz:string KST.AOZT)
+        (patron:string KST.ANHD)
+        (ps:string "PlebeicStrength-98c486052a51")
+        (th-k:string "THKOSON-98c486052a51")
+        (pd-k:string "PDKOSON-98c486052a51")
+    )
+    (print (format "aoz PDKOSON (cold-rbt) balance: {}" [(DPTF.UR_AccountSupply pd-k aoz)]))
+    (ref-TS01-C2::ATS|C_SetHotRecoveryFee aoz ps 20.0 30)
+    (print "hot recovery fees set")
+    (ref-TS01-C2::ATS|C_SwitchHotRecovery aoz ps true)
+    (ref-TS01-C2::ATS|C_HotRecovery aoz aoz ps 1.0)
+    (print (format "th-k nonces used: {}" [(DPOF.UR_NoncesUsed th-k)]))
+)
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "COV DRAFT 3 - Repurpose nonce 1, mint nonce 2, Reverse(Recover) nonce 2")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_AOZ", "caps": [] } ])
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
+        (aoz:string KST.AOZT)
+        (patron:string KST.ANHD)
+        (ps:string "PlebeicStrength-98c486052a51")
+        (th-k:string "THKOSON-98c486052a51")
+    )
+    (ref-TS01-C2::ATS|C_HOT-RBT|Repurpose aoz th-k 1 patron)
+    (print (format "nonce 1 repurposed to patron: {}" [(DPOF.UR_NonceHolder th-k 1)]))
+    (ref-TS01-C2::ATS|C_HotRecovery aoz aoz ps 1.0)
+    (print (format "th-k nonces used now: {}" [(DPOF.UR_NoncesUsed th-k)]))
+    (ref-TS01-C2::ATS|C_Reverse aoz aoz th-k 3)
+    (print "nonce 2 reversed (Recover) back to cold-rbt")
+)
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "COV DRAFT 4 - A_RemoveSecondary (admin) + WithdrawRoyalties + DirectRecovery")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_AOZ", "caps": [] } { "key": "PK_AncientHodler", "caps": [] } ])
+(let
+    (
+        (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
+        (aoz:string KST.AOZT)
+        (ancienthodler:string KST.ANHD)
+        (ps:string "PlebeicStrength-98c486052a51")
+        (e-k:string "EKOSON-98c486052a51")
+        (pd-k:string "PDKOSON-98c486052a51")
+    )
+    (print (format "ps RT list before admin removal: {}" [(ATS.UR_RewardTokenList ps)]))
+    (ref-TS01-A::ATS|A_RemoveSecondary ancienthodler ancienthodler ps e-k [])
+    (print (format "ps RT list after admin removal: {}" [(ATS.UR_RewardTokenList ps)]))
+    ;; WithdrawRoyalties - ensure some royalty exists first
+    (ref-TS01-C2::ATS|C_UpdateRoyalty aoz ps 5.0)
+    (ref-TS01-C2::ATS|C_SwitchColdRecovery aoz ps true)
+    (ref-TS01-C2::ATS|C_Coil aoz ps pd-k 1.0)
+    (print (format "ps royalty accrued: {}" [(ATS.UR_RewardTokenRUR ps 3)]))
+    (ref-TS01-C2::ATS|C_WithdrawRoyalties aoz ps aoz)
+    (print "royalties withdrawn")
+    ;; DirectRecovery
+    (ref-TS01-C2::ATS|C_SetDirectRecoveryFee aoz ps 5.0)
+    (ref-TS01-C2::ATS|C_SwitchDirectRecovery aoz ps true)
+    (ref-TS01-C2::ATS|C_DirectRecovery aoz ps 1.0)
+    (print "direct recovery done")
+)
+(commit-tx)

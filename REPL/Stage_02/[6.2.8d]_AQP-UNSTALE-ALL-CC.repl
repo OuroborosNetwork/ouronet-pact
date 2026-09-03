@@ -2,7 +2,7 @@
 ;; REPL/Stage_02/[6.2.8d]_AQP-UNSTALE-ALL-CC.repl — OWNER mass deb-unstale (CCp_UnstaleAll).
 ;;
 ;; Legend: <(...)>  live call echo   ·   <<TX-UNSTALEALL*>>  assertion tag.
-;; Source: 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04_FVT.pact (CCp_UnstaleAll +
+;; Source: 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact (CCp_UnstaleAll +
 ;;         FVT|C>UNSTALE-ALL), 3_Talos/04_TS02-C3.pact (CCp_AQP-FVT|UnstaleAll).
 ;; REPL tests: deb-staleness-unstale-all-cc.repl.
 ;;

@@ -5,7 +5,7 @@
 ;;                ANHD collects 180 (sole for h0-12 = 120, half of h12-24 = 60), EMMA collects 60. Proves late
 ;;                stakers capture only the post-join drip, and the drip-at-stake checkpoint is exact.
 ;; Legend: <(call)> invocation echo · <<T-STREAM-nn>> assertion tag.
-;; Source: 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04_FVT.pact (CC_InjectStream / XI_ReleaseStream)
+;; Source: 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact (CC_InjectStream / XI_ReleaseStream)
 ;;
 (print "")
 (print "================================================================")

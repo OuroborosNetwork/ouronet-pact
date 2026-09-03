@@ -7,7 +7,7 @@
 ;;   EMMA/LUMY collect 1800 each  (2000x0.9)                                      = R·d·(1−fee)/W
 ;; The operator collects its share INDEPENDENTLY (first, before any delegator). A mid-stream A_SetAgencyFee to
 ;; 20% reprices ONLY the next inject (O(1), no per-delegator recompute): operator 1800, delegators 1600 each.
-;; Source: 04_FVT.pact XI_1|FarmSplitInject (fee split) + FVT|AgencyFee + 07_DSA.pact A_SetAgencyFee.
+;; Source: 05_FVT.pact XI_1|FarmSplitInject (fee split) + FVT|AgencyFee + 08_DSA.pact A_SetAgencyFee.
 ;;
 (print "")
 (print "================================================================")

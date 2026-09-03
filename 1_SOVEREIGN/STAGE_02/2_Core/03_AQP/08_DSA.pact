@@ -1,4 +1,4 @@
-;; Deploy: load THIS file — interface + module ship together (model: 06_MTX-AQP.pact).
+;; Deploy: load THIS file — interface + module ship together (model: 07_MTX-AQP.pact).
 ;; DSA — Delegated Staking Agencies. A delegated node-staking layer on the FVT two-tier farm settle:
 ;;   an agency = one FVT member (a triplet for Custodians); delegators stake into it; the operator runs
 ;;   nodes to CAPTURE reward units and takes a fee. Depends on AQP-FVT (deploys first; DSA writes the

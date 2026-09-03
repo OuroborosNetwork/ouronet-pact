@@ -20,7 +20,7 @@
 ;; the reroute to token-1 (Auryn, via the Coil leg).
 ;;
 ;; Legend:  <(...)> op echo   <<GT-nn>> assertion tag
-;; Source:  07_DSA.pact (whole module) + 04_FVT.pact (AgencyFee/QualitySplit/inject/
+;; Source:  08_DSA.pact (whole module) + 05_FVT.pact (AgencyFee/QualitySplit/inject/
 ;;          collect) + 3_Talos/04_TS02-C3.pact (AQP-DSA| / AQP-FVT| wrappers)
 ;; ================================================================
 (print "")

@@ -10,7 +10,7 @@
 ;;   5. a second operator stake grows Q, and the PERMISSIONLESS C_RecomputeCapture picks it up while
 ;;      PRESERVING the stored oracle-ts (a stake must not refresh oracle freshness).
 ;; unit-score = 2000 => open gate = 1000. Custodians quintessence: -1->1, -2->10, -3->100 (x0.001 fragment scale).
-;; Source: 07_DSA.pact (C_OpenAgency atomic, A_SetOracleAuth, A_OracleWrite, C_RecomputeCapture, URC_CaptureUnits).
+;; Source: 08_DSA.pact (C_OpenAgency atomic, A_SetOracleAuth, A_OracleWrite, C_RecomputeCapture, URC_CaptureUnits).
 ;;
 (print "")
 (print "================================================================")

@@ -2,7 +2,7 @@
 ;; REPL/Stage_02/[6.2.8b]_AQP-UNSTALE.repl — user self-service deb-unstale (#FP4.2).
 ;;
 ;; Legend: <(...)>  live call echo   ·   <<TX-UNSTALE*>>  assertion tag.
-;; Source: 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04_FVT.pact (CC_UnstaleMyScores +
+;; Source: 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact (CC_UnstaleMyScores +
 ;;         FVT|C>UNSTALE-MY-SCORES + GAS|UNSTALE), 3_Talos/04_TS02-C3.pact
 ;;         (CC_AQP-FVT|UnstaleMyScores). REPL tests: deb-staleness-sweep-cc.repl.
 ;;

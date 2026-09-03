@@ -2,7 +2,7 @@
 ;; REPL/Stage_02/[6.2.8c]_AQP-INJECT-CC.repl — enforced-fresh inject CC-batch (#FP4.3).
 ;;
 ;; Legend: <(...)>  live call echo   ·   <<TX-INJECT-CC*>>  assertion tag.
-;; Source: 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04_FVT.pact (CCp_InjectFixChunk +
+;; Source: 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact (CCp_InjectFixChunk +
 ;;         CC_InjectFinalize + FVT|C>INJECT-FIX + INJECT-FIX-CHUNK-MAX), 3_Talos/
 ;;         04_TS02-C3.pact (CCp_AQP-FVT|InjectFixChunk / CC_AQP-FVT|InjectFinalize).
 ;; REPL tests: deb-staleness-inject-cc.repl.

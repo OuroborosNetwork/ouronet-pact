@@ -56,7 +56,7 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (env-sigs [{ "key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": [] }])
-(load "../1_SOVEREIGN/STAGE_02/2_Core/03_AQP/08_AQP-INFO.pact")
+(load "../1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact")
 (commit-tx)
 (print "")
 ;; ---- ground truth ----

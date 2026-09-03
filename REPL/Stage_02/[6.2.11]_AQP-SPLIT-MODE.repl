@@ -6,7 +6,7 @@
 ;; re-weights FUTURE injects (RPS is checkpoint-based), so a bare class-0 farm proves the switch
 ;; mechanism + validation deterministically. The economic W_i flip (member staked value vs whole-pool
 ;; TVL) rides on URC_MemberLevel2Weight, exercised by the full-boot farm inject path.
-;; Source: 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04_FVT.pact (C_SetSplitMode / FVT|C>SET-SPLIT-MODE /
+;; Source: 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact (C_SetSplitMode / FVT|C>SET-SPLIT-MODE /
 ;;         URC_MemberLevel2Weight); Talos 3_Talos/04_TS02-C3.pact (C_AQP-FVT|SetSplitMode).
 ;; Loaded by REPL/Stage_02/[6.2]_AQP.repl after [6.2.10]. Assumes the [6.2.1-5] entities exist
 ;; (the class-1 vault "TfStakeVault" is reused for the farm-only rejection).
