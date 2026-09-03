@@ -1,0 +1,65 @@
+;;
+;; REPL/mig-harness.repl — ISOLATED MigrateLiquidFunds coverage harness (#79 Phase 2)
+;;   Standalone (boot → test → discard). A_DALOS|MigrateLiquidFunds moves the DALOS smart account's
+;;   entire native-Stoa balance to a target Stoa account (namespace-migration admin op). Covers the
+;;   uncovered A_DALOS|MigrateLiquidFunds op. Target = an existing STOA fee-recipient k: account.
+;;   Run:  cd REPL && pact mig-harness.repl
+;;
+(load "Stage00_Sanboxes.repl")
+(load "Stage01_Tester.repl")
+
+(print "")
+(print "================================================================")
+(print "FILE  REPL/mig-harness.repl  (isolated MigrateLiquidFunds)")
+(print "================================================================")
+(print "")
+
+;;================================================================================
+(begin-tx "TX-MIG-001 - migrate the DALOS SC Stoa balance to a target Stoa account")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-MIG-001 · 01 · env-data + env-sigs (admin + Stoa funder) ====
+(print "--- [TX-MIG-001 · 01 · env-data + env-sigs] ---")
+;; guard for a FRESH empty migration-target Stoa account (GOV|MIGRATE requires target-balance 0)
+(env-data
+    { "tgt-ks":
+        { "keys": [ "1111111111111111111111111111111111111111111111111111111111111111" ]
+        , "pred": "keys-all" }
+    }
+)
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        ;; genesis foundation account (holds native Stoa, keys-any) — authorizes the DALOS-SC funding
+        { "key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74", "caps": [] }
+    ]
+)
+;;==== TX-MIG-001 · 02 · fund DALOS SC Stoa, empty target, GAP on, MigrateLiquidFunds ====
+(print "--- [TX-MIG-001 · 02 · fund + gap + migrate] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+        (sp:string "stoa-foundation")
+        (target:string "k:1111111111111111111111111111111111111111111111111111111111111111")
+    )
+    (let
+        (
+            (dalos-stoa:string (ref-DALOS::GOV|DALOS|SC_STOA-NAME))
+        )
+        ;; probe: does the DALOS smart account already hold native Stoa to migrate?
+        (print (format "DALOS SC Stoa balance = {}" [(coin.get-balance dalos-stoa)]))
+        ;; create the FRESH empty migration target (GOV|MIGRATE enforces target-balance = 0)
+        (coin.create-account target (read-keyset "tgt-ks"))
+        ;; GOV|MIGRATE requires GAP on
+        (ref-TS01-A::A_DALOS|ToggleGAP true)
+        ;; migrate the DALOS SC's entire Stoa balance to the target
+        (print (format "<(A_DALOS|MigrateLiquidFunds)> migrated => {}"
+            [(ref-TS01-A::A_DALOS|MigrateLiquidFunds target)]))
+        (print "<<TX-MIG-001>> A_DALOS|MigrateLiquidFunds OK")
+    )
+)
+(print "===^^^===")
+(commit-tx)
+(print "")
+(print "=== END FILE mig-harness.repl (A_DALOS|MigrateLiquidFunds covered) ===")

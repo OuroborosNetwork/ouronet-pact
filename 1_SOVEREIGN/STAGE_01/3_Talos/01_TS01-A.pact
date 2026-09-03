@@ -303,7 +303,6 @@
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                 )
                 (ref-DALOS::A_MigrateLiquidFunds migration-target-stoa-account)
-                (format "Liquid Funds succesfuly migrated to {}" [migration-target-stoa-account])
             )
         )
     )
