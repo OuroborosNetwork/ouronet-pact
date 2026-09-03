@@ -533,9 +533,7 @@
             \ Vault/Treasury: total-deb-score mirror for inject; common-denominator sentinel \"|\"; total-ghost-tvl-weight 0.0. \
             \ UrStoa analogue: vault header (urstoa-supply on SCORE side; S or total-deb here is FVT-side denominator). \
             \ Field tags: [.] fixed at issue; [..] fixed once set; [M] mutable; [Mu] mutable only under owner + can-upgrade."
-        fvt-class:integer                                       ;;[.]   0=Farm (LP scores) · 1=Vault (TF | OF scores) · 2=Treasury (SF | NF scores).
-        ;;                                                              Fixed at issue; enforced 0..2 (UEV_New). Only members whose score-class
-        ;;                                                              matches this class are admitted (URC_ScoreClassMatchesFvtClass).
+        ;; fvt-class moved to FVT|RewardAggregate (#75 B' Stage 2) — the reward engine reads it heavily.
         owner-konto:string
         can-upgrade:bool
         can-change-owner:bool
@@ -554,6 +552,7 @@
     (defschema FVT|RewardAggregate
         @doc "Key = <FVT-ID>. Reward-computation aggregates split out of FVT|Schema (#75 B' Stage 1) so \
             \ the reward orchestration owns them; identity/config stays in FVT|Schema."
+        fvt-class:integer                                       ;;[.]   0=Farm · 1=Vault · 2=Treasury (moved here #75 B' Stage 2)
         total-ghost-tvl-weight:decimal                          ;;[M]   Farm S = sum enabled ScoreEntityLink W_i
         total-base-score:decimal
         total-boosted-score:decimal
@@ -1380,7 +1379,6 @@
     ;; Early UDC: constructors required before UR_* with-default-read default objects.
     (defun UDC_FVT|Schema:object{FVT|Schema}
         (
-            fvt-class:integer
             owner-konto:string
             can-upgrade:bool
             can-change-owner:bool
@@ -1393,8 +1391,7 @@
         )
         @doc "Core constructor for object{FVT|Schema}. oracle-on (DSA node/uptime oracle toggle) passes through — \
             \ false for every non-DSA FVT. split-mode = farm reward-split (SPLIT|STAKED default | SPLIT|TVL)."
-        {"fvt-class"                : fvt-class
-        ,"owner-konto"              : owner-konto
+        {"owner-konto"              : owner-konto
         ,"can-upgrade"              : can-upgrade
         ,"can-change-owner"         : can-change-owner
         ,"common-denominator"       : common-denominator
@@ -1406,6 +1403,7 @@
     )
     (defun UDC_FVT|RewardAggregate:object{FVT|RewardAggregate}
         (
+            fvt-class:integer
             total-ghost-tvl-weight:decimal
             total-base-score:decimal
             total-boosted-score:decimal
@@ -1415,8 +1413,9 @@
             member-link-count:integer
             fvt-id:string
         )
-        @doc "Constructor for object{FVT|RewardAggregate} — the reward-computation aggregates (#75 B' Stage 1)."
-        {"total-ghost-tvl-weight"   : total-ghost-tvl-weight
+        @doc "Constructor for object{FVT|RewardAggregate} — fvt-class (identity) + reward-computation aggregates (#75 B' Stage 1/2)."
+        {"fvt-class"                : fvt-class
+        ,"total-ghost-tvl-weight"   : total-ghost-tvl-weight
         ,"total-base-score"         : total-base-score
         ,"total-boosted-score"      : total-boosted-score
         ,"total-deb-score"          : total-deb-score
@@ -1706,7 +1705,7 @@
     )
     (defun UR_FVT|FvtClass:integer (fvt-id:string)
         @doc "Reads fvt-class from FVT row."
-        (at "fvt-class" (read FVT|T fvt-id ["fvt-class"]))
+        (at "fvt-class" (read FVT|T|RewardAggregate fvt-id ["fvt-class"]))
     )
     (defun UR_FVT|OwnerKonto:string (fvt-id:string)
         @doc "Reads owner-konto from FVT row."
@@ -4463,14 +4462,14 @@
         ;; SECURE: granted by WI_Fvt (underlying W_).
         (WI_Fvt fvt-id
             (UDC_FVT|Schema
-                fvt-class owner-konto true true common-denominator
+                owner-konto true true common-denominator
                 true CT_MEMBERSHIP_MODE_BAR false
                 ;; split-mode: farm (class 0) default participation; vault/treasury get the "|" sentinel (never read)
                 (if (= fvt-class 0) CT_SPLIT_MODE_STAKED CT_SPLIT_MODE_NA) fvt-id
             )
         )
         (WI_FvtRewardAggregate fvt-id
-            (UDC_FVT|RewardAggregate 0.0 0.0 0.0 0.0 0 0 0 fvt-id)
+            (UDC_FVT|RewardAggregate fvt-class 0.0 0.0 0.0 0.0 0 0 0 fvt-id)
         )
     )
     (defun XI_SetMosaic:string
@@ -7461,10 +7460,10 @@
                 )
                 (with-capability (SECURE)
                     (WI_Fvt fvt-id
-                        (UDC_FVT|Schema 1 owner-konto true true "|" true CT_MEMBERSHIP_MODE_BAR false CT_SPLIT_MODE_NA fvt-id)
+                        (UDC_FVT|Schema owner-konto true true "|" true CT_MEMBERSHIP_MODE_BAR false CT_SPLIT_MODE_NA fvt-id)
                     )
                     (WI_FvtRewardAggregate fvt-id
-                        (UDC_FVT|RewardAggregate 0.0 0.0 0.0 0.0 0 1 1 fvt-id)
+                        (UDC_FVT|RewardAggregate 1 0.0 0.0 0.0 0.0 0 1 1 fvt-id)
                     )
                     (WI_ScoreEntityLink fvt-id score-id
                         (UDC_FVT|ScoreEntityLink CT_SCORE_ENTITY_SCORE true "|" 0.0 0.0 false 0.0 0.0 STREAM_EPOCH fvt-id score-id)
@@ -7490,10 +7489,10 @@
                 )
                 (with-capability (SECURE)
                     (WI_Fvt fvt-id
-                        (UDC_FVT|Schema 2 owner-konto true true "|" true CT_MEMBERSHIP_MODE_BAR false CT_SPLIT_MODE_NA fvt-id)
+                        (UDC_FVT|Schema owner-konto true true "|" true CT_MEMBERSHIP_MODE_BAR false CT_SPLIT_MODE_NA fvt-id)
                     )
                     (WI_FvtRewardAggregate fvt-id
-                        (UDC_FVT|RewardAggregate 0.0 0.0 0.0 0.0 0 1 1 fvt-id)
+                        (UDC_FVT|RewardAggregate 2 0.0 0.0 0.0 0.0 0 1 1 fvt-id)
                     )
                     (WI_ScoreEntityLink fvt-id score-id
                         (UDC_FVT|ScoreEntityLink CT_SCORE_ENTITY_SCORE true "|" 0.0 0.0 false 0.0 0.0 STREAM_EPOCH fvt-id score-id)
