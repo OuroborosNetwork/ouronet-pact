@@ -1,0 +1,69 @@
+;;
+;; REPL/Stage_02/[6.2.15]_AQP-NF-ANCHOR.repl — AQP non-fungible trait-anchor coverage (#79 Phase 2)
+;;   Issues a fresh DPNF whose nonce 1 carries a real trait ({"rarity":"golden"}), then anchors on
+;;   that trait via C_AQP-ANK|IssueNonFungibleAnchor. Covers the uncovered NF trait-anchor client
+;;   op (CNF from [6.1.4] has NoMetaData, so the ANK|C>ISSUE-DPNF "trait-key present on nonce 1"
+;;   gate needs a purpose-built trait-bearing DPNF). Self-contained.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[6.2.15]_AQP-NF-ANCHOR.repl  (AQP NF trait-anchor)")
+(print "================================================================")
+(print "")
+
+;;================================================================================
+(begin-tx "TX-NA-001 - issue trait-bearing DPNF, anchor on the trait")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-NA-001 · 01 · env-sigs (generous STOA caps: DPNF issue + NF anchor) ====
+(print "--- [TX-NA-001 · 01 · env-sigs] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+            ]
+        }
+    ]
+)
+;;==== TX-NA-001 · 02 · issue DPNF -> create trait nonces -> IssueNonFungibleAnchor ====
+(print "--- [TX-NA-001 · 02 · issue trait DPNF + NF anchor] ---")
+(let
+    (
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (patron:string KST.ANHD)
+        (tnf-id:string "TNF-98c486052a51")
+        (type:object{DpdcUdcV2.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+    )
+    ;; issue the collection, then create 8 nonces whose metadata carries the "rarity" trait
+    (ref-TS02-C2::C_DPNF|Issue patron patron patron "TraitNF" "TNF" true true true true true true true true)
+    (let
+        (
+            (nd:object{DpdcUdcV2.DPDC|NonceData}
+                (ref-DPDC-UDC::UDC_NonceData
+                    0.0 0.0 "T" "Trait nonce" (ref-DPDC-UDC::UDC_MetaData { "rarity": "golden" }) type
+                    (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
+                )
+            )
+        )
+        (ref-TS02-C2::C_DPNF|Create patron tnf-id (make-list 8 nd))
+        ;; anchor on the "rarity"="golden" trait; acnoi=true creates the boost class inline (2x STOA)
+        (print (ref-TS02-C3::C_AQP-ANK|IssueNonFungibleAnchor patron "NFTraitAnchor" tnf-id true "NFTraitBoost" 3 100.0 "rarity" "golden"))
+        (print "<<TX-NA-001>> C_DPNF|Issue/Create (trait) + C_AQP-ANK|IssueNonFungibleAnchor OK")
+    )
+)
+(print "===^^^===")
+(commit-tx)
+(print "")
+(print "=== END FILE [6.2.15]_AQP-NF-ANCHOR.repl (IssueNonFungibleAnchor) ===")
