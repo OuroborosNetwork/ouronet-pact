@@ -197,5 +197,49 @@
 )
 (print "===^^^===")
 (commit-tx)
+;;================================================================================
+(begin-tx "TX-VSTH-006 - RepurposeFrozen (account-recovery): fund EMMA, recover to LUMY")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-VSTH-006 · 01 · env-sigs (patron + STOA caps) ====
+(print "--- [TX-VSTH-006 · 01 · env-sigs] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+            ]
+        }
+    ]
+)
+;;==== TX-VSTH-006 · 02 · fund EMMA with OURO, then RepurposeFrozen EMMA -> LUMY ====
+(print "--- [TX-VSTH-006 · 02 · fund + repurpose-frozen] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+        (ouro-id:string (ref-DALOS::UR_OuroborosID))
+    )
+    ;; fund EMMA with 100 OURO so it holds a non-zero base-token balance to recover
+    (ref-TS01-C1::C_DPTF|Transfer patron ouro-id patron emma 100.0 false)
+    ;; RepurposeFrozen: freeze+wipe EMMA's OURO and re-mint to LUMY (OURO has a frozen link from TX-003)
+    (ref-TS01-C2::C_VST|RepurposeFrozen patron ouro-id emma lumy)
+    (print "<<TX-VSTH-006>> C_DPTF|Transfer + C_VST|RepurposeFrozen (account-recovery) OK")
+)
+(print "===^^^===")
+(commit-tx)
 (print "")
-(print "=== END FILE vst-harness.repl (14 VST ops covered) ===")
+(print "=== END FILE vst-harness.repl (15 VST ops covered) ===")
