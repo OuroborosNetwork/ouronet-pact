@@ -483,5 +483,52 @@
 )
 (print "===^^^===")
 (commit-tx)
+;;================================================================================
+(begin-tx "TX-VSTH-012 - Unreserve: move R|OURO to a non-custodian smart account, then Unreserve")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-VSTH-012 · 01 · env-sigs (patron + STOA caps) ====
+(print "--- [TX-VSTH-012 · 01 · env-sigs] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+            ]
+        }
+    ]
+)
+;;==== TX-VSTH-012 · 02 · transfer R|OURO to a NON-custodian smart account, then Unreserve ====
+(print "--- [TX-VSTH-012 · 02 · move R|OURO to smart acct + unreserve] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (patron:string KST.ANHD)
+        (ouro-id:string (ref-DALOS::UR_OuroborosID))
+        ;; Reserve custodies via VST|SC_NAME, so pick a DIFFERENT smart account as the unreserver
+        (orbr-sc:string (ref-DALOS::GOV|OUROBOROS|SC_NAME))
+    )
+    ;; patron holds R|OURO from TX-001's Reserve (transfer role granted in TX-005); move it to a SMART
+    ;; account that is NOT the reserved-token custodian (method=true), so the SMART-only Unreserve applies
+    (ref-TS01-C1::C_DPTF|Transfer patron (ref-DPTF::UR_Reservation ouro-id) patron orbr-sc 100.0 true)
+    ;; Unreserve: r-dptf is the RESERVED token R|OURO (the smart account holds it); the core sends R|OURO
+    ;; to the VST custodian, burns it, and returns the base OURO to the unreserver
+    (ref-TS01-C2::C_VST|Unreserve patron orbr-sc (ref-DPTF::UR_Reservation ouro-id) 100.0)
+    (print "<<TX-VSTH-012>> C_DPTF|Transfer(->smart) + C_VST|Unreserve (smart) OK")
+)
+(print "===^^^===")
+(commit-tx)
 (print "")
-(print "=== END FILE vst-harness.repl (20 VST ops covered) ===")
+(print "=== END FILE vst-harness.repl (all 21 VST ops covered) ===")
