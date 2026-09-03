@@ -1,0 +1,3 @@
+;; deploy-stage00.repl — Stage 00 sandbox boot (Kadena + Stoa). Shared deploy core.
+;; Loaded first by ZALL.repl and by any standalone module tester (see REPL/modules/).
+(load "Stage00_Sanboxes.repl")

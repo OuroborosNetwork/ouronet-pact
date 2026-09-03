@@ -31,18 +31,8 @@
 ;(load "Stage00a_StoaTests.repl")
 ;(load "Stage01_Tester.repl")
 
-;;SOVEREING DEPLOYER
-(load "Stage_02/[0.1]_Interfaces.repl")
-(load "Stage_02/[2.1]_DpdcCore.repl")
-(load "Stage_02/[2.2]_DemiPad.repl")
-(load "Stage_02/[2.3]_EarningPools.repl")
-(load "Stage_02/[3]_Talos.repl")
-
-;;SOVEREIGN EXECUTOR (DPDC IMC policies + DH collection issue — no mass mint)
-(load "Stage_02/[4.0]_Sovereign-Executor.repl")
-
-;;Z_READS — INFO-TWO (Stage-2 INFO previews), deployed after usage prices exist
-(load "Stage_02/[Z]_Reads.repl")
+;;DEPLOY CORE (shared with ZALL.repl + standalone module testers) — see REPL_TEST_ARCHITECTURE.md
+(load "deploy-stage02.repl")
 
 ;;EQUITY (shareholder package shares) — DPDC Audit #22H: first real, reachable, asserted coverage.
 (load "Stage_02/[6.1.1]_EQUITY.repl")

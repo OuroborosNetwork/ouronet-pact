@@ -1,0 +1,14 @@
+;; deploy-stage02.repl — Stage 2 deploy core (DPDC → DemiPad → EarningPools[ANK/SCORE/POOL/RPS/FVT/
+;; VCT/MTX/DSA/INFO] → Talos → sovereign executor → Z_Reads/INFO-TWO). Deploy ONLY, no [6.x] suites.
+;; Shared by Stage02_Tester, ZALL.repl, and standalone Stage-2 module testers.
+;; Assumes Stage 00 + Stage 01 deploy cores already loaded.
+;;SOVEREIGN DEPLOYER
+(load "Stage_02/[0.1]_Interfaces.repl")
+(load "Stage_02/[2.1]_DpdcCore.repl")
+(load "Stage_02/[2.2]_DemiPad.repl")
+(load "Stage_02/[2.3]_EarningPools.repl")
+(load "Stage_02/[3]_Talos.repl")
+;;SOVEREIGN EXECUTOR (DPDC IMC policies + DH collection issue — no mass mint)
+(load "Stage_02/[4.0]_Sovereign-Executor.repl")
+;;Z_READS — INFO-TWO (Stage-2 INFO previews), deployed after usage prices exist
+(load "Stage_02/[Z]_Reads.repl")
