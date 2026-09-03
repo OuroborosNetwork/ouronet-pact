@@ -38,8 +38,14 @@ Stage 2 adds **collectables (DPDC)**, **DemiPad** (launchpad ecosystem), **AQP**
 | `01_ANK.pact` | `AQP-ANK` | **Anchors** + BoostClasses |
 | `02_SCORE.pact` | `AQP-SCORE` | Scores, links, user triples |
 | `03_AQP.pact` | `AQP-POOL` | Pools, trackers, stake/unstake orchestration |
-| `04_FVT.pact` | `AQP-FVT` | Farms / Vaults / Treasuries, inject/collect, stake recipes |
-| `05_VCT.pact` | `AQP-VCT` | Pool-owner vacate (Full + Legs) |
+| `04_RPS.pact` | `RPS` | **Reward engine leaf** (deploys first): RPS reward-per-share global/member/user/stream tables, member vaults, presence/weight mirrors, quality-splits, forced-fix, DSA agency-fee/oracle + royalty disposal. Own SECURE/IMC; `XE_` forward-entrypoints. Split out of `04_FVT` (#75) for deploy-size. |
+| `05_FVT.pact` | `AQP-FVT` | Farms / Vaults / Treasuries **entity/config/client shell** (deploys second): all `C_/CC_/CCp_/A_` client entrypoints (inject/collect/stake recipes/vacate-freeze), thin `FVT|T`/VacateFreeze/SweepProgress tables, + facade re-exports delegating reward reads to `RPS`. |
+| `06_VCT.pact` | `AQP-VCT` | Pool-owner vacate (Full + Legs) |
+| `07_MTX-AQP.pact` | `MTX-AQP` | Multi-tx matrix: enforced-fair inject/deb-fix defpacts + anchor-sweep |
+| `08_DSA.pact` | `DSA` | Delegated Staking Agencies: agency-open, capture recompute, operator fee, royalty disposal (drives `RPS::XE_`) |
+| `09_AQP-INFO.pact` | `AQP-INFO` | Client-facing INFO views over the AQP family |
+
+> **Deploy order (Kadena ~150k cap + RPS-before-FVT seam):** ANK → SCORE → AQP-POOL → **RPS → FVT** → VCT → MTX-AQP → DSA → AQP-INFO. RPS is a pure leaf (reads no FVT table; FVT config is denormalized into `FVT|T|RewardAggregate`, which RPS owns). See `03_AQP/Audit/FVT-SPLIT-MANIFEST.md`.
 
 **Docs:** `README_GLOBAL.md` (architecture), `README_TALOS_CATALOGUE.md` (Talos `C_*`), `README_HOWTO_FVT.md` (build Farm/Vault/Treasury), plus per-module READMEs under `03_AQP/`.
 

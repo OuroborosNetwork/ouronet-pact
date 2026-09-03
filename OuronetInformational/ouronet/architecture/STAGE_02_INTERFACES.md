@@ -20,6 +20,8 @@ Includes: `TalosStageTwo_DemiPadV1`, `TalosStageTwo_ClientOneV1`, `TalosStageTwo
 | `02_DEMIPAD/03_Custodians.pact` | `SaleCustodiansV1` |
 | `02_DEMIPAD/04_STOICPAY.pact` | `StoicPayV2` |
 | `03_AQP/01_ANK.pact` | `AcquisitionAnchors` |
+| `03_AQP/04_RPS.pact` | `AcquisitionRewardPerShareV1` (inline; reward-engine leaf, #75 split) |
+| `03_AQP/05_FVT.pact` | `AcquisitionFarmsVaultsTreasuriesV2` (inline; entity/config/client shell) |
 | `01_DPDC/11_EQUITY+.pact` | `EquityV1` |
 | `INFO-TWO.pact` | `InfoTwoV1` |
 
