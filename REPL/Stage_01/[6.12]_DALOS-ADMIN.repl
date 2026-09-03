@@ -1,0 +1,58 @@
+;;
+;; REPL/Stage_01/[6.12]_DALOS-ADMIN.repl — DALOS admin-toggle coverage (#79 Phase 2)
+;;   Covers the uncovered global-config admin ops: A_DALOS|ToggleGAP, ToggleOAPU, SetAutoFueling,
+;;   SetIgnisSourcePrice. Each is exercised idempotently — read the current value, then set the flag
+;;   to that same value — so the write path is covered with ZERO net state change (safe to run in the
+;;   shared Z.repl pipeline before Stage 2). MigrateLiquidFunds is intentionally excluded (it moves
+;;   liquid funds and has no safe idempotent form).
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_01/[6.12]_DALOS-ADMIN.repl  (DALOS admin toggles)")
+(print "================================================================")
+(print "")
+
+;;================================================================================
+(begin-tx "TX-DA-001 - DALOS admin toggles idempotent set-to-current (coverage)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-DA-001 · 01 · env-sigs (admin keyset) ====
+(print "--- [TX-DA-001 · 01 · env-sigs] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+;;==== TX-DA-001 · 02 · read current global config, set each to itself ====
+(print "--- [TX-DA-001 · 02 · idempotent admin toggles] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+    )
+    (let
+        (
+            (gap0:bool (ref-DALOS::UR_GAP))
+            (oapu0:bool (ref-DALOS::UR_OuroAutoPriceUpdate))
+            (autofuel0:bool (ref-DALOS::UR_AutoFuel))
+            (ouro-price0:decimal (ref-DALOS::UR_OuroborosPrice))
+        )
+        ;; ToggleGAP enforces the value must CHANGE — flip to the opposite then flip back (net zero)
+        (ref-TS01-A::A_DALOS|ToggleGAP (not gap0))
+        (ref-TS01-A::A_DALOS|ToggleGAP gap0)
+        ;; the rest are plain setters (no enforce-difference) — set each to its current value, no change
+        (ref-TS01-A::A_DALOS|ToggleOAPU oapu0)
+        (ref-TS01-A::A_DALOS|SetAutoFueling autofuel0)
+        (ref-TS01-A::A_DALOS|SetIgnisSourcePrice ouro-price0)
+        ;; prove the idempotency (values unchanged) — batch the expects so every line prints
+        (map print
+            [
+                (expect (format "<<TX-DA-001>> GAP unchanged (={})" [gap0]) gap0 (ref-DALOS::UR_GAP))
+                (expect (format "<<TX-DA-001>> OAPU unchanged (={})" [oapu0]) oapu0 (ref-DALOS::UR_OuroAutoPriceUpdate))
+                (expect (format "<<TX-DA-001>> AutoFuel unchanged (={})" [autofuel0]) autofuel0 (ref-DALOS::UR_AutoFuel))
+                (expect (format "<<TX-DA-001>> OURO price unchanged (={})" [ouro-price0]) ouro-price0 (ref-DALOS::UR_OuroborosPrice))
+                ""
+            ]
+        )
+    )
+)
+(print "===^^^===")
+(commit-tx)
+(print "")
+(print "=== END FILE [6.12]_DALOS-ADMIN.repl (4 admin toggles covered) ===")

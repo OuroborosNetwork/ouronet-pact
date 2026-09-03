@@ -54,6 +54,8 @@
 ;(load "Stage_01/[6.2]_DPTF.repl")
 ;(load "Stage_01/[6.3]_SWP.repl")
 (load "Stage_01/[6.11]_INFO.repl")
+;;DALOS admin-toggle coverage — #79 Phase 2
+(load "Stage_01/[6.12]_DALOS-ADMIN.repl")
 (load "Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl")
     ;(load "Stage_01/[6.4]_Admin.repl")
 ;; #12a GUARD — keep [6.5]_DPOF + [6.6]_ATS COMMENTED here: the AQP Stage-2 path self-loads
