@@ -658,7 +658,10 @@
             (ref-U|DALOS::UEV_Fee mx-sleeping)
             (ref-U|DALOS::UEV_Fee mx-hibernated)
             (if (= score-class 0)
-                (let ((ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF))
+                (let
+                    (
+                        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    )
                     (ref-DPTF::UEV_id lp-denominator)
                 )
                 true
@@ -2586,16 +2589,31 @@
         ))
     (defun URCi_IssueSemiFungibleScoreDefinition:object{IgnisCollectorV2.OutputCumulator} (score-id:string nonces:[integer])
         @doc "IGNIS = |nonces| x UsagePrice('ignis|big'), konto = score owner."
-        (let ((r:module{IgnisCollectorV2} IGNIS) (d:module{OuronetDalosV2} DALOS))
-            (r::UDC_ConstructOutputCumulator (* (dec (length nonces)) (d::UR_UsagePrice "ignis|big")) (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+                (d:module{OuronetDalosV2} DALOS)
+            )
+            (r::UDC_ConstructOutputCumulator (* (dec (length nonces)) (d::UR_UsagePrice "ignis|big")) (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])
+        ))
     (defun URCi_IssueNonFungibleScoreDefinition:object{IgnisCollectorV2.OutputCumulator} (score-id:string trait-keys:[string])
         @doc "IGNIS = |trait-keys| x UsagePrice('ignis|biggest'), konto = score owner."
-        (let ((r:module{IgnisCollectorV2} IGNIS) (d:module{OuronetDalosV2} DALOS))
-            (r::UDC_ConstructOutputCumulator (* (dec (length trait-keys)) (d::UR_UsagePrice "ignis|biggest")) (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+                (d:module{OuronetDalosV2} DALOS)
+            )
+            (r::UDC_ConstructOutputCumulator (* (dec (length trait-keys)) (d::UR_UsagePrice "ignis|biggest")) (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])
+        ))
     (defun URCi_IssueNonFungibleSetScoreDefinition:object{IgnisCollectorV2.OutputCumulator} (score-id:string dpnf-nonce-classes:[integer])
         @doc "IGNIS = |nonce-classes| x UsagePrice('ignis|biggest'), konto = score owner."
-        (let ((r:module{IgnisCollectorV2} IGNIS) (d:module{OuronetDalosV2} DALOS))
-            (r::UDC_ConstructOutputCumulator (* (dec (length dpnf-nonce-classes)) (d::UR_UsagePrice "ignis|biggest")) (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+                (d:module{OuronetDalosV2} DALOS)
+            )
+            (r::UDC_ConstructOutputCumulator (* (dec (length dpnf-nonce-classes)) (d::UR_UsagePrice "ignis|biggest")) (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])
+        ))
     (defun URCi_IssueScoreModel:object{IgnisCollectorV2.OutputCumulator} (patron:string output:[string])
         @doc "GAS|ISSUE-SCORE-MODEL (shared by IssueSingleScoreModel / CombineTripletScoreModel / IssueScoreFromModel)."
         (let

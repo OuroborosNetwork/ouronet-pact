@@ -2929,202 +2929,347 @@
     )
     ;; ---- ATS entity-completion: pool config ops (1:1 ATS URCi, IGNIS) ----
     (defun INFO_ATS|RotateOwnership:object{OuronetInfoV2.ClientInfo} (patron:string ats:string new-owner:string)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-ATS:module{AutostakeV3} ATS) (sa:string (ref-I|OURONET::OI|UC_ShortAccount new-owner)))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount new-owner))
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Changes Ownership of ATS-Pair {} to {}" [ats sa])]
                 [(format "ATS-Pair {} Ownership succesfully set to {}" [ats sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_RotateOwnership ats)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     (defun INFO_ATS|Control:object{OuronetInfoV2.ClientInfo} (patron:string ats:string can-change-owner:bool syphoning:bool hibernate:bool)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-ATS:module{AutostakeV3} ATS))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Controls Boolean Properties of ATS-Pair {}" [ats])]
                 [(format "Succesfully controlled Properties of ATS-Pair {}" [ats])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_Control ats)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     (defun INFO_ATS|UpdateRoyalty:object{OuronetInfoV2.ClientInfo} (patron:string ats:string royalty:decimal)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-ATS:module{AutostakeV3} ATS))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Sets Royalty of ATS-Pair {} to {}" [ats royalty])]
                 [(format "Royalty of ATS-Pair {} succesfully set to {}" [ats royalty])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_UpdateRoyalty ats)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [royalty])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [royalty])
+        ))
     (defun INFO_ATS|UpdateSyphon:object{OuronetInfoV2.ClientInfo} (patron:string ats:string syphon:decimal)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-ATS:module{AutostakeV3} ATS))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Sets Syphon of ATS-Pair {} to {}" [ats syphon])]
                 [(format "Syphon of ATS-Pair {} succesfully set to {}" [ats syphon])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_UpdateSyphon ats)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [syphon])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [syphon])
+        ))
     (defun INFO_ATS|SetHibernationFees:object{OuronetInfoV2.ClientInfo} (patron:string ats:string peak:decimal decay:decimal)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-ATS:module{AutostakeV3} ATS))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Sets Hibernation Fees of ATS-Pair {} (peak {}, decay {})" [ats peak decay])]
                 [(format "Hibernation Fees of ATS-Pair {} succesfully set" [ats])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_SetHibernationFees ats)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [peak decay])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [peak decay])
+        ))
     (defun INFO_ATS|ToggleParameterLock:object{OuronetInfoV2.ClientInfo} (patron:string ats:string toggle:bool)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-ATS:module{AutostakeV3} ATS))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(if toggle (format "Operation: Locks Parameters of ATS-Pair {}" [ats]) (format "Operation: Unlocks Parameters of ATS-Pair {}" [ats]))]
                 [(if toggle (format "Parameters of ATS-Pair {} succesfully locked" [ats]) (format "Parameters of ATS-Pair {} succesfully unlocked" [ats]))]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_ToggleParameterLock ats)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [toggle])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [toggle])
+        ))
     (defun INFO_ATS|AddSecondary:object{OuronetInfoV2.ClientInfo} (patron:string ats:string reward-token:string rt-nfr:bool)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-ATS:module{AutostakeV3} ATS))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Adds Secondary Reward-Token {} to ATS-Pair {}" [reward-token ats])]
                 [(format "Secondary Reward-Token {} succesfully added to ATS-Pair {}" [reward-token ats])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_AddSecondary ats)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     (defun INFO_ATS|ControlColdRecoveryFees:object{OuronetInfoV2.ClientInfo} (patron:string ats:string c-nfr:bool c-fr:bool)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-ATS:module{AutostakeV3} ATS))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Controls Cold-Recovery Fee flags of ATS-Pair {}" [ats])]
                 [(format "Cold-Recovery Fee flags of ATS-Pair {} succesfully controlled" [ats])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_ControlColdRecoveryFees ats)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     (defun INFO_ATS|SetColdRecoveryFees:object{OuronetInfoV2.ClientInfo} (patron:string ats:string fee-positions:integer fee-thresholds:[decimal] fee-array:[[decimal]])
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-ATS:module{AutostakeV3} ATS))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Sets the {} Cold-Recovery Fee positions of ATS-Pair {}" [fee-positions ats])]
                 [(format "Cold-Recovery Fees of ATS-Pair {} succesfully set" [ats])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_SetColdRecoveryFees ats)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     (defun INFO_ATS|SetColdRecoveryDuration:object{OuronetInfoV2.ClientInfo} (patron:string ats:string soft-or-hard:bool base:integer growth:integer)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-ATS:module{AutostakeV3} ATS))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Sets Cold-Recovery Duration of ATS-Pair {} (base {}, growth {})" [ats base growth])]
                 [(format "Cold-Recovery Duration of ATS-Pair {} succesfully set" [ats])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_SetColdRecoveryDuration ats)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     (defun INFO_ATS|ToggleElite:object{OuronetInfoV2.ClientInfo} (patron:string ats:string toggle:bool)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-ATS:module{AutostakeV3} ATS))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(if toggle (format "Operation: Enables Elite Mode on ATS-Pair {}" [ats]) (format "Operation: Disables Elite Mode on ATS-Pair {}" [ats]))]
                 [(if toggle (format "Elite Mode enabled on ATS-Pair {}" [ats]) (format "Elite Mode disabled on ATS-Pair {}" [ats]))]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_ToggleElite ats)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [toggle])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [toggle])
+        ))
     (defun INFO_ATS|ToggleUpgrade:object{OuronetInfoV2.ClientInfo} (patron:string ats:string toggle:bool)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-ATS:module{AutostakeV3} ATS))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(if toggle (format "Operation: Enables Upgradeability on ATS-Pair {}" [ats]) (format "Operation: Disables Upgradeability on ATS-Pair {}" [ats]))]
                 [(if toggle (format "Upgradeability enabled on ATS-Pair {}" [ats]) (format "Upgradeability disabled on ATS-Pair {}" [ats]))]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_ToggleUpgrade ats)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [toggle])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [toggle])
+        ))
     (defun INFO_ATS|SwitchColdRecovery:object{OuronetInfoV2.ClientInfo} (patron:string ats:string toggle:bool)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-ATS:module{AutostakeV3} ATS))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(if toggle (format "Operation: Enables Cold-Recovery on ATS-Pair {}" [ats]) (format "Operation: Disables Cold-Recovery on ATS-Pair {}" [ats]))]
                 [(if toggle (format "Cold-Recovery enabled on ATS-Pair {}" [ats]) (format "Cold-Recovery disabled on ATS-Pair {}" [ats]))]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_SwitchColdRecovery ats)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [toggle])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [toggle])
+        ))
     (defun INFO_ATS|ControlHotRecoveryFee:object{OuronetInfoV2.ClientInfo} (patron:string ats:string h-fr:bool)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-ATS:module{AutostakeV3} ATS))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Controls Hot-Recovery Fee flag of ATS-Pair {}" [ats])]
                 [(format "Hot-Recovery Fee flag of ATS-Pair {} succesfully controlled" [ats])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_ControlHotRecoveryFee ats)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     (defun INFO_ATS|SetHotRecoveryFee:object{OuronetInfoV2.ClientInfo} (patron:string ats:string promile:decimal decay:integer)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-ATS:module{AutostakeV3} ATS))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Sets Hot-Recovery Fee of ATS-Pair {} ({}‰, decay {})" [ats promile decay])]
                 [(format "Hot-Recovery Fee of ATS-Pair {} succesfully set" [ats])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_SetHotRecoveryFees ats)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [promile])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [promile])
+        ))
     (defun INFO_ATS|SwitchHotRecovery:object{OuronetInfoV2.ClientInfo} (patron:string ats:string toggle:bool)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-ATS:module{AutostakeV3} ATS))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(if toggle (format "Operation: Enables Hot-Recovery on ATS-Pair {}" [ats]) (format "Operation: Disables Hot-Recovery on ATS-Pair {}" [ats]))]
                 [(if toggle (format "Hot-Recovery enabled on ATS-Pair {}" [ats]) (format "Hot-Recovery disabled on ATS-Pair {}" [ats]))]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_SwitchHotRecovery ats)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [toggle])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [toggle])
+        ))
     (defun INFO_ATS|SetDirectRecoveryFee:object{OuronetInfoV2.ClientInfo} (patron:string ats:string promile:decimal)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-ATS:module{AutostakeV3} ATS))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Sets Direct-Recovery Fee of ATS-Pair {} to {}‰" [ats promile])]
                 [(format "Direct-Recovery Fee of ATS-Pair {} succesfully set to {}‰" [ats promile])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_SetDirectRecoveryFee ats)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [promile])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [promile])
+        ))
     (defun INFO_ATS|SwitchDirectRecovery:object{OuronetInfoV2.ClientInfo} (patron:string ats:string toggle:bool)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-ATS:module{AutostakeV3} ATS))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(if toggle (format "Operation: Enables Direct-Recovery on ATS-Pair {}" [ats]) (format "Operation: Disables Direct-Recovery on ATS-Pair {}" [ats]))]
                 [(if toggle (format "Direct-Recovery enabled on ATS-Pair {}" [ats]) (format "Direct-Recovery disabled on ATS-Pair {}" [ats]))]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_SwitchDirectRecovery ats)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [toggle])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [toggle])
+        ))
     (defun INFO_ATS|UpdatePendingBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-ATS:module{AutostakeV3} ATS))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Updates Pending Branding for ATS-Pair {}" [entity-id])]
                 [(format "Pending Branding for ATS-Pair {} updated succesfully" [entity-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_UpdatePendingBranding entity-id)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     (defun INFO_ATS|UpgradeBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string months:integer)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-ATS:module{AutostakeV3} ATS))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Upgrades Branding for ATS-Pair {} for {} month(s)" [entity-id months])]
                 [(format "ATS-Pair {} succesfully upgraded for {} month(s)!" [entity-id months])]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-ATS::URCi_UpgradeBranding months)) [])))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-ATS::URCi_UpgradeBranding months)) [])
+        ))
     (defun INFO_ATS|Issue:object{OuronetInfoV2.ClientInfo} (patron:string account:string ats:[string])
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-ATS:module{AutostakeV3} ATS) (sa:string (ref-I|OURONET::OI|UC_ShortAccount account)))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Issues {} ATS-Pair(s) on Account {}" [(length ats) sa])]
                 [(format "ATS-Pair Issuance of {} succesfully completed" [ats])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-ATS::URCi_IssueGas (length ats)))
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-ATS::URCi_IssueStoa (length ats))) [])))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-ATS::URCi_IssueStoa (length ats))) [])
+        ))
     ;; ---- ATS entity-completion: staking / recovery ops (1:1 ATSU URCi, IGNIS) ----
     (defun INFO_ATS|Fuel:object{OuronetInfoV2.ClientInfo} (patron:string fueler:string ats:string reward-token:string amount:decimal)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-ATSU:module{AutostakeUsageV2} ATSU) (sa:string (ref-I|OURONET::OI|UC_ShortAccount fueler)))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount fueler))
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Fuels {} {} into ATS-Pair {}" [amount reward-token ats])]
                 [(format "Succesfully fueled {} {} into ATS-Pair {} from Account {}" [amount reward-token ats sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Fuel fueler ats reward-token amount)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [(ref-I|OURONET::OI|UC_FormatTokenAmount amount)])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [(ref-I|OURONET::OI|UC_FormatTokenAmount amount)])
+        ))
     (defun INFO_ATS|HotRecovery:object{OuronetInfoV2.ClientInfo} (patron:string recoverer:string ats:string ra:decimal)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-ATSU:module{AutostakeUsageV2} ATSU))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Places {} into Hot Recovery on ATS-Pair {}" [ra ats])]
                 [(format "Succesfully placed {} into Hot Recovery on ATS-Pair {}" [ra ats])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_HotRecovery recoverer ats ra)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [(ref-I|OURONET::OI|UC_FormatTokenAmount ra)])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [(ref-I|OURONET::OI|UC_FormatTokenAmount ra)])
+        ))
     (defun INFO_ATS|KickStart:object{OuronetInfoV2.ClientInfo} (patron:string kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-ATSU:module{AutostakeUsageV2} ATSU))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: KickStarts ATS-Pair {} with RT amounts {} for {} RBT" [ats rt-amounts rbt-request-amount])]
                 [(format "Succesfully kickstarted ATS-Pair {}" [ats])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_KickStart kickstarter ats rt-amounts rbt-request-amount)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [(ref-I|OURONET::OI|UC_FormatTokenAmount rbt-request-amount)])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [(ref-I|OURONET::OI|UC_FormatTokenAmount rbt-request-amount)])
+        ))
     (defun INFO_ATS|Redeem:object{OuronetInfoV2.ClientInfo} (patron:string redeemer:string id:string nonce:integer)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-ATSU:module{AutostakeUsageV2} ATSU))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Redeems {} Nonce {} on its ATS-Pair" [id nonce])]
                 [(format "Succesfully redeemed {} Nonce {}" [id nonce])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Redeem redeemer id nonce)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     (defun INFO_ATS|Reverse:object{OuronetInfoV2.ClientInfo} (patron:string recoverer:string id:string nonce:integer)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-ATSU:module{AutostakeUsageV2} ATSU))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Reverses (Recovers) {} Nonce {}" [id nonce])]
                 [(format "Succesfully reversed {} Nonce {}" [id nonce])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Recover recoverer id nonce)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     (defun INFO_ATS|Syphon:object{OuronetInfoV2.ClientInfo} (patron:string syphon-target:string ats:string syphon-amounts:[decimal])
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-ATSU:module{AutostakeUsageV2} ATSU) (sa:string (ref-I|OURONET::OI|UC_ShortAccount syphon-target)))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount syphon-target))
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Syphons {} from ATS-Pair {} to {}" [syphon-amounts ats sa])]
                 [(format "Succesfully syphoned from ATS-Pair {} to {}" [ats sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Syphon syphon-target ats syphon-amounts)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [syphon-amounts])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [syphon-amounts])
+        ))
     (defun INFO_ATS|WithdrawRoyalties:object{OuronetInfoV2.ClientInfo} (patron:string ats:string target:string)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-ATSU:module{AutostakeUsageV2} ATSU) (sa:string (ref-I|OURONET::OI|UC_ShortAccount target)))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount target))
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Withdraws accrued Royalties of ATS-Pair {} to {}" [ats sa])]
                 [(format "Succesfully withdrew Royalties of ATS-Pair {} to {}" [ats sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_WithdrawRoyalties ats target)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     ;; ---- ATS entity-completion: composite / hot-rbt ops (reuse existing readers) ----
     (defun INFO_ATS|VestedCoil:object{OuronetInfoV2.ClientInfo}
         (patron:string coiler-vester:string ats:string coil-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer)
@@ -3151,7 +3296,8 @@
                 [(format "Succesfully coiled and vested {} {} generating {} {} to {}" [amount coil-token c-rbt-amount c-rbt sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [(ref-I|OURONET::OI|UC_FormatTokenAmount c-rbt-amount) milestones])))
+                [(ref-I|OURONET::OI|UC_FormatTokenAmount c-rbt-amount) milestones])
+        ))
     (defun INFO_ATS|VestedCurl:object{OuronetInfoV2.ClientInfo}
         (patron:string curler-vester:string ats1:string ats2:string curl-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer)
         (let
@@ -3178,76 +3324,129 @@
                 [(format "Succesfully curled and vested {} {} generating {} {} to {}" [amount curl-token c-rbt2-amount c-rbt2 sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                [(ref-I|OURONET::OI|UC_FormatTokenAmount c-rbt2-amount) milestones])))
+                [(ref-I|OURONET::OI|UC_FormatTokenAmount c-rbt2-amount) milestones])
+        ))
     (defun INFO_ATS|HOT-RBT|UpdatePendingBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Updates Pending Branding for Hot-RBT {}" [entity-id])]
                 [(format "Pending Branding for Hot-RBT {} updated succesfully" [entity-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_UpdatePendingBranding entity-id)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     (defun INFO_ATS|HOT-RBT|UpgradeBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string months:integer)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Upgrades Branding for Hot-RBT {} for {} month(s)" [entity-id months])]
                 [(format "Hot-RBT {} succesfully upgraded for {} month(s)!" [entity-id months])]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-DPOF::URCi_UpgradeBranding months)) [])))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-DPOF::URCi_UpgradeBranding months)) [])
+        ))
     (defun INFO_ATS|HOT-RBT|Repurpose:object{OuronetInfoV2.ClientInfo} (patron:string hot-rbt:string nonce:integer repurpose-to:string)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF) (ref-VST:module{VestingV2} VST)
-              (nonce-holder:string (ref-DPOF::UR_NonceHolder hot-rbt nonce)) (sa:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to)))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-VST:module{VestingV2} VST)
+                (nonce-holder:string (ref-DPOF::UR_NonceHolder hot-rbt nonce))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Repurposes Hot-RBT {} Nonce {} to {}" [hot-rbt nonce sa])]
                 [(format "Hot-RBT {} Nonce {} succesfully repurposed to {}" [hot-rbt nonce sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_RepurposeOrtoFungible hot-rbt nonce nonce-holder repurpose-to)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     (defun INFO_ATS|AddHotRBT:object{OuronetInfoV2.ClientInfo} (patron:string ats:string hot-rbt:string)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-ATS:module{AutostakeV3} ATS))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Adds Hot-RBT {} to ATS-Pair {}" [hot-rbt ats])]
                 [(format "Hot-RBT {} succesfully added to ATS-Pair {}" [hot-rbt ats])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_AddHotRBT ats hot-rbt)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     (defun INFO_ATS|RemoveSecondary:object{OuronetInfoV2.ClientInfo} (patron:string remover:string ats:string reward-token:string)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-ATSU:module{AutostakeUsageV2} ATSU) (sa:string (ref-I|OURONET::OI|UC_ShortAccount remover)))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount remover))
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Removes Secondary Reward-Token {} from ATS-Pair {}" [reward-token ats])]
                 [(format "Secondary Reward-Token {} succesfully removed from ATS-Pair {} (balance returned to {})" [reward-token ats sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_RemoveSecondary remover ats reward-token)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     ;; [LIQUID]
     (defun INFO_LIQUID|UnwrapUrStoa:object{OuronetInfoV2.ClientInfo}
         (patron:string unwrapper:string amount:decimal)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID) (uw:string (ref-I|OURONET::OI|UC_ShortAccount unwrapper)))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
+                (uw:string (ref-I|OURONET::OI|UC_ShortAccount unwrapper))
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Unwraps {} UrStoa to the Payment Key of the Unwrapper {}" [amount uw])]
                 [(format "Succesfully unwrapped {} UrStoa to the Payment Key of the Unwrapper {}" [amount uw])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-LIQUID::URCi_UnwrapUrStoa unwrapper amount)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     (defun INFO_LIQUID|WrapUrStoa:object{OuronetInfoV2.ClientInfo}
         (patron:string wrapper:string amount:decimal)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID) (uw:string (ref-I|OURONET::OI|UC_ShortAccount wrapper)))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
+                (uw:string (ref-I|OURONET::OI|UC_ShortAccount wrapper))
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Wraps {} UrStoa to the Payment Key of the Wrapper {}" [amount uw])]
                 [(format "Succesfully wrapped {} UrStoa to the Payment Key of the Wrapper {}" [amount uw])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-LIQUID::URCi_WrapUrStoa wrapper amount)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     (defun INFO_LIQUID|UnwrapStoa:object{OuronetInfoV2.ClientInfo}
         (patron:string unwrapper:string amount:decimal)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID) (uw:string (ref-I|OURONET::OI|UC_ShortAccount unwrapper)))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
+                (uw:string (ref-I|OURONET::OI|UC_ShortAccount unwrapper))
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Unwraps {} Stoa to the Payment Key of the Unwrapper {}" [amount uw])]
                 [(format "Succesfully unwrapped {} Stoa to the Payment Key of the Unwrapper {}" [amount uw])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-LIQUID::URCi_UnwrapStoa unwrapper amount)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     (defun INFO_LIQUID|WrapStoa:object{OuronetInfoV2.ClientInfo}
         (patron:string wrapper:string amount:decimal)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID) (uw:string (ref-I|OURONET::OI|UC_ShortAccount wrapper)))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
+                (uw:string (ref-I|OURONET::OI|UC_ShortAccount wrapper))
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Wraps {} Stoa to the Payment Key of the Wrapper {}" [amount uw])]
                 [(format "Succesfully wrapped {} Stoa to the Payment Key of the Wrapper {}" [amount uw])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-LIQUID::URCi_WrapStoa wrapper amount)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     ;;
     (defun INFO_ORBR|Compress:object{OuronetInfoV2.ClientInfo}
         (client:string ignis-amount:decimal)
@@ -3567,61 +3766,101 @@
         )
     )
     (defun INFO_SWP|UpdateAmplifier:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string amp:decimal)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-SWP:module{SwapperV4} SWP))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWP:module{SwapperV4} SWP)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Updates Amplifier of SWP-Pair {} to {}" [swpair amp])]
                 [(format "Amplifier of SWP-Pair {} succesfully set to {}" [swpair amp])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWP::URCi_UpdateAmplifier swpair)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [amp])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [amp])
+        ))
     (defun INFO_SWP|UpdateFee:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string new-fee:decimal lp-or-special:bool)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-SWP:module{SwapperV4} SWP))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWP:module{SwapperV4} SWP)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Updates {} Fee of SWP-Pair {} to {}" [(if lp-or-special "LP" "Special") swpair new-fee])]
                 [(format "Fee of SWP-Pair {} succesfully set to {}" [swpair new-fee])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWP::URCi_UpdateFee swpair)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [new-fee])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [new-fee])
+        ))
     (defun INFO_SWP|UpdateSpecialFeeTargets:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string targets:[string])
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-SWP:module{SwapperV4} SWP))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWP:module{SwapperV4} SWP)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Updates Special-Fee targets of SWP-Pair {} to {}" [swpair targets])]
                 [(format "Special-Fee targets of SWP-Pair {} succesfully updated" [swpair])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWP::URCi_UpdateSpecialFeeTargets swpair)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [targets])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [targets])
+        ))
     (defun INFO_SWP|ToggleFeeLock:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string toggle:bool)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-SWP:module{SwapperV4} SWP))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWP:module{SwapperV4} SWP)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(if toggle (format "Operation: Locks Fee Settings of SWP-Pair {}" [swpair]) (format "Operation: Unlocks Fee Settings of SWP-Pair {}" [swpair]))]
                 [(if toggle (format "Fee Settings of SWP-Pair {} succesfully locked" [swpair]) (format "Fee Settings of SWP-Pair {} succesfully unlocked" [swpair]))]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWP::URCi_ToggleFeeLock swpair toggle)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [toggle])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [toggle])
+        ))
     (defun INFO_SWP|UpdatePendingBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-SWP:module{SwapperV4} SWP))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWP:module{SwapperV4} SWP)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Updates Pending Branding for SWP-Pair {}" [entity-id])]
                 [(format "Pending Branding for SWP-Pair {} updated succesfully" [entity-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWP::URCi_UpdatePendingBranding entity-id)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     (defun INFO_SWP|UpgradeBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string months:integer)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-SWP:module{SwapperV4} SWP))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWP:module{SwapperV4} SWP)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Upgrades Branding for SWP-Pair {} for {} month(s)" [entity-id months])]
                 [(format "SWP-Pair {} succesfully upgraded for {} month(s)!" [entity-id months])]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-SWP::URCi_UpgradeBranding months)) [])))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-SWP::URCi_UpgradeBranding months)) [])
+        ))
     (defun INFO_SWP|UpdatePendingBrandingLPs:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string entity-pos:integer)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Updates Pending LP-Branding for SWP-Pair {} entity-position {}" [swpair entity-pos])]
                 [(format "Pending LP-Branding for SWP-Pair {} entity-position {} updated" [swpair entity-pos])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_UpdatePendingBrandingLPs swpair entity-pos)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     (defun INFO_SWP|UpgradeBrandingLPs:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string entity-pos:integer months:integer)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Upgrades LP-Branding for SWP-Pair {} entity-position {} for {} month(s)" [swpair entity-pos months])]
                 [(format "LP-Branding for SWP-Pair {} entity-position {} upgraded for {} month(s)!" [swpair entity-pos months])]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-SWPLC::URCi_UpgradeBrandingLPs months)) [])))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-SWPLC::URCi_UpgradeBrandingLPs months)) [])
+        ))
     (defun INFO_SWP|Fuel:object{OuronetInfoV2.ClientInfo}
         (patron:string account:string swpair:string input-amounts:[decimal])
         (let
@@ -3706,52 +3945,94 @@
     ;; ---- SWP entity-completion: issue ops (all share SWPI|URCi_Issue [IGNIS] + dptf+swp [STOA]) ----
     (defun INFO_SWP|IssueStable:object{OuronetInfoV2.ClientInfo}
         (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-DALOS:module{OuronetDalosV2} DALOS) (ref-SWPI:module{SwapperIssueV4} SWPI) (sa:string (ref-I|OURONET::OI|UC_ShortAccount account)))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-SWPI:module{SwapperIssueV4} SWPI)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Issues a Stable SWP-Pair with {} pool-tokens on Account {}" [(length pool-tokens) sa])]
                 [(format "Stable SWP-Pair issued succesfully on Account {}" [sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPI::URCi_Issue account pool-tokens)))
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))) [])))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))) [])
+        ))
     (defun INFO_SWP|IssueStandard:object{OuronetInfoV2.ClientInfo}
         (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-DALOS:module{OuronetDalosV2} DALOS) (ref-SWPI:module{SwapperIssueV4} SWPI) (sa:string (ref-I|OURONET::OI|UC_ShortAccount account)))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-SWPI:module{SwapperIssueV4} SWPI)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Issues a Standard SWP-Pair with {} pool-tokens on Account {}" [(length pool-tokens) sa])]
                 [(format "Standard SWP-Pair issued succesfully on Account {}" [sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPI::URCi_Issue account pool-tokens)))
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))) [])))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))) [])
+        ))
     (defun INFO_SWP|IssueWeighted:object{OuronetInfoV2.ClientInfo}
         (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-DALOS:module{OuronetDalosV2} DALOS) (ref-SWPI:module{SwapperIssueV4} SWPI) (sa:string (ref-I|OURONET::OI|UC_ShortAccount account)))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-SWPI:module{SwapperIssueV4} SWPI)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Issues a Weighted SWP-Pair with {} pool-tokens on Account {}" [(length pool-tokens) sa])]
                 [(format "Weighted SWP-Pair issued succesfully on Account {}" [sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPI::URCi_Issue account pool-tokens)))
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))) [])))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))) [])
+        ))
     (defun INFO_SWP|IssueStablePool:object{OuronetInfoV2.ClientInfo}
         (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-DALOS:module{OuronetDalosV2} DALOS) (ref-SWPI:module{SwapperIssueV4} SWPI) (sa:string (ref-I|OURONET::OI|UC_ShortAccount account)))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-SWPI:module{SwapperIssueV4} SWPI)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Issues a Stable SWP-Pair (multistep) with {} pool-tokens on Account {}" [(length pool-tokens) sa])]
                 [(format "Stable SWP-Pair issued succesfully on Account {}" [sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPI::URCi_Issue account pool-tokens)))
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))) [])))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))) [])
+        ))
     (defun INFO_SWP|IssueStandardPool:object{OuronetInfoV2.ClientInfo}
         (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-DALOS:module{OuronetDalosV2} DALOS) (ref-SWPI:module{SwapperIssueV4} SWPI) (sa:string (ref-I|OURONET::OI|UC_ShortAccount account)))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-SWPI:module{SwapperIssueV4} SWPI)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Issues a Standard SWP-Pair (multistep) with {} pool-tokens on Account {}" [(length pool-tokens) sa])]
                 [(format "Standard SWP-Pair issued succesfully on Account {}" [sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPI::URCi_Issue account pool-tokens)))
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))) [])))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))) [])
+        ))
     (defun INFO_SWP|IssueWeightedPool:object{OuronetInfoV2.ClientInfo}
         (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-DALOS:module{OuronetDalosV2} DALOS) (ref-SWPI:module{SwapperIssueV4} SWPI) (sa:string (ref-I|OURONET::OI|UC_ShortAccount account)))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-SWPI:module{SwapperIssueV4} SWPI)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Issues a Weighted SWP-Pair (multistep) with {} pool-tokens on Account {}" [(length pool-tokens) sa])]
                 [(format "Weighted SWP-Pair issued succesfully on Account {}" [sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPI::URCi_Issue account pool-tokens)))
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))) [])))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))) [])
+        ))
     ;; ---- SWP entity-completion: swaps (direct -> SWPU|URCi_Swap ; smart -> URCi_SmartSwap / URCi_SmartSwapWithBundle) ----
     (defun INFO_SWP|SingleSwapNoSlippage:object{OuronetInfoV2.ClientInfo}
         (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string)
@@ -3765,7 +4046,8 @@
                 [(format "Operation: Swaps {} {} to {} on SWP-Pair {} (no slippage protection)" [input-amount input-id output-id swpair])]
                 [(format "Succesfully swapped {} {} to {} on SWP-Pair {}" [input-amount input-id output-id swpair])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPU::URCi_Swap account swpair [input-id] [input-amount] output-id -1.0 bounds)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     (defun INFO_SWP|SingleSwapWithSlippage:object{OuronetInfoV2.ClientInfo}
         (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV3.Slippage})
         (let
@@ -3778,7 +4060,8 @@
                 [(format "Operation: Swaps {} {} to {} on SWP-Pair {} (slippage {}%)" [input-amount input-id output-id swpair slippage])]
                 [(format "Succesfully swapped {} {} to {} on SWP-Pair {}" [input-amount input-id output-id swpair])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPU::URCi_Swap account swpair [input-id] [input-amount] output-id slippage slippage-bounds)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     (defun INFO_SWP|MultiSwapNoSlippage:object{OuronetInfoV2.ClientInfo}
         (patron:string account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string)
         (let
@@ -3791,7 +4074,8 @@
                 [(format "Operation: Multi-swaps {} to {} on SWP-Pair {} (no slippage protection)" [input-ids output-id swpair])]
                 [(format "Succesfully multi-swapped {} to {} on SWP-Pair {}" [input-ids output-id swpair])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPU::URCi_Swap account swpair input-ids input-amounts output-id -1.0 bounds)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     (defun INFO_SWP|MultiSwapWithSlippage:object{OuronetInfoV2.ClientInfo}
         (patron:string account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage-bounds:object{SwapperUsageV3.Slippage})
         (let
@@ -3804,7 +4088,8 @@
                 [(format "Operation: Multi-swaps {} to {} on SWP-Pair {} (slippage {}%)" [input-ids output-id swpair slippage])]
                 [(format "Succesfully multi-swapped {} to {} on SWP-Pair {}" [input-ids output-id swpair])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPU::URCi_Swap account swpair input-ids input-amounts output-id slippage slippage-bounds)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     (defun INFO_SWP|SmartSwapNoSlippage:object{OuronetInfoV2.ClientInfo}
         (patron:string account:string input-id:string input-amount:decimal output-id:string)
         (let
@@ -3817,7 +4102,8 @@
                 [(format "Operation: Smart-swaps {} {} to {} (auto-routed, no slippage protection)" [input-amount input-id output-id])]
                 [(format "Succesfully smart-swapped {} {} to {}" [input-amount input-id output-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPU::URCi_SmartSwap account input-id input-amount output-id -1.0 bounds)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     (defun INFO_SWP|SmartSwapWithSlippage:object{OuronetInfoV2.ClientInfo}
         (patron:string account:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV3.Slippage})
         (let
@@ -3830,7 +4116,8 @@
                 [(format "Operation: Smart-swaps {} {} to {} (auto-routed, slippage {}%)" [input-amount input-id output-id slippage])]
                 [(format "Succesfully smart-swapped {} {} to {}" [input-amount input-id output-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPU::URCi_SmartSwap account input-id input-amount output-id slippage slippage-bounds)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     (defun INFO_SWP|SmartSwapNoSlippageBundle:object{OuronetInfoV2.ClientInfo}
         (patron:string account:string input-id:string input-amount:decimal output-id:string bundle:object{SwapperUsageV3.SmartSwapPathBundle})
         (let
@@ -3843,7 +4130,8 @@
                 [(format "Operation: Smart-swaps {} {} to {} via a provided route bundle (no slippage protection)" [input-amount input-id output-id])]
                 [(format "Succesfully smart-swapped {} {} to {} via bundle" [input-amount input-id output-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPU::URCi_SmartSwapWithBundle account input-id input-amount output-id -1.0 bounds bundle)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     (defun INFO_SWP|SmartSwapWithSlippageBundle:object{OuronetInfoV2.ClientInfo}
         (patron:string account:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV3.Slippage} bundle:object{SwapperUsageV3.SmartSwapPathBundle})
         (let
@@ -3856,56 +4144,93 @@
                 [(format "Operation: Smart-swaps {} {} to {} via a provided route bundle (slippage {}%)" [input-amount input-id output-id slippage])]
                 [(format "Succesfully smart-swapped {} {} to {} via bundle" [input-amount input-id output-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPU::URCi_SmartSwapWithBundle account input-id input-amount output-id slippage slippage-bounds bundle)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     ;;
     (defun INFO_SWP|AddLiquidity:object{OuronetInfoV2.ClientInfo}
         (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC) (sa:string (ref-I|OURONET::OI|UC_ShortAccount account)))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Adds Standard (native-LP) Liquidity to SWP-Pair {} with amounts {}" [swpair input-amounts])]
                 [(format "Succesfully added Standard Liquidity to SWP-Pair {} from Account {}" [swpair sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_AddStandardLiquidity account swpair input-amounts stoa-pid)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [input-amounts])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [input-amounts])
+        ))
     (defun INFO_SWP|AddStandardLiquidity:object{OuronetInfoV2.ClientInfo}
         (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC) (sa:string (ref-I|OURONET::OI|UC_ShortAccount account)))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Adds Standard (native-LP) Liquidity to SWP-Pair {} with amounts {} (multistep)" [swpair input-amounts])]
                 [(format "Succesfully added Standard Liquidity to SWP-Pair {} from Account {}" [swpair sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_AddStandardLiquidity account swpair input-amounts stoa-pid)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [input-amounts])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [input-amounts])
+        ))
     (defun INFO_SWP|AddIcedLiquidity:object{OuronetInfoV2.ClientInfo}
         (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC) (sa:string (ref-I|OURONET::OI|UC_ShortAccount account)))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Adds Iced Liquidity to SWP-Pair {} with amounts {}" [swpair input-amounts])]
                 [(format "Succesfully added Iced Liquidity to SWP-Pair {} from Account {}" [swpair sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_AddIcedLiquidity account swpair input-amounts stoa-pid)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [input-amounts])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [input-amounts])
+        ))
     (defun INFO_SWP|AddGlacialLiquidity:object{OuronetInfoV2.ClientInfo}
         (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC) (sa:string (ref-I|OURONET::OI|UC_ShortAccount account)))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Adds Glacial Liquidity to SWP-Pair {} with amounts {}" [swpair input-amounts])]
                 [(format "Succesfully added Glacial Liquidity to SWP-Pair {} from Account {}" [swpair sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_AddGlacialLiquidity account swpair input-amounts stoa-pid)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [input-amounts])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [input-amounts])
+        ))
     (defun INFO_SWP|AddFrozenLiquidity:object{OuronetInfoV2.ClientInfo}
         (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC) (sa:string (ref-I|OURONET::OI|UC_ShortAccount account)))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Adds Frozen Liquidity ({} {}) to SWP-Pair {}" [input-amount frozen-dptf swpair])]
                 [(format "Succesfully added Frozen Liquidity to SWP-Pair {} from Account {}" [swpair sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_AddFrozenLiquidity account swpair frozen-dptf input-amount stoa-pid)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [(ref-I|OURONET::OI|UC_FormatTokenAmount input-amount)])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [(ref-I|OURONET::OI|UC_FormatTokenAmount input-amount)])
+        ))
     (defun INFO_SWP|AddSleepingLiquidity:object{OuronetInfoV2.ClientInfo}
         (patron:string account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC) (sa:string (ref-I|OURONET::OI|UC_ShortAccount account)))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Adds Sleeping Liquidity ({} Nonce {}) to SWP-Pair {}" [sleeping-dpof nonce swpair])]
                 [(format "Succesfully added Sleeping Liquidity to SWP-Pair {} from Account {}" [swpair sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_AddSleepingLiquidity account swpair sleeping-dpof nonce stoa-pid)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [nonce])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [nonce])
+        ))
     (defun INFO_SWP|RemoveLiquidity:object{OuronetInfoV2.ClientInfo}
         (patron:string account:string swpair:string lp-amount:decimal)
         (let

@@ -510,7 +510,10 @@
             \ through SCORE's own IMC-gated XE_NukeScoreForVacate."
         @event
         (CAP_VctVacatePoolOwner pool-id)
-        (let ((ref-AQP:module{AcquisitionPoolsV2} AQP-POOL))
+        (let
+            (
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+            )
             (enforce (ref-AQP::UR_AQP|PoolVacateInProgress pool-id) "Finalize: no vacate in progress on this pool")
             (enforce (URC_PoolFullyVacated pool-id) "Finalize: pool not fully drained (nns != 0)")
         )
@@ -529,7 +532,8 @@
                 (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
             )
             (enforce (contains (ref-AQP::UR_AQP|PoolAqpClass pool-id) [0 1 2 3 4])
-                "VCT|C>VACATE: unknown aqp-class"))
+                "VCT|C>VACATE: unknown aqp-class")
+        )
         (compose-capability (SECURE))
         (compose-capability (P|VCT|RECIPE))
     )
@@ -1045,7 +1049,10 @@
         @doc "Preserve first-seen order; dedupe beneficiaries for score/RPS phases."
         (fold
             (lambda (acc:[string] leg:object{VCT|VacateTfLeg})
-                (let ((b:string (at "beneficiary-id" leg)))
+                (let
+                    (
+                        (b:string (at "beneficiary-id" leg))
+                    )
                     (if (contains b acc) acc (+ acc [b]))
                 )
             )
@@ -1567,7 +1574,10 @@
     )
     (defun UR_VacateSessionFields:object
         (pool-id:string)
-        (let ((ref-AQP:module{AcquisitionPoolsV2} AQP-POOL))
+        (let
+            (
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+            )
             (ref-AQP::UR_AQP|PoolVacateSession pool-id)
         )
     )
@@ -1899,7 +1909,10 @@
     (defun URHC_VacateNonceOwnerRowsRaw:[object{VCT|VacateNonceLeg}]
         (pool-id:string asset-id:string vacate-kind:integer)
         @doc "Grouped nonce vacate owner rows from VCT inventory URD (unexpanded)."
-        (let ((son:bool (UC_VacateKindSon vacate-kind)))
+        (let
+            (
+                (son:bool (UC_VacateKindSon vacate-kind))
+            )
             (if (= vacate-kind VACATE-KIND-OF)
                 (at "legs" (URH_VacateOfInventory pool-id asset-id))
                 (at "legs" (URH_VacateCollectableInventory pool-id asset-id son))
@@ -2025,7 +2038,10 @@
         @doc "Live TF vacate inventory for <pool-id>/<dptf-id>: reads the active DPTF tracker rows and builds \
             \ per-owner TF legs. Being a live tracker read, a vacated leg zeroes its slot, so a re-read after a \
             \ partial vacate naturally returns the outstanding remains (the UI's 'construct remains' is implicit)."
-        (let ((ref-AQP:module{AcquisitionPoolsV2} AQP-POOL))
+        (let
+            (
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+            )
             (UDC_VacateTfInventory
                 (map
                     (lambda (row:object)
@@ -2038,7 +2054,10 @@
     )
     (defun URH_VacateOfNonceRows:[object{VCT|VacateNonceRow}] (pool-id:string dpof-id:string)
         @doc "Live per-nonce OF vacate rows for <pool-id>/<dpof-id> from the active DPOF tracker."
-        (let ((ref-AQP:module{AcquisitionPoolsV2} AQP-POOL))
+        (let
+            (
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+            )
             (map
                 (lambda (row:object)
                     (UDC_VacateNonceRow (at "owner-id" row) (at "beneficiary-id" row) (at "nonce" row) (at "balance" row))
@@ -2063,7 +2082,10 @@
         (pool-id:string collectable-id:string son:bool)
         @doc "Live per-nonce collectable vacate rows for <pool-id>/<collectable-id> (<son> selects the DPSF vs \
             \ DPNF active tracker)."
-        (let ((ref-AQP:module{AcquisitionPoolsV2} AQP-POOL))
+        (let
+            (
+                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+            )
             (map
                 (lambda (row:object)
                     (UDC_VacateNonceRow (at "owner-id" row) (at "beneficiary-id" row) (at "nonce" row) (at "balance" row))

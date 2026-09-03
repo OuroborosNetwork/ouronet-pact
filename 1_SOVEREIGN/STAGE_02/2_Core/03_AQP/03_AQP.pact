@@ -1681,13 +1681,19 @@
     )
     (defun URC_StakeTrueFungiblePoolClassOk:bool (pool-id:string)
         @doc "True when pool aqp-class is 0 (LP via TF) or 1 (non-LP DPTF)."
-        (let ((c:integer (UR_AQP|PoolAqpClass pool-id)))
+        (let
+            (
+                (c:integer (UR_AQP|PoolAqpClass pool-id))
+            )
             (or (= c 0) (= c 1))
         )
     )
     (defun URC_StakeOrtoFungiblePoolClassOk:bool (pool-id:string)
         @doc "True when pool aqp-class is 0 (LP + Z| orto), 1 (DPTF + sleep/hib DPOF satellites), or 2 (native DPOF)."
-        (let ((c:integer (UR_AQP|PoolAqpClass pool-id)))
+        (let
+            (
+                (c:integer (UR_AQP|PoolAqpClass pool-id))
+            )
             (or (= c 0) (or (= c 1) (= c 2)))
         )
     )
@@ -2139,7 +2145,8 @@
                       (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME))
                   (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                                     ;; ico-gas
                       (URCi_SyncTrueFungibleAnchors [beneficiary-id dptf-id]))
-                ])))
+                ])
+        ))
     (defun URCi_SyncCollectableAnchorsFull:decimal (beneficiary-id:string collectable-id:string)
         @doc "FULL reconstructed IGNIS ifp of C_SyncCollectableAnchors (SF son=true / NF son=false — cost is \
             \ son-independent). Read-only mirror of the exec's UDC_ConcatenateOutputCumulators [ico-ank ico-meta ico-gas]. \
@@ -2163,7 +2170,8 @@
                       (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME))
                   (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                                     ;; ico-gas
                       (URCi_SyncCollectableAnchors [beneficiary-id collectable-id]))
-                ])))
+                ])
+        ))
     ;;{5.4}  Validate [UEV/CAP]
     ;; [UEV] enforce
     (defun UEV_IssuePoolClassAndAsset (aqp-class:integer asset-id:string)

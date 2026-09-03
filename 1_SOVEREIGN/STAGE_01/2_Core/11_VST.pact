@@ -923,7 +923,10 @@
     (defun URCi_ToggleTransferRoleFrozenDPTF:object{IgnisCollectorV2.OutputCumulator}
         (s-dptf:string)
         @doc "Cost preview for C_ToggleTransferRoleFrozenDPTF (single DPTF transfer-role toggle)."
-        (let ((ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF))
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+            )
             (ref-DPTF::URCi_ToggleTransferRole s-dptf)
         )
     )
@@ -976,7 +979,10 @@
     (defun URCi_ToggleTransferRoleReservedDPTF:object{IgnisCollectorV2.OutputCumulator}
         (s-dptf:string)
         @doc "Cost preview for C_ToggleTransferRoleReservedDPTF (single DPTF transfer-role toggle)."
-        (let ((ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF))
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+            )
             (ref-DPTF::URCi_ToggleTransferRole s-dptf)
         )
     )
@@ -1203,7 +1209,10 @@
     (defun URCi_ToggleTransferRoleSleepingDPOF:object{IgnisCollectorV2.OutputCumulator}
         (s-dpof:string)
         @doc "Cost preview for C_ToggleTransferRoleSleepingDPOF (single DPOF transfer-role toggle)."
-        (let ((ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF))
+        (let
+            (
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+            )
             (ref-DPOF::URCi_ToggleTransferRole s-dpof)
         )
     )
@@ -1292,7 +1301,10 @@
     (defun URCi_ToggleTransferRoleHibernatingDPOF:object{IgnisCollectorV2.OutputCumulator}
         (s-dpof:string)
         @doc "Cost preview for C_ToggleTransferRoleHibernatingDPOF (single DPOF transfer-role toggle)."
-        (let ((ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF))
+        (let
+            (
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+            )
             (ref-DPOF::URCi_ToggleTransferRole s-dpof)
         )
     )

@@ -2162,7 +2162,10 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
-                (let ((r:string (ref-FVT::CCp_InjectFixChunk patron fvt-id reward-dptf-id chunk)))
+                (let
+                    (
+                        (r:string (ref-FVT::CCp_InjectFixChunk patron fvt-id reward-dptf-id chunk))
+                    )
                     (ref-TS01-A::XB_DynamicFuelSTOA)
                     r
                 )
@@ -2202,7 +2205,10 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
-                (let ((r:string (ref-FVT::CCp_UnstaleAll patron fvt-id reward-dptf-id chunk)))
+                (let
+                    (
+                        (r:string (ref-FVT::CCp_UnstaleAll patron fvt-id reward-dptf-id chunk))
+                    )
                     (ref-TS01-A::XB_DynamicFuelSTOA)
                     r
                 )
@@ -2220,7 +2226,10 @@
                     (ref-MTX-AQP:module{AqpMtxV2} MTX-AQP)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
-                (let ((r:string (ref-MTX-AQP::C_2|Inject patron fvt-id reward-dptf-id amount)))
+                (let
+                    (
+                        (r:string (ref-MTX-AQP::C_2|Inject patron fvt-id reward-dptf-id amount))
+                    )
                     (ref-TS01-A::XB_DynamicFuelSTOA)
                     r
                 )
@@ -2239,7 +2248,10 @@
                     (ref-MTX-AQP:module{AqpMtxV2} MTX-AQP)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
-                (let ((r:string (ref-MTX-AQP::C_2|SweepRevokeAnchor patron anchor-id)))
+                (let
+                    (
+                        (r:string (ref-MTX-AQP::C_2|SweepRevokeAnchor patron anchor-id))
+                    )
                     (ref-TS01-A::XB_DynamicFuelSTOA)
                     r
                 )
@@ -2257,7 +2269,10 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
-                (let ((r:string (ref-FVT::CC_SweepRevokeAnchor patron anchor-id)))
+                (let
+                    (
+                        (r:string (ref-FVT::CC_SweepRevokeAnchor patron anchor-id))
+                    )
                     (ref-TS01-A::XB_DynamicFuelSTOA)
                     r
                 )
@@ -2275,7 +2290,10 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
-                (let ((r:string (ref-FVT::CC_SweepBegin patron anchor-id)))
+                (let
+                    (
+                        (r:string (ref-FVT::CC_SweepBegin patron anchor-id))
+                    )
                     (ref-TS01-A::XB_DynamicFuelSTOA)
                     r
                 )
@@ -2293,7 +2311,10 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
-                (let ((r:string (ref-FVT::CCp_SweepRecomputeChunk patron anchor-id chunk)))
+                (let
+                    (
+                        (r:string (ref-FVT::CCp_SweepRecomputeChunk patron anchor-id chunk))
+                    )
                     (ref-TS01-A::XB_DynamicFuelSTOA)
                     r
                 )

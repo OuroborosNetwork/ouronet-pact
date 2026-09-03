@@ -165,12 +165,17 @@
     ;;
     ;;  [DPDC roles/toggles] — DPDC-R (son = false for DPNF, true for DPSF)
     (defun INFO_DPDC-R|Toggle:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string son:bool label:string ico:object{IgnisCollectorV2.OutputCumulator} toggle:bool)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (sa:string (ref-I|OURONET::OI|UC_ShortAccount account)))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(if toggle (format "Operation: Adds {} Role for {} {} to {}" [label (if son "SFT" "NFT") id sa]) (format "Operation: Removes {} Role for {} {} to {}" [label (if son "SFT" "NFT") id sa]))]
                 [(if toggle (format "{} Role added for {} to {}" [label id sa]) (format "{} Role removed for {} to {}" [label id sa]))]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [toggle])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [toggle])
+        ))
     (defun INFO_DPNF|ToggleBurnRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool)
         (let
             (
@@ -293,12 +298,17 @@
     )
     ;;  [DPDC role moves] — DPDC-R Move* (patron id new-account)
     (defun INFO_DPDC-R|Move:object{OuronetInfoV2.ClientInfo} (patron:string id:string new-account:string son:bool label:string ico:object{IgnisCollectorV2.OutputCumulator})
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (sa:string (ref-I|OURONET::OI|UC_ShortAccount new-account)))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount new-account))
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Moves the {} Role of {} {} to {}" [label (if son "SFT" "NFT") id sa])]
                 [(format "{} Role of {} succesfully moved to {}" [label id sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     (defun INFO_DPNF|MoveCreateRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string new-account:string)
         (let
             (
@@ -349,10 +359,14 @@
     )
     ;;  [DPDC management] — DPDC-MNG Control / Pause / Respawn / AddQuantity
     (defun INFO_DPDC-MNG|Simple:object{OuronetInfoV2.ClientInfo} (patron:string desc:string result:string ico:object{IgnisCollectorV2.OutputCumulator})
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo [desc] [result]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     (defun INFO_DPNF|Control:object{OuronetInfoV2.ClientInfo} (patron:string id:string cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool)
         (let
             (
@@ -403,19 +417,29 @@
     )
     ;;  [DPDC updates] — DPDC-N single-field (URCi_UpdateNonceField) + bulk (URCi_UpdateNonces)
     (defun INFO_DPDC-N|Field:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string son:bool label:string)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (r:module{DpdcNonceV2} DPDC-N))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (r:module{DpdcNonceV2} DPDC-N)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Updates the {} of {} {}" [label (if son "SFT" "NFT") id])]
                 [(format "{} of {} {} succesfully updated" [label (if son "SFT" "NFT") id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (r::URCi_UpdateNonceField account)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     (defun INFO_DPDC-N|Bulk:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string son:bool label:string count:integer)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (r:module{DpdcNonceV2} DPDC-N))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (r:module{DpdcNonceV2} DPDC-N)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Updates {} {} of {} {}" [count label (if son "SFT" "NFT") id])]
                 [(format "{} {} of {} {} succesfully updated" [count label (if son "SFT" "NFT") id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (r::URCi_UpdateNonces account count)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     ;;   NF single-field
     (defun INFO_DPNF|UpdateNonceName:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonce:integer nos:bool name:string) (INFO_DPDC-N|Field patron id account false (format "Name (Nonce {})" [nonce])))
     (defun INFO_DPNF|UpdateNonceDescription:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonce:integer nos:bool description:string) (INFO_DPDC-N|Field patron id account false (format "Description (Nonce {})" [nonce])))
@@ -462,12 +486,18 @@
     (defun INFO_DPSF|UpdateSetNonces:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string set-classes:[integer] nos:bool new-nonces-data:[object{DpdcUdcV2.DPDC|NonceData}]) (INFO_DPDC-N|Bulk patron id account true "Set-Nonces" (length set-classes)))
     ;;  [DPDC wipes] — DPDC-MNG single (URCi_WipeNonce/WipeSlim) + multi (URCi_WipeCumulator)
     (defun INFO_DPDC-MNG|WipeMulti:object{OuronetInfoV2.ClientInfo} (patron:string id:string son:bool obj:object{DpdcManagementV2.RemovableNonces} label:string)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (r:module{DpdcManagementV2} DPDC-MNG) (n:integer (length (at "r-nonces" obj))))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (r:module{DpdcManagementV2} DPDC-MNG)
+                (n:integer (length (at "r-nonces" obj)))
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: {} wipe of {} {} Nonces of {}" [label (if son "SFT" "NFT") n id])]
                 [(format "{} wipe of {} {} Nonces of {} succesful" [label (if son "SFT" "NFT") n id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (r::URCi_WipeCumulator id son obj)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     (defun INFO_DPNF|WipeNonce:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonce:integer)
         (let
             (
@@ -854,12 +884,17 @@
         )
     )
     (defun INFO_DPDC-I|Issue:object{OuronetInfoV2.ClientInfo} (patron:string owner-account:string collection-name:string son:bool)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (i:module{DpdcIssueV2} DPDC-I))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (i:module{DpdcIssueV2} DPDC-I)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Issues a new {} Collection '{}' for {}" [(if son "SemiFungible" "NonFungible") collection-name (ref-I|OURONET::OI|UC_ShortAccount owner-account)])]
                 [(format "{} Collection '{}' succesfully issued" [(if son "SemiFungible" "NonFungible") collection-name])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (i::URCi_IssueDigitalCollection son owner-account)))
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (i::URCi_IssueCollectionStoa son)) [])))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (i::URCi_IssueCollectionStoa son)) [])
+        ))
     (defun INFO_DPNF|Issue:object{OuronetInfoV2.ClientInfo} (patron:string owner-account:string creator-account:string collection-name:string collection-ticker:string can-upgrade:bool can-change-owner:bool can-change-creator:bool can-add-special-role:bool can-transfer-nft-create-role:bool can-freeze:bool can-wipe:bool can-pause:bool) (INFO_DPDC-I|Issue patron owner-account collection-name false))
     (defun INFO_DPSF|Issue:object{OuronetInfoV2.ClientInfo} (patron:string owner-account:string creator-account:string collection-name:string collection-ticker:string can-upgrade:bool can-change-owner:bool can-change-creator:bool can-add-special-role:bool can-transfer-nft-create-role:bool can-freeze:bool can-wipe:bool can-pause:bool) (INFO_DPDC-I|Issue patron owner-account collection-name true))
     ;;  [DPDC branding] — DpdcV2 UpdatePendingBranding (IGNIS) + UpgradeBranding (STOA)
@@ -880,12 +915,17 @@
         )
     )
     (defun INFO_DPDC|UpgradeBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string months:integer son:bool)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (d:module{DpdcV2} DPDC))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (d:module{DpdcV2} DPDC)
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Upgrades Branding of {} {} for {} months" [(if son "SFT" "NFT") entity-id months])]
                 [(format "Branding of {} {} upgraded for {} months" [(if son "SFT" "NFT") entity-id months])]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (d::URCi_UpgradeBranding months)) [])))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (d::URCi_UpgradeBranding months)) [])
+        ))
     (defun INFO_DPNF|UpgradeBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string months:integer) (INFO_DPDC|UpgradeBranding patron entity-id months false))
     (defun INFO_DPSF|UpgradeBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string months:integer) (INFO_DPDC|UpgradeBranding patron entity-id months true))
     ;;  [DPSF equity aliases] — Talos surfaces EQUITY ops under the DPSF| client namespace
@@ -894,12 +934,18 @@
     ;;
     ;;  [DEMIPAD] — sovereign launchpad ops (deposit + fuel/retrieve TF/OF/SF/NF + withdraw)
     (defun INFO_DEMIPAD|Deposit:object{OuronetInfoV2.ClientInfo} (patron:string donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD) (sd:string (ref-I|OURONET::OI|UC_ShortAccount donor)))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+                (sd:string (ref-I|OURONET::OI|UC_ShortAccount donor))
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Deposits {} $ worth against {} into the Launchpad from {}" [amount-in-dollars asset-id sd])]
                 [(format "Succesfully deposited {} $ worth against {} into Demipad from {}" [amount-in-dollars asset-id sd])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DEMIPAD::URCi_Deposit donor asset-id amount-in-dollars type direct-injection)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     (defun INFO_DEMIPAD|Withdraw:object{OuronetInfoV2.ClientInfo} (patron:string asset-id:string type:integer destination:string)
         (let
             (
@@ -916,79 +962,144 @@
                 [(format "Operation: Withdraws {} {} accumulated in the Launchpad to {}" [amount working-id sd])]
                 [(format "Succesfully withdrawn {} {} from Demipad to {}" [amount working-id sd])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-TFT::URCi_Transfer working-id lpad destination amount)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     (defun INFO_DEMIPAD|FuelTrueFungible:object{OuronetInfoV2.ClientInfo} (patron:string client:string asset-id:string amount:decimal)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD) (ref-TFT:module{TrueFungibleTransferV2} TFT) (lpad:string (ref-DEMIPAD::GOV|DEMIPAD|SC_NAME)) (sa:string (ref-I|OURONET::OI|UC_ShortAccount client)))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (lpad:string (ref-DEMIPAD::GOV|DEMIPAD|SC_NAME))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount client))
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Fuels {} {} (TrueFungible) to the Launchpad from {}" [amount asset-id sa])]
                 [(format "Succesfully fueled {} {} to the Launchpad from {}" [amount asset-id sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-TFT::URCi_Transfer asset-id client lpad amount)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     (defun INFO_DEMIPAD|RetrieveTrueFungible:object{OuronetInfoV2.ClientInfo} (patron:string client:string asset-id:string amount:decimal)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD) (ref-TFT:module{TrueFungibleTransferV2} TFT) (lpad:string (ref-DEMIPAD::GOV|DEMIPAD|SC_NAME)) (sa:string (ref-I|OURONET::OI|UC_ShortAccount client)))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (lpad:string (ref-DEMIPAD::GOV|DEMIPAD|SC_NAME))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount client))
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Retrieves {} {} (TrueFungible) from the Launchpad to {}" [amount asset-id sa])]
                 [(format "Succesfully retrieved {} {} from the Launchpad to {}" [amount asset-id sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-TFT::URCi_Transfer asset-id lpad client amount)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     (defun INFO_DEMIPAD|FuelOrtoFungible:object{OuronetInfoV2.ClientInfo} (patron:string client:string asset-id:string nonces:[integer])
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF) (sa:string (ref-I|OURONET::OI|UC_ShortAccount client)))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount client))
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Fuels {} Nonces {} (OrtoFungible) to the Launchpad from {}" [asset-id nonces sa])]
                 [(format "Succesfully fueled {} Nonces {} to the Launchpad from {}" [asset-id nonces sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_MoveCumulator asset-id nonces false)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [nonces])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [nonces])
+        ))
     (defun INFO_DEMIPAD|RetrieveOrtoFungible:object{OuronetInfoV2.ClientInfo} (patron:string client:string asset-id:string nonces:[integer])
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF) (sa:string (ref-I|OURONET::OI|UC_ShortAccount client)))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount client))
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Retrieves {} Nonces {} (OrtoFungible) from the Launchpad to {}" [asset-id nonces sa])]
                 [(format "Succesfully retrieved {} Nonces {} from the Launchpad to {}" [asset-id nonces sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_MoveCumulator asset-id nonces false)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [nonces])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [nonces])
+        ))
     (defun INFO_DEMIPAD|FuelSemiFungible:object{OuronetInfoV2.ClientInfo} (patron:string client:string asset-id:string nonces:[integer] amounts:[integer])
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD) (sa:string (ref-I|OURONET::OI|UC_ShortAccount client)))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount client))
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Fuels {} Nonces {} Amounts {} (SemiFungible) to the Launchpad from {}" [asset-id nonces amounts sa])]
                 [(format "Succesfully fueled {} Nonces {} to the Launchpad from {}" [asset-id nonces sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DEMIPAD::URCi_TransmitSemiFungibles client asset-id nonces amounts true)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [amounts])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [amounts])
+        ))
     (defun INFO_DEMIPAD|RetrieveSemiFungible:object{OuronetInfoV2.ClientInfo} (patron:string client:string asset-id:string nonces:[integer] amounts:[integer])
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD) (sa:string (ref-I|OURONET::OI|UC_ShortAccount client)))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount client))
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Retrieves {} Nonces {} Amounts {} (SemiFungible) from the Launchpad to {}" [asset-id nonces amounts sa])]
                 [(format "Succesfully retrieved {} Nonces {} from the Launchpad to {}" [asset-id nonces sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DEMIPAD::URCi_TransmitSemiFungibles client asset-id nonces amounts false)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [amounts])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [amounts])
+        ))
     (defun INFO_DEMIPAD|FuelNonFungible:object{OuronetInfoV2.ClientInfo} (patron:string client:string asset-id:string nonces:[integer] amounts:[integer])
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD) (sa:string (ref-I|OURONET::OI|UC_ShortAccount client)))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount client))
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Fuels {} Nonces {} (NonFungible) to the Launchpad from {}" [asset-id nonces sa])]
                 [(format "Succesfully fueled {} Nonces {} to the Launchpad from {}" [asset-id nonces sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DEMIPAD::URCi_TransmitNonFungibles client asset-id nonces amounts true)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [nonces])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [nonces])
+        ))
     (defun INFO_DEMIPAD|RetrieveNonFungible:object{OuronetInfoV2.ClientInfo} (patron:string client:string asset-id:string nonces:[integer] amounts:[integer])
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD) (sa:string (ref-I|OURONET::OI|UC_ShortAccount client)))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount client))
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Retrieves {} Nonces {} (NonFungible) from the Launchpad to {}" [asset-id nonces sa])]
                 [(format "Succesfully retrieved {} Nonces {} from the Launchpad to {}" [asset-id nonces sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DEMIPAD::URCi_TransmitNonFungibles client asset-id nonces amounts false)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [nonces])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [nonces])
+        ))
     ;;
     ;;  [EQUITY] — shareholder/company SFT collection (exposed via DPSF Talos)
     (defun INFO_EQUITY|IssueCompany:object{OuronetInfoV2.ClientInfo} (patron:string creator-account:string collection-name:string)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-EQUITY:module{EquityV2} EQUITY) (sa:string (ref-I|OURONET::OI|UC_ShortAccount creator-account)))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-EQUITY:module{EquityV2} EQUITY)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount creator-account))
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Issues the 8-element Shareholder (Equity) SFT Collection '{}' on Account {}" [collection-name sa])]
                 [(format "Shareholder Collection '{}' issued succesfully on Account {}" [collection-name sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-EQUITY::URCi_IssueShareholderCollection)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     (defun INFO_EQUITY|MorphEquity:object{OuronetInfoV2.ClientInfo} (patron:string account:string id:string input-nonce:integer input-amount:integer output-nonce:integer)
-        (let ((ref-I|OURONET:module{OuronetInfoV2} IGNIS) (ref-EQUITY:module{EquityV2} EQUITY) (sa:string (ref-I|OURONET::OI|UC_ShortAccount account)))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-EQUITY:module{EquityV2} EQUITY)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Morphs {} shares of {} Nonce {} into Nonce {} on Account {}" [input-amount id input-nonce output-nonce sa])]
                 [(format "Succesfully morphed {} {} Nonce {} shares into Nonce {} on {}" [input-amount id input-nonce output-nonce sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-EQUITY::URCi_MorphPackageShares account id input-nonce input-amount output-nonce)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X

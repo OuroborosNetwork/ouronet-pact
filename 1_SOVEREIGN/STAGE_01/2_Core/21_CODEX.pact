@@ -182,7 +182,10 @@
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
     (defun P|UEV_IMC ()
-        (let ((ref-U|G:module{OuronetGuardsV2} U|G))
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV2} U|G)
+            )
             (ref-U|G::UEV_Any (P|UR_IMP))
         )
     )
@@ -423,7 +426,10 @@
     ;;{C4}  Ownership [gold]
     (defcap CODEX|STOICTAG-DALOS-OWNER (account-address:string)
         @doc "Caller controls the Ouronet (DALOS) account — Standard or Smart, not Stoa coin.details."
-        (let ((ref-DALOS:module{OuronetDalosV2} DALOS))
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
             (ref-DALOS::CAP_EnforceAccountOwnership account-address)
         )
     )
@@ -863,7 +869,10 @@
     (defun XI_DeactivateStoicTag:string (tag-name:string)
         @doc "Under SECURE (from CODEX|C>RELEASE-STOICTAG): set iz-active false on both tables. Write only."
         (require-capability (SECURE))
-        (let ((account-address:string (UR_STG|AccountAddress tag-name)))
+        (let
+            (
+                (account-address:string (UR_STG|AccountAddress tag-name))
+            )
             (update CODEX|T|StoicTags tag-name (UDC_STG|IzActiveUpdate false))
             (update CODEX|T|StoicTagsByAccount account-address (UDC_STBA|IzActiveUpdate false))
         )

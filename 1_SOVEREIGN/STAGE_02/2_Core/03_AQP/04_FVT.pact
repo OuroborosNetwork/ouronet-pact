@@ -1064,8 +1064,12 @@
             \ this standalone op is OWNER-GATED — only the FVT owner may pre-unstale their own entity. Composes \
             \ P|SECURE-CALLER for the intra-module fix + the cross-module XE_RefreshUserScoreDeb into AQP-SCORE."
         @event
-        (let ((ref-DALOS:module{OuronetDalosV2} DALOS))
-            (ref-DALOS::CAP_EnforceAccountOwnership (UR_FVT|OwnerKonto fvt-id)))
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership (UR_FVT|OwnerKonto fvt-id))
+        )
         (enforce (not (UR_FVT|VacateFrozen fvt-id)) "FVT is frozen: a pool it serves is mid-vacate")
         (enforce (and (URC_FvtRpsGlobalRowExists fvt-id reward-dptf-id) (UR_FVT-RG|RewardEnabled fvt-id reward-dptf-id))
             "Reward link row must exist and be enabled for an unstale pass")
@@ -1165,8 +1169,12 @@
             \ live value is always safe (no fund movement — pending is banked, not paid). Composes P|SECURE-CALLER \
             \ for the intra-module fix + the cross-module XE_RefreshUserScoreDeb into AQP-SCORE."
         @event
-        (let ((ref-DALOS:module{OuronetDalosV2} DALOS))
-            (ref-DALOS::CAP_EnforceAccountOwnership patron))
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership patron)
+        )
         (compose-capability (P|SECURE-CALLER))
     )
     (defcap FVT|C>TRUE-FUNGIBLE-STAKE-FLOW
@@ -2647,7 +2655,10 @@
         @doc "Read-only: the total a drip would release RIGHT NOW across the lane's active streams — rate*elapsed \
             \ floored to the token's decimals, or the exact remainder for a finished stream. Mirrors XI_ReleaseStream's \
             \ per-stream rel WITHOUT writes (for URC_LiveClaimable / URC_StreamStatus). 0.0 when no stream is active."
-        (let ((count:integer (UR_FVT-RG|StreamCount fvt-id dptf-id)))
+        (let
+            (
+                (count:integer (UR_FVT-RG|StreamCount fvt-id dptf-id))
+            )
             (if (= count 0)
                 0.0
                 (let*
@@ -2666,12 +2677,19 @@
                                     (rel:decimal
                                         (if (>= now (at "finish" s))
                                             remaining
-                                            (let ((by-rate:decimal (floor (* (at "rate" s) (diff-time now last)) reward-dec)))
-                                                (if (> by-rate remaining) remaining by-rate))))
+                                            (let
+                                                (
+                                                    (by-rate:decimal (floor (* (at "rate" s) (diff-time now last)) reward-dec))
+                                                )
+                                                (if (> by-rate remaining) remaining by-rate)
+                                            )))
                                 )
-                                (+ acc rel)))
+                                (+ acc rel)
+                            ))
                         0.0
-                        (enumerate 1 count))))))
+                        (enumerate 1 count))
+                ))
+        ))
     (defun URC_ProjectedIndexAdvance:decimal
         (fvt-id:string score-entity-type:integer score-entity-id:string dptf-id:string releasable:decimal)
         @doc "Read-only: the Tier-1 index (L_i / G) advance that distributing `releasable` right now would produce \
@@ -2688,7 +2706,8 @@
                     (member-slice:decimal (if (> s-farm 0.0) (floor (/ (* releasable w-i) s-farm) reward-dec) 0.0))
                     (total-deb:decimal (URC_ScoreEntityMemberTier2Divisor fvt-id score-entity-type score-entity-id))
                 )
-                (if (> total-deb 0.0) (floor (/ member-slice total-deb) CT_FVT_RPS_PREC) 0.0))
+                (if (> total-deb 0.0) (floor (/ member-slice total-deb) CT_FVT_RPS_PREC) 0.0)
+            )
             (UC_ComputeInjectGainedRps releasable (URC_InjectDenominator fvt-id))))
     (defun URC_LiveClaimable:decimal
         (user-id:string fvt-id:string pool-id:string score-entity-type:integer score-entity-id:string dptf-id:string)
@@ -2709,12 +2728,16 @@
                 (pending:decimal (UR_FVT-RU|PendingRewards user-id fvt-id score-entity-id dptf-id))
                 (last-rps:decimal (UR_FVT-RU|LastRps user-id fvt-id score-entity-id dptf-id))
             )
-            (+ pending (floor (* deb-user (- proj-index last-rps)) reward-dec))))
+            (+ pending (floor (* deb-user (- proj-index last-rps)) reward-dec))
+        ))
     (defun URC_StreamStatus:object (fvt-id:string dptf-id:string)
         @doc "Read-only lane stream summary for the UI (the 7x7 view): active-count (live positions 1..stream-count), \
             \ total-rate (Σ rate over streams NOT yet finished), earliest-finish (soonest a stream ends; STREAM_EPOCH \
             \ when none), unreleased (custodied-but-not-yet-dripped). Reads positions 1..stream-count."
-        (let ((count:integer (UR_FVT-RG|StreamCount fvt-id dptf-id)))
+        (let
+            (
+                (count:integer (UR_FVT-RG|StreamCount fvt-id dptf-id))
+            )
             (if (= count 0)
                 { "active-count" : 0, "total-rate" : 0.0, "earliest-finish" : STREAM_EPOCH, "unreleased" : 0.0 }
                 (let
@@ -2723,16 +2746,42 @@
                         (agg:object
                             (fold
                                 (lambda (acc:object idx:integer)
-                                    (let ((s:object{FVT|RPS|Stream} (UR_FVT-RS|Stream fvt-id dptf-id idx)))
-                                        { "rate" : (+ (at "rate" acc) (if (> (at "finish" s) now) (at "rate" s) 0.0))
-                                        , "earliest" : (if (< (at "finish" s) (at "earliest" acc)) (at "finish" s) (at "earliest" acc)) }))
+                                    (let
+                                        (
+                                            (s:object{FVT|RPS|Stream} (UR_FVT-RS|Stream fvt-id dptf-id idx))
+                                        )
+                                        {
+                                        "rate"
+                                        :
+                                        (+ (at "rate" acc) (if (> (at "finish" s) now) (at "rate" s) 0.0))
+                                        ,
+                                        "earliest"
+                                        :
+                                        (if (< (at "finish" s) (at "earliest" acc)) (at "finish" s) (at "earliest" acc))
+                                        }
+                                    ))
                                 { "rate" : 0.0, "earliest" : (at "finish" (UR_FVT-RS|Stream fvt-id dptf-id 1)) }
                                 (enumerate 1 count)))
                     )
-                    { "active-count" : count
-                    , "total-rate" : (at "rate" agg)
-                    , "earliest-finish" : (at "earliest" agg)
-                    , "unreleased" : (UR_FVT-RG|StreamUnreleased fvt-id dptf-id) }))))
+                    {
+                    "active-count"
+                    :
+                    count
+                    ,
+                    "total-rate"
+                    :
+                    (at "rate" agg)
+                    ,
+                    "earliest-finish"
+                    :
+                    (at "earliest" agg)
+                    ,
+                    "unreleased"
+                    :
+                    (UR_FVT-RG|StreamUnreleased fvt-id dptf-id)
+                    }
+                ))
+        ))
     (defun URC_SettleScorePlanRows:[object{FVT|SettleScorePlan}]
         (settle-scores:[string] fvt-reward-bundle:[object{FVT|SettleFvtRewards}])
         @doc "Distinct score-entity settle plans — triplet members collapse to one triplet-id plan."
@@ -3273,7 +3322,8 @@
             )
             (+ (if is-ignis (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ORBR::URCi_Compress AQP|SC_NAME royalty)) 0.0)
                (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
-                   (ref-TFT::URCi_TransferCumulator xfer-type token AQP|SC_NAME destination)))))
+                   (ref-TFT::URCi_TransferCumulator xfer-type token AQP|SC_NAME destination)))
+        ))
     (defun URCi_BurnRoyaltyCustody:decimal (fvt-id:string reward-dptf-id:string)
         @doc "Read-only IGNIS ifp of the custody burn in XE_BurnRoyalty: IGNIS-normalize leg (compress when the \
             \ reward-dptf is IGNIS, else none) + a DPTF burn of the normalized live royalty balance from AQP|SC_NAME."
@@ -3289,7 +3339,8 @@
                 (token:string    (if is-ignis (ref-DALOS::UR_OuroborosID) reward-dptf-id))
             )
             (+ (if is-ignis (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ORBR::URCi_Compress AQP|SC_NAME royalty)) 0.0)
-               (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPTF::URCi_Burn token AQP|SC_NAME)))))
+               (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPTF::URCi_Burn token AQP|SC_NAME)))
+        ))
     (defun URCi_FuelRoyaltyCustody:decimal (fvt-id:string reward-dptf-id:string swpair:string)
         @doc "Read-only IGNIS ifp of the custody fuel in XE_FuelRoyalty: IGNIS-normalize leg (compress when the \
             \ reward-dptf is IGNIS, else none) + an SWPLC fuel of the normalized live royalty balance from AQP|SC_NAME \
@@ -3310,7 +3361,8 @@
                 (input-amounts:[decimal] (map (lambda (t:string) (if (= t token) amount 0.0)) pool-tokens))
             )
             (+ (if is-ignis (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ORBR::URCi_Compress AQP|SC_NAME royalty)) 0.0)
-               (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_Fuel AQP|SC_NAME swpair input-amounts true)))))
+               (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_Fuel AQP|SC_NAME swpair input-amounts true)))
+        ))
     ;; [URCi/URC]   CC_Collect FULL-cost readers — read-only mirror of the reward-payout leg (XI_TransferRewardDptfFromVault:
     ;;   plain single TFT transfer, or a MULTIPLET_BASE triplet Coil/Curl ladder, homogeneous or heterogeneous) + the
     ;;   Phase-7 forced-fix penalty + GAS|COLLECT. The payout is derived on the CURRENT (pre-drip) claimable state —
@@ -3328,7 +3380,8 @@
                 (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
                     (ref-TFT::URCi_TransferCumulator
                         (at "type" (ref-TFT::URC_TransferClasses id AQP|SC_NAME patron amount))
-                        id AQP|SC_NAME patron)))))
+                        id AQP|SC_NAME patron))
+            )))
     (defun URC_HeterogeneousLaneRouteIgnis:decimal
         (patron:string fvt-id:string reward-dptf-id:string mf-id:string amt-b:decimal amt-s:decimal amt-g:decimal prec:integer)
         @doc "IGNIS ifp mirror of XI_1|HeterogeneousLaneRoute: pre-fund token-0 (two transfers) + Coil(total-t1) + Curl(total-t2)."
@@ -3359,12 +3412,16 @@
                         false))
                 (curl-ok:bool
                     (if (> total-t2 0.0)
-                        (let ((h1:object (ref-ATS::URC_RewardBearingTokenAmounts ats-01 token-0 total-t2)))
+                        (let
+                            (
+                                (h1:object (ref-ATS::URC_RewardBearingTokenAmounts ats-01 token-0 total-t2))
+                            )
                             (if (> (at "rbt-amount" h1) 0.0)
                                 (> (at "rbt-amount"
                                         (ref-ATS::URC_RewardBearingTokenAmounts ats-12 (at "rbt-id" h1) (at "rbt-amount" h1)))
                                    0.0)
-                                false))
+                                false)
+                        )
                         false))
             )
             (fold (+) 0.0
@@ -3372,7 +3429,8 @@
                   (URC_CollectXferIgnis token-0 patron fund-12)
                   (if coil-ok (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Coil patron ats-01 token-0 total-t1)) 0.0)
                   (if curl-ok (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Curl patron ats-01 ats-12 token-0 total-t2)) 0.0)
-                ])))
+                ])
+        ))
     (defun URC_CollectTransferLegIgnis:decimal
         (patron:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         @doc "IGNIS ifp mirror of XI_TransferRewardDptfFromVault (PHASE 1.1 collect payout leg)."
@@ -3411,12 +3469,16 @@
                                     false))
                             (curl-g-ok:bool
                                 (if (> amt-g 0.0)
-                                    (let ((h1:object (ref-ATS::URC_RewardBearingTokenAmounts ats-01 token-0 amt-g)))
+                                    (let
+                                        (
+                                            (h1:object (ref-ATS::URC_RewardBearingTokenAmounts ats-01 token-0 amt-g))
+                                        )
                                         (if (> (at "rbt-amount" h1) 0.0)
                                             (> (at "rbt-amount"
                                                     (ref-ATS::URC_RewardBearingTokenAmounts ats-12 (at "rbt-id" h1) (at "rbt-amount" h1)))
                                                0.0)
-                                            false))
+                                            false)
+                                    )
                                     false))
                         )
                         (if (= mode CT_REWARD_MODE_HETEROGENEOUS)
@@ -3426,8 +3488,10 @@
                                   (URC_CollectXferIgnis token-0 patron fund-sg)
                                   (if coil-s-ok (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Coil patron ats-01 token-0 amt-s)) 0.0)
                                   (if curl-g-ok (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Curl patron ats-01 ats-12 token-0 amt-g)) 0.0)
-                                ])))
-                    (URC_CollectXferIgnis reward-dptf-id patron payout)))))
+                                ]))
+                    )
+                    (URC_CollectXferIgnis reward-dptf-id patron payout)))
+        ))
     (defun URC_CollectForcedFixIgnis:decimal (patron:string fvt-id:string reward-dptf-id:string)
         @doc "IGNIS ifp mirror of CC_Collect PHASE 7 forced-fix penalty: (ffc x CT_FORCED_FIX_RATE / patron-discount) \
             \ gated by the virtual-gas toggle; 0 when ffc<=0."
@@ -3440,7 +3504,8 @@
             (if (<= ffc 0)
                 0.0
                 (UC_GasPrice (/ (* (dec ffc) CT_FORCED_FIX_RATE) (ref-DALOS::URC_IgnisGasDiscount patron))
-                             (ref-IGNIS::URC_IsVirtualGasZero)))))
+                             (ref-IGNIS::URC_IsVirtualGasZero)))
+        ))
     (defun URCi_CollectFull:decimal
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         @doc "FULL reconstructed IGNIS ifp of CC_Collect = reward-payout leg (URC_CollectTransferLegIgnis) + Phase-7 \
@@ -3461,21 +3526,36 @@
                 [ (URC_CollectTransferLegIgnis patron pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
                   (URC_CollectForcedFixIgnis patron fvt-id reward-dptf-id)
                   (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (URCi_Collect fvt-id [fvt-id score-entity-id reward-dptf-id]))
-                ])))
+                ])
+        ))
     (defun URC_TierMedium:decimal ()
         @doc "IGNIS tier 'ignis|medium' behind the virtual-gas toggle."
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS) (ref-DALOS:module{OuronetDalosV2} DALOS))
-            (UC_GasPrice (ref-DALOS::UR_UsagePrice "ignis|medium") (ref-IGNIS::URC_IsVirtualGasZero)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (UC_GasPrice (ref-DALOS::UR_UsagePrice "ignis|medium") (ref-IGNIS::URC_IsVirtualGasZero))
+        )
     )
     (defun URC_TierBiggest:decimal ()
         @doc "IGNIS tier 'ignis|biggest' behind the virtual-gas toggle."
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS) (ref-DALOS:module{OuronetDalosV2} DALOS))
-            (UC_GasPrice (ref-DALOS::UR_UsagePrice "ignis|biggest") (ref-IGNIS::URC_IsVirtualGasZero)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (UC_GasPrice (ref-DALOS::UR_UsagePrice "ignis|biggest") (ref-IGNIS::URC_IsVirtualGasZero))
+        )
     )
     (defun URC_TierFixed:decimal (gas-cost:decimal)
         @doc "A FIXED IGNIS gas cost behind the virtual-gas toggle."
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS))
-            (UC_GasPrice gas-cost (ref-IGNIS::URC_IsVirtualGasZero)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (UC_GasPrice gas-cost (ref-IGNIS::URC_IsVirtualGasZero))
+        )
     )
     (defun URC_StakeScoreDeltaSum:decimal (pool-id:string)
         @doc "Phase-4 leg: Σ SCORE.URC_StakeScoreDeltaIgnisUnit over POOL.URC_PoolActiveScoreIds (raw, ungated)."
@@ -3655,8 +3735,12 @@
             (enforce (= score-owner fvt-owner) "Score owner must match FVT owner")
             (enforce
                 (or (UR_FVT|Mosaic fvt-id)
-                    (let ((mode:string (UR_FVT|MembershipMode fvt-id)))
-                        (or (= mode CT_MEMBERSHIP_MODE_BAR) (= mode CT_MEMBERSHIP_MODE_SCORE))))
+                    (let
+                        (
+                            (mode:string (UR_FVT|MembershipMode fvt-id))
+                        )
+                        (or (= mode CT_MEMBERSHIP_MODE_BAR) (= mode CT_MEMBERSHIP_MODE_SCORE))
+                    ))
                 "Non-mosaic FVT locked to score membership only")
             (enforce
                 (fold (and) true
@@ -3701,10 +3785,14 @@
             (enforce (ref-SCR::URC_TripletCategoryMatchesFvtClass triplet-cat fvt-class) "Triplet category must match FVT class")
             (enforce
                 (or (UR_FVT|Mosaic fvt-id)
-                    (let ((mode:string (UR_FVT|MembershipMode fvt-id)))
+                    (let
+                        (
+                            (mode:string (UR_FVT|MembershipMode fvt-id))
+                        )
                         (or (= mode CT_MEMBERSHIP_MODE_BAR)
                             (and (= mode CT_MEMBERSHIP_MODE_TRUE_TRIPLET) is-true-triplet)
-                            (and (= mode CT_MEMBERSHIP_MODE_STANDARD_TRIPLET) (not is-true-triplet)))))
+                            (and (= mode CT_MEMBERSHIP_MODE_STANDARD_TRIPLET) (not is-true-triplet)))
+                    ))
                 "Non-mosaic FVT membership mode mismatch for triplet admission")
             (enforce
                 (fold (and) true
@@ -4134,7 +4222,10 @@
         (fvt-id:string score-entity-id:string dptf-id:string direction:bool)
         @doc "Increment (true) / decrement (false, floored at 0) the member mini-vault unclaimed-count (upsert)."
         (require-capability (SECURE))
-        (let ((old-uc:integer (UR_FVT-MV|UnclaimedCount fvt-id score-entity-id dptf-id)))
+        (let
+            (
+                (old-uc:integer (UR_FVT-MV|UnclaimedCount fvt-id score-entity-id dptf-id))
+            )
             (write FVT|T|MemberVault (UCk_RpsMember fvt-id score-entity-id dptf-id)
                 {"unclaimed-count"     : (if direction (+ old-uc 1) (if (> old-uc 0) (- old-uc 1) 0))
                 ,"available-rewards"   : (UR_FVT-MV|AvailableRewards fvt-id score-entity-id dptf-id)
@@ -4389,7 +4480,10 @@
     (defun XI_AddScoreEntity:string
         (fvt-id:string score-entity-type:integer score-entity-id:string swpair:string ghost-weight:decimal)
         @doc "Under SECURE: insert enabled ScoreEntityLink; farm adds W_i to S; lock membership-mode when non-mosaic."
-        (let ((ref-SCR:module{AcquisitionScoresV2} AQP-SCORE))
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+            )
             (WI_ScoreEntityLink fvt-id score-entity-id
                 (UDC_FVT|ScoreEntityLink score-entity-type true swpair ghost-weight 0.0 false 0.0 0.0 STREAM_EPOCH fvt-id score-entity-id)
             )
@@ -4436,7 +4530,8 @@
                                     (URC_ScoreEntityMemberDebWeight
                                         (UR_FVT-SEL|ScoreEntityType fvt-id score-entity-id) score-entity-id))
                             )
-                            (if enabled d (- 0.0 d)))
+                            (if enabled d (- 0.0 d))
+                        )
                         0.0
                     )
                 )
@@ -4566,12 +4661,16 @@
                                     false))
                             (curl-g-ok:bool
                                 (if (> amt-g 0.0)
-                                    (let ((h1:object (ref-ATS::URC_RewardBearingTokenAmounts ats-01 token-0 amt-g)))
+                                    (let
+                                        (
+                                            (h1:object (ref-ATS::URC_RewardBearingTokenAmounts ats-01 token-0 amt-g))
+                                        )
                                         (if (> (at "rbt-amount" h1) 0.0)
                                             (> (at "rbt-amount"
                                                     (ref-ATS::URC_RewardBearingTokenAmounts ats-12 (at "rbt-id" h1) (at "rbt-amount" h1)))
                                                0.0)
-                                            false))
+                                            false)
+                                    )
                                     false))
                         )
                         (if (= mode CT_REWARD_MODE_HETEROGENEOUS)
@@ -4647,7 +4746,8 @@
                             )
                             (if (!= delta 0.0)
                                 (WU_Fvt|TotalDebScore fvt-id (+ (UR_FVT|TotalDebScore fvt-id) delta))
-                                true))
+                                true)
+                        )
                     )
                 )
             )
@@ -5377,7 +5477,10 @@
             \ positions 1..k; finished streams are pruned (freeing slots). Fast no-op when stream-count = 0. \
             \ require SECURE (writes G / available-rewards / the stream ledger)."
         (require-capability (SECURE))
-        (let ((count:integer (UR_FVT-RG|StreamCount fvt-id reward-dptf-id)))
+        (let
+            (
+                (count:integer (UR_FVT-RG|StreamCount fvt-id reward-dptf-id))
+            )
             (if (= count 0)
                 (UC_EmptyOc)                                        ;; fast path — no stream on this lane
                 (let*
@@ -5401,8 +5504,12 @@
                                             (rel:decimal
                                                 (if finished
                                                     remaining                             ;; exact-remainder flush
-                                                    (let ((by-rate:decimal (floor (* (at "rate" s) (diff-time now last)) reward-dec)))
-                                                        (if (> by-rate remaining) remaining by-rate))))
+                                                    (let
+                                                        (
+                                                            (by-rate:decimal (floor (* (at "rate" s) (diff-time now last)) reward-dec))
+                                                        )
+                                                        (if (> by-rate remaining) remaining by-rate)
+                                                    )))
                                         )
                                         { "total" : (+ (at "total" acc) rel)
                                         , "keep"  :
@@ -5428,10 +5535,14 @@
                     (if (> k 0)
                         (map
                             (lambda (i:integer)
-                                (let ((r:object{FVT|RPS|Stream} (at i survivors)))
+                                (let
+                                    (
+                                        (r:object{FVT|RPS|Stream} (at i survivors))
+                                    )
                                     (WW_RpsStream fvt-id reward-dptf-id (+ i 1)
                                         (UDC_FVT|RPS|Stream (at "rate" r) (at "finish" r) (at "amount" r)
-                                            (at "released" r) fvt-id reward-dptf-id (+ i 1)))))
+                                            (at "released" r) fvt-id reward-dptf-id (+ i 1)))
+                                ))
                             (enumerate 0 (- k 1)))
                         "no survivors")
                     ;; 3. update the lane cursor
@@ -5500,7 +5611,10 @@
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
             )
             ;; PHASE 0 — drip (checkpoint + prune finished streams) so the shared last-release is `now` before we add
-            (let ((drip-oc:object{IgnisCollectorV2.OutputCumulator} (XI_ReleaseStream fvt-id reward-dptf-id)))
+            (let
+                (
+                    (drip-oc:object{IgnisCollectorV2.OutputCumulator} (XI_ReleaseStream fvt-id reward-dptf-id))
+                )
                 ;; PHASE 0b — slot-cap on the POST-DRIP count (Elite tier of the FVT owner konto, D5)
                 (enforce (< (UR_FVT-RG|StreamCount fvt-id reward-dptf-id) (URC_MaxStreamLanes owner-konto))
                     "FVT|Stream: stream slots full for this owner's Elite tier — use a direct (instant) inject")
@@ -5549,7 +5663,8 @@
             (map
                 (lambda (u:string)
                     (XI_SweepRecomputeUserMemberIn u fvt-id (UR_FVT-SEL|ScoreEntityType fvt-id score-entity-id) score-entity-id swept-boost-class-id reward-rows))
-                users))
+                users)
+        )
         (UC_EmptyOc)
     )
     (defun XI_FvtSweepRecomputeWindow:integer
@@ -5592,8 +5707,20 @@
                                                 (slice:[string] (take (- hi lo) (drop (- lo seen-before) users)))
                                             )
                                             (XI_FvtSweepRecomputeChunk fvt member boost-class-id slice)
-                                            {"seen": seen-after, "processed": (+ (at "processed" acc) (length slice))})
-                                        {"seen": seen-after, "processed": (at "processed" acc)}))))))
+                                            {
+                                            "seen"
+                                            :
+                                            seen-after,
+                                            "processed"
+                                            :
+                                            (+ (at "processed" acc) (length slice))
+                                            }
+                                        )
+                                        {"seen": seen-after, "processed": (at "processed" acc)})
+                                )
+                            )
+                        )
+                    ))
                 {"seen": 0, "processed": 0}
                 score-ids))
     )
@@ -5919,12 +6046,16 @@
                         false))
                 (curl-ok:bool
                     (if (> total-t2 0.0)
-                        (let ((h1:object (ref-ATS::URC_RewardBearingTokenAmounts ats-01 token-0 total-t2)))
+                        (let
+                            (
+                                (h1:object (ref-ATS::URC_RewardBearingTokenAmounts ats-01 token-0 total-t2))
+                            )
                             (if (> (at "rbt-amount" h1) 0.0)
                                 (> (at "rbt-amount"
                                         (ref-ATS::URC_RewardBearingTokenAmounts ats-12 (at "rbt-id" h1) (at "rbt-amount" h1)))
                                    0.0)
-                                false))
+                                false)
+                        )
                         false))
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators
@@ -5980,7 +6111,8 @@
                 )
                 ;; DRIP each reward lane once (checkpoint) before the fix loop → users settle at now's index
                 (map (lambda (d:string) (XI_ReleaseStream fvt-id d)) reward-rows)
-                (map (lambda (u:string) (XI_FixUserFvtDebPenalizedIn fvt-id reward-dptf-id u members reward-rows)) users))
+                (map (lambda (u:string) (XI_FixUserFvtDebPenalizedIn fvt-id reward-dptf-id u members reward-rows)) users)
+            )
             (UC_EmptyOc)
         )
     )
@@ -6688,7 +6820,8 @@
                         (
                             (remaining:integer (- (length stale) (length batch)))
                         )
-                        (format "Inject-fix: fixed {} of {} stale staker(s) — {} remain{}." [(length batch) (length stale) remaining (if (= remaining 0) " (ready to CC_InjectFinalize)" ", keep paging")]))
+                        (format "Inject-fix: fixed {} of {} stale staker(s) — {} remain{}." [(length batch) (length stale) remaining (if (= remaining 0) " (ready to CC_InjectFinalize)" ", keep paging")])
+                    )
                 )
             )
         )
@@ -6753,7 +6886,8 @@
                         )
                         (if (= (length stale) 0)
                             (format "Unstale-all: FVT {} lane {} — all present stakers up to date (injection-ready)." [fvt-id reward-dptf-id])
-                            (format "Unstale-all: unstaled {} of {} stale staker(s) — {} remain{}." [(length batch) (length stale) remaining (if (= remaining 0) " (injection-ready)" ", keep paging")])))
+                            (format "Unstale-all: unstaled {} of {} stale staker(s) — {} remain{}." [(length batch) (length stale) remaining (if (= remaining 0) " (injection-ready)" ", keep paging")]))
+                    )
                 )
             )
         )
@@ -6835,7 +6969,8 @@
                             (total:integer (URC_FvtSweepTotalPresent score-ids))
                         )
                         (WU_FvtSweepProgress anchor-id total 0 true)
-                        (format "Sweep begun for anchor {} (BoostClass {}): swept-revoked; {} holder(s) to recompute across {} score(s) — page via CCp_SweepRecomputeChunk." [anchor-id boost-class-id total (length score-ids)]))
+                        (format "Sweep begun for anchor {} (BoostClass {}): swept-revoked; {} holder(s) to recompute across {} score(s) — page via CCp_SweepRecomputeChunk." [anchor-id boost-class-id total (length score-ids)])
+                    )
                 )
             )
         )
@@ -7288,7 +7423,10 @@
         (fvt-id:string owner-konto:string score-id:string reward-dptf-id:string)
         @doc "REPL-only: insert class-1 vault + enabled ScoreEntityLink (type 1) + reward-enabled RPS|Global."
         (with-capability (GOV|FVT_ADMIN)
-            (let ((ref-SCR:module{AcquisitionScoresV2} AQP-SCORE))
+            (let
+                (
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                )
                 (with-capability (SECURE)
                     (WI_Fvt fvt-id
                         (UDC_FVT|Schema 1 owner-konto true true "|" 0.0 0.0 0.0 0.0 0 1 1 true CT_MEMBERSHIP_MODE_BAR false CT_SPLIT_MODE_NA fvt-id)
@@ -7311,7 +7449,10 @@
         (fvt-id:string owner-konto:string score-id:string reward-dptf-id:string)
         @doc "REPL-only: insert class-2 treasury + enabled ScoreEntityLink (type 1) + reward-enabled RPS|Global."
         (with-capability (GOV|FVT_ADMIN)
-            (let ((ref-SCR:module{AcquisitionScoresV2} AQP-SCORE))
+            (let
+                (
+                    (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                )
                 (with-capability (SECURE)
                     (WI_Fvt fvt-id
                         (UDC_FVT|Schema 2 owner-konto true true "|" 0.0 0.0 0.0 0.0 0 1 1 true CT_MEMBERSHIP_MODE_BAR false CT_SPLIT_MODE_NA fvt-id)

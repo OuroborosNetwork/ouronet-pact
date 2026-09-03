@@ -1591,12 +1591,18 @@
             \ pricing paths (SWPT::URC_ValidatePathStructure alone, exists-only, is \
             \ sufficient for those — see the P3.0 split in the exhaustive-path-search \
             \ HANDOFF doc)."
-        (let ((ref-SWPT:module{SwapTracerV3} SWPT))
+        (let
+            (
+                (ref-SWPT:module{SwapTracerV3} SWPT)
+            )
             (if (not (ref-SWPT::URC_ValidatePathStructure nodes edges))
                 false
                 (if (= (length edges) 0)
                     true
-                    (let ((ref-SWP:module{SwapperV4} SWP))
+                    (let
+                        (
+                            (ref-SWP:module{SwapperV4} SWP)
+                        )
                         (fold
                             (lambda (acc:bool e:string) (and acc (ref-SWP::UR_CanSwap e)))
                             true

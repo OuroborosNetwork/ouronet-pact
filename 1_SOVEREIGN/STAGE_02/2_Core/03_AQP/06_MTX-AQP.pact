@@ -306,8 +306,20 @@
                                                 (slice:[string] (take (- hi lo) (drop (- lo seen-before) users)))
                                             )
                                             (ref-FVT::XE_FvtSweepRecomputeChunk fvt member boost-class-id slice)
-                                            {"seen": seen-after, "processed": (+ (at "processed" acc) (length slice))})
-                                        {"seen": seen-after, "processed": (at "processed" acc)}))))))
+                                            {
+                                            "seen"
+                                            :
+                                            seen-after,
+                                            "processed"
+                                            :
+                                            (+ (at "processed" acc) (length slice))
+                                            }
+                                        )
+                                        {"seen": seen-after, "processed": (at "processed" acc)})
+                                )
+                            )
+                        )
+                    ))
                 {"seen": 0, "processed": 0}
                 score-ids))
     )
@@ -353,13 +365,19 @@
                     (stale:[string] (ref-FVT::URH_FvtStalePresentUsers fvt-id))
                 )
                 (if (<= (length stale) N_FIX)
-                    (let ((n:integer (length stale)))
+                    (let
+                        (
+                            (n:integer (length stale))
+                        )
                         (ref-FVT::XE_FvtFixUserChunk fvt-id reward-dptf-id stale)
                         (ref-IGNIS::C_Collect patron (ref-FVT::XB_FvtInject patron fvt-id reward-dptf-id amount))
                         (yield {"injected" : true})
                         (format "MTX Inject 1|2: fixed {} stale staker(s) and INJECTED {} {} (terminal)." [n amount reward-dptf-id])
                     )
-                    (let ((remaining:integer (- (length stale) N_FIX)))
+                    (let
+                        (
+                            (remaining:integer (- (length stale) N_FIX))
+                        )
                         (ref-FVT::XE_FvtFixUserChunk fvt-id reward-dptf-id (take N_FIX stale))
                         (yield {"injected" : false})
                         (format "MTX Inject 1|2: fixed {} of {} stale — {} remain, continue to step 2." [N_FIX (length stale) remaining])
@@ -430,13 +448,18 @@
                                     )
                                     (ref-FVT::XE_SweepEnd anchor-id)
                                     (yield {"done": true, "boost-class-id": boost-class-id, "score-ids": score-ids, "offset": 0})
-                                    (format "MTX Sweep 1|2: swept-revoked anchor {} and recomputed {} holder(s) across {} score(s) (terminal)." [anchor-id n (length score-ids)]))
+                                    (format "MTX Sweep 1|2: swept-revoked anchor {} and recomputed {} holder(s) across {} score(s) (terminal)." [anchor-id n (length score-ids)])
+                                )
                                 (let
                                     (
                                         (n:integer (XI_SweepRecomputeWindow score-ids boost-class-id 0 N_SWEEP))
                                     )
                                     (yield {"done": false, "boost-class-id": boost-class-id, "score-ids": score-ids, "offset": N_SWEEP})
-                                    (format "MTX Sweep 1|2: swept-revoked anchor {}; recomputed {} of {} holder(s) — {} remain, continue to step 2." [anchor-id n total (- total N_SWEEP)]))))))
+                                    (format "MTX Sweep 1|2: swept-revoked anchor {}; recomputed {} of {} holder(s) — {} remain, continue to step 2." [anchor-id n total (- total N_SWEEP)])
+                                ))
+                        )
+                    )
+                )
             )
         )
         ;;Step 1 — if step 0 already finished, no-op; else recompute the remainder [offset, total) then unfreeze.
@@ -456,7 +479,9 @@
                                     (n:integer (XI_SweepRecomputeWindow score-ids boost-class-id offset total))
                                 )
                                 (ref-FVT::XE_SweepEnd anchor-id)
-                                (format "MTX Sweep 2|2: recomputed {} remaining holder(s) — anchor {} retired." [n anchor-id])))))))
+                                (format "MTX Sweep 2|2: recomputed {} remaining holder(s) — anchor {} retired." [n anchor-id])
+                            )
+                        )))))
     )
 
 )

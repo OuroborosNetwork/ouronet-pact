@@ -1516,20 +1516,36 @@
     ;; [URCi]   cost readers — single source for exec billing + INFO preview
     (defun URCi_IssueAnchor:object{IgnisCollectorV2.OutputCumulator} (output:[string])
         @doc "IGNIS cost for the 4 anchor-issue ops (flat GAS 1000; <output> carries anchor-id[+boost-class-id])."
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS))
-            (ref-IGNIS::UDC_ConstructOutputCumulator 1000.0 AQP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) output)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator 1000.0 AQP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) output)
+        ))
     (defun URCi_IssueAnchorStoa:decimal (acnoi:bool)
         @doc "STOA cost for anchor-issue: 'standard' usage price x(2 if acnoi else 1)."
-        (let ((ref-DALOS:module{OuronetDalosV2} DALOS))
-            (* (ref-DALOS::UR_UsagePrice "standard") (if acnoi 2.0 1.0))))
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (* (ref-DALOS::UR_UsagePrice "standard") (if acnoi 2.0 1.0))
+        ))
     (defun URCi_RevokeAnchor:object{IgnisCollectorV2.OutputCumulator} ()
         @doc "IGNIS cost for C_RevokeAnchor (biggest tier)."
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS))
-            (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME)
+        ))
     (defun URCi_RevokeBoostClass:object{IgnisCollectorV2.OutputCumulator} ()
         @doc "IGNIS cost for C_RevokeBoostClass (biggest tier)."
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS))
-            (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME)
+        ))
     ;;{5.4}  Validate [UEV/CAP]
     ;; [UEV] enforce
     (defun UEV_AnkFungibility (asset-fungibility:[bool])
@@ -1666,10 +1682,14 @@
         @doc "Add score-id to the BoostClass reverse-index set (idempotent — no-op if already present). Upsert. \
             \ H4 reverse index + #9 revoke lock (locked while the set is non-empty)."
         (require-capability (SECURE))
-        (let ((sl:[string] (UR_BC|ScoreLinks boost-class-id)))
+        (let
+            (
+                (sl:[string] (UR_BC|ScoreLinks boost-class-id))
+            )
             (write ANK|T|BoostClassScoreLinks boost-class-id
                 {"score-links"     : (if (contains score-id sl) sl (+ sl [score-id]))
-                ,"boost-class-id"  : boost-class-id}))
+                ,"boost-class-id"  : boost-class-id})
+        )
     )
     (defun WU_BC|RemoveScoreLink:string
         (boost-class-id:string score-id:string)

@@ -1239,12 +1239,16 @@
     )
     (defun UEV_EnforceGuardProtocol (g:guard is-keyset-based:bool)
         @doc "When is-keyset-based is true, guard must be k:/w:/r:. When false, must be u:/c:/m:/p:."
-        (let ((proto (UC_GuardProtocol g)))
+        (let
+            (
+                (proto (UC_GuardProtocol g))
+            )
             (if is-keyset-based
                 (enforce (contains proto ["k:" "w:" "r:"])
                     (format "Guard must be key-based (keyset/keyset-ref); got '{}'" [proto]))
                 (enforce (contains proto ["u:" "c:" "m:" "p:"])
-                    (format "Governor must be non-key-based (user/capability/module/pact); got '{}'" [proto])))))
+                    (format "Governor must be non-key-based (user/capability/module/pact); got '{}'" [proto])))
+        ))
     ;;
     (defun CAP_EnforceAccountOwnership (account:string)
         @doc "Enforces OuroNet Account Ownership"

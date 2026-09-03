@@ -481,7 +481,10 @@
         (swpair:string toggle:bool)
         @doc "Cost preview for C_ToggleAddLiquidity: delegates to SWP's add-or-swap toggle \
             \ cost (add-or-swap = true)."
-        (let ((ref-SWP:module{SwapperV4} SWP))
+        (let
+            (
+                (ref-SWP:module{SwapperV4} SWP)
+            )
             (ref-SWP::URCi_ToggleAddOrSwap swpair toggle true)
         )
     )

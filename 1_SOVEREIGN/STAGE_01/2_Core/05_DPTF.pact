@@ -1747,7 +1747,10 @@
     ;;  ToggleFeeLock STOA leg: the unlock price rail (0.0 when locking); mirrors the STOA amount
     ;;  C_ToggleFeeLock collects (= (at 1 (UC_UnlockPrice (UR_FeeUnlocks id)))). Pure — no mutation.
     (defun URCi_ToggleFeeLockStoa:decimal (id:string toggle:bool)
-        (let ((ref-U|DPTF:module{UtilityDptfV2} U|DPTF))
+        (let
+            (
+                (ref-U|DPTF:module{UtilityDptfV2} U|DPTF)
+            )
             (if toggle 0.0 (at 1 (ref-U|DPTF::UC_UnlockPrice (UR_FeeUnlocks id))))
         )
     )

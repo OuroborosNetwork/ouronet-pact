@@ -2535,7 +2535,10 @@
     )
     (defun URC_0031:[object] (apollo-accounts:[string])
         @doc "Map PYTHIA.UR_ApiKeyRowOrNull over each Apollo account string (₱./Π.)."
-        (let ((ref-PYTHIA:module{PythiaV5} PYTHIA))
+        (let
+            (
+                (ref-PYTHIA:module{PythiaV5} PYTHIA)
+            )
             (map
                 (lambda (apollo-account:string)
                     (ref-PYTHIA::UR_ApiKeyRowOrNull apollo-account)
@@ -2764,7 +2767,10 @@
     )
     (defun URC_0033_DualApiKeyMapper:[object] (dual-api-keys:[string])
         @doc "Map PYTHIA.UR_DualLinkRowOrNull over each dual-API key (Standard|Smart composite)."
-        (let ((ref-PYTHIA:module{PythiaV5} PYTHIA))
+        (let
+            (
+                (ref-PYTHIA:module{PythiaV5} PYTHIA)
+            )
             (map
                 (lambda (dual-api-key:string)
                     (ref-PYTHIA::UR_DualLinkRowOrNull dual-api-key)

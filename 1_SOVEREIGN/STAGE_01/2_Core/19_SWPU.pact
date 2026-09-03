@@ -893,7 +893,10 @@
         (swpair:string toggle:bool)
         @doc "Cost preview for C_ToggleSwapCapability: delegates to SWP's add-or-swap toggle \
             \ cost (add-or-swap = false)."
-        (let ((ref-SWP:module{SwapperV4} SWP))
+        (let
+            (
+                (ref-SWP:module{SwapperV4} SWP)
+            )
             (ref-SWP::URCi_ToggleAddOrSwap swpair toggle false)
         )
     )

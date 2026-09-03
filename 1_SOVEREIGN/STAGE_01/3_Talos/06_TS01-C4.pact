@@ -274,7 +274,10 @@
     (defun A_PYTHIA|Link:string (standard-apollo:string smart-apollo:string)
         @doc "Cronoton activates dual link after off-chain Apollo proof (no fee)."
         (with-capability (P|TS)
-            (let ((ref-PYTHIA:module{PythiaV5} PYTHIA))
+            (let
+                (
+                    (ref-PYTHIA:module{PythiaV5} PYTHIA)
+                )
                 (ref-PYTHIA::A_LinkDualApiKey standard-apollo smart-apollo)
             )
         )
@@ -305,7 +308,10 @@
     (defun A_PYTHIA|UpdateDeployPrice:string (new-price:decimal)
         @doc "Updates the PYTHIA Codex/Apollo deploy price (no fee)."
         (with-capability (P|TS)
-            (let ((ref-PYTHIA:module{PythiaV5} PYTHIA))
+            (let
+                (
+                    (ref-PYTHIA:module{PythiaV5} PYTHIA)
+                )
                 (ref-PYTHIA::A_UpdateDeployPrice new-price)
             )
         )
@@ -313,7 +319,10 @@
     (defun A_PYTHIA|UpdateRenamePrice:string (new-price:decimal)
         @doc "Updates the PYTHIA Codex/Apollo rename price (no fee)."
         (with-capability (P|TS)
-            (let ((ref-PYTHIA:module{PythiaV5} PYTHIA))
+            (let
+                (
+                    (ref-PYTHIA:module{PythiaV5} PYTHIA)
+                )
                 (ref-PYTHIA::A_UpdateRenamePrice new-price)
             )
         )
@@ -435,7 +444,10 @@
           consumer-lane:string )
         @doc "Both half-owners link deployed Standard+Smart halves into inactive dual row (no fee)."
         (with-capability (P|TS)
-            (let ((ref-PYTHIA:module{PythiaV5} PYTHIA))
+            (let
+                (
+                    (ref-PYTHIA:module{PythiaV5} PYTHIA)
+                )
                 (ref-PYTHIA::C_LinkDualApiKey standard-apollo smart-apollo consumer-lane)
             )
         )
