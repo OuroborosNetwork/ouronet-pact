@@ -58,8 +58,22 @@
     (defconst D-R "Rare Nosferat Earning 0.1 Percent of Nosferatu Movie Profits, and 0.0625 Promile of all Future Movie Profits")
     (defconst D-C "Common Nosferat Earning 0.5 Promile of Nosferatu Movie Profits, and 0.03125 Promile of all Future Movie Profits")
     ;;
-    (defconst TYPE                                      (let ((ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)) (ref-DPDC-UDC::UDC_URI|Type T F F F F F F)))
-    (defconst ZD                                        (let ((ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    (defconst TYPE
+        (let
+            (
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+            )
+            (ref-DPDC-UDC::UDC_URI|Type T F F F F F F)
+        )
+    )
+    (defconst ZD
+        (let
+            (
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+            )
+            (ref-DPDC-UDC::UDC_ZeroURI|Data)
+        )
+    )
     ;;{3.2}  schemas
     ;;
     ;;

@@ -252,10 +252,38 @@
     (defconst BAR                                       (CT_Bar))
     (defconst EOC                                       (CT_EmptyCumulator))
     (defconst TF                                        (at 0 ["True-Fungible"]))
-    (defconst DALOS|SC_NAME                             (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|DALOS|SC_NAME)))
-    (defconst ATS|SC_NAME                               (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|ATS|SC_NAME)))
-    (defconst OUROBOROS|SC_NAME                         (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|OUROBOROS|SC_NAME)))
-    (defconst VST|SC_NAME                               (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|VST|SC_NAME)))
+    (defconst DALOS|SC_NAME
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::GOV|DALOS|SC_NAME)
+        )
+    )
+    (defconst ATS|SC_NAME
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::GOV|ATS|SC_NAME)
+        )
+    )
+    (defconst OUROBOROS|SC_NAME
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::GOV|OUROBOROS|SC_NAME)
+        )
+    )
+    (defconst VST|SC_NAME
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::GOV|VST|SC_NAME)
+        )
+    )
     ;;{3.2}  schemas
     ;;{3.3}  tables
 

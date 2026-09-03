@@ -53,8 +53,22 @@
     (defconst D-L "Golden Bunnies, the most precious Bunnies in the whole of Existance, makes the dreams come true for their Owners")
     (defconst D-C "Born on MultiversX, fled to Ouronet, ready for Unity, primed for Cryptoplasm, the Bunny Collection is here to make your dreams come true.")
     ;;
-    (defconst TYPE                                      (let ((ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)) (ref-DPDC-UDC::UDC_URI|Type T F F F F F F)))
-    (defconst ZD                                        (let ((ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    (defconst TYPE
+        (let
+            (
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+            )
+            (ref-DPDC-UDC::UDC_URI|Type T F F F F F F)
+        )
+    )
+    (defconst ZD
+        (let
+            (
+                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+            )
+            (ref-DPDC-UDC::UDC_ZeroURI|Data)
+        )
+    )
     ;;{3.2}  schemas
     ;;
     ;;

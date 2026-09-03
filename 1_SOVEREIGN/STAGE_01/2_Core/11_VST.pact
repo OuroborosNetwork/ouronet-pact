@@ -298,7 +298,14 @@
     (defconst VST|SC_NAME                               (GOV|VST|SC_NAME))
     (defconst BAR                                       (CT_Bar))
     (defconst EOC                                       (CT_EmptyCumulator))
-    (defconst ATS|SC_NAME                               (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|ATS|SC_NAME)))
+    (defconst ATS|SC_NAME
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::GOV|ATS|SC_NAME)
+        )
+    )
     ;;{3.2}  schemas
     ;;{3.3}  tables
 

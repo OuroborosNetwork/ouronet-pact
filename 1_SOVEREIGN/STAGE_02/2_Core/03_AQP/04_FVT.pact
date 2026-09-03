@@ -7103,7 +7103,14 @@
                                 ;; #10 Tier-1: decrement the member mini-vault too. Clamp at 0 for the global-sweep
                                 ;; case (payout = global available ≥ member available), which zeroes the member vault.
                                 (ma:decimal (UR_FVT-MV|AvailableRewards fvt-id score-entity-id reward-dptf-id))
-                                (new-ma:decimal (let ((m:decimal (- ma payout))) (if (< m 0.0) 0.0 m)))
+                                (new-ma:decimal
+                                    (let
+                                        (
+                                            (m:decimal (- ma payout))
+                                        )
+                                        (if (< m 0.0) 0.0 m)
+                                    )
+                                )
                             )
                             ;; SECURE: granted by WU_RpsGlobal|AvailableRewards / WU_MemberVault|AvailableRewards (underlying W_).
                             (WU_RpsGlobal|AvailableRewards fvt-id reward-dptf-id new-ar)

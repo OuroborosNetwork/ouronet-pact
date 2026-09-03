@@ -503,7 +503,14 @@
     ;;{3.1}  constants
     (defconst BAR                                       (CT_Bar))
     (defconst OF                                        (at 0 ["Orto-Fungible"]))
-    (defconst ATS|SC_NAME                               (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|ATS|SC_NAME)))
+    (defconst ATS|SC_NAME
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::GOV|ATS|SC_NAME)
+        )
+    )
     ;;{3.2}  schemas
     ;;
     (defschema TransmitData
