@@ -105,3 +105,30 @@ each green-gating in-module before the boundary flip.
 **Assets ready for B' execution:** validated RPS module+interface builder (`_fvtasm.py`, loads at
 ~120K gas), call-graph classifier (`_fvtsplit.py`), body extractor (`_fvtgen.py`), cutter
 (`_fvtcut.py`) — all re-point to the wider table scope by editing the `RPS_TBL` set.
+
+---
+
+## Stage 2 complete — module is split-ready (2026-09-03)
+
+After Stages 1/2a/2b (all reward aggregates + fvt-class + owner-konto/mosaic/membership-mode/
+split-mode moved into FVT|T|RewardAggregate), the reward orchestration reads ALL its config from
+RPS-bound tables. Verified under the final 14/3 table assignment:
+
+- RPS-side (14): RPS|Global/Member/User/Stream, MemberVault, MemberUserWeight, ForcedFixCount,
+  ScoreEntityLink, UserPresence, MultipletFamily, RewardAggregate, QualitySplit, AgencyFee,
+  DsaOracleConfig
+- FVT-side (3): FVT|T (thin identity: can-upgrade/can-change-owner/common-denominator/oracle-on),
+  VacateFreeze, SweepProgress
+- **0 functions directly touch both sides** (DAG-clean). Classification: RPS 266 / SEAM 35 /
+  FVT 20 / FREE 88.
+
+**Confirmed deployable sizing:** RPS ≈ 4,576 lines (~17.5% of 2M gas, ~82% headroom) /
+FVT ≈ 1,995 lines (~5%). Both comfortably under cap.
+
+## Stage 3 (the flip) — remaining mechanics
+1. Re-point `_fvtgen`/`_fvtasm`/`_fvtcut` `RPS_TBL` to the 14-table scope + widen the schema/table
+   lists (add RewardAggregate/ScoreEntityLink/MultipletFamily/UserPresence/AgencyFee/QualitySplit/
+   DsaOracleConfig); make interface generation compute the public surface dynamically.
+2. Regenerate `04_RPS.pact` (reward engine, ~4.6k lines); isolated-load-validate (as before).
+3. Cut FVT to the client/vacate shell; rewire `ref-RPS::` + `XE_`; executor deploy-order + IMC.
+4. `Z.repl` + `[6.2.x]` green, numbers unchanged; re-measure.
