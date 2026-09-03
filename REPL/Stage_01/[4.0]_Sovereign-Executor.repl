@@ -777,6 +777,8 @@
         (ref-TS01-C2::C_ORBR|Sublimate patron aozt 1000.0)
         (ref-TS01-C2::C_ORBR|Sublimate patron emma 1000.0)
         (ref-TS01-C2::C_ORBR|Sublimate patron lumy 1000.0)
+        ;; #79 Phase 2: cover the V2 sublimation path (price-aware, 1% fee) — OURO supply is positive here
+        (ref-TS01-C2::C_ORBR|SublimateV2 patron patron 1000.0)
     ]
 )
 
