@@ -195,3 +195,11 @@ hardcoded reward/gas expected value in the `[6.2.x]` suites matches → behavior
 `bash REPL/_fvtrun.sh` (restore `/tmp/FVT_full.pact` → `_fvtgen` → `_fvtasm` → `_fvtflip` →
 `_fvtfacade`). The `_fvt*.py` generators are scratch tooling (not committed); the committed
 artifacts are `04_RPS.pact` + `05_FVT.pact` + the sibling/executor edits.
+
+### Deploy-gas headroom (confirmed post-split)
+REPL `table` gas model measures runtime load-execution, not the chain's size-based deploy
+formula, but it's a useful floor: RPS load-exec **362,174**, FVT **249,972** (cf. ANCHOR 150K /
+SCORE 229K / AQP 202K / VCT 243K). On the size cliff itself (7th-power of tx size, 2M cap at
+~6,635 ln): RPS 5,617 ln → `(5617/6635)^7 × 2M ≈ 624K`; FVT 3,878 ln → `~47K`. Both deploy with
+wide margin. (Executor `[2.3]` cost-echoes were bare `(format …)` — never printed — now wrapped in
+`(print …)` so deploy-gas is observable on every run.)
