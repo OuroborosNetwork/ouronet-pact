@@ -65,5 +65,95 @@
 )
 (print "===^^^===")
 (commit-tx)
+;;================================================================================
+(begin-tx "TX-VSTH-003 - Sleep / Freeze / Hibernate on OURO (self-created links)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-VSTH-003 · 01 · env-sigs (patron) ====
+(print "--- [TX-VSTH-003 · 01 · env-sigs] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+            ]
+        }
+    ]
+)
+;;==== TX-VSTH-003 · 02 · create sleeping/frozen/hibernating links on OURO, then Sleep/Freeze/Hibernate ====
+(print "--- [TX-VSTH-003 · 02 · create links + sleep/freeze/hibernate] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (patron:string KST.ANHD)
+        (ouro-id:string (ref-DALOS::UR_OuroborosID))
+    )
+    ;; patron owns OURO, so it can attach the remaining special links to it (also covers Create*Link)
+    (ref-TS01-C2::C_VST|CreateFrozenLink patron ouro-id)
+    (ref-TS01-C2::C_VST|CreateSleepingLink patron ouro-id)
+    (ref-TS01-C2::C_VST|CreateHibernatingLink patron ouro-id)
+    ;; Sleep 100 OURO over 30 days (single duration in seconds)
+    (ref-TS01-C2::C_VST|Sleep patron patron patron ouro-id 100.0 2592000)
+    ;; Freeze 100 OURO — freeze-output is the ACCOUNT receiving the frozen tokens (patron)
+    (ref-TS01-C2::C_VST|Freeze patron patron patron ouro-id 100.0)
+    ;; Hibernate 100 OURO for 30 days
+    (ref-TS01-C2::C_VST|Hibernate patron patron patron ouro-id 100.0 30)
+    (print "<<TX-VSTH-003>> CreateFrozen/Sleeping/Hibernating + Sleep + Freeze + Hibernate OK")
+)
+(print "===^^^===")
+(commit-tx)
+;;================================================================================
+(begin-tx "TX-VSTH-004 - Unsleep + Awake the matured OURO positions (time advanced)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;; advance block-time well past both the 30-day sleep and hibernation durations
+(env-chain-data { "block-time": (time "2035-01-01T00:00:00Z") })
+;;==== TX-VSTH-004 · 01 · env-sigs (patron) ====
+(print "--- [TX-VSTH-004 · 01 · env-sigs] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+            ]
+        }
+    ]
+)
+;;==== TX-VSTH-004 · 02 · Unsleep + Awake ====
+(print "--- [TX-VSTH-004 · 02 · unsleep + awake matured] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (patron:string KST.ANHD)
+        (ouro-id:string (ref-DALOS::UR_OuroborosID))
+    )
+    ;; Unsleep the sleeping position (nonce 1); Awake the hibernating position (nonce 1)
+    (ref-TS01-C2::C_VST|Unsleep patron patron (ref-DPTF::UR_Sleeping ouro-id) 1)
+    (ref-TS01-C2::C_VST|Awake patron patron (ref-DPTF::UR_Hibernation ouro-id) 1)
+    (print "<<TX-VSTH-004>> C_VST|Unsleep + C_VST|Awake (matured) OK")
+)
+(print "===^^^===")
+(commit-tx)
 (print "")
-(print "=== END FILE vst-harness.repl (Vest/Reserve/Unvest covered) ===")
+(print "=== END FILE vst-harness.repl (Vest/Reserve/Unvest/Sleep/Freeze/Hibernate/Unsleep/Awake) ===")

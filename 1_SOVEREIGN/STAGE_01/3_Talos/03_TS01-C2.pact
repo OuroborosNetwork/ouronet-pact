@@ -1555,7 +1555,7 @@
                 (ref-IGNIS::C_Collect patron
                     (ref-VST::C_Hibernate hibernator target-account dptf amount dayz)
                 )
-                (format "Sucesfully hibernated {} {} on Account {} for a Duration of {} days." [amount dptf sta days])
+                (format "Sucesfully hibernated {} {} on Account {} for a Duration of {} days." [amount dptf sta dayz])
             )
         )
     )
