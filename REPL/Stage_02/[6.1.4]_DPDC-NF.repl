@@ -370,8 +370,52 @@
 )
 (print "===^^^===")
 (commit-tx)
+;;================================================================================
+(begin-tx "TX-NF-009 - DPNF wipes (fund + freeze EMMA/LUMY; owner-forced wipe)")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-NF-009 · 01 · env-sigs (caps) ====
+(print "--- [TX-NF-009 · 01 · env-sigs] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+;;==== TX-NF-009 · 02 · fund/freeze/wipe ====
+(print "--- [TX-NF-009 · 02 · fund/freeze/wipe] ---")
+(let
+    (
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (id:string "CNF-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+    )
+    ;; deploy LUMY's account (role toggle auto-deploys), then fund EMMA (3,4,5,7) and LUMY (8)
+    (ref-TS02-C2::C_DPNF|ToggleUpdateRole patron id lumy true)
+    (ref-TS02-C2::C_DPNF|ToggleUpdateRole patron id lumy false)
+    (ref-TS02-C2::C_DPNF|BulkTransfer patron id [[3 4 5 7]] [[1 1 1 1]] patron [emma] false)
+    (ref-TS02-C2::C_DPNF|BulkTransfer patron id [[8]] [[1]] patron [lumy] false)
+    ;; freeze both accounts (wipe requires a frozen account)
+    (ref-TS02-C2::C_DPNF|ToggleFreezeAccount patron id emma true)
+    (ref-TS02-C2::C_DPNF|ToggleFreezeAccount patron id lumy true)
+    ;; owner-forced wipes on EMMA: single / clean / dirty / heavy (heavy clears the rest)
+    (ref-TS02-C2::C_DPNF|WipeNonce patron id emma 3)
+    (ref-TS02-C2::C_DPNF|WipeClean patron emma id [4])
+    (ref-TS02-C2::C_DPNF|WipeDirty patron emma id [5])
+    (ref-TS02-C2::C_DPNF|WipeHeavy patron emma id)
+    ;; WipePure on LUMY via the computed RemovableNonces object
+    (ref-TS02-C2::C_DPNF|WipePure patron lumy id (ref-DPDC-MNG::URHC_WipePure lumy id false))
+    (map print
+        [
+            (expect "<<TX-NF-009>> EMMA fully wiped (nonce 6 gone)" 0 (ref-DPDC::UR_AccountNonceSupply emma id false 6))
+            (expect "<<TX-NF-009>> LUMY fully wiped (nonce 8 gone)" 0 (ref-DPDC::UR_AccountNonceSupply lumy id false 8))
+            ""
+        ]
+    )
+)
+(print "===^^^===")
+(commit-tx)
 (print "")
-(print "=== END FILE [6.1.4]_DPDC-NF.repl (batches 1-3 + branding + burn) ===")
-;; TODO batch 4 remainder (#100): Wipe{Nonce,Clean,Dirty,Heavy,Pure}, fragments
-;;   (MergeFragments/RepurposeFragments need MakeFragments first).
+(print "=== END FILE [6.1.4]_DPDC-NF.repl (batches 1-4: all except fragments) ===")
+;; TODO batch 5 (#100): fragments (MergeFragments/RepurposeFragments — need EnableNonceFragmentation
+;;   + MakeFragments first).
 (print "")
