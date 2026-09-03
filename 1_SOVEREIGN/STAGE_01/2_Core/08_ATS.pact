@@ -374,9 +374,30 @@
         )
     )
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()                             (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
-    (defun GOV|AutostakeKey ()                          (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|AutostakeKey)))
-    (defun GOV|ATS|SC_NAME ()                           (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|ATS|SC_NAME)))
+    (defun GOV|Demiurgoi ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::GOV|Demiurgoi)
+        )
+    )
+    (defun GOV|AutostakeKey ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::GOV|AutostakeKey)
+        )
+    )
+    (defun GOV|ATS|SC_NAME ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::GOV|ATS|SC_NAME)
+        )
+    )
 
     ;;<=========================================================================>
     ;;{2}  POLICY
@@ -396,7 +417,14 @@
         (compose-capability (SECURE))
     )
     ;;{P5}  functions
-    (defun P|Info ()                                    (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::P|Info)
+        )
+    )
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -913,8 +941,22 @@
     ;;<=========================================================================>
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
-    (defun CT_Bar ()                                    (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
-    (defun CT_EmptyCumulator ()                         (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_EmptyOutputCumulatorV2)))
+    (defun CT_Bar ()
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+            )
+            (ref-U|CT::CT_BAR)
+        )
+    )
+    (defun CT_EmptyCumulator ()
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
+        )
+    )
     ;;
     ;;
     (defun UDC_MakeUnstakeObject:object{UtilityAtsV3.Awo} (atspair:string tm:time)
@@ -1991,52 +2033,132 @@
     ;;[URCi] cost readers — single cost source per op. The C_ returns/bills its URCi; Phase 1.2 INFO
     ;;  previews from the same reader. (HOT-RBT branding/Repurpose forward DPOF costs — no own URCi.)
     (defun URCi_UpdatePendingBranding:object{IgnisCollectorV2.OutputCumulator} (entity-id:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_BrandingCumulator (UR_OwnerKonto entity-id) 5.0))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_BrandingCumulator (UR_OwnerKonto entity-id) 5.0)
+        )
     )
     (defun URCi_RotateOwnership:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto atspair)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto atspair))
+        )
     )
     (defun URCi_Control:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_BigCumulator (UR_OwnerKonto atspair)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_BigCumulator (UR_OwnerKonto atspair))
+        )
     )
     (defun URCi_UpdateRoyalty:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_SmallCumulator (UR_OwnerKonto atspair)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_SmallCumulator (UR_OwnerKonto atspair))
+        )
     )
     (defun URCi_UpdateSyphon:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_SmallCumulator (UR_OwnerKonto atspair)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_SmallCumulator (UR_OwnerKonto atspair))
+        )
     )
     (defun URCi_SetHibernationFees:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_SmallCumulator (UR_OwnerKonto atspair)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_SmallCumulator (UR_OwnerKonto atspair))
+        )
     )
     (defun URCi_ControlColdRecoveryFees:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_MediumCumulator (UR_OwnerKonto atspair)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_MediumCumulator (UR_OwnerKonto atspair))
+        )
     )
     (defun URCi_SetColdRecoveryDuration:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_SmallCumulator (UR_OwnerKonto atspair)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_SmallCumulator (UR_OwnerKonto atspair))
+        )
     )
     (defun URCi_ToggleElite:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_SmallCumulator (UR_OwnerKonto atspair)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_SmallCumulator (UR_OwnerKonto atspair))
+        )
     )
     (defun URCi_ToggleUpgrade:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_SmallCumulator (UR_OwnerKonto atspair)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_SmallCumulator (UR_OwnerKonto atspair))
+        )
     )
     (defun URCi_SwitchColdRecovery:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto atspair)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto atspair))
+        )
     )
     (defun URCi_ControlHotRecoveryFee:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_MediumCumulator (UR_OwnerKonto atspair)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_MediumCumulator (UR_OwnerKonto atspair))
+        )
     )
     (defun URCi_SetHotRecoveryFees:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto atspair)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto atspair))
+        )
     )
     (defun URCi_SwitchHotRecovery:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto atspair)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto atspair))
+        )
     )
     (defun URCi_SetDirectRecoveryFee:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto atspair)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto atspair))
+        )
     )
     (defun URCi_SwitchDirectRecovery:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto atspair)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto atspair))
+        )
     )
     ;;  Construct-with-price (pure): also reused for C_AddHotRBT's ico0 (identical token-issue construct).
     (defun URCi_AddSecondary:object{IgnisCollectorV2.OutputCumulator} ()
@@ -2093,13 +2215,28 @@
     )
     ;;  Issue/UpgradeBranding: :decimal price rails (cumulator output / write side-effect stays in the C_/XI).
     (defun URCi_IssueGas:decimal (token-count:integer)
-        (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (* (dec token-count) (ref-DALOS::UR_UsagePrice "ignis|ats-issue")))
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (* (dec token-count) (ref-DALOS::UR_UsagePrice "ignis|ats-issue"))
+        )
     )
     (defun URCi_IssueStoa:decimal (token-count:integer)
-        (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (* (dec token-count) (ref-DALOS::UR_UsagePrice "ats")))
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (* (dec token-count) (ref-DALOS::UR_UsagePrice "ats"))
+        )
     )
     (defun URCi_UpgradeBranding:decimal (months:integer)
-        (let ((ref-BRD:module{BrandingV2} BRD)) (ref-BRD::URCi_UpgradeBranding months))
+        (let
+            (
+                (ref-BRD:module{BrandingV2} BRD)
+            )
+            (ref-BRD::URCi_UpgradeBranding months)
+        )
     )
     ;;{5.4}  Validate [UEV/CAP]
     (defun UEV_id (atspair:string)

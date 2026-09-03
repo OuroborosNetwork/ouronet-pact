@@ -286,7 +286,14 @@
     (defcap GOV ()                                      (compose-capability (GOV|AQP_ADMIN)))
     (defcap GOV|AQP_ADMIN ()                            (enforce-guard GOV|MD_AQP))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()                             (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::GOV|Demiurgoi)
+        )
+    )
 
     ;;<=========================================================================>
     ;;{2}  POLICY
@@ -310,7 +317,14 @@
         (compose-capability (SECURE))
     )
     ;;{P5}  functions
-    (defun P|Info ()                                    (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::P|Info)
+        )
+    )
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -838,16 +852,31 @@
     (defun CT_Bar:string
         ()
         @doc "Returns CT_BAR constant."
-        (let ((ref-U|CT:module{OuronetConstantsV2} U|CT))               (ref-U|CT::CT_BAR))
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+            )
+            (ref-U|CT::CT_BAR)
+        )
     )
     (defun CT_EmptyCumulator ()
         @doc "Empty IGNIS OutputCumulator for stub transfer legs."
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_EmptyOutputCumulatorV2))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
+        )
     )
     (defun CT_AqpScName:string
         ()
         @doc "Resolves AQP|SC_NAME from canonical AQP-ANK via interface ref."
-        (let ((ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)) (ref-ANK::GOV|AQP|SC_NAME))
+        (let
+            (
+                (ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)
+            )
+            (ref-ANK::GOV|AQP|SC_NAME)
+        )
     )
     ;;
     ;; [UDC] construct
@@ -2037,22 +2066,57 @@
     )
     ;; [URCi]   cost readers — single source for exec billing + INFO preview (config/sync)
     (defun URCi_Issue:object{IgnisCollectorV2.OutputCumulator} (output:[string])
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ISSUE-POOL AQP|SC_NAME (r::URC_IsVirtualGasZero) output)))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator GAS|ISSUE-POOL AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
+        ))
     (defun URCi_IssueStoa:decimal ()
-        (let ((d:module{OuronetDalosV2} DALOS)) (d::UR_UsagePrice "smart")))
+        (let
+            (
+                (d:module{OuronetDalosV2} DALOS)
+            )
+            (d::UR_UsagePrice "smart")
+        ))
     (defun URCi_AddScore:object{IgnisCollectorV2.OutputCumulator} (output:[string])
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ADD-SCORE AQP|SC_NAME (r::URC_IsVirtualGasZero) output)))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator GAS|ADD-SCORE AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
+        ))
     (defun URCi_RevokeScore:object{IgnisCollectorV2.OutputCumulator} (output:[string])
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|REVOKE-SCORE AQP|SC_NAME (r::URC_IsVirtualGasZero) output)))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator GAS|REVOKE-SCORE AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
+        ))
     (defun URCi_SetPoolStake:object{IgnisCollectorV2.OutputCumulator} (output:[string])
         @doc "GAS|SET-POOL-STAKE (shared by Enable / Disable pool-stake)."
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|SET-POOL-STAKE AQP|SC_NAME (r::URC_IsVirtualGasZero) output)))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator GAS|SET-POOL-STAKE AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
+        ))
     (defun URCi_SyncTrueFungibleAnchors:object{IgnisCollectorV2.OutputCumulator} (output:[string])
         @doc "GAS|SYNC-TF-ANCHORS gas leg; exec concats it with the anchor-repair + meta legs (state-dependent)."
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|SYNC-TF-ANCHORS AQP|SC_NAME (r::URC_IsVirtualGasZero) output)))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator GAS|SYNC-TF-ANCHORS AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
+        ))
     (defun URCi_SyncCollectableAnchors:object{IgnisCollectorV2.OutputCumulator} (output:[string])
         @doc "GAS|SYNC-COLLECTABLE-ANCHORS gas leg (SF+NF); exec concats it with the anchor-repair + meta legs (state-dependent)."
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|SYNC-COLLECTABLE-ANCHORS AQP|SC_NAME (r::URC_IsVirtualGasZero) output)))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator GAS|SYNC-COLLECTABLE-ANCHORS AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
+        ))
     (defun URCi_SyncTrueFungibleAnchorsFull:decimal (beneficiary-id:string dptf-id:string)
         @doc "FULL reconstructed IGNIS ifp of C_SyncTrueFungibleAnchors: the read-only mirror of the exec's \
             \ UDC_ConcatenateOutputCumulators [ico-ank ico-meta ico-gas]. ico-ank = ANK anchor-refresh (ignis|small \

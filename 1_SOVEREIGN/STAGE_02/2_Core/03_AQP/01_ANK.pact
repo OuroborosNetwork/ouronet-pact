@@ -186,7 +186,12 @@
     ;;{G5}  functions
     (defun GOV|Demiurgoi ()
         @doc "Resolves the governance keyset from DALOS."
-        (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi))
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::GOV|Demiurgoi)
+        )
     )
     (defun GOV|AqpKey ()
         @doc "Governance keyset name for the AQP smart account (canonical — sibling AQP modules ref AQP-ANK)."
@@ -221,7 +226,12 @@
     ;;{P5}  functions
     (defun P|Info ()
         @doc "Returns policy metadata key from DALOS policy module."
-        (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info))
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::P|Info)
+        )
     )
     (defun P|UR:guard (policy-name:string)
         @doc "Reads one policy guard by policy name."
@@ -667,11 +677,21 @@
     ;;{5.1}  Construct [CT/UDC]
     (defun CT_Namespace ()
         @doc "Namespace prefix for AQP governance keyset name."
-        (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_NS_USE))
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+            )
+            (ref-U|CT::CT_NS_USE)
+        )
     )
     (defun CT_Bar ()
         @doc "Returns CT_BAR constant."
-        (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR))
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+            )
+            (ref-U|CT::CT_BAR)
+        )
     )
     ;;
     ;; [UDC] construct

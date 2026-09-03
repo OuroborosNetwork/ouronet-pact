@@ -127,7 +127,14 @@
     (defcap GOV ()                                      (compose-capability (GOV|AQP_BOOT_ADMIN)))
     (defcap GOV|AQP_BOOT_ADMIN ()                       (enforce-guard GOV|MD_AQP-BOOT))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()                             (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::GOV|Demiurgoi)
+        )
+    )
 
     ;;<=========================================================================>
     ;;{2}  POLICY

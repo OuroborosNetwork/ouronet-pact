@@ -324,7 +324,14 @@
     (defcap GOV ()                                      (compose-capability (GOV|FVT_ADMIN)))
     (defcap GOV|FVT_ADMIN ()                            (enforce-guard GOV|MD_FVT))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()                             (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::GOV|Demiurgoi)
+        )
+    )
 
     ;;<=========================================================================>
     ;;{2}  POLICY
@@ -350,7 +357,14 @@
         (compose-capability (SECURE))
     )
     ;;{P5}  functions
-    (defun P|Info ()                                    (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::P|Info)
+        )
+    )
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -1325,12 +1339,22 @@
     ;;{5.1}  Construct [CT/UDC]
     (defun CT_Bar ()
         @doc "Returns CT_BAR constant."
-        (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR))
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+            )
+            (ref-U|CT::CT_BAR)
+        )
     )
     (defun CT_AqpScName:string
         ()
         @doc "Resolves AQP|SC_NAME from canonical AQP-ANK via interface ref."
-        (let ((ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)) (ref-ANK::GOV|AQP|SC_NAME))
+        (let
+            (
+                (ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)
+            )
+            (ref-ANK::GOV|AQP|SC_NAME)
+        )
     )
     ;;
     ;; [UDC] construct
@@ -3113,40 +3137,120 @@
     )
     ;; [URCi]   cost readers — single source for exec billing + INFO preview
     (defun URCi_Issue:object{IgnisCollectorV2.OutputCumulator} (owner-konto:string output:[string])
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ISSUE-FVT owner-konto (r::URC_IsVirtualGasZero) output)))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator GAS|ISSUE-FVT owner-konto (r::URC_IsVirtualGasZero) output)
+        ))
     (defun URCi_IssueStoa:decimal ()
-        (let ((d:module{OuronetDalosV2} DALOS)) (d::UR_UsagePrice "smart")))
+        (let
+            (
+                (d:module{OuronetDalosV2} DALOS)
+            )
+            (d::UR_UsagePrice "smart")
+        ))
     (defun URCi_RotateOwnership:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string)
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_MediumCumulator (UR_FVT|OwnerKonto fvt-id))))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_MediumCumulator (UR_FVT|OwnerKonto fvt-id))
+        ))
     (defun URCi_Control:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string)
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_MediumCumulator (UR_FVT|OwnerKonto fvt-id))))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_MediumCumulator (UR_FVT|OwnerKonto fvt-id))
+        ))
     (defun URCi_SetCommonDenominator:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string])
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|SET-COMMON-DENOMINATOR (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator GAS|SET-COMMON-DENOMINATOR (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)
+        ))
     (defun URCi_SetMosaic:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string])
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|SET-MOSAIC (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator GAS|SET-MOSAIC (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)
+        ))
     (defun URCi_SetSplitMode:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string])
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|SET-SPLIT-MODE (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator GAS|SET-SPLIT-MODE (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)
+        ))
     (defun URCi_AddScoreEntity:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string])
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ADD-SCORE-ENTITY (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator GAS|ADD-SCORE-ENTITY (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)
+        ))
     (defun URCi_ToggleScoreEntityLink:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string])
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|TOGGLE-SCORE-ENTITY-LINK (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator GAS|TOGGLE-SCORE-ENTITY-LINK (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)
+        ))
     (defun URCi_IssueMultipletFamily:object{IgnisCollectorV2.OutputCumulator} (patron:string output:[string])
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ISSUE-MULTIPLET-FAMILY patron (r::URC_IsVirtualGasZero) output)))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator GAS|ISSUE-MULTIPLET-FAMILY patron (r::URC_IsVirtualGasZero) output)
+        ))
     (defun URCi_AddRewardLink:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string])
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ADD-REWARD-LINK (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator GAS|ADD-REWARD-LINK (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)
+        ))
     (defun URCi_ToggleRewardLink:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string])
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|TOGGLE-REWARD-LINK (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator GAS|TOGGLE-REWARD-LINK (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)
+        ))
     (defun URCi_SetQualitySplit:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string])
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|SET-QUALITY-SPLIT (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator GAS|SET-QUALITY-SPLIT (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)
+        ))
     (defun URCi_Inject:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string])
         @doc "GAS|INJECT gas leg (konto = FVT owner); shared by instant inject, stream inject, and inject-finalize."
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|INJECT (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator GAS|INJECT (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)
+        ))
     (defun URCi_UnstaleMyScores:object{IgnisCollectorV2.OutputCumulator} (patron:string output:[string])
         @doc "GAS|UNSTALE gas leg (konto = patron); exec concats it with the per-fvt unstale walk."
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|UNSTALE patron (r::URC_IsVirtualGasZero) output)))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator GAS|UNSTALE patron (r::URC_IsVirtualGasZero) output)
+        ))
     (defun URCi_Collect:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string])
         @doc "GAS|COLLECT gas leg (konto = FVT owner); exec concats it with the forced-fix penalty leg and (triplet) the ATS ladder legs."
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|COLLECT (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator GAS|COLLECT (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)
+        ))
     ;; [URCi]   DSA royalty-disposal CUSTODY-move ifp readers — read-only mirror of the XE_*Royalty custody legs
     ;;   (the DSA A_*Royalty exec concats URCi_*Royalty gas leg with the FVT XE_*Royalty custody cumulator).
     ;;   The disposal amount/token are reconstructed from the live royalty pool balance + IGNIS-normalize decision.

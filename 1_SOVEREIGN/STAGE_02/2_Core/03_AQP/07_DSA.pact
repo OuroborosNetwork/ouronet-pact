@@ -132,7 +132,14 @@
         )
     )
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()                             (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::GOV|Demiurgoi)
+        )
+    )
 
     ;;<=========================================================================>
     ;;{2}  POLICY
@@ -159,7 +166,14 @@
         (compose-capability (P|DSA|CALLER))
     )
     ;;{P5}  functions
-    (defun P|Info ()                                    (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::P|Info)
+        )
+    )
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -431,8 +445,22 @@
     ;;<=========================================================================>
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
-    (defun CT_Bar ()                                    (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
-    (defun CT_EmptyCumulator ()                         (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_EmptyOutputCumulatorV2)))
+    (defun CT_Bar ()
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+            )
+            (ref-U|CT::CT_BAR)
+        )
+    )
+    (defun CT_EmptyCumulator ()
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
+        )
+    )
     ;;
     ;; [UDC] construct
     (defun UDC_DSA|Template:object{DSA|Template}
@@ -551,25 +579,65 @@
     ;; [URCi]   cost readers — single source for exec billing + INFO preview
     ;;   (flat GAS legs; the 3 royalty readers return the GAS leg the exec concats with the custody-move XE_)
     (defun URCi_DefineDelegationVault:object{IgnisCollectorV2.OutputCumulator} (patron:string output:[string])
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|DEFINE-VAULT patron (r::URC_IsVirtualGasZero) output)))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator GAS|DEFINE-VAULT patron (r::URC_IsVirtualGasZero) output)
+        ))
     (defun URCi_OpenAgency:object{IgnisCollectorV2.OutputCumulator} (patron:string output:[string])
         @doc "GAS leg for the core admit (C_AdmitAgency); the Talos open flow additionally stakes operator collateral."
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|OPEN-AGENCY patron (r::URC_IsVirtualGasZero) output)))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator GAS|OPEN-AGENCY patron (r::URC_IsVirtualGasZero) output)
+        ))
     (defun URCi_RecomputeCapture:object{IgnisCollectorV2.OutputCumulator} (patron:string output:[string])
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|RECOMPUTE-CAPTURE patron (r::URC_IsVirtualGasZero) output)))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator GAS|RECOMPUTE-CAPTURE patron (r::URC_IsVirtualGasZero) output)
+        ))
     (defun URCi_SetOracleAuth:object{IgnisCollectorV2.OutputCumulator} (patron:string output:[string])
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|SET-ORACLE-AUTH patron (r::URC_IsVirtualGasZero) output)))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator GAS|SET-ORACLE-AUTH patron (r::URC_IsVirtualGasZero) output)
+        ))
     (defun URCi_OracleWrite:object{IgnisCollectorV2.OutputCumulator} (patron:string output:[string])
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ORACLE-WRITE patron (r::URC_IsVirtualGasZero) output)))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator GAS|ORACLE-WRITE patron (r::URC_IsVirtualGasZero) output)
+        ))
     (defun URCi_WithdrawRoyalty:object{IgnisCollectorV2.OutputCumulator} (patron:string output:[string])
         @doc "GAS leg only; exec concats this with the custody-move IGNIS (FVT::XE_WithdrawRoyalty, state-dependent)."
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|WITHDRAW-ROYALTY patron (r::URC_IsVirtualGasZero) output)))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator GAS|WITHDRAW-ROYALTY patron (r::URC_IsVirtualGasZero) output)
+        ))
     (defun URCi_BurnRoyalty:object{IgnisCollectorV2.OutputCumulator} (patron:string output:[string])
         @doc "GAS leg only; exec concats this with the burn's IGNIS (FVT::XE_BurnRoyalty, state-dependent)."
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|BURN-ROYALTY patron (r::URC_IsVirtualGasZero) output)))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator GAS|BURN-ROYALTY patron (r::URC_IsVirtualGasZero) output)
+        ))
     (defun URCi_FuelRoyalty:object{IgnisCollectorV2.OutputCumulator} (patron:string output:[string])
         @doc "GAS leg only; exec concats this with the fuel's IGNIS (FVT::XE_FuelRoyalty, state-dependent)."
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|FUEL-ROYALTY patron (r::URC_IsVirtualGasZero) output)))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator GAS|FUEL-ROYALTY patron (r::URC_IsVirtualGasZero) output)
+        ))
     (defun URCi_WithdrawRoyaltyFull:decimal (patron:string fvt-id:string reward-dptf-id:string)
         @doc "FULL reconstructed IGNIS ifp of A_WithdrawRoyalty: GAS|WITHDRAW-ROYALTY gas leg + the FVT custody-move \
             \ leg (FVT::URCi_WithdrawRoyaltyCustody mirroring XE_WithdrawRoyalty to the FVT owner). Read-only mirror \
@@ -602,7 +670,12 @@
             (+ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (URCi_FuelRoyalty patron [fvt-id]))
                (ref-FVT::URCi_FuelRoyaltyCustody fvt-id reward-dptf-id swpair))))
     (defun URCi_SetAgencyFee:object{IgnisCollectorV2.OutputCumulator} (patron:string output:[string])
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|SET-AGENCY-FEE patron (r::URC_IsVirtualGasZero) output)))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator GAS|SET-AGENCY-FEE patron (r::URC_IsVirtualGasZero) output)
+        ))
     ;;{5.4}  Validate [UEV/CAP]
     ;; [UEV] enforce
     (defun UEV_OpenGate:bool (fvt-id:string score-entity-id:string)

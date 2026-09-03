@@ -136,7 +136,14 @@
     ;;{5.1}  Construct [CT/UDC]
     ;;
     ;;
-    (defun CT_Bar ()                                    (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_Bar ()
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+            )
+            (ref-U|CT::CT_BAR)
+        )
+    )
     (defun UDCx_ExtendChain:object{BreadthFirstSearchV2.QE} (input:object{BreadthFirstSearchV2.QE} element:string)
         @doc "Extends a Que Element with a new element"
         (let

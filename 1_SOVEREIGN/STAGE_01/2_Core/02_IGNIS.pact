@@ -247,7 +247,14 @@
     (defcap GOV ()                                      (compose-capability (GOV|IGNIS_ADMIN)))
     (defcap GOV|IGNIS_ADMIN ()                          (enforce-guard GOV|MD_IGNIS))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()                             (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::GOV|Demiurgoi)
+        )
+    )
 
     ;;<=========================================================================>
     ;;{2}  POLICY
@@ -268,7 +275,14 @@
         (compose-capability (SECURE))
     )
     ;;{P5}  functions
-    (defun P|Info ()                                    (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::P|Info)
+        )
+    )
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -427,8 +441,22 @@
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
     ;;
-    (defun CT_Bar ()                                    (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
-    (defun CT_StoaPrec ()                               (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_STOA_PRECISION)))
+    (defun CT_Bar ()
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+            )
+            (ref-U|CT::CT_BAR)
+        )
+    )
+    (defun CT_StoaPrec ()
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+            )
+            (ref-U|CT::CT_STOA_PRECISION)
+        )
+    )
     (defun UDC_EmptyOutputCumulatorV2:object{IgnisCollectorV2.OutputCumulator} ()
         {"cumulator-chain"      :
             [
@@ -1049,10 +1077,20 @@
     )
     ;;  STOA-billed DALOS ops: the URCi returns the native fair price (the tier "key" single-sourced)
     (defun DALOS|URCi_DeploySmartAccount:decimal ()
-        (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::UR_UsagePrice "smart"))
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::UR_UsagePrice "smart")
+        )
     )
     (defun DALOS|URCi_DeployStandardAccount:decimal ()
-        (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::UR_UsagePrice "standard"))
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::UR_UsagePrice "standard")
+        )
     )
     (defun OI|UR_StoaTargets:[string] ()
         (let

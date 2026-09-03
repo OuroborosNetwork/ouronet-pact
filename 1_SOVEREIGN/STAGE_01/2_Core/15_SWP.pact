@@ -210,9 +210,30 @@
     )
     ;;{G5}  functions
     ;;
-    (defun GOV|Demiurgoi ()                             (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
-    (defun GOV|SwapKey ()                               (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|SwapKey)))
-    (defun GOV|SWP|SC_NAME ()                           (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|SWP|SC_NAME)))
+    (defun GOV|Demiurgoi ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::GOV|Demiurgoi)
+        )
+    )
+    (defun GOV|SwapKey ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::GOV|SwapKey)
+        )
+    )
+    (defun GOV|SWP|SC_NAME ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::GOV|SWP|SC_NAME)
+        )
+    )
 
     ;;<=========================================================================>
     ;;{2}  POLICY
@@ -236,7 +257,14 @@
         (compose-capability (SWP|GOV))
     )
     ;;{P5}  functions
-    (defun P|Info ()                                    (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::P|Info)
+        )
+    )
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -768,8 +796,22 @@
     ;;<=========================================================================>
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
-    (defun CT_Bar ()                                    (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
-    (defun CT_EmptyCumulator ()                         (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_EmptyOutputCumulatorV2)))
+    (defun CT_Bar ()
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+            )
+            (ref-U|CT::CT_BAR)
+        )
+    )
+    (defun CT_EmptyCumulator ()
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
+        )
+    )
     (defun CT_Info ()                                   (at 0 ["SwapperInformation"]))
     ;;{5.2}  Compute [UC]
     (defun UC_ExtractTokens:[string] (input:[object{SwapperV4.PoolTokens}])
@@ -1193,25 +1235,60 @@
     ;;
     ;;[URCi] cost readers — single cost source per op. Enable*/ToggleAddOrSwap composers -> Phase 1.2.
     (defun URCi_UpdatePendingBranding:object{IgnisCollectorV2.OutputCumulator} (entity-id:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_BrandingCumulator (UR_OwnerKonto entity-id) 4.0))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_BrandingCumulator (UR_OwnerKonto entity-id) 4.0)
+        )
     )
     (defun URCi_ChangeOwnership:object{IgnisCollectorV2.OutputCumulator} (swpair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto swpair)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto swpair))
+        )
     )
     (defun URCi_ModifyCanChangeOwner:object{IgnisCollectorV2.OutputCumulator} (swpair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto swpair)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto swpair))
+        )
     )
     (defun URCi_ModifyWeights:object{IgnisCollectorV2.OutputCumulator} (swpair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto swpair)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto swpair))
+        )
     )
     (defun URCi_UpdateAmplifier:object{IgnisCollectorV2.OutputCumulator} (swpair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_MediumCumulator (UR_OwnerKonto swpair)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_MediumCumulator (UR_OwnerKonto swpair))
+        )
     )
     (defun URCi_UpdateFee:object{IgnisCollectorV2.OutputCumulator} (swpair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_SmallCumulator (UR_OwnerKonto swpair)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_SmallCumulator (UR_OwnerKonto swpair))
+        )
     )
     (defun URCi_UpdateSpecialFeeTargets:object{IgnisCollectorV2.OutputCumulator} (swpair:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_MediumCumulator (UR_OwnerKonto swpair)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_MediumCumulator (UR_OwnerKonto swpair))
+        )
     )
     (defun URCi_ToggleFeeLock:object{IgnisCollectorV2.OutputCumulator} (swpair:string toggle:bool)
         (let
@@ -1227,7 +1304,12 @@
         )
     )
     (defun URCi_UpgradeBranding:decimal (months:integer)
-        (let ((ref-BRD:module{BrandingV2} BRD)) (ref-BRD::URCi_UpgradeBranding months))
+        (let
+            (
+                (ref-BRD:module{BrandingV2} BRD)
+            )
+            (ref-BRD::URCi_UpgradeBranding months)
+        )
     )
     (defun URCi_EnableFrozenLP:object{IgnisCollectorV2.OutputCumulator}
         (patron:string swpair:string)

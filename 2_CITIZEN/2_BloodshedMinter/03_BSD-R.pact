@@ -19,7 +19,14 @@
     (defcap GOV ()                                      (compose-capability (GOV|BLOODSHED-R_ADMIN)))
     (defcap GOV|BLOODSHED-R_ADMIN ()                    (enforce-guard GOV|MD_BLOODSHED-R))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()                             (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::GOV|Demiurgoi)
+        )
+    )
 
     ;;<=========================================================================>
     ;;{2}  POLICY
@@ -136,7 +143,14 @@
     ;;{5.1}  Construct [CT/UDC]
     ;;
     ;;
-    (defun CT_Bar ()                                    (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_Bar ()
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+            )
+            (ref-U|CT::CT_BAR)
+        )
+    )
     ;;
     (defun UDC_MetaData:object{Bloodshed.MD}
         (a:string b:string c:string d:string e:string f:string g:string h:string i:string)

@@ -1115,7 +1115,12 @@
     ;;   the single source they share with the stake readers. INFO repoints here; execs are unchanged.
     (defun URCi_FinalizeVacate:object{IgnisCollectorV2.OutputCumulator} ()
         @doc "Flat 'ignis|medium' tier on AQP|SC_NAME — single source for C_FinalizeVacate + its INFO preview."
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_MediumCumulator AQP|SC_NAME)))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_MediumCumulator AQP|SC_NAME)
+        ))
     (defun URCi_BatchVacateTrueFungible:decimal
         (pool-id:string dptf-id:string legs:[object{VCT|VacateTfLeg}])
         @doc "Variant-A shared cost estimator for CCp_BatchVacateTrueFungible. Mirrors \

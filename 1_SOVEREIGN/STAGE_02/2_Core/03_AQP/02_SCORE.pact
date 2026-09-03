@@ -243,7 +243,14 @@
     (defcap GOV ()                                      (compose-capability (GOV|AQP-SCORE_ADMIN)))
     (defcap GOV|AQP-SCORE_ADMIN ()                      (enforce-guard GOV|MD_AQP-SCORE))
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()                             (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::GOV|Demiurgoi)
+        )
+    )
 
     ;;<=========================================================================>
     ;;{2}  POLICY
@@ -263,7 +270,14 @@
         (compose-capability (SECURE))
     )
     ;;{P5}  functions
-    (defun P|Info ()                                    (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::P|Info)
+        )
+    )
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -1310,13 +1324,30 @@
     ;;{5.1}  Construct [CT/UDC]
     (defun CT_Bar ()
         @doc "Returns CT_BAR constant."
-        (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR))
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+            )
+            (ref-U|CT::CT_BAR)
+        )
     )
-    (defun CT_EmptyCumulator ()                         (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_EmptyOutputCumulatorV2)))
+    (defun CT_EmptyCumulator ()
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
+        )
+    )
     (defun CT_AqpScName:string
         ()
         @doc "Resolves AQP|SC_NAME from canonical AQP-ANK via interface ref."
-        (let ((ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)) (ref-ANK::GOV|AQP|SC_NAME))
+        (let
+            (
+                (ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)
+            )
+            (ref-ANK::GOV|AQP|SC_NAME)
+        )
     )
     ;; [UDC] construct
     ;;
@@ -2495,24 +2526,64 @@
     ;; [URCi]   cost readers — single source for exec billing + INFO preview
     (defun URCi_IssueScore:object{IgnisCollectorV2.OutputCumulator} (owner-konto:string output:[string])
         @doc "IGNIS cost for the 5 score-issue ops (flat GAS|ISSUE-SCORE, konto = the new score's owner)."
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ISSUE-SCORE owner-konto (r::URC_IsVirtualGasZero) output)))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator GAS|ISSUE-SCORE owner-konto (r::URC_IsVirtualGasZero) output)
+        ))
     (defun URCi_IssueScoreStoa:decimal ()
         @doc "STOA cost for score-issue: UR_UsagePrice 'smart'."
-        (let ((d:module{OuronetDalosV2} DALOS)) (d::UR_UsagePrice "smart")))
+        (let
+            (
+                (d:module{OuronetDalosV2} DALOS)
+            )
+            (d::UR_UsagePrice "smart")
+        ))
     (defun URCi_RotateOwnership:object{IgnisCollectorV2.OutputCumulator} (score-id:string)
         @doc "Medium tier on the (pre-rotate) score owner."
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_MediumCumulator (UR_SCR|ScoreOwnerKonto score-id))))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_MediumCumulator (UR_SCR|ScoreOwnerKonto score-id))
+        ))
     (defun URCi_Control:object{IgnisCollectorV2.OutputCumulator} (score-id:string)
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_MediumCumulator (UR_SCR|ScoreOwnerKonto score-id))))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_MediumCumulator (UR_SCR|ScoreOwnerKonto score-id))
+        ))
     (defun URCi_CreateBoostClassLink:object{IgnisCollectorV2.OutputCumulator} (score-id:string)
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_BiggestCumulator (UR_SCR|ScoreOwnerKonto score-id))))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_BiggestCumulator (UR_SCR|ScoreOwnerKonto score-id))
+        ))
     (defun URCi_CreateBoostLink:object{IgnisCollectorV2.OutputCumulator} (score-id:string)
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_BiggestCumulator (UR_SCR|ScoreOwnerKonto score-id))))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_BiggestCumulator (UR_SCR|ScoreOwnerKonto score-id))
+        ))
     (defun URCi_EnableDebBoost:object{IgnisCollectorV2.OutputCumulator} (score-id:string)
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_MediumCumulator (UR_SCR|ScoreOwnerKonto score-id))))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_MediumCumulator (UR_SCR|ScoreOwnerKonto score-id))
+        ))
     (defun URCi_IssueTriplet:object{IgnisCollectorV2.OutputCumulator} (silver-score-id:string output:[string])
         @doc "GAS|ISSUE-TRIPLET, konto = the silver score's owner."
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ISSUE-TRIPLET (UR_SCR|ScoreOwnerKonto silver-score-id) (r::URC_IsVirtualGasZero) output)))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator GAS|ISSUE-TRIPLET (UR_SCR|ScoreOwnerKonto silver-score-id) (r::URC_IsVirtualGasZero) output)
+        ))
     (defun URCi_IssueSemiFungibleScoreDefinition:object{IgnisCollectorV2.OutputCumulator} (score-id:string nonces:[integer])
         @doc "IGNIS = |nonces| x UsagePrice('ignis|big'), konto = score owner."
         (let ((r:module{IgnisCollectorV2} IGNIS) (d:module{OuronetDalosV2} DALOS))
@@ -2527,7 +2598,12 @@
             (r::UDC_ConstructOutputCumulator (* (dec (length dpnf-nonce-classes)) (d::UR_UsagePrice "ignis|biggest")) (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])))
     (defun URCi_IssueScoreModel:object{IgnisCollectorV2.OutputCumulator} (patron:string output:[string])
         @doc "GAS|ISSUE-SCORE-MODEL (shared by IssueSingleScoreModel / CombineTripletScoreModel / IssueScoreFromModel)."
-        (let ((r:module{IgnisCollectorV2} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ISSUE-SCORE-MODEL patron (r::URC_IsVirtualGasZero) output)))
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator GAS|ISSUE-SCORE-MODEL patron (r::URC_IsVirtualGasZero) output)
+        ))
     ;;{5.4}  Validate [UEV/CAP]
     ;; [UEV] enforce
     (defun UEV_LpStakeScoreContext

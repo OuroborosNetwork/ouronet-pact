@@ -424,7 +424,14 @@
         )
     )
     ;;{G5}  functions
-    (defun GOV|Demiurgoi ()                             (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::GOV|Demiurgoi)
+        )
+    )
 
     ;;<=========================================================================>
     ;;{2}  POLICY
@@ -444,7 +451,14 @@
         (compose-capability (SECURE))
     )
     ;;{P5}  functions
-    (defun P|Info ()                                    (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::P|Info)
+        )
+    )
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -986,7 +1000,14 @@
     ;;<=========================================================================>
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
-    (defun CT_Bar ()                                    (let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_Bar ()
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+            )
+            (ref-U|CT::CT_BAR)
+        )
+    )
     ;;
     (defun UDC_VerumRoles:object{DPTF|RoleSchema}
         (a:[string] b:[string] c:[string] d:[string] e:[string])
@@ -1516,52 +1537,132 @@
     ;;[URCi] cost readers — the single cost source per client/forward op. The C_/XE_ returns its URCi
     ;;  (billing); Phase 1.2 INFO previews from the same reader. Each == the prior inline cumulator.
     (defun URCi_UpdatePendingBranding:object{IgnisCollectorV2.OutputCumulator} (entity-id:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_BrandingCumulator (UR_Konto entity-id) 1.0))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_BrandingCumulator (UR_Konto entity-id) 1.0)
+        )
     )
     (defun URCi_RotateOwnership:object{IgnisCollectorV2.OutputCumulator} (id:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_BigCumulator (UR_Konto id)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_BigCumulator (UR_Konto id))
+        )
     )
     (defun URCi_Control:object{IgnisCollectorV2.OutputCumulator} (id:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_SmallCumulator (UR_Konto id)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_SmallCumulator (UR_Konto id))
+        )
     )
     (defun URCi_TogglePause:object{IgnisCollectorV2.OutputCumulator} (id:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_MediumCumulator (UR_Konto id)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_MediumCumulator (UR_Konto id))
+        )
     )
     (defun URCi_ToggleReservation:object{IgnisCollectorV2.OutputCumulator} (id:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_MediumCumulator (UR_Konto id)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_MediumCumulator (UR_Konto id))
+        )
     )
     (defun URCi_ToggleFee:object{IgnisCollectorV2.OutputCumulator} (id:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_SmallCumulator (UR_Konto id)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_SmallCumulator (UR_Konto id))
+        )
     )
     (defun URCi_SetMinMove:object{IgnisCollectorV2.OutputCumulator} (id:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_SmallCumulator (UR_Konto id)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_SmallCumulator (UR_Konto id))
+        )
     )
     (defun URCi_SetFee:object{IgnisCollectorV2.OutputCumulator} (id:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_SmallCumulator (UR_Konto id)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_SmallCumulator (UR_Konto id))
+        )
     )
     (defun URCi_SetFeeTarget:object{IgnisCollectorV2.OutputCumulator} (id:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_SmallCumulator (UR_Konto id)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_SmallCumulator (UR_Konto id))
+        )
     )
     (defun URCi_ToggleFreezeAccount:object{IgnisCollectorV2.OutputCumulator} (id:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_BigCumulator (UR_Konto id)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_BigCumulator (UR_Konto id))
+        )
     )
     (defun URCi_ToggleBurnRole:object{IgnisCollectorV2.OutputCumulator} (id:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_BigCumulator (UR_Konto id)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_BigCumulator (UR_Konto id))
+        )
     )
     (defun URCi_ToggleMintRole:object{IgnisCollectorV2.OutputCumulator} (id:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_BigCumulator (UR_Konto id)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_BigCumulator (UR_Konto id))
+        )
     )
     (defun URCi_ToggleFeeExemptionRole:object{IgnisCollectorV2.OutputCumulator} (id:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_BigCumulator (UR_Konto id)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_BigCumulator (UR_Konto id))
+        )
     )
     (defun URCi_ToggleTransferRole:object{IgnisCollectorV2.OutputCumulator} (id:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_BigCumulator (UR_Konto id)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_BigCumulator (UR_Konto id))
+        )
     )
     (defun URCi_WipeSlim:object{IgnisCollectorV2.OutputCumulator} (id:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_BiggestCumulator (UR_Konto id)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_BiggestCumulator (UR_Konto id))
+        )
     )
     (defun URCi_Wipe:object{IgnisCollectorV2.OutputCumulator} (id:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_BiggestCumulator (UR_Konto id)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_BiggestCumulator (UR_Konto id))
+        )
     )
     (defun URCi_Burn:object{IgnisCollectorV2.OutputCumulator} (id:string account:string)
         (let
@@ -1585,7 +1686,12 @@
         )
     )
     (defun URCi_UpdateSpecialTrueFungible:object{IgnisCollectorV2.OutputCumulator} (main-dptf:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_BiggestCumulator (UR_Konto main-dptf)))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_BiggestCumulator (UR_Konto main-dptf))
+        )
     )
     ;;  Group C — pure cost readers whose cumulator/price were previously coupled to a write.
     ;;  ToggleFeeLock: full cumulator, re-derived from fee-unlocks (must be read PRE-increment — see C_).
@@ -1604,19 +1710,39 @@
     )
     ;;  Issue: two native/gas price rails per issued token; the cumulator's output (created IDs) stays in XB_IssueFree.
     (defun URCi_IssueGas:decimal (token-count:integer)
-        (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (* (dec token-count) (ref-DALOS::UR_UsagePrice "ignis|token-issue")))
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (* (dec token-count) (ref-DALOS::UR_UsagePrice "ignis|token-issue"))
+        )
     )
     (defun URCi_IssueStoa:decimal (token-count:integer)
-        (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (* (dec token-count) (ref-DALOS::UR_UsagePrice "dptf")))
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (* (dec token-count) (ref-DALOS::UR_UsagePrice "dptf"))
+        )
     )
     ;;  UpgradeBranding: STOA price is unconditionally months x "blue" (BRD's XE_UpgradeBranding returns the same).
     (defun URCi_UpgradeBranding:decimal (months:integer)
-        (let ((ref-BRD:module{BrandingV2} BRD)) (ref-BRD::URCi_UpgradeBranding months))
+        (let
+            (
+                (ref-BRD:module{BrandingV2} BRD)
+            )
+            (ref-BRD::URCi_UpgradeBranding months)
+        )
     )
     ;;  DeployAccount: CORE C_DeployAccount returns no cumulator; the ignis|small toll is billed
     ;;  by Talos keyed on the deployed account. This reader single-sources that toll for exec + INFO.
     (defun URCi_DeployAccount:object{IgnisCollectorV2.OutputCumulator} (account:string)
-        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UDC_SmallCumulator account))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_SmallCumulator account)
+        )
     )
     ;;  ToggleFeeLock STOA leg: the unlock price rail (0.0 when locking); mirrors the STOA amount
     ;;  C_ToggleFeeLock collects (= (at 1 (UC_UnlockPrice (UR_FeeUnlocks id)))). Pure — no mutation.
