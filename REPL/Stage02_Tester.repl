@@ -113,7 +113,7 @@
 ;;FULL> Launchpad scenario REPL (not AQP)
 ;(load "Stage_02/[5.3]_Launchpad.repl")
 ;;FULL> DPDC integration suite (~1400 lines; DPL-UR StoicPay lives here — use with StageZZ)
-;(load "Stage_02/[6.1]_DPDC.repl")
+(load "Stage_02/[6.1]_DPDC.repl")
 ;;FULL> STOAICO scenario
 ;(load "Stage_02/[6.3]_STOAICO.repl")
 (load "Stage_02/[6.2]_AQP.repl")
