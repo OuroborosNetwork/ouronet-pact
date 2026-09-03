@@ -2624,7 +2624,7 @@
                         (ref-IGNIS::UDC_ConstructOutputCumulator gas-swp-cost SWP|SC_NAME trigger [])
                     )
                 )
-                (ref-IGNIS::C_STOA|Collect patron stoa-costs)
+                (ref-IGNIS::STOA|C_Collect patron stoa-costs)
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3 ico4 ico5] [swpair token-lp])
             )
         )

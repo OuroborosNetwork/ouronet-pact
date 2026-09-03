@@ -2725,7 +2725,7 @@
             (with-capability (ATS|C>UPGRADE-BRD entity-id)
                 (ref-BRD::XE_UpgradeBranding entity-id owner months)
             )
-            (ref-IGNIS::C_STOA|CollectWT patron (URCi_UpgradeBranding months) false)
+            (ref-IGNIS::STOA|C_CollectWT patron (URCi_UpgradeBranding months) false)
         )
     )
     ;;Hot RBT Management
@@ -2816,7 +2816,7 @@
                         (XI_FoldedIssue account atspair index-decimals reward-token rt-nfr reward-bearing-token rbt-nfr)
                     )
                 )
-                (ref-IGNIS::C_STOA|Collect patron stoa-costs)
+                (ref-IGNIS::STOA|C_Collect patron stoa-costs)
                 (ref-IGNIS::UDC_ConstructOutputCumulator gas-costs ATS|SC_NAME trigger ats-ids)
                 
             )
@@ -2904,7 +2904,7 @@
                 (if (> stoa-costs 0.0)
                     (do
                         (XI_IncrementParameterUnlocks atspair)
-                        (ref-IGNIS::C_STOA|Collect patron stoa-costs)
+                        (ref-IGNIS::STOA|C_Collect patron stoa-costs)
                     )
                     true
                 )

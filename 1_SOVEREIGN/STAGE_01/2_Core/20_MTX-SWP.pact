@@ -911,7 +911,7 @@
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico0 ico1] [])
                 )
                 ;;Collect STOA for Issuance
-                (ref-IGNIS::C_STOA|Collect patron stoa-costs)
+                (ref-IGNIS::STOA|C_Collect patron stoa-costs)
                 (let
                     (
                         (ref-ORBR:module{OuroborosV2} OUROBOROS)

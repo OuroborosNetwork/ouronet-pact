@@ -53,7 +53,7 @@
                 (expect "<<ANK>> SF issue ignis-full == 1000" 1000.0 (at "ignis-full" (at "ignis" i-sf)))
                 (expect "<<ANK>> NF issue ignis-full == 1000" 1000.0 (at "ignis-full" (at "ignis" i-nf)))
                 (expect "<<ANK>> NFSet issue ignis-full == 1000" 1000.0 (at "ignis-full" (at "ignis" i-nfs)))
-                ;; STOA: standard × (2 if acnoi else 1) — the exact ANK C_STOA|Collect amount
+                ;; STOA: standard × (2 if acnoi else 1) — the exact ANK STOA|C_Collect amount
                 (expect "<<ANK>> TF issue (link) stoa-full == standard" standard (at "stoa-full" (at "stoa" i-tf-link)))
                 (expect "<<ANK>> TF issue (acnoi) stoa-full == 2×standard" (* 2.0 standard) (at "stoa-full" (at "stoa" i-tf-new)))
                 (expect "<<ANK>> NF issue (acnoi) stoa-full == 2×standard" (* 2.0 standard) (at "stoa-full" (at "stoa" i-nf)))

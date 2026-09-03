@@ -290,7 +290,7 @@
                 (ref-DALOS::C_DeploySmartAccount account guard stoa sovereign public)
                 ;;Collecting IGNIS is moved from DALOS here, due to IGNIS existing after DALOS
                 (if (not (ref-IGNIS::URC_IsNativeGasZero))
-                    (ref-IGNIS::C_STOA|Collect account (ref-IGNIS::DALOS|URCi_DeploySmartAccount))
+                    (ref-IGNIS::STOA|C_Collect account (ref-IGNIS::DALOS|URCi_DeploySmartAccount))
                     true
                 )
                 (ref-TS01-A::XB_DynamicFuelSTOA)
@@ -310,7 +310,7 @@
                 (ref-DALOS::C_DeployStandardAccount account guard stoa public)
                 ;;Collecting IGNIS is moved from DALOS here, due to IGNIS existing after DALOS
                 (if (not (ref-IGNIS::URC_IsNativeGasZero))
-                    (ref-IGNIS::C_STOA|Collect account (ref-IGNIS::DALOS|URCi_DeployStandardAccount))
+                    (ref-IGNIS::STOA|C_Collect account (ref-IGNIS::DALOS|URCi_DeployStandardAccount))
                     true
                 )
                 (ref-TS01-A::XB_DynamicFuelSTOA)

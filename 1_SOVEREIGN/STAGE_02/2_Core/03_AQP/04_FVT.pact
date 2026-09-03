@@ -6209,7 +6209,7 @@
                     (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
-                (ref-IGNIS::C_STOA|Collect patron (URCi_IssueStoa))
+                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueStoa))
                 (XI_IssueFvt fvt-id fvt-class owner-konto common-denominator)
                 (URCi_Issue owner-konto [fvt-id])
             )

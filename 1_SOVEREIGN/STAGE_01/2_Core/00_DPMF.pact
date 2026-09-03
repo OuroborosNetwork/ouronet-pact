@@ -1995,7 +1995,7 @@
                     )
                 )
             )
-            (ref-DALOS::C_STOA|CollectWT patron stoa-payment false)
+            (ref-DALOS::STOA|C_CollectWT patron stoa-payment false)
         )
     )
     ;;
@@ -2109,7 +2109,7 @@
                     )
                 )
             )
-            (ref-DALOS::C_STOA|Collect patron stoa-costs)
+            (ref-DALOS::STOA|C_Collect patron stoa-costs)
             ico
         )
     )

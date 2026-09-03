@@ -228,7 +228,7 @@
     (defun URCi_IssueCollectionStoa:decimal
         (son:bool)
         @doc "STOA side-cost for a digital-collection issue (dpsf for SFT, dpnf for NFT). \
-            \ Single source for C_STOA|Collect and the INFO preview."
+            \ Single source for STOA|C_Collect and the INFO preview."
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -476,7 +476,7 @@
                         )
                     )
                 )
-                (ref-IGNIS::C_STOA|Collect patron stoa-cost)
+                (ref-IGNIS::STOA|C_Collect patron stoa-cost)
                 (ref-IGNIS::UDC_ConstructOutputCumulator ignis-price owner-account trigger [id])
             )
         )

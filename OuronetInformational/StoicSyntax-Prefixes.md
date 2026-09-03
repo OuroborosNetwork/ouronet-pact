@@ -778,3 +778,25 @@ staircase form above.
 *Status:* rule recorded now; the **whole-codebase strip** of these inline/crammed `let` blocks is a tracked
 to-do (a paren-layout normalizer pass — AST-level, beyond the current whitespace-only aligner). `canon_check`
 does not yet flag it.
+
+### 7.17 Entity-scope goes SCOPE-FIRST: `SCOPE|PREFIX_Name` — amendment 2026-09-03
+A leading **CAPITALISED scope + `|`** ties a function to a **logical module / entity**, and it is placed
+**BEFORE** the operation-class prefix — **`SCOPE|PREFIX_Name`**, never `PREFIX_SCOPE|Name`. The pre-bar caps
+name the owning entity; everything after the `|` is the ordinary prefixed function name.
+
+- **Canonical:** `STOA|C_Collect` (the STOA sub-entity's `C_Collect` client fn), `SWP|C_Swap`,
+  `GOV|Demiurgoi`, `GOV|DALOS_ADMIN`, `P|UEV_IMC`, `P|UR_IMP`.
+- **Fixed 2026-09-03:** IGNIS's `C_STOA|Collect` / `C_STOA|CollectWT` / `C_STOA|CollectWTEx` were **prefix-first
+  (wrong)** → renamed to **`STOA|C_Collect` / `STOA|C_CollectWT` / `STOA|C_CollectWTEx`** (definitions in
+  `IgnisCollectorV2` + IGNIS, and all ~48 call sites across 21 files).
+
+**Contrast — a TABLE scope stays *after* the prefix, inside the name.** `UR_SCR|ScoreOwnerKonto` is a `UR_`
+reader whose name is scoped to the `SCR` tables — the `SCR|` here is a table qualifier on the *name*, not an
+owning entity, so it follows the prefix. Rule of thumb: **owning entity → scope-first (`ENTITY|C_Fn`);
+table/name qualifier on a read → prefix-first (`UR_TABLE|Field`).**
+
+> **⚠ Known wider inconsistency (open decision, not yet swept):** the **Talos client/admin wrappers** are
+> pervasively **prefix-first** — `C_DPTF|Issue`, `C_DPNF|Create`, `A_DALOS|ToggleGAP`, … (441 wrappers). Under
+> this rule those are the owning-entity form and *should* be scope-first (`DPTF|C_Issue`, `DPNF|C_Create`,
+> `DALOS|A_ToggleGAP`). Sweeping them is a large rename touching every Talos module, interface, caller, and REPL
+> suite — deferred to an explicit owner-approved pass, not done implicitly. Only the STOA violation is fixed here.

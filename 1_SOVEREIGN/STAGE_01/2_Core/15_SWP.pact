@@ -1936,7 +1936,7 @@
             (with-capability (SWP|C>UPGRADE-BRD entity-id)
                 (ref-BRD::XE_UpgradeBranding entity-id owner months)
             )
-            (ref-IGNIS::C_STOA|CollectWT patron (URCi_UpgradeBranding months) false)
+            (ref-IGNIS::STOA|C_CollectWT patron (URCi_UpgradeBranding months) false)
         )
     )
     ;;
@@ -2136,7 +2136,7 @@
                 (if (> stoa-costs 0.0)
                     (do
                         (XI_IncrementFeeUnlocks swpair)
-                        (ref-IGNIS::C_STOA|Collect patron stoa-costs)
+                        (ref-IGNIS::STOA|C_Collect patron stoa-costs)
                     )
                     true
                 )

@@ -1384,7 +1384,7 @@
             )
             ;;Create DPTF Account
             (ref-DPTF::C_DeployAccount dptf VST|SC_NAME)
-            (ref-IGNIS::C_STOA|Collect patron stoa-costs)
+            (ref-IGNIS::STOA|C_Collect patron stoa-costs)
             (ref-IGNIS::UDC_ConcatenateOutputCumulators 
                 [
                     ico0 
@@ -1447,7 +1447,7 @@
             )
             ;;Create DPTF Account 
             (ref-DPTF::C_DeployAccount dptf VST|SC_NAME)
-            (ref-IGNIS::C_STOA|Collect patron stoa-costs)
+            (ref-IGNIS::STOA|C_Collect patron stoa-costs)
             (ref-IGNIS::UDC_ConcatenateOutputCumulators 
                 [
                     ico0 

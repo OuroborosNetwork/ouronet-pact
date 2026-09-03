@@ -3316,7 +3316,7 @@
 (namespace "ouronet-ns")
 ;;==== HOT-RBT Branding Proof 2|2 · 01 · env-sigs (caps) ==== =====================================
 (print "--- [HOT-RBT Branding Proof 2|2 · 01 · env-sigs (caps)] ---")
-;; C_HOT-RBT|UpgradeBranding -> DPOF::C_UpgradeBranding -> IGNIS::C_STOA|CollectWT -> real coin.TRANSFER
+;; C_HOT-RBT|UpgradeBranding -> DPOF::C_UpgradeBranding -> IGNIS::STOA|C_CollectWT -> real coin.TRANSFER
 ;; (price key "blue", same URC_SplitSTOAPrices 4-way split / 4-target pattern as every other raw-STOA
 ;; payment in this file), followed by TS01-A::XB_DynamicFuelSTOA.
 (let

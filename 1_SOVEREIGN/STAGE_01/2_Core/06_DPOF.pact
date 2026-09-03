@@ -2532,7 +2532,7 @@
             (with-capability (DPOF|C>UPGRADE-BRD entity-id)
                 (ref-BRD::XE_UpgradeBranding entity-id parent-owner months)
             )
-            (ref-IGNIS::C_STOA|CollectWT patron (URCi_UpgradeBranding months) false)
+            (ref-IGNIS::STOA|C_CollectWT patron (URCi_UpgradeBranding months) false)
         )
     )
     ;;
@@ -2561,7 +2561,7 @@
                     )
                 )
             )
-            (ref-IGNIS::C_STOA|Collect patron stoa-costs)
+            (ref-IGNIS::STOA|C_Collect patron stoa-costs)
             ico
         )
     )

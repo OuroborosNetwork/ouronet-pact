@@ -3169,7 +3169,7 @@
                     (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
-                (ref-IGNIS::C_STOA|Collect patron (URCi_IssueStoa))
+                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueStoa))
                 (XI_IssuePool pool-id aqp-class asset-id)
                 (URCi_Issue [pool-id])
             )

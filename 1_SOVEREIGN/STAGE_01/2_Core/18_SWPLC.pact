@@ -845,7 +845,7 @@
                     )
                 )
             )
-            (ref-IGNIS::C_STOA|CollectWT patron stoa-payment false)
+            (ref-IGNIS::STOA|C_CollectWT patron stoa-payment false)
         )
     )
     (defun C_ToggleAddLiquidity:object{IgnisCollectorV2.OutputCumulator}

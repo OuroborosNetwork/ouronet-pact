@@ -115,9 +115,9 @@
     ;;
     (defun C_TransferDalosFuel (sender:string receiver:string amount:decimal))
     (defun C_Collect                                    (patron:string input-output-cumulator:object{OutputCumulator}))
-    (defun C_STOA|Collect (sender:string amount:decimal))
-    (defun C_STOA|CollectWT (sender:string amount:decimal trigger:bool))
-    (defun C_STOA|CollectWTEx (payer:string discount-account:string amount:decimal trigger:bool))
+    (defun STOA|C_Collect (sender:string amount:decimal))
+    (defun STOA|C_CollectWT (sender:string amount:decimal trigger:bool))
+    (defun STOA|C_CollectWTEx (payer:string discount-account:string amount:decimal trigger:bool))
 
 )
 
@@ -1210,13 +1210,13 @@
             )
         )
     )
-    (defun C_STOA|Collect (sender:string amount:decimal)
-        (C_STOA|CollectWT sender amount (URC_IsNativeGasZero))
+    (defun STOA|C_Collect (sender:string amount:decimal)
+        (STOA|C_CollectWT sender amount (URC_IsNativeGasZero))
     )
-    (defun C_STOA|CollectWT (sender:string amount:decimal trigger:bool)
-        (C_STOA|CollectWTEx sender sender amount trigger)
+    (defun STOA|C_CollectWT (sender:string amount:decimal trigger:bool)
+        (STOA|C_CollectWTEx sender sender amount trigger)
     )
-    (defun C_STOA|CollectWTEx (payer:string discount-account:string amount:decimal trigger:bool)
+    (defun STOA|C_CollectWTEx (payer:string discount-account:string amount:decimal trigger:bool)
         @doc "Collect native STOA from payer Stoa account; Elite split from discount-account."
         (let
             (

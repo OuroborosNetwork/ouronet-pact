@@ -320,7 +320,7 @@
         )
     )
     (defun C_CODEX|RegisterStoicTag:string (patron:string tag-name:string account-address:string)
-        @doc "Register StoicTag; STOA from patron Stoa, Elite discount from account-address (C_STOA|CollectWTEx trigger false)."
+        @doc "Register StoicTag; STOA from patron Stoa, Elite discount from account-address (STOA|C_CollectWTEx trigger false)."
         (with-capability (P|TS)
             (let
                 (
@@ -332,7 +332,7 @@
                         (ref-CODEX::C_RegisterStoicTag tag-name account-address)
                     )
                 )
-                (ref-IGNIS|V2::C_STOA|CollectWTEx patron account-address stoa-fee false)
+                (ref-IGNIS|V2::STOA|C_CollectWTEx patron account-address stoa-fee false)
                 msg
             )
         )
@@ -379,7 +379,7 @@
                         )
                     )
                 )
-                (ref-IGNIS|V2::C_STOA|CollectWTEx patron fee-anchor deploy-fee false)
+                (ref-IGNIS|V2::STOA|C_CollectWTEx patron fee-anchor deploy-fee false)
                 msg
             )
         )
@@ -403,7 +403,7 @@
                         )
                     )
                 )
-                (ref-IGNIS|V2::C_STOA|CollectWTEx patron fee-anchor rename-fee false)
+                (ref-IGNIS|V2::STOA|C_CollectWTEx patron fee-anchor rename-fee false)
                 msg
             )
         )
