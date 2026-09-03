@@ -1,0 +1,48 @@
+;;
+;; REPL/Stage_02/[6.1.5]_DEMIPAD.repl — DEMIPAD launchpad Fuel/Retrieve coverage (#79 Phase 1c / #95)
+;;   Canonical integration layout. Reuses the CNF NFT collection from [6.1.4] (owner still holds
+;;   nonce 2) as a known-state NF asset. Registers it to the launchpad, fuels it in, then retrieves.
+;;   TF/OF/SF legs + Withdraw (needs the buy flow) follow in later batches.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[6.1.5]_DEMIPAD.repl  (DEMIPAD launchpad)")
+(print "================================================================")
+(print "")
+
+;;================================================================================
+(begin-tx "TX-DP-001 - register CNF (NF) to launchpad, fuel a nonce, retrieve it")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-DP-001 · 01 · env-sigs (caps) ====
+(print "--- [TX-DP-001 · 01 · env-sigs] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+;;==== TX-DP-001 · 02 · register / fuel / retrieve ====
+(print "--- [TX-DP-001 · 02 · register / fuel / retrieve] ---")
+(let
+    (
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+        (id:string "CNF-98c486052a51")
+        (patron:string KST.ANHD)
+    )
+    ;; NF fungibility flags = [false false]; register deploys the launchpad's NF account for CNF
+    (ref-TS02-DPAD::A_RegisterAssetToLaunchpad patron id [false false])
+    ;; fuel nonce 2 (amount 1) into the launchpad (owner holds CNF nonce 2 from [6.1.4])
+    (ref-TS02-DPAD::C_DEMIPAD|FuelNonFungible patron patron id [2] [1])
+    ;; allow retrieval, then retrieve nonce 2 back to the owner
+    (ref-TS02-DPAD::A_ToggleRetrieval id true)
+    (ref-TS02-DPAD::C_DEMIPAD|RetrieveNonFungible patron patron id [2] [1])
+    (map print
+        [
+            (expect "<<TX-DP-001>> owner holds CNF nonce 2 again after retrieve" 1 (ref-DPDC::UR_AccountNonceSupply patron id false 2))
+            ""
+        ]
+    )
+)
+(print "===^^^===")
+(commit-tx)
+(print "")
+(print "=== END FILE [6.1.5]_DEMIPAD.repl (batch 1: NF fuel/retrieve) ===")
+;; TODO (#101): SF (FuelSemiFungible/RetrieveSemiFungible), OF (FuelOrtoFungible/RetrieveOrtoFungible),
+;;   TF (FuelTrueFungible/RetrieveTrueFungible), Deposit + Withdraw (buy flow), StoicPay gate (StageZZ).

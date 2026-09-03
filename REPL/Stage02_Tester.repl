@@ -55,6 +55,10 @@
 (load "Stage_02/[6.1.3]_DPDC-S.repl")
 ;;DPNF (NFT) client-op coverage — #79 Phase 1b
 (load "Stage_02/[6.1.4]_DPDC-NF.repl")
+;;DEMIPAD launchpad Fuel/Retrieve coverage — #79 Phase 1c (WIP: collectable fuel-to-launchpad
+;;transfer hits a DPDC-T|C>TRANSFER enforce — same cascade that bit-rotted the original launchpad
+;;block; under investigation, disabled to keep the pipeline green)
+;(load "Stage_02/[6.1.5]_DEMIPAD.repl")
 
 ;;CITIZEN DEPLOYER + EXECUTOR
 ;;FULL> Populate scripts — mass DPNF mint; ~minutes each (Nosferatu + Bloodshed worst offenders)
