@@ -38,7 +38,7 @@
     )
     (enforce (> (length nonces) 0) "EMMA needs DHB nonces from PopulateBloodshed")
     (print (format "<(C_StakeNonFungible DHB nonce={})> => \"{}\"" [stake-nonce
-        (ref-TS02-C3::CC_AQP-POOL|StakeNonFungibleCollectable patron pool-id owner beneficiary dhb-id [stake-nonce])
+        (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id owner beneficiary dhb-id [stake-nonce])
     ]))
     (let
         (
@@ -82,7 +82,7 @@
     )
     (enforce (> (length nonces) 0) "EMMA needs DHN nonces from PopulateNosferatu")
     (print (format "<(C_StakeNonFungible DHN nonce={})> => \"{}\"" [stake-nonce
-        (ref-TS02-C3::CC_AQP-POOL|StakeNonFungibleCollectable patron pool-id owner beneficiary dhn-id [stake-nonce])
+        (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id owner beneficiary dhn-id [stake-nonce])
     ]))
     (let
         (
@@ -127,7 +127,7 @@
                 (stake-nonce:integer (at 0 nonces))
             )
             (print (format "<(C_StakeNonFungible KBN bunny nonce={})> => \"{}\"" [stake-nonce
-                (ref-TS02-C3::CC_AQP-POOL|StakeNonFungibleCollectable patron pool-id owner beneficiary kbn-id [stake-nonce])
+                (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id owner beneficiary kbn-id [stake-nonce])
             ]))
             (let
                 (
@@ -174,7 +174,7 @@
     (if (> total-bunnies 0.0)
         (do
             (print (format "<(C_Inject Auryn subsidiary {})> => \"{}\"" [inject-amt
-                (ref-TS02-C3::CC_AQP-FVT|Inject patron fvt-id auryn-id inject-amt)
+                (ref-TS02-C3::AQP-FVT|CC_Inject patron fvt-id auryn-id inject-amt)
             ]))
             (let
                 (
@@ -230,7 +230,7 @@
                 true (contains "Rarity" nonce1-meta))
             (expect-failure
                 (format "<<TX-AQP-NF-NEGDEF>> negative NF trait score value (-1.0) rejected at definition (#19)" [])
-                (ref-TS02-C3::C_AQP-SCR|IssueNonFungibleScoreDefinition patron score-id kbn-id ["Rarity"] ["Common"] [-1.0]))
+                (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScoreDefinition patron score-id kbn-id ["Rarity"] ["Common"] [-1.0]))
         ]
     )
 )
@@ -285,12 +285,12 @@
             }
         ]
     )
-    (print (format "<(C_AQP-SCR|IssueNonFungibleScore M1Probe model=1)> => \"{}\"" [
-        (ref-TS02-C3::C_AQP-SCR|IssueNonFungibleScore patron owner-id "M1Probe" 6 1)]))
+    (print (format "<(AQP-SCR|C_IssueNonFungibleScore M1Probe model=1)> => \"{}\"" [
+        (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron owner-id "M1Probe" 6 1)]))
     ;; trait definitions (IGNIS only → plain ANHD sig)
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (print (format "<(C_AQP-SCR|IssueNonFungibleScoreDefinition Rarity/Background)> => \"{}\"" [
-        (ref-TS02-C3::C_AQP-SCR|IssueNonFungibleScoreDefinition patron score-id kbn-id
+    (print (format "<(AQP-SCR|C_IssueNonFungibleScoreDefinition Rarity/Background)> => \"{}\"" [
+        (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScoreDefinition patron score-id kbn-id
             ["Rarity" "Rarity" "Background"] ["Common" "Legendary" "Movie Set"] [50.0 9999.0 10.0])]))
     ;;==== TX-AQP-M1 · 01 · point-read scoring assertions ====
     (print "--- [TX-AQP-M1 · 01 · point-read scoring assertions] ---")

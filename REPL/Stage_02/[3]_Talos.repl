@@ -107,7 +107,7 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
 ;; CITIZEN launchpad sales — deploy AFTER the sovereign Talos so they can call
-;; C_DEMIPAD|Deposit (TS02-DPAD) + DPSF|/DPTF| (TS02-C1 / TS01) as pure citizens.
+;; DEMIPAD|C_Deposit (TS02-DPAD) + DPSF|/DPTF| (TS02-C1 / TS01) as pure citizens.
 (begin-tx "TX-04 [2.4] - Launchpad CITIZEN sales (Spark/Snakes/Custodians/StoicPay/StoicIco)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")

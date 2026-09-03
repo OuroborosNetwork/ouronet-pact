@@ -483,7 +483,7 @@
         )
     )
     (defun INFO_BuySparks:object{OuronetInfoV2.ClientInfo} (patron:string buyer:string sparks-amount:integer iz-native:bool)
-        @doc "Cost preview for the C_SPARK|BuySparks pure-citizen buy (sole gas-funded path = the \
+        @doc "Cost preview for the SPARK|C_BuySparks pure-citizen buy (sole gas-funded path = the \
             \ TS02-CPAD Talos wrapper). IGNIS = URCi_BuySparks (Sigma of the two Talos ops). Launchpad \
             \ ops carry NO protocol STOA fee; the ACQUISITION cost (dollar pid + STOA wstoa) is declared \
             \ in the description as the good being bought, not a fee-to-execute (protocol stoa = none)."
@@ -500,7 +500,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [ (format "Operation: Buy {} {} Sparks for {} (pure-citizen, Sigma-billed)." [sparks-amount spark-id sb])
                   (format "Acquisition cost: {} $ paid as {} {} (not a protocol fee)." [pid wstoa pay])
-                  "Executes via TS02-CPAD.C_SPARK|BuySparks (the sole gas-funded path)." ]
+                  "Executes via TS02-CPAD.SPARK|C_BuySparks (the sole gas-funded path)." ]
                 [ (format "Acquired {} {} Sparks." [sparks-amount spark-id]) ]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (URCi_BuySparks buyer sparks-amount iz-native))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
@@ -606,17 +606,17 @@
             )
             ;;PURE CITIZEN: six SOVEREIGN Talos ops, each self-collecting IGNIS on patron (Sigma-billed).
             ;;1]Move Wrapped Stoa to Target
-            (ref-TS01-C1::C_DPTF|Transfer patron wstoa-id redemption-payer account-to-redeem redemption-value true)
+            (ref-TS01-C1::DPTF|C_Transfer patron wstoa-id redemption-payer account-to-redeem redemption-value true)
             ;;2]Freeze <account-to-redeem>
-            (ref-TS01-C1::C_DPTF|ToggleFreezeAccount patron spark-id account-to-redeem true)
+            (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron spark-id account-to-redeem true)
             ;;3]Partial Wipe <spark-id>
-            (ref-TS01-C1::C_DPTF|WipeSlim patron spark-id account-to-redeem redemption-quantity)
+            (ref-TS01-C1::DPTF|C_WipeSlim patron spark-id account-to-redeem redemption-quantity)
             ;;4]Unfreeze <account-to-redeem>
-            (ref-TS01-C1::C_DPTF|ToggleFreezeAccount patron spark-id account-to-redeem false)
+            (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron spark-id account-to-redeem false)
             ;;5]Remint wiped amount to <DEMIPAD|SC_NAME>
-            (ref-TS01-C1::C_DPTF|Mint patron spark-id DEMIPAD|SC_NAME redemption-quantity false)
+            (ref-TS01-C1::DPTF|C_Mint patron spark-id DEMIPAD|SC_NAME redemption-quantity false)
             ;;6]Freeze it back to <account-to-redeem>
-            (ref-TS01-C2::C_VST|Freeze patron DEMIPAD|SC_NAME account-to-redeem spark-id redemption-quantity)
+            (ref-TS01-C2::VST|C_Freeze patron DEMIPAD|SC_NAME account-to-redeem spark-id redemption-quantity)
             (format "Succesfully Redeemed {} {} for {} {} on Account {}"
                 [redemption-quantity spark-id redemption-value wstoa-id sa-atr]
             )
@@ -642,17 +642,17 @@
             )
             ;;PURE CITIZEN: six SOVEREIGN Talos ops, each self-collecting IGNIS on patron (Sigma-billed).
             ;;1]Move Wrapped Stoa to Target
-            (ref-TS01-C1::C_DPTF|Transfer patron wstoa-id redemption-payer account-to-redeem redemption-value true)
+            (ref-TS01-C1::DPTF|C_Transfer patron wstoa-id redemption-payer account-to-redeem redemption-value true)
             ;;2]Freeze <account-to-redeem>
-            (ref-TS01-C1::C_DPTF|ToggleFreezeAccount patron spark-id account-to-redeem true)
+            (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron spark-id account-to-redeem true)
             ;;3]Partial Wipe <spark-id>
-            (ref-TS01-C1::C_DPTF|WipeSlim patron spark-id account-to-redeem redemption-quantity)
+            (ref-TS01-C1::DPTF|C_WipeSlim patron spark-id account-to-redeem redemption-quantity)
             ;;4]Unfreeze <account-to-redeem>
-            (ref-TS01-C1::C_DPTF|ToggleFreezeAccount patron spark-id account-to-redeem false)
+            (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron spark-id account-to-redeem false)
             ;;5]Remint wiped amount to <DEMIPAD|SC_NAME>
-            (ref-TS01-C1::C_DPTF|Mint patron spark-id DEMIPAD|SC_NAME redemption-quantity false)
+            (ref-TS01-C1::DPTF|C_Mint patron spark-id DEMIPAD|SC_NAME redemption-quantity false)
             ;;6]Freeze it back to <account-to-redeem>
-            (ref-TS01-C2::C_VST|Freeze patron DEMIPAD|SC_NAME account-to-redeem spark-id redemption-quantity)
+            (ref-TS01-C2::VST|C_Freeze patron DEMIPAD|SC_NAME account-to-redeem spark-id redemption-quantity)
             (format "Succesfully Redeemed {} {} for {} {} on Account {}"
                 [redemption-quantity spark-id redemption-value wstoa-id sa-atr]
             )
@@ -661,8 +661,8 @@
     ;;{5.7}  User [A/C]
     ;;
     (defun C_BuySparks (patron:string buyer:string sparks-amount:integer iz-native:bool max-cost:decimal)
-        @doc "PURE CITIZEN buy. Composes two SOVEREIGN Talos ops — C_DEMIPAD|Deposit (buyer STOA -> \
-            \ Launchpad) then C_DPTF|Transfer (Sparks Launchpad -> buyer) — each self-collecting IGNIS \
+        @doc "PURE CITIZEN buy. Composes two SOVEREIGN Talos ops — DEMIPAD|C_Deposit (buyer STOA -> \
+            \ Launchpad) then DPTF|C_Transfer (Sparks Launchpad -> buyer) — each self-collecting IGNIS \
             \ on <patron>. A citizen cannot fold cumulators (no permission for the bare uncollected \
             \ core funcs), so IGNIS is billed Sigma-wise (once per op). <max-cost> is the buyer's dollar \
             \ slippage ceiling (sentinel < 0 = slippage off). Preview: URCi_BuySparks / INFO_BuySparks."
@@ -680,9 +680,9 @@
                     (sb:string (ref-I|OURONET::OI|UC_ShortAccount buyer))
                 )
                 ;;1] SOVEREIGN deposit Talos op — buyer's STOA into the Launchpad; self-collects IGNIS on patron
-                (ref-TS02-DPAD::C_DEMIPAD|Deposit patron buyer spark-id pid type false max-cost)
+                (ref-TS02-DPAD::DEMIPAD|C_Deposit patron buyer spark-id pid type false max-cost)
                 ;;2] SOVEREIGN DPTF transfer Talos op — Sparks from the Launchpad SC to the buyer; self-collects IGNIS
-                (ref-TS01-C1::C_DPTF|Transfer patron spark-id DEMIPAD|SC_NAME buyer (dec sparks-amount) true)
+                (ref-TS01-C1::DPTF|C_Transfer patron spark-id DEMIPAD|SC_NAME buyer (dec sparks-amount) true)
                 (format "User {} succesfuly acquired {} {} Tokens" [sb sparks-amount spark-id])
             )
         )

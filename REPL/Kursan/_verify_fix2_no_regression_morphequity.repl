@@ -1,5 +1,5 @@
 ;; Follow-up check for Fix #2 (07_DPDC-T.pact:305, IGNIS|C>DEBIT ownership check): does it break
-;; C_DPSF|MorphEquity, the one real call site of C_IgnisRoyaltyCollector never exercised by the default
+;; DPSF|C_MorphEquity, the one real call site of C_IgnisRoyaltyCollector never exercised by the default
 ;; Z.repl pipeline? Real equity collection E|DH-98c486052a51, patron == the actual owner throughout
 ;; (matching every real usage of this function found in the repo — patron and account are always the
 ;; same variable at every call site).
@@ -12,7 +12,7 @@
 (load "../Stage_02/[3]_Talos.repl")
 (load "../Stage_02/[4.0]_Sovereign-Executor.repl")
 
-(begin-tx "PROBE-FIX2-REGRESSION - C_DPSF|MorphEquity, patron == actual owner")
+(begin-tx "PROBE-FIX2-REGRESSION - DPSF|C_MorphEquity, patron == actual owner")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
@@ -24,7 +24,7 @@
     )
     (print (format "BEFORE anhd tier1 supply = {}" [(ref-DPDC::UR_AccountNonceSupply KST.ANHD edh-id true 1)]))
     (print (format "MORPH RESULT = {}"
-        [(ref-TS02-C1::C_DPSF|MorphEquity KST.ANHD KST.ANHD edh-id 1 20000 6)]))
+        [(ref-TS02-C1::DPSF|C_MorphEquity KST.ANHD KST.ANHD edh-id 1 20000 6)]))
     (print (format "AFTER anhd tier1 supply = {}" [(ref-DPDC::UR_AccountNonceSupply KST.ANHD edh-id true 1)]))
     (print (format "AFTER anhd tier6 supply = {}" [(ref-DPDC::UR_AccountNonceSupply KST.ANHD edh-id true 6)]))
 )

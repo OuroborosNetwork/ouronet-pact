@@ -308,7 +308,7 @@
                 (zd:object{DpdcUdcV2.URI|Data} (ref-DPDC-UDC::UDC_ZeroURI|Data))
                 ;;
             )
-            (ref-TS02-C2::C_DPNF|Create
+            (ref-TS02-C2::DPNF|C_Create
                 patron dhb
                 (fold
                     (lambda

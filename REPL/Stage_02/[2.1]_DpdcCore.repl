@@ -146,9 +146,9 @@
             (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
             (patron:string KST.ANHD)
         )
-        (ref-TS01-A::A_DALOS|DeploySmartAccount KC2.DPTS_NAME_0001 (keyset-ref-guard "ouronet-ns.dh_sc_dpdc-keyset")  KC2.KADN_NAME_0001 patron KC2.PBLC_0001)
-        (ref-TS01-A::A_DALOS|DeploySmartAccount KC2.DPTS_NAME_0002 (keyset-ref-guard "ouronet-ns.dh_sc_mb-keyset")    KC2.KADN_NAME_0002 patron KC2.PBLC_0002)
-        (ref-TS01-A::A_DALOS|DeploySmartAccount KC2.DPTS_NAME_0003 (keyset-ref-guard "ouronet-ns.dh_sc_aqp-keyset")   KC2.KADN_NAME_0003 patron KC2.PBLC_0003)
+        (ref-TS01-A::DALOS|A_DeploySmartAccount KC2.DPTS_NAME_0001 (keyset-ref-guard "ouronet-ns.dh_sc_dpdc-keyset")  KC2.KADN_NAME_0001 patron KC2.PBLC_0001)
+        (ref-TS01-A::DALOS|A_DeploySmartAccount KC2.DPTS_NAME_0002 (keyset-ref-guard "ouronet-ns.dh_sc_mb-keyset")    KC2.KADN_NAME_0002 patron KC2.PBLC_0002)
+        (ref-TS01-A::DALOS|A_DeploySmartAccount KC2.DPTS_NAME_0003 (keyset-ref-guard "ouronet-ns.dh_sc_aqp-keyset")   KC2.KADN_NAME_0003 patron KC2.PBLC_0003)
     )
 
 (env-gas)

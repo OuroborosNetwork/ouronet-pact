@@ -126,7 +126,7 @@
                 (b:string BAR)
             )
             ;;Set Class 1
-            (ref-TS02-C2::C_DPNF|DefinePrimordialSet
+            (ref-TS02-C2::DPNF|C_DefinePrimordialSet
                 patron dhb "Tier 1 Common Comati" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 4865 12928 144))
@@ -173,7 +173,7 @@
                 (b:string BAR)
             )
             ;;Set Class 2
-            (ref-TS02-C2::C_DPNF|DefinePrimordialSet
+            (ref-TS02-C2::DPNF|C_DefinePrimordialSet
                 patron dhb "Tier 1 Common Ursoi" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 4883 12928 144))
@@ -220,7 +220,7 @@
                 (b:string BAR)
             )
             ;;Set Class 3
-            (ref-TS02-C2::C_DPNF|DefinePrimordialSet
+            (ref-TS02-C2::DPNF|C_DefinePrimordialSet
                 patron dhb "Tier 1 Common Pileati" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 4901 12928 144))
@@ -267,7 +267,7 @@
                 (b:string BAR)
             )
             ;;Set Class 4
-            (ref-TS02-C2::C_DPNF|DefinePrimordialSet
+            (ref-TS02-C2::DPNF|C_DefinePrimordialSet
                 patron dhb "Tier 1 Common Smardoi" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 4919 12928 144))
@@ -314,7 +314,7 @@
                 (b:string BAR)
             )
             ;;Set Class 5
-            (ref-TS02-C2::C_DPNF|DefinePrimordialSet
+            (ref-TS02-C2::DPNF|C_DefinePrimordialSet
                 patron dhb "Tier 1 Common Carpian" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 4937 12928 144))
@@ -361,7 +361,7 @@
                 (b:string BAR)
             )
             ;;Set Class 6
-            (ref-TS02-C2::C_DPNF|DefinePrimordialSet
+            (ref-TS02-C2::DPNF|C_DefinePrimordialSet
                 patron dhb "Tier 1 Common Tarabostes" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 4955 12928 144))
@@ -408,7 +408,7 @@
                 (b:string BAR)
             )
             ;;Set Class 7
-            (ref-TS02-C2::C_DPNF|DefinePrimordialSet
+            (ref-TS02-C2::DPNF|C_DefinePrimordialSet
                 patron dhb "Tier 1 Common Costoboc" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 4973 12928 144))
@@ -462,7 +462,7 @@
                 (zd:object{DpdcUdcV2.URI|Data} (ref-DPDC-UDC::UDC_ZeroURI|Data))
             )
             ;;Set Class 8
-            [(ref-TS02-C2::C_DPNF|DefinePrimordialSet
+            [(ref-TS02-C2::DPNF|C_DefinePrimordialSet
                 patron dhb "Tier 1 Common Buridavens" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 4991 12928 144))
@@ -495,7 +495,7 @@
                 )
             )
             ;;Set Class 9
-            (ref-TS02-C2::C_DPNF|DefinePrimordialSet
+            (ref-TS02-C2::DPNF|C_DefinePrimordialSet
                 patron dhb "Tier 1 Rare Comati" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 1697 4864 72))
@@ -535,7 +535,7 @@
                 (zd:object{DpdcUdcV2.URI|Data} (ref-DPDC-UDC::UDC_ZeroURI|Data))
             )
             ;;Set Class 10
-            [(ref-TS02-C2::C_DPNF|DefinePrimordialSet
+            [(ref-TS02-C2::DPNF|C_DefinePrimordialSet
                 patron dhb "Tier 1 Rare Ursoi" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 1706 4864 72))
@@ -560,7 +560,7 @@
                 )
             )
             ;;Set Class 11
-            (ref-TS02-C2::C_DPNF|DefinePrimordialSet
+            (ref-TS02-C2::DPNF|C_DefinePrimordialSet
                 patron dhb "Tier 1 Rare Pileati" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 1715 4864 72))
@@ -585,7 +585,7 @@
                 )
             )
             ;;Set Class 12
-            (ref-TS02-C2::C_DPNF|DefinePrimordialSet
+            (ref-TS02-C2::DPNF|C_DefinePrimordialSet
                 patron dhb "Tier 1 Rare Smardoi" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 1724 4864 72))
@@ -610,7 +610,7 @@
                 )
             )
             ;;Set Class 13
-            (ref-TS02-C2::C_DPNF|DefinePrimordialSet
+            (ref-TS02-C2::DPNF|C_DefinePrimordialSet
                 patron dhb "Tier 1 Rare Carpian" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 1733 4864 72))
@@ -650,7 +650,7 @@
                 (zd:object{DpdcUdcV2.URI|Data} (ref-DPDC-UDC::UDC_ZeroURI|Data))
             )
             ;;Set Class 14
-            [(ref-TS02-C2::C_DPNF|DefinePrimordialSet
+            [(ref-TS02-C2::DPNF|C_DefinePrimordialSet
                 patron dhb "Tier 1 Rare Tarabostes" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 1742 4864 72))
@@ -675,7 +675,7 @@
                 )
             )
             ;;Set Class 15
-            (ref-TS02-C2::C_DPNF|DefinePrimordialSet
+            (ref-TS02-C2::DPNF|C_DefinePrimordialSet
                 patron dhb "Tier 1 Rare Costoboc" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 1751 4864 72))
@@ -700,7 +700,7 @@
                 )
             )
             ;;Set Class 16
-            (ref-TS02-C2::C_DPNF|DefinePrimordialSet
+            (ref-TS02-C2::DPNF|C_DefinePrimordialSet
                 patron dhb "Tier 1 Rare Buridavens" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 1760 4864 72))
@@ -740,7 +740,7 @@
                 (zd:object{DpdcUdcV2.URI|Data} (ref-DPDC-UDC::UDC_ZeroURI|Data))
             )
             ;;Set Class 17
-            [(ref-TS02-C2::C_DPNF|DefinePrimordialSet
+            [(ref-TS02-C2::DPNF|C_DefinePrimordialSet
                 patron dhb "Tier 1 Epic Comati" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 161 1696 48))
@@ -762,7 +762,7 @@
                 )
             )
             ;;Set Class 18
-            (ref-TS02-C2::C_DPNF|DefinePrimordialSet
+            (ref-TS02-C2::DPNF|C_DefinePrimordialSet
                 patron dhb "Tier 1 Epic Ursoi" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 167 1696 48))
@@ -784,7 +784,7 @@
                 )
             )
             ;;Set Class 19
-            (ref-TS02-C2::C_DPNF|DefinePrimordialSet
+            (ref-TS02-C2::DPNF|C_DefinePrimordialSet
                 patron dhb "Tier 1 Epic Pileati" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 173 1696 48))
@@ -806,7 +806,7 @@
                 )
             )
             ;;Set Class 20
-            (ref-TS02-C2::C_DPNF|DefinePrimordialSet
+            (ref-TS02-C2::DPNF|C_DefinePrimordialSet
                 patron dhb "Tier 1 Epic Smardoi" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 179 1696 48))
@@ -828,7 +828,7 @@
                 )
             )
             ;;Set Class 21
-            (ref-TS02-C2::C_DPNF|DefinePrimordialSet
+            (ref-TS02-C2::DPNF|C_DefinePrimordialSet
                 patron dhb "Tier 1 Epic Carpian" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 185 1696 48))
@@ -850,7 +850,7 @@
                 )
             )
             ;;Set Class 22
-            (ref-TS02-C2::C_DPNF|DefinePrimordialSet
+            (ref-TS02-C2::DPNF|C_DefinePrimordialSet
                 patron dhb "Tier 1 Epic Tarabostes" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 191 1696 48))
@@ -872,7 +872,7 @@
                 )
             )
             ;;Set Class 23
-            (ref-TS02-C2::C_DPNF|DefinePrimordialSet
+            (ref-TS02-C2::DPNF|C_DefinePrimordialSet
                 patron dhb "Tier 1 Epic Costoboc" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 197 1696 48))
@@ -894,7 +894,7 @@
                 )
             )
             ;;Set Class 24
-            (ref-TS02-C2::C_DPNF|DefinePrimordialSet
+            (ref-TS02-C2::DPNF|C_DefinePrimordialSet
                 patron dhb "Tier 1 Epic Buridavens" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 203 1696 48))
@@ -949,7 +949,7 @@
                 ;;
             )
             ;;Set Class 25
-            [(ref-TS02-C2::C_DPNF|DefineHybridSet
+            [(ref-TS02-C2::DPNF|C_DefineHybridSet
                 patron dhb "Tier 2 Comati" 1.3
                 [(UDC_AllowedNonce (enumerate 1 160 8))]
                 [(UDC_AllowedClass 1) (UDC_AllowedClass 9) (UDC_AllowedClass 17)]
@@ -964,7 +964,7 @@
                 )
             )
             ;;Set Class 26
-            (ref-TS02-C2::C_DPNF|DefineHybridSet
+            (ref-TS02-C2::DPNF|C_DefineHybridSet
                 patron dhb "Tier 2 Ursoi" 1.3
                 [(UDC_AllowedNonce (enumerate 2 160 8))]
                 [(UDC_AllowedClass 2) (UDC_AllowedClass 10) (UDC_AllowedClass 18)]
@@ -979,7 +979,7 @@
                 )
             )
             ;;Set Class 27
-            (ref-TS02-C2::C_DPNF|DefineHybridSet
+            (ref-TS02-C2::DPNF|C_DefineHybridSet
                 patron dhb "Tier 2 Pileati" 1.3
                 [(UDC_AllowedNonce (enumerate 3 160 8))]
                 [(UDC_AllowedClass 3) (UDC_AllowedClass 11) (UDC_AllowedClass 19)]
@@ -994,7 +994,7 @@
                 )
             )
             ;;Set Class 28
-            (ref-TS02-C2::C_DPNF|DefineHybridSet
+            (ref-TS02-C2::DPNF|C_DefineHybridSet
                 patron dhb "Tier 2 Smardoi" 1.3
                 [(UDC_AllowedNonce (enumerate 4 160 8))]
                 [(UDC_AllowedClass 4) (UDC_AllowedClass 12) (UDC_AllowedClass 20)]
@@ -1009,7 +1009,7 @@
                 )
             )
             ;;Set Class 29
-            (ref-TS02-C2::C_DPNF|DefineHybridSet
+            (ref-TS02-C2::DPNF|C_DefineHybridSet
                 patron dhb "Tier 2 Carpian" 1.3
                 [(UDC_AllowedNonce (enumerate 5 160 8))]
                 [(UDC_AllowedClass 5) (UDC_AllowedClass 13) (UDC_AllowedClass 21)]
@@ -1024,7 +1024,7 @@
                 )
             )
             ;;Set Class 30
-            (ref-TS02-C2::C_DPNF|DefineHybridSet
+            (ref-TS02-C2::DPNF|C_DefineHybridSet
                 patron dhb "Tier 2 Tarabostes" 1.3
                 [(UDC_AllowedNonce (enumerate 6 160 8))]
                 [(UDC_AllowedClass 6) (UDC_AllowedClass 14) (UDC_AllowedClass 22)]
@@ -1039,7 +1039,7 @@
                 )
             )
             ;;Set Class 31
-            (ref-TS02-C2::C_DPNF|DefineHybridSet
+            (ref-TS02-C2::DPNF|C_DefineHybridSet
                 patron dhb "Tier 2 Costoboc" 1.3
                 [(UDC_AllowedNonce (enumerate 7 160 8))]
                 [(UDC_AllowedClass 7) (UDC_AllowedClass 15) (UDC_AllowedClass 23)]
@@ -1054,7 +1054,7 @@
                 )
             )
             ;;Set Class 32
-            (ref-TS02-C2::C_DPNF|DefineHybridSet
+            (ref-TS02-C2::DPNF|C_DefineHybridSet
                 patron dhb "Tier 2 Buridavens" 1.3
                 [(UDC_AllowedNonce (enumerate 8 160 8))]
                 [(UDC_AllowedClass 8) (UDC_AllowedClass 16) (UDC_AllowedClass 24)]
@@ -1069,7 +1069,7 @@
                 )
             )
             ;;Set Class 33
-            (ref-TS02-C2::C_DPNF|DefineCompositeSet
+            (ref-TS02-C2::DPNF|C_DefineCompositeSet
                 patron dhb "Tier 3 Common" 1.6
                 [(UDC_AllowedClass 1) (UDC_AllowedClass 2) (UDC_AllowedClass 3) (UDC_AllowedClass 4) (UDC_AllowedClass 5) (UDC_AllowedClass 6) (UDC_AllowedClass 7) (UDC_AllowedClass 8)]
                 (ref-DPDC-UDC::UDC_NonceData
@@ -1083,7 +1083,7 @@
                 )
             )
             ;;Set Class 34
-            (ref-TS02-C2::C_DPNF|DefineCompositeSet
+            (ref-TS02-C2::DPNF|C_DefineCompositeSet
                 patron dhb "Tier 3 Rare" 1.6
                 [(UDC_AllowedClass 9) (UDC_AllowedClass 10) (UDC_AllowedClass 11) (UDC_AllowedClass 12) (UDC_AllowedClass 13) (UDC_AllowedClass 14) (UDC_AllowedClass 15) (UDC_AllowedClass 16)]
                 (ref-DPDC-UDC::UDC_NonceData
@@ -1097,7 +1097,7 @@
                 )
             )
             ;;Set Class 35
-            (ref-TS02-C2::C_DPNF|DefineCompositeSet
+            (ref-TS02-C2::DPNF|C_DefineCompositeSet
                 patron dhb "Tier 3 Epic" 1.6
                 [(UDC_AllowedClass 17) (UDC_AllowedClass 18) (UDC_AllowedClass 19) (UDC_AllowedClass 20) (UDC_AllowedClass 21) (UDC_AllowedClass 22) (UDC_AllowedClass 23) (UDC_AllowedClass 24)]
                 (ref-DPDC-UDC::UDC_NonceData
@@ -1111,7 +1111,7 @@
                 )
             )
             ;;Set Class 36
-            (ref-TS02-C2::C_DPNF|DefinePrimordialSet
+            (ref-TS02-C2::DPNF|C_DefinePrimordialSet
                 patron dhb "Tier 3 Legendary" 1.6
                 [
                     (UDC_AllowedNonce (enumerate 1 160 8))
@@ -1135,7 +1135,7 @@
                 )
             )
             ;;Set Class 37
-            (ref-TS02-C2::C_DPNF|DefineCompositeSet
+            (ref-TS02-C2::DPNF|C_DefineCompositeSet
                 patron dhb "Tier 4" 2.0
                 [(UDC_AllowedClass 25) (UDC_AllowedClass 26) (UDC_AllowedClass 27) (UDC_AllowedClass 28) (UDC_AllowedClass 29) (UDC_AllowedClass 30) (UDC_AllowedClass 31) (UDC_AllowedClass 32)]
                 (ref-DPDC-UDC::UDC_NonceData
@@ -1149,7 +1149,7 @@
                 )
             )
             ;;Set Class 38
-            (ref-TS02-C2::C_DPNF|DefineCompositeSet
+            (ref-TS02-C2::DPNF|C_DefineCompositeSet
                 patron dhb "Tier 4" 2.0
                 [(UDC_AllowedClass 33) (UDC_AllowedClass 34) (UDC_AllowedClass 35) (UDC_AllowedClass 36)]
                 (ref-DPDC-UDC::UDC_NonceData
@@ -1163,7 +1163,7 @@
                 )
             )
             ;;Set Fragmentation for Class 37 and 38
-            (ref-TS02-C2::C_DPNF|EnableSetClassFragmentation
+            (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation
                 patron dhb 37
                 (ref-DPDC-UDC::UDC_NonceData
                     r3 (/ ir4 1000.0)
@@ -1175,7 +1175,7 @@
                     zd
                 )
             )
-            (ref-TS02-C2::C_DPNF|EnableSetClassFragmentation
+            (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation
                 patron dhb 38
                 (ref-DPDC-UDC::UDC_NonceData
                     r3 (/ ir4 1000.0)

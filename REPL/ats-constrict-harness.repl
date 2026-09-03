@@ -3,7 +3,7 @@
 ;;   Standalone (boot → test → discard). Enables hibernation on the canonical Auryndex ATS pool
 ;;   (stakes OURO -> rewards Auryn), then Constricts OURO (the pool's input/reward token, which the
 ;;   patron holds) — autostaking it into hibernation and minting+hibernating the Auryn RBT.
-;;   Covers the uncovered C_ATS|Constrict client op.  Run:  cd REPL && pact ats-constrict-harness.repl
+;;   Covers the uncovered ATS|C_Constrict client op.  Run:  cd REPL && pact ats-constrict-harness.repl
 ;;
 (load "Stage00_Sanboxes.repl")
 (load "Stage01_Tester.repl")
@@ -51,17 +51,17 @@
         (auryn-id:string (ref-DALOS::UR_AurynID))
     )
     ;; Auryndex's RBT (Auryn) needs a hibernation link before Control can flip hibernation ON
-    (ref-TS01-C2::C_VST|CreateHibernatingLink patron auryn-id)
+    (ref-TS01-C2::VST|C_CreateHibernatingLink patron auryn-id)
     ;; turn hibernation ON via Control (preserve the pool's can-change-owner + syphoning settings)
-    (ref-TS01-C2::C_ATS|Control patron auryndex
+    (ref-TS01-C2::ATS|C_Control patron auryndex
         (ref-ATS::UR_CanChangeOwner auryndex) (ref-ATS::UR_Syphoning auryndex) true)
     ;; set hibernation fees (peak in (0,800], decay in (0,1), prec-4) — used by the coil calc
-    (ref-TS01-C2::C_ATS|SetHibernationFees patron auryndex 100.0 0.008)
+    (ref-TS01-C2::ATS|C_SetHibernationFees patron auryndex 100.0 0.008)
     ;; Constrict OURO (the pool's input/reward token, held by the patron) for 30 days
-    (print (ref-TS01-C2::C_ATS|Constrict patron patron auryndex ouro-id 100.0 30))
+    (print (ref-TS01-C2::ATS|C_Constrict patron patron auryndex ouro-id 100.0 30))
     (print "<<TX-CNS-001>> CreateHibernatingLink + Control(hibernate) + SetHibernationFees + Constrict OK")
 )
 (print "===^^^===")
 (commit-tx)
 (print "")
-(print "=== END FILE ats-constrict-harness.repl (C_ATS|Constrict covered) ===")
+(print "=== END FILE ats-constrict-harness.repl (ATS|C_Constrict covered) ===")

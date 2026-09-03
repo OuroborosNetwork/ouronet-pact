@@ -36,7 +36,7 @@
     )
     (print (format "set-classes-used before = {} (expect 1, from [4.0]'s CodingDivision primordial set)" [(ref-DPDC::UR_SetClassesUsed id true)]))
     (print
-        (ref-TS02-C1::C_DPSF|DefineHybridSet
+        (ref-TS02-C1::DPSF|C_DefineHybridSet
             owner id "HybridProbeSet" 1.0
             [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [5])]
             [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)]

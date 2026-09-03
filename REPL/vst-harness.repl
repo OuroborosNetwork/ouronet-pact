@@ -33,11 +33,11 @@
         (ouro-id:string (ref-DALOS::UR_OuroborosID))
     )
     ;; Vest: patron owns OURO (CAP_Owner) — vest 100 OURO to the patron over 30 days, single milestone
-    (ref-TS01-C2::C_VST|Vest patron patron patron ouro-id 100.0 0 2592000 1)
+    (ref-TS01-C2::VST|C_Vest patron patron patron ouro-id 100.0 0 2592000 1)
     ;; Reserve: open reservation on OURO first (RESERVE cap gates on UR_IzReservationOpen), then reserve
-    (ref-TS01-C1::C_DPTF|ToggleReservation patron ouro-id true)
-    (ref-TS01-C2::C_VST|Reserve patron patron ouro-id 100.0)
-    (print "<<TX-VSTH-001>> C_VST|Vest + ToggleReservation + C_VST|Reserve OK")
+    (ref-TS01-C1::DPTF|C_ToggleReservation patron ouro-id true)
+    (ref-TS01-C2::VST|C_Reserve patron patron ouro-id 100.0)
+    (print "<<TX-VSTH-001>> VST|C_Vest + ToggleReservation + VST|C_Reserve OK")
 )
 (print "===^^^===")
 (commit-tx)
@@ -60,8 +60,8 @@
         (patron:string KST.ANHD)
     )
     ;; dpof = UR_Vesting(OURO) — unvest the first vested nonce (now matured)
-    (ref-TS01-C2::C_VST|Unvest patron patron (ref-DPTF::UR_Vesting (ref-DALOS::UR_OuroborosID)) 1)
-    (print "<<TX-VSTH-002>> C_VST|Unvest (matured) OK")
+    (ref-TS01-C2::VST|C_Unvest patron patron (ref-DPTF::UR_Vesting (ref-DALOS::UR_OuroborosID)) 1)
+    (print "<<TX-VSTH-002>> VST|C_Unvest (matured) OK")
 )
 (print "===^^^===")
 (commit-tx)
@@ -99,15 +99,15 @@
         (ouro-id:string (ref-DALOS::UR_OuroborosID))
     )
     ;; patron owns OURO, so it can attach the remaining special links to it (also covers Create*Link)
-    (ref-TS01-C2::C_VST|CreateFrozenLink patron ouro-id)
-    (ref-TS01-C2::C_VST|CreateSleepingLink patron ouro-id)
-    (ref-TS01-C2::C_VST|CreateHibernatingLink patron ouro-id)
+    (ref-TS01-C2::VST|C_CreateFrozenLink patron ouro-id)
+    (ref-TS01-C2::VST|C_CreateSleepingLink patron ouro-id)
+    (ref-TS01-C2::VST|C_CreateHibernatingLink patron ouro-id)
     ;; Sleep 100 OURO over 30 days (single duration in seconds)
-    (ref-TS01-C2::C_VST|Sleep patron patron patron ouro-id 100.0 2592000)
+    (ref-TS01-C2::VST|C_Sleep patron patron patron ouro-id 100.0 2592000)
     ;; Freeze 100 OURO — freeze-output is the ACCOUNT receiving the frozen tokens (patron)
-    (ref-TS01-C2::C_VST|Freeze patron patron patron ouro-id 100.0)
+    (ref-TS01-C2::VST|C_Freeze patron patron patron ouro-id 100.0)
     ;; Hibernate 100 OURO for 30 days
-    (ref-TS01-C2::C_VST|Hibernate patron patron patron ouro-id 100.0 30)
+    (ref-TS01-C2::VST|C_Hibernate patron patron patron ouro-id 100.0 30)
     (print "<<TX-VSTH-003>> CreateFrozen/Sleeping/Hibernating + Sleep + Freeze + Hibernate OK")
 )
 (print "===^^^===")
@@ -149,9 +149,9 @@
         (ouro-id:string (ref-DALOS::UR_OuroborosID))
     )
     ;; Unsleep the sleeping position (nonce 1); Awake the hibernating position (nonce 1)
-    (ref-TS01-C2::C_VST|Unsleep patron patron (ref-DPTF::UR_Sleeping ouro-id) 1)
-    (ref-TS01-C2::C_VST|Awake patron patron (ref-DPTF::UR_Hibernation ouro-id) 1)
-    (print "<<TX-VSTH-004>> C_VST|Unsleep + C_VST|Awake (matured) OK")
+    (ref-TS01-C2::VST|C_Unsleep patron patron (ref-DPTF::UR_Sleeping ouro-id) 1)
+    (ref-TS01-C2::VST|C_Awake patron patron (ref-DPTF::UR_Hibernation ouro-id) 1)
+    (print "<<TX-VSTH-004>> VST|C_Unsleep + VST|C_Awake (matured) OK")
 )
 (print "===^^^===")
 (commit-tx)
@@ -190,9 +190,9 @@
         (ouro-id:string (ref-DALOS::UR_OuroborosID))
     )
     ;; grant the patron the transfer role on each special (frozen/reserved/sleeping) OURO token
-    (ref-TS01-C2::C_VST|ToggleTransferRoleFrozenDPTF patron (ref-DPTF::UR_Frozen ouro-id) patron true)
-    (ref-TS01-C2::C_VST|ToggleTransferRoleReservedDPTF patron (ref-DPTF::UR_Reservation ouro-id) patron true)
-    (ref-TS01-C2::C_VST|ToggleTransferRoleSleepingDPOF patron (ref-DPTF::UR_Sleeping ouro-id) patron true)
+    (ref-TS01-C2::VST|C_ToggleTransferRoleFrozenDPTF patron (ref-DPTF::UR_Frozen ouro-id) patron true)
+    (ref-TS01-C2::VST|C_ToggleTransferRoleReservedDPTF patron (ref-DPTF::UR_Reservation ouro-id) patron true)
+    (ref-TS01-C2::VST|C_ToggleTransferRoleSleepingDPOF patron (ref-DPTF::UR_Sleeping ouro-id) patron true)
     (print "<<TX-VSTH-005>> ToggleTransferRole Frozen/Reserved/Sleeping OK")
 )
 (print "===^^^===")
@@ -234,10 +234,10 @@
         (ouro-id:string (ref-DALOS::UR_OuroborosID))
     )
     ;; fund EMMA with 100 OURO so it holds a non-zero base-token balance to recover
-    (ref-TS01-C1::C_DPTF|Transfer patron ouro-id patron emma 100.0 false)
+    (ref-TS01-C1::DPTF|C_Transfer patron ouro-id patron emma 100.0 false)
     ;; RepurposeFrozen: freeze+wipe EMMA's OURO and re-mint to LUMY (OURO has a frozen link from TX-003)
-    (ref-TS01-C2::C_VST|RepurposeFrozen patron ouro-id emma lumy)
-    (print "<<TX-VSTH-006>> C_DPTF|Transfer + C_VST|RepurposeFrozen (account-recovery) OK")
+    (ref-TS01-C2::VST|C_RepurposeFrozen patron ouro-id emma lumy)
+    (print "<<TX-VSTH-006>> DPTF|C_Transfer + VST|C_RepurposeFrozen (account-recovery) OK")
 )
 (print "===^^^===")
 (commit-tx)
@@ -277,8 +277,8 @@
         (ouro-id:string (ref-DALOS::UR_OuroborosID))
     )
     ;; LUMY holds the 100 OURO re-minted by TX-VSTH-006; recover it to AOZT (OURO has a reservation link)
-    (ref-TS01-C2::C_VST|RepurposeReserved patron ouro-id lumy aozt)
-    (print "<<TX-VSTH-007>> C_VST|RepurposeReserved (account-recovery) OK")
+    (ref-TS01-C2::VST|C_RepurposeReserved patron ouro-id lumy aozt)
+    (print "<<TX-VSTH-007>> VST|C_RepurposeReserved (account-recovery) OK")
 )
 (print "===^^^===")
 (commit-tx)
@@ -319,16 +319,16 @@
         (ouro-id:string (ref-DALOS::UR_OuroborosID))
     )
     ;; vest 100 OURO to AOZT (patron owns OURO), creating a vested DPOF nonce held by AOZT
-    (ref-TS01-C2::C_VST|Vest patron patron aozt ouro-id 100.0 0 2592000 1)
+    (ref-TS01-C2::VST|C_Vest patron patron aozt ouro-id 100.0 0 2592000 1)
     ;; recover AOZT's vested nonce to the patron (read the actual nonce AOZT holds on the vested DPOF)
     (let
         (
             (vested-ouro:string (ref-DPTF::UR_Vesting ouro-id))
         )
-        (ref-TS01-C2::C_VST|RepurposeVested patron vested-ouro
+        (ref-TS01-C2::VST|C_RepurposeVested patron vested-ouro
             (at 0 (ref-DPOF::URH_AccountNonces aozt vested-ouro)) aozt patron)
     )
-    (print "<<TX-VSTH-008>> C_VST|Vest + C_VST|RepurposeVested (nonce account-recovery) OK")
+    (print "<<TX-VSTH-008>> VST|C_Vest + VST|C_RepurposeVested (nonce account-recovery) OK")
 )
 (print "===^^^===")
 (commit-tx)
@@ -369,16 +369,16 @@
         (ouro-id:string (ref-DALOS::UR_OuroborosID))
     )
     ;; sleep 100 OURO to AOZT (patron owns OURO), creating a sleeping DPOF nonce held by AOZT
-    (ref-TS01-C2::C_VST|Sleep patron patron aozt ouro-id 100.0 2592000)
+    (ref-TS01-C2::VST|C_Sleep patron patron aozt ouro-id 100.0 2592000)
     ;; recover AOZT's sleeping nonce to the patron (read the actual nonce AOZT holds on the sleeping DPOF)
     (let
         (
             (sleeping-ouro:string (ref-DPTF::UR_Sleeping ouro-id))
         )
-        (ref-TS01-C2::C_VST|RepurposeSleeping patron sleeping-ouro
+        (ref-TS01-C2::VST|C_RepurposeSleeping patron sleeping-ouro
             (at 0 (ref-DPOF::URH_AccountNonces aozt sleeping-ouro)) aozt patron)
     )
-    (print "<<TX-VSTH-009>> C_VST|Sleep + C_VST|RepurposeSleeping (nonce account-recovery) OK")
+    (print "<<TX-VSTH-009>> VST|C_Sleep + VST|C_RepurposeSleeping (nonce account-recovery) OK")
 )
 (print "===^^^===")
 (commit-tx)
@@ -418,17 +418,17 @@
         (ouro-id:string (ref-DALOS::UR_OuroborosID))
     )
     ;; create two sleeping DPOF nonces held by the patron
-    (ref-TS01-C2::C_VST|Sleep patron patron patron ouro-id 100.0 2592000)
-    (ref-TS01-C2::C_VST|Sleep patron patron patron ouro-id 100.0 2592000)
+    (ref-TS01-C2::VST|C_Sleep patron patron patron ouro-id 100.0 2592000)
+    (ref-TS01-C2::VST|C_Sleep patron patron patron ouro-id 100.0 2592000)
     ;; Slumber merges the patron's sleeping nonces on the sleeping DPOF into one
     (let
         (
             (sleeping-ouro:string (ref-DPTF::UR_Sleeping ouro-id))
         )
-        (ref-TS01-C2::C_VST|Slumber patron patron sleeping-ouro
+        (ref-TS01-C2::VST|C_Slumber patron patron sleeping-ouro
             (ref-DPOF::URH_AccountNonces patron sleeping-ouro))
     )
-    (print "<<TX-VSTH-010>> C_VST|Sleep x2 + C_VST|Slumber (merge sleeping nonces) OK")
+    (print "<<TX-VSTH-010>> VST|C_Sleep x2 + VST|C_Slumber (merge sleeping nonces) OK")
 )
 (print "===^^^===")
 (commit-tx)
@@ -469,17 +469,17 @@
         (ouro-id:string (ref-DALOS::UR_OuroborosID))
     )
     ;; RepurposeMerge recovers >=2 nonces at once, so give the patron two fresh sleeping nonces
-    (ref-TS01-C2::C_VST|Sleep patron patron patron ouro-id 100.0 2592000)
-    (ref-TS01-C2::C_VST|Sleep patron patron patron ouro-id 100.0 2592000)
+    (ref-TS01-C2::VST|C_Sleep patron patron patron ouro-id 100.0 2592000)
+    (ref-TS01-C2::VST|C_Sleep patron patron patron ouro-id 100.0 2592000)
     ;; recover all of the patron's sleeping nonces (>=2) to LUMY (account-recovery)
     (let
         (
             (sleeping-ouro:string (ref-DPTF::UR_Sleeping ouro-id))
         )
-        (ref-TS01-C2::C_VST|RepurposeMerge patron sleeping-ouro
+        (ref-TS01-C2::VST|C_RepurposeMerge patron sleeping-ouro
             (ref-DPOF::URH_AccountNonces patron sleeping-ouro) patron lumy)
     )
-    (print "<<TX-VSTH-011>> C_VST|RepurposeMerge (multi-nonce account-recovery) OK")
+    (print "<<TX-VSTH-011>> VST|C_RepurposeMerge (multi-nonce account-recovery) OK")
 )
 (print "===^^^===")
 (commit-tx)
@@ -522,11 +522,11 @@
     )
     ;; patron holds R|OURO from TX-001's Reserve (transfer role granted in TX-005); move it to a SMART
     ;; account that is NOT the reserved-token custodian (method=true), so the SMART-only Unreserve applies
-    (ref-TS01-C1::C_DPTF|Transfer patron (ref-DPTF::UR_Reservation ouro-id) patron orbr-sc 100.0 true)
+    (ref-TS01-C1::DPTF|C_Transfer patron (ref-DPTF::UR_Reservation ouro-id) patron orbr-sc 100.0 true)
     ;; Unreserve: r-dptf is the RESERVED token R|OURO (the smart account holds it); the core sends R|OURO
     ;; to the VST custodian, burns it, and returns the base OURO to the unreserver
-    (ref-TS01-C2::C_VST|Unreserve patron orbr-sc (ref-DPTF::UR_Reservation ouro-id) 100.0)
-    (print "<<TX-VSTH-012>> C_DPTF|Transfer(->smart) + C_VST|Unreserve (smart) OK")
+    (ref-TS01-C2::VST|C_Unreserve patron orbr-sc (ref-DPTF::UR_Reservation ouro-id) 100.0)
+    (print "<<TX-VSTH-012>> DPTF|C_Transfer(->smart) + VST|C_Unreserve (smart) OK")
 )
 (print "===^^^===")
 (commit-tx)

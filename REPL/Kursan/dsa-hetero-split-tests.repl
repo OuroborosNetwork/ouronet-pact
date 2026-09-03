@@ -9,7 +9,7 @@
 ;;
 ;; Source : 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact
 ;;          (FVT|QualitySplit, C_SetQualitySplit, XI_1|HeterogeneousLaneRoute)
-;;          1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact (C_AQP-FVT|SetQualitySplit)
+;;          1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact (AQP-FVT|C_SetQualitySplit)
 ;;
 ;; What it proves:
 ;;   1. Default mode is HOMOGENEOUS (unset row).
@@ -162,8 +162,8 @@
             )
             ;; ----- fixture: seed LP, get SilverSnakePower promile, TF-stake (mirrors CL03) -----
             (if (< lp-bal-work 100.0)
-                (print (format "<(C_SWP|AddLiquidity seed)> => \"{}\"" [
-                    (ref-TS01-C3::C_SWP|AddLiquidity patron patron swpair [50.0 50.0 50.0])
+                (print (format "<(SWP|C_AddLiquidity seed)> => \"{}\"" [
+                    (ref-TS01-C3::SWP|C_AddLiquidity patron patron swpair [50.0 50.0 50.0])
                 ]))
                 true
             )
@@ -189,12 +189,12 @@
                             )
                             (if (not (contains auryn-rain-nonce anhd-kbn))
                                 (print (format "<(DPNF transfer AurynRain nonce {} EMMA to ANHD)> => \"{}\"" [auryn-rain-nonce
-                                    (ref-TS02-C2::C_DPNF|TransferNonce patron kbn-id emma owner auryn-rain-nonce 1 false)
+                                    (ref-TS02-C2::DPNF|C_TransferNonce patron kbn-id emma owner auryn-rain-nonce 1 false)
                                 ]))
                                 true
                             )
                             (print (format "<(C_StakeNonFungible DHBunnies KBN nonce {})> => \"{}\"" [auryn-rain-nonce
-                                (ref-TS02-C3::CC_AQP-POOL|StakeNonFungibleCollectable
+                                (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable
                                     patron bunnies-pool owner owner kbn-id [auryn-rain-nonce]
                                 )
                             ]))
@@ -205,7 +205,7 @@
                         "HET needs SilverSnakePower promile - Auryn Rain KBN stake on DHBunnies")
                 )
                 (print (format "<(CC_StakeTrueFungible DHOuroLp LP {})> => \"{}\"" [stake-amt
-                    (ref-TS02-C3::CC_AQP-POOL|StakeTrueFungible patron pool-id owner owner lp-id stake-amt)
+                    (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner owner lp-id stake-amt)
                 ]))
                 ;; ---------------------------------------------------------------------------------
                 ;; PROOF 1 - default mode is HOMOGENEOUS
@@ -218,8 +218,8 @@
                 )
                 ;; PROOF 2 - owner sets HETEROGENEOUS all-to-token0 [1000 0 0]; readers round-trip
                 (print "--- [TX-HET-01 - 01 - set HETEROGENEOUS all-to-OURO [1000 0 0]] ---")
-                (print (format "<(C_AQP-FVT|SetQualitySplit HET [1000 0 0]x3)> => \"{}\"" [
-                    (ref-TS02-C3::C_AQP-FVT|SetQualitySplit patron farm-id ouro-id "HETEROGENEOUS" [1000 0 0] [1000 0 0] [1000 0 0])
+                (print (format "<(AQP-FVT|C_SetQualitySplit HET [1000 0 0]x3)> => \"{}\"" [
+                    (ref-TS02-C3::AQP-FVT|C_SetQualitySplit patron farm-id ouro-id "HETEROGENEOUS" [1000 0 0] [1000 0 0] [1000 0 0])
                 ]))
                 (map print
                     [
@@ -234,14 +234,14 @@
                 )
                 ;; PROOF 3 - inject then collect => WHOLE payout as OURO; Auryn/Elite ZERO
                 (print "--- [TX-HET-01 - 02 - inject + collect: expect pure OURO] ---")
-                (ref-TS02-C3::CC_AQP-FVT|Inject patron farm-id ouro-id inject-amt)
+                (ref-TS02-C3::AQP-FVT|CC_Inject patron farm-id ouro-id inject-amt)
                 (let
                     (
                         (ouro-pre:decimal (ref-DPTF::UR_AccountSupply ouro-id owner))
                         (auryn-pre:decimal (ref-DPTF::UR_AccountSupply auryn-id owner))
                         (elite-pre:decimal (ref-DPTF::UR_AccountSupply elite-auryn-id owner))
                     )
-                    (ref-TS02-C3::CC_AQP-FVT|Collect owner farm-id 3 triplet-id ouro-id)
+                    (ref-TS02-C3::AQP-FVT|CC_Collect owner farm-id 3 triplet-id ouro-id)
                     (let
                         (
                             (pay-ouro:decimal (- (ref-DPTF::UR_AccountSupply ouro-id owner) ouro-pre))
@@ -260,15 +260,15 @@
                 )
                 ;; PROOF 4 - O(1) reprice to all-to-token1 [0 1000 0] => next collect is pure Auryn (Coil leg)
                 (print "--- [TX-HET-01 - 03 - reprice all-to-Auryn [0 1000 0] + inject/collect] ---")
-                (ref-TS02-C3::C_AQP-FVT|SetQualitySplit patron farm-id ouro-id "HETEROGENEOUS" [0 1000 0] [0 1000 0] [0 1000 0])
-                (ref-TS02-C3::CC_AQP-FVT|Inject patron farm-id ouro-id inject-amt)
+                (ref-TS02-C3::AQP-FVT|C_SetQualitySplit patron farm-id ouro-id "HETEROGENEOUS" [0 1000 0] [0 1000 0] [0 1000 0])
+                (ref-TS02-C3::AQP-FVT|CC_Inject patron farm-id ouro-id inject-amt)
                 (let
                     (
                         (ouro-pre:decimal (ref-DPTF::UR_AccountSupply ouro-id owner))
                         (auryn-pre:decimal (ref-DPTF::UR_AccountSupply auryn-id owner))
                         (elite-pre:decimal (ref-DPTF::UR_AccountSupply elite-auryn-id owner))
                     )
-                    (ref-TS02-C3::CC_AQP-FVT|Collect owner farm-id 3 triplet-id ouro-id)
+                    (ref-TS02-C3::AQP-FVT|CC_Collect owner farm-id 3 triplet-id ouro-id)
                     (let
                         (
                             (pay-ouro:decimal (- (ref-DPTF::UR_AccountSupply ouro-id owner) ouro-pre))
@@ -320,7 +320,7 @@
             (map print
                 [
                     (expect-failure "<<TX-HET-02>> non-owner cannot set quality split"
-                        (ref-TS02-C3::C_AQP-FVT|SetQualitySplit emma farm-id ouro-id "HETEROGENEOUS" [1000 0 0] [1000 0 0] [1000 0 0]))
+                        (ref-TS02-C3::AQP-FVT|C_SetQualitySplit emma farm-id ouro-id "HETEROGENEOUS" [1000 0 0] [1000 0 0] [1000 0 0]))
                 ]
             )
             (print "--- [TX-HET-02 - 02 - a row not summing to 1000 rejected] ---")
@@ -328,18 +328,18 @@
             (map print
                 [
                     (expect-failure "<<TX-HET-02>> silver row [500 400 0] (sum 900) rejected"
-                        (ref-TS02-C3::C_AQP-FVT|SetQualitySplit patron farm-id ouro-id "HETEROGENEOUS" [1000 0 0] [500 400 0] [1000 0 0]))
+                        (ref-TS02-C3::AQP-FVT|C_SetQualitySplit patron farm-id ouro-id "HETEROGENEOUS" [1000 0 0] [500 400 0] [1000 0 0]))
                     (expect-failure "<<TX-HET-02>> a 2-element row rejected"
-                        (ref-TS02-C3::C_AQP-FVT|SetQualitySplit patron farm-id ouro-id "HETEROGENEOUS" [1000 0 0] [600 400] [1000 0 0]))
+                        (ref-TS02-C3::AQP-FVT|C_SetQualitySplit patron farm-id ouro-id "HETEROGENEOUS" [1000 0 0] [600 400] [1000 0 0]))
                     (expect-failure "<<TX-HET-02>> unknown mode rejected"
-                        (ref-TS02-C3::C_AQP-FVT|SetQualitySplit patron farm-id ouro-id "BOGUS" [1000 0 0] [1000 0 0] [1000 0 0]))
+                        (ref-TS02-C3::AQP-FVT|C_SetQualitySplit patron farm-id ouro-id "BOGUS" [1000 0 0] [1000 0 0] [1000 0 0]))
                 ]
             )
             (print "--- [TX-HET-02 - 03 - set on a PLAIN (non-multiplet) reward rejected] ---")
             (map print
                 [
                     (expect-failure "<<TX-HET-02>> quality split on a non-existent reward link rejected"
-                        (ref-TS02-C3::C_AQP-FVT|SetQualitySplit patron farm-id "VESTA-98c486052a51" "HETEROGENEOUS" [1000 0 0] [1000 0 0] [1000 0 0]))
+                        (ref-TS02-C3::AQP-FVT|C_SetQualitySplit patron farm-id "VESTA-98c486052a51" "HETEROGENEOUS" [1000 0 0] [1000 0 0] [1000 0 0]))
                 ]
             )
         )

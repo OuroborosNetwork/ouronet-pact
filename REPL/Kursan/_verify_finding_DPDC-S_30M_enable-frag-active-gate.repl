@@ -31,19 +31,19 @@
     )
     (print (format "set-class 1 active before toggle-off = {}" [(ref-DPDC-S::UR_IzSetActive id true 1)]))
     ;;Deactivate the set-class (an owner-legitimate admin action)
-    (print (ref-TS02-C1::C_DPSF|ToggleSet owner id 1 false))
+    (print (ref-TS02-C1::DPSF|C_ToggleSet owner id 1 false))
     (print (format "set-class 1 active after toggle-off = {}" [(ref-DPDC-S::UR_IzSetActive id true 1)]))
     ;;Attempting to enable fragmentation on a deactivated set-class must now be rejected
     (print
         (expect-failure
             "EnableSetClassFragmentation on a deactivated set-class is rejected (DPDC Audit #30M fix)"
-            (ref-TS02-C1::C_DPSF|EnableSetClassFragmentation owner id 1 nd)
+            (ref-TS02-C1::DPSF|C_EnableSetClassFragmentation owner id 1 nd)
         )
     )
     ;;Reactivate; the exact same call must now succeed
-    (print (ref-TS02-C1::C_DPSF|ToggleSet owner id 1 true))
+    (print (ref-TS02-C1::DPSF|C_ToggleSet owner id 1 true))
     (print (format "set-class 1 active after toggle-on = {}" [(ref-DPDC-S::UR_IzSetActive id true 1)]))
-    (print (ref-TS02-C1::C_DPSF|EnableSetClassFragmentation owner id 1 nd))
+    (print (ref-TS02-C1::DPSF|C_EnableSetClassFragmentation owner id 1 nd))
     (print (format "set-class 1 iz-fragmented after enable = {}" [(ref-DPDC-S::UEV_IzSetClassFragmented id true 1)]))
 )
 (commit-tx)

@@ -398,7 +398,7 @@
             \ NOTE: the SWPI-style ground-truth (compare vs the real reader post-issue) does NOT apply \
             \ — post-populate nonces-used=8, so a live URCi_CreateNewNonces reads the UNdiscounted \
             \ price; the equality is code-proven, not test-arbitrated. A GAS-delta harness on the \
-            \ real C_DPSF|IssueCompany would confirm empirically. The discount itself (equity always \
+            \ real DPSF|C_IssueCompany would confirm empirically. The discount itself (equity always \
             \ Elite) is intended-behavior to confirm under task #76 (IGNIS re-pricing)."
         (let
             (

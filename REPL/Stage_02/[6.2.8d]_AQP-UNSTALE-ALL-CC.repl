@@ -3,7 +3,7 @@
 ;;
 ;; Legend: <(...)>  live call echo   ·   <<TX-UNSTALEALL*>>  assertion tag.
 ;; Source: 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact (CCp_UnstaleAll +
-;;         FVT|C>UNSTALE-ALL), 3_Talos/04_TS02-C3.pact (CCp_AQP-FVT|UnstaleAll).
+;;         FVT|C>UNSTALE-ALL), 3_Talos/04_TS02-C3.pact (AQP-FVT|CCp_UnstaleAll).
 ;; REPL tests: deb-staleness-unstale-all-cc.repl.
 ;;
 ;; WHAT THIS PROVES — the owner-side counterpart to [6.2.8b] CC_UnstaleMyScores: the FVT
@@ -52,7 +52,7 @@
         ]
     )
     ;; drop ANHD's EliteAuryn to ~1% → live Elite-DEB falls a tier ⇒ his treasury scores go stale
-    (ref-TS01-C1::C_DPTF|Transfer anhd ea-id anhd emma (floor (* ea-bal 0.99) 4) false)
+    (ref-TS01-C1::DPTF|C_Transfer anhd ea-id anhd emma (floor (* ea-bal 0.99) 4) false)
     (map print
         [
             (format "<(UNSTALEALL01 post-move: elite-deb {} -> {} · stale present users = {})>" [deb-pre (ref-DALOS::UR_Elite-DEB anhd) (length (ref-FVT::URH_FvtStalePresentUsers fvt-id))])
@@ -85,7 +85,7 @@
         [
             ;; Emma is not the FVT owner ⇒ the CAP_EnforceAccountOwnership on the owner-konto refuses.
             (expect-failure "<<TX-UNSTALEALL02>> non-owner Emma REFUSED by the owner-gate"
-                (ref-TS02-C3::CCp_AQP-FVT|UnstaleAll emma fvt-id auryn-id 100))
+                (ref-TS02-C3::AQP-FVT|CCp_UnstaleAll emma fvt-id auryn-id 100))
             ;; nothing was fixed — the staleness is untouched
             (expect "<<TX-UNSTALEALL02>> staleness untouched by the refused call" 1 (length (ref-FVT::URH_FvtStalePresentUsers fvt-id)))
         ]
@@ -117,7 +117,7 @@
     )
     (let
         (
-            (report:string (ref-TS02-C3::CCp_AQP-FVT|UnstaleAll anhd fvt-id auryn-id 100))
+            (report:string (ref-TS02-C3::AQP-FVT|CCp_UnstaleAll anhd fvt-id auryn-id 100))
         )
         (let
             (
@@ -164,7 +164,7 @@
     )
     (let
         (
-            (report:string (ref-TS02-C3::CCp_AQP-FVT|UnstaleAll anhd fvt-id auryn-id 100))
+            (report:string (ref-TS02-C3::AQP-FVT|CCp_UnstaleAll anhd fvt-id auryn-id 100))
         )
         (map print
             [

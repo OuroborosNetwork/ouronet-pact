@@ -237,7 +237,7 @@
     )
     (print
         (expect-failure "non-owner (patron) cannot update Hot-RBT branding of a pair they don't own"
-            (ref-TS01-C2::ATS|C_HOT-RBT|UpdatePendingBranding patron dd-k "evil-logo" "evil-desc" "evil.site" [])
+            (ref-TS01-C2::ATS|HOT-RBT|C_UpdatePendingBranding patron dd-k "evil-logo" "evil-desc" "evil.site" [])
         )
     )
 )
@@ -257,7 +257,7 @@
     ;; Bare call, not wrapped in expect: if CAP_Owner rejects aoz (it shouldn't — aoz IS the real
     ;; owner), this whole tx aborts and the REPL load fails loudly. Reaching MARKER-C5-OWNER-OK below
     ;; is itself the proof the legitimate owner path still works after the fix.
-    (ref-TS01-C2::ATS|C_HOT-RBT|UpdatePendingBranding aoz dd-k "real-logo" "real-desc" "real.site" [])
+    (ref-TS01-C2::ATS|HOT-RBT|C_UpdatePendingBranding aoz dd-k "real-logo" "real-desc" "real.site" [])
     (print "PROOF: real pair owner (aoz) CAN still update Hot-RBT branding — fix didn't break the legitimate path")
 )
 (commit-tx)

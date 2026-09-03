@@ -22,13 +22,13 @@
         (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
     )
     (print (format "MAKE FRAGMENTS RESULT = {}"
-        [(ref-TS02-C1::C_DPSF|MakeFragments KST.ANHD KST.ANHD id 3 100)]))
+        [(ref-TS02-C1::DPSF|C_MakeFragments KST.ANHD KST.ANHD id 3 100)]))
     (print (format "dpdc nonce3 (escrowed collateral) supply = {}" [(ref-DPDC::UR_AccountNonceSupply dpdc id true 3)]))
     ;; enable can-wipe on the collection (cw=true), matching what the real wipe path requires
     (print (format "ENABLE CAN-WIPE RESULT = {}"
-        [(ref-TS02-C1::C_DPSF|Control KST.ANHD id true true true true true true true true)]))
+        [(ref-TS02-C1::DPSF|C_Control KST.ANHD id true true true true true true true true)]))
     (print (format "FREEZE dpdc RESULT = {}"
-        [(ref-TS02-C1::C_DPSF|ToggleFreezeAccount KST.ANHD id dpdc true)]))
+        [(ref-TS02-C1::DPSF|C_ToggleFreezeAccount KST.ANHD id dpdc true)]))
 )
 (commit-tx)
 
@@ -47,6 +47,6 @@
         (id:string "DHOC-98c486052a51")
         (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
     )
-    (ref-TS02-C1::C_DPSF|WipeNonce KST.ANHD id dpdc 3)
+    (ref-TS02-C1::DPSF|C_WipeNonce KST.ANHD id dpdc 3)
 )
 (commit-tx)

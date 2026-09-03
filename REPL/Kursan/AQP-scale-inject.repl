@@ -80,18 +80,18 @@
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "ScaleInjFvt"))
     )
     ;; deb-based (class-1) vault + score + enable
-    (ref-TS02-C3::C_AQP-POOL|Issue patron "ScaleInjPool" ouro-id 1)
-    (ref-TS02-C3::C_AQP-SCR|IssueTrueFungibleScore patron patron "ScaleInjScore" 12 1.0)
-    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
+    (ref-TS02-C3::AQP-POOL|C_Issue patron "ScaleInjPool" ouro-id 1)
+    (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron "ScaleInjScore" 12 1.0)
+    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
     ;; ENABLE deb-boost while the score is empty — required for the score's deb to track Elite-DEB (go stale)
-    (ref-TS02-C3::C_AQP-SCR|EnableDebBoost patron score-id)
+    (ref-TS02-C3::AQP-SCR|C_EnableDebBoost patron score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
-    (ref-TS02-C3::C_AQP-POOL|EnablePoolStake patron pool-id)
+    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
     ;; stake 50 synth (2 OURO each) at Elite-DEB=1.0 → deb stored on the 1.0 basis
     (VCTGAS.XI_TfStakeOnly patron pool-id ouro-id 50 2.0)
     ;; mint EliteAuryn to patron, then GIVE 100000 to each synth → Elite-DEB rises → stored deb stale
-    (ref-TS01-C1::C_DPTF|Mint patron elite-id patron 10000000.0 true)
-    (map (lambda (i:integer) (ref-TS01-C1::C_DPTF|Transfer patron elite-id patron (VCTGAS.UC_SynthAccount i) 100000.0 true)) (enumerate 1 50))
+    (ref-TS01-C1::DPTF|C_Mint patron elite-id patron 10000000.0 true)
+    (map (lambda (i:integer) (ref-TS01-C1::DPTF|C_Transfer patron elite-id patron (VCTGAS.UC_SynthAccount i) 100000.0 true)) (enumerate 1 50))
     (let
         (
             (u1:string (VCTGAS.UC_SynthAccount 1))
@@ -142,7 +142,7 @@
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "ScaleInjFvt"))
     )
     (env-gas 0)
-    (ref-TS02-C3::CCp_AQP-FVT|InjectFixChunk patron fvt-id ouro-id 15)
+    (ref-TS02-C3::AQP-FVT|CCp_InjectFixChunk patron fvt-id ouro-id 15)
     (let
         (
             (g:integer (env-gas))
@@ -188,7 +188,7 @@
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "ScaleInjFvt"))
     )
     (env-gas 0)
-    (ref-TS02-C3::CCp_AQP-FVT|InjectFixChunk patron fvt-id ouro-id 15)
+    (ref-TS02-C3::AQP-FVT|CCp_InjectFixChunk patron fvt-id ouro-id 15)
     (let
         (
             (g:integer (env-gas))
@@ -234,7 +234,7 @@
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "ScaleInjFvt"))
     )
     (env-gas 0)
-    (ref-TS02-C3::CCp_AQP-FVT|InjectFixChunk patron fvt-id ouro-id 15)
+    (ref-TS02-C3::AQP-FVT|CCp_InjectFixChunk patron fvt-id ouro-id 15)
     (let
         (
             (g:integer (env-gas))
@@ -280,7 +280,7 @@
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "ScaleInjFvt"))
     )
     (env-gas 0)
-    (ref-TS02-C3::CCp_AQP-FVT|InjectFixChunk patron fvt-id ouro-id 15)
+    (ref-TS02-C3::AQP-FVT|CCp_InjectFixChunk patron fvt-id ouro-id 15)
     (let
         (
             (g:integer (env-gas))
@@ -329,7 +329,7 @@
     )
     (expect "<<SCALE-INJ-FINALIZE>> pre: zero stale (gate may proceed)" 0 (length (ref-FVT::URH_FvtStalePresentUsers fvt-id)))
     (env-gas 0)
-    (ref-TS02-C3::CC_AQP-FVT|InjectFinalize patron fvt-id ouro-id 10.0)
+    (ref-TS02-C3::AQP-FVT|CC_InjectFinalize patron fvt-id ouro-id 10.0)
     (let
         (
             (g:integer (env-gas))

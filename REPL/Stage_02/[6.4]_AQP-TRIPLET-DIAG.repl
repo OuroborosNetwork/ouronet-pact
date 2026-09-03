@@ -65,7 +65,7 @@
                   (if (not (contains n anhd-kbn))
                       (if (contains n emma-kbn)
                           (print (format "<(transfer KBN nonce {} EMMA→ANHD)> => \"{}\"" [n
-                              (ref-TS02-C2::C_DPNF|TransferNonce patron kbn-id emma owner n 1 false)
+                              (ref-TS02-C2::DPNF|C_TransferNonce patron kbn-id emma owner n 1 false)
                           ]))
                           (print (format "NOTE: KBN nonce {} not on EMMA (may already be staked)" [n]))
                       )
@@ -82,7 +82,7 @@
                   (lambda (n:integer)
                       (if (contains n anhd-unstaked)
                           (print (format "<(C_StakeNonFungible DHBunnies nonce {})> => \"{}\"" [n
-                              (ref-TS02-C3::CC_AQP-POOL|StakeNonFungibleCollectable
+                              (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable
                                   patron bunnies-pool owner owner kbn-id [n]
                               )
                           ]))
@@ -103,7 +103,7 @@
               ]
           )
           (print (format "<(CC_StakeTrueFungible DHOuroLp LP {})> => \"{}\"" [stake-amt
-              (ref-TS02-C3::CC_AQP-POOL|StakeTrueFungible patron pool-id owner owner lp-id stake-amt)
+              (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner owner lp-id stake-amt)
           ]))
           (map print
               [

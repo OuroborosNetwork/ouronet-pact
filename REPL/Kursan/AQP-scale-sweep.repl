@@ -72,14 +72,14 @@
         (boost-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpBoost"))
     )
     ;; 1. anchor on OURO (promile 500 / reference 1000) — acnoi=true creates the boost-class
-    (ref-TS02-C3::C_AQP-ANK|IssueTrueFungibleAnchor patron "ScaleSwpAnchor" ouro-id true "ScaleSwpBoost" 3 500.0 1000.0)
+    (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "ScaleSwpAnchor" ouro-id true "ScaleSwpBoost" 3 500.0 1000.0)
     ;; 2. pool + score, LINK the score to the boost-class WHILE EMPTY, then vault + enable
-    (ref-TS02-C3::C_AQP-POOL|Issue patron "ScaleSwpPool" ouro-id 1)
-    (ref-TS02-C3::C_AQP-SCR|IssueTrueFungibleScore patron patron "ScaleSwpScore" 12 1.0)
-    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
-    (ref-TS02-C3::C_AQP-SCR|CreateScoreBoostClassLink patron score-id boost-id)
+    (ref-TS02-C3::AQP-POOL|C_Issue patron "ScaleSwpPool" ouro-id 1)
+    (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron "ScaleSwpScore" 12 1.0)
+    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostClassLink patron score-id boost-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
-    (ref-TS02-C3::C_AQP-POOL|EnablePoolStake patron pool-id)
+    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
     ;; 3. stake 50 synth (2 OURO each) → each gains proportional promile (2/1000 * 500 = 1.0)
     (VCTGAS.XI_TfStakeOnly patron pool-id ouro-id 50 2.0)
     (let
@@ -135,7 +135,7 @@
         (probe-user:string (VCTGAS.UC_SynthAccount 1))
     )
     (env-gas 0)
-    (ref-TS02-C3::CC_AQP-FVT|SweepBegin patron anchor-id)
+    (ref-TS02-C3::AQP-FVT|CC_SweepBegin patron anchor-id)
     (let
         (
             (g:integer (env-gas))
@@ -185,7 +185,7 @@
         (pool-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpPool"))
     )
     (env-gas 0)
-    (ref-TS02-C3::CCp_AQP-FVT|SweepRecomputeChunk patron anchor-id 15)
+    (ref-TS02-C3::AQP-FVT|CCp_SweepRecomputeChunk patron anchor-id 15)
     (let
         (
             (g:integer (env-gas))
@@ -234,7 +234,7 @@
         (pool-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpPool"))
     )
     (env-gas 0)
-    (ref-TS02-C3::CCp_AQP-FVT|SweepRecomputeChunk patron anchor-id 15)
+    (ref-TS02-C3::AQP-FVT|CCp_SweepRecomputeChunk patron anchor-id 15)
     (let
         (
             (g:integer (env-gas))
@@ -283,7 +283,7 @@
         (pool-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpPool"))
     )
     (env-gas 0)
-    (ref-TS02-C3::CCp_AQP-FVT|SweepRecomputeChunk patron anchor-id 15)
+    (ref-TS02-C3::AQP-FVT|CCp_SweepRecomputeChunk patron anchor-id 15)
     (let
         (
             (g:integer (env-gas))
@@ -332,7 +332,7 @@
         (pool-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpPool"))
     )
     (env-gas 0)
-    (ref-TS02-C3::CCp_AQP-FVT|SweepRecomputeChunk patron anchor-id 15)
+    (ref-TS02-C3::AQP-FVT|CCp_SweepRecomputeChunk patron anchor-id 15)
     (let
         (
             (g:integer (env-gas))

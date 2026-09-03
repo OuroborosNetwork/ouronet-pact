@@ -69,7 +69,7 @@
         ;(ref-P|STOAICO::P|A_AddIMP mg)     Needed on Mainnet
         ;                                   Not needed on repl because it is already added on TS02-DPAD
         ;;Governor Update for <lpad-sc>
-        (ref-TS01-C1::C_DALOS|RotateGovernor
+        (ref-TS01-C1::DALOS|C_RotateGovernor
             KST.ANHD
             lpad-sc
             (ref-U|G::UEV_GuardOfAny

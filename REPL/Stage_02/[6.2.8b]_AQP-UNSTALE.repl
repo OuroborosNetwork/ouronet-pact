@@ -4,7 +4,7 @@
 ;; Legend: <(...)>  live call echo   ·   <<TX-UNSTALE*>>  assertion tag.
 ;; Source: 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact (CC_UnstaleMyScores +
 ;;         FVT|C>UNSTALE-MY-SCORES + GAS|UNSTALE), 3_Talos/04_TS02-C3.pact
-;;         (CC_AQP-FVT|UnstaleMyScores). REPL tests: deb-staleness-sweep-cc.repl.
+;;         (AQP-FVT|CC_UnstaleMyScores). REPL tests: deb-staleness-sweep-cc.repl.
 ;;
 ;; WHAT THIS PROVES — the UI-facing self-service unstale: ANHD moves his own Elite-DEB
 ;; DOWN (staleness on his SubsidiaryTreasury/SubsidiaryWonderCoach deb-score), then calls
@@ -48,7 +48,7 @@
         ]
     )
     ;; drop ANHD's EliteAuryn to ~1% of holdings → live Elite-DEB falls a tier ⇒ stored deb now stale
-    (ref-TS01-C1::C_DPTF|Transfer anhd ea-id anhd emma (floor (* ea-bal 0.99) 4) false)
+    (ref-TS01-C1::DPTF|C_Transfer anhd ea-id anhd emma (floor (* ea-bal 0.99) 4) false)
     (let
         (
             (deb-post:decimal (ref-DALOS::UR_Elite-DEB anhd))
@@ -99,8 +99,8 @@
         ]
     )
     ;; THE SELF-SERVICE UNSTALE — ANHD refreshes his own stale scores in SubsidiaryTreasury.
-    (print (format "<(UNSTALE02 CC_AQP-FVT|UnstaleMyScores anhd [SubsidiaryTreasury])> => \"{}\""
-        [(ref-TS02-C3::CC_AQP-FVT|UnstaleMyScores anhd [fvt-id])]))
+    (print (format "<(UNSTALE02 AQP-FVT|CC_UnstaleMyScores anhd [SubsidiaryTreasury])> => \"{}\""
+        [(ref-TS02-C3::AQP-FVT|CC_UnstaleMyScores anhd [fvt-id])]))
     (let
         (
             (stored-post:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore anhd pool-id score-id))

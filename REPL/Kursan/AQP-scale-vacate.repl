@@ -76,11 +76,11 @@
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "ScaleVacFvt"))
     )
     ;; pool (class 1 = TF) + score + vault + enable stake
-    (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name ouro-id 1)
-    (ref-TS02-C3::C_AQP-SCR|IssueTrueFungibleScore patron patron score-name 12 1.0)
-    (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
+    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name ouro-id 1)
+    (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron score-name 12 1.0)
+    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
-    (ref-TS02-C3::C_AQP-POOL|EnablePoolStake patron pool-id)
+    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
     ;; fund + stake synth-001 .. synth-050 (2 OURO each), each its OWN beneficiary
     (VCTGAS.XI_TfStakeOnly patron pool-id ouro-id 50 2.0)
     (print (format "<(staked 50 synth · pool leg-count)> => {}"
@@ -131,7 +131,7 @@
     )
     (let ((n:integer (length owners)))
         (env-gas 0)
-        (ref-TS02-C3::CCp_AQP-POOL|BatchDrainTrueFungible patron pool-id ouro-id owners owners (make-list n 2.0))
+        (ref-TS02-C3::AQP-POOL|CCp_BatchDrainTrueFungible patron pool-id ouro-id owners owners (make-list n 2.0))
         (let
             (
                 (g:integer (env-gas))
@@ -181,7 +181,7 @@
     )
     (let ((n:integer (length owners)))
         (env-gas 0)
-        (ref-TS02-C3::CCp_AQP-POOL|BatchDrainTrueFungible patron pool-id ouro-id owners owners (make-list n 2.0))
+        (ref-TS02-C3::AQP-POOL|CCp_BatchDrainTrueFungible patron pool-id ouro-id owners owners (make-list n 2.0))
         (let
             (
                 (g:integer (env-gas))
@@ -231,7 +231,7 @@
     )
     (let ((n:integer (length owners)))
         (env-gas 0)
-        (ref-TS02-C3::CCp_AQP-POOL|BatchDrainTrueFungible patron pool-id ouro-id owners owners (make-list n 2.0))
+        (ref-TS02-C3::AQP-POOL|CCp_BatchDrainTrueFungible patron pool-id ouro-id owners owners (make-list n 2.0))
         (let
             (
                 (g:integer (env-gas))
@@ -281,7 +281,7 @@
     )
     (let ((n:integer (length owners)))
         (env-gas 0)
-        (ref-TS02-C3::CCp_AQP-POOL|BatchDrainTrueFungible patron pool-id ouro-id owners owners (make-list n 2.0))
+        (ref-TS02-C3::AQP-POOL|CCp_BatchDrainTrueFungible patron pool-id ouro-id owners owners (make-list n 2.0))
         (let
             (
                 (g:integer (env-gas))
@@ -331,7 +331,7 @@
         (pool-id:string (ref-U|DALOS::UDC_Makeid "ScaleVacPool"))
     )
     (env-gas 0)
-    (ref-TS02-C3::C_AQP-POOL|FinalizeVacate patron pool-id)
+    (ref-TS02-C3::AQP-POOL|C_FinalizeVacate patron pool-id)
     (let ((g:integer (env-gas)))
         (map print
             [

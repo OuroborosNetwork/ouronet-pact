@@ -127,7 +127,7 @@
         ;(acquire-module-admin ouronet-ns.DPDC)
         ;;MAIN-NET VARIANT
         ;;(acquire-module-admin n_7d40ccda457e374d8eb07b658fd38c282c545038.DPDC)
-        (ref-TS01-C1::C_DALOS|RotateGovernor patron dpdc
+        (ref-TS01-C1::DALOS|C_RotateGovernor patron dpdc
             (ref-U|G::UEV_GuardOfAny
                 [
                     (create-capability-guard (DPDC.DPDC|GOV))
@@ -207,7 +207,7 @@
             (collection-owner:string patron)
             (collection-creator:string patron)
         )
-        (ref-TS02-C1::C_DPSF|Issue
+        (ref-TS02-C1::DPSF|C_Issue
             patron
             collection-owner collection-creator "OuronetCustodians" "DHOC"
             true true true true
@@ -262,7 +262,7 @@
             ;;
             (dhoc-id:string "DHOC-98c486052a51"
                 ;;1]Issue Custodians Collection
-                ;(ref-TS02-C1::C_DPSF|Issue
+                ;(ref-TS02-C1::DPSF|C_Issue
                 ;    patron
                 ;    collection-owner collection-creator "OuronetCustodians" "DHOC"
                 ;    true true true true
@@ -440,11 +440,11 @@
         )
         [
             ;;2]Create Nonces [1 2 3]
-            (ref-TS02-C1::C_DPSF|Create patron dhoc-id [10000 1000 100 105] native-nonce-data)
+            (ref-TS02-C1::DPSF|C_Create patron dhoc-id [10000 1000 100 105] native-nonce-data)
             ;;3]Enable Fragmentations for Nonces [1 2 3]
-            (ref-TS02-C1::C_DPSF|EnableNonceFragmentation patron dhoc-id 1 (at 0 fragments-nonce-data))
-            (ref-TS02-C1::C_DPSF|EnableNonceFragmentation patron dhoc-id 2 (at 1 fragments-nonce-data))
-            (ref-TS02-C1::C_DPSF|EnableNonceFragmentation patron dhoc-id 3 (at 2 fragments-nonce-data))
+            (ref-TS02-C1::DPSF|C_EnableNonceFragmentation patron dhoc-id 1 (at 0 fragments-nonce-data))
+            (ref-TS02-C1::DPSF|C_EnableNonceFragmentation patron dhoc-id 2 (at 1 fragments-nonce-data))
+            (ref-TS02-C1::DPSF|C_EnableNonceFragmentation patron dhoc-id 3 (at 2 fragments-nonce-data))
         ]
     )
 )
@@ -522,7 +522,7 @@
             (collection-creator:string patron)
         )
         [
-            (ref-TS02-C1::C_DPSF|IssueCompany
+            (ref-TS02-C1::DPSF|C_IssueCompany
                 patron collection-creator
                 "DemiourgosHoldings" "DH"
                 150.0 1000.0
@@ -626,7 +626,7 @@
             (collection-owner:string patron)
             (collection-creator:string patron)
         )
-        (ref-TS02-C1::C_DPSF|Issue
+        (ref-TS02-C1::DPSF|C_Issue
             patron
             collection-owner collection-creator "CodingDivision" "DHCD"
             true true true true 
@@ -692,7 +692,7 @@
             ;;
             ;;
             (dhcd-id:string "DHCD-98c486052a51"
-                ;(ref-TS02-C1::C_DPSF|Issue
+                ;(ref-TS02-C1::DPSF|C_Issue
                 ;    patron
                 ;    collection-owner collection-creator "CodingDivision" "DHCD"
                 ;    true true true true 
@@ -822,9 +822,9 @@
         )
         [
             ;;2]Create Nonces [1 2 3 4 5 6 7 8 9 10]
-            (ref-TS02-C1::C_DPSF|Create patron dhcd-id (make-list 10 500) (drop -1 native-nonce-data))
+            (ref-TS02-C1::DPSF|C_Create patron dhcd-id (make-list 10 500) (drop -1 native-nonce-data))
             ;;3]Define the CodingDivision Primordial Set
-            (ref-TS02-C1::C_DPSF|DefinePrimordialSet
+            (ref-TS02-C1::DPSF|C_DefinePrimordialSet
                 patron dhcd-id (at 10 names) 1.0
                 [
                     (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1])
@@ -911,7 +911,7 @@
             (collection-owner:string patron)
             (collection-creator:string patron)
         )
-        (ref-TS02-C1::C_DPSF|Issue
+        (ref-TS02-C1::DPSF|C_Issue
             patron
             collection-owner collection-creator "WonderCoach" "DHWC"
             true true true true 
@@ -974,7 +974,7 @@
             (collection-creator:string patron)
             ;;
             (dhwc-id:string "DHWC-98c486052a51"
-                ;(ref-TS02-C1::C_DPSF|Issue
+                ;(ref-TS02-C1::DPSF|C_Issue
                 ;    patron
                 ;    collection-owner collection-creator "WonderCoach" "DHWC"
                 ;    true true true true 
@@ -1192,13 +1192,13 @@
         )
         [
             ;;1]Create Nonce [1 2 3 4 5 6 7 8 9 10 11 12 12 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30]
-            (ref-TS02-C1::C_DPSF|Create
+            (ref-TS02-C1::DPSF|C_Create
                 patron dhwc-id
                 (fold (+) [] [(make-list 10 1000) (make-list 10 500) (make-list 10 200)])
                 (drop -4 native-nonce-data)
             )
             ;;2]Define the Bronze Set
-            (ref-TS02-C1::C_DPSF|DefinePrimordialSet
+            (ref-TS02-C1::DPSF|C_DefinePrimordialSet
                 patron dhwc-id (at 30 names) 1.0
                 [
                     (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1])
@@ -1215,7 +1215,7 @@
                 (at 30 native-nonce-data)
             )
             ;;3]Define Silver Set
-            (ref-TS02-C1::C_DPSF|DefinePrimordialSet
+            (ref-TS02-C1::DPSF|C_DefinePrimordialSet
                 patron dhwc-id (at 31 names) 1.0
                 [
                     (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [11])
@@ -1232,7 +1232,7 @@
                 (at 31 native-nonce-data)
             )
             ;;4]Define Golden Set
-            (ref-TS02-C1::C_DPSF|DefinePrimordialSet
+            (ref-TS02-C1::DPSF|C_DefinePrimordialSet
                 patron dhwc-id (at 32 names) 1.0
                 [
                     (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [21])
@@ -1249,7 +1249,7 @@
                 (at 32 native-nonce-data)
             )
             ;;5]Define Movie Set
-            (ref-TS02-C1::C_DPSF|DefineCompositeSet
+            (ref-TS02-C1::DPSF|C_DefineCompositeSet
                 patron dhwc-id (at 33 names) 1.0
                 [
                     (ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)
@@ -1336,7 +1336,7 @@
             ;;
         )
         [
-            (ref-TS02-C2::C_DPNF|Issue
+            (ref-TS02-C2::DPNF|C_Issue
                 patron
                 collection-owner collection-creator "DemiourgosHoldingsNosferatu" "DHN"
                 true true true true true true true true
@@ -1419,12 +1419,12 @@
             ;;
         )
         [
-            (ref-TS02-C2::C_DPNF|Issue
+            (ref-TS02-C2::DPNF|C_Issue
                 patron
                 collection-owner collection-creator "DemiourgosHoldingsBloodshed" "DHB"
                 true true true true true true true true
             )
-            ;(ref-TS02-C2::C_DPNF|Issue
+            ;(ref-TS02-C2::DPNF|C_Issue
             ;    patron
             ;    collection-owner collection-creator "DemiBunnies" "KBN"
             ;    true true true true true true true true
@@ -1507,12 +1507,12 @@
             ;;
         )
         [
-            ;(ref-TS02-C2::C_DPNF|Issue
+            ;(ref-TS02-C2::DPNF|C_Issue
             ;    patron
             ;    collection-owner collection-creator "DemiourgosHoldingsBloodshed" "DHB"
             ;    true true true true true true true true
             ;)
-            (ref-TS02-C2::C_DPNF|Issue
+            (ref-TS02-C2::DPNF|C_Issue
                 patron
                 collection-owner collection-creator "DemiBunnies" "KBN"
                 true true true true true true true true

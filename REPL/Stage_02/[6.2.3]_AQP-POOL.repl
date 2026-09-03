@@ -71,14 +71,14 @@
             }
         ]
     )
-    (print (format "<(TS02-C3.C_AQP-SCR|IssueSemiFungibleScore PoolRevokeProbeB)> => \"{}\"" [
-        (ref-TS02-C3::C_AQP-SCR|IssueSemiFungibleScore patron owner-konto probe-b-name 3 false)
+    (print (format "<(TS02-C3.AQP-SCR|C_IssueSemiFungibleScore PoolRevokeProbeB)> => \"{}\"" [
+        (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron owner-konto probe-b-name 3 false)
     ]))
-    (print (format "<(TS02-C3.C_AQP-POOL|Issue class=3)> => \"{}\"" [(ref-TS02-C3::C_AQP-POOL|Issue patron pool-name asset-id aqp-class)]))
+    (print (format "<(TS02-C3.AQP-POOL|C_Issue class=3)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_Issue patron pool-name asset-id aqp-class)]))
     ;;==== TX-POOL-01 · 02 · C_AddScore ×2 — REPL =====================================
     (print "--- [TX-POOL-01 · 02 · C_AddScore ×2] ---")
-    (print (format "<(TS02-C3.C_AQP-POOL|AddScore score-a)> => \"{}\"" [(ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-a)]))
-    (print (format "<(TS02-C3.C_AQP-POOL|AddScore score-b)> => \"{}\"" [(ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-b)]))
+    (print (format "<(TS02-C3.AQP-POOL|C_AddScore score-a)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-a)]))
+    (print (format "<(TS02-C3.AQP-POOL|C_AddScore score-b)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-b)]))
     ;;==== TX-POOL-01 · 03 · post-add reads + expect — REPL ===========================
     (print "--- [TX-POOL-01 · 03 · post-add reads + expect] ---")
     (let
@@ -107,7 +107,7 @@
     )
     ;;==== TX-POOL-01 · 04 · C_RevokeScore score-a (compact) — REPL ====================
     (print "--- [TX-POOL-01 · 04 · C_RevokeScore score-a] ---")
-    (print (format "<(TS02-C3.C_AQP-POOL|RevokeScore score-a)> => \"{}\"" [(ref-TS02-C3::C_AQP-POOL|RevokeScore patron pool-id score-a)]))
+    (print (format "<(TS02-C3.AQP-POOL|C_RevokeScore score-a)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_RevokeScore patron pool-id score-a)]))
     ;;==== TX-POOL-01 · 05 · post-revoke reads + expect — REPL =========================
     (print "--- [TX-POOL-01 · 05 · post-revoke reads + expect] ---")
     (let
@@ -208,32 +208,32 @@
             }
         ]
     )
-    (print (format "<(TS02-C3.C_AQP-SCR|IssueSemiFungibleScore hub)> => \"{}\"" [(ref-TS02-C3::C_AQP-SCR|IssueSemiFungibleScore patron owner-konto hub-name 3 false)]))
-    (print (format "<(TS02-C3.C_AQP-SCR|IssueSemiFungibleScore sat-a)> => \"{}\"" [(ref-TS02-C3::C_AQP-SCR|IssueSemiFungibleScore patron owner-konto sat-a-name 3 false)]))
-    (print (format "<(TS02-C3.C_AQP-SCR|IssueSemiFungibleScore sat-b)> => \"{}\"" [(ref-TS02-C3::C_AQP-SCR|IssueSemiFungibleScore patron owner-konto sat-b-name 3 false)]))
-    (print (format "<(TS02-C3.C_AQP-SCR|CreateScoreBoostLink sat-a->hub)> => \"{}\"" [(ref-TS02-C3::C_AQP-SCR|CreateScoreBoostLink patron sat-a-id hub-id)]))
-    (print (format "<(TS02-C3.C_AQP-SCR|CreateScoreBoostLink sat-b->hub)> => \"{}\"" [(ref-TS02-C3::C_AQP-SCR|CreateScoreBoostLink patron sat-b-id hub-id)]))
+    (print (format "<(TS02-C3.AQP-SCR|C_IssueSemiFungibleScore hub)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron owner-konto hub-name 3 false)]))
+    (print (format "<(TS02-C3.AQP-SCR|C_IssueSemiFungibleScore sat-a)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron owner-konto sat-a-name 3 false)]))
+    (print (format "<(TS02-C3.AQP-SCR|C_IssueSemiFungibleScore sat-b)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron owner-konto sat-b-name 3 false)]))
+    (print (format "<(TS02-C3.AQP-SCR|C_CreateScoreBoostLink sat-a->hub)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_CreateScoreBoostLink patron sat-a-id hub-id)]))
+    (print (format "<(TS02-C3.AQP-SCR|C_CreateScoreBoostLink sat-b->hub)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_CreateScoreBoostLink patron sat-b-id hub-id)]))
     ;;==== TX-POOL-02 · 02 · issue pool + add triplet — REPL ===========================
     (print "--- [TX-POOL-02 · 02 · issue pool + C_AddScore ×3] ---")
-    (print (format "<(TS02-C3.C_AQP-POOL|Issue class=3)> => \"{}\"" [(ref-TS02-C3::C_AQP-POOL|Issue patron pool-name asset-id aqp-class)]))
-    (print (format "<(TS02-C3.C_AQP-POOL|AddScore hub)> => \"{}\"" [(ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id hub-id)]))
-    (print (format "<(TS02-C3.C_AQP-POOL|AddScore sat-a)> => \"{}\"" [(ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id sat-a-id)]))
-    (print (format "<(TS02-C3.C_AQP-POOL|AddScore sat-b)> => \"{}\"" [(ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id sat-b-id)]))
+    (print (format "<(TS02-C3.AQP-POOL|C_Issue class=3)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_Issue patron pool-name asset-id aqp-class)]))
+    (print (format "<(TS02-C3.AQP-POOL|C_AddScore hub)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id hub-id)]))
+    (print (format "<(TS02-C3.AQP-POOL|C_AddScore sat-a)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id sat-a-id)]))
+    (print (format "<(TS02-C3.AQP-POOL|C_AddScore sat-b)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id sat-b-id)]))
     ;;==== TX-POOL-02 · 03 · expect-failure hub revoke while dependents employed — REPL
     (print "--- [TX-POOL-02 · 03 · expect-failure revoke hub with dependents] ---")
     (map print
         [
             (expect-failure
                 (format "<<TX-POOL-02 expect-failure>> revoke hub while sat-a/sat-b employed (must fail)" [])
-                (ref-TS02-C3::C_AQP-POOL|RevokeScore patron pool-id hub-id)
+                (ref-TS02-C3::AQP-POOL|C_RevokeScore patron pool-id hub-id)
             )
         ]
     )
     ;;==== TX-POOL-02 · 04 · revoke dependents then hub — REPL =========================
     (print "--- [TX-POOL-02 · 04 · revoke sat-b, sat-a, hub] ---")
-    (print (format "<(TS02-C3.C_AQP-POOL|RevokeScore sat-b)> => \"{}\"" [(ref-TS02-C3::C_AQP-POOL|RevokeScore patron pool-id sat-b-id)]))
-    (print (format "<(TS02-C3.C_AQP-POOL|RevokeScore sat-a)> => \"{}\"" [(ref-TS02-C3::C_AQP-POOL|RevokeScore patron pool-id sat-a-id)]))
-    (print (format "<(TS02-C3.C_AQP-POOL|RevokeScore hub)> => \"{}\"" [(ref-TS02-C3::C_AQP-POOL|RevokeScore patron pool-id hub-id)]))
+    (print (format "<(TS02-C3.AQP-POOL|C_RevokeScore sat-b)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_RevokeScore patron pool-id sat-b-id)]))
+    (print (format "<(TS02-C3.AQP-POOL|C_RevokeScore sat-a)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_RevokeScore patron pool-id sat-a-id)]))
+    (print (format "<(TS02-C3.AQP-POOL|C_RevokeScore hub)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_RevokeScore patron pool-id hub-id)]))
     ;;==== TX-POOL-02 · 05 · post-revoke reads + expect — REPL =========================
     (print "--- [TX-POOL-02 · 05 · post-revoke reads + expect] ---")
     (let

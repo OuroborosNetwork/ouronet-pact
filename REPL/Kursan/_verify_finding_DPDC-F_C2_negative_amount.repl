@@ -34,7 +34,7 @@
         (id:string "DHOC-98c486052a51")
     )
     (print (format "LEGIT MAKE-FRAGMENTS RESULT = {}"
-        [(ref-TS02-C1::C_DPSF|MakeFragments KST.ANHD KST.ANHD id 3 100)]))
+        [(ref-TS02-C1::DPSF|C_MakeFragments KST.ANHD KST.ANHD id 3 100)]))
     (print (format "AFTER legit make: anhd nonce3 supply = {}" [(ref-DPDC::UR_AccountNonceSupply KST.ANHD id true 3)]))
     (print (format "AFTER legit make: anhd fragment(-3) supply = {}" [(ref-DPDC::UR_AccountNonceSupply KST.ANHD id true -3)]))
 )
@@ -54,6 +54,6 @@
         (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
         (id:string "DHOC-98c486052a51")
     )
-    (ref-TS02-C1::C_DPSF|MakeFragments KST.ANHD KST.ANHD id 3 -100)
+    (ref-TS02-C1::DPSF|C_MakeFragments KST.ANHD KST.ANHD id 3 -100)
 )
 (commit-tx)

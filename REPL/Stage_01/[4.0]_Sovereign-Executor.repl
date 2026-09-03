@@ -68,21 +68,21 @@
         (ns-uze:string (ref-U|CT::CT_NS_USE))
     )
     [
-        (ref-TS01-A::A_DALOS|DeployStandardAccount
+        (ref-TS01-A::DALOS|A_DeployStandardAccount
             ;:Deploy AH Standard Ouronet Account
             "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî"
             (keyset-ref-guard (+ ns-uze ".dh_ah-keyset"))
             "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"    ;;Different Main Net Value
             "9G.CgcAjiI89ICnk45mxx63hwkBe5G71sIqfEta0ugkzF7EB6cy55BtzlFa27jDGE7Kn7ChljCmkcIsrDw9JwzJECieGLB5Jlkz9Blo6iJct6uxIA1u64Hr7HKa93EAiCwJJBBKAojJtwupEsvspH1jjGxKyFsb8fbfnJm1rAKxcIzcFILmmdHFaICfFpnbJG6tJu0HM9JCJ7MBCE7C2LiqvE6Fc1hqCeAdGHxDp7sGquI0wl2l08aa6wlKvwu44jgqF8mqDnCyjpxHuttEqjs4h9IJ28kmB53ppwoznt16rjzeMl21n3rwfI2es56rp5xavCabDacyCuonniz72L5d7dq3ptIEiuggEyLIIGe9sadH6eaMyitcmKaH7orgFz6d9kL9FKorBr06owFg328wFhCIlCFpwIzokmo47xKKt5kBzhyodBAjhCqayuHBue4oDhoA21A2H9ut9gApMuxokcmsi7Bd1kitrfJAy1GkrGiBK5dvlhgshcnGaG3vhkCm6dI5idCGjDEodivvDbgyI6zaajHvIMdBtrGvuKnxvsBulkbaDbk2wIdKwrK"
         )
-        (ref-TS01-A::A_DALOS|DeployStandardAccount
+        (ref-TS01-A::DALOS|A_DeployStandardAccount
             ;;Deploy CTO Standard Ouronet Account
             "Ѻ.CЭΞŸNGúůρhãmИΘÛ¢₳šШдìAÚwŚGýηЗПAÊУÔȘřŽÍζЗηmΔφDmcдΛъ₳tĂýăŮsПÞ$öœGθeBŽvąαÃfçл¢ĎĆď$şbsЦэΘNÄëÍĂνуãöž¥àZjÆůšÁœôñχŽâЩåτâн4μфAOçĎΓuЗŮnøЙãĚè6Дżîþż$цÑûρψŻïZÉλûæřΨeèÎígςeL"
             (keyset-ref-guard (+ ns-uze ".dh_cto-keyset"))
             "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
             "9G.7si93iImtrM53Jl9C7pIojCAmq04gHyk8d1lle6x07Hfh57idcrqEznFM7ousiC14d16dlIbwAE2K7MBK79ApIMgb405svepvaz7azIIHGLulbIqBefscnsmydqD1pCHAKlH3xu6tJk6ejJk5fMlvtrvu2gc0lnz7knipdqvE6huvywrFt925E9Ci5bkspirF8GDA03Iorf5zdg1ad6tFG9uMBHL2aqsu0JcoicuoHcCnLHE6dBoignL7DiJrFGxgimrmrF5cLoqDjrjhb3GwFD4wfnMDbIqmq3MMrBJm96Ggve7worr5z5oLh5bhhrjHzf0fLH77ho1zv04kEM8odz6254H4JewC4sw9cxA1Aa9vaggj5owFK332Fff41lCi75otEhdzoheln2Czli46tcKv35o1ftkHLgrjAtMoIFDKuFjzv4d3kbqJ4Crzgtn63o95FMqFF91MbLGMLEBjis3sjJiGB0yLJzdBetdECclzxFo5cAve8o08Hifng4kEgExDzqFhKGdK9lCmyu4E9vo6k3jHjhH96KlvGDCjwMFcpkqyMB2gtlurlst"
         )
-        (ref-TS01-A::A_DALOS|DeployStandardAccount
+        (ref-TS01-A::DALOS|A_DeployStandardAccount
             ;;Deploy HOV Standard Ouronet Account
             "Ѻ.ÍăüÙÜЦżΦF₿ÈшÕóñĐĞGюѺλωÇțnθòoйEςк₱0дş3ôPpxŞțqgЖ€šωbэočΞìČ5òżŁdŒИöùЪøŤяжλзÜ2ßżpĄγïčѺöэěτČэεSčDõžЩУЧÀ₳ŚàЪЙĎpЗΣ2ÃлτíČнÙyéÕãďWŹŘĘźσПåbã€éѺι€ΓφŠ₱ŽyWcy5ŘòmČ₿nβÁ¢¥NЙëOι"
             (keyset-ref-guard (+ ns-uze ".dh_hov-keyset"))
@@ -224,28 +224,28 @@
     )
     [
         ;;Stoa Prices (Main-Net Prices x1000)
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "standard"      0.01)
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "smart"         0.02)
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "ats"            0.1)
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "swp"           0.15)
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "dptf"           0.2)
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "dpmf"           0.3)
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "dpsf"           0.4)
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "dpnf"           0.5)
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "blue"         0.025)
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "codex"        100.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "standard"      0.01)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "smart"         0.02)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "ats"            0.1)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "swp"           0.15)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "dptf"           0.2)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "dpmf"           0.3)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "dpsf"           0.4)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "dpnf"           0.5)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "blue"         0.025)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "codex"        100.0)
 
         ;;Ignis Prices
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "ignis|smallest"            1.0)
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "ignis|small"               2.0)
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "ignis|medium"              3.0)
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "ignis|big"                 4.0)
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "ignis|biggest"             5.0)
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "ignis|branding"          100.0)
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "ignis|token-issue"       500.0)
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "ignis|ats-issue"        5000.0)
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "ignis|swp-issue"        4000.0)
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "ignis|swp-liquidity"      20.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "ignis|smallest"            1.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "ignis|small"               2.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "ignis|medium"              3.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "ignis|big"                 4.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "ignis|biggest"             5.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "ignis|branding"          100.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "ignis|token-issue"       500.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "ignis|ats-issue"        5000.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "ignis|swp-issue"        4000.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "ignis|swp-liquidity"      20.0)
 
         ;;REPL-VARIANT:
         (acquire-module-admin ouronet-ns.DALOS)
@@ -350,7 +350,7 @@
         (swp-sc:string (ref-DALOS::GOV|SWP|SC_NAME))
     )
     [
-        (ref-TS01-A::A_DALOS|DeploySmartAccount
+        (ref-TS01-A::DALOS|A_DeploySmartAccount
             ;;Dalos Smart Ouronet Account
             dalos-sc
             (keyset-ref-guard (ref-DALOS::GOV|DalosKey)) 
@@ -358,7 +358,7 @@
             patron 
             (ref-DALOS::GOV|DALOS|PBL)
         )
-        (ref-TS01-A::A_DALOS|DeploySmartAccount
+        (ref-TS01-A::DALOS|A_DeploySmartAccount
             ;;Autostake Smart Ouronet Account
             ats-sc
             (keyset-ref-guard (ref-DALOS::GOV|AutostakeKey)) 
@@ -366,7 +366,7 @@
             patron 
             (ref-DALOS::GOV|ATS|PBL)
         )
-        (ref-TS01-A::A_DALOS|DeploySmartAccount
+        (ref-TS01-A::DALOS|A_DeploySmartAccount
             ;;Vesting Smart Ouronet Account
             (ref-DALOS::GOV|VST|SC_NAME)
             (keyset-ref-guard (ref-DALOS::GOV|VestingKey)) 
@@ -374,7 +374,7 @@
             patron 
             (ref-DALOS::GOV|VST|PBL)
         )
-        (ref-TS01-A::A_DALOS|DeploySmartAccount
+        (ref-TS01-A::DALOS|A_DeploySmartAccount
             ;;Liquid-Staking Smart Ouronet Account
             liquid-sc
             (keyset-ref-guard (ref-DALOS::GOV|LiquidKey)) 
@@ -382,7 +382,7 @@
             patron 
             (ref-DALOS::GOV|LIQUID|PBL)
         )
-        (ref-TS01-A::A_DALOS|DeploySmartAccount
+        (ref-TS01-A::DALOS|A_DeploySmartAccount
             ;;Ouroboros Smart Ouronet Account
             ouroboros-sc 
             (keyset-ref-guard (ref-DALOS::GOV|OuroborosKey)) 
@@ -390,7 +390,7 @@
             patron 
             (ref-DALOS::GOV|OUROBOROS|PBL)
         )
-        (ref-TS01-A::A_DALOS|DeploySmartAccount
+        (ref-TS01-A::DALOS|A_DeploySmartAccount
             ;;SWP Smart Ouronet Account
             swp-sc
             (keyset-ref-guard (ref-DALOS::GOV|SwapKey)) 
@@ -400,14 +400,14 @@
         )
         ;;
         ;;
-        (ref-TS01-A::A_DALOS|DeployStandardAccount
+        (ref-TS01-A::DALOS|A_DeployStandardAccount
             ;;Demiourgos Treasury Standard Ouronet Account
             (ref-DALOS::GOV|DHV1|SC_NAME) 
             (keyset-ref-guard (ref-DALOS::GOV|DHVKey)) 
             "k:1ca97db36aa87fd6fd7be81a263811469bf8b79d6b21ef3a215653bdcf7af55a"    ;;Different Main Net Value
             (ref-DALOS::GOV|DHV|PBL)
         )
-        (ref-TS01-A::A_DALOS|DeploySmartAccount
+        (ref-TS01-A::DALOS|A_DeploySmartAccount
             ;Demiourgos Treasury Smart Ouronet Account
             (ref-DALOS::GOV|DHV2|SC_NAME)
             (keyset-ref-guard (ref-DALOS::GOV|DHVKey)) 
@@ -418,7 +418,7 @@
         ;;
         ;;
         ;;Genesis Governor Setups
-        (ref-TS01-C1::C_DALOS|RotateGovernor patron dalos-sc
+        (ref-TS01-C1::DALOS|C_RotateGovernor patron dalos-sc
             (ref-U|G::UEV_GuardOfAny
                 [
                     (ref-P|DALOS::P|UR "TFT|RemoteDalosGov")
@@ -429,7 +429,7 @@
                 ]
             )
         )
-        (ref-TS01-C1::C_DALOS|RotateGovernor patron ats-sc
+        (ref-TS01-C1::DALOS|C_RotateGovernor patron ats-sc
             (ref-U|G::UEV_GuardOfAny
                 [
                     (create-capability-guard (ATS.ATS|GOV))
@@ -439,7 +439,7 @@
                 ]
             )
         )
-        (ref-TS01-C1::C_DALOS|RotateGovernor patron vst-sc
+        (ref-TS01-C1::DALOS|C_RotateGovernor patron vst-sc
             (ref-U|G::UEV_GuardOfAny
                 [
                     (create-capability-guard (VST.VST|GOV))
@@ -448,13 +448,13 @@
                 ]
             )
         )
-        (ref-TS01-C1::C_DALOS|RotateGovernor patron liquid-sc
+        (ref-TS01-C1::DALOS|C_RotateGovernor patron liquid-sc
             (create-capability-guard (LIQUID.LIQUID|GOV))
         )
-        (ref-TS01-C1::C_DALOS|RotateGovernor patron ouroboros-sc
+        (ref-TS01-C1::DALOS|C_RotateGovernor patron ouroboros-sc
             (create-capability-guard (OUROBOROS.ORBR|GOV))
         )
-        (ref-TS01-C1::C_DALOS|RotateGovernor patron swp-sc
+        (ref-TS01-C1::DALOS|C_RotateGovernor patron swp-sc
             (ref-U|G::UEV_GuardOfAny
                 [
                     (create-capability-guard (SWP.SWP|GOV))
@@ -517,7 +517,7 @@
         (dalos:string (ref-DALOS::GOV|DALOS|SC_NAME))
         (ouroboros:string (ref-DALOS::GOV|OUROBOROS|SC_NAME))
         (ids:list
-            (ref-TS01-C1::C_DPTF|Issue
+            (ref-TS01-C1::DPTF|C_Issue
                 patron
                 dalos
                 ;; DalosUrStoa (DUK, 3 dec = URSTOA_PREC) mirrors DalosWrappedStoa (DWK) — its flags match DWK
@@ -559,24 +559,24 @@
             }
         )
         ;;Set Token Roles Part I
-        (ref-TS01-C1::C_DPTF|SetFee patron AurynID 50.0)
-        (ref-TS01-C1::C_DPTF|SetFee patron EliteAurynID 100.0)
-        (ref-TS01-C1::C_DPTF|ToggleFee patron AurynID true)
-        (ref-TS01-C1::C_DPTF|ToggleFee patron EliteAurynID true)
-        (ref-TS01-C1::C_DPTF|ToggleFeeLock patron AurynID true)
-        (ref-TS01-C1::C_DPTF|ToggleFeeLock patron EliteAurynID true)
+        (ref-TS01-C1::DPTF|C_SetFee patron AurynID 50.0)
+        (ref-TS01-C1::DPTF|C_SetFee patron EliteAurynID 100.0)
+        (ref-TS01-C1::DPTF|C_ToggleFee patron AurynID true)
+        (ref-TS01-C1::DPTF|C_ToggleFee patron EliteAurynID true)
+        (ref-TS01-C1::DPTF|C_ToggleFeeLock patron AurynID true)
+        (ref-TS01-C1::DPTF|C_ToggleFeeLock patron EliteAurynID true)
         ;;
         ;;Set Token Roles Part II
-        (ref-TS01-C1::C_DPTF|SetMinMove patron GasID 1000.0)
-        (ref-TS01-C1::C_DPTF|SetFee patron GasID -1.0)
-        (ref-TS01-C1::C_DPTF|SetFeeTarget patron GasID dalos)
-        (ref-TS01-C1::C_DPTF|ToggleFee patron GasID true)
-        (ref-TS01-C1::C_DPTF|ToggleFeeLock patron GasID true)
-        ;(ref-TS01-C1::C_DPTF|ToggleBurnRole patron GasID ouroboros true)
-        ;(ref-TS01-C1::C_DPTF|ToggleBurnRole patron OuroID ouroboros true)
-        ;(ref-TS01-C1::C_DPTF|ToggleMintRole patron GasID ouroboros true)
-        ;(ref-TS01-C1::C_DPTF|ToggleMintRole patron OuroID ouroboros true)
-        ;(ref-TS01-C1::C_DPTF|ToggleMintRole patron OuroID treasury-sc true)
+        (ref-TS01-C1::DPTF|C_SetMinMove patron GasID 1000.0)
+        (ref-TS01-C1::DPTF|C_SetFee patron GasID -1.0)
+        (ref-TS01-C1::DPTF|C_SetFeeTarget patron GasID dalos)
+        (ref-TS01-C1::DPTF|C_ToggleFee patron GasID true)
+        (ref-TS01-C1::DPTF|C_ToggleFeeLock patron GasID true)
+        ;(ref-TS01-C1::DPTF|C_ToggleBurnRole patron GasID ouroboros true)
+        ;(ref-TS01-C1::DPTF|C_ToggleBurnRole patron OuroID ouroboros true)
+        ;(ref-TS01-C1::DPTF|C_ToggleMintRole patron GasID ouroboros true)
+        ;(ref-TS01-C1::DPTF|C_ToggleMintRole patron OuroID ouroboros true)
+        ;(ref-TS01-C1::DPTF|C_ToggleMintRole patron OuroID treasury-sc true)
     ]
 )
 
@@ -615,9 +615,9 @@
         (AurynID:string (ref-DALOS::UR_AurynID))
         (EliteAurynID:string (ref-DALOS::UR_EliteAurynID))
         ;;
-        (VestedOuroID:string (at 1 (ref-TS01-C2::C_VST|CreateVestingLink patron OuroID)))
-        (VestedAurynID:string (at 1 (ref-TS01-C2::C_VST|CreateVestingLink patron AurynID)))
-        (VestedEliteAurynID:string (at 1 (ref-TS01-C2::C_VST|CreateVestingLink patron EliteAurynID)))
+        (VestedOuroID:string (at 1 (ref-TS01-C2::VST|C_CreateVestingLink patron OuroID)))
+        (VestedAurynID:string (at 1 (ref-TS01-C2::VST|C_CreateVestingLink patron AurynID)))
+        (VestedEliteAurynID:string (at 1 (ref-TS01-C2::VST|C_CreateVestingLink patron EliteAurynID)))
     )
     [VestedOuroID VestedAurynID VestedEliteAurynID]
 )
@@ -658,7 +658,7 @@
         (WrappedStoaID:string (ref-DALOS::UR_WrappedStoaID))
         (StakedStoaID:string (ref-DALOS::UR_SilverStoaID))
         (ats-ids:list
-            (ref-TS01-C2::C_ATS|Issue
+            (ref-TS01-C2::ATS|C_Issue
                 patron
                 patron
                 ["Auryndex" "EliteAuryndex" "StoaLiquindex"]
@@ -675,7 +675,7 @@
     )
     [
         ;;Set Up <Auryndex> 4795
-        (ref-TS01-C2::C_ATS|SetColdRecoveryFees patron Auryndex
+        (ref-TS01-C2::ATS|C_SetColdRecoveryFees patron Auryndex
             7
             [50.0 100.0 200.0 350.0 550.0 800.0]
             [
@@ -688,16 +688,16 @@
                 [14.0 13.0 12.0 11.0 10.0 9.0 8.0]
             ]
         )
-        (ref-TS01-C2::C_ATS|SwitchColdRecovery patron Auryndex true)
+        (ref-TS01-C2::ATS|C_SwitchColdRecovery patron Auryndex true)
         ;;Set Up <EliteAuryndex>
-        (ref-TS01-C2::C_ATS|SetColdRecoveryFees patron Elite-Auryndex 7 [0.0] [[0.0]])
-        (ref-TS01-C2::C_ATS|SetColdRecoveryDuration patron Elite-Auryndex false 360 24)
-        (ref-TS01-C2::C_ATS|ToggleElite patron Elite-Auryndex true)
-        (ref-TS01-C2::C_ATS|SwitchColdRecovery patron Elite-Auryndex true)
+        (ref-TS01-C2::ATS|C_SetColdRecoveryFees patron Elite-Auryndex 7 [0.0] [[0.0]])
+        (ref-TS01-C2::ATS|C_SetColdRecoveryDuration patron Elite-Auryndex false 360 24)
+        (ref-TS01-C2::ATS|C_ToggleElite patron Elite-Auryndex true)
+        (ref-TS01-C2::ATS|C_SwitchColdRecovery patron Elite-Auryndex true)
         ;;Set Up <StoaLiquindex>
-        (ref-TS01-C2::C_ATS|SetColdRecoveryFees patron Stoa-Liquid-Index -1 [0.0] [[0.0]])
-        (ref-TS01-C2::C_ATS|SetColdRecoveryDuration patron Stoa-Liquid-Index false 12 6)
-        (ref-TS01-C2::C_ATS|SwitchColdRecovery patron Stoa-Liquid-Index true)
+        (ref-TS01-C2::ATS|C_SetColdRecoveryFees patron Stoa-Liquid-Index -1 [0.0] [[0.0]])
+        (ref-TS01-C2::ATS|C_SetColdRecoveryDuration patron Stoa-Liquid-Index false 12 6)
+        (ref-TS01-C2::ATS|C_SwitchColdRecovery patron Stoa-Liquid-Index true)
         ats-ids
     ]
 )
@@ -734,7 +734,7 @@
         (patron:string KST.ANHD)
         (ouro-amount:decimal 2000000.0)     ;;Main-Net Value Different
     )
-    (ref-TS01-C1::C_DPTF|Mint
+    (ref-TS01-C1::DPTF|C_Mint
         patron
         (ref-DALOS::UR_OuroborosID)
         patron
@@ -776,12 +776,12 @@
         (lumy:string KST.LUMY)
     )
     [
-        (ref-TS01-C2::C_ORBR|Sublimate patron patron 10000.0)
-        (ref-TS01-C2::C_ORBR|Sublimate patron aozt 1000.0)
-        (ref-TS01-C2::C_ORBR|Sublimate patron emma 1000.0)
-        (ref-TS01-C2::C_ORBR|Sublimate patron lumy 1000.0)
+        (ref-TS01-C2::ORBR|C_Sublimate patron patron 10000.0)
+        (ref-TS01-C2::ORBR|C_Sublimate patron aozt 1000.0)
+        (ref-TS01-C2::ORBR|C_Sublimate patron emma 1000.0)
+        (ref-TS01-C2::ORBR|C_Sublimate patron lumy 1000.0)
         ;; #79 Phase 2: cover the V2 sublimation path (price-aware, 1% fee) — OURO supply is positive here
-        (ref-TS01-C2::C_ORBR|SublimateV2 patron patron 1000.0)
+        (ref-TS01-C2::ORBR|C_SublimateV2 patron patron 1000.0)
     ]
 )
 
@@ -825,22 +825,22 @@
         (liquid:string (ref-DALOS::GOV|LIQUID|SC_NAME))
     )
     [
-        (ref-TS01-A::A_DALOS|IgnisToggle false true)
-        (ref-TS01-A::A_DALOS|IgnisToggle true true)
+        (ref-TS01-A::DALOS|A_IgnisToggle false true)
+        (ref-TS01-A::DALOS|A_IgnisToggle true true)
         ;;
         ;;#N2 fix: system smart accounts (not self-owned) - admin variant, not self-service C_
-        (ref-TS01-A::A_DPTF|DeployAccount patron AurynID ats)
-        (ref-TS01-A::A_DPTF|DeployAccount patron EliteAurynID ats)
-        (ref-TS01-A::A_DPTF|DeployAccount patron WrappedStoaID liquid)
-        (ref-TS01-A::A_DPTF|DeployAccount patron StakedStoaID liquid)
+        (ref-TS01-A::DPTF|A_DeployAccount patron AurynID ats)
+        (ref-TS01-A::DPTF|A_DeployAccount patron EliteAurynID ats)
+        (ref-TS01-A::DPTF|A_DeployAccount patron WrappedStoaID liquid)
+        (ref-TS01-A::DPTF|A_DeployAccount patron StakedStoaID liquid)
         ;; wrapped-UrStoa (DUK) — same liquid-SC holding account as native wrapped-Stoa (DWK)
-        (ref-TS01-A::A_DPTF|DeployAccount patron (ref-DALOS::UR_UrStoaID) liquid)
+        (ref-TS01-A::DPTF|A_DeployAccount patron (ref-DALOS::UR_UrStoaID) liquid)
         ;;Set Token Roles Part III
-        (ref-TS01-C1::C_DPTF|SetFee patron StakedStoaID -1.0)
-        (ref-TS01-C1::C_DPTF|ToggleFee patron StakedStoaID true)
-        (ref-TS01-C1::C_DPTF|ToggleFeeLock patron StakedStoaID true)
-        ;(ref-TS01-C1::C_DPTF|ToggleBurnRole patron WrappedStoaID liquid true)
-        ;(ref-TS01-C1::C_DPTF|ToggleMintRole patron WrappedStoaID liquid true)
+        (ref-TS01-C1::DPTF|C_SetFee patron StakedStoaID -1.0)
+        (ref-TS01-C1::DPTF|C_ToggleFee patron StakedStoaID true)
+        (ref-TS01-C1::DPTF|C_ToggleFeeLock patron StakedStoaID true)
+        ;(ref-TS01-C1::DPTF|C_ToggleBurnRole patron WrappedStoaID liquid true)
+        ;(ref-TS01-C1::DPTF|C_ToggleMintRole patron WrappedStoaID liquid true)
     ]
     
 )
@@ -883,7 +883,7 @@
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
         (patron:string KST.ANHD)
     )
-    (ref-TS01-C2::C_LQD|WrapStoa patron patron 1.0)
+    (ref-TS01-C2::LQD|C_WrapStoa patron patron 1.0)
 )
 
 ;;==== TX-11 [4.1.11] - Dalos INIT [11]: Wrap Stoa · 03 · gas echo ==== =========================
@@ -958,13 +958,13 @@
             (ur-before:decimal (ref-ur-coin::UR_UR|Balance (ref-DALOS::UR_AccountStoa patron)))
         )
         ;; WrapUrStoa: patron's UrStoa -> liquid SC; mints 1.0 wrapped-UrStoa (DUK) to the patron
-        (ref-TS01-C2::C_LQD|WrapUrStoa patron patron 1.0)
+        (ref-TS01-C2::LQD|C_WrapUrStoa patron patron 1.0)
         (let
             (
                 (duk-after-wrap:decimal (ref-DPTF::UR_AccountSupply ur-id patron))
             )
             ;; UnwrapUrStoa: burns the 1.0 DUK, returns 1.0 UrStoa to the patron's Stoa addr
-            (ref-TS01-C2::C_LQD|UnwrapUrStoa patron patron 1.0)
+            (ref-TS01-C2::LQD|C_UnwrapUrStoa patron patron 1.0)
             (map print
                 [
                     (expect "<<TX-11b>> WrapUrStoa minted 1.0 DUK to the patron" 1.0 duk-after-wrap)
@@ -1005,7 +1005,7 @@
         ;;
         (patron:string KST.ANHD)
     )
-    (ref-TS01-C2::C_ATS|Coil
+    (ref-TS01-C2::ATS|C_Coil
         patron
         patron
         (at 0 (ref-DPTF::UR_RewardBearingToken (ref-DALOS::UR_SilverStoaID)))
@@ -1049,7 +1049,7 @@
         (rt-amounts:[decimal] [418414.8824])
         (rbt-request-amount:decimal 159016.8713)
     )
-    (ref-TS01-C2::C_ATS|KickStart patron patron atspair rt-amounts rbt-request-amount)
+    (ref-TS01-C2::ATS|C_KickStart patron patron atspair rt-amounts rbt-request-amount)
 )
 
 ;;==== TX-13 [4.1.13] - Dalos INIT [13]: KickStart Auryndex · 03 · gas echo ==== ==================
@@ -1087,7 +1087,7 @@
         (rt-amounts:[decimal] [114907.2904])
         (rbt-request-amount:decimal (at 0 rt-amounts))
     )
-    (ref-TS01-C2::C_ATS|KickStart patron patron atspair rt-amounts rbt-request-amount)
+    (ref-TS01-C2::ATS|C_KickStart patron patron atspair rt-amounts rbt-request-amount)
 )
 
 ;;==== TX-14 [4.1.14] - Dalos INIT [14]: Kickstart EliteAuryndex · 03 · gas echo ==== =============
@@ -1123,7 +1123,7 @@
         (ouro-id:string (ref-DALOS::UR_OuroborosID))
 
     )
-    (ref-TS01-C1::C_DPTF|Transmute patron ouro-id patron 10.0)
+    (ref-TS01-C1::DPTF|C_Transmute patron ouro-id patron 10.0)
 )
 
 ;;==== TX-15 [4.1.15] - Dalos INIT [15]: Transmute · 03 · gas echo ==== ===========================
@@ -1159,7 +1159,7 @@
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
     )
-    (ref-TS01-C1::C_DPTF|Transfer
+    (ref-TS01-C1::DPTF|C_Transfer
         patron
         OuroID
         patron
@@ -1244,7 +1244,7 @@
         (patron:string KST.ANHD)
         (OuroID:string (ref-DALOS::UR_OuroborosID))
         (ids:list
-            (ref-TS01-C1::C_DPTF|Issue
+            (ref-TS01-C1::DPTF|C_Issue
                 patron
                 patron
                 ["Vesta"]
@@ -1259,9 +1259,9 @@
             )
         )
         (VestaID:string (at 0 ids))
-        (FrozenVestaID:string (at 1 (ref-TS01-C2::C_VST|CreateFrozenLink patron VestaID)))
-        (SleepingVestaID:string (at 1 (ref-TS01-C2::C_VST|CreateSleepingLink patron VestaID)))
-        (ReservedOuroID:string (at 1 (ref-TS01-C2::C_VST|CreateReservationLink patron OuroID)))
+        (FrozenVestaID:string (at 1 (ref-TS01-C2::VST|C_CreateFrozenLink patron VestaID)))
+        (SleepingVestaID:string (at 1 (ref-TS01-C2::VST|C_CreateSleepingLink patron VestaID)))
+        (ReservedOuroID:string (at 1 (ref-TS01-C2::VST|C_CreateReservationLink patron OuroID)))
     )
     [VestaID FrozenVestaID SleepingVestaID ReservedOuroID]
 )
@@ -1384,16 +1384,16 @@
         (p2:string (ref-DALOS::UR_OuroborosID))
         (swp:string (ref-DALOS::GOV|SWP|SC_NAME))
     )
-    (ref-TS01-A::A_SWP|UpdatePrincipal p1 true)
-    (ref-TS01-A::A_SWP|UpdatePrincipal p2 true)
+    (ref-TS01-A::SWP|A_UpdatePrincipal p1 true)
+    (ref-TS01-A::SWP|A_UpdatePrincipal p2 true)
 
     ;;#N2 fix: swp is a system smart account (not self-owned) - admin variant
-    (ref-TS01-A::A_DPTF|DeployAccount patron p1 swp)
-    ;(ref-TS01-C1::C_DPTF|ToggleFeeExemptionRole patron p1 swp true)
-    ;(ref-TS01-C1::C_DPTF|ToggleBurnRole patron p1 swp true)
+    (ref-TS01-A::DPTF|A_DeployAccount patron p1 swp)
+    ;(ref-TS01-C1::DPTF|C_ToggleFeeExemptionRole patron p1 swp true)
+    ;(ref-TS01-C1::DPTF|C_ToggleBurnRole patron p1 swp true)
 
-    (ref-TS01-A::A_DPTF|DeployAccount patron p2 swp)
-    ;(ref-TS01-C1::C_DPTF|ToggleFeeExemptionRole patron p2 swp true)
+    (ref-TS01-A::DPTF|A_DeployAccount patron p2 swp)
+    ;(ref-TS01-C1::DPTF|C_ToggleFeeExemptionRole patron p2 swp true)
 )
 
 ;;==== TX-18 [4.1.19] - Dalos INIT [19]: SWP Setup 2 · 03 · gas echo ==== =========================
@@ -1502,7 +1502,7 @@
             (patron-wstoa-balance:decimal (ref-DPTF::UR_AccountSupply wstoa-id patron))
             ;;
             (ids:list
-                (ref-TS01-C1::C_DPTF|Issue
+                (ref-TS01-C1::DPTF|C_Issue
                     patron
                     patron
                     ["PensionStoa"]
@@ -1518,11 +1518,11 @@
             )
             (PensionID:string (at 0 ids))
             (HibernatedPensionID:string 
-                (at 1 (ref-TS01-C2::C_VST|CreateHibernatingLink patron PensionID))
+                (at 1 (ref-TS01-C2::VST|C_CreateHibernatingLink patron PensionID))
             )
             (KoriID:string
                 (at 0
-                    (ref-TS01-C2::C_ATS|Issue
+                    (ref-TS01-C2::ATS|C_Issue
                         patron
                         patron
                         ["KORIndex" ]
@@ -1543,8 +1543,8 @@
                 (format "Cumulated Royalty on Kori is {}" [(ref-ATS::UR_SingleRewardTokenRUR KoriID sstoa-id 3)])
             ]
             [
-                (ref-TS01-C2::C_LQD|WrapStoa patron patron stoa-wrap-amount)
-                (ref-TS01-C2::C_ATS|Coil patron patron "StoaLiquindex-98c486052a51" wstoa-id 98000.0)
+                (ref-TS01-C2::LQD|C_WrapStoa patron patron stoa-wrap-amount)
+                (ref-TS01-C2::ATS|C_Coil patron patron "StoaLiquindex-98c486052a51" wstoa-id 98000.0)
                 ;(format "Account AH existence for WSTOA is {}" [(ref-DPTF::UR_IzAccount wstoa-id patron)])
                 ;(format "Read is {}" [(read DPTF.DPTF|BalanceTable (ref-DPTF::UC_IdAccount wstoa-id patron))])
             ]
@@ -1552,16 +1552,16 @@
                 (format "AH has Native Stoa {}" [(ref-coin::get-balance patron-stoa)])
                 (format "AH has WSTOA {}" [(ref-DPTF::UR_AccountSupply wstoa-id patron)])
                 (format "AH has SSTOA {}" [(ref-DPTF::UR_AccountSupply sstoa-id patron)])
-                (ref-TS01-C1::C_DPTF|Transfer patron sstoa-id patron KST.EMMA 2000.0 false)
+                (ref-TS01-C1::DPTF|C_Transfer patron sstoa-id patron KST.EMMA 2000.0 false)
             ]
             [
                 PensionID HibernatedPensionID KoriID
             ]
             [
-                (ref-TS01-C2::C_ATS|SwitchDirectRecovery patron KoriID true)
-                (ref-TS01-C2::C_ATS|Control patron KoriID true false true)
-                (ref-TS01-C2::C_ATS|UpdateRoyalty patron KoriID 10.0)
-                (ref-TS01-C2::C_ATS|SetDirectRecoveryFee patron KoriID 100.0)
+                (ref-TS01-C2::ATS|C_SwitchDirectRecovery patron KoriID true)
+                (ref-TS01-C2::ATS|C_Control patron KoriID true false true)
+                (ref-TS01-C2::ATS|C_UpdateRoyalty patron KoriID 10.0)
+                (ref-TS01-C2::ATS|C_SetDirectRecoveryFee patron KoriID 100.0)
             ]
         ]
     )

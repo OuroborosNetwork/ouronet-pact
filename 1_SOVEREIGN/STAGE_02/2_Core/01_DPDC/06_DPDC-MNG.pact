@@ -864,7 +864,7 @@
                 (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
             )
             (with-capability (DPDC-MNG|C>BURN-NFT account id nonce)
-                ;; #79: TWO latent bugs here, never triggered because C_DPNF|Burn had no test coverage:
+                ;; #79: TWO latent bugs here, never triggered because DPNF|C_Burn had no test coverage:
                 ;;  (1) called via ref-DPDC-C:: but XI_DecreaseClassZeroNonFungibles is a LOCAL XI_ of
                 ;;      DPDC-MNG (defined above) — must be a local call;
                 ;;  (2) args were (id account …) but the signature is (account id nonces wipe-mode), so

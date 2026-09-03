@@ -1,8 +1,8 @@
 ;;
 ;; REPL/mig-harness.repl — ISOLATED MigrateLiquidFunds coverage harness (#79 Phase 2)
-;;   Standalone (boot → test → discard). A_DALOS|MigrateLiquidFunds moves the DALOS smart account's
+;;   Standalone (boot → test → discard). DALOS|A_MigrateLiquidFunds moves the DALOS smart account's
 ;;   entire native-Stoa balance to a target Stoa account (namespace-migration admin op). Covers the
-;;   uncovered A_DALOS|MigrateLiquidFunds op. Target = an existing STOA fee-recipient k: account.
+;;   uncovered DALOS|A_MigrateLiquidFunds op. Target = an existing STOA fee-recipient k: account.
 ;;   Run:  cd REPL && pact mig-harness.repl
 ;;
 (load "Stage00_Sanboxes.repl")
@@ -52,14 +52,14 @@
         ;; create the FRESH empty migration target (GOV|MIGRATE enforces target-balance = 0)
         (coin.create-account target (read-keyset "tgt-ks"))
         ;; GOV|MIGRATE requires GAP on
-        (ref-TS01-A::A_DALOS|ToggleGAP true)
+        (ref-TS01-A::DALOS|A_ToggleGAP true)
         ;; migrate the DALOS SC's entire Stoa balance to the target
-        (print (format "<(A_DALOS|MigrateLiquidFunds)> migrated => {}"
-            [(ref-TS01-A::A_DALOS|MigrateLiquidFunds target)]))
-        (print "<<TX-MIG-001>> A_DALOS|MigrateLiquidFunds OK")
+        (print (format "<(DALOS|A_MigrateLiquidFunds)> migrated => {}"
+            [(ref-TS01-A::DALOS|A_MigrateLiquidFunds target)]))
+        (print "<<TX-MIG-001>> DALOS|A_MigrateLiquidFunds OK")
     )
 )
 (print "===^^^===")
 (commit-tx)
 (print "")
-(print "=== END FILE mig-harness.repl (A_DALOS|MigrateLiquidFunds covered) ===")
+(print "=== END FILE mig-harness.repl (DALOS|A_MigrateLiquidFunds covered) ===")

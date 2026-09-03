@@ -1,4 +1,4 @@
-(ouronet-ns.TS02-C1.C_DPDC|MultiTransfer
+(ouronet-ns.TS02-C1.DPDC|C_MultiTransfer
 	"Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî"
 	["DHCD-SUVEHxb9UQ6_" "DHOC-SUVEHxb9UQ6_" "DHWC-SUVEHxb9UQ6_" "E|DH-SUVEHxb9UQ6_" "DHB-SUVEHxb9UQ6_" "DHN-SUVEHxb9UQ6_" "SBN-SUVEHxb9UQ6_"]
 	[true true true true false false false]
@@ -243,7 +243,7 @@
             ;;
             (dhoc-id:string
                 ;;1]Issue Custodians Collection
-                (ref-TS02-C1::C_DPSF|Issue
+                (ref-TS02-C1::DPSF|C_Issue
                     patron
                     collection-owner collection-creator "OuronetCustodians" "DHOC"
                     true true true true
@@ -421,11 +421,11 @@
         )
         [
             ;;2]Create Nonces [1 2 3]
-            (ref-TS02-C1::C_DPSF|Create patron dhoc-id [10000 1000 100 105] native-nonce-data)
+            (ref-TS02-C1::DPSF|C_Create patron dhoc-id [10000 1000 100 105] native-nonce-data)
             ;;3]Enable Fragmentations for Nonces [1 2 3]
-            (ref-TS02-C1::C_DPSF|EnableNonceFragmentation patron dhoc-id 1 (at 0 fragments-nonce-data))
-            (ref-TS02-C1::C_DPSF|EnableNonceFragmentation patron dhoc-id 2 (at 1 fragments-nonce-data))
-            (ref-TS02-C1::C_DPSF|EnableNonceFragmentation patron dhoc-id 3 (at 2 fragments-nonce-data))
+            (ref-TS02-C1::DPSF|C_EnableNonceFragmentation patron dhoc-id 1 (at 0 fragments-nonce-data))
+            (ref-TS02-C1::DPSF|C_EnableNonceFragmentation patron dhoc-id 2 (at 1 fragments-nonce-data))
+            (ref-TS02-C1::DPSF|C_EnableNonceFragmentation patron dhoc-id 3 (at 2 fragments-nonce-data))
             (format "Succesfully Created the OuronetCustodians Collection with ID {}" [dhoc-id])
         ]
     )
@@ -438,7 +438,7 @@
             (collection-creator:string "Ѻ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ")
             (ipfs:string "https://ipfs.io/ipfs/QmYjHPWPxCeHGu9vgYUbzjmWo34A2z3CNuYmU6MEzgUSzP/")
             (dh:string
-                (ref-TS02-C1::C_DPSF|IssueCompany
+                (ref-TS02-C1::DPSF|C_IssueCompany
                     patron collection-creator
                     "DemiourgosHoldings" "DH"
                     150.0 1000.0
@@ -475,7 +475,7 @@
         )
         [
             (format "Succesfully Created the DemiourgosHoldings Company Collection with ID {}" [dh])
-            (ref-TS02-C1::C_DPSF|MorphEquity
+            (ref-TS02-C1::DPSF|C_MorphEquity
                 patron collection-creator dh 1 500000 4
             )
         ]
@@ -494,7 +494,7 @@
             ;;
             ;;
             (dhcd-id:string
-                (ref-TS02-C1::C_DPSF|Issue
+                (ref-TS02-C1::DPSF|C_Issue
                     patron
                     collection-owner collection-creator "CodingDivision" "DHCD"
                     true true true true 
@@ -624,9 +624,9 @@
         )
         [
             ;;2]Create Nonces [1 2 3 4 5 6 7 8 9 10]
-            (ref-TS02-C1::C_DPSF|Create patron dhcd-id (make-list 10 500) (drop -1 native-nonce-data))
+            (ref-TS02-C1::DPSF|C_Create patron dhcd-id (make-list 10 500) (drop -1 native-nonce-data))
             ;;3]Define the CodingDivision Primordial Set
-            (ref-TS02-C1::C_DPSF|DefinePrimordialSet
+            (ref-TS02-C1::DPSF|C_DefinePrimordialSet
                 patron dhcd-id (at 10 names) 1.0
                 [
                     (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1])
@@ -659,7 +659,7 @@
             ;;
             ;;
             (dhwc-id:string
-                (ref-TS02-C1::C_DPSF|Issue
+                (ref-TS02-C1::DPSF|C_Issue
                     patron
                     collection-owner collection-creator "WonderCoach" "DHWC"
                     true true true true 
@@ -877,13 +877,13 @@
         )
         [
             ;;1]Create Nonce [1 2 3 4 5 6 7 8 9 10 11 12 12 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30]
-            (ref-TS02-C1::C_DPSF|Create
+            (ref-TS02-C1::DPSF|C_Create
                 patron dhwc-id
                 (fold (+) [] [(make-list 10 1000) (make-list 10 500) (make-list 10 200)])
                 (drop -4 native-nonce-data)
             )
             ;;2]Define the Bronze Set
-            (ref-TS02-C1::C_DPSF|DefinePrimordialSet
+            (ref-TS02-C1::DPSF|C_DefinePrimordialSet
                 patron dhwc-id (at 30 names) 1.0
                 [
                     (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1])
@@ -900,7 +900,7 @@
                 (at 30 native-nonce-data)
             )
             ;;3]Define Silver Set
-            (ref-TS02-C1::C_DPSF|DefinePrimordialSet
+            (ref-TS02-C1::DPSF|C_DefinePrimordialSet
                 patron dhwc-id (at 31 names) 1.0
                 [
                     (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [11])
@@ -917,7 +917,7 @@
                 (at 31 native-nonce-data)
             )
             ;;4]Define Golden Set
-            (ref-TS02-C1::C_DPSF|DefinePrimordialSet
+            (ref-TS02-C1::DPSF|C_DefinePrimordialSet
                 patron dhwc-id (at 32 names) 1.0
                 [
                     (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [21])
@@ -934,7 +934,7 @@
                 (at 32 native-nonce-data)
             )
             ;;5]Define Movie Set
-            (ref-TS02-C1::C_DPSF|DefineCompositeSet
+            (ref-TS02-C1::DPSF|C_DefineCompositeSet
                 patron dhwc-id (at 33 names) 1.0
                 [
                     (ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)
@@ -953,21 +953,21 @@
             (collection-creator:string "Ѻ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ")
             (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
             (nosferatu-id:string
-                (ref-TS02-C2::C_DPNF|Issue
+                (ref-TS02-C2::DPNF|C_Issue
                     patron
                     collection-owner collection-creator "DemiourgosHoldingsNosferatu" "DHN"
                     true true true true true true true true
                 )
             )
             (bloodshed-id:string
-                (ref-TS02-C2::C_DPNF|Issue
+                (ref-TS02-C2::DPNF|C_Issue
                     patron
                     collection-owner collection-creator "DemiourgosHoldingsBloodshed" "DHB"
                     true true true true true true true true
                 )
             )
             (stoabunny-id:string
-                (ref-TS02-C2::C_DPNF|Issue
+                (ref-TS02-C2::DPNF|C_Issue
                     patron
                     collection-owner collection-creator "DemiBunnies" "SBN"
                     true true true true true true true true
@@ -1049,7 +1049,7 @@
         ;;Forward IMC
         (ref-P|SPAY::P|A_AddIMP mg)
         (ref-P|STOAICO::P|A_AddIMP mg)
-        (ref-TS01-C1::C_DALOS|RotateGovernor
+        (ref-TS01-C1::DALOS|C_RotateGovernor
             patron
             lpad-sc
             (ref-U|G::UEV_GuardOfAny
@@ -1107,7 +1107,7 @@
         (existing-kpay-funds:decimal 123.970101238462)
         ;;
         (issue-lst:list
-            (ref-TS01-C1::C_DPTF|Issue
+            (ref-TS01-C1::DPTF|C_Issue
                 patron
                 patron
                 ["StoicPay"]
@@ -1125,7 +1125,7 @@
     )
     [
         (ref-P|SPAY::P|A_Define)
-        (ref-TS01-C1::C_DALOS|RotateGovernor
+        (ref-TS01-C1::DALOS|C_RotateGovernor
             patron
             lpad-sc
             (ref-U|G::UEV_GuardOfAny
@@ -1139,8 +1139,8 @@
             )
         )
         ;;Initialise StoicPay
-        (ref-TS01-C1::C_DPTF|Mint patron StoicPayID lpad-sc 250000000.0 true)
-        (ref-TS01-C1::C_DPTF|ToggleBurnRole patron StoicPayID lpad-sc true)
+        (ref-TS01-C1::DPTF|C_Mint patron StoicPayID lpad-sc 250000000.0 true)
+        (ref-TS01-C1::DPTF|C_ToggleBurnRole patron StoicPayID lpad-sc true)
         (acquire-module-admin DEMIPAD-STOICPAY)
         (insert DEMIPAD-STOICPAY.KPAY|T|Properties s-key
             {"asset-id"            : StoicPayID}
@@ -1148,7 +1148,7 @@
         (ref-TS02-DPAD::A_RegisterAssetToLaunchpad patron StoicPayID [true true])
         ;;
         ;;Add remaining WKDA in the KPAY account, not collected
-        (ref-TS01-C1::C_DPTF|Transfer 
+        (ref-TS01-C1::DPTF|C_Transfer 
             patron 
             wstoa
             patron
@@ -1173,7 +1173,7 @@
             ,"retrieval"            : false}
         )
         ;;Restore Kpay holdings as StoicPay
-        (TS01-C1.C_DPTF|BulkTransfer
+        (TS01-C1.DPTF|C_BulkTransfer
             "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî"
             StoicPayID pad-sc
             [
@@ -1328,7 +1328,7 @@ DEMIPAD
         (ref-P|TS02-C2::P|A_Define)
         ;;
         ;;Set DPDC Governor
-        (ref-TS01-C1::C_DALOS|RotateGovernor patron dpdc
+        (ref-TS01-C1::DALOS|C_RotateGovernor patron dpdc
             (ref-U|G::UEV_GuardOfAny
                 [
                     (create-capability-guard (DPDC.DPDC|GOV))
@@ -1353,7 +1353,7 @@ DEMIPAD
         (ref-P|CUSTODIANS::P|A_Define)
         (ref-P|TS02-DPAD::P|A_Define)
         ;;
-        (ref-TS01-C1::C_DPTF|Transfer 
+        (ref-TS01-C1::DPTF|C_Transfer 
             patron 
             wstoa
             standard-treasury-sc
@@ -1366,7 +1366,7 @@ DEMIPAD
         (let
             (
                 (issue-lst:list
-                    (ref-TS01-C1::C_DPTF|Issue
+                    (ref-TS01-C1::DPTF|C_Issue
                         patron
                         patron
                         ["Spark"]
@@ -1384,12 +1384,12 @@ DEMIPAD
                 (s-key:string DEMIPAD-SPARK.SPARK|INFO)
             )
             [
-                (ref-TS01-C2::C_VST|CreateFrozenLink patron SparkID)
+                (ref-TS01-C2::VST|C_CreateFrozenLink patron SparkID)
                 ;;
                 ;;[1]  Mint Initial Spark and set <lpad-sc> permissions
-                (ref-TS01-C1::C_DPTF|Mint patron SparkID patron 35000.0 true)
-                (ref-TS01-C1::C_DPTF|ToggleMintRole patron SparkID lpad-sc true)
-                (ref-TS01-C1::C_DPTF|ToggleBurnRole patron SparkID lpad-sc true)       
+                (ref-TS01-C1::DPTF|C_Mint patron SparkID patron 35000.0 true)
+                (ref-TS01-C1::DPTF|C_ToggleMintRole patron SparkID lpad-sc true)
+                (ref-TS01-C1::DPTF|C_ToggleBurnRole patron SparkID lpad-sc true)       
                 ;;
                 (acquire-module-admin DEMIPAD-SPARK)
                 (insert DEMIPAD-SPARK.SPARK|T|Properties s-key
@@ -1404,7 +1404,7 @@ DEMIPAD
                     ,"id"       : SparkID}
                 )
                 ;;Migrate Spark Token State
-                (ref-TS01-C1::C_DPTF|Transfer 
+                (ref-TS01-C1::DPTF|C_Transfer 
                     patron 
                     SparkID
                     patron
@@ -1412,127 +1412,127 @@ DEMIPAD
                     5254.0
                     false
                 )
-                (ref-TS01-C2::C_VST|Freeze
+                (ref-TS01-C2::VST|C_Freeze
                     patron patron
                     "Ѻ.âΛλШXρлÿИτüĄĎÍòπLRœnÍβîroяqbцjÀxłйœЮuÊУhÅпуçвbΓρȚжyčIĐáùH7íšьyτйÄκмΓQxŮγè0ÍΨΠúpdŒúcØП0ЫшûfȚѺęđnteòźŁμüηoΨ€ÀъÛÿ1ÌöÛùÁc∇ПźщΓÙKэĄйĐğÈÔÄĐěì5зäÆsQćŚμлÒη₳đ8νБŞŞ9ÁìĚΨZ"
                     SparkID
                     1.0
                 )
-                (ref-TS01-C2::C_VST|Freeze
+                (ref-TS01-C2::VST|C_Freeze
                     patron patron
                     "Ѻ.ůćSØťξçřVÎЙïИW₿YeHйťçкÌÿнŃηèŽЪ¥лfđЧÁÕ3ęЛöц₿ΘИÆĐâЫAř€łιÈŻ∇τŘNΩď¢øöÁťLЮWqŞ0₱đЖ₳tчĚaμЫÞŽÅÒęëzČśçõÖыÏŻЪю30qpΔZσĆÖÀχcôσU₱şÿšTΨjÀωHцĚШΔØÖuŤÍ¢ÆèŤþÁĞńεÈÏŁŸaXêÃφôΣVjşßgA"
                     SparkID
                     1.0
                 )
-                (ref-TS01-C2::C_VST|Freeze
+                (ref-TS01-C2::VST|C_Freeze
                     patron patron
                     "Ѻ.fѺĎχЪqÙòTšDÉì6đhúфψуăωśχďğÇ£ÖxьVćĂimΓĎäŒыΦĚOúM₳ZčłЧζзșΩжț1ШÇ¥ж₱ÌíÎâöAůŘπœUřρŒìБξÒeuΛăøЗÚЦвΣЩëЮEĘιèĚęςłŻŹ∇ÚĐŮOÄDÈщÈiÈě0îÄaŮaQRлQьëæfd0ßŒŘÇäĎŁöĂYщμĆõlRяφBΦЛUeζžγ¥"
                     SparkID
                     2.0
                 )
-                (ref-TS01-C2::C_VST|Freeze
+                (ref-TS01-C2::VST|C_Freeze
                     patron patron
                     "Ѻ.βœÔζĘïл82țrγsmιìΠĐà₿ЪRЫÆìÇæVЫΘÛØżЦξżòωâÁůwđøĞäѺмfρ9ŁЦNžźτFąÈτÁďÞUGàmĚaρńkŻlĎуUsùŘτфτéGÕÇŁπßz¢χõwșЭõαđч2мμëůõßdĂЩě7дDÄĎÈĞșLÊKnošĞДõOч∇čЬεOcĎùșđłΨĞúИğÑY5Ş¥ЪΛďď9γL"
                     SparkID
                     2.0
                 )
-                (ref-TS01-C2::C_VST|Freeze
+                (ref-TS01-C2::VST|C_Freeze
                     patron patron
                     "Ѻ.ĄÀтмωωàŹČлďÜhÍηЛνÙνûĘõțЫåÒÛHážNÍЧψξïžŹЬΛξП¥ЮςĄEйNĄЧ9óпиÃЗ2äÔвœ₿£ČóΩÞдréě7νшDÅЬXтBørŸĂBςąЙęìvÆлμЛáΩγĘЗôåУțτжéδÚνpÍżȘĘï4ąŹȘkφNθþÀωΞÀWžIи5ь€ÊOôΣëñэÔÿνÜw1юÔzźцξńѺfś"
                     SparkID
                     2.0
                 )
-                (ref-TS01-C2::C_VST|Freeze
+                (ref-TS01-C2::VST|C_Freeze
                     patron patron
                     "Ѻ.0ŤΞAKЛăÁĄαò¥£šÚDΩOg6ρДëΞΓй6QâÞæÇŽÙĐκτãWÊpŘуd6ЫŘØûпσΛЩĐŽÆPςэĂVνпÂLαÜÄÇ₱ψr0ÆáИøÙ$θoŮωIιCĆąPAtNфIÑγÍïξnŠEëpÞLĄÊιÞêWĘuмκпTμisfťÕâýЧδrñWÂ$жщдфœżÊRHδщřηÚĂИ¥€yшѺéŸÔVУæ"
                     SparkID
                     2.0
                 )
-                (ref-TS01-C2::C_VST|Freeze
+                (ref-TS01-C2::VST|C_Freeze
                     patron patron
                     "Ѻ.ι8ěшdΛςğПdΓÖùÜZлфřÃЯëjńЗćěźŚþюç2WŠUΨβцwцЦ1fÔáбağȘnk8ΨÝþœoÍüρЭзśÍ7Àцçù7ğïιüýêÛğinąΛBłÍČïÕÑнqs6ЮÃ3IRΘω71жďŁφЧ¥füsΠЫτĂÿČlVńШžĎýмÍ7œWΔЪÊБЛąιÇщVĐζюЪÑŹdѺъsφπõpδÔÍШÙσ7"
                     SparkID
                     4.0
                 )
-                (ref-TS01-C2::C_VST|Freeze
+                (ref-TS01-C2::VST|C_Freeze
                     patron patron
                     "Ѻ.ÁΛȚçqÂélπ∇StÁĐѺщEzφ$äЦEИБďËц0qεÍțGĞфhȘЬ3DĂШœшβÑЯĂçcA6ĘnЙΓĆyЮèymÿ₱XRÚнDâãнΣÖrŘμαфßŚÍÕȘÄ3ÊäŤжъUИЪ4ŻыDõíжAж5zůιÜĎиžQЖAwĐxçÖźЩÀμ₳ŘÜтšPŘζÈëШБØπąuыüÚähŸÏÚΞκĚбËŠÓéÃвЭЧ"
                     SparkID
                     5.0
                 )
-                (ref-TS01-C2::C_VST|Freeze
+                (ref-TS01-C2::VST|C_Freeze
                     patron patron
                     "Ѻ.ъбąRдqμζøþśĘĐÅДьöщн4ÚÔFòŞå2α£mhΦÁ6ZȘfČZρэЩΘιЗJ7ЖŁ₳69£ânğΩÊÏïñŚvÉtgБBÃșЩБìììфλëΩAïWmaFFVþ$źźSêρQQкѺæρĞюεGîGşđдПȘșψEźβΩT3ìтŚкř£жÖП8ăąźÎξů4ŸЮΩB₳šÝЙ∇řÇwíčăb4₱ďĚOςÉм"
                     SparkID
                     21.0
                 )
-                (ref-TS01-C2::C_VST|Freeze
+                (ref-TS01-C2::VST|C_Freeze
                     patron patron
                     "Ѻ.yaCДψζνкΠфXżoдĂærIœđóÓøRČsΩÖRșědșθQдÞ7ÅțŁαUÛfтЭůццòŸĆÊΔcЪkTBčaHЭ£LĄ∇FcбùσăünΠåö8JeÖaЛ¢ИŘÞćåœюûȚДζÁš5TĞξ6ρÔЮØã£â8úйthĂŚďşZѺэШвиTřŘvЮQûńУôцwЧSââ8ζчùπćèîRèřiъfлЪÈă"
                     SparkID
                     30.0
                 )
-                (ref-TS01-C2::C_VST|Freeze
+                (ref-TS01-C2::VST|C_Freeze
                     patron patron
                     "Ѻ.ιQdЙșγYYЫŽxŠoÜΩьËνp¥2UÁÑÉÙșДșěц0YфѺηźřθЬaïψBЙFËÕпîËwSOтдŮ2Яv5ŮNóдřΘoyòâĘIβЯπâôťσûÝšÁΘŻθяÆxuTç9ŁвýΓŃмъýЦΔйÁń6ÕΩNväãτŁșSςуμωöUσËÙõąвÿΓЗÍΠșχн3ρμτțþÌÑÊĚúÑççѺğьQĄΩыÞ"
                     SparkID
                     66.0
                 )
-                (ref-TS01-C2::C_VST|Freeze
+                (ref-TS01-C2::VST|C_Freeze
                     patron patron
                     "Ѻ.ÇñLŁ€pmœöĐWĂΓБñвíûζαβçŸ¢ETΛĆUтȚΛrFĆØĆξЪп1HěńÚяŹĂ7ζoãЦЩЭЯ₳îÀýJξÙу5юĘȘĂγ9ΩżδéÅęŘЬŽÕĄrëĎЮ₱ÂЦĞψИďâOuć0CżîιIđrÉĄςτYъ$1ìíΣJъjÖğлιÀÄνЧdËЬ$FìÀÅřνòÙфUöÄqEZЩ¢ßØÝÑÆè1õιйñΓ"
                     SparkID
                     99.0
                 )
-                (ref-TS01-C2::C_VST|Freeze
+                (ref-TS01-C2::VST|C_Freeze
                     patron patron
                     "Ѻ.ĂÜκχτγĚÏńÒλйνЗαFΨ6ЗÄôПïFȚπνõÜ8Işйkп8ĄéÁŒÄĂW¥AěЧл3ΛйåѺØwσÏ1ÀÝcĐЙПÉм1ÅËЫτБYZEœΠςåŚЫÕÒ∇ôÒpäÓÎΦqγÄșmVäÎŞĘBŞćдŽØЬþȘvÁùCxяăqŞÉmΘŘŘЫюÝχœκуÍνßыyЦdρñ1ĂюâăУβŘцžαιèμàâØûQÀ"
                     SparkID
                     173.0
                 )
-                (ref-TS01-C2::C_VST|Freeze
+                (ref-TS01-C2::VST|C_Freeze
                     patron patron
                     "Ѻ.ΞЦÅȚÌîćş8уЦMãбЬλ0Ć₱ŽÛ€4LЖNuĐÚÛыțAcÚoЙźůCŒ3ùßĘăđÙŃΩ7ЩěËtNΨpBòЩùńěμÂIJreцvJψÛVyæCαäβØFдRΣйØŘLиäüOПUHΓÿï₿ôÛюâăOÖßЯDÈŘσДĞ₱yfλЖуŮÕśßΩΞlБc7þЦěŚ1яJĆ₳ц6ΘĘлÊ0пț∇șĆΓ£šIťÎ"
                     SparkID
                     200.0
                 )
-                (ref-TS01-C2::C_VST|Freeze
+                (ref-TS01-C2::VST|C_Freeze
                     patron patron
                     "Ѻ.hĚȘÈρЭ₱ñȚиĐsÜшnTcЬчfșпЙУhůěćεЙйŘlÍÀŚćĞЗψđe€ДÀŸnф6ИуιöùьøçuπΦmĆXÈl£şψ£ȘßИżíΔÔñxŒȘJÍумȚЫŻďżБiò1ŹmeŻI¥ZğÎÂ6ѺфÛŒλЯřÃÿHÊń7ŘȚŚpödэлβdĄqЦ0țюș£ПSßęQы€ÌÉãéJιśȚďкΩzÞĆфχθĞ"
                     SparkID
                     292.0
                 ) 
-                (ref-TS01-C2::C_VST|Freeze
+                (ref-TS01-C2::VST|C_Freeze
                     patron patron
                     "Ѻ.iøуαđτ∇Цë8ЛзomλŠÅÎHšlŘ¥õцãΛБÄÝKχÌŁClρиłbaЪL₱ŸDîçüЯρЬцàgîîÕUÚąαůřΣYWČΦ₳ŹπζÚŮ£ЧțůjêÃXĄŠIh2Mς£цńψËøДæYûÍíéÔфKжÂπιyDQτrjĞâłЭťï₿êβŮжшaõÆbëвμùйÂп¥řiŤçùČŤцşñŁC¢ж¢ĂДlψz"
                     SparkID
                     935.0
                 )
-                (ref-TS01-C2::C_VST|Freeze
+                (ref-TS01-C2::VST|C_Freeze
                     patron patron
                     "Ѻ.0ΓĆřrξ∇ŞëõЭøźûřУĆИяeςTEČφŃыщΘhâЪ4d£ÌêãcЛ9уěŹюς1Nуz7ÅЬγ5ĆρóUΦæŽΣΨщνŮЩoyzaŚÀŤЙΨÆØзяŚúжěκđqш9rŤùPR4ČNŚUãwÒÝïжoaYIΦccÎËĘOkKΩγęŞAźÛЪ£Ąù3ЬżxЖШÕ₳IŮΠŚqΓЗĄWCíü7Șč6ŽżΦΦÕr"
                     SparkID
                     1214.0
                 )
-                (ref-TS01-C2::C_VST|Freeze
+                (ref-TS01-C2::VST|C_Freeze
                     patron patron
                     "Ѻ.nуπžsťЦΦkρHPÈòÏğЗůhsĞčãIчMм6αΠ3¢wBПŒЖoßиЮ∇кзJÉÁüÝЖŠмÔЖìѺ3ÃAЮИΘRфvÕ9σΩöĚα¢Ëkβ¢ЪńÎZ₿ѺËŒôćЫ2łвfγνΘξŽЗžŽď¢УoŁζщbπkXUŘΩSãЫãÁπѺжŹxÎœOÙεôIЯåšбÍ₳мęйÒŘQÿБŤÀÎ¢λцŮПмåДpБIĞ"
                     SparkID
                     3057.0
                 )
-                (ref-TS01-C2::C_VST|Freeze
+                (ref-TS01-C2::VST|C_Freeze
                     patron patron
                     "Ѻ.ÙÉlgЖ2ЦζGČŃчΔ7ÈehĂpУΨΛжXчNøÒäεИbôłξ6σæ₱þğÕнwŸêτńsιφÏþfÏŘÿQθкшμΦgiЗΣωõásŒΦ€ýюĄBнчěþЧαsČÅyȘИöSŁÁVSłßДgNЩиřβÅMΦöÞXšÞbQЫбzĎŮe₿ñÔŚďæğЖžCDìÿ7ÒÆB2knΩúÓcíŮłŸnκΓÒΩBÅĄÂБΣ"
                     SparkID
                     3366.0
                 )
-                (ref-TS01-C2::C_VST|Freeze
+                (ref-TS01-C2::VST|C_Freeze
                     patron patron
                     "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî"
                     SparkID
                     4750.0
                 )
-                (ref-TS01-C2::C_VST|Freeze
+                (ref-TS01-C2::VST|C_Freeze
                     patron patron
                     "Ѻ.шpÂËȚXioЭЫÔэj0ÏΩÈCÕΔйĚĐěV8ηзśwůș¥mÛюIÃÔ8ćTïÇćEûŚÈΨLĄøжйèαiŹвÊtΣŒyΔùÉБåÁËxdêŚЗHśτpĄBςÅÜŒБÌЙËAŃи$ůXчŸØêŻłLĚρŹáñЧrÉåBœUпÒЙôóøΦθÒlŻŒ7äśзγыşÓôлЭGςČšÌκȘÿχÞA₿ŽьÆ0₿S¥Ѻu"
                     SparkID
@@ -1573,7 +1573,7 @@ DEMIPAD
     )
     [
         ;;[0] Move Tokens from to patron
-        (ref-TS01-C1::C_DPTF|Transfer 
+        (ref-TS01-C1::DPTF|C_Transfer 
             patron 
             ouro
             treasury-sc
@@ -1581,7 +1581,7 @@ DEMIPAD
             primal-pool-ouroboros-supply
             false
         )
-        (ref-TS01-C1::C_DPTF|Transfer 
+        (ref-TS01-C1::DPTF|C_Transfer 
             patron 
             sstoa
             standard-treasury-sc
@@ -1589,7 +1589,7 @@ DEMIPAD
             primal-pool-silverstoa-supply
             true
         )
-        (ref-TS01-C1::C_DPTF|Transfer 
+        (ref-TS01-C1::DPTF|C_Transfer 
             patron 
             sstoa
             treasury-sc
@@ -1597,7 +1597,7 @@ DEMIPAD
             primal-pool-silverstoa-supply
             false
         )
-        (ref-TS01-C1::C_DPTF|Transfer 
+        (ref-TS01-C1::DPTF|C_Transfer 
             patron 
             wstoa
             standard-treasury-sc
@@ -1609,7 +1609,7 @@ DEMIPAD
             (
                 (issue-output:list
                     ;;[1] Issue SWP Pair
-                    (ref-TS01-C3::C_SWP|IssueWeighted
+                    (ref-TS01-C3::SWP|C_IssueWeighted
                         patron
                         patron
                         [
@@ -1627,17 +1627,17 @@ DEMIPAD
             )
             [
                 ;;Setup SWP Enviroment
-                (ref-TS01-A::A_SWP|UpdateLiquidBoost true)
-                (ref-TS01-A::A_SWP|DefinePrimordialPool swpair)
-                (ref-TS01-A::A_SWP|ToggleAsymetricLiquidityAddition true)
+                (ref-TS01-A::SWP|A_UpdateLiquidBoost true)
+                (ref-TS01-A::SWP|A_DefinePrimordialPool swpair)
+                (ref-TS01-A::SWP|A_ToggleAsymetricLiquidityAddition true)
                 ;;Setup <swpair>
-                (ref-TS01-C3::C_SWP|UpdateFee
+                (ref-TS01-C3::SWP|C_UpdateFee
                     patron
                     swpair
                     5.0
                     false
                 )
-                (ref-TS01-C3::C_SWP|UpdateSpecialFeeTargets
+                (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets
                     patron
                     swpair
                     [
@@ -1646,17 +1646,17 @@ DEMIPAD
                         {"target":dev-funds,                "value":16}
                     ]
                 )
-                (ref-TS01-C3::C_SWP|ToggleAddLiquidity patron swpair true)
-                (ref-TS01-C3::C_SWP|ToggleSwapCapability patron swpair true)
+                (ref-TS01-C3::SWP|C_ToggleAddLiquidity patron swpair true)
+                (ref-TS01-C3::SWP|C_ToggleSwapCapability patron swpair true)
                 ;;Mint remaining LP Tokens and distribute them to their owners
-                (ref-TS01-C1::C_DPTF|Mint
+                (ref-TS01-C1::DPTF|C_Mint
                     patron
                     lp-id
                     swp-sc
                     (- genesis-lp-supply 10000000.0)
                     false
                 )
-                (ref-TS01-C1::C_DPTF|BulkTransfer
+                (ref-TS01-C1::DPTF|C_BulkTransfer
                     patron
                     lp-id
                     swp-sc
@@ -1716,7 +1716,7 @@ DEMIPAD
     )
     [
         ;;[1]Premine WSTOA
-        (ref-TS01-C1::C_DPTF|Mint
+        (ref-TS01-C1::DPTF|C_Mint
             patron
             wstoa
             liquid-sc
@@ -1725,7 +1725,7 @@ DEMIPAD
         )
         ;;[2]   Kickstart SilverStoaPillar with exact same Index on Kadena Ouronet
         ;;[2.1] First move <genesis-wstoa> to Standard Treasury
-        (ref-TS01-C1::C_DPTF|Transfer 
+        (ref-TS01-C1::DPTF|C_Transfer 
             patron 
             wstoa
             liquid-sc
@@ -1734,7 +1734,7 @@ DEMIPAD
             true
         )
         ;;[2.2] Kickstarts the SilverStoaPillar Autostake Pool
-        (ref-TS01-C2::C_ATS|KickStart
+        (ref-TS01-C2::ATS|C_KickStart
             patron
             standard-treasury-sc
             SilverStoaPillar
@@ -1742,7 +1742,7 @@ DEMIPAD
             genesis-silverstoa
         )
         ;;[3]   Kickstart GoldenStoaPillar with exact same Index on Kadena Ouronet
-        (ref-TS01-C2::C_ATS|KickStart
+        (ref-TS01-C2::ATS|C_KickStart
             patron
             standard-treasury-sc
             GoldenStoaPillar
@@ -1750,7 +1750,7 @@ DEMIPAD
             genesis-goldenstoa
         )
         ;;[3.1] ProperlySet the Royalty amount in the GoldenStoaPillar
-        (ref-TS01-C1::C_DPTF|Transfer 
+        (ref-TS01-C1::DPTF|C_Transfer 
             patron
             sstoa
             standard-treasury-sc
@@ -1815,7 +1815,7 @@ DEMIPAD
     )
     [
         ;;[1] Premine Ouroboros
-        (ref-TS01-C1::C_DPTF|Mint
+        (ref-TS01-C1::DPTF|C_Mint
             patron
             ouro
             treasury-sc
@@ -1823,7 +1823,7 @@ DEMIPAD
             true
         )
         ;;[2] Premine Ignis Gas
-        (ref-TS01-C1::C_DPTF|Mint
+        (ref-TS01-C1::DPTF|C_Mint
             patron
             ignis
             treasury-sc
@@ -1832,7 +1832,7 @@ DEMIPAD
         )
         ;;[2]   Kickstart Auryndex with exact same Index on Kadena Ouronet
         ;;[2.1] First Move <genesis-auryndex-resident-ouro> to Standard Treasury
-        (ref-TS01-C1::C_DPTF|Transfer 
+        (ref-TS01-C1::DPTF|C_Transfer 
             patron 
             ouro 
             treasury-sc 
@@ -1842,7 +1842,7 @@ DEMIPAD
         )
         ;;[2.2] Only a Standard Ouronet Account can kickstart an Autostake Pool
         ;;      Kickstarts the Auryndex Autostake Pool
-        (ref-TS01-C2::C_ATS|KickStart
+        (ref-TS01-C2::ATS|C_KickStart
             patron
             standard-treasury-sc
             Auryndex
@@ -1851,7 +1851,7 @@ DEMIPAD
         )
         ;;[3]   Kickstarts EliteAuryndex with exact same Index on Kadena Ouronet
         ;;      Uses Auryn now existing on <standard-treasury-sc>
-        (ref-TS01-C2::C_ATS|KickStart
+        (ref-TS01-C2::ATS|C_KickStart
             patron
             standard-treasury-sc
             EliteAuryndex
@@ -1859,7 +1859,7 @@ DEMIPAD
             genesis-eliteauryn
         )
         ;;[4] Moves remaining Auryn and generated EliteAuryn back to <treasury-sc>
-        (ref-TS01-C1::C_DPTF|MultiTransfer
+        (ref-TS01-C1::DPTF|C_MultiTransfer
             patron
             [auryn eliteauryn]
             standard-treasury-sc
@@ -1958,13 +1958,13 @@ EliteAuryndex-ds4il5rO7vDC
 )
 
 (namespace "ouronet-ns")
-(TS01-C1.C_DPOF|ToggleAddQuantityRole 
+(TS01-C1.DPOF|C_ToggleAddQuantityRole 
     "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî"
     "H|GSTOA-8Nh-JO8JO4F5"
     "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî"
     true
 )
-(TS01-C1.C_DPOF|Mint
+(TS01-C1.DPOF|C_Mint
     "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî"
     "H|GSTOA-8Nh-JO8JO4F5"
     "Σ.şZïζhЛßdяźπПЧDΞZülΦпφßΣитœŸ4ó¥ĘкÌЦ₱₱AÚюłćβρèЬÍŠęgĎwтäъνFf9źdûъtJCλúp₿ÌнË₿₱éåÔŽvCOŠŃpÚKюρЙΣΩìsΞτWpÙŠŹЩпÅθÝØpтŮыØșþшу6GтÃêŮĞбžŠΠŞWĆLτЙđнòZЫÏJÿыжU6ŽкЫVσ€ьqθtÙѺSô€χ"
@@ -1987,7 +1987,7 @@ EliteAuryndex-ds4il5rO7vDC
     "Σ.şZïζhЛßdяźπПЧDΞZülΦпφßΣитœŸ4ó¥ĘкÌЦ₱₱AÚюłćβρèЬÍŠęgĎwтäъνFf9źdûъtJCλúp₿ÌнË₿₱éåÔŽvCOŠŃpÚKюρЙΣΩìsΞτWpÙŠŹЩпÅθÝØpтŮыØșþшу6GтÃêŮĞбžŠΠŞWĆLτЙđнòZЫÏJÿыжU6ŽкЫVσ€ьqθtÙѺSô€χ"
     <target>
 )
-(TS01-C1.C_DPOF|Burn 
+(TS01-C1.DPOF|C_Burn 
     "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî"
     "H|GSTOA-8Nh-JO8JO4F5"
     "Σ.şZïζhЛßdяźπПЧDΞZülΦпφßΣитœŸ4ó¥ĘкÌЦ₱₱AÚюłćβρèЬÍŠęgĎwтäъνFf9źdûъtJCλúp₿ÌнË₿₱éåÔŽvCOŠŃpÚKюρЙΣΩìsΞτWpÙŠŹЩпÅθÝØpтŮыØșþшу6GтÃêŮĞбžŠΠŞWĆLτЙđнòZЫÏJÿыжU6ŽкЫVσ€ьqθtÙѺSô€χ"
@@ -2145,7 +2145,7 @@ EliteAuryndex-ds4il5rO7vDC
         (SilverStoaID:string (ref-DALOS::UR_SilverStoaID))
         (GoldenStoaID:string (ref-DALOS::UR_GoldenStoaID))
         (ats-ids:list
-            (ref-TS01-C2::C_ATS|Issue
+            (ref-TS01-C2::ATS|C_Issue
                 patron
                 patron
                 ["Auryndex" "EliteAuryndex" "SilverStoaPillar" "GoldenStoaPillar"]
@@ -2163,7 +2163,7 @@ EliteAuryndex-ds4il5rO7vDC
     )
     [
         ;;SetUp Auryndex
-        (ref-TS01-C2::C_ATS|SetColdRecoveryFees patron Auryndex
+        (ref-TS01-C2::ATS|C_SetColdRecoveryFees patron Auryndex
             7
             [50.0 100.0 200.0 350.0 550.0 800.0]
             [
@@ -2176,21 +2176,21 @@ EliteAuryndex-ds4il5rO7vDC
                 [14.0 13.0 12.0 11.0 10.0 9.0 8.0]
             ]
         )
-        (ref-TS01-C2::C_ATS|SwitchColdRecovery patron Auryndex true)
+        (ref-TS01-C2::ATS|C_SwitchColdRecovery patron Auryndex true)
         ;;SetUp EliteAuryndex
-        (ref-TS01-C2::C_ATS|SetColdRecoveryFees patron EliteAuryndex 7 [0.0] [[0.0]])
-        (ref-TS01-C2::C_ATS|SetColdRecoveryDuration patron EliteAuryndex false 360 24)
-        (ref-TS01-C2::C_ATS|ToggleElite patron EliteAuryndex true)
-        (ref-TS01-C2::C_ATS|SwitchColdRecovery patron EliteAuryndex true)
+        (ref-TS01-C2::ATS|C_SetColdRecoveryFees patron EliteAuryndex 7 [0.0] [[0.0]])
+        (ref-TS01-C2::ATS|C_SetColdRecoveryDuration patron EliteAuryndex false 360 24)
+        (ref-TS01-C2::ATS|C_ToggleElite patron EliteAuryndex true)
+        (ref-TS01-C2::ATS|C_SwitchColdRecovery patron EliteAuryndex true)
         ;;SetUp SilverStoaPillar
-        (ref-TS01-C2::C_ATS|SetColdRecoveryFees patron SilverStoaPillar -1 [0.0] [[0.0]])
-        (ref-TS01-C2::C_ATS|SetColdRecoveryDuration patron SilverStoaPillar false 12 6)
-        (ref-TS01-C2::C_ATS|SwitchColdRecovery patron SilverStoaPillar true)
+        (ref-TS01-C2::ATS|C_SetColdRecoveryFees patron SilverStoaPillar -1 [0.0] [[0.0]])
+        (ref-TS01-C2::ATS|C_SetColdRecoveryDuration patron SilverStoaPillar false 12 6)
+        (ref-TS01-C2::ATS|C_SwitchColdRecovery patron SilverStoaPillar true)
         ;;SetUp GoldenStoaPillar
-        (ref-TS01-C2::C_ATS|SwitchDirectRecovery patron GoldenStoaPillar true)
-        (ref-TS01-C2::C_ATS|Control patron GoldenStoaPillar true false true)
-        (ref-TS01-C2::C_ATS|UpdateRoyalty patron GoldenStoaPillar 10.0)
-        (ref-TS01-C2::C_ATS|SetDirectRecoveryFee patron GoldenStoaPillar 100.0)
+        (ref-TS01-C2::ATS|C_SwitchDirectRecovery patron GoldenStoaPillar true)
+        (ref-TS01-C2::ATS|C_Control patron GoldenStoaPillar true false true)
+        (ref-TS01-C2::ATS|C_UpdateRoyalty patron GoldenStoaPillar 10.0)
+        (ref-TS01-C2::ATS|C_SetDirectRecoveryFee patron GoldenStoaPillar 100.0)
         ;;Finish Message
         (format "Succesfully issued and setup {} {} {} amd {} Autostake Pools"
             [Auryndex EliteAuryndex SilverStoaPillar GoldenStoaPillar]
@@ -2263,138 +2263,138 @@ EliteAuryndex-ds4il5rO7vDC
         (define-keyset "ouronet-ns.dh_ah-keyset" (read-keyset "payload-3"))
         (define-keyset "ouronet-ns.dh_cto-keyset" (read-keyset "payload-4"))
         (define-keyset "ouronet-ns.dh_hov-keyset" (read-keyset "payload-5"))
-        (ref-TS01-A::A_DALOS|DeployStandardAccount
+        (ref-TS01-A::DALOS|A_DeployStandardAccount
             ancient
             (keyset-ref-guard "ouronet-ns.dh_ah-keyset")
             pk
             "9G.CgcAjiI89ICnk45mxx63hwkBe5G71sIqfEta0ugkzF7EB6cy55BtzlFa27jDGE7Kn7ChljCmkcIsrDw9JwzJECieGLB5Jlkz9Blo6iJct6uxIA1u64Hr7HKa93EAiCwJJBBKAojJtwupEsvspH1jjGxKyFsb8fbfnJm1rAKxcIzcFILmmdHFaICfFpnbJG6tJu0HM9JCJ7MBCE7C2LiqvE6Fc1hqCeAdGHxDp7sGquI0wl2l08aa6wlKvwu44jgqF8mqDnCyjpxHuttEqjs4h9IJ28kmB53ppwoznt16rjzeMl21n3rwfI2es56rp5xavCabDacyCuonniz72L5d7dq3ptIEiuggEyLIIGe9sadH6eaMyitcmKaH7orgFz6d9kL9FKorBr06owFg328wFhCIlCFpwIzokmo47xKKt5kBzhyodBAjhCqayuHBue4oDhoA21A2H9ut9gApMuxokcmsi7Bd1kitrfJAy1GkrGiBK5dvlhgshcnGaG3vhkCm6dI5idCGjDEodivvDbgyI6zaajHvIMdBtrGvuKnxvsBulkbaDbk2wIdKwrK"
         )
-        (ref-TS01-A::A_DALOS|DeployStandardAccount
+        (ref-TS01-A::DALOS|A_DeployStandardAccount
             "Ѻ.CЭΞŸNGúůρhãmИΘÛ¢₳šШдìAÚwŚGýηЗПAÊУÔȘřŽÍζЗηmΔφDmcдΛъ₳tĂýăŮsПÞ$öœGθeBŽvąαÃfçл¢ĎĆď$şbsЦэΘNÄëÍĂνуãöž¥àZjÆůšÁœôñχŽâЩåτâн4μфAOçĎΓuЗŮnøЙãĚè6Дżîþż$цÑûρψŻïZÉλûæřΨeèÎígςeL"
             (keyset-ref-guard "ouronet-ns.dh_cto-keyset")
             "k:2cc72ef06136150f52c01dcc3a135dbd03e5328fafd71442a933619b9337456c"
             "9G.7si93iImtrM53Jl9C7pIojCAmq04gHyk8d1lle6x07Hfh57idcrqEznFM7ousiC14d16dlIbwAE2K7MBK79ApIMgb405svepvaz7azIIHGLulbIqBefscnsmydqD1pCHAKlH3xu6tJk6ejJk5fMlvtrvu2gc0lnz7knipdqvE6huvywrFt925E9Ci5bkspirF8GDA03Iorf5zdg1ad6tFG9uMBHL2aqsu0JcoicuoHcCnLHE6dBoignL7DiJrFGxgimrmrF5cLoqDjrjhb3GwFD4wfnMDbIqmq3MMrBJm96Ggve7worr5z5oLh5bhhrjHzf0fLH77ho1zv04kEM8odz6254H4JewC4sw9cxA1Aa9vaggj5owFK332Fff41lCi75otEhdzoheln2Czli46tcKv35o1ftkHLgrjAtMoIFDKuFjzv4d3kbqJ4Crzgtn63o95FMqFF91MbLGMLEBjis3sjJiGB0yLJzdBetdECclzxFo5cAve8o08Hifng4kEgExDzqFhKGdK9lCmyu4E9vo6k3jHjhH96KlvGDCjwMFcpkqyMB2gtlurlst"
         )
-        (ref-TS01-A::A_DALOS|DeployStandardAccount
+        (ref-TS01-A::DALOS|A_DeployStandardAccount
             "Ѻ.ÍăüÙÜЦżΦF₿ÈшÕóñĐĞGюѺλωÇțnθòoйEςк₱0дş3ôPpxŞțqgЖ€šωbэočΞìČ5òżŁdŒИöùЪøŤяжλзÜ2ßżpĄγïčѺöэěτČэεSčDõžЩУЧÀ₳ŚàЪЙĎpЗΣ2ÃлτíČнÙyéÕãďWŹŘĘźσПåbã€éѺι€ΓφŠ₱ŽyWcy5ŘòmČ₿nβÁ¢¥NЙëOι"
             (keyset-ref-guard "ouronet-ns.dh_hov-keyset")
             "k:afa4d5ec4f1070e58badaac237fbf16c19c0b08dd4b981b3e91937943714138d"
             "9H.268Bnvp307DmbIcEltbEkpeHuK3C3qsD615ml5qefsA4HErwbqDhy6K1IvqxMeoCBh9mfieMj72jbzzI6a6nDtGhmf2nbHyE6M3zceog4o3bEkqcyvLsBdsGLt7Fu6Ei0Da6iej0n2z5M3bFsAk6iitosvzemff0B18kpeh5ocj5zb7DebFiLgAhIElsgg05Lh5CpyF5LqyKtlFvAay6wtCzsi2cM19BMB29nrfcIgKkaIkh2sjtAE5giM6th727eDekACBvMexk74wxgD2pJegzjuCqIe3BwozG5Fa29DqpcKM5zL1x78h7JKMj1ek2aanqnCtG33Dr3w2mzcIcLjlsDtMD1CG02CFlrCCAzMmlLmFgsBiIpt3Blj1uaxJG67xB2jwKj45s4LIDhzLea24m1AzFh6FD4MsF4Ay35i2Cvbmzdff6nuJbKM5tw5C31xapoqwEIeKkCC9zsiIk8GCMhis557p7Hk9H3aM059D24ar7KLmlr8cydi9n4u2rwH02rb8l1ixDbgoqn2jlCHDBxbCnf3A4GyI4FpaqJuBf1IwdI85Bq6qzcJIiK"
         )
-        (ref-TS01-A::A_DALOS|DeployStandardAccount
+        (ref-TS01-A::DALOS|A_DeployStandardAccount
             "Ѻ.ÓŸαďŸÿŁș∇ëŤΘìηвШ7Ξпí∇εнìażĂ0ζÛÈõóşøÍЪýWKąĄfÑřúÆFïn$éČMŹΨŮIÜЧИůąпěθÀ£ÆпiMÛğλ$ĘØÊS¢Čłя₿Bк£č0ПĂ₳Ť¢ćÊзŠąA¥ŸιÚЬѺ$Й6ÌβmæñщюΞÜťčУИJș5дč¥dńУЖțŘΛя₿ξPx₿₱yζãъWςÙf₱ťηaŻê₱ΦЫ"
             (read-keyset "payload-3")
             pk
             "9G.1gDhzraCk2gfKJhlahy5FKBB6LwrDqdgvctfH7LJ22ejtqmlGth1yFe48C4rwLcHssr0I2Mz1GG97sKCyi29cxzoxGu5EGsajDLvFzHpGMuitBB4aDLfycMA9yGuFdqu7GrdpLy2Jo2sjrhIu6cqpAf2h0383hbj2zo75zkonA0JzAKt5oCbhlrybhDKApEd8EJF27Liymw99porIjyahlD7poxmAtdLtpg6qmymvtg6mkMFbrjk0Ls0wanevkyMk1td7jFyulAEo9lAIA8jbnCDap5Lju70lJzqefqAhqeyxfoeb7fncIBL0tsdz6olzxxwb1corLqbJF0BKszd5odijy2k84w2nqv92t5EckEsrKwynFm7bhqjb2yMcLkoCMcEIrea8ggk2M9pCCm0FeHmhgdjfLra6jiuxauqB8FMw7B1tAsEIgxAdasBHfsHuMwDL33q3tmvHnCCFEiud4psC0EydAEtMntl78JLzdAglfhGhyczpb9upA8ufn4l1ndlJJc6KBng3qbu5J7njwa5obDrsEsbj23bi6bys9Cy0E9t7ADdC0haHxhbl"
         )
-        (ref-TS01-A::A_DALOS|DeployStandardAccount
+        (ref-TS01-A::DALOS|A_DeployStandardAccount
             "Ѻ.A0ěьπΨтÎșπЦĐđŽ6ЫêÀεÅĐȘдÞЩ4Ł2ďй5žömiτsλÚÇдěÒaV₱ÏûιЩД₳îJÍşыyÜŹżęìvAЙsÄ¢ÿnΦIťQůЮ7ĄвaèďíoáнõÎLJθÆEáПiXÿÒÀĘ14цU1çΞêSťüIψчèι₱ê9ŽчΓüЦrÀÓμĆ99κQťqPÖшŮ1ÈČSĐŁÌбÝàŞbPσŃĎ8ĄW"
             (keyset-ref-guard "ouronet-ns.us-0001_emma-keyset")
             "k:11cd20672e0b414864b3b55f81f3980a74a021928c80b607d9e678043b34da80"
             "9G.39tf0E26stf4Dxiows9kidajrJGCjDighDd4jltItj9js3n8dFiiin5yphml1u0uAltxumFngoogIv8jypw4LlehiEbmuzxtwkdajn7j3M0s3s7g6aALwbbGt6uGjeuFw1ovxf769AzklLxke2MKfobAbDyIH2a6zwKC79eypy1tfdF2plELbfMq9KxtF1GvIri0y4c4Ll3rK0FqICktqmJEakeC4GadmsAatJzIa8vHj82uC0A3KrtkhLsz9cGmsC0Lmzi6GFvv0Cola8g1A4k2neFEAoCsHyepILCgCz6ftlLmsjwgBMfLLL0n3Iwa4lzsn0w2qHwqmvckCtEIeHfwd5m9MKg8AA51uaBDm76j9GnMpecaabqELMm2Fc1h4DhgmzJIIndmwj0vxKmqjnxfg891HKezsCJxIDmMvxC7JbGGbaLip7JaJ6kuuBmreFm3GyLIz1KKlIeBG6Ck8ftgpaGum2BrEFF45jom87uhba7lzfpq6ihG8H4MCAGyyrz9q3ben4yLv4Keqq9tt1q0F5AdC4s4Eox0ebLwLiCtgkrfp5qCohHBH8E8"
         )
-        (ref-TS01-A::A_DALOS|DeployStandardAccount
+        (ref-TS01-A::DALOS|A_DeployStandardAccount
             "Ѻ.œâσzüştŒhłσćØTöõúoвþçЧлρËШđюλ2ÙPeжŘťȚŤtθËûrólþŘß₿øuŁdáNÎČȘřΦĘbχλΩĄ¢ц2ŹθõĐLcÑÁäăå₿ξЭжулxòΘηĂœŞÝUËcω∇ß$ωoñД7θÁяЯéEU¢CЮxÃэJĘčÎΠ£αöŮЖбlćшbăÙЦÎAдŃЭб$ĞцFδŃËúHãjÁÝàĘSt"
             (keyset-ref-guard "ouronet-ns.us-0002_lumy-keyset")
             "k:8d9ef619118ad63187c3d56a3ff72986188cec388aa24d49eb8790233cca414c"
             "9G.1CAv9Fq0mmrgALMafmEv46lkzHj7yib75pCbDdtojimK8KHiBMqcMMj4002t612H5HaKD6yBDo556n2Jsc7CvxFlo0knLpoLMs331kCgur71s7tHbc20iAx5IvCdaektlscciwLAH8bKIprgBmJubk12xKGfw2FbdjH8Hgygs5g2LJKsf11sh6croly7w8G6E2LLHsf1D5HImE3K7Jd5wMkjcCHsu2khw6wpmxotBf1l1jMxedypoyGh5GHzy15hKafx4cL97ttq8jEvnioLshycFct228L6xsIIadmcodbyyyDhA2H7yqe2C5rwAvqirFHy5d40Mo2mFyJhG4D3HvwphdCuGCkM9yv3vdDFo4HHGDAllz2Ig6B1y8lf9Dmg9kk3fIFI5m7f8p01Hejq30JsA4av0cruGEIIB94AbyJvec09u2DA9gi7t4qDurc8pxw8qgs8v4IFoB2k1vwint9z2JAc82kw5t4frwip3Isx7zk3za2qdi5M6ifiFokdzidA0A0u3eho6goh5x8nn3llBDz6E9uDKedyApF1nzDkJefAIbigke32psym"
         )
-        (ref-TS01-A::A_DALOS|DeployStandardAccount
+        (ref-TS01-A::DALOS|A_DeployStandardAccount
             "Ѻ.ÅτhGźνΣhςвiàÁĘĚДÏWÉΨTěCÃŒnæi9цéŘQí¢лΞÛIчмfÓeżÜýЯàDÖ5αȚÞVđσγ₱0ęЬÔĄsĄLлKùvåH£ΞMFУûÊyđÜqdŽŚЖsĘъsПÂÔØŹÞŮγŚΣЧ6Ïж¢чPyòлБ14ÚęŃĄåîêтηΛbΦđkûÇĂζsБúĎdŸUЛзÙÂÚJηXťćж¥zщòÁŸRĘ"
             (keyset-ref-guard "ouronet-ns.us-0000_aozt-keyset")
             "k:3583447c7273253e634d6cd7aa86eee5df9a33e05bd29122e2b95f157bea937e"
             "9G.29k17uqiwBF7mbc3rzr5gz228lxepz7a0fwrja2Bgzk1czjCLja3wg9q1ey10ftFhxIAiFBHCtvotkmKIIxFisMni8EA6esncL3lg2uLLH2u89Er9sgbeGmK0k7b63xujf1nAIf5GB583fcE6pzFak2CwhEi1dHzI0F14tvtxv4H8r1ABk5weoJ7HfCoadMm1h8MjIwjzbDKo80H25AJL8I1JiFF66Iwjcj3sFrD9xaqz1ziEEBJICF2k81pG9ABpDk2rK4ooglCK3kmC0h7yvvakjIvMpGp00jnw2Cpg1HoxjK0HoqzuKciIIczGsEzCjoB43x7lKsxkzAm7op2urv0I85Kon7uIBmg328cuKMc8driw8boAFnrdqHEFhx4sFjm8DM44FutCykKGx7GGLnoeJLaC707lot9tM51krmp6KDG8Ii318fIc1L5iuzqEwDnkro35JthzlDD1GkJaGgze3kDApAckn3uMcBypdz4LxbDGrg5K2GdiFBdFHqdpHyssrH8t694BkBtM9EB3yI3ojbnrbKrEM8fMaHAH2zl4x5gdkHnpjAeo8nz"
         )
         
-        (ref-TS01-A::A_DALOS|DeploySmartAccount
+        (ref-TS01-A::DALOS|A_DeploySmartAccount
             dalos-sc
             (keyset-ref-guard "ouronet-ns.dh_sc_dalos-keyset")
             pk
             ancient
             "9G.DwF3imJMCp4ht88DD1vx6pdjEkLM4j7Fvzso8zJF7Ixe1p2oKfGb53a5svtEF0Lz1q4MjvHaMrgqCfjlA1cBj2bzvs86EeLIMg2fmutzwbA5vI4woKoqq0acDHllAonxC4qLBulsLclMGwcw9iGxiw919t4tfD8FpcIc4MJ059ki7giFIAyCghgMwwr199v3qiDfIon426rbz1jMLmCe4jhHwD3sEarwMlmzLJ5li43J70CEDzouh7x8pu4u1GxJHa6Cabrsc147gIlzIdDmCC2j87LFpEdvqLge9o0w4av8mLr0lDAfalpnEabfkl0E6zE9KMG7LH2w7uvBIup3Hxxxu2Giwu29Cqye3fJ5ihcjacop4vtcLsi33ip742uAhGzjHaDLwAh933ntp8tEC1zkt9yi6n89JtsDLk477p80rscbGtsi14nxsMf7y0d7GxzE8FFmljElu5yE3vx25cEvc9574Hw4iIi23FFKfdhGF77LMqaBkDB9hJKmpc1B2rM1a8mfilyvLAdzpj57Ae5FG5vvm1n1nzgau373dBF7CuBAu2zbts09du55"
         )
-        (ref-TS01-A::A_DALOS|DeploySmartAccount
+        (ref-TS01-A::DALOS|A_DeploySmartAccount
             ats-sc
             (keyset-ref-guard "ouronet-ns.dh_sc_autostake-keyset")
             pk
             ancient
             "9H.9I8veD6Lqmcd5nKlb1vlHkg976FhdtooE3iH73h8i2Gq9tLKdclnpo07sC29i2yvMeuB0ikkKghiIgdAfkfDiM57o2phj2quCD8gutjIgDs6AlecMtw2lG6kMMBxBH4B5d1xqhpzA7AHkgEqF7Hgqwpx6E5aIMAtqxIpMhjyqziDiwLA69dKlhlwpjoze34Bwz6swBjlA880ItKfwxtulKEJG9oI3Gjmwgn6bbAgL7xy4brdbgK5DukMBHc0K1jIs1DjcDzhJz2liKultB67rKaBf3nMHMkbzhwl1hdu2wBCeHMLLphug2kE3tDtpxw6kLcj80qfBxvwmuxbeHjk349Md2B7eB4brt8fldi2CxGltfj41KA7GkgmtMa6szivDl5aCk9ozab9ohrsfBHikGL7GJ5Az4A2a8ufnIAJIz2mAgwGDmsAl7yyavbx12e5KhFFupclbKadmiFx8dvqkqwziu4vtt3AcKDhl96EzhuiKAF49vGoaAMo5vxM4h0t94nscG8IGl33De5MJGCpdf3g23D13eJ9BDi034wECutafzao4zzCe9IyvD3E"
         )
-        (ref-TS01-A::A_DALOS|DeploySmartAccount
+        (ref-TS01-A::DALOS|A_DeploySmartAccount
             vst-sc
             (keyset-ref-guard "ouronet-ns.dh_sc_vesting-keyset")
             pk
             ancient
             "9G.5s5hoiGo96tMqyh3JBklmsvo8Lc3ol9m6zavJcCuqg4mBvkbDfcv5gEorMit8v8Mj9Jc18EI36Gq7cJ1IyA4e4wvl199KuCx3chsDKGDdfsvzk8mo317ulGk00pbxu7MLc2zw7joouaxt3Ax1KnlJz153ko0JtIxz7pqylfis45pDo2vvm1MH2kA2wmE2crxiEo6oEckuGqzz8oEaa9ez8ADLyqnj48lq4jGp4slkKo6a06ElezH619fsihIdmiMdfB036CJAr0rlzA2b5DgvEJcoyIFioru7vynBjLMLv3pvLFnbFeswrlyLjF8ry7kB52cD7bD7xaamCEjgIC2DsKMv5Mrd69BIKn2yKHC86f0hme9zs5dwMekAd6mc4wM4bDAk6Jrsl6s74ykKLF71pk45rIE1xxzFC4EjykBf6G0neBdaExI32HufaE5mEloDtvnC6vJ7HA9akkI3616MnLErA8eMIn7Kr2wI4l9CvGpKcF9HilzJmdqMa4kzJwqzuFc9LhDnrKcu0LvBHqsx2CrCM9EwHqpkkGe7w8eK8x0xK6K8drLaoBKmaB1"
         )
-        (ref-TS01-A::A_DALOS|DeploySmartAccount
+        (ref-TS01-A::DALOS|A_DeploySmartAccount
             liquid-sc
             (keyset-ref-guard "ouronet-ns.dh_sc_stoaliquidstaking-keyset")
             (ref-LIQUID::GOV|LIQUID|SC_KDA-NAME)
             ancient
             "9H.b49lfzLzvC25g87fst6MqCkfbuqq39iGu50gDqi9jBEk6Cn86w54b91zDxeGgLdCxIjJDfyi6gBBwA93lyGLcdfggf0LzwKu405piavx0nEnqpzyHK125h2BhECnobmDBAps61c7mGmw5GrczBjvBMLxHwl2avt5jwhKeGxh7Ibm1ui6wI6lpAKBMay4tvEwHK0EibhbeaA2lLqjIwqMKnldp22txeje3DFLautFC798ExbLxG7q3om8l1f9qpMJkw9f5nmHsHGJcrcIF2mou9lmpr3hbz64La6nF9w26h7osABLMLlK9Glp48yrj4h1MkI7xjftytKDnJFyqvoMFqKvA43cJ81bJCvmn63eJ9jx5n3GxFbc9H4v400iFwtyIilmhKymsa1iCnwL29g21DvkaE6JJyxl5eLCiGH3Ml1nb0jkg16zJbf9cfg41KHA0IGFIvLj9LBhj7okL6wspCEBfkc5Aui6DAM7dvAqH54LApEaAzIgyMloEmqvBgt5wF0lyd05xHxz4Mtb3ItGb5fLpzbMGqGKBffi4dElI7Hbs6Id0hCKGaeIg9JL"
         )
-        (ref-TS01-A::A_DALOS|DeploySmartAccount
+        (ref-TS01-A::DALOS|A_DeploySmartAccount
             ouroboros-sc
             (keyset-ref-guard "ouronet-ns.dh_sc_ouroboros-keyset")
             (ref-ORBR::GOV|ORBR|SC_KDA-NAME)
             ancient
             "9H.28jB2BBny4op601Cfqz9brFJKAEo67jbEDJi91i00pGjcD1Mpn0y0A1CxcAwGgBu35Ix3bG4e4p56Mu6x7Mmd50nKfmpDGtLy1ywyCjoDD5xiHBb0y5dAjB0fuokrqyx3ula9rtxyEHK1A4gkG4g3GEyysMtgF40IBgKjm7t8ffGshICIypFeF3gA5x0MixA0soiCx9tBnMDzI6G5xC8yIJJ3Bt2sCvJHAp7HAEA3rKK6Bgnx8hK94oDbgrpCkxw3zpo7tbeHhcakzbg0ELG3EJvk19hyd9LC73t2gizl0B6puq3Ljji5EDAhzno7K32x8vCagc5D2GLiMfdzEzsj5KEe1c2p7hxj76lMvp40r9F56vzlK8Kb7mrKt90ILEMqCghLrok7D4uH8h28EGqbK75wiyguimc1jDGxthyBJFfApClymKA57ehqbv2Lyv323w44b0kIItu35fjmhe2DCBMwjn67ffDII97b6AdyG010wvAHf55xFt25Mbm2pflsggL4D5jHtokl7qn6g4ltM5ilvHvsxn7jHe23Cfgoxn1JssdFMBpcDvB2xki7"
         )
-        (ref-TS01-A::A_DALOS|DeploySmartAccount
+        (ref-TS01-A::DALOS|A_DeploySmartAccount
             swp-sc
             (keyset-ref-guard "ouronet-ns.dh_sc_swapper-keyset")
             pk
             ancient
             "9G.4Bl3bJ5o1eIoBkhynF39lFdvkA3E0n8m5fBr9iG4D6Ahj3xfop72b98rr33vFFLjqaiozE1btl7lgzKcjHwjzu5GuFqvMb43v9CHHe8je3buLbHMkcAyKdEMD85yIHsb9ty58Kzyado3ho1n1mf9GzpeegMrpK9wDFteeKexdL7HHq8GF7ptD2w45IkMf2A8j4pm7E6vJ1ytCckhclD9nd3JzL2j5cyLxawnE76leKmEmFaxqnF76yyJe5Mu6yLkg2yonJa6vx6jd1kr0hdEf81o42Asr8EcCDeeqD4nAehC3w3pFDMwbln4Mbl6t55GHGephx99LJKH1ojhlMlnyC4bbJFAiyD1h6vs0o7mKAaazFG9y0vfbvM9imcs1vCMmpk2cGDAAAqH6iJe32ugHA3AECEgCvxCskw4Mfx6Cc4rx2BkmKMlxeHqyDceI6wa2qjzuyI80vKg6H6tMwEg48H0ywIMDyxteDfHav08eEJE2lljEIAc1jxLlLcosbiknAyxJvu8g7kA4oAlcio2jI8lMxp76vosd5FxpatowuFktILfyCFyHvKfcozy"
         )
-        (ref-TS01-A::A_DALOS|DeploySmartAccount
+        (ref-TS01-A::DALOS|A_DeploySmartAccount
             "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ"
             (keyset-ref-guard "ouronet-ns.dh_sc_dhvault-keyset")
             pk
             ancient
             "9G.7G3mkhkk34Bg37uslsu3M7psBc40xsKFibE9DL0jb43JcJ7fzDh9cz3Edn8uvlkh0bCeFafFntCKt0HvJsmczx3Lek9d3mqr38BbIwmBrDkd8sordjr4L7tJ5Fnqj39F6s55hD3rEFvMGors4sws3lDcKiEHkMEE7kHuuB31gGe3F5HsI0yHbwsm2IcspsB1ICiD1g73vup127pjLauIc6gxl3sJy0lAml1uA9g18Btcl6prinGmo3uFomeoyvx9oLGlf6ctFsfavKa5vFrvaw2FB1KsAiejqqjaeMu1I1cEey3m55allFm5pg9LaFK307qnmjxfmqv38vvr2wBerI4BnvFKLgpB7e7pCCmarDJq1l6nHEIv6wl3d96iwAqEHxKEwpH7ljzqnsnBpcEFlpKu6xjc5o78DiwzrltiDxa5c9ug7wML3MGqDEH9tzIj2IreF5yEnw4M15yy38z7gqKbd7l3Fb3qc7kvrgHKG8cpq9M54kg6v5a1k7Laqea07ynccK6r2bjwl7L8IkE7EsAep77M1kb4455klFFH2qx2uEuGBlfsu1rztiMa"
         )
-        (ref-TS01-A::A_DALOS|DeployStandardAccount
+        (ref-TS01-A::DALOS|A_DeployStandardAccount
             "Ѻ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ"
             (keyset-ref-guard "ouronet-ns.dh_sc_dhvault-keyset")
             pk
             "9G.7G3mkhkk34Bg37uslsu3M7psBc40xsKFibE9DL0jb43JcJ7fzDh9cz3Edn8uvlkh0bCeFafFntCKt0HvJsmczx3Lek9d3mqr38BbIwmBrDkd8sordjr4L7tJ5Fnqj39F6s55hD3rEFvMGors4sws3lDcKiEHkMEE7kHuuB31gGe3F5HsI0yHbwsm2IcspsB1ICiD1g73vup127pjLauIc6gxl3sJy0lAml1uA9g18Btcl6prinGmo3uFomeoyvx9oLGlf6ctFsfavKa5vFrvaw2FB1KsAiejqqjaeMu1I1cEey3m55allFm5pg9LaFK307qnmjxfmqv38vvr2wBerI4BnvFKLgpB7e7pCCmarDJq1l6nHEIv6wl3d96iwAqEHxKEwpH7ljzqnsnBpcEFlpKu6xjc5o78DiwzrltiDxa5c9ug7wML3MGqDEH9tzIj2IreF5yEnw4M15yy38z7gqKbd7l3Fb3qc7kvrgHKG8cpq9M54kg6v5a1k7Laqea07ynccK6r2bjwl7L8IkE7EsAep77M1kb4455klFFH2qx2uEuGBlfsu1rztiMa"
         )
-        (ref-TS01-A::A_DALOS|DeploySmartAccount
+        (ref-TS01-A::DALOS|A_DeploySmartAccount
             "Σ.μЖâAáпδÃàźфнMAŸôIÌjȘЛδεЬÍБЮoзξ4κΩøΠÒçѺłœщÌĘчoãueUøVlßHšδLτε£σž£ЙLÛòCÎcďьčfğÅηвČïnÊвÞIwÇÝмÉŠвRмWć5íЮzGWYвьżΨπûEÃdйdGЫŁŤČçПχĘŚślьЙŤğLУ0SýЭψȘÔÜнìÆkČѺȘÍÍΛ4шεнÄtИςȘ4"
             (keyset-ref-guard "ouronet-ns.dh_sc_dpdc-keyset")
             pk
             ancient
             "9G.2j95rkomKqd207CDg5yycyKcAy1AqFhjy6D0rCr0Kbwe9E6libtveIHsAIw9F2c43v6IHILIBf62r2LD58xHE09kypyoevL62E81wHL4zj9tIyspf5df82upuBGGKmIsHGuvH86fHMMi99n0htsypL9h3dMHFCIx8ogeynkmCIghxK871rlkas8iDfce7AwAbiajr7H1LHi17mLD7aJu6m7xmcAABkhxtwb4Kqbk8xLpehakyu3AvajgJvtfeysoH67irvplA0as86Jls1r3d3oHms9Maaja9856wzybpthMGs6qDAzacE24skcA30wvm77BLhrdh0ymkl3vbJ9lG641J7ofg5K9gEbHD4ioFHLEajL28qsD4cFEhdDthDzwF8EnBBc74Dikqn9xixFap5Jxhl7D0owz5d9MDJzfjgx3jbdpD3zglsq83iC4fhcpbz3KeAi11Ig2pgIqnmwwqA0Exr5073w7lgzlrw3Ff7Co9uuxbnLuJvlFzgfGeIwM2Dmev1JskqEGK0Ck0B87iagsHFI76HC6sKnwrHnkl0sl8pAf0pbBaw9MbqLs"
         )
-        (ref-TS01-A::A_DALOS|DeploySmartAccount
+        (ref-TS01-A::DALOS|A_DeploySmartAccount
             "Σ.hÜ5ĞÊÜεŞΓõè1Ă₳äàÄìãÓЦφLÕзЯŮμĞ₿мK6àŘуVćχδдзηφыβэÎχUHRêγBğΛ∇VŒižďЬШ£îOÜøE4ÖFSõЩЩAłκè1ččΨΦŻЖэч6Iчη₱ØćнúŒψУćÀyпãЗцÚäδÏÍtςřïçγț6γÎęôigFzÝûηы₿ÏЬüБэΞčмŃт₳ŘчjζsŠȚHъĘïЦ0"
             (keyset-ref-guard "ouronet-ns.dh_sc_dispenser-keyset")
             pk
             ancient
             "9G.o0n0iHmGhkch5aEqr0wcpEKpuqgGt5uvFapDLb94GwCbJvBga5H4xrFAx41CbMMH0M7AHmqFnrafceFmaHBfjsH51ggCxJmu5DMpK4jGg0rpogpD26r4yiykAIkaqDz61sHGewpxl1tly780ahKxbEB7uD8FlvA1nGppsttz3AhIhbxlhJ3BpI3Hehf5tCM6bfqF9o6ryb3bErqJwEDJmMGFC9HEeDiLKAtMgqaajzK2b0yg2sE0lJMp2K8I6sjfwnyhyL5vnycpMpeCgagdlnbMMMaA9trHLx4FxLym6KqCFAxCFwFHohfbcolG3u5wGo06M1fMBKpC64Mgm4584tH93Hpmop4tLpD7157GLo7mejJk8ryrA229K07D2hbhtanzCgdtjziBs9yqvHLq78EFEsD1fpEeD0pMhJeLEMEsqu8zf816cLErk4aDC22GnsC9774C59iaLFKkzKzh11xnAEalcpGcLf7aecGBHu5IABIGq8sEFa9Ahi5inermzrys3HcLpz2degMmAEy8hKsI83zvaCta8Ksimgn3qmv4r4jocMsIAwDeEfzE"
         )
-        (ref-TS01-A::A_DALOS|DeployStandardAccount
+        (ref-TS01-A::DALOS|A_DeployStandardAccount
             "Ѻ.hÜ5ĞÊÜεŞΓõè1Ă₳äàÄìãÓЦφLÕзЯŮμĞ₿мK6àŘуVćχδдзηφыβэÎχUHRêγBğΛ∇VŒižďЬШ£îOÜøE4ÖFSõЩЩAłκè1ččΨΦŻЖэч6Iчη₱ØćнúŒψУćÀyпãЗцÚäδÏÍtςřïçγț6γÎęôigFzÝûηы₿ÏЬüБэΞčмŃт₳ŘчjζsŠȚHъĘïЦ0"
             (keyset-ref-guard "ouronet-ns.dh_sc_dispenser-keyset")
             pk
             "9G.o0n0iHmGhkch5aEqr0wcpEKpuqgGt5uvFapDLb94GwCbJvBga5H4xrFAx41CbMMH0M7AHmqFnrafceFmaHBfjsH51ggCxJmu5DMpK4jGg0rpogpD26r4yiykAIkaqDz61sHGewpxl1tly780ahKxbEB7uD8FlvA1nGppsttz3AhIhbxlhJ3BpI3Hehf5tCM6bfqF9o6ryb3bErqJwEDJmMGFC9HEeDiLKAtMgqaajzK2b0yg2sE0lJMp2K8I6sjfwnyhyL5vnycpMpeCgagdlnbMMMaA9trHLx4FxLym6KqCFAxCFwFHohfbcolG3u5wGo06M1fMBKpC64Mgm4584tH93Hpmop4tLpD7157GLo7mejJk8ryrA229K07D2hbhtanzCgdtjziBs9yqvHLq78EFEsD1fpEeD0pMhJeLEMEsqu8zf816cLErk4aDC22GnsC9774C59iaLFKkzKzh11xnAEalcpGcLf7aecGBHu5IABIGq8sEFa9Ahi5inermzrys3HcLpz2degMmAEy8hKsI83zvaCta8Ksimgn3qmv4r4jocMsIAwDeEfzE"
         )
-        (ref-TS01-A::A_DALOS|DeploySmartAccount
+        (ref-TS01-A::DALOS|A_DeploySmartAccount
             "Σ.Щę7ãŽÓλ4ěПîЭđЮЫAďбQOχnиИДχѺNŽł6ПžιéИąĞuπЙůÞ1ęrПΔżæÍžăζàïαŮŘDzΘ€ЦBGÝŁЭЭςșúÜđŻõËŻκΩÎzŁÇÉΠмłÔÝÖθσ7₱в£μŻzéΘÚĂИüyćťξюWc2И7кςαTnÿЩE3MVTÀεPβafÖôoъBσÂбýжõÞ7ßzŁŞε0âłXâÃЛ"
             (keyset-ref-guard "ouronet-ns.dh_sc_custodians-keyset")
             pk
             ancient
             "9H.abeq3vvcwJp9gl2Kdt5xb7djJwdB35bCgkIaF3r0k38kBF6La1M6ci0ma2e5exMehsmwe1x3d6EpsIjxv95hAvc3uJweirnitcAAryxn9HaHJ1f0ya36BDfsrfaIBL4moIF3B8glb5pDBhta7pyxigEdt13ccEIKtCdyC6krMhB5iyqfEyB70zf5tjqn2xpDDzg9nA7auzzjxxtwLH80Lmdp4wAEcnqprGishhMLLefMnzDv9dFyM0n31fAcziHogCIM4kktFgydhHah7hmJurs3xCrGrs5qAEtjid0zioLHM58l8wogL2j0L9LIH21wI4lD1BlKq4445nos849CEzcm3DC9t67IH1r63pkgc9xFEGr8K6H3CCfg9aqDcApxaDuEomaKjEj6ft71gtEwbEJJmrAzfDolHrFfubcertjF2rE2wMywhv7HqIoHMCKEznMFCy2C6eyGyh1mIMeKJDDhwqIDIA5a2wvtt0HedKxmgDldafrrGdn5yDGHMexLFCrGv9aG50G82zIlE5z7cksfplf5taeiz8vlydDKmLaCcMgA7ne77hsbGHuu"
         )
-        (ref-TS01-A::A_DALOS|DeployStandardAccount
+        (ref-TS01-A::DALOS|A_DeployStandardAccount
             "Ѻ.Щę7ãŽÓλ4ěПîЭđЮЫAďбQOχnиИДχѺNŽł6ПžιéИąĞuπЙůÞ1ęrПΔżæÍžăζàïαŮŘDzΘ€ЦBGÝŁЭЭςșúÜđŻõËŻκΩÎzŁÇÉΠмłÔÝÖθσ7₱в£μŻzéΘÚĂИüyćťξюWc2И7кςαTnÿЩE3MVTÀεPβafÖôoъBσÂбýжõÞ7ßzŁŞε0âłXâÃЛ"
             (keyset-ref-guard "ouronet-ns.dh_sc_custodians-keyset")
             pk
             "9H.abeq3vvcwJp9gl2Kdt5xb7djJwdB35bCgkIaF3r0k38kBF6La1M6ci0ma2e5exMehsmwe1x3d6EpsIjxv95hAvc3uJweirnitcAAryxn9HaHJ1f0ya36BDfsrfaIBL4moIF3B8glb5pDBhta7pyxigEdt13ccEIKtCdyC6krMhB5iyqfEyB70zf5tjqn2xpDDzg9nA7auzzjxxtwLH80Lmdp4wAEcnqprGishhMLLefMnzDv9dFyM0n31fAcziHogCIM4kktFgydhHah7hmJurs3xCrGrs5qAEtjid0zioLHM58l8wogL2j0L9LIH21wI4lD1BlKq4445nos849CEzcm3DC9t67IH1r63pkgc9xFEGr8K6H3CCfg9aqDcApxaDuEomaKjEj6ft71gtEwbEJJmrAzfDolHrFfubcertjF2rE2wMywhv7HqIoHMCKEznMFCy2C6eyGyh1mIMeKJDDhwqIDIA5a2wvtt0HedKxmgDldafrrGdn5yDGHMexLFCrGv9aG50G82zIlE5z7cksfplf5taeiz8vlydDKmLaCcMgA7ne77hsbGHuu"
         )
-        (ref-TS01-A::A_DALOS|DeploySmartAccount
+        (ref-TS01-A::DALOS|A_DeploySmartAccount
             "Σ.Îäć$ЬчýφVεÎÿůпΨÖůηüηŞйnюŽXΣşpЩß5ςĂκ£RäbE₳èËłŹŘYшÆgлoюýRαѺÑÏρζt∇ŹÏýжIŒațэVÞÛщŹЭδźvëȘĂтPЖÃÇЭiërđÈÝДÖšжzČđзUĚĂsкιnãñOÔIKпŞΛI₳zÄû$ρśθ6ΨЬпYпĞHöÝйÏюşí2ćщÞΔΔŻTж€₿ŞhTțŽ"
             (keyset-ref-guard "ouronet-ns.dh_sc_demipad-keyset")
             pk
@@ -2431,26 +2431,26 @@ EliteAuryndex-ds4il5rO7vDC
         (ref-P|TS01-C3::P|A_Define)
         (ref-P|TS01-CP::P|A_Define)
         ;;Define Prices
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "standard"     1.0)
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "smart"        2.0)
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "ats"          1.0)
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "swp"         15.0)
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "dptf"        20.0)
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "dpmf"        30.0)
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "dpsf"        40.0)
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "dpnf"        50.0)
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "blue"         2.5)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "standard"     1.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "smart"        2.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "ats"          1.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "swp"         15.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "dptf"        20.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "dpmf"        30.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "dpsf"        40.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "dpnf"        50.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "blue"         2.5)
         ;;Ignis Prices
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "ignis|smallest"            1.0)
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "ignis|small"               2.0)
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "ignis|medium"              3.0)
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "ignis|big"                 4.0)
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "ignis|biggest"             5.0)
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "ignis|branding"          100.0)
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "ignis|token-issue"       500.0)
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "ignis|ats-issue"        5000.0)
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "ignis|swp-issue"        4000.0)
-        (ref-TS01-A::A_DALOS|UpdateUsagePrice "ignis|swp-liquidity"      20.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "ignis|smallest"            1.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "ignis|small"               2.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "ignis|medium"              3.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "ignis|big"                 4.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "ignis|biggest"             5.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "ignis|branding"          100.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "ignis|token-issue"       500.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "ignis|ats-issue"        5000.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "ignis|swp-issue"        4000.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "ignis|swp-liquidity"      20.0)
         ;;
         (insert ref-DALOS::DALOS|PropertiesTable info
             {"global-administrative-pause"  : false
@@ -2485,7 +2485,7 @@ EliteAuryndex-ds4il5rO7vDC
         )
         ;;
         ;;Genesis Governor Swaps
-        (ref-TS01-C1::C_DALOS|RotateGovernor ancient dalos-sc
+        (ref-TS01-C1::DALOS|C_RotateGovernor ancient dalos-sc
             (ref-U|G::UEV_GuardOfAny
                 [
                     (ref-P|DALOS::P|UR "TFT|RemoteDalosGov")
@@ -2496,7 +2496,7 @@ EliteAuryndex-ds4il5rO7vDC
                 ]
             )
         )
-        (ref-TS01-C1::C_DALOS|RotateGovernor ancient ats-sc
+        (ref-TS01-C1::DALOS|C_RotateGovernor ancient ats-sc
             (ref-U|G::UEV_GuardOfAny
                 [
                     (create-capability-guard (ATS.ATS|GOV))
@@ -2505,7 +2505,7 @@ EliteAuryndex-ds4il5rO7vDC
                 ]
             )
         )
-        (ref-TS01-C1::C_DALOS|RotateGovernor ancient vst-sc
+        (ref-TS01-C1::DALOS|C_RotateGovernor ancient vst-sc
             (ref-U|G::UEV_GuardOfAny
                 [
                     (create-capability-guard (VST.VST|GOV))
@@ -2514,13 +2514,13 @@ EliteAuryndex-ds4il5rO7vDC
                 ]
             )
         )
-        (ref-TS01-C1::C_DALOS|RotateGovernor ancient liquid-sc
+        (ref-TS01-C1::DALOS|C_RotateGovernor ancient liquid-sc
             (create-capability-guard (LIQUID.LIQUID|GOV))
         )
-        (ref-TS01-C1::C_DALOS|RotateGovernor ancient ouroboros-sc
+        (ref-TS01-C1::DALOS|C_RotateGovernor ancient ouroboros-sc
             (create-capability-guard (OUROBOROS.ORBR|GOV))
         )
-        (ref-TS01-C1::C_DALOS|RotateGovernor ancient swp-sc
+        (ref-TS01-C1::DALOS|C_RotateGovernor ancient swp-sc
             (ref-U|G::UEV_GuardOfAny
                 [
                     (create-capability-guard (SWP.SWP|GOV))
@@ -2531,7 +2531,7 @@ EliteAuryndex-ds4il5rO7vDC
                 ]
             )
         )
-        (ref-TS01-C1::C_DALOS|RotateGovernor ancient smart-dhvault-sc
+        (ref-TS01-C1::DALOS|C_RotateGovernor ancient smart-dhvault-sc
             (ref-P|DALOS::P|UR "DSP|RemoteDalosGov")
         )
         ;;Deploy Principal Autonomous Accounts
@@ -2552,7 +2552,7 @@ EliteAuryndex-ds4il5rO7vDC
         (let
             (
                 (ids:list
-                    (ref-TS01-C1::C_DPTF|Issue
+                    (ref-TS01-C1::DPTF|C_Issue
                         ancient
                         dalos-sc
                         ["Ouroboros" "Auryn" "EliteAuryn" "Ignis" "WrappedStoa" "SilverStoa"]
@@ -2584,44 +2584,44 @@ EliteAuryndex-ds4il5rO7vDC
                     }
                 )
                 ;;Set Token Roles Part I
-                (ref-TS01-C1::C_DPTF|SetFee ancient AurynID 50.0)
-                (ref-TS01-C1::C_DPTF|SetFee ancient EliteAurynID 100.0)
-                (ref-TS01-C1::C_DPTF|ToggleFee ancient AurynID true)
-                (ref-TS01-C1::C_DPTF|ToggleFee ancient EliteAurynID true)
-                (ref-TS01-C1::C_DPTF|ToggleFeeLock ancient AurynID true)
-                (ref-TS01-C1::C_DPTF|ToggleFeeLock ancient EliteAurynID true)
+                (ref-TS01-C1::DPTF|C_SetFee ancient AurynID 50.0)
+                (ref-TS01-C1::DPTF|C_SetFee ancient EliteAurynID 100.0)
+                (ref-TS01-C1::DPTF|C_ToggleFee ancient AurynID true)
+                (ref-TS01-C1::DPTF|C_ToggleFee ancient EliteAurynID true)
+                (ref-TS01-C1::DPTF|C_ToggleFeeLock ancient AurynID true)
+                (ref-TS01-C1::DPTF|C_ToggleFeeLock ancient EliteAurynID true)
                 ;;
                 ;;Set Token Roles Part II
-                (ref-TS01-C1::C_DPTF|SetMinMove ancient GasID 1000.0)
-                (ref-TS01-C1::C_DPTF|SetFee ancient GasID -1.0)
-                (ref-TS01-C1::C_DPTF|SetFeeTarget ancient GasID dalos-sc)
-                (ref-TS01-C1::C_DPTF|ToggleFee ancient GasID true)
-                (ref-TS01-C1::C_DPTF|ToggleFeeLock ancient GasID true)
-                (ref-TS01-C1::C_DPTF|ToggleMintRole ancient OuroID smart-dhvault-sc true)
+                (ref-TS01-C1::DPTF|C_SetMinMove ancient GasID 1000.0)
+                (ref-TS01-C1::DPTF|C_SetFee ancient GasID -1.0)
+                (ref-TS01-C1::DPTF|C_SetFeeTarget ancient GasID dalos-sc)
+                (ref-TS01-C1::DPTF|C_ToggleFee ancient GasID true)
+                (ref-TS01-C1::DPTF|C_ToggleFeeLock ancient GasID true)
+                (ref-TS01-C1::DPTF|C_ToggleMintRole ancient OuroID smart-dhvault-sc true)
                 ;;
                 ;;Setup WSTOA and STOA
-                (ref-TS01-C1::C_DPTF|DeployAccount ancient AurynID ats-sc)
-                (ref-TS01-C1::C_DPTF|DeployAccount ancient EliteAurynID ats-sc)
-                (ref-TS01-C1::C_DPTF|DeployAccount ancient WrappedStoaID liquid-sc)
-                (ref-TS01-C1::C_DPTF|DeployAccount ancient SilverStoaID liquid-sc)
+                (ref-TS01-C1::DPTF|C_DeployAccount ancient AurynID ats-sc)
+                (ref-TS01-C1::DPTF|C_DeployAccount ancient EliteAurynID ats-sc)
+                (ref-TS01-C1::DPTF|C_DeployAccount ancient WrappedStoaID liquid-sc)
+                (ref-TS01-C1::DPTF|C_DeployAccount ancient SilverStoaID liquid-sc)
                 ;;
-                (ref-TS01-C1::C_DPTF|SetFee ancient SilverStoaID -1.0)
-                (ref-TS01-C1::C_DPTF|ToggleFee ancient SilverStoaID true)
-                (ref-TS01-C1::C_DPTF|ToggleFeeLock ancient SilverStoaID true)
+                (ref-TS01-C1::DPTF|C_SetFee ancient SilverStoaID -1.0)
+                (ref-TS01-C1::DPTF|C_ToggleFee ancient SilverStoaID true)
+                (ref-TS01-C1::DPTF|C_ToggleFeeLock ancient SilverStoaID true)
                 ;;
                 ;;Create Vesting Links for Snake Tokens
                 (format "Vested Links for Ouroboros Auryn and Elite-Auryn created with Id {} {} and {}"
                     [
-                        (at 1 (ref-TS01-C2::C_VST|CreateVestingLink ancient OuroID))
-                        (at 1 (ref-TS01-C2::C_VST|CreateVestingLink ancient AurynID))
-                        (at 1 (ref-TS01-C2::C_VST|CreateVestingLink ancient EliteAurynID))
+                        (at 1 (ref-TS01-C2::VST|C_CreateVestingLink ancient OuroID))
+                        (at 1 (ref-TS01-C2::VST|C_CreateVestingLink ancient AurynID))
+                        (at 1 (ref-TS01-C2::VST|C_CreateVestingLink ancient EliteAurynID))
                     ]
                 )
                 ;;Issue Vesta and GoldenStoa
                 (let
                     (
                         (ids:list
-                            (ref-TS01-C1::C_DPTF|Issue
+                            (ref-TS01-C1::DPTF|C_Issue
                                 ancient
                                 ancient
                                 ["Vesta" "GoldenStoa"]
@@ -2636,12 +2636,12 @@ EliteAuryndex-ds4il5rO7vDC
                             )
                         )
                         (VestaID:string (at 0 ids))
-                        (FrozenVestaID:string (at 1 (ref-TS01-C2::C_VST|CreateFrozenLink ancient VestaID)))
-                        (SleepingVestaID:string (at 1 (ref-TS01-C2::C_VST|CreateSleepingLink ancient VestaID)))
-                        (ReservedOuroID:string (at 1 (ref-TS01-C2::C_VST|CreateReservationLink ancient OuroID)))
+                        (FrozenVestaID:string (at 1 (ref-TS01-C2::VST|C_CreateFrozenLink ancient VestaID)))
+                        (SleepingVestaID:string (at 1 (ref-TS01-C2::VST|C_CreateSleepingLink ancient VestaID)))
+                        (ReservedOuroID:string (at 1 (ref-TS01-C2::VST|C_CreateReservationLink ancient OuroID)))
                         (GoldenStoaID:string (at 1 ids))
                         (HibernatedGoldenStoaID:string
-                            (at 1 (ref-TS01-C2::C_VST|CreateHibernatingLink ancient GoldenStoaID))
+                            (at 1 (ref-TS01-C2::VST|C_CreateHibernatingLink ancient GoldenStoaID))
                         )
                     )
                     [
@@ -2709,10 +2709,10 @@ EliteAuryndex-ds4il5rO7vDC
                                 {"pools"                : u}
                             )
                             ;;Update SWP Principal Swap Tokens
-                            (ref-TS01-A::A_SWP|UpdatePrincipal SilverStoaID true)
-                            (ref-TS01-A::A_SWP|UpdatePrincipal OuroID true)
-                            (ref-TS01-C1::C_DPTF|DeployAccount ancient SilverStoaID swp-sc)
-                            (ref-TS01-C1::C_DPTF|DeployAccount ancient OuroID swp-sc)
+                            (ref-TS01-A::SWP|A_UpdatePrincipal SilverStoaID true)
+                            (ref-TS01-A::SWP|A_UpdatePrincipal OuroID true)
+                            (ref-TS01-C1::DPTF|C_DeployAccount ancient SilverStoaID swp-sc)
+                            (ref-TS01-C1::DPTF|C_DeployAccount ancient OuroID swp-sc)
                         ]
                     )
                 )
@@ -2733,7 +2733,7 @@ EliteAuryndex-ds4il5rO7vDC
         (eliteauryn:string (ref-DALOS::UR_EliteAurynID))
     )
     [
-        (ref-TS01-C1::C_DPTF|BulkTransfer
+        (ref-TS01-C1::DPTF|C_BulkTransfer
             patron eliteauryn treasury-sc
             [
                 "Ѻ.âΛλШXρлÿИτüĄĎÍòπLRœnÍβîroяqbцjÀxłйœЮuÊУhÅпуçвbΓρȚжyčIĐáùH7íšьyτйÄκмΓQxŮγè0ÍΨΠúpdŒúcØП0ЫшûfȚѺęđnteòźŁμüηoΨ€ÀъÛÿ1ÌöÛùÁc∇ПźщΓÙKэĄйĐğÈÔÄĐěì5зäÆsQćŚμлÒη₳đ8νБŞŞ9ÁìĚΨZ"
@@ -2869,7 +2869,7 @@ EliteAuryndex-ds4il5rO7vDC
 
 
   
-(ouronet-ns.TS01-C1.C_DPTF|Transfer
+(ouronet-ns.TS01-C1.DPTF|C_Transfer
     "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî"
     "OURO-8Nh-JO8JO4F5"
     "Ѻ.0ŤΞAKЛăÁĄαò¥£šÚDΩOg6ρДëΞΓй6QâÞæÇŽÙĐκτãWÊpŘуd6ЫŘØûпσΛЩĐŽÆPςэĂVνпÂLαÜÄÇ₱ψr0ÆáИøÙ$θoŮωIιCĆąPAtNфIÑγÍïξnŠEëpÞLĄÊιÞêWĘuмκпTμisfťÕâýЧδrñWÂ$жщдфœżÊRHδщřηÚĂИ¥€yшѺéŸÔVУæ"
@@ -2877,7 +2877,7 @@ EliteAuryndex-ds4il5rO7vDC
     8652.531282443781698661867751
     true
 )  
-(ouronet-ns.TS01-C1.C_DPTF|Transfer
+(ouronet-ns.TS01-C1.DPTF|C_Transfer
     "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî"
     "OURO-8Nh-JO8JO4F5"
     "Ѻ.ĄÀтмωωàŹČлďÜhÍηЛνÙνûĘõțЫåÒÛHážNÍЧψξïžŹЬΛξП¥ЮςĄEйNĄЧ9óпиÃЗ2äÔвœ₿£ČóΩÞдréě7νшDÅЬXтBørŸĂBςąЙęìvÆлμЛáΩγĘЗôåУțτжéδÚνpÍżȘĘï4ąŹȘkφNθþÀωΞÀWžIи5ь€ÊOôΣëñэÔÿνÜw1юÔzźцξńѺfś"
@@ -2885,7 +2885,7 @@ EliteAuryndex-ds4il5rO7vDC
     5905.242946018959898219
     true
 )  
-(ouronet-ns.TS01-C1.C_DPTF|Transfer
+(ouronet-ns.TS01-C1.DPTF|C_Transfer
     "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî"
     "OURO-8Nh-JO8JO4F5"
     "Ѻ.ÙÉlgЖ2ЦζGČŃчΔ7ÈehĂpУΨΛжXчNøÒäεИbôłξ6σæ₱þğÕнwŸêτńsιφÏþfÏŘÿQθкшμΦgiЗΣωõásŒΦ€ýюĄBнчěþЧαsČÅyȘИöSŁÁVSłßДgNЩиřβÅMΦöÞXšÞbQЫбzĎŮe₿ñÔŚďæğЖžCDìÿ7ÒÆB2knΩúÓcíŮłŸnκΓÒΩBÅĄÂБΣ"
@@ -2893,7 +2893,7 @@ EliteAuryndex-ds4il5rO7vDC
     1089.442984580802158061388475
     true
 )  
-(ouronet-ns.TS01-C1.C_DPTF|Transfer
+(ouronet-ns.TS01-C1.DPTF|C_Transfer
     "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî"
     "OURO-8Nh-JO8JO4F5"
     "Ѻ.ÁΛȚçqÂélπ∇StÁĐѺщEzφ$äЦEИБďËц0qεÍțGĞфhȘЬ3DĂШœшβÑЯĂçcA6ĘnЙΓĆyЮèymÿ₱XRÚнDâãнΣÖrŘμαфßŚÍÕȘÄ3ÊäŤжъUИЪ4ŻыDõíжAж5zůιÜĎиžQЖAwĐxçÖźЩÀμ₳ŘÜтšPŘζÈëШБØπąuыüÚähŸÏÚΞκĚбËŠÓéÃвЭЧ"

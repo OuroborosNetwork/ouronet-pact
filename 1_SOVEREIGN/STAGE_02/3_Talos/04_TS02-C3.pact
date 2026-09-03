@@ -51,82 +51,82 @@
     ;;
     ;;  [ANK]
     ;;
-    (defun C_AQP-ANK|RevokeBoostClass:string (patron:string boost-class-id:string))
-    (defun C_AQP-ANK|IssueTrueFungibleAnchor:string
+    (defun AQP-ANK|C_RevokeBoostClass:string (patron:string boost-class-id:string))
+    (defun AQP-ANK|C_IssueTrueFungibleAnchor:string
         (patron:string anchor-name:string dptf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dptf-amount:decimal)
     )
-    (defun C_AQP-ANK|IssueSemiFungibleAnchor:string
+    (defun AQP-ANK|C_IssueSemiFungibleAnchor:string
         (patron:string anchor-name:string dpsf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpsf-nonce:integer)
     )
-    (defun C_AQP-ANK|IssueNonFungibleAnchor:string
+    (defun AQP-ANK|C_IssueNonFungibleAnchor:string
         (patron:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-trait-key:string dpnf-trait-value:string)
     )
-    (defun C_AQP-ANK|IssueNonFungibleSetAnchor:string
+    (defun AQP-ANK|C_IssueNonFungibleSetAnchor:string
         (patron:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-nonce-class:integer)
     )
-    (defun C_AQP-ANK|RevokeAnchor:string (patron:string anchor-id:string))
+    (defun AQP-ANK|C_RevokeAnchor:string (patron:string anchor-id:string))
     ;;
     ;;  [AQP-SCORE]
     ;;
-    (defun C_AQP-SCR|IssueLiquidityScore:string
+    (defun AQP-SCR|C_IssueLiquidityScore:string
         (patron:string owner-konto:string score-name:string precision:integer lp-denominator:string mx-frozen:decimal mx-sleeping:decimal)
     )
-    (defun C_AQP-SCR|IssueTrueFungibleScore:string
+    (defun AQP-SCR|C_IssueTrueFungibleScore:string
         (patron:string owner-konto:string score-name:string precision:integer mx-frozen:decimal)
     )
-    (defun C_AQP-SCR|IssueOrtoFungibleScore:string
+    (defun AQP-SCR|C_IssueOrtoFungibleScore:string
         (patron:string owner-konto:string score-name:string precision:integer mx-sleeping:decimal mx-hibernated:decimal)
     )
-    (defun C_AQP-SCR|IssueSemiFungibleScore:string
+    (defun AQP-SCR|C_IssueSemiFungibleScore:string
         (patron:string owner-konto:string score-name:string precision:integer sft-equality:bool)
     )
-    (defun C_AQP-SCR|IssueNonFungibleScore:string
+    (defun AQP-SCR|C_IssueNonFungibleScore:string
         (patron:string owner-konto:string score-name:string precision:integer nft-score-model:integer)
     )
-    (defun C_AQP-SCR|RotateScoreOwnership:string (patron:string score-id:string new-owner-konto:string))
-    (defun C_AQP-SCR|ControlScore:string (patron:string score-id:string new-can-upgrade:bool new-can-change-owner:bool))
-    (defun C_AQP-SCR|CreateScoreBoostClassLink:string (patron:string score-id:string boost-class-id:string))
-    (defun C_AQP-SCR|CreateScoreBoostLink:string (patron:string score-id:string boost-score-id:string))
-    (defun C_AQP-SCR|EnableDebBoost:string (patron:string score-id:string))
-    (defun C_AQP-SCR|IssueTriplet:string
+    (defun AQP-SCR|C_RotateScoreOwnership:string (patron:string score-id:string new-owner-konto:string))
+    (defun AQP-SCR|C_ControlScore:string (patron:string score-id:string new-can-upgrade:bool new-can-change-owner:bool))
+    (defun AQP-SCR|C_CreateScoreBoostClassLink:string (patron:string score-id:string boost-class-id:string))
+    (defun AQP-SCR|C_CreateScoreBoostLink:string (patron:string score-id:string boost-score-id:string))
+    (defun AQP-SCR|C_EnableDebBoost:string (patron:string score-id:string))
+    (defun AQP-SCR|C_IssueTriplet:string
         (patron:string bronze-score-id:string silver-score-id:string golden-score-id:string)
     )
-    (defun C_AQP-SCR|IssueSingleScoreModel:string
+    (defun AQP-SCR|C_IssueSingleScoreModel:string
         (patron:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal])
     )
-    (defun C_AQP-SCR|CombineTripletScoreModel:string
+    (defun AQP-SCR|C_CombineTripletScoreModel:string
         (patron:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
     )
-    (defun C_AQP-SCR|IssueScoreFromModel:string (patron:string owner-konto:string model-id:string agency-name:string))
-    (defun C_AQP-SCR|IssueSemiFungibleScoreDefinition:string
+    (defun AQP-SCR|C_IssueScoreFromModel:string (patron:string owner-konto:string model-id:string agency-name:string))
+    (defun AQP-SCR|C_IssueSemiFungibleScoreDefinition:string
         (patron:string score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal])
     )
-    (defun C_AQP-SCR|IssueNonFungibleScoreDefinition:string
+    (defun AQP-SCR|C_IssueNonFungibleScoreDefinition:string
         (patron:string score-id:string dpnf-id:string trait-keys:[string] trait-values:[string] trait-score-values:[decimal])
     )
-    (defun C_AQP-SCR|IssueNonFungibleSetScoreDefinition:string
+    (defun AQP-SCR|C_IssueNonFungibleSetScoreDefinition:string
         (patron:string score-id:string dpnf-id:string dpnf-nonce-classes:[integer] class-score-values:[decimal])
     )
     ;;
     ;;  [AQP-POOL]
     ;;
-    (defun C_AQP-POOL|Issue:string
+    (defun AQP-POOL|C_Issue:string
         (patron:string pool-name:string asset-id:string aqp-class:integer)
     )
-    (defun C_AQP-POOL|AddScore:string
+    (defun AQP-POOL|C_AddScore:string
         (patron:string pool-id:string score-id:string)
     )
-    (defun C_AQP-POOL|RevokeScore:string
+    (defun AQP-POOL|C_RevokeScore:string
         (patron:string pool-id:string score-id:string)
     )
-    (defun C_AQP-POOL|DisablePoolStake:string
+    (defun AQP-POOL|C_DisablePoolStake:string
         (patron:string pool-id:string)
     )
-    (defun C_AQP-POOL|EnablePoolStake:string
+    (defun AQP-POOL|C_EnablePoolStake:string
         (patron:string pool-id:string)
     )
     ;;
-    (defun CC_AQP-POOL|StakeSemiFungibleCollectable:string
+    (defun AQP-POOL|CC_StakeSemiFungibleCollectable:string
         (
             patron:string
             pool-id:string
@@ -136,7 +136,7 @@
             nonces:[integer]
         )
     )
-    (defun CC_AQP-POOL|UnstakeSemiFungibleCollectable:string
+    (defun AQP-POOL|CC_UnstakeSemiFungibleCollectable:string
         (
             patron:string
             pool-id:string
@@ -147,7 +147,7 @@
             nonce-amounts:[integer]
         )
     )
-    (defun CC_AQP-POOL|StakeNonFungibleCollectable:string
+    (defun AQP-POOL|CC_StakeNonFungibleCollectable:string
         (
             patron:string
             pool-id:string
@@ -157,7 +157,7 @@
             nonces:[integer]
         )
     )
-    (defun CC_AQP-POOL|UnstakeNonFungibleCollectable:string
+    (defun AQP-POOL|CC_UnstakeNonFungibleCollectable:string
         (
             patron:string
             pool-id:string
@@ -169,13 +169,13 @@
         )
     )
     ;;
-    (defun CC_AQP-POOL|StakeTrueFungible:string
+    (defun AQP-POOL|CC_StakeTrueFungible:string
         (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
     )
-    (defun CC_AQP-POOL|UnstakeTrueFungible:string
+    (defun AQP-POOL|CC_UnstakeTrueFungible:string
         (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
     )
-    (defun CC_AQP-POOL|StakeOrtoFungible:string
+    (defun AQP-POOL|CC_StakeOrtoFungible:string
         (
             patron:string
             pool-id:string
@@ -185,7 +185,7 @@
             nonces:[integer]
         )
     )
-    (defun CC_AQP-POOL|UnstakeOrtoFungible:string
+    (defun AQP-POOL|CC_UnstakeOrtoFungible:string
         (
             patron:string
             pool-id:string
@@ -195,39 +195,39 @@
             nonces:[integer]
         )
     )
-    (defun C_AQP-POOL|SyncTrueFungibleAnchors:string
+    (defun AQP-POOL|C_SyncTrueFungibleAnchors:string
         (patron:string beneficiary-id:string dptf-id:string)
     )
-    (defun C_AQP-POOL|SyncSemiFungibleAnchors:string
+    (defun AQP-POOL|C_SyncSemiFungibleAnchors:string
         (patron:string beneficiary-id:string dpsf-id:string)
     )
-    (defun C_AQP-POOL|SyncNonFungibleAnchors:string
+    (defun AQP-POOL|C_SyncNonFungibleAnchors:string
         (patron:string beneficiary-id:string dpnf-id:string)
     )
-    (defun C_AQP-POOL|AbortVacate:string
+    (defun AQP-POOL|C_AbortVacate:string
         (patron:string pool-id:string)
     )
-    (defun C_AQP-POOL|FinalizeVacate:string (patron:string pool-id:string))
-    (defun CC_AQP-POOL|FullVacate:string (patron:string pool-id:string))
-    (defun CCp_AQP-POOL|BatchVacateTrueFungible:string
+    (defun AQP-POOL|C_FinalizeVacate:string (patron:string pool-id:string))
+    (defun AQP-POOL|CC_FullVacate:string (patron:string pool-id:string))
+    (defun AQP-POOL|CCp_BatchVacateTrueFungible:string
         (patron:string pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal]))
-    (defun CCp_AQP-POOL|BatchVacateOrtoFungible:string
+    (defun AQP-POOL|CCp_BatchVacateOrtoFungible:string
         (patron:string pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]]))
-    (defun CCp_AQP-POOL|BatchVacateCollectables:string
+    (defun AQP-POOL|CCp_BatchVacateCollectables:string
         (patron:string pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
-    (defun CCp_AQP-POOL|BatchDrainTrueFungible:string
+    (defun AQP-POOL|CCp_BatchDrainTrueFungible:string
         (patron:string pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal]))
-    (defun CCp_AQP-POOL|BatchDrainOrtoFungible:string
+    (defun AQP-POOL|CCp_BatchDrainOrtoFungible:string
         (patron:string pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]]))
-    (defun CCp_AQP-POOL|BatchDrainCollectable:string
+    (defun AQP-POOL|CCp_BatchDrainCollectable:string
         (patron:string pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
     ;;
     ;;  [AQP-FVT]
     ;;
-    (defun C_AQP-FVT|Issue:string
+    (defun AQP-FVT|C_Issue:string
         (patron:string fvt-name:string owner-konto:string fvt-class:integer common-denominator:string)
     )
-    (defun C_AQP-FVT|IssueMultipletFamily:string
+    (defun AQP-FVT|C_IssueMultipletFamily:string
         (
             patron:string
             token-0-id:string
@@ -237,102 +237,102 @@
             ats-1-2-id:string
         )
     )
-    (defun C_AQP-FVT|AddScoreEntity:string
+    (defun AQP-FVT|C_AddScoreEntity:string
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string)
     )
-    (defun C_AQP-FVT|AddRewardLink:string
+    (defun AQP-FVT|C_AddRewardLink:string
         (patron:string fvt-id:string reward-dptf-id:string segmentation:bool multiplet-family-id:string)
     )
-    (defun C_AQP-FVT|ToggleScoreEntityLink:string
+    (defun AQP-FVT|C_ToggleScoreEntityLink:string
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string enabled:bool)
     )
-    (defun C_AQP-FVT|ToggleRewardLink:string
+    (defun AQP-FVT|C_ToggleRewardLink:string
         (patron:string fvt-id:string reward-dptf-id:string enabled:bool)
     )
-    (defun C_AQP-FVT|SetQualitySplit:string
+    (defun AQP-FVT|C_SetQualitySplit:string
         (patron:string fvt-id:string reward-dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
     )
-    (defun C_AQP-FVT|Control:string
+    (defun AQP-FVT|C_Control:string
         (patron:string fvt-id:string new-can-upgrade:bool new-can-change-owner:bool)
     )
-    (defun C_AQP-FVT|RotateOwnership:string
+    (defun AQP-FVT|C_RotateOwnership:string
         (patron:string fvt-id:string new-owner-konto:string)
     )
-    (defun C_AQP-FVT|SetCommonDenominator:string
+    (defun AQP-FVT|C_SetCommonDenominator:string
         (patron:string fvt-id:string common-denominator:string)
     )
-    (defun C_AQP-FVT|SetMosaic:string
+    (defun AQP-FVT|C_SetMosaic:string
         (patron:string fvt-id:string mosaic:bool)
     )
-    (defun C_AQP-FVT|SetSplitMode:string
+    (defun AQP-FVT|C_SetSplitMode:string
         (patron:string fvt-id:string split-mode:string)
     )
-    (defun CC_AQP-FVT|InjectStream:string
+    (defun AQP-FVT|CC_InjectStream:string
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
     )
-    (defun CC_AQP-FVT|Inject:string
+    (defun AQP-FVT|CC_Inject:string
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
-    (defun CCp_AQP-FVT|InjectFixChunk:string
+    (defun AQP-FVT|CCp_InjectFixChunk:string
         (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
     )
-    (defun CC_AQP-FVT|InjectFinalize:string
+    (defun AQP-FVT|CC_InjectFinalize:string
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
-    (defun CCp_AQP-FVT|UnstaleAll:string
+    (defun AQP-FVT|CCp_UnstaleAll:string
         (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
     )
-    (defun C_MTX-AQP|2|Inject:string
+    (defun MTX-AQP|2|C_Inject:string
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
-    (defun C_MTX-AQP|2|SweepRevokeAnchor:string
+    (defun MTX-AQP|2|C_SweepRevokeAnchor:string
         (patron:string anchor-id:string)
     )
-    (defun CC_AQP-FVT|SweepRevokeAnchor:string
+    (defun AQP-FVT|CC_SweepRevokeAnchor:string
         (patron:string anchor-id:string)
     )
-    (defun CC_AQP-FVT|SweepBegin:string
+    (defun AQP-FVT|CC_SweepBegin:string
         (patron:string anchor-id:string)
     )
-    (defun CCp_AQP-FVT|SweepRecomputeChunk:string
+    (defun AQP-FVT|CCp_SweepRecomputeChunk:string
         (patron:string anchor-id:string chunk:integer)
     )
-    (defun CC_AQP-FVT|UnstaleMyScores:string
+    (defun AQP-FVT|CC_UnstaleMyScores:string
         (patron:string fvt-ids:[string])
     )
-    (defun CC_AQP-FVT|Collect:string
+    (defun AQP-FVT|CC_Collect:string
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
     )
-    (defun A_AQP-DSA|DefineDelegationVault:string
+    (defun AQP-DSA|A_DefineDelegationVault:string
         (patron:string fvt-id:string model-id:string unit-score:integer)
     )
-    (defun C_AQP-DSA|OpenAgency:string
+    (defun AQP-DSA|C_OpenAgency:string
         (patron:string fvt-id:string pool-id:string score-entity-id:string fee-per-mille:integer
          collectable-id:string stake-nonces:[integer])
     )
-    (defun C_AQP-DSA|RecomputeCapture:string
+    (defun AQP-DSA|C_RecomputeCapture:string
         (patron:string fvt-id:string score-entity-id:string)
     )
-    (defun A_AQP-DSA|SetOracleAuth:string
+    (defun AQP-DSA|A_SetOracleAuth:string
         (patron:string fvt-id:string oracle-guard:guard)
     )
-    (defun A_AQP-DSA|OracleWrite:string
+    (defun AQP-DSA|A_OracleWrite:string
         (patron:string fvt-id:string score-entity-id:string nodes:integer uptime:integer)
     )
-    (defun A_AQP-DSA|WithdrawRoyalty:string
+    (defun AQP-DSA|A_WithdrawRoyalty:string
         (patron:string fvt-id:string reward-dptf-id:string)
     )
-    (defun A_AQP-DSA|BurnRoyalty:string
+    (defun AQP-DSA|A_BurnRoyalty:string
         (patron:string fvt-id:string reward-dptf-id:string)
     )
-    (defun A_AQP-DSA|FuelRoyalty:string
+    (defun AQP-DSA|A_FuelRoyalty:string
         (patron:string fvt-id:string reward-dptf-id:string swpair:string)
     )
-    (defun A_AQP-DSA|SetAgencyFee:string
+    (defun AQP-DSA|A_SetAgencyFee:string
         (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer)
     )
-    (defun A_AQP-DSA|ToggleExternalOracle:string (on:bool))
-    (defun A_AQP-DSA|SetOracleValidity:string (seconds:integer))
+    (defun AQP-DSA|A_ToggleExternalOracle:string (on:bool))
+    (defun AQP-DSA|A_SetOracleValidity:string (seconds:integer))
 
 )
 ;;
@@ -768,7 +768,7 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun A_AQP-DSA|DefineDelegationVault:string
+    (defun AQP-DSA|A_DefineDelegationVault:string
         (patron:string fvt-id:string model-id:string unit-score:integer)
         @doc "DSA (Talos): bind a class-0 FVT as a delegation vault (score-entity model + unit-score); collects \
             \ IGNIS on patron. Only the FVT owner may run it."
@@ -786,7 +786,7 @@
             )
         )
     )
-    (defun A_AQP-DSA|SetOracleAuth:string
+    (defun AQP-DSA|A_SetOracleAuth:string
         (patron:string fvt-id:string oracle-guard:guard)
         @doc "DSA (Talos): owner authorizes the delegated oracle key for a vault + arms the 25h capture expiry; \
             \ collects IGNIS on patron."
@@ -804,7 +804,7 @@
             )
         )
     )
-    (defun A_AQP-DSA|OracleWrite:string
+    (defun AQP-DSA|A_OracleWrite:string
         (patron:string fvt-id:string score-entity-id:string nodes:integer uptime:integer)
         @doc "DSA (Talos): the delegated oracle writes an agency's daily {nodes, uptime} + recomputes its capture \
             \ (fresh oracle-ts); collects IGNIS on patron."
@@ -822,7 +822,7 @@
             )
         )
     )
-    (defun A_AQP-DSA|WithdrawRoyalty:string
+    (defun AQP-DSA|A_WithdrawRoyalty:string
         (patron:string fvt-id:string reward-dptf-id:string)
         @doc "DSA (Talos): the FVT owner withdraws the whole royalty pool of <reward-dptf-id> on vault <fvt-id> to \
             \ the owner konto; collects IGNIS on patron."
@@ -840,7 +840,7 @@
             )
         )
     )
-    (defun A_AQP-DSA|BurnRoyalty:string
+    (defun AQP-DSA|A_BurnRoyalty:string
         (patron:string fvt-id:string reward-dptf-id:string)
         @doc "DSA (Talos): the FVT owner BURNS the whole royalty pool of <reward-dptf-id> on vault <fvt-id>; \
             \ collects IGNIS on patron."
@@ -858,7 +858,7 @@
             )
         )
     )
-    (defun A_AQP-DSA|FuelRoyalty:string
+    (defun AQP-DSA|A_FuelRoyalty:string
         (patron:string fvt-id:string reward-dptf-id:string swpair:string)
         @doc "DSA (Talos): the FVT owner FUELS <swpair> with the whole royalty pool of <reward-dptf-id> on vault \
             \ <fvt-id> (adds liquidity, no LP mint); collects IGNIS on patron."
@@ -876,7 +876,7 @@
             )
         )
     )
-    (defun A_AQP-DSA|SetAgencyFee:string
+    (defun AQP-DSA|A_SetAgencyFee:string
         (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer)
         @doc "DSA (Talos): the FVT owner changes a delegation agency's operator fee (reprices only future injects); \
             \ collects IGNIS on patron."
@@ -894,7 +894,7 @@
             )
         )
     )
-    (defun A_AQP-DSA|ToggleExternalOracle:string (on:bool)
+    (defun AQP-DSA|A_ToggleExternalOracle:string (on:bool)
         @doc "DSA (Talos): MODULE ADMIN (GOV) flip of the SINGULAR GLOBAL external-oracle switch for ALL agencies. \
             \ No IGNIS billing (pure governance, master-signed, no OutputCumulator)."
         (with-capability (P|TS)
@@ -907,7 +907,7 @@
             )
         )
     )
-    (defun A_AQP-DSA|SetOracleValidity:string (seconds:integer)
+    (defun AQP-DSA|A_SetOracleValidity:string (seconds:integer)
         @doc "DSA (Talos): MODULE ADMIN (GOV) set of the GLOBAL oracle-validity window (freshness horizon, seconds). \
             \ No IGNIS billing (pure governance, master-signed, no OutputCumulator)."
         (with-capability (P|TS)
@@ -921,7 +921,7 @@
         )
     )
     ;;
-    (defun C_AQP-ANK|RevokeBoostClass:string
+    (defun AQP-ANK|C_RevokeBoostClass:string
         (patron:string boost-class-id:string)
         @doc "Revokes an empty BoostClass."
         (with-capability (P|TS)
@@ -937,7 +937,7 @@
             )
         )
     )
-    (defun C_AQP-ANK|IssueTrueFungibleAnchor:string
+    (defun AQP-ANK|C_IssueTrueFungibleAnchor:string
         (patron:string anchor-name:string dptf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dptf-amount:decimal)
         @doc "Issues a DPTF Anchor. acnoi=true creates BoostClass inline (2x STOA); false links to existing (1x STOA)."
         (with-capability (P|TS)
@@ -963,7 +963,7 @@
             )
         )
     )
-    (defun C_AQP-ANK|IssueSemiFungibleAnchor:string
+    (defun AQP-ANK|C_IssueSemiFungibleAnchor:string
         (patron:string anchor-name:string dpsf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpsf-nonce:integer)
         @doc "Issues a DPSF Anchor. acnoi=true creates BoostClass inline (2x STOA); false links to existing (1x STOA)."
         (with-capability (P|TS)
@@ -989,7 +989,7 @@
             )
         )
     )
-    (defun C_AQP-ANK|IssueNonFungibleAnchor:string
+    (defun AQP-ANK|C_IssueNonFungibleAnchor:string
         (patron:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-trait-key:string dpnf-trait-value:string)
         @doc "Issues a DPNF trait-Anchor. acnoi=true creates BoostClass inline (2x STOA); false links to existing (1x STOA)."
         (with-capability (P|TS)
@@ -1015,7 +1015,7 @@
             )
         )
     )
-    (defun C_AQP-ANK|IssueNonFungibleSetAnchor:string
+    (defun AQP-ANK|C_IssueNonFungibleSetAnchor:string
         (patron:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-nonce-class:integer)
         @doc "Issues a DPNF set-Anchor. acnoi=true creates BoostClass inline (2x STOA); false links to existing (1x STOA)."
         (with-capability (P|TS)
@@ -1041,7 +1041,7 @@
             )
         )
     )
-    (defun C_AQP-ANK|RevokeAnchor:string (patron:string anchor-id:string)
+    (defun AQP-ANK|C_RevokeAnchor:string (patron:string anchor-id:string)
         @doc "Revokes an existing Anchor, removing it from its BoostClass and AssetAnchors bookkeeping."
         (with-capability (P|TS)
             (let
@@ -1056,7 +1056,7 @@
             )
         )
     )
-    (defun C_AQP-SCR|IssueLiquidityScore:string
+    (defun AQP-SCR|C_IssueLiquidityScore:string
         (patron:string owner-konto:string score-name:string precision:integer lp-denominator:string mx-frozen:decimal mx-sleeping:decimal)
         @doc "Issues score-class 0 (LP) in AQP-SCORE and collects resulting IGNIS output on patron."
         (with-capability (P|TS)
@@ -1072,7 +1072,7 @@
             )
         )
     )
-    (defun C_AQP-SCR|IssueTrueFungibleScore:string
+    (defun AQP-SCR|C_IssueTrueFungibleScore:string
         (patron:string owner-konto:string score-name:string precision:integer mx-frozen:decimal)
         @doc "Issues score-class 1 (DPTF) in AQP-SCORE and collects resulting IGNIS output on patron."
         (with-capability (P|TS)
@@ -1088,7 +1088,7 @@
             )
         )
     )
-    (defun C_AQP-SCR|IssueOrtoFungibleScore:string
+    (defun AQP-SCR|C_IssueOrtoFungibleScore:string
         (patron:string owner-konto:string score-name:string precision:integer mx-sleeping:decimal mx-hibernated:decimal)
         @doc "Issues score-class 2 (DPOF) in AQP-SCORE and collects resulting IGNIS output on patron."
         (with-capability (P|TS)
@@ -1104,7 +1104,7 @@
             )
         )
     )
-    (defun C_AQP-SCR|IssueSemiFungibleScore:string
+    (defun AQP-SCR|C_IssueSemiFungibleScore:string
         (patron:string owner-konto:string score-name:string precision:integer sft-equality:bool)
         @doc "Issues score-class 3 (DPSF) in AQP-SCORE and collects resulting IGNIS output on patron."
         (with-capability (P|TS)
@@ -1120,7 +1120,7 @@
             )
         )
     )
-    (defun C_AQP-SCR|IssueNonFungibleScore:string
+    (defun AQP-SCR|C_IssueNonFungibleScore:string
         (patron:string owner-konto:string score-name:string precision:integer nft-score-model:integer)
         @doc "Issues score-class 4 (DPNF) in AQP-SCORE and collects resulting IGNIS output on patron."
         (with-capability (P|TS)
@@ -1136,7 +1136,7 @@
             )
         )
     )
-    (defun C_AQP-SCR|RotateScoreOwnership:string (patron:string score-id:string new-owner-konto:string)
+    (defun AQP-SCR|C_RotateScoreOwnership:string (patron:string score-id:string new-owner-konto:string)
         @doc "Rotates score ownership in AQP-SCORE and collects resulting IGNIS output on patron."
         (with-capability (P|TS)
             (let
@@ -1149,7 +1149,7 @@
             )
         )
     )
-    (defun C_AQP-SCR|ControlScore:string (patron:string score-id:string new-can-upgrade:bool new-can-change-owner:bool)
+    (defun AQP-SCR|C_ControlScore:string (patron:string score-id:string new-can-upgrade:bool new-can-change-owner:bool)
         @doc "Updates score control flags in AQP-SCORE and collects resulting IGNIS output on patron."
         (with-capability (P|TS)
             (let
@@ -1164,7 +1164,7 @@
             )
         )
     )
-    (defun C_AQP-SCR|CreateScoreBoostClassLink:string (patron:string score-id:string boost-class-id:string)
+    (defun AQP-SCR|C_CreateScoreBoostClassLink:string (patron:string score-id:string boost-class-id:string)
         @doc "Creates score -> boost-class link in AQP-SCORE and collects resulting IGNIS output on patron."
         (with-capability (P|TS)
             (let
@@ -1177,7 +1177,7 @@
             )
         )
     )
-    (defun C_AQP-SCR|CreateScoreBoostLink:string (patron:string score-id:string boost-score-id:string)
+    (defun AQP-SCR|C_CreateScoreBoostLink:string (patron:string score-id:string boost-score-id:string)
         @doc "Creates score -> boost-score link in AQP-SCORE and collects resulting IGNIS output on patron."
         (with-capability (P|TS)
             (let
@@ -1190,7 +1190,7 @@
             )
         )
     )
-    (defun C_AQP-SCR|EnableDebBoost:string (patron:string score-id:string)
+    (defun AQP-SCR|C_EnableDebBoost:string (patron:string score-id:string)
         @doc "Enables irreversible DEB boost on the score row. Medium IGNIS cost; no native STOA."
         (with-capability (P|TS)
             (let
@@ -1203,7 +1203,7 @@
             )
         )
     )
-    (defun C_AQP-SCR|IssueTriplet:string
+    (defun AQP-SCR|C_IssueTriplet:string
         (patron:string bronze-score-id:string silver-score-id:string golden-score-id:string)
         @doc "Issues SCR triplet bundle T|bronze|silver|golden and collects IGNIS on patron."
         (with-capability (P|TS)
@@ -1222,7 +1222,7 @@
             )
         )
     )
-    (defun C_AQP-SCR|IssueSingleScoreModel:string
+    (defun AQP-SCR|C_IssueSingleScoreModel:string
         (patron:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal])
         @doc "Defines a SINGLE score-entity model in AQP-SCORE and collects IGNIS on patron. Returns the model-id."
         (with-capability (P|TS)
@@ -1240,7 +1240,7 @@
             )
         )
     )
-    (defun C_AQP-SCR|CombineTripletScoreModel:string
+    (defun AQP-SCR|C_CombineTripletScoreModel:string
         (patron:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
         @doc "Combines three single models into a TRIPLET score-entity model in AQP-SCORE and collects IGNIS on patron."
         (with-capability (P|TS)
@@ -1258,7 +1258,7 @@
             )
         )
     )
-    (defun C_AQP-SCR|IssueScoreFromModel:string (patron:string owner-konto:string model-id:string agency-name:string)
+    (defun AQP-SCR|C_IssueScoreFromModel:string (patron:string owner-konto:string model-id:string agency-name:string)
         @doc "FACTORY (Talos): issue a conforming score entity from <model-id> for owner-konto; collects IGNIS on \
             \ patron. Returns the (score | triplet) id."
         (with-capability (P|TS)
@@ -1276,7 +1276,7 @@
             )
         )
     )
-    (defun C_AQP-SCR|IssueSemiFungibleScoreDefinition:string
+    (defun AQP-SCR|C_IssueSemiFungibleScoreDefinition:string
         (patron:string score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal])
         @doc "Writes DPSF nonce score definitions in AQP-SCORE and collects resulting IGNIS output on patron."
         (with-capability (P|TS)
@@ -1292,7 +1292,7 @@
             )
         )
     )
-    (defun C_AQP-SCR|IssueNonFungibleScoreDefinition:string
+    (defun AQP-SCR|C_IssueNonFungibleScoreDefinition:string
         (patron:string score-id:string dpnf-id:string trait-keys:[string] trait-values:[string] trait-score-values:[decimal])
         @doc "Writes DPNF trait score definitions in AQP-SCORE and collects resulting IGNIS output on patron."
         (with-capability (P|TS)
@@ -1308,7 +1308,7 @@
             )
         )
     )
-    (defun C_AQP-SCR|IssueNonFungibleSetScoreDefinition:string
+    (defun AQP-SCR|C_IssueNonFungibleSetScoreDefinition:string
         (patron:string score-id:string dpnf-id:string dpnf-nonce-classes:[integer] class-score-values:[decimal])
         @doc "Writes DPNF set-mode (nonce-class) score definitions in AQP-SCORE and collects resulting IGNIS output on patron."
         (with-capability (P|TS)
@@ -1324,7 +1324,7 @@
             )
         )
     )
-    (defun C_AQP-POOL|Issue:string
+    (defun AQP-POOL|C_Issue:string
         (patron:string pool-name:string asset-id:string aqp-class:integer)
         @doc "Issues an acquisition pool (aqp-class + canonical native asset-id) and collects IGNIS output on patron."
         (with-capability (P|TS)
@@ -1345,7 +1345,7 @@
             )
         )
     )
-    (defun C_AQP-POOL|AddScore:string
+    (defun AQP-POOL|C_AddScore:string
         (patron:string pool-id:string score-id:string)
         @doc "Assigns score-id to the first free slot on pool-id; collects IGNIS output on patron."
         (with-capability (P|TS)
@@ -1363,7 +1363,7 @@
             )
         )
     )
-    (defun C_AQP-POOL|RevokeScore:string
+    (defun AQP-POOL|C_RevokeScore:string
         (patron:string pool-id:string score-id:string)
         @doc "Revokes score-id from pool-id (compact slots, clear aqpool-link); collects IGNIS output on patron."
         (with-capability (P|TS)
@@ -1381,7 +1381,7 @@
             )
         )
     )
-    (defun C_AQP-POOL|DisablePoolStake:string
+    (defun AQP-POOL|C_DisablePoolStake:string
         (patron:string pool-id:string)
         @doc "Pool owner pauses new stakes (stake-enabled → false); collects IGNIS output on patron."
         (with-capability (P|TS)
@@ -1399,7 +1399,7 @@
             )
         )
     )
-    (defun C_AQP-POOL|EnablePoolStake:string
+    (defun AQP-POOL|C_EnablePoolStake:string
         (patron:string pool-id:string)
         @doc "Pool owner re-enables new stakes (stake-enabled → true); collects IGNIS output on patron."
         (with-capability (P|TS)
@@ -1418,7 +1418,7 @@
         )
     )
     ;;
-    (defun CC_AQP-POOL|StakeTrueFungible:string
+    (defun AQP-POOL|CC_StakeTrueFungible:string
         (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
         @doc "Stake DPTF (or native|F| LP) into pool-id. Talos client shell: event cap + FVT::CC_TrueFungibleStakeFlow direction=true."
         (with-capability (AQP|C>STAKE-TRUE-FUNGIBLE patron pool-id owner-id beneficiary-id dptf-id amount)
@@ -1434,7 +1434,7 @@
             )
         )
     )
-    (defun CC_AQP-POOL|UnstakeTrueFungible:string
+    (defun AQP-POOL|CC_UnstakeTrueFungible:string
         (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
         @doc "Unstake DPTF from pool-id. Talos client shell: event cap + FVT::CC_TrueFungibleStakeFlow direction=false."
         (with-capability (AQP|C>UNSTAKE-TRUE-FUNGIBLE patron pool-id owner-id beneficiary-id dptf-id amount)
@@ -1450,7 +1450,7 @@
             )
         )
     )
-    (defun CC_AQP-POOL|StakeOrtoFungible:string
+    (defun AQP-POOL|CC_StakeOrtoFungible:string
         (
             patron:string
             pool-id:string
@@ -1483,7 +1483,7 @@
             )
         )
     )
-    (defun CC_AQP-POOL|UnstakeOrtoFungible:string
+    (defun AQP-POOL|CC_UnstakeOrtoFungible:string
         (
             patron:string
             pool-id:string
@@ -1519,7 +1519,7 @@
         )
     )
     ;;
-    (defun CC_AQP-POOL|StakeSemiFungibleCollectable:string
+    (defun AQP-POOL|CC_StakeSemiFungibleCollectable:string
         (
             patron:string
             pool-id:string
@@ -1557,7 +1557,7 @@
             )
         )
     )
-    (defun CC_AQP-POOL|UnstakeSemiFungibleCollectable:string
+    (defun AQP-POOL|CC_UnstakeSemiFungibleCollectable:string
         (
             patron:string
             pool-id:string
@@ -1592,7 +1592,7 @@
             )
         )
     )
-    (defun CC_AQP-POOL|StakeNonFungibleCollectable:string
+    (defun AQP-POOL|CC_StakeNonFungibleCollectable:string
         (
             patron:string
             pool-id:string
@@ -1630,7 +1630,7 @@
             )
         )
     )
-    (defun CC_AQP-POOL|UnstakeNonFungibleCollectable:string
+    (defun AQP-POOL|CC_UnstakeNonFungibleCollectable:string
         (
             patron:string
             pool-id:string
@@ -1668,7 +1668,7 @@
     ;;
     ;; Vacate — Full (1 tx) or Stateless Legs (N txs; auto-begin; finalize on last)
     ;;
-    (defun C_AQP-POOL|AbortVacate:string
+    (defun AQP-POOL|C_AbortVacate:string
         (patron:string pool-id:string)
         @doc "Clear vacate-in-progress; stake stays disabled. Talos → AQP-VCT::C_AbortVacate."
         (with-capability (AQP|C>ABORT-VACATE patron pool-id)
@@ -1686,7 +1686,7 @@
             )
         )
     )
-    (defun C_AQP-POOL|FinalizeVacate:string
+    (defun AQP-POOL|C_FinalizeVacate:string
         (patron:string pool-id:string)
         @doc "Vacate-v2 FINALIZE (nuke) — after a pool has been fully drained via AQP-POOL|Cp_BatchDrain*, this \
             \ bulk-zeroes every employed score + bumps their vacate-generation (lazily invalidating all per-user \
@@ -1703,7 +1703,7 @@
             )
         )
     )
-    (defun CC_AQP-POOL|FullVacate:string
+    (defun AQP-POOL|CC_FullVacate:string
         (patron:string pool-id:string)
         @doc "Vacate rehaul — pool-owner AGNOSTIC full vacate (one tx): input is JUST the pool-id. VCT reads the \
             \ pool class + scans its inventory on-chain and vacates every asset type. Owner enforced in VCT|C>VACATE; \
@@ -1719,7 +1719,7 @@
             )
         )
     )
-    (defun CCp_AQP-POOL|BatchVacateTrueFungible:string
+    (defun AQP-POOL|CCp_BatchVacateTrueFungible:string
         (patron:string pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal])
         @doc "One TF batch of a UI-sliced vacate campaign. The first successful batch freezes the pool + its FVTs; \
             \ the batch that empties the pool auto-finalizes/unfreezes. Owner enforced in VCT; IGNIS on patron."
@@ -1735,11 +1735,11 @@
             )
         )
     )
-    (defun CCp_AQP-POOL|BatchDrainTrueFungible:string
+    (defun AQP-POOL|CCp_BatchDrainTrueFungible:string
         (patron:string pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal])
         @doc "Vacate-v2 FAST-DRAIN — one TF batch that returns assets + preserves rewards WITHOUT touching scores \
             \ and WITHOUT finalizing (cheaper than CCp_BatchVacateTrueFungible for large pools). First batch freezes \
-            \ the pool + its FVTs; the pool stays frozen until C_AQP-POOL|FinalizeVacate nukes the scores once \
+            \ the pool + its FVTs; the pool stays frozen until AQP-POOL|C_FinalizeVacate nukes the scores once \
             \ empty. Owner enforced in VCT; IGNIS on patron. Commit-forward — CCp_BatchVacateTrueFungible is the \
             \ abortable path."
         (with-capability (P|TS)
@@ -1755,11 +1755,11 @@
             )
         )
     )
-    (defun CCp_AQP-POOL|BatchDrainOrtoFungible:string
+    (defun AQP-POOL|CCp_BatchDrainOrtoFungible:string
         (patron:string pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]])
         @doc "Vacate-v2 FAST-DRAIN — one OF batch that returns nonces + preserves rewards WITHOUT touching scores \
             \ and WITHOUT finalizing. Amounts resolved on-chain from the tracker. First batch freezes the pool + \
-            \ its FVTs; it stays frozen until C_AQP-POOL|FinalizeVacate nukes the scores once empty. Owner enforced \
+            \ its FVTs; it stays frozen until AQP-POOL|C_FinalizeVacate nukes the scores once empty. Owner enforced \
             \ in VCT; IGNIS on patron. Commit-forward — CCp_BatchVacateOrtoFungible is the abortable path."
         (with-capability (P|TS)
             (let
@@ -1774,11 +1774,11 @@
             )
         )
     )
-    (defun CCp_AQP-POOL|BatchDrainCollectable:string
+    (defun AQP-POOL|CCp_BatchDrainCollectable:string
         (patron:string pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]])
         @doc "Vacate-v2 FAST-DRAIN — one DPSF (son=true) / DPNF (son=false) batch that returns nonces + preserves \
             \ rewards WITHOUT touching scores and WITHOUT finalizing. First batch freezes the pool + its FVTs; it \
-            \ stays frozen until C_AQP-POOL|FinalizeVacate nukes the scores once empty. Owner enforced in VCT; \
+            \ stays frozen until AQP-POOL|C_FinalizeVacate nukes the scores once empty. Owner enforced in VCT; \
             \ IGNIS on patron. Commit-forward — CCp_BatchVacateCollectables is the abortable path."
         (with-capability (P|TS)
             (let
@@ -1793,7 +1793,7 @@
             )
         )
     )
-    (defun CCp_AQP-POOL|BatchVacateOrtoFungible:string
+    (defun AQP-POOL|CCp_BatchVacateOrtoFungible:string
         (patron:string pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]])
         @doc "One OF batch of a UI-sliced vacate campaign (amounts resolved on-chain from the tracker). First batch \
             \ freezes; the emptying batch auto-finalizes/unfreezes. Owner enforced in VCT; IGNIS on patron."
@@ -1809,7 +1809,7 @@
             )
         )
     )
-    (defun CCp_AQP-POOL|BatchVacateCollectables:string
+    (defun AQP-POOL|CCp_BatchVacateCollectables:string
         (patron:string pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]])
         @doc "One DPSF (son=true) / DPNF (son=false) batch of a UI-sliced vacate campaign. First batch freezes; the \
             \ emptying batch auto-finalizes/unfreezes. Owner enforced in VCT; IGNIS on patron."
@@ -1826,7 +1826,7 @@
             )
         )
     )
-    (defun C_AQP-POOL|SyncTrueFungibleAnchors:string
+    (defun AQP-POOL|C_SyncTrueFungibleAnchors:string
         (patron:string beneficiary-id:string dptf-id:string)
         @doc "Pool-agnostic TF anchor repair for beneficiary × dptf-id. Talos shell → AQP-POOL::C_SyncTrueFungibleAnchors."
         (with-capability (AQP|C>SYNC-TF-ANCHORS patron beneficiary-id dptf-id)
@@ -1844,7 +1844,7 @@
             )
         )
     )
-    (defun C_AQP-POOL|SyncSemiFungibleAnchors:string
+    (defun AQP-POOL|C_SyncSemiFungibleAnchors:string
         (patron:string beneficiary-id:string dpsf-id:string)
         @doc "Pool-agnostic DPSF anchor repair. Talos shell → AQP-POOL::C_SyncCollectableAnchors son=true."
         (with-capability (AQP|C>SYNC-SEMI-FUNGIBLE-ANCHORS patron beneficiary-id dpsf-id)
@@ -1862,7 +1862,7 @@
             )
         )
     )
-    (defun C_AQP-POOL|SyncNonFungibleAnchors:string
+    (defun AQP-POOL|C_SyncNonFungibleAnchors:string
         (patron:string beneficiary-id:string dpnf-id:string)
         @doc "Pool-agnostic DPNF anchor repair. Talos shell → AQP-POOL::C_SyncCollectableAnchors son=false."
         (with-capability (AQP|C>SYNC-NON-FUNGIBLE-ANCHORS patron beneficiary-id dpnf-id)
@@ -1882,7 +1882,7 @@
     )
     ;;
     ;; --- AQP-FVT lifecycle (Talos client shell → AQP-FVT::C_*) ---
-    (defun C_AQP-FVT|Issue:string
+    (defun AQP-FVT|C_Issue:string
         (patron:string fvt-name:string owner-konto:string fvt-class:integer common-denominator:string)
         @doc "Issues an FVT (farm/vault/treasury) and collects IGNIS output on patron."
         (with-capability (P|TS)
@@ -1903,7 +1903,7 @@
             )
         )
     )
-    (defun C_AQP-FVT|IssueMultipletFamily:string
+    (defun AQP-FVT|C_IssueMultipletFamily:string
         (
             patron:string
             token-0-id:string
@@ -1933,7 +1933,7 @@
             )
         )
     )
-    (defun C_AQP-FVT|AddScoreEntity:string
+    (defun AQP-FVT|C_AddScoreEntity:string
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string)
         @doc "Admits score (type 1) or triplet (type 3) to fvt-id via ScoreEntityLink."
         (with-capability (P|TS)
@@ -1953,7 +1953,7 @@
             )
         )
     )
-    (defun C_AQP-FVT|AddRewardLink:string
+    (defun AQP-FVT|C_AddRewardLink:string
         (patron:string fvt-id:string reward-dptf-id:string segmentation:bool multiplet-family-id:string)
         @doc "Registers one reward DPTF on fvt-id (multiplet-family-id BAR for plain tokens). Collects IGNIS on patron."
         (with-capability (P|TS)
@@ -1973,7 +1973,7 @@
             )
         )
     )
-    (defun C_AQP-FVT|ToggleScoreEntityLink:string
+    (defun AQP-FVT|C_ToggleScoreEntityLink:string
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string enabled:bool)
         @doc "Toggles ScoreEntityLink.enabled and collects IGNIS output on patron."
         (with-capability (P|TS)
@@ -1991,7 +1991,7 @@
             )
         )
     )
-    (defun C_AQP-FVT|ToggleRewardLink:string
+    (defun AQP-FVT|C_ToggleRewardLink:string
         (patron:string fvt-id:string reward-dptf-id:string enabled:bool)
         @doc "Toggles reward-enabled and collects IGNIS output on patron."
         (with-capability (P|TS)
@@ -2007,7 +2007,7 @@
             )
         )
     )
-    (defun C_AQP-FVT|SetQualitySplit:string
+    (defun AQP-FVT|C_SetQualitySplit:string
         (patron:string fvt-id:string reward-dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
         @doc "Round B: set a MULTIPLET_BASE reward's quality-split MODE + heterogeneous MATRIX (owner-gated). \
             \ HOMOGENEOUS routes each lane to its one ladder token; HETEROGENEOUS splits each lane across all 3 \
@@ -2025,7 +2025,7 @@
             )
         )
     )
-    (defun C_AQP-FVT|Control:string
+    (defun AQP-FVT|C_Control:string
         (patron:string fvt-id:string new-can-upgrade:bool new-can-change-owner:bool)
         @doc "Updates FVT control flags and collects IGNIS output on patron."
         (with-capability (P|TS)
@@ -2041,7 +2041,7 @@
             )
         )
     )
-    (defun C_AQP-FVT|RotateOwnership:string
+    (defun AQP-FVT|C_RotateOwnership:string
         (patron:string fvt-id:string new-owner-konto:string)
         @doc "Rotates FVT ownership and collects IGNIS output on patron."
         (with-capability (P|TS)
@@ -2057,7 +2057,7 @@
             )
         )
     )
-    (defun C_AQP-FVT|SetCommonDenominator:string
+    (defun AQP-FVT|C_SetCommonDenominator:string
         (patron:string fvt-id:string common-denominator:string)
         @doc "Sets farm common-denominator (before ScoreEntityLinks) and collects IGNIS on patron."
         (with-capability (P|TS)
@@ -2075,7 +2075,7 @@
             )
         )
     )
-    (defun C_AQP-FVT|SetMosaic:string
+    (defun AQP-FVT|C_SetMosaic:string
         (patron:string fvt-id:string mosaic:bool)
         @doc "Sets mosaic membership policy when FVT has no member links; collects IGNIS on patron."
         (with-capability (P|TS)
@@ -2091,7 +2091,7 @@
             )
         )
     )
-    (defun C_AQP-FVT|SetSplitMode:string
+    (defun AQP-FVT|C_SetSplitMode:string
         (patron:string fvt-id:string split-mode:string)
         @doc "Sets a farm's reward-split mode (SPLIT|STAKED participation | SPLIT|TVL pool-size); collects IGNIS on patron. \
             \ Freely mutable — re-weights only future injects."
@@ -2108,10 +2108,10 @@
             )
         )
     )
-    (defun CC_AQP-FVT|InjectStream:string
+    (defun AQP-FVT|CC_InjectStream:string
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
         @doc "Injects reward DPTF as a TIME-STREAM (linear vesting over `duration` seconds, 1h..365d) into fvt-id \
-            \ and collects IGNIS on patron. The DELAYED counterpart of CC_AQP-FVT|Inject (instant): the amount vests \
+            \ and collects IGNIS on patron. The DELAYED counterpart of AQP-FVT|CC_Inject (instant): the amount vests \
             \ continuously and whoever is staked during each slice earns it (late stakers included). Independent \
             \ overlapping streams, capped by the FVT owner konto's Elite tier. See Audit/STREAMED-INJECT-DESIGN.md."
         (with-capability (P|TS)
@@ -2129,7 +2129,7 @@
             )
         )
     )
-    (defun CC_AQP-FVT|Inject:string
+    (defun AQP-FVT|CC_Inject:string
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "HEAVY enforced-FRESH inject for ANY FVT class (farm/vault/treasury; M3 #12): refreshes every stale \
             \ staker's deb so the divisor is live before injecting, then injects + collects IGNIS on patron. Same \
@@ -2150,10 +2150,10 @@
             )
         )
     )
-    (defun CCp_AQP-FVT|InjectFixChunk:string
+    (defun AQP-FVT|CCp_InjectFixChunk:string
         (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
         @doc "PAGE the enforced-fresh inject's fix phase — refresh up to `chunk` currently-stale stakers (penalized), \
-            \ the scalable prelude to CC_AQP-FVT|InjectFinalize for stale sets exceeding one tx. Repeat until none \
+            \ the scalable prelude to AQP-FVT|CC_InjectFinalize for stale sets exceeding one tx. Repeat until none \
             \ remain. `chunk` is the UI's simulated slice (bounded by AQP-FVT's loose INJECT-FIX-CHUNK-MAX). Lives \
             \ in AQP-FVT."
         (with-capability (P|TS)
@@ -2172,10 +2172,10 @@
             )
         )
     )
-    (defun CC_AQP-FVT|InjectFinalize:string
+    (defun AQP-FVT|CC_InjectFinalize:string
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "FINALIZE a paginated enforced-fresh inject: after CCp_InjectFixChunk pages left ZERO stale, inject on \
-            \ the fresh divisor + collect IGNIS on patron — same outcome as the single-tx CC_AQP-FVT|Inject. Lives \
+            \ the fresh divisor + collect IGNIS on patron — same outcome as the single-tx AQP-FVT|CC_Inject. Lives \
             \ in AQP-FVT."
         (with-capability (P|TS)
             (let
@@ -2192,11 +2192,11 @@
             )
         )
     )
-    (defun CCp_AQP-FVT|UnstaleAll:string
+    (defun AQP-FVT|CCp_UnstaleAll:string
         (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
         @doc "OWNER mass deb-unstale — force-refresh up to `chunk` currently-stale present stakers (penalized, same \
             \ 2e tag as an inject's fix) to make the FVT INJECTION-READY, WITHOUT injecting. Repeat until the report \
-            \ says injection-ready (or `all up to date` when nothing is stale), then run a light CC_AQP-FVT|Inject. \
+            \ says injection-ready (or `all up to date` when nothing is stale), then run a light AQP-FVT|CC_Inject. \
             \ Owner-gated in AQP-FVT::CCp_UnstaleAll. `chunk` is the UI's simulated slice (bounded by INJECT-FIX-CHUNK-MAX). \
             \ Lives in AQP-FVT."
         (with-capability (P|TS)
@@ -2215,9 +2215,9 @@
             )
         )
     )
-    (defun C_MTX-AQP|2|Inject:string
+    (defun MTX-AQP|2|C_Inject:string
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
-        @doc "Starts the 2-step enforced-fresh inject defpact (MTX-AQP — spike fallback for CC_AQP-FVT|Inject when \
+        @doc "Starts the 2-step enforced-fresh inject defpact (MTX-AQP — spike fallback for AQP-FVT|CC_Inject when \
             \ the stale set exceeds one tx). Step 0 runs here; advance with (continue-pact 1). Each defpact step \
             \ collects its own IGNIS on patron, so this wrapper only summons the pact."
         (with-capability (P|TS)
@@ -2236,10 +2236,10 @@
             )
         )
     )
-    (defun C_MTX-AQP|2|SweepRevokeAnchor:string
+    (defun MTX-AQP|2|C_SweepRevokeAnchor:string
         (patron:string anchor-id:string)
         @doc "Starts the 2-step paginated re-score SWEEP defpact (MTX-AQP — spike fallback for \
-            \ CC_AQP-FVT|SweepRevokeAnchor when the recompute set exceeds one tx). Step 0 brackets (freeze + \
+            \ AQP-FVT|CC_SweepRevokeAnchor when the recompute set exceeds one tx). Step 0 brackets (freeze + \
             \ swept-revoke) + recomputes the first window here; advance with (continue-pact 1). The defpact is \
             \ gas-only (no reward inject), so this wrapper just summons the pact and refuels."
         (with-capability (P|TS)
@@ -2258,7 +2258,7 @@
             )
         )
     )
-    (defun CC_AQP-FVT|SweepRevokeAnchor:string
+    (defun AQP-FVT|CC_SweepRevokeAnchor:string
         (patron:string anchor-id:string)
         @doc "Single-tx re-score SWEEP that retires an EMPLOYED anchor (H4 half-2): freezes the affected pools, \
             \ removes the anchor (swept-revoke), recomputes every affected holder (aggregate/lane refold + deb), \
@@ -2279,11 +2279,11 @@
             )
         )
     )
-    (defun CC_AQP-FVT|SweepBegin:string
+    (defun AQP-FVT|CC_SweepBegin:string
         (patron:string anchor-id:string)
-        @doc "OPEN a paginated (defun+gate) re-score sweep — the scalable twin of CC_AQP-FVT|SweepRevokeAnchor for \
+        @doc "OPEN a paginated (defun+gate) re-score sweep — the scalable twin of AQP-FVT|CC_SweepRevokeAnchor for \
             \ holder sets exceeding one tx: freezes the affected pools + swept-revokes the anchor, then defers the \
-            \ recompute to CCp_AQP-FVT|SweepRecomputeChunk calls under the held freeze. Owner-initiated. Lives in AQP-FVT."
+            \ recompute to AQP-FVT|CCp_SweepRecomputeChunk calls under the held freeze. Owner-initiated. Lives in AQP-FVT."
         (with-capability (P|TS)
             (let
                 (
@@ -2300,7 +2300,7 @@
             )
         )
     )
-    (defun CCp_AQP-FVT|SweepRecomputeChunk:string
+    (defun AQP-FVT|CCp_SweepRecomputeChunk:string
         (patron:string anchor-id:string chunk:integer)
         @doc "PAGE an open re-score sweep: recompute the next `chunk` holders over the frozen global present set, \
             \ advancing the cursor; the finalizing chunk (set exhausted) unfreezes the affected pools. `chunk` is \
@@ -2321,7 +2321,7 @@
             )
         )
     )
-    (defun CC_AQP-FVT|UnstaleMyScores:string
+    (defun AQP-FVT|CC_UnstaleMyScores:string
         (patron:string fvt-ids:[string])
         @doc "User self-service deb-unstale: the caller refreshes THEIR OWN stale scores across the listed FVTs \
             \ (non-penalized — the cheap alternative to being force-fixed by an inject), then collects IGNIS on \
@@ -2342,7 +2342,7 @@
             )
         )
     )
-    (defun CC_AQP-FVT|Collect:string
+    (defun AQP-FVT|CC_Collect:string
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         @doc "Collects pending reward DPTF for patron on one score-entity from fvt-id; collects IGNIS on patron."
         (with-capability (P|TS)
@@ -2370,7 +2370,7 @@
             )
         )
     )
-    (defun C_AQP-DSA|OpenAgency:string
+    (defun AQP-DSA|C_OpenAgency:string
         (patron:string fvt-id:string pool-id:string score-entity-id:string fee-per-mille:integer
          collectable-id:string stake-nonces:[integer])
         @doc "DSA (Talos): open a delegation agency ATOMICALLY under P|TS — (1) admit the operator's BLANK triplet \
@@ -2400,7 +2400,7 @@
             )
         )
     )
-    (defun C_AQP-DSA|RecomputeCapture:string
+    (defun AQP-DSA|C_RecomputeCapture:string
         (patron:string fvt-id:string score-entity-id:string)
         @doc "DSA (Talos): permissionlessly recompute an agency's capture from its current quintessence (after a \
             \ delegator stake/unstake changed Q); collects IGNIS on patron."

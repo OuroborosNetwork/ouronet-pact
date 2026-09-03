@@ -1857,7 +1857,7 @@
             \ is only safe because this whole function always executes as one atomic \
             \ unit — never split across a transaction/step boundary. Confirmed for both \
             \ real call shapes: the single-tx SWPLC client paths call this directly \
-            \ inside one transaction; MTX-SWP::C_MTX|AddLiquidity's defpact calls it \
+            \ inside one transaction; MTX-SWP::MTX|C_AddLiquidity's defpact calls it \
             \ entirely within Step 1's own step-with-rollback block (never spanning \
             \ Step 1 and a later step) — a defpact step is itself a single atomic \
             \ transaction, so the same guarantee holds there too. If a future caller \

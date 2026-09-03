@@ -126,13 +126,13 @@
         (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
     )
-    (ref-TS02-C3::C_AQP-POOL|DisablePoolStake patron pool-id)
+    (ref-TS02-C3::AQP-POOL|C_DisablePoolStake patron pool-id)
     (map print
         [
             (expect (format "<<TX-AQP-NEG-STATE>> pool now stake-disabled got={}" [(ref-AQP::UR_AQP|PoolStakeEnabled pool-id)]) false (ref-AQP::UR_AQP|PoolStakeEnabled pool-id))
             (expect-failure
                 (format "<<TX-AQP-NEG-STATE>> stake into a DISABLED pool rejected (URC_PoolStakeAdmissionOk)" [])
-                (ref-TS02-C3::CC_AQP-POOL|StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id 10.0))
+                (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id 10.0))
         ]
     )
 )
@@ -157,7 +157,7 @@
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "ResumeVacPool"))
     )
-    (ref-TS02-C3::C_AQP-POOL|EnablePoolStake patron pool-id)
+    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
 )
 (env-sigs [])
 (commit-tx)
@@ -188,13 +188,13 @@
         [
             (expect-failure
                 (format "<<TX-AQP-NEG-OWNER>> non-owner C_DisablePoolStake rejected (pool-owner gate)" [])
-                (ref-TS02-C3::C_AQP-POOL|DisablePoolStake foreign pool-id))
+                (ref-TS02-C3::AQP-POOL|C_DisablePoolStake foreign pool-id))
             (expect-failure
                 (format "<<TX-AQP-NEG-OWNER>> non-owner C_AddScore rejected (pool-owner gate)" [])
-                (ref-TS02-C3::C_AQP-POOL|AddScore foreign pool-id score-id))
+                (ref-TS02-C3::AQP-POOL|C_AddScore foreign pool-id score-id))
             (expect-failure
                 (format "<<TX-AQP-NEG-OWNER>> non-owner C_RevokeScore rejected (pool-owner gate)" [])
-                (ref-TS02-C3::C_AQP-POOL|RevokeScore foreign pool-id score-id))
+                (ref-TS02-C3::AQP-POOL|C_RevokeScore foreign pool-id score-id))
         ]
     )
 )
@@ -231,14 +231,14 @@
     (map print
         [
             (expect-failure
-                (format "<<TX-AQP-NEG-OWNER2>> non-owner C_AQP-ANK|RevokeAnchor rejected (anchor-owner gate)" [])
-                (ref-TS02-C3::C_AQP-ANK|RevokeAnchor foreign anchor-id))
+                (format "<<TX-AQP-NEG-OWNER2>> non-owner AQP-ANK|C_RevokeAnchor rejected (anchor-owner gate)" [])
+                (ref-TS02-C3::AQP-ANK|C_RevokeAnchor foreign anchor-id))
             (expect-failure
-                (format "<<TX-AQP-NEG-OWNER2>> non-owner C_AQP-SCR|EnableDebBoost rejected (score-owner gate)" [])
-                (ref-TS02-C3::C_AQP-SCR|EnableDebBoost foreign score-id))
+                (format "<<TX-AQP-NEG-OWNER2>> non-owner AQP-SCR|C_EnableDebBoost rejected (score-owner gate)" [])
+                (ref-TS02-C3::AQP-SCR|C_EnableDebBoost foreign score-id))
             (expect-failure
-                (format "<<TX-AQP-NEG-OWNER2>> non-owner C_AQP-FVT|Control rejected (fvt-owner gate)" [])
-                (ref-TS02-C3::C_AQP-FVT|Control foreign fvt-id false false))
+                (format "<<TX-AQP-NEG-OWNER2>> non-owner AQP-FVT|C_Control rejected (fvt-owner gate)" [])
+                (ref-TS02-C3::AQP-FVT|C_Control foreign fvt-id false false))
         ]
     )
 )
@@ -319,7 +319,7 @@
         [
             (expect-failure
                 (format "<<TX-AQP-NEG-INPUT>> negative NF set-class score value (-1.0) rejected at definition (#19)" [])
-                (ref-TS02-C3::C_AQP-SCR|IssueNonFungibleSetScoreDefinition patron score-id dpnf-id [0] [-1.0]))
+                (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleSetScoreDefinition patron score-id dpnf-id [0] [-1.0]))
         ]
     )
 )

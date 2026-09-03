@@ -10,7 +10,7 @@
 (interface TalosStageOne_ClientThreeV4
     @doc "Exposes Ouronet Stage One Third Batch of Client Functions \
         \ Modules: SWP are included in the Second Batch\
-        \ V2: Added Smart Swap entry points - CC_SWP|SmartSwapWithSlippage and CC_SWP|SmartSwapNoSlippage \
+        \ V2: Added Smart Swap entry points - SWP|CC_SmartSwapWithSlippage and SWP|CC_SmartSwapNoSlippage \
         \ for multi-hop token swaps across the entire pool base using BFS path tracing. \
         \ V3: Issue and fee-target surfaces use SwapperV4.PoolTokens / SwapperV4.FeeSplit (interface bump per versioning rule). \
         \ #34 Phase 8: SWP|C_SmartSwap{With,No}Slippage renamed to SWP|CC_SmartSwap{With,No}Slippage \
@@ -56,57 +56,57 @@
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
     ;;
-    (defun C_SWP|UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
-    (defun C_SWP|UpgradeBranding (patron:string entity-id:string months:integer))
-    (defun C_SWP|UpdatePendingBrandingLPs (patron:string swpair:string entity-pos:integer logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
-    (defun C_SWP|UpgradeBrandingLPs (patron:string swpair:string entity-pos:integer months:integer))
+    (defun SWP|C_UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
+    (defun SWP|C_UpgradeBranding (patron:string entity-id:string months:integer))
+    (defun SWP|C_UpdatePendingBrandingLPs (patron:string swpair:string entity-pos:integer logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
+    (defun SWP|C_UpgradeBrandingLPs (patron:string swpair:string entity-pos:integer months:integer))
     ;;
-    (defun C_SWP|ChangeOwnership (patron:string swpair:string new-owner:string))
-    (defun C_SWP|EnableFrozenLP:string (patron:string swpair:string))
-    (defun C_SWP|EnableSleepingLP:string (patron:string swpair:string))
+    (defun SWP|C_ChangeOwnership (patron:string swpair:string new-owner:string))
+    (defun SWP|C_EnableFrozenLP:string (patron:string swpair:string))
+    (defun SWP|C_EnableSleepingLP:string (patron:string swpair:string))
     ;;Issue
-    (defun C_SWP|IssueStable:list (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
-    (defun C_SWP|IssueStandard:list (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool))
-    (defun C_SWP|IssueWeighted:list (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
+    (defun SWP|C_IssueStable:list (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
+    (defun SWP|C_IssueStandard:list (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool))
+    (defun SWP|C_IssueWeighted:list (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
     ;;Management
-    (defun C_SWP|ModifyCanChangeOwner (patron:string swpair:string new-boolean:bool))
-    (defun C_SWP|ModifyWeights (patron:string swpair:string new-weights:[decimal]))
-    (defun C_SWP|ToggleAddLiquidity (patron:string swpair:string toggle:bool))
-    (defun C_SWP|ToggleSwapCapability (patron:string swpair:string toggle:bool))
-    (defun C_SWP|ToggleFeeLock (patron:string swpair:string toggle:bool))
-    (defun C_SWP|UpdateAmplifier (patron:string swpair:string amp:decimal))
-    (defun C_SWP|UpdateFee (patron:string swpair:string new-fee:decimal lp-or-special:bool))
-    (defun C_SWP|UpdateSpecialFeeTargets (patron:string swpair:string targets:[object{SwapperV4.FeeSplit}]))
+    (defun SWP|C_ModifyCanChangeOwner (patron:string swpair:string new-boolean:bool))
+    (defun SWP|C_ModifyWeights (patron:string swpair:string new-weights:[decimal]))
+    (defun SWP|C_ToggleAddLiquidity (patron:string swpair:string toggle:bool))
+    (defun SWP|C_ToggleSwapCapability (patron:string swpair:string toggle:bool))
+    (defun SWP|C_ToggleFeeLock (patron:string swpair:string toggle:bool))
+    (defun SWP|C_UpdateAmplifier (patron:string swpair:string amp:decimal))
+    (defun SWP|C_UpdateFee (patron:string swpair:string new-fee:decimal lp-or-special:bool))
+    (defun SWP|C_UpdateSpecialFeeTargets (patron:string swpair:string targets:[object{SwapperV4.FeeSplit}]))
     ;;Liquidity
-    (defun C_SWP|AddLiquidity:string (patron:string account:string swpair:string input-amounts:[decimal]))
-    (defun C_SWP|AddIcedLiquidity:string (patron:string account:string swpair:string input-amounts:[decimal]))
-    (defun C_SWP|AddGlacialLiquidity:string (patron:string account:string swpair:string input-amounts:[decimal]))
-    (defun C_SWP|AddFrozenLiquidity:string (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal))
-    (defun C_SWP|AddSleepingLiquidity:string (patron:string account:string swpair:string sleeping-dpof:string nonce:integer))
-    (defun C_SWP|RemoveLiquidity (patron:string account:string swpair:string lp-amount:decimal))
-    ;;#70L fix: C_SWP|Fuel/C_SWP|Firestarter are real, public functions on the TS01-C3
+    (defun SWP|C_AddLiquidity:string (patron:string account:string swpair:string input-amounts:[decimal]))
+    (defun SWP|C_AddIcedLiquidity:string (patron:string account:string swpair:string input-amounts:[decimal]))
+    (defun SWP|C_AddGlacialLiquidity:string (patron:string account:string swpair:string input-amounts:[decimal]))
+    (defun SWP|C_AddFrozenLiquidity:string (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal))
+    (defun SWP|C_AddSleepingLiquidity:string (patron:string account:string swpair:string sleeping-dpof:string nonce:integer))
+    (defun SWP|C_RemoveLiquidity (patron:string account:string swpair:string lp-amount:decimal))
+    ;;#70L fix: SWP|C_Fuel/SWP|C_Firestarter are real, public functions on the TS01-C3
     ;;module below but were missing from this interface (interface-completeness gap,
     ;;not a security issue — both were still reachable via the concrete module ref).
-    (defun C_SWP|Fuel (patron:string account:string swpair:string input-amounts:[decimal]))
-    (defun C_SWP|Firestarter (fire-starter:string))
+    (defun SWP|C_Fuel (patron:string account:string swpair:string input-amounts:[decimal]))
+    (defun SWP|C_Firestarter (fire-starter:string))
     ;;Smart Swap
-    (defun CC_SWP|SmartSwapWithSlippage (patron:string account:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV3.Slippage}))
-    (defun CC_SWP|SmartSwapNoSlippage (patron:string account:string input-id:string input-amount:decimal output-id:string))
+    (defun SWP|CC_SmartSwapWithSlippage (patron:string account:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV3.Slippage}))
+    (defun SWP|CC_SmartSwapNoSlippage (patron:string account:string input-id:string input-amount:decimal output-id:string))
     ;;#34 Phase 8: bundle-based, dirty-read-injected Smart Swap — built alongside, not
     ;;replacing, SWP|CC_SmartSwap{With,No}Slippage above, for direct gas comparison.
-    (defun C_SWP|SmartSwapWithSlippage
+    (defun SWP|C_SmartSwapWithSlippage
         (patron:string account:string input-id:string input-amount:decimal output-id:string
          slippage-bounds:object{SwapperUsageV3.Slippage} bundle:object{SwapperUsageV3.SmartSwapPathBundle})
     )
-    (defun C_SWP|SmartSwapNoSlippage
+    (defun SWP|C_SmartSwapNoSlippage
         (patron:string account:string input-id:string input-amount:decimal output-id:string
          bundle:object{SwapperUsageV3.SmartSwapPathBundle})
     )
     ;;Swap
-    (defun C_SWP|SingleSwapWithSlippage (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV3.Slippage}))
-    (defun C_SWP|SingleSwapNoSlippage (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string))
-    (defun C_SWP|MultiSwapWithSlippage (patron:string account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage-bounds:object{SwapperUsageV3.Slippage}))
-    (defun C_SWP|MultiSwapNoSlippage (patron:string account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string))
+    (defun SWP|C_SingleSwapWithSlippage (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV3.Slippage}))
+    (defun SWP|C_SingleSwapNoSlippage (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string))
+    (defun SWP|C_MultiSwapWithSlippage (patron:string account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage-bounds:object{SwapperUsageV3.Slippage}))
+    (defun SWP|C_MultiSwapNoSlippage (patron:string account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string))
 
 )
 ;;
@@ -278,7 +278,7 @@
     ;;
     ;;
     ;;  [Swapper_Client]
-    (defun C_SWP|UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+    (defun SWP|C_UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
         @doc "Updates <pending-branding> for SWPair Token <entity-id> costing 400 IGNIS"
         (with-capability (P|TS)
             (let
@@ -292,7 +292,7 @@
             )
         )
     )
-    (defun C_SWP|UpgradeBranding (patron:string entity-id:string months:integer)
+    (defun SWP|C_UpgradeBranding (patron:string entity-id:string months:integer)
         @doc "Similar to its DPTF, DPOF, ATS Variants"
         (with-capability (P|TS)
             (let
@@ -305,7 +305,7 @@
             )
         )
     )
-    (defun C_SWP|UpdatePendingBrandingLPs (patron:string swpair:string entity-pos:integer logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+    (defun SWP|C_UpdatePendingBrandingLPs (patron:string swpair:string entity-pos:integer logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
         @doc "Updates <pending-branding> for SWPair LPs (Native LP, Frozen LP or Sleeping LP) Token <entity-id> costing 200 IGNIS \
             \ <entity-pos> 1 = LP Token will be used \
             \ <entity-pos> 2 = Frozen-LP Token will be used \
@@ -322,7 +322,7 @@
             )
         )
     )
-    (defun C_SWP|UpgradeBrandingLPs (patron:string swpair:string entity-pos:integer months:integer)
+    (defun SWP|C_UpgradeBrandingLPs (patron:string swpair:string entity-pos:integer months:integer)
         @doc "Similar to its DPTF, DPOF, ATS SWP Variants, but for SWPair LPs"
         (with-capability (P|TS)
             (let
@@ -335,7 +335,7 @@
             )
         )
     )
-    (defun C_SWP|ChangeOwnership (patron:string swpair:string new-owner:string)
+    (defun SWP|C_ChangeOwnership (patron:string swpair:string new-owner:string)
         @doc "Changes Ownership of an SWPair"
         (with-capability (P|TS)
             (let
@@ -351,7 +351,7 @@
             )
         )
     )
-    (defun C_SWP|EnableFrozenLP:string (patron:string swpair:string)
+    (defun SWP|C_EnableFrozenLP:string (patron:string swpair:string)
         @doc "Enables the posibility of using Frozen Tokens to add Liquidity for an SWPair"
         (with-capability (P|TS)
             (let
@@ -382,7 +382,7 @@
             )
         )
     )
-    (defun C_SWP|EnableSleepingLP:string (patron:string swpair:string)
+    (defun SWP|C_EnableSleepingLP:string (patron:string swpair:string)
         @doc "Enables the posibility of using Sleeping Tokens to add Liquidity for an SWPair"
         (with-capability (P|TS)
             (let
@@ -413,7 +413,7 @@
             )
         )
     )
-    (defun C_SWP|IssueStable:list (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool)
+    (defun SWP|C_IssueStable:list (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool)
         @doc "Issues a Stable Liquidity Pool. First Token in the liquidity Pool must have a connection to a principal Token \
             \ Stable Pools have the S designation. \
             \ Stable Pools can be created with up to 7 Tokens, and have by design equal weighting. \
@@ -436,14 +436,14 @@
             )
         )
     )
-    (defun C_SWP|IssueStandard:list (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool)
+    (defun SWP|C_IssueStandard:list (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool)
         @doc "Issues a Standard, Constant Product Pool. \
             \ Constant Product Pools have the P Designation, and they are by design equal weigthed \
             \ Can also be created with up to 7 Tokens, also the <p> boolean determines if its a Principal Pool or not \
             \ The First Token must be a Principal Token"
-        (C_SWP|IssueStable patron account pool-tokens fee-lp -1.0 p)
+        (SWP|C_IssueStable patron account pool-tokens fee-lp -1.0 p)
     )
-    (defun C_SWP|IssueWeighted:list (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool)
+    (defun SWP|C_IssueWeighted:list (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool)
         @doc "Issues a Weigthed Constant Liquidity Pool \
             \ Weigthed Pools have the W Designation, and the weights can be changed at will. \
             \ Can also be created with up to 7 Tokens, <p> boolean determines if its a Principal Pool or not \
@@ -464,7 +464,7 @@
             )
         )
     )
-    (defun C_SWP|ModifyCanChangeOwner (patron:string swpair:string new-boolean:bool)
+    (defun SWP|C_ModifyCanChangeOwner (patron:string swpair:string new-boolean:bool)
         @doc "Modifies the <can-change-owner> parameter of an SWPair"
         (with-capability (P|TS)
             (let
@@ -479,7 +479,7 @@
             )
         )
     )
-    (defun C_SWP|ModifyWeights (patron:string swpair:string new-weights:[decimal])
+    (defun SWP|C_ModifyWeights (patron:string swpair:string new-weights:[decimal])
         @doc "Modify weights for an SWPair. Works only for W Pools"
         (with-capability (P|TS)
             (let
@@ -494,7 +494,7 @@
             )
         )
     )
-    (defun C_SWP|ToggleAddLiquidity (patron:string swpair:string toggle:bool)
+    (defun SWP|C_ToggleAddLiquidity (patron:string swpair:string toggle:bool)
         @doc "Toggle on or off the Functionality of adding liquidity for an <swpair> \
             \ When <toggle> is <true>, ensures required Mint, Burn, Transfer Roles are set, if not, set them. \
             \ The Roles are: \
@@ -517,9 +517,9 @@
             )
         )
     )
-    (defun C_SWP|ToggleSwapCapability (patron:string swpair:string toggle:bool)
+    (defun SWP|C_ToggleSwapCapability (patron:string swpair:string toggle:bool)
         @doc "Toggle on or off the Functionality of swapping for an <swpair> \
-            \ When <toggle> is <true>, same setup for roles is executed as for <C_SWP|ToggleAddLiquidity> \
+            \ When <toggle> is <true>, same setup for roles is executed as for <SWP|C_ToggleAddLiquidity> \
             \ \
             \ <On> Toggle can only be executed is <swpair> surpasses <(ref-SWP::UR_InactiveLimit)> \
             \ \
@@ -537,7 +537,7 @@
             )
         )
     )
-    (defun C_SWP|ToggleFeeLock (patron:string swpair:string toggle:bool)
+    (defun SWP|C_ToggleFeeLock (patron:string swpair:string toggle:bool)
         @doc "Locks the SPWPair fees in place. Modifying the SWPair fees requires them to be unlocked \
             \ Unlocking costs STOA and is financially discouraged"
         (with-capability (P|TS)
@@ -557,7 +557,7 @@
             )
         )
     )
-    (defun C_SWP|UpdateAmplifier (patron:string swpair:string amp:decimal)
+    (defun SWP|C_UpdateAmplifier (patron:string swpair:string amp:decimal)
         @doc "Updates Amplifier Value; Only works on S-Pools (Stable Pools)"
         (with-capability (P|TS)
             (let
@@ -572,7 +572,7 @@
             )
         )
     )
-    (defun C_SWP|UpdateFee (patron:string swpair:string new-fee:decimal lp-or-special:bool)
+    (defun SWP|C_UpdateFee (patron:string swpair:string new-fee:decimal lp-or-special:bool)
         @doc "Updates Fees Values for an SWPair \
             \ The <lp-or-special> boolean defines whether its the LP-Fee or Special-Fee that is changed \
             \ THe LP Fee is the amount of Swap Output kept by the Liquidity Pool, increasing the Value of its LP Token(s) \
@@ -594,7 +594,7 @@
             )
         )
     )
-    (defun C_SWP|UpdateSpecialFeeTargets (patron:string swpair:string targets:[object{SwapperV4.FeeSplit}])
+    (defun SWP|C_UpdateSpecialFeeTargets (patron:string swpair:string targets:[object{SwapperV4.FeeSplit}])
         @doc "Updates the Special Fee Targets, along with their Split, for an SWPair"
         (with-capability (P|TS)
             (let
@@ -610,7 +610,7 @@
         )
     )
     ;;
-    (defun C_SWP|Fuel
+    (defun SWP|C_Fuel
         (patron:string account:string swpair:string input-amounts:[decimal])
         @doc "Fuels the <swpair> with <input-amounts> of Tokens. \
             \ Must contain values for all pool tokens, with zero for Tokens that arent used \
@@ -631,7 +631,7 @@
             )
         )
     )
-    (defun C_SWP|AddLiquidity:string (patron:string account:string swpair:string input-amounts:[decimal])
+    (defun SWP|C_AddLiquidity:string (patron:string account:string swpair:string input-amounts:[decimal])
         @doc "Adds Liquidity using <input-amounts> on <swpair>, in its default Standard Mode. \
             \ Must Contain 0.0 for Tokens not used; Pool Token Order must be followed for desired <input-amounts> \
             \ 1000 IGNIS Flat Fee Cost for adding liquidity to deincentivize addition of small values \
@@ -655,7 +655,7 @@
                     (ref-SWPI:module{SwapperIssueV4} SWPI)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (ico:object{IgnisCollectorV2.OutputCumulator}
-                        (ref-SWPLC::C_STOA-PID|AddStandardLiquidity account swpair input-amounts stoa-pid)
+                        (ref-SWPLC::STOA-PID|C_AddStandardLiquidity account swpair input-amounts stoa-pid)
                     )
                 )
                 (ref-IGNIS::C_Collect patron ico)
@@ -666,8 +666,8 @@
             )
         )
     )
-    (defun C_SWP|AddIcedLiquidity:string (patron:string account:string swpair:string input-amounts:[decimal])
-        @doc "Same as <C_SWP|AddLiquidity>, but using ICED Mode \
+    (defun SWP|C_AddIcedLiquidity:string (patron:string account:string swpair:string input-amounts:[decimal])
+        @doc "Same as <SWP|C_AddLiquidity>, but using ICED Mode \
             \ \
             \ ICED MODE \
             \ Returns a part of the <asymmetric-lp-amount> as Frozen LP \
@@ -688,7 +688,7 @@
                     (ref-SWPI:module{SwapperIssueV4} SWPI)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (ico:object{IgnisCollectorV2.OutputCumulator}
-                        (ref-SWPLC::C_STOA-PID|AddIcedLiquidity account swpair input-amounts stoa-pid)
+                        (ref-SWPLC::STOA-PID|C_AddIcedLiquidity account swpair input-amounts stoa-pid)
                     )
                 )
                 (ref-IGNIS::C_Collect patron ico)
@@ -699,8 +699,8 @@
             )
         )
     )
-    (defun C_SWP|AddGlacialLiquidity:string (patron:string account:string swpair:string input-amounts:[decimal])
-        @doc "Same as <C_SWP|AddLiquidity>, but using GLACIAL Mode \
+    (defun SWP|C_AddGlacialLiquidity:string (patron:string account:string swpair:string input-amounts:[decimal])
+        @doc "Same as <SWP|C_AddLiquidity>, but using GLACIAL Mode \
             \ \
             \ GLACIAL MODE \
             \ Returns all of the <asymmetric-lp-amount> as Frozen LP \
@@ -719,7 +719,7 @@
                     (ref-SWPI:module{SwapperIssueV4} SWPI)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (ico:object{IgnisCollectorV2.OutputCumulator}
-                        (ref-SWPLC::C_STOA-PID|AddGlacialLiquidity account swpair input-amounts stoa-pid)
+                        (ref-SWPLC::STOA-PID|C_AddGlacialLiquidity account swpair input-amounts stoa-pid)
                     )
                 )
                 (ref-IGNIS::C_Collect patron ico)
@@ -730,7 +730,7 @@
             )
         )
     )
-    (defun C_SWP|AddFrozenLiquidity:string (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal)
+    (defun SWP|C_AddFrozenLiquidity:string (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal)
         @doc "Adds Liquidity using a single <input-amount> of a single <frozen-dptf> \
             \ Since this is an asymetric-liquidity-amount, it is bound by max. deviation rules \
             \ 1000 IGNIS Flat Fee Cost for adding liquidity. \
@@ -749,7 +749,7 @@
                     (ref-SWPI:module{SwapperIssueV4} SWPI)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (ico:object{IgnisCollectorV2.OutputCumulator}
-                        (ref-SWPLC::C_STOA-PID|AddFrozenLiquidity account swpair frozen-dptf input-amount stoa-pid)
+                        (ref-SWPLC::STOA-PID|C_AddFrozenLiquidity account swpair frozen-dptf input-amount stoa-pid)
                     )
                 )
                 (ref-IGNIS::C_Collect patron ico)
@@ -760,7 +760,7 @@
             )
         )
     )
-    (defun C_SWP|AddSleepingLiquidity:string (patron:string account:string swpair:string sleeping-dpof:string nonce:integer)
+    (defun SWP|C_AddSleepingLiquidity:string (patron:string account:string swpair:string sleeping-dpof:string nonce:integer)
         @doc "Adds Liquidity using a single <input-amount> of a single <sleeping-dpof> \
         \ Since this is an asymetric-liquidity-amount, it is bound by max. deviation rules \
         \ 1000 IGNIS Flat Fee Cost for adding liquidity. \
@@ -779,7 +779,7 @@
                     (ref-SWPI:module{SwapperIssueV4} SWPI)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (ico:object{IgnisCollectorV2.OutputCumulator}
-                        (ref-SWPLC::C_STOA-PID|AddSleepingLiquidity account swpair sleeping-dpof nonce stoa-pid)
+                        (ref-SWPLC::STOA-PID|C_AddSleepingLiquidity account swpair sleeping-dpof nonce stoa-pid)
                     )
                 )
                 (ref-IGNIS::C_Collect patron ico)
@@ -790,7 +790,7 @@
             )
         )
     )
-    (defun C_SWP|RemoveLiquidity (patron:string account:string swpair:string lp-amount:decimal)
+    (defun SWP|C_RemoveLiquidity (patron:string account:string swpair:string lp-amount:decimal)
         @doc "Removes <swpair> Liquidity using <lp-amount> of LP Tokens \
             \ Always returns all Pool Tokens at current Pool Token Ratio \
             \ Removing Liquidty complety leaving the pool exactly empty (0.0 tokens) is fully supported"
@@ -812,7 +812,7 @@
         )
     )
     ;;Swaps
-    (defun C_SWP|Firestarter (fire-starter:string)
+    (defun SWP|C_Firestarter (fire-starter:string)
         @doc "Makes IGNIS for <fire-starter> using 10 native Stoas"
         (with-capability (P|TS)
             (let
@@ -869,7 +869,7 @@
             )
         )
     )
-    (defun CC_SWP|SmartSwapWithSlippage
+    (defun SWP|CC_SmartSwapWithSlippage
         (
             patron:string
             account:string
@@ -880,7 +880,7 @@
         )
         @doc "Executes a Smart Swap from <input-id> to <output-id> with slippage protection. \
             \ Path is traced automatically via BFS across all pool bases. \
-            \ #34 Phase 8: renamed from C_SWP|SmartSwapWithSlippage. \
+            \ #34 Phase 8: renamed from SWP|C_SmartSwapWithSlippage. \
             \ #65bL Phase 4 fix: the STOA-repricing loop below (one URC_PoolValue call \
             \ per distinct pool touched) now fetches the whole topology's raw graph \
             \ ONCE via URC_PoolValueFromRaw's shared <raw-graph>, instead of each \
@@ -945,7 +945,7 @@
             )
         )
     )
-    (defun CC_SWP|SmartSwapNoSlippage
+    (defun SWP|CC_SmartSwapNoSlippage
         (
             patron:string
             account:string
@@ -955,8 +955,8 @@
         )
         @doc "Executes a Smart Swap from <input-id> to <output-id> without slippage protection. \
             \ Path is traced automatically via BFS across all pool bases. \
-            \ #34 Phase 8: renamed from C_SWP|SmartSwapNoSlippage. \
-            \ #65bL Phase 4/7 fix: see CC_SWP|SmartSwapWithSlippage's own doc — same \
+            \ #34 Phase 8: renamed from SWP|C_SmartSwapNoSlippage. \
+            \ #65bL Phase 4/7 fix: see SWP|CC_SmartSwapWithSlippage's own doc — same \
             \ shared-raw-graph/shared-graph-build STOA-repricing-loop fixes, \
             \ mirrored here."
         (with-capability (P|TS)
@@ -1015,7 +1015,7 @@
             )
         )
     )
-    (defun C_SWP|SmartSwapWithSlippage
+    (defun SWP|C_SmartSwapWithSlippage
         (
             patron:string
             account:string
@@ -1031,7 +1031,7 @@
             \ P3.4's dumb-writer: <stoa-results> (precomputed by \
             \ SWPU::URC_ComputeStoaValueResults inside SWPU::C_SmartSwap) is mapped \
             \ straight into XE_UpdateStoaValue below — no URC_PoolValue re-derivation \
-            \ at the Talos layer at all, unlike CC_SWP|SmartSwapWithSlippage above."
+            \ at the Talos layer at all, unlike SWP|CC_SmartSwapWithSlippage above."
         (with-capability (P|TS)
             (let
                 (
@@ -1063,7 +1063,7 @@
             )
         )
     )
-    (defun C_SWP|SmartSwapNoSlippage
+    (defun SWP|C_SmartSwapNoSlippage
         (
             patron:string
             account:string
@@ -1073,7 +1073,7 @@
             bundle:object{SwapperUsageV3.SmartSwapPathBundle}
         )
         @doc "#34 Phase 8: bundle-based Smart Swap without slippage protection. Unlike \
-            \ CC_SWP|SmartSwapNoSlippage above, the dummy slippage-bounds object is built \
+            \ SWP|CC_SmartSwapNoSlippage above, the dummy slippage-bounds object is built \
             \ via SWPU::UDC_Slippage directly (not UDC_SpawnSmartSwapSlippageBounds, \
             \ which itself performs a live URC_HopperActive search — defeating the whole \
             \ point of the bundle-based path)."
@@ -1108,7 +1108,7 @@
             )
         )
     )
-    (defun C_SWP|SingleSwapWithSlippage
+    (defun SWP|C_SingleSwapWithSlippage
         (
             patron:string
             account:string
@@ -1142,7 +1142,7 @@
             )
         )
     )
-    (defun C_SWP|SingleSwapNoSlippage
+    (defun SWP|C_SingleSwapNoSlippage
         (
             patron:string
             account:string
@@ -1177,7 +1177,7 @@
             )
         )
     )
-    (defun C_SWP|MultiSwapWithSlippage
+    (defun SWP|C_MultiSwapWithSlippage
         (
             patron:string
             account:string
@@ -1211,7 +1211,7 @@
             )
         )
     )
-    (defun C_SWP|MultiSwapNoSlippage
+    (defun SWP|C_MultiSwapNoSlippage
         (
             patron:string
             account:string

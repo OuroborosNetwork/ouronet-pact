@@ -60,18 +60,18 @@
     ;;
     ;;  [C]
     ;;
-    (defun C_DEMIPAD|Deposit (patron:string donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal))
+    (defun DEMIPAD|C_Deposit (patron:string donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal))
     ;;
-    (defun C_DEMIPAD|Withdraw (patron:string asset-id:string type:integer destination:string))
+    (defun DEMIPAD|C_Withdraw (patron:string asset-id:string type:integer destination:string))
     ;;
-    (defun C_DEMIPAD|FuelTrueFungible (patron:string client:string asset-id:string amount:decimal))
-    (defun C_DEMIPAD|FuelOrtoFungible (patron:string client:string asset-id:string nonces:[integer]))
-    (defun C_DEMIPAD|FuelSemiFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
-    (defun C_DEMIPAD|FuelNonFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
-    (defun C_DEMIPAD|RetrieveTrueFungible (patron:string client:string asset-id:string amount:decimal))
-    (defun C_DEMIPAD|RetrieveOrtoFungible (patron:string client:string asset-id:string nonces:[integer]))
-    (defun C_DEMIPAD|RetrieveSemiFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
-    (defun C_DEMIPAD|RetrieveNonFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
+    (defun DEMIPAD|C_FuelTrueFungible (patron:string client:string asset-id:string amount:decimal))
+    (defun DEMIPAD|C_FuelOrtoFungible (patron:string client:string asset-id:string nonces:[integer]))
+    (defun DEMIPAD|C_FuelSemiFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
+    (defun DEMIPAD|C_FuelNonFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
+    (defun DEMIPAD|C_RetrieveTrueFungible (patron:string client:string asset-id:string amount:decimal))
+    (defun DEMIPAD|C_RetrieveOrtoFungible (patron:string client:string asset-id:string nonces:[integer]))
+    (defun DEMIPAD|C_RetrieveSemiFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
+    (defun DEMIPAD|C_RetrieveNonFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
 
 )
 ;;
@@ -265,8 +265,8 @@
                 ;;   DPDC::XB_DeployAccountSFT/NFT directly, module-to-module — the pattern every
                 ;;   legitimate internal caller (DPDC-C/DPDC-F/DPDC-R/DPDC-S) already uses.
                 (cond
-                    ((= fungibility tf) (ref-TS01-A::A_DPTF|DeployAccount patron asset-id lpad))
-                    ((= fungibility of) (ref-TS01-A::A_DPOF|DeployAccount patron asset-id lpad))
+                    ((= fungibility tf) (ref-TS01-A::DPTF|A_DeployAccount patron asset-id lpad))
+                    ((= fungibility of) (ref-TS01-A::DPOF|A_DeployAccount patron asset-id lpad))
                     ((= fungibility sf) (ref-DPDC::XB_DeployAccountSFT lpad asset-id f f f f f f f f f f f))
                     ((= fungibility nf) (ref-DPDC::XB_DeployAccountNFT lpad asset-id f f f f f f f f f f))
                     true
@@ -307,7 +307,7 @@
             )
         )
     )
-    (defun C_DEMIPAD|Deposit (patron:string donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal)
+    (defun DEMIPAD|C_Deposit (patron:string donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal)
         @doc "Sovereign launchpad DEPOSIT Talos op — the citizen sales call this to move a buyer's \
             \ STOA/OURS working-token into the Launchpad against <asset-id>. <type> 0 = Native STOA \
             \ (wrapped), 1 = OWS; <max-cost> is the buyer's dollar slippage ceiling (sentinel < 0 = \
@@ -329,7 +329,7 @@
         )
     )
     ;;
-    (defun C_DEMIPAD|Withdraw (patron:string asset-id:string type:integer destination:string)
+    (defun DEMIPAD|C_Withdraw (patron:string asset-id:string type:integer destination:string)
         @doc "Withdraws all cumulated Tokens in the Launchpad, gathered through sale \
             \ Type 1 = WSTOA \
             \ Type 2 = SSTOA \
@@ -358,7 +358,7 @@
         )
     )
     ;;
-    (defun C_DEMIPAD|FuelTrueFungible (patron:string client:string asset-id:string amount:decimal)
+    (defun DEMIPAD|C_FuelTrueFungible (patron:string client:string asset-id:string amount:decimal)
         (with-capability (P|TS)
             (let
                 (
@@ -368,7 +368,7 @@
             )
         )
     )
-    (defun C_DEMIPAD|FuelOrtoFungible (patron:string client:string asset-id:string nonces:[integer])
+    (defun DEMIPAD|C_FuelOrtoFungible (patron:string client:string asset-id:string nonces:[integer])
         (with-capability (P|TS)
             (let
                 (
@@ -378,7 +378,7 @@
             )
         )
     )
-    (defun C_DEMIPAD|FuelSemiFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer])
+    (defun DEMIPAD|C_FuelSemiFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer])
         (with-capability (P|TS)
             (let
                 (
@@ -394,7 +394,7 @@
             )
         )
     )
-    (defun C_DEMIPAD|FuelNonFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer])
+    (defun DEMIPAD|C_FuelNonFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer])
         (with-capability (P|TS)
             (let
                 (
@@ -411,7 +411,7 @@
         )
     )
     ;;
-    (defun C_DEMIPAD|RetrieveTrueFungible (patron:string client:string asset-id:string amount:decimal)
+    (defun DEMIPAD|C_RetrieveTrueFungible (patron:string client:string asset-id:string amount:decimal)
         (with-capability (P|TS)
             (let
                 (
@@ -421,7 +421,7 @@
             )
         )
     )
-    (defun C_DEMIPAD|RetrieveOrtoFungible (patron:string client:string asset-id:string nonces:[integer])
+    (defun DEMIPAD|C_RetrieveOrtoFungible (patron:string client:string asset-id:string nonces:[integer])
         (with-capability (P|TS)
             (let
                 (
@@ -431,7 +431,7 @@
             )
         )
     )
-    (defun C_DEMIPAD|RetrieveSemiFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer])
+    (defun DEMIPAD|C_RetrieveSemiFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer])
         (with-capability (P|TS)
             (let
                 (
@@ -447,7 +447,7 @@
             )
         )
     )
-    (defun C_DEMIPAD|RetrieveNonFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer])
+    (defun DEMIPAD|C_RetrieveNonFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer])
         (with-capability (P|TS)
             (let
                 (
