@@ -457,7 +457,7 @@
                 (target-balance:decimal (ref-coin::get-balance migration-target-stoa-account))
                 (gap:bool (UR_GAP))
             )
-            (enforce gap (format "Migration can only be executed when Global Administrative Pause is offline"))
+            (enforce gap (format "Migration can only be executed when Global Administrative Pause is offline" []))
             (enforce (= target-balance 0.0) "Migration can only be executed to an empty stoa account")
             (compose-capability (GOV|DALOS_ADMIN))
             (compose-capability (DALOS|NATIVE-AUTOMATIC))
