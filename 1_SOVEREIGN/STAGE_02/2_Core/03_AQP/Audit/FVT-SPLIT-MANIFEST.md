@@ -80,3 +80,28 @@ the FVT structure). Measure-driven, not blanket — avoids over-refactoring cold
 3. FVT surgery: delete moved defs; rewire 59 call sites → `ref-RPS::`; add `RPS` module-ref binding.
 4. Renumber `04_RPS`/`05_FVT`/… + executor deploy-list + FVT `P|A_Define` registers on RPS (IMC).
 5. `Z.repl` + `[6.2.4]`/`[6.2.5]` green; re-measure; then the GAS-probe pass.
+
+---
+
+## P1 conclusion (2026-09-03): only B' (balanced reward-engine split) is clean
+
+Empirically established over P1: the accessor-only split (ledger + thin writers → RPS) is NOT
+cleanly completable and leaves FVT lopsided (6,435 ln / ~84% gas):
+- The reward orchestration is pervasively coupled to BOTH the RPS ledger AND FVT structure.
+- Staying orchestration functions read moved RPS data across the object boundary
+  (`URH_FVT|SettleFvtRewardBundle` → `[object{FVT|SettleFvtRewards}]`; `UR_FVT-RS|Stream` →
+  `object{FVT|RPS|Stream}`), which the interface object-return rule bars — forcing those
+  functions into RPS anyway.
+- The orchestration also writes 5 `FVT|T` aggregate fields (would be RPS→FVT cycle).
+
+**Required path = B'** (design §2–5, revised): reward ENGINE (ledger + distribution topology
+ScoreEntityLink/UserPresence/MultipletFamily + new `FVT|T|RewardAggregate` + the ~195-fn
+orchestration) → RPS; FVT keeps entity/config/client and arg-passes `FVT|T` config into the RPS
+phase entrypoints. Measured target RPS ≈ 3,288 / FVT ≈ 2,765, DAG-clean. This is a major,
+correctness-sensitive surgery (reward math) and should run staged with a behavioral-equivalence
+gate per step (Stage 1 FVT|T field split → Stage 2 config arg-threading → Stage 3 module move),
+each green-gating in-module before the boundary flip.
+
+**Assets ready for B' execution:** validated RPS module+interface builder (`_fvtasm.py`, loads at
+~120K gas), call-graph classifier (`_fvtsplit.py`), body extractor (`_fvtgen.py`), cutter
+(`_fvtcut.py`) — all re-point to the wider table scope by editing the `RPS_TBL` set.
