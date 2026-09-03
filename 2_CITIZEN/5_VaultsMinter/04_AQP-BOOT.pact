@@ -210,6 +210,7 @@
             (let
                 (
                     (ref-P|AQP:module{OuronetPolicyV2} AQP-POOL)
+                    (ref-P|RPS:module{OuronetPolicyV2} RPS)
                     (ref-P|FVT:module{OuronetPolicyV2} AQP-FVT)
                     (ref-P|VCT:module{OuronetPolicyV2} AQP-VCT)
                     (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
@@ -218,6 +219,7 @@
                     (aqp-sc:string (ref-ANK::GOV|AQP|SC_NAME))
                 )
                 (ref-P|AQP::P|A_Define)
+                (ref-P|RPS::P|A_Define)   ;; #75 B': RPS reward engine registers its guards on deps (royalty disposal)
                 (ref-P|FVT::P|A_Define)
                 (ref-P|VCT::P|A_Define)
                 ;; C_RotateGovernor — AQP|SC_NAME: AQP-POOL.AQP|GOV (stake) + FVT|RemoteAqpGov + VCT|RemoteAqpGov.

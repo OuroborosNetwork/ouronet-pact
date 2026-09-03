@@ -162,3 +162,44 @@ to green (uncommitted) because the tail is fragile reward-math surgery not to be
    `04_RPS.pact` + `05_FVT.pact` + executor together.
 
 Do NOT commit a half-flipped tree; the flip lands as one green-gated unit.
+
+---
+
+## ✅ FINAL STATE — split complete, full `Z.repl` green (behavioral equivalence proven)
+
+The FVT→RPS split landed as one green-gated unit. Full pipeline `cd REPL && pact Z.repl` →
+**`Load successful`, 595 assertions pass (517 positive + 78 negative), 0 failures**; every
+hardcoded reward/gas expected value in the `[6.2.x]` suites matches → behavioral equivalence.
+
+### Final module sizes (from undeployable 7,527-line monolith)
+- **`04_RPS.pact` — 5,617 lines** — reward engine leaf (deploys first). Interface
+  `AcquisitionRewardPerShareV1`, own GOV/policy/SECURE/IMC, 14 tables, 306 moved fns + 33 `XE_`
+  SECURE-granting writer wrappers.
+- **`05_FVT.pact` — 3,878 lines** — entity/config/client shell (deploys second). Keeps `AQP-FVT`
+  module + `AcquisitionFarmsVaultsTreasuriesV2`, all `C_`/`CC_`/`CCp_`/`A_` client entrypoints, +
+  **53 facade re-exports** delegating reward reads to RPS so the test corpus stays byte-identical.
+- Both < the ~6,635-line deploy cliff.
+
+### The three mechanisms that closed the tail (all scripted, reproducible via `REPL/_fvtrun.sh`)
+1. **Transitive SECURE-scope detection** (`_fvtasm`/`_fvtflip`): a moved fn needs a SECURE-granting
+   `XE_` wrapper iff it *transitively* contains `(require-capability (SECURE))` (subsumes RPS-table
+   writers AND fund-transfer fns like `XI_TransferRewardDptfFromVault`). Writers 21→33.
+2. **Facade re-export** (`_fvtfacade.py`): every moved reader still called via `ref-FVT::X`
+   (modref) or `AQP-FVT.X` (dot) is re-declared in FVT's inline interface + given a thin delegating
+   wrapper `(defun X (…) (RPS.X …))`. 53 readers → tests/siblings unchanged, equivalence trustworthy.
+3. **IMC cascade**: FVT (`P|A_Define` +`ref-P|RPS::P|A_AddIMP dg`), VCT (`dg`), DSA (`mg`) register
+   their SECURE/CALLER guard on RPS's IMP; AQP-BOOT Step0 calls `ref-P|RPS::P|A_Define`. RPS's own
+   `P|A_Define` self-registration line is stripped by `_fvtasm` (`ref-P|RPS::P|A_AddIMP dg` → n/a).
+
+### Reproduce
+`bash REPL/_fvtrun.sh` (restore `/tmp/FVT_full.pact` → `_fvtgen` → `_fvtasm` → `_fvtflip` →
+`_fvtfacade`). The `_fvt*.py` generators are scratch tooling (not committed); the committed
+artifacts are `04_RPS.pact` + `05_FVT.pact` + the sibling/executor edits.
+
+### Deploy-gas headroom (confirmed post-split)
+REPL `table` gas model measures runtime load-execution, not the chain's size-based deploy
+formula, but it's a useful floor: RPS load-exec **362,174**, FVT **249,972** (cf. ANCHOR 150K /
+SCORE 229K / AQP 202K / VCT 243K). On the size cliff itself (7th-power of tx size, 2M cap at
+~6,635 ln): RPS 5,617 ln → `(5617/6635)^7 × 2M ≈ 624K`; FVT 3,878 ln → `~47K`. Both deploy with
+wide margin. (Executor `[2.3]` cost-echoes were bare `(format …)` — never printed — now wrapped in
+`(print …)` so deploy-gas is observable on every run.)

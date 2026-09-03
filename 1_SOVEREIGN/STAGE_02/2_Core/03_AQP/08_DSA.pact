@@ -216,12 +216,15 @@
         (let
             (
                 (ref-P|FVT:module{OuronetPolicyV2} AQP-FVT)
+                (ref-P|RPS:module{OuronetPolicyV2} RPS)
                 (mg:guard (create-capability-guard (P|DSA|CALLER)))
             )
             ;; DSA calls AQP-FVT's XE_ building blocks (SetMemberCapture / SetMemberDelegation / SetFvtOracleOn,
             ;; all P|UEV_IMC-gated) — register DSA as an allowed IMC caller of AQP-FVT. (SCORE/POOL calls for
             ;; agency-open are added here when that path is built.)
             (ref-P|FVT::P|A_AddIMP mg)
+            ;; #75 B': DSA's capture/oracle/royalty XE_ building blocks moved to the RPS reward engine — register on RPS IMP.
+            (ref-P|RPS::P|A_AddIMP mg)
         )
     )
 
@@ -299,9 +302,9 @@
             (
                 (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (fvt-owner:string (ref-FVT::UR_FVT|OwnerKonto fvt-id))
+                (fvt-owner:string (RPS.UR_FVT|OwnerKonto fvt-id))
             )
-            (enforce (= (ref-FVT::UR_FVT|FvtClass fvt-id) 0) "DSA vault must be a class-0 FVT")
+            (enforce (= (RPS.UR_FVT|FvtClass fvt-id) 0) "DSA vault must be a class-0 FVT")
             (enforce (= patron fvt-owner) "Only the FVT owner may define the delegation vault")
             (enforce (> unit-score 0) "unit-score must be positive")
             (enforce (not (URC_DsaTemplateExists fvt-id)) "This FVT is already a DSA vault")
@@ -333,7 +336,7 @@
                 (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
             )
             (enforce (URC_DsaTemplateActive fvt-id) "DSA vault not defined or inactive")
-            (enforce (ref-FVT::UR_FVT-SEL|Delegation fvt-id score-entity-id) "Score entity is not a delegation member")
+            (enforce (RPS.UR_FVT-SEL|Delegation fvt-id score-entity-id) "Score entity is not a delegation member")
         )
         (compose-capability (P|SECURE-CALLER))
     )
@@ -345,7 +348,7 @@
             (
                 (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (fvt-owner:string (ref-FVT::UR_FVT|OwnerKonto fvt-id))
+                (fvt-owner:string (RPS.UR_FVT|OwnerKonto fvt-id))
             )
             (enforce (URC_DsaTemplateActive fvt-id) "DSA vault not defined or inactive")
             (enforce (= patron fvt-owner) "Only the FVT owner may set the oracle authority")
@@ -362,7 +365,7 @@
             (
                 (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (fvt-owner:string (ref-FVT::UR_FVT|OwnerKonto fvt-id))
+                (fvt-owner:string (RPS.UR_FVT|OwnerKonto fvt-id))
             )
             (enforce (URC_DsaTemplateActive fvt-id) "DSA vault not defined or inactive")
             (enforce (= patron fvt-owner) "Only the FVT owner may withdraw royalty")
@@ -379,7 +382,7 @@
             (
                 (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (fvt-owner:string (ref-FVT::UR_FVT|OwnerKonto fvt-id))
+                (fvt-owner:string (RPS.UR_FVT|OwnerKonto fvt-id))
             )
             (enforce (URC_DsaTemplateActive fvt-id) "DSA vault not defined or inactive")
             (enforce (= patron fvt-owner) "Only the FVT owner may burn royalty")
@@ -396,7 +399,7 @@
             (
                 (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (fvt-owner:string (ref-FVT::UR_FVT|OwnerKonto fvt-id))
+                (fvt-owner:string (RPS.UR_FVT|OwnerKonto fvt-id))
             )
             (enforce (URC_DsaTemplateActive fvt-id) "DSA vault not defined or inactive")
             (enforce (= patron fvt-owner) "Only the FVT owner may fuel with royalty")
@@ -413,7 +416,7 @@
             (
                 (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (fvt-owner:string (ref-FVT::UR_FVT|OwnerKonto fvt-id))
+                (fvt-owner:string (RPS.UR_FVT|OwnerKonto fvt-id))
             )
             (enforce (URC_DsaTemplateActive fvt-id) "DSA vault not defined or inactive")
             (enforce (= patron fvt-owner) "Only the FVT owner may change the agency fee")
@@ -432,7 +435,7 @@
                 (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
             )
             (enforce-guard (UR_DSA-ORA|Guard fvt-id))
-            (enforce (ref-FVT::UR_FVT-SEL|Delegation fvt-id score-entity-id) "Score entity is not a delegation member")
+            (enforce (RPS.UR_FVT-SEL|Delegation fvt-id score-entity-id) "Score entity is not a delegation member")
             (enforce (fold (and) true
                 [ (>= nodes 0)
                   (>= uptime DSA_UPTIME_MIN)
@@ -648,7 +651,7 @@
                 (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
             )
             (+ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (URCi_WithdrawRoyalty patron [fvt-id]))
-               (ref-FVT::URCi_WithdrawRoyaltyCustody fvt-id reward-dptf-id (ref-FVT::UR_FVT|OwnerKonto fvt-id)))
+               (RPS.URCi_WithdrawRoyaltyCustody fvt-id reward-dptf-id (RPS.UR_FVT|OwnerKonto fvt-id)))
         ))
     (defun URCi_BurnRoyaltyFull:decimal (patron:string fvt-id:string reward-dptf-id:string)
         @doc "FULL reconstructed IGNIS ifp of A_BurnRoyalty: GAS|BURN-ROYALTY gas leg + the FVT custody-burn leg \
@@ -659,7 +662,7 @@
                 (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
             )
             (+ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (URCi_BurnRoyalty patron [fvt-id]))
-               (ref-FVT::URCi_BurnRoyaltyCustody fvt-id reward-dptf-id))
+               (RPS.URCi_BurnRoyaltyCustody fvt-id reward-dptf-id))
         ))
     (defun URCi_FuelRoyaltyFull:decimal (patron:string fvt-id:string reward-dptf-id:string swpair:string)
         @doc "FULL reconstructed IGNIS ifp of A_FuelRoyalty: GAS|FUEL-ROYALTY gas leg + the FVT custody-fuel leg \
@@ -670,7 +673,7 @@
                 (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
             )
             (+ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (URCi_FuelRoyalty patron [fvt-id]))
-               (ref-FVT::URCi_FuelRoyaltyCustody fvt-id reward-dptf-id swpair))
+               (RPS.URCi_FuelRoyaltyCustody fvt-id reward-dptf-id swpair))
         ))
     (defun URCi_SetAgencyFee:object{IgnisCollectorV2.OutputCumulator} (patron:string output:[string])
         (let
@@ -728,7 +731,7 @@
                 (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                 (units:decimal (URC_CaptureUnits fvt-id score-entity-id))
             )
-            (ref-FVT::XE_SetMemberCapture fvt-id score-entity-id
+            (RPS.XE_SetMemberCapture fvt-id score-entity-id
                 units (UC_CaptureWeight units (UR_DSA-AGN|Uptime fvt-id score-entity-id)) oracle-ts)
         )
     )
@@ -799,7 +802,7 @@
                     (
                         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                     )
-                    (ref-FVT::XE_SetExternalOracle on)
+                    (RPS.XE_SetExternalOracle on)
                 )
             )
         )
@@ -815,7 +818,7 @@
                     (
                         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                     )
-                    (ref-FVT::XE_SetOracleValidity seconds)
+                    (RPS.XE_SetOracleValidity seconds)
                 )
             )
         )
@@ -835,7 +838,7 @@
                 )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     [ (URCi_WithdrawRoyalty patron [fvt-id])
-                      (ref-FVT::XE_WithdrawRoyalty fvt-id reward-dptf-id (ref-FVT::UR_FVT|OwnerKonto fvt-id)) ]
+                      (RPS.XE_WithdrawRoyalty fvt-id reward-dptf-id (RPS.UR_FVT|OwnerKonto fvt-id)) ]
                     [fvt-id])
             )
         )
@@ -854,7 +857,7 @@
                 )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     [ (URCi_BurnRoyalty patron [fvt-id])
-                      (ref-FVT::XE_BurnRoyalty fvt-id reward-dptf-id) ]
+                      (RPS.XE_BurnRoyalty fvt-id reward-dptf-id) ]
                     [fvt-id])
             )
         )
@@ -873,7 +876,7 @@
                 )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     [ (URCi_FuelRoyalty patron [fvt-id])
-                      (ref-FVT::XE_FuelRoyalty fvt-id reward-dptf-id swpair) ]
+                      (RPS.XE_FuelRoyalty fvt-id reward-dptf-id swpair) ]
                     [fvt-id])
             )
         )
@@ -893,7 +896,7 @@
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
                 (WU_Agency-Fee fvt-id score-entity-id fee-per-mille)
-                (ref-FVT::XE_SetAgencyFee fvt-id score-entity-id (UR_DSA-AGN|Operator fvt-id score-entity-id) fee-per-mille)
+                (RPS.XE_SetAgencyFee fvt-id score-entity-id (UR_DSA-AGN|Operator fvt-id score-entity-id) fee-per-mille)
                 (URCi_SetAgencyFee patron [score-entity-id])
             )
         )
@@ -916,11 +919,11 @@
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
-                (ref-FVT::XE_AdmitDelegationMember fvt-id score-entity-id patron)
-                (ref-FVT::XE_SetMemberDelegation fvt-id score-entity-id true)
+                (RPS.XE_AdmitDelegationMember fvt-id score-entity-id patron)
+                (RPS.XE_SetMemberDelegation fvt-id score-entity-id true)
                 (WI_Agency fvt-id score-entity-id (UDC_DSA|Agency patron fee-per-mille 0 DSA_UPTIME_FULL fvt-id score-entity-id))
                 ;; mirror the operator + fee onto the FVT member so the inject settle can apply the fee split locally
-                (ref-FVT::XE_SetAgencyFee fvt-id score-entity-id patron fee-per-mille)
+                (RPS.XE_SetAgencyFee fvt-id score-entity-id patron fee-per-mille)
                 (URCi_OpenAgency patron [score-entity-id])
             )
         )
@@ -938,7 +941,7 @@
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
-                (XI_ApplyCapture fvt-id score-entity-id (ref-FVT::UR_FVT-SEL|OracleTs fvt-id score-entity-id))
+                (XI_ApplyCapture fvt-id score-entity-id (RPS.UR_FVT-SEL|OracleTs fvt-id score-entity-id))
                 (URCi_RecomputeCapture patron [score-entity-id])
             )
         )

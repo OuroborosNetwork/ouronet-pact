@@ -145,4 +145,11 @@
 (commit-tx)
 (print "")
 (print "=== END FILE [6.1.5]_DEMIPAD.repl (batches 1-4: all 8 Fuel*/Retrieve* covered) ===")
-;; TODO (#101): Deposit + Withdraw (buy flow: price object + buyer), StoicPay gate (StageZZ).
+;; #101 scope note: this suite covers the 8 sovereign Fuel*/Retrieve* Talos ops (all asset types).
+;; The Deposit/Withdraw BUY-FLOW + StoicPay gate are sale-economics-coupled (per-sale price object +
+;; STOA oracle split across receivers), so they are exercised end-to-end where they actually live —
+;; the citizen launchpad scenario REPL/Stage_02/[5.3]_Launchpad.repl (Spark/Snakes/Custodians/
+;; StoicPay; self-deploys the 5 StoicPay recipient accounts). Verified GREEN in the full chain
+;; (enable the ;;FULL> [5.3] load in Stage02_Tester): 420 launchpad assertions, 0 failures. A
+;; synthetic raw-DEMIPAD deposit against a bare asset here would duplicate that with hand-forged
+;; pricing — deliberately not added.

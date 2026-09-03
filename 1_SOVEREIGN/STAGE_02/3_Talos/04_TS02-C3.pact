@@ -2325,7 +2325,7 @@
         (patron:string fvt-ids:[string])
         @doc "User self-service deb-unstale: the caller refreshes THEIR OWN stale scores across the listed FVTs \
             \ (non-penalized — the cheap alternative to being force-fixed by an inject), then collects IGNIS on \
-            \ patron. The UI finds the FVT list via AQP-FVT.URC_FvtUserHasStaleMember per FVT the user stakes. \
+            \ patron. The UI finds the FVT list via RPS.URC_FvtUserHasStaleMember per FVT the user stakes. \
             \ Lives in AQP-FVT."
         (with-capability (P|TS)
             (let
