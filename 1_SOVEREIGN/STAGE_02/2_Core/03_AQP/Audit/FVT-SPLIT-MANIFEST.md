@@ -132,3 +132,33 @@ FVT ≈ 1,995 lines (~5%). Both comfortably under cap.
 2. Regenerate `04_RPS.pact` (reward engine, ~4.6k lines); isolated-load-validate (as before).
 3. Cut FVT to the client/vacate shell; rewire `ref-RPS::` + `XE_`; executor deploy-order + IMC.
 4. `Z.repl` + `[6.2.x]` green, numbers unchanged; re-measure.
+
+---
+
+## Stage 3 flip — scripted + ~90% validated (2026-09-03)
+
+The flip is fully scripted (`REPL/_fvtflip.py`) and driven ~90% to green in a dry run; restored
+to green (uncommitted) because the tail is fragile reward-math surgery not to be rushed. State:
+
+- ✅ `_fvtgen`/`_fvtasm`/`_fvtcut` re-scoped to 14 tables; wide **RPS reward engine (6,047 ln)
+  isolate-loads green** (~375K exec gas).
+- ✅ `_fvtflip.py`: cuts 301 fns + 14 schemas + 14 tables from FVT → **2,575-line shell**;
+  rewrites the 56 call sites → `ref-RPS::`/`ref-RPS::XE_`; inserts 23 `ref-RPS` `let` bindings;
+  paren-balanced, 0 residual un-rewired calls.
+- ✅ executor: RPS deploy block inserted before FVT in `[2.3]_EarningPools.repl`.
+- ✅ dry-run green-gate reached: RPS deploys; FVT loads past schemas (added 6 duplicate structural
+  schemas: RPS|Global/Member/Stream/User, RewardAggregate, ScoreEntityLink) + a newline-separated
+  bare-call rewire fix.
+
+### Remaining flip finish (focused, careful — reward math)
+1. **7 functions call `ref-RPS::` with no `let` to bind into** (need a body-wrap `let` with the
+   ref-RPS binding): `FVT|C>INJECT-FIX`, `FVT|C>SWEEP-REVOKE` (defcaps — mind `@event`/`compose`),
+   `XI_IssueFvt`, `XE_RefreshTrueFungibleStakeAnchors`, `XE_RefreshCollectableStakeAnchors`,
+   `XB_FvtInject`, `CC_InjectStream`.
+2. Iterate the FVT load past subsequent errors (object-boundary readers FVT still calls; IMC).
+3. Executor: RPS `P|A_Define` + FVT `P|A_Define` register on RPS (IMC caller-guards); file renumber
+   `04_RPS`/`05_FVT`.
+4. `Z.repl` + `[6.2.x]` green AND **numbers unchanged** (behavioral-equivalence gate), then commit
+   `04_RPS.pact` + `05_FVT.pact` + executor together.
+
+Do NOT commit a half-flipped tree; the flip lands as one green-gated unit.
