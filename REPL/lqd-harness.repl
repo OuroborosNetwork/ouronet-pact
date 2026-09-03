@@ -1,0 +1,133 @@
+;;
+;; REPL/lqd-harness.repl — ISOLATED LQD UrStoa wrap/unwrap coverage harness (#79 Phase 2)
+;;   Standalone (boot → test → discard). The boot leaves ur-stoa-id = BAR (the Ouronet wrapped-UrStoa
+;;   DPTF is never deployed), so this harness FIRST stands up that token exactly the way the boot
+;;   stands up wrapped-stoa-id (issue DPTF via the DALOS SC + acquire-module-admin + config update +
+;;   deploy the liquid-SC account), THEN funds the patron's Stoa address with UrStoa from the genesis
+;;   foundation and covers C_LQD|WrapUrStoa + C_LQD|UnwrapUrStoa. Run: cd REPL && pact lqd-harness.repl
+;;
+(load "Stage00_Sanboxes.repl")
+(load "Stage01_Tester.repl")
+
+(print "")
+(print "================================================================")
+(print "FILE  REPL/lqd-harness.repl  (isolated LQD UrStoa wrap/unwrap)")
+(print "================================================================")
+(print "")
+
+;;================================================================================
+(begin-tx "TX-LQD-000 - deploy + register the Ouronet wrapped-UrStoa DPTF (boot gap fixture)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-LQD-000 · 01 · env-sigs (patron + STOA fee caps for the DPTF issue) ====
+(print "--- [TX-LQD-000 · 01 · env-sigs] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps":
+            [
+                ;; WrapUrStoa moves UrStoa from the patron Stoa addr to the liquid SC's Stoa addr
+                (coin.UR|TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:ZNfuj3iZI83n7MUSKGuoXoSxFg1cyMxCzB3szUHVvrI" 1000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+            ]
+        }
+    ]
+)
+;;==== TX-LQD-000 · 02 · issue wrapped-UrStoa DPTF, register ur-stoa-id, deploy liquid account ====
+(print "--- [TX-LQD-000 · 02 · deploy wrapped-UrStoa token] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+        (patron:string KST.ANHD)
+        (dalos:string (ref-DALOS::GOV|DALOS|SC_NAME))
+        (liquid:string (ref-DALOS::GOV|LIQUID|SC_NAME))
+        (info:string (ref-DALOS::CT_Info))
+    )
+    ;; issue the Ouronet wrapped-UrStoa DPTF (mirrors the boot's DalosWrappedStoa "DWK" flags)
+    (let
+        (
+            (ur-stoa-id:string
+                (at 0 (ref-TS01-C1::C_DPTF|Issue patron dalos
+                    ["DalosUrStoa"] ["DUK"] [24] [true] [true] [true] [false] [false] [false])))
+        )
+        ;; register it as the canonical ur-stoa-id (same acquire-module-admin + config-update the boot uses)
+        (acquire-module-admin ouronet-ns.DALOS)
+        (update DALOS.DALOS|PropertiesTable info { "ur-stoa-id" : ur-stoa-id })
+        ;; deploy the liquid smart account's holding account for the wrapped-UrStoa token
+        (ref-TS01-A::A_DPTF|DeployAccount patron ur-stoa-id liquid)
+        (print (format "<(wrapped-UrStoa deployed)> ur-stoa-id => {}" [ur-stoa-id]))
+    )
+)
+(print "===^^^===")
+(commit-tx)
+;;================================================================================
+(begin-tx "TX-LQD-001 - fund patron Stoa addr with UrStoa, then WrapUrStoa + UnwrapUrStoa")
+(namespace "ouronet-ns")
+(env-chain-data { "chain-id": "0" })
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-LQD-001 · 01 · env-data + env-sigs (foundation UR|TRANSFER + patron + STOA caps) ====
+(print "--- [TX-LQD-001 · 01 · env-data + env-sigs] ---")
+(env-data
+    { "sp-ks":
+        { "keys": [ "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ]
+        , "pred": "keys-all" }
+    }
+)
+(env-sigs
+    [
+        { "key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74",
+          "caps": [ (coin.UR|TRANSFER "stoa-foundation"
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 1000.0) ] }
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps":
+            [
+                ;; WrapUrStoa moves UrStoa from the patron Stoa addr to the liquid SC's Stoa addr
+                (coin.UR|TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:ZNfuj3iZI83n7MUSKGuoXoSxFg1cyMxCzB3szUHVvrI" 1000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+            ]
+        }
+    ]
+)
+;;==== TX-LQD-001 · 02 · fund UrStoa + WrapUrStoa + UnwrapUrStoa ====
+(print "--- [TX-LQD-001 · 02 · fund + wrap + unwrap] ---")
+(let
+    (
+        (ref-ur-coin:module{stoa-ns.ur-stoic-fungible-v1} coin)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (patron:string KST.ANHD)
+        (stoa-patron:string "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263")
+    )
+    ;; fund the patron's attached Stoa address with 1000 UrStoa from the genesis foundation account
+    (ref-ur-coin::C_UR|TransferAnew "stoa-foundation" stoa-patron (read-keyset "sp-ks") 1000.0)
+    ;; create the liquid SC's UrStoa account (WrapUrStoa transfers UrStoa into it; boot never created it)
+    (ref-ur-coin::C_UR|CreateAccount (LIQUID.GOV|LIQUID|SC_STOA-NAME) (LIQUID.GOV|LIQUID|GUARD))
+    ;; WrapUrStoa: pulls UrStoa from the patron's Stoa addr, mints Ouronet wrapped-UrStoa to the patron
+    (ref-TS01-C2::C_LQD|WrapUrStoa patron patron 500.0)
+    ;; UnwrapUrStoa: reverse — burns wrapped-UrStoa, returns UrStoa to the patron's Stoa addr
+    (ref-TS01-C2::C_LQD|UnwrapUrStoa patron patron 500.0)
+    (print "<<TX-LQD-001>> C_UR|TransferAnew(fund) + C_LQD|WrapUrStoa + C_LQD|UnwrapUrStoa OK")
+)
+(print "===^^^===")
+(commit-tx)
+(print "")
+(print "=== END FILE lqd-harness.repl (WrapUrStoa + UnwrapUrStoa covered) ===")
