@@ -1,0 +1,63 @@
+;;
+;; REPL/Stage_02/[6.2.13]_AQP-TRIPLET.repl — AQP triplet-bundle coverage (#79 Phase 2)
+;;   Issues three distinct class-1 (DPTF) scores owned by the patron, then bundles them into one
+;;   immutable triplet via C_AQP-SCR|IssueTriplet. Covers the uncovered IssueTrueFungibleScore +
+;;   IssueTriplet client ops. Self-contained; loaded after [6.2.2] so the AQP-SCORE boot exists.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[6.2.13]_AQP-TRIPLET.repl  (AQP triplet bundle)")
+(print "================================================================")
+(print "")
+
+;;================================================================================
+(begin-tx "TX-TR-001 - issue 3 class-1 TF scores, bundle into a triplet")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-TR-001 · 01 · env-sigs + coin caps (3x smart STOA for score issuance) ====
+(print "--- [TX-TR-001 · 01 · env-sigs + coin caps] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+            ]
+        }
+    ]
+)
+;;==== TX-TR-001 · 02 · issue bronze/silver/gold TF scores + bundle triplet ====
+(print "--- [TX-TR-001 · 02 · issue 3 scores + IssueTriplet] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+    )
+    (let
+        (
+            (bronze-id:string (ref-U|DALOS::UDC_Makeid "TripBronzeScore"))
+            (silver-id:string (ref-U|DALOS::UDC_Makeid "TripSilverScore"))
+            (gold-id:string   (ref-U|DALOS::UDC_Makeid "TripGoldScore"))
+        )
+        ;; three distinct class-1 (DPTF) scores, all owned by patron (triplet requires same class+owner)
+        (print (format "<(bronze)> => \"{}\"" [(ref-TS02-C3::C_AQP-SCR|IssueTrueFungibleScore patron patron "TripBronzeScore" 24 2.0)]))
+        (print (format "<(silver)> => \"{}\"" [(ref-TS02-C3::C_AQP-SCR|IssueTrueFungibleScore patron patron "TripSilverScore" 24 2.0)]))
+        (print (format "<(gold)>   => \"{}\"" [(ref-TS02-C3::C_AQP-SCR|IssueTrueFungibleScore patron patron "TripGoldScore"   24 2.0)]))
+        ;; bundle the three into one immutable triplet (silver owner becomes triplet owner)
+        (print (ref-TS02-C3::C_AQP-SCR|IssueTriplet patron bronze-id silver-id gold-id))
+        (print "<<TX-TR-001>> IssueTrueFungibleScore x3 + IssueTriplet OK")
+    )
+)
+(print "===^^^===")
+(commit-tx)
+(print "")
+(print "=== END FILE [6.2.13]_AQP-TRIPLET.repl (IssueTrueFungibleScore + IssueTriplet) ===")

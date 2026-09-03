@@ -21,4 +21,5 @@
 (load "[6.2.10]_AQP-NEGATIVES.repl") ;; NEG  - IMC boundary + owner/state negatives (Track C)
 (load "[6.2.11]_AQP-SPLIT-MODE.repl") ;; SPLIT - dual reward-split mode toggle (D1-G2, task #89)
 (load "[6.2.12]_AQP-ANCHOR-TAIL.repl") ;; ANCHOR-TAIL - SetCommonDenominator + RotateOwnership (#79 Ph2)
+(load "[6.2.13]_AQP-TRIPLET.repl") ;; TRIPLET - IssueTrueFungibleScore + IssueTriplet (#79 Ph2)
 
