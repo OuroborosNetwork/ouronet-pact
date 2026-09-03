@@ -282,5 +282,55 @@
 )
 (print "===^^^===")
 (commit-tx)
+;;================================================================================
+(begin-tx "TX-VSTH-008 - RepurposeVested (nonce account-recovery): vest to AOZT, recover to patron")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-VSTH-008 · 01 · env-sigs (patron + STOA caps) ====
+(print "--- [TX-VSTH-008 · 01 · env-sigs] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+            ]
+        }
+    ]
+)
+;;==== TX-VSTH-008 · 02 · vest to AOZT, then RepurposeVested that nonce -> patron ====
+(print "--- [TX-VSTH-008 · 02 · vest + repurpose-vested] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (patron:string KST.ANHD)
+        (aozt:string KST.AOZT)
+        (ouro-id:string (ref-DALOS::UR_OuroborosID))
+    )
+    ;; vest 100 OURO to AOZT (patron owns OURO), creating a vested DPOF nonce held by AOZT
+    (ref-TS01-C2::C_VST|Vest patron patron aozt ouro-id 100.0 0 2592000 1)
+    ;; recover AOZT's vested nonce to the patron (read the actual nonce AOZT holds on the vested DPOF)
+    (let
+        (
+            (vested-ouro:string (ref-DPTF::UR_Vesting ouro-id))
+        )
+        (ref-TS01-C2::C_VST|RepurposeVested patron vested-ouro
+            (at 0 (ref-DPOF::URH_AccountNonces aozt vested-ouro)) aozt patron)
+    )
+    (print "<<TX-VSTH-008>> C_VST|Vest + C_VST|RepurposeVested (nonce account-recovery) OK")
+)
+(print "===^^^===")
+(commit-tx)
 (print "")
-(print "=== END FILE vst-harness.repl (16 VST ops covered) ===")
+(print "=== END FILE vst-harness.repl (17 VST ops covered) ===")
