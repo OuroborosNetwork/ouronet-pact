@@ -432,5 +432,56 @@
 )
 (print "===^^^===")
 (commit-tx)
+;;================================================================================
+(begin-tx "TX-VSTH-011 - RepurposeMerge: recover the patron's merged sleeping nonce to LUMY")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-VSTH-011 · 01 · env-sigs (patron + STOA caps) ====
+(print "--- [TX-VSTH-011 · 01 · env-sigs] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+            ]
+        }
+    ]
+)
+;;==== TX-VSTH-011 · 02 · RepurposeMerge the patron's merged sleeping nonce -> LUMY ====
+(print "--- [TX-VSTH-011 · 02 · repurpose-merge] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        (ouro-id:string (ref-DALOS::UR_OuroborosID))
+    )
+    ;; RepurposeMerge recovers >=2 nonces at once, so give the patron two fresh sleeping nonces
+    (ref-TS01-C2::C_VST|Sleep patron patron patron ouro-id 100.0 2592000)
+    (ref-TS01-C2::C_VST|Sleep patron patron patron ouro-id 100.0 2592000)
+    ;; recover all of the patron's sleeping nonces (>=2) to LUMY (account-recovery)
+    (let
+        (
+            (sleeping-ouro:string (ref-DPTF::UR_Sleeping ouro-id))
+        )
+        (ref-TS01-C2::C_VST|RepurposeMerge patron sleeping-ouro
+            (ref-DPOF::URH_AccountNonces patron sleeping-ouro) patron lumy)
+    )
+    (print "<<TX-VSTH-011>> C_VST|RepurposeMerge (multi-nonce account-recovery) OK")
+)
+(print "===^^^===")
+(commit-tx)
 (print "")
-(print "=== END FILE vst-harness.repl (19 VST ops covered) ===")
+(print "=== END FILE vst-harness.repl (20 VST ops covered) ===")
