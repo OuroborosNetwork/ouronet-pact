@@ -61,6 +61,8 @@
 (load "Stage_02/[6.1.5]_DEMIPAD.repl")
 ;;DPOF tail-op coverage — #79 Phase 2
 (load "Stage_02/[6.1.6]_DPOF.repl")
+;;DPSF tail-op coverage — #79 Phase 2
+(load "Stage_02/[6.1.7]_DPSF-UPDATES.repl")
 
 ;;CITIZEN DEPLOYER + EXECUTOR
 ;;FULL> Populate scripts — mass DPNF mint; ~minutes each (Nosferatu + Bloodshed worst offenders)
