@@ -31,16 +31,14 @@
 ;;P2>      DALOS admin-toggle + INFO-ZERO previews
 (load "Stage_01/[6.11]_INFO.repl")
 (load "Stage_01/[6.12]_DALOS-ADMIN.repl")
-;;P2-TODO> [6.4]_Admin — admin/rotation (contamination: verify vs canonical ANHD)
-;(load "Stage_01/[6.4]_Admin.repl")
-;;P2-TODO> [6.5]_DPOF / [6.6]_ATS — #12a: self-loaded by the Stage-2 AQP path; needs de-dup before ZALL
-;(load "Stage_01/[6.5]_DPOF.repl")
-;(load "Stage_01/[6.6]_ATS.repl")
-;;P2-TODO> VST / Dispenser / CODEX / PYTHIA — fold in + resolve any contamination
-;(load "Stage_01/[6.7]_VST.repl")
-;(load "Stage_01/[6.8]_Dispenser.repl")
-;(load "Stage_01/[6.9]_CODEX.repl")
-;(load "Stage_01/[6.10]_PYTHIA.repl")
+;;P2-NOTE> [6.4]_Admin rotates the canonical ANHD guard -> runs LAST (TERMINAL segment below).
+;;P2-NOTE> [6.5]_DPOF is covered via [6.2.4]_AQP-FVT-OF's self-load (issues MVST-98c486052a51);
+;;         loading it here too would re-issue MVST (dup-insert). [6.6]_ATS: see P2-TODO tail.
+;;P2>      VST / Dispenser / CODEX / PYTHIA
+(load "Stage_01/[6.7]_VST.repl")
+(load "Stage_01/[6.8]_Dispenser.repl")
+(load "Stage_01/[6.9]_CODEX.repl")
+(load "Stage_01/[6.10]_PYTHIA.repl")
 
 ;;==================================================================================
 ;; DEPLOY — Stage 2
@@ -67,9 +65,11 @@
 ;;==================================================================================
 ;; STAGE 2 — launchpad + STOAICO + populate (slow / contamination-sensitive)
 ;;==================================================================================
-;;P2-TODO> [5.3]_Launchpad — buy-flow + StoicPay (self-deploys StoicPay accts; verified green solo)
-;(load "Stage_02/[5.3]_Launchpad.repl")
-;;P2-TODO> [6.3]_STOAICO
+;;P2>      [5.3]_Launchpad — buy-flow + StoicPay (self-deploys StoicPay accts)
+(load "Stage_02/[5.3]_Launchpad.repl")
+;;P2-TODO> [6.3]_STOAICO — asserts ABSOLUTE conservation (emma+lumy wSTOA ==10,000,000) but the
+;;         shared canonical accounts KST.EMMA/KST.LUMY carry a ~0.012 wSTOA residue from earlier
+;;         suites in a full boot. Fold in after making its conservation delta-based (before/after).
 ;(load "Stage_02/[6.3]_STOAICO.repl")
 ;;P2-TODO> Populate* mass mint (~minutes each) — Nosferatu/Bloodshed/Bunnies
 ;(load "Stage_02/[5.1]_PopulateNosferatu.repl")
@@ -80,6 +80,13 @@
 ;; STAGE ZZ — DPL-UR + EXPLORER + DSP dispenser
 ;;==================================================================================
 ;;P2-TODO> (load "deploy-stagezz.repl")
+
+;;==================================================================================
+;; TERMINAL — destructive / ordering-sensitive suites (run LAST: they trash shared
+;; canonical fixtures that earlier suites depend on, so nothing may follow them).
+;;==================================================================================
+;;P2>      [6.4]_Admin — rotates the canonical ANHD account guard (must be terminal)
+(load "Stage_01/[6.4]_Admin.repl")
 
 (print "")
 (print "################################################################")
