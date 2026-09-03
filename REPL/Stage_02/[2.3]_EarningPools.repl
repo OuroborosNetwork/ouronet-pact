@@ -90,6 +90,18 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
+(begin-tx "TX-01 [1b] - RPS Module (reward engine, deploys before FVT)")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-01 [1b] - RPS Module · 01 · env-sigs] ---")
+(env-sigs
+  [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+(print "--- [TX-01 [1b] - RPS Module · 02 · load module] ---")
+(load "../../1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04_RPS.pact")
+(format "<<<<<<<RPS Costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(commit-tx)
+(print "")
 (begin-tx "TX-01 [2] - FVT Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")

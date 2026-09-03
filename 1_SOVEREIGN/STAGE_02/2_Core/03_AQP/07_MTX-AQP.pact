@@ -261,7 +261,7 @@
             )
             (fold (+) 0
                 (map
-                    (lambda (sid:string) (length (ref-FVT::URH_FvtPresentUsers (ref-SCR::UR_SCR|ScoreFvtLink sid))))
+                    (lambda (sid:string) (length (RPS.URH_FvtPresentUsers (ref-SCR::UR_SCR|ScoreFvtLink sid))))
                     score-ids))
         )
     )
@@ -289,7 +289,7 @@
                         )
                         (let
                             (
-                                (users:[string] (ref-FVT::URH_FvtPresentUsers fvt))
+                                (users:[string] (RPS.URH_FvtPresentUsers fvt))
                             )
                             (let
                                 (
@@ -305,7 +305,7 @@
                                             (
                                                 (slice:[string] (take (- hi lo) (drop (- lo seen-before) users)))
                                             )
-                                            (ref-FVT::XE_FvtSweepRecomputeChunk fvt member boost-class-id slice)
+                                            (RPS.XE_FvtSweepRecomputeChunk fvt member boost-class-id slice)
                                             {
                                             "seen"
                                             :
@@ -362,14 +362,14 @@
               (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                    (stale:[string] (ref-FVT::URH_FvtStalePresentUsers fvt-id))
+                    (stale:[string] (RPS.URH_FvtStalePresentUsers fvt-id))
                 )
                 (if (<= (length stale) N_FIX)
                     (let
                         (
                             (n:integer (length stale))
                         )
-                        (ref-FVT::XE_FvtFixUserChunk fvt-id reward-dptf-id stale)
+                        (RPS.XE_FvtFixUserChunk fvt-id reward-dptf-id stale)
                         (ref-IGNIS::C_Collect patron (ref-FVT::XB_FvtInject patron fvt-id reward-dptf-id amount))
                         (yield {"injected" : true})
                         (format "MTX Inject 1|2: fixed {} stale staker(s) and INJECTED {} {} (terminal)." [n amount reward-dptf-id])
@@ -378,7 +378,7 @@
                         (
                             (remaining:integer (- (length stale) N_FIX))
                         )
-                        (ref-FVT::XE_FvtFixUserChunk fvt-id reward-dptf-id (take N_FIX stale))
+                        (RPS.XE_FvtFixUserChunk fvt-id reward-dptf-id (take N_FIX stale))
                         (yield {"injected" : false})
                         (format "MTX Inject 1|2: fixed {} of {} stale — {} remain, continue to step 2." [N_FIX (length stale) remaining])
                     )
@@ -397,9 +397,9 @@
                             (
                                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                                 (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
-                                (stale:[string] (ref-FVT::URH_FvtStalePresentUsers fvt-id))
+                                (stale:[string] (RPS.URH_FvtStalePresentUsers fvt-id))
                             )
-                            (ref-FVT::XE_FvtFixUserChunk fvt-id reward-dptf-id stale)
+                            (RPS.XE_FvtFixUserChunk fvt-id reward-dptf-id stale)
                             (ref-IGNIS::C_Collect patron (ref-FVT::XB_FvtInject patron fvt-id reward-dptf-id amount))
                             (format "MTX Inject 2|2: fixed {} remaining stale staker(s) and INJECTED {} {}." [(length stale) amount reward-dptf-id])
                         )
