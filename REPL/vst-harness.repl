@@ -382,5 +382,55 @@
 )
 (print "===^^^===")
 (commit-tx)
+;;================================================================================
+(begin-tx "TX-VSTH-010 - Slumber: merge two of the patron's sleeping OURO nonces")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-VSTH-010 · 01 · env-sigs (patron + STOA caps) ====
+(print "--- [TX-VSTH-010 · 01 · env-sigs] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+            ]
+        }
+    ]
+)
+;;==== TX-VSTH-010 · 02 · sleep twice to patron, then Slumber (merge) the two nonces ====
+(print "--- [TX-VSTH-010 · 02 · sleep x2 + slumber] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (patron:string KST.ANHD)
+        (ouro-id:string (ref-DALOS::UR_OuroborosID))
+    )
+    ;; create two sleeping DPOF nonces held by the patron
+    (ref-TS01-C2::C_VST|Sleep patron patron patron ouro-id 100.0 2592000)
+    (ref-TS01-C2::C_VST|Sleep patron patron patron ouro-id 100.0 2592000)
+    ;; Slumber merges the patron's sleeping nonces on the sleeping DPOF into one
+    (let
+        (
+            (sleeping-ouro:string (ref-DPTF::UR_Sleeping ouro-id))
+        )
+        (ref-TS01-C2::C_VST|Slumber patron patron sleeping-ouro
+            (ref-DPOF::URH_AccountNonces patron sleeping-ouro))
+    )
+    (print "<<TX-VSTH-010>> C_VST|Sleep x2 + C_VST|Slumber (merge sleeping nonces) OK")
+)
+(print "===^^^===")
+(commit-tx)
 (print "")
-(print "=== END FILE vst-harness.repl (18 VST ops covered) ===")
+(print "=== END FILE vst-harness.repl (19 VST ops covered) ===")
