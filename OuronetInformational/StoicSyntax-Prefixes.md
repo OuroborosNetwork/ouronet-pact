@@ -45,6 +45,12 @@ A name is `PREFIX_Name` (or `PREFIX_Scope|Name`). The prefix is read left-to-rig
 
 **Positioning:** an `…x` auxiliary is placed **immediately below** the function that consumes it.
 
+**Bare prefix (no name).** A name that is **just the class prefix with no `_Name` after it** — the class letters
+alone, the `_` separator dropped because there's nothing to separate — e.g. `UR`, `P|A`, `UEV` — is a valid name
+and is coloured by its class exactly like the full form (`UR`→READ, `P|A`→ADMIN, `P|UEV`→ENFORCE). ⟨COLOUR⟩ The
+classifier matches a segment that equals a prefix **minus its trailing `_`**, so both `UR_Name` and the bare
+`UR` resolve to the same family. (Added 2026-09-03.)
+
 **Honesty rule:** the prefix reflects the function's **own** nature and its **heaviest reachable
 branch**, never its caller's class. A pure-compute helper used by a `URC_` is still `UC` (→ `UCx_`),
 because it does no reads. A conditionally-heavy function takes the heavy prefix (`URHC_`) — but we
@@ -743,3 +749,32 @@ describing what the unit is and what it is for (house style: one continued strin
 Sovereign modules/interfaces are **required**; citizen `@doc` is **optional / need-basis**. `canon_check` flags
 a module/interface with no `@doc` as a violation. (The emitter preserves an existing `@doc`; it does not invent
 one — authoring is manual, after reading the unit.)
+
+### 7.16 Vertical `let` / paren layout (human-readable close) — amendment 2026-09-03
+Binding forms — `let`, `let*`, `with-capability`, `with-read`, `with-default-read`, `bind`, `with-capability`
+recipes — are laid out **fully vertically**, exactly like any other function; **never** collapsed inline and
+**never** with the trailing parens crammed onto one line. The closing parens are **de-indented one per line** so
+each `)` sits directly under the form it closes (the "staircase" close), making the block human-readable.
+
+**Canonical (the `UEV_Glyph` shape):**
+```
+(defun UEV_Glyph (account:string)
+    (let
+        (
+            (ref-U|GLYPHS:module{UtilityDalosGlyphsV3} U|DALOS)
+        )
+        (ref-U|GLYPHS::GLYPH|UEV_DalosAccount account)
+    )
+)
+```
+- `let` on its own line; the binding-list `(` on its **own** indented line; **one binding per line**; the
+  binding-list `)` on its own line; the body indented under it; then each closing `)` on its own line,
+  dedenting to align with its opener.
+
+**Non-canonical (forbidden):** `(let ((proto (UC_GuardProtocol g)))` with the body's trailing parens ending a
+line as `… [proto]))))`  — inline binding list + crammed closer. Every real `let` must be expanded to the
+staircase form above.
+
+*Status:* rule recorded now; the **whole-codebase strip** of these inline/crammed `let` blocks is a tracked
+to-do (a paren-layout normalizer pass — AST-level, beyond the current whitespace-only aligner). `canon_check`
+does not yet flag it.
