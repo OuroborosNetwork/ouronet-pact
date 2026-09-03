@@ -143,10 +143,76 @@
 (print "")
 
 ;;================================================================================
+;;================================================================================
+(begin-tx "TX-NF-003 - DPNF native-nonce updates (nos=true = native)")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-NF-003 · 01 · env-sigs (caps) ====
+(print "--- [TX-NF-003 · 01 · env-sigs] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+;;==== TX-NF-003 · 02 · updates ====
+(print "--- [TX-NF-003 · 02 · updates] ---")
+(let
+    (
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (id:string "CNF-98c486052a51")
+        (patron:string KST.ANHD)
+        (type:object{DpdcUdcV2.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd2:object{DpdcUdcV2.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 5.0 "Updated" "Updated nonce" (ref-DPDC-UDC::UDC_NoMetaData) type
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
+            )
+        )
+    )
+    ;; bulk update native nonces 1..2 (nos=true → native, not fragment)
+    (ref-TS02-C2::C_DPNF|UpdateNonces patron id patron [1 2] true [nd2 nd2])
+    ;; single-field native updates (nos=true)
+    (ref-TS02-C2::C_DPNF|UpdateNonceIgnisRoyalty patron id patron 3 true 2.0)
+    (ref-TS02-C2::C_DPNF|RemoveNonceScore patron id patron 4 true)
+    (print "<<TX-NF-003>> DPNF UpdateNonces + UpdateNonceIgnisRoyalty + RemoveNonceScore executed OK")
+)
+(print "===^^^===")
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
-(print "=== END FILE [6.1.4]_DPDC-NF.repl (batch 1: issue/create + role toggles + role moves) ===")
-;; TODO batch 2 (#100): UpgradeBranding (needs STOA fee caps), UpdateNonces/UpdateNonce*/
-;;   RemoveNonceScore (fragmentation-path gate), Respawn/Burn, BulkTransfer, Wipe{Nonce,Clean,
-;;   Dirty,Heavy,Pure}, sets (Define*/Rename/Toggle/UpdateSetNonce*/RemoveSetNonceScore/
-;;   EnableSetClassFragmentation), fragments (Merge/Repurpose).
+
+;;================================================================================
+(begin-tx "TX-NF-004 - DPNF burn / respawn / bulk-transfer")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-NF-004 · 01 · env-sigs (caps) ====
+(print "--- [TX-NF-004 · 01 · env-sigs] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+;;==== TX-NF-004 · 02 · burn / respawn / transfer ====
+(print "--- [TX-NF-004 · 02 · burn / respawn / transfer] ---")
+(let
+    (
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (id:string "CNF-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+    )
+    ;; bulk-transfer nonces 5 and 6 (amount 1 each) to EMMA (single receiver)
+    (ref-TS02-C2::C_DPNF|BulkTransfer patron id [[5 6]] [[1 1]] patron [emma] false)
+    (map print
+        [
+            (expect "<<TX-NF-004>> EMMA holds NFT nonce 6 after bulk-transfer" 1 (ref-DPDC::UR_AccountNonceSupply emma id false 6))
+            ""
+        ]
+    )
+    ;; NOTE (batch 3): C_DPNF|Burn/Respawn have a not-yet-pinned precondition on C_BurnNFT
+    ;; (role/flag/state) — deferred with wipes/sets/fragments.
+)
+(print "===^^^===")
+(commit-tx)
+(print "")
+(print "=== END FILE [6.1.4]_DPDC-NF.repl (batches 1-2) ===")
+;; TODO batch 3 (#100): UpgradeBranding (STOA fee caps), Wipe{Nonce,Clean,Dirty,Heavy,Pure},
+;;   sets (DefineCompositeSet/DefineHybridSet/RenameSet/ToggleSet/EnableSetClassFragmentation,
+;;   UpdateSetNonce*/RemoveSetNonceScore), fragments (MergeFragments/RepurposeFragments).
 (print "")
