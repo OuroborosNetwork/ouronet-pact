@@ -155,5 +155,47 @@
 )
 (print "===^^^===")
 (commit-tx)
+;;================================================================================
+(begin-tx "TX-VSTH-005 - ToggleTransferRole on frozen / reserved / sleeping special tokens")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-VSTH-005 · 01 · env-sigs (patron + STOA caps) ====
+(print "--- [TX-VSTH-005 · 01 · env-sigs] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+            ]
+        }
+    ]
+)
+;;==== TX-VSTH-005 · 02 · toggle transfer roles on the special tokens ====
+(print "--- [TX-VSTH-005 · 02 · toggle transfer roles] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (patron:string KST.ANHD)
+        (ouro-id:string (ref-DALOS::UR_OuroborosID))
+    )
+    ;; grant the patron the transfer role on each special (frozen/reserved/sleeping) OURO token
+    (ref-TS01-C2::C_VST|ToggleTransferRoleFrozenDPTF patron (ref-DPTF::UR_Frozen ouro-id) patron true)
+    (ref-TS01-C2::C_VST|ToggleTransferRoleReservedDPTF patron (ref-DPTF::UR_Reservation ouro-id) patron true)
+    (ref-TS01-C2::C_VST|ToggleTransferRoleSleepingDPOF patron (ref-DPTF::UR_Sleeping ouro-id) patron true)
+    (print "<<TX-VSTH-005>> ToggleTransferRole Frozen/Reserved/Sleeping OK")
+)
+(print "===^^^===")
+(commit-tx)
 (print "")
-(print "=== END FILE vst-harness.repl (Vest/Reserve/Unvest/Sleep/Freeze/Hibernate/Unsleep/Awake) ===")
+(print "=== END FILE vst-harness.repl (14 VST ops covered) ===")
