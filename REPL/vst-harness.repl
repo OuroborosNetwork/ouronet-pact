@@ -1,0 +1,69 @@
+;;
+;; REPL/vst-harness.repl — ISOLATED VST-lifecycle coverage harness (#79 Phase 2)
+;;   Standalone (boot → test → discard): boots Stage 0 + Stage 1, then exercises the uncovered VST
+;;   client ops that mutate shared financial state (lock funds), which is why they live here rather
+;;   than in the shared Z.repl green-gate. Reuses OURO (patron-owned, boot-linked for vesting +
+;;   reservation). Run:  cd REPL && pact vst-harness.repl
+;;
+(load "Stage00_Sanboxes.repl")
+(load "Stage01_Tester.repl")
+
+(print "")
+(print "================================================================")
+(print "FILE  REPL/vst-harness.repl  (isolated VST lifecycle)")
+(print "================================================================")
+(print "")
+
+;;================================================================================
+(begin-tx "TX-VSTH-001 - Vest + Reserve on OURO (isolated, funds may lock)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-VSTH-001 · 01 · env-sigs (patron) ====
+(print "--- [TX-VSTH-001 · 01 · env-sigs] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+;;==== TX-VSTH-001 · 02 · Vest (standalone) + Reserve (open then reserve) ====
+(print "--- [TX-VSTH-001 · 02 · vest / reserve] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (patron:string KST.ANHD)
+        (ouro-id:string (ref-DALOS::UR_OuroborosID))
+    )
+    ;; Vest: patron owns OURO (CAP_Owner) — vest 100 OURO to the patron over 30 days, single milestone
+    (ref-TS01-C2::C_VST|Vest patron patron patron ouro-id 100.0 0 2592000 1)
+    ;; Reserve: open reservation on OURO first (RESERVE cap gates on UR_IzReservationOpen), then reserve
+    (ref-TS01-C1::C_DPTF|ToggleReservation patron ouro-id true)
+    (ref-TS01-C2::C_VST|Reserve patron patron ouro-id 100.0)
+    (print "<<TX-VSTH-001>> C_VST|Vest + ToggleReservation + C_VST|Reserve OK")
+)
+(print "===^^^===")
+(commit-tx)
+;;================================================================================
+(begin-tx "TX-VSTH-002 - Unvest the matured OURO vesting (time advanced past duration)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;; advance block-time well past the 30-day vesting duration so the milestone matures
+(env-chain-data { "block-time": (time "2030-01-01T00:00:00Z") })
+;;==== TX-VSTH-002 · 01 · env-sigs (patron) ====
+(print "--- [TX-VSTH-002 · 01 · env-sigs] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+;;==== TX-VSTH-002 · 02 · Unvest ====
+(print "--- [TX-VSTH-002 · 02 · unvest matured position] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (patron:string KST.ANHD)
+    )
+    ;; dpof = UR_Vesting(OURO) — unvest the first vested nonce (now matured)
+    (ref-TS01-C2::C_VST|Unvest patron patron (ref-DPTF::UR_Vesting (ref-DALOS::UR_OuroborosID)) 1)
+    (print "<<TX-VSTH-002>> C_VST|Unvest (matured) OK")
+)
+(print "===^^^===")
+(commit-tx)
+(print "")
+(print "=== END FILE vst-harness.repl (Vest/Reserve/Unvest covered) ===")
