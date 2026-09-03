@@ -241,5 +241,46 @@
 )
 (print "===^^^===")
 (commit-tx)
+;;================================================================================
+(begin-tx "TX-VSTH-007 - RepurposeReserved (account-recovery): recover LUMY's OURO to AOZT")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-VSTH-007 · 01 · env-sigs (patron + STOA caps) ====
+(print "--- [TX-VSTH-007 · 01 · env-sigs] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+            ]
+        }
+    ]
+)
+;;==== TX-VSTH-007 · 02 · RepurposeReserved LUMY -> AOZT ====
+(print "--- [TX-VSTH-007 · 02 · repurpose-reserved] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        (aozt:string KST.AOZT)
+        (ouro-id:string (ref-DALOS::UR_OuroborosID))
+    )
+    ;; LUMY holds the 100 OURO re-minted by TX-VSTH-006; recover it to AOZT (OURO has a reservation link)
+    (ref-TS01-C2::C_VST|RepurposeReserved patron ouro-id lumy aozt)
+    (print "<<TX-VSTH-007>> C_VST|RepurposeReserved (account-recovery) OK")
+)
+(print "===^^^===")
+(commit-tx)
 (print "")
-(print "=== END FILE vst-harness.repl (15 VST ops covered) ===")
+(print "=== END FILE vst-harness.repl (16 VST ops covered) ===")
