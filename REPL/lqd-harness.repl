@@ -4,7 +4,7 @@
 ;;   DPTF is never deployed), so this harness FIRST stands up that token exactly the way the boot
 ;;   stands up wrapped-stoa-id (issue DPTF via the DALOS SC + acquire-module-admin + config update +
 ;;   deploy the liquid-SC account), THEN funds the patron's Stoa address with UrStoa from the genesis
-;;   foundation and covers C_LQD|WrapUrStoa + C_LQD|UnwrapUrStoa. Run: cd REPL && pact lqd-harness.repl
+;;   foundation and covers LQD|C_WrapUrStoa + LQD|C_UnwrapUrStoa. Run: cd REPL && pact lqd-harness.repl
 ;;
 (load "Stage00_Sanboxes.repl")
 (load "Stage01_Tester.repl")
@@ -58,14 +58,14 @@
     (let
         (
             (ur-stoa-id:string
-                (at 0 (ref-TS01-C1::C_DPTF|Issue patron dalos
+                (at 0 (ref-TS01-C1::DPTF|C_Issue patron dalos
                     ["DalosUrStoa"] ["DUK"] [24] [true] [true] [true] [false] [false] [false])))
         )
         ;; register it as the canonical ur-stoa-id (same acquire-module-admin + config-update the boot uses)
         (acquire-module-admin ouronet-ns.DALOS)
         (update DALOS.DALOS|PropertiesTable info { "ur-stoa-id" : ur-stoa-id })
         ;; deploy the liquid smart account's holding account for the wrapped-UrStoa token
-        (ref-TS01-A::A_DPTF|DeployAccount patron ur-stoa-id liquid)
+        (ref-TS01-A::DPTF|A_DeployAccount patron ur-stoa-id liquid)
         (print (format "<(wrapped-UrStoa deployed)> ur-stoa-id => {}" [ur-stoa-id]))
     )
 )
@@ -122,10 +122,10 @@
     ;; create the liquid SC's UrStoa account (WrapUrStoa transfers UrStoa into it; boot never created it)
     (ref-ur-coin::C_UR|CreateAccount (LIQUID.GOV|LIQUID|SC_STOA-NAME) (LIQUID.GOV|LIQUID|GUARD))
     ;; WrapUrStoa: pulls UrStoa from the patron's Stoa addr, mints Ouronet wrapped-UrStoa to the patron
-    (ref-TS01-C2::C_LQD|WrapUrStoa patron patron 500.0)
+    (ref-TS01-C2::LQD|C_WrapUrStoa patron patron 500.0)
     ;; UnwrapUrStoa: reverse — burns wrapped-UrStoa, returns UrStoa to the patron's Stoa addr
-    (ref-TS01-C2::C_LQD|UnwrapUrStoa patron patron 500.0)
-    (print "<<TX-LQD-001>> C_UR|TransferAnew(fund) + C_LQD|WrapUrStoa + C_LQD|UnwrapUrStoa OK")
+    (ref-TS01-C2::LQD|C_UnwrapUrStoa patron patron 500.0)
+    (print "<<TX-LQD-001>> C_UR|TransferAnew(fund) + LQD|C_WrapUrStoa + LQD|C_UnwrapUrStoa OK")
 )
 (print "===^^^===")
 (commit-tx)

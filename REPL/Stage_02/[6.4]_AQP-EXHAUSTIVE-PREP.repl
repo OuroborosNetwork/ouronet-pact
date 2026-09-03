@@ -27,14 +27,14 @@
             { "key": "PK_Lumy", "caps": [] }
         ]
     )
-    (ref-TS02-C1::C_DPSF|MorphEquity patron patron edh-id 1 20000 6)
+    (ref-TS02-C1::DPSF|C_MorphEquity patron patron edh-id 1 20000 6)
     (let
         (
             (anhd-pre:integer (ref-DPDC::UR_AccountNonceSupply patron edh-id true 6))
             (xfer:integer (/ anhd-pre 2))
         )
         (enforce (> anhd-pre 1) "TX-AQP-P01: need >1 tier-6 package units to split 50/50")
-        (ref-TS02-C1::C_DPSF|TransferNonce patron edh-id patron lumy 6 xfer false)
+        (ref-TS02-C1::DPSF|C_TransferNonce patron edh-id patron lumy 6 xfer false)
         (let
             (
                 (anhd-supply:integer (ref-DPDC::UR_AccountNonceSupply patron edh-id true 6))
@@ -75,7 +75,7 @@
             { "key": "PK_Lumy", "caps": [] }
         ]
     )
-    (ref-TS02-C1::C_DPSF|TransferNonce patron dhcd-id patron lumy stake-nonce 400 false)
+    (ref-TS02-C1::DPSF|C_TransferNonce patron dhcd-id patron lumy stake-nonce 400 false)
     (let
         (
             (anhd-supply:integer (ref-DPDC::UR_AccountNonceSupply patron dhcd-id true stake-nonce))

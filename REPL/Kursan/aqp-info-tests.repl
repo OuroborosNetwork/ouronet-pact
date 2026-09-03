@@ -4,7 +4,7 @@
 ;; AQP-INFO cost-preview verification. For each AQP-<MOD>|INFO_* function, assert its
 ;; reported cost (ignis-full / stoa-full) equals the EXACT source the execution bills
 ;; (the GAS| constant read cross-module, or UR_UsagePrice tier × multiplier). Billing is
-;; enabled (A_DALOS|IgnisToggle) so the magnitudes are the real, non-subsidised numbers.
+;; enabled (DALOS|A_IgnisToggle) so the magnitudes are the real, non-subsidised numbers.
 ;;
 ;; Procedure: OuronetInformational/skills/aqp-info-module-procedure.md
 ;; ================================================================
@@ -76,7 +76,7 @@
                 ;; the account-specific need is discount × full (non-negative, ≤ full)
                 (expect "<<ANK>> TF issue ignis-need ≤ full" true (<= (at "ignis-need" (at "ignis" i-tf-link)) 1000.0))
                 (expect "<<ANK>> preview carries the execution function name in pre-text" true
-                    (contains "Executes via TS02-C3.C_AQP-ANK|IssueTrueFungibleAnchor." (at "pre-text" i-tf-link)))
+                    (contains "Executes via TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor." (at "pre-text" i-tf-link)))
             ]
         )
     )

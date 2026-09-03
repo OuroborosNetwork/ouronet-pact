@@ -370,7 +370,7 @@
                 (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
                 (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
             )
-            (ref-TS02-C2::C_DPNF|Issue
+            (ref-TS02-C2::DPNF|C_Issue
                 patron
                 collection-owner collection-creator "DemiourgosHoldingsBloodshed" "DHB"
                 true true true true true true true true
@@ -394,7 +394,7 @@
                 (zd:object{DpdcUdcV2.URI|Data} (ref-DPDC-UDC::UDC_ZeroURI|Data))
                 ;;
             )
-            (ref-TS02-C2::C_DPNF|Create
+            (ref-TS02-C2::DPNF|C_Create
                 patron dhb
                 (fold
                     (lambda

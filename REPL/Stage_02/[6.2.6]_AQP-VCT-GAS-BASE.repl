@@ -8,7 +8,7 @@
 (print "================================================================")
 (print "Legend: <<VCT-GAS-*>> legs/gas/fits-2M; <<VCT-GAS-DPTF-BULK>> bulk receivers; <<VCT-GAS-OF-7x>> multi-nonce.")
 (print "Source: ;;|| NEXT > between txs; VCT-GAS module holds probe helpers + max table.")
-(print "REPL tests: C_Vacate*Legs + C_DPTF|BulkTransfer + 7-owner multi-nonce OF vs env-gaslimit 2000000.")
+(print "REPL tests: C_Vacate*Legs + DPTF|C_BulkTransfer + 7-owner multi-nonce OF vs env-gaslimit 2000000.")
 (print "")
 ;;
 (begin-tx "VCT-GAS-00 - VCT-GAS probe module + synth account deploy")
@@ -88,7 +88,7 @@
                 (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 (acct:string (UC_SynthAccount idx))
             )
-            (ref-TS01-A::A_DALOS|DeployStandardAccount acct SYNTH-GUARD (UC_StoaForIdx idx) acct)
+            (ref-TS01-A::DALOS|A_DeployStandardAccount acct SYNTH-GUARD (UC_StoaForIdx idx) acct)
         )
     )
     (defun XI_DeploySynthRange:string (start:integer count:integer)
@@ -114,28 +114,28 @@
                 (asset-id:string (at "asset-id" payload))
             )
             (if (= kind AQP-VCT.VACATE-KIND-TF)
-                (ref-TS02-C3::CCp_AQP-POOL|BatchVacateTrueFungible
+                (ref-TS02-C3::AQP-POOL|CCp_BatchVacateTrueFungible
                     patron pool-id asset-id
                     (at "owner-ids" payload)
                     (at "beneficiary-ids" payload)
                     (at "tf-amounts" payload)
                 )
                 (if (= kind AQP-VCT.VACATE-KIND-OF)
-                    (ref-TS02-C3::CCp_AQP-POOL|BatchVacateOrtoFungible
+                    (ref-TS02-C3::AQP-POOL|CCp_BatchVacateOrtoFungible
                         patron pool-id asset-id
                         (at "owner-ids" payload)
                         (at "beneficiary-ids" payload)
                         (at "nonces-array" payload)
                     )
                     (if (= kind AQP-VCT.VACATE-KIND-DPSF)
-                        (ref-TS02-C3::CCp_AQP-POOL|BatchVacateCollectables
+                        (ref-TS02-C3::AQP-POOL|CCp_BatchVacateCollectables
                             patron pool-id asset-id true
                             (at "owner-ids" payload)
                             (at "beneficiary-ids" payload)
                             (at "nonces-array" payload)
                             (at "amounts-array" payload)
                         )
-                        (ref-TS02-C3::CCp_AQP-POOL|BatchVacateCollectables
+                        (ref-TS02-C3::AQP-POOL|CCp_BatchVacateCollectables
                             patron pool-id asset-id false
                             (at "owner-ids" payload)
                             (at "beneficiary-ids" payload)
@@ -185,8 +185,8 @@
             (fold
                 (lambda (acc:bool idx:integer)
                     (let ((owner:string (UC_SynthAccount idx)))
-                        (ref-TS02-C1::C_DPSF|TransferNonces patron dpsf-id patron owner [nonce] [1] false)
-                        (ref-TS02-C3::CC_AQP-POOL|StakeSemiFungibleCollectable patron pool-id owner owner dpsf-id [nonce])
+                        (ref-TS02-C1::DPSF|C_TransferNonces patron dpsf-id patron owner [nonce] [1] false)
+                        (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id owner owner dpsf-id [nonce])
                     )
                     true
                 )
@@ -243,8 +243,8 @@
             (fold
                 (lambda (acc:bool idx:integer)
                     (let ((owner:string (UC_SynthAccount idx)))
-                        (ref-TS01-C1::C_DPTF|Transfer patron ouro-id patron owner stake-amt true)
-                        (ref-TS02-C3::CC_AQP-POOL|StakeTrueFungible patron pool-id owner owner ouro-id stake-amt)
+                        (ref-TS01-C1::DPTF|C_Transfer patron ouro-id patron owner stake-amt true)
+                        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner owner ouro-id stake-amt)
                     )
                     true
                 )
@@ -300,28 +300,28 @@
                 (ref-VCT:module{AcquisitionVacateV2} AQP-VCT)
             )
             (if (not (ref-DPOF::UR_R-AddQuantity dpof-id patron))
-                (ref-TS01-C1::C_DPOF|ToggleAddQuantityRole patron dpof-id patron true)
+                (ref-TS01-C1::DPOF|C_ToggleAddQuantityRole patron dpof-id patron true)
                 true
             )
             (if (ref-DPOF::UR_R-Frozen dpof-id patron)
-                (ref-TS01-C1::C_DPOF|ToggleFreezeAccount patron dpof-id patron false)
+                (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id patron false)
                 true
             )
             (fold
                 (lambda (acc:bool idx:integer)
                     (let ((owner:string (UC_SynthAccount idx)))
-                        (ref-TS01-C1::C_DPOF|Mint patron dpof-id patron 1.0 [{"vct-gas": true}])
+                        (ref-TS01-C1::DPOF|C_Mint patron dpof-id patron 1.0 [{"vct-gas": true}])
                         (let
                             (
                                 (patron-nonces:[integer] (ref-DPOF::URH_AccountNonces patron dpof-id))
                                 (mint-nonce:integer (at (- (length patron-nonces) 1) patron-nonces))
                             )
-                            (ref-TS01-C1::C_DPOF|Transfer patron dpof-id [mint-nonce] patron owner true)
+                            (ref-TS01-C1::DPOF|C_Transfer patron dpof-id [mint-nonce] patron owner true)
                             (if (ref-DPOF::UR_R-Frozen dpof-id owner)
-                                (ref-TS01-C1::C_DPOF|ToggleFreezeAccount patron dpof-id owner false)
+                                (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id owner false)
                                 true
                             )
-                            (ref-TS02-C3::CC_AQP-POOL|StakeOrtoFungible patron pool-id owner owner dpof-id [mint-nonce])
+                            (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron pool-id owner owner dpof-id [mint-nonce])
                         )
                     )
                     true
@@ -378,7 +378,7 @@
                 (source:string KST.EMMA)
                 (pre-count:integer (length (ref-DPDC::URH_AccountNonces source dpnf-id false)))
             )
-            (ref-TS02-C2::C_DPNF|Create patron dpnf-id (UC_DpnfNonceRows n))
+            (ref-TS02-C2::DPNF|C_Create patron dpnf-id (UC_DpnfNonceRows n))
             (let
                 (
                     (picked:[integer]
@@ -395,8 +395,8 @@
                                 (owner:string (UC_SynthAccount idx))
                                 (nonce:integer (at (- idx 1) picked))
                             )
-                            (ref-TS02-C2::C_DPNF|TransferNonces patron dpnf-id source owner [nonce] [1] false)
-                            (ref-TS02-C3::CC_AQP-POOL|StakeNonFungibleCollectable patron pool-id owner owner dpnf-id [nonce])
+                            (ref-TS02-C2::DPNF|C_TransferNonces patron dpnf-id source owner [nonce] [1] false)
+                            (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id owner owner dpnf-id [nonce])
                         )
                         true
                     )
@@ -496,9 +496,9 @@
                 (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
                 (fvt-id:string (ref-U|DALOS::UDC_Makeid (format "VctGasDpsfFvt{}" [n])))
             )
-            (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name dpsf-id 3)
-            (ref-TS02-C3::C_AQP-SCR|IssueSemiFungibleScore patron patron score-name 3 true)
-            (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id (ref-U|DALOS::UDC_Makeid score-name))
+            (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpsf-id 3)
+            (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron patron score-name 3 true)
+            (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id (ref-U|DALOS::UDC_Makeid score-name))
             (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron (ref-U|DALOS::UDC_Makeid score-name) ouro-id)
             (let
                 (
@@ -524,9 +524,9 @@
                 (fvt-id:string (ref-U|DALOS::UDC_Makeid (format "VctGasTfFvt{}" [n])))
                 (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
             )
-            (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name ouro-id 1)
-            (ref-TS02-C3::C_AQP-SCR|IssueTrueFungibleScore patron patron score-name 12 1.0)
-            (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)
+            (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name ouro-id 1)
+            (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron score-name 12 1.0)
+            (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
             (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
             (let
                 (
@@ -551,9 +551,9 @@
                 (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
                 (fvt-id:string (ref-U|DALOS::UDC_Makeid (format "VctGasOfFvt{}" [n])))
             )
-            (ref-TS02-C3::C_AQP-SCR|IssueOrtoFungibleScore patron patron score-name 12 1.0 1.0)
-            (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name dpof-id 2)
-            (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id (ref-U|DALOS::UDC_Makeid score-name))
+            (ref-TS02-C3::AQP-SCR|C_IssueOrtoFungibleScore patron patron score-name 12 1.0 1.0)
+            (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpof-id 2)
+            (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id (ref-U|DALOS::UDC_Makeid score-name))
             (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron (ref-U|DALOS::UDC_Makeid score-name) ouro-id)
             (let
                 (
@@ -578,9 +578,9 @@
                 (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
                 (fvt-id:string (ref-U|DALOS::UDC_Makeid (format "VctGasDpnfFvt{}" [n])))
             )
-            (ref-TS02-C3::C_AQP-SCR|IssueNonFungibleScore patron patron score-name 6 0)
-            (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name dpnf-id 4)
-            (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id (ref-U|DALOS::UDC_Makeid score-name))
+            (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron patron score-name 6 0)
+            (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpnf-id 4)
+            (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id (ref-U|DALOS::UDC_Makeid score-name))
             (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron (ref-U|DALOS::UDC_Makeid score-name) ouro-id)
             (let
                 (
@@ -606,11 +606,11 @@
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
             )
             (if (not (ref-DPOF::UR_R-AddQuantity dpof-id patron))
-                (ref-TS01-C1::C_DPOF|ToggleAddQuantityRole patron dpof-id patron true)
+                (ref-TS01-C1::DPOF|C_ToggleAddQuantityRole patron dpof-id patron true)
                 true
             )
             (if (ref-DPOF::UR_R-Frozen dpof-id patron)
-                (ref-TS01-C1::C_DPOF|ToggleFreezeAccount patron dpof-id patron false)
+                (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id patron false)
                 true
             )
             true
@@ -623,15 +623,15 @@
                 (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
             )
-            (ref-TS01-C1::C_DPOF|Mint patron dpof-id patron 1.0 [{"vct-gas": true}])
+            (ref-TS01-C1::DPOF|C_Mint patron dpof-id patron 1.0 [{"vct-gas": true}])
             (let
                 (
                     (patron-nonces:[integer] (ref-DPOF::URH_AccountNonces patron dpof-id))
                     (mint-nonce:integer (at (- (length patron-nonces) 1) patron-nonces))
                 )
-                (ref-TS01-C1::C_DPOF|Transfer patron dpof-id [mint-nonce] patron owner true)
+                (ref-TS01-C1::DPOF|C_Transfer patron dpof-id [mint-nonce] patron owner true)
                 (if (ref-DPOF::UR_R-Frozen dpof-id owner)
-                    (ref-TS01-C1::C_DPOF|ToggleFreezeAccount patron dpof-id owner false)
+                    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id owner false)
                     true
                 )
                 mint-nonce
@@ -668,7 +668,7 @@
                                 )
                             )
                         )
-                        (ref-TS02-C3::CC_AQP-POOL|StakeOrtoFungible patron pool-id owner owner dpof-id picked)
+                        (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron pool-id owner owner dpof-id picked)
                     )
                     true
                 )
@@ -717,9 +717,9 @@
                 (fvt-id:string (ref-U|DALOS::UDC_Makeid (format "VctGasOf7xFvt{}{}" [owner-count nonces-per-owner])))
                 (staked-total:integer (* owner-count nonces-per-owner))
             )
-            (ref-TS02-C3::C_AQP-SCR|IssueOrtoFungibleScore patron patron score-name 12 1.0 1.0)
-            (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name dpof-id 2)
-            (ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id (ref-U|DALOS::UDC_Makeid score-name))
+            (ref-TS02-C3::AQP-SCR|C_IssueOrtoFungibleScore patron patron score-name 12 1.0 1.0)
+            (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpof-id 2)
+            (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id (ref-U|DALOS::UDC_Makeid score-name))
             (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron (ref-U|DALOS::UDC_Makeid score-name) ouro-id)
             (let
                 (
@@ -750,7 +750,7 @@
                 (amounts:[decimal] (UC_MakeDecimals receiver-count amt))
                 (g-before:integer (env-gas))
             )
-            (ref-TS01-C1::C_DPTF|BulkTransfer patron ouro-id patron receivers amounts)
+            (ref-TS01-C1::DPTF|C_BulkTransfer patron ouro-id patron receivers amounts)
             (- (env-gas) g-before)
         )
     )
@@ -772,8 +772,8 @@
             (fold
                 (lambda (acc:bool idx:integer)
                     (let ((owner:string (UC_SynthAccount idx)))
-                        (ref-TS01-C1::C_DPTF|Transfer patron ouro-id patron owner stake-amt true)
-                        (ref-TS02-C3::CC_AQP-POOL|StakeTrueFungible patron pool-id owner owner ouro-id stake-amt)
+                        (ref-TS01-C1::DPTF|C_Transfer patron ouro-id patron owner stake-amt true)
+                        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner owner ouro-id stake-amt)
                     )
                     true
                 )
@@ -794,18 +794,18 @@
             (fold
                 (lambda (acc:bool idx:integer)
                     (let ((owner:string (UC_SynthAccount idx)))
-                        (ref-TS01-C1::C_DPOF|Mint patron dpof-id patron 1.0 [{"vct-gas-fv": true}])
+                        (ref-TS01-C1::DPOF|C_Mint patron dpof-id patron 1.0 [{"vct-gas-fv": true}])
                         (let
                             (
                                 (patron-nonces:[integer] (ref-DPOF::URH_AccountNonces patron dpof-id))
                                 (mint-nonce:integer (at (- (length patron-nonces) 1) patron-nonces))
                             )
-                            (ref-TS01-C1::C_DPOF|Transfer patron dpof-id [mint-nonce] patron owner true)
+                            (ref-TS01-C1::DPOF|C_Transfer patron dpof-id [mint-nonce] patron owner true)
                             (if (ref-DPOF::UR_R-Frozen dpof-id owner)
-                                (ref-TS01-C1::C_DPOF|ToggleFreezeAccount patron dpof-id owner false)
+                                (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id owner false)
                                 true
                             )
-                            (ref-TS02-C3::CC_AQP-POOL|StakeOrtoFungible patron pool-id owner owner dpof-id [mint-nonce])
+                            (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron pool-id owner owner dpof-id [mint-nonce])
                         )
                     )
                     true
@@ -826,8 +826,8 @@
             (fold
                 (lambda (acc:bool idx:integer)
                     (let ((owner:string (UC_SynthAccount idx)))
-                        (ref-TS02-C1::C_DPSF|TransferNonces patron dpsf-id patron owner [nonce] [1] false)
-                        (ref-TS02-C3::CC_AQP-POOL|StakeSemiFungibleCollectable patron pool-id owner owner dpsf-id [nonce])
+                        (ref-TS02-C1::DPSF|C_TransferNonces patron dpsf-id patron owner [nonce] [1] false)
+                        (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id owner owner dpsf-id [nonce])
                     )
                     true
                 )
@@ -846,7 +846,7 @@
                 (source:string KST.EMMA)
                 (pre-count:integer (length (ref-DPDC::URH_AccountNonces source dpnf-id false)))
             )
-            (ref-TS02-C2::C_DPNF|Create patron dpnf-id (UC_DpnfNonceRows n))
+            (ref-TS02-C2::DPNF|C_Create patron dpnf-id (UC_DpnfNonceRows n))
             (let
                 (
                     (picked:[integer]
@@ -863,8 +863,8 @@
                                 (owner:string (UC_SynthAccount idx))
                                 (nonce:integer (at (- idx 1) picked))
                             )
-                            (ref-TS02-C2::C_DPNF|TransferNonces patron dpnf-id source owner [nonce] [1] false)
-                            (ref-TS02-C3::CC_AQP-POOL|StakeNonFungibleCollectable patron pool-id owner owner dpnf-id [nonce])
+                            (ref-TS02-C2::DPNF|C_TransferNonces patron dpnf-id source owner [nonce] [1] false)
+                            (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id owner owner dpnf-id [nonce])
                         )
                         true
                     )
@@ -932,8 +932,8 @@
             }
         ]
     )
-    (print (format "<(C_AQP-ANK|IssueTrueFungibleAnchor VctGasTfAnchor)> => \"{}\"" [
-        (ref-TS02-C3::C_AQP-ANK|IssueTrueFungibleAnchor patron "VctGasTfAnchor" ouro-id true "VctGasBoost" 3 500.0 5000.0)
+    (print (format "<(AQP-ANK|C_IssueTrueFungibleAnchor VctGasTfAnchor)> => \"{}\"" [
+        (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "VctGasTfAnchor" ouro-id true "VctGasBoost" 3 500.0 5000.0)
     ]))
 )
 (env-sigs [])

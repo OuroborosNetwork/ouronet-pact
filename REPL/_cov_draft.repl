@@ -90,7 +90,7 @@
     (ref-TS01-C2::ATS|C_SwitchHotRecovery aoz ps false)
     (ref-TS01-C2::ATS|C_AddHotRBT aoz ps th-k)
     (print (format "ps hot-rbt now: {}" [(ATS.UR_HotRewardBearingToken ps)]))
-    (ref-TS01-C2::ATS|C_HOT-RBT|UpdatePendingBranding aoz th-k "logo" "desc" "site" [])
+    (ref-TS01-C2::ATS|HOT-RBT|C_UpdatePendingBranding aoz th-k "logo" "desc" "site" [])
     (print "branding update ok")
     (let
         (
@@ -110,7 +110,7 @@
             ]
         )
     )
-    (ref-TS01-C2::ATS|C_HOT-RBT|UpgradeBranding aoz th-k 1)
+    (ref-TS01-C2::ATS|HOT-RBT|C_UpgradeBranding aoz th-k 1)
     (print "branding upgrade ok")
 )
 (commit-tx)
@@ -153,7 +153,7 @@
         (ps:string "PlebeicStrength-98c486052a51")
         (th-k:string "THKOSON-98c486052a51")
     )
-    (ref-TS01-C2::ATS|C_HOT-RBT|Repurpose aoz th-k 1 patron)
+    (ref-TS01-C2::ATS|HOT-RBT|C_Repurpose aoz th-k 1 patron)
     (print (format "nonce 1 repurposed to patron: {}" [(DPOF.UR_NonceHolder th-k 1)]))
     (ref-TS01-C2::ATS|C_HotRecovery aoz aoz ps 1.0)
     (print (format "th-k nonces used now: {}" [(DPOF.UR_NoncesUsed th-k)]))

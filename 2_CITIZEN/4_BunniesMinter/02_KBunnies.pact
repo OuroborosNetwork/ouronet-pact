@@ -218,7 +218,7 @@
                 (ipfs-link-two:string "BiggrPhoto-IPFS-Link")
             )
             ;;Set Class 1
-            (ref-TS02-C2::C_DPNF|DefinePrimordialSet
+            (ref-TS02-C2::DPNF|C_DefinePrimordialSet
                 patron kbn-id
                 "Bunny RGB Set"
                 1.0
@@ -254,7 +254,7 @@
                 (iz-legendary ())
             )
             (enforce (= l number-of-positions) "Invalid Number of Positions")
-            (ref-TS02-C2::C_DPNF|Create
+            (ref-TS02-C2::DPNF|C_Create
                 patron kbn-id
                 (fold
                     (lambda

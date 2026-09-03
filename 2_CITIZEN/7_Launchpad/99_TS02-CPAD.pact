@@ -52,13 +52,13 @@
     ;;
     ;;  [C]
     ;;
-    (defun C_SPARK|BuySparks (patron:string buyer:string sparks-amount:integer iz-native:bool max-cost:decimal))
-    (defun C_SPARK|RedemAllSparks (patron:string redemption-payer:string account-to-redeem:string))
-    (defun C_SPARK|RedemFewSparks (patron:string redemption-payer:string account-to-redeem:string redemption-quantity:decimal))
-    (defun C_SNAKES|Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal))
-    (defun C_CUSTODIANS|Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal))
-    (defun C_KPAY|BuyStoicPay (patron:string buyer:string kpay-amount:integer iz-native:bool max-cost:decimal))
-    (defun C_STOAICO|Collect (patron:string account:string))
+    (defun SPARK|C_BuySparks (patron:string buyer:string sparks-amount:integer iz-native:bool max-cost:decimal))
+    (defun SPARK|C_RedemAllSparks (patron:string redemption-payer:string account-to-redeem:string))
+    (defun SPARK|C_RedemFewSparks (patron:string redemption-payer:string account-to-redeem:string redemption-quantity:decimal))
+    (defun SNAKES|C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal))
+    (defun CUSTODIANS|C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal))
+    (defun KPAY|C_BuyStoicPay (patron:string buyer:string kpay-amount:integer iz-native:bool max-cost:decimal))
+    (defun STOAICO|C_Collect (patron:string account:string))
 
 )
 ;;
@@ -224,7 +224,7 @@
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
     ;;
-    (defun C_SPARK|BuySparks (patron:string buyer:string sparks-amount:integer iz-native:bool max-cost:decimal)
+    (defun SPARK|C_BuySparks (patron:string buyer:string sparks-amount:integer iz-native:bool max-cost:decimal)
         @doc "<max-cost> = buyer's dollar slippage ceiling (Variant 1). Pass a sentinel < 0 for slippage \
             \ off (Variant 2, live price via install-capability, UI-warned)."
         (with-capability (P|TS)
@@ -238,7 +238,7 @@
             )
         )
     )
-    (defun C_SPARK|RedemAllSparks (patron:string redemption-payer:string account-to-redeem:string)
+    (defun SPARK|C_RedemAllSparks (patron:string redemption-payer:string account-to-redeem:string)
         (with-capability (P|TS)
             (let
                 (
@@ -248,7 +248,7 @@
             )
         )
     )
-    (defun C_SPARK|RedemFewSparks (patron:string redemption-payer:string account-to-redeem:string redemption-quantity:decimal)
+    (defun SPARK|C_RedemFewSparks (patron:string redemption-payer:string account-to-redeem:string redemption-quantity:decimal)
         (with-capability (P|TS)
             (let
                 (
@@ -259,7 +259,7 @@
         )
     )
     ;;
-    (defun C_SNAKES|Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal)
+    (defun SNAKES|C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal)
         @doc "<max-cost> = buyer's dollar slippage ceiling (Variant 1). Sentinel < 0 = slippage off (Variant 2)."
         (with-capability (P|TS)
             (let
@@ -272,7 +272,7 @@
             )
         )
     )
-    (defun C_CUSTODIANS|Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal)
+    (defun CUSTODIANS|C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal)
         @doc "<max-cost> = buyer's dollar slippage ceiling (Variant 1). Sentinel < 0 = slippage off (Variant 2)."
         (with-capability (P|TS)
             (let
@@ -285,7 +285,7 @@
             )
         )
     )
-    (defun C_KPAY|BuyStoicPay (patron:string buyer:string kpay-amount:integer iz-native:bool max-cost:decimal)
+    (defun KPAY|C_BuyStoicPay (patron:string buyer:string kpay-amount:integer iz-native:bool max-cost:decimal)
         @doc "<max-cost> = buyer's dollar slippage ceiling (Variant 1). Sentinel < 0 = slippage off (Variant 2)."
         (with-capability (P|TS)
             (let
@@ -299,7 +299,7 @@
             )
         )
     )
-    (defun C_STOAICO|Collect (patron:string account:string)
+    (defun STOAICO|C_Collect (patron:string account:string)
         @doc "Gas-funded entry for the StoicIco reward self-collect. No STOA inflow (it is a payout), so \
             \ no XB_DynamicFuelSTOA refuel. Cost preview: STOAICO.URCi_Collect / STOAICO.INFO_Collect."
         (with-capability (P|TS)

@@ -147,10 +147,10 @@
 
     )
     [
-        (ref-TS01-C2::C_ATS|Coil aoz aoz ps p-k 100.0)
-        (ref-TS01-C2::C_ATS|Fuel aoz aoz ps p-k 50.0)
-        (ref-TS01-C2::C_ATS|Fuel aoz aoz ps e-k 40.0)
-        (ref-TS01-C2::C_ATS|Fuel aoz aoz ps a-k 80.0)
+        (ref-TS01-C2::ATS|C_Coil aoz aoz ps p-k 100.0)
+        (ref-TS01-C2::ATS|C_Fuel aoz aoz ps p-k 50.0)
+        (ref-TS01-C2::ATS|C_Fuel aoz aoz ps e-k 40.0)
+        (ref-TS01-C2::ATS|C_Fuel aoz aoz ps a-k 80.0)
         (ref-INFO-ONE::URC_ATS|Coil aoz aoz ps p-k 100.0)
     ]
 
@@ -346,7 +346,7 @@
     )
     ;; nonce 1 — mint time = current chain-data block-time (TIME00, set at file INIT). Redeemed
     ;; EARLY (Test 4|5, still inside the decay window) to exercise the fee-bearing branch.
-    (ref-TS01-C2::C_ATS|HotRecovery aoz aoz ps 100.0)
+    (ref-TS01-C2::ATS|C_HotRecovery aoz aoz ps 100.0)
 )
 
 (print "")
@@ -406,7 +406,7 @@
                 (at "block-time" (chain-data))
             ]
         )
-        (ref-TS01-C2::C_ATS|HotRecovery aoz aoz ps 50.0)
+        (ref-TS01-C2::ATS|C_HotRecovery aoz aoz ps 50.0)
     ]
 )
 
@@ -464,7 +464,7 @@
         {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
         "block-time": (time "2026-10-10T06:00:00Z")}
     )
-    (ref-TS01-C2::C_ATS|Redeem aoz aoz dd-k 1)
+    (ref-TS01-C2::ATS|C_Redeem aoz aoz dd-k 1)
     (let
         (
             (p-delta:decimal (- (ref-DPTF::UR_AccountSupply p-k aoz) p-before))
@@ -547,7 +547,7 @@
         {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
         "block-time": (time "2026-10-12T00:00:00Z")}
     )
-    (ref-TS01-C2::C_ATS|Redeem aoz aoz dd-k 2)
+    (ref-TS01-C2::ATS|C_Redeem aoz aoz dd-k 2)
     (let
         (
             (p-delta:decimal (- (ref-DPTF::UR_AccountSupply p-k aoz) p-before))
@@ -747,26 +747,26 @@
         (format "Cold Recovery Fee for 50 is {}" [(ref-ATS::URC_ColdRecoveryFee ps 50.0 -1)])
     ]
     [
-        (ref-TS01-C2::C_ATS|ColdRecovery aoz aoz ps 200.0)
-        (ref-TS01-C2::C_ATS|ColdRecovery aoz aoz ps 100.0)
-        (ref-TS01-C2::C_ATS|ColdRecovery aoz aoz ps 50.0)
+        (ref-TS01-C2::ATS|C_ColdRecovery aoz aoz ps 200.0)
+        (ref-TS01-C2::ATS|C_ColdRecovery aoz aoz ps 100.0)
+        (ref-TS01-C2::ATS|C_ColdRecovery aoz aoz ps 50.0)
     
-        (ref-TS01-C2::C_ATS|ColdRecovery patron patron a-idx 50.0)
-        (ref-TS01-C2::C_ATS|ColdRecovery patron patron a-idx 60.0)
-        (ref-TS01-C2::C_ATS|ColdRecovery patron patron a-idx 70.0)
-        (ref-TS01-C2::C_ATS|ColdRecovery patron patron a-idx 80.0)
-        (ref-TS01-C2::C_ATS|ColdRecovery patron patron a-idx 81.0)
-        (ref-TS01-C2::C_ATS|ColdRecovery patron patron a-idx 1.0)
-        (ref-TS01-C2::C_ATS|ColdRecovery patron patron a-idx 7.0)
+        (ref-TS01-C2::ATS|C_ColdRecovery patron patron a-idx 50.0)
+        (ref-TS01-C2::ATS|C_ColdRecovery patron patron a-idx 60.0)
+        (ref-TS01-C2::ATS|C_ColdRecovery patron patron a-idx 70.0)
+        (ref-TS01-C2::ATS|C_ColdRecovery patron patron a-idx 80.0)
+        (ref-TS01-C2::ATS|C_ColdRecovery patron patron a-idx 81.0)
+        (ref-TS01-C2::ATS|C_ColdRecovery patron patron a-idx 1.0)
+        (ref-TS01-C2::ATS|C_ColdRecovery patron patron a-idx 7.0)
         (format "Which Position is {}" [(ref-ATS::URC_WhichPosition a-idx 2.0 patron)])
         (format "Cold Recovery Positions are {}" [(ref-ATS::UR_ColdRecoveryPositions a-idx)])
         
-        ;(ref-P|TS01-C2::C_ATS|ColdRecovery patron patron a-idx 2.0)
+        ;(ref-P|TS01-C2::ATS|C_ColdRecovery patron patron a-idx 2.0)
     
-        (ref-TS01-C2::C_ATS|ColdRecovery patron patron ea-idx 500.0)
-        (ref-TS01-C2::C_ATS|ColdRecovery patron patron ea-idx 600.0)
-        (ref-TS01-C2::C_ATS|ColdRecovery patron patron ea-idx 700.0)
-        (ref-TS01-C2::C_ATS|ColdRecovery patron patron ea-idx 800.0)
+        (ref-TS01-C2::ATS|C_ColdRecovery patron patron ea-idx 500.0)
+        (ref-TS01-C2::ATS|C_ColdRecovery patron patron ea-idx 600.0)
+        (ref-TS01-C2::ATS|C_ColdRecovery patron patron ea-idx 700.0)
+        (ref-TS01-C2::ATS|C_ColdRecovery patron patron ea-idx 800.0)
     ]
     
 )
@@ -927,14 +927,14 @@
         ;"block-time": (time "2024-10-28T00:00:00Z")}
     )
     ;(ref-TS01-C2::ATS|C_ModifyCanChangeOwner patron a-idx false)
-    (ref-TS01-C2::C_ATS|RotateOwnership patron a-idx emma)
-    (ref-TS01-C2::C_ATS|RotateOwnership emma a-idx patron)
+    (ref-TS01-C2::ATS|C_RotateOwnership patron a-idx emma)
+    (ref-TS01-C2::ATS|C_RotateOwnership emma a-idx patron)
     [
         (format "Can Change Owner for Auryndex is {}" [(ref-ATS::UR_CanChangeOwner a-idx)])
-        (format "Curling 100 OURO Returns {} EA" [(ref-TS01-C2::C_ATS|Curl patron patron a-idx ea-idx ouro 100.0)])
-        (format "Culling AOZ returns {} in RTs" [(ref-TS01-C2::C_ATS|Cull aoz aoz ps)])
-        (format "Culling AH Auryndex returns {} in RTs" [(ref-TS01-C2::C_ATS|Cull patron patron a-idx)])
-        (format "Culling AH E-Auryndex returns {} in RTs" [(ref-TS01-C2::C_ATS|Cull patron patron ea-idx)])
+        (format "Curling 100 OURO Returns {} EA" [(ref-TS01-C2::ATS|C_Curl patron patron a-idx ea-idx ouro 100.0)])
+        (format "Culling AOZ returns {} in RTs" [(ref-TS01-C2::ATS|C_Cull aoz aoz ps)])
+        (format "Culling AH Auryndex returns {} in RTs" [(ref-TS01-C2::ATS|C_Cull patron patron a-idx)])
+        (format "Culling AH E-Auryndex returns {} in RTs" [(ref-TS01-C2::ATS|C_Cull patron patron ea-idx)])
         
         (format "AOZET has {} PlebiumDenarius and {} Denarius Debilis; Time is {}"
             [
@@ -1028,9 +1028,9 @@
         (ea-idx:string "EliteAuryndex-98c486052a51")
         (ouro:string "OURO-98c486052a51")
     )
-    (ref-TS01-C2::C_ATS|UpdateSyphon patron ps 0.6)
+    (ref-TS01-C2::ATS|C_UpdateSyphon patron ps 0.6)
     ;;Toggle Syphoning
-    (ref-TS01-C2::C_ATS|Control patron ps true true false)    ;;second true turns syphoning on
+    (ref-TS01-C2::ATS|C_Control patron ps true true false)    ;;second true turns syphoning on
     [
         (format "Plebeic Strength Setting Lock state is {}" [(ref-ATS::UR_Lock ps)])
         (format "Emma has before spyhoning {} p-k |{} e-k |{} a-k " 
@@ -1116,8 +1116,8 @@
         (ouro:string "OURO-98c486052a51")
     )
 
-    (ref-TS01-C2::C_ATS|Syphon patron emma ps [17.647058823529411764705882 5.294117647058823529411765 7.058823529411764705882353])
-    (ref-TS01-C2::C_ATS|ToggleParameterLock patron ps true)
+    (ref-TS01-C2::ATS|C_Syphon patron emma ps [17.647058823529411764705882 5.294117647058823529411765 7.058823529411764705882353])
+    (ref-TS01-C2::ATS|C_ToggleParameterLock patron ps true)
     [
         (format "Plebeic Strength Setting Lock state is {}" [(ref-ATS::UR_Lock ps)])
         (format "Emma has after spyhoning {} p-k |{} e-k |{} a-k " 
@@ -1260,9 +1260,9 @@
                 (ref-ATS::UR_ToggleDirectRecovery ps)
             ]
         )
-        (ref-TS01-C2::C_ATS|SwitchColdRecovery aoz ps false)
-        (ref-TS01-C2::C_ATS|SwitchHotRecovery aoz ps false)
-        (ref-TS01-C2::C_ATS|ToggleParameterLock aoz ps false)
+        (ref-TS01-C2::ATS|C_SwitchColdRecovery aoz ps false)
+        (ref-TS01-C2::ATS|C_SwitchHotRecovery aoz ps false)
+        (ref-TS01-C2::ATS|C_ToggleParameterLock aoz ps false)
     ]
     
     
@@ -1302,8 +1302,8 @@
             (ps:string "PlebeicStrength-98c486052a51")
         )
         [
-            (ref-TS01-C2::C_ATS|SwitchColdRecovery aoz ps true)
-            (ref-TS01-C2::C_ATS|SwitchHotRecovery aoz ps true)
+            (ref-TS01-C2::ATS|C_SwitchColdRecovery aoz ps true)
+            (ref-TS01-C2::ATS|C_SwitchHotRecovery aoz ps true)
         ]
     )
 
@@ -1443,9 +1443,9 @@
         (ea-idx:string "EliteAuryndex-98c486052a51")
         (ouro:string "OURO-98c486052a51")
     )
-    (ref-TS01-C2::C_ATS|ColdRecovery aoz aoz ps 40.0)
-    (ref-TS01-C2::C_ATS|ColdRecovery aoz aoz ps 50.0)
-    (ref-TS01-C2::C_ATS|ColdRecovery aoz aoz ps 75.0)
+    (ref-TS01-C2::ATS|C_ColdRecovery aoz aoz ps 40.0)
+    (ref-TS01-C2::ATS|C_ColdRecovery aoz aoz ps 50.0)
+    (ref-TS01-C2::ATS|C_ColdRecovery aoz aoz ps 75.0)
     [
         (format "AFTER COLD RECOVERY Reward Tokens Resident Amounts for {} are {}" [ps (ref-ATS::UR_RewardTokenRUR ps 1)])
         (format "AFTER COLD RECOVERY Reward Tokens Unbonding Amounts for {} are {}" [ps (ref-ATS::UR_RewardTokenRUR ps 2)])
@@ -1526,8 +1526,8 @@
     )
     (print "Begining with removal of RT++++++++++++++++++++")
 
-    (ref-TS01-C2::C_ATS|SwitchColdRecovery aoz ps false)
-    (ref-TS01-C2::C_ATS|SwitchHotRecovery aoz ps false)
+    (ref-TS01-C2::ATS|C_SwitchColdRecovery aoz ps false)
+    (ref-TS01-C2::ATS|C_SwitchHotRecovery aoz ps false)
 )
 
 (print "")
@@ -1611,7 +1611,7 @@
             ;(ref-TFT::DPTF-DPOF-ATS|UR_FilterKeysForInfo ps 3 false)
             (format "BEFORE {} has as RTs: {}" [ps (ref-ATS::UR_RewardTokenList ps)])
             (format "BEFORE {} has registered ATS as {}" [a-k (ref-DPTF::UR_RewardToken a-k)])
-            (ref-TS01-C2::C_ATS|RemoveSecondary aoz aoz ps a-k)
+            (ref-TS01-C2::ATS|C_RemoveSecondary aoz aoz ps a-k)
         ]
         [
             (format "AFTER {} has as RTs: {}" [ps (ref-ATS::UR_RewardTokenList ps)])
@@ -1769,9 +1769,9 @@
         (ea-idx:string "EliteAuryndex-98c486052a51")
         (ouro:string "OURO-98c486052a51")
     )
-    (ref-TS01-C2::C_ATS|Coil aoz aoz ps e-k 250.0)
-    (ref-TS01-C2::C_ATS|AddSecondary aoz ps a-k false)
-    (ref-TS01-C2::C_ATS|Fuel aoz aoz ps a-k 500.0)
+    (ref-TS01-C2::ATS|C_Coil aoz aoz ps e-k 250.0)
+    (ref-TS01-C2::ATS|C_AddSecondary aoz ps a-k false)
+    (ref-TS01-C2::ATS|C_Fuel aoz aoz ps a-k 500.0)
 
 
     [
@@ -1846,13 +1846,13 @@
         (ouro:string "OURO-98c486052a51")
     )
     (print "Turning Recovery On Again++++++++++++++++++++")
-    (ref-TS01-C2::C_ATS|SwitchColdRecovery aoz ps true)
-    (ref-TS01-C2::C_ATS|SwitchHotRecovery aoz ps true)
+    (ref-TS01-C2::ATS|C_SwitchColdRecovery aoz ps true)
+    (ref-TS01-C2::ATS|C_SwitchHotRecovery aoz ps true)
     (print "Cold Recovery Again++++++++++++++++++++")
-    (ref-TS01-C2::C_ATS|ColdRecovery aoz aoz ps 25.0)
-    (ref-TS01-C2::C_ATS|ColdRecovery aoz aoz ps 64.0)
-    (ref-TS01-C2::C_ATS|ColdRecovery aoz aoz ps 90.0)
-    (ref-TS01-C2::C_ATS|ColdRecovery aoz aoz ps 15.0)
+    (ref-TS01-C2::ATS|C_ColdRecovery aoz aoz ps 25.0)
+    (ref-TS01-C2::ATS|C_ColdRecovery aoz aoz ps 64.0)
+    (ref-TS01-C2::ATS|C_ColdRecovery aoz aoz ps 90.0)
+    (ref-TS01-C2::ATS|C_ColdRecovery aoz aoz ps 15.0)
 
 
     [
@@ -1949,18 +1949,18 @@
         "block-time": (time "2024-11-22T00:00:00Z")}
     )
 
-    (ref-TS01-C2::C_ATS|SwitchColdRecovery aoz ps false)
-    (ref-TS01-C2::C_ATS|SwitchHotRecovery aoz ps false)
+    (ref-TS01-C2::ATS|C_SwitchColdRecovery aoz ps false)
+    (ref-TS01-C2::ATS|C_SwitchHotRecovery aoz ps false)
 
-    (ref-TS01-C2::C_ATS|ControlColdRecoveryFees aoz ps false false)
-    (ref-TS01-C2::C_ATS|ControlHotRecoveryFee aoz ps false)
+    (ref-TS01-C2::ATS|C_ControlColdRecoveryFees aoz ps false false)
+    (ref-TS01-C2::ATS|C_ControlHotRecoveryFee aoz ps false)
 
-    (ref-TS01-C2::C_ATS|SwitchColdRecovery aoz ps true)
-    (ref-TS01-C2::C_ATS|SwitchHotRecovery aoz ps true)
+    (ref-TS01-C2::ATS|C_SwitchColdRecovery aoz ps true)
+    (ref-TS01-C2::ATS|C_SwitchHotRecovery aoz ps true)
 
     [
         (format "{} Index is {};" [ps (ref-ATS::URC_Index ps)])
-        (format "Culling AOZ returns {} in RTs" [(ref-TS01-C2::C_ATS|Cull aoz aoz ps)])
+        (format "Culling AOZ returns {} in RTs" [(ref-TS01-C2::ATS|C_Cull aoz aoz ps)])
         (format "AOZET has AFTER Hybrid Cull {} p-k |{} e-k |{} a-k " 
             [
                 (ref-DPTF::UR_AccountSupply p-k aoz)
@@ -1977,7 +1977,7 @@
     ]
     [
         (INFO-ONE.INFO_DPTF|Transfer patron auryn patron emma 22.0 )
-        (ref-TS01-C1::C_DPTF|Transfer
+        (ref-TS01-C1::DPTF|C_Transfer
             "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî"
             "DWK-98c486052a51"
             "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî"
@@ -2037,7 +2037,7 @@
     (
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
     )
-    (ref-TS01-C2::C_ATS|Brumate
+    (ref-TS01-C2::ATS|C_Brumate
         "Ѻ.œâσzüştŒhłσćØTöõúoвþçЧлρËШđюλ2ÙPeжŘťȚŤtθËûrólþŘß₿øuŁdáNÎČȘřΦĘbχλΩĄ¢ц2ŹθõĐLcÑÁäăå₿ξЭжулxòΘηĂœŞÝUËcω∇ß$ωoñД7θÁяЯéEU¢CЮxÃэJĘčÎΠ£αöŮЖбlćшbăÙЦÎAдŃЭб$ĞцFδŃËúHãjÁÝàĘSt"
         "Ѻ.œâσzüştŒhłσćØTöõúoвþçЧлρËШđюλ2ÙPeжŘťȚŤtθËûrólþŘß₿øuŁdáNÎČȘřΦĘbχλΩĄ¢ц2ŹθõĐLcÑÁäăå₿ξЭжулxòΘηĂœŞÝUËcω∇ß$ωoñД7θÁяЯéEU¢CЮxÃэJĘčÎΠ£αöŮЖбlćшbăÙЦÎAдŃЭб$ĞцFδŃËúHãjÁÝàĘSt"
         "StoaLiquindex-98c486052a51"
@@ -2100,155 +2100,155 @@
     )
     [
         [
-            (ref-TS01-C1::C_DPTF|Transfer patron sstoa patron emma 150.0 false)
+            (ref-TS01-C1::DPTF|C_Transfer patron sstoa patron emma 150.0 false)
             (format "User AH has SSTOA {}" [(DPTF.UR_AccountSupply sstoa patron)])
             (format "User EMMA has SSTOA {}" [(DPTF.UR_AccountSupply sstoa emma)])
             (format "User LUMY has SSTOA {}" [(DPTF.UR_AccountSupply sstoa lumy)])
             (format "User AOZ has SSTOA {}" [(DPTF.UR_AccountSupply sstoa aoz)])
         ]
         [
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
 
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
 
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
 
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
 
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
 
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
 
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
 
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
 
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
 
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
 
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
 
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
 
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
 
         ]
     ]
@@ -2307,78 +2307,78 @@
     )
     [
         [
-            (ref-TS01-C1::C_DPTF|Transfer patron sstoa patron emma 150.0 false)
+            (ref-TS01-C1::DPTF|C_Transfer patron sstoa patron emma 150.0 false)
             (format "User AH has SSTOA {}" [(DPTF.UR_AccountSupply sstoa patron)])
             (format "User EMMA has SSTOA {}" [(DPTF.UR_AccountSupply sstoa emma)])
             (format "User LUMY has SSTOA {}" [(DPTF.UR_AccountSupply sstoa lumy)])
             (format "User AOZ has SSTOA {}" [(DPTF.UR_AccountSupply sstoa aoz)])
         ]
         [
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
 
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
 
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
 
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
 
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
 
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
         ]
     ]
     
@@ -2436,78 +2436,78 @@
     )
     [
         [
-            (ref-TS01-C1::C_DPTF|Transfer patron sstoa patron emma 150.0 false)
+            (ref-TS01-C1::DPTF|C_Transfer patron sstoa patron emma 150.0 false)
             (format "User AH has SSTOA {}" [(DPTF.UR_AccountSupply sstoa patron)])
             (format "User EMMA has SSTOA {}" [(DPTF.UR_AccountSupply sstoa emma)])
             (format "User LUMY has SSTOA {}" [(DPTF.UR_AccountSupply sstoa lumy)])
             (format "User AOZ has SSTOA {}" [(DPTF.UR_AccountSupply sstoa aoz)])
         ]
         [
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
 
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
 
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
 
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
 
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
 
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
-            ;(ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
+            ;(ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
         ]
     ]
     
@@ -2553,7 +2553,7 @@
     )
     [
         [
-            (ref-TS01-C2::C_ATS|ColdRecovery patron emma lq-idx 0.1)
+            (ref-TS01-C2::ATS|C_ColdRecovery patron emma lq-idx 0.1)
 
         ]
         (env-chain-data
@@ -2599,7 +2599,7 @@
         ;;
         (lq-idx:string "StoaLiquindex-98c486052a51")
     )
-    (ref-TS01-C2::C_ATS|Cull patron emma lq-idx)
+    (ref-TS01-C2::ATS|C_Cull patron emma lq-idx)
 )
 
 (print "")
@@ -2633,8 +2633,8 @@
 )
 ;;==== ToggleUpgrade Proof 1|2 · 02 · let / invocation ==== =======================================
 (print "--- [ToggleUpgrade Proof 1|2 · 02 · let / invocation — switch OFF, C_Control must now fail] ---")
-;; #21L / L3 regression: can-upgrade previously had no setter at all. C_ATS|ToggleUpgrade
-;; (audit fix, 08_ATS.pact ATS|C>TOGGLE-UPGRADE / XI_ToggleUpgrade) gates C_ATS|Control via
+;; #21L / L3 regression: can-upgrade previously had no setter at all. ATS|C_ToggleUpgrade
+;; (audit fix, 08_ATS.pact ATS|C>TOGGLE-UPGRADE / XI_ToggleUpgrade) gates ATS|C_Control via
 ;; UEV_CanUpgradeON — flipping it off must make C_Control fail with the "properties cannot be
 ;; upgraded" enforce, and flipping it back on (Proof 2|2) must let C_Control succeed again.
 (let
@@ -2644,12 +2644,12 @@
         (aoz:string KST.AOZT)
         (ps:string "PlebeicStrength-98c486052a51")
     )
-    (ref-TS01-C2::C_ATS|ToggleUpgrade aoz ps false)
+    (ref-TS01-C2::ATS|C_ToggleUpgrade aoz ps false)
     (map print
         [
             (expect "can-upgrade is now false" false (ref-ATS::UR_CanUpgrade ps))
             (expect-failure (format "{} properties cannot be upgraded" [ps])
-                (ref-TS01-C2::C_ATS|Control aoz ps false false false)
+                (ref-TS01-C2::ATS|C_Control aoz ps false false false)
             )
         ]
     )
@@ -2687,8 +2687,8 @@
         (aoz:string KST.AOZT)
         (ps:string "PlebeicStrength-98c486052a51")
     )
-    (ref-TS01-C2::C_ATS|ToggleUpgrade aoz ps true)
-    (ref-TS01-C2::C_ATS|Control aoz ps false false false)
+    (ref-TS01-C2::ATS|C_ToggleUpgrade aoz ps true)
+    (ref-TS01-C2::ATS|C_Control aoz ps false false false)
     (map print
         [
             (expect "can-upgrade is now true" true (ref-ATS::UR_CanUpgrade ps))
@@ -2722,7 +2722,7 @@
 ;;==== SetHibernationFees Proof · 02 · let / invocation ==== ======================================
 (print "--- [SetHibernationFees Proof · 02 · let / invocation] ---")
 ;; #9H/#10M regression: UEV_HibernationFees (09_U_ATS.pact) used to fail unconditionally on every
-;; input (stray `(= () 0.0)` 7th predicate, always false). Proves the full C_ATS|SetHibernationFees
+;; input (stray `(= () 0.0)` 7th predicate, always false). Proves the full ATS|C_SetHibernationFees
 ;; capability chain (ATS|S>SET-HIBERNATION-FEES -> ref-U|ATS::UEV_HibernationFees) now accepts a
 ;; valid (peak, decay) pair and persists it.
 (let
@@ -2734,7 +2734,7 @@
         (peak-before:decimal (ref-ATS::UR_PeakHibernatePromile ps))
         (decay-before:decimal (ref-ATS::UR_HibernateDecay ps))
     )
-    (ref-TS01-C2::C_ATS|SetHibernationFees aoz ps 160.0 0.01)
+    (ref-TS01-C2::ATS|C_SetHibernationFees aoz ps 160.0 0.01)
     (map print
         [
             (format "peak-hibernate-promile was {}, decay was {}" [peak-before decay-before])
@@ -2811,7 +2811,7 @@
     )
 ;;==== Fresh Test Pool Setup 1|3 · 02 · let / invocation ==== =====================================
     (print "--- [Fresh Test Pool Setup 1|3 · 02 · let / invocation] ---")
-    (ref-TS01-C1::C_DPOF|Issue
+    (ref-TS01-C1::DPOF|C_Issue
         aoz
         aoz
         ["TestHotRbtCandidate"]
@@ -2891,7 +2891,7 @@
     )
 ;;==== Fresh Test Pool Setup 2|3 · 02 · let / invocation ==== =====================================
     (print "--- [Fresh Test Pool Setup 2|3 · 02 · let / invocation] ---")
-    (ref-TS01-C1::C_DPTF|Issue
+    (ref-TS01-C1::DPTF|C_Issue
         aoz
         aoz
         ["TestKickPairColdRbt"]
@@ -2972,7 +2972,7 @@
             (p-k:string "PKOSON-98c486052a51")
             (tkrbt:string "TKRBT-98c486052a51")
         )
-        (ref-TS01-C2::C_ATS|Issue
+        (ref-TS01-C2::ATS|C_Issue
             aoz
             aoz
             ["TestKickPair"]
@@ -3024,7 +3024,7 @@
             (expect "no Hot-RBT registered yet (sentinel \"|\")" "|" (ref-ATS::UR_HotRewardBearingToken tkp))
         ]
     )
-    (ref-TS01-C2::C_ATS|AddHotRBT aoz tkp thrbt)
+    (ref-TS01-C2::ATS|C_AddHotRBT aoz tkp thrbt)
     (map print
         [
             (expect "THRBT is now the registered Hot-RBT for TestKickPair" thrbt (ref-ATS::UR_HotRewardBearingToken tkp))
@@ -3050,14 +3050,14 @@
 (namespace "ouronet-ns")
 ;;==== A_KickStart Proof · 01 · env-sigs (caps) ==== ===============================================
 (print "--- [A_KickStart Proof · 01 · env-sigs (caps)] ---")
-;; A_ATS|RemoveSecondary / A_ATS|KickStart regression proof — the P|A_Define fix (01_TS01-A.pact):
+;; ATS|A_RemoveSecondary / ATS|A_KickStart regression proof — the P|A_Define fix (01_TS01-A.pact):
 ;; ATS and ATSU were never registered as permitted callers there (ATS was even bound - ref-P|ATS -
 ;; but never used), so this admin path used to fail unconditionally inside ATSU's own P|UEV_IMC with
 ;; "None of the guards passed", regardless of who signed. "DemiourgosSithMasters" (keys-any over
 ;; PK_AncientHodler / PK_Florean) is the keyset behind both the Talos-level P|ADMINISTRATIVE-SUMMONER
 ;; gate and ATSU's own GOV|ATSU_ADMIN gate — PK_AncientHodler alone satisfies both. Also exercises
 ;; the #11M / M2 fix's shared floor/ceiling machinery (UC_KickStartIndex, ATSU|C>X_KICKSTART): the
-;; admin path has no upper ceiling (unlike the owner-facing C_ATS|KickStart's 100.0 cap), only the
+;; admin path has no upper ceiling (unlike the owner-facing ATS|C_KickStart's 100.0 cap), only the
 ;; shared >= 0.1 floor. TestKickPair was issued fresh and never fueled/coiled, so its index is
 ;; still the -1.0 "un-kickstarted" sentinel — exactly the precondition ATSU|C>X_KICKSTART requires.
 (env-sigs
@@ -3080,7 +3080,7 @@
             (expect "TestKickPair index is -1.0 before KickStart (never fueled)" -1.0 (ref-ATS::URC_Index tkp))
         ]
     )
-    (ref-TS01-A::A_ATS|KickStart aoz aoz tkp [1000.0] 1000.0)
+    (ref-TS01-A::ATS|A_KickStart aoz aoz tkp [1000.0] 1000.0)
     (map print
         [
             (expect "TestKickPair index is 1.0 after KickStart (1000.0 RT / 1000.0 RBT)" 1.0 (ref-ATS::URC_Index tkp))
@@ -3126,13 +3126,13 @@
         (tkp:string "TestKickPair-98c486052a51")
         (e-k:string "EKOSON-98c486052a51")
     )
-    (ref-TS01-C2::C_ATS|AddSecondary aoz tkp e-k false)
+    (ref-TS01-C2::ATS|C_AddSecondary aoz tkp e-k false)
     (map print
         [
             (expect "EKOSON is now a registered RT for TestKickPair" true (contains e-k (ref-ATS::UR_RewardTokenList tkp)))
         ]
     )
-    (ref-TS01-C2::C_ATS|Fuel aoz aoz tkp e-k 50.0)
+    (ref-TS01-C2::ATS|C_Fuel aoz aoz tkp e-k 50.0)
     (map print
         [
             (expect "EKOSON resident RUR is now nonzero (fueled)" true (> (at 1 (ref-ATS::UR_RewardTokenRUR tkp 1)) 0.0))
@@ -3175,7 +3175,7 @@
         (tkp:string "TestKickPair-98c486052a51")
         (e-k:string "EKOSON-98c486052a51")
     )
-    (ref-TS01-A::A_ATS|RemoveSecondary aoz aoz tkp e-k [aoz])
+    (ref-TS01-A::ATS|A_RemoveSecondary aoz aoz tkp e-k [aoz])
     (map print
         [
             (expect "EKOSON is no longer a registered RT for TestKickPair" false (contains e-k (ref-ATS::UR_RewardTokenList tkp)))
@@ -3213,7 +3213,7 @@
 ;; happen before Hot Recovery is ever switched on for a pair). ps has had Hot Recovery switched ON
 ;; since the "Hybrid Cull" sections earlier in this file, so it's toggled off, reconfigured, and
 ;; toggled back on here — leaving ps's ambient state exactly as the rest of the file left it.
-;; #31L confirmation: the Talos wrapper is the SINGULAR C_ATS|SetHotRecoveryFee (not "...Fees").
+;; #31L confirmation: the Talos wrapper is the SINGULAR ATS|C_SetHotRecoveryFee (not "...Fees").
 (let
     (
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
@@ -3226,8 +3226,8 @@
         (decay-before:integer (ref-ATS::UR_HotRecoveryDecayPeriod ps))
         (nonces-before:integer (ref-DPOF::UR_NoncesUsed dd-k))
     )
-    (ref-TS01-C2::C_ATS|SwitchHotRecovery aoz ps false)
-    (ref-TS01-C2::C_ATS|SetHotRecoveryFee aoz ps 500.0 30)
+    (ref-TS01-C2::ATS|C_SwitchHotRecovery aoz ps false)
+    (ref-TS01-C2::ATS|C_SetHotRecoveryFee aoz ps 500.0 30)
     (map print
         [
             (format "h-promile was {}, h-decay was {}" [promile-before decay-before])
@@ -3235,8 +3235,8 @@
             (expect "h-decay updated to 30" 30 (ref-ATS::UR_HotRecoveryDecayPeriod ps))
         ]
     )
-    (ref-TS01-C2::C_ATS|SwitchHotRecovery aoz ps true)
-    (ref-TS01-C2::C_ATS|HotRecovery aoz aoz ps 25.0)
+    (ref-TS01-C2::ATS|C_SwitchHotRecovery aoz ps true)
+    (ref-TS01-C2::ATS|C_HotRecovery aoz aoz ps 25.0)
     (map print
         [
             (expect "DDKOSON minted exactly one new nonce (nonce 3)" (+ nonces-before 1) (ref-DPOF::UR_NoncesUsed dd-k))
@@ -3280,7 +3280,7 @@
         (aoz:string KST.AOZT)
         (dd-k:string "DDKOSON-98c486052a51")
     )
-    (ref-TS01-C2::C_ATS|HOT-RBT|UpdatePendingBranding
+    (ref-TS01-C2::ATS|HOT-RBT|C_UpdatePendingBranding
         aoz
         dd-k
         "https://example.com/thrbt-logo.png"
@@ -3316,7 +3316,7 @@
 (namespace "ouronet-ns")
 ;;==== HOT-RBT Branding Proof 2|2 · 01 · env-sigs (caps) ==== =====================================
 (print "--- [HOT-RBT Branding Proof 2|2 · 01 · env-sigs (caps)] ---")
-;; C_HOT-RBT|UpgradeBranding -> DPOF::C_UpgradeBranding -> IGNIS::STOA|C_CollectWT -> real coin.TRANSFER
+;; HOT-RBT|C_UpgradeBranding -> DPOF::C_UpgradeBranding -> IGNIS::STOA|C_CollectWT -> real coin.TRANSFER
 ;; (price key "blue", same URC_SplitSTOAPrices 4-way split / 4-target pattern as every other raw-STOA
 ;; payment in this file), followed by TS01-A::XB_DynamicFuelSTOA.
 (let
@@ -3367,7 +3367,7 @@
             (dd-k:string "DDKOSON-98c486052a51")
             (flag-before:integer (ref-BRD::UR_Flag dd-k false))
         )
-        (ref-TS01-C2::C_ATS|HOT-RBT|UpgradeBranding aoz dd-k months)
+        (ref-TS01-C2::ATS|HOT-RBT|C_UpgradeBranding aoz dd-k months)
         (map print
             [
                 (format "flag was {} (3 = Gray) before upgrade" [flag-before])
@@ -3407,7 +3407,7 @@
 )
 ;;==== HOT-RBT Repurpose Proof · 02 · let / invocation ==== ========================================
 (print "--- [HOT-RBT Repurpose Proof · 02 · let / invocation] ---")
-;; #22L core fix regression: C_HOT-RBT|Repurpose (08_ATS.pact) used to call
+;; #22L core fix regression: HOT-RBT|C_Repurpose (08_ATS.pact) used to call
 ;; (ref-DPOF::UR_NonceMetaData) with zero arguments where it requires (id nonce) — an unconditional
 ;; crash on every call, never caught for lack of test coverage. This seizes nonce 3 (minted to aoz
 ;; in the SetHotRecoveryFee/HotRecovery proof above, still unredeemed) and reassigns an
@@ -3423,7 +3423,7 @@
         (nonce-3-supply:decimal (ref-DPOF::UR_NonceSupply dd-k 3))
         (nonce-3-mint-time:time (at "mint-time" (at 0 (ref-DPOF::UR_NonceMetaData dd-k 3))))
     )
-    (ref-TS01-C2::C_ATS|HOT-RBT|Repurpose aoz dd-k 3 emma)
+    (ref-TS01-C2::ATS|HOT-RBT|C_Repurpose aoz dd-k 3 emma)
     (map print
         [
             (expect "nonce 3 wiped — DPOF supply now the not-exists sentinel" -1.0 (ref-DPOF::UR_NonceSupply dd-k 3))
@@ -3465,7 +3465,7 @@
 )
 ;;==== Reverse (Recover) Proof · 02 · let / invocation ==== ========================================
 (print "--- [Reverse (Recover) Proof · 02 · let / invocation] ---")
-;; C_ATS|Reverse (Talos, 03_TS01-C2.pact) forwards to ATSU's own C_Recover (10_ATSU.pact) — converts
+;; ATS|C_Reverse (Talos, 03_TS01-C2.pact) forwards to ATSU's own C_Recover (10_ATSU.pact) — converts
 ;; a still-live Hot-RBT nonce back into an equivalent Cold-RBT position: burns the nonce, mints the
 ;; matching amount of the pair's cold-RBT (PDKOSON) straight to the recoverer. Mints a fresh nonce
 ;; (nonce 5 — nonces-used was 4 after the Repurpose proof's own internal mint) specifically for this,
@@ -3479,7 +3479,7 @@
         (dd-k:string "DDKOSON-98c486052a51")
         (pd-k:string "PDKOSON-98c486052a51")
     )
-    (ref-TS01-C2::C_ATS|HotRecovery aoz aoz "PlebeicStrength-98c486052a51" 15.0)
+    (ref-TS01-C2::ATS|C_HotRecovery aoz aoz "PlebeicStrength-98c486052a51" 15.0)
     (let
         (
             (nonce-5-supply:decimal (ref-DPOF::UR_NonceSupply dd-k 5))
@@ -3490,7 +3490,7 @@
                 (expect "nonce 5 was minted to aoz" aoz (ref-DPOF::UR_NonceHolder dd-k 5))
             ]
         )
-        (ref-TS01-C2::C_ATS|Reverse aoz aoz dd-k 5)
+        (ref-TS01-C2::ATS|C_Reverse aoz aoz dd-k 5)
         (map print
             [
                 (expect "nonce 5 burned — DPOF supply now the not-exists sentinel" -1.0 (ref-DPOF::UR_NonceSupply dd-k 5))
@@ -3530,7 +3530,7 @@
 (print "--- [WithdrawRoyalties Proof · 02 · let / invocation] ---")
 ;; ATSU|C>WITHDRAW-ROYALTIES enforces a nonzero accrued sum (RUR bucket 3) before it will run, so a
 ;; royalty rate is set and a Coil is performed first (URCx_RBT-Amount charges royalty-fee out of
-;; every Coil deposit once C_ATS|UpdateRoyalty has set a nonzero royalty-promile) to actually accrue
+;; every Coil deposit once ATS|C_UpdateRoyalty has set a nonzero royalty-promile) to actually accrue
 ;; something to withdraw.
 (let
     (
@@ -3541,8 +3541,8 @@
         (ps:string "PlebeicStrength-98c486052a51")
         (p-k:string "PKOSON-98c486052a51")
     )
-    (ref-TS01-C2::C_ATS|UpdateRoyalty aoz ps 15.0)
-    (ref-TS01-C2::C_ATS|Coil aoz aoz ps p-k 200.0)
+    (ref-TS01-C2::ATS|C_UpdateRoyalty aoz ps 15.0)
+    (ref-TS01-C2::ATS|C_Coil aoz aoz ps p-k 200.0)
     (let
         (
             (royalty-sum-before:decimal (fold (+) 0.0 (ref-ATS::UR_RewardTokenRUR ps 3)))
@@ -3553,7 +3553,7 @@
                 (expect "royalty accrued from the Coil above (nonzero)" true (> royalty-sum-before 0.0))
             ]
         )
-        (ref-TS01-C2::C_ATS|WithdrawRoyalties aoz ps emma)
+        (ref-TS01-C2::ATS|C_WithdrawRoyalties aoz ps emma)
         (map print
             [
                 (expect "all royalty buckets reset to 0.0 after withdrawal"
@@ -3606,7 +3606,7 @@
         (ps:string "PlebeicStrength-98c486052a51")
         (pd-k:string "PDKOSON-98c486052a51")
     )
-    (ref-TS01-C2::C_ATS|SwitchDirectRecovery aoz ps true)
+    (ref-TS01-C2::ATS|C_SwitchDirectRecovery aoz ps true)
     (let
         (
             (rt-lst:[string] (ref-ATS::UR_RewardTokenList ps))
@@ -3618,7 +3618,7 @@
             (
                 (rt-before:[decimal] (map (lambda (id:string) (ref-DPTF::UR_AccountSupply id aoz)) rt-lst))
             )
-            (ref-TS01-C2::C_ATS|DirectRecovery aoz aoz ps ra)
+            (ref-TS01-C2::ATS|C_DirectRecovery aoz aoz ps ra)
             (let
                 (
                     (rt-after:[decimal] (map (lambda (id:string) (ref-DPTF::UR_AccountSupply id aoz)) rt-lst))
@@ -3683,20 +3683,20 @@
     (map print
         [
             (expect-failure "royalty above the new 500.0 ceiling (999.0, the old ceiling) is rejected"
-                (ref-TS01-C2::C_ATS|UpdateRoyalty aoz ps 999.0)
+                (ref-TS01-C2::ATS|C_UpdateRoyalty aoz ps 999.0)
             )
             (expect-failure "royalty just above the new ceiling (500.0001) is rejected"
-                (ref-TS01-C2::C_ATS|UpdateRoyalty aoz ps 500.0001)
+                (ref-TS01-C2::ATS|C_UpdateRoyalty aoz ps 500.0001)
             )
         ]
     )
-    (ref-TS01-C2::C_ATS|UpdateRoyalty aoz ps 500.0)
+    (ref-TS01-C2::ATS|C_UpdateRoyalty aoz ps 500.0)
     (map print
         [
             (expect "royalty exactly at the new 500.0 ceiling is accepted" 500.0 (ref-ATS::UR_Royalty ps))
         ]
     )
-    (ref-TS01-C2::C_ATS|UpdateRoyalty aoz ps -1.0)
+    (ref-TS01-C2::ATS|C_UpdateRoyalty aoz ps -1.0)
     (map print
         [
             ;; UR_Royalty (08_ATS.pact:870-873) already normalizes a stored -1.0 to read back as
@@ -3705,7 +3705,7 @@
             (expect "-1.0 remains a valid \"off\" sentinel (reads back normalized to 0.0), unaffected by the ceiling" 0.0 (ref-ATS::UR_Royalty ps))
         ]
     )
-    (ref-TS01-C2::C_ATS|UpdateRoyalty aoz ps 0.0)
+    (ref-TS01-C2::ATS|C_UpdateRoyalty aoz ps 0.0)
     (map print
         [
             (expect "0.0 remains a valid \"off\" sentinel, unaffected by the ceiling" 0.0 (ref-ATS::UR_Royalty ps))

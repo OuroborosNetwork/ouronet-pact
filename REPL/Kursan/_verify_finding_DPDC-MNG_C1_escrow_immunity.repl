@@ -27,12 +27,12 @@
     (print (format "dpdc account = {}" [dpdc]))
     (print (format "BEFORE anhd nonce4 supply = {}" [(ref-DPDC::UR_AccountNonceSupply KST.ANHD id true 3)]))
     (print (format "MAKE FRAGMENTS RESULT = {}"
-        [(ref-TS02-C1::C_DPSF|MakeFragments KST.ANHD KST.ANHD id 3 100)]))
+        [(ref-TS02-C1::DPSF|C_MakeFragments KST.ANHD KST.ANHD id 3 100)]))
     (print (format "dpdc nonce4 (escrowed collateral) supply = {}" [(ref-DPDC::UR_AccountNonceSupply dpdc id true 3)]))
     ;; Prove burn's real precondition is just the burn ROLE, nothing about freeze — grant it to dpdc,
     ;; simulating an accidental/malicious role grant, and deliberately do NOT freeze dpdc.
     (print (format "GRANT BURN ROLE TO dpdc RESULT = {}"
-        [(ref-TS02-C1::C_DPSF|ToggleBurnRole KST.ANHD id dpdc true)]))
+        [(ref-TS02-C1::DPSF|C_ToggleBurnRole KST.ANHD id dpdc true)]))
 )
 (commit-tx)
 
@@ -49,7 +49,7 @@
     (print (format "BEFORE anhd nonce1 supply = {}" [(ref-DPDC::UR_AccountNonceSupply KST.ANHD id true 1)]))
     ;; ANHD already holds the burn role by default (owner==creator at genesis) — no need to grant it.
     (print (format "LEGIT BURN RESULT = {}"
-        [(ref-TS02-C1::C_DPSF|Burn KST.ANHD id KST.ANHD 1 50)]))
+        [(ref-TS02-C1::DPSF|C_Burn KST.ANHD id KST.ANHD 1 50)]))
     (print (format "AFTER legit burn: anhd nonce1 supply = {}" [(ref-DPDC::UR_AccountNonceSupply KST.ANHD id true 1)]))
 )
 (commit-tx)
@@ -69,6 +69,6 @@
         (id:string "DHOC-98c486052a51")
         (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
     )
-    (ref-TS02-C1::C_DPSF|Burn KST.ANHD id dpdc 3 50)
+    (ref-TS02-C1::DPSF|C_Burn KST.ANHD id dpdc 3 50)
 )
 (commit-tx)

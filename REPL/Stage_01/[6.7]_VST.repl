@@ -74,9 +74,9 @@
             (format "Emma s-vst is {}" [(ref-DPTF::UR_IzAccount s-vst emma)])
         ]
         [
-            (ref-TS01-C2::C_VST|ToggleTransferRoleFrozenDPTF patron f-vst emma true)
-            (ref-TS01-C2::C_VST|ToggleTransferRoleReservedDPTF patron r-ouro emma true)
-            (ref-TS01-C2::C_VST|ToggleTransferRoleSleepingDPOF patron s-vst emma true)
+            (ref-TS01-C2::VST|C_ToggleTransferRoleFrozenDPTF patron f-vst emma true)
+            (ref-TS01-C2::VST|C_ToggleTransferRoleReservedDPTF patron r-ouro emma true)
+            (ref-TS01-C2::VST|C_ToggleTransferRoleSleepingDPOF patron s-vst emma true)
         ]
         [
             (format "Emma F-VST Transfer Role is {}" [(ref-DPTF::UR_AccountRoleTransfer f-vst emma)])
@@ -139,54 +139,54 @@
         (v-auryn:string "V|AURYN-98c486052a51")
         (v-e-auryn:string "V|ELITEAURYN-98c486052a51")
     )
-    (ref-TS01-C2::C_ATS|VestedCoil patron patron a-idx ouro 100.0 emma 3600 7200 5)
-    (ref-TS01-C2::C_ATS|VestedCurl patron patron a-idx ea-idx ouro 250.0 emma 360 720 6)
+    (ref-TS01-C2::ATS|C_VestedCoil patron patron a-idx ouro 100.0 emma 3600 7200 5)
+    (ref-TS01-C2::ATS|C_VestedCurl patron patron a-idx ea-idx ouro 250.0 emma 360 720 6)
 
     ;;Mint 100 mil VST
-    (ref-TS01-C1::C_DPTF|ToggleMintRole patron vst patron true)
-    (ref-TS01-C1::C_DPTF|Mint patron vst patron 100000000.0 false)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 5000.0 432000)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 6000.0 518400)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 7000.0 604800)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 8000.0 691200)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 9000.0 777600)
+    (ref-TS01-C1::DPTF|C_ToggleMintRole patron vst patron true)
+    (ref-TS01-C1::DPTF|C_Mint patron vst patron 100000000.0 false)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 5000.0 432000)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 6000.0 518400)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 7000.0 604800)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 8000.0 691200)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 9000.0 777600)
 
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 5000.0 5432000)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 6000.0 4518400)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 7000.0 3604800)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 8000.0 2691200)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 9000.0 1777600)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 5000.0 5432000)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 6000.0 4518400)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 7000.0 3604800)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 8000.0 2691200)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 9000.0 1777600)
 
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 5000.0 5432000)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 6000.0 4518400)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 7000.0 3604800)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 8000.0 2691200)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 9000.0 2777600)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 5000.0 5432000)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 6000.0 4518400)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 7000.0 3604800)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 8000.0 2691200)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 9000.0 2777600)
 
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 51000.0 432000)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 6000.0 1518400)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 7000.0 1604800)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 8000.0 2691200)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 9000.0 1777600)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 51000.0 432000)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 6000.0 1518400)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 7000.0 1604800)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 8000.0 2691200)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 9000.0 1777600)
 
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 57000.0 432000)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 6000.0 1518400)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 7000.0 1604800)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 8000.0 2691200)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 9000.0 1777600)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 57000.0 432000)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 6000.0 1518400)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 7000.0 1604800)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 8000.0 2691200)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 9000.0 1777600)
 
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 13000.0 432000)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 6000.0 1518400)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 7000.0 1604800)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 8000.0 2691200)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 9000.0 1777600)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 13000.0 432000)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 6000.0 1518400)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 7000.0 1604800)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 8000.0 2691200)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 9000.0 1777600)
 
     ;;Sleept 6500 VST to Emma
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 5000.0 432000)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 6000.0 518400)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 7000.0 604800)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 8000.0 691200)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 9000.0 777600)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 5000.0 432000)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 6000.0 518400)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 7000.0 604800)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 8000.0 691200)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 9000.0 777600)
     [
         (format "Emma F-VST Transfer Role is {}" [(ref-DPTF::UR_AccountRoleTransfer f-vst emma)])
         (format "Emma R-OURO Transfer Role is {}" [(ref-DPTF::UR_AccountRoleTransfer r-ouro emma)])
@@ -266,7 +266,7 @@
         {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
         "block-time": (time "2024-10-19T00:00:00Z")}
     )
-    ;(ref-TS01-C2::C_VST|Unsleep patron emma s-vst 26)
+    ;(ref-TS01-C2::VST|C_Unsleep patron emma s-vst 26)
 
     [
         ;(format "Emma has {} Sleeping Vesta" [(ref-DPOF::UR_AccountSupply s-vst emma)])
@@ -353,7 +353,7 @@
 
         (dwk:string "DWK-98c486052a51")
     )
-    ;(ref-TS01-C2::C_LQD|UnwrapStoa patron patron 150.0)      ;;INSUFICCINET when standalone
+    ;(ref-TS01-C2::LQD|C_UnwrapStoa patron patron 150.0)      ;;INSUFICCINET when standalone
 
     [
         ;(format "Emma has {} Sleeping Vesta" [(ref-DPOF::UR_AccountSupply s-vst emma)])
@@ -424,10 +424,10 @@
         {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
         "block-time": (time "2024-10-19T00:00:00Z")}
     )
-    ;(ref-TS01-C2::C_VST|Unsleep patron emma s-vst 36)
-    (ref-TS01-C1::C_DPTF|SetMinMove patron vst 500.0)
-    ;(ref-TS01-C1::C_DPTF|ToggleFee patron vst true)
-    ;(ref-TS01-C1::C_DPTF|Transfer patron vst emma lumy 500.0 false)
+    ;(ref-TS01-C2::VST|C_Unsleep patron emma s-vst 36)
+    (ref-TS01-C1::DPTF|C_SetMinMove patron vst 500.0)
+    ;(ref-TS01-C1::DPTF|C_ToggleFee patron vst true)
+    ;(ref-TS01-C1::DPTF|C_Transfer patron vst emma lumy 500.0 false)
 
     [
         ;(format "Emma has {} Sleeping Vesta" [(ref-DPOF::UR_AccountSupply s-vst emma)])

@@ -79,10 +79,10 @@
     )
     ;;==== TX-FVT-01 · 02 · issue TF anchor on OURO — REPL ==========================
     (print "--- [TX-FVT-01 · 02 · C_IssueTrueFungibleAnchor on OURO] ---")
-    (print (format "<(TS02-C3.C_AQP-ANK|IssueTrueFungibleAnchor TfStakeAnchor)> => \"{}\"" [(ref-TS02-C3::C_AQP-ANK|IssueTrueFungibleAnchor patron "TfStakeAnchor" ouro-id true boost-class-name 3 500.0 5000.0)]))
+    (print (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TfStakeAnchor)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TfStakeAnchor" ouro-id true boost-class-name 3 500.0 5000.0)]))
     ;;==== TX-FVT-01 · 03 · issue class-1 TF score — REPL ===========================
     (print "--- [TX-FVT-01 · 03 · C_IssueTrueFungibleScore] ---")
-    (print (format "<(TS02-C3.C_AQP-SCR|IssueTrueFungibleScore TfStakeScore)> => \"{}\"" [(ref-TS02-C3::C_AQP-SCR|IssueTrueFungibleScore patron owner-konto score-name 12 1.0)]))
+    (print (format "<(TS02-C3.AQP-SCR|C_IssueTrueFungibleScore TfStakeScore)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron owner-konto score-name 12 1.0)]))
     ;;==== TX-FVT-01 · 04 · post-issue reads + expect — REPL ========================
     (print "--- [TX-FVT-01 · 04 · post-issue reads + expect] ---")
     (let
@@ -180,13 +180,13 @@
     )
     ;;==== TX-FVT-02 · 02 · issue class-1 pool on OURO + C_AddScore — REPL ===========
     (print "--- [TX-FVT-02 · 02 · C_Issue class-1 pool + C_AddScore] ---")
-    (print (format "<(TS02-C3.C_AQP-POOL|Issue class=1 OURO)> => \"{}\"" [(ref-TS02-C3::C_AQP-POOL|Issue patron pool-name ouro-id aqp-class)]))
-    (print (format "<(TS02-C3.C_AQP-POOL|AddScore)> => \"{}\"" [(ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)]))
+    (print (format "<(TS02-C3.AQP-POOL|C_Issue class=1 OURO)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_Issue patron pool-name ouro-id aqp-class)]))
+    (print (format "<(TS02-C3.AQP-POOL|C_AddScore)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)]))
     ;;==== TX-FVT-02 · 03 · C_Issue vault + C_AddRewardLink + C_AddScoreEntity — REPL =====
     (print "--- [TX-FVT-02 · 03 · C_Issue vault + C_AddRewardLink + C_AddScoreEntity] ---")
-    (print (format "<(TS02-C3.C_AQP-FVT|Issue class=1 vault)> => \"{}\"" [(ref-TS02-C3::C_AQP-FVT|Issue patron fvt-name patron fvt-class "|")]))
-    (print (format "<(TS02-C3.C_AQP-FVT|AddRewardLink OURO)> => \"{}\"" [(let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-TS02-C3::C_AQP-FVT|AddRewardLink patron fvt-id ouro-id false (ref-U|CT::CT_BAR)))]))
-    (print (format "<(TS02-C3.C_AQP-FVT|AddScoreEntity)> => \"{}\"" [(ref-TS02-C3::C_AQP-FVT|AddScoreEntity patron fvt-id 1 score-id)]))
+    (print (format "<(TS02-C3.AQP-FVT|C_Issue class=1 vault)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_Issue patron fvt-name patron fvt-class "|")]))
+    (print (format "<(TS02-C3.AQP-FVT|C_AddRewardLink OURO)> => \"{}\"" [(let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron fvt-id ouro-id false (ref-U|CT::CT_BAR)))]))
+    (print (format "<(TS02-C3.AQP-FVT|C_AddScoreEntity)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron fvt-id 1 score-id)]))
     ;;==== TX-FVT-02 · 04 · pre-stake readiness reads + expect — REPL ===============
     (print "--- [TX-FVT-02 · 04 · FVT stake-ready reads + expect] ---")
     (let
@@ -271,7 +271,7 @@
     ;;==== TX-FVT-03 · 02 · env-sigs + CC_StakeTrueFungible — REPL =================
     (print "--- [TX-FVT-03 · 02 · env-sigs + CC_StakeTrueFungible] ---")
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (print (format "<(TS02-C3.CC_AQP-POOL|StakeTrueFungible amount={})> => \"{}\"" [stake-amount (ref-TS02-C3::CC_AQP-POOL|StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id stake-amount)]))
+    (print (format "<(TS02-C3.AQP-POOL|CC_StakeTrueFungible amount={})> => \"{}\"" [stake-amount (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id stake-amount)]))
     ;;==== TX-FVT-03 · 03 · post-stake reads + expect — REPL =======================
     (print "--- [TX-FVT-03 · 03 · post-stake reads + expect] ---")
     (let
@@ -347,8 +347,8 @@
     )
     (print "--- [TX-FVT-04 · 01 · ToggleScoreLink off/on] ---")
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (print (format "<(TS02-C3.C_AQP-FVT|ToggleScoreEntityLink off)> => \"{}\"" [(ref-TS02-C3::C_AQP-FVT|ToggleScoreEntityLink patron fvt-id 1 score-id false)]))
-    (print (format "<(TS02-C3.C_AQP-FVT|ToggleScoreEntityLink on)> => \"{}\"" [(ref-TS02-C3::C_AQP-FVT|ToggleScoreEntityLink patron fvt-id 1 score-id true)]))
+    (print (format "<(TS02-C3.AQP-FVT|C_ToggleScoreEntityLink off)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_ToggleScoreEntityLink patron fvt-id 1 score-id false)]))
+    (print (format "<(TS02-C3.AQP-FVT|C_ToggleScoreEntityLink on)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_ToggleScoreEntityLink patron fvt-id 1 score-id true)]))
     (print "--- [TX-FVT-04 · 02 · post-toggle reads + expect] ---")
     (let
         (
@@ -410,8 +410,8 @@
     (print "--- [TX-FVT-05 · 01 · inject OURO into vault] ---")
     (enforce (>= ouro-pre inject-amt) "TX-FVT-05: patron needs OURO for inject")
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (print (format "<(TS02-C3.CC_AQP-FVT|Inject amount={})> => \"{}\"" [inject-amt
-        (ref-TS02-C3::CC_AQP-FVT|Inject patron fvt-id ouro-id inject-amt)
+    (print (format "<(TS02-C3.AQP-FVT|CC_Inject amount={})> => \"{}\"" [inject-amt
+        (ref-TS02-C3::AQP-FVT|CC_Inject patron fvt-id ouro-id inject-amt)
     ]))
     (let
         (
@@ -442,8 +442,8 @@
                 (pre-gas:decimal (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" patron))
             )
             (print (format "<(URCi_CollectFull plain→ignis-need)> = {} ; patron pre-gas = {}" [predicted pre-gas]))
-            (print (format "<(TS02-C3.CC_AQP-FVT|Collect type=1)> => \"{}\"" [
-                (ref-TS02-C3::CC_AQP-FVT|Collect patron fvt-id 1 score-id ouro-id)
+            (print (format "<(TS02-C3.AQP-FVT|CC_Collect type=1)> => \"{}\"" [
+                (ref-TS02-C3::AQP-FVT|CC_Collect patron fvt-id 1 score-id ouro-id)
             ]))
             (let ((post-gas:decimal (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" patron)))
                 (map print
@@ -477,8 +477,8 @@
                 (
                     (ouro-before-2:decimal (ref-DPTF::UR_AccountSupply ouro-id patron))
                 )
-                (print (format "<(TS02-C3.CC_AQP-FVT|Collect second)> => \"{}\"" [
-                    (ref-TS02-C3::CC_AQP-FVT|Collect patron fvt-id 1 score-id ouro-id)
+                (print (format "<(TS02-C3.AQP-FVT|CC_Collect second)> => \"{}\"" [
+                    (ref-TS02-C3::AQP-FVT|CC_Collect patron fvt-id 1 score-id ouro-id)
                 ]))
                 (let
                     (
@@ -532,7 +532,7 @@
     (env-chain-data { "block-time": t0 })
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (let ((ouro-pre:decimal (ref-DPTF::UR_AccountSupply ouro-id patron)))
-        (print (format "<(CC_AQP-FVT|InjectStream)> => \"{}\"" [(ref-TS02-C3::CC_AQP-FVT|InjectStream patron fvt-id ouro-id 240.0 86400)]))
+        (print (format "<(AQP-FVT|CC_InjectStream)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|CC_InjectStream patron fvt-id ouro-id 240.0 86400)]))
         (map print
             [ (expect "<<05b>> stream-count = 1 after inject" 1 (AQP-FVT.UR_FVT-RG|StreamCount fvt-id ouro-id))
               (expect "<<05b>> stream-unreleased = 240 after inject" 240.0 (AQP-FVT.UR_FVT-RG|StreamUnreleased fvt-id ouro-id))
@@ -550,7 +550,7 @@
             [ (format "<<05b>> URC_LiveClaimable @12h (pre-collect) = {}" [live])
               (expect (format "<<05b>> URC_LiveClaimable projects ~120 @12h got={}" [live]) true (and (> live 119.99) (< live 120.01))) ]))
     (let ((ouro-pre:decimal (ref-DPTF::UR_AccountSupply ouro-id patron)))
-        (print (format "<(CC_Collect @12h)> => \"{}\"" [(ref-TS02-C3::CC_AQP-FVT|Collect patron fvt-id 1 score-id ouro-id)]))
+        (print (format "<(CC_Collect @12h)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|CC_Collect patron fvt-id 1 score-id ouro-id)]))
         (let ((payout:decimal (- (ref-DPTF::UR_AccountSupply ouro-id patron) ouro-pre)))
             (map print
                 [ (format "<<05b>> payout @12h = {}" [payout])
@@ -562,7 +562,7 @@
     (env-chain-data { "block-time": (add-time t0 86400) })
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (let ((ouro-pre:decimal (ref-DPTF::UR_AccountSupply ouro-id patron)))
-        (print (format "<(CC_Collect @24h)> => \"{}\"" [(ref-TS02-C3::CC_AQP-FVT|Collect patron fvt-id 1 score-id ouro-id)]))
+        (print (format "<(CC_Collect @24h)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|CC_Collect patron fvt-id 1 score-id ouro-id)]))
         (let
             (
                 (payout:decimal (- (ref-DPTF::UR_AccountSupply ouro-id patron) ouro-pre))
@@ -624,8 +624,8 @@
             }
         ]
     )
-    (print (format "<(C_AQP-ANK|IssueTrueFungibleAnchor TfStakeAnchor2)> => \"{}\"" [
-        (ref-TS02-C3::C_AQP-ANK|IssueTrueFungibleAnchor patron "TfStakeAnchor2" ouro-id true boost-class-name 3 250.0 5000.0)
+    (print (format "<(AQP-ANK|C_IssueTrueFungibleAnchor TfStakeAnchor2)> => \"{}\"" [
+        (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TfStakeAnchor2" ouro-id true boost-class-name 3 250.0 5000.0)
     ]))
     (let
         (
@@ -657,8 +657,8 @@
                 (pre-gas:decimal (ref-DPTF2::UR_AccountSupply "GAS-98c486052a51" patron))
             )
             (print (format "<(URCi_SyncTrueFungibleAnchorsFull→ignis-need)> = {} ; patron pre-gas = {}" [predicted pre-gas]))
-            (print (format "<(C_AQP-POOL|SyncTrueFungibleAnchors)> => \"{}\"" [
-                (ref-TS02-C3::C_AQP-POOL|SyncTrueFungibleAnchors patron beneficiary-id ouro-id)
+            (print (format "<(AQP-POOL|C_SyncTrueFungibleAnchors)> => \"{}\"" [
+                (ref-TS02-C3::AQP-POOL|C_SyncTrueFungibleAnchors patron beneficiary-id ouro-id)
             ]))
             (let ((post-gas:decimal (ref-DPTF2::UR_AccountSupply "GAS-98c486052a51" patron)))
                 (map print
@@ -727,8 +727,8 @@
     (print "--- [TX-FVT-07 · 01 · partial unstake 40] ---")
     (enforce (>= tracker-pre 100.0) "TX-FVT-07 expects ≥100 staked from TX-FVT-03")
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (print (format "<(CC_AQP-POOL|UnstakeTrueFungible {})> => \"{}\"" [partial-amt
-        (ref-TS02-C3::CC_AQP-POOL|UnstakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id partial-amt)
+    (print (format "<(AQP-POOL|CC_UnstakeTrueFungible {})> => \"{}\"" [partial-amt
+        (ref-TS02-C3::AQP-POOL|CC_UnstakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id partial-amt)
     ]))
     (let
         (
@@ -753,8 +753,8 @@
             ]
         )
         (print "--- [TX-FVT-07 · 02 · full remainder unstake] ---")
-        (print (format "<(CC_AQP-POOL|UnstakeTrueFungible remainder {})> => \"{}\"" [remain
-            (ref-TS02-C3::CC_AQP-POOL|UnstakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id remain)
+        (print (format "<(AQP-POOL|CC_UnstakeTrueFungible remainder {})> => \"{}\"" [remain
+            (ref-TS02-C3::AQP-POOL|CC_UnstakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id remain)
         ]))
         (let
             (
@@ -841,13 +841,13 @@
         ]
     )
     (print (format "<(C_IssueTrueFungibleScore TfMosaicScore)> => \"{}\"" [
-        (ref-TS02-C3::C_AQP-SCR|IssueTrueFungibleScore patron owner-konto score-name 12 1.0)
+        (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron owner-konto score-name 12 1.0)
     ]))
     (print (format "<(C_Issue pool + AddScore)> => \"{}\"" [
-        (ref-TS02-C3::C_AQP-POOL|Issue patron pool-name ouro-id 1)
+        (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name ouro-id 1)
     ]))
-    (print (format "<(C_AddScore)> => \"{}\"" [(ref-TS02-C3::C_AQP-POOL|AddScore patron pool-id score-id)]))
-    (print (format "<(C_Issue vault)> => \"{}\"" [(ref-TS02-C3::C_AQP-FVT|Issue patron fvt-name patron 1 "|")]))
+    (print (format "<(C_AddScore)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)]))
+    (print (format "<(C_Issue vault)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_Issue patron fvt-name patron 1 "|")]))
     (let
         (
             (mosaic-default:bool (ref-FVT::UR_FVT|Mosaic fvt-id))
@@ -862,7 +862,7 @@
     )
     (print "--- [TX-FVT-08 · 02 · SetMosaic false then true (no links)] ---")
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (print (format "<(C_SetMosaic false)> => \"{}\"" [(ref-TS02-C3::C_AQP-FVT|SetMosaic patron fvt-id false)]))
+    (print (format "<(C_SetMosaic false)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_SetMosaic patron fvt-id false)]))
     (let
         (
             (m1:bool (ref-FVT::UR_FVT|Mosaic fvt-id))
@@ -875,14 +875,14 @@
             ]
         )
     )
-    (print (format "<(C_SetMosaic true)> => \"{}\"" [(ref-TS02-C3::C_AQP-FVT|SetMosaic patron fvt-id true)]))
-    (print (format "<(C_SetMosaic false again)> => \"{}\"" [(ref-TS02-C3::C_AQP-FVT|SetMosaic patron fvt-id false)]))
+    (print (format "<(C_SetMosaic true)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_SetMosaic patron fvt-id true)]))
+    (print (format "<(C_SetMosaic false again)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_SetMosaic patron fvt-id false)]))
     (print "--- [TX-FVT-08 · 03 · reward + AddScoreEntity locks SCORE mode] ---")
     (print (format "<(C_AddRewardLink)> => \"{}\"" [
-        (ref-TS02-C3::C_AQP-FVT|AddRewardLink patron fvt-id ouro-id false bar)
+        (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron fvt-id ouro-id false bar)
     ]))
     (print (format "<(C_AddScoreEntity type=1)> => \"{}\"" [
-        (ref-TS02-C3::C_AQP-FVT|AddScoreEntity patron fvt-id 1 score-id)
+        (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron fvt-id 1 score-id)
     ]))
     (let
         (
@@ -900,7 +900,7 @@
     (map print
         [
             (expect-failure "<<TX-FVT-08>> SetMosaic blocked while ScoreEntityLink rows exist"
-                (ref-TS02-C3::C_AQP-FVT|SetMosaic patron fvt-id true))
+                (ref-TS02-C3::AQP-FVT|C_SetMosaic patron fvt-id true))
         ]
     )
 )
@@ -957,15 +957,15 @@
     )
     (if (< emma-ouro stake-e)
         (print (format "<(DPTF C_Transfer OURO ANHD→EMMA {})> => \"{}\"" [stake-e
-            (ref-TS01-C1::C_DPTF|Transfer patron ouro-id anhd emma stake-e true)
+            (ref-TS01-C1::DPTF|C_Transfer patron ouro-id anhd emma stake-e true)
         ]))
         true
     )
     (print (format "<(CC_StakeTrueFungible ANHD {})> => \"{}\"" [stake-a
-        (ref-TS02-C3::CC_AQP-POOL|StakeTrueFungible patron pool-id anhd anhd ouro-id stake-a)
+        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id anhd anhd ouro-id stake-a)
     ]))
     (print (format "<(CC_StakeTrueFungible EMMA {})> => \"{}\"" [stake-e
-        (ref-TS02-C3::CC_AQP-POOL|StakeTrueFungible patron pool-id emma emma ouro-id stake-e)
+        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id emma emma ouro-id stake-e)
     ]))
     (let
         (
@@ -988,13 +988,13 @@
                 (ouro-e-pre:decimal (ref-DPTF::UR_AccountSupply ouro-id emma))
             )
             (print (format "<(C_Inject {})> => \"{}\"" [inject-amt
-                (ref-TS02-C3::CC_AQP-FVT|Inject patron fvt-id ouro-id inject-amt)
+                (ref-TS02-C3::AQP-FVT|CC_Inject patron fvt-id ouro-id inject-amt)
             ]))
             (print (format "<(CC_Collect ANHD)> => \"{}\"" [
-                (ref-TS02-C3::CC_AQP-FVT|Collect anhd fvt-id 1 score-id ouro-id)
+                (ref-TS02-C3::AQP-FVT|CC_Collect anhd fvt-id 1 score-id ouro-id)
             ]))
             (print (format "<(CC_Collect EMMA)> => \"{}\"" [
-                (ref-TS02-C3::CC_AQP-FVT|Collect emma fvt-id 1 score-id ouro-id)
+                (ref-TS02-C3::AQP-FVT|CC_Collect emma fvt-id 1 score-id ouro-id)
             ]))
             (let
                 (
@@ -1068,10 +1068,10 @@
         (pre-anhd-deb:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore owner-id pool-id score-id))
     )
     (enforce (>= pre-owner-supply stake-amount) "TX-FVT-10: owner needs OURO for the non-self proof")
-    (ref-TS02-C3::C_AQP-POOL|EnablePoolStake patron pool-id)
+    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
     ;;==== TX-FVT-10 · 01 · owner ANHD stakes FOR foreign beneficiary EMMA ====
     (print "--- [TX-FVT-10 · 01 · stake owner=ANHD, beneficiary=EMMA] ---")
-    (ref-TS02-C3::CC_AQP-POOL|StakeTrueFungible patron pool-id owner-id foreign-ben ouro-id stake-amount)
+    (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id foreign-ben ouro-id stake-amount)
     (let
         (
             (post-ben-bal:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id foreign-ben))
@@ -1089,7 +1089,7 @@
     )
     ;;==== TX-FVT-10 · 02 · non-self unstake removes EMMA's weight + clears the foreign row ====
     (print "--- [TX-FVT-10 · 02 · unstake owner=ANHD, beneficiary=EMMA] ---")
-    (ref-TS02-C3::CC_AQP-POOL|UnstakeTrueFungible patron pool-id owner-id foreign-ben ouro-id stake-amount)
+    (ref-TS02-C3::AQP-POOL|CC_UnstakeTrueFungible patron pool-id owner-id foreign-ben ouro-id stake-amount)
     (let
         (
             (post2-ben-bal:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id foreign-ben))

@@ -169,14 +169,14 @@
             (OuroID:string (ref-DALOS::UR_OuroborosID))
         )
         ;;Deploy Dispenser, Custodians and Treasury Standard Ouronet Accounts
-        (ref-TS01-A::A_DALOS|DeployStandardAccount KC2.DPTS_NAME_a  (keyset-ref-guard "ouronet-ns.dh_sc_dispenser-keyset")     KC2.KADN_NAME_a PBLC_a)
-        (ref-TS01-A::A_DALOS|DeployStandardAccount KC2.DPTS_NAME_b  (keyset-ref-guard "ouronet-ns.dh_sc_custodians-keyset")    KC2.KADN_NAME_b PBLC_b)
-        ;(ref-TS01-A::A_DALOS|DeployStandardAccount KC2.DPTS_NAME_c  (keyset-ref-guard "ouronet-ns.dh_sc_dhvault-keyset")       KC2.KADN_NAME_c PBLC_c)
+        (ref-TS01-A::DALOS|A_DeployStandardAccount KC2.DPTS_NAME_a  (keyset-ref-guard "ouronet-ns.dh_sc_dispenser-keyset")     KC2.KADN_NAME_a PBLC_a)
+        (ref-TS01-A::DALOS|A_DeployStandardAccount KC2.DPTS_NAME_b  (keyset-ref-guard "ouronet-ns.dh_sc_custodians-keyset")    KC2.KADN_NAME_b PBLC_b)
+        ;(ref-TS01-A::DALOS|A_DeployStandardAccount KC2.DPTS_NAME_c  (keyset-ref-guard "ouronet-ns.dh_sc_dhvault-keyset")       KC2.KADN_NAME_c PBLC_c)
         ;;
         ;;Deploy Dispenser, Custodians and Treasury Smart Ouronet Accounts
-        (ref-TS01-A::A_DALOS|DeploySmartAccount KC2.DPTS_NAME_1     (keyset-ref-guard "ouronet-ns.dh_sc_dispenser-keyset")     KC2.KADN_NAME_1 KC2.DPTS_NAME_a PBLC_a)
-        (ref-TS01-A::A_DALOS|DeploySmartAccount KC2.DPTS_NAME_2     (keyset-ref-guard "ouronet-ns.dh_sc_custodians-keyset")    KC2.KADN_NAME_2 KC2.DPTS_NAME_b PBLC_b)
-        ;(ref-TS01-A::A_DALOS|DeploySmartAccount KC2.DPTS_NAME_3     (keyset-ref-guard "ouronet-ns.dh_sc_dhvault-keyset")       KC2.KADN_NAME_3 KC2.DPTS_NAME_c PBLC_c)
+        (ref-TS01-A::DALOS|A_DeploySmartAccount KC2.DPTS_NAME_1     (keyset-ref-guard "ouronet-ns.dh_sc_dispenser-keyset")     KC2.KADN_NAME_1 KC2.DPTS_NAME_a PBLC_a)
+        (ref-TS01-A::DALOS|A_DeploySmartAccount KC2.DPTS_NAME_2     (keyset-ref-guard "ouronet-ns.dh_sc_custodians-keyset")    KC2.KADN_NAME_2 KC2.DPTS_NAME_b PBLC_b)
+        ;(ref-TS01-A::DALOS|A_DeploySmartAccount KC2.DPTS_NAME_3     (keyset-ref-guard "ouronet-ns.dh_sc_dhvault-keyset")       KC2.KADN_NAME_3 KC2.DPTS_NAME_c PBLC_c)
         ;;
     )
 
@@ -266,7 +266,7 @@
     ;;1]Define IMC for Dispenser
     (ref-P|DSP::P|A_Define)
     ;;2]Reconfigure DALOS Governor, to be accesable from Dispenser, in order to use Gassless Patron for dispensing
-    (ref-TS01-C1::C_DALOS|RotateGovernor patron dalos-sc
+    (ref-TS01-C1::DALOS|C_RotateGovernor patron dalos-sc
         (ref-U|G::UEV_GuardOfAny
             [
                 (ref-P|DALOS::P|UR "TFT|RemoteDalosGov")
@@ -278,20 +278,20 @@
         )
     )
     ;;3]Reconfigure the SMART-DHVault Governor, to acces it fro mthe DSP Module
-    (ref-TS01-C1::C_DALOS|RotateGovernor patron smart-dhvault-sc
+    (ref-TS01-C1::DALOS|C_RotateGovernor patron smart-dhvault-sc
         (ref-P|DALOS::P|UR "DSP|RemoteDalosGov")
     )
     ;;4]Toggle Mint Role for Ouro on Dispenser
-    (ref-TS01-C1::C_DPTF|ToggleMintRole patron OuroID standard-dispenser true)
+    (ref-TS01-C1::DPTF|C_ToggleMintRole patron OuroID standard-dispenser true)
     ;;5]Toggle Mint Role for Primordial, Esoteric, and Ancient Kosons on Dispenser
     ;;#N2 fix: standard-dispenser is a system smart account (not self-owned) - admin variant
-    (ref-TS01-A::A_DPTF|DeployAccount patron PrimordialKosonID standard-dispenser)
-    (ref-TS01-A::A_DPTF|DeployAccount patron EsothericKosonID standard-dispenser)
-    (ref-TS01-A::A_DPTF|DeployAccount patron AncientKosonID standard-dispenser)
+    (ref-TS01-A::DPTF|A_DeployAccount patron PrimordialKosonID standard-dispenser)
+    (ref-TS01-A::DPTF|A_DeployAccount patron EsothericKosonID standard-dispenser)
+    (ref-TS01-A::DPTF|A_DeployAccount patron AncientKosonID standard-dispenser)
     ;;
-    (ref-TS01-C1::C_DPTF|ToggleMintRole patron PrimordialKosonID standard-dispenser true)
-    (ref-TS01-C1::C_DPTF|ToggleMintRole patron EsothericKosonID standard-dispenser true)
-    (ref-TS01-C1::C_DPTF|ToggleMintRole patron AncientKosonID standard-dispenser true)
+    (ref-TS01-C1::DPTF|C_ToggleMintRole patron PrimordialKosonID standard-dispenser true)
+    (ref-TS01-C1::DPTF|C_ToggleMintRole patron EsothericKosonID standard-dispenser true)
+    (ref-TS01-C1::DPTF|C_ToggleMintRole patron AncientKosonID standard-dispenser true)
 )
 
 ;;==== TX-03 [3.1] - DSP Init [1]: Dispenser Setup · 03 · gas echo ==== ===========================

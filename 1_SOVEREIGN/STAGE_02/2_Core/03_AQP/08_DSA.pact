@@ -686,7 +686,7 @@
     ;; [UEV] enforce
     (defun UEV_OpenGate:bool (fvt-id:string score-entity-id:string)
         @doc "Terminal open gate — after the operator's initial stake, the agency quintessence must clear \
-            \ unit-score/2. The Talos C_AQP-DSA|OpenAgency flow calls this at the END of the atomic open (admit → \
+            \ unit-score/2. The Talos AQP-DSA|C_OpenAgency flow calls this at the END of the atomic open (admit → \
             \ stake → THIS); a short operator stake fails here and rolls the whole open back. Unprotected read+enforce."
         (enforce (>= (URC_AgencyQuintessence score-entity-id) (/ (dec (UR_DSA-TMP|UnitScore fvt-id)) 2.0))
             "Open gate: operator must stake quintessence >= unit-score/2 to open")
@@ -904,7 +904,7 @@
     ;; [C]   client
     (defun C_AdmitAgency:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer)
-        @doc "Core admit of the ATOMIC open (the Talos C_AQP-DSA|OpenAgency flow drives the full sequence): admit \
+        @doc "Core admit of the ATOMIC open (the Talos AQP-DSA|C_OpenAgency flow drives the full sequence): admit \
             \ the operator's BLANK triplet as a delegation member of the class-0 vault FVT (XE_AdmitDelegationMember \
             \ — requires the sub-scores' fvt-links BAR, i.e. unstaked) + flip delegation on + record DSA|Agency. \
             \ Does NOT stake or gate: the deep DPDC custody transfer of the operator's stake needs the caller's \

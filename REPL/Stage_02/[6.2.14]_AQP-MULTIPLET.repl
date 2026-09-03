@@ -2,7 +2,7 @@
 ;; REPL/Stage_02/[6.2.14]_AQP-MULTIPLET.repl — AQP multiplet-family coverage (#79 Phase 2)
 ;;   Issues the chain-wide MultipletFamily reward ladder OURO -> Auryn -> Elite-Auryn, wired by the
 ;;   canonical Auryndex / EliteAuryndex ATS pairs (Coil/Curl outputs). Covers the uncovered
-;;   C_AQP-FVT|IssueMultipletFamily sovereign client op (fixture mirrors [6.2.9] Step10, but calls
+;;   AQP-FVT|C_IssueMultipletFamily sovereign client op (fixture mirrors [6.2.9] Step10, but calls
 ;;   the Talos op directly). Loaded after [6.2.4] so the FVT + Stage-1 AURYN economy exist.
 ;;
 (print "")
@@ -49,11 +49,11 @@
             }
         ]
     )
-    ;;==== TX-MF-001 · 02 · C_AQP-FVT|IssueMultipletFamily ====
+    ;;==== TX-MF-001 · 02 · AQP-FVT|C_IssueMultipletFamily ====
     (print "--- [TX-MF-001 · 02 · IssueMultipletFamily] ---")
     ;; token-1 (Auryn) must be reward-bearing on Auryndex (Coil), token-2 (Elite) on EliteAuryndex (Curl)
-    (print (ref-TS02-C3::C_AQP-FVT|IssueMultipletFamily patron ouro-id auryn-id elite-auryn-id ats-0-1-id ats-1-2-id))
-    (print "<<TX-MF-001>> C_AQP-FVT|IssueMultipletFamily OURO->Auryn->Elite OK")
+    (print (ref-TS02-C3::AQP-FVT|C_IssueMultipletFamily patron ouro-id auryn-id elite-auryn-id ats-0-1-id ats-1-2-id))
+    (print "<<TX-MF-001>> AQP-FVT|C_IssueMultipletFamily OURO->Auryn->Elite OK")
 )
 (print "===^^^===")
 (commit-tx)

@@ -222,9 +222,9 @@
     ;;
     ;;  [C]
     ;;
-    (defun C_HOT-RBT|UpdatePendingBranding:object{IgnisCollectorV2.OutputCumulator} (entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
-    (defun C_HOT-RBT|UpgradeBranding (patron:string entity-id:string months:integer))
-    (defun C_HOT-RBT|Repurpose:object{IgnisCollectorV2.OutputCumulator} (hot-rbt:string nonce:integer repurpose-to:string))
+    (defun HOT-RBT|C_UpdatePendingBranding:object{IgnisCollectorV2.OutputCumulator} (entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
+    (defun HOT-RBT|C_UpgradeBranding (patron:string entity-id:string months:integer))
+    (defun HOT-RBT|C_Repurpose:object{IgnisCollectorV2.OutputCumulator} (hot-rbt:string nonce:integer repurpose-to:string))
         ;;
     (defun C_Issue:object{IgnisCollectorV2.OutputCumulator}
         (
@@ -707,7 +707,7 @@
             (compose-capability (ATS|GOV))
         )
     )
-    ;; Fix (audit finding #5C / C5): C_HOT-RBT|UpdatePendingBranding/UpgradeBranding composed ATS|GOV
+    ;; Fix (audit finding #5C / C5): HOT-RBT|C_UpdatePendingBranding/UpgradeBranding composed ATS|GOV
     ;; directly with no preceding ownership check — ATS|GOV is legitimately required (the hot-rbt's
     ;; DPOF owner-konto is ATS|SC_NAME, so DPOF's own UEV_ParentOwnership resolves to "prove you own
     ;; ats-sc", which only ATS's own code can do), but nothing gated *which caller* could trigger it.
@@ -2866,7 +2866,7 @@
         )
     )
     ;;Hot RBT Management
-    (defun C_HOT-RBT|UpdatePendingBranding:object{IgnisCollectorV2.OutputCumulator}
+    (defun HOT-RBT|C_UpdatePendingBranding:object{IgnisCollectorV2.OutputCumulator}
         (entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
         (P|UEV_IMC)
         (let
@@ -2878,7 +2878,7 @@
             )
         )
     )
-    (defun C_HOT-RBT|UpgradeBranding (patron:string entity-id:string months:integer)
+    (defun HOT-RBT|C_UpgradeBranding (patron:string entity-id:string months:integer)
         (P|UEV_IMC)
         (let
             (
@@ -2889,7 +2889,7 @@
             )
         )
     )
-    (defun C_HOT-RBT|Repurpose:object{IgnisCollectorV2.OutputCumulator}
+    (defun HOT-RBT|C_Repurpose:object{IgnisCollectorV2.OutputCumulator}
         (hot-rbt:string nonce:integer repurpose-to:string)
         @doc "Fix (audit finding #22L test-coverage sweep): UR_NonceMetaData was called \
             \ with zero arguments where it requires (id nonce) - an unconditional crash, \

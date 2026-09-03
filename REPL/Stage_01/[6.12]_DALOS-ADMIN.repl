@@ -1,6 +1,6 @@
 ;;
 ;; REPL/Stage_01/[6.12]_DALOS-ADMIN.repl — DALOS admin-toggle coverage (#79 Phase 2)
-;;   Covers the uncovered global-config admin ops: A_DALOS|ToggleGAP, ToggleOAPU, SetAutoFueling,
+;;   Covers the uncovered global-config admin ops: DALOS|A_ToggleGAP, ToggleOAPU, SetAutoFueling,
 ;;   SetIgnisSourcePrice. Each is exercised idempotently — read the current value, then set the flag
 ;;   to that same value — so the write path is covered with ZERO net state change (safe to run in the
 ;;   shared Z.repl pipeline before Stage 2). MigrateLiquidFunds is intentionally excluded (it moves
@@ -34,12 +34,12 @@
             (ouro-price0:decimal (ref-DALOS::UR_OuroborosPrice))
         )
         ;; ToggleGAP enforces the value must CHANGE — flip to the opposite then flip back (net zero)
-        (ref-TS01-A::A_DALOS|ToggleGAP (not gap0))
-        (ref-TS01-A::A_DALOS|ToggleGAP gap0)
+        (ref-TS01-A::DALOS|A_ToggleGAP (not gap0))
+        (ref-TS01-A::DALOS|A_ToggleGAP gap0)
         ;; the rest are plain setters (no enforce-difference) — set each to its current value, no change
-        (ref-TS01-A::A_DALOS|ToggleOAPU oapu0)
-        (ref-TS01-A::A_DALOS|SetAutoFueling autofuel0)
-        (ref-TS01-A::A_DALOS|SetIgnisSourcePrice ouro-price0)
+        (ref-TS01-A::DALOS|A_ToggleOAPU oapu0)
+        (ref-TS01-A::DALOS|A_SetAutoFueling autofuel0)
+        (ref-TS01-A::DALOS|A_SetIgnisSourcePrice ouro-price0)
         ;; prove the idempotency (values unchanged) — batch the expects so every line prints
         (map print
             [

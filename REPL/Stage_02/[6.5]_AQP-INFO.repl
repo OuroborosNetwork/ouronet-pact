@@ -64,7 +64,7 @@
                 ;; the account-specific need is discount × full (non-negative, ≤ full)
                 (expect "<<ANK>> TF issue ignis-need ≤ full" true (<= (at "ignis-need" (at "ignis" i-tf-link)) 1000.0))
                 (expect "<<ANK>> preview carries the execution function name in pre-text" true
-                    (contains "Executes via TS02-C3.C_AQP-ANK|IssueTrueFungibleAnchor." (at "pre-text" i-tf-link)))
+                    (contains "Executes via TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor." (at "pre-text" i-tf-link)))
             ]
         )
     )

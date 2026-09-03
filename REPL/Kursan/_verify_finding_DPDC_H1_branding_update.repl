@@ -1,4 +1,4 @@
-;; Verification for DPDC Audit finding #9H (DPDC · H1): C_DPSF|UpdatePendingBranding passed 7 args to
+;; Verification for DPDC Audit finding #9H (DPDC · H1): DPSF|C_UpdatePendingBranding passed 7 args to
 ;; DPDC's 6-param C_UpdatePendingBranding, hard-aborting every single call. Fix: dropped the stray
 ;; leading `patron` argument in 01_TS02-C1.pact to match the correct DPNF sibling's call shape.
 ;; This probe: (1) proves the SFT path now actually succeeds (it never did before, on any input), and
@@ -26,7 +26,7 @@
     )
     (print (format "BEFORE pending logo = {}" [(ref-BRD::UR_Logo id true)]))
     (print (format "SFT UPDATE RESULT = {}"
-        [(ref-TS02-C1::C_DPSF|UpdatePendingBranding KST.ANHD id
+        [(ref-TS02-C1::DPSF|C_UpdatePendingBranding KST.ANHD id
             "https://example.com/logo.png" "The best DPSF collection" "https://example.com" [])]))
     (print (format "AFTER pending logo = {}" [(ref-BRD::UR_Logo id true)]))
     (print (format "AFTER pending description = {}" [(ref-BRD::UR_Description id true)]))
@@ -45,7 +45,7 @@
     )
     ;; DHN's collection-owner is LUMY (per genesis), not ANHD
     (print (format "NFT UPDATE RESULT = {}"
-        [(ref-TS02-C2::C_DPNF|UpdatePendingBranding KST.LUMY id
+        [(ref-TS02-C2::DPNF|C_UpdatePendingBranding KST.LUMY id
             "https://example.com/nft-logo.png" "The best DPNF collection" "https://example.com" [])]))
     (print (format "AFTER NFT pending logo = {}" [(ref-BRD::UR_Logo id true)]))
 )

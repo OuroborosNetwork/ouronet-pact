@@ -219,7 +219,7 @@
                 (ref-P|SWP:module{OuronetPolicyV2} SWP)
                 (ref-P|SWPL:module{OuronetPolicyV2} SWPL)
                 ;;#36M/M5 fix: MTX-SWP now calls SWPI::XE_IssueWrite (P|UEV_IMC-gated)
-                ;;directly from C_MTX|Issue's Step 3, so MTX-SWP must register itself
+                ;;directly from MTX|C_Issue's Step 3, so MTX-SWP must register itself
                 ;;as an approved IMC caller on SWPI too — same as every other module
                 ;;it already calls into below.
                 (ref-P|SWPI:module{OuronetPolicyV2} SWPI)
@@ -402,7 +402,7 @@
         (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool)
         (P|UEV_IMC)
         (with-capability (MTX-SWP|C>ISSUE-S-POOL pool-tokens)
-            (C_MTX|Issue
+            (MTX|C_Issue
                 patron account pool-tokens fee-lp
                 (make-list (length pool-tokens) 1.0)
                 amp p
@@ -413,7 +413,7 @@
         (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool)
         (P|UEV_IMC)
         (with-capability (MTX-SWP|C>ISSUE-W-POOL pool-tokens)
-            (C_MTX|Issue
+            (MTX|C_Issue
                 patron account pool-tokens fee-lp
                 weights
                 -1.0 p
@@ -424,7 +424,7 @@
         (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool)
         (P|UEV_IMC)
         (with-capability (MTX-SWP|C>ISSUE-P-POOL pool-tokens)
-            (C_MTX|Issue
+            (MTX|C_Issue
                 patron account pool-tokens fee-lp
                 (make-list (length pool-tokens) 1.0)
                 -1.0 p
@@ -436,38 +436,38 @@
         (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
         (P|UEV_IMC)
         (with-capability (MTX-SWP|S>ADD-LQ stoa-pid)
-            (C_MTX|AddLiquidity patron account swpair input-amounts true true stoa-pid)
+            (MTX|C_AddLiquidity patron account swpair input-amounts true true stoa-pid)
         )
     )
     (defun C_AddIcedLiquidity
         (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
         (P|UEV_IMC)
         (with-capability (MTX-SWP|S>ADD-LQ stoa-pid)
-            (C_MTX|AddLiquidity patron account swpair input-amounts false true stoa-pid)
+            (MTX|C_AddLiquidity patron account swpair input-amounts false true stoa-pid)
         )
     )
     (defun C_AddGlacialLiquidity
         (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
         (P|UEV_IMC)
         (with-capability (MTX-SWP|S>ADD-LQ stoa-pid)
-            (C_MTX|AddLiquidity patron account swpair input-amounts false false stoa-pid)
+            (MTX|C_AddLiquidity patron account swpair input-amounts false false stoa-pid)
         )
     )
     (defun C_AddFrozenLiquidity
         (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal)
         (P|UEV_IMC)
         (with-capability (MTX-SWP|S>ADD-LQ stoa-pid)
-            (C_MTX|AddFrozenLiquidity patron account swpair frozen-dptf input-amount stoa-pid)
+            (MTX|C_AddFrozenLiquidity patron account swpair frozen-dptf input-amount stoa-pid)
         )
     )
     (defun C_AddSleepingLiquidity
         (patron:string account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal)
         (P|UEV_IMC)
         (with-capability (MTX-SWP|S>ADD-LQ stoa-pid)
-            (C_MTX|AddSleepingLiquidity patron account swpair sleeping-dpof nonce stoa-pid)
+            (MTX|C_AddSleepingLiquidity patron account swpair sleeping-dpof nonce stoa-pid)
         )
     )
-    (defpact C_MTX|AddLiquidity 
+    (defpact MTX|C_AddLiquidity 
         (
             patron:string account:string swpair:string input-amounts:[decimal] 
             asymmetric-collection:bool gaseous-collection:bool stoa-pid:decimal
@@ -615,7 +615,7 @@
             )
         )
     )
-    (defpact C_MTX|AddFrozenLiquidity
+    (defpact MTX|C_AddFrozenLiquidity
         (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal)
         ;;Adds Frozen Liquidity, as an MTX in 3 Steps
         ;;
@@ -744,7 +744,7 @@
             )
         )
     )
-    (defpact C_MTX|AddSleepingLiquidity
+    (defpact MTX|C_AddSleepingLiquidity
         (patron:string account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal)
         ;;Adds Frozen Liquidity, as an MTX in 3 Steps
         ;;
@@ -890,7 +890,7 @@
             )
         )
     )
-    (defpact C_MTX|Issue
+    (defpact MTX|C_Issue
         (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
         ;;Issues an SWPair, as MultiStep Transaction, to be used in case <C_Issue> cant fit inside one TX.
         ;;

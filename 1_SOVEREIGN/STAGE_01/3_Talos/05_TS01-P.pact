@@ -51,15 +51,15 @@
     ;;
     ;;
     ;;Issue
-    (defun C_SWP|IssueStablePool (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
-    (defun C_SWP|IssueWeightedPool (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
-    (defun C_SWP|IssueStandardPool (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool))
+    (defun SWP|C_IssueStablePool (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
+    (defun SWP|C_IssueWeightedPool (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
+    (defun SWP|C_IssueStandardPool (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool))
     ;;
-    (defun C_SWP|AddStandardLiquidity (patron:string account:string swpair:string input-amounts:[decimal]))
-    (defun C_SWP|AddIcedLiquidity (patron:string account:string swpair:string input-amounts:[decimal]))
-    (defun C_SWP|AddGlacialLiquidity (patron:string account:string swpair:string input-amounts:[decimal]))
-    (defun C_SWP|AddFrozenLiquidity (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal))
-    (defun C_SWP|AddSleepingLiquidity (patron:string account:string swpair:string sleeping-dpof:string nonce:integer))
+    (defun SWP|C_AddStandardLiquidity (patron:string account:string swpair:string input-amounts:[decimal]))
+    (defun SWP|C_AddIcedLiquidity (patron:string account:string swpair:string input-amounts:[decimal]))
+    (defun SWP|C_AddGlacialLiquidity (patron:string account:string swpair:string input-amounts:[decimal]))
+    (defun SWP|C_AddFrozenLiquidity (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal))
+    (defun SWP|C_AddSleepingLiquidity (patron:string account:string swpair:string sleeping-dpof:string nonce:integer))
 
 )
 ;;
@@ -203,8 +203,8 @@
     ;;
     ;;
     ;;  [SWP PactStarters]
-    (defun C_SWP|IssueStablePool (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool)
-        @doc "Similar outcome to <ref-TS01-C2::C_SWP|IssueStable>, but over 3 <steps> (0|1|2) via <defpact> \
+    (defun SWP|C_IssueStablePool (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool)
+        @doc "Similar outcome to <ref-TS01-C2::SWP|C_IssueStable>, but over 3 <steps> (0|1|2) via <defpact> \
             \ Calling this function runs the Step 0 of 2. To finalize SWPair creation, Steps 1 and 2 must also be executed \
             \ \
             \ Step 0: Data Validation, makes sure the input data is correct for SWPair Creation \
@@ -220,7 +220,7 @@
             )
         )
     )
-    (defun C_SWP|IssueWeightedPool (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool)
+    (defun SWP|C_IssueWeightedPool (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool)
         @doc "Similar to <SWP|C_IssueStableMultiStep>, but issues a W (Weighted) Pool"
         (with-capability (P|TS)
             (let
@@ -231,7 +231,7 @@
             )
         )
     )
-    (defun C_SWP|IssueStandardPool (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool)
+    (defun SWP|C_IssueStandardPool (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool)
         @doc "Similar to <SWP|C_IssueStableMultiStep>, but issues a P (Standard) Pool"
         (with-capability (P|TS)
             (let
@@ -243,7 +243,7 @@
         )
     )
     ;;
-    (defun C_SWP|AddStandardLiquidity
+    (defun SWP|C_AddStandardLiquidity
         (patron:string account:string swpair:string input-amounts:[decimal])
         (with-capability (P|TS)
             (let
@@ -258,7 +258,7 @@
             )
         )
     )
-    (defun C_SWP|AddIcedLiquidity
+    (defun SWP|C_AddIcedLiquidity
         (patron:string account:string swpair:string input-amounts:[decimal])
         (with-capability (P|TS)
             (let
@@ -273,7 +273,7 @@
             )
         )
     )
-    (defun C_SWP|AddGlacialLiquidity
+    (defun SWP|C_AddGlacialLiquidity
         (patron:string account:string swpair:string input-amounts:[decimal])
         (with-capability (P|TS)
             (let
@@ -288,7 +288,7 @@
             )
         )
     )
-    (defun C_SWP|AddFrozenLiquidity
+    (defun SWP|C_AddFrozenLiquidity
         (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal)
         (with-capability (P|TS)
             (let
@@ -303,7 +303,7 @@
             )
         )
     )
-    (defun C_SWP|AddSleepingLiquidity
+    (defun SWP|C_AddSleepingLiquidity
         (patron:string account:string swpair:string sleeping-dpof:string nonce:integer)
         (with-capability (P|TS)
             (let

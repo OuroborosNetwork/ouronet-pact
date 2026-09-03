@@ -64,7 +64,7 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
-(begin-tx "TX001 - A_CODEX|RegisterCodexIdentity + UR_CIX reads")
+(begin-tx "TX001 - CODEX|A_RegisterCodexIdentity + UR_CIX reads")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "")
@@ -86,7 +86,7 @@
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
         (ref-CODEX:module{CodexV2} CODEX)
         (reg-msg:string
-            (ref-TS01-C4::A_CODEX|RegisterCodexIdentity
+            (ref-TS01-C4::CODEX|A_RegisterCodexIdentity
                 composite-id
                 public-standard
                 public-smart
@@ -97,7 +97,7 @@
     )
     ;;==== TX001 · 02 · Talos A_Register ====
     (print "--- [TX001 · 02 · Talos A_Register] ---")
-    (print (format "<(TS01-C4.A_CODEX|RegisterCodexIdentity)> => \"{}\"" [reg-msg]))
+    (print (format "<(TS01-C4.CODEX|A_RegisterCodexIdentity)> => \"{}\"" [reg-msg]))
     ;;==== TX001 · 03 · UR_CIX reads + expects ====
     (print "--- [TX001 · 03 · UR_CIX reads + expects] ---")
     (map print
@@ -132,7 +132,7 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
-(begin-tx "TX002 - C_CODEX|RotateCodexGuard")
+(begin-tx "TX002 - CODEX|C_RotateCodexGuard")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "")
@@ -152,12 +152,12 @@
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
         (ref-CODEX:module{CodexV2} CODEX)
         (rot-msg:string
-            (ref-TS01-C4::C_CODEX|RotateCodexGuard composite-id new-codex-guard)
+            (ref-TS01-C4::CODEX|C_RotateCodexGuard composite-id new-codex-guard)
         )
     )
     ;;==== TX002 · 02 · Talos C_Rotate ====
     (print "--- [TX002 · 02 · Talos C_Rotate] ---")
-    (print (format "<(TS01-C4.C_CODEX|RotateCodexGuard)> => \"{}\"" [rot-msg]))
+    (print (format "<(TS01-C4.CODEX|C_RotateCodexGuard)> => \"{}\"" [rot-msg]))
     ;;==== TX002 · 03 · UR guard expect ====
     (print "--- [TX002 · 03 · UR guard expect] ---")
     (map print
@@ -179,7 +179,7 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
-(begin-tx "TX003 - C_CODEX|RecordArweaveUpload")
+(begin-tx "TX003 - CODEX|C_RecordArweaveUpload")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "")
@@ -199,12 +199,12 @@
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
         (ref-CODEX:module{CodexV2} CODEX)
         (arw-msg:string
-            (ref-TS01-C4::C_CODEX|RecordArweaveUpload composite-id arweave-tx-id uploaded-bytes)
+            (ref-TS01-C4::CODEX|C_RecordArweaveUpload composite-id arweave-tx-id uploaded-bytes)
         )
     )
     ;;==== TX003 · 02 · Talos C_RecordArweave ====
     (print "--- [TX003 · 02 · Talos C_RecordArweave] ---")
-    (print (format "<(TS01-C4.C_CODEX|RecordArweaveUpload)> => \"{}\"" [arw-msg]))
+    (print (format "<(TS01-C4.CODEX|C_RecordArweaveUpload)> => \"{}\"" [arw-msg]))
     ;;==== TX003 · 03 · UR_AWT reads + expects ====
     (print "--- [TX003 · 03 · UR_AWT reads + expects] ---")
     (map print
@@ -232,7 +232,7 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
-(begin-tx "TX004 - C_CODEX|RegisterStoicTag")
+(begin-tx "TX004 - CODEX|C_RegisterStoicTag")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "")
@@ -283,12 +283,12 @@
     (let
         (
             (stg-msg:string
-                (ref-TS01-C4::C_CODEX|RegisterStoicTag patron tag-name account-address)
+                (ref-TS01-C4::CODEX|C_RegisterStoicTag patron tag-name account-address)
             )
         )
         ;;==== TX004 · 03 · Talos C_RegisterStoicTag ====
         (print "--- [TX004 · 03 · Talos C_RegisterStoicTag] ---")
-        (print (format "<(TS01-C4.C_CODEX|RegisterStoicTag)> patron={} tag={} account={} => \"{}\""
+        (print (format "<(TS01-C4.CODEX|C_RegisterStoicTag)> patron={} tag={} account={} => \"{}\""
             [patron tag-name account-address stg-msg]))
         ;;==== TX004 · 04 · UR_STG / UR_STBA expects (virgin insert — both tables) ====
         (print "--- [TX004 · 04 · UR_STG / UR_STBA expects (virgin insert)] ---")
@@ -333,7 +333,7 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
-(begin-tx "TX005 - C_CODEX|ReleaseStoicTag")
+(begin-tx "TX005 - CODEX|C_ReleaseStoicTag")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "")
@@ -359,14 +359,14 @@
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
         (ref-CODEX:module{CodexV2} CODEX)
         (tag-fee:decimal (ref-CODEX::UC_StoicTagStoaFee tag-name))
-        (rel-msg:string (ref-TS01-C4::C_CODEX|ReleaseStoicTag patron tag-name))
+        (rel-msg:string (ref-TS01-C4::CODEX|C_ReleaseStoicTag patron tag-name))
     )
     ;;==== TX005 · 01b · IGNIS fee echo (same UC_StoicTagStoaFee amount) ====
     (print "--- [TX005 · 01b · IGNIS fee (UC_StoicTagStoaFee amount, 1 per glyph)] ---")
     (print (format "<(CODEX|UC_StoicTagStoaFee)> tag len {} => \"{}\" IGNIS" [(length tag-name) tag-fee]))
     ;;==== TX005 · 02 · Talos C_ReleaseStoicTag ====
     (print "--- [TX005 · 02 · Talos C_ReleaseStoicTag] ---")
-    (print (format "<(TS01-C4.C_CODEX|ReleaseStoicTag)> => \"{}\"" [rel-msg]))
+    (print (format "<(TS01-C4.CODEX|C_ReleaseStoicTag)> => \"{}\"" [rel-msg]))
     ;;==== TX005 · 03 · UR deactivation + bijection expects ====
     (print "--- [TX005 · 03 · UR deactivation + bijection expects] ---")
     (map print
@@ -404,7 +404,7 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
-(begin-tx "TX006 - C_CODEX|RegisterStoicTag (re-activate released tag)")
+(begin-tx "TX006 - CODEX|C_RegisterStoicTag (re-activate released tag)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "")
@@ -455,12 +455,12 @@
     (let
         (
             (stg-msg:string
-                (ref-TS01-C4::C_CODEX|RegisterStoicTag patron tag-name account-address)
+                (ref-TS01-C4::CODEX|C_RegisterStoicTag patron tag-name account-address)
             )
         )
         ;;==== TX006 · 03 · Talos C_RegisterStoicTag (upsert path) ====
         (print "--- [TX006 · 03 · Talos C_RegisterStoicTag (released re-activate)] ---")
-        (print (format "<(TS01-C4.C_CODEX|RegisterStoicTag)> => \"{}\"" [stg-msg]))
+        (print (format "<(TS01-C4.CODEX|C_RegisterStoicTag)> => \"{}\"" [stg-msg]))
         ;;==== TX006 · 04 · bijection re-active expects ====
         (print "--- [TX006 · 04 · bijection re-active expects (both tables)] ---")
         (map print

@@ -1,8 +1,8 @@
 ;;
 ;; REPL/Stage_02/[6.2.12]_AQP-ANCHOR-TAIL.repl — AQP anchor tail-op coverage (#79 Phase 2)
 ;;   Issues a fresh TF anchor on OURO (mirrors [6.2.1] fee/boost fixture), captures its fvt-id,
-;;   then exercises the uncovered anchor-admin ops: C_AQP-FVT|SetCommonDenominator +
-;;   C_AQP-FVT|RotateOwnership. Loaded after [6.2.1] so the AQP boot + OURO fixture exist.
+;;   then exercises the uncovered anchor-admin ops: AQP-FVT|C_SetCommonDenominator +
+;;   AQP-FVT|C_RotateOwnership. Loaded after [6.2.1] so the AQP boot + OURO fixture exist.
 ;;
 (print "")
 (print "================================================================")
@@ -62,12 +62,12 @@
             (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
         )
         ;; issue a class-0 FVT (farm); farms require a real native DPTF common-denominator (OURO)
-        (print (format "<(C_AQP-FVT|Issue farm)> => \"{}\"" [(ref-TS02-C3::C_AQP-FVT|Issue patron fvt-name patron fvt-class ouro-id)]))
+        (print (format "<(AQP-FVT|C_Issue farm)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_Issue patron fvt-name patron fvt-class ouro-id)]))
         ;; SetCommonDenominator while patron still owns the farm (switch OURO -> AURYN native DPTF)
-        (print (ref-TS02-C3::C_AQP-FVT|SetCommonDenominator patron fvt-id auryn-id))
+        (print (ref-TS02-C3::AQP-FVT|C_SetCommonDenominator patron fvt-id auryn-id))
         ;; RotateOwnership: hand the FVT to EMMA (existing DALOS account from the DPDC suites)
-        (print (ref-TS02-C3::C_AQP-FVT|RotateOwnership patron fvt-id emma))
-        (print "<<TX-AT-001>> C_AQP-FVT|Issue + SetCommonDenominator + RotateOwnership OK")
+        (print (ref-TS02-C3::AQP-FVT|C_RotateOwnership patron fvt-id emma))
+        (print "<<TX-AT-001>> AQP-FVT|C_Issue + SetCommonDenominator + RotateOwnership OK")
     )
 )
 (print "===^^^===")

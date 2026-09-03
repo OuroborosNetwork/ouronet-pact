@@ -820,18 +820,18 @@
     )
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     (defun URCi_DeployApiKey:decimal ()
-        @doc "Cost single-source for C_PYTHIA|DeployApiKey — RAW native STOA toll \
+        @doc "Cost single-source for PYTHIA|C_DeployApiKey — RAW native STOA toll \
             \ (UC_DeployPrice, default 500). Discount anchor is BAR (no Elite discount). \
             \ Consumed by TS01-C4 exec collect + INFO preview."
         (UC_DeployPrice)
     )
     (defun URCi_UpdateDualConsumerLane:decimal ()
-        @doc "Cost single-source for C_PYTHIA|UpdateDualConsumerLane — RAW native STOA \
+        @doc "Cost single-source for PYTHIA|C_UpdateDualConsumerLane — RAW native STOA \
             \ rename toll (UC_RenamePrice). Consumed by exec collect + INFO preview."
         (UC_RenamePrice)
     )
     (defun URCi_RevokeLink:decimal ()
-        @doc "Cost single-source for C_PYTHIA|RevokeLink — flat IGNIS toll \
+        @doc "Cost single-source for PYTHIA|C_RevokeLink — flat IGNIS toll \
             \ (UC_RevokeIgnisFee), collected via IGNIS::C_Collect in TS01-C4. \
             \ Consumed by exec + INFO."
         (UC_RevokeIgnisFee)
@@ -1145,7 +1145,7 @@
             apollo-account:string
             public:string
         )
-        @doc "ClientInfo for TS01-C4 C_PYTHIA|DeployApiKey (500 STOA per half)."
+        @doc "ClientInfo for TS01-C4 PYTHIA|C_DeployApiKey (500 STOA per half)."
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
@@ -1176,7 +1176,7 @@
             smart-apollo:string
             consumer-lane:string
         )
-        @doc "ClientInfo for TS01-C4 C_PYTHIA|Link (inactive dual row; no fee)."
+        @doc "ClientInfo for TS01-C4 PYTHIA|C_Link (inactive dual row; no fee)."
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
@@ -1207,7 +1207,7 @@
             patron:string
             dual-link-key:string
         )
-        @doc "ClientInfo for TS01-C4 C_PYTHIA|RevokeLink / A_RevokeLink (1 IGNIS)."
+        @doc "ClientInfo for TS01-C4 PYTHIA|C_RevokeLink / A_RevokeLink (1 IGNIS)."
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
@@ -1245,7 +1245,7 @@
             dual-link-key:string
             new-name:string
         )
-        @doc "ClientInfo for TS01-C4 C_PYTHIA|UpdateDualConsumerLane."
+        @doc "ClientInfo for TS01-C4 PYTHIA|C_UpdateDualConsumerLane."
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)

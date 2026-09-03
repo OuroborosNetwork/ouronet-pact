@@ -151,11 +151,11 @@
     )
     [
         ;;1]Turn Off KDA Collection to Mint DPTF without KDA Cost
-        (ref-TS01-A::A_DALOS|IgnisToggle true false)    ;;turn off KDA Collection
+        (ref-TS01-A::DALOS|A_IgnisToggle true false)    ;;turn off KDA Collection
         (let
             (
                 (ids:list
-                    (ref-TS01-C1::C_DPTF|Issue
+                    (ref-TS01-C1::DPTF|C_Issue
                         patron
                         patron
                         ["StoicPayV3"]
@@ -173,13 +173,13 @@
             )
             [   
                 ;;2]Turn back On KDA Collection
-                (ref-TS01-A::A_DALOS|IgnisToggle true true)     ;;Turn on KDA Collection
+                (ref-TS01-A::DALOS|A_IgnisToggle true true)     ;;Turn on KDA Collection
                 ;;3]Backward IMC
                 (ref-P|KPAY::P|A_Define)
                 ;;4]Forward IMC
                 (ref-P|KPAY::P|A_AddIMP mg)
                 ;;5]Demipad Governer Update
-                (ref-TS01-C1::C_DALOS|RotateGovernor
+                (ref-TS01-C1::DALOS|C_RotateGovernor
                     patron
                     lpad-sc
                     (ref-U|G::UEV_GuardOfAny
@@ -193,8 +193,8 @@
                     )
                 )
                 ;;6]Permissions
-                (ref-TS01-C1::C_DPTF|Mint patron KpayID lpad-sc 250000000.0 true)
-                (ref-TS01-C1::C_DPTF|ToggleBurnRole patron KpayID lpad-sc true)
+                (ref-TS01-C1::DPTF|C_Mint patron KpayID lpad-sc 250000000.0 true)
+                (ref-TS01-C1::DPTF|C_ToggleBurnRole patron KpayID lpad-sc true)
                 ;;7]Store Kpay ID
                 (acquire-module-admin DEMIPAD-STOICPAY)
                 (insert DEMIPAD-STOICPAY.KPAY|T|Properties s-key

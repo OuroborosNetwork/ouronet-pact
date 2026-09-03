@@ -43,6 +43,6 @@
         (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
         (id:string "DHWC-98c486052a51")
     )
-    (ref-TS02-C1::C_DPSF|Make KST.ANHD KST.ANHD id [1 2 3 4 5 6 7 8 9 10] 1 -1)
+    (ref-TS02-C1::DPSF|C_Make KST.ANHD KST.ANHD id [1 2 3 4 5 6 7 8 9 10] 1 -1)
 )
 (commit-tx)

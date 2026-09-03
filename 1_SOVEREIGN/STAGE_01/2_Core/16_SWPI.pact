@@ -203,13 +203,13 @@
     ;;  [X] Functions
     ;;
     ;;#36M/M5 fix: forward-module entrypoint for the shared pool-issuance write
-    ;;sequence — SWPI's own C_Issue and MTX-SWP::C_MTX|Issue's Step 3 both call this
+    ;;sequence — SWPI's own C_Issue and MTX-SWP::MTX|C_Issue's Step 3 both call this
     ;;instead of each independently reimplementing the same mint/transfer/tracker
     ;;writes. Returns [swpair token-lp ico-lp ico-transfer-in ico-mint ico-transfer-out]
     ;;— a wider list, not an IgnisCollectorV2.OutputCumulator (matches this codebase's
     ;;XE_* convention: the forward module's own C_ composes IGNIS, not this function) —
     ;;so C_Issue can still aggregate every sub-call's own cumulator into its single
-    ;;billed response exactly as before, while C_MTX|Issue (which already bills
+    ;;billed response exactly as before, while MTX|C_Issue (which already bills
     ;;separately in its own Step 2) can just take swpair/token-lp and ignore the rest.
     (defun XE_IssueWrite:list (account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool))
     ;;{5.7}  User [A/C]
@@ -378,7 +378,7 @@
     (defconst BAR                                       (CT_Bar))
     ;;#36M/M5 fix: named, single source of truth for the genesis LP mint amount —
     ;;was a bare 10000000.0 literal duplicated independently in both C_Issue and
-    ;;C_MTX|Issue's own write sequences; now lives once, inside the shared
+    ;;MTX|C_Issue's own write sequences; now lives once, inside the shared
     ;;XE_IssueWrite both call.
     (defconst GENESIS_LP_SUPPLY                         10000000.0)
     ;;{3.2}  schemas
@@ -2544,14 +2544,14 @@
             \ write sequence — mint the LP token, register the pool, transfer pool tokens \
             \ in, mint genesis LP supply, transfer LP out to the account, register the \
             \ swap-tracer graph edge. Both SWPI::C_Issue (this module) and \
-            \ MTX-SWP::C_MTX|Issue's Step 3 (a different module, reached via a \
+            \ MTX-SWP::MTX|C_Issue's Step 3 (a different module, reached via a \
             \ module{SwapperIssueV4} ref) call this instead of each independently \
             \ reimplementing it. \
             \ Returns [swpair token-lp ico-lp ico-transfer-in ico-mint ico-transfer-out] — \
             \ a wider list, not an IgnisCollectorV2.OutputCumulator (this codebase's XE_* \
             \ convention: the forward module's own C_ composes IGNIS, not this function). \
             \ C_Issue aggregates all four sub-cumulators into its own single billed \
-            \ response; C_MTX|Issue's Step 3 only needs swpair/token-lp (it already billed \
+            \ response; MTX|C_Issue's Step 3 only needs swpair/token-lp (it already billed \
             \ separately, in its own Step 2, before Step 3 ever runs) and ignores the rest."
         (P|UEV_IMC)
         (with-capability (SWPI|XE>ISSUE-WRITE account pool-tokens fee-lp weights amp p)
@@ -2632,9 +2632,9 @@
         (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
         @doc "Issues a new SWPair (Liquidty Pool). \
             \ #36M/M5 fix: the write sequence itself (mint/transfer/tracker) now lives in \
-            \ the shared XE_IssueWrite — MTX-SWP::C_MTX|Issue's own Step 3 calls the same \
+            \ the shared XE_IssueWrite — MTX-SWP::MTX|C_Issue's own Step 3 calls the same \
             \ function instead of independently reimplementing it. This function still \
-            \ owns all of ITS OWN IGNIS billing/aggregation (C_MTX|Issue bills separately, \
+            \ owns all of ITS OWN IGNIS billing/aggregation (MTX|C_Issue bills separately, \
             \ in its own Step 2, before Step 3 ever runs)."
         (P|UEV_IMC)
         (with-capability (SWPI|C>ISSUE account pool-tokens fee-lp weights amp p)

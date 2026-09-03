@@ -60,8 +60,8 @@
     (map print
         [
             ;; owner=creator=ANHD so ANHD holds the create-role; role toggles below auto-deploy EMMA.
-            (format "<(C_DPNF|Issue CoverageNF/CNF)> => \"{}\""
-                [(ref-TS02-C2::C_DPNF|Issue owner owner owner "CoverageNF" "CNF" true true true true true true true true)])
+            (format "<(DPNF|C_Issue CoverageNF/CNF)> => \"{}\""
+                [(ref-TS02-C2::DPNF|C_Issue owner owner owner "CoverageNF" "CNF" true true true true true true true true)])
         ]
     )
     (let
@@ -76,8 +76,8 @@
         )
         (map print
             [
-                (format "<(C_DPNF|Create 8 NFT nonces)> => \"{}\""
-                    [(ref-TS02-C2::C_DPNF|Create owner nft-id (make-list 8 nd))])
+                (format "<(DPNF|C_Create 8 NFT nonces)> => \"{}\""
+                    [(ref-TS02-C2::DPNF|C_Create owner nft-id (make-list 8 nd))])
                 (expect "<<TX-NF-001>> CNF has 8 native nonces created" 8 (ref-DPDC::UR_NoncesUsed nft-id false))
                 ""
             ]
@@ -112,27 +112,27 @@
         (f:bool false)
     )
     ;; pause on/off
-    (ref-TS02-C2::C_DPNF|TogglePause patron id t)
-    (ref-TS02-C2::C_DPNF|TogglePause patron id f)
+    (ref-TS02-C2::DPNF|C_TogglePause patron id t)
+    (ref-TS02-C2::DPNF|C_TogglePause patron id f)
     ;; per-account role toggles on a standard account (EMMA) — on then off
-    (ref-TS02-C2::C_DPNF|ToggleBurnRole patron id emma t)
-    (ref-TS02-C2::C_DPNF|ToggleBurnRole patron id emma f)
+    (ref-TS02-C2::DPNF|C_ToggleBurnRole patron id emma t)
+    (ref-TS02-C2::DPNF|C_ToggleBurnRole patron id emma f)
     ;; exemption role requires a SMART account (Ouroboros)
-    (ref-TS02-C2::C_DPNF|ToggleExemptionRole patron id orbr t)
-    (ref-TS02-C2::C_DPNF|ToggleExemptionRole patron id orbr f)
-    (ref-TS02-C2::C_DPNF|ToggleUpdateRole patron id emma t)
-    (ref-TS02-C2::C_DPNF|ToggleUpdateRole patron id emma f)
-    (ref-TS02-C2::C_DPNF|ToggleModifyCreatorRole patron id emma t)
-    (ref-TS02-C2::C_DPNF|ToggleModifyCreatorRole patron id emma f)
-    (ref-TS02-C2::C_DPNF|ToggleModifyRoyaltiesRole patron id emma t)
-    (ref-TS02-C2::C_DPNF|ToggleModifyRoyaltiesRole patron id emma f)
+    (ref-TS02-C2::DPNF|C_ToggleExemptionRole patron id orbr t)
+    (ref-TS02-C2::DPNF|C_ToggleExemptionRole patron id orbr f)
+    (ref-TS02-C2::DPNF|C_ToggleUpdateRole patron id emma t)
+    (ref-TS02-C2::DPNF|C_ToggleUpdateRole patron id emma f)
+    (ref-TS02-C2::DPNF|C_ToggleModifyCreatorRole patron id emma t)
+    (ref-TS02-C2::DPNF|C_ToggleModifyCreatorRole patron id emma f)
+    (ref-TS02-C2::DPNF|C_ToggleModifyRoyaltiesRole patron id emma t)
+    (ref-TS02-C2::DPNF|C_ToggleModifyRoyaltiesRole patron id emma f)
     ;; singleton role moves: owner -> EMMA -> owner (round-trip so owner keeps them)
-    (ref-TS02-C2::C_DPNF|MoveCreateRole patron id emma)
-    (ref-TS02-C2::C_DPNF|MoveCreateRole patron id patron)
-    (ref-TS02-C2::C_DPNF|MoveRecreateRole patron id emma)
-    (ref-TS02-C2::C_DPNF|MoveRecreateRole patron id patron)
-    (ref-TS02-C2::C_DPNF|MoveSetUriRole patron id emma)
-    (ref-TS02-C2::C_DPNF|MoveSetUriRole patron id patron)
+    (ref-TS02-C2::DPNF|C_MoveCreateRole patron id emma)
+    (ref-TS02-C2::DPNF|C_MoveCreateRole patron id patron)
+    (ref-TS02-C2::DPNF|C_MoveRecreateRole patron id emma)
+    (ref-TS02-C2::DPNF|C_MoveRecreateRole patron id patron)
+    (ref-TS02-C2::DPNF|C_MoveSetUriRole patron id emma)
+    (ref-TS02-C2::DPNF|C_MoveSetUriRole patron id patron)
     (print "<<TX-NF-002>> all DPNF pause/role toggles + role moves executed OK (owner + EMMA)")
 )
 (print "===^^^===")
@@ -167,10 +167,10 @@
         )
     )
     ;; bulk update native nonces 1..2 (nos=true → native, not fragment)
-    (ref-TS02-C2::C_DPNF|UpdateNonces patron id patron [1 2] true [nd2 nd2])
+    (ref-TS02-C2::DPNF|C_UpdateNonces patron id patron [1 2] true [nd2 nd2])
     ;; single-field native updates (nos=true)
-    (ref-TS02-C2::C_DPNF|UpdateNonceIgnisRoyalty patron id patron 3 true 2.0)
-    (ref-TS02-C2::C_DPNF|RemoveNonceScore patron id patron 4 true)
+    (ref-TS02-C2::DPNF|C_UpdateNonceIgnisRoyalty patron id patron 3 true 2.0)
+    (ref-TS02-C2::DPNF|C_RemoveNonceScore patron id patron 4 true)
     (print "<<TX-NF-003>> DPNF UpdateNonces + UpdateNonceIgnisRoyalty + RemoveNonceScore executed OK")
 )
 (print "===^^^===")
@@ -198,14 +198,14 @@
         (emma:string KST.EMMA)
     )
     ;; bulk-transfer nonces 5 and 6 (amount 1 each) to EMMA (single receiver)
-    (ref-TS02-C2::C_DPNF|BulkTransfer patron id [[5 6]] [[1 1]] patron [emma] false)
+    (ref-TS02-C2::DPNF|C_BulkTransfer patron id [[5 6]] [[1 1]] patron [emma] false)
     (map print
         [
             (expect "<<TX-NF-004>> EMMA holds NFT nonce 6 after bulk-transfer" 1 (ref-DPDC::UR_AccountNonceSupply emma id false 6))
             ""
         ]
     )
-    ;; NOTE (batch 3): C_DPNF|Burn/Respawn have a not-yet-pinned precondition on C_BurnNFT
+    ;; NOTE (batch 3): DPNF|C_Burn/Respawn have a not-yet-pinned precondition on C_BurnNFT
     ;; (role/flag/state) — deferred with wipes/sets/fragments.
 )
 (print "===^^^===")
@@ -234,20 +234,20 @@
         )
     )
     ;; primordial fixture (set-class 1): positions [1 2] / [3 4]
-    (ref-TS02-C2::C_DPNF|DefinePrimordialSet patron id "CNF-P1" 1.0
+    (ref-TS02-C2::DPNF|C_DefinePrimordialSet patron id "CNF-P1" 1.0
         [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1 2]) (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [3 4])] nd)
     ;; composite (set-class 2): references set-class 1
-    (ref-TS02-C2::C_DPNF|DefineCompositeSet patron id "CNF-C1" 1.0
+    (ref-TS02-C2::DPNF|C_DefineCompositeSet patron id "CNF-C1" 1.0
         [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)] nd)
     ;; hybrid (set-class 3): primordial nonces [5 6] (NFT positions need >1 element) + composite set-class 1
-    (ref-TS02-C2::C_DPNF|DefineHybridSet patron id "CNF-H1" 1.0
+    (ref-TS02-C2::DPNF|C_DefineHybridSet patron id "CNF-H1" 1.0
         [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [5 6])] [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)] nd)
     ;; admin on set-class 1
-    (ref-TS02-C2::C_DPNF|RenameSet patron id 1 "CNF-P1-Renamed")
+    (ref-TS02-C2::DPNF|C_RenameSet patron id 1 "CNF-P1-Renamed")
     ;; newly-defined sets are active → toggle off then back on (mirrors [6.1.3])
-    (ref-TS02-C2::C_DPNF|ToggleSet patron id 1 false)
-    (ref-TS02-C2::C_DPNF|ToggleSet patron id 1 true)
-    (ref-TS02-C2::C_DPNF|EnableSetClassFragmentation patron id 1 nd)
+    (ref-TS02-C2::DPNF|C_ToggleSet patron id 1 false)
+    (ref-TS02-C2::DPNF|C_ToggleSet patron id 1 true)
+    (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron id 1 nd)
     (print "<<TX-NF-005>> DPNF DefinePrimordial/Composite/Hybrid + Rename/Toggle/EnableSetClassFragmentation OK")
 )
 (print "===^^^===")
@@ -281,17 +281,17 @@
             )
         )
     )
-    (ref-TS02-C2::C_DPNF|UpdateSetNonce patron id patron sc true nd2)
-    (ref-TS02-C2::C_DPNF|UpdateSetNonces patron id patron [sc] true [nd2])
-    (ref-TS02-C2::C_DPNF|UpdateSetNonceRoyalty patron id patron sc true 3.0)
-    (ref-TS02-C2::C_DPNF|UpdateSetNonceIgnisRoyalty patron id patron sc true 2.0)
-    (ref-TS02-C2::C_DPNF|UpdateSetNonceName patron id patron sc true "SetName")
-    (ref-TS02-C2::C_DPNF|UpdateSetNonceDescription patron id patron sc true "SetDesc")
-    (ref-TS02-C2::C_DPNF|UpdateSetNonceScore patron id patron sc true 5.0)
-    (ref-TS02-C2::C_DPNF|UpdateSetNonceMetaData patron id patron sc true (ref-DPDC-UDC::UDC_NoMetaData))
-    (ref-TS02-C2::C_DPNF|UpdateSetNonceURI patron id patron sc true type
+    (ref-TS02-C2::DPNF|C_UpdateSetNonce patron id patron sc true nd2)
+    (ref-TS02-C2::DPNF|C_UpdateSetNonces patron id patron [sc] true [nd2])
+    (ref-TS02-C2::DPNF|C_UpdateSetNonceRoyalty patron id patron sc true 3.0)
+    (ref-TS02-C2::DPNF|C_UpdateSetNonceIgnisRoyalty patron id patron sc true 2.0)
+    (ref-TS02-C2::DPNF|C_UpdateSetNonceName patron id patron sc true "SetName")
+    (ref-TS02-C2::DPNF|C_UpdateSetNonceDescription patron id patron sc true "SetDesc")
+    (ref-TS02-C2::DPNF|C_UpdateSetNonceScore patron id patron sc true 5.0)
+    (ref-TS02-C2::DPNF|C_UpdateSetNonceMetaData patron id patron sc true (ref-DPDC-UDC::UDC_NoMetaData))
+    (ref-TS02-C2::DPNF|C_UpdateSetNonceURI patron id patron sc true type
         (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data))
-    (ref-TS02-C2::C_DPNF|RemoveSetNonceScore patron id patron sc true)
+    (ref-TS02-C2::DPNF|C_RemoveSetNonceScore patron id patron sc true)
     (print "<<TX-NF-006>> DPNF all 10 UpdateSetNonce* + RemoveSetNonceScore executed OK")
 )
 (print "===^^^===")
@@ -330,8 +330,8 @@
     )
     (map print
         [
-            (format "<(C_DPNF|UpgradeBranding CNF 1 month)> => \"{}\""
-                [(ref-TS02-C2::C_DPNF|UpgradeBranding patron id 1)])
+            (format "<(DPNF|C_UpgradeBranding CNF 1 month)> => \"{}\""
+                [(ref-TS02-C2::DPNF|C_UpgradeBranding patron id 1)])
             ""
         ]
     )
@@ -357,10 +357,10 @@
         (emma:string KST.EMMA)
     )
     ;; enable EMMA's burn role (TX-NF-002 left it off), then burn her nonce 5
-    (ref-TS02-C2::C_DPNF|ToggleBurnRole patron id emma true)
-    (ref-TS02-C2::C_DPNF|Burn patron id emma 5)
+    (ref-TS02-C2::DPNF|C_ToggleBurnRole patron id emma true)
+    (ref-TS02-C2::DPNF|C_Burn patron id emma 5)
     ;; respawn the burned nonce 5 to the owner
-    (ref-TS02-C2::C_DPNF|Respawn patron id patron 5)
+    (ref-TS02-C2::DPNF|C_Respawn patron id patron 5)
     (map print
         [
             (expect "<<TX-NF-008>> nonce 5 no longer held by EMMA after burn" 0 (ref-DPDC::UR_AccountNonceSupply emma id false 5))
@@ -390,20 +390,20 @@
         (lumy:string KST.LUMY)
     )
     ;; deploy LUMY's account (role toggle auto-deploys), then fund EMMA (3,4,5,7) and LUMY (8)
-    (ref-TS02-C2::C_DPNF|ToggleUpdateRole patron id lumy true)
-    (ref-TS02-C2::C_DPNF|ToggleUpdateRole patron id lumy false)
-    (ref-TS02-C2::C_DPNF|BulkTransfer patron id [[3 4 5 7]] [[1 1 1 1]] patron [emma] false)
-    (ref-TS02-C2::C_DPNF|BulkTransfer patron id [[8]] [[1]] patron [lumy] false)
+    (ref-TS02-C2::DPNF|C_ToggleUpdateRole patron id lumy true)
+    (ref-TS02-C2::DPNF|C_ToggleUpdateRole patron id lumy false)
+    (ref-TS02-C2::DPNF|C_BulkTransfer patron id [[3 4 5 7]] [[1 1 1 1]] patron [emma] false)
+    (ref-TS02-C2::DPNF|C_BulkTransfer patron id [[8]] [[1]] patron [lumy] false)
     ;; freeze both accounts (wipe requires a frozen account)
-    (ref-TS02-C2::C_DPNF|ToggleFreezeAccount patron id emma true)
-    (ref-TS02-C2::C_DPNF|ToggleFreezeAccount patron id lumy true)
+    (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron id emma true)
+    (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron id lumy true)
     ;; owner-forced wipes on EMMA: single / clean / dirty / heavy (heavy clears the rest)
-    (ref-TS02-C2::C_DPNF|WipeNonce patron id emma 3)
-    (ref-TS02-C2::C_DPNF|WipeClean patron emma id [4])
-    (ref-TS02-C2::C_DPNF|WipeDirty patron emma id [5])
-    (ref-TS02-C2::C_DPNF|WipeHeavy patron emma id)
+    (ref-TS02-C2::DPNF|C_WipeNonce patron id emma 3)
+    (ref-TS02-C2::DPNF|C_WipeClean patron emma id [4])
+    (ref-TS02-C2::DPNF|C_WipeDirty patron emma id [5])
+    (ref-TS02-C2::DPNF|C_WipeHeavy patron emma id)
     ;; WipePure on LUMY via the computed RemovableNonces object
-    (ref-TS02-C2::C_DPNF|WipePure patron lumy id (ref-DPDC-MNG::URHC_WipePure lumy id false))
+    (ref-TS02-C2::DPNF|C_WipePure patron lumy id (ref-DPDC-MNG::URHC_WipePure lumy id false))
     (map print
         [
             (expect "<<TX-NF-009>> EMMA fully wiped (nonce 6 gone)" 0 (ref-DPDC::UR_AccountNonceSupply emma id false 6))
@@ -440,15 +440,15 @@
         )
     )
     ;; enable fragmentation on native nonce 1 (owner holds 1,2 after the wipes)
-    (ref-TS02-C2::C_DPNF|EnableNonceFragmentation patron id 1 nd)
+    (ref-TS02-C2::DPNF|C_EnableNonceFragmentation patron id 1 nd)
     ;; make 1000 fragments of nonce 1 (NFT supply 1 -> fragment nonce -1 x1000), then merge back
-    (ref-TS02-C2::C_DPNF|MakeFragments patron patron id 1 1)
-    (ref-TS02-C2::C_DPNF|MergeFragments patron patron id -1 1000)
+    (ref-TS02-C2::DPNF|C_MakeFragments patron patron id 1 1)
+    (ref-TS02-C2::DPNF|C_MergeFragments patron patron id -1 1000)
     ;; re-fragment, then repurpose the fragment nonce -1 to a fresh (non-frozen) account (Ouroboros)
-    (ref-TS02-C2::C_DPNF|MakeFragments patron patron id 1 1)
-    (ref-TS02-C2::C_DPNF|ToggleUpdateRole patron id orbr true)
-    (ref-TS02-C2::C_DPNF|ToggleUpdateRole patron id orbr false)
-    (ref-TS02-C2::C_DPNF|RepurposeFragments patron id patron orbr [-1] [1000])
+    (ref-TS02-C2::DPNF|C_MakeFragments patron patron id 1 1)
+    (ref-TS02-C2::DPNF|C_ToggleUpdateRole patron id orbr true)
+    (ref-TS02-C2::DPNF|C_ToggleUpdateRole patron id orbr false)
+    (ref-TS02-C2::DPNF|C_RepurposeFragments patron id patron orbr [-1] [1000])
     (map print
         [
             (expect "<<TX-NF-010>> Ouroboros holds the 1000 repurposed fragment units of nonce -1" 1000 (ref-DPDC::UR_AccountNonceSupply orbr id false -1))

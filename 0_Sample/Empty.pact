@@ -1,5 +1,5 @@
 (namespace "n_7d40ccda457e374d8eb07b658fd38c282c545038")
-(TS01-A.A_SWP|UpdateLiquidBoost false)
+(TS01-A.SWP|A_UpdateLiquidBoost false)
 (let
     (
         (ref-IGNIS:module{IgnisCollector} DALOS)
@@ -83,8 +83,8 @@
     )
     ;;Rotate to Local KDA
     (TS01-C1.DALOS|C_RotateKadena patron patron local-kda)
-    (TS01-C2.C_VST|CreateFrozenLink patron lp-id)
-    (TS01-C2.C_SWP|EnableFrozenLP patron swpair)
+    (TS01-C2.VST|C_CreateFrozenLink patron lp-id)
+    (TS01-C2.SWP|C_EnableFrozenLP patron swpair)
     ;;(TS01-C1.DALOS|C_RotateKadena patron patron original-kda)
-    ;(TS01-C2.C_VST|CreateFrozenLink patron lp-id)
+    ;(TS01-C2.VST|C_CreateFrozenLink patron lp-id)
 )

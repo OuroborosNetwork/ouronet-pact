@@ -1,7 +1,7 @@
 ;;
 ;; REPL/Stage_02/[6.2.13]_AQP-TRIPLET.repl — AQP triplet-bundle coverage (#79 Phase 2)
 ;;   Issues three distinct class-1 (DPTF) scores owned by the patron, then bundles them into one
-;;   immutable triplet via C_AQP-SCR|IssueTriplet. Covers the uncovered IssueTrueFungibleScore +
+;;   immutable triplet via AQP-SCR|C_IssueTriplet. Covers the uncovered IssueTrueFungibleScore +
 ;;   IssueTriplet client ops. Self-contained; loaded after [6.2.2] so the AQP-SCORE boot exists.
 ;;
 (print "")
@@ -49,11 +49,11 @@
             (gold-id:string   (ref-U|DALOS::UDC_Makeid "TripGoldScore"))
         )
         ;; three distinct class-1 (DPTF) scores, all owned by patron (triplet requires same class+owner)
-        (print (format "<(bronze)> => \"{}\"" [(ref-TS02-C3::C_AQP-SCR|IssueTrueFungibleScore patron patron "TripBronzeScore" 24 2.0)]))
-        (print (format "<(silver)> => \"{}\"" [(ref-TS02-C3::C_AQP-SCR|IssueTrueFungibleScore patron patron "TripSilverScore" 24 2.0)]))
-        (print (format "<(gold)>   => \"{}\"" [(ref-TS02-C3::C_AQP-SCR|IssueTrueFungibleScore patron patron "TripGoldScore"   24 2.0)]))
+        (print (format "<(bronze)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron "TripBronzeScore" 24 2.0)]))
+        (print (format "<(silver)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron "TripSilverScore" 24 2.0)]))
+        (print (format "<(gold)>   => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron "TripGoldScore"   24 2.0)]))
         ;; bundle the three into one immutable triplet (silver owner becomes triplet owner)
-        (print (ref-TS02-C3::C_AQP-SCR|IssueTriplet patron bronze-id silver-id gold-id))
+        (print (ref-TS02-C3::AQP-SCR|C_IssueTriplet patron bronze-id silver-id gold-id))
         (print "<<TX-TR-001>> IssueTrueFungibleScore x3 + IssueTriplet OK")
     )
 )

@@ -53,7 +53,7 @@
 )
 
 
-(n_7d40ccda457e374d8eb07b658fd38c282c545038.TS01-C1.C_DPTF|Transfer
+(n_7d40ccda457e374d8eb07b658fd38c282c545038.TS01-C1.DPTF|C_Transfer
     "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî"
     "KPAY-8ogtqXeTmcSe"
     "Ѻ.CЭΞŸNGúůρhãmИΘÛ¢₳šШдìAÚwŚGýηЗПAÊУÔȘřŽÍζЗηmΔφDmcдΛъ₳tĂýăŮsПÞ$öœGθeBŽvąαÃfçл¢ĎĆď$şbsЦэΘNÄëÍĂνуãöž¥àZjÆůšÁœôñχŽâЩåτâн4μфAOçĎΓuЗŮnøЙãĚè6Дżîþż$цÑûρψŻïZÉλûæřΨeèÎígςeL"
@@ -61,7 +61,7 @@
     51.5
     false
 )
-(n_7d40ccda457e374d8eb07b658fd38c282c545038.TS01-C1.C_DPTF|Transfer
+(n_7d40ccda457e374d8eb07b658fd38c282c545038.TS01-C1.DPTF|C_Transfer
     "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî"
     "KPAY-8ogtqXeTmcSe"
     "Ѻ.ÍăüÙÜЦżΦF₿ÈшÕóñĐĞGюѺλωÇțnθòoйEςк₱0дş3ôPpxŞțqgЖ€šωbэočΞìČ5òżŁdŒИöùЪøŤяжλзÜ2ßżpĄγïčѺöэěτČэεSčDõžЩУЧÀ₳ŚàЪЙĎpЗΣ2ÃлτíČнÙyéÕãďWŹŘĘźσПåbã€éѺι€ΓφŠ₱ŽyWcy5ŘòmČ₿nβÁ¢¥NЙëOι"
@@ -388,7 +388,7 @@
 
 
 ;;Check Wrapping Contract
-(n_7d40ccda457e374d8eb07b658fd38c282c545038.TS01-C1.C_DPTF|Mint
+(n_7d40ccda457e374d8eb07b658fd38c282c545038.TS01-C1.DPTF|C_Mint
     "Ѻ.A0ěьπΨтÎșπЦĐđŽ6ЫêÀεÅĐȘдÞЩ4Ł2ďй5žömiτsλÚÇдěÒaV₱ÏûιЩД₳îJÍşыyÜŹżęìvAЙsÄ¢ÿnΦIťQůЮ7ĄвaèďíoáнõÎLJθÆEáПiXÿÒÀĘ14цU1çΞêSťüIψчèι₱ê9ŽчΓüЦrÀÓμĆ99κQťqPÖшŮ1ÈČSĐŁÌбÝàŞbPσŃĎ8ĄW"
     "WKDA-slLyzPPCo22W"
     "Ѻ.A0ěьπΨтÎșπЦĐđŽ6ЫêÀεÅĐȘдÞЩ4Ł2ďй5žömiτsλÚÇдěÒaV₱ÏûιЩД₳îJÍşыyÜŹżęìvAЙsÄ¢ÿnΦIťQůЮ7ĄвaèďíoáнõÎLJθÆEáПiXÿÒÀĘ14цU1çΞêSťüIψчèι₱ê9ŽчΓüЦrÀÓμĆ99κQťqPÖшŮ1ÈČSĐŁÌбÝàŞbPσŃĎ8ĄW"
@@ -415,7 +415,7 @@
     [
         (ref-P|MTX-SWP::P|A_Define)
         (ref-P|TS01-CP::P|A_Define)
-        (ref-TS01-C1::C_DALOS|RotateGovernor patron vst-sc
+        (ref-TS01-C1::DALOS|C_RotateGovernor patron vst-sc
             (ref-U|G::UEV_GuardOfAny
                 [
                     (create-capability-guard (VST.VST|GOV))
@@ -424,7 +424,7 @@
                 ]
             )
         )
-        (ref-TS01-C1::C_DALOS|RotateGovernor patron swp-sc
+        (ref-TS01-C1::DALOS|C_RotateGovernor patron swp-sc
             (ref-U|G::UEV_GuardOfAny
                 [
                     (create-capability-guard (SWP.SWP|GOV))

@@ -50,7 +50,7 @@
     (print
         (expect-failure
             "garbage out-of-range primordial element (-100000) is rejected (DPDC Audit #31M fix)"
-            (ref-TS02-C1::C_DPSF|DefinePrimordialSet
+            (ref-TS02-C1::DPSF|C_DefinePrimordialSet
                 owner id "GarbageProbeSet" 1.0
                 [
                     (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1])
@@ -65,7 +65,7 @@
     (print
         (expect-failure
             "zero as a primordial allowed-nonce is rejected (DPDC Audit #31M fix)"
-            (ref-TS02-C1::C_DPSF|DefinePrimordialSet
+            (ref-TS02-C1::DPSF|C_DefinePrimordialSet
                 owner id "ZeroProbeSet" 1.0
                 [
                     (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1])
@@ -78,7 +78,7 @@
     ;;Control: a definition using only real, in-range native nonces (some positive, some already-real
     ;;fragment-encoding-shaped negatives within magnitude 1-10) must still be accepted normally.
     (print
-        (ref-TS02-C1::C_DPSF|DefinePrimordialSet
+        (ref-TS02-C1::DPSF|C_DefinePrimordialSet
             owner id "LegitProbeSet" 1.0
             [
                 (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1])

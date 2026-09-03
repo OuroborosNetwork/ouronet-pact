@@ -126,11 +126,11 @@
     (defun C_ToggleAddLiquidity:object{IgnisCollectorV2.OutputCumulator} (swpair:string toggle:bool))
     (defun C_Fuel:object{IgnisCollectorV2.OutputCumulator} (account:string swpair:string input-amounts:[decimal] direct-or-indirect:bool validation:bool))
         ;;
-    (defun C_STOA-PID|AddStandardLiquidity:object{IgnisCollectorV2.OutputCumulator} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
-    (defun C_STOA-PID|AddIcedLiquidity:object{IgnisCollectorV2.OutputCumulator} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
-    (defun C_STOA-PID|AddGlacialLiquidity:object{IgnisCollectorV2.OutputCumulator} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
-    (defun C_STOA-PID|AddFrozenLiquidity:object{IgnisCollectorV2.OutputCumulator} (account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal))
-    (defun C_STOA-PID|AddSleepingLiquidity:object{IgnisCollectorV2.OutputCumulator} (account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal))
+    (defun STOA-PID|C_AddStandardLiquidity:object{IgnisCollectorV2.OutputCumulator} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun STOA-PID|C_AddIcedLiquidity:object{IgnisCollectorV2.OutputCumulator} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun STOA-PID|C_AddGlacialLiquidity:object{IgnisCollectorV2.OutputCumulator} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun STOA-PID|C_AddFrozenLiquidity:object{IgnisCollectorV2.OutputCumulator} (account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal))
+    (defun STOA-PID|C_AddSleepingLiquidity:object{IgnisCollectorV2.OutputCumulator} (account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal))
         ;;
     (defun C_RemoveLiquidity:object{IgnisCollectorV2.OutputCumulator} (account:string swpair:string lp-amount:decimal))
 
@@ -523,7 +523,7 @@
     )
     (defun URCi_AddStandardLiquidity:object{IgnisCollectorV2.OutputCumulator}
         (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
-        @doc "Cost preview for C_STOA-PID|AddStandardLiquidity: the CLAD perfect-ignis-fee + the \
+        @doc "Cost preview for STOA-PID|C_AddStandardLiquidity: the CLAD perfect-ignis-fee + the \
             \ SWP->account LP transfer. clad is a pure reader; the add-liquidity + autonomous- \
             \ swap-management writes are free."
         (let
@@ -550,7 +550,7 @@
     )
     (defun URCi_AddIcedLiquidity:object{IgnisCollectorV2.OutputCumulator}
         (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
-        @doc "Cost preview for C_STOA-PID|AddIcedLiquidity: CLAD fee + native-LP transfer + \
+        @doc "Cost preview for STOA-PID|C_AddIcedLiquidity: CLAD fee + native-LP transfer + \
             \ freeze of the secondary (iced) LP to the account."
         (let
             (
@@ -579,7 +579,7 @@
     )
     (defun URCi_AddGlacialLiquidity:object{IgnisCollectorV2.OutputCumulator}
         (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
-        @doc "Cost preview for C_STOA-PID|AddGlacialLiquidity: CLAD fee + (conditional) native-LP \
+        @doc "Cost preview for STOA-PID|C_AddGlacialLiquidity: CLAD fee + (conditional) native-LP \
             \ transfer + freeze of the secondary (glacial) LP."
         (let
             (
@@ -611,7 +611,7 @@
     )
     (defun URCi_AddFrozenLiquidity:object{IgnisCollectorV2.OutputCumulator}
         (account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal)
-        @doc "Cost preview for C_STOA-PID|AddFrozenLiquidity: move the frozen DPTF to VST + burn + \
+        @doc "Cost preview for STOA-PID|C_AddFrozenLiquidity: move the frozen DPTF to VST + burn + \
             \ CLAD fee + re-freeze the resulting LP. Uses the frozen-token's underlying position."
         (let
             (
@@ -647,7 +647,7 @@
     )
     (defun URCi_AddSleepingLiquidity:object{IgnisCollectorV2.OutputCumulator}
         (account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal)
-        @doc "Cost preview for C_STOA-PID|AddSleepingLiquidity: move the sleeping nonce to VST + \
+        @doc "Cost preview for STOA-PID|C_AddSleepingLiquidity: move the sleeping nonce to VST + \
             \ burn + IGNIS-tax transfer + CLAD fee + re-sleep the resulting LP over the remaining \
             \ lock. Uses the sleeping-token's underlying position."
         (let
@@ -948,7 +948,7 @@
             )
         )
     )
-    (defun C_STOA-PID|AddStandardLiquidity:object{IgnisCollectorV2.OutputCumulator}
+    (defun STOA-PID|C_AddStandardLiquidity:object{IgnisCollectorV2.OutputCumulator}
         (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
         (P|UEV_IMC)
         (let
@@ -996,7 +996,7 @@
             )
         )
     )
-    (defun C_STOA-PID|AddIcedLiquidity:object{IgnisCollectorV2.OutputCumulator}
+    (defun STOA-PID|C_AddIcedLiquidity:object{IgnisCollectorV2.OutputCumulator}
         (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
         (P|UEV_IMC)
         (let
@@ -1049,7 +1049,7 @@
             )
         )
     )
-    (defun C_STOA-PID|AddGlacialLiquidity:object{IgnisCollectorV2.OutputCumulator}
+    (defun STOA-PID|C_AddGlacialLiquidity:object{IgnisCollectorV2.OutputCumulator}
         (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
         (P|UEV_IMC)
         (let
@@ -1105,7 +1105,7 @@
             )
         )
     )
-    (defun C_STOA-PID|AddFrozenLiquidity:object{IgnisCollectorV2.OutputCumulator}
+    (defun STOA-PID|C_AddFrozenLiquidity:object{IgnisCollectorV2.OutputCumulator}
         (account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal)
         (P|UEV_IMC)
         (let
@@ -1170,7 +1170,7 @@
             )
         )
     )
-    (defun C_STOA-PID|AddSleepingLiquidity:object{IgnisCollectorV2.OutputCumulator}
+    (defun STOA-PID|C_AddSleepingLiquidity:object{IgnisCollectorV2.OutputCumulator}
         (account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal)
         (P|UEV_IMC)
         (let

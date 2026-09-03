@@ -36,7 +36,7 @@
     (print (format "ANHD == creator? = {}" [(= KST.ANHD (ref-DPDC::UR_CreatorKonto id true))]))
     ;; ANHD (the creator) -> Emma: self-creator exemption, no royalty, just seeds Emma's balance.
     (print (format "SETUP TRANSFER (ANHD->Emma, self-creator, no royalty expected) = {}"
-        [(ref-TS02-C1::C_DPSF|TransferNonce KST.ANHD id KST.ANHD KST.EMMA 1 25 false)]))
+        [(ref-TS02-C1::DPSF|C_TransferNonce KST.ANHD id KST.ANHD KST.EMMA 1 25 false)]))
     (print (format "emma nonce1 supply after setup = {}" [(ref-DPDC::UR_AccountNonceSupply KST.EMMA id true 1)]))
     (print (format "emma IGNIS after setup = {}" [(ref-DALOS::UR_TF_AccountSupply KST.EMMA false)]))
     (print (format "anhd IGNIS (creator) after setup = {}" [(ref-DALOS::UR_TF_AccountSupply KST.ANHD false)]))
@@ -54,7 +54,7 @@
         (id:string "DHOC-98c486052a51")
     )
     (print (format "LEGIT RESULT (patron=Emma, Emma signs, Emma pays her own real royalty) = {}"
-        [(ref-TS02-C1::C_DPSF|TransferNonce KST.EMMA id KST.EMMA KST.LUMY 1 10 false)]))
+        [(ref-TS02-C1::DPSF|C_TransferNonce KST.EMMA id KST.EMMA KST.LUMY 1 10 false)]))
     (print (format "emma IGNIS after real royalty paid = {}" [(ref-DALOS::UR_TF_AccountSupply KST.EMMA false)]))
     (print (format "anhd IGNIS (creator, should have grown by the royalty) = {}" [(ref-DALOS::UR_TF_AccountSupply KST.ANHD false)]))
 )
@@ -77,6 +77,6 @@
         (id:string "DHOC-98c486052a51")
     )
     ;; LUMY signs, but names EMMA as patron — LUMY does not own/control Emma's account.
-    (ref-TS02-C1::C_DPSF|TransferNonce KST.EMMA id KST.LUMY KST.LUMY 1 5 false)
+    (ref-TS02-C1::DPSF|C_TransferNonce KST.EMMA id KST.LUMY KST.LUMY 1 5 false)
 )
 (commit-tx)

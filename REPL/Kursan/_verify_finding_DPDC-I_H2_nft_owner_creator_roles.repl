@@ -49,13 +49,13 @@
         (creator:string KST.ANHD)
     )
     (print (format "ISSUE RESULT = {}"
-        [(ref-TS02-C2::C_DPNF|Issue owner owner creator "SoloCreatorProbeNFT" "SCPN"
+        [(ref-TS02-C2::DPNF|C_Issue owner owner creator "SoloCreatorProbeNFT" "SCPN"
             true true true true true true true true)]))
     (let ((id:string "SCPN-98c486052a51"))
         (print (format "role-modify-royalties on owner BEFORE would-be-check: {}"
             [(ref-DPDC::UR_CA|R-ModifyRoyalties id false owner)]))
         (print (format "CREATE NONCE RESULT = {}"
-            [(ref-TS02-C2::C_DPNF|Create owner id
+            [(ref-TS02-C2::DPNF|C_Create owner id
                 [(ref-DPDC-UDC::UDC_NonceData
                     0.0 0.0 "Solo Probe NFT #1" "bar" (ref-DPDC-UDC::UDC_NoMetaData)
                     ;; DPDC Audit #12Hb: at least one real asset-type flag + matching link required now.
@@ -65,7 +65,7 @@
                 )]
             )]))
         (print (format "SET ROYALTY RESULT = {}"
-            [(ref-TS02-C2::C_DPNF|UpdateNonceRoyalty owner id owner 1 true 50.0)]))
+            [(ref-TS02-C2::DPNF|C_UpdateNonceRoyalty owner id owner 1 true 50.0)]))
         (print (format "royalty after set = {}" [(ref-DPDC::UR_N|Royalty (ref-DPDC::UR_NonceData id false 1))]))
     )
 )

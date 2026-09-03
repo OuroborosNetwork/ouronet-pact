@@ -31,7 +31,7 @@
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (enforce (> (length nonces) 0) "ANHD needs DHWC nonces")
     (print (format "<(C_StakeSemiFungible DHWC nonce={})> => \"{}\"" [stake-nonce
-        (ref-TS02-C3::CC_AQP-POOL|StakeSemiFungibleCollectable patron pool-id owner owner dhwc-id [stake-nonce])
+        (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id owner owner dhwc-id [stake-nonce])
     ]))
     (let
         (
@@ -40,7 +40,7 @@
         (expect (format "<<TX-AQP-BP01>> deb increased got={} pre={}" [deb-post deb-pre]) true (> deb-post deb-pre))
     )
     (print (format "<(C_UnstakeSemiFungible DHWC)> => \"{}\"" [
-        (ref-TS02-C3::CC_AQP-POOL|UnstakeSemiFungibleCollectable patron pool-id owner owner dhwc-id [stake-nonce] [stake-amt])
+        (ref-TS02-C3::AQP-POOL|CC_UnstakeSemiFungibleCollectable patron pool-id owner owner dhwc-id [stake-nonce] [stake-amt])
     ]))
     (let
         (
@@ -72,7 +72,7 @@
     )
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (print (format "<(C_StakeSemiFungible E|DH tier-6 shareholder)> => \"{}\"" [
-        (ref-TS02-C3::CC_AQP-POOL|StakeSemiFungibleCollectable patron pool-id anhd anhd edh-id [6])
+        (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id anhd anhd edh-id [6])
     ]))
     (let
         (
@@ -142,7 +142,7 @@
             )
             (if (< lp-bal-work 100.0)
                 (print (format "<(BP03 seed LP)> => \"{}\"" [
-                    (ref-TS01-C3::C_SWP|AddLiquidity patron patron swpair [50.0 50.0 50.0])
+                    (ref-TS01-C3::SWP|C_AddLiquidity patron patron swpair [50.0 50.0 50.0])
                 ]))
                 true
             )
@@ -171,12 +171,12 @@
                                     )
                                     (if (not (contains auryn-rain-nonce anhd-kbn))
                                         (print (format "<(DPNF transfer AurynRain nonce {} EMMA→ANHD)> => \"{}\"" [auryn-rain-nonce
-                                            (ref-TS02-C2::C_DPNF|TransferNonce patron kbn-id emma owner auryn-rain-nonce 1 false)
+                                            (ref-TS02-C2::DPNF|C_TransferNonce patron kbn-id emma owner auryn-rain-nonce 1 false)
                                         ]))
                                         true
                                     )
                                     (print (format "<(C_StakeNonFungible DHBunnies KBN nonce {})> => \"{}\"" [auryn-rain-nonce
-                                        (ref-TS02-C3::CC_AQP-POOL|StakeNonFungibleCollectable
+                                        (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable
                                             patron bunnies-pool owner owner kbn-id [auryn-rain-nonce]
                                         )
                                     ]))
@@ -192,7 +192,7 @@
                             )
                         )
                         (print (format "<(CC_StakeTrueFungible DHOuroLp LP amount={})> => \"{}\"" [stake-amt
-                            (ref-TS02-C3::CC_AQP-POOL|StakeTrueFungible patron pool-id owner owner lp-id stake-amt)
+                            (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner owner lp-id stake-amt)
                         ]))
                         (let
                             (
@@ -209,7 +209,7 @@
                             )
                         )
                         (print (format "<(C_Inject OURO farm 50)> => \"{}\"" [
-                            (ref-TS02-C3::CC_AQP-FVT|Inject patron farm-id ouro-id 50.0)
+                            (ref-TS02-C3::AQP-FVT|CC_Inject patron farm-id ouro-id 50.0)
                         ]))
                     )
                     (print (format "SKIP TX-AQP-BP03: no LP balance after seed (lp-bal={})" [lp-bal-final]))

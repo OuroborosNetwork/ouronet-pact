@@ -5186,7 +5186,7 @@
         (fvt-id:string score-entity-id:string swept-boost-class-id:string users:[string])
         @doc "Forward (re-score sweep defpact — cross-module): recompute a CHUNK of holders on one (fvt, member). \
             \ Thin P|UEV_IMC + FVT|XE>SWEEP-FIX (composes SECURE) wrapper over XI_FvtSweepRecomputeChunk. Caller passes \
-            \ `take N` of the member's present users. Paged by MTX-AQP::C_MTX|2|SweepRevokeAnchor (XI_SweepRecomputeWindow)."
+            \ `take N` of the member's present users. Paged by MTX-AQP::MTX|2|C_SweepRevokeAnchor (XI_SweepRecomputeWindow)."
         (P|UEV_IMC)
         (with-capability (FVT|XE>SWEEP-FIX fvt-id)
             (XI_FvtSweepRecomputeChunk fvt-id score-entity-id swept-boost-class-id users)

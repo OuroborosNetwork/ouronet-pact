@@ -45,80 +45,80 @@
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
     ;;
-    (defun C_DALOS|ControlSmartAccount (patron:string account:string payable-as-smart-contract:bool payable-by-smart-contract:bool payable-by-method:bool))
-    (defun C_DALOS|DeploySmartAccount (account:string guard:guard stoa:string sovereign:string public:string))
-    (defun C_DALOS|DeployStandardAccount (account:string guard:guard stoa:string public:string))
-    (defun C_DALOS|RotateGovernor (patron:string account:string governor:guard))
-    (defun C_DALOS|RotateGuard (patron:string account:string new-guard:guard safe:bool))
-    (defun C_DALOS|RotateStoa (patron:string account:string stoa:string))
-    (defun C_DALOS|RotateSovereign (patron:string account:string new-sovereign:string))
-    (defun C_DALOS|UpdateEliteAccount (patron:string account:string))
-    (defun C_DALOS|UpdateEliteAccountSquared (patron:string sender:string receiver:string))
+    (defun DALOS|C_ControlSmartAccount (patron:string account:string payable-as-smart-contract:bool payable-by-smart-contract:bool payable-by-method:bool))
+    (defun DALOS|C_DeploySmartAccount (account:string guard:guard stoa:string sovereign:string public:string))
+    (defun DALOS|C_DeployStandardAccount (account:string guard:guard stoa:string public:string))
+    (defun DALOS|C_RotateGovernor (patron:string account:string governor:guard))
+    (defun DALOS|C_RotateGuard (patron:string account:string new-guard:guard safe:bool))
+    (defun DALOS|C_RotateStoa (patron:string account:string stoa:string))
+    (defun DALOS|C_RotateSovereign (patron:string account:string new-sovereign:string))
+    (defun DALOS|C_UpdateEliteAccount (patron:string account:string))
+    (defun DALOS|C_UpdateEliteAccountSquared (patron:string sender:string receiver:string))
     ;;
     ;;
-    (defun C_DPTF|UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
-    (defun C_DPTF|UpgradeBranding (patron:string entity-id:string months:integer))
+    (defun DPTF|C_UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
+    (defun DPTF|C_UpgradeBranding (patron:string entity-id:string months:integer))
     ;;
-    (defun C_DPTF|Issue:list (patron:string account:string name:[string] ticker:[string] decimals:[integer] can-change-owner:[bool] can-upgrade:[bool] can-add-special-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool]))
-    (defun C_DPTF|RotateOwnership (patron:string id:string new-owner:string))
-    (defun C_DPTF|Control (patron:string id:string cu:bool cco:bool casr:bool cf:bool cw:bool cp:bool))
-    (defun C_DPTF|TogglePause (patron:string id:string toggle:bool))
-    (defun C_DPTF|ToggleReservation (patron:string id:string toggle:bool))
+    (defun DPTF|C_Issue:list (patron:string account:string name:[string] ticker:[string] decimals:[integer] can-change-owner:[bool] can-upgrade:[bool] can-add-special-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool]))
+    (defun DPTF|C_RotateOwnership (patron:string id:string new-owner:string))
+    (defun DPTF|C_Control (patron:string id:string cu:bool cco:bool casr:bool cf:bool cw:bool cp:bool))
+    (defun DPTF|C_TogglePause (patron:string id:string toggle:bool))
+    (defun DPTF|C_ToggleReservation (patron:string id:string toggle:bool))
         ;;
-    (defun C_DPTF|ToggleFee (patron:string id:string toggle:bool))
-    (defun C_DPTF|SetMinMove (patron:string id:string min-move-value:decimal))
-    (defun C_DPTF|SetFee (patron:string id:string fee:decimal))
-    (defun C_DPTF|SetFeeTarget (patron:string id:string target:string))
-    (defun C_DPTF|DonateFees (patron:string id:string))
-    (defun C_DPTF|ResetFeeTarget (patron:string id:string))
-    (defun C_DPTF|ToggleFeeLock (patron:string id:string toggle:bool))
+    (defun DPTF|C_ToggleFee (patron:string id:string toggle:bool))
+    (defun DPTF|C_SetMinMove (patron:string id:string min-move-value:decimal))
+    (defun DPTF|C_SetFee (patron:string id:string fee:decimal))
+    (defun DPTF|C_SetFeeTarget (patron:string id:string target:string))
+    (defun DPTF|C_DonateFees (patron:string id:string))
+    (defun DPTF|C_ResetFeeTarget (patron:string id:string))
+    (defun DPTF|C_ToggleFeeLock (patron:string id:string toggle:bool))
         ;;
-    (defun C_DPTF|DeployAccount (patron:string id:string account:string))
-    (defun C_DPTF|ToggleFreezeAccount (patron:string id:string account:string toggle:bool))
-    (defun C_DPTF|ToggleBurnRole (patron:string id:string account:string toggle:bool))
-    (defun C_DPTF|ToggleMintRole (patron:string id:string account:string toggle:bool))
-    (defun C_DPTF|ToggleFeeExemptionRole (patron:string id:string account:string toggle:bool))
-    (defun C_DPTF|ToggleTransferRole (patron:string id:string account:string toggle:bool))
+    (defun DPTF|C_DeployAccount (patron:string id:string account:string))
+    (defun DPTF|C_ToggleFreezeAccount (patron:string id:string account:string toggle:bool))
+    (defun DPTF|C_ToggleBurnRole (patron:string id:string account:string toggle:bool))
+    (defun DPTF|C_ToggleMintRole (patron:string id:string account:string toggle:bool))
+    (defun DPTF|C_ToggleFeeExemptionRole (patron:string id:string account:string toggle:bool))
+    (defun DPTF|C_ToggleTransferRole (patron:string id:string account:string toggle:bool))
         ;;
-    (defun C_DPTF|ClearDispo (patron:string account:string))
-    (defun C_DPTF|Burn (patron:string id:string account:string amount:decimal))
-    (defun C_DPTF|Mint (patron:string id:string account:string amount:decimal origin:bool))
-    (defun C_DPTF|WipeSlim (patron:string id:string atbw:string amtbw:decimal))
-    (defun C_DPTF|Wipe (patron:string id:string atbw:string))
+    (defun DPTF|C_ClearDispo (patron:string account:string))
+    (defun DPTF|C_Burn (patron:string id:string account:string amount:decimal))
+    (defun DPTF|C_Mint (patron:string id:string account:string amount:decimal origin:bool))
+    (defun DPTF|C_WipeSlim (patron:string id:string atbw:string amtbw:decimal))
+    (defun DPTF|C_Wipe (patron:string id:string atbw:string))
         ;;
-    (defun C_DPTF|Transmute (patron:string id:string transmuter:string transmute-amount:decimal))
-    (defun C_DPTF|Transfer (patron:string id:string sender:string receiver:string transfer-amount:decimal method:bool))
-    (defun C_DPTF|MultiTransfer (patron:string id-lst:[string] sender:string receiver:string transfer-amount-lst:[decimal] method:bool))
-    (defun C_DPTF|BulkTransfer (patron:string id:string sender:string receiver-lst:[string] transfer-amount-lst:[decimal]))
-    (defun C_DPTF|MultiBulkTransfer (patron:string id:[string] sender:string receiver-array:[[string]] transfer-amount-array:[[decimal]]))
+    (defun DPTF|C_Transmute (patron:string id:string transmuter:string transmute-amount:decimal))
+    (defun DPTF|C_Transfer (patron:string id:string sender:string receiver:string transfer-amount:decimal method:bool))
+    (defun DPTF|C_MultiTransfer (patron:string id-lst:[string] sender:string receiver:string transfer-amount-lst:[decimal] method:bool))
+    (defun DPTF|C_BulkTransfer (patron:string id:string sender:string receiver-lst:[string] transfer-amount-lst:[decimal]))
+    (defun DPTF|C_MultiBulkTransfer (patron:string id:[string] sender:string receiver-array:[[string]] transfer-amount-array:[[decimal]]))
     ;;
     ;;
-    (defun C_DPOF|UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
-    (defun C_DPOF|UpgradeBranding (patron:string entity-id:string months:integer))
+    (defun DPOF|C_UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
+    (defun DPOF|C_UpgradeBranding (patron:string entity-id:string months:integer))
     ;;
-    (defun C_DPOF|Issue:list (patron:string account:string name:[string] ticker:[string] decimals:[integer] can-upgrade:[bool] can-change-owner:[bool] can-add-special-role:[bool] can-transfer-oft-create-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool]))
-    (defun C_DPOF|RotateOwnership (patron:string id:string new-owner:string))
-    (defun C_DPOF|Control (patron:string id:string cu:bool cco:bool casr:bool ctocr:bool cf:bool cw:bool cp:bool sg:bool))
-    (defun C_DPOF|TogglePause (patron:string id:string toggle:bool))
+    (defun DPOF|C_Issue:list (patron:string account:string name:[string] ticker:[string] decimals:[integer] can-upgrade:[bool] can-change-owner:[bool] can-add-special-role:[bool] can-transfer-oft-create-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool]))
+    (defun DPOF|C_RotateOwnership (patron:string id:string new-owner:string))
+    (defun DPOF|C_Control (patron:string id:string cu:bool cco:bool casr:bool ctocr:bool cf:bool cw:bool cp:bool sg:bool))
+    (defun DPOF|C_TogglePause (patron:string id:string toggle:bool))
         ;;
-    (defun C_DPOF|DeployAccount (patron:string id:string account:string))
-    (defun C_DPOF|ToggleFreezeAccount (patron:string id:string account:string toggle:bool))
-    (defun C_DPOF|ToggleAddQuantityRole (patron:string id:string account:string toggle:bool))
-    (defun C_DPOF|ToggleBurnRole (patron:string id:string account:string toggle:bool))
-    (defun C_DPOF|MoveCreateRole (patron:string id:string receiver:string))
-    (defun C_DPOF|ToggleTransferRole (patron:string id:string account:string toggle:bool))
+    (defun DPOF|C_DeployAccount (patron:string id:string account:string))
+    (defun DPOF|C_ToggleFreezeAccount (patron:string id:string account:string toggle:bool))
+    (defun DPOF|C_ToggleAddQuantityRole (patron:string id:string account:string toggle:bool))
+    (defun DPOF|C_ToggleBurnRole (patron:string id:string account:string toggle:bool))
+    (defun DPOF|C_MoveCreateRole (patron:string id:string receiver:string))
+    (defun DPOF|C_ToggleTransferRole (patron:string id:string account:string toggle:bool))
         ;;
-    (defun C_DPOF|AddQuantity (patron:string id:string account:string nonce:integer amount:decimal))
-    (defun C_DPOF|Burn (patron:string id:string account:string nonce:integer amount:decimal))
-    (defun C_DPOF|Mint (patron:string id:string account:string amount:decimal meta-data-chain:[object]))
-    (defun C_DPOF|WipeSlim (patron:string id:string account:string nonce:integer amount:decimal))
-    (defun C_DPOF|WipeHeavy (patron:string id:string account:string))
-    (defun C_DPOF|WipePure (patron:string id:string account:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces}))
-    (defun C_DPOF|WipeClean (patron:string id:string account:string nonces:[integer]))
+    (defun DPOF|C_AddQuantity (patron:string id:string account:string nonce:integer amount:decimal))
+    (defun DPOF|C_Burn (patron:string id:string account:string nonce:integer amount:decimal))
+    (defun DPOF|C_Mint (patron:string id:string account:string amount:decimal meta-data-chain:[object]))
+    (defun DPOF|C_WipeSlim (patron:string id:string account:string nonce:integer amount:decimal))
+    (defun DPOF|C_WipeHeavy (patron:string id:string account:string))
+    (defun DPOF|C_WipePure (patron:string id:string account:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces}))
+    (defun DPOF|C_WipeClean (patron:string id:string account:string nonces:[integer]))
         ;;
-    (defun C_DPOF|Transmit (patron:string id:string nonces:[integer] amounts:[decimal] sender:string receiver:string method:bool))
-    (defun C_DPOF|Transfer (patron:string id:string nonces:[integer] sender:string receiver:string method:bool))    
-    (defun C_DPOF|BulkTransfer
+    (defun DPOF|C_Transmit (patron:string id:string nonces:[integer] amounts:[decimal] sender:string receiver:string method:bool))
+    (defun DPOF|C_Transfer (patron:string id:string nonces:[integer] sender:string receiver:string method:bool))    
+    (defun DPOF|C_BulkTransfer
         (patron:string id:string nonces-array:[[integer]] sender:string receiver-lst:[string] method:bool)
     )
 
@@ -278,7 +278,7 @@
     ;;
     ;;
     ;;  [DALOS_Client]
-    (defun C_DALOS|ControlSmartAccount (patron:string account:string payable-as-smart-contract:bool payable-by-smart-contract:bool payable-by-method:bool)
+    (defun DALOS|C_ControlSmartAccount (patron:string account:string payable-as-smart-contract:bool payable-by-smart-contract:bool payable-by-method:bool)
         @doc "Controls Smart Ouronet Account properties via boolean triggers"
         (with-capability (P|TS)
             (let
@@ -292,7 +292,7 @@
             )
         )
     )
-    (defun C_DALOS|DeploySmartAccount (account:string guard:guard stoa:string sovereign:string public:string)
+    (defun DALOS|C_DeploySmartAccount (account:string guard:guard stoa:string sovereign:string public:string)
         @doc "Deploys a Standard Ouronet Account, taxing for STOA"
         (with-capability (P|TS)
             (let
@@ -312,7 +312,7 @@
             )
         )
     )
-    (defun C_DALOS|DeployStandardAccount (account:string guard:guard stoa:string public:string)
+    (defun DALOS|C_DeployStandardAccount (account:string guard:guard stoa:string public:string)
         @doc "Deploys a Standard Ouronet Account, taxing for STOA"
         (with-capability (P|TS)
             (let
@@ -332,7 +332,7 @@
             )
         )
     )
-    (defun C_DALOS|RotateGovernor (patron:string account:string governor:guard)
+    (defun DALOS|C_RotateGovernor (patron:string account:string governor:guard)
         @doc "Rotates the governor of a Smart Ouronet Account \
         \ The Governor acts as a governing entity for the Smart Ouronet Account allowing fine control of its assets"
         (with-capability (P|TS)
@@ -347,7 +347,7 @@
             )
         )
     )
-    (defun C_DALOS|RotateGuard (patron:string account:string new-guard:guard safe:bool)
+    (defun DALOS|C_RotateGuard (patron:string account:string new-guard:guard safe:bool)
         @doc "Rotates the guard of an Ouronet Safe. Boolean <safe> also enforces the <new-guard>"
         (with-capability (P|TS)
             (let
@@ -361,7 +361,7 @@
             )
         )
     )
-    (defun C_DALOS|RotateStoa (patron:string account:string stoa:string)
+    (defun DALOS|C_RotateStoa (patron:string account:string stoa:string)
         @doc "Rotates the STOA Account attached to an Ouronet Account. \
         \ The attached STOA Account is the account that makes STOA Payments for specific Ouronet Actions"
         (with-capability (P|TS)
@@ -376,7 +376,7 @@
             )
         )
     )
-    (defun C_DALOS|RotateSovereign (patron:string account:string new-sovereign:string)
+    (defun DALOS|C_RotateSovereign (patron:string account:string new-sovereign:string)
         @doc "Rotates the Sovereign of a Smart Ouronet Account \
         \ The Sovereign of a Smart Ouronet Account acts as its owner, allowing dominion over its assets"
         (with-capability (P|TS)
@@ -391,7 +391,7 @@
             )
         )
     )
-    (defun C_DALOS|UpdateEliteAccount (patron:string account:string)
+    (defun DALOS|C_UpdateEliteAccount (patron:string account:string)
         @doc "Manualy Updates the Demiourgos Elite Account for one Ouronet Account in case of emergency. \
         \ Can be used without account ownership by anyone."
         (with-capability (P|TS)
@@ -410,7 +410,7 @@
             )
         )
     )
-    (defun C_DALOS|UpdateEliteAccountSquared (patron:string sender:string receiver:string)
+    (defun DALOS|C_UpdateEliteAccountSquared (patron:string sender:string receiver:string)
         @doc "Manualy Updates the Demiourgos Elite Account for two Ouronet Accounts in case of emergency. \
         \ Can be used without account ownership by anyone."
         (with-capability (P|TS)
@@ -430,7 +430,7 @@
         )
     )
     ;;  [DPTF_Client]
-    (defun C_DPTF|UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+    (defun DPTF|C_UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
         @doc "Updates <pending-branding> for DPTF Token <entity-id> costing 100 IGNIS"
         (with-capability (P|TS)
             (let
@@ -445,7 +445,7 @@
             )
         )
     )
-    (defun C_DPTF|UpgradeBranding (patron:string entity-id:string months:integer)
+    (defun DPTF|C_UpgradeBranding (patron:string entity-id:string months:integer)
         @doc "Upgrades Branding for DPTF Token, making it a premium BrandingV2. \
             \ Also sets pending-branding to live branding if its branding is not live yet"
         (with-capability (P|TS)
@@ -461,7 +461,7 @@
         )
     )
     ;;
-    (defun C_DPTF|Issue:list (patron:string account:string name:[string] ticker:[string] decimals:[integer] can-change-owner:[bool] can-upgrade:[bool] can-add-special-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool])
+    (defun DPTF|C_Issue:list (patron:string account:string name:[string] ticker:[string] decimals:[integer] can-change-owner:[bool] can-upgrade:[bool] can-add-special-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool])
         @doc "Issues a new DPTF Token in Bulk, can also be used to issue a single DPTF \
         \ Outputs a string list with the issed DPTF IDs"
         (with-capability (P|TS)
@@ -480,7 +480,7 @@
             )
         )
     )
-    (defun C_DPTF|RotateOwnership (patron:string id:string new-owner:string)
+    (defun DPTF|C_RotateOwnership (patron:string id:string new-owner:string)
         @doc "Rotates DPTF ID Ownership"
         (with-capability (P|TS)
             (let
@@ -497,7 +497,7 @@
             )
         )
     )
-    (defun C_DPTF|Control (patron:string id:string cu:bool cco:bool casr:bool cf:bool cw:bool cp:bool)
+    (defun DPTF|C_Control (patron:string id:string cu:bool cco:bool casr:bool cf:bool cw:bool cp:bool)
         @doc "Controls the properties of a DPTF Token \
             \ <can-change-owner> <can-upgrade> <can-add-special-role> <can-freeze> <can-wipe> <can-pause>"
         (with-capability (P|TS)
@@ -513,7 +513,7 @@
             )
         )
     )
-    (defun C_DPTF|TogglePause (patron:string id:string toggle:bool)
+    (defun DPTF|C_TogglePause (patron:string id:string toggle:bool)
         @doc "Toggles Pause for a DPTF Token"
         (with-capability (P|TS)
             (let
@@ -531,7 +531,7 @@
             )
         )
     )
-    (defun C_DPTF|ToggleReservation (patron:string id:string toggle:bool)
+    (defun DPTF|C_ToggleReservation (patron:string id:string toggle:bool)
         @doc "Toggles Reservations for a DPTF Token"
         (with-capability (P|TS)
             (let
@@ -550,7 +550,7 @@
         )
     )
     ;;
-    (defun C_DPTF|ToggleFee (patron:string id:string toggle:bool)
+    (defun DPTF|C_ToggleFee (patron:string id:string toggle:bool)
         @doc "Toggles Fee collection for a DPTF Token. When a DPTF Token is setup with a transfer fee, \
             \ it will come in effect only when the toggle is on(true)"
         (with-capability (P|TS)
@@ -569,7 +569,7 @@
             )
         )
     )
-    (defun C_DPTF|SetMinMove (patron:string id:string min-move-value:decimal)
+    (defun DPTF|C_SetMinMove (patron:string id:string min-move-value:decimal)
         @doc "Sets the minimum amount needed to transfer a DPTF Token"
         (with-capability (P|TS)
             (let
@@ -584,7 +584,7 @@
             )
         )
     )
-    (defun C_DPTF|SetFee (patron:string id:string fee:decimal)
+    (defun DPTF|C_SetFee (patron:string id:string fee:decimal)
         @doc "Sets a transfer fee for the DPTF Token"
         (with-capability (P|TS)
             (let
@@ -599,7 +599,7 @@
             )
         )
     )
-    (defun C_DPTF|SetFeeTarget (patron:string id:string target:string)
+    (defun DPTF|C_SetFeeTarget (patron:string id:string target:string)
         @doc "Sets the Fee Collection Target for a DPTF"
         (with-capability (P|TS)
             (let
@@ -616,7 +616,7 @@
             )
         )
     )
-    (defun C_DPTF|DonateFees (patron:string id:string)
+    (defun DPTF|C_DonateFees (patron:string id:string)
         @doc "Sets the Fee Collection target to the DALOS|SC_NAME \
         \ When DPTF Fees collect here, the will be earned by Ouronet Custodians"
         (with-capability (P|TS)
@@ -635,7 +635,7 @@
             )
         )
     )
-    (defun C_DPTF|ResetFeeTarget (patron:string id:string)
+    (defun DPTF|C_ResetFeeTarget (patron:string id:string)
         @doc "Sets the Fee Collection target to the OUROBOROS|SC_NAME \
         \ Fees can then be collected by <DPTF|C_WithdrawFees>"
         (with-capability (P|TS)
@@ -654,7 +654,7 @@
             )
         )
     )
-    (defun C_DPTF|ToggleFeeLock (patron:string id:string toggle:bool)
+    (defun DPTF|C_ToggleFeeLock (patron:string id:string toggle:bool)
         @doc "Toggles DPTF Fee Settings Lock"
         (with-capability (P|TS)
             (let
@@ -677,11 +677,11 @@
         )
     )
     ;;
-    (defun C_DPTF|DeployAccount (patron:string id:string account:string)
+    (defun DPTF|C_DeployAccount (patron:string id:string account:string)
         @doc "Deploys a DPTF Account. Self-service activation only - the caller must own \
             \ <account> (DALOS|CAP_EnforceAccountOwnership). System/infrastructure account \
             \ setup (a smart account governed by another module) must use the admin variant \
-            \ A_DPTF|DeployAccount in TS01-A instead."
+            \ DPTF|A_DeployAccount in TS01-A instead."
         (with-capability (P|TS)
             (let
                 (
@@ -700,7 +700,7 @@
             )
         )
     )
-    (defun C_DPTF|ToggleFreezeAccount (patron:string id:string account:string toggle:bool)
+    (defun DPTF|C_ToggleFreezeAccount (patron:string id:string account:string toggle:bool)
         @doc "Toggles Freezing of a DPTF Account"
         (with-capability (P|TS)
             (let
@@ -720,7 +720,7 @@
             )
         )
     )
-    (defun C_DPTF|ToggleBurnRole (patron:string id:string account:string toggle:bool)
+    (defun DPTF|C_ToggleBurnRole (patron:string id:string account:string toggle:bool)
         @doc "Toggles <burn-role> for a DPTF Token <id> on a specific <account>"
         (with-capability (P|TS)
             (let
@@ -734,7 +734,7 @@
             )
         )
     )
-    (defun C_DPTF|ToggleMintRole (patron:string id:string account:string toggle:bool)
+    (defun DPTF|C_ToggleMintRole (patron:string id:string account:string toggle:bool)
         @doc "Toggles <mint-role> for a DPTF Token <id> on a specific <account>"
         (with-capability (P|TS)
             (let
@@ -748,7 +748,7 @@
             )
         )
     )
-    (defun C_DPTF|ToggleFeeExemptionRole (patron:string id:string account:string toggle:bool)
+    (defun DPTF|C_ToggleFeeExemptionRole (patron:string id:string account:string toggle:bool)
         @doc "Toggles <fee-exemption-role> for a DPTF Token <id> on a specific <account>"
         (with-capability (P|TS)
             (let
@@ -762,7 +762,7 @@
             )
         )
     )
-    (defun C_DPTF|ToggleTransferRole (patron:string id:string account:string toggle:bool)
+    (defun DPTF|C_ToggleTransferRole (patron:string id:string account:string toggle:bool)
         @doc "Toggles <transfer-role> for a DPTF Token <id> on a specific <account>"
         (with-capability (P|TS)
             (let
@@ -783,7 +783,7 @@
         )
     )
     ;;
-    (defun C_DPTF|ClearDispo (patron:string account:string)
+    (defun DPTF|C_ClearDispo (patron:string account:string)
         @doc "Clears OURO Dispo by levereging existing Elite-Auryn"
         (with-capability (P|TS)
             (let
@@ -797,7 +797,7 @@
             )
         )
     )
-    (defun C_DPTF|Burn (patron:string id:string account:string amount:decimal)
+    (defun DPTF|C_Burn (patron:string id:string account:string amount:decimal)
         @doc "Burns a DPTF Token from an account"
         (with-capability (P|TS)
             (let
@@ -814,7 +814,7 @@
             )
         )
     )
-    (defun C_DPTF|Mint (patron:string id:string account:string amount:decimal origin:bool)
+    (defun DPTF|C_Mint (patron:string id:string account:string amount:decimal origin:bool)
         @doc "Mints a DPTF Token"
         (with-capability (P|TS)
             (let
@@ -834,8 +834,8 @@
             )
         )
     )
-    (defun C_DPTF|WipeSlim (patron:string id:string atbw:string amtbw:decimal)
-        @doc "Similar to <C_DPTF|Wipe>, but doesnt wipe the whole existing amount"
+    (defun DPTF|C_WipeSlim (patron:string id:string atbw:string amtbw:decimal)
+        @doc "Similar to <DPTF|C_Wipe>, but doesnt wipe the whole existing amount"
         (with-capability (P|TS)
             (let
                 (
@@ -854,7 +854,7 @@
             )
         )
     )
-    (defun C_DPTF|Wipe (patron:string id:string atbw:string)
+    (defun DPTF|C_Wipe (patron:string id:string atbw:string)
         @doc "Wipes a DPTF Token from a given account in its entirety \
         \ Only works for positive existing amounts"
         (with-capability (P|TS)
@@ -876,7 +876,7 @@
         )
     )
     ;;
-    (defun C_DPTF|Transmute (patron:string id:string transmuter:string transmute-amount:decimal)
+    (defun DPTF|C_Transmute (patron:string id:string transmuter:string transmute-amount:decimal)
         @doc "Transmutes a DPTF Token. Transmuting Uses the whole amount as it if were Primary Fee \
         \ without adding to the Primary Fee Counter. \
         \ Thus it can either be collected to the Fee Target Collector \
@@ -898,7 +898,7 @@
             )
         )
     )
-    (defun C_DPTF|Transfer (patron:string id:string sender:string receiver:string transfer-amount:decimal method:bool)
+    (defun DPTF|C_Transfer (patron:string id:string sender:string receiver:string transfer-amount:decimal method:bool)
         @doc "Transfers a DPTF Token from <sender> to <receiver>, using the <transfer-amount> and <method> \
         \ It autonomously choose between the 6 Transfer Variants spread over 3 Classes. \
         \ \
@@ -931,7 +931,7 @@
             )
         )
     )
-    (defun C_DPTF|MultiTransfer (patron:string id-lst:[string] sender:string receiver:string transfer-amount-lst:[decimal] method:bool)
+    (defun DPTF|C_MultiTransfer (patron:string id-lst:[string] sender:string receiver:string transfer-amount-lst:[decimal] method:bool)
         @doc "Transfers Multiple DPTF Tokens from one sender to another, each token having its own amount specified \
         \ Receiver, as it is only one, can also be a Smart Ouronet Account \
         \ 150k Gas can support between 10 and 20 Transfers, depending on DPTF Token (Simple, Complex, Elite, Unity)"
@@ -951,7 +951,7 @@
             )
         )
     )
-    (defun C_DPTF|BulkTransfer (patron:string id:string sender:string receiver-lst:[string] transfer-amount-lst:[decimal])
+    (defun DPTF|C_BulkTransfer (patron:string id:string sender:string receiver-lst:[string] transfer-amount-lst:[decimal])
         @doc "Transfers a DPTF in Bulk, from 1 sender to multiple receivers, each with its own amount \
         \ Because <receivers> cannot be Smart Ouronet Accounts, no <method> parameter is needed \
         \ When the Token <id> is set up with a Transfer Fee, and its receiver is on the receiver list, \
@@ -984,7 +984,7 @@
             )
         )
     )
-    (defun C_DPTF|MultiBulkTransfer (patron:string id:[string] sender:string receiver-array:[[string]] transfer-amount-array:[[decimal]])
+    (defun DPTF|C_MultiBulkTransfer (patron:string id:[string] sender:string receiver-array:[[string]] transfer-amount-array:[[decimal]])
         @doc "Executes Multiple Bulk Transfers in a single Function"
         (with-capability (P|TS)
             (let
@@ -1002,7 +1002,7 @@
         )
     )
     ;;  [DPOF_Client]
-    (defun C_DPOF|UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+    (defun DPOF|C_UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
         @doc "Updates <pending-branding> for DPOF Token <entity-id> costing 150 IGNIS"
         (with-capability (P|TS)
             (let
@@ -1017,7 +1017,7 @@
             )
         )
     )
-    (defun C_DPOF|UpgradeBranding (patron:string entity-id:string months:integer)
+    (defun DPOF|C_UpgradeBranding (patron:string entity-id:string months:integer)
         @doc "Similar to its DPTF Variant"
         (with-capability (P|TS)
             (let
@@ -1032,7 +1032,7 @@
         )
     )
     ;;
-    (defun C_DPOF|Issue:list (patron:string account:string name:[string] ticker:[string] decimals:[integer] can-upgrade:[bool] can-change-owner:[bool] can-add-special-role:[bool] can-transfer-oft-create-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool])
+    (defun DPOF|C_Issue:list (patron:string account:string name:[string] ticker:[string] decimals:[integer] can-upgrade:[bool] can-change-owner:[bool] can-add-special-role:[bool] can-transfer-oft-create-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool])
         @doc "Similar to its DPTF Variant"
         (with-capability (P|TS)
             (let
@@ -1050,7 +1050,7 @@
             )
         )
     )
-    (defun C_DPOF|RotateOwnership (patron:string id:string new-owner:string)
+    (defun DPOF|C_RotateOwnership (patron:string id:string new-owner:string)
         @doc "Similar to its DPTF Variant"
         (with-capability (P|TS)
             (let
@@ -1064,7 +1064,7 @@
             )
         )
     )
-    (defun C_DPOF|Control (patron:string id:string cu:bool cco:bool casr:bool ctocr:bool cf:bool cw:bool cp:bool sg:bool)
+    (defun DPOF|C_Control (patron:string id:string cu:bool cco:bool casr:bool ctocr:bool cf:bool cw:bool cp:bool sg:bool)
         @doc "Similar to its DPTF Variant, has an extra boolean trigger for <can-transfer-nft-create-role>"
         (with-capability (P|TS)
             (let
@@ -1079,7 +1079,7 @@
             )
         )
     )
-    (defun C_DPOF|TogglePause (patron:string id:string toggle:bool)
+    (defun DPOF|C_TogglePause (patron:string id:string toggle:bool)
         ;;#35M fix: removed a dead ref-TS01-A binding (copy-paste leftover, never used) and
         ;;added the CLAUDE.md-mandated format result string, mirroring the correct DPTF sibling.
         @doc "Similar to its DPTF Variant"
@@ -1100,11 +1100,11 @@
         )
     )
     ;;
-    (defun C_DPOF|DeployAccount (patron:string id:string account:string)
+    (defun DPOF|C_DeployAccount (patron:string id:string account:string)
         @doc "Similar to its DPTF Variant. Self-service activation only - the caller must \
             \ own <account> (DALOS|CAP_EnforceAccountOwnership). System/infrastructure \
             \ account setup (a smart account governed by another module) must use the \
-            \ admin variant A_DPOF|DeployAccount in TS01-A instead."
+            \ admin variant DPOF|A_DeployAccount in TS01-A instead."
         (with-capability (P|TS)
             (let
                 (
@@ -1123,7 +1123,7 @@
             )
         )
     )
-    (defun C_DPOF|ToggleFreezeAccount (patron:string id:string account:string toggle:bool)
+    (defun DPOF|C_ToggleFreezeAccount (patron:string id:string account:string toggle:bool)
         ;;#35M fix: removed a dead ref-TS01-A binding (copy-paste leftover, never used) and
         ;;added the CLAUDE.md-mandated format result string, mirroring the correct DPTF sibling.
         @doc "Similar to its DPTF Variant"
@@ -1145,7 +1145,7 @@
             )
         )
     )
-    (defun C_DPOF|ToggleAddQuantityRole (patron:string id:string account:string toggle:bool)
+    (defun DPOF|C_ToggleAddQuantityRole (patron:string id:string account:string toggle:bool)
         @doc "Toggles <add-quantity-role> for a DPMF Token <id> on a specific <account>"
         (with-capability (P|TS)
             (let
@@ -1159,7 +1159,7 @@
             )
         )
     )
-    (defun C_DPOF|ToggleBurnRole (patron:string id:string account:string toggle:bool)
+    (defun DPOF|C_ToggleBurnRole (patron:string id:string account:string toggle:bool)
         @doc "Toggles <burn-role> for a DPMF Token <id> on a specific <account>"
         (with-capability (P|TS)
             (let
@@ -1173,7 +1173,7 @@
             )
         )
     )
-    (defun C_DPOF|MoveCreateRole (patron:string id:string receiver:string)
+    (defun DPOF|C_MoveCreateRole (patron:string id:string receiver:string)
         @doc "Moves <create-role> for a DPMF Token <id> to <receiver> \
         \ Only a single account may have this role"
         (with-capability (P|TS)
@@ -1188,7 +1188,7 @@
             )
         )
     )
-    (defun C_DPOF|ToggleTransferRole (patron:string id:string account:string toggle:bool)
+    (defun DPOF|C_ToggleTransferRole (patron:string id:string account:string toggle:bool)
         @doc "Similar to its DPTF Variant"
         (with-capability (P|TS)
             (let
@@ -1203,7 +1203,7 @@
         )
     )
     ;;
-    (defun C_DPOF|AddQuantity (patron:string id:string account:string nonce:integer amount:decimal)
+    (defun DPOF|C_AddQuantity (patron:string id:string account:string nonce:integer amount:decimal)
         @doc "Similar to its DPTF Variant"
         (with-capability (P|TS)
             (let
@@ -1220,7 +1220,7 @@
             )
         )
     )
-    (defun C_DPOF|Burn (patron:string id:string account:string nonce:integer amount:decimal)
+    (defun DPOF|C_Burn (patron:string id:string account:string nonce:integer amount:decimal)
         @doc "Similar to its DPTF Variant"
         (with-capability (P|TS)
             (let
@@ -1237,7 +1237,7 @@
             )
         )
     )
-    (defun C_DPOF|Mint (patron:string id:string account:string amount:decimal meta-data-chain:[object])
+    (defun DPOF|C_Mint (patron:string id:string account:string amount:decimal meta-data-chain:[object])
         @doc "Mints a DPOF Token, creating it and adding quantity to it \
         \ Outputs the nonce of the created DPOF"
         (with-capability (P|TS)
@@ -1258,7 +1258,7 @@
             )
         )
     )
-    (defun C_DPOF|WipeSlim (patron:string id:string account:string nonce:integer amount:decimal)
+    (defun DPOF|C_WipeSlim (patron:string id:string account:string nonce:integer amount:decimal)
         @doc "Wipes a specific DPOF <id> <nonce> on <account> by <amount> \
             \ Amount may be lower or equal to the nonce amount. \
             \ Requires <id> has <segmentation> set to true"
@@ -1277,7 +1277,7 @@
             )
         )
     )
-    (defun C_DPOF|WipeHeavy (patron:string id:string account:string)
+    (defun DPOF|C_WipeHeavy (patron:string id:string account:string)
         @doc "Wipes all viable <id> Nonces of an DPOF <account> \
             \ \
             \ |Heavy| reffers to the usage of expensive functions like <select> or <keys> \
@@ -1298,7 +1298,7 @@
             )
         )
     )
-    (defun C_DPOF|WipePure (patron:string id:string account:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces})
+    (defun DPOF|C_WipePure (patron:string id:string account:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces})
         @doc "Wipes all <id> Nonces of an DPOF <account>, presented via an <removable-nonces-obj> object \
         \ \
         \ The object must be pre-read (dirty read) \
@@ -1322,7 +1322,7 @@
             )
         )
     )
-    (defun C_DPOF|WipeClean (patron:string id:string account:string nonces:[integer])
+    (defun DPOF|C_WipeClean (patron:string id:string account:string nonces:[integer])
         @doc "Wipes <id> select <nonces> of a DPOF <account>"
         (with-capability (P|TS)
             (let
@@ -1340,7 +1340,7 @@
         )
     )
     ;;
-    (defun C_DPOF|Transmit (patron:string id:string nonces:[integer] amounts:[decimal] sender:string receiver:string method:bool)
+    (defun DPOF|C_Transmit (patron:string id:string nonces:[integer] amounts:[decimal] sender:string receiver:string method:bool)
         @doc "Transfer DPOF <id> <nonces> from <sender> to <receiver> by a specific <amount> \
             \ This debits the <sender> nonces by <amount> and creates new nonces on receiver of <amount> \
             \ Requires <segmentation> set to <true> \
@@ -1366,7 +1366,7 @@
             )
         )
     )
-    (defun C_DPOF|Transfer (patron:string id:string nonces:[integer] sender:string receiver:string method:bool)
+    (defun DPOF|C_Transfer (patron:string id:string nonces:[integer] sender:string receiver:string method:bool)
         @doc "Transfer DPOF <id> <nonces> from <sender> to <receiver> by changing their Ownership"
         (with-capability (P|TS)
             (let
@@ -1389,7 +1389,7 @@
             )
         )
     )
-    (defun C_DPOF|BulkTransfer
+    (defun DPOF|C_BulkTransfer
         (patron:string id:string nonces-array:[[integer]] sender:string receiver-lst:[string] method:bool)
         @doc "Bulk whole-nonce DPOF transfer — one sender, many standard-account receivers (TalosStageOne_ClientOneV2)."
         (with-capability (P|TS)

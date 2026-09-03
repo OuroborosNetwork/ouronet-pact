@@ -115,7 +115,7 @@
     (
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
     )
-    (ref-TS01-C2::C_LQD|WrapStoa KST.ANHD KST.ANHD 20000.0)
+    (ref-TS01-C2::LQD|C_WrapStoa KST.ANHD KST.ANHD 20000.0)
 )
 (print "")
 (print "")
@@ -156,7 +156,7 @@
         (ats-pairs-with-dlk-id:[string] (ref-DPTF::UR_RewardBearingToken dlk-id))
         (stoaliquindex:string (at 0 ats-pairs-with-dlk-id))
     )
-    (ref-TS01-C2::C_ATS|Coil
+    (ref-TS01-C2::ATS|C_Coil
         KST.ANHD
         KST.ANHD
         stoaliquindex
@@ -205,7 +205,7 @@
     (
         (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
     )
-    (ref-TS01-C1::C_DPTF|Transfer 
+    (ref-TS01-C1::DPTF|C_Transfer 
         KST.ANHD
         "OURO-98c486052a51"
         KST.ANHD
@@ -323,7 +323,7 @@
     (let
         (
             (pool
-                (ref-TS01-C3::C_SWP|IssueWeighted
+                (ref-TS01-C3::SWP|C_IssueWeighted
                     KST.ANHD
                     KST.ANHD
                     [
@@ -414,7 +414,7 @@
             (t2a:decimal 900.0)
             (t3a:decimal 850.0)
             (pool
-                (ref-TS01-C3::C_SWP|IssueStable
+                (ref-TS01-C3::SWP|C_IssueStable
                     KST.ANHD
                     KST.ANHD
                     [
@@ -504,7 +504,7 @@
     (let
         (
             (pool
-                (ref-TS01-C3::C_SWP|IssueStandard
+                (ref-TS01-C3::SWP|C_IssueStandard
                     KST.AOZT
                     KST.AOZT
                     [
@@ -592,7 +592,7 @@
     (let
         (
             (pool
-                (ref-TS01-C3::C_SWP|IssueStable
+                (ref-TS01-C3::SWP|C_IssueStable
                     KST.AOZT
                     KST.AOZT
                     [
@@ -683,7 +683,7 @@
     (let
         (
             (pool
-                (ref-TS01-C3::C_SWP|IssueStandard
+                (ref-TS01-C3::SWP|C_IssueStandard
                     KST.ANHD
                     KST.ANHD
                     [
@@ -739,7 +739,7 @@
         (patron:string KST.ANHD)
     )
     ;;Mint 100 mil VST
-    (ref-TS01-C1::C_DPTF|Mint patron vst patron 200000000.0 true)
+    (ref-TS01-C1::DPTF|C_Mint patron vst patron 200000000.0 true)
 )
 
 (print "")
@@ -813,7 +813,7 @@
     (let
         (
             (pool
-                (ref-TS01-C3::C_SWP|IssueStandard
+                (ref-TS01-C3::SWP|C_IssueStandard
                     KST.ANHD
                     KST.ANHD
                     [
@@ -909,7 +909,7 @@
     (let
         (
             (pool
-                (ref-TS01-C3::C_SWP|IssueStandard
+                (ref-TS01-C3::SWP|C_IssueStandard
                     KST.ANHD
                     KST.ANHD
                     [
@@ -983,7 +983,7 @@
         (amp:decimal 85.0)
         (p:bool false)
     )
-    ;(ref-TS01-CP::C_SWP|IssueStablePool
+    ;(ref-TS01-CP::SWP|C_IssueStablePool
     ;    patron
     ;    patron
     ;    pool-tokens
@@ -991,7 +991,7 @@
     ;    amp
     ;    p
     ;)
-    ;(ref-TS01-CP::C_SWP|IssueWeightedPool
+    ;(ref-TS01-CP::SWP|C_IssueWeightedPool
     ;    patron
     ;    patron
     ;    pool-tokens
@@ -999,7 +999,7 @@
     ;    w-weigths
     ;    p
     ;)
-    ;(ref-TS01-CP::C_SWP|IssueStandardPool
+    ;(ref-TS01-CP::SWP|C_IssueStandardPool
     ;    patron
     ;    patron
     ;    pool-tokens
@@ -1010,7 +1010,7 @@
     
     [
         (format "AH has {} GAS" [(ref-DPTF::UR_AccountSupply (ref-DALOS::UR_IgnisID) KST.ANHD)])
-        (ref-TS01-CP::C_SWP|IssueStablePool
+        (ref-TS01-CP::SWP|C_IssueStablePool
             patron
             patron
             pool-tokens
@@ -1180,7 +1180,7 @@
     (let
         (
             (pool
-                (ref-TS01-C3::C_SWP|IssueWeighted
+                (ref-TS01-C3::SWP|C_IssueWeighted
                     KST.ANHD
                     KST.ANHD
                     [
@@ -1282,48 +1282,48 @@
         )
     )
     ;;Add Special Fee
-    (ref-TS01-C3::C_SWP|UpdateFee KST.ANHD pool1 20.0 false)
-    (ref-TS01-C3::C_SWP|UpdateFee KST.ANHD pool2 20.0 false)
-    (ref-TS01-C3::C_SWP|UpdateFee KST.ANHD pool3 20.0 false)
-    (ref-TS01-C3::C_SWP|UpdateFee KST.ANHD pool4 20.0 false)
-    (ref-TS01-C3::C_SWP|UpdateFee KST.ANHD pool5 20.0 false)
-    (ref-TS01-C3::C_SWP|UpdateFee KST.ANHD pool6 20.0 false)
-    (ref-TS01-C3::C_SWP|UpdateFee KST.ANHD pool6a 50.0 false)
-    (ref-TS01-C3::C_SWP|UpdateFee KST.ANHD pool7 20.0 false)
-    (ref-TS01-C3::C_SWP|UpdateFee KST.ANHD pool8 20.0 false)
+    (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD pool1 20.0 false)
+    (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD pool2 20.0 false)
+    (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD pool3 20.0 false)
+    (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD pool4 20.0 false)
+    (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD pool5 20.0 false)
+    (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD pool6 20.0 false)
+    (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD pool6a 50.0 false)
+    (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD pool7 20.0 false)
+    (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD pool8 20.0 false)
     ;;Add Fee Targets
-    (ref-TS01-C3::C_SWP|UpdateSpecialFeeTargets KST.ANHD pool1 spt2)
-    (ref-TS01-C3::C_SWP|UpdateSpecialFeeTargets KST.ANHD pool2 spt2)
-    (ref-TS01-C3::C_SWP|UpdateSpecialFeeTargets KST.ANHD pool3 spt1)
-    (ref-TS01-C3::C_SWP|UpdateSpecialFeeTargets KST.ANHD pool4 spt1)
-    ;(ref-TS01-C3::C_SWP|UpdateSpecialFeeTargets KST.ANHD pool5 spt2)
-    (ref-TS01-C3::C_SWP|UpdateSpecialFeeTargets KST.ANHD pool6 spt2)
-    (ref-TS01-C3::C_SWP|UpdateSpecialFeeTargets KST.ANHD pool6a spt2)
-    (ref-TS01-C3::C_SWP|UpdateSpecialFeeTargets KST.ANHD pool7 spt2)
-    (ref-TS01-C3::C_SWP|UpdateSpecialFeeTargets KST.ANHD pool8 spt2)
+    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD pool1 spt2)
+    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD pool2 spt2)
+    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD pool3 spt1)
+    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD pool4 spt1)
+    ;(ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD pool5 spt2)
+    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD pool6 spt2)
+    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD pool6a spt2)
+    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD pool7 spt2)
+    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD pool8 spt2)
     ;;Enable Asymetric Liquidity Addition and Primordial Pool
-    (ref-TS01-A::A_SWP|DefinePrimordialPool pool1)
-    (ref-TS01-A::A_SWP|ToggleAsymetricLiquidityAddition true)
+    (ref-TS01-A::SWP|A_DefinePrimordialPool pool1)
+    (ref-TS01-A::SWP|A_ToggleAsymetricLiquidityAddition true)
     ;;Toggle Add Liquidity
-    (ref-TS01-C3::C_SWP|ToggleAddLiquidity KST.ANHD pool1 true)
-    (ref-TS01-C3::C_SWP|ToggleAddLiquidity KST.ANHD pool2 true)
-    (ref-TS01-C3::C_SWP|ToggleAddLiquidity KST.ANHD pool3 true)
-    (ref-TS01-C3::C_SWP|ToggleAddLiquidity KST.ANHD pool4 true)
-    (ref-TS01-C3::C_SWP|ToggleAddLiquidity KST.ANHD pool5 true)
-    (ref-TS01-C3::C_SWP|ToggleAddLiquidity KST.ANHD pool6 true)
-    (ref-TS01-C3::C_SWP|ToggleAddLiquidity KST.ANHD pool6a true)
-    (ref-TS01-C3::C_SWP|ToggleAddLiquidity KST.ANHD pool7 true)
-    (ref-TS01-C3::C_SWP|ToggleAddLiquidity KST.ANHD pool8 true)
+    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD pool1 true)
+    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD pool2 true)
+    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD pool3 true)
+    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD pool4 true)
+    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD pool5 true)
+    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD pool6 true)
+    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD pool6a true)
+    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD pool7 true)
+    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD pool8 true)
     ;;Toggle Swap Functionality
-    (ref-TS01-C3::C_SWP|ToggleSwapCapability KST.ANHD pool1 true)
-    (ref-TS01-C3::C_SWP|ToggleSwapCapability KST.ANHD pool2 true)
-    (ref-TS01-C3::C_SWP|ToggleSwapCapability KST.ANHD pool3 true)
-    (ref-TS01-C3::C_SWP|ToggleSwapCapability KST.ANHD pool4 true)
-    (ref-TS01-C3::C_SWP|ToggleSwapCapability KST.ANHD pool5 true)
-    (ref-TS01-C3::C_SWP|ToggleSwapCapability KST.ANHD pool6 true)
-    (ref-TS01-C3::C_SWP|ToggleSwapCapability KST.ANHD pool6a true)
-    (ref-TS01-C3::C_SWP|ToggleSwapCapability KST.ANHD pool7 true)
-    (ref-TS01-C3::C_SWP|ToggleSwapCapability KST.ANHD pool8 true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool1 true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool2 true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool3 true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool4 true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool5 true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool6 true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool6a true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool7 true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool8 true)
 )
 
 (print "")
@@ -1452,7 +1452,7 @@
         (ref-SWPU:module{SwapperUsageV3} SWPU)
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
         (swap-result:string
-            (ref-TS01-C3::CC_SWP|SmartSwapWithSlippage
+            (ref-TS01-C3::SWP|CC_SmartSwapWithSlippage
                 KST.ANHD
                 KST.AOZT
                 "AKOSON-98c486052a51"
@@ -1542,7 +1542,7 @@
         (
             (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
             (issued-ids:[string]
-                (ref-TS01-C1::C_DPTF|Issue
+                (ref-TS01-C1::DPTF|C_Issue
                     patron
                     patron
                     ["TestTokenY"]
@@ -1592,7 +1592,7 @@
         (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
     )
-    (ref-TS01-C1::C_DPTF|Mint patron "TSTY-98c486052a51" patron 100000.0 true)
+    (ref-TS01-C1::DPTF|C_Mint patron "TSTY-98c486052a51" patron 100000.0 true)
     (format "AH has {} TSTY" [(ref-DPTF::UR_AccountSupply "TSTY-98c486052a51" KST.ANHD)])
 )
 (print "")
@@ -1660,7 +1660,7 @@
     (let
         (
             (pool
-                (ref-TS01-C3::C_SWP|IssueStandard
+                (ref-TS01-C3::SWP|C_IssueStandard
                     KST.ANHD
                     KST.ANHD
                     [
@@ -1740,7 +1740,7 @@
     (let
         (
             (pool
-                (ref-TS01-C3::C_SWP|IssueWeighted
+                (ref-TS01-C3::SWP|C_IssueWeighted
                     KST.ANHD
                     KST.ANHD
                     [
@@ -1788,8 +1788,8 @@
         (poolP:string "P|OURO-98c486052a51|TSTY-98c486052a51")
         (poolQ:string "W|OURO-98c486052a51|TSTY-98c486052a51")
     )
-    (ref-TS01-C3::C_SWP|ToggleSwapCapability KST.ANHD poolP true)
-    (ref-TS01-C3::C_SWP|ToggleSwapCapability KST.ANHD poolQ true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD poolP true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD poolQ true)
 )
 (print "")
 (print "")
@@ -1827,7 +1827,7 @@
         (cached-P-before:decimal (ref-SWP::UR_StoaValue poolP))
         (cached-Q-before:decimal (ref-SWP::UR_StoaValue poolQ))
         (swap-result:string
-            (ref-TS01-C3::CC_SWP|SmartSwapNoSlippage
+            (ref-TS01-C3::SWP|CC_SmartSwapNoSlippage
                 KST.ANHD
                 KST.ANHD
                 "OURO-98c486052a51"
@@ -1920,7 +1920,7 @@
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
     )
     ;;134k
-    (ref-TS01-C3::C_SWP|MultiSwapWithSlippage
+    (ref-TS01-C3::SWP|C_MultiSwapWithSlippage
         KST.ANHD 
         KST.ANHD
         "W|OURO-98c486052a51|TEUR-98c486052a51|EURT-98c486052a51|EURC-98c486052a51|EURD-98c486052a51|AEUR-98c486052a51|CEUR-98c486052a51"
@@ -1936,7 +1936,7 @@
         )
     )
     ;;129k
-    (ref-TS01-C3::C_SWP|MultiSwapNoSlippage
+    (ref-TS01-C3::SWP|C_MultiSwapNoSlippage
         KST.ANHD 
         KST.ANHD
         "W|OURO-98c486052a51|TEUR-98c486052a51|EURT-98c486052a51|EURC-98c486052a51|EURD-98c486052a51|AEUR-98c486052a51|CEUR-98c486052a51"
@@ -1946,7 +1946,7 @@
     )
 
     ;84k
-    (ref-TS01-C3::C_SWP|SingleSwapWithSlippage
+    (ref-TS01-C3::SWP|C_SingleSwapWithSlippage
         KST.ANHD 
         KST.ANHD
         "W|OURO-98c486052a51|TEUR-98c486052a51|EURT-98c486052a51|EURC-98c486052a51|EURD-98c486052a51|AEUR-98c486052a51|CEUR-98c486052a51"
@@ -1962,7 +1962,7 @@
         )
     )
     ;;81k
-    (ref-TS01-C3::C_SWP|SingleSwapNoSlippage
+    (ref-TS01-C3::SWP|C_SingleSwapNoSlippage
         KST.ANHD 
         KST.ANHD
         "W|OURO-98c486052a51|TEUR-98c486052a51|EURT-98c486052a51|EURC-98c486052a51|EURD-98c486052a51|AEUR-98c486052a51|CEUR-98c486052a51"
@@ -1970,7 +1970,7 @@
         2400.0
         "OURO-98c486052a51"
     )
-    (ref-TS01-C3::C_SWP|SingleSwapNoSlippage
+    (ref-TS01-C3::SWP|C_SingleSwapNoSlippage
         KST.ANHD 
         KST.ANHD
         "W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51"
@@ -2016,7 +2016,7 @@
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
     )
     [
-        (ref-TS01-C3::C_SWP|MultiSwapWithSlippage
+        (ref-TS01-C3::SWP|C_MultiSwapWithSlippage
             KST.ANHD 
             KST.ANHD
             "W|OURO-98c486052a51|TEUR-98c486052a51|EURT-98c486052a51|EURC-98c486052a51|EURD-98c486052a51|AEUR-98c486052a51|CEUR-98c486052a51"
@@ -2105,13 +2105,13 @@
     [
         ;ld
         ;clad
-        (ref-TS01-C3::C_SWP|AddLiquidity
+        (ref-TS01-C3::SWP|C_AddLiquidity
             patron
             patron
             pool8
             ia
         )
-        (ref-TS01-C3::C_SWP|AddLiquidity
+        (ref-TS01-C3::SWP|C_AddLiquidity
             patron
             patron
             pool5
@@ -2122,7 +2122,7 @@
         ;(format "Burn role for LP on SWP-SC is {}" [(ref-DPTF::UR_AccountRoleBurn pool8-lp swp-sc)])
         ;(format "Mint role for LP on SWP-SC is {}" [(ref-DPTF::UR_AccountRoleMint pool8-lp swp-sc)])
         ;(format "Pool8-LP Owner is {}" [(ref-DPTF::UR_Konto pool8-lp)])
-        (ref-TS01-C1::C_DPTF|MultiTransfer patron 
+        (ref-TS01-C1::DPTF|C_MultiTransfer patron 
             ["OURO-98c486052a51" "TEUR-98c486052a51" "EURT-98c486052a51" "EURC-98c486052a51" "EURD-98c486052a51" "AEUR-98c486052a51" "CEUR-98c486052a51"]
             patron emma
             [730.0 277.0 330.0 450.0 554.0 332.0 170.0]
@@ -2177,9 +2177,9 @@
         (pool8:string "W|OURO-98c486052a51|TEUR-98c486052a51|EURT-98c486052a51|EURC-98c486052a51|EURD-98c486052a51|AEUR-98c486052a51|CEUR-98c486052a51")
         (ia:[decimal] [730.0 277.0 330.0 450.0 554.0 332.0 170.0])
     )
-    ;; Step 0 of the C_MTX|AddLiquidity defpact. (Scaffold F0/F1/F2 path removed — this now mirrors the
+    ;; Step 0 of the MTX|C_AddLiquidity defpact. (Scaffold F0/F1/F2 path removed — this now mirrors the
     ;; Iced/Glacial blocks: begin the pact here, advance via (continue-pact 1) / (continue-pact 2) below.)
-    (ref-TS01-CP::C_SWP|AddStandardLiquidity emma emma pool8 ia)
+    (ref-TS01-CP::SWP|C_AddStandardLiquidity emma emma pool8 ia)
 )
 
 (print "")
@@ -2313,7 +2313,7 @@
         (format "Balanced Liquidity with 500 OURO is{}, and adding liquidity so creates {} LP Tokens" 
             [
                 bl
-                (ref-TS01-C3::C_SWP|AddLiquidity
+                (ref-TS01-C3::SWP|C_AddLiquidity
                     patron
                     patron
                     pool8
@@ -2440,7 +2440,7 @@
     [
         (format "Current Liquindex is {}, Projected Liquindex is" [(at 0 indices) (at 1 indices)])
     ]
-    (ref-TS01-A::A_ORBR|Fuel)
+    (ref-TS01-A::ORBR|A_Fuel)
     (let
         (
             (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -2539,14 +2539,14 @@
             }
         ]
     )
-    (ref-TS01-C1::C_DALOS|DeploySmartAccount
+    (ref-TS01-C1::DALOS|C_DeploySmartAccount
         ah-ouronet-account
         (keyset-ref-guard ah-key) 
         ah-stoa 
         patron 
         ah-pbl
     )
-    (ref-TS01-C1::C_DALOS|DeployStandardAccount
+    (ref-TS01-C1::DALOS|C_DeployStandardAccount
         cip
         (keyset-ref-guard ah-key) 
         ah-stoa 
@@ -2599,24 +2599,24 @@
         (emma:string KST.EMMA)
     )
     ;;Turn ON Reserve Functionality
-    (ref-TS01-C1::C_DPTF|ToggleReservation patron OuroID true)
+    (ref-TS01-C1::DPTF|C_ToggleReservation patron OuroID true)
     ;;Standard Account makes 15 R|Ouro
-    (ref-TS01-C2::C_VST|Reserve patron patron OuroID 15.0)
+    (ref-TS01-C2::VST|C_Reserve patron patron OuroID 15.0)
     (let
         (
             (r-dptf-balance:decimal (ref-DPTF::UR_AccountSupply ROuroID patron))
         )
         ;;Deploy Account for ROuroID on Smart-Patron
-        (ref-TS01-C1::C_DPTF|DeployAccount patron ROuroID smart-patron)
+        (ref-TS01-C1::DPTF|C_DeployAccount patron ROuroID smart-patron)
         ;;Transfer Role set to true to Smart Account.
-        (ref-TS01-C1::C_DPTF|ToggleTransferRole patron ROuroID smart-patron true)
+        (ref-TS01-C1::DPTF|C_ToggleTransferRole patron ROuroID smart-patron true)
         ;;Send 15 R|Ouro to Smart Account
-        (ref-TS01-C1::C_DPTF|Transfer patron ROuroID patron smart-patron 15.0 true)
+        (ref-TS01-C1::DPTF|C_Transfer patron ROuroID patron smart-patron 15.0 true)
         ;;Smart Account unreserves 10 Ouro
-        (ref-TS01-C2::C_VST|Unreserve patron smart-patron ROuroID 10.0)
+        (ref-TS01-C2::VST|C_Unreserve patron smart-patron ROuroID 10.0)
 
         ;;
-        ;(ref-TS01-C2::C_VST|RepurposeReserved patron ROuroID patron emma)
+        ;(ref-TS01-C2::VST|C_RepurposeReserved patron ROuroID patron emma)
         (let
             (
                 (r2-dptf-balance:decimal (ref-DPTF::UR_AccountSupply ROuroID smart-patron))
@@ -2675,13 +2675,13 @@
         
     )
     ;;Mint 1000 VST
-    ;(ref-TS01-C1::C_DPTF|Mint patron vst patron 100000000.0 false)
+    ;(ref-TS01-C1::DPTF|C_Mint patron vst patron 100000000.0 false)
     ;;Freeze 500 VST to Emma
-    (ref-TS01-C2::C_VST|Freeze patron patron emma vst 10000000.0)
+    (ref-TS01-C2::VST|C_Freeze patron patron emma vst 10000000.0)
     ;;Show Emmas Balance
     ;(format "Emma has {} {}"[(ref-DPTF::UR_AccountSupply f-vst emma) f-vst])
     ;;Repurpose frozen Token back to AH
-    (ref-TS01-C2::C_VST|RepurposeFrozen patron f-vst emma patron)
+    (ref-TS01-C2::VST|C_RepurposeFrozen patron f-vst emma patron)
     ;(ref-VST::XI_RepurposeTrueFungible patron f-vst emma patron true)
     ;;Show AH Balance
     (format "AH has {} {} after repurpose"[(ref-DPTF::UR_AccountSupply f-vst patron) f-vst])
@@ -2730,41 +2730,41 @@
         
     )
     ;;Sleept 6500 VST to Emma
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 5000.0 432000)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 6000.0 518400)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 7000.0 604800)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 8000.0 691200)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 9000.0 777600)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 5000.0 432000)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 6000.0 518400)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 7000.0 604800)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 8000.0 691200)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 9000.0 777600)
 
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 5000.0 5432000)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 6000.0 4518400)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 7000.0 3604800)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 8000.0 2691200)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 9000.0 1777600)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 5000.0 5432000)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 6000.0 4518400)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 7000.0 3604800)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 8000.0 2691200)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 9000.0 1777600)
 
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 5000.0 5432000)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 6000.0 4518400)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 7000.0 3604800)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 8000.0 2691200)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 9000.0 2777600)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 5000.0 5432000)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 6000.0 4518400)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 7000.0 3604800)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 8000.0 2691200)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 9000.0 2777600)
 
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 51000.0 432000)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 6000.0 1518400)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 7000.0 1604800)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 8000.0 2691200)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 9000.0 1777600)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 51000.0 432000)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 6000.0 1518400)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 7000.0 1604800)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 8000.0 2691200)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 9000.0 1777600)
 
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 57000.0 432000)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 6000.0 1518400)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 7000.0 1604800)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 8000.0 2691200)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 9000.0 1777600)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 57000.0 432000)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 6000.0 1518400)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 7000.0 1604800)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 8000.0 2691200)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 9000.0 1777600)
 
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 13000.0 432000)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 6000.0 1518400)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 7000.0 1604800)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 8000.0 2691200)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 9000.0 1777600)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 13000.0 432000)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 6000.0 1518400)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 7000.0 1604800)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 8000.0 2691200)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 9000.0 1777600)
 
     ;;Show Emmas Balance
     
@@ -2772,7 +2772,7 @@
         {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
          "block-time": (time "2024-10-16T00:00:00Z")}
     )
-    ;(ref-TS01-C2::C_VST|RepurposeSleeping patron s-vst 25 emma patron)
+    ;(ref-TS01-C2::VST|C_RepurposeSleeping patron s-vst 25 emma patron)
     [
         (format "<<<<<>>>>>{}" [p])
         (format "Emma has {} {} in total, owned nonces are {}"[(ref-DPOF::UR_AccountSupply s-vst emma) s-vst (ref-DPOF::URH_AccountNonces emma s-vst)])
@@ -2821,10 +2821,10 @@
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
         (s-vesta:string "Z|VST-98c486052a51")
     )
-    ;(ref-TS01-C2::C_VST|Merge KST.EMMA KST.EMMA s-vesta (enumerate 1 30))
+    ;(ref-TS01-C2::VST|C_Merge KST.EMMA KST.EMMA s-vesta (enumerate 1 30))
     ;(ref-TS01-C2::VST|C_MergeAll KST.EMMA KST.EMMA s-vesta)
-    ;(ref-TS01-C2::C_VST|RepurposeMerge KST.EMMA s-vesta (enumerate 1 10) KST.EMMA KST.ANHD)
-    (ref-TS01-C2::C_VST|RepurposeMerge KST.EMMA s-vesta (ref-DPOF::URH_AccountNonces KST.EMMA s-vesta) KST.EMMA KST.ANHD)
+    ;(ref-TS01-C2::VST|C_RepurposeMerge KST.EMMA s-vesta (enumerate 1 10) KST.EMMA KST.ANHD)
+    (ref-TS01-C2::VST|C_RepurposeMerge KST.EMMA s-vesta (ref-DPOF::URH_AccountNonces KST.EMMA s-vesta) KST.EMMA KST.ANHD)
     [
         (format "Emma has {} {} in total, owned nonces are {}"[(ref-DPOF::UR_AccountSupply s-vesta KST.EMMA) s-vesta (ref-DPOF::URH_AccountNonces KST.EMMA s-vesta)])
         (format "Emma VST supply is {}" [(ref-DPTF::UR_AccountSupply "VST-98c486052a51" KST.EMMA)])
@@ -2872,8 +2872,8 @@
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
     )
-    ;(ref-TS01-C2::C_VST|Merge KST.EMMA KST.EMMA "Z|VST-98c486052a51" (enumerate 1 30))
-    (ref-TS01-C2::C_VST|Vest patron patron emma ouro 250.0 3600 7200 20)
+    ;(ref-TS01-C2::VST|C_Merge KST.EMMA KST.EMMA "Z|VST-98c486052a51" (enumerate 1 30))
+    (ref-TS01-C2::VST|C_Vest patron patron emma ouro 250.0 3600 7200 20)
     [
         (format "Emma has {} {} in total, owned nonces are {}"[(ref-DPOF::UR_AccountSupply v-ouro emma) v-ouro (ref-DPOF::URH_AccountNonces emma v-ouro)])
         (format "Emma OURO supply is {}" [(ref-DPTF::UR_AccountSupply ouro emma)])
@@ -2924,7 +2924,7 @@
         {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
          "block-time": (time "2024-10-16T13:00:00Z")}
     )
-    ;(ref-TS01-C2::C_VST|Unvest emma emma v-ouro 1)
+    ;(ref-TS01-C2::VST|C_Unvest emma emma v-ouro 1)
     [
         ;(format "Account Nonce Balance is {}" [(ref-DPOF::UR_NonceSupply v-ouro 1)])
         ;(format "Culled Amount is {}" [(ref-VST::URC_CullMetaDataAmount emma v-ouro 1)])
@@ -2967,8 +2967,8 @@
     (
         (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
     )
-    (ref-TS01-C1::C_DPOF|DeployAccount KST.ANHD "V|OURO-98c486052a51" KST.ANHD)
-    (ref-TS01-C1::C_DPOF|ToggleTransferRole KST.ANHD "V|OURO-98c486052a51" KST.ANHD true)
+    (ref-TS01-C1::DPOF|C_DeployAccount KST.ANHD "V|OURO-98c486052a51" KST.ANHD)
+    (ref-TS01-C1::DPOF|C_ToggleTransferRole KST.ANHD "V|OURO-98c486052a51" KST.ANHD true)
 )
 
 (print "")
@@ -3012,8 +3012,8 @@
         (dalos:string "Σ.W∇ЦwÏξБØnζΦψÕłěîбηжÛśTã∇țâĆã4ЬĚIŽȘØíÕlÛřбΩцμCšιÄиMkλ€УщшàфGřÞыÎäY8È₳BDÏÚmßOozBτòÊŸŹjПкцğ¥щóиś4h4ÑþююqςA9ÆúÛȚβжéÑψéУoЭπÄЩψďşõшżíZtZuψ4ѺËxЖψУÌбЧλüșěđΔjÈt0ΛŽZSÿΞЩŠ")
     )
     ;(ref-TS01-C1::DPMF|C_Transfer KST.EMMA "V|OURO-98c486052a51" 1 KST.EMMA KST.ANHD 100.0 false)
-    ;(expect-failure "No Cull Possible" (ref-TS01-C2::C_VST|Unvest KST.EMMA KST.EMMA "V|OURO-98c486052a51" 2))
-    (ref-TS01-C2::C_VST|Unvest KST.EMMA KST.EMMA "V|OURO-98c486052a51" 1)
+    ;(expect-failure "No Cull Possible" (ref-TS01-C2::VST|C_Unvest KST.EMMA KST.EMMA "V|OURO-98c486052a51" 2))
+    (ref-TS01-C2::VST|C_Unvest KST.EMMA KST.EMMA "V|OURO-98c486052a51" 1)
     ;[
     ;    ;(format "Account Nonce Balance is {}" [(ref-DPOF::UR_NonceSupply v-ouro 1)])
     ;    ;(format "Culled Amount is {}" [(ref-VST::URC_CullMetaDataAmount emma v-ouro 1)])
@@ -3021,7 +3021,7 @@
     ;    (format "AH OURO supply is {}" [(ref-DPTF::UR_AccountSupply "OURO-98c486052a51" KST.ANHD)])
     ;]
     (ref-DALOS::CAP_EnforceAccountOwnership dalos)
-    (ref-TS01-C2::C_ORBR|Sublimate patron emma 100.0)
+    (ref-TS01-C2::ORBR|C_Sublimate patron emma 100.0)
     [
         (format "Emma GAS supply after unvest is {}" [(ref-DPTF::UR_AccountSupply "GAS-98c486052a51" KST.EMMA)])
         (format "Emma has Ignis Gas Discount {}" [(ref-DALOS::URC_IgnisGasDiscount KST.EMMA)])
@@ -3117,11 +3117,11 @@
             }
         ]
     )
-    (ref-TS01-C2::C_VST|CreateSleepingLink emma ouro-id)
-    (ref-TS01-C3::C_SWP|EnableFrozenLP emma pool)
-    (ref-TS01-C3::C_SWP|EnableFrozenLP emma pool8)
-    (ref-TS01-C3::C_SWP|EnableSleepingLP emma pool)
-    (ref-TS01-C3::C_SWP|EnableSleepingLP emma pool8)
+    (ref-TS01-C2::VST|C_CreateSleepingLink emma ouro-id)
+    (ref-TS01-C3::SWP|C_EnableFrozenLP emma pool)
+    (ref-TS01-C3::SWP|C_EnableFrozenLP emma pool8)
+    (ref-TS01-C3::SWP|C_EnableSleepingLP emma pool)
+    (ref-TS01-C3::SWP|C_EnableSleepingLP emma pool8)
     (format "Emma GAS supply after unvest is {}" [(ref-DPTF::UR_AccountSupply "GAS-98c486052a51" KST.EMMA)])
 )
 
@@ -3164,11 +3164,11 @@
         [
             (expect-failure
                 "Non-owner cannot enable Frozen LP on someone else's pool (#31M/M7 fix)"
-                (ref-TS01-C3::C_SWP|EnableFrozenLP KST.EMMA pool5)
+                (ref-TS01-C3::SWP|C_EnableFrozenLP KST.EMMA pool5)
             )
             (expect-failure
                 "Non-owner cannot enable Sleeping LP on someone else's pool (#31M/M7 fix)"
-                (ref-TS01-C3::C_SWP|EnableSleepingLP KST.EMMA pool5)
+                (ref-TS01-C3::SWP|C_EnableSleepingLP KST.EMMA pool5)
             )
             (expect
                 "Frozen LP must still read false — the rejected non-owner call must not have mutated state"
@@ -3252,17 +3252,17 @@
             }
         ]
     )
-    (ref-TS01-C3::C_SWP|EnableFrozenLP KST.ANHD pool5)
-    (ref-TS01-C3::C_SWP|EnableSleepingLP KST.ANHD pool5)
+    (ref-TS01-C3::SWP|C_EnableFrozenLP KST.ANHD pool5)
+    (ref-TS01-C3::SWP|C_EnableSleepingLP KST.ANHD pool5)
     (map print
         [
             (expect
-                "True owner's C_SWP|EnableFrozenLP call succeeds and sticks"
+                "True owner's SWP|C_EnableFrozenLP call succeeds and sticks"
                 true
                 (ref-SWP::UR_IzFrozenLP pool5)
             )
             (expect
-                "True owner's C_SWP|EnableSleepingLP call succeeds and sticks"
+                "True owner's SWP|C_EnableSleepingLP call succeeds and sticks"
                 true
                 (ref-SWP::UR_IzSleepingLP pool5)
             )
@@ -3336,7 +3336,7 @@
         (
             (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
             (issued-ids:[string]
-                (ref-TS01-C1::C_DPTF|Issue
+                (ref-TS01-C1::DPTF|C_Issue
                     patron
                     patron
                     ["TestTokenC" "TestTokenD" "TestTokenZ"]
@@ -3386,9 +3386,9 @@
         (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
     )
-    (ref-TS01-C1::C_DPTF|Mint patron "TSTC-98c486052a51" patron 1000000.0 true)
-    (ref-TS01-C1::C_DPTF|Mint patron "TSTD-98c486052a51" patron 1000000.0 true)
-    (ref-TS01-C1::C_DPTF|Mint patron "TSTZ-98c486052a51" patron 1000000.0 true)
+    (ref-TS01-C1::DPTF|C_Mint patron "TSTC-98c486052a51" patron 1000000.0 true)
+    (ref-TS01-C1::DPTF|C_Mint patron "TSTD-98c486052a51" patron 1000000.0 true)
+    (ref-TS01-C1::DPTF|C_Mint patron "TSTZ-98c486052a51" patron 1000000.0 true)
     (format "AH has {} TSTC / {} TSTD / {} TSTZ" [
         (ref-DPTF::UR_AccountSupply "TSTC-98c486052a51" KST.ANHD)
         (ref-DPTF::UR_AccountSupply "TSTD-98c486052a51" KST.ANHD)
@@ -3469,7 +3469,7 @@
     ;;measured via a scratch diagnostic that TSTC's own DWK-worth rises very
     ;;slowly/asymptotically with reserve size, so a naive small thin pool like
     ;;500/500 undershoots it.)
-    (ref-TS01-C3::C_SWP|IssueStandard KST.ANHD KST.ANHD
+    (ref-TS01-C3::SWP|C_IssueStandard KST.ANHD KST.ANHD
         [
             { "token-id": "OURO-98c486052a51", "token-supply": 5000.0}
             { "token-id": "TSTC-98c486052a51", "token-supply": 10000.0}
@@ -3481,14 +3481,14 @@
     ;;DLK-connected via the OURO|TSTC pool just issued above, satisfying Stable's
     ;;own no-principal-tokens escape hatch (first token needs a DLK route via
     ;;existing pools, not to literally be a principal).
-    (ref-TS01-C3::C_SWP|IssueStable KST.ANHD KST.ANHD
+    (ref-TS01-C3::SWP|C_IssueStable KST.ANHD KST.ANHD
         [
             { "token-id": "TSTC-98c486052a51", "token-supply": 2000.0}
             { "token-id": "TSTZ-98c486052a51", "token-supply": 2000.0}
         ]
         25.0 10.0 false
     )
-    (ref-TS01-C3::C_SWP|IssueStandard KST.ANHD KST.ANHD
+    (ref-TS01-C3::SWP|C_IssueStandard KST.ANHD KST.ANHD
         [
             { "token-id": "OURO-98c486052a51", "token-supply": 5000.0}
             { "token-id": "TSTD-98c486052a51", "token-supply": 7500.0}
@@ -3496,7 +3496,7 @@
         25.0 false
     )
     ;;Same reasoning as the TSTC|TSTZ pool above.
-    (ref-TS01-C3::C_SWP|IssueStable KST.ANHD KST.ANHD
+    (ref-TS01-C3::SWP|C_IssueStable KST.ANHD KST.ANHD
         [
             { "token-id": "TSTD-98c486052a51", "token-supply": 200000.0}
             { "token-id": "TSTZ-98c486052a51", "token-supply": 200000.0}
@@ -3534,10 +3534,10 @@
     (
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
     )
-    (ref-TS01-C3::C_SWP|ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|TSTC-98c486052a51" true)
-    (ref-TS01-C3::C_SWP|ToggleSwapCapability KST.ANHD "S|TSTC-98c486052a51|TSTZ-98c486052a51" true)
-    (ref-TS01-C3::C_SWP|ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|TSTD-98c486052a51" true)
-    (ref-TS01-C3::C_SWP|ToggleSwapCapability KST.ANHD "S|TSTD-98c486052a51|TSTZ-98c486052a51" true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|TSTC-98c486052a51" true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "S|TSTC-98c486052a51|TSTZ-98c486052a51" true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|TSTD-98c486052a51" true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "S|TSTD-98c486052a51|TSTZ-98c486052a51" true)
 )
 (print "")
 (print "")
@@ -3571,7 +3571,7 @@
 ;;measured, on this codebase's real organically-grown ~102-pool topology (7
 ;;representative pairs, 1-8 hops), that best-of-3 never actually found anything
 ;;better than first-found there — so the LIVE default routing path
-;;(CC_SWP|SmartSwapNoSlippage -> URC_HopperActive -> URCx_Hopper) now uses
+;;(SWP|CC_SmartSwapNoSlippage -> URC_HopperActive -> URCx_Hopper) now uses
 ;;first-found only. On THIS deliberately-adversarial topology specifically, that
 ;;means the live path now takes the worse route — proven directly below, not
 ;;glossed over. SWPT::URC_ComputeAlternateRoutes itself is unchanged and still
@@ -3588,7 +3588,7 @@
         (ref-SWPI:module{SwapperIssueV4} SWPI)
         (tstz-before:decimal (ref-DPTF::UR_AccountSupply "TSTZ-98c486052a51" KST.ANHD))
         (swap-result:string
-            (ref-TS01-C3::CC_SWP|SmartSwapNoSlippage
+            (ref-TS01-C3::SWP|CC_SmartSwapNoSlippage
                 KST.ANHD
                 KST.ANHD
                 "OURO-98c486052a51"
@@ -3711,7 +3711,7 @@
         (
             (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
             (issued-ids:[string]
-                (ref-TS01-C1::C_DPTF|Issue
+                (ref-TS01-C1::DPTF|C_Issue
                     patron
                     patron
                     ["TestTokenN" "TestTokenM" "TestTokenQ"]
@@ -3760,9 +3760,9 @@
         (patron:string KST.ANHD)
         (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
     )
-    (ref-TS01-C1::C_DPTF|Mint patron "TSTN-98c486052a51" patron 10000.0 true)
-    (ref-TS01-C1::C_DPTF|Mint patron "TSTM-98c486052a51" patron 10000.0 true)
-    (ref-TS01-C1::C_DPTF|Mint patron "TSTQ-98c486052a51" patron 10000.0 true)
+    (ref-TS01-C1::DPTF|C_Mint patron "TSTN-98c486052a51" patron 10000.0 true)
+    (ref-TS01-C1::DPTF|C_Mint patron "TSTM-98c486052a51" patron 10000.0 true)
+    (ref-TS01-C1::DPTF|C_Mint patron "TSTQ-98c486052a51" patron 10000.0 true)
 )
 (print "")
 (print "")
@@ -3828,7 +3828,7 @@
     )
     ;;Pool AN: OURO (principal, first) + TSTN — valid W/P anchoring. TSTN is now
     ;;genuinely DIRECTLY pooled with a principal.
-    (ref-TS01-C3::C_SWP|IssueStandard KST.ANHD KST.ANHD
+    (ref-TS01-C3::SWP|C_IssueStandard KST.ANHD KST.ANHD
         [
             { "token-id": "OURO-98c486052a51", "token-supply": 800.0}
             { "token-id": "TSTN-98c486052a51", "token-supply": 800.0}
@@ -3839,7 +3839,7 @@
     ;;(via pool AN just above), so this passes under both old and new logic —
     ;;this is the legitimate "S|AG|AL" case. TSTM's ONLY connection after this
     ;;is to TSTN (not itself a principal, just principal-adjacent).
-    (ref-TS01-C3::C_SWP|IssueStable KST.ANHD KST.ANHD
+    (ref-TS01-C3::SWP|C_IssueStable KST.ANHD KST.ANHD
         [
             { "token-id": "TSTN-98c486052a51", "token-supply": 800.0}
             { "token-id": "TSTM-98c486052a51", "token-supply": 800.0}
@@ -3920,7 +3920,7 @@
             (expect-failure
                 "S|TSTM|TSTQ rejected — TSTM is only transitively (2-hop), not \
                 \ directly, connected to a principal (#34bM fix)"
-                (ref-TS01-C3::C_SWP|IssueStable KST.ANHD KST.ANHD
+                (ref-TS01-C3::SWP|C_IssueStable KST.ANHD KST.ANHD
                     [
                         { "token-id": "TSTM-98c486052a51", "token-supply": 800.0}
                         { "token-id": "TSTQ-98c486052a51", "token-supply": 800.0}
@@ -4035,7 +4035,7 @@
                   "W6A" "W6B" "W6C" "W6D" "W6E" ]
             )
             (issued-ids:[string]
-                (ref-TS01-C1::C_DPTF|Issue
+                (ref-TS01-C1::DPTF|C_Issue
                     patron
                     patron
                     names
@@ -4095,7 +4095,7 @@
     )
     (map
         (lambda (t:string)
-            (ref-TS01-C1::C_DPTF|Mint patron (format "{}-98c486052a51" [t]) patron 10000.0 true)
+            (ref-TS01-C1::DPTF|C_Mint patron (format "{}-98c486052a51" [t]) patron 10000.0 true)
         )
         tickers
     )
@@ -4131,9 +4131,9 @@
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
         (ref-SWP:module{SwapperV4} SWP)
     )
-    (ref-TS01-A::A_SWP|UpdatePrincipal "W1-98c486052a51" true)
-    (ref-TS01-A::A_SWP|UpdatePrincipal "W4-98c486052a51" true)
-    (ref-TS01-A::A_SWP|UpdatePrincipal "W7-98c486052a51" true)
+    (ref-TS01-A::SWP|A_UpdatePrincipal "W1-98c486052a51" true)
+    (ref-TS01-A::SWP|A_UpdatePrincipal "W4-98c486052a51" true)
+    (ref-TS01-A::SWP|A_UpdatePrincipal "W7-98c486052a51" true)
     (print (format "Principal count after adding W1/W4/W7: {}" [(length (ref-SWP::UR_Principals))]))
 )
 (print "")
@@ -4199,7 +4199,7 @@
         ]
     )
     ;;Pool 1: W1(principal)-W2 hop.
-    (ref-TS01-C3::C_SWP|IssueStable KST.ANHD KST.ANHD
+    (ref-TS01-C3::SWP|C_IssueStable KST.ANHD KST.ANHD
         [
             { "token-id": "W1-98c486052a51", "token-supply": 100.0}
             { "token-id": "W2-98c486052a51", "token-supply": 100.0}
@@ -4212,7 +4212,7 @@
         10.0 10.0 true
     )
     ;;Pool 2: W2-W3 hop. W2 is directly principal-adjacent (to W1, via pool 1).
-    (ref-TS01-C3::C_SWP|IssueStable KST.ANHD KST.ANHD
+    (ref-TS01-C3::SWP|C_IssueStable KST.ANHD KST.ANHD
         [
             { "token-id": "W2-98c486052a51", "token-supply": 100.0}
             { "token-id": "W3-98c486052a51", "token-supply": 100.0}
@@ -4225,7 +4225,7 @@
         10.0 10.0 true
     )
     ;;Pool 3: W4(principal)-W3 hop.
-    (ref-TS01-C3::C_SWP|IssueStable KST.ANHD KST.ANHD
+    (ref-TS01-C3::SWP|C_IssueStable KST.ANHD KST.ANHD
         [
             { "token-id": "W4-98c486052a51", "token-supply": 100.0}
             { "token-id": "W3-98c486052a51", "token-supply": 100.0}
@@ -4238,7 +4238,7 @@
         10.0 10.0 true
     )
     ;;Pool 4: W4(principal)-W5 hop.
-    (ref-TS01-C3::C_SWP|IssueStable KST.ANHD KST.ANHD
+    (ref-TS01-C3::SWP|C_IssueStable KST.ANHD KST.ANHD
         [
             { "token-id": "W4-98c486052a51", "token-supply": 100.0}
             { "token-id": "W5-98c486052a51", "token-supply": 100.0}
@@ -4251,7 +4251,7 @@
         10.0 10.0 true
     )
     ;;Pool 5: W5-W6 hop. W5 is directly principal-adjacent (to W4, via pool 4).
-    (ref-TS01-C3::C_SWP|IssueStable KST.ANHD KST.ANHD
+    (ref-TS01-C3::SWP|C_IssueStable KST.ANHD KST.ANHD
         [
             { "token-id": "W5-98c486052a51", "token-supply": 100.0}
             { "token-id": "W6-98c486052a51", "token-supply": 100.0}
@@ -4264,7 +4264,7 @@
         10.0 10.0 true
     )
     ;;Pool 6: W7(principal)-W6 hop.
-    (ref-TS01-C3::C_SWP|IssueStable KST.ANHD KST.ANHD
+    (ref-TS01-C3::SWP|C_IssueStable KST.ANHD KST.ANHD
         [
             { "token-id": "W7-98c486052a51", "token-supply": 100.0}
             { "token-id": "W6-98c486052a51", "token-supply": 100.0}
@@ -4296,7 +4296,7 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;#34bM/P0.5 note: URC_PoolValue prices a pool using only its FIRST token's DWK
 ;;worth (URC_WorthWSTOA -> URC_Hopper(token, DWK, amount) — a real swap-reachability
-;;search), and C_SWP|ToggleSwapCapability requires that worth clear an
+;;search), and SWP|C_ToggleSwapCapability requires that worth clear an
 ;;inactive-limit floor. The isolated W1-W7 chain has zero path to DWK on its own.
 ;;This one small OURO|W1 pool (never referenced by the intended swap route) gives
 ;;W1 real DWK-reachable worth — and since the whole chain is transitively
@@ -4347,7 +4347,7 @@
             }
         ]
     )
-    (ref-TS01-C3::C_SWP|IssueStandard KST.ANHD KST.ANHD
+    (ref-TS01-C3::SWP|C_IssueStandard KST.ANHD KST.ANHD
         [
             { "token-id": "OURO-98c486052a51", "token-supply": 1000.0}
             { "token-id": "W1-98c486052a51", "token-supply": 1000.0}
@@ -4366,7 +4366,7 @@
     ;;crashes instead of failing cleanly. Worth its own tracked finding — not
     ;;fixing it here, just routing around it to keep this specific pool
     ;;genuinely DLK-reachable so the swap can execute at all.
-    (ref-TS01-C3::C_SWP|ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|W1-98c486052a51" true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|W1-98c486052a51" true)
 )
 (print "")
 (print "")
@@ -4443,7 +4443,7 @@
     (print
         (expect-failure
             "#74: issuing [OURO, OURO, W1] (duplicate token ID) is rejected — composed protection from TFT::C_MultiTransfer's own uniqueness guard, not UEV_Issue"
-            (ref-TS01-C3::C_SWP|IssueWeighted KST.ANHD KST.ANHD
+            (ref-TS01-C3::SWP|C_IssueWeighted KST.ANHD KST.ANHD
                 [
                     { "token-id": "OURO-98c486052a51", "token-supply": 5000.0}
                     { "token-id": "OURO-98c486052a51", "token-supply": 5000.0}
@@ -4498,7 +4498,7 @@
             ]
         )
     )
-    (map (lambda (p:string) (ref-TS01-C3::C_SWP|UpdateSpecialFeeTargets KST.ANHD p spt)) pools)
+    (map (lambda (p:string) (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD p spt)) pools)
     ;;P0.6 correction, 2026-08-21: configuring targets alone (above) does NOT activate
     ;;the special-fee rate itself — <fee-special> defaults to 0.0 at issuance and stays
     ;;there unless explicitly set, meaning every prior worst-case measurement in this
@@ -4506,8 +4506,8 @@
     ;;all (o-id-special was 0.0 on every hop). Set to 10.0 here, mirroring <lp-fee>
     ;;(matches how Liquid Boost already mirrors <lp-fee> when its own toggle is on), so
     ;;this "worst case" test actually stresses the path it claims to.
-    (map (lambda (p:string) (ref-TS01-C3::C_SWP|UpdateFee KST.ANHD p 10.0 false)) pools)
-    (map (lambda (p:string) (ref-TS01-C3::C_SWP|ToggleSwapCapability KST.ANHD p true)) pools)
+    (map (lambda (p:string) (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD p 10.0 false)) pools)
+    (map (lambda (p:string) (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD p true)) pools)
 )
 (print "")
 (print "")
@@ -4546,7 +4546,7 @@
     (
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
     )
-    (ref-TS01-A::A_SWP|UpdateLiquidBoost true)
+    (ref-TS01-A::SWP|A_UpdateLiquidBoost true)
 )
 ;;P0.6 direction 5: XI_SmartSwapCore now carries the Liquid Boost cut forward
 ;;hop-by-hop (SWPI::URC_Swap over each hop's own already-selected edge, no
@@ -4564,7 +4564,7 @@
         (dlk-before:decimal (ref-DPTF::UR_AccountSupply sstoa swp-sc))
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
         (swap-result:string
-            (ref-TS01-C3::CC_SWP|SmartSwapNoSlippage
+            (ref-TS01-C3::SWP|CC_SmartSwapNoSlippage
                 KST.ANHD
                 KST.ANHD
                 "W1-98c486052a51"
@@ -4598,7 +4598,7 @@
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
     )
     ;;Restore — must not leak into the rest of the file's later transactions.
-    (ref-TS01-A::A_SWP|UpdateLiquidBoost false)
+    (ref-TS01-A::SWP|A_UpdateLiquidBoost false)
 )
 (print "===^^^===")
 (env-sigs [])
@@ -4664,7 +4664,7 @@
         (
             (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
             (issued-ids:[string]
-                (ref-TS01-C1::C_DPTF|Issue
+                (ref-TS01-C1::DPTF|C_Issue
                     patron patron names symbols
                     (make-list n 24)
                     (make-list n true)
@@ -4740,13 +4740,13 @@
             (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
             (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
         )
-        (map (lambda (t:string) (ref-TS01-C1::C_DPTF|Mint patron t patron 1000.0 true)) tok-ids)
+        (map (lambda (t:string) (ref-TS01-C1::DPTF|C_Mint patron t patron 1000.0 true)) tok-ids)
         ;;permissioned=true (skips the issuance-time worth/spawn-limit search only —
-        ;;irrelevant for these noise pools; C_SWP|ToggleSwapCapability's own worth
+        ;;irrelevant for these noise pools; SWP|C_ToggleSwapCapability's own worth
         ;;check below is unconditional regardless and still runs).
         (map
             (lambda (t:string)
-                (ref-TS01-C3::C_SWP|IssueStandard patron patron
+                (ref-TS01-C3::SWP|C_IssueStandard patron patron
                     [
                         { "token-id": "OURO-98c486052a51", "token-supply": 1000.0}
                         { "token-id": t, "token-supply": 1000.0}
@@ -4757,7 +4757,7 @@
             tok-ids
         )
         ;;First batch: activate the first 20 (baseline 22 -> ~42 active).
-        (map (lambda (t:string) (ref-TS01-C3::C_SWP|ToggleSwapCapability patron (format "P|OURO-98c486052a51|{}" [t]) true)) (take 20 tok-ids))
+        (map (lambda (t:string) (ref-TS01-C3::SWP|C_ToggleSwapCapability patron (format "P|OURO-98c486052a51|{}" [t]) true)) (take 20 tok-ids))
     )
 )
 (print (format "<<<<<<<SWP|TX 032s ==> {} STOA GAS>>>>>>>" [(env-gas)]))
@@ -4771,13 +4771,13 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let ((ref-SWP:module{SwapperV4} SWP)) (print (format "P2-scale checkpoint: active swpairs = {}" [(length (ref-SWP::URC_ActiveSwpairs))])))
-(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::A_SWP|UpdateLiquidBoost true))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost true))
 (env-gas 0)
 (let ((ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3))
-    (print (ref-TS01-C3::CC_SWP|SmartSwapNoSlippage KST.ANHD KST.ANHD "W1-98c486052a51" 10.0 "W7-98c486052a51"))
+    (print (ref-TS01-C3::SWP|CC_SmartSwapNoSlippage KST.ANHD KST.ANHD "W1-98c486052a51" 10.0 "W7-98c486052a51"))
 )
 (print (format "<<<<<<<SWP|TX 032u P2-SCALE CHECKPOINT ==> {} STOA GAS>>>>>>>" [(env-gas)]))
-(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::A_SWP|UpdateLiquidBoost false))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost false))
 (env-sigs [])
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -4793,7 +4793,7 @@
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
         (tok-ids:[string] (map (lambda (i:integer) (format "N2{}-98c486052a51" [i])) (enumerate 21 40)))
     )
-    (map (lambda (t:string) (ref-TS01-C3::C_SWP|ToggleSwapCapability patron (format "P|OURO-98c486052a51|{}" [t]) true)) tok-ids)
+    (map (lambda (t:string) (ref-TS01-C3::SWP|C_ToggleSwapCapability patron (format "P|OURO-98c486052a51|{}" [t]) true)) tok-ids)
 )
 (print (format "<<<<<<<SWP|TX 032v ==> {} STOA GAS>>>>>>>" [(env-gas)]))
 (env-sigs [])
@@ -4806,13 +4806,13 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let ((ref-SWP:module{SwapperV4} SWP)) (print (format "P2-scale checkpoint: active swpairs = {}" [(length (ref-SWP::URC_ActiveSwpairs))])))
-(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::A_SWP|UpdateLiquidBoost true))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost true))
 (env-gas 0)
 (let ((ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3))
-    (print (ref-TS01-C3::CC_SWP|SmartSwapNoSlippage KST.ANHD KST.ANHD "W1-98c486052a51" 10.0 "W7-98c486052a51"))
+    (print (ref-TS01-C3::SWP|CC_SmartSwapNoSlippage KST.ANHD KST.ANHD "W1-98c486052a51" 10.0 "W7-98c486052a51"))
 )
 (print (format "<<<<<<<SWP|TX 032w P2-SCALE CHECKPOINT ==> {} STOA GAS>>>>>>>" [(env-gas)]))
-(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::A_SWP|UpdateLiquidBoost false))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost false))
 (env-sigs [])
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -4828,7 +4828,7 @@
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
         (tok-ids:[string] (map (lambda (i:integer) (format "N2{}-98c486052a51" [i])) (enumerate 41 60)))
     )
-    (map (lambda (t:string) (ref-TS01-C3::C_SWP|ToggleSwapCapability patron (format "P|OURO-98c486052a51|{}" [t]) true)) tok-ids)
+    (map (lambda (t:string) (ref-TS01-C3::SWP|C_ToggleSwapCapability patron (format "P|OURO-98c486052a51|{}" [t]) true)) tok-ids)
 )
 (print (format "<<<<<<<SWP|TX 032x ==> {} STOA GAS>>>>>>>" [(env-gas)]))
 (env-sigs [])
@@ -4841,13 +4841,13 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let ((ref-SWP:module{SwapperV4} SWP)) (print (format "P2-scale checkpoint: active swpairs = {}" [(length (ref-SWP::URC_ActiveSwpairs))])))
-(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::A_SWP|UpdateLiquidBoost true))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost true))
 (env-gas 0)
 (let ((ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3))
-    (print (ref-TS01-C3::CC_SWP|SmartSwapNoSlippage KST.ANHD KST.ANHD "W1-98c486052a51" 10.0 "W7-98c486052a51"))
+    (print (ref-TS01-C3::SWP|CC_SmartSwapNoSlippage KST.ANHD KST.ANHD "W1-98c486052a51" 10.0 "W7-98c486052a51"))
 )
 (print (format "<<<<<<<SWP|TX 032y P2-SCALE CHECKPOINT ==> {} STOA GAS>>>>>>>" [(env-gas)]))
-(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::A_SWP|UpdateLiquidBoost false))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost false))
 (env-sigs [])
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -4863,7 +4863,7 @@
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
         (tok-ids:[string] (map (lambda (i:integer) (format "N2{}-98c486052a51" [i])) (enumerate 61 80)))
     )
-    (map (lambda (t:string) (ref-TS01-C3::C_SWP|ToggleSwapCapability patron (format "P|OURO-98c486052a51|{}" [t]) true)) tok-ids)
+    (map (lambda (t:string) (ref-TS01-C3::SWP|C_ToggleSwapCapability patron (format "P|OURO-98c486052a51|{}" [t]) true)) tok-ids)
 )
 (print (format "<<<<<<<SWP|TX 032z ==> {} STOA GAS>>>>>>>" [(env-gas)]))
 (env-sigs [])
@@ -4876,13 +4876,13 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let ((ref-SWP:module{SwapperV4} SWP)) (print (format "P2-scale checkpoint: active swpairs = {}" [(length (ref-SWP::URC_ActiveSwpairs))])))
-(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::A_SWP|UpdateLiquidBoost true))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost true))
 (env-gas 0)
 (let ((ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3))
-    (print (ref-TS01-C3::CC_SWP|SmartSwapNoSlippage KST.ANHD KST.ANHD "W1-98c486052a51" 10.0 "W7-98c486052a51"))
+    (print (ref-TS01-C3::SWP|CC_SmartSwapNoSlippage KST.ANHD KST.ANHD "W1-98c486052a51" 10.0 "W7-98c486052a51"))
 )
 (print (format "<<<<<<<SWP|TX 032z2 P2-SCALE CHECKPOINT ==> {} STOA GAS>>>>>>>" [(env-gas)]))
-(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::A_SWP|UpdateLiquidBoost false))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost false))
 (env-sigs [])
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -5111,14 +5111,14 @@
 ;;==== SWP|TX 032z5 - XI_RawLiquidPump Crash-Bug Fix Proof · 02 · let / invocation ====
 (print "--- [SWP|TX 032z5 - XI_RawLiquidPump Crash-Bug Fix Proof · 02 · let / invocation] ---")
 (let ((ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3))
-    (ref-TS01-C3::C_SWP|ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|W1-98c486052a51" false)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|W1-98c486052a51" false)
 )
-(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::A_SWP|UpdateLiquidBoost true))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost true))
 (let*
     (
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
         (swap-result:string
-            (ref-TS01-C3::CC_SWP|SmartSwapNoSlippage KST.ANHD KST.ANHD "W1-98c486052a51" 10.0 "W7-98c486052a51")
+            (ref-TS01-C3::SWP|CC_SmartSwapNoSlippage KST.ANHD KST.ANHD "W1-98c486052a51" 10.0 "W7-98c486052a51")
         )
     )
     (map print
@@ -5132,10 +5132,10 @@
         ]
     )
 )
-(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::A_SWP|UpdateLiquidBoost false))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost false))
 (let ((ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3))
     ;;Restore — must not leak into any later transaction in this file.
-    (ref-TS01-C3::C_SWP|ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|W1-98c486052a51" true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|W1-98c486052a51" true)
 )
 (env-sigs [])
 (commit-tx)
@@ -5152,9 +5152,9 @@
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
-;;#34 Phase 8: proves the bundle-based C_SWP|SmartSwapNoSlippage end to end at the
+;;#34 Phase 8: proves the bundle-based SWP|C_SmartSwapNoSlippage end to end at the
 ;;SAME ~102-active-pool P2-scale worst-case state SWP|TX 032z2 measured
-;;CC_SWP|SmartSwapNoSlippage (self-searching) at — direct, apples-to-apples gas
+;;SWP|CC_SmartSwapNoSlippage (self-searching) at — direct, apples-to-apples gas
 ;;comparison against that already-recorded number, not an estimate. Bundle
 ;;construction below (URC_HopperActive/URC_HopperActiveShortest/URC_Hopper calls)
 ;;simulates exactly what an off-chain client would do via free /local dirty reads —
@@ -5163,7 +5163,7 @@
 ;;anything.
 ;;==== SWP|TX 032z6 - Bundle-Based SmartSwap Proof · 02 · dirty-read bundle + measured call ====
 (print "--- [SWP|TX 032z6 - Bundle-Based SmartSwap Proof · 02 · dirty-read bundle + measured call] ---")
-(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::A_SWP|UpdateLiquidBoost true))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost true))
 (let*
     (
         (ref-SWPI:module{SwapperIssueV4} SWPI)
@@ -5177,7 +5177,7 @@
         (output-id "W7-98c486052a51")
         ;;1) swap-route: A->B, freshly discovered off-chain (P3.0: never cached,
         ;;amount-sensitive) — the real, best-of-3 active-only search, same one
-        ;;CC_SWP|SmartSwapNoSlippage itself runs internally at 032z2.
+        ;;SWP|CC_SmartSwapNoSlippage itself runs internally at 032z2.
         (route-h:object{SwapperIssueV4.Hopper} (ref-SWPI::URC_HopperActive input-id output-id 10.0))
         (route-nodes:[string] (at "nodes" route-h))
         (route-edges:[string] (at "edges" route-h))
@@ -5222,7 +5222,7 @@
     (let
         (
             (swap-result:string
-                (ref-TS01-C3::C_SWP|SmartSwapNoSlippage KST.ANHD KST.ANHD input-id 10.0 output-id bundle)
+                (ref-TS01-C3::SWP|C_SmartSwapNoSlippage KST.ANHD KST.ANHD input-id 10.0 output-id bundle)
             )
         )
         (map print
@@ -5265,8 +5265,8 @@
     )
 )
 (print (format "<<<<<<<SWP|TX 032z6 #34 PHASE 8 BUNDLE-BASED SMARTSWAP (Liquid Boost ON, ~102 active pools) ==> {} STOA GAS>>>>>>>" [(env-gas)]))
-(print "Compare directly against SWP|TX 032z2's recorded CC_SWP|SmartSwapNoSlippage gas at the same ~102-active-pool state — this is the real 'how much does outsourcing dirty reads save us' number.")
-(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::A_SWP|UpdateLiquidBoost false))
+(print "Compare directly against SWP|TX 032z2's recorded SWP|CC_SmartSwapNoSlippage gas at the same ~102-active-pool state — this is the real 'how much does outsourcing dirty reads save us' number.")
+(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost false))
 (env-sigs [])
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -5568,7 +5568,7 @@
 ;;S|DLK|OURO|DWK stable pool), well within the P0.4 cap.
 ;;==== SWP|TX 032z7 - Boost-Path Cache Registration Proof · 02 · dirty-read bundle + call ====
 (print "--- [SWP|TX 032z7 - Boost-Path Cache Registration Proof · 02 · dirty-read bundle + call] ---")
-(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::A_SWP|UpdateLiquidBoost true))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost true))
 (let*
     (
         (ref-SWPI:module{SwapperIssueV4} SWPI)
@@ -5614,7 +5614,7 @@
     (let
         (
             (swap-result:string
-                (ref-TS01-C3::C_SWP|SmartSwapNoSlippage KST.ANHD KST.ANHD input-id 5.0 output-id bundle)
+                (ref-TS01-C3::SWP|C_SmartSwapNoSlippage KST.ANHD KST.ANHD input-id 5.0 output-id bundle)
             )
         )
         (map print
@@ -5636,7 +5636,7 @@
         )
     )
 )
-(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::A_SWP|UpdateLiquidBoost false))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost false))
 (env-sigs [])
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -5793,7 +5793,7 @@
         (
             (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
         )
-        (ref-TS01-C1::C_DPTF|Issue
+        (ref-TS01-C1::DPTF|C_Issue
             patron patron
             ["MinorPrincipalTest"] ["MPTEST"] (make-list 1 24)
             (make-list 1 true) (make-list 1 true) (make-list 1 true)
@@ -5861,13 +5861,13 @@
             (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
             (ref-SWP:module{SwapperV4} SWP)
         )
-    (ref-TS01-C1::C_DPTF|Mint patron "MPTEST-98c486052a51" patron 10000.0 true)
-    (ref-TS01-A::A_SWP|UpdatePrincipal "MPTEST-98c486052a51" true)
+    (ref-TS01-C1::DPTF|C_Mint patron "MPTEST-98c486052a51" patron 10000.0 true)
+    (ref-TS01-A::SWP|A_UpdatePrincipal "MPTEST-98c486052a51" true)
     (print (format "Principal count after adding MPTEST: {}" [(length (ref-SWP::UR_Principals))]))
     ;;P-type pool, MPTEST first (the pool WILL fail issuance if MPTEST weren't already a
     ;;principal — proves the anchoring, not just claims it), OURO second — a genuine 1-hop
     ;;organic connection, permissioned bypass (p=true) since MPTEST has no trading history yet.
-    (ref-TS01-C3::C_SWP|IssueStandard patron patron
+    (ref-TS01-C3::SWP|C_IssueStandard patron patron
         [
             { "token-id": "MPTEST-98c486052a51", "token-supply": 500.0}
             { "token-id": "OURO-98c486052a51", "token-supply": 500.0}
@@ -6124,33 +6124,33 @@
         [
             (expect-failure
                 "Adversarial: swap-route claiming input-id but ending at a different (real, connected) token is rejected"
-                (ref-TS01-C3::C_SWP|SmartSwapNoSlippage KST.ANHD KST.ANHD input-id 1.0 output-id wrong-endpoint-bundle)
+                (ref-TS01-C3::SWP|C_SmartSwapNoSlippage KST.ANHD KST.ANHD input-id 1.0 output-id wrong-endpoint-bundle)
             )
             (expect-failure
                 "Adversarial: swap-route exceeding the P0.4 depth cap (8 nodes) is rejected"
-                (ref-TS01-C3::C_SWP|SmartSwapNoSlippage KST.ANHD KST.ANHD input-id 1.0 output-id depth-cap-bundle)
+                (ref-TS01-C3::SWP|C_SmartSwapNoSlippage KST.ANHD KST.ANHD input-id 1.0 output-id depth-cap-bundle)
             )
             (expect-failure
                 "Adversarial: swap-route with a fabricated, non-existent pool as its edge is rejected"
-                (ref-TS01-C3::C_SWP|SmartSwapNoSlippage KST.ANHD KST.ANHD input-id 1.0 output-id fabricated-edge-bundle)
+                (ref-TS01-C3::SWP|C_SmartSwapNoSlippage KST.ANHD KST.ANHD input-id 1.0 output-id fabricated-edge-bundle)
             )
         ]
     )
     ;;Inactive-edge case needs the pool actually toggled off first (a genuinely real,
     ;;structurally-connected, but can-swap=false pool) — same revert/restore pattern
     ;;as SWP|TX 032z5.
-    (ref-TS01-C3::C_SWP|ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|W1-98c486052a51" false)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|W1-98c486052a51" false)
     (print
         (expect-failure
             "Adversarial: swap-route over a real, connected, but can-swap=false pool is rejected"
-            (ref-TS01-C3::C_SWP|SmartSwapNoSlippage KST.ANHD KST.ANHD "W1-98c486052a51" 1.0 "OURO-98c486052a51" inactive-edge-bundle)
+            (ref-TS01-C3::SWP|C_SmartSwapNoSlippage KST.ANHD KST.ANHD "W1-98c486052a51" 1.0 "OURO-98c486052a51" inactive-edge-bundle)
         )
     )
-    (ref-TS01-C3::C_SWP|ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|W1-98c486052a51" true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|W1-98c486052a51" true)
 )
 ;;==== SWP|TX 032z8 - Adversarial Malformed-Bundle Proof · 03 · pricing-path graceful degrade ====
 (print "--- [SWP|TX 032z8 - Adversarial Malformed-Bundle Proof · 03 · pricing-path graceful degrade] ---")
-(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::A_SWP|UpdateLiquidBoost true))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost true))
 (let*
     (
         (ref-SWPI:module{SwapperIssueV4} SWPI)
@@ -6180,8 +6180,8 @@
         ;;result gets a real check, not a placebo true==true — if either call had
         ;;thrown (crashed) instead of degrading gracefully, this whole transaction
         ;;would already be dead by the time the assertions below run.
-        (result-bad-boost:string (ref-TS01-C3::C_SWP|SmartSwapNoSlippage KST.ANHD KST.ANHD input-id 1.0 output-id bundle-bad-boost))
-        (result-bad-stoa:string (ref-TS01-C3::C_SWP|SmartSwapNoSlippage KST.ANHD KST.ANHD input-id 1.0 output-id bundle-bad-stoa))
+        (result-bad-boost:string (ref-TS01-C3::SWP|C_SmartSwapNoSlippage KST.ANHD KST.ANHD input-id 1.0 output-id bundle-bad-boost))
+        (result-bad-stoa:string (ref-TS01-C3::SWP|C_SmartSwapNoSlippage KST.ANHD KST.ANHD input-id 1.0 output-id bundle-bad-stoa))
     )
     (map print
         [
@@ -6200,7 +6200,7 @@
         ]
     )
 )
-(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::A_SWP|UpdateLiquidBoost false))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost false))
 (env-sigs [])
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -6270,9 +6270,9 @@
     )
     ;(acquire-module-admin ouronet-ns.SWPL)
     
-    (ref-TS01-C3::C_SWP|AddSleepingLiquidity patron patron pool s-vst 31)
-    (ref-TS01-C3::C_SWP|AddFrozenLiquidity patron patron pool f-vst 50000.0)
-    (ref-TS01-C3::C_SWP|ToggleFeeLock patron pool true)
+    (ref-TS01-C3::SWP|C_AddSleepingLiquidity patron patron pool s-vst 31)
+    (ref-TS01-C3::SWP|C_AddFrozenLiquidity patron patron pool f-vst 50000.0)
+    (ref-TS01-C3::SWP|C_ToggleFeeLock patron pool true)
     ;(ref-DPOF::UR_NonceMetaData s-vst 31)
     [
         (format "Nonce MD is {}" [(at "release-date" (at 0 nonce-md))])
@@ -6339,7 +6339,7 @@
         ;    )
         ;)
     )
-    (ref-TS01-CP::C_SWP|AddIcedLiquidity
+    (ref-TS01-CP::SWP|C_AddIcedLiquidity
         patron
         patron
         pool8
@@ -6454,7 +6454,7 @@
         ;    )
         ;)
     )
-    (ref-TS01-CP::C_SWP|AddGlacialLiquidity
+    (ref-TS01-CP::SWP|C_AddGlacialLiquidity
         patron
         patron
         pool
@@ -6565,8 +6565,8 @@
         (s-vst:string "Z|VST-98c486052a51")
         (s-ouro:string "Z|OURO-98c486052a51")
     )
-    (ref-TS01-C2::C_VST|Sleep patron patron emma vst 57000.0 432000)
-    (ref-TS01-C2::C_VST|Sleep patron patron emma ouro 2500.0 432000)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma vst 57000.0 432000)
+    (ref-TS01-C2::VST|C_Sleep patron patron emma ouro 2500.0 432000)
     [
         (format "Emma has {} {} in total, owned nonces are {}" 
             [
@@ -6636,14 +6636,14 @@
             )
         )
     )    
-    ;(ref-TS01-CP::C_SWP|AddSleepingLiquidity
+    ;(ref-TS01-CP::SWP|C_AddSleepingLiquidity
     ;    patron
     ;    emma
     ;    poo8
     ;    s-vst
     ;    32
     ;)
-    (ref-TS01-CP::C_SWP|AddSleepingLiquidity
+    (ref-TS01-CP::SWP|C_AddSleepingLiquidity
         patron
         emma
         pool8
@@ -6763,7 +6763,7 @@
             )
         )
     )
-    (ref-TS01-CP::C_SWP|AddFrozenLiquidity
+    (ref-TS01-CP::SWP|C_AddFrozenLiquidity
         patron
         patron
         pool
@@ -6868,7 +6868,7 @@
         (pool:string "P|OURO-98c486052a51|VST-98c486052a51")
         ;
     )
-    (ref-TS01-C3::C_SWP|AddIcedLiquidity patron patron pool [500.0 0.0])
+    (ref-TS01-C3::SWP|C_AddIcedLiquidity patron patron pool [500.0 0.0])
 )
 
 (print "")
@@ -6911,7 +6911,7 @@
     (print
         (expect-failure "#56L: negative input amount rejected even though the sum is positive"
             "No input amount may be negative"
-            (ref-TS01-C3::C_SWP|AddIcedLiquidity patron patron pool [-100.0 600.0])
+            (ref-TS01-C3::SWP|C_AddIcedLiquidity patron patron pool [-100.0 600.0])
         )
     )
 )
@@ -6930,7 +6930,7 @@
 ;;==== SWP|TX 038c - #62L C_Fuel Proof · 01 · env-sigs (caps) ====
 (print "--- [SWP|TX 038c - #62L C_Fuel Proof · 01 · env-sigs (caps)] ---")
 ;;#62L fix: SWPLC::C_Fuel had zero REPL coverage of any kind despite moving real
-;;funds. Proves the real, permissionless, direct-mode Talos path (C_SWP|Fuel):
+;;funds. Proves the real, permissionless, direct-mode Talos path (SWP|C_Fuel):
 ;;"increases Liquidity without issuing LP" per its own doc — a real transfer into
 ;;the pool's own custody, reserves bumped by exactly the fueled amount, no LP
 ;;minted. Uses a delta assertion (post - pre) rather than absolute values, since
@@ -6953,7 +6953,7 @@
     )
     ;;==== SWP|TX 038c - #62L C_Fuel Proof · 02 · let / invocation ====
     (print "--- [SWP|TX 038c - #62L C_Fuel Proof · 02 · let / invocation] ---")
-    (print (ref-TS01-C3::C_SWP|Fuel patron patron pool fuel-amounts))
+    (print (ref-TS01-C3::SWP|C_Fuel patron patron pool fuel-amounts))
     (let
         (
             (post-supplies:[decimal] (ref-SWP::UR_PoolTokenSupplies pool))
@@ -7001,7 +7001,7 @@
         (ias:[decimal] [500.0 35000.0])
         ;
     )
-    (ref-TS01-C3::C_SWP|AddGlacialLiquidity patron patron pool8 ia)
+    (ref-TS01-C3::SWP|C_AddGlacialLiquidity patron patron pool8 ia)
 )
 
 (print "")
@@ -7072,22 +7072,22 @@
         (dwk:string "DWK-98c486052a51")
         (ignis:string "GAS-98c486052a51")
     )
-    ;;(ref-TS01-C3::C_SWP|ChangeOwnership patron pool emma)
-    (ref-TS01-C3::C_SWP|ModifyCanChangeOwner patron pool false)
-    (ref-TS01-C3::C_SWP|ModifyCanChangeOwner patron pool true)
-    ;;(ref-TS01-C3::C_SWP|ChangeOwnership patron pool patron)
-    (ref-TS01-C3::C_SWP|ModifyWeights patron wp [0.25 0.25 0.50])
-    (ref-TS01-C3::C_SWP|UpdateAmplifier patron sp 95.0)
+    ;;(ref-TS01-C3::SWP|C_ChangeOwnership patron pool emma)
+    (ref-TS01-C3::SWP|C_ModifyCanChangeOwner patron pool false)
+    (ref-TS01-C3::SWP|C_ModifyCanChangeOwner patron pool true)
+    ;;(ref-TS01-C3::SWP|C_ChangeOwnership patron pool patron)
+    (ref-TS01-C3::SWP|C_ModifyWeights patron wp [0.25 0.25 0.50])
+    (ref-TS01-C3::SWP|C_UpdateAmplifier patron sp 95.0)
 
     ;;
-    (ref-TS01-C3::C_SWP|RemoveLiquidity patron patron wp 10000000.0)
-    (ref-TS01-C3::C_SWP|AddLiquidity
+    (ref-TS01-C3::SWP|C_RemoveLiquidity patron patron wp 10000000.0)
+    (ref-TS01-C3::SWP|C_AddLiquidity
         patron 
         patron
         wp
         [2000.0 2500.0 2000.0]
     )
-    (ref-TS01-C2::C_ORBR|Compress patron 1000.0)
+    (ref-TS01-C2::ORBR|C_Compress patron 1000.0)
     [
         (format "AH has {} Ignis and {} OURO" [(ref-DPTF::UR_AccountSupply ignis patron) (ref-DPTF::UR_AccountSupply ouro patron )])
         (format "Pool {} owner is {}" [pool (ref-SWP::UR_OwnerKonto pool)])
@@ -7192,7 +7192,7 @@
     (let
         (
             (ids:list
-                (ref-TS01-C1::C_DPTF|Issue
+                (ref-TS01-C1::DPTF|C_Issue
                     patron
                     patron
                     ["BlessedVesta"]
@@ -7269,18 +7269,18 @@
         (gas-tanker:string (ref-DALOS::GOV|DALOS|SC_NAME))
 
     )
-    ;(ref-TS01-A::A_DALOS|ToggleGAP true)
-    (ref-TS01-C1::C_DPTF|SetFee patron b-vst 250.0)
-    (ref-TS01-C1::C_DPTF|ToggleFee patron b-vst true)
-    ;(ref-TS01-C1::C_DPTF|ToggleFeeLock patron b-vst true)
-    (ref-TS01-C1::C_DPTF|Mint
+    ;(ref-TS01-A::DALOS|A_ToggleGAP true)
+    (ref-TS01-C1::DPTF|C_SetFee patron b-vst 250.0)
+    (ref-TS01-C1::DPTF|C_ToggleFee patron b-vst true)
+    ;(ref-TS01-C1::DPTF|C_ToggleFeeLock patron b-vst true)
+    (ref-TS01-C1::DPTF|C_Mint
         patron
         b-vst
         patron
         5000000.0
         true
     )
-    (ref-TS01-C1::C_DPTF|Transfer 
+    (ref-TS01-C1::DPTF|C_Transfer 
         patron 
         b-vst
         patron
@@ -7288,7 +7288,7 @@
         1000000.0
         false
     )
-    (ref-TS01-C1::C_DPTF|Transfer 
+    (ref-TS01-C1::DPTF|C_Transfer 
         patron 
         b-vst
         emma
@@ -7296,8 +7296,8 @@
         400000.0
         false
     )
-    (ref-TS01-C1::C_DPTF|DonateFees patron b-vst)
-    (ref-TS01-C1::C_DPTF|Transfer 
+    (ref-TS01-C1::DPTF|C_DonateFees patron b-vst)
+    (ref-TS01-C1::DPTF|C_Transfer 
         patron 
         b-vst
         emma
@@ -7305,8 +7305,8 @@
         200000.0
         false
     )
-    (ref-TS01-C1::C_DPTF|SetFeeTarget patron b-vst coca)
-    (ref-TS01-C1::C_DPTF|Transfer 
+    (ref-TS01-C1::DPTF|C_SetFeeTarget patron b-vst coca)
+    (ref-TS01-C1::DPTF|C_Transfer 
         patron 
         b-vst
         emma
@@ -7314,7 +7314,7 @@
         100000.0
         false
     )
-    (ref-TS01-C2::C_ORBR|WithdrawFees patron b-vst kiss)
+    (ref-TS01-C2::ORBR|C_WithdrawFees patron b-vst kiss)
     [   
         (format "AH has {} {}" [(ref-DPTF::UR_AccountSupply b-vst patron) b-vst])
         (format "Emma has {} {}" [(ref-DPTF::UR_AccountSupply b-vst emma) b-vst])
@@ -7387,10 +7387,10 @@
         (migration-target:string "k:163320715f95957d1a15ea664fa6bd46f4c59dbb804f793ae93662a4c90b3189")
         (dwk:string "DWK-98c486052a51")
     )
-    ;(ref-TS01-A::A_DALOS|ToggleGAP true)  
+    ;(ref-TS01-A::DALOS|A_ToggleGAP true)  
     [   
         (format "DWK Supply is {}" [(ref-DPTF::UR_Supply dwk)])
-        ;(format "Migration will migrate {} STOA" [(ref-TS01-A::A_LIQUID|MigrateLiquidFunds migration-target)])
+        ;(format "Migration will migrate {} STOA" [(ref-TS01-A::LIQUID|A_MigrateLiquidFunds migration-target)])
         ;(format "Migration address has {} STOA" [(ref-coin::get-balance migration-target)])
     ]
     
@@ -7465,10 +7465,10 @@
         ;(migration-target:string "k:163320715f95957d1a15ea664fa6bd46f4c59dbb804f793ae93662a4c90b3189")
         ;(dwk:string "DWK-98c486052a51")
     )
-    (ref-TS01-C1::C_DPTF|Transfer patron ouro treasury emma 250000.0 false)
-    (ref-TS01-A::A_DPTF|WipeTreasuryDebtPartial 100000.0)
-    (ref-TS01-A::A_DPTF|WipeTreasuryDebt)
-    (ref-TS01-A::A_DPTF|UpdateTreasuryDispoParameters 2 12.0 24.0)
+    (ref-TS01-C1::DPTF|C_Transfer patron ouro treasury emma 250000.0 false)
+    (ref-TS01-A::DPTF|A_WipeTreasuryDebtPartial 100000.0)
+    (ref-TS01-A::DPTF|A_WipeTreasuryDebt)
+    (ref-TS01-A::DPTF|A_UpdateTreasuryDispoParameters 2 12.0 24.0)
     [   
         (format "Treasury OURO Supply is {}" [(ref-DPTF::UR_AccountSupply ouro treasury)])
         (format "Emma OURO Supply is {}" [(ref-DPTF::UR_AccountSupply ouro emma)])
@@ -7516,7 +7516,7 @@
     (
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
     )
-    (ref-TS01-A::A_SWP|UpdateLiquidBoost true)
+    (ref-TS01-A::SWP|A_UpdateLiquidBoost true)
 )
 (let
     (
@@ -7585,11 +7585,11 @@
         ;;
         (v2:decimal (floor (+ (fold (*) 1.0 [a d-computed nn]) (/ (^ d-computed np1) (* nn product))) 24))
     )
-    ;(ref-TS01-A::A_SWP|UpdateLiquidBoost true)
-    (ref-TS01-C1::C_DPTF|Transfer patron ouro patron nani 1600.0 false)
-    (ref-TS01-C1::C_DPTF|Transfer patron busd patron nani 50000.0 false)
-    (ref-TS01-C1::C_DPTF|Transfer patron tusd patron nani 50000.0 false)
-    (ref-TS01-C1::C_DPTF|Transfer patron vst patron nani 500000.0 false)
+    ;(ref-TS01-A::SWP|A_UpdateLiquidBoost true)
+    (ref-TS01-C1::DPTF|C_Transfer patron ouro patron nani 1600.0 false)
+    (ref-TS01-C1::DPTF|C_Transfer patron busd patron nani 50000.0 false)
+    (ref-TS01-C1::DPTF|C_Transfer patron tusd patron nani 50000.0 false)
+    (ref-TS01-C1::DPTF|C_Transfer patron vst patron nani 500000.0 false)
     
     [
         [   
@@ -7732,8 +7732,8 @@
         ]
     ]
     
-    ;(ref-TS01-C3::C_SWP|RemoveLiquidity patron patron pool 800000.0)
-    ;(ref-TS01-C3::C_SWP|RemoveLiquidity patron patron pool 722962.962962964)
+    ;(ref-TS01-C3::SWP|C_RemoveLiquidity patron patron pool 800000.0)
+    ;(ref-TS01-C3::SWP|C_RemoveLiquidity patron patron pool 722962.962962964)
     
     
 )
@@ -7790,8 +7790,8 @@
         (emma-ignis:decimal (ref-DPTF::UR_AccountSupply ignis emma))
         (emma-ouro:decimal (ref-DPTF::UR_AccountSupply ouro emma))
     )
-    (ref-TS01-C1::C_DPTF|Transfer patron ignis emma treasury emma-ignis true)
-    (ref-TS01-C1::C_DPTF|Transfer patron ouro emma treasury emma-ouro true)
+    (ref-TS01-C1::DPTF|C_Transfer patron ignis emma treasury emma-ignis true)
+    (ref-TS01-C1::DPTF|C_Transfer patron ouro emma treasury emma-ouro true)
     [   
         (format "Emma has {} IGNIS" [(ref-DPTF::UR_AccountSupply ignis emma)])
         (format "Emma has {} OURO" [(ref-DPTF::UR_AccountSupply ouro emma)])
@@ -7869,7 +7869,7 @@
     ;        "Σ.fĘĐżØиmΞüȚÓ0âGœȘйцań₿ѺĐЦãúα0šwř4QąйZЛgãŽ₿ßÇöđ2zFtмÄäþťûκpíČX₳ĂBÞãÅhλÚțqýвáêйâ₳ЫDżfÙŃλыêąйíâβPЫůjыáaπÕpnýOĄåęümÚJηğȘôρ8şnνEβęůйΛÑćλòxЧUdÑĎÈčVΞÌFAx£Ы2τżŻzДŽYуRČñÜ"
     ;    )
     ;]
-    (ref-TS01-C3::C_SWP|Firestarter emma)
+    (ref-TS01-C3::SWP|C_Firestarter emma)
 )
 
 (print "")
@@ -7909,7 +7909,7 @@
         (emma:string KST.EMMA)
     )
     [
-        (ref-TS01-C1::C_DPTF|Transfer patron ouro patron emma 500.0 false)
+        (ref-TS01-C1::DPTF|C_Transfer patron ouro patron emma 500.0 false)
         (ref-DPTF::UR_AccountSupply "OURO-98c486052a51" emma)
     ]
 )
@@ -7955,9 +7955,9 @@
     )
     [
         ;;Make 50 OURO in IGNIS
-        (ref-TS01-C2::C_ORBR|Sublimate emma emma 200.0)
+        (ref-TS01-C2::ORBR|C_Sublimate emma emma 200.0)
         ;:Swap 50 OURO to DLK
-        (ref-TS01-C3::C_SWP|SingleSwapWithSlippage
+        (ref-TS01-C3::SWP|C_SingleSwapWithSlippage
             emma
             emma
             pool
@@ -7966,7 +7966,7 @@
             "DLK-98c486052a51"
             (ref-SWPU::UDC_SpawnSlippageBounds pool ["OURO-98c486052a51"] [20.0] "DLK-98c486052a51" -1.0)
         )
-        (ref-TS01-C3::C_SWP|AddLiquidity emma emma pool [0.0 50.0 0.0])
+        (ref-TS01-C3::SWP|C_AddLiquidity emma emma pool [0.0 50.0 0.0])
         (ouronet-ns.DALOS.AU_OuronetAccounts
             ["Σ.W∇ЦwÏξБØnζΦψÕłěîбηжÛśTã∇țâĆã4ЬĚIŽȘØíÕlÛřбΩцμCšιÄиMkλ€УщшàфGřÞыÎäY8È₳BDÏÚmßOozBτòÊŸŹjПкцğ¥щóиś4h4ÑþююqςA9ÆúÛȚβжéÑψéУoЭπÄЩψďşõшżíZtZuψ4ѺËxЖψУÌбЧλüșěđΔjÈt0ΛŽZSÿΞЩŠ"]
         )
@@ -7990,7 +7990,7 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;#34 Phase 11: mirrors SWP|TX 032c/032d's exact pattern (TSTC/TSTD/TSTZ) — pool
-;;issuance (C_SWP|IssueStandard/C_IssueStable) does NOT auto-create the underlying
+;;issuance (SWP|C_IssueStandard/C_IssueStable) does NOT auto-create the underlying
 ;;DPTF tokens; they must already exist (missed this the first time, caught via a
 ;;real "No value found in table ... DPTF|PropertiesTable for key: TSTE-..." error
 ;;at full-regression time, not assumed).
@@ -8043,7 +8043,7 @@
         (
             (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
             (issued-ids:[string]
-                (ref-TS01-C1::C_DPTF|Issue
+                (ref-TS01-C1::DPTF|C_Issue
                     patron
                     patron
                     ["TestTokenE" "TestTokenF"]
@@ -8071,9 +8071,9 @@
         (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
     )
-    (ref-TS01-C1::C_DPTF|Mint patron "TSTE-98c486052a51" patron 1000000.0 true)
+    (ref-TS01-C1::DPTF|C_Mint patron "TSTE-98c486052a51" patron 1000000.0 true)
     ;;TSTF's own first hop needs 9000.0 — mint generously above that.
-    (ref-TS01-C1::C_DPTF|Mint patron "TSTF-98c486052a51" patron 5000000.0 true)
+    (ref-TS01-C1::DPTF|C_Mint patron "TSTF-98c486052a51" patron 5000000.0 true)
     ;;TSTZ already exists (032c/032d) — re-minting it hit DPTF's per-account mint-role
     ;;permission model (its origin mint was one-time-only, and the follow-up mint
     ;;role for this account isn't separately enabled here) — rather than chase that
@@ -8161,14 +8161,14 @@
     ;;all, proving the exhaustive search (URC_ComputeAllRoutes, max-attempts>=4)
     ;;finds a genuinely better route the old approximation provably misses (P4.1,
     ;;still open from Phase 4, closed here as part of Phase 11's own proof).
-    (ref-TS01-C3::C_SWP|IssueStandard KST.ANHD KST.ANHD
+    (ref-TS01-C3::SWP|C_IssueStandard KST.ANHD KST.ANHD
         [
             { "token-id": "OURO-98c486052a51", "token-supply": 5000.0}
             { "token-id": "TSTE-98c486052a51", "token-supply": 6000.0}
         ]
         25.0 false
     )
-    (ref-TS01-C3::C_SWP|IssueStable KST.ANHD KST.ANHD
+    (ref-TS01-C3::SWP|C_IssueStable KST.ANHD KST.ANHD
         [
             { "token-id": "TSTE-98c486052a51", "token-supply": 800.0}
             { "token-id": "TSTZ-98c486052a51", "token-supply": 800.0}
@@ -8181,7 +8181,7 @@
     ;;the actual best-of-3 winner (195.16 for a 100 OURO test, vs D's 16.66 and
     ;;E's 116.81) — the original 032e-era "D beats C" narrative no longer holds by
     ;;this point in the file. F must beat 195.16, not D's now-tiny figure.
-    (ref-TS01-C3::C_SWP|IssueStandard KST.ANHD KST.ANHD
+    (ref-TS01-C3::SWP|C_IssueStandard KST.ANHD KST.ANHD
         [
             { "token-id": "OURO-98c486052a51", "token-supply": 5000.0}
             { "token-id": "TSTF-98c486052a51", "token-supply": 40000.0}
@@ -8191,7 +8191,7 @@
     ;;TSTZ's existing (pre-minted) balance for this patron is ~802,906 by this point
     ;;in the file — 700,000.0 stays safely within that while still being generously
     ;;deep (minimal second-hop price impact).
-    (ref-TS01-C3::C_SWP|IssueStable KST.ANHD KST.ANHD
+    (ref-TS01-C3::SWP|C_IssueStable KST.ANHD KST.ANHD
         [
             { "token-id": "TSTF-98c486052a51", "token-supply": 700000.0}
             { "token-id": "TSTZ-98c486052a51", "token-supply": 700000.0}
@@ -8220,10 +8220,10 @@
     (
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
     )
-    (ref-TS01-C3::C_SWP|ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|TSTE-98c486052a51" true)
-    (ref-TS01-C3::C_SWP|ToggleSwapCapability KST.ANHD "S|TSTE-98c486052a51|TSTZ-98c486052a51" true)
-    (ref-TS01-C3::C_SWP|ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|TSTF-98c486052a51" true)
-    (ref-TS01-C3::C_SWP|ToggleSwapCapability KST.ANHD "S|TSTF-98c486052a51|TSTZ-98c486052a51" true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|TSTE-98c486052a51" true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "S|TSTE-98c486052a51|TSTZ-98c486052a51" true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|TSTF-98c486052a51" true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "S|TSTF-98c486052a51|TSTZ-98c486052a51" true)
 )
 (env-sigs [])
 (commit-tx)

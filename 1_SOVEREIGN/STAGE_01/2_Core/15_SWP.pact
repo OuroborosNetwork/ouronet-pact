@@ -1649,7 +1649,7 @@
         @doc "Forward writer: inserts the new SWP|Pairs row, registers the LP tracker \
             \ (C9 fix), saves the pool, and deploys token accounts. \
             \ #52L fix (R4): returns the newly-constructed <swpair> ID — callers \
-            \ (e.g. SWPI::C_Issue, MTX-SWP::C_MTX|Issue) need it back to finish \
+            \ (e.g. SWPI::C_Issue, MTX-SWP::MTX|C_Issue) need it back to finish \
             \ building their own response/continue the issuance flow."
         (P|UEV_IMC)
         (let
@@ -1696,7 +1696,7 @@
             )
             ;;C9 fix: SWP|LP must be populated by EVERY issuance path. Folded here (both <token-lp> and
             ;;<swpair> are already in scope) instead of leaving it a standalone call each caller must
-            ;;remember — 16_SWPI.pact::C_Issue did remember; 20_MTX-SWP.pact::C_MTX|Issue (the defpact
+            ;;remember — 16_SWPI.pact::C_Issue did remember; 20_MTX-SWP.pact::MTX|C_Issue (the defpact
             ;;path, which also calls XE_Issue) never did, so every pool issued through it had an LP token
             ;;that could never be resolved back to its swpair (UR_GetLpSwpair hard-aborts on the missing
             ;;row), permanently blocking AQP LP-stake admission for that pool.
@@ -1858,7 +1858,7 @@
             \ validation, never existing routing. Major principals (currently a \
             \ member of the primordial pool — always OURO/WSTOA/SSTOA in practice) are \
             \ never removable here regardless of the floor; retiring one requires \
-            \ redefining the primordial pool itself (A_SWP|DefinePrimordialPool). \
+            \ redefining the primordial pool itself (SWP|A_DefinePrimordialPool). \
             \ A_RotatePrincipal remains available as an atomic, count-preserving \
             \ alternative for minor principals — it never touches the floor or \
             \ cap, but is equally blocked from rotating a major principal away."
@@ -1906,7 +1906,7 @@
             \ member of the primordial pool — always OURO/WSTOA/SSTOA in practice) is \
             \ rejected outright regardless of everything else (#65eL, \
             \ URC_IsMajorPrincipal) — majors are fixed, retirable only by \
-            \ redefining the primordial pool itself (A_SWP|DefinePrimordialPool)."
+            \ redefining the primordial pool itself (SWP|A_DefinePrimordialPool)."
         (P|UEV_IMC)
         (with-read SWP|Properties SWP|INFO
             { "principals" := pp }
@@ -1971,19 +1971,19 @@
                     (ignis-fee-exemption-roleV2:bool (ref-DPTF::UR_AccountRoleFeeExemption ignis-id vst-sc))
                 )
                 (if (not ignis-burn-role)
-                    (ref-ATS::C_DPTF|ToggleBurnRole ignis-id SWP|SC_NAME true)
+                    (ref-ATS::DPTF|C_ToggleBurnRole ignis-id SWP|SC_NAME true)
                     true
                 )
                 (if (not ouro-mint-role)
-                    (ref-ATS::C_DPTF|ToggleMintRole ouro-id SWP|SC_NAME true)
+                    (ref-ATS::DPTF|C_ToggleMintRole ouro-id SWP|SC_NAME true)
                     true
                 )
                 (if (not ignis-fee-exemption-role)
-                    (ref-ATS::C_DPTF|ToggleFeeExemptionRole ignis-id SWP|SC_NAME true)
+                    (ref-ATS::DPTF|C_ToggleFeeExemptionRole ignis-id SWP|SC_NAME true)
                     true
                 )
                 (if (not ignis-fee-exemption-role)
-                    (ref-ATS::C_DPTF|ToggleFeeExemptionRole ignis-id vst-sc true)
+                    (ref-ATS::DPTF|C_ToggleFeeExemptionRole ignis-id vst-sc true)
                     true
                 )
                 (update SWP|Asymmetry SWP|INFO
@@ -2160,13 +2160,13 @@
                                     (lp-mint-role:bool (ref-DPTF::UR_AccountRoleMint lp-id SWP|SC_NAME))
                                     (ico2:object{IgnisCollectorV2.OutputCumulator}
                                         (if (not lp-burn-role)
-                                            (ref-ATS::C_DPTF|ToggleBurnRole lp-id SWP|SC_NAME true)
+                                            (ref-ATS::DPTF|C_ToggleBurnRole lp-id SWP|SC_NAME true)
                                             EOC
                                         )
                                     )
                                     (ico3:object{IgnisCollectorV2.OutputCumulator}
                                         (if (not lp-mint-role)
-                                            (ref-ATS::C_DPTF|ToggleMintRole lp-id SWP|SC_NAME true)
+                                            (ref-ATS::DPTF|C_ToggleMintRole lp-id SWP|SC_NAME true)
                                             EOC
                                         )
                                     )
@@ -2177,7 +2177,7 @@
                                                 (ref-U|LST::UC_AppL
                                                     acc
                                                     (if (not (ref-DPTF::UR_AccountRoleFeeExemption (at idx ptts) SWP|SC_NAME))
-                                                        (ref-ATS::C_DPTF|ToggleFeeExemptionRole (at idx ptts) SWP|SC_NAME true)
+                                                        (ref-ATS::DPTF|C_ToggleFeeExemptionRole (at idx ptts) SWP|SC_NAME true)
                                                         EOC
                                                     )
                                                 )

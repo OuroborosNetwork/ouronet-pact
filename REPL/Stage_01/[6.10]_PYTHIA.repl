@@ -72,8 +72,8 @@
             }
         ]
     )
-    (let ((dep-msg:string (ref-TS01-C4::C_PYTHIA|DeployApiKey patron owner-acct apollo-std public-std)))
-        (print (format "<(TS01-C4.C_PYTHIA|DeployApiKey)> => \"{}\"" [dep-msg]))
+    (let ((dep-msg:string (ref-TS01-C4::PYTHIA|C_DeployApiKey patron owner-acct apollo-std public-std)))
+        (print (format "<(TS01-C4.PYTHIA|C_DeployApiKey)> => \"{}\"" [dep-msg]))
         (map print
             [
                 (expect "<<TX001>> UR_ApiKeyRowOrNull is-registered true" true (at "is-registered" (ref-PYTHIA::UR_ApiKeyRowOrNull apollo-std)))
@@ -120,8 +120,8 @@
             }
         ]
     )
-    (let ((dep-msg:string (ref-TS01-C4::C_PYTHIA|DeployApiKey patron owner-acct apollo-smt public-smt)))
-        (print (format "<(TS01-C4.C_PYTHIA|DeployApiKey)> => \"{}\"" [dep-msg]))
+    (let ((dep-msg:string (ref-TS01-C4::PYTHIA|C_DeployApiKey patron owner-acct apollo-smt public-smt)))
+        (print (format "<(TS01-C4.PYTHIA|C_DeployApiKey)> => \"{}\"" [dep-msg]))
         (map print
             [
                 (expect "<<TX002>> UC_IsStandardApollo false for Π." false (ref-PYTHIA::UC_IsStandardApollo apollo-smt))
@@ -148,8 +148,8 @@
         (dlk:string (ref-PYTHIA::UC_DualLinkKey apollo-std apollo-smt))
     )
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (let ((link-msg:string (ref-TS01-C4::C_PYTHIA|Link apollo-std apollo-smt lane-dual)))
-        (print (format "<(TS01-C4.C_PYTHIA|Link)> => \"{}\"" [link-msg]))
+    (let ((link-msg:string (ref-TS01-C4::PYTHIA|C_Link apollo-std apollo-smt lane-dual)))
+        (print (format "<(TS01-C4.PYTHIA|C_Link)> => \"{}\"" [link-msg]))
         (map print
             [
                 (expect "<<TX003>> dual key length 325" 325 (length dlk))
@@ -178,8 +178,8 @@
         (dlk:string (ref-PYTHIA::UC_DualLinkKey apollo-std apollo-smt))
     )
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (let ((act-msg:string (ref-TS01-C4::A_PYTHIA|Link apollo-std apollo-smt)))
-        (print (format "<(TS01-C4.A_PYTHIA|Link)> => \"{}\"" [act-msg]))
+    (let ((act-msg:string (ref-TS01-C4::PYTHIA|A_Link apollo-std apollo-smt)))
+        (print (format "<(TS01-C4.PYTHIA|A_Link)> => \"{}\"" [act-msg]))
         (map print
             [
                 (expect "<<TX004>> UR_DualLinkIzActive true" true (ref-PYTHIA::UR_DualLinkIzActive dlk))
@@ -210,9 +210,9 @@
         (height-before:integer (ref-PYTHIA::UR_RevocationAtHeight))
     )
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (let ((rev-msg:string (ref-TS01-C4::C_PYTHIA|RevokeLink patron dlk)))
+    (let ((rev-msg:string (ref-TS01-C4::PYTHIA|C_RevokeLink patron dlk)))
         (print (format "<(PYTHIA|UC_RevokeIgnisFee)> => \"{}\" IGNIS" [revoke-fee]))
-        (print (format "<(TS01-C4.C_PYTHIA|RevokeLink)> => \"{}\"" [rev-msg]))
+        (print (format "<(TS01-C4.PYTHIA|C_RevokeLink)> => \"{}\"" [rev-msg]))
         (map print
             [
                 (expect "<<TX005>> UR_DualLinkIzActive false after revoke" false (ref-PYTHIA::UR_DualLinkIzActive dlk))
@@ -248,8 +248,8 @@
         (split-stoa:[decimal] (ref-DALOS::URC_SplitSTOAPrices (ref-PYTHIA::UC_FeeDiscountAnchor) rename-fee))
     )
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (let ((react-msg:string (ref-TS01-C4::A_PYTHIA|Link apollo-std apollo-smt)))
-        (print (format "<(TS01-C4.A_PYTHIA|Link)> => \"{}\"" [react-msg]))
+    (let ((react-msg:string (ref-TS01-C4::PYTHIA|A_Link apollo-std apollo-smt)))
+        (print (format "<(TS01-C4.PYTHIA|A_Link)> => \"{}\"" [react-msg]))
         ""
     )
     (env-sigs
@@ -266,8 +266,8 @@
             }
         ]
     )
-    (let ((ren-msg:string (ref-TS01-C4::C_PYTHIA|UpdateDualConsumerLane patron dlk lane-renamed)))
-        (print (format "<(TS01-C4.C_PYTHIA|UpdateDualConsumerLane)> => \"{}\"" [ren-msg]))
+    (let ((ren-msg:string (ref-TS01-C4::PYTHIA|C_UpdateDualConsumerLane patron dlk lane-renamed)))
+        (print (format "<(TS01-C4.PYTHIA|C_UpdateDualConsumerLane)> => \"{}\"" [ren-msg]))
         (map print
             [
                 (expect "<<TX006>> UR_DualLinkIzActive true after re-activate" true (ref-PYTHIA::UR_DualLinkIzActive dlk))
@@ -341,8 +341,8 @@
             }
         ]
     )
-    (let ((dep-msg:string (ref-TS01-C4::C_PYTHIA|DeployApiKey patron owner-acct apollo-std public-std)))
-        (print (format "<(TS01-C4.C_PYTHIA|DeployApiKey)> => \"{}\"" [dep-msg]))
+    (let ((dep-msg:string (ref-TS01-C4::PYTHIA|C_DeployApiKey patron owner-acct apollo-std public-std)))
+        (print (format "<(TS01-C4.PYTHIA|C_DeployApiKey)> => \"{}\"" [dep-msg]))
         (map print
             [
                 (expect "<<TX007a>> pair-2 Standard registered" true (at "is-registered" (ref-PYTHIA::UR_ApiKeyRowOrNull apollo-std)))
@@ -390,8 +390,8 @@
             }
         ]
     )
-    (let ((dep-msg:string (ref-TS01-C4::C_PYTHIA|DeployApiKey patron owner-acct apollo-smt public-smt)))
-        (print (format "<(TS01-C4.C_PYTHIA|DeployApiKey)> => \"{}\"" [dep-msg]))
+    (let ((dep-msg:string (ref-TS01-C4::PYTHIA|C_DeployApiKey patron owner-acct apollo-smt public-smt)))
+        (print (format "<(TS01-C4.PYTHIA|C_DeployApiKey)> => \"{}\"" [dep-msg]))
         (map print
             [
                 (expect "<<TX007b>> pair-2 Smart registered" true (at "is-registered" (ref-PYTHIA::UR_ApiKeyRowOrNull apollo-smt)))
@@ -426,8 +426,8 @@
         (dlk:string (ref-PYTHIA::UC_DualLinkKey apollo-std apollo-smt))
         (expected-lane:string (+ "PYTHIA-" (take 12 "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006")))
     )
-    (let ((act-msg:string (ref-TS01-C4::A_PYTHIA|Link apollo-std apollo-smt)))
-        (print (format "<(TS01-C4.A_PYTHIA|Link)> => \"{}\"" [act-msg]))
+    (let ((act-msg:string (ref-TS01-C4::PYTHIA|A_Link apollo-std apollo-smt)))
+        (print (format "<(TS01-C4.PYTHIA|A_Link)> => \"{}\"" [act-msg]))
         (map print
             [
                 (expect "<<TX007c>> counterparts set on Standard" apollo-smt (ref-PYTHIA::UR_Counterpart apollo-std))
