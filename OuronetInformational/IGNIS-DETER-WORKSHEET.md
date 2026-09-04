@@ -674,17 +674,6 @@ explicit C_DeployAccount entrypoint (deliberate token-account creation) carries 
 | `C_Step10_IssueMultipletFamily` | SETUP | 0 | 0 | 0 | 0 | 1 | 1 | · | 5 | 6 | management/config/property change — slightly expensive |
 | `C_Step1_CreateBunnySet` | SETUP | 0 | 0 | 0 | 0 | 0 | 0 | · | 5 | 5 | management/config/property change — slightly expensive |
 
-## 03_CADUCEUS.pact
-
-| op | role | ins/wr | upd | R | S | X | components | cur GAS\| | **deter** | final | rationale |
-|----|------|--:|--:|--:|--:|--:|-------:|-----:|------:|-----:|-----------|
-| `C_MintToUserFromBridgeSignal` | ISSUE | 1 | 0 | 4 | 2 | 2 | 11 | · | 50 | 61 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
-| `A_DeployBridgeSmartAccount` | ISSUE | 0 | 0 | 4 | 1 | 1 | 6 | · | 50 | 56 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
-| `A_ProvisionBridgeDptfRoles` | SETUP | 0 | 0 | 3 | 1 | 4 | 8 | · | 10 | 18 | role/authority/guard setup |
-| `C_BurnFromBridgeSignal` | SETUP | 1 | 0 | 4 | 2 | 1 | 10 | · | 5 | 15 | management/config/property change — slightly expensive |
-| `A_SetBridgeConfig` | SETUP | 1 | 0 | 0 | 0 | 0 | 3 | · | 5 | 8 | management/config/property change — slightly expensive |
-| `A_SetBridgeActive` | SETUP | 0 | 1 | 0 | 0 | 0 | 1 | · | 5 | 6 | management/config/property change — slightly expensive |
-
 ## 01_Spark.pact
 
 | op | role | ins/wr | upd | R | S | X | components | cur GAS\| | **deter** | final | rationale |
@@ -745,11 +734,11 @@ explicit C_DeployAccount entrypoint (deliberate token-account creation) carries 
 |------:|----:|---------|
 | exempt | 8 | IGNIS-exempt (account creation + ignis machinery: collect/compress/sublimate) |
 | 1 | 103 | activity — no deterrent |
-| 5 | 244 | config/property change |
-| 10 | 33 | role/authority/guard setup |
+| 5 | 241 | config/property change |
+| 10 | 32 | role/authority/guard setup |
 | 25 | 21 | fee/price/rate change |
-| 50 | 42 | token/collection issuance (+STOA) |
+| 50 | 40 | token/collection issuance (+STOA) |
 | 500 | 5 | issuance (current flat) |
 | 1000 | 13 | issuance / LP — very big |
 
-469 ops · 358 pre-suggested deter>1 (rest default 1). Revise & green-light.
+463 ops · 352 pre-suggested deter>1 (rest default 1). Revise & green-light.
