@@ -79,7 +79,7 @@
 ;;==================================================================================
 ;; STAGE ZZ — DPL-UR + EXPLORER + DSP dispenser
 ;;==================================================================================
-;;P2-TODO> (load "deploy-stagezz.repl")
+(load "deploy-stagezz.repl")
 
 ;;==================================================================================
 ;; TERMINAL — destructive / ordering-sensitive suites (run LAST: they trash shared
