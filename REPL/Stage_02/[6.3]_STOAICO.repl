@@ -99,6 +99,19 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
+(begin-tx "TX-00c - STOAICO baseline capture (delta conservation, boot-position-independent)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;; Capture emma+lumy pre-existing wSTOA so the final CONSERVATION assert measures the DELTA the ICO
+;; distributed (==10M), not an absolute — otherwise a full-boot residue on the shared KST.EMMA/KST.LUMY
+;; accounts (e.g. ~0.012 wSTOA left by earlier suites) breaks it. (try 0.0 …): no wSTOA row yet -> 0.
+(let ((wstoa:string (DALOS.UR_WrappedStoaID)))
+    (env-data
+        { "stoaico-wstoa-base":
+            (+ (try 0.0 (DPTF.UR_AccountSupply wstoa KST.EMMA))
+               (try 0.0 (DPTF.UR_AccountSupply wstoa KST.LUMY))) }))
+(commit-tx)
+(print "")
 (begin-tx "TX-01 - Initialise STOA ICO")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
@@ -334,7 +347,10 @@
                 (expect "lumy stamped collected for round 1" 1 (STOAICO.UR_User5 lumy))
                 (expect "unclaimed-count cleared to 0 (inject barrier now open)" 0 (STOAICO.UR_Global7))
                 (expect "vault wstoa-supply fully conserved to 0 (dust to the last collector)" 0.0 (STOAICO.UR_Global4))
-                (expect "CONSERVATION: emma + lumy wSTOA == 10,000,000 injected" 10000000.0 (+ emma-bal lumy-bal))
+                ;; delta = (emma+lumy now) - (emma+lumy baseline captured at TX-00c) == 10M distributed,
+                ;; boot-position-independent (immune to any pre-existing residue on the shared accounts).
+                (expect "CONSERVATION: emma + lumy wSTOA delta == 10,000,000 injected" 10000000.0
+                    (- (+ emma-bal lumy-bal) (read-decimal "stoaico-wstoa-base")))
                 ""
             ]
         )

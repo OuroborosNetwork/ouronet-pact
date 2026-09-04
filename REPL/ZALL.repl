@@ -67,10 +67,8 @@
 ;;==================================================================================
 ;;P2>      [5.3]_Launchpad — buy-flow + StoicPay (self-deploys StoicPay accts)
 (load "Stage_02/[5.3]_Launchpad.repl")
-;;P2-TODO> [6.3]_STOAICO — asserts ABSOLUTE conservation (emma+lumy wSTOA ==10,000,000) but the
-;;         shared canonical accounts KST.EMMA/KST.LUMY carry a ~0.012 wSTOA residue from earlier
-;;         suites in a full boot. Fold in after making its conservation delta-based (before/after).
-;(load "Stage_02/[6.3]_STOAICO.repl")
+;;P2>      [6.3]_STOAICO (conservation now delta-based at TX-00c — boot-position-independent)
+(load "Stage_02/[6.3]_STOAICO.repl")
 ;;P2-TODO> Populate* mass mint (~minutes each) — Nosferatu/Bloodshed/Bunnies
 ;(load "Stage_02/[5.1]_PopulateNosferatu.repl")
 ;(load "Stage_02/[5.2]_PopulateBloodshed.repl")
