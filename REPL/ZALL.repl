@@ -62,6 +62,12 @@
 ;; STAGE 2 — AQP earning-pools suites (the [6.2] granular set = the AQP-FAST default)
 ;;==================================================================================
 (load "Stage_02/[6.2]_AQP.repl")
+;;P2-NOTE> The AQP tail suites NOT in the [6.2]_AQP umbrella — [6.2.7]_AQP-DEB-MTX (MTX-AQP->RPS
+;;   deb-fix), [6.2.8]_SWEEP-CC, [6.2.8b]_UNSTALE, [6.2.8c]_INJECT-CC, [6.2.8d]_UNSTALE-ALL-CC —
+;;   each set up their own SubsidiaryTreasury FVT + staker fixtures and are NOT boot-composable after
+;;   [6.2]_AQP (RewardAggregate key mismatch). Those exact paths ARE covered by the self-booting
+;;   deb-staleness-* harnesses in REPL/ root (deb-staleness-proof/-inject-cc/-sweep-cc/-unstale-all-cc)
+;;   — the deb-fix/MTX-AQP->RPS path among them (see REPL/modules/README.md).
 
 ;;==================================================================================
 ;; STAGE 2 — launchpad + STOAICO + populate (slow / contamination-sensitive)

@@ -26,6 +26,23 @@ DPSF-UPDATES², AQP, STOAICO, LAUNCHPAD.
 ¹ SWP/ADMIN preload `[6.2]_DPTF` (+ `[6.3]_SWP` for ADMIN) for their token/pair fixtures.
 ² DEMIPAD/DPOF-S2/DPSF-UPDATES preload the `[6.1.3]`/`[6.1.4]`/`[6.1.5]` DPDC chain for TSFS/CNF/COF.
 
+## Self-booting harnesses in `REPL/` root (also standalone module testers)
+
+Some paths are covered by pre-existing self-booting drivers in `REPL/` root (they deploy their own
+Stage 0/1/2 env + AQP-BOOT, so they are standalone testers already — not folded into ZALL because
+they set up their own SubsidiaryTreasury/staker fixtures that aren't boot-composable after
+`[6.2]_AQP`):
+
+- **`deb-staleness-proof.repl`** (261) — deb-staleness fix incl. `MTX-AQP -> RPS::XE_FvtFixUserChunk`.
+- **`deb-staleness-inject-cc.repl`** (204) — enforced-fresh inject CC-batch.
+- **`deb-staleness-sweep-cc.repl`** (222) — anchor re-score sweep CC-batch.
+- **`deb-staleness-unstale-all-cc.repl`** — owner mass-unstale CC-batch (slow).
+- **`aqp-info-groundtruth.repl`** (411), **`triplet-collect-golden.repl`** (144),
+  **`launchpad-groundtruth.repl`** (139) — behavioral/cost ground-truth gates.
+
+These are the module testers for the AQP deb-fix / CC-batch / ground-truth paths that ZALL's
+`[6.2]_AQP` umbrella does not carry.
+
 ## Adding a new module tester
 1. Copy an existing one of the same stage.
 2. Point the final `(load "../Stage_0N/[6.x]_<suite>.repl")` at the module's suite.
