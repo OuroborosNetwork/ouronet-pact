@@ -1,0 +1,5 @@
+;; STANDALONE Bunnies populate — fresh boot (slow mass-mint scale fixture).
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+(load "../deploy-stage02.repl")
+(load "../Stage_02/[5.4]_PopulateBunnies.repl")

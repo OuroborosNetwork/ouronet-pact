@@ -1,0 +1,5 @@
+;; STANDALONE Nosferatu populate — fresh boot (slow mass-mint scale fixture).
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+(load "../deploy-stage02.repl")
+(load "../Stage_02/[5.1]_PopulateNosferatu.repl")

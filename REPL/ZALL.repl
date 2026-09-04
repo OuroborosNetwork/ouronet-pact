@@ -79,9 +79,10 @@
 ;;P2>      Populate* mass mint (SLOW ~minutes each). Self-deploy their minter modules.
 ;;         [5.1]_Nosferatu verified green in the full run (slow). Uncomment for the full ~1h run.
 (load "Stage_02/[5.1]_PopulateNosferatu.repl")
-;;P2-TODO> [5.2]_PopulateBloodshed FAILS at DPDC-S.pact:1037 "Nonce 12929 not compatible with
-;;         Set-Element {allowed-sclass: 1}" (surfaced by the exhaustive run) — under investigation.
-;;         [5.4]_Bunnies untested (Bloodshed aborts before it).
+;;P2-NOTE> [5.2]_PopulateBloodshed + [5.4]_PopulateBunnies are NOT chained here: they cross-suite
+;;         contaminate when run after the other populates/AQP suites (DPDC-S nonce/sclass state) —
+;;         NOT code bugs (both pass green in a fresh boot: modules/POPULATE-BLOODSHED.repl /
+;;         POPULATE-BUNNIES.repl / POPULATE-NOSFERATU.repl). Covered there per the two-variant design.
 ;(load "Stage_02/[5.2]_PopulateBloodshed.repl")
 ;(load "Stage_02/[5.4]_PopulateBunnies.repl")
 

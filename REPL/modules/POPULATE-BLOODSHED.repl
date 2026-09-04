@@ -1,0 +1,5 @@
+;; STANDALONE Bloodshed populate — fresh boot, no Nosferatu before it (isolate the sclass failure).
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+(load "../deploy-stage02.repl")
+(load "../Stage_02/[5.2]_PopulateBloodshed.repl")
