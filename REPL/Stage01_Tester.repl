@@ -24,25 +24,8 @@
 ;;================================================================================
 ;;
 ;;
-;;STARTER
-(load "Stage_01/[0.0]_Starter.repl")
-
-;;SOVEREING DEPLOYER
-(load "Stage_01/[0.1]_Interfaces.repl")
-(load "Stage_01/[1]_Utilities.repl")
-(load "Stage_01/[2.1]_Dalos.repl")
-(load "Stage_01/[2.2]_Core.repl")
-(load "Stage_01/[3]_Talos.repl")
-
-;;Z_READS — read-only presentation layer, deployed LAST (after 3_Talos): INFO-ZERO
-(load "Stage_01/[Z]_Reads.repl")
-
-;;SOVEREIGN EXECUTOR (contains executions to initialise the SOVEREIGN Functionality)
-(load "Stage_01/[4.0]_Sovereign-Executor.repl")
-
-;;CITIZEN DEPLOYER + EXECUTOR
-(load "Stage_01/[5.1]_Aoz+.repl")
-(load "Stage_01/[5.2]_Dispenser+.repl")
+;;DEPLOY CORE (shared with ZALL.repl + standalone module testers) — see REPL_TEST_ARCHITECTURE.md
+(load "deploy-stage01.repl")
 
 ;;CITIZEN TESTER
 ;;FULL> Cumulator scenario suite — skip for AQP-fast (Z.repl default)

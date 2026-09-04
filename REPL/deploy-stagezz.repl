@@ -1,0 +1,4 @@
+;; deploy-stagezz.repl — Stage ZZ deploy core (DPL-UR deployer-reads + EXPLORER + DSP+ dispenser).
+;; Deployed last; needed for StoicPay launchpad + explorer reads. Shared core.
+;; Assumes Stage 00 + 01 + 02 deploy cores already loaded.
+(load "StageZZ_Tester.repl")

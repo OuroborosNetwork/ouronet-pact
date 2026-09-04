@@ -1,0 +1,9 @@
+;; REPL/modules/DPOF-S2.repl — STANDALONE Stage-2 DPOF tester.
+;; Reuses the COF DPOF issued in [6.1.5]_DEMIPAD (which reuses TSFS/CNF from [6.1.3]/[6.1.4]).
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+(load "../deploy-stage02.repl")
+(load "../Stage_02/[6.1.3]_DPDC-S.repl")
+(load "../Stage_02/[6.1.4]_DPDC-NF.repl")
+(load "../Stage_02/[6.1.5]_DEMIPAD.repl")
+(load "../Stage_02/[6.1.6]_DPOF.repl")

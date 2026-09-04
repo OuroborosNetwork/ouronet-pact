@@ -1,0 +1,6 @@
+;; REPL/modules/DALOS-ADMIN.repl — STANDALONE DALOS-ADMIN tester (blockchain-env-in-a-repl).
+;; Fresh boot: Stage 00 sandbox + deploy core(s) + the DALOS-ADMIN suite only.
+;; Run: cd REPL && pact modules/DALOS-ADMIN.repl   (see ARCHITECTURE/REPL_TEST_ARCHITECTURE.md)
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+(load "../Stage_01/[6.12]_DALOS-ADMIN.repl")

@@ -1,0 +1,6 @@
+;; REPL/modules/ATS.repl — STANDALONE ATS tester (blockchain-env-in-a-repl).
+;; Fresh boot: Stage 00 sandbox + deploy core(s) + the ATS suite only.
+;; Run: cd REPL && pact modules/ATS.repl   (see ARCHITECTURE/REPL_TEST_ARCHITECTURE.md)
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+(load "../Stage_01/[6.6]_ATS.repl")

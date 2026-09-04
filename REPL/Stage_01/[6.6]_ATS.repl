@@ -151,7 +151,7 @@
         (ref-TS01-C2::ATS|C_Fuel aoz aoz ps p-k 50.0)
         (ref-TS01-C2::ATS|C_Fuel aoz aoz ps e-k 40.0)
         (ref-TS01-C2::ATS|C_Fuel aoz aoz ps a-k 80.0)
-        (ref-INFO-ONE::URC_ATS|Coil aoz aoz ps p-k 100.0)
+        (ref-INFO-ONE::INFO_ATS|Coil aoz aoz ps p-k 100.0)
     ]
 
 

@@ -1,0 +1,7 @@
+;; REPL/modules/AQP.repl — STANDALONE AQP tester (ANK/SCORE/POOL/RPS/FVT/VCT/MTX/DSA).
+;; Fresh boot: Stage 00 + Stage 1 + Stage 2 deploy cores + the AQP suite umbrella.
+;; Run: cd REPL && pact modules/AQP.repl
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+(load "../deploy-stage02.repl")
+(load "../Stage_02/[6.2]_AQP.repl")

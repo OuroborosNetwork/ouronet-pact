@@ -175,12 +175,16 @@
         (let
             (
                 (ref-P|FVT:module{OuronetPolicyV2} AQP-FVT)
+                (ref-P|RPS:module{OuronetPolicyV2} RPS)
                 (mg:guard (create-capability-guard (P|MTX-AQP|CALLER)))
             )
             ;; MTX-AQP calls AQP-FVT's XE_ building blocks (P|UEV_IMC) — register as an allowed IMC caller.
             ;; (The re-score sweep's ANK/POOL calls live in AQP-FVT::CC_SweepRevokeAnchor, which is already in
             ;;  ANK's + POOL's IMP — so MTX-AQP itself does not call ANK/POOL directly.)
             (ref-P|FVT::P|A_AddIMP mg)
+            ;; #75 B': the deb-fix + re-score defpacts now drive RPS::XE_FvtFixUserChunk /
+            ;; XE_FvtSweepRecomputeChunk (moved to the RPS reward engine) — register on RPS IMP too.
+            (ref-P|RPS::P|A_AddIMP mg)
         )
     )
 

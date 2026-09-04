@@ -1,0 +1,6 @@
+;; REPL/modules/DPTF.repl — STANDALONE DPTF tester (blockchain-env-in-a-repl).
+;; Fresh boot: Stage 00 sandbox + Stage 1 deploy core + the DPTF suite only.
+;; Run: cd REPL && pact modules/DPTF.repl   (see OuronetInformational/ARCHITECTURE/REPL_TEST_ARCHITECTURE.md)
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+(load "../Stage_01/[6.2]_DPTF.repl")

@@ -1,0 +1,7 @@
+;; REPL/modules/DPSF-UPDATES.repl — STANDALONE DPSF set-element update tester.
+;; Reuses TSFS (SFT, set-class 1) from [6.1.3].
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+(load "../deploy-stage02.repl")
+(load "../Stage_02/[6.1.3]_DPDC-S.repl")
+(load "../Stage_02/[6.1.7]_DPSF-UPDATES.repl")
