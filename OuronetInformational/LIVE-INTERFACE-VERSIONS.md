@@ -72,3 +72,35 @@
 **62 modules** implement a versioned interface.
 
 Notes: some modules implement/bless **two** versions (`IGNIS` V1+V2, `DPL-UR` DeployerReads V7+V8) — the higher is current. Talos client interfaces already carry high suffixes (`TS01-C4` V7, `TS01-CP` V3, `TS01-C3` V3, `MTX-SWP` V3, `SWP` V3, `PYTHIA` V4) from prior live revisions.
+
+---
+
+## New since the last live snapshot (NOT in the 62 above) — code versions, target TBD
+
+These modules were **not** in the on-chain snapshot (2026-08-30), i.e. never deployed live. The
+versioning policy ("new/active work stays on V1 until first mainnet deployment") vs the whole-codebase
+V2 baseline that #85 established is an **owner call** for the redeploy — recorded here as the current
+*code* interface version, not an asserted target.
+
+| Module | Interface(s) in code | Note |
+|--------|----------------------|------|
+| `RPS` (04_RPS) | `AcquisitionRewardPerShareV1` | **new** interface from the #75 FVT→RPS split; only RPS implements it, only AQP-FVT names it |
+| `AQP-ANK` | `AcquisitionAnchorsV2` | AQP earning-pools family (new since last deploy) |
+| `AQP-SCORE` | `AcquisitionScoresV2` | |
+| `AQP-POOL` | `AcquisitionPoolsV2` | |
+| `AQP-FVT` (05_FVT) | `AcquisitionFarmsVaultsTreasuriesV2` | content changed by #75 split (facade re-exports) — stayed on V2 (pre-deploy edit) |
+| `AQP-VCT` | `AcquisitionVacateV2` | |
+| `MTX-AQP` | `AqpMtxV2` | |
+| `DSA` | `DsaV2` | |
+| `AQP-INFO` | (reads only) | |
+
+**This session's interface-content changes (all pre-deploy, kept on existing suffixes):**
+- #75 split: `AcquisitionFarmsVaultsTreasuriesV2` slimmed + facade re-exports; new `AcquisitionRewardPerShareV1`.
+- #104 Talos scope-first rename: member *names* changed in the Talos client interfaces
+  (`TalosStageOne_*`, `TalosStageTwo_*`) + `AutostakeV3`/`SwapperLiquidityClientV2` (HOT-RBT/STOA-PID
+  core client fns) — all edited in place on their current suffixes; the whole codebase loads green
+  (cascade-coherent), so no re-bump was triggered pre-deploy.
+
+**Open decision for the redeploy (Phase 1.7):** confirm whether the never-live AQP family + RPS deploy
+at V1 (strict "new work → V1") or stay at the current V2 baseline; and whether any live-and-changed
+interface needs an explicit live+1 bump beyond what #85 already applied.
