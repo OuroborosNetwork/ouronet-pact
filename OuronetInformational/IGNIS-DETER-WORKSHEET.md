@@ -22,17 +22,17 @@ deter default 1 (no extra). Revise the `deter` column; I green-light nothing mys
 | `C_ControlSmartAccount` | SETUP | 0 | 1 | 1 | 0 | 1 | 3 | · | 5 | 8 | management/config/property change — slightly expensive |
 | `A_ToggleGasCollection` | USAGE | 0 | 2 | 1 | 0 | 1 | 4 | · | 1 | 5 | legit activity — pure compute, no deterrent |
 | `A_SetAutoFueling` | USAGE | 0 | 1 | 1 | 0 | 1 | 3 | · | 1 | 4 | legit activity — pure compute, no deterrent |
-| `A_DeploySmartAccount` | ISSUE | 3 | 0 | 1 | 0 | 2 | 12 | · | exempt | 0 | IGNIS-EXEMPT — STOA-only (account creation), no IGNIS finish cost |
-| `A_DeployStandardAccount` | ISSUE | 3 | 0 | 1 | 0 | 2 | 12 | · | exempt | 0 | IGNIS-EXEMPT — STOA-only (account creation), no IGNIS finish cost |
-| `C_DeploySmartAccount` | ISSUE | 3 | 0 | 2 | 0 | 3 | 14 | · | exempt | 0 | IGNIS-EXEMPT — STOA-only (account creation), no IGNIS finish cost |
-| `C_DeployStandardAccount` | ISSUE | 3 | 0 | 2 | 0 | 3 | 14 | · | exempt | 0 | IGNIS-EXEMPT — STOA-only (account creation), no IGNIS finish cost |
+| `A_DeploySmartAccount` | ISSUE | 3 | 0 | 1 | 0 | 2 | 12 | · | exempt | 0 | IGNIS-EXEMPT — STOA-only (Ouronet account creation), no IGNIS finish cost |
+| `A_DeployStandardAccount` | ISSUE | 3 | 0 | 1 | 0 | 2 | 12 | · | exempt | 0 | IGNIS-EXEMPT — STOA-only (Ouronet account creation), no IGNIS finish cost |
+| `C_DeploySmartAccount` | ISSUE | 3 | 0 | 2 | 0 | 3 | 14 | · | exempt | 0 | IGNIS-EXEMPT — STOA-only (Ouronet account creation), no IGNIS finish cost |
+| `C_DeployStandardAccount` | ISSUE | 3 | 0 | 2 | 0 | 3 | 14 | · | exempt | 0 | IGNIS-EXEMPT — STOA-only (Ouronet account creation), no IGNIS finish cost |
 
 ## 02_IGNIS.pact
 
 | op | role | ins/wr | upd | R | S | X | components | cur GAS\| | **deter** | final | rationale |
 |----|------|--:|--:|--:|--:|--:|-------:|-----:|------:|-----:|-----------|
-| `C_Collect` | USAGE | 0 | 0 | 2 | 0 | 24 | 26 | · | 1 | 27 | legit activity — pure compute, no deterrent |
 | `C_TransferDalosFuel` | USAGE | 0 | 0 | 0 | 0 | 1 | 1 | · | 1 | 2 | legit activity — pure compute, no deterrent |
+| `C_Collect` | USAGE | 0 | 0 | 2 | 0 | 24 | 26 | · | exempt | 0 | IGNIS-EXEMPT — the ignis collector itself |
 
 ## 04_BRD.pact
 
@@ -47,6 +47,7 @@ deter default 1 (no extra). Revise the `deter` column; I green-light nothing mys
 |----|------|--:|--:|--:|--:|--:|-------:|-----:|------:|-----:|-----------|
 | `C_Mint` | ISSUE | 2 | 3 | 9 | 0 | 13 | 31 | · | 50 | 81 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
 | `C_Issue` | ISSUE | 3 | 0 | 3 | 0 | 14 | 26 | · | 50 | 76 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
+| `C_DeployAccount` | ISSUE | 1 | 0 | 3 | 0 | 3 | 9 | · | 50 | 59 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
 | `C_ToggleFeeExemptionRole` | SETUP | 1 | 2 | 6 | 0 | 9 | 20 | · | 25 | 45 | economic-parameter change (fee/price/rate) |
 | `A_WipeTreasuryDebt` | SETUP | 2 | 3 | 9 | 0 | 16 | 34 | · | 5 | 39 | management/config/property change — slightly expensive |
 | `A_WipeTreasuryDebtPartial` | SETUP | 2 | 3 | 9 | 0 | 15 | 33 | · | 5 | 38 | management/config/property change — slightly expensive |
@@ -69,7 +70,6 @@ deter default 1 (no extra). Revise the `deter` column; I green-light nothing mys
 | `C_ToggleReservation` | SETUP | 0 | 1 | 2 | 0 | 2 | 5 | · | 5 | 10 | management/config/property change — slightly expensive |
 | `C_SetMinMove` | SETUP | 0 | 1 | 2 | 0 | 2 | 5 | · | 5 | 10 | management/config/property change — slightly expensive |
 | `A_UpdateTreasury` | SETUP | 0 | 0 | 1 | 0 | 2 | 3 | · | 5 | 8 | management/config/property change — slightly expensive |
-| `C_DeployAccount` | ISSUE | 1 | 0 | 3 | 0 | 3 | 9 | · | exempt | 0 | IGNIS-EXEMPT — STOA-only (account creation), no IGNIS finish cost |
 
 ## 06_DPOF.pact
 
@@ -77,6 +77,7 @@ deter default 1 (no extra). Revise the `deter` column; I green-light nothing mys
 |----|------|--:|--:|--:|--:|--:|-------:|-----:|------:|-----:|-----------|
 | `C_Issue` | ISSUE | 3 | 0 | 4 | 0 | 13 | 26 | · | 50 | 76 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
 | `C_Mint` | ISSUE | 2 | 4 | 11 | 0 | 4 | 25 | · | 50 | 75 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
+| `C_DeployAccount` | ISSUE | 1 | 0 | 4 | 0 | 2 | 9 | · | 50 | 59 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
 | `C_Transmit` | SETUP | 2 | 5 | 13 | 0 | 7 | 31 | · | 5 | 36 | management/config/property change — slightly expensive |
 | `C_AddQuantity` | SETUP | 2 | 4 | 11 | 0 | 3 | 24 | · | 5 | 29 | management/config/property change — slightly expensive |
 | `C_ToggleAddQuantityRole` | SETUP | 1 | 2 | 7 | 0 | 4 | 16 | · | 10 | 26 | role/authority/guard setup |
@@ -96,7 +97,6 @@ deter default 1 (no extra). Revise the `deter` column; I green-light nothing mys
 | `C_UpdatePendingBranding` | SETUP | 0 | 0 | 2 | 0 | 3 | 5 | · | 5 | 10 | management/config/property change — slightly expensive |
 | `C_Control` | SETUP | 0 | 1 | 2 | 0 | 2 | 5 | · | 5 | 10 | management/config/property change — slightly expensive |
 | `C_TogglePause` | SETUP | 0 | 1 | 2 | 0 | 2 | 5 | · | 5 | 10 | management/config/property change — slightly expensive |
-| `C_DeployAccount` | ISSUE | 1 | 0 | 4 | 0 | 2 | 9 | · | exempt | 0 | IGNIS-EXEMPT — STOA-only (account creation), no IGNIS finish cost |
 
 ## 08_ATS.pact
 
@@ -203,11 +203,11 @@ deter default 1 (no extra). Revise the `deter` column; I green-light nothing mys
 
 | op | role | ins/wr | upd | R | S | X | components | cur GAS\| | **deter** | final | rationale |
 |----|------|--:|--:|--:|--:|--:|-------:|-----:|------:|-----:|-----------|
-| `C_SublimateV2` | SETUP | 0 | 0 | 1 | 0 | 17 | 18 | · | 5 | 23 | management/config/property change — slightly expensive |
-| `C_Sublimate` | SETUP | 0 | 0 | 1 | 0 | 15 | 16 | · | 5 | 21 | management/config/property change — slightly expensive |
-| `C_Compress` | USAGE | 0 | 0 | 1 | 0 | 14 | 15 | · | 1 | 16 | legit activity — pure compute, no deterrent |
 | `C_Fuel` | USAGE | 0 | 0 | 1 | 0 | 10 | 11 | · | 1 | 12 | legit activity — pure compute, no deterrent |
 | `C_WithdrawFees` | USAGE | 0 | 0 | 1 | 0 | 7 | 8 | · | 1 | 9 | legit activity — pure compute, no deterrent |
+| `C_Compress` | USAGE | 0 | 0 | 1 | 0 | 14 | 15 | · | exempt | 0 | IGNIS-EXEMPT — makes/breaks ignis |
+| `C_Sublimate` | SETUP | 0 | 0 | 1 | 0 | 15 | 16 | · | exempt | 0 | IGNIS-EXEMPT — makes/breaks ignis |
+| `C_SublimateV2` | SETUP | 0 | 0 | 1 | 0 | 17 | 18 | · | exempt | 0 | IGNIS-EXEMPT — makes/breaks ignis |
 
 ## 15_SWP.pact
 
@@ -675,11 +675,11 @@ deter default 1 (no extra). Revise the `deter` column; I green-light nothing mys
 | op | role | ins/wr | upd | R | S | X | components | cur GAS\| | **deter** | final | rationale |
 |----|------|--:|--:|--:|--:|--:|-------:|-----:|------:|-----:|-----------|
 | `C_MintToUserFromBridgeSignal` | ISSUE | 1 | 0 | 4 | 2 | 2 | 11 | · | 50 | 61 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
+| `A_DeployBridgeSmartAccount` | ISSUE | 0 | 0 | 4 | 1 | 1 | 6 | · | 50 | 56 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
 | `A_ProvisionBridgeDptfRoles` | SETUP | 0 | 0 | 3 | 1 | 4 | 8 | · | 10 | 18 | role/authority/guard setup |
 | `C_BurnFromBridgeSignal` | SETUP | 1 | 0 | 4 | 2 | 1 | 10 | · | 5 | 15 | management/config/property change — slightly expensive |
 | `A_SetBridgeConfig` | SETUP | 1 | 0 | 0 | 0 | 0 | 3 | · | 5 | 8 | management/config/property change — slightly expensive |
 | `A_SetBridgeActive` | SETUP | 0 | 1 | 0 | 0 | 0 | 1 | · | 5 | 6 | management/config/property change — slightly expensive |
-| `A_DeployBridgeSmartAccount` | ISSUE | 0 | 0 | 4 | 1 | 1 | 6 | · | exempt | 0 | IGNIS-EXEMPT — STOA-only (account creation), no IGNIS finish cost |
 
 ## 01_Spark.pact
 
@@ -739,13 +739,13 @@ deter default 1 (no extra). Revise the `deter` column; I green-light nothing mys
 
 | deter | ops | meaning |
 |------:|----:|---------|
-| exempt | 7 | account creation — STOA-only, no IGNIS |
-| 1 | 105 | activity — no deterrent |
-| 5 | 246 | config/property change |
+| exempt | 8 | IGNIS-exempt (account creation + ignis machinery: collect/compress/sublimate) |
+| 1 | 103 | activity — no deterrent |
+| 5 | 244 | config/property change |
 | 10 | 33 | role/authority/guard setup |
 | 25 | 21 | fee/price/rate change |
-| 50 | 39 | token/collection issuance (+STOA) |
+| 50 | 42 | token/collection issuance (+STOA) |
 | 500 | 5 | issuance (current flat) |
 | 1000 | 13 | issuance / LP — very big |
 
-469 ops · 357 pre-suggested deter>1 (rest default 1). Revise & green-light.
+469 ops · 358 pre-suggested deter>1 (rest default 1). Revise & green-light.
