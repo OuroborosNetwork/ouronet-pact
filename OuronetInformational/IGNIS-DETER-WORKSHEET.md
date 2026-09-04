@@ -546,139 +546,6 @@ explicit C_DeployAccount entrypoint (deliberate token-account creation) carries 
 | `A_ToggleOpenForBusiness` | SETUP | · | · | · | · | 🟫1 | **1** | · | 🟦 5x | **6** | management/config/property change — slightly expensive |
 | `A_ToggleRetrieval` | SETUP | · | · | · | · | 🟫1 | **1** | · | 🟦 5x | **6** | management/config/property change — slightly expensive |
 
-## 01_AOZ+.pact
-
-| op | role | ins/wr | upd | R | S | X | components | cur GAS\| | **deter** | final | rationale |
-|----|------|--:|--:|--:|--:|--:|-------:|-----:|------:|-----:|-----------|
-| `A_RegisterPrimalTrueFungible` | SETUP | 🟥1 | 🟧1 | 🟦2 | · | · | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_RegisterPrimalOrtoFungible` | SETUP | 🟥1 | 🟧1 | 🟦2 | · | · | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_RegisterAutostakePair` | SETUP | 🟥1 | 🟧1 | 🟦2 | · | · | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_RegisterTrueFungible` | SETUP | 🟥1 | 🟧1 | 🟦2 | · | · | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_RegisterOrtoFungible` | SETUP | 🟥1 | 🟧1 | 🟦2 | · | · | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_RegisterSemiFungible` | SETUP | 🟥1 | 🟧1 | 🟦2 | · | · | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_RegisterNonFungible` | SETUP | 🟥1 | 🟧1 | 🟦2 | · | · | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `C_SetupKosonicATS` | SETUP | · | · | 🟦1 | · | 🟫5 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_InitialiseCounters` | SETUP | 🟥1 | · | · | · | · | **3** | · | 🟦 5x | **8** | management/config/property change — slightly expensive |
-
-## 01_BSD-L.pact
-
-| op | role | ins/wr | upd | R | S | X | components | cur GAS\| | **deter** | final | rationale |
-|----|------|--:|--:|--:|--:|--:|-------:|-----:|------:|-----:|-----------|
-| `A_Issue` | ISSUE | · | · | · | · | 🟫1 | **1** | · | 🟧 50x | **51** | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
-| `A_Legendary` | SETUP | · | · | · | · | 🟫8 | **8** | · | 🟦 5x | **13** | management/config/property change — slightly expensive |
-
-## 02_BSD-E.pact
-
-| op | role | ins/wr | upd | R | S | X | components | cur GAS\| | **deter** | final | rationale |
-|----|------|--:|--:|--:|--:|--:|-------:|-----:|------:|-----:|-----------|
-| `A_Epic` | SETUP | · | · | · | · | 🟫8 | **8** | · | 🟦 5x | **13** | management/config/property change — slightly expensive |
-
-## 03_BSD-R.pact
-
-| op | role | ins/wr | upd | R | S | X | components | cur GAS\| | **deter** | final | rationale |
-|----|------|--:|--:|--:|--:|--:|-------:|-----:|------:|-----:|-----------|
-| `A_Rare` | SETUP | · | · | · | · | 🟫8 | **8** | · | 🟦 5x | **13** | management/config/property change — slightly expensive |
-
-## 04_BSD-C.pact
-
-| op | role | ins/wr | upd | R | S | X | components | cur GAS\| | **deter** | final | rationale |
-|----|------|--:|--:|--:|--:|--:|-------:|-----:|------:|-----:|-----------|
-| `A_Common` | SETUP | · | · | · | · | 🟫8 | **8** | · | 🟦 5x | **13** | management/config/property change — slightly expensive |
-
-## 01_NOSFERATU.pact
-
-| op | role | ins/wr | upd | R | S | X | components | cur GAS\| | **deter** | final | rationale |
-|----|------|--:|--:|--:|--:|--:|-------:|-----:|------:|-----:|-----------|
-| `A_Step01` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_Step02` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_Step03` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_Step04` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_Step05` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_Step06` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_Step07` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_Step08` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_Step09` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_Step10` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_Step11` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_Step12` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_Step13` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_Step14` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_Step15` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_Step16` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_Step17` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_Step18` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_Step19` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_Step20` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_Step21` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_Step22` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `C_Spawn` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_Fix01` | USAGE | · | · | · | · | 🟫6 | **6** | · | 🟩 1x | **7** | legit activity — pure compute, no deterrent |
-| `A_Fix02a` | USAGE | · | · | · | · | 🟫6 | **6** | · | 🟩 1x | **7** | legit activity — pure compute, no deterrent |
-| `A_Fix02b` | USAGE | · | · | · | · | 🟫6 | **6** | · | 🟩 1x | **7** | legit activity — pure compute, no deterrent |
-| `A_Fix03` | USAGE | · | · | · | · | 🟫6 | **6** | · | 🟩 1x | **7** | legit activity — pure compute, no deterrent |
-| `A_Fix04` | USAGE | · | · | · | · | 🟫6 | **6** | · | 🟩 1x | **7** | legit activity — pure compute, no deterrent |
-| `A_Fix05a` | USAGE | · | · | · | · | 🟫6 | **6** | · | 🟩 1x | **7** | legit activity — pure compute, no deterrent |
-| `A_Fix05b` | USAGE | · | · | · | · | 🟫6 | **6** | · | 🟩 1x | **7** | legit activity — pure compute, no deterrent |
-| `A_Fix06` | USAGE | · | · | · | · | 🟫6 | **6** | · | 🟩 1x | **7** | legit activity — pure compute, no deterrent |
-| `A_Fix07` | USAGE | · | · | · | · | 🟫6 | **6** | · | 🟩 1x | **7** | legit activity — pure compute, no deterrent |
-| `A_Fix08` | USAGE | · | · | · | · | 🟫6 | **6** | · | 🟩 1x | **7** | legit activity — pure compute, no deterrent |
-| `A_Fix09` | USAGE | · | · | · | · | 🟫6 | **6** | · | 🟩 1x | **7** | legit activity — pure compute, no deterrent |
-| `A_Fix10` | USAGE | · | · | · | · | 🟫6 | **6** | · | 🟩 1x | **7** | legit activity — pure compute, no deterrent |
-| `A_Fix11` | USAGE | · | · | · | · | 🟫6 | **6** | · | 🟩 1x | **7** | legit activity — pure compute, no deterrent |
-| `A_Fix12` | USAGE | · | · | · | · | 🟫6 | **6** | · | 🟩 1x | **7** | legit activity — pure compute, no deterrent |
-| `A_Fix13` | USAGE | · | · | · | · | 🟫6 | **6** | · | 🟩 1x | **7** | legit activity — pure compute, no deterrent |
-| `A_Fix14` | USAGE | · | · | · | · | 🟫6 | **6** | · | 🟩 1x | **7** | legit activity — pure compute, no deterrent |
-| `A_Fix15` | USAGE | · | · | · | · | 🟫6 | **6** | · | 🟩 1x | **7** | legit activity — pure compute, no deterrent |
-| `A_Fix16` | USAGE | · | · | · | · | 🟫6 | **6** | · | 🟩 1x | **7** | legit activity — pure compute, no deterrent |
-| `A_Fix17` | USAGE | · | · | · | · | 🟫6 | **6** | · | 🟩 1x | **7** | legit activity — pure compute, no deterrent |
-| `A_Fix18` | USAGE | · | · | · | · | 🟫6 | **6** | · | 🟩 1x | **7** | legit activity — pure compute, no deterrent |
-| `A_Fix19` | USAGE | · | · | · | · | 🟫6 | **6** | · | 🟩 1x | **7** | legit activity — pure compute, no deterrent |
-| `A_Fix20` | USAGE | · | · | · | · | 🟫6 | **6** | · | 🟩 1x | **7** | legit activity — pure compute, no deterrent |
-| `A_Fix21` | USAGE | · | · | · | · | 🟫6 | **6** | · | 🟩 1x | **7** | legit activity — pure compute, no deterrent |
-| `A_Fix22` | USAGE | · | · | · | · | 🟫6 | **6** | · | 🟩 1x | **7** | legit activity — pure compute, no deterrent |
-| `C_Fix` | USAGE | · | · | · | · | 🟫6 | **6** | · | 🟩 1x | **7** | legit activity — pure compute, no deterrent |
-
-## 02_KBunnies.pact
-
-| op | role | ins/wr | upd | R | S | X | components | cur GAS\| | **deter** | final | rationale |
-|----|------|--:|--:|--:|--:|--:|-------:|-----:|------:|-----:|-----------|
-| `A_BunnyRGBSet` | SETUP | · | · | · | · | 🟫10 | **10** | · | 🟦 5x | **15** | management/config/property change — slightly expensive |
-| `A_Step01` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_Step02` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_Step03` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_Step04` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_Step05` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_Step06` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_Step07` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_Step08` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_Step09` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_Step10` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_Step11` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_Step12` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_Step13` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_Step14` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_Step15` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `A_Step16` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-| `C_Spawn` | SETUP | · | · | · | · | 🟫6 | **6** | · | 🟦 5x | **11** | management/config/property change — slightly expensive |
-
-## 04_AQP-BOOT.pact
-
-| op | role | ins/wr | upd | R | S | X | components | cur GAS\| | **deter** | final | rationale |
-|----|------|--:|--:|--:|--:|--:|-------:|-----:|------:|-----:|-----------|
-| `C_Step3_CreateBoosterAnchorClasses` | SETUP | · | · | · | · | 🟫25 | **25** | · | 🟦 5x | **30** | management/config/property change — slightly expensive |
-| `C_Step7_CreatePoolsAndScores` | SETUP | · | · | · | · | 🟫19 | **19** | · | 🟦 5x | **24** | management/config/property change — slightly expensive |
-| `C_Step5_CreateSubsidiaryScores` | SETUP | · | · | · | · | 🟫15 | **15** | · | 🟦 5x | **20** | management/config/property change — slightly expensive |
-| `C_Step2_CreateSnakePowerAnchorClasses` | SETUP | · | · | · | · | 🟫11 | **11** | · | 🟦 5x | **16** | management/config/property change — slightly expensive |
-| `C_Step6_CreateOuroLpTriplet` | SETUP | · | · | · | · | 🟫11 | **11** | · | 🟦 5x | **16** | management/config/property change — slightly expensive |
-| `C_Step8_IssueFvtEntities` | SETUP | · | · | · | · | 🟫10 | **10** | · | 🟦 5x | **15** | management/config/property change — slightly expensive |
-| `C_Step0_WireImcAndGovernor` | SETUP | · | · | · | · | 🟫9 | **9** | · | 🟦 5x | **14** | management/config/property change — slightly expensive |
-| `C_Step4_CreateCoreScores` | SETUP | · | · | · | · | 🟫8 | **8** | · | 🟦 5x | **13** | management/config/property change — slightly expensive |
-| `C_Step12_AddFvtRewardLinks` | SETUP | · | · | · | · | 🟫5 | **5** | · | 🟦 5x | **10** | management/config/property change — slightly expensive |
-| `C_Step9_AddFvtScoreEntities` | SETUP | · | · | · | · | 🟫4 | **4** | · | 🟦 5x | **9** | management/config/property change — slightly expensive |
-| `C_Step11_WireFarmTriplet` | SETUP | · | · | · | · | 🟫3 | **3** | · | 🟦 5x | **8** | management/config/property change — slightly expensive |
-| `C_Step10_IssueMultipletFamily` | SETUP | · | · | · | · | 🟫1 | **1** | · | 🟦 5x | **6** | management/config/property change — slightly expensive |
-| `C_Step1_CreateBunnySet` | SETUP | · | · | · | · | · | **0** | · | 🟦 5x | **5** | management/config/property change — slightly expensive |
-
 ## 01_Spark.pact
 
 | op | role | ins/wr | upd | R | S | X | components | cur GAS\| | **deter** | final | rationale |
@@ -721,17 +588,6 @@ explicit C_DeployAccount entrypoint (deliberate token-account creation) carries 
 | `A_Inject` | USAGE | · | 🟧5 | 🟦8 | · | 🟫2 | **15** | · | 🟩 1x | **16** | legit activity — pure compute, no deterrent |
 | `A_InitialiseDistributionVault` | SETUP | 🟥1 | · | · | · | 🟫7 | **10** | · | 🟦 5x | **15** | management/config/property change — slightly expensive |
 
-## 03_DSP+.pact
-
-| op | role | ins/wr | upd | R | S | X | components | cur GAS\| | **deter** | final | rationale |
-|----|------|--:|--:|--:|--:|--:|-------:|-----:|------:|-----:|-----------|
-| `A_KosonMinterStageOne` | SETUP | · | · | · | · | 🟫37 | **37** | · | 🟦 5x | **42** | management/config/property change — slightly expensive |
-| `A_KosonMinterStageOne_1of3` | SETUP | · | · | · | · | 🟫18 | **18** | · | 🟦 5x | **23** | management/config/property change — slightly expensive |
-| `A_OuroMinterStageOne` | SETUP | · | · | · | · | 🟫17 | **17** | · | 🟦 5x | **22** | management/config/property change — slightly expensive |
-| `A_KosonMinterStageOne_2of3` | SETUP | · | · | · | · | 🟫15 | **15** | · | 🟦 5x | **20** | management/config/property change — slightly expensive |
-| `A_KosonMinterStageOne_3of3` | SETUP | · | · | · | · | 🟫15 | **15** | · | 🟦 5x | **20** | management/config/property change — slightly expensive |
-| `A_StoicismMinter` | SETUP | · | · | · | · | 🟫2 | **2** | · | 🟦 5x | **7** | management/config/property change — slightly expensive |
-
 ---
 ## Colour legend / suggested-deter tier distribution
 
@@ -741,12 +597,12 @@ Each colour square below tags every op of that tier in the tables above.
 | colour | deter | ops | meaning |
 |--------|------:|----:|---------|
 | ⬜ | exempt | 8 | IGNIS-exempt (account creation + ignis machinery: collect/compress/sublimate/firestarter) |
-| 🟩 | 1x | 103 | activity — no deterrent |
-| 🟦 | 5x | 241 | config/property change |
+| 🟩 | 1x | 78 | activity — no deterrent |
+| 🟦 | 5x | 168 | config/property change |
 | 🟪 | 10x | 32 | role/authority/guard setup |
 | 🟨 | 25x | 21 | fee/price/rate change |
-| 🟧 | 50x | 40 | token/collection issuance (+STOA) |
+| 🟧 | 50x | 39 | token/collection issuance (+STOA) |
 | 🟥 | 500x | 5 | issuance (current flat) |
 | ⬛ | 1000x | 13 | issuance / LP — very big |
 
-463 ops · 352 pre-suggested deter>1 (rest default 1). Revise & green-light.
+364 ops · 278 pre-suggested deter>1 (rest default 1). Revise & green-light.
