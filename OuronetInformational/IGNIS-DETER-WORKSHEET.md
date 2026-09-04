@@ -4,6 +4,10 @@ FINAL = deter·IG|TX(1) + [ 3·(insert/write) + 1·update + 1·read + 1·scan + 
 cross-module callee internals not summed, so delegating ops read low).
 deter default 1 (no extra). Revise the `deter` column; I green-light nothing myself.
 
+S1 CONSTRAINT — auto account-creation inside a transfer (recipient has no account yet) is
+IGNIS-FREE: it is subsumed in the transfer (deter 1), never billed as a separate op. Only the
+explicit C_DeployAccount entrypoint (deliberate token-account creation) carries an IGNIS deterrent.
+
 
 ## 01_DALOS.pact
 
@@ -47,7 +51,7 @@ deter default 1 (no extra). Revise the `deter` column; I green-light nothing mys
 |----|------|--:|--:|--:|--:|--:|-------:|-----:|------:|-----:|-----------|
 | `C_Mint` | ISSUE | 2 | 3 | 9 | 0 | 13 | 31 | · | 50 | 81 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
 | `C_Issue` | ISSUE | 3 | 0 | 3 | 0 | 14 | 26 | · | 50 | 76 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
-| `C_DeployAccount` | ISSUE | 1 | 0 | 3 | 0 | 3 | 9 | · | 50 | 59 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
+| `C_DeployAccount` | ISSUE | 1 | 0 | 3 | 0 | 3 | 9 | · | 50 | 59 | explicit token-account creation — IGNIS deterrent vs on-purpose spam (auto-creation inside a transfer is FREE) |
 | `C_ToggleFeeExemptionRole` | SETUP | 1 | 2 | 6 | 0 | 9 | 20 | · | 25 | 45 | economic-parameter change (fee/price/rate) |
 | `A_WipeTreasuryDebt` | SETUP | 2 | 3 | 9 | 0 | 16 | 34 | · | 5 | 39 | management/config/property change — slightly expensive |
 | `A_WipeTreasuryDebtPartial` | SETUP | 2 | 3 | 9 | 0 | 15 | 33 | · | 5 | 38 | management/config/property change — slightly expensive |
@@ -77,7 +81,7 @@ deter default 1 (no extra). Revise the `deter` column; I green-light nothing mys
 |----|------|--:|--:|--:|--:|--:|-------:|-----:|------:|-----:|-----------|
 | `C_Issue` | ISSUE | 3 | 0 | 4 | 0 | 13 | 26 | · | 50 | 76 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
 | `C_Mint` | ISSUE | 2 | 4 | 11 | 0 | 4 | 25 | · | 50 | 75 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
-| `C_DeployAccount` | ISSUE | 1 | 0 | 4 | 0 | 2 | 9 | · | 50 | 59 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
+| `C_DeployAccount` | ISSUE | 1 | 0 | 4 | 0 | 2 | 9 | · | 50 | 59 | explicit token-account creation — IGNIS deterrent vs on-purpose spam (auto-creation inside a transfer is FREE) |
 | `C_Transmit` | SETUP | 2 | 5 | 13 | 0 | 7 | 31 | · | 5 | 36 | management/config/property change — slightly expensive |
 | `C_AddQuantity` | SETUP | 2 | 4 | 11 | 0 | 3 | 24 | · | 5 | 29 | management/config/property change — slightly expensive |
 | `C_ToggleAddQuantityRole` | SETUP | 1 | 2 | 7 | 0 | 4 | 16 | · | 10 | 26 | role/authority/guard setup |
