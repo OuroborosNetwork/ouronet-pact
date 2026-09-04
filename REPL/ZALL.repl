@@ -34,7 +34,8 @@
 ;;P2-NOTE> [6.4]_Admin rotates the canonical ANHD guard -> runs LAST (TERMINAL segment below).
 ;;P2-NOTE> [6.5]_DPOF is covered via [6.2.4]_AQP-FVT-OF's self-load (issues MVST-98c486052a51);
 ;;         loading it here too would re-issue MVST (dup-insert). [6.6]_ATS: see P2-TODO tail.
-;;P2>      VST / Dispenser / CODEX / PYTHIA
+;;P2>      ATS (autostake — KOSON assets) / VST / Dispenser / CODEX / PYTHIA
+(load "Stage_01/[6.6]_ATS.repl")
 (load "Stage_01/[6.7]_VST.repl")
 (load "Stage_01/[6.8]_Dispenser.repl")
 (load "Stage_01/[6.9]_CODEX.repl")
