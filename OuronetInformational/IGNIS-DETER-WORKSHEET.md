@@ -22,10 +22,10 @@ deter default 1 (no extra). Revise the `deter` column; I green-light nothing mys
 | `C_ControlSmartAccount` | SETUP | 0 | 1 | 1 | 0 | 1 | 3 | · | 5 | 8 | management/config/property change — slightly expensive |
 | `A_ToggleGasCollection` | USAGE | 0 | 2 | 1 | 0 | 1 | 4 | · | 1 | 5 | legit activity — pure compute, no deterrent |
 | `A_SetAutoFueling` | USAGE | 0 | 1 | 1 | 0 | 1 | 3 | · | 1 | 4 | legit activity — pure compute, no deterrent |
-| `A_DeploySmartAccount` | ISSUE | 3 | 0 | 1 | 0 | 2 | 12 | · | exempt | 0 | IGNIS-EXEMPT — STOA-only (Ouronet account creation), no IGNIS finish cost |
-| `A_DeployStandardAccount` | ISSUE | 3 | 0 | 1 | 0 | 2 | 12 | · | exempt | 0 | IGNIS-EXEMPT — STOA-only (Ouronet account creation), no IGNIS finish cost |
-| `C_DeploySmartAccount` | ISSUE | 3 | 0 | 2 | 0 | 3 | 14 | · | exempt | 0 | IGNIS-EXEMPT — STOA-only (Ouronet account creation), no IGNIS finish cost |
-| `C_DeployStandardAccount` | ISSUE | 3 | 0 | 2 | 0 | 3 | 14 | · | exempt | 0 | IGNIS-EXEMPT — STOA-only (Ouronet account creation), no IGNIS finish cost |
+| `A_DeploySmartAccount` | ISSUE | 3 | 0 | 1 | 0 | 2 | 12 | · | exempt | 0 | IGNIS-EXEMPT — admin account deploy: fully FREE (no STOA, no IGNIS) |
+| `A_DeployStandardAccount` | ISSUE | 3 | 0 | 1 | 0 | 2 | 12 | · | exempt | 0 | IGNIS-EXEMPT — admin account deploy: fully FREE (no STOA, no IGNIS) |
+| `C_DeploySmartAccount` | ISSUE | 3 | 0 | 2 | 0 | 3 | 14 | · | exempt | 0 | IGNIS-EXEMPT — user account deploy: STOA-priced, no IGNIS finish cost |
+| `C_DeployStandardAccount` | ISSUE | 3 | 0 | 2 | 0 | 3 | 14 | · | exempt | 0 | IGNIS-EXEMPT — user account deploy: STOA-priced, no IGNIS finish cost |
 
 ## 02_IGNIS.pact
 
