@@ -9,10 +9,6 @@ deter default 1 (no extra). Revise the `deter` column; I green-light nothing mys
 
 | op | role | ins/wr | upd | R | S | X | components | cur GAS\| | **deter** | final | rationale |
 |----|------|--:|--:|--:|--:|--:|-------:|-----:|------:|-----:|-----------|
-| `C_DeploySmartAccount` | ISSUE | 3 | 0 | 2 | 0 | 3 | 14 | · | 100 | 114 | issuance — default deterrent (account deploys can be lowered) |
-| `C_DeployStandardAccount` | ISSUE | 3 | 0 | 2 | 0 | 3 | 14 | · | 100 | 114 | issuance — default deterrent (account deploys can be lowered) |
-| `A_DeploySmartAccount` | ISSUE | 3 | 0 | 1 | 0 | 2 | 12 | · | 100 | 112 | issuance — default deterrent (account deploys can be lowered) |
-| `A_DeployStandardAccount` | ISSUE | 3 | 0 | 1 | 0 | 2 | 12 | · | 100 | 112 | issuance — default deterrent (account deploys can be lowered) |
 | `A_UpdateUsagePrice` | SETUP | 1 | 0 | 1 | 0 | 2 | 6 | · | 25 | 31 | economic-parameter change (fee/price/rate) |
 | `A_SetIgnisSourcePrice` | SETUP | 0 | 1 | 1 | 0 | 1 | 3 | · | 25 | 28 | economic-parameter change (fee/price/rate) |
 | `C_RotateStoa` | SETUP | 2 | 1 | 3 | 0 | 3 | 13 | · | 10 | 23 | role/authority/guard setup |
@@ -26,6 +22,10 @@ deter default 1 (no extra). Revise the `deter` column; I green-light nothing mys
 | `C_ControlSmartAccount` | SETUP | 0 | 1 | 1 | 0 | 1 | 3 | · | 5 | 8 | management/config/property change — slightly expensive |
 | `A_ToggleGasCollection` | USAGE | 0 | 2 | 1 | 0 | 1 | 4 | · | 1 | 5 | legit activity — pure compute, no deterrent |
 | `A_SetAutoFueling` | USAGE | 0 | 1 | 1 | 0 | 1 | 3 | · | 1 | 4 | legit activity — pure compute, no deterrent |
+| `A_DeploySmartAccount` | ISSUE | 3 | 0 | 1 | 0 | 2 | 12 | · | exempt | 0 | IGNIS-EXEMPT — STOA-only (account creation), no IGNIS finish cost |
+| `A_DeployStandardAccount` | ISSUE | 3 | 0 | 1 | 0 | 2 | 12 | · | exempt | 0 | IGNIS-EXEMPT — STOA-only (account creation), no IGNIS finish cost |
+| `C_DeploySmartAccount` | ISSUE | 3 | 0 | 2 | 0 | 3 | 14 | · | exempt | 0 | IGNIS-EXEMPT — STOA-only (account creation), no IGNIS finish cost |
+| `C_DeployStandardAccount` | ISSUE | 3 | 0 | 2 | 0 | 3 | 14 | · | exempt | 0 | IGNIS-EXEMPT — STOA-only (account creation), no IGNIS finish cost |
 
 ## 02_IGNIS.pact
 
@@ -45,9 +45,8 @@ deter default 1 (no extra). Revise the `deter` column; I green-light nothing mys
 
 | op | role | ins/wr | upd | R | S | X | components | cur GAS\| | **deter** | final | rationale |
 |----|------|--:|--:|--:|--:|--:|-------:|-----:|------:|-----:|-----------|
-| `C_Mint` | ISSUE | 2 | 3 | 9 | 0 | 13 | 31 | · | 100 | 131 | issuance — default deterrent (account deploys can be lowered) |
-| `C_Issue` | ISSUE | 3 | 0 | 3 | 0 | 14 | 26 | · | 100 | 126 | issuance — default deterrent (account deploys can be lowered) |
-| `C_DeployAccount` | ISSUE | 1 | 0 | 3 | 0 | 3 | 9 | · | 100 | 109 | issuance — default deterrent (account deploys can be lowered) |
+| `C_Mint` | ISSUE | 2 | 3 | 9 | 0 | 13 | 31 | · | 50 | 81 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
+| `C_Issue` | ISSUE | 3 | 0 | 3 | 0 | 14 | 26 | · | 50 | 76 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
 | `C_ToggleFeeExemptionRole` | SETUP | 1 | 2 | 6 | 0 | 9 | 20 | · | 25 | 45 | economic-parameter change (fee/price/rate) |
 | `A_WipeTreasuryDebt` | SETUP | 2 | 3 | 9 | 0 | 16 | 34 | · | 5 | 39 | management/config/property change — slightly expensive |
 | `A_WipeTreasuryDebtPartial` | SETUP | 2 | 3 | 9 | 0 | 15 | 33 | · | 5 | 38 | management/config/property change — slightly expensive |
@@ -70,14 +69,14 @@ deter default 1 (no extra). Revise the `deter` column; I green-light nothing mys
 | `C_ToggleReservation` | SETUP | 0 | 1 | 2 | 0 | 2 | 5 | · | 5 | 10 | management/config/property change — slightly expensive |
 | `C_SetMinMove` | SETUP | 0 | 1 | 2 | 0 | 2 | 5 | · | 5 | 10 | management/config/property change — slightly expensive |
 | `A_UpdateTreasury` | SETUP | 0 | 0 | 1 | 0 | 2 | 3 | · | 5 | 8 | management/config/property change — slightly expensive |
+| `C_DeployAccount` | ISSUE | 1 | 0 | 3 | 0 | 3 | 9 | · | exempt | 0 | IGNIS-EXEMPT — STOA-only (account creation), no IGNIS finish cost |
 
 ## 06_DPOF.pact
 
 | op | role | ins/wr | upd | R | S | X | components | cur GAS\| | **deter** | final | rationale |
 |----|------|--:|--:|--:|--:|--:|-------:|-----:|------:|-----:|-----------|
-| `C_Issue` | ISSUE | 3 | 0 | 4 | 0 | 13 | 26 | · | 100 | 126 | issuance — default deterrent (account deploys can be lowered) |
-| `C_Mint` | ISSUE | 2 | 4 | 11 | 0 | 4 | 25 | · | 100 | 125 | issuance — default deterrent (account deploys can be lowered) |
-| `C_DeployAccount` | ISSUE | 1 | 0 | 4 | 0 | 2 | 9 | · | 100 | 109 | issuance — default deterrent (account deploys can be lowered) |
+| `C_Issue` | ISSUE | 3 | 0 | 4 | 0 | 13 | 26 | · | 50 | 76 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
+| `C_Mint` | ISSUE | 2 | 4 | 11 | 0 | 4 | 25 | · | 50 | 75 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
 | `C_Transmit` | SETUP | 2 | 5 | 13 | 0 | 7 | 31 | · | 5 | 36 | management/config/property change — slightly expensive |
 | `C_AddQuantity` | SETUP | 2 | 4 | 11 | 0 | 3 | 24 | · | 5 | 29 | management/config/property change — slightly expensive |
 | `C_ToggleAddQuantityRole` | SETUP | 1 | 2 | 7 | 0 | 4 | 16 | · | 10 | 26 | role/authority/guard setup |
@@ -97,12 +96,13 @@ deter default 1 (no extra). Revise the `deter` column; I green-light nothing mys
 | `C_UpdatePendingBranding` | SETUP | 0 | 0 | 2 | 0 | 3 | 5 | · | 5 | 10 | management/config/property change — slightly expensive |
 | `C_Control` | SETUP | 0 | 1 | 2 | 0 | 2 | 5 | · | 5 | 10 | management/config/property change — slightly expensive |
 | `C_TogglePause` | SETUP | 0 | 1 | 2 | 0 | 2 | 5 | · | 5 | 10 | management/config/property change — slightly expensive |
+| `C_DeployAccount` | ISSUE | 1 | 0 | 4 | 0 | 2 | 9 | · | exempt | 0 | IGNIS-EXEMPT — STOA-only (account creation), no IGNIS finish cost |
 
 ## 08_ATS.pact
 
 | op | role | ins/wr | upd | R | S | X | components | cur GAS\| | **deter** | final | rationale |
 |----|------|--:|--:|--:|--:|--:|-------:|-----:|------:|-----:|-----------|
-| `C_Issue` | ISSUE | 1 | 0 | 1 | 0 | 18 | 22 | · | 100 | 122 | issuance — default deterrent (account deploys can be lowered) |
+| `C_Issue` | ISSUE | 1 | 0 | 1 | 0 | 18 | 22 | · | 50 | 72 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
 | `C_SetColdRecoveryFees` | SETUP | 0 | 1 | 1 | 0 | 6 | 8 | · | 25 | 33 | economic-parameter change (fee/price/rate) |
 | `C_SetHibernationFees` | SETUP | 0 | 1 | 2 | 0 | 2 | 5 | · | 25 | 30 | economic-parameter change (fee/price/rate) |
 | `C_ControlColdRecoveryFees` | SETUP | 0 | 1 | 2 | 0 | 2 | 5 | · | 25 | 30 | economic-parameter change (fee/price/rate) |
@@ -159,11 +159,11 @@ deter default 1 (no extra). Revise the `deter` column; I green-light nothing mys
 
 | op | role | ins/wr | upd | R | S | X | components | cur GAS\| | **deter** | final | rationale |
 |----|------|--:|--:|--:|--:|--:|-------:|-----:|------:|-----:|-----------|
-| `C_CreateFrozenLink` | ISSUE | 0 | 0 | 1 | 0 | 14 | 15 | · | 100 | 115 | issuance — default deterrent (account deploys can be lowered) |
-| `C_CreateReservationLink` | ISSUE | 0 | 0 | 1 | 0 | 14 | 15 | · | 100 | 115 | issuance — default deterrent (account deploys can be lowered) |
-| `C_CreateVestingLink` | ISSUE | 0 | 0 | 1 | 0 | 14 | 15 | · | 100 | 115 | issuance — default deterrent (account deploys can be lowered) |
-| `C_CreateSleepingLink` | ISSUE | 0 | 0 | 1 | 0 | 14 | 15 | · | 100 | 115 | issuance — default deterrent (account deploys can be lowered) |
-| `C_CreateHibernatingLink` | ISSUE | 0 | 0 | 1 | 0 | 14 | 15 | · | 100 | 115 | issuance — default deterrent (account deploys can be lowered) |
+| `C_CreateFrozenLink` | ISSUE | 0 | 0 | 1 | 0 | 14 | 15 | · | 50 | 65 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
+| `C_CreateReservationLink` | ISSUE | 0 | 0 | 1 | 0 | 14 | 15 | · | 50 | 65 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
+| `C_CreateVestingLink` | ISSUE | 0 | 0 | 1 | 0 | 14 | 15 | · | 50 | 65 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
+| `C_CreateSleepingLink` | ISSUE | 0 | 0 | 1 | 0 | 14 | 15 | · | 50 | 65 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
+| `C_CreateHibernatingLink` | ISSUE | 0 | 0 | 1 | 0 | 14 | 15 | · | 50 | 65 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
 | `C_Merge` | SETUP | 0 | 0 | 1 | 0 | 19 | 20 | · | 5 | 25 | management/config/property change — slightly expensive |
 | `C_RepurposeMerge` | SETUP | 0 | 0 | 1 | 0 | 19 | 20 | · | 5 | 25 | management/config/property change — slightly expensive |
 | `C_Slumber` | SETUP | 0 | 0 | 1 | 0 | 19 | 20 | · | 5 | 25 | management/config/property change — slightly expensive |
@@ -213,7 +213,7 @@ deter default 1 (no extra). Revise the `deter` column; I green-light nothing mys
 
 | op | role | ins/wr | upd | R | S | X | components | cur GAS\| | **deter** | final | rationale |
 |----|------|--:|--:|--:|--:|--:|-------:|-----:|------:|-----:|-----------|
-| `A_DefinePrimordialPool` | ISSUE | 0 | 1 | 1 | 0 | 1 | 3 | · | 100 | 103 | issuance — default deterrent (account deploys can be lowered) |
+| `A_DefinePrimordialPool` | ISSUE | 0 | 1 | 1 | 0 | 1 | 3 | · | 50 | 53 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
 | `C_ToggleFeeLock` | SETUP | 0 | 2 | 4 | 0 | 7 | 13 | · | 25 | 38 | economic-parameter change (fee/price/rate) |
 | `C_UpdateFee` | SETUP | 0 | 2 | 2 | 0 | 2 | 6 | · | 25 | 31 | economic-parameter change (fee/price/rate) |
 | `C_UpdateSpecialFeeTargets` | SETUP | 0 | 1 | 2 | 0 | 2 | 5 | · | 25 | 30 | economic-parameter change (fee/price/rate) |
@@ -236,7 +236,7 @@ deter default 1 (no extra). Revise the `deter` column; I green-light nothing mys
 
 | op | role | ins/wr | upd | R | S | X | components | cur GAS\| | **deter** | final | rationale |
 |----|------|--:|--:|--:|--:|--:|-------:|-----:|------:|-----:|-----------|
-| `C_Issue` | ISSUE | 1 | 0 | 1 | 0 | 18 | 22 | · | 100 | 122 | issuance — default deterrent (account deploys can be lowered) |
+| `C_Issue` | ISSUE | 1 | 0 | 1 | 0 | 18 | 22 | · | 50 | 72 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
 | `A_RebuildGraph` | SETUP | 1 | 0 | 1 | 0 | 20 | 24 | · | 5 | 29 | management/config/property change — slightly expensive |
 
 ## 18_SWPLC.pact
@@ -267,9 +267,9 @@ deter default 1 (no extra). Revise the `deter` column; I green-light nothing mys
 | `C_AddStandardLiquidity` | USAGE | 0 | 0 | 1 | 0 | 25 | 26 | · | 1000 | 1026 | LP add/remove churn — very big deterrent |
 | `C_AddIcedLiquidity` | USAGE | 0 | 0 | 1 | 0 | 25 | 26 | · | 1000 | 1026 | LP add/remove churn — very big deterrent |
 | `C_AddGlacialLiquidity` | USAGE | 0 | 0 | 1 | 0 | 25 | 26 | · | 1000 | 1026 | LP add/remove churn — very big deterrent |
-| `C_IssueStablePool` | ISSUE | 1 | 0 | 1 | 0 | 21 | 25 | · | 100 | 125 | issuance — default deterrent (account deploys can be lowered) |
-| `C_IssueWeightedPool` | ISSUE | 1 | 0 | 1 | 0 | 21 | 25 | · | 100 | 125 | issuance — default deterrent (account deploys can be lowered) |
-| `C_IssueStandardPool` | ISSUE | 1 | 0 | 1 | 0 | 21 | 25 | · | 100 | 125 | issuance — default deterrent (account deploys can be lowered) |
+| `C_IssueStablePool` | ISSUE | 1 | 0 | 1 | 0 | 21 | 25 | · | 50 | 75 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
+| `C_IssueWeightedPool` | ISSUE | 1 | 0 | 1 | 0 | 21 | 25 | · | 50 | 75 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
+| `C_IssueStandardPool` | ISSUE | 1 | 0 | 1 | 0 | 21 | 25 | · | 50 | 75 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
 
 ## 21_CODEX.pact
 
@@ -285,7 +285,7 @@ deter default 1 (no extra). Revise the `deter` column; I green-light nothing mys
 
 | op | role | ins/wr | upd | R | S | X | components | cur GAS\| | **deter** | final | rationale |
 |----|------|--:|--:|--:|--:|--:|-------:|-----:|------:|-----:|-----------|
-| `C_DeployApolloPythiaApiKey` | ISSUE | 1 | 0 | 1 | 0 | 1 | 5 | · | 100 | 105 | issuance — default deterrent (account deploys can be lowered) |
+| `C_DeployApolloPythiaApiKey` | ISSUE | 1 | 0 | 1 | 0 | 1 | 5 | · | 50 | 55 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
 | `A_UpdateDeployPrice` | SETUP | 1 | 0 | 2 | 0 | 1 | 6 | · | 25 | 31 | economic-parameter change (fee/price/rate) |
 | `A_UpdateRenamePrice` | SETUP | 1 | 0 | 2 | 0 | 1 | 6 | · | 25 | 31 | economic-parameter change (fee/price/rate) |
 | `A_Flush` | USAGE | 2 | 3 | 4 | 1 | 1 | 15 | · | 1 | 16 | legit activity — pure compute, no deterrent |
@@ -306,14 +306,14 @@ deter default 1 (no extra). Revise the `deter` column; I green-light nothing mys
 
 | op | role | ins/wr | upd | R | S | X | components | cur GAS\| | **deter** | final | rationale |
 |----|------|--:|--:|--:|--:|--:|-------:|-----:|------:|-----:|-----------|
-| `C_CreateNewNonce` | ISSUE | 0 | 0 | 2 | 0 | 23 | 25 | · | 100 | 125 | issuance — default deterrent (account deploys can be lowered) |
-| `C_CreateNewNonces` | ISSUE | 0 | 0 | 2 | 0 | 23 | 25 | · | 100 | 125 | issuance — default deterrent (account deploys can be lowered) |
+| `C_CreateNewNonce` | ISSUE | 0 | 0 | 2 | 0 | 23 | 25 | · | 50 | 75 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
+| `C_CreateNewNonces` | ISSUE | 0 | 0 | 2 | 0 | 23 | 25 | · | 50 | 75 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
 
 ## 04_DPDC-I.pact
 
 | op | role | ins/wr | upd | R | S | X | components | cur GAS\| | **deter** | final | rationale |
 |----|------|--:|--:|--:|--:|--:|-------:|-----:|------:|-----:|-----------|
-| `C_IssueDigitalCollection` | ISSUE | 0 | 0 | 1 | 0 | 23 | 24 | · | 100 | 124 | issuance — default deterrent (account deploys can be lowered) |
+| `C_IssueDigitalCollection` | ISSUE | 0 | 0 | 1 | 0 | 23 | 24 | · | 50 | 74 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
 
 ## 05_DPDC-R.pact
 
@@ -361,11 +361,11 @@ deter default 1 (no extra). Revise the `deter` column; I green-light nothing mys
 
 | op | role | ins/wr | upd | R | S | X | components | cur GAS\| | **deter** | final | rationale |
 |----|------|--:|--:|--:|--:|--:|-------:|-----:|------:|-----:|-----------|
-| `C_DefineHybridSet` | ISSUE | 2 | 0 | 1 | 0 | 13 | 20 | · | 100 | 120 | issuance — default deterrent (account deploys can be lowered) |
-| `C_DefinePrimordialSet` | ISSUE | 2 | 0 | 1 | 0 | 12 | 19 | · | 100 | 119 | issuance — default deterrent (account deploys can be lowered) |
-| `C_DefineCompositeSet` | ISSUE | 2 | 0 | 1 | 0 | 12 | 19 | · | 100 | 119 | issuance — default deterrent (account deploys can be lowered) |
-| `C_MakeNonFungibleSet` | ISSUE | 0 | 0 | 3 | 0 | 10 | 13 | · | 100 | 113 | issuance — default deterrent (account deploys can be lowered) |
-| `C_MakeSemiFungibleSet` | ISSUE | 0 | 0 | 3 | 0 | 4 | 7 | · | 100 | 107 | issuance — default deterrent (account deploys can be lowered) |
+| `C_DefineHybridSet` | ISSUE | 2 | 0 | 1 | 0 | 13 | 20 | · | 50 | 70 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
+| `C_DefinePrimordialSet` | ISSUE | 2 | 0 | 1 | 0 | 12 | 19 | · | 50 | 69 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
+| `C_DefineCompositeSet` | ISSUE | 2 | 0 | 1 | 0 | 12 | 19 | · | 50 | 69 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
+| `C_MakeNonFungibleSet` | ISSUE | 0 | 0 | 3 | 0 | 10 | 13 | · | 50 | 63 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
+| `C_MakeSemiFungibleSet` | ISSUE | 0 | 0 | 3 | 0 | 4 | 7 | · | 50 | 57 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
 | `C_BreakSemiFungibleSet` | SETUP | 0 | 0 | 3 | 0 | 11 | 14 | · | 5 | 19 | management/config/property change — slightly expensive |
 | `C_BreakNonFungibleSet` | SETUP | 0 | 0 | 1 | 0 | 9 | 10 | · | 5 | 15 | management/config/property change — slightly expensive |
 | `C_EnableSetClassFragmentation` | SETUP | 0 | 4 | 1 | 0 | 3 | 8 | · | 5 | 13 | management/config/property change — slightly expensive |
@@ -376,7 +376,7 @@ deter default 1 (no extra). Revise the `deter` column; I green-light nothing mys
 
 | op | role | ins/wr | upd | R | S | X | components | cur GAS\| | **deter** | final | rationale |
 |----|------|--:|--:|--:|--:|--:|-------:|-----:|------:|-----:|-----------|
-| `C_MakeFragments` | ISSUE | 0 | 0 | 1 | 0 | 8 | 9 | · | 100 | 109 | issuance — default deterrent (account deploys can be lowered) |
+| `C_MakeFragments` | ISSUE | 0 | 0 | 1 | 0 | 8 | 9 | · | 50 | 59 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
 | `C_RepurposeCollectableFragments` | USAGE | 0 | 0 | 1 | 0 | 18 | 19 | · | 1 | 20 | legit activity — pure compute, no deterrent |
 | `C_MergeFragments` | SETUP | 0 | 0 | 1 | 0 | 8 | 9 | · | 5 | 14 | management/config/property change — slightly expensive |
 | `C_EnableNonceFragmentation` | SETUP | 0 | 0 | 1 | 0 | 6 | 7 | · | 5 | 12 | management/config/property change — slightly expensive |
@@ -398,15 +398,15 @@ deter default 1 (no extra). Revise the `deter` column; I green-light nothing mys
 
 | op | role | ins/wr | upd | R | S | X | components | cur GAS\| | **deter** | final | rationale |
 |----|------|--:|--:|--:|--:|--:|-------:|-----:|------:|-----:|-----------|
-| `C_IssueShareholderCollection` | ISSUE | 0 | 0 | 1 | 0 | 43 | 44 | · | 100 | 144 | issuance — default deterrent (account deploys can be lowered) |
+| `C_IssueShareholderCollection` | ISSUE | 0 | 0 | 1 | 0 | 43 | 44 | · | 50 | 94 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
 | `C_MorphPackageShares` | SETUP | 0 | 0 | 1 | 0 | 18 | 19 | · | 5 | 24 | management/config/property change — slightly expensive |
 
 ## 00_Demipad.pact
 
 | op | role | ins/wr | upd | R | S | X | components | cur GAS\| | **deter** | final | rationale |
 |----|------|--:|--:|--:|--:|--:|-------:|-----:|------:|-----:|-----------|
-| `A_DefinePrice` | ISSUE | 0 | 1 | 1 | 0 | 1 | 3 | · | 100 | 103 | issuance — default deterrent (account deploys can be lowered) |
 | `C_Deposit` | USAGE | 0 | 10 | 9 | 0 | 35 | 54 | · | 1 | 55 | legit activity — pure compute, no deterrent |
+| `A_DefinePrice` | ISSUE | 0 | 1 | 1 | 0 | 1 | 3 | · | 50 | 53 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
 | `C_Withdraw` | USAGE | 0 | 3 | 4 | 0 | 5 | 12 | · | 1 | 13 | legit activity — pure compute, no deterrent |
 | `C_TransmitSemiFungibles` | SETUP | 0 | 0 | 1 | 0 | 6 | 7 | · | 5 | 12 | management/config/property change — slightly expensive |
 | `C_TransmitNonFungibles` | SETUP | 0 | 0 | 1 | 0 | 6 | 7 | · | 5 | 12 | management/config/property change — slightly expensive |
@@ -420,10 +420,10 @@ deter default 1 (no extra). Revise the `deter` column; I green-light nothing mys
 
 | op | role | ins/wr | upd | R | S | X | components | cur GAS\| | **deter** | final | rationale |
 |----|------|--:|--:|--:|--:|--:|-------:|-----:|------:|-----:|-----------|
-| `C_IssueTrueFungibleAnchor` | ISSUE | 4 | 0 | 4 | 0 | 7 | 23 | · | 100 | 123 | issuance — default deterrent (account deploys can be lowered) |
-| `C_IssueSemiFungibleAnchor` | ISSUE | 4 | 0 | 4 | 0 | 7 | 23 | · | 100 | 123 | issuance — default deterrent (account deploys can be lowered) |
-| `C_IssueNonFungibleAnchor` | ISSUE | 4 | 0 | 4 | 0 | 7 | 23 | · | 100 | 123 | issuance — default deterrent (account deploys can be lowered) |
-| `C_IssueNonFungibleSetAnchor` | ISSUE | 4 | 0 | 4 | 0 | 7 | 23 | · | 100 | 123 | issuance — default deterrent (account deploys can be lowered) |
+| `C_IssueTrueFungibleAnchor` | ISSUE | 4 | 0 | 4 | 0 | 7 | 23 | · | 50 | 73 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
+| `C_IssueSemiFungibleAnchor` | ISSUE | 4 | 0 | 4 | 0 | 7 | 23 | · | 50 | 73 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
+| `C_IssueNonFungibleAnchor` | ISSUE | 4 | 0 | 4 | 0 | 7 | 23 | · | 50 | 73 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
+| `C_IssueNonFungibleSetAnchor` | ISSUE | 4 | 0 | 4 | 0 | 7 | 23 | · | 50 | 73 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
 | `C_RevokeAnchor` | SETUP | 2 | 1 | 6 | 0 | 6 | 19 | · | 5 | 24 | management/config/property change — slightly expensive |
 | `C_RevokeBoostClass` | SETUP | 0 | 1 | 1 | 0 | 2 | 4 | · | 5 | 9 | management/config/property change — slightly expensive |
 
@@ -439,11 +439,11 @@ deter default 1 (no extra). Revise the `deter` column; I green-light nothing mys
 | `C_IssueScoreFromModel` | ISSUE | 4 | 1 | 6 | 0 | 4 | 23 | 500 | 500 | 523 | issuance — honor current flat GAS| (500) |
 | `C_IssueTriplet` | ISSUE | 1 | 1 | 4 | 0 | 2 | 10 | 500 | 500 | 510 | issuance — honor current flat GAS| (500) |
 | `C_IssueSingleScoreModel` | ISSUE | 1 | 0 | 1 | 0 | 3 | 7 | 500 | 500 | 507 | issuance — honor current flat GAS| (500) |
-| `C_IssueNonFungibleScoreDefinition` | ISSUE | 4 | 0 | 7 | 0 | 3 | 22 | · | 100 | 122 | issuance — default deterrent (account deploys can be lowered) |
-| `C_IssueNonFungibleSetScoreDefinition` | ISSUE | 4 | 0 | 7 | 0 | 3 | 22 | · | 100 | 122 | issuance — default deterrent (account deploys can be lowered) |
-| `C_IssueSemiFungibleScoreDefinition` | ISSUE | 2 | 0 | 3 | 0 | 3 | 12 | · | 100 | 112 | issuance — default deterrent (account deploys can be lowered) |
-| `C_CreateBoostClassLink` | ISSUE | 0 | 1 | 3 | 0 | 3 | 7 | · | 100 | 107 | issuance — default deterrent (account deploys can be lowered) |
-| `C_CreateBoostLink` | ISSUE | 0 | 1 | 2 | 0 | 1 | 4 | · | 100 | 104 | issuance — default deterrent (account deploys can be lowered) |
+| `C_IssueNonFungibleScoreDefinition` | ISSUE | 4 | 0 | 7 | 0 | 3 | 22 | · | 50 | 72 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
+| `C_IssueNonFungibleSetScoreDefinition` | ISSUE | 4 | 0 | 7 | 0 | 3 | 22 | · | 50 | 72 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
+| `C_IssueSemiFungibleScoreDefinition` | ISSUE | 2 | 0 | 3 | 0 | 3 | 12 | · | 50 | 62 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
+| `C_CreateBoostClassLink` | ISSUE | 0 | 1 | 3 | 0 | 3 | 7 | · | 50 | 57 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
+| `C_CreateBoostLink` | ISSUE | 0 | 1 | 2 | 0 | 1 | 4 | · | 50 | 54 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
 | `C_RotateOwnership` | SETUP | 0 | 1 | 2 | 0 | 1 | 4 | · | 10 | 14 | role/authority/guard setup |
 | `C_CombineTripletScoreModel` | SETUP | 1 | 0 | 1 | 0 | 3 | 7 | 500 | 5 | 12 | management/config/property change — slightly expensive |
 | `C_Control` | SETUP | 0 | 1 | 2 | 0 | 1 | 4 | · | 5 | 9 | management/config/property change — slightly expensive |
@@ -532,7 +532,7 @@ deter default 1 (no extra). Revise the `deter` column; I green-light nothing mys
 
 | op | role | ins/wr | upd | R | S | X | components | cur GAS\| | **deter** | final | rationale |
 |----|------|--:|--:|--:|--:|--:|-------:|-----:|------:|-----:|-----------|
-| `A_DefinePrice` | ISSUE | 0 | 0 | 0 | 0 | 1 | 1 | · | 100 | 101 | issuance — default deterrent (account deploys can be lowered) |
+| `A_DefinePrice` | ISSUE | 0 | 0 | 0 | 0 | 1 | 1 | · | 50 | 51 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
 | `A_RegisterAssetToLaunchpad` | SETUP | 0 | 0 | 0 | 0 | 6 | 6 | · | 5 | 11 | management/config/property change — slightly expensive |
 | `A_ToggleOpenForBusiness` | SETUP | 0 | 0 | 0 | 0 | 1 | 1 | · | 5 | 6 | management/config/property change — slightly expensive |
 | `A_ToggleRetrieval` | SETUP | 0 | 0 | 0 | 0 | 1 | 1 | · | 5 | 6 | management/config/property change — slightly expensive |
@@ -555,7 +555,7 @@ deter default 1 (no extra). Revise the `deter` column; I green-light nothing mys
 
 | op | role | ins/wr | upd | R | S | X | components | cur GAS\| | **deter** | final | rationale |
 |----|------|--:|--:|--:|--:|--:|-------:|-----:|------:|-----:|-----------|
-| `A_Issue` | ISSUE | 0 | 0 | 0 | 0 | 1 | 1 | · | 100 | 101 | issuance — default deterrent (account deploys can be lowered) |
+| `A_Issue` | ISSUE | 0 | 0 | 0 | 0 | 1 | 1 | · | 50 | 51 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
 | `A_Legendary` | SETUP | 0 | 0 | 0 | 0 | 8 | 8 | · | 5 | 13 | management/config/property change — slightly expensive |
 
 ## 02_BSD-E.pact
@@ -674,12 +674,12 @@ deter default 1 (no extra). Revise the `deter` column; I green-light nothing mys
 
 | op | role | ins/wr | upd | R | S | X | components | cur GAS\| | **deter** | final | rationale |
 |----|------|--:|--:|--:|--:|--:|-------:|-----:|------:|-----:|-----------|
-| `C_MintToUserFromBridgeSignal` | ISSUE | 1 | 0 | 4 | 2 | 2 | 11 | · | 100 | 111 | issuance — default deterrent (account deploys can be lowered) |
-| `A_DeployBridgeSmartAccount` | ISSUE | 0 | 0 | 4 | 1 | 1 | 6 | · | 100 | 106 | issuance — default deterrent (account deploys can be lowered) |
+| `C_MintToUserFromBridgeSignal` | ISSUE | 1 | 0 | 4 | 2 | 2 | 11 | · | 50 | 61 | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
 | `A_ProvisionBridgeDptfRoles` | SETUP | 0 | 0 | 3 | 1 | 4 | 8 | · | 10 | 18 | role/authority/guard setup |
 | `C_BurnFromBridgeSignal` | SETUP | 1 | 0 | 4 | 2 | 1 | 10 | · | 5 | 15 | management/config/property change — slightly expensive |
 | `A_SetBridgeConfig` | SETUP | 1 | 0 | 0 | 0 | 0 | 3 | · | 5 | 8 | management/config/property change — slightly expensive |
 | `A_SetBridgeActive` | SETUP | 0 | 1 | 0 | 0 | 0 | 1 | · | 5 | 6 | management/config/property change — slightly expensive |
+| `A_DeployBridgeSmartAccount` | ISSUE | 0 | 0 | 4 | 1 | 1 | 6 | · | exempt | 0 | IGNIS-EXEMPT — STOA-only (account creation), no IGNIS finish cost |
 
 ## 01_Spark.pact
 
@@ -739,12 +739,13 @@ deter default 1 (no extra). Revise the `deter` column; I green-light nothing mys
 
 | deter | ops | meaning |
 |------:|----:|---------|
+| exempt | 7 | account creation — STOA-only, no IGNIS |
 | 1 | 105 | activity — no deterrent |
 | 5 | 246 | config/property change |
 | 10 | 33 | role/authority/guard setup |
 | 25 | 21 | fee/price/rate change |
-| 100 | 46 | issuance (no current flat) |
+| 50 | 39 | token/collection issuance (+STOA) |
 | 500 | 5 | issuance (current flat) |
 | 1000 | 13 | issuance / LP — very big |
 
-469 ops · 364 pre-suggested deter>1 (rest default 1). Revise & green-light.
+469 ops · 357 pre-suggested deter>1 (rest default 1). Revise & green-light.
