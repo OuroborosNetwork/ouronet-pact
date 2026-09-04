@@ -1,0 +1,6 @@
+;; REPL/modules/DISPENSER.repl — STANDALONE DISPENSER tester (blockchain-env-in-a-repl).
+;; Fresh boot: Stage 00 sandbox + deploy core(s) + the DISPENSER suite only.
+;; Run: cd REPL && pact modules/DISPENSER.repl   (see ARCHITECTURE/REPL_TEST_ARCHITECTURE.md)
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+(load "../Stage_01/[6.8]_Dispenser.repl")

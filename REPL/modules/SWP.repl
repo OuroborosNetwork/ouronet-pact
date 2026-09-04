@@ -1,0 +1,7 @@
+;; REPL/modules/SWP.repl — STANDALONE SWP tester (liquidity pools).
+;; Fresh boot: Stage 00 + Stage 1 deploy core + [6.2]_DPTF (SWP pairs need its BUSD/token
+;; fixtures) + the SWP suite. Run: cd REPL && pact modules/SWP.repl
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+(load "../Stage_01/[6.2]_DPTF.repl")
+(load "../Stage_01/[6.3]_SWP.repl")

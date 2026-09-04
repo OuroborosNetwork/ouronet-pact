@@ -1,0 +1,7 @@
+;; REPL/modules/DPDC-FRAGMENTS.repl — STANDALONE DPDC-FRAGMENTS tester (blockchain-env-in-a-repl).
+;; Fresh boot: Stage 00 sandbox + deploy core(s) + the DPDC-FRAGMENTS suite only.
+;; Run: cd REPL && pact modules/DPDC-FRAGMENTS.repl   (see ARCHITECTURE/REPL_TEST_ARCHITECTURE.md)
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+(load "../deploy-stage02.repl")
+(load "../Stage_02/[6.1.2]_DPDC-FRAGMENTS.repl")

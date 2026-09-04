@@ -1,0 +1,8 @@
+;; REPL/modules/ADMIN.repl — STANDALONE DPTF/DALOS/SWP admin-ops tester.
+;; Fresh boot + [6.2]_DPTF + [6.3]_SWP fixtures (admin ops target their tokens + SWP pairs) + Admin
+;; suite. NOTE rotates the canonical ANHD guard (fine standalone). Run: cd REPL && pact modules/ADMIN.repl
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+(load "../Stage_01/[6.2]_DPTF.repl")
+(load "../Stage_01/[6.3]_SWP.repl")
+(load "../Stage_01/[6.4]_Admin.repl")

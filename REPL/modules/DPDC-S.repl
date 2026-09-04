@@ -1,0 +1,7 @@
+;; REPL/modules/DPDC-S.repl — STANDALONE DPDC-S tester (blockchain-env-in-a-repl).
+;; Fresh boot: Stage 00 sandbox + deploy core(s) + the DPDC-S suite only.
+;; Run: cd REPL && pact modules/DPDC-S.repl   (see ARCHITECTURE/REPL_TEST_ARCHITECTURE.md)
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+(load "../deploy-stage02.repl")
+(load "../Stage_02/[6.1.3]_DPDC-S.repl")
