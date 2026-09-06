@@ -395,13 +395,19 @@
     )
     (defun URCi_UpdateNonceField:object{IgnisCollectorV2.OutputCumulator}
         (account:string)
-        @doc "Cost preview for the single-field nonce updates (Royalty, IgnisRoyalty, \
-            \ Name, Description, Score, MetaData, URI) — all flat Small(account)."
+        @doc "Cost preview for the single-field nonce updates (Royalty, IgnisRoyalty, Name, \
+            \ Description, Score, MetaData, URI) — ONE uniform price for all ~20 C_UpdateNonce* \
+            \ wrappers (owner 2026-09-06). A single component key is EXACT here because every \
+            \ DPSF|/DPNF| UpdateNonce* entry in IG|COMPONENTS is 17.0; if those ever diverge \
+            \ this reader must take <son> and branch. Tier is setup, not usage: a nonce field \
+            \ update is a config/property change per the IG|DETER rubric."
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_SmallCumulator account)
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "DPNF|C_UpdateNonce" "setup")
+                account (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     ;;{5.4}  Validate [UEV/CAP]

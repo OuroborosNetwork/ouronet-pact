@@ -413,9 +413,11 @@
         ;;a VST link's OWN deterrence ($2.50); the DPTF/DPOF it issues is charged separately
         ,"vst-link"          : 250.0
         ,"lp-churn"          : 1000.0
-        ,"anchor-tf"         : 500.0
-        ,"anchor-sf"         : 1000.0
-        ,"anchor-nf"         : 1250.0
+        ;;Anchors are a FLAT 500 regardless of what they anchor (owner 2026-09-06). This
+        ;;SUPERSEDES the 2026-09-05 rule of "half the issuance price of the anchored asset"
+        ;;(anchor-tf 500 / anchor-sf 1000 / anchor-nf 1250), which is why there is now a single
+        ;;key. The op's component cost is charged ON TOP, like every other priced op.
+        ,"anchor"            : 500.0
         ,"revoke-anchor"     : 100.0
         ,"revoke-boost"      : 500.0
         ,"combine-triplet"   : 100.0

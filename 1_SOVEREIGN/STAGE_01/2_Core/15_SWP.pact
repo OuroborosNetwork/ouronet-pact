@@ -1984,19 +1984,19 @@
                     (ignis-fee-exemption-roleV2:bool (ref-DPTF::UR_AccountRoleFeeExemption ignis-id vst-sc))
                 )
                 (if (not ignis-burn-role)
-                    (ref-ATS::DPTF|C_ToggleBurnRole ignis-id SWP|SC_NAME true)
+                    (ref-DPTF::C_ToggleBurnRole ignis-id SWP|SC_NAME true)
                     true
                 )
                 (if (not ouro-mint-role)
-                    (ref-ATS::DPTF|C_ToggleMintRole ouro-id SWP|SC_NAME true)
+                    (ref-DPTF::C_ToggleMintRole ouro-id SWP|SC_NAME true)
                     true
                 )
                 (if (not ignis-fee-exemption-role)
-                    (ref-ATS::DPTF|C_ToggleFeeExemptionRole ignis-id SWP|SC_NAME true)
+                    (ref-DPTF::C_ToggleFeeExemptionRole ignis-id SWP|SC_NAME true)
                     true
                 )
                 (if (not ignis-fee-exemption-role)
-                    (ref-ATS::DPTF|C_ToggleFeeExemptionRole ignis-id vst-sc true)
+                    (ref-DPTF::C_ToggleFeeExemptionRole ignis-id vst-sc true)
                     true
                 )
                 (update SWP|Asymmetry SWP|INFO
@@ -2173,13 +2173,13 @@
                                     (lp-mint-role:bool (ref-DPTF::UR_AccountRoleMint lp-id SWP|SC_NAME))
                                     (ico2:object{IgnisCollectorV2.OutputCumulator}
                                         (if (not lp-burn-role)
-                                            (ref-ATS::DPTF|C_ToggleBurnRole lp-id SWP|SC_NAME true)
+                                            (ref-DPTF::C_ToggleBurnRole lp-id SWP|SC_NAME true)
                                             EOC
                                         )
                                     )
                                     (ico3:object{IgnisCollectorV2.OutputCumulator}
                                         (if (not lp-mint-role)
-                                            (ref-ATS::DPTF|C_ToggleMintRole lp-id SWP|SC_NAME true)
+                                            (ref-DPTF::C_ToggleMintRole lp-id SWP|SC_NAME true)
                                             EOC
                                         )
                                     )
@@ -2190,7 +2190,7 @@
                                                 (ref-U|LST::UC_AppL
                                                     acc
                                                     (if (not (ref-DPTF::UR_AccountRoleFeeExemption (at idx ptts) SWP|SC_NAME))
-                                                        (ref-ATS::DPTF|C_ToggleFeeExemptionRole (at idx ptts) SWP|SC_NAME true)
+                                                        (ref-DPTF::C_ToggleFeeExemptionRole (at idx ptts) SWP|SC_NAME true)
                                                         EOC
                                                     )
                                                 )

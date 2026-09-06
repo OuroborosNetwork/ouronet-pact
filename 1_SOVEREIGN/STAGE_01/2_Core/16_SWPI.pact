@@ -1275,7 +1275,7 @@
             (
                 (ref-U|SWP:module{UtilitySwpV2} U|SWP)
             )
-            (ref-U|SWP::UC_ComputedInverseWP 
+            (ref-U|SWP::UC_ComputeInverseWP 
                 (URC_InverseRawSwapInput swpair rsid)
             )
         )

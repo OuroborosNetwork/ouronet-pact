@@ -471,12 +471,15 @@
             (let
                 (
                     (ref-coin:module{stoa-ns.fungible-v1} coin)    
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    ;;C_TransferDalosFuel lives in IGNIS, not DALOS — it was called through the
+                    ;;DALOS ref, which DOES NOT have that member, so this admin migration path
+                    ;;died on every call (modref members resolve at runtime, so it still loaded).
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (lq-stoa:string LIQUID|SC_STOA-NAME)
                     (present-stoa-balance:decimal (ref-coin::get-balance lq-stoa))
                 )
                 (install-capability (ref-coin::TRANSFER lq-stoa migration-target-stoa-account present-stoa-balance))
-                (ref-DALOS::C_TransferDalosFuel lq-stoa migration-target-stoa-account present-stoa-balance)
+                (ref-IGNIS::C_TransferDalosFuel lq-stoa migration-target-stoa-account present-stoa-balance)
                 present-stoa-balance
             )
         )

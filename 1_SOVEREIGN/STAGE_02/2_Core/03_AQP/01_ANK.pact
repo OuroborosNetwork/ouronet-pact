@@ -103,7 +103,7 @@
     (defun URH_BC|AllBoostClassIds:[string] ())
     ;;
     ;; [URCi]   cost readers — single source for exec billing + INFO preview
-    (defun URCi_IssueAnchor:object{IgnisCollectorV2.OutputCumulator} (deter-key:string output:[string]))
+    (defun URCi_IssueAnchor:object{IgnisCollectorV2.OutputCumulator} (op-key:string output:[string]))
     (defun URCi_IssueAnchorStoa:decimal (acnoi:bool))
     (defun URCi_RevokeAnchor:object{IgnisCollectorV2.OutputCumulator} ())
     (defun URCi_RevokeBoostClass:object{IgnisCollectorV2.OutputCumulator} ())
@@ -1514,17 +1514,18 @@
         (keys ANK|T|BoostClass)
     )
     ;; [URCi]   cost readers — single source for exec billing + INFO preview
-    (defun URCi_IssueAnchor:object{IgnisCollectorV2.OutputCumulator} (deter-key:string output:[string])
-        @doc "IGNIS cost for the 4 anchor-issue ops. Owner 2026-09-05: an anchor costs HALF the \
-            \ issuance price of the asset type it anchors, so the caller passes the central \
-            \ IG|DETER tier key — anchor-tf 500 (half of TF 1000), anchor-sf 1000 (half of SFT \
-            \ 2000), anchor-nf 1250 (half of NFT 2500; the Set anchor shares the NF tier). \
-            \ <output> carries anchor-id[+boost-class-id]. Shared by exec and the INFO_* previews."
+    (defun URCi_IssueAnchor:object{IgnisCollectorV2.OutputCumulator} (op-key:string output:[string])
+        @doc "IGNIS cost for the 4 anchor-issue ops: a FLAT 500 deterrence for every anchor type \
+            \ plus that op's own component cost (owner 2026-09-06). This supersedes the \
+            \ 2026-09-05 rule of half the anchored asset's issuance price, which is why the \
+            \ caller now passes its TALOS OP KEY (AQP-ANK|C_Issue…Anchor) rather than a deter \
+            \ tier — the tier is the same for all four. <output> carries \
+            \ anchor-id[+boost-class-id]. Shared by exec and the INFO_* previews."
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisDeter deter-key) AQP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) output)
+            (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisPrice op-key "anchor") AQP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) output)
         ))
     (defun URCi_IssueAnchorStoa:decimal (acnoi:bool)
         @doc "STOA cost for anchor-issue: 'standard' usage price x(2 if acnoi else 1)."
@@ -1535,22 +1536,22 @@
             (* (ref-DALOS::UR_UsagePrice "standard") (if acnoi 2.0 1.0))
         ))
     (defun URCi_RevokeAnchor:object{IgnisCollectorV2.OutputCumulator} ()
-        @doc "IGNIS cost for C_RevokeAnchor — owner-priced 100 (2026-09-05) via the central IG|DETER \
+        @doc "IGNIS cost for C_RevokeAnchor — owner-priced 100 deterrence + its component cost, via the central IG|DETER/IG|COMPONENTS \
             \ map. Shared by exec and the INFO_* preview."
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisDeter "revoke-anchor") AQP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
+            (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisPrice "AQP-ANK|C_RevokeAnchor" "revoke-anchor") AQP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
         ))
     (defun URCi_RevokeBoostClass:object{IgnisCollectorV2.OutputCumulator} ()
-        @doc "IGNIS cost for C_RevokeBoostClass — owner-priced 500 (2026-09-05) via the central IG|DETER \
+        @doc "IGNIS cost for C_RevokeBoostClass — owner-priced 500 deterrence + its component cost, via the central IG|DETER/IG|COMPONENTS \
             \ map. Shared by exec and the INFO_* preview."
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisDeter "revoke-boost") AQP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
+            (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisPrice "AQP-ANK|C_RevokeBoostClass" "revoke-boost") AQP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
         ))
     ;;{5.4}  Validate [UEV/CAP]
     ;; [UEV] enforce
@@ -2281,7 +2282,7 @@
                 )
                 (XI_PlaceAnchorInBookkeeping anchor-id dptf-id boost-class-id)
                 (ref-IGNIS::STOA|C_Collect patron (URCi_IssueAnchorStoa acnoi))
-                (URCi_IssueAnchor "anchor-tf" (if acnoi [anchor-id boost-class-id] [anchor-id]))
+                (URCi_IssueAnchor "AQP-ANK|C_IssueTrueFungibleAnchor" (if acnoi [anchor-id boost-class-id] [anchor-id]))
             )
         )
     )
@@ -2306,7 +2307,7 @@
                 )
                 (XI_PlaceAnchorInBookkeeping anchor-id dpsf-id boost-class-id)
                 (ref-IGNIS::STOA|C_Collect patron (URCi_IssueAnchorStoa acnoi))
-                (URCi_IssueAnchor "anchor-sf" (if acnoi [anchor-id boost-class-id] [anchor-id]))
+                (URCi_IssueAnchor "AQP-ANK|C_IssueSemiFungibleAnchor" (if acnoi [anchor-id boost-class-id] [anchor-id]))
             )
         )
     )
@@ -2331,7 +2332,7 @@
                 )
                 (XI_PlaceAnchorInBookkeeping anchor-id dpnf-id boost-class-id)
                 (ref-IGNIS::STOA|C_Collect patron (URCi_IssueAnchorStoa acnoi))
-                (URCi_IssueAnchor "anchor-nf" (if acnoi [anchor-id boost-class-id] [anchor-id]))
+                (URCi_IssueAnchor "AQP-ANK|C_IssueNonFungibleAnchor" (if acnoi [anchor-id boost-class-id] [anchor-id]))
             )
         )
     )
@@ -2356,7 +2357,7 @@
                 )
                 (XI_PlaceAnchorInBookkeeping anchor-id dpnf-id boost-class-id)
                 (ref-IGNIS::STOA|C_Collect patron (URCi_IssueAnchorStoa acnoi))
-                (URCi_IssueAnchor "anchor-nf" (if acnoi [anchor-id boost-class-id] [anchor-id]))
+                (URCi_IssueAnchor "AQP-ANK|C_IssueNonFungibleSetAnchor" (if acnoi [anchor-id boost-class-id] [anchor-id]))
             )
         )
     )
