@@ -1454,7 +1454,7 @@
     ;;   Mirror CC_*StakeFlow leg-for-leg; every leg gated by the virtual-gas toggle so toggle-on -> 0.
     ;;   Tier gates below reproduce the UsagePrice tier behind URC_IsVirtualGasZero);
     ;;   AQP-VCT's vacate readers reach them + the two score-delta sums cross-module. Leg map:
-    ;;   memories/2026-08-27-aqp-info-final17-costmap.md
+    ;;   IGNIS-PRICING/memories/2026-08-27-aqp-info-final17-costmap.md
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;; [UR]  read
     ;; FVT|T|MemberVault  Key = <FVT-ID> | <Score-Entity-ID> | <DPTF-ID>  (Tier-1 dust sweep, M1/#10)

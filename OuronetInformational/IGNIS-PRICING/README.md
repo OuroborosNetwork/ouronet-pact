@@ -13,6 +13,10 @@ Everything about how an Ouronet op is priced lives here. Read in this order.
 | **IGNIS-COST-ANALYSIS.md** | why the OLD cost structure was wrong | historical (pre-rehaul) |
 | **IGNIS-COST-INVENTORY.md** | generated snapshot of what every op charged BEFORE the rehaul | historical (pre-rehaul baseline) |
 
+| **HYDRA-WIPE-DESIGN.md** | the parallel-wipe (Hydra) design that came out of this rehaul | implemented 2026-09-05 |
+| **PRICING-FEEDBACK-RECOVERED.md** | owner pricing feedback recovered verbatim from a wedged conversation (2026-09-05) | historical input — the decisions it discusses are settled in the SPEC |
+| **memories/** | the dated captures specific to this work: the pricing feedback round, the cost rethink, the URCi progress notes, the AQP cost map, and the ZALL-vs-Z gate lesson | current |
+
 ## The model in one line
 
 ```

@@ -218,7 +218,7 @@ and partially). This phase both *simplifies* the existing INFO and *completes* t
 - [ ] ❌ **1.2.1.1** Gut each existing `INFO_*` body to a thin **composer-`URCi` call + `ClientInfo` text**
       (keep names/return shape so the UI is untouched).
 - [ ] ❌ **1.2.1.2** Build the **7 AQP vacate/drain/FullVacate INFO** as `URCi_Vacate*` callers (cost map:
-      `memories/2026-08-27-aqp-info-final17-costmap.md`). Completes the AQP "final 17".
+      `IGNIS-PRICING/memories/2026-08-27-aqp-info-final17-costmap.md`). Completes the AQP "final 17".
 - [ ] ❌ **1.2.1.3 COMPLETE the missing INFO across every module/stage.** Inventory every
       `C_`/`CC_`/`A_`/`AA_` client/admin entrypoint (Stage 1 + Stage 2, all modules) and build an INFO
       preview for each that lacks one — thin composer-`URCi` callers. This is the bulk of the rehaul:
@@ -243,7 +243,7 @@ and partially). This phase both *simplifies* the existing INFO and *completes* t
 ---
 
 ### 1.3 · Phase — Re-price IGNIS  ❌
-Point A; spec: `memories/2026-08-27-ignis-cost-rethink.md`; task #76.
+Point A; spec: `IGNIS-PRICING/memories/2026-08-27-ignis-cost-rethink.md`; task #76.
 
 #### 1.3.1 · Subphase — Measure, re-price, surcharge
 - [ ] ❌ **1.3.1.1 Measurement pass:** instrument real STOA gas per client op by run-shape (build on

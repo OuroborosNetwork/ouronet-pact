@@ -105,7 +105,7 @@ their reader were fixed. 395 of 401 Talos client ops had an INFO preview; the 2 
 
 * **Gate on `ZALL.repl`, never `Z.repl`** for anything price-related — `Z.repl` skips
   `[6.1]_Cumulator.repl`, where the price assertions live. See
-  `memories/2026-09-06-zall-is-the-real-gate-not-z.md`.
+  `IGNIS-PRICING/memories/2026-09-06-zall-is-the-real-gate-not-z.md`.
 * **A green pipeline is not evidence a price is right.** A half-migrated `(if son …)` branch kept
   charging the legacy NFT price through many green runs. Only an assertion catches that, and only
   if it exercises BOTH branches.

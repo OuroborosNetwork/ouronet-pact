@@ -1,7 +1,7 @@
 # IGNIS re-pricing — owner feedback resolved + open items (2026-09-05)
 
 **Context:** continuation of a stalled conversation (recovered via
-`OuronetInformational/_PRICING-FEEDBACK-PENDING.md`) revising
+`OuronetInformational/IGNIS-PRICING/PRICING-FEEDBACK-RECOVERED.md`) revising
 `OuronetInformational/IGNIS-PRICING/IGNIS-DETER-WORKSHEET.md` (#76). This note captures the durable design
 decisions the owner settled during that back-and-forth, plus what's still open.
 
@@ -143,7 +143,7 @@ to be properly planned, substaged." Proposed substages (order matters — deps f
    DPDC-MNG modeled on the VCT vacate know-how (`URH_*` preflight → `Cp_`/`CCp_` slices →
    finalize). UI-driven: scan → construct slice txs → fire in parallel.
    **→ DONE 2026-09-05** (owner said "lets start substage 1"; built same session). Design +
-   status: `OuronetInformational/HYDRA-WIPE-DESIGN.md`. Key learnings captured there: wipes
+   status: `OuronetInformational/IGNIS-PRICING/HYDRA-WIPE-DESIGN.md`. Key learnings captured there: wipes
    need NO begin/finalize bracket (freeze precondition + native replay-revert replace VCT's
    whole state machine); true `Cp_` achieved (VCT's slices are `CCp_`); VCT's partition math
    can emit an empty tail slice — recompute `n-final = ceil(l/per-slice)` after clamping.
@@ -272,12 +272,12 @@ still says "I green-light nothing myself" — nothing ships without owner green-
 
 ## Related
 
-- `OuronetInformational/_PRICING-FEEDBACK-PENDING.md` — verbatim owner feedback this note resolves.
+- `OuronetInformational/IGNIS-PRICING/PRICING-FEEDBACK-RECOVERED.md` — verbatim owner feedback this note resolves.
 - `OuronetInformational/IGNIS-PRICING/IGNIS-DETER-WORKSHEET.md` — the worksheet updated in this pass (see its
   REVISION LOG section at the top, dated 2026-09-05).
 - `OuronetInformational/IGNIS-PRICING/IGNIS-COST-ANALYSIS.md` — the earlier re-pricing proposal this worksheet
   refines.
-- `OuronetInformational/memories/2026-08-27-ignis-cost-rethink.md` — the original directive that
+- `OuronetInformational/IGNIS-PRICING/IGNIS-PRICING/memories/2026-08-27-ignis-cost-rethink.md` — the original directive that
   kicked off this whole rethink.
 
 ## Deliverables & follow-ups (2026-09-05, end of rehaul)

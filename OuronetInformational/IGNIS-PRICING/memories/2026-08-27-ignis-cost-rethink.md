@@ -38,4 +38,4 @@ we can now *see* which legs dominate and which are subsidised too cheaply/expens
 ## Related
 - Module-sizing hard rule: `OuronetInformational/MODULE-SIZING.md` (also owner-directed 2026-08-27).
 - Transitive heavy rule + recipe axes: `OuronetInformational/StoicSyntax-Prefixes.md`.
-- Per-op IGNIS leg map: `OuronetInformational/memories/2026-08-27-aqp-info-final17-costmap.md`.
+- Per-op IGNIS leg map: `OuronetInformational/IGNIS-PRICING/IGNIS-PRICING/memories/2026-08-27-aqp-info-final17-costmap.md`.

@@ -42,7 +42,7 @@ cd REPL && pact ZALL.repl             # EXHAUSTIVE runner — every suite, incl.
 variants run instead) and the Stage-1 scenario tail (`[6.6]_ATS`, `[6.7]_VST`, …). **Any change to
 pricing, STOA collection or IGNIS billing must be verified with `ZALL.repl`** — a green `Z.repl` on
 a pricing change does not execute the assertions written to protect it (see
-`OuronetInformational/memories/2026-09-06-zall-is-the-real-gate-not-z.md`).
+`OuronetInformational/IGNIS-PRICING/IGNIS-PRICING/memories/2026-09-06-zall-is-the-real-gate-not-z.md`).
 
 Individual scenario REPLs live in `REPL/Stage_01/[*].repl` and `REPL/Stage_02/[*].repl`. The reference hand-maintained integration suites are `REPL/Stage_02/[6.2.1]_AQP-ANK.repl` and `REPL/Stage_02/[6.2.2]_AQP-SCORE.repl` — mirror these when writing new integration tests.
 

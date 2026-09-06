@@ -7,8 +7,8 @@
 > `IGNIS-PRICING-PLAN.md` for what is built.
 
 Owner decision, 2026-08-27. This is the spec to implement when we resume after the audits.
-Companion: `memories/2026-08-27-ignis-cost-rethink.md` (point A), `MODULE-SIZING.md` (point B),
-`memories/2026-08-27-aqp-info-final17-costmap.md` (the proven AQP leg breakdowns = the spec source).
+Companion: `IGNIS-PRICING/memories/2026-08-27-ignis-cost-rethink.md` (point A), `MODULE-SIZING.md` (point B),
+`IGNIS-PRICING/memories/2026-08-27-aqp-info-final17-costmap.md` (the proven AQP leg breakdowns = the spec source).
 
 ## 1. The problem
 IGNIS cost is **emergent**: each cost-emitting leaf (`XE_`/`XI_`) does its write AND returns an
