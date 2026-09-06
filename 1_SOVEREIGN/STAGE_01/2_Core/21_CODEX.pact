@@ -785,6 +785,45 @@
             )
         )
     )
+    (defun INFO_CODEX|RotateCodexGuard:object{OuronetInfoV2.ClientInfo}
+        (patron:string codex-id:string)
+        @doc "ClientInfo preview for TS01-C4 CODEX|C_RotateCodexGuard. The op is GASLESS today: \
+            \ its Talos wrapper collects no IGNIS and the core client returns no cumulator, so \
+            \ there is no URCi_ reader to wrap. IG|COMPONENTS does carry an entry for it \
+            \ (CODEX|C_RotateCodexGuard 4) — if this op is ever priced, add the reader and \
+            \ point this preview at it instead of NoIgnisCosts."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Rotate the Codex Guard of Codex {}." [codex-id])]
+                [(format "Codex Guard of Codex {} rotated." [codex-id])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun INFO_CODEX|RecordArweaveUpload:object{OuronetInfoV2.ClientInfo}
+        (patron:string codex-id:string arweave-tx-id:string uploaded-bytes:integer)
+        @doc "ClientInfo preview for TS01-C4 CODEX|C_RecordArweaveUpload. Gasless today for the \
+            \ same reason as RotateCodexGuard (IG|COMPONENTS entry: CODEX|C_RecordArweaveUpload \
+            \ 9). Records the Arweave transaction id and the uploaded byte count."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Record Arweave upload {} ({} bytes) for Codex {}."
+                    [arweave-tx-id uploaded-bytes codex-id])]
+                [(format "Arweave upload {} recorded for Codex {}." [arweave-tx-id codex-id])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
     (defun INFO_CODEX|ReleaseStoicTag:object{OuronetInfoV2.ClientInfo}
         (patron:string tag-name:string)
         @doc "ClientInfo preview for TS01-C4 CODEX|C_ReleaseStoicTag (IGNIS = UC_StoicTagStoaFee per glyph)."
