@@ -102,3 +102,121 @@
 (print "<<TX-AQPP-001>> P7 sweep: all 4 migrated SCORE/RPS readers price correctly")
 (print "===^^^===")
 (commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;================================================================================
+(begin-tx "TX-AQPP-002 - AQP component gap closed: every migrated reader bills deter + components")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-AQPP-002 · 01 · AQP family sweep ====
+(print "--- [TX-AQPP-002 · 01 · AQP family sweep] ---")
+;;The AQP family used to bill DETERRENCE ONLY: ~79 IG|COMPONENTS entries existed for these ops
+;;and nothing read them, so an anchor/pool/score/FVT op charged its deterrent and none of the
+;;work it actually does. Owner closed that gap 2026-09-06. Each assertion below pins one op to
+;;deter + components; a reader silently reverting to a bare UC_IgnisDeter fails exactly one.
+(let
+    (
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+        (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+        (score:string "TheCodingDivision-98c486052a51")
+        (fvt:string (ref-U|DALOS::UDC_Makeid "TfStakeVault"))
+    )
+    (map (print)
+        [
+            (expect "<<TX-AQPP-002>> AQP-POOL|C_Issue == deter(issue-pool) + components"
+                (ref-IGNIS::UC_IgnisPrice "AQP-POOL|C_Issue" "issue-pool")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-AQP::URCi_Issue [])))))
+            (expect "<<TX-AQPP-002>> AQP-POOL|C_AddScore == deter(add-score) + components"
+                (ref-IGNIS::UC_IgnisPrice "AQP-POOL|C_AddScore" "add-score")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-AQP::URCi_AddScore [])))))
+            (expect "<<TX-AQPP-002>> AQP-POOL|C_RevokeScore == deter(revoke-score) + components"
+                (ref-IGNIS::UC_IgnisPrice "AQP-POOL|C_RevokeScore" "revoke-score")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-AQP::URCi_RevokeScore [])))))
+            (expect "<<TX-AQPP-002>> AQP-POOL|C_EnablePoolStake == deter(pool-stake-toggle) + components"
+                (ref-IGNIS::UC_IgnisPrice "AQP-POOL|C_EnablePoolStake" "pool-stake-toggle")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-AQP::URCi_SetPoolStake [])))))
+            (expect "<<TX-AQPP-002>> AQP-POOL|C_SyncTrueFungibleAnchors == deter(sync-anchors) + components"
+                (ref-IGNIS::UC_IgnisPrice "AQP-POOL|C_SyncTrueFungibleAnchors" "sync-anchors")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-AQP::URCi_SyncTrueFungibleAnchors [])))))
+            (expect "<<TX-AQPP-002>> AQP-POOL|C_SyncSemiFungibleAnchors == deter(sync-anchors) + components"
+                (ref-IGNIS::UC_IgnisPrice "AQP-POOL|C_SyncSemiFungibleAnchors" "sync-anchors")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-AQP::URCi_SyncCollectableAnchors [])))))
+            (expect "<<TX-AQPP-002>> AQP-SCR|C_IssueTrueFungibleScore == deter(issue-score) + components"
+                (ref-IGNIS::UC_IgnisPrice "AQP-SCR|C_IssueTrueFungibleScore" "issue-score")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-SCR::URCi_IssueScore KST.ANHD [])))))
+            (expect "<<TX-AQPP-002>> AQP-SCR|C_IssueSingleScoreModel == deter(issue-score-model) + components"
+                (ref-IGNIS::UC_IgnisPrice "AQP-SCR|C_IssueSingleScoreModel" "issue-score-model")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-SCR::URCi_IssueScoreModel "AQP-SCR|C_IssueSingleScoreModel" KST.ANHD [])))))
+            (expect "<<TX-AQPP-002>> AQP-SCR|C_IssueScoreFromModel == deter(issue-score-model) + components"
+                (ref-IGNIS::UC_IgnisPrice "AQP-SCR|C_IssueScoreFromModel" "issue-score-model")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-SCR::URCi_IssueScoreModel "AQP-SCR|C_IssueScoreFromModel" KST.ANHD [])))))
+            (expect "<<TX-AQPP-002>> AQP-SCR|C_CombineTripletScoreModel == deter(combine-triplet) + components"
+                (ref-IGNIS::UC_IgnisPrice "AQP-SCR|C_CombineTripletScoreModel" "combine-triplet")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-SCR::URCi_CombineTripletModel KST.ANHD [])))))
+            (expect "<<TX-AQPP-002>> AQP-SCR|C_IssueTriplet == deter(issue-triplet) + components"
+                (ref-IGNIS::UC_IgnisPrice "AQP-SCR|C_IssueTriplet" "issue-triplet")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-SCR::URCi_IssueTriplet score [])))))
+            (expect "<<TX-AQPP-002>> AQP-FVT|C_Issue == deter(issue-fvt) + components"
+                (ref-IGNIS::UC_IgnisPrice "AQP-FVT|C_Issue" "issue-fvt")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-FVT::URCi_Issue KST.ANHD [])))))
+            (expect "<<TX-AQPP-002>> AQP-FVT|C_IssueMultipletFamily == deter(issue-multiplet) + components"
+                (ref-IGNIS::UC_IgnisPrice "AQP-FVT|C_IssueMultipletFamily" "issue-multiplet")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-FVT::URCi_IssueMultipletFamily KST.ANHD [])))))
+            (expect "<<TX-AQPP-002>> AQP-FVT|CC_UnstaleMyScores == deter(unstale) + components"
+                (ref-IGNIS::UC_IgnisPrice "AQP-FVT|CC_UnstaleMyScores" "unstale")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-FVT::URCi_UnstaleMyScores KST.ANHD [])))))
+            (expect "<<TX-AQPP-002>> AQP-FVT|C_SetCommonDenominator == deter(fvt-split-setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "AQP-FVT|C_SetCommonDenominator" "fvt-split-setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-RPS::URCi_SetCommonDenominator fvt [])))))
+            (expect "<<TX-AQPP-002>> AQP-FVT|C_SetMosaic == deter(fvt-split-setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "AQP-FVT|C_SetMosaic" "fvt-split-setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-RPS::URCi_SetMosaic fvt [])))))
+            (expect "<<TX-AQPP-002>> AQP-FVT|C_SetSplitMode == deter(fvt-split-setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "AQP-FVT|C_SetSplitMode" "fvt-split-setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-RPS::URCi_SetSplitMode fvt [])))))
+            (expect "<<TX-AQPP-002>> AQP-FVT|C_SetQualitySplit == deter(fvt-split-setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "AQP-FVT|C_SetQualitySplit" "fvt-split-setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-RPS::URCi_SetQualitySplit fvt [])))))
+            (expect "<<TX-AQPP-002>> AQP-FVT|C_AddScoreEntity == deter(add-score-entity) + components"
+                (ref-IGNIS::UC_IgnisPrice "AQP-FVT|C_AddScoreEntity" "add-score-entity")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-RPS::URCi_AddScoreEntity fvt [])))))
+            (expect "<<TX-AQPP-002>> AQP-FVT|C_AddRewardLink == deter(add-reward-link) + components"
+                (ref-IGNIS::UC_IgnisPrice "AQP-FVT|C_AddRewardLink" "add-reward-link")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-RPS::URCi_AddRewardLink fvt [])))))
+            (expect "<<TX-AQPP-002>> AQP-FVT|C_ToggleScoreEntityLink == deter(fvt-link-toggle) + components"
+                (ref-IGNIS::UC_IgnisPrice "AQP-FVT|C_ToggleScoreEntityLink" "fvt-link-toggle")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-RPS::URCi_ToggleScoreEntityLink fvt [])))))
+            (expect "<<TX-AQPP-002>> AQP-FVT|C_ToggleRewardLink == deter(fvt-link-toggle) + components"
+                (ref-IGNIS::UC_IgnisPrice "AQP-FVT|C_ToggleRewardLink" "fvt-link-toggle")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-RPS::URCi_ToggleRewardLink fvt [])))))
+            (expect "<<TX-AQPP-002>> AQP-FVT|CC_Collect == deter(aqp-collect) + components"
+                (ref-IGNIS::UC_IgnisPrice "AQP-FVT|CC_Collect" "aqp-collect")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-RPS::URCi_Collect fvt [])))))
+            (expect "<<TX-AQPP-002>> AQP-ANK|C_IssueTrueFungibleAnchor == deter(anchor) + components"
+                (ref-IGNIS::UC_IgnisPrice "AQP-ANK|C_IssueTrueFungibleAnchor" "anchor")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-ANK::URCi_IssueAnchor "AQP-ANK|C_IssueTrueFungibleAnchor" [])))))
+            (expect "<<TX-AQPP-002>> AQP-ANK|C_IssueNonFungibleAnchor == deter(anchor) + components"
+                (ref-IGNIS::UC_IgnisPrice "AQP-ANK|C_IssueNonFungibleAnchor" "anchor")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-ANK::URCi_IssueAnchor "AQP-ANK|C_IssueNonFungibleAnchor" [])))))
+            (expect "<<TX-AQPP-002>> AQP-ANK|C_RevokeAnchor == deter(revoke-anchor) + components"
+                (ref-IGNIS::UC_IgnisPrice "AQP-ANK|C_RevokeAnchor" "revoke-anchor")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-ANK::URCi_RevokeAnchor)))))
+            (expect "<<TX-AQPP-002>> AQP-ANK|C_RevokeBoostClass == deter(revoke-boost) + components"
+                (ref-IGNIS::UC_IgnisPrice "AQP-ANK|C_RevokeBoostClass" "revoke-boost")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-ANK::URCi_RevokeBoostClass)))))
+            ""
+        ]
+    )
+)
+(print "")
+(print "<<TX-AQPP-002>> AQP component gap: all 27 migrated AQP ops bill deter + components")
+(print "===^^^===")
+(commit-tx)

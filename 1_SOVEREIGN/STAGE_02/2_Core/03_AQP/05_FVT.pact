@@ -1769,7 +1769,9 @@
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_ConstructOutputCumulator GAS|ISSUE-FVT owner-konto (r::URC_IsVirtualGasZero) output)
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-FVT|C_Issue" "issue-fvt")
+                owner-konto (r::URC_IsVirtualGasZero) output)
         ))
     (defun URCi_IssueStoa:decimal ()
         (let
@@ -1783,7 +1785,9 @@
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_ConstructOutputCumulator GAS|ISSUE-MULTIPLET-FAMILY patron (r::URC_IsVirtualGasZero) output)
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-FVT|C_IssueMultipletFamily" "issue-multiplet")
+                patron (r::URC_IsVirtualGasZero) output)
         ))
     (defun URCi_UnstaleMyScores:object{IgnisCollectorV2.OutputCumulator} (patron:string output:[string])
         @doc "GAS|UNSTALE gas leg (konto = patron); exec concats it with the per-fvt unstale walk."
@@ -1791,7 +1795,9 @@
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_ConstructOutputCumulator GAS|UNSTALE patron (r::URC_IsVirtualGasZero) output)
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-FVT|CC_UnstaleMyScores" "unstale")
+                patron (r::URC_IsVirtualGasZero) output)
         ))
     ;; [URCi]   DSA royalty-disposal CUSTODY-move ifp readers — read-only mirror of the XE_*Royalty custody legs
     ;;   (the DSA A_*Royalty exec concats URCi_*Royalty gas leg with the FVT XE_*Royalty custody cumulator).

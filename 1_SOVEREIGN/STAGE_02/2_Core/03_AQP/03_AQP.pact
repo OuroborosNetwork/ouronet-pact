@@ -2076,7 +2076,9 @@
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_ConstructOutputCumulator GAS|ISSUE-POOL AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-POOL|C_Issue" "issue-pool")
+                AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
         ))
     (defun URCi_IssueStoa:decimal ()
         (let
@@ -2090,38 +2092,52 @@
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_ConstructOutputCumulator GAS|ADD-SCORE AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-POOL|C_AddScore" "add-score")
+                AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
         ))
     (defun URCi_RevokeScore:object{IgnisCollectorV2.OutputCumulator} (output:[string])
         (let
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_ConstructOutputCumulator GAS|REVOKE-SCORE AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-POOL|C_RevokeScore" "revoke-score")
+                AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
         ))
     (defun URCi_SetPoolStake:object{IgnisCollectorV2.OutputCumulator} (output:[string])
-        @doc "GAS|SET-POOL-STAKE (shared by Enable / Disable pool-stake)."
+        @doc "Shared by Enable / Disable pool-stake — one component key is exact because \
+            \ AQP-POOL|C_EnablePoolStake and C_DisablePoolStake are both 6.0."
         (let
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_ConstructOutputCumulator GAS|SET-POOL-STAKE AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-POOL|C_EnablePoolStake" "pool-stake-toggle")
+                AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
         ))
     (defun URCi_SyncTrueFungibleAnchors:object{IgnisCollectorV2.OutputCumulator} (output:[string])
-        @doc "GAS|SYNC-TF-ANCHORS gas leg; exec concats it with the anchor-repair + meta legs (state-dependent)."
+        @doc "Gas leg for the TF anchor sync; exec concats it with the anchor-repair + meta \
+            \ legs (state-dependent)."
         (let
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_ConstructOutputCumulator GAS|SYNC-TF-ANCHORS AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-POOL|C_SyncTrueFungibleAnchors" "sync-anchors")
+                AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
         ))
     (defun URCi_SyncCollectableAnchors:object{IgnisCollectorV2.OutputCumulator} (output:[string])
-        @doc "GAS|SYNC-COLLECTABLE-ANCHORS gas leg (SF+NF); exec concats it with the anchor-repair + meta legs (state-dependent)."
+        @doc "Gas leg for the SF+NF anchor sync; exec concats it with the anchor-repair + \
+            \ meta legs (state-dependent). One component key is exact because \
+            \ AQP-POOL|C_SyncSemiFungibleAnchors and C_SyncNonFungibleAnchors are both 36.0."
         (let
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_ConstructOutputCumulator GAS|SYNC-COLLECTABLE-ANCHORS AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-POOL|C_SyncSemiFungibleAnchors" "sync-anchors")
+                AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
         ))
     (defun URCi_SyncTrueFungibleAnchorsFull:decimal (beneficiary-id:string dptf-id:string)
         @doc "FULL reconstructed IGNIS ifp of C_SyncTrueFungibleAnchors: the read-only mirror of the exec's \

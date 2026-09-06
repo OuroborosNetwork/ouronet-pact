@@ -2696,7 +2696,9 @@
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_ConstructOutputCumulator GAS|SET-COMMON-DENOMINATOR (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-FVT|C_SetCommonDenominator" "fvt-split-setup")
+                (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)
         ))
 
     (defun URCi_SetMosaic:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string])
@@ -2704,7 +2706,9 @@
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_ConstructOutputCumulator GAS|SET-MOSAIC (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-FVT|C_SetMosaic" "fvt-split-setup")
+                (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)
         ))
 
     (defun URCi_SetSplitMode:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string])
@@ -2712,7 +2716,9 @@
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_ConstructOutputCumulator GAS|SET-SPLIT-MODE (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-FVT|C_SetSplitMode" "fvt-split-setup")
+                (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)
         ))
 
     (defun URCi_AddScoreEntity:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string])
@@ -2720,7 +2726,9 @@
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_ConstructOutputCumulator GAS|ADD-SCORE-ENTITY (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-FVT|C_AddScoreEntity" "add-score-entity")
+                (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)
         ))
 
     (defun URCi_ToggleScoreEntityLink:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string])
@@ -2728,7 +2736,9 @@
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_ConstructOutputCumulator GAS|TOGGLE-SCORE-ENTITY-LINK (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-FVT|C_ToggleScoreEntityLink" "fvt-link-toggle")
+                (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)
         ))
 
     (defun URCi_AddRewardLink:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string])
@@ -2736,7 +2746,9 @@
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_ConstructOutputCumulator GAS|ADD-REWARD-LINK (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-FVT|C_AddRewardLink" "add-reward-link")
+                (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)
         ))
 
     (defun URCi_ToggleRewardLink:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string])
@@ -2744,7 +2756,9 @@
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_ConstructOutputCumulator GAS|TOGGLE-REWARD-LINK (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-FVT|C_ToggleRewardLink" "fvt-link-toggle")
+                (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)
         ))
 
     (defun URCi_SetQualitySplit:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string])
@@ -2752,11 +2766,18 @@
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_ConstructOutputCumulator GAS|SET-QUALITY-SPLIT (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-FVT|C_SetQualitySplit" "fvt-split-setup")
+                (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)
         ))
 
     (defun URCi_Inject:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string])
-        @doc "GAS|INJECT gas leg (konto = FVT owner); shared by instant inject, stream inject, and inject-finalize."
+        @doc "Deterrence-only gas leg (konto = FVT owner), shared by instant inject, stream \
+            \ inject and inject-finalize. NOT yet on deter+components, deliberately: those \
+            \ three ops have DIFFERENT component costs (CC_Inject 21 / CC_InjectStream 5 / \
+            \ CC_InjectFinalize 7) and the caller identity is only known upstream in FVT — \
+            \ adding components needs an op key threaded through the XE_/XI_ inject \
+            \ boundary. Left explicit rather than billed against a guessed key."
         (let
             (
                 (r:module{IgnisCollectorV2} IGNIS)
@@ -2770,7 +2791,9 @@
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_ConstructOutputCumulator GAS|COLLECT (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-FVT|CC_Collect" "aqp-collect")
+                (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)
         ))
 
     (defun URCi_WithdrawRoyaltyCustody:decimal (fvt-id:string reward-dptf-id:string destination:string)
@@ -2982,7 +3005,7 @@
     (defun URCi_CollectFull:decimal
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         @doc "FULL reconstructed IGNIS ifp of CC_Collect = reward-payout leg (URC_CollectTransferLegIgnis) + Phase-7 \
-            \ forced-fix penalty (URC_CollectForcedFixIgnis) + GAS|COLLECT. Residual: the payout is read pre-drip, so \
+            \ forced-fix penalty (URC_CollectForcedFixIgnis) + the URCi_Collect leg. Residual: the payout is read pre-drip, so \
             \ a lane carrying a LIVE stream (whose exec drip vests extra reward before payout) can shift the transfer \
             \ tier — exact only for un-streamed / already-settled lanes."
         (let

@@ -38,12 +38,12 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 
 | Talos function | core op | role | IGNIS | STOA | $ (ignis) | charge breakdown |
 |----------------|---------|------|------:|-----:|----------:|------------------|
-| `C_IssueNonFungibleAnchor` | `C_IssueNonFungibleAnchor` | ISSUE | **≥ 1250** | 0.01 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:anchor-nf 1250 |
-| `C_IssueNonFungibleSetAnchor` | `C_IssueNonFungibleSetAnchor` | ISSUE | **≥ 1250** | 0.01 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:anchor-nf 1250 |
-| `C_IssueSemiFungibleAnchor` | `C_IssueSemiFungibleAnchor` | ISSUE | **≥ 1000** | 0.01 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:anchor-sf 1000 |
-| `C_IssueTrueFungibleAnchor` | `C_IssueTrueFungibleAnchor` | ISSUE | **≥ 500** | 0.01 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:anchor-tf 500 |
-| `C_RevokeAnchor` | `C_RevokeAnchor` | SETUP | **100** | — | $1.00 | deter:revoke-anchor 100 |
-| `C_RevokeBoostClass` | `C_RevokeBoostClass` | SETUP | **500** | — | $5.00 | deter:revoke-boost 500 |
+| `C_IssueNonFungibleAnchor` | `C_IssueNonFungibleAnchor` | ISSUE | **≥ 500** | 0.01 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:anchor 500 |
+| `C_IssueNonFungibleSetAnchor` | `C_IssueNonFungibleSetAnchor` | ISSUE | **≥ 500** | 0.01 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:anchor 500 |
+| `C_IssueSemiFungibleAnchor` | `C_IssueSemiFungibleAnchor` | ISSUE | **≥ 500** | 0.01 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:anchor 500 |
+| `C_IssueTrueFungibleAnchor` | `C_IssueTrueFungibleAnchor` | ISSUE | **≥ 500** | 0.01 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:anchor 500 |
+| `C_RevokeAnchor` | `C_RevokeAnchor` | SETUP | **167** | — | $1.67 | deter:revoke-anchor 100 + components:AQP-ANK|C_RevokeAnchor 67 |
+| `C_RevokeBoostClass` | `C_RevokeBoostClass` | SETUP | **510** | — | $5.10 | deter:revoke-boost 500 + components:AQP-ANK|C_RevokeBoostClass 10 |
 
 ## AQP-DSA
 
@@ -65,25 +65,25 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 
 | Talos function | core op | role | IGNIS | STOA | $ (ignis) | charge breakdown |
 |----------------|---------|------|------:|-----:|----------:|------------------|
-| `C_AddRewardLink` | `C_AddRewardLink` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_AddScoreEntity` | `C_AddScoreEntity` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_AddRewardLink` | `C_AddRewardLink` | SETUP | **511** | — | $5.11 | deter:add-reward-link 500 + components:AQP-FVT|C_AddRewardLink 11 |
+| `C_AddScoreEntity` | `C_AddScoreEntity` | SETUP | **539** | — | $5.39 | deter:add-score-entity 500 + components:AQP-FVT|C_AddScoreEntity 39 |
 | `C_Control` | `C_Control` | SETUP | **13** | — | $0.13 | deter:setup 5 + components:AQP-FVT|C_Control 8 |
-| `C_Issue` | `C_Issue` | ISSUE | **?** | 0.02 | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_IssueMultipletFamily` | `C_IssueMultipletFamily` | ISSUE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_Issue` | `C_Issue` | ISSUE | **≥ 1019** | 0.02 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-fvt 1000 + components:AQP-FVT|C_Issue 19 |
+| `C_IssueMultipletFamily` | `C_IssueMultipletFamily` | ISSUE | **509** | — | $5.09 | deter:issue-multiplet 500 + components:AQP-FVT|C_IssueMultipletFamily 9 |
 | `C_RotateOwnership` | `C_RotateOwnership` | AUTH | **17** | — | $0.17 | deter:auth 10 + components:AQP-FVT|C_RotateOwnership 7 |
-| `C_SetCommonDenominator` | `C_SetCommonDenominator` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_SetMosaic` | `C_SetMosaic` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_SetQualitySplit` | `C_SetQualitySplit` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_SetSplitMode` | `C_SetSplitMode` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_ToggleRewardLink` | `C_ToggleRewardLink` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_ToggleScoreEntityLink` | `C_ToggleScoreEntityLink` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `CC_Collect` | `CC_Collect` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_SetCommonDenominator` | `C_SetCommonDenominator` | SETUP | **110** | — | $1.10 | deter:fvt-split-setup 100 + components:AQP-FVT|C_SetCommonDenominator 10 |
+| `C_SetMosaic` | `C_SetMosaic` | SETUP | **111** | — | $1.11 | deter:fvt-split-setup 100 + components:AQP-FVT|C_SetMosaic 11 |
+| `C_SetQualitySplit` | `C_SetQualitySplit` | SETUP | **111** | — | $1.11 | deter:fvt-split-setup 100 + components:AQP-FVT|C_SetQualitySplit 11 |
+| `C_SetSplitMode` | `C_SetSplitMode` | SETUP | **111** | — | $1.11 | deter:fvt-split-setup 100 + components:AQP-FVT|C_SetSplitMode 11 |
+| `C_ToggleRewardLink` | `C_ToggleRewardLink` | SETUP | **61** | — | $0.61 | deter:fvt-link-toggle 50 + components:AQP-FVT|C_ToggleRewardLink 11 |
+| `C_ToggleScoreEntityLink` | `C_ToggleScoreEntityLink` | SETUP | **61** | — | $0.61 | deter:fvt-link-toggle 50 + components:AQP-FVT|C_ToggleScoreEntityLink 11 |
+| `CC_Collect` | `CC_Collect` | USAGE | **≥ 557** | — | COMPLEX | heavy / parallel-slice op; legs: deter:aqp-collect 500 + components:AQP-FVT|CC_Collect 57 |
 | `CC_Inject` | `CC_Inject` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `CC_InjectFinalize` | `CC_InjectFinalize` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `CC_InjectStream` | `CC_InjectStream` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `CC_SweepBegin` | `CC_SweepBegin` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `CC_SweepRevokeAnchor` | `CC_SweepRevokeAnchor` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `CC_UnstaleMyScores` | `CC_UnstaleMyScores` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `CC_UnstaleMyScores` | `CC_UnstaleMyScores` | USAGE | **≥ 111** | — | COMPLEX | heavy / parallel-slice op; legs: deter:unstale 100 + components:AQP-FVT|CC_UnstaleMyScores 11 |
 | `CCp_InjectFixChunk` | `CCp_InjectFixChunk` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `CCp_SweepRecomputeChunk` | `CCp_SweepRecomputeChunk` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `CCp_UnstaleAll` | `CCp_UnstaleAll` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
@@ -93,23 +93,23 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | Talos function | core op | role | IGNIS | STOA | $ (ignis) | charge breakdown |
 |----------------|---------|------|------:|-----:|----------:|------------------|
 | `C_AbortVacate` | `C_AbortVacate` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_AddScore` | `C_AddScore` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_DisablePoolStake` | `C_DisablePoolStake` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_EnablePoolStake` | `C_EnablePoolStake` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_AddScore` | `C_AddScore` | SETUP | **243** | — | $2.43 | deter:add-score 200 + components:AQP-POOL|C_AddScore 43 |
+| `C_DisablePoolStake` | `C_DisablePoolStake` | USAGE | **56** | — | $0.56 | deter:pool-stake-toggle 50 + components:AQP-POOL|C_EnablePoolStake 6 |
+| `C_EnablePoolStake` | `C_EnablePoolStake` | USAGE | **56** | — | $0.56 | deter:pool-stake-toggle 50 + components:AQP-POOL|C_EnablePoolStake 6 |
 | `C_FinalizeVacate` | `C_FinalizeVacate` | USAGE | **≥ 3** | — | COMPLEX | per-nonce / per-item work; legs: medium 3 |
-| `C_Issue` | `C_Issue` | ISSUE | **?** | 0.02 | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_RevokeScore` | `C_RevokeScore` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_SyncNonFungibleAnchors` | `C_SyncCollectableAnchors` | USAGE | **5** | — | $0.05 | biggest 5 |
-| `C_SyncSemiFungibleAnchors` | `C_SyncCollectableAnchors` | USAGE | **5** | — | $0.05 | biggest 5 |
-| `C_SyncTrueFungibleAnchors` | `C_SyncTrueFungibleAnchors` | SETUP | **5** | — | $0.05 | biggest 5 |
+| `C_Issue` | `C_Issue` | ISSUE | **≥ 1020** | 0.02 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-pool 1000 + components:AQP-POOL|C_Issue 20 |
+| `C_RevokeScore` | `C_RevokeScore` | SETUP | **298** | — | $2.98 | deter:revoke-score 250 + components:AQP-POOL|C_RevokeScore 48 |
+| `C_SyncNonFungibleAnchors` | `C_SyncCollectableAnchors` | USAGE | **86** | — | $0.86 | deter:sync-anchors 50 + components:AQP-POOL|C_SyncSemiFungibleAnchors 36 |
+| `C_SyncSemiFungibleAnchors` | `C_SyncCollectableAnchors` | USAGE | **86** | — | $0.86 | deter:sync-anchors 50 + components:AQP-POOL|C_SyncSemiFungibleAnchors 36 |
+| `C_SyncTrueFungibleAnchors` | `C_SyncTrueFungibleAnchors` | SETUP | **66** | — | $0.66 | deter:sync-anchors 50 + components:AQP-POOL|C_SyncTrueFungibleAnchors 16 |
 | `CC_FullVacate` | `CC_FullVacate` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `CC_StakeNonFungibleCollectable` | `CC_CollectableStakeFlow` | USAGE | **≥ 3** | — | COMPLEX | heavy / parallel-slice op; legs: medium 3 |
+| `CC_StakeNonFungibleCollectable` | `CC_CollectableStakeFlow` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `CC_StakeOrtoFungible` | `CC_OrtoFungibleStakeFlow` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `CC_StakeSemiFungibleCollectable` | `CC_CollectableStakeFlow` | USAGE | **≥ 3** | — | COMPLEX | heavy / parallel-slice op; legs: medium 3 |
+| `CC_StakeSemiFungibleCollectable` | `CC_CollectableStakeFlow` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `CC_StakeTrueFungible` | `CC_TrueFungibleStakeFlow` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `CC_UnstakeNonFungibleCollectable` | `CC_CollectableStakeFlow` | USAGE | **≥ 3** | — | COMPLEX | heavy / parallel-slice op; legs: medium 3 |
+| `CC_UnstakeNonFungibleCollectable` | `CC_CollectableStakeFlow` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `CC_UnstakeOrtoFungible` | `CC_OrtoFungibleStakeFlow` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `CC_UnstakeSemiFungibleCollectable` | `CC_CollectableStakeFlow` | USAGE | **≥ 3** | — | COMPLEX | heavy / parallel-slice op; legs: medium 3 |
+| `CC_UnstakeSemiFungibleCollectable` | `CC_CollectableStakeFlow` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `CC_UnstakeTrueFungible` | `CC_TrueFungibleStakeFlow` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `CCp_BatchDrainCollectable` | `CCp_BatchDrainCollectable` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `CCp_BatchDrainOrtoFungible` | `CCp_BatchDrainOrtoFungible` | USAGE | **≥ 3** | — | COMPLEX | heavy / parallel-slice op; legs: small 2 + smallest 1 |
@@ -122,22 +122,22 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 
 | Talos function | core op | role | IGNIS | STOA | $ (ignis) | charge breakdown |
 |----------------|---------|------|------:|-----:|----------:|------------------|
-| `C_CombineTripletScoreModel` | `C_CombineTripletScoreModel` | SETUP | **100** | — | $1.00 | deter:combine-triplet 100 |
+| `C_CombineTripletScoreModel` | `C_CombineTripletScoreModel` | SETUP | **616** | — | $6.16 | deter:combine-triplet 100 + components:AQP-SCR|C_CombineTripletScoreModel 16 + deter:issue-score-model 500 |
 | `C_ControlScore` | `C_Control` | SETUP | **18** | — | $0.18 | deter:setup 5 + components:AQP-SCR|C_ControlScore 13 |
 | `C_CreateScoreBoostClassLink` | `C_CreateBoostClassLink` | ISSUE | **5** | — | $0.05 | biggest 5 |
 | `C_CreateScoreBoostLink` | `C_CreateBoostLink` | ISSUE | **5** | — | $0.05 | biggest 5 |
 | `C_EnableDebBoost` | `C_EnableDebBoost` | SETUP | **3** | — | $0.03 | medium 3 |
-| `C_IssueLiquidityScore` | `C_IssueLiquidityScore` | ISSUE | **?** | 0.02 | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_IssueNonFungibleScore` | `C_IssueNonFungibleScore` | ISSUE | **?** | 0.02 | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_IssueLiquidityScore` | `C_IssueLiquidityScore` | ISSUE | **≥ 1028** | 0.02 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-score 1000 + components:AQP-SCR|C_IssueTrueFungibleScore 28 |
+| `C_IssueNonFungibleScore` | `C_IssueNonFungibleScore` | ISSUE | **≥ 1028** | 0.02 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-score 1000 + components:AQP-SCR|C_IssueTrueFungibleScore 28 |
 | `C_IssueNonFungibleScoreDefinition` | `C_IssueNonFungibleScoreDefinition` | ISSUE | **≥ 5** | — | COMPLEX | charge multiplies by an item count; legs: biggest 5 |
 | `C_IssueNonFungibleSetScoreDefinition` | `C_IssueNonFungibleSetScoreDefinition` | ISSUE | **≥ 5** | — | COMPLEX | charge multiplies by an item count; legs: biggest 5 |
-| `C_IssueOrtoFungibleScore` | `C_IssueOrtoFungibleScore` | ISSUE | **?** | 0.02 | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_IssueScoreFromModel` | `C_IssueScoreFromModel` | ISSUE | **100** | — | $1.00 | deter:combine-triplet 100 |
-| `C_IssueSemiFungibleScore` | `C_IssueSemiFungibleScore` | ISSUE | **?** | 0.02 | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_IssueOrtoFungibleScore` | `C_IssueOrtoFungibleScore` | ISSUE | **≥ 1028** | 0.02 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-score 1000 + components:AQP-SCR|C_IssueTrueFungibleScore 28 |
+| `C_IssueScoreFromModel` | `C_IssueScoreFromModel` | ISSUE | **616** | — | $6.16 | deter:combine-triplet 100 + components:AQP-SCR|C_CombineTripletScoreModel 16 + deter:issue-score-model 500 |
+| `C_IssueSemiFungibleScore` | `C_IssueSemiFungibleScore` | ISSUE | **≥ 1028** | 0.02 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-score 1000 + components:AQP-SCR|C_IssueTrueFungibleScore 28 |
 | `C_IssueSemiFungibleScoreDefinition` | `C_IssueSemiFungibleScoreDefinition` | ISSUE | **≥ 4** | — | COMPLEX | charge multiplies by an item count; legs: big 4 |
-| `C_IssueSingleScoreModel` | `C_IssueSingleScoreModel` | ISSUE | **100** | — | $1.00 | deter:combine-triplet 100 |
-| `C_IssueTriplet` | `C_IssueTriplet` | ISSUE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_IssueTrueFungibleScore` | `C_IssueTrueFungibleScore` | ISSUE | **?** | 0.02 | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_IssueSingleScoreModel` | `C_IssueSingleScoreModel` | ISSUE | **616** | — | $6.16 | deter:combine-triplet 100 + components:AQP-SCR|C_CombineTripletScoreModel 16 + deter:issue-score-model 500 |
+| `C_IssueTriplet` | `C_IssueTriplet` | ISSUE | **539** | — | $5.39 | deter:issue-triplet 500 + components:AQP-SCR|C_IssueTriplet 39 |
+| `C_IssueTrueFungibleScore` | `C_IssueTrueFungibleScore` | ISSUE | **≥ 1028** | 0.02 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-score 1000 + components:AQP-SCR|C_IssueTrueFungibleScore 28 |
 | `C_RotateScoreOwnership` | `C_RotateOwnership` | AUTH | **23** | — | $0.23 | deter:auth 10 + components:AQP-SCR|C_RotateScoreOwnership 13 |
 
 ## ATS
@@ -290,24 +290,24 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_TransferNonce` | `C_IgnisRoyaltyCollector` ×2 | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_TransferNonces` | `C_IgnisRoyaltyCollector` ×2 | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_UpdateNonce` | `C_UpdateNonces` | SETUP | **≥ 1** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 |
-| `C_UpdateNonceDescription` | `C_UpdateNonceDescription` | SETUP | **2** | — | $0.02 | small 2 |
-| `C_UpdateNonceIgnisRoyalty` | `C_UpdateNonceIgnisRoyalty` | SETUP | **2** | — | $0.02 | small 2 |
-| `C_UpdateNonceMetaData` | `C_UpdateNonceMetaData` | SETUP | **2** | — | $0.02 | small 2 |
-| `C_UpdateNonceName` | `C_UpdateNonceName` | SETUP | **2** | — | $0.02 | small 2 |
-| `C_UpdateNonceRoyalty` | `C_UpdateNonceRoyalty` | SETUP | **2** | — | $0.02 | small 2 |
+| `C_UpdateNonceDescription` | `C_UpdateNonceDescription` | SETUP | **17** | — | $0.17 | components:DPNF|C_UpdateNonce 17 |
+| `C_UpdateNonceIgnisRoyalty` | `C_UpdateNonceIgnisRoyalty` | SETUP | **17** | — | $0.17 | components:DPNF|C_UpdateNonce 17 |
+| `C_UpdateNonceMetaData` | `C_UpdateNonceMetaData` | SETUP | **17** | — | $0.17 | components:DPNF|C_UpdateNonce 17 |
+| `C_UpdateNonceName` | `C_UpdateNonceName` | SETUP | **17** | — | $0.17 | components:DPNF|C_UpdateNonce 17 |
+| `C_UpdateNonceRoyalty` | `C_UpdateNonceRoyalty` | SETUP | **17** | — | $0.17 | components:DPNF|C_UpdateNonce 17 |
 | `C_UpdateNonces` | `C_UpdateNonces` | SETUP | **≥ 1** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 |
-| `C_UpdateNonceScore` | `C_UpdateNonceScore` | SETUP | **2** | — | $0.02 | small 2 |
-| `C_UpdateNonceURI` | `C_UpdateNonceURI` | SETUP | **2** | — | $0.02 | small 2 |
+| `C_UpdateNonceScore` | `C_UpdateNonceScore` | SETUP | **17** | — | $0.17 | components:DPNF|C_UpdateNonce 17 |
+| `C_UpdateNonceURI` | `C_UpdateNonceURI` | SETUP | **17** | — | $0.17 | components:DPNF|C_UpdateNonce 17 |
 | `C_UpdatePendingBranding` | `C_UpdatePendingBranding` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_UpdateSetNonce` | `C_UpdateNonces` | SETUP | **≥ 1** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 |
-| `C_UpdateSetNonceDescription` | `C_UpdateNonceDescription` | SETUP | **2** | — | $0.02 | small 2 |
-| `C_UpdateSetNonceIgnisRoyalty` | `C_UpdateNonceIgnisRoyalty` | SETUP | **2** | — | $0.02 | small 2 |
-| `C_UpdateSetNonceMetaData` | `C_UpdateNonceMetaData` | SETUP | **2** | — | $0.02 | small 2 |
-| `C_UpdateSetNonceName` | `C_UpdateNonceName` | SETUP | **2** | — | $0.02 | small 2 |
-| `C_UpdateSetNonceRoyalty` | `C_UpdateNonceRoyalty` | SETUP | **2** | — | $0.02 | small 2 |
+| `C_UpdateSetNonceDescription` | `C_UpdateNonceDescription` | SETUP | **17** | — | $0.17 | components:DPNF|C_UpdateNonce 17 |
+| `C_UpdateSetNonceIgnisRoyalty` | `C_UpdateNonceIgnisRoyalty` | SETUP | **17** | — | $0.17 | components:DPNF|C_UpdateNonce 17 |
+| `C_UpdateSetNonceMetaData` | `C_UpdateNonceMetaData` | SETUP | **17** | — | $0.17 | components:DPNF|C_UpdateNonce 17 |
+| `C_UpdateSetNonceName` | `C_UpdateNonceName` | SETUP | **17** | — | $0.17 | components:DPNF|C_UpdateNonce 17 |
+| `C_UpdateSetNonceRoyalty` | `C_UpdateNonceRoyalty` | SETUP | **17** | — | $0.17 | components:DPNF|C_UpdateNonce 17 |
 | `C_UpdateSetNonces` | `C_UpdateNonces` | SETUP | **≥ 1** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 |
-| `C_UpdateSetNonceScore` | `C_UpdateNonceScore` | SETUP | **2** | — | $0.02 | small 2 |
-| `C_UpdateSetNonceURI` | `C_UpdateNonceURI` | SETUP | **2** | — | $0.02 | small 2 |
+| `C_UpdateSetNonceScore` | `C_UpdateNonceScore` | SETUP | **17** | — | $0.17 | components:DPNF|C_UpdateNonce 17 |
+| `C_UpdateSetNonceURI` | `C_UpdateNonceURI` | SETUP | **17** | — | $0.17 | components:DPNF|C_UpdateNonce 17 |
 | `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **?** | 0.025 | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_WipeClean` | `C_WipeClean` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_WipeDirty` | `C_WipeDirty` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
@@ -384,24 +384,24 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_TransferNonce` | `C_IgnisRoyaltyCollector` ×2 | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_TransferNonces` | `C_IgnisRoyaltyCollector` ×2 | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_UpdateNonce` | `C_UpdateNonces` | SETUP | **≥ 1** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 |
-| `C_UpdateNonceDescription` | `C_UpdateNonceDescription` | SETUP | **2** | — | $0.02 | small 2 |
-| `C_UpdateNonceIgnisRoyalty` | `C_UpdateNonceIgnisRoyalty` | SETUP | **2** | — | $0.02 | small 2 |
-| `C_UpdateNonceMetaData` | `C_UpdateNonceMetaData` | SETUP | **2** | — | $0.02 | small 2 |
-| `C_UpdateNonceName` | `C_UpdateNonceName` | SETUP | **2** | — | $0.02 | small 2 |
-| `C_UpdateNonceRoyalty` | `C_UpdateNonceRoyalty` | SETUP | **2** | — | $0.02 | small 2 |
+| `C_UpdateNonceDescription` | `C_UpdateNonceDescription` | SETUP | **5** | — | $0.05 | deter:setup 5 |
+| `C_UpdateNonceIgnisRoyalty` | `C_UpdateNonceIgnisRoyalty` | SETUP | **5** | — | $0.05 | deter:setup 5 |
+| `C_UpdateNonceMetaData` | `C_UpdateNonceMetaData` | SETUP | **5** | — | $0.05 | deter:setup 5 |
+| `C_UpdateNonceName` | `C_UpdateNonceName` | SETUP | **5** | — | $0.05 | deter:setup 5 |
+| `C_UpdateNonceRoyalty` | `C_UpdateNonceRoyalty` | SETUP | **5** | — | $0.05 | deter:setup 5 |
 | `C_UpdateNonces` | `C_UpdateNonces` | SETUP | **≥ 1** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 |
-| `C_UpdateNonceScore` | `C_UpdateNonceScore` | SETUP | **2** | — | $0.02 | small 2 |
-| `C_UpdateNonceURI` | `C_UpdateNonceURI` | SETUP | **2** | — | $0.02 | small 2 |
+| `C_UpdateNonceScore` | `C_UpdateNonceScore` | SETUP | **5** | — | $0.05 | deter:setup 5 |
+| `C_UpdateNonceURI` | `C_UpdateNonceURI` | SETUP | **5** | — | $0.05 | deter:setup 5 |
 | `C_UpdatePendingBranding` | `C_UpdatePendingBranding` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_UpdateSetNonce` | `C_UpdateNonces` | SETUP | **≥ 1** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 |
-| `C_UpdateSetNonceDescription` | `C_UpdateNonceDescription` | SETUP | **2** | — | $0.02 | small 2 |
-| `C_UpdateSetNonceIgnisRoyalty` | `C_UpdateNonceIgnisRoyalty` | SETUP | **2** | — | $0.02 | small 2 |
-| `C_UpdateSetNonceMetaData` | `C_UpdateNonceMetaData` | SETUP | **2** | — | $0.02 | small 2 |
-| `C_UpdateSetNonceName` | `C_UpdateNonceName` | SETUP | **2** | — | $0.02 | small 2 |
-| `C_UpdateSetNonceRoyalty` | `C_UpdateNonceRoyalty` | SETUP | **2** | — | $0.02 | small 2 |
+| `C_UpdateSetNonceDescription` | `C_UpdateNonceDescription` | SETUP | **5** | — | $0.05 | deter:setup 5 |
+| `C_UpdateSetNonceIgnisRoyalty` | `C_UpdateNonceIgnisRoyalty` | SETUP | **5** | — | $0.05 | deter:setup 5 |
+| `C_UpdateSetNonceMetaData` | `C_UpdateNonceMetaData` | SETUP | **5** | — | $0.05 | deter:setup 5 |
+| `C_UpdateSetNonceName` | `C_UpdateNonceName` | SETUP | **5** | — | $0.05 | deter:setup 5 |
+| `C_UpdateSetNonceRoyalty` | `C_UpdateNonceRoyalty` | SETUP | **5** | — | $0.05 | deter:setup 5 |
 | `C_UpdateSetNonces` | `C_UpdateNonces` | SETUP | **≥ 1** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 |
-| `C_UpdateSetNonceScore` | `C_UpdateNonceScore` | SETUP | **2** | — | $0.02 | small 2 |
-| `C_UpdateSetNonceURI` | `C_UpdateNonceURI` | SETUP | **2** | — | $0.02 | small 2 |
+| `C_UpdateSetNonceScore` | `C_UpdateNonceScore` | SETUP | **5** | — | $0.05 | deter:setup 5 |
+| `C_UpdateSetNonceURI` | `C_UpdateNonceURI` | SETUP | **5** | — | $0.05 | deter:setup 5 |
 | `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **?** | 0.025 | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_WipeClean` | `C_WipeClean` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_WipeDirty` | `C_WipeDirty` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
@@ -549,9 +549,9 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_SingleSwapWithSlippage` | `C_Swap` | USAGE | **≥ 0** | — | COMPLEX | charge multiplies by an item count; legs: literal 0 |
 | `C_SmartSwapNoSlippage` | `C_SmartSwap` | USAGE | **≥ 0** | — | COMPLEX | per-nonce / per-item work; legs: literal 0 |
 | `C_SmartSwapWithSlippage` | `C_SmartSwap` | USAGE | **≥ 0** | — | COMPLEX | per-nonce / per-item work; legs: literal 0 |
-| `C_ToggleAddLiquidity` | `C_ToggleAddLiquidity` | USAGE | **≥ 5** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: biggest 5 |
+| `C_ToggleAddLiquidity` | `C_ToggleAddLiquidity` | USAGE | **≥ 214** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:auth 10 + components:DPTF|C_ToggleBurnRole 58 + components:DPTF|C_ToggleMintRole 58 + deter:fee 25 + components:DPTF|C_ToggleFeeExemptionRole 58 + biggest 5 |
 | `C_ToggleFeeLock` | `C_ToggleFeeLock` | SETUP | **≥ 2** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: small 2 |
-| `C_ToggleSwapCapability` | `C_ToggleSwapCapability` | USAGE | **≥ 5** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: biggest 5 |
+| `C_ToggleSwapCapability` | `C_ToggleSwapCapability` | USAGE | **≥ 214** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:auth 10 + components:DPTF|C_ToggleBurnRole 58 + components:DPTF|C_ToggleMintRole 58 + deter:fee 25 + components:DPTF|C_ToggleFeeExemptionRole 58 + biggest 5 |
 | `C_UpdateAmplifier` | `C_UpdateAmplifier` | FEE | **44** | — | $0.44 | deter:fee 25 + components:SWP|C_UpdateAmplifier 19 |
 | `C_UpdateFee` | `C_UpdateFee` | FEE | **45** | — | $0.45 | deter:fee 25 + components:SWP|C_UpdateFee 20 |
 | `C_UpdatePendingBranding` | `C_UpdatePendingBranding` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
@@ -595,7 +595,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_Vest` | `C_Vest` | SETUP | **≥ 91** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Mint 80 + small 2 + smallest 1 + medium 3 |
 
 ---
-145 simple (exact price) · 136 complex (floor price) · 40 exempt · 109 unresolved · 321 Talos client functions
+159 simple (exact price) · 141 complex (floor price) · 40 exempt · 90 unresolved · 340 Talos client functions
 
 `×N` on a core op = the wrapper drives N priced core ops in a FIXED composition (still exactly knowable).
 

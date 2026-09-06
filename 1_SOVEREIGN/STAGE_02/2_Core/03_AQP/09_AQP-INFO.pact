@@ -375,7 +375,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Define a SINGLE score-entity model." "Executes via TS02-C3.AQP-SCR|C_IssueSingleScoreModel."]
                 [(format "Single score model '{}' defined (class {})." [model-name score-class])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueScoreModel patron [])))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueScoreModel "AQP-SCR|C_IssueSingleScoreModel" patron [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [])
         )
@@ -405,7 +405,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Issue a score/triplet entity conforming to a model." "Executes via TS02-C3.AQP-SCR|C_IssueScoreFromModel."]
                 [(format "Entity '{}' issued from model {} for {}." [agency-name model-id owner-konto])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueScoreModel patron [])))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueScoreModel "AQP-SCR|C_IssueScoreFromModel" patron [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [])
         )

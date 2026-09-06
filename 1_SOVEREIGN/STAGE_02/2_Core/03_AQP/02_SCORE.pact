@@ -134,7 +134,7 @@
     (defun URCi_IssueSemiFungibleScoreDefinition:object{IgnisCollectorV2.OutputCumulator} (score-id:string nonces:[integer]))
     (defun URCi_IssueNonFungibleScoreDefinition:object{IgnisCollectorV2.OutputCumulator} (score-id:string trait-keys:[string]))
     (defun URCi_IssueNonFungibleSetScoreDefinition:object{IgnisCollectorV2.OutputCumulator} (score-id:string dpnf-nonce-classes:[integer]))
-    (defun URCi_IssueScoreModel:object{IgnisCollectorV2.OutputCumulator} (patron:string output:[string]))
+    (defun URCi_IssueScoreModel:object{IgnisCollectorV2.OutputCumulator} (op-key:string patron:string output:[string]))
     (defun URCi_CombineTripletModel:object{IgnisCollectorV2.OutputCumulator} (patron:string output:[string]))
     ;;{5.4}  Validate [UEV/CAP]
     ;; [UEV] enforce
@@ -2529,12 +2529,18 @@
     )
     ;; [URCi]   cost readers — single source for exec billing + INFO preview
     (defun URCi_IssueScore:object{IgnisCollectorV2.OutputCumulator} (owner-konto:string output:[string])
-        @doc "IGNIS cost for the 5 score-issue ops (flat GAS|ISSUE-SCORE, konto = the new score's owner)."
+        @doc "IGNIS cost for the 5 score-issue ops: the issue-score deterrence PLUS the op's \
+            \ component cost, konto = the new score's owner. One component key is EXACT here \
+            \ because all five (Liquidity/TrueFungible/OrtoFungible/SemiFungible/NonFungible) \
+            \ are 28.0; if they ever diverge this reader must take the op key, as the anchor \
+            \ reader does."
         (let
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_ConstructOutputCumulator GAS|ISSUE-SCORE owner-konto (r::URC_IsVirtualGasZero) output)
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-SCR|C_IssueTrueFungibleScore" "issue-score")
+                owner-konto (r::URC_IsVirtualGasZero) output)
         ))
     (defun URCi_IssueScoreStoa:decimal ()
         @doc "STOA cost for score-issue: UR_UsagePrice 'smart'."
@@ -2593,7 +2599,9 @@
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_ConstructOutputCumulator GAS|ISSUE-TRIPLET (UR_SCR|ScoreOwnerKonto silver-score-id) (r::URC_IsVirtualGasZero) output)
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-SCR|C_IssueTriplet" "issue-triplet")
+                (UR_SCR|ScoreOwnerKonto silver-score-id) (r::URC_IsVirtualGasZero) output)
         ))
     (defun URCi_IssueSemiFungibleScoreDefinition:object{IgnisCollectorV2.OutputCumulator} (score-id:string nonces:[integer])
         @doc "IGNIS = |nonces| x UsagePrice('ignis|big'), konto = score owner."
@@ -2622,14 +2630,19 @@
             )
             (r::UDC_ConstructOutputCumulator (* (dec (length dpnf-nonce-classes)) (d::UR_UsagePrice "ignis|biggest")) (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])
         ))
-    (defun URCi_IssueScoreModel:object{IgnisCollectorV2.OutputCumulator} (patron:string output:[string])
-        @doc "GAS|ISSUE-SCORE-MODEL (shared by IssueSingleScoreModel / IssueScoreFromModel; \
-            \ CombineTripletScoreModel split off to URCi_CombineTripletModel — owner-priced 100, 2026-09-05)."
+    (defun URCi_IssueScoreModel:object{IgnisCollectorV2.OutputCumulator}
+        (op-key:string patron:string output:[string])
+        @doc "Shared by IssueSingleScoreModel / IssueScoreFromModel: same issue-score-model \
+            \ deterrence, but their component costs DIFFER (16 vs 69), so the caller passes its \
+            \ TALOS OP KEY. CombineTripletScoreModel split off to URCi_CombineTripletModel \
+            \ (owner-priced 100, 2026-09-05)."
         (let
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_ConstructOutputCumulator GAS|ISSUE-SCORE-MODEL patron (r::URC_IsVirtualGasZero) output)
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice op-key "issue-score-model")
+                patron (r::URC_IsVirtualGasZero) output)
         ))
     (defun URCi_CombineTripletModel:object{IgnisCollectorV2.OutputCumulator} (patron:string output:[string])
         @doc "Owner-priced (2026-09-05) combine-triplet deter (100 ignis) via the central IGNIS \
@@ -2638,7 +2651,9 @@
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_ConstructOutputCumulator (r::UC_IgnisDeter "combine-triplet") patron (r::URC_IsVirtualGasZero) output)
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-SCR|C_CombineTripletScoreModel" "combine-triplet")
+                patron (r::URC_IsVirtualGasZero) output)
         ))
     ;;{5.4}  Validate [UEV/CAP]
     ;; [UEV] enforce
@@ -4058,7 +4073,7 @@
                 )
                 (WI_ScoreEntityModel model-id
                     (UDC_SCR|ScoreEntityModel CT_SCORE_MODEL_SINGLE score-class collectable-id precision nonces nonce-score-values BAR BAR BAR model-id))
-                (URCi_IssueScoreModel patron [model-id])
+                (URCi_IssueScoreModel "AQP-SCR|C_IssueSingleScoreModel" patron [model-id])
             )
         )
     )
@@ -4118,7 +4133,7 @@
                             )
                         )
                     )
-                    (URCi_IssueScoreModel patron [result-id])
+                    (URCi_IssueScoreModel "AQP-SCR|C_IssueScoreFromModel" patron [result-id])
                 )
             )
         )
