@@ -51,15 +51,15 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 |----------------|---------|------|------:|-----:|----------:|------------------|
 | `A_SetOracleValidity` | `A_SetOracleValidity` | SETUP | **0** | — | free | admin/exempt |
 | `A_ToggleExternalOracle` | `A_ToggleExternalOracle` | SETUP | **0** | — | free | admin/exempt |
-| `C_BurnRoyalty` | `C_BurnRoyalty` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_DefineDelegationVault` | `C_DefineDelegationVault` | ISSUE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_FuelRoyalty` | `C_FuelRoyalty` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_OpenAgency` | `C_AdmitAgency` ×2 | ISSUE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_OracleWrite` | `C_OracleWrite` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_RecomputeCapture` | `C_RecomputeCapture` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_SetAgencyFee` | `C_SetAgencyFee` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_SetOracleAuth` | `C_SetOracleAuth` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_WithdrawRoyalty` | `C_WithdrawRoyalty` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_BurnRoyalty` | `C_BurnRoyalty` | SETUP | **405** | — | $4.05 | deter:royalty-dispose 400 + components:AQP-DSA|C_BurnRoyalty 5 |
+| `C_DefineDelegationVault` | `C_DefineDelegationVault` | ISSUE | **5011** | — | $50.11 | deter:issue-dsa-vault 5000 + components:AQP-DSA|C_DefineDelegationVault 11 |
+| `C_FuelRoyalty` | `C_FuelRoyalty` | USAGE | **505** | — | $5.05 | deter:royalty-fuel 500 + components:AQP-DSA|C_FuelRoyalty 5 |
+| `C_OpenAgency` | `C_AdmitAgency` ×2 | ISSUE | **2011** | — | $20.11 | deter:issue-dsa-agency 2000 + components:AQP-DSA|C_OpenAgency 11 |
+| `C_OracleWrite` | `C_OracleWrite` | SETUP | **222** | — | $2.22 | deter:oracle-write 200 + components:AQP-DSA|C_OracleWrite 22 |
+| `C_RecomputeCapture` | `C_RecomputeCapture` | SETUP | **321** | — | $3.21 | deter:recompute-capture 300 + components:AQP-DSA|C_RecomputeCapture 21 |
+| `C_SetAgencyFee` | `C_SetAgencyFee` | SETUP | **308** | — | $3.08 | deter:set-agency-fee 300 + components:AQP-DSA|C_SetAgencyFee 8 |
+| `C_SetOracleAuth` | `C_SetOracleAuth` | SETUP | **310** | — | $3.10 | deter:set-oracle-auth 300 + components:AQP-DSA|C_SetOracleAuth 10 |
+| `C_WithdrawRoyalty` | `C_WithdrawRoyalty` | USAGE | **405** | — | $4.05 | deter:royalty-dispose 400 + components:AQP-DSA|C_WithdrawRoyalty 5 |
 
 ## AQP-FVT
 
@@ -78,9 +78,9 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_ToggleRewardLink` | `C_ToggleRewardLink` | SETUP | **61** | — | $0.61 | deter:fvt-link-toggle 50 + components:AQP-FVT|C_ToggleRewardLink 11 |
 | `C_ToggleScoreEntityLink` | `C_ToggleScoreEntityLink` | SETUP | **61** | — | $0.61 | deter:fvt-link-toggle 50 + components:AQP-FVT|C_ToggleScoreEntityLink 11 |
 | `CC_Collect` | `CC_Collect` | USAGE | **≥ 557** | — | COMPLEX | heavy / parallel-slice op; legs: deter:aqp-collect 500 + components:AQP-FVT|CC_Collect 57 |
-| `CC_Inject` | `CC_Inject` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `CC_InjectFinalize` | `CC_InjectFinalize` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `CC_InjectStream` | `CC_InjectStream` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `CC_Inject` | `CC_Inject` | USAGE | **≥ 500** | — | COMPLEX | heavy / parallel-slice op; legs: deter:aqp-inject 500 |
+| `CC_InjectFinalize` | `CC_InjectFinalize` | USAGE | **≥ 500** | — | COMPLEX | heavy / parallel-slice op; legs: deter:aqp-inject 500 |
+| `CC_InjectStream` | `CC_InjectStream` | USAGE | **≥ 500** | — | COMPLEX | heavy / parallel-slice op; legs: deter:aqp-inject 500 |
 | `CC_SweepBegin` | `CC_SweepBegin` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `CC_SweepRevokeAnchor` | `CC_SweepRevokeAnchor` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `CC_UnstaleMyScores` | `CC_UnstaleMyScores` | USAGE | **≥ 111** | — | COMPLEX | heavy / parallel-slice op; legs: deter:unstale 100 + components:AQP-FVT|CC_UnstaleMyScores 11 |
@@ -265,9 +265,9 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_DefineCompositeSet` | `C_DefineCompositeSet` | ISSUE | **≥ 1** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: smallest 1 |
 | `C_DefineHybridSet` | `C_DefineHybridSet` | ISSUE | **≥ 1** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: smallest 1 |
 | `C_DefinePrimordialSet` | `C_DefinePrimordialSet` | ISSUE | **≥ 1** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: smallest 1 |
-| `C_EnableNonceFragmentation` | `C_EnableNonceFragmentation` | ISSUE | **100** | — | $1.00 | deter:frag-enable 100 |
+| `C_EnableNonceFragmentation` | `C_EnableNonceFragmentation` | ISSUE | **117** | — | $1.17 | deter:frag-enable 100 + components:DPNF|C_EnableNonceFragmentation 17 |
 | `C_EnableSetClassFragmentation` | `C_EnableSetClassFragmentation` | SETUP | **5** | — | $0.05 | biggest 5 |
-| `C_Issue` | `C_IssueDigitalCollection` | ISSUE | **≥ 4500** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-sft 2000 + deter:issue-nft 2500 |
+| `C_Issue` | `C_IssueDigitalCollection` | ISSUE | **≥ 4549** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-sft 2000 + deter:issue-nft 2500 + components:DPNF|C_Issue 49 |
 | `C_Make` | `C_MakeNonFungibleSet` | ISSUE | **≥ 1** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: smallest 1 |
 | `C_MakeFragments` | `C_MakeFragments` | USAGE | **≥ 18** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPNF|C_MakeFragments 17 |
 | `C_MergeFragments` | `C_MergeFragments` | USAGE | **≥ 18** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPNF|C_MergeFragments 17 |
@@ -325,7 +325,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_BulkTransfer` | `C_BulkTransfer` | USAGE | **≥ 3** | — | COMPLEX | per-nonce / per-item work; legs: small 2 + smallest 1 |
 | `C_Burn` | `C_Burn` | SETUP | **≥ 50** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Burn 45 |
 | `C_Control` | `C_Control` | SETUP | **25** | — | $0.25 | deter:setup 5 + components:DPOF|C_Control 20 |
-| `C_DeployAccount` | `C_DeployAccount` | ISSUE | **50** | — | $0.50 | deter:token-account 50 |
+| `C_DeployAccount` | `C_DeployAccount` | ISSUE | **77** | — | $0.77 | deter:token-account 50 + components:DPOF|C_DeployAccount 27 |
 | `C_Issue` | `C_Issue` | ISSUE | **≥ 1000** | — | COMPLEX | charge multiplies by an item count; legs: deter:issue-of 1000 |
 | `C_Mint` | `C_Mint` | SETUP | **≥ 85** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Mint 80 |
 | `C_MoveCreateRole` | `C_MoveCreateRole` | AUTH | **57** | — | $0.57 | deter:auth 10 + components:DPOF|C_MoveCreateRole 47 |
@@ -357,10 +357,10 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_DefineCompositeSet` | `C_DefineCompositeSet` | ISSUE | **≥ 500** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: token-issue 500 |
 | `C_DefineHybridSet` | `C_DefineHybridSet` | ISSUE | **≥ 500** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: token-issue 500 |
 | `C_DefinePrimordialSet` | `C_DefinePrimordialSet` | ISSUE | **≥ 500** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: token-issue 500 |
-| `C_EnableNonceFragmentation` | `C_EnableNonceFragmentation` | ISSUE | **100** | — | $1.00 | deter:frag-enable 100 |
+| `C_EnableNonceFragmentation` | `C_EnableNonceFragmentation` | ISSUE | **117** | — | $1.17 | deter:frag-enable 100 + components:DPSF|C_EnableNonceFragmentation 17 |
 | `C_EnableSetClassFragmentation` | `C_EnableSetClassFragmentation` | SETUP | **5** | — | $0.05 | biggest 5 |
-| `C_Issue` | `C_IssueDigitalCollection` | ISSUE | **≥ 4500** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-sft 2000 + deter:issue-nft 2500 |
-| `C_IssueCompany` | `C_IssueShareholderCollection` | ISSUE | **≥ 14501** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-shareholder 10000 + deter:issue-sft 2000 + deter:issue-nft 2500 + smallest 1 |
+| `C_Issue` | `C_IssueDigitalCollection` | ISSUE | **≥ 4549** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-sft 2000 + components:DPSF|C_Issue 49 + deter:issue-nft 2500 |
+| `C_IssueCompany` | `C_IssueShareholderCollection` | ISSUE | **≥ 14643** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-shareholder 10000 + components:DPSF|C_IssueCompany 93 + deter:issue-sft 2000 + components:DPSF|C_Issue 49 + deter:issue-nft 2500 + smallest 1 |
 | `C_Make` | `C_MakeSemiFungibleSet` | ISSUE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_MakeFragments` | `C_MakeFragments` | USAGE | **≥ 18** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPSF|C_MakeFragments 17 |
 | `C_MergeFragments` | `C_MergeFragments` | USAGE | **≥ 18** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPSF|C_MergeFragments 17 |
@@ -423,7 +423,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_Burn` | `C_Burn` | SETUP | **2** | — | $0.02 | small 2 |
 | `C_ClearDispo` | `C_ClearDispo` | SETUP | **≥ 145** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:setup 5 + components:DPTF|C_ToggleFreezeAccount 58 + components:DPTF|C_WipeSlim 80 + small 2 |
 | `C_Control` | `C_Control` | SETUP | **25** | — | $0.25 | deter:setup 5 + components:DPTF|C_Control 20 |
-| `C_DeployAccount` | `C_DeployAccount` | ISSUE | **50** | — | $0.50 | deter:token-account 50 |
+| `C_DeployAccount` | `C_DeployAccount` | ISSUE | **74** | — | $0.74 | deter:token-account 50 + components:DPTF|C_DeployAccount 24 |
 | `C_DonateFees` | `C_SetFeeTarget` | FEE | **44** | — | $0.44 | deter:fee 25 + components:DPTF|C_SetFeeTarget 19 |
 | `C_Issue` | `C_Issue` | ISSUE | **≥ 1000** | — | COMPLEX | charge multiplies by an item count; legs: deter:issue-tf 1000 |
 | `C_Mint` | `C_Mint` | ISSUE | **7** | — | $0.07 | biggest 5 + small 2 |
@@ -595,7 +595,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_Vest` | `C_Vest` | SETUP | **≥ 91** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Mint 80 + small 2 + smallest 1 + medium 3 |
 
 ---
-159 simple (exact price) · 141 complex (floor price) · 40 exempt · 90 unresolved · 340 Talos client functions
+168 simple (exact price) · 144 complex (floor price) · 40 exempt · 78 unresolved · 352 Talos client functions
 
 `×N` on a core op = the wrapper drives N priced core ops in a FIXED composition (still exactly knowable).
 

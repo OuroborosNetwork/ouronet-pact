@@ -414,7 +414,9 @@
             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                 [
                     (ref-DPDC-I::URCi_IssueDigitalCollection true dpdc)
-                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisDeter "issue-shareholder") dpdc (ref-IGNIS::URC_IsVirtualGasZero) [])
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "DPSF|C_IssueCompany" "issue-shareholder")
+                dpdc (ref-IGNIS::URC_IsVirtualGasZero) [])
                     (ref-IGNIS::UDC_ConstructOutputCumulator populate-price dpdc (ref-IGNIS::URC_IsVirtualGasZero) [])
                 ]
                 []
@@ -721,7 +723,9 @@
                 [
                     ico
                     ;;2]Equity premium: $100 flat in IGNIS (owner 2026-09-05), central IG|DETER
-                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisDeter "issue-shareholder") dpdc (ref-IGNIS::URC_IsVirtualGasZero) [])
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "DPSF|C_IssueCompany" "issue-shareholder")
+                dpdc (ref-IGNIS::URC_IsVirtualGasZero) [])
                     ;;3]Populate Equity SFT Collection
                     (ref-DPDC-C::C_CreateNewNonces
                         equity-id true [1000000 0 0 0 0 0 0 0]

@@ -186,7 +186,7 @@
     (defun URC_DirectRefillAmounts:[decimal] (swpair:string ids:[string] amounts:[decimal]))
     (defun URC_IndirectRefillAmounts:[decimal] (X:[decimal] positions:[integer] amounts:[decimal]))
     (defun URC_TrimIdsWithZeroAmounts:[string] (swpair:string input-amounts:[decimal]))
-    (defun URCi_Issue:object{IgnisCollectorV2.OutputCumulator} (account:string pool-tokens:[object{SwapperV4.PoolTokens}]))
+    (defun URCi_Issue:object{IgnisCollectorV2.OutputCumulator} (op-key:string account:string pool-tokens:[object{SwapperV4.PoolTokens}]))
     ;;{5.4}  Validate [UEV/CAP]
     ;;
     ;;
@@ -2296,7 +2296,7 @@
         )
     )
     (defun URCi_Issue:object{IgnisCollectorV2.OutputCumulator}
-        (account:string pool-tokens:[object{SwapperV4.PoolTokens}])
+        (op-key:string account:string pool-tokens:[object{SwapperV4.PoolTokens}])
         @doc "Cost preview for C_Issue's IGNIS cumulator (the STOA dptf+swp usage prices are \
             \ billed separately). Five legs, matching C_Issue's concat: \
             \ ico1 = LP-token issue gas (URCi_IssueGas 1 on SWP); \
@@ -2331,7 +2331,10 @@
                     (ref-TFT::URCi_MultiTransferCumulator pool-token-ids account swp-sc pool-token-amounts)
                     (ref-IGNIS::UDC_ConstructOutputCumulator (ref-DALOS::UR_UsagePrice "ignis|biggest") swp-sc trigger [])
                     (ref-IGNIS::UDC_ConstructOutputCumulator (ref-DALOS::UR_UsagePrice "ignis|smallest") swp-sc trigger [])
-                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisDeter "issue-swp-pair") swp-sc trigger [])
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                    ;;the six issue variants share this reader but NOT their component cost
+                    ;;(plain 35 vs pool 43), so the caller passes its Talos op key
+                    (ref-IGNIS::UC_IgnisPrice op-key "issue-swp-pair") swp-sc trigger [])
                 ]
                 []
             )

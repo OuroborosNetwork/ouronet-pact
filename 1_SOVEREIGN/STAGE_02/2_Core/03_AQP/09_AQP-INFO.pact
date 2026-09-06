@@ -1097,7 +1097,7 @@
                 ["Operation: Inject reward tokens as a linear time-stream over the given duration."
                  "Executes via TS02-C3.AQP-FVT|CC_InjectStream."]
                 [(format "Streaming {} of {} into FVT {} over {}s." [amount reward-dptf-id fvt-id duration])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (RPS.URCi_Inject fvt-id [])))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (RPS.URCi_Inject "AQP-FVT|CC_InjectStream" fvt-id [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount])
         )
@@ -1113,7 +1113,7 @@
                 ["Operation: Enforced-fresh single-tx inject (fixes all stale members first)."
                  "Executes via TS02-C3.AQP-FVT|CC_Inject."]
                 [(format "Fresh-injected {} of {} into FVT {}." [amount reward-dptf-id fvt-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (RPS.URCi_Inject fvt-id [])))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (RPS.URCi_Inject "AQP-FVT|CC_Inject" fvt-id [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount])
         )
@@ -1129,7 +1129,7 @@
                 ["Operation: Finalize a paginated fresh inject (zero-stale gate, then inject)."
                  "Executes via TS02-C3.AQP-FVT|CC_InjectFinalize."]
                 [(format "Finalized fresh inject of {} of {} into FVT {}." [amount reward-dptf-id fvt-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (RPS.URCi_Inject fvt-id [])))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (RPS.URCi_Inject "AQP-FVT|CC_InjectFinalize" fvt-id [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount])
         )
@@ -1449,7 +1449,7 @@
                 ["Operation: 2-step enforced-fresh inject (spike fallback for CC_Inject on vault/treasury)."
                  "Executes via TS02-C3.MTX-AQP|2|C_Inject."]
                 [(format "2-step fresh-injected {} of {} into FVT {}." [amount reward-dptf-id fvt-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (RPS.URCi_Inject fvt-id [])))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (RPS.URCi_Inject "MTX-AQP|2|C_Inject" fvt-id [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount])
         )

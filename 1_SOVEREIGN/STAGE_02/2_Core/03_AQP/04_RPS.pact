@@ -64,8 +64,8 @@
     (defun XE_XI_FixUserFvtDeb:object{IgnisCollectorV2.OutputCumulator} (user-id:string fvt-id:string))
     (defun XE_XI_FixUserFvtDebPenalizedIn:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string reward-dptf-id:string user-id:string members:[string] reward-rows:[string]))
     (defun XE_XI_FixUserMemberDeb:object{IgnisCollectorV2.OutputCumulator} (user-id:string fvt-id:string score-entity-type:integer score-entity-id:string))
-    (defun XE_XI_FvtAddStream:object{IgnisCollectorV2.OutputCumulator} (patron:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer))
-    (defun XE_XI_FvtInjectCore:object{IgnisCollectorV2.OutputCumulator} (patron:string fvt-id:string reward-dptf-id:string amount:decimal))
+    (defun XE_XI_FvtAddStream:object{IgnisCollectorV2.OutputCumulator} (op-key:string patron:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer))
+    (defun XE_XI_FvtInjectCore:object{IgnisCollectorV2.OutputCumulator} (op-key:string patron:string fvt-id:string reward-dptf-id:string amount:decimal))
     (defun XE_XI_FvtSweepRecomputeChunk:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string score-entity-id:string swept-boost-class-id:string users:[string]))
     (defun XE_XI_FvtSweepRecomputeWindow:integer (score-ids:[string] boost-class-id:string win-lo:integer win-hi:integer))
     (defun XE_XI_IssueMultipletFamily:string (token-0-id:string
@@ -2771,18 +2771,18 @@
                 (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)
         ))
 
-    (defun URCi_Inject:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string])
-        @doc "Deterrence-only gas leg (konto = FVT owner), shared by instant inject, stream \
-            \ inject and inject-finalize. NOT yet on deter+components, deliberately: those \
-            \ three ops have DIFFERENT component costs (CC_Inject 21 / CC_InjectStream 5 / \
-            \ CC_InjectFinalize 7) and the caller identity is only known upstream in FVT — \
-            \ adding components needs an op key threaded through the XE_/XI_ inject \
-            \ boundary. Left explicit rather than billed against a guessed key."
+    (defun URCi_Inject:object{IgnisCollectorV2.OutputCumulator} (op-key:string fvt-id:string output:[string])
+        @doc "Gas leg (konto = FVT owner) for the inject family. The ops sharing it have \
+            \ DIFFERENT component costs (CC_Inject 21 / CC_InjectStream 5 / \
+            \ CC_InjectFinalize 7 / MTX-AQP|2|C_Inject 11), so the caller passes its \
+            \ TALOS OP KEY down through the XE_/XI_ inject boundary."
         (let
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_ConstructOutputCumulator GAS|INJECT (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice op-key "aqp-inject")
+                (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)
         ))
 
     (defun URCi_Collect:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string])
@@ -4706,7 +4706,7 @@
     )
 
     (defun XI_FvtInjectCore:object{IgnisCollectorV2.OutputCumulator}
-        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+        (op-key:string patron:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "THE single inject-CORE for ALL FVT classes — the ONLY place inject writes exist. C_Inject, CC_Inject \
             \ and the MTX|n|C_Inject defpact terminal step all route through here (one code path to audit/fix). \
             \ (1) custody transfer R patron→AQP|SC_NAME; (2) escrow-aware distribute over the divisor — FARM \
@@ -4738,7 +4738,7 @@
                     ;; the ESCROW-on-empty case (divisor 0 → hold `amount` as zombie, kept out of the M1 sweep).
                     (XI_DistributeInjectAmount fvt-id reward-dptf-id amount)
                     ;; PHASE 4.1 — Do not reset unclaimed-count · UrStoa comment-only slot
-                    (URCi_Inject fvt-id [fvt-id reward-dptf-id (format "{}" [amount])])
+                    (URCi_Inject op-key fvt-id [fvt-id reward-dptf-id (format "{}" [amount])])
                 ]
                 []
             )
@@ -4746,7 +4746,7 @@
     )
 
     (defun XI_FvtAddStream:object{IgnisCollectorV2.OutputCumulator}
-        (patron:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
+        (op-key:string patron:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
         @doc "Streamed inject CORE (linear vesting). (0) DRIP pending streams (checkpoint + prune finished → free \
             \ slots); (0b) enforce a free stream slot on the POST-DRIP count under the FVT owner konto's Elite-tier \
             \ cap; (1) custody-transfer `amount` patron→AQP|SC_NAME (held, invisible to available-rewards until \
@@ -4791,7 +4791,7 @@
                             (UC_EmptyOc)
                         )
                         ;; PHASE 3 — GAS (same lane event as an instant inject)
-                        (URCi_Inject fvt-id [fvt-id reward-dptf-id (format "{}" [amount])])
+                        (URCi_Inject op-key fvt-id [fvt-id reward-dptf-id (format "{}" [amount])])
                     ]
                     []
                 )
@@ -5528,16 +5528,16 @@
             (XI_FixUserMemberDeb user-id fvt-id score-entity-type score-entity-id)
         )
     )
-    (defun XE_XI_FvtAddStream:object{IgnisCollectorV2.OutputCumulator} (patron:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
+    (defun XE_XI_FvtAddStream:object{IgnisCollectorV2.OutputCumulator} (op-key:string patron:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
-            (XI_FvtAddStream patron fvt-id reward-dptf-id amount duration)
+            (XI_FvtAddStream op-key patron fvt-id reward-dptf-id amount duration)
         )
     )
-    (defun XE_XI_FvtInjectCore:object{IgnisCollectorV2.OutputCumulator} (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+    (defun XE_XI_FvtInjectCore:object{IgnisCollectorV2.OutputCumulator} (op-key:string patron:string fvt-id:string reward-dptf-id:string amount:decimal)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
-            (XI_FvtInjectCore patron fvt-id reward-dptf-id amount)
+            (XI_FvtInjectCore op-key patron fvt-id reward-dptf-id amount)
         )
     )
     (defun XE_XI_FvtSweepRecomputeChunk:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string score-entity-id:string swept-boost-class-id:string users:[string])

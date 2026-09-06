@@ -2254,7 +2254,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (* (dec token-count) (ref-IGNIS::UC_IgnisDeter "issue-ats-pair"))
+            ;;deterrence scales PER TOKEN; the op's own compute is charged ONCE
+            (+ (* (dec token-count) (ref-IGNIS::UC_IgnisDeter "issue-ats-pair"))
+               (ref-IGNIS::UC_IgnisComponents "ATS|C_Issue"))
         )
     )
     (defun URCi_IssueStoa:decimal (token-count:integer)

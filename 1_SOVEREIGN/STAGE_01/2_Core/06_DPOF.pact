@@ -1898,7 +1898,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (* (dec token-count) (ref-IGNIS::UC_IgnisDeter "issue-of"))
+            ;;deterrence scales PER TOKEN; the op's own compute is charged ONCE
+            (+ (* (dec token-count) (ref-IGNIS::UC_IgnisDeter "issue-of"))
+               (ref-IGNIS::UC_IgnisComponents "DPOF|C_Issue"))
         )
     )
     (defun URCi_IssueStoa:decimal (token-count:integer)
@@ -1932,7 +1934,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisDeter "token-account") account (ref-IGNIS::URC_IsVirtualGasZero) [])
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "DPOF|C_DeployAccount" "token-account")
+                account (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     ;;{5.4}  Validate [UEV/CAP]

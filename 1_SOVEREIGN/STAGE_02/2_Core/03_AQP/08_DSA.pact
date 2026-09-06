@@ -586,7 +586,9 @@
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_ConstructOutputCumulator GAS|DEFINE-VAULT patron (r::URC_IsVirtualGasZero) output)
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-DSA|C_DefineDelegationVault" "issue-dsa-vault")
+                patron (r::URC_IsVirtualGasZero) output)
         ))
     (defun URCi_OpenAgency:object{IgnisCollectorV2.OutputCumulator} (patron:string output:[string])
         @doc "GAS leg for the core admit (C_AdmitAgency); the Talos open flow additionally stakes operator collateral."
@@ -594,28 +596,36 @@
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_ConstructOutputCumulator GAS|OPEN-AGENCY patron (r::URC_IsVirtualGasZero) output)
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-DSA|C_OpenAgency" "issue-dsa-agency")
+                patron (r::URC_IsVirtualGasZero) output)
         ))
     (defun URCi_RecomputeCapture:object{IgnisCollectorV2.OutputCumulator} (patron:string output:[string])
         (let
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_ConstructOutputCumulator GAS|RECOMPUTE-CAPTURE patron (r::URC_IsVirtualGasZero) output)
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-DSA|C_RecomputeCapture" "recompute-capture")
+                patron (r::URC_IsVirtualGasZero) output)
         ))
     (defun URCi_SetOracleAuth:object{IgnisCollectorV2.OutputCumulator} (patron:string output:[string])
         (let
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_ConstructOutputCumulator GAS|SET-ORACLE-AUTH patron (r::URC_IsVirtualGasZero) output)
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-DSA|C_SetOracleAuth" "set-oracle-auth")
+                patron (r::URC_IsVirtualGasZero) output)
         ))
     (defun URCi_OracleWrite:object{IgnisCollectorV2.OutputCumulator} (patron:string output:[string])
         (let
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_ConstructOutputCumulator GAS|ORACLE-WRITE patron (r::URC_IsVirtualGasZero) output)
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-DSA|C_OracleWrite" "oracle-write")
+                patron (r::URC_IsVirtualGasZero) output)
         ))
     (defun URCi_WithdrawRoyalty:object{IgnisCollectorV2.OutputCumulator} (patron:string output:[string])
         @doc "GAS leg only; exec concats this with the custody-move IGNIS (FVT::XE_WithdrawRoyalty, state-dependent)."
@@ -623,7 +633,9 @@
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_ConstructOutputCumulator GAS|WITHDRAW-ROYALTY patron (r::URC_IsVirtualGasZero) output)
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-DSA|C_WithdrawRoyalty" "royalty-dispose")
+                patron (r::URC_IsVirtualGasZero) output)
         ))
     (defun URCi_BurnRoyalty:object{IgnisCollectorV2.OutputCumulator} (patron:string output:[string])
         @doc "GAS leg only; exec concats this with the burn's IGNIS (FVT::XE_BurnRoyalty, state-dependent)."
@@ -631,7 +643,9 @@
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_ConstructOutputCumulator GAS|BURN-ROYALTY patron (r::URC_IsVirtualGasZero) output)
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-DSA|C_BurnRoyalty" "royalty-dispose")
+                patron (r::URC_IsVirtualGasZero) output)
         ))
     (defun URCi_FuelRoyalty:object{IgnisCollectorV2.OutputCumulator} (patron:string output:[string])
         @doc "GAS leg only; exec concats this with the fuel's IGNIS (FVT::XE_FuelRoyalty, state-dependent)."
@@ -639,7 +653,9 @@
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_ConstructOutputCumulator GAS|FUEL-ROYALTY patron (r::URC_IsVirtualGasZero) output)
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-DSA|C_FuelRoyalty" "royalty-fuel")
+                patron (r::URC_IsVirtualGasZero) output)
         ))
     (defun URCi_WithdrawRoyaltyFull:decimal (patron:string fvt-id:string reward-dptf-id:string)
         @doc "FULL reconstructed IGNIS ifp of C_WithdrawRoyalty: GAS|WITHDRAW-ROYALTY gas leg + the FVT custody-move \
@@ -680,7 +696,9 @@
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_ConstructOutputCumulator GAS|SET-AGENCY-FEE patron (r::URC_IsVirtualGasZero) output)
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-DSA|C_SetAgencyFee" "set-agency-fee")
+                patron (r::URC_IsVirtualGasZero) output)
         ))
     ;;{5.4}  Validate [UEV/CAP]
     ;; [UEV] enforce

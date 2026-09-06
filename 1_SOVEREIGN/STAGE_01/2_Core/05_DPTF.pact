@@ -1761,7 +1761,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (* (dec token-count) (ref-IGNIS::UC_IgnisDeter "issue-tf"))
+            ;;deterrence scales PER TOKEN; the op's own compute is charged ONCE
+            (+ (* (dec token-count) (ref-IGNIS::UC_IgnisDeter "issue-tf"))
+               (ref-IGNIS::UC_IgnisComponents "DPTF|C_Issue"))
         )
     )
     (defun URCi_IssueStoa:decimal (token-count:integer)
@@ -1796,7 +1798,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisDeter "token-account") account (ref-IGNIS::URC_IsVirtualGasZero) [])
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "DPTF|C_DeployAccount" "token-account")
+                account (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     ;;  ToggleFeeLock STOA leg: the unlock price rail (0.0 when locking); mirrors the STOA amount

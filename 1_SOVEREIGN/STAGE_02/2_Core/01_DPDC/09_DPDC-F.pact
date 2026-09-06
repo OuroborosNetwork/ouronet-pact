@@ -350,7 +350,8 @@
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
-                (ref-IGNIS::UC_IgnisDeter "frag-enable")
+                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_EnableNonceFragmentation" "frag-enable")
+                        (ref-IGNIS::UC_IgnisPrice "DPNF|C_EnableNonceFragmentation" "frag-enable"))
                 (ref-DPDC::UR_CreatorKonto id son)
                 (ref-IGNIS::URC_IsVirtualGasZero)
                 []

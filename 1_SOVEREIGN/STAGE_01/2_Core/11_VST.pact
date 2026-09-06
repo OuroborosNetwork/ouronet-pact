@@ -837,8 +837,10 @@
                 [
                     ;;1]Issue the special DPTF wrapper (gas rail only; STOA collected separately)
                     (ref-IGNIS::UDC_ConstructOutputCumulator
-                        ;;the link's OWN deterrence ($2.50) PLUS the cost of the DPTF it issues
-                        (+ (ref-IGNIS::UC_IgnisDeter "vst-link") (ref-DPTF::URCi_IssueGas 1))
+                        ;;the link's OWN deterrence ($2.50) + its component cost + the DPTF it issues.
+                        ;;One component key is exact: every VST|C_Create*Link entry is 29.0
+                        (+ (ref-IGNIS::UC_IgnisPrice "VST|C_CreateFrozenLink" "vst-link")
+                           (ref-DPTF::URCi_IssueGas 1))
                         VST|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
                     ;;2]Link <dptf> <-> special wrapper
                     (ref-DPTF::URCi_UpdateSpecialTrueFungible dptf)
@@ -866,8 +868,10 @@
                 [
                     ;;1]Issue the special DPOF wrapper (gas rail only; STOA collected separately)
                     (ref-IGNIS::UDC_ConstructOutputCumulator
-                        ;;the link's OWN deterrence ($2.50) PLUS the cost of the DPOF it issues
-                        (+ (ref-IGNIS::UC_IgnisDeter "vst-link") (ref-DPOF::URCi_IssueGas 1))
+                        ;;the link's OWN deterrence ($2.50) + its component cost + the DPOF it issues.
+                        ;;One component key is exact: every VST|C_Create*Link entry is 29.0
+                        (+ (ref-IGNIS::UC_IgnisPrice "VST|C_CreateVestingLink" "vst-link")
+                           (ref-DPOF::URCi_IssueGas 1))
                         VST|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
                     ;;2]Link <dptf> <-> special wrapper
                     (ref-DPOF::URCi_UpdateSpecialOrtoFungible dptf)

@@ -481,12 +481,16 @@
             (expect "<<TX-IGC-006>> DPTF|C_Wipe == deter(setup) + components"
                 (ref-IGNIS::UC_IgnisPrice "DPTF|C_Wipe" "setup")
                 (at "ignis" (at 0 (at "cumulator-chain" (ref-DPTF::URCi_Wipe ouro)))))
-            ;;deterrence-only readers (no components leg): issuance gas rail + token-account
-            (expect "<<TX-IGC-006>> DPTF issue gas (1 token) == deter(issue-tf), no components"
-                (ref-IGNIS::UC_IgnisDeter "issue-tf")
+            ;;issuance rail: deterrence scales per token, the op's compute is charged once
+            (expect "<<TX-IGC-006>> DPTF issue gas (1 token) == deter(issue-tf) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPTF|C_Issue" "issue-tf")
                 (ref-DPTF::URCi_IssueGas 1))
-            (expect "<<TX-IGC-006>> DPTF DeployAccount == deter(token-account), no components"
-                (ref-IGNIS::UC_IgnisDeter "token-account")
+            (expect "<<TX-IGC-006>> DPTF issue gas (3 tokens) == 3x deter + components ONCE"
+                (+ (* 3.0 (ref-IGNIS::UC_IgnisDeter "issue-tf"))
+                   (ref-IGNIS::UC_IgnisComponents "DPTF|C_Issue"))
+                (ref-DPTF::URCi_IssueGas 3))
+            (expect "<<TX-IGC-006>> DPTF DeployAccount == deter(token-account) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPTF|C_DeployAccount" "token-account")
                 (at "ignis" (at 0 (at "cumulator-chain" (ref-DPTF::URCi_DeployAccount KST.ANHD)))))
             ""
         ]
@@ -558,8 +562,8 @@
             (expect "<<TX-IGC-007>> ATS|C_SetHotRecoveryFee == deter(fee) + components"
                 (ref-IGNIS::UC_IgnisPrice "ATS|C_SetHotRecoveryFee" "fee")
                 (at "ignis" (at 0 (at "cumulator-chain" (ref-ATS::URCi_SetHotRecoveryFees atspair)))))
-            (expect "<<TX-IGC-007>> ATS issue gas (1 pair) == deter(issue-ats-pair), no components"
-                (ref-IGNIS::UC_IgnisDeter "issue-ats-pair")
+            (expect "<<TX-IGC-007>> ATS issue gas (1 pair) == deter(issue-ats-pair) + components"
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_Issue" "issue-ats-pair")
                 (ref-ATS::URCi_IssueGas 1))
             ""
         ]
@@ -583,8 +587,9 @@
     )
     (map (print)
         [
-            (expect "<<TX-IGC-008>> VST link leg 0 == deter(vst-link) + the DPTF issuance it carries"
-                (+ (ref-IGNIS::UC_IgnisDeter "vst-link") (ref-DPTF::URCi_IssueGas 1))
+            (expect "<<TX-IGC-008>> VST link leg 0 == price(vst-link) + the DPTF issuance it carries"
+                (+ (ref-IGNIS::UC_IgnisPrice "VST|C_CreateFrozenLink" "vst-link")
+                   (ref-DPTF::URCi_IssueGas 1))
                 (at "ignis" (at 0 (at "cumulator-chain"
                     (ref-VST::URCi_CreateSpecialTrueFungibleLink ouro)))))
             ;;floor: the op charges MORE than its deterrence leg (update-special + role toggle)

@@ -245,7 +245,8 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (if son (ref-IGNIS::UC_IgnisDeter "issue-sft") (ref-IGNIS::UC_IgnisDeter "issue-nft"))
+            (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_Issue" "issue-sft")
+                    (ref-IGNIS::UC_IgnisPrice "DPNF|C_Issue" "issue-nft"))
         )
     )
     (defun URCi_IssueCollectionStoa:decimal

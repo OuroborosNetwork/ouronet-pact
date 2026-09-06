@@ -170,12 +170,12 @@
             (expect "<<TX-DPP-001>> DPNF|C_MergeFragments == deter(usage) + components"
                 (ref-IGNIS::UC_IgnisPrice "DPNF|C_MergeFragments" "usage")
                 (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-F::URCi_MergeFragments nft false)))))
-            ;;the fragmentation ISSUE gate is deter-only (one nonce enabled per call)
-            (expect "<<TX-DPP-001>> DPSF EnableNonceFragmentation == deter(frag-enable), no components"
-                (ref-IGNIS::UC_IgnisDeter "frag-enable")
+            ;;the fragmentation ISSUE gate: one nonce enabled per call
+            (expect "<<TX-DPP-001>> DPSF EnableNonceFragmentation == deter(frag-enable) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPSF|C_EnableNonceFragmentation" "frag-enable")
                 (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-F::URCi_EnableNonceFragmentation sft true)))))
-            (expect "<<TX-DPP-001>> DPNF EnableNonceFragmentation == deter(frag-enable), no components"
-                (ref-IGNIS::UC_IgnisDeter "frag-enable")
+            (expect "<<TX-DPP-001>> DPNF EnableNonceFragmentation == deter(frag-enable) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPNF|C_EnableNonceFragmentation" "frag-enable")
                 (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-F::URCi_EnableNonceFragmentation nft false)))))
             ""
         ]
@@ -242,12 +242,12 @@
             (expect "<<TX-OFP-001>> DPOF|C_Mint == deter(setup) + components"
                 (ref-IGNIS::UC_IgnisPrice "DPOF|C_Mint" "setup")
                 (at "ignis" (at 0 (at "cumulator-chain" (ref-DPOF::URCi_Mint of)))))
-            ;;deterrence-only readers: issuance gas rail + token-account creation
-            (expect "<<TX-OFP-001>> DPOF issue gas (1 token) == deter(issue-of), no components"
-                (ref-IGNIS::UC_IgnisDeter "issue-of")
+            ;;issuance rail + token-account creation, both now deter + components
+            (expect "<<TX-OFP-001>> DPOF issue gas (1 token) == deter(issue-of) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPOF|C_Issue" "issue-of")
                 (ref-DPOF::URCi_IssueGas 1))
-            (expect "<<TX-OFP-001>> DPOF DeployAccount == deter(token-account), no components"
-                (ref-IGNIS::UC_IgnisDeter "token-account")
+            (expect "<<TX-OFP-001>> DPOF DeployAccount == deter(token-account) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPOF|C_DeployAccount" "token-account")
                 (at "ignis" (at 0 (at "cumulator-chain" (ref-DPOF::URCi_DeployAccount KST.ANHD)))))
             ""
         ]

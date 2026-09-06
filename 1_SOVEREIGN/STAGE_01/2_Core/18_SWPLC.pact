@@ -542,7 +542,9 @@
             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                 [
                     ;;LP churn deterrent (central IG|DETER lp-churn, owner 2026-09-05)
-                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisDeter "lp-churn") SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "SWP|C_AddStandardLiquidity" "lp-churn")
+                SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
                     (at "perfect-ignis-fee" (at "clad-op" clad))
                     (ref-TFT::URCi_Transfer lp-id SWP|SC_NAME account native-lp)
                 ]
@@ -572,7 +574,9 @@
             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                 [
                     ;;LP churn deterrent (central IG|DETER lp-churn, owner 2026-09-05)
-                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisDeter "lp-churn") SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "SWP|C_AddIcedLiquidity" "lp-churn")
+                SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
                     (at "perfect-ignis-fee" (at "clad-op" clad))
                     (ref-TFT::URCi_Transfer lp-id SWP|SC_NAME account native-lp)
                     (ref-VST::URCi_Freeze SWP|SC_NAME account lp-id frozen-lp)
@@ -603,7 +607,9 @@
             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                 [
                     ;;LP churn deterrent (central IG|DETER lp-churn, owner 2026-09-05)
-                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisDeter "lp-churn") SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "SWP|C_AddGlacialLiquidity" "lp-churn")
+                SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
                     (at "perfect-ignis-fee" (at "clad-op" clad))
                     (if (!= native-lp 0.0)
                         (ref-TFT::URCi_Transfer lp-id SWP|SC_NAME account native-lp)
@@ -643,7 +649,9 @@
             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                 [
                     ;;LP churn deterrent (central IG|DETER lp-churn, owner 2026-09-05)
-                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisDeter "lp-churn") SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "SWP|C_AddFrozenLiquidity" "lp-churn")
+                SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
                     (ref-TFT::URCi_Transfer frozen-dptf account vst-sc input-amount)
                     (ref-DPTF::URCi_Burn frozen-dptf vst-sc)
                     (at "perfect-ignis-fee" (at "clad-op" clad))
@@ -687,7 +695,9 @@
             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                 [
                     ;;LP churn deterrent (central IG|DETER lp-churn, owner 2026-09-05)
-                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisDeter "lp-churn") SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "SWP|C_AddSleepingLiquidity" "lp-churn")
+                SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
                     (ref-DPOF::URCi_MoveCumulator sleeping-dpof [nonce] false)
                     (ref-DPOF::URCi_Burn sleeping-dpof)
                     (ref-TFT::URCi_Transfer ignis-id account vst-sc (at "total-ignis-tax-needed" clad))
@@ -720,7 +730,9 @@
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                 [
-                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisDeter "lp-churn") SWP|SC_NAME trigger [])
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "SWP|C_RemoveLiquidity" "lp-churn")
+                SWP|SC_NAME trigger [])
                     (ref-TFT::URCi_Transfer lp-id account SWP|SC_NAME lp-amount)
                     (ref-DPTF::URCi_Burn lp-id SWP|SC_NAME)
                     (ref-TFT::URCi_MultiTransferCumulator pool-token-ids SWP|SC_NAME account pt-output-amounts)
@@ -999,7 +1011,12 @@
                         (ref-SWPL::XE_AutonomousSwapManagement swpair)
                         ;;Output Cumulator
                         (ref-IGNIS::UDC_ConcatenateOutputCumulators 
-                            [(ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisDeter "lp-churn") SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []) ico1 ico2] [native-lp-transfer-amount]
+                            [(ref-IGNIS::UDC_ConstructOutputCumulator
+                ;;the STOA-PID variant is the same work as its plain sibling, and both
+                ;;branches are the SAME Talos op (SWP|C_AddLiquidity), so it bills the
+                ;;sibling component key rather than inventing a second entry
+                (ref-IGNIS::UC_IgnisPrice "SWP|C_AddStandardLiquidity" "lp-churn")
+                SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []) ico1 ico2] [native-lp-transfer-amount]
                         )
                     )
                 )
@@ -1052,7 +1069,12 @@
                         (ref-SWPL::XE_AutonomousSwapManagement swpair)
                         ;;Output Cumulator
                         (ref-IGNIS::UDC_ConcatenateOutputCumulators [
-                            (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisDeter "lp-churn") SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []) ico1 ico2 ico3] [native-lp-transfer-amount frozen-lp-transfer-amount]
+                            (ref-IGNIS::UDC_ConstructOutputCumulator
+                ;;the STOA-PID variant is the same work as its plain sibling, and both
+                ;;branches are the SAME Talos op (SWP|C_AddLiquidity), so it bills the
+                ;;sibling component key rather than inventing a second entry
+                (ref-IGNIS::UC_IgnisPrice "SWP|C_AddIcedLiquidity" "lp-churn")
+                SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []) ico1 ico2 ico3] [native-lp-transfer-amount frozen-lp-transfer-amount]
                         )
                     )
                 )
@@ -1108,7 +1130,12 @@
                         (ref-SWPL::XE_AutonomousSwapManagement swpair)
                         ;;Output Cumulator
                         (ref-IGNIS::UDC_ConcatenateOutputCumulators 
-                            [(ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisDeter "lp-churn") SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []) ico1 ico2 ico3] [native-lp-transfer-amount frozen-lp-transfer-amount]
+                            [(ref-IGNIS::UDC_ConstructOutputCumulator
+                ;;the STOA-PID variant is the same work as its plain sibling, and both
+                ;;branches are the SAME Talos op (SWP|C_AddLiquidity), so it bills the
+                ;;sibling component key rather than inventing a second entry
+                (ref-IGNIS::UC_IgnisPrice "SWP|C_AddGlacialLiquidity" "lp-churn")
+                SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []) ico1 ico2 ico3] [native-lp-transfer-amount frozen-lp-transfer-amount]
                         )
                     )
                 )
@@ -1173,7 +1200,12 @@
                         (ref-SWPL::XE_AutonomousSwapManagement swpair)
                         ;;Output Cumulator
                         (ref-IGNIS::UDC_ConcatenateOutputCumulators 
-                            [(ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisDeter "lp-churn") SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []) ico1 ico2 ico3 ico4] [frozen-lp-transfer-amount]
+                            [(ref-IGNIS::UDC_ConstructOutputCumulator
+                ;;the STOA-PID variant is the same work as its plain sibling, and both
+                ;;branches are the SAME Talos op (SWP|C_AddLiquidity), so it bills the
+                ;;sibling component key rather than inventing a second entry
+                (ref-IGNIS::UC_IgnisPrice "SWP|C_AddFrozenLiquidity" "lp-churn")
+                SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []) ico1 ico2 ico3 ico4] [frozen-lp-transfer-amount]
                         )
                     )
                 )
@@ -1250,7 +1282,12 @@
                         (ref-SWPL::XE_AutonomousSwapManagement swpair)
                         ;;Output Cumulator
                         (ref-IGNIS::UDC_ConcatenateOutputCumulators 
-                            [(ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisDeter "lp-churn") SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []) ico1 ico2 ico3 ico4 ico5] [sleeping-lp-transfer-amount]
+                            [(ref-IGNIS::UDC_ConstructOutputCumulator
+                ;;the STOA-PID variant is the same work as its plain sibling, and both
+                ;;branches are the SAME Talos op (SWP|C_AddLiquidity), so it bills the
+                ;;sibling component key rather than inventing a second entry
+                (ref-IGNIS::UC_IgnisPrice "SWP|C_AddSleepingLiquidity" "lp-churn")
+                SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []) ico1 ico2 ico3 ico4 ico5] [sleeping-lp-transfer-amount]
                         )
                     )
                 )

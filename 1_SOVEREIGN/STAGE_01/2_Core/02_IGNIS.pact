@@ -833,6 +833,9 @@
         ,"SWP|C_Firestarter"                            : 15.0
         ,"SWP|C_Fuel"                                   : 21.0
         ,"SWP|C_IssueStable"                            : 35.0
+        ;;C_IssueStandard was MISSING from the generated map while its two siblings were
+        ;;present; same five-leg shape as Stable/Weighted, so it carries their value.
+        ,"SWP|C_IssueStandard"                          : 35.0
         ,"SWP|C_IssueStablePool"                        : 43.0
         ,"SWP|C_IssueStandardPool"                      : 43.0
         ,"SWP|C_IssueWeighted"                          : 35.0
