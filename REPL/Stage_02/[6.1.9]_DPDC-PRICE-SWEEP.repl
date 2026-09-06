@@ -1,0 +1,186 @@
+;;
+;; REPL/Stage_02/[6.1.9]_DPDC-PRICE-SWEEP.repl — DPDC full-module IGNIS price sweep (P7)
+;;   Canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   Legend:  <<TX-DPP-nnn>>  price assertion
+;;   Source:  1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/{05_DPDC-R,06_DPDC-MNG,08_DPDC-S,09_DPDC-F}.pact
+;;   REPL tests: every migrated DPDC URCi_* cost reader, BOTH son branches.
+;;
+;;   WHY this file exists: DPDC-MNG::URCi_Control and URCi_WipeNonce were once half-migrated —
+;;   the son=true branch billed the new deter+components price while son=false silently kept a
+;;   legacy flat tier. That is syntactically valid, so the whole pipeline stayed green. Only a
+;;   price assertion catches it, and only if it exercises BOTH branches. Hence: every son-taking
+;;   reader below is asserted twice (SFT id + NFT id).
+;;
+;;   Fixtures: TSFS-98c486052a51 (SFT collection, from [6.1.3]) and CNF-98c486052a51 (NFT
+;;   collection, from [6.1.4]) — so this file must load after those two suites.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[6.1.9]_DPDC-PRICE-SWEEP.repl  (DPDC price sweep)")
+(print "================================================================")
+(print "")
+
+;;================================================================================
+(begin-tx "TX-DPP-001 - DPDC price sweep: observed IGNIS == deter + components")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-DPP-001 · 01 · full-module sweep ====
+(print "--- [TX-DPP-001 · 01 · full-module sweep] ---")
+(let
+    (
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+        (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
+        (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+        (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
+        (sft:string "TSFS-98c486052a51")
+        (nft:string "CNF-98c486052a51")
+    )
+    (map (print)
+        [
+            (expect "<<TX-DPP-001>> DPSF|C_ToggleAddQuantityRole == deter(auth) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPSF|C_ToggleAddQuantityRole" "auth")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-R::URCi_ToggleAddQuantityRole sft)))))
+            (expect "<<TX-DPP-001>> DPSF|C_ToggleFreezeAccount == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPSF|C_ToggleFreezeAccount" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-R::URCi_ToggleFreezeAccount sft true)))))
+            (expect "<<TX-DPP-001>> DPNF|C_ToggleFreezeAccount == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPNF|C_ToggleFreezeAccount" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-R::URCi_ToggleFreezeAccount nft false)))))
+            (expect "<<TX-DPP-001>> DPSF|C_ToggleExemptionRole == deter(auth) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPSF|C_ToggleExemptionRole" "auth")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-R::URCi_ToggleExemptionRole sft true)))))
+            (expect "<<TX-DPP-001>> DPNF|C_ToggleExemptionRole == deter(auth) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPNF|C_ToggleExemptionRole" "auth")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-R::URCi_ToggleExemptionRole nft false)))))
+            (expect "<<TX-DPP-001>> DPSF|C_ToggleBurnRole == deter(auth) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPSF|C_ToggleBurnRole" "auth")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-R::URCi_ToggleBurnRole sft true)))))
+            (expect "<<TX-DPP-001>> DPNF|C_ToggleBurnRole == deter(auth) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPNF|C_ToggleBurnRole" "auth")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-R::URCi_ToggleBurnRole nft false)))))
+            (expect "<<TX-DPP-001>> DPSF|C_ToggleUpdateRole == deter(auth) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPSF|C_ToggleUpdateRole" "auth")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-R::URCi_ToggleUpdateRole sft true)))))
+            (expect "<<TX-DPP-001>> DPNF|C_ToggleUpdateRole == deter(auth) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPNF|C_ToggleUpdateRole" "auth")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-R::URCi_ToggleUpdateRole nft false)))))
+            (expect "<<TX-DPP-001>> DPSF|C_ToggleModifyCreatorRole == deter(auth) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPSF|C_ToggleModifyCreatorRole" "auth")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-R::URCi_ToggleModifyCreatorRole sft true)))))
+            (expect "<<TX-DPP-001>> DPNF|C_ToggleModifyCreatorRole == deter(auth) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPNF|C_ToggleModifyCreatorRole" "auth")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-R::URCi_ToggleModifyCreatorRole nft false)))))
+            (expect "<<TX-DPP-001>> DPSF|C_ToggleModifyRoyaltiesRole == deter(fee) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPSF|C_ToggleModifyRoyaltiesRole" "fee")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-R::URCi_ToggleModifyRoyaltiesRole sft true)))))
+            (expect "<<TX-DPP-001>> DPNF|C_ToggleModifyRoyaltiesRole == deter(fee) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPNF|C_ToggleModifyRoyaltiesRole" "fee")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-R::URCi_ToggleModifyRoyaltiesRole nft false)))))
+            (expect "<<TX-DPP-001>> DPSF|C_ToggleTransferRole == deter(usage) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPSF|C_ToggleTransferRole" "usage")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-R::URCi_ToggleTransferRole sft true)))))
+            (expect "<<TX-DPP-001>> DPNF|C_ToggleTransferRole == deter(usage) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPNF|C_ToggleTransferRole" "usage")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-R::URCi_ToggleTransferRole nft false)))))
+            (expect "<<TX-DPP-001>> DPSF|C_MoveCreateRole == deter(auth) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPSF|C_MoveCreateRole" "auth")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-R::URCi_MoveCreateRole sft true)))))
+            (expect "<<TX-DPP-001>> DPNF|C_MoveCreateRole == deter(auth) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPNF|C_MoveCreateRole" "auth")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-R::URCi_MoveCreateRole nft false)))))
+            (expect "<<TX-DPP-001>> DPSF|C_MoveRecreateRole == deter(auth) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPSF|C_MoveRecreateRole" "auth")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-R::URCi_MoveRecreateRole sft true)))))
+            (expect "<<TX-DPP-001>> DPNF|C_MoveRecreateRole == deter(auth) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPNF|C_MoveRecreateRole" "auth")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-R::URCi_MoveRecreateRole nft false)))))
+            (expect "<<TX-DPP-001>> DPSF|C_MoveSetUriRole == deter(auth) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPSF|C_MoveSetUriRole" "auth")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-R::URCi_MoveSetUriRole sft true)))))
+            (expect "<<TX-DPP-001>> DPNF|C_MoveSetUriRole == deter(auth) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPNF|C_MoveSetUriRole" "auth")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-R::URCi_MoveSetUriRole nft false)))))
+            (expect "<<TX-DPP-001>> DPSF|C_Control == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPSF|C_Control" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-MNG::URCi_Control sft true)))))
+            (expect "<<TX-DPP-001>> DPNF|C_Control == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPNF|C_Control" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-MNG::URCi_Control nft false)))))
+            (expect "<<TX-DPP-001>> DPSF|C_TogglePause == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPSF|C_TogglePause" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-MNG::URCi_TogglePause sft true)))))
+            (expect "<<TX-DPP-001>> DPNF|C_TogglePause == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPNF|C_TogglePause" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-MNG::URCi_TogglePause nft false)))))
+            (expect "<<TX-DPP-001>> DPSF|C_WipeNonce == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPSF|C_WipeNonce" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-MNG::URCi_WipeNonce sft true)))))
+            (expect "<<TX-DPP-001>> DPNF|C_WipeNonce == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPNF|C_WipeNonce" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-MNG::URCi_WipeNonce nft false)))))
+            ;;minting-type op: generic tier, no issuance price
+            (expect "<<TX-DPP-001>> DPSF|C_AddQuantity == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPSF|C_AddQuantity" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-MNG::URCi_AddQuantity sft)))))
+            ;;minting-type op: generic tier, no issuance price
+            (expect "<<TX-DPP-001>> DPNF|C_Respawn == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPNF|C_Respawn" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-MNG::URCi_RespawnNFT nft)))))
+            ;;reader name != Talos op name
+            (expect "<<TX-DPP-001>> DPSF|C_Burn == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPSF|C_Burn" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-MNG::URCi_BurnSFT sft)))))
+            ;;reader name != Talos op name
+            (expect "<<TX-DPP-001>> DPSF|C_WipeNoncePartialy == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPSF|C_WipeNoncePartialy" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-MNG::URCi_WipeSlim sft)))))
+            ;;reader name != Talos op name
+            (expect "<<TX-DPP-001>> DPNF|C_Burn == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPNF|C_Burn" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-MNG::URCi_BurnNFT nft)))))
+            (expect "<<TX-DPP-001>> DPSF|C_EnableSetClassFragmentation == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPSF|C_EnableSetClassFragmentation" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-S::URCi_EnableSetClassFragmentation sft true)))))
+            (expect "<<TX-DPP-001>> DPNF|C_EnableSetClassFragmentation == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPNF|C_EnableSetClassFragmentation" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-S::URCi_EnableSetClassFragmentation nft false)))))
+            (expect "<<TX-DPP-001>> DPSF|C_ToggleSet == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPSF|C_ToggleSet" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-S::URCi_ToggleSet sft true)))))
+            (expect "<<TX-DPP-001>> DPNF|C_ToggleSet == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPNF|C_ToggleSet" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-S::URCi_ToggleSet nft false)))))
+            (expect "<<TX-DPP-001>> DPSF|C_RenameSet == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPSF|C_RenameSet" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-S::URCi_RenameSet sft true)))))
+            (expect "<<TX-DPP-001>> DPNF|C_RenameSet == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPNF|C_RenameSet" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-S::URCi_RenameSet nft false)))))
+            (expect "<<TX-DPP-001>> DPSF|C_MakeFragments == deter(usage) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPSF|C_MakeFragments" "usage")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-F::URCi_MakeFragments sft true)))))
+            (expect "<<TX-DPP-001>> DPNF|C_MakeFragments == deter(usage) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPNF|C_MakeFragments" "usage")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-F::URCi_MakeFragments nft false)))))
+            (expect "<<TX-DPP-001>> DPSF|C_MergeFragments == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPSF|C_MergeFragments" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-F::URCi_MergeFragments sft true)))))
+            (expect "<<TX-DPP-001>> DPNF|C_MergeFragments == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPNF|C_MergeFragments" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-F::URCi_MergeFragments nft false)))))
+            ;;the fragmentation ISSUE gate is deter-only (one nonce enabled per call)
+            (expect "<<TX-DPP-001>> DPSF EnableNonceFragmentation == deter(frag-enable), no components"
+                (ref-IGNIS::UC_IgnisDeter "frag-enable")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-F::URCi_EnableNonceFragmentation sft true)))))
+            (expect "<<TX-DPP-001>> DPNF EnableNonceFragmentation == deter(frag-enable), no components"
+                (ref-IGNIS::UC_IgnisDeter "frag-enable")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-F::URCi_EnableNonceFragmentation nft false)))))
+            ""
+        ]
+    )
+)
+(print "")
+(print "<<TX-DPP-001>> P7 sweep: all 44 DPDC price assertions pass (both son branches)")
+(print "===^^^===")
+(commit-tx)
