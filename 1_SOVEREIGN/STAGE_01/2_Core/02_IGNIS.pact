@@ -64,11 +64,6 @@
     (defun UDC_MakeIDP:string (ignis-discount:decimal))
     (defun UDC_ConstructOutputCumulator:object{OutputCumulator} (price:decimal active-account:string trigger:bool output-lst:list))
     (defun UDC_BrandingCumulator:object{OutputCumulator} (active-account:string multiplier:decimal))
-    (defun UDC_SmallestCumulator:object{OutputCumulator} (active-account:string))
-    (defun UDC_SmallCumulator:object{OutputCumulator} (active-account:string))
-    (defun UDC_MediumCumulator:object{OutputCumulator} (active-account:string))
-    (defun UDC_BigCumulator:object{OutputCumulator} (active-account:string))
-    (defun UDC_BiggestCumulator:object{OutputCumulator} (active-account:string))
     (defun UDC_LegCumulator:object{OutputCumulator} (leg-key:string active-account:string))
     (defun UDC_CustomCodeCumulator:object{OutputCumulator} ())
         ;;
@@ -415,7 +410,14 @@
         ,"ben-nonce-total-nf"        : 3.0
         ,"ank-sync-count-tf"         : 5.0
         ,"ank-sync-count-collectable": 5.0
-        ,"stake-anchor-refresh"      : 3.0}
+        ,"stake-anchor-refresh"      : 3.0
+        ;;legs lifted out of Stage-1 writers/composers (2026-09-06, same parity rule: each value
+        ;;is exactly what its site charged as a hardcoded tier, so lifting moved no price)
+        ,"special-tf-link"           : 5.0
+        ,"special-of-link"           : 5.0
+        ,"vst-link-role-toggle-tf"   : 4.0
+        ,"vst-link-role-toggle-of"   : 5.0
+        ,"lp-mint"                   : 2.0}
     )
     (defconst IG|DETER
         {"usage"             : 1.0
@@ -615,6 +617,11 @@
         ,"CODEX|C_RotateCodexGuard"                     : 4.0
         ,"CUSTODIANS|C_Acquire"                         : 29.0
         ,"DALOS|C_ControlSmartAccount"                  : 4.0
+        ;;UpdateEliteAccount / …Squared were MISSING from the generated map (same class of
+        ;;omission as SWP|C_IssueStandard). Valued from the ControlSmartAccount shape they share:
+        ;;a single elite-tier recompute per account touched, so the Squared variant is 2x.
+        ,"DALOS|C_UpdateEliteAccount"                   : 4.0
+        ,"DALOS|C_UpdateEliteAccountSquared"            : 8.0
         ,"DALOS|C_RotateGovernor"                       : 4.0
         ,"DALOS|C_RotateGuard"                          : 14.0
         ,"DALOS|C_RotateSovereign"                      : 4.0
@@ -1037,76 +1044,6 @@
             )
             (UDC_ConstructOutputCumulator
                 (* multiplier (ref-DALOS::UR_UsagePrice "ignis|branding"))
-                active-account
-                (URC_IsVirtualGasZero)
-                []
-            )
-        )
-    )
-    (defun UDC_SmallestCumulator:object{IgnisCollectorV2.OutputCumulator}
-        (active-account:string)
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-            )
-            (UDC_ConstructOutputCumulator
-                (ref-DALOS::UR_UsagePrice "ignis|smallest")
-                active-account
-                (URC_IsVirtualGasZero)
-                []
-            )
-        )
-    )
-    (defun UDC_SmallCumulator:object{IgnisCollectorV2.OutputCumulator}
-        (active-account:string)
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-            )
-            (UDC_ConstructOutputCumulator
-                (ref-DALOS::UR_UsagePrice "ignis|small")
-                active-account
-                (URC_IsVirtualGasZero)
-                []
-            )
-        )
-    )
-    (defun UDC_MediumCumulator:object{IgnisCollectorV2.OutputCumulator}
-        (active-account:string)
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-            )
-            (UDC_ConstructOutputCumulator
-                (ref-DALOS::UR_UsagePrice "ignis|medium")
-                active-account
-                (URC_IsVirtualGasZero)
-                []
-            )
-        )
-    )
-    (defun UDC_BigCumulator:object{IgnisCollectorV2.OutputCumulator}
-        (active-account:string)
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-            )
-            (UDC_ConstructOutputCumulator
-                (ref-DALOS::UR_UsagePrice "ignis|big")
-                active-account
-                (URC_IsVirtualGasZero)
-                []
-            )
-        )
-    )
-    (defun UDC_BiggestCumulator:object{IgnisCollectorV2.OutputCumulator}
-        (active-account:string)
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-            )
-            (UDC_ConstructOutputCumulator
-                (ref-DALOS::UR_UsagePrice "ignis|biggest")
                 active-account
                 (URC_IsVirtualGasZero)
                 []
@@ -1669,25 +1606,39 @@
     ;;  DALOS deploys below IGNIS (cannot host these); Talos bills through them and the Z_Reads
     ;;  presentation derives its preview from the same call, so billing and preview never drift.
     (defun DALOS|URCi_ControlSmartAccount:object{IgnisCollectorV2.OutputCumulator} (account:string)
-        (UDC_SmallCumulator account)
+        (UDC_ConstructOutputCumulator
+            (UC_IgnisPrice "DALOS|C_ControlSmartAccount" "setup")
+            account (URC_IsVirtualGasZero) [])
     )
     (defun DALOS|URCi_RotateGovernor:object{IgnisCollectorV2.OutputCumulator} (account:string)
-        (UDC_SmallCumulator account)
+        (UDC_ConstructOutputCumulator
+            (UC_IgnisPrice "DALOS|C_RotateGovernor" "auth")
+            account (URC_IsVirtualGasZero) [])
     )
     (defun DALOS|URCi_RotateGuard:object{IgnisCollectorV2.OutputCumulator} (account:string)
-        (UDC_SmallCumulator account)
+        (UDC_ConstructOutputCumulator
+            (UC_IgnisPrice "DALOS|C_RotateGuard" "auth")
+            account (URC_IsVirtualGasZero) [])
     )
     (defun DALOS|URCi_RotateStoa:object{IgnisCollectorV2.OutputCumulator} (account:string)
-        (UDC_SmallCumulator account)
+        (UDC_ConstructOutputCumulator
+            (UC_IgnisPrice "DALOS|C_RotateStoa" "auth")
+            account (URC_IsVirtualGasZero) [])
     )
     (defun DALOS|URCi_RotateSovereign:object{IgnisCollectorV2.OutputCumulator} (account:string)
-        (UDC_SmallCumulator account)
+        (UDC_ConstructOutputCumulator
+            (UC_IgnisPrice "DALOS|C_RotateSovereign" "auth")
+            account (URC_IsVirtualGasZero) [])
     )
     (defun DALOS|URCi_UpdateEliteAccount:object{IgnisCollectorV2.OutputCumulator} (patron:string)
-        (UDC_SmallCumulator patron)
+        (UDC_ConstructOutputCumulator
+            (UC_IgnisPrice "DALOS|C_UpdateEliteAccount" "usage")
+            patron (URC_IsVirtualGasZero) [])
     )
     (defun DALOS|URCi_UpdateEliteAccountSquared:object{IgnisCollectorV2.OutputCumulator} (patron:string)
-        (UDC_MediumCumulator patron)
+        (UDC_ConstructOutputCumulator
+            (UC_IgnisPrice "DALOS|C_UpdateEliteAccountSquared" "usage")
+            patron (URC_IsVirtualGasZero) [])
     )
     ;;  STOA-billed DALOS ops: the URCi returns the native fair price (the tier "key" single-sourced)
     (defun DALOS|URCi_DeploySmartAccount:decimal ()

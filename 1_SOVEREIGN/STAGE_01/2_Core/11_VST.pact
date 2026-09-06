@@ -826,7 +826,7 @@
             \ XI_CreateSpecialTrueFungibleLink): issue the special wrapper (gas rail, empty \
             \ write-product output as the block-hash id is exec-only) + update-special on \
             \ <dptf> + the unconditional transfer-role toggle on the VST-owned wrapper \
-            \ (UDC_BigCumulator on VST|SC_NAME == DPTF::URCi_ToggleTransferRole of the fresh id). \
+            \ (the vst-link-role-toggle-tf leg on VST|SC_NAME == DPTF::URCi_ToggleTransferRole). \
             \ Cost is fr-tag independent (both tags issue 1 token + toggle)."
         (let
             (
@@ -845,7 +845,7 @@
                     ;;2]Link <dptf> <-> special wrapper
                     (ref-DPTF::URCi_UpdateSpecialTrueFungible dptf)
                     ;;3]Toggle transfer-role on the VST-owned special wrapper
-                    (ref-IGNIS::UDC_BigCumulator VST|SC_NAME)
+                    (ref-IGNIS::UDC_LegCumulator "vst-link-role-toggle-tf" VST|SC_NAME)
                 ]
                 []
             )
@@ -857,7 +857,7 @@
             \ C_CreateHibernatingLink(3) (shared XI_CreateSpecialOrtoFungibleLink): issue the \
             \ special DPOF wrapper (gas rail, empty write-product output) + update-special on \
             \ <dptf> + the transfer-role toggle (only for Vesting/Sleeping; Hibernating is \
-            \ transfer-free -> EOC). UDC_BiggestCumulator on VST|SC_NAME mirrors \
+            \ transfer-free -> EOC). the vst-link-role-toggle-of leg on VST|SC_NAME mirrors \
             \ DPOF::URCi_ToggleTransferRole of the fresh id."
         (let
             (
@@ -877,7 +877,7 @@
                     (ref-DPOF::URCi_UpdateSpecialOrtoFungible dptf)
                     ;;3]Toggle transfer-role only for Vesting/Sleeping wrappers
                     (if (or (= vzh-tag 1) (= vzh-tag 2))
-                        (ref-IGNIS::UDC_BiggestCumulator VST|SC_NAME)
+                        (ref-IGNIS::UDC_LegCumulator "vst-link-role-toggle-of" VST|SC_NAME)
                         EOC
                     )
                 ]

@@ -1875,7 +1875,7 @@
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
             )
-            (ref-IGNIS::UDC_BiggestCumulator (ref-DPTF::UR_Konto main-dptf))
+            (ref-IGNIS::UDC_LegCumulator "special-of-link" (ref-DPTF::UR_Konto main-dptf))
         )
     )
     ;;  Mint: URCi is the Medium price part; C_Mint concatenates the created-nonce output onto it.

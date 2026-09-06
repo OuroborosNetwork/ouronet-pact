@@ -924,7 +924,7 @@
                                 )
                                 (ico2:object{IgnisCollectorV2.OutputCumulator}
                                     ;;For LP Minting (2)
-                                    (ref-IGNIS::UDC_SmallCumulator SWP|SC_NAME)
+                                    (ref-IGNIS::UDC_LegCumulator "lp-mint" SWP|SC_NAME)
                                 )
                                 ;;
                                 (read-bk-ids:[string] (ref-SWP::UR_SpecialFeeTargets swpair))
@@ -1067,7 +1067,7 @@
                                         (ref-TFT::URCi_MultiTransferCumulator 
                                             input-ids-for-transfer account SWP|SC_NAME input-amounts-for-transfer
                                         )
-                                        (ref-IGNIS::UDC_SmallCumulator SWP|SC_NAME)
+                                        (ref-IGNIS::UDC_LegCumulator "lp-mint" SWP|SC_NAME)
                                     ] 
                                     []
                                 )
@@ -1113,7 +1113,7 @@
                                 (ref-TFT::URCi_MultiTransferCumulator 
                                     input-ids-for-transfer account SWP|SC_NAME input-amounts-for-transfer
                                 )
-                                (ref-IGNIS::UDC_SmallCumulator SWP|SC_NAME)
+                                (ref-IGNIS::UDC_LegCumulator "lp-mint" SWP|SC_NAME)
                             ] 
                             []
                         )

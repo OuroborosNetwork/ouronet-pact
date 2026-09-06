@@ -1474,11 +1474,10 @@
         (with-capability (DPDC-S|C>ENABLE-FRAGMENTATION id son set-class fragmentation-ind)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (ref-DPDC:module{DpdcV2} DPDC)
                 )
                 (XI_FragmentSetClass id son set-class fragmentation-ind)
-                (ref-IGNIS::UDC_BiggestCumulator (ref-DPDC::UR_CreatorKonto id son))
+                (URCi_EnableSetClassFragmentation id son)
             )
         )
     )
@@ -1487,11 +1486,10 @@
         (with-capability (DPDC-S|C>TOGGLE id son set-class toggle)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (ref-DPDC:module{DpdcV2} DPDC)
                 )
                 (XI_ToggleSetClass id son set-class toggle)
-                (ref-IGNIS::UDC_BiggestCumulator (ref-DPDC::UR_CreatorKonto id son))
+                (URCi_ToggleSet id son)
             )
         )
     )
@@ -1500,11 +1498,10 @@
         (with-capability (DPDC-S|C>RENAME id son set-class new-name)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (ref-DPDC:module{DpdcV2} DPDC)
                 )
                 (XI_RenameSet id son set-class new-name)
-                (ref-IGNIS::UDC_SmallCumulator (ref-DPDC::UR_CreatorKonto id son))
+                (URCi_RenameSet id son)
             )
         )
     )

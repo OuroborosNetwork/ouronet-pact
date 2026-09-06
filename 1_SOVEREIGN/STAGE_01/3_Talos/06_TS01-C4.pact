@@ -56,8 +56,8 @@
             codex-guard:guard
             registered-by:string
         ))
-    (defun CODEX|C_RotateCodexGuard:string (codex-id:string new-codex-guard:guard))
-    (defun CODEX|C_RecordArweaveUpload:string (codex-id:string arweave-tx-id:string uploaded-bytes:integer))
+    (defun CODEX|C_RotateCodexGuard:string (patron:string codex-id:string new-codex-guard:guard))
+    (defun CODEX|C_RecordArweaveUpload:string (patron:string codex-id:string arweave-tx-id:string uploaded-bytes:integer))
     (defun CODEX|C_RegisterStoicTag:string (patron:string tag-name:string account-address:string))
     (defun CODEX|C_ReleaseStoicTag:string (patron:string tag-name:string))
     ;;
@@ -327,25 +327,33 @@
             )
         )
     )
-    (defun CODEX|C_RotateCodexGuard:string (codex-id:string new-codex-guard:guard)
+    (defun CODEX|C_RotateCodexGuard:string (patron:string codex-id:string new-codex-guard:guard)
         @doc "Rotate codex-guard for <codex-id>."
         (with-capability (P|TS)
             (let 
                 (
                     (ref-CODEX:module{CodexV2} CODEX)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 )
-                (ref-CODEX::C_RotateCodexGuard codex-id new-codex-guard)
+                (let ((msg:string (ref-CODEX::C_RotateCodexGuard codex-id new-codex-guard)))
+                    (ref-IGNIS::C_Collect patron (ref-CODEX::URCi_RotateCodexGuard patron))
+                    msg
+                )
             )
         )
     )
-    (defun CODEX|C_RecordArweaveUpload:string (codex-id:string arweave-tx-id:string uploaded-bytes:integer)
+    (defun CODEX|C_RecordArweaveUpload:string (patron:string codex-id:string arweave-tx-id:string uploaded-bytes:integer)
         @doc "Append Arweave upload audit row for <codex-id>."
         (with-capability (P|TS)
             (let 
                 (
                     (ref-CODEX:module{CodexV2} CODEX)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 )
-                (ref-CODEX::C_RecordArweaveUpload codex-id arweave-tx-id uploaded-bytes)
+                (let ((msg:string (ref-CODEX::C_RecordArweaveUpload codex-id arweave-tx-id uploaded-bytes)))
+                    (ref-IGNIS::C_Collect patron (ref-CODEX::URCi_RecordArweaveUpload patron))
+                    msg
+                )
             )
         )
     )

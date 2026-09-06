@@ -152,7 +152,7 @@
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
         (ref-CODEX:module{CodexV2} CODEX)
         (rot-msg:string
-            (ref-TS01-C4::CODEX|C_RotateCodexGuard composite-id new-codex-guard)
+            (ref-TS01-C4::CODEX|C_RotateCodexGuard KST.ANHD composite-id new-codex-guard)
         )
     )
     ;;==== TX002 · 02 · Talos C_Rotate ====
@@ -184,10 +184,13 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "")
 (print "=== TX003 — C_RecordArweaveUpload =======================================")
-;;==== TX003 · 01 · env-sigs (rotated codex guard = Florian) ====
-(print "--- [TX003 · 01 · env-sigs (rotated codex guard)] ---")
+;;==== TX003 · 01 · env-sigs (rotated codex guard = Florian + IGNIS patron) ====
+(print "--- [TX003 · 01 · env-sigs (rotated codex guard + patron)] ---")
+;;the patron key is required now that CODEX|C_RecordArweaveUpload collects IGNIS
+;;(deter(usage) + components) — before the pricing rehaul this op was gasless.
 (env-sigs
     [
+        { "key": "PK_AncientHodler", "caps": [] }
         { "key": "PK_Florean", "caps": [] }
     ]
 )
@@ -199,7 +202,7 @@
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
         (ref-CODEX:module{CodexV2} CODEX)
         (arw-msg:string
-            (ref-TS01-C4::CODEX|C_RecordArweaveUpload composite-id arweave-tx-id uploaded-bytes)
+            (ref-TS01-C4::CODEX|C_RecordArweaveUpload KST.ANHD composite-id arweave-tx-id uploaded-bytes)
         )
     )
     ;;==== TX003 · 02 · Talos C_RecordArweave ====

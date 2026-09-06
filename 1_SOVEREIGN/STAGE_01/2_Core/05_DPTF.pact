@@ -1734,7 +1734,7 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_BiggestCumulator (UR_Konto main-dptf))
+            (ref-IGNIS::UDC_LegCumulator "special-tf-link" (UR_Konto main-dptf))
         )
     )
     ;;  Group C — pure cost readers whose cumulator/price were previously coupled to a write.

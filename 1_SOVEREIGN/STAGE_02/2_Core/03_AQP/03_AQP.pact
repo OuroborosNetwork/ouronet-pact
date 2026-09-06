@@ -2158,7 +2158,7 @@
                           (ref-ANK::URC_TrueFungibleStakeAnchorRefreshIgnis n-live)
                           AQP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []))
                   (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                                     ;; ico-meta
-                      (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME))
+                      (ref-IGNIS::UDC_LegCumulator "ank-sync-count-tf" AQP|SC_NAME))
                   (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                                     ;; ico-gas
                       (URCi_SyncTrueFungibleAnchors [beneficiary-id dptf-id]))
                 ])
@@ -2183,7 +2183,7 @@
                           (ref-ANK::URC_TrueFungibleStakeAnchorRefreshIgnis n-live)
                           AQP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []))
                   (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                                     ;; ico-meta
-                      (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME))
+                      (ref-IGNIS::UDC_LegCumulator "ank-sync-count-tf" AQP|SC_NAME))
                   (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                                     ;; ico-gas
                       (URCi_SyncCollectableAnchors [beneficiary-id collectable-id]))
                 ])

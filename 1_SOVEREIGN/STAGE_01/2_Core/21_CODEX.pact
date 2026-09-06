@@ -63,6 +63,8 @@
     ;; consumed by BOTH the TS01-C4 exec collect and the INFO preview layer.
     (defun URCi_RegisterStoicTag:decimal (tag-name:string))
     (defun URCi_ReleaseStoicTag:decimal (tag-name:string))
+    (defun URCi_RotateCodexGuard:object{IgnisCollectorV2.OutputCumulator} (patron:string))
+    (defun URCi_RecordArweaveUpload:object{IgnisCollectorV2.OutputCumulator} (patron:string))
     ;;
     ;; [UR] CODEX|S|Identity — field accessors + DataOrNull (UR_CIX|Data is module-only; schema not in interface)
     (defun UR_CIX|CodexIdStandard:string (codex-id:string))
@@ -620,6 +622,33 @@
             \ so this returns the pre-discount amount. Consumed by TS01-C4 exec + INFO."
         (UC_StoicTagStoaFee tag-name)
     )
+    (defun URCi_RotateCodexGuard:object{IgnisCollectorV2.OutputCumulator} (patron:string)
+        @doc "Cost single-source for CODEX|C_RotateCodexGuard — deter(auth) + components, on the \
+            \ patron (the codex row carries no konto of its own). AUTH tier: rotating a guard is \
+            \ an authority change, the same class as every other module's RotateOwnership. \
+            \ Consumed by the TS01-C4 exec path + INFO, so the two cannot drift."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "CODEX|C_RotateCodexGuard" "auth")
+                patron (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    (defun URCi_RecordArweaveUpload:object{IgnisCollectorV2.OutputCumulator} (patron:string)
+        @doc "Cost single-source for CODEX|C_RecordArweaveUpload — deter(usage) + components, on \
+            \ the patron. USAGE tier: recording an upload is routine activity, not a config \
+            \ change. Consumed by the TS01-C4 exec path + INFO."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "CODEX|C_RecordArweaveUpload" "usage")
+                patron (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
     (defun URCi_ReleaseStoicTag:decimal (tag-name:string)
         @doc "Cost single-source for CODEX|C_ReleaseStoicTag — flat IGNIS toll (1/glyph), \
             \ collected via IGNIS::C_Collect in TS01-C4. Consumed by exec + INFO."
@@ -788,11 +817,7 @@
     )
     (defun INFO_CODEX|RotateCodexGuard:object{OuronetInfoV2.ClientInfo}
         (patron:string codex-id:string)
-        @doc "ClientInfo preview for TS01-C4 CODEX|C_RotateCodexGuard. The op is GASLESS today: \
-            \ its Talos wrapper collects no IGNIS and the core client returns no cumulator, so \
-            \ there is no URCi_ reader to wrap. IG|COMPONENTS does carry an entry for it \
-            \ (CODEX|C_RotateCodexGuard 4) — if this op is ever priced, add the reader and \
-            \ point this preview at it instead of NoIgnisCosts."
+        
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
@@ -800,7 +825,8 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Rotate the Codex Guard of Codex {}." [codex-id])]
                 [(format "Codex Guard of Codex {} rotated." [codex-id])]
-                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (URCi_RotateCodexGuard patron)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
@@ -819,7 +845,8 @@
                 [(format "Operation: Record Arweave upload {} ({} bytes) for Codex {}."
                     [arweave-tx-id uploaded-bytes codex-id])]
                 [(format "Arweave upload {} recorded for Codex {}." [arweave-tx-id codex-id])]
-                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (URCi_RecordArweaveUpload patron)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )

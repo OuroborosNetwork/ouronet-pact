@@ -1124,12 +1124,16 @@
     ;;   sums are reached cross-module on AQP-FVT (AQP-FVT.URC_Tier* / AQP-FVT.URC_StakeScoreDeltaSum*),
     ;;   the single source they share with the stake readers. INFO repoints here; execs are unchanged.
     (defun URCi_FinalizeVacate:object{IgnisCollectorV2.OutputCumulator} ()
-        @doc "Flat 'ignis|medium' tier on AQP|SC_NAME — single source for C_FinalizeVacate + its INFO preview."
+        @doc "Single source for C_FinalizeVacate + its INFO preview: deter(usage) + the op's \
+            \ components. USAGE tier — finalizing a vacate is activity on an already-authorised \
+            \ campaign, not a new setup."
         (let
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_MediumCumulator AQP|SC_NAME)
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-POOL|C_FinalizeVacate" "usage")
+                AQP|SC_NAME (r::URC_IsVirtualGasZero) [])
         ))
     (defun URCi_BatchVacateTrueFungible:decimal
         (pool-id:string dptf-id:string legs:[object{VCT|VacateTfLeg}])

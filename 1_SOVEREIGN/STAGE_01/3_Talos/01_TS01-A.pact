@@ -570,7 +570,9 @@
                 )
                 (ref-DPTF::C_DeployAccount id account)
                 (ref-IGNIS::C_Collect patron
-                    (ref-IGNIS::UDC_SmallCumulator account)
+                    ;;charge through the SAME reader the client twin uses, so the admin variant
+                    ;;cannot drift from DPTF|C_DeployAccount's price
+                    (ref-DPTF::URCi_DeployAccount account)
                 )
                 (format "DPTF {} added to {} Ouronet Account succesfully! (admin)" [id sa])
             )
@@ -595,7 +597,9 @@
                 )
                 (ref-DPOF::C_DeployAccount id account)
                 (ref-IGNIS::C_Collect patron
-                    (ref-IGNIS::UDC_SmallCumulator account)
+                    ;;charge through the SAME reader the client twin uses, so the admin variant
+                    ;;cannot drift from DPOF|C_DeployAccount's price
+                    (ref-DPOF::URCi_DeployAccount account)
                 )
                 (format "Succesfully deployed a New DPOF Account for DPOF {} on Ouronet Account {} (admin)" [id sa])
             )

@@ -2573,25 +2573,37 @@
                 (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])
         ))
     (defun URCi_CreateBoostClassLink:object{IgnisCollectorV2.OutputCumulator} (score-id:string)
+        @doc "Cost preview for AQP-SCR|C_CreateScoreBoostClassLink — deter(setup) + components. \
+            \ SETUP tier: linking a score to a boost class is a configuration change. NOTE the \
+            \ asymmetry with revoke-boost (500, owner-priced) — if creating a link should carry \
+            \ its own deterrent, that is an owner call, not a convention one."
         (let
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_BiggestCumulator (UR_SCR|ScoreOwnerKonto score-id))
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-SCR|C_CreateScoreBoostClassLink" "setup")
+                (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])
         ))
     (defun URCi_CreateBoostLink:object{IgnisCollectorV2.OutputCumulator} (score-id:string)
+        @doc "Cost preview for AQP-SCR|C_CreateScoreBoostLink — deter(setup) + components."
         (let
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_BiggestCumulator (UR_SCR|ScoreOwnerKonto score-id))
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-SCR|C_CreateScoreBoostLink" "setup")
+                (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])
         ))
     (defun URCi_EnableDebBoost:object{IgnisCollectorV2.OutputCumulator} (score-id:string)
+        @doc "Cost preview for AQP-SCR|C_EnableDebBoost — deter(setup) + components."
         (let
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_MediumCumulator (UR_SCR|ScoreOwnerKonto score-id))
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-SCR|C_EnableDebBoost" "setup")
+                (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])
         ))
     (defun URCi_IssueTriplet:object{IgnisCollectorV2.OutputCumulator} (silver-score-id:string output:[string])
         @doc "GAS|ISSUE-TRIPLET, konto = the silver score's owner."
