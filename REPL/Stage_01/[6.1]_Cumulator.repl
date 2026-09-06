@@ -487,6 +487,71 @@
 )
 (print "")
 (print "<<TX-IGC-006>> P7 sweep: all 15 migrated DPTF readers price correctly")
+(print "")
+;;==== TX-IGC-001 · 07 · P7 sweep: EVERY migrated ATS reader ==== =================================
+(print "--- [TX-IGC-001 · 07 · P7 sweep, all migrated ATS readers] ---")
+;;Second full-module sweep. NOTE why this matters: a half-migrated branch (see DPDC-MNG
+;;URCi_Control) stays syntactically valid and ZALL-green while charging the OLD price — only a
+;;price assertion catches that. Migrated != verified until a sweep like this exists.
+(let
+    (
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-ATS:module{AutostakeV3} ATS)
+        ;;the AURYN reward-bearing pair — deterministic, exists right after deploy-stage01
+        (atspair:string (at 0 (ref-DPTF::UR_RewardBearingToken (ref-DALOS::UR_AurynID))))
+    )
+    (map (print)
+        [
+            (expect "<<TX-IGC-007>> ATS|C_RotateOwnership == deter(auth) + components"
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_RotateOwnership" "auth")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-ATS::URCi_RotateOwnership atspair)))))
+            (expect "<<TX-IGC-007>> ATS|C_Control == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_Control" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-ATS::URCi_Control atspair)))))
+            (expect "<<TX-IGC-007>> ATS|C_UpdateRoyalty == deter(fee) + components"
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_UpdateRoyalty" "fee")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-ATS::URCi_UpdateRoyalty atspair)))))
+            (expect "<<TX-IGC-007>> ATS|C_UpdateSyphon == deter(usage) + components"
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_UpdateSyphon" "usage")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-ATS::URCi_UpdateSyphon atspair)))))
+            (expect "<<TX-IGC-007>> ATS|C_SetHibernationFees == deter(fee) + components"
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_SetHibernationFees" "fee")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-ATS::URCi_SetHibernationFees atspair)))))
+            (expect "<<TX-IGC-007>> ATS|C_ControlColdRecoveryFees == deter(fee) + components"
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_ControlColdRecoveryFees" "fee")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-ATS::URCi_ControlColdRecoveryFees atspair)))))
+            (expect "<<TX-IGC-007>> ATS|C_SetColdRecoveryDuration == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_SetColdRecoveryDuration" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-ATS::URCi_SetColdRecoveryDuration atspair)))))
+            (expect "<<TX-IGC-007>> ATS|C_ToggleElite == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_ToggleElite" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-ATS::URCi_ToggleElite atspair)))))
+            (expect "<<TX-IGC-007>> ATS|C_ToggleUpgrade == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_ToggleUpgrade" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-ATS::URCi_ToggleUpgrade atspair)))))
+            (expect "<<TX-IGC-007>> ATS|C_SwitchColdRecovery == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_SwitchColdRecovery" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-ATS::URCi_SwitchColdRecovery atspair)))))
+            (expect "<<TX-IGC-007>> ATS|C_ControlHotRecoveryFee == deter(fee) + components"
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_ControlHotRecoveryFee" "fee")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-ATS::URCi_ControlHotRecoveryFee atspair)))))
+            (expect "<<TX-IGC-007>> ATS|C_SwitchHotRecovery == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_SwitchHotRecovery" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-ATS::URCi_SwitchHotRecovery atspair)))))
+            (expect "<<TX-IGC-007>> ATS|C_SetDirectRecoveryFee == deter(fee) + components"
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_SetDirectRecoveryFee" "fee")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-ATS::URCi_SetDirectRecoveryFee atspair)))))
+            (expect "<<TX-IGC-007>> ATS|C_SwitchDirectRecovery == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_SwitchDirectRecovery" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-ATS::URCi_SwitchDirectRecovery atspair)))))
+            ""
+        ]
+    )
+)
+(print "")
+(print "<<TX-IGC-007>> P7 sweep: all 14 migrated ATS readers price correctly")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
