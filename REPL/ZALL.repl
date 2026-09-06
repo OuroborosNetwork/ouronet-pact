@@ -56,6 +56,9 @@
 (load "Stage_02/[6.1.5]_DEMIPAD.repl")
 (load "Stage_02/[6.1.6]_DPOF.repl")
 (load "Stage_02/[6.1.7]_DPSF-UPDATES.repl")
+(load "Stage_02/[6.1.8]_DPDC-HYDRA-WIPE.repl")
+;;P7 price sweeps (DPDC + DPOF + SWP) — needs TSFS [6.1.3], CNF [6.1.4], COF, and a Stage-1 swpair
+(load "Stage_02/[6.1.9]_PRICE-SWEEP.repl")
 (load "Stage_02/[6.1]_DPDC.repl")
 
 ;;==================================================================================

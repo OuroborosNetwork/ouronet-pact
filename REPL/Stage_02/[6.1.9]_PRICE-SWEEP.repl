@@ -1,5 +1,5 @@
 ;;
-;; REPL/Stage_02/[6.1.9]_DPDC-PRICE-SWEEP.repl — DPDC full-module IGNIS price sweep (P7)
+;; REPL/Stage_02/[6.1.9]_PRICE-SWEEP.repl — full-module IGNIS price sweeps (P7): DPDC + DPOF + SWP
 ;;   Canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
 ;;   Legend:  <<TX-DPP-nnn>>  price assertion
 ;;   Source:  1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/{05_DPDC-R,06_DPDC-MNG,08_DPDC-S,09_DPDC-F}.pact
@@ -11,12 +11,13 @@
 ;;   price assertion catches it, and only if it exercises BOTH branches. Hence: every son-taking
 ;;   reader below is asserted twice (SFT id + NFT id).
 ;;
-;;   Fixtures: TSFS-98c486052a51 (SFT collection, from [6.1.3]) and CNF-98c486052a51 (NFT
-;;   collection, from [6.1.4]) — so this file must load after those two suites.
+;;   Fixtures: TSFS-98c486052a51 (SFT collection, from [6.1.3]), CNF-98c486052a51 (NFT
+;;   collection, from [6.1.4]) and COF-98c486052a51 (ortofungible) — so this file must load
+;;   after those suites.
 ;;
 (print "")
 (print "================================================================")
-(print "FILE  REPL/Stage_02/[6.1.9]_DPDC-PRICE-SWEEP.repl  (DPDC price sweep)")
+(print "FILE  REPL/Stage_02/[6.1.9]_PRICE-SWEEP.repl  (DPDC + DPOF + SWP price sweeps)")
 (print "================================================================")
 (print "")
 
@@ -182,5 +183,127 @@
 )
 (print "")
 (print "<<TX-DPP-001>> P7 sweep: all 44 DPDC price assertions pass (both son branches)")
+(print "===^^^===")
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;================================================================================
+(begin-tx "TX-OFP-001 - DPOF price sweep: observed IGNIS == deter + components")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-OFP-001 · 01 · full-module sweep ====
+(print "--- [TX-OFP-001 · 01 · full-module sweep] ---")
+;;All 14 migrated DPOF cost readers. The 12 below take an ortofungible id; the two after them
+;;are deterrence-only (no components leg), so they are asserted against UC_IgnisDeter directly.
+(let
+    (
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (of:string "COF-98c486052a51")
+    )
+    (map (print)
+        [
+            (expect "<<TX-OFP-001>> DPOF|C_RotateOwnership == deter(auth) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPOF|C_RotateOwnership" "auth")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPOF::URCi_RotateOwnership of)))))
+            (expect "<<TX-OFP-001>> DPOF|C_Control == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPOF|C_Control" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPOF::URCi_Control of)))))
+            (expect "<<TX-OFP-001>> DPOF|C_TogglePause == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPOF|C_TogglePause" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPOF::URCi_TogglePause of)))))
+            (expect "<<TX-OFP-001>> DPOF|C_ToggleFreezeAccount == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPOF|C_ToggleFreezeAccount" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPOF::URCi_ToggleFreezeAccount of)))))
+            (expect "<<TX-OFP-001>> DPOF|C_ToggleAddQuantityRole == deter(auth) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPOF|C_ToggleAddQuantityRole" "auth")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPOF::URCi_ToggleAddQuantityRole of)))))
+            (expect "<<TX-OFP-001>> DPOF|C_ToggleBurnRole == deter(auth) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPOF|C_ToggleBurnRole" "auth")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPOF::URCi_ToggleBurnRole of)))))
+            (expect "<<TX-OFP-001>> DPOF|C_MoveCreateRole == deter(auth) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPOF|C_MoveCreateRole" "auth")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPOF::URCi_MoveCreateRole of)))))
+            (expect "<<TX-OFP-001>> DPOF|C_ToggleTransferRole == deter(usage) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPOF|C_ToggleTransferRole" "usage")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPOF::URCi_ToggleTransferRole of)))))
+            (expect "<<TX-OFP-001>> DPOF|C_AddQuantity == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPOF|C_AddQuantity" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPOF::URCi_AddQuantity of)))))
+            (expect "<<TX-OFP-001>> DPOF|C_Burn == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPOF|C_Burn" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPOF::URCi_Burn of)))))
+            (expect "<<TX-OFP-001>> DPOF|C_WipeSlim == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPOF|C_WipeSlim" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPOF::URCi_WipeSlim of)))))
+            (expect "<<TX-OFP-001>> DPOF|C_Mint == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPOF|C_Mint" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPOF::URCi_Mint of)))))
+            ;;deterrence-only readers: issuance gas rail + token-account creation
+            (expect "<<TX-OFP-001>> DPOF issue gas (1 token) == deter(issue-of), no components"
+                (ref-IGNIS::UC_IgnisDeter "issue-of")
+                (ref-DPOF::URCi_IssueGas 1))
+            (expect "<<TX-OFP-001>> DPOF DeployAccount == deter(token-account), no components"
+                (ref-IGNIS::UC_IgnisDeter "token-account")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPOF::URCi_DeployAccount KST.ANHD)))))
+            ""
+        ]
+    )
+)
+(print "")
+(print "<<TX-OFP-001>> P7 sweep: all 14 migrated DPOF readers price correctly")
+(print "===^^^===")
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;================================================================================
+(begin-tx "TX-SWPP-001 - SWP price sweep: observed IGNIS == deter + components")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-SWPP-001 · 01 · full-module sweep ====
+(print "--- [TX-SWPP-001 · 01 · full-module sweep] ---")
+;;The swpair fixture is derived at RUNTIME from whatever pairs Stage 1 issued — same principle as
+;;the ATS sweep in [6.1]_Cumulator.repl. No hardcoded id, so this cannot rot when a suite changes
+;;which pairs it creates; it only requires that at least one pair exists.
+;;NOT swept here: the six SWPLC liquidity readers are composed (deter + transfer/burn legs), so
+;;they have no single deter+components identity to assert — they need a floor-style check instead.
+(let
+    (
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-SWP:module{SwapperV4} SWP)
+        (swpair:string (at 0 (ref-SWP::URC_Swpairs)))
+    )
+    (map (print)
+        [
+            (expect "<<TX-SWPP-001>> SWP|C_ChangeOwnership == deter(auth) + components"
+                (ref-IGNIS::UC_IgnisPrice "SWP|C_ChangeOwnership" "auth")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-SWP::URCi_ChangeOwnership swpair)))))
+            (expect "<<TX-SWPP-001>> SWP|C_ModifyCanChangeOwner == deter(auth) + components"
+                (ref-IGNIS::UC_IgnisPrice "SWP|C_ModifyCanChangeOwner" "auth")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-SWP::URCi_ModifyCanChangeOwner swpair)))))
+            (expect "<<TX-SWPP-001>> SWP|C_ModifyWeights == deter(fee) + components"
+                (ref-IGNIS::UC_IgnisPrice "SWP|C_ModifyWeights" "fee")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-SWP::URCi_ModifyWeights swpair)))))
+            (expect "<<TX-SWPP-001>> SWP|C_UpdateAmplifier == deter(fee) + components"
+                (ref-IGNIS::UC_IgnisPrice "SWP|C_UpdateAmplifier" "fee")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-SWP::URCi_UpdateAmplifier swpair)))))
+            (expect "<<TX-SWPP-001>> SWP|C_UpdateFee == deter(fee) + components"
+                (ref-IGNIS::UC_IgnisPrice "SWP|C_UpdateFee" "fee")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-SWP::URCi_UpdateFee swpair)))))
+            (expect "<<TX-SWPP-001>> SWP|C_UpdateSpecialFeeTargets == deter(fee) + components"
+                (ref-IGNIS::UC_IgnisPrice "SWP|C_UpdateSpecialFeeTargets" "fee")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-SWP::URCi_UpdateSpecialFeeTargets swpair)))))
+            ""
+        ]
+    )
+)
+(print "")
+(print "<<TX-SWPP-001>> P7 sweep: all 6 migrated SWP readers price correctly")
 (print "===^^^===")
 (commit-tx)

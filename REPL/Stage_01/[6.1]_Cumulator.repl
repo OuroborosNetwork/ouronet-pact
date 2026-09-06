@@ -481,12 +481,19 @@
             (expect "<<TX-IGC-006>> DPTF|C_Wipe == deter(setup) + components"
                 (ref-IGNIS::UC_IgnisPrice "DPTF|C_Wipe" "setup")
                 (at "ignis" (at 0 (at "cumulator-chain" (ref-DPTF::URCi_Wipe ouro)))))
+            ;;deterrence-only readers (no components leg): issuance gas rail + token-account
+            (expect "<<TX-IGC-006>> DPTF issue gas (1 token) == deter(issue-tf), no components"
+                (ref-IGNIS::UC_IgnisDeter "issue-tf")
+                (ref-DPTF::URCi_IssueGas 1))
+            (expect "<<TX-IGC-006>> DPTF DeployAccount == deter(token-account), no components"
+                (ref-IGNIS::UC_IgnisDeter "token-account")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPTF::URCi_DeployAccount KST.ANHD)))))
             ""
         ]
     )
 )
 (print "")
-(print "<<TX-IGC-006>> P7 sweep: all 15 migrated DPTF readers price correctly")
+(print "<<TX-IGC-006>> P7 sweep: all 17 migrated DPTF readers price correctly")
 (print "")
 ;;==== TX-IGC-001 · 07 · P7 sweep: EVERY migrated ATS reader ==== =================================
 (print "--- [TX-IGC-001 · 07 · P7 sweep, all migrated ATS readers] ---")
@@ -546,12 +553,20 @@
             (expect "<<TX-IGC-007>> ATS|C_SwitchDirectRecovery == deter(setup) + components"
                 (ref-IGNIS::UC_IgnisPrice "ATS|C_SwitchDirectRecovery" "setup")
                 (at "ignis" (at 0 (at "cumulator-chain" (ref-ATS::URCi_SwitchDirectRecovery atspair)))))
+            ;;the hot-fee setter was left behind by the first ATS migration pass — it billed a flat
+            ;;UDC_BiggestCumulator while every sibling fee setter had moved to deter(fee)+components
+            (expect "<<TX-IGC-007>> ATS|C_SetHotRecoveryFee == deter(fee) + components"
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_SetHotRecoveryFee" "fee")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-ATS::URCi_SetHotRecoveryFees atspair)))))
+            (expect "<<TX-IGC-007>> ATS issue gas (1 pair) == deter(issue-ats-pair), no components"
+                (ref-IGNIS::UC_IgnisDeter "issue-ats-pair")
+                (ref-ATS::URCi_IssueGas 1))
             ""
         ]
     )
 )
 (print "")
-(print "<<TX-IGC-007>> P7 sweep: all 14 migrated ATS readers price correctly")
+(print "<<TX-IGC-007>> P7 sweep: all 16 migrated ATS readers price correctly")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)

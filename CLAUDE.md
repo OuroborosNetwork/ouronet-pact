@@ -30,7 +30,15 @@ cd REPL && pact Stage02_Tester.repl   # Stage 2 only (DPDC, DemiPad, AQP, Talos,
 cd REPL && pact Stage00_Sanboxes.repl # Kadena + Stoa sandbox bootstrap
 cd REPL && pact Stage00a_StoaTests.repl # Stoa coin regression tests
 cd REPL && pact StageZZ_Tester.repl   # Deploy 2_CITIZEN/Stage_Z/01_DPL-UR.pact only
+cd REPL && pact ZALL.repl             # EXHAUSTIVE runner — every suite, incl. the ones Z.repl skips
 ```
+
+**`Z.repl` is the fast path, not the gate.** It deliberately skips `Stage_01/[6.1]_Cumulator.repl`
+(where the IGNIS price assertions live), the full `[6.2]_DPTF` / `[6.3]_SWP` suites (issuance-only
+variants run instead) and the Stage-1 scenario tail (`[6.6]_ATS`, `[6.7]_VST`, …). **Any change to
+pricing, STOA collection or IGNIS billing must be verified with `ZALL.repl`** — a green `Z.repl` on
+a pricing change does not execute the assertions written to protect it (see
+`OuronetInformational/memories/2026-09-06-zall-is-the-real-gate-not-z.md`).
 
 Individual scenario REPLs live in `REPL/Stage_01/[*].repl` and `REPL/Stage_02/[*].repl`. The reference hand-maintained integration suites are `REPL/Stage_02/[6.2.1]_AQP-ANK.repl` and `REPL/Stage_02/[6.2.2]_AQP-SCORE.repl` — mirror these when writing new integration tests.
 

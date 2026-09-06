@@ -1753,11 +1753,19 @@
     ;;
     ;;
     (defun C_TransferDalosFuel (sender:string receiver:string amount:decimal)
-        (let
-            (
-                (ref-coin:module{stoa-ns.fungible-v1} coin)
+        @doc "Move native STOA. A ZERO amount is a NO-OP, not a transfer: Stoa's coin enforces \
+            \ (> amount 0.0), so passing 0.0 aborts the whole transaction. Zero legs are now \
+            \ normal — the account-creation STOA switch prices onboarding at 0.0 while it is \
+            \ OFF, and a small dollar-pegged amount can round one of the four split legs to \
+            \ zero. Guarding here covers every STOA|C_Collect* path at once."
+        (if (> amount 0.0)
+            (let
+                (
+                    (ref-coin:module{stoa-ns.fungible-v1} coin)
+                )
+                (ref-coin::transfer sender receiver amount)
             )
-            (ref-coin::transfer sender receiver amount)
+            "Zero STOA leg — nothing transferred"
         )
     )
     (defun C_Collect

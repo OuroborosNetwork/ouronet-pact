@@ -1,0 +1,58 @@
+;;
+;; REPL/Stage_02/[6.2.16]_AQP-PRICE-SWEEP.repl — AQP-family IGNIS price sweep (P7)
+;;   Canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   Legend:  <<TX-AQPP-nnn>>  price assertion
+;;   Source:  1_SOVEREIGN/STAGE_02/2_Core/03_AQP/{02_SCORE,04_RPS}.pact
+;;   REPL tests: the four AQP readers migrated to deter + components on 2026-09-06.
+;;
+;;   These four were left on flat UDC_MediumCumulator tiers by the earlier migration passes.
+;;   They moved to the central price only where the tier was unambiguous — Control -> "setup"
+;;   and RotateOwnership -> "auth" hold across EVERY migrated module — so these assertions also
+;;   pin that convention: if someone re-tiers one module's Control, this fails and names it.
+;;
+;;   Fixtures: the TheCodingDivision score from [6.2.2] and the TfStakeVault FVT from [6.2.4],
+;;   so this file must load after both (it is last in [6.2]_AQP.repl).
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[6.2.16]_AQP-PRICE-SWEEP.repl  (AQP price sweep)")
+(print "================================================================")
+(print "")
+
+;;================================================================================
+(begin-tx "TX-AQPP-001 - AQP price sweep: observed IGNIS == deter + components")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-AQPP-001 · 01 · SCORE + RPS readers ====
+(print "--- [TX-AQPP-001 · 01 · SCORE + RPS readers] ---")
+(let
+    (
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+        (score:string "TheCodingDivision-98c486052a51")
+        (fvt:string (ref-U|DALOS::UDC_Makeid "TfStakeVault"))
+    )
+    (map (print)
+        [
+            (expect "<<TX-AQPP-001>> AQP-SCR|C_ControlScore == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "AQP-SCR|C_ControlScore" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-SCR::URCi_Control score)))))
+            (expect "<<TX-AQPP-001>> AQP-SCR|C_RotateScoreOwnership == deter(auth) + components"
+                (ref-IGNIS::UC_IgnisPrice "AQP-SCR|C_RotateScoreOwnership" "auth")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-SCR::URCi_RotateOwnership score)))))
+            (expect "<<TX-AQPP-001>> AQP-FVT|C_Control == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "AQP-FVT|C_Control" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-RPS::URCi_Control fvt)))))
+            (expect "<<TX-AQPP-001>> AQP-FVT|C_RotateOwnership == deter(auth) + components"
+                (ref-IGNIS::UC_IgnisPrice "AQP-FVT|C_RotateOwnership" "auth")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-RPS::URCi_RotateOwnership fvt)))))
+            ""
+        ]
+    )
+)
+(print "")
+(print "<<TX-AQPP-001>> P7 sweep: all 4 migrated SCORE/RPS readers price correctly")
+(print "===^^^===")
+(commit-tx)

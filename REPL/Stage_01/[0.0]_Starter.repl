@@ -270,7 +270,10 @@
                     [
                         (coin.TRANSFER "alice" KC.KADN_NAME_0000 250000.0)  ;;<PK_AncientHodler>    "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                         (coin.TRANSFER "alice" KC.KADN_NAME_000b 1500.0)    ;;<PK_Emma>             "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"
-                        (coin.TRANSFER "alice" KC.KADN_NAME_000i 5000.0)    ;;<PK_AOZ>              "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf"
+                        (coin.TRANSFER "alice" KC.KADN_NAME_000i 9000.0)    ;;<PK_AOZ>              "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf"
+                        ;;AOZ raised 5000 -> 9000: the pricing rehaul made fee-unlock a FLAT $50
+                        ;;STOA (500) per unlock instead of an escalating ladder that started cheap,
+                        ;;so [6.6]_ATS.repl's parameter-unlock scenario now outspends 5000.
                         (coin.TRANSFER "alice" KC.KADN_NAME_000j 1500.0)    ;;<PK_BM>               "k:59e0417d779c90651e5cd9ca98736362f0262a80b8cdfd300f9f4c977b23c77a"
                         (coin.TRANSFER "alice" KC.KADN_NAME_000h 1000.0)    ;;<PK_BM>               "k:03c14c229fdcec2e5053b6a7b8a031fbbbfce198a845e94e7908668686706e43"
                     ]
@@ -302,7 +305,7 @@
         ;;Fuel Accounts:
         (ref-coin::transfer "alice" KC.KADN_NAME_0000 250000.0)
         (ref-coin::transfer "alice" KC.KADN_NAME_000b 1500.0)
-        (ref-coin::transfer "alice" KC.KADN_NAME_000i 5000.0)
+        (ref-coin::transfer "alice" KC.KADN_NAME_000i 9000.0)
         (ref-coin::transfer "alice" KC.KADN_NAME_000j 1500.0)
         (ref-coin::transfer "alice" KC.KADN_NAME_000h 1000.0)
 
