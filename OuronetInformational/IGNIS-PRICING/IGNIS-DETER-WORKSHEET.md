@@ -800,4 +800,4 @@ Deter is a multiplier on IG|TX: `25x` = 25·IG|TX added on top of the compute co
 | 5000x | 5 | SWP pair $50 / DSA vault $50 |
 | 10000x | 1 | ShareholderCollection $100 |
 
-517 ops · 253 with deter>1 (rest default 1 or exempt). Regenerate: python3 REPL/_ignis_deter_worksheet.py > OuronetInformational/IGNIS-DETER-WORKSHEET.md
+517 ops · 253 with deter>1 (rest default 1 or exempt). Regenerate: python3 REPL/_ignis_deter_worksheet.py > OuronetInformational/IGNIS-PRICING/IGNIS-DETER-WORKSHEET.md

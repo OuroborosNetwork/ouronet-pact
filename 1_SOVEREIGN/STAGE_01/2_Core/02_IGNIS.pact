@@ -370,7 +370,7 @@
     ;;  UC_IgnisDeter; no module keeps local GAS|/deter constants. Adding a new op later
     ;;  means adding its key here (IGNIS module upgrade) — accepted trade-off for one
     ;;  manageable location. Source of values: OWNER_DECISIONS in
-    ;;  REPL/_ignis_deter_worksheet.py == OuronetInformational/IGNIS-DETER-WORKSHEET.md.
+    ;;  REPL/_ignis_deter_worksheet.py == OuronetInformational/IGNIS-PRICING/IGNIS-DETER-WORKSHEET.md.
     ;;
     (defconst IG|WEIGHTS
         {"tx"         : 1.0

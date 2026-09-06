@@ -2,7 +2,7 @@
 
 **Context:** continuation of a stalled conversation (recovered via
 `OuronetInformational/_PRICING-FEEDBACK-PENDING.md`) revising
-`OuronetInformational/IGNIS-DETER-WORKSHEET.md` (#76). This note captures the durable design
+`OuronetInformational/IGNIS-PRICING/IGNIS-DETER-WORKSHEET.md` (#76). This note captures the durable design
 decisions the owner settled during that back-and-forth, plus what's still open.
 
 ## Durable decisions (fold into future pricing work)
@@ -168,7 +168,7 @@ to be properly planned, substaged." Proposed substages (order matters — deps f
    **Crucially: the owner's whole 2026-09-05 pricing batch is now encoded IN-SCRIPT as the
    `OWNER_DECISIONS` dict** — the worksheet is fully regenerable (hand edits no longer live in
    the markdown) and that dict is the direct input for the substage-3 IGNIS defconst
-   generation. Regenerate: `python3 REPL/_ignis_deter_worksheet.py > OuronetInformational/IGNIS-DETER-WORKSHEET.md`.
+   generation. Regenerate: `python3 REPL/_ignis_deter_worksheet.py > OuronetInformational/IGNIS-PRICING/IGNIS-DETER-WORKSHEET.md`.
    Distribution after regen: 190 exempt · 70 @1x · 255 with deter>1 (tier table at worksheet foot).
 3. **IGNIS module defconsts — DONE 2026-09-05 (constants live; call-site swap deferred to 5).**
    `02_IGNIS.pact` now holds two object-map defconsts in `{3.1}`: `IG|WEIGHTS` (tx=1, ins=3,
@@ -273,9 +273,9 @@ still says "I green-light nothing myself" — nothing ships without owner green-
 ## Related
 
 - `OuronetInformational/_PRICING-FEEDBACK-PENDING.md` — verbatim owner feedback this note resolves.
-- `OuronetInformational/IGNIS-DETER-WORKSHEET.md` — the worksheet updated in this pass (see its
+- `OuronetInformational/IGNIS-PRICING/IGNIS-DETER-WORKSHEET.md` — the worksheet updated in this pass (see its
   REVISION LOG section at the top, dated 2026-09-05).
-- `OuronetInformational/IGNIS-COST-ANALYSIS.md` — the earlier re-pricing proposal this worksheet
+- `OuronetInformational/IGNIS-PRICING/IGNIS-COST-ANALYSIS.md` — the earlier re-pricing proposal this worksheet
   refines.
 - `OuronetInformational/memories/2026-08-27-ignis-cost-rethink.md` — the original directive that
   kicked off this whole rethink.
@@ -286,8 +286,8 @@ still says "I green-light nothing myself" — nothing ships without owner green-
 its printing lives in `main()` (guarded by `__main__`), making it importable; the new
 `REPL/_ignis_price_sheet.py` imports it and reuses `OWNER_DECISIONS` + `suggest_deter` + the
 component model, so the two documents can never disagree.
-  - `OuronetInformational/IGNIS-DETER-WORKSHEET.md` — every op WITH its modelled compute components.
-  - `OuronetInformational/IGNIS-PRICE-SHEET.md` — owner ask: "the expected price of every simple
+  - `OuronetInformational/IGNIS-PRICING/IGNIS-DETER-WORKSHEET.md` — every op WITH its modelled compute components.
+  - `OuronetInformational/IGNIS-PRICING/IGNIS-PRICE-SHEET.md` — owner ask: "the expected price of every simple
     function, and when you come to a function that is complex, just say so". Three sections:
     **FIXED** (258 ops — flat, quotable price in IGNIS + $), **COMPLEX** (67 — no single number,
     with the reason), **EXEMPT** (190 — always free). Regenerate with the command in its footer.

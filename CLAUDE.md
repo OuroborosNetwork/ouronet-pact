@@ -16,6 +16,10 @@ Authoritative docs live under `OuronetInformational/`:
 - `CONTEXT.md` — consolidated project facts and vocabulary.
 - `MODULE_ARCHITECTURE.md` — prefixes, capability bands, Talos, client flows. Read before touching any sovereign core or Talos module.
 - `ARCHITECTURE/README.md` + `ARCHITECTURE/*` — inventory, interface versioning, REPL layout spec, module deep dive.
+- `IGNIS-PRICING/` — the #76 pricing work: plan + status, owner spec, the generated price sheet and
+  deterrence worksheet, plus the historical pre-rehaul analyses. Start at
+  `IGNIS-PRICING/README.md`.
+- `HANDOFFS/` — long-form handover documents (PYTHIA, SWP path search, bulk transfer).
 - `skills/` — repeatable procedures (enforce grouping, UR layout, REPL test layout, etc.).
 - `memories/` — dated conversation captures and decisions.
 

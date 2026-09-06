@@ -1055,8 +1055,8 @@ principal tokens, which become search hubs). Owner directed the whole thing — 
 limitations, the gas-ceiling crisis, and the fix — be consolidated into this one issue, executed
 phase-by-phase with explicit go-ahead at each step, full REPL verification (not load-testing — real
 pass/fail assertions) at every stage, adversarial revert-and-reproduce proof for every fix. Full
-13-phase plan, every design decision, every dead end: `OuronetInformational/HANDOFF-swp-exhaustive-path-search.md`.
-Finished-mechanism write-up + client orchestration guide: `OuronetInformational/HANDOFF-swp-smartswap-bundle-architecture.md`.
+13-phase plan, every design decision, every dead end: `OuronetInformational/HANDOFFS/HANDOFF-swp-exhaustive-path-search.md`.
+Finished-mechanism write-up + client orchestration guide: `OuronetInformational/HANDOFFS/HANDOFF-swp-smartswap-bundle-architecture.md`.
 
 **The redesign (Phases 6-10, the dirty-read bundle mechanism) — push all path discovery off-chain:**
 - `1_SOVEREIGN/STAGE_01/2_Core/14_SWPT.pact` — `SWPT|PathCache` table (+ `PathCacheRow` on the
@@ -1745,7 +1745,7 @@ capstone phase to add a separate, simplified direct-pool-swap interface. See
 `OuronetInformational/memories/2026-08-28-capstone-ui-needs-a-simplified-direct-pool-swap-interface.md`.
 
 **Status:** FIXED ✅ AND PROVEN ✅. Full detail in
-`OuronetInformational/HANDOFF-swp-graph-search-engine-optimization.md`.
+`OuronetInformational/HANDOFFS/HANDOFF-swp-graph-search-engine-optimization.md`.
 
 ---
 
@@ -2040,7 +2040,7 @@ Phase 6) — a cache hit bypasses BFS entirely, before this fix's code ever runs
 (exit 0, 0 `FAILURE`), `Stage01_Tester.repl` reverted to default afterward (zero drift).
 
 **Status:** FIXED ✅ AND PROVEN ✅. See `ROUND-01-OWNER-FEEDBACK.md`'s `#65bL` entry (Phase 9
-addendum) and `OuronetInformational/HANDOFF-swp-graph-search-engine-optimization.md` for the full
+addendum) and `OuronetInformational/HANDOFFS/HANDOFF-swp-graph-search-engine-optimization.md` for the full
 writeup.
 
 ---

@@ -332,4 +332,4 @@ print(f"\n---\n{nsimple} simple (exact price) · {ncomplex} complex (floor price
       f" · {nsimple+ncomplex+nexempt} Talos client functions"
       f"\n\n`×N` on a core op = the wrapper drives N priced core ops in a FIXED composition"
       f" (still exactly knowable).\n")
-print("Regenerate: `python3 REPL/_ignis_price_sheet.py > OuronetInformational/IGNIS-PRICE-SHEET.md`")
+print("Regenerate: `python3 REPL/_ignis_price_sheet.py > OuronetInformational/IGNIS-PRICING/IGNIS-PRICE-SHEET.md`")

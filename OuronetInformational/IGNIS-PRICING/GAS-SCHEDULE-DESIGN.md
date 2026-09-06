@@ -1,5 +1,12 @@
 # Ouronet IGNIS gas schedule — parametric re-pricing design (#76)
 
+> **STATUS: ADOPTED IN PRINCIPLE, DIFFERENT SHAPE.** The idea — compose every price from a small
+> table of named primitives instead of magic numbers — is what shipped. The concrete `IG|U` single
+> global knob in this document did NOT ship; the implemented tables are four:
+> `IG|DETER` (deterrence tiers + owner-priced ops), `IG|WEIGHTS` (cost-model primitives),
+> `IG|COMPONENTS` (generated per-op compute cost) and `IG|LEGS` (named internal write legs).
+> Treat this as the design rationale, not as a description of the code.
+
 Goal: replace the hand-picked IGNIS magic numbers with an **algorithmic gas schedule** — a small
 table of named price primitives that every client/admin function's cost is *composed from*, the way a
 real chain meters gas. You tune the **table** (one unit + tier multiples + per-resource units); the

@@ -1,5 +1,11 @@
 # URCi cost architecture — Option A (chosen) + implementation plan
 
+> **STATUS: IMPLEMENTED.** This is the original Option-A decision (2026-08-27) that introduced the
+> `URCi_` prefix — "the spec to implement when we resume". It has been implemented: every client op
+> has a `URCi_` cost reader, and 345 of 365 INFO previews are thin wrappers over those readers (the
+> rest are deliberately free ops or data views). Read it for the WHY; read
+> `IGNIS-PRICING-PLAN.md` for what is built.
+
 Owner decision, 2026-08-27. This is the spec to implement when we resume after the audits.
 Companion: `memories/2026-08-27-ignis-cost-rethink.md` (point A), `MODULE-SIZING.md` (point B),
 `memories/2026-08-27-aqp-info-final17-costmap.md` (the proven AQP leg breakdowns = the spec source).

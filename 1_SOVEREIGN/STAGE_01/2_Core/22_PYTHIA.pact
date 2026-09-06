@@ -1,5 +1,5 @@
 ;; PYTHIA — Apollo Pythia dual-Apollo API-key registry (Stage 01 core #23).
-;; Spec: OuronetInformational/HANDOFF-pact-apollo-pythia-key-module.md
+;; Spec: OuronetInformational/HANDOFFS/HANDOFF-pact-apollo-pythia-key-module.md
 ;; Deploy: load THIS file — PythiaV5 + PythiaLedgerV3 interfaces + PYTHIA module ship together.
 ;; Shared/historical registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact (PythiaV1–V3, PythiaLedger V1/V2BlockTime).
 ;; Talos client: 1_SOVEREIGN/STAGE_01/3_Talos/06_TS01-C4.pact (TalosStageOne_ClientFourV8 embedded).
@@ -15,7 +15,7 @@
 ;;   PYTHIA|T|PythTotal   — Pyth ledger running totals (key = "stoachain")
 ;;   P|T / P|MT           — standard Ouronet policy tables
 ;;
-;; Spec (ledger): OuronetInformational/HANDOFF-pact-pyth-ledger.md
+;; Spec (ledger): OuronetInformational/HANDOFFS/HANDOFF-pact-pyth-ledger.md
 ;; (create-table ...) at module bottom runs on **first module install** (greenfield).
 ;; You do not submit separate create-table txs. All eight fire in the PYTHIA deploy tx.
 ;; If PYTHIA were already on-chain at V3, only PythDaily + PythTotal are additive create-tables.

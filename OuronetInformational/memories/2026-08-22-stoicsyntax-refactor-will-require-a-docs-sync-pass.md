@@ -9,8 +9,8 @@ against StoicSyntax during the audits themselves; that's explicitly deferred.
 **The consequence that must not be lost:** every doc written *during* the audits — findings,
 fix logs, HANDOFF/architecture docs — necessarily references the **pre-refactor** names (e.g.
 `SWPU::C_SmartSwap`, `SWPT::URC_ComputeAllRoutes`, `SWPI::URC_HopperExhaustive`, every prefix and
-function cited throughout `OuronetInformational/HANDOFF-swp-exhaustive-path-search.md` and
-`OuronetInformational/HANDOFF-swp-smartswap-bundle-architecture.md`, every `Audit/*/README.md` /
+function cited throughout `OuronetInformational/HANDOFFS/HANDOFF-swp-exhaustive-path-search.md` and
+`OuronetInformational/HANDOFFS/HANDOFF-swp-smartswap-bundle-architecture.md`, every `Audit/*/README.md` /
 `ISSUES-RANKED.md` / `ROUND-0N-*.md` fix entry across every module). Once the StoicSyntax
 refactor renames things, **all of this documentation goes stale** — code examples, function
 references, and cross-links will point at names that no longer exist.

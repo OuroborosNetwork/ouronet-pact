@@ -326,7 +326,7 @@ def main():
     for d in sorted(tiers,key=_tkey):
         dd=d if isinstance(d,str) else f'{d:g}x'
         print(f"| {dd} | {tiers[d]} | {labels.get(d,'')} |")
-    print(f"\n{tot} ops · {deterred} with deter>1 (rest default 1 or exempt). Regenerate: python3 REPL/_ignis_deter_worksheet.py > OuronetInformational/IGNIS-DETER-WORKSHEET.md")
+    print(f"\n{tot} ops · {deterred} with deter>1 (rest default 1 or exempt). Regenerate: python3 REPL/_ignis_deter_worksheet.py > OuronetInformational/IGNIS-PRICING/IGNIS-DETER-WORKSHEET.md")
 
 
 if __name__ == "__main__":

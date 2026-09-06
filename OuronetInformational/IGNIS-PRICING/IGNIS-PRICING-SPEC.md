@@ -1,9 +1,20 @@
 # IGNIS + STOA pricing spec — the settled list (owner directives, 2026-09-05)
 
-> Status: **SPEC / not yet implemented.** The earlier rehaul wired only the ops named by number
-> to the central `IG|DETER` (~70 call sites: the AQP family + the specific issuance/wipe/anchor/
-> DSA/LP ops). Every other client op still charges its legacy `UDC_*Cumulator` tier. This
-> document is the target state to implement against.
+> Status: **IMPLEMENTED (2026-09-06).** The stale note that used to sit here — "only ~70 call
+> sites wired, every other op still on its legacy `UDC_*Cumulator` tier" — has not been true since
+> the rehaul finished. Every client op now bills `UC_IgnisPrice = deter + components`; there are
+> ZERO deterrence-only readers and zero legacy tier calls on a client path.
+>
+> Owner amendments made AFTER this spec was written, which override it where they differ:
+> * **Anchors** are a FLAT 500 deterrence for every type (`IG|DETER "anchor"`), superseding the
+>   "half the anchored asset's issuance price" rule below (anchor-tf/sf/nf are gone).
+> * **Fee-unlock** is a flat $50 IGNIS + $50 STOA, replacing the escalating ladder.
+> * **Account creation** STOA ($5 standard / $10 smart) sits behind its own switch, default OFF.
+> * **MergeFragments / MakeFragments** are USAGE tier; `EnableNonceFragmentation` is the issue gate.
+> * Minting-type ops (`AddQuantity`, `RespawnNFT`, `MakeFragments`) get no special issuance price.
+>
+> For what is built and what remains: `IGNIS-PRICING-PLAN.md`. For live numbers:
+> `IGNIS-PRICE-SHEET.md`.
 
 ## 1. The cost model
 

@@ -334,8 +334,8 @@ swap, an 18.5x reduction**, safely under the ceiling; the old self-searching pat
 cheapest-path search (`SWPT::URC_ComputeAllRoutes`/`SWPI::URC_HopperExhaustive`), proved on a real
 4-route topology that it finds a route best-of-3 structurally cannot (195.16 vs. 784.27), and measured
 its own realistic-scale cost (sub-linear; dirty-read-only, so never competes against the paid ceiling).
-Full phase list, design, and every measurement: `OuronetInformational/HANDOFF-swp-exhaustive-path-search.md`.
-Finished-mechanism write-up + client orchestration guide: `OuronetInformational/HANDOFF-swp-smartswap-bundle-architecture.md`.
+Full phase list, design, and every measurement: `OuronetInformational/HANDOFFS/HANDOFF-swp-exhaustive-path-search.md`.
+Finished-mechanism write-up + client orchestration guide: `OuronetInformational/HANDOFFS/HANDOFF-swp-smartswap-bundle-architecture.md`.
 — *M2*
 
 #34bM **[SWPI]** ~~Discovered during #34M follow-up discussion, not from the original Round I sweep.
@@ -672,7 +672,7 @@ case, 1,837,000→1,687,556 gas (8.1% further) on the P2-scale checkpoint. **Cum
 5,094,054→1,687,556 gas, a 66.9% reduction** from the pre-`#65L` baseline; warm-cache steady-state
 unaffected (still 1,143,255 gas, 77.6%, since the bundle-based flow never touched this code path). Full
 writeup in `ROUND-01-OWNER-FEEDBACK.md` and
-`OuronetInformational/HANDOFF-swp-graph-search-engine-optimization.md`. — *#65bL*
+`OuronetInformational/HANDOFFS/HANDOFF-swp-graph-search-engine-optimization.md`. — *#65bL*
 
 **Phase 8 addendum (`#65fL`, `ROUND-02-FIXES.md` Fix #45):** owner asked about direct-pool-swap costs
 (confirmed already zero pathfinding) and proposed DLK/OURO get zero-search worth shortcuts — DLK

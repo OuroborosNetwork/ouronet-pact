@@ -25,7 +25,7 @@ config framed around multi-hop uncertainty, etc.) for a case that doesn't need a
 
 This surfaced while closing out `#65bL` (the SWP audit's on-chain graph-search engine optimization,
 see `1_SOVEREIGN/STAGE_01/2_Core/Audit/SWP/ROUND-01-OWNER-FEEDBACK.md` and
-`OuronetInformational/HANDOFF-swp-graph-search-engine-optimization.md`). Part of that closing
+`OuronetInformational/HANDOFFS/HANDOFF-swp-graph-search-engine-optimization.md`). Part of that closing
 discussion was about SmartSwap's own on-chain routing search dropping from best-of-3 to
 first-found-only (Phase 5) — the owner's own reasoning for accepting that tradeoff was partly
 grounded in "on the UI we have the smart swap tab, that is used even now when there is a single

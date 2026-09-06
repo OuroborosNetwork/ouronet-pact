@@ -1832,8 +1832,8 @@ worst-case swap, an 18.5x reduction) closes the gas crisis, and a genuine exhaus
 cheapest-path search, proven to find routes best-of-3 structurally cannot. Full phased plan, every
 design decision, the depth-vs-path-count distinction, the same-pool-detour pruning rule, the concrete
 counter-example proving "shortest ≠ cheapest," and every real measurement:
-`OuronetInformational/HANDOFF-swp-exhaustive-path-search.md`. Finished-mechanism write-up + client
-orchestration guide: `OuronetInformational/HANDOFF-swp-smartswap-bundle-architecture.md`. Fix #19
+`OuronetInformational/HANDOFFS/HANDOFF-swp-exhaustive-path-search.md`. Finished-mechanism write-up + client
+orchestration guide: `OuronetInformational/HANDOFFS/HANDOFF-swp-smartswap-bundle-architecture.md`. Fix #19
 (`CC_SmartSwap`, the renamed self-searching variant) stays live as the production fallback alongside
 the new bundle-based path — whether it's ever fully retired is an explicit open decision, not made
 here.
@@ -3112,7 +3112,7 @@ pool swaps. See
 `OuronetInformational/memories/2026-08-28-capstone-ui-needs-a-simplified-direct-pool-swap-interface.md`.
 
 **Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #42 and
-`OuronetInformational/HANDOFF-swp-graph-search-engine-optimization.md` for the full phase-by-phase
+`OuronetInformational/HANDOFFS/HANDOFF-swp-graph-search-engine-optimization.md` for the full phase-by-phase
 detail, mirroring `HANDOFF-swp-exhaustive-path-search.md`'s own role for `#34`. Awaiting Round III
 re-verify (though per the owner's later direction, Round III itself is out of scope for this
 branch). — *#65bL*

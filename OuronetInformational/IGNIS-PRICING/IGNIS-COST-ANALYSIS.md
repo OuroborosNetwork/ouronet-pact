@@ -1,5 +1,11 @@
 # IGNIS cost analysis & re-pricing proposal (#76)
 
+> **STATUS: HISTORICAL (pre-rehaul).** Describes the cost structure as it was BEFORE the #76
+> re-pricing: flat `GAS|<OP>` constants in AQP, `UsagePrice` tiers everywhere else. Both are gone —
+> every op now bills `UC_IgnisPrice = deter + components`. Kept because the *analysis* of why the
+> old structure was wrong is still the rationale for the current design. For today's numbers see
+> `IGNIS-PRICE-SHEET.md`; for status see `IGNIS-PRICING-PLAN.md`.
+
 Built from `REPL/_ignis_cost_classify.py` (DPMF excluded — historic stub). Classifies every
 client/admin **core** entrypoint by how its charge is built and its role, then measures the current
 structure against the gate philosophy: **issue > setup > usage, and usage scales with compute.**

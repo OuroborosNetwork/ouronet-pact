@@ -599,4 +599,4 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 
 `×N` on a core op = the wrapper drives N priced core ops in a FIXED composition (still exactly knowable).
 
-Regenerate: `python3 REPL/_ignis_price_sheet.py > OuronetInformational/IGNIS-PRICE-SHEET.md`
+Regenerate: `python3 REPL/_ignis_price_sheet.py > OuronetInformational/IGNIS-PRICING/IGNIS-PRICE-SHEET.md`

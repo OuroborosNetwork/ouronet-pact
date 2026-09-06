@@ -33,7 +33,7 @@ table for the file/interface mapping). It contains three layers of work, in comm
    worst-case gas dropped **5,094,054 → 1,296,898** (74.5% reduction); warm-cache steady-state
    (bundle-swap-primed `SWPT|PathCache`) sits at 1,143,255 gas (77.6% reduction), unaffected by the
    cold-cache phases since a cache hit bypasses the search entirely. Full detail:
-   `OuronetInformational/HANDOFF-swp-graph-search-engine-optimization.md` (dedicated phase-by-phase
+   `OuronetInformational/HANDOFFS/HANDOFF-swp-graph-search-engine-optimization.md` (dedicated phase-by-phase
    writeup — read this for the gas-optimization arc specifically, this document only summarizes it).
 3. **This session's 3 additional findings** — `#72C`, `#73C`, `#74` — surfaced by direct owner
    questions after the audit and the gas arc were both already closed, not from a formal review
@@ -200,7 +200,7 @@ Expected result on both paths, as of this branch's tip (`d5cb352`): `EXIT:0`, `0
 | `ROUND-01-OWNER-FEEDBACK.md` | Full reasoning + verdict per finding, append-only, includes every "owner pushed back and was right/wrong" exchange verbatim |
 | `ROUND-02-FIXES.md` | The actual fix, one entry per Fix #, sequential, includes every adversarial-proof writeup |
 | `reference/` | Kaddex/KDX mainnet source + comparison handoff (new this session, now tracked) |
-| `OuronetInformational/HANDOFF-swp-graph-search-engine-optimization.md` | Dedicated `#65bL` gas-arc writeup, all 9 phases |
+| `OuronetInformational/HANDOFFS/HANDOFF-swp-graph-search-engine-optimization.md` | Dedicated `#65bL` gas-arc writeup, all 9 phases |
 | `OuronetInformational/memories/2026-08-29-recursion-detection-and-try-forces-readonly.md` | Pact recursion/reentrancy semantics + the `try`-forces-read-only gotcha, both independently proven this session |
 
 ## 7. Sign-off

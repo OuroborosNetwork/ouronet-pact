@@ -1,6 +1,6 @@
 # IGNIS/STOA re-pricing — implementation plan
 
-> Target: `OuronetInformational/IGNIS-PRICING-SPEC.md`. Ends with REPL tests that observe REAL
+> Target: `OuronetInformational/IGNIS-PRICING/IGNIS-PRICING-SPEC.md`. Ends with REPL tests that observe REAL
 > costs and assert them against the planned table; whatever they surface gets fixed. The final
 > per-function IGNIS/STOA list is a deliverable for the Chapter-2 documentation constructors.
 
@@ -68,41 +68,38 @@ them, do not adjust the expectation to match.
 Regenerate `IGNIS-PRICE-SHEET.md` from live code, now test-enforced, as the pricing input to the
 Chapter-2 Stage-1/Stage-2 documentation.
 
-## Status — 2026-09-06
+## Status — 2026-09-06 (end of the owner-decision batch)
 
 | phase | state |
 |---|---|
-| **P1** foundation | **done** — `IG\|COMPONENTS` 393 ops, `UC_IgnisPrice` / `…Scaled` / `UC_StoaPrice`, `stoa\|price` oracle |
-| **P2** account-creation STOA switch | **done** — independent flag + admin fn + Talos wrapper, $5/$10 pegged |
+| **P1** foundation | **done** — `IG\|DETER`, `IG\|WEIGHTS`, `IG\|COMPONENTS` (394 ops), `IG\|LEGS`, `UC_IgnisPrice` / `…Scaled` / `UC_IgnisLeg` / `UC_StoaPrice`, `stoa\|price` oracle |
+| **P2** account-creation STOA switch | **done** — independent flag + admin fn + Talos wrapper, $5/$10 pegged, default OFF |
 | **P3** issue functions | **done** — dollar-pegged STOA legs; non-discountable path for PYTHIA |
 | **P4** fee-unlock flat $50+$50 | **done** — escalating ladder off every call path |
-| **P5** `URCi_*` migration | **partial — 97 readers migrated.** The tail is the AQP family (see below) |
-| **P6** retire dead constructors | **blocked on P5** — the tier constructors still have live callers |
-| **P7** acceptance gate | **6 module sweeps + a composed-op floor; 84 of 97 migrated readers asserted** |
-| **P8** documentation list | **regenerable** — `IGNIS-PRICE-SHEET.md` is in sync with the chain |
+| **P5** `URCi_*` migration | **DONE** — **zero deterrence-only readers, zero legacy tier calls on a client path** |
+| **P6** retire dead constructors | **open** — the `UDC_<tier>Cumulator` family still has non-client callers; needs a sweep before deletion |
+| **P7** acceptance gate | **~90 price assertions** across 8 sweeps (DPTF 17, ATS 16, DPDC 44, DPOF 14, SWP 6, SCORE/RPS 4, AQP family 27, IG\|LEGS 11) + a composed-op floor |
+| **P8** documentation list | **ready** — `IGNIS-PRICE-SHEET.md` regenerates from live code and agrees with the chain |
 
-**P7 coverage.** DPTF 17 · ATS 16 · DPDC 25 readers (44 assertions — both `son` branches) ·
-DPOF 14 · SWP 6 · SCORE/RPS 4 · VST composed-op floor. Unasserted: ANK 3, SWPLC 6,
-`SCORE::URCi_CombineTripletModel`, `DPDC-I::URCi_IssueCollectionPrice`,
-`EQUITY+::URCi_IssueShareholderCollection`, `VST::URCi_CreateSpecialOrtoFungibleLink` — all
-state-dependent (SWPLC needs real pool state; the rest need issuance fixtures).
+**Price sheet:** 168 simple (exact) · 144 complex (floor) · 40 exempt · 78 unresolved of 352 Talos
+client functions. The remaining "unresolved" are extractor limits on composed shapes, NOT missing
+readers — see the INFO audit below.
 
-**Price sheet.** 145 simple (exact) · 136 complex (floor) · 40 exempt · 109 unresolved.
-The 109 are overwhelmingly the AQP-family gap, not an extraction defect.
+**INFO layer:** 345 of 365 INFO implementations wrap a `URCi_` reader; 14 declare their op free
+(gas-station-subsidised hydra slices, ORBR, DSA oracle toggles), 4 are data views, 2 that bypassed
+their reader were fixed. 395 of 401 Talos client ops had an INFO preview; the 2 genuinely missing
+(`CODEX|C_RotateCodexGuard`, `C_RecordArweaveUpload`) were added.
 
-### What is NOT done, and why
+### Open questions for the owner
 
-1. **The AQP-family component gap.** `AQP-SCR\|`, `AQP-POOL\|`, `AQP-FVT\|`, `AQP-DSA\|`,
-   `AQP-ANK\|` bill **deterrence only** — ~79 `IG\|COMPONENTS` entries exist for them and nothing
-   reads them. Closing it is mechanical (`UC_IgnisDeter k` → `UC_IgnisPrice op k`) but it RAISES
-   prices across the AQP surface, so it needs an explicit owner go-ahead.
-2. **Per-leg cumulators inside `XI_`/`XB_` writers** — 10 sites, all in AQP, each a flat tier
-   (mostly `Medium` = 3). Option A leaves them outside central control; option B makes them named
-   `IG\|WEIGHTS` legs. Owner leaned B; not yet done.
-3. **`URCi_UpdateNonceField`** — one reader serving ~20 `C_UpdateNonce*` wrappers: uniform price
-   or split per wrapper?
-4. **`MergeFragments`** moved to `usage` per the recorded owner directive — flagged in case the
-   directive itself is stale.
+1. **`CODEX|C_RotateCodexGuard` / `C_RecordArweaveUpload` are gasless** — no cumulator, no `URCi_`
+   reader — yet `IG\|COMPONENTS` carries entries for them (4 / 9). Price them, or delete the
+   entries?
+2. **P6** — deleting `UDC_SmallestCumulator … UDC_BiggestCumulator` needs each remaining caller
+   checked; some are internal legs that legitimately still use a tier.
+3. **`SWP|C_IssueStandard` was missing** from the generated `IG\|COMPONENTS` while both siblings
+   were present. Added by hand at their value (35). The generator should be re-checked for other
+   omissions.
 
 ### Verification rules learned the hard way
 
@@ -113,8 +110,8 @@ The 109 are overwhelmingly the AQP-family gap, not an extraction defect.
   charging the legacy NFT price through many green runs. Only an assertion catches that, and only
   if it exercises BOTH branches.
 * **`::` modref calls resolve at runtime** — a wrong member or arity deploys clean and dies on
-  first call. `python3 REPL/_audit_modref_calls.py` covers that statically (baseline: 11 dead
-  calls, 2 of them in dead `00_DPMF.pact`; 0 arity mismatches).
+  first call. `python3 REPL/_audit_modref_calls.py` covers that statically (baseline: 2 dead calls,
+  both in dead `00_DPMF.pact`; 0 arity mismatches).
 
 ## Ordering note
 

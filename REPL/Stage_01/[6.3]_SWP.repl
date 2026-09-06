@@ -3946,7 +3946,7 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
 (print "=======================P0.5 Worst-Case Execution Gas Test (Phase 2 planning)=================================")
-;;Roadmap: OuronetInformational/HANDOFF-swp-exhaustive-path-search.md, item P0.5.
+;;Roadmap: OuronetInformational/HANDOFFS/HANDOFF-swp-exhaustive-path-search.md, item P0.5.
 ;;Measures the real gas cost of executing (not searching for) a maximal-complexity
 ;;SmartSwap: a 7-token/6-hop route (owner's "sexy number 7" depth cap) where EVERY
 ;;one of the 6 pools along the way is itself maximally sized (7 members) with 7
