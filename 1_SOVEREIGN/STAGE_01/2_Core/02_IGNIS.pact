@@ -69,6 +69,7 @@
     (defun UDC_MediumCumulator:object{OutputCumulator} (active-account:string))
     (defun UDC_BigCumulator:object{OutputCumulator} (active-account:string))
     (defun UDC_BiggestCumulator:object{OutputCumulator} (active-account:string))
+    (defun UDC_LegCumulator:object{OutputCumulator} (leg-key:string active-account:string))
     (defun UDC_CustomCodeCumulator:object{OutputCumulator} ())
         ;;
     (defun UDC_MakeModularCumulator:object{ModularCumulator} (price:decimal active-account:string trigger:bool))
@@ -79,6 +80,7 @@
     ;;{5.2}  Compute [UC]
     (defun UC_IgnisWeight:decimal (key:string))
     (defun UC_IgnisDeter:decimal (key:string))
+    (defun UC_IgnisLeg:decimal (leg-key:string))
     (defun UC_IgnisComponents:decimal (op-key:string))
     (defun UC_IgnisPrice:decimal (op-key:string deter-key:string))
     (defun UC_IgnisPriceScaled:decimal (op-key:string deter-key:string weight-key:string n:integer))
@@ -393,6 +395,27 @@
         ,"r-xl"       : 9.0
         ,"wipe-nonce" : 5.0
         ,"frag-nonce" : 100.0}
+    )
+    ;;
+    ;;  IG|LEGS — named INTERNAL write legs charged inside XI_/XB_ writers. These are NOT client
+    ;;  ops: one user operation adds several of them (stake a token -> write a tracker slot AND
+    ;;  bump a total), so a composed op's price is its own price plus whichever legs it touches.
+    ;;  Kept separate from the other two maps ON PURPOSE — IG|DETER is deterrence, IG|COMPONENTS
+    ;;  is per-CLIENT-OP work, IG|LEGS is per-WRITE work. Values below are exactly what these
+    ;;  sites charged as hardcoded tiers before centralisation (medium 3 / biggest 5), so lifting
+    ;;  them here moved no price; from now on a leg is retuned HERE, not hunted for in AQP.
+    ;;
+    (defconst IG|LEGS
+        {"tracker-write-tf"          : 3.0
+        ,"tracker-write-of"          : 3.0
+        ,"tracker-write-collectable" : 3.0
+        ,"tracker-zero-tf"           : 3.0
+        ,"ben-total-tf"              : 5.0
+        ,"ben-nonce-total-sf"        : 3.0
+        ,"ben-nonce-total-nf"        : 3.0
+        ,"ank-sync-count-tf"         : 5.0
+        ,"ank-sync-count-collectable": 5.0
+        ,"stake-anchor-refresh"      : 3.0}
     )
     (defconst IG|DETER
         {"usage"             : 1.0
@@ -1087,6 +1110,18 @@
             )
         )
     )
+    (defun UDC_LegCumulator:object{IgnisCollectorV2.OutputCumulator}
+        (leg-key:string active-account:string)
+        @doc "Cumulator for ONE named internal write leg (IG|LEGS). Replaces the hardcoded \
+            \ UDC_<tier>Cumulator calls inside XI_/XB_ writers so every internal charge has a \
+            \ name and a single place to be retuned."
+        (UDC_ConstructOutputCumulator
+            (UC_IgnisLeg leg-key)
+            active-account
+            (URC_IsVirtualGasZero)
+            []
+        )
+    )
     (defun UDC_CustomCodeCumulator:object{IgnisCollectorV2.OutputCumulator} ()
         (let
             (
@@ -1432,6 +1467,12 @@
             \ AQP-family tiers (2026-09-05 batch). 1 ignis = 1 USD/EUR cent. An unknown \
             \ key fails fast via <at>."
         (at key IG|DETER)
+    )
+    (defun UC_IgnisLeg:decimal (leg-key:string)
+        @doc "Price of ONE named internal write leg, from IG|LEGS. Charged by XI_/XB_ writers \
+            \ for the persistence work a single write does — not a client-op price. Fails fast \
+            \ on an unknown key."
+        (at leg-key IG|LEGS)
     )
     (defun UC_IgnisComponents:decimal (op-key:string)
         @doc "The op's own computed IGNIS consumption (its real work), from IG|COMPONENTS. \

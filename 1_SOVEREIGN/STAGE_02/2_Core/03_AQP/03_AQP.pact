@@ -2735,7 +2735,7 @@
                         (if (and (> bal 0.0) (= new-bal 0.0)) (WU_Pool|Occupancy pool-id beneficiary-id -1) "no nns transition"))
                 )
             )
-            (ref-IGNIS::UDC_MediumCumulator AQP|SC_NAME)
+            (ref-IGNIS::UDC_LegCumulator "tracker-write-collectable" AQP|SC_NAME)
         )
     )
     (defun XI_1|BumpBenCollectableNonceTotalSlot:object{IgnisCollectorV2.OutputCumulator}
@@ -2781,7 +2781,7 @@
                 )
                 true
             )
-            (ref-IGNIS::UDC_MediumCumulator AQP|SC_NAME)
+            (ref-IGNIS::UDC_LegCumulator "ben-nonce-total-sf" AQP|SC_NAME)
         )
     )
     (defun XI_2|BumpBenDpnfNonceTotal:object{IgnisCollectorV2.OutputCumulator}
@@ -2818,7 +2818,7 @@
                 )
                 true
             )
-            (ref-IGNIS::UDC_MediumCumulator AQP|SC_NAME)
+            (ref-IGNIS::UDC_LegCumulator "ben-nonce-total-nf" AQP|SC_NAME)
         )
     )
     (defun XI_1|WriteDptfTrackerSlot:object{IgnisCollectorV2.OutputCumulator}
@@ -2840,7 +2840,7 @@
             ;; No-op on LP pools (class 0, nns=-1) via the WU_Pool|Nns guard. Covers TF stake AND unstake.
             (if (and (= bal 0.0) (> new-bal 0.0)) (WU_Pool|Occupancy pool-id beneficiary-id 1)
                 (if (and (> bal 0.0) (= new-bal 0.0)) (WU_Pool|Occupancy pool-id beneficiary-id -1) "no nns transition"))
-            (ref-IGNIS::UDC_MediumCumulator AQP|SC_NAME)
+            (ref-IGNIS::UDC_LegCumulator "tracker-write-tf" AQP|SC_NAME)
         )
     )
     (defun XI_1|ZeroDptfTrackerSlot:object{IgnisCollectorV2.OutputCumulator}
@@ -2858,7 +2858,7 @@
             )
             ;; #FP1 universal nns: zeroing an OCCUPIED leg is an occupied->empty transition (-1). No-op on LP.
             (if (> bal 0.0) (WU_Pool|Occupancy pool-id beneficiary-id -1) "no nns transition")
-            (ref-IGNIS::UDC_MediumCumulator AQP|SC_NAME)
+            (ref-IGNIS::UDC_LegCumulator "tracker-zero-tf" AQP|SC_NAME)
         )
     )
     (defun XI_1|BumpBenDptfTotalSlot:object{IgnisCollectorV2.OutputCumulator}
@@ -2877,7 +2877,7 @@
             (WW_BenDptfTotal beneficiary-id dptf-id
                 (UDC_AQP|BenDptfTotal new-total sc beneficiary-id dptf-id)
             )
-            (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME)
+            (ref-IGNIS::UDC_LegCumulator "ben-total-tf" AQP|SC_NAME)
         )
     )
     (defun XI_1|WriteDpofTrackerSlot:object{IgnisCollectorV2.OutputCumulator}
@@ -2906,7 +2906,7 @@
             ;; #FP1: pool nns occupancy — OF moves the whole nonce, so every move is a full 0<->occupied transition
             (if (and (= bal 0.0) (> new-bal 0.0)) (WU_Pool|Occupancy pool-id beneficiary-id 1)
                 (if (and (> bal 0.0) (= new-bal 0.0)) (WU_Pool|Occupancy pool-id beneficiary-id -1) "no nns transition"))
-            (ref-IGNIS::UDC_MediumCumulator AQP|SC_NAME)
+            (ref-IGNIS::UDC_LegCumulator "tracker-write-of" AQP|SC_NAME)
         )
     )
     ;; [XE]
@@ -3183,7 +3183,7 @@
                 )
                 ;; SECURE: granted by WU_BenDptfTotal|LastAnkSyncCount (underlying W_).
                 (WU_BenDptfTotal|LastAnkSyncCount beneficiary-id dptf-id row live-count)
-                (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME)
+                (ref-IGNIS::UDC_LegCumulator "ank-sync-count-tf" AQP|SC_NAME)
             )
         )
     )
@@ -3216,7 +3216,7 @@
                         (WU_BenDpnfAnkMeta|LastAnkSyncCount beneficiary-id collectable-id row live-count)
                     )
                 )
-                (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME)
+                (ref-IGNIS::UDC_LegCumulator "ank-sync-count-collectable" AQP|SC_NAME)
             )
         )
     )

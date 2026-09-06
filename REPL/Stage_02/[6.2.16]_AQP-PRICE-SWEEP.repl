@@ -53,6 +53,52 @@
     )
 )
 (print "")
+;;==== TX-AQPP-001 · 02 · IG|LEGS lifted the 10 internal write legs with NO price move ====
+(print "--- [TX-AQPP-001 · 02 · IG|LEGS parity with the tiers they replaced] ---")
+;;The 10 XI_/XB_ writers in AQP used to charge hardcoded UDC_<tier>Cumulator calls, invisible to
+;;the pricing system. They now charge named IG|LEGS keys. This block pins the REFACTOR claim:
+;;every lifted leg still costs exactly what its old tier cost (medium 3 / biggest 5), so the
+;;centralisation moved no price. Retuning a leg from here on is a deliberate edit to IG|LEGS
+;;— and it will make one of these assertions fail, which is the intended alarm.
+(let
+    (
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (medium:decimal (ref-DALOS::UR_UsagePrice "ignis|medium"))
+        (biggest:decimal (ref-DALOS::UR_UsagePrice "ignis|biggest"))
+    )
+    (map (print)
+        [
+            (expect "<<TX-AQPP-001>> leg tracker-write-tf == old medium tier"
+                medium (ref-IGNIS::UC_IgnisLeg "tracker-write-tf"))
+            (expect "<<TX-AQPP-001>> leg tracker-write-of == old medium tier"
+                medium (ref-IGNIS::UC_IgnisLeg "tracker-write-of"))
+            (expect "<<TX-AQPP-001>> leg tracker-write-collectable == old medium tier"
+                medium (ref-IGNIS::UC_IgnisLeg "tracker-write-collectable"))
+            (expect "<<TX-AQPP-001>> leg tracker-zero-tf == old medium tier"
+                medium (ref-IGNIS::UC_IgnisLeg "tracker-zero-tf"))
+            (expect "<<TX-AQPP-001>> leg ben-nonce-total-sf == old medium tier"
+                medium (ref-IGNIS::UC_IgnisLeg "ben-nonce-total-sf"))
+            (expect "<<TX-AQPP-001>> leg ben-nonce-total-nf == old medium tier"
+                medium (ref-IGNIS::UC_IgnisLeg "ben-nonce-total-nf"))
+            (expect "<<TX-AQPP-001>> leg stake-anchor-refresh == old medium tier"
+                medium (ref-IGNIS::UC_IgnisLeg "stake-anchor-refresh"))
+            (expect "<<TX-AQPP-001>> leg ben-total-tf == old biggest tier"
+                biggest (ref-IGNIS::UC_IgnisLeg "ben-total-tf"))
+            (expect "<<TX-AQPP-001>> leg ank-sync-count-tf == old biggest tier"
+                biggest (ref-IGNIS::UC_IgnisLeg "ank-sync-count-tf"))
+            (expect "<<TX-AQPP-001>> leg ank-sync-count-collectable == old biggest tier"
+                biggest (ref-IGNIS::UC_IgnisLeg "ank-sync-count-collectable"))
+            ;;an unknown leg key must fail fast, not silently price at zero
+            (expect-failure "<<TX-AQPP-001>> an unknown IG|LEGS key fails fast"
+                (ref-IGNIS::UC_IgnisLeg "no-such-leg"))
+            ""
+        ]
+    )
+)
+(print "")
+(print "<<TX-AQPP-001>> IG|LEGS: all 10 lifted legs price exactly as their old tiers")
+(print "")
 (print "<<TX-AQPP-001>> P7 sweep: all 4 migrated SCORE/RPS readers price correctly")
 (print "===^^^===")
 (commit-tx)

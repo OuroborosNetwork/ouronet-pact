@@ -2342,7 +2342,7 @@
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                 [
-                    (ref-IGNIS::UDC_MediumCumulator AQP|SC_NAME)
+                    (ref-IGNIS::UDC_LegCumulator "stake-anchor-refresh" AQP|SC_NAME)
                     (ref-AQP::XB_SetBenCollectableAnkSyncCount beneficiary-id collectable-id son)
                 ]
                 []
