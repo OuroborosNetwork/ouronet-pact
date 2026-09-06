@@ -566,6 +566,41 @@
     )
 )
 (print "")
+;;==== TX-IGC-001 · 08 · P7: composed op — VST special-link floor ==== ============================
+(print "--- [TX-IGC-001 · 08 · VST link: deterrence leg is exact, total is a floor] ---")
+;;A COMPOSED op cannot be asserted as one number: URCi_CreateSpecialTrueFungibleLink concatenates
+;;three legs (issue-the-wrapper, update-special on the underlying, transfer-role toggle). What IS
+;;exactly knowable is leg 0 — the link's own $2.50 deterrence PLUS the DPTF issuance it carries —
+;;so that leg is pinned exactly and the total only floor-checked. This is the shape the price
+;;sheet prints for composed ops ("COMPLEX — at least N"), asserted against the live cumulator.
+(let
+    (
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-VST:module{VestingV2} VST)
+        (ouro:string (ref-DALOS::UR_OuroborosID))
+    )
+    (map (print)
+        [
+            (expect "<<TX-IGC-008>> VST link leg 0 == deter(vst-link) + the DPTF issuance it carries"
+                (+ (ref-IGNIS::UC_IgnisDeter "vst-link") (ref-DPTF::URCi_IssueGas 1))
+                (at "ignis" (at 0 (at "cumulator-chain"
+                    (ref-VST::URCi_CreateSpecialTrueFungibleLink ouro)))))
+            ;;floor: the op charges MORE than its deterrence leg (update-special + role toggle)
+            (expect "<<TX-IGC-008>> VST link total exceeds leg 0 (it has update + toggle legs too)"
+                true
+                (> (fold (+) 0.0 (map (at "ignis")
+                        (at "cumulator-chain" (ref-VST::URCi_CreateSpecialTrueFungibleLink ouro))))
+                   (at "ignis" (at 0 (at "cumulator-chain"
+                       (ref-VST::URCi_CreateSpecialTrueFungibleLink ouro))))))
+            ""
+        ]
+    )
+)
+(print "")
+(print "<<TX-IGC-008>> P7: composed-op floor (VST special link) OK")
+(print "")
 (print "<<TX-IGC-007>> P7 sweep: all 16 migrated ATS readers price correctly")
 (print "===^^^===")
 (env-sigs [])
