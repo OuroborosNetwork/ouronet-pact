@@ -67,10 +67,10 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 |----------------|---------|------|------:|-----:|----------:|------------------|
 | `C_AddRewardLink` | `C_AddRewardLink` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_AddScoreEntity` | `C_AddScoreEntity` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_Control` | `C_Control` | SETUP | **3** | — | $0.03 | medium 3 |
+| `C_Control` | `C_Control` | SETUP | **13** | — | $0.13 | deter:setup 5 + components:AQP-FVT|C_Control 8 |
 | `C_Issue` | `C_Issue` | ISSUE | **?** | 0.02 | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_IssueMultipletFamily` | `C_IssueMultipletFamily` | ISSUE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_RotateOwnership` | `C_RotateOwnership` | SETUP | **3** | — | $0.03 | medium 3 |
+| `C_RotateOwnership` | `C_RotateOwnership` | AUTH | **17** | — | $0.17 | deter:auth 10 + components:AQP-FVT|C_RotateOwnership 7 |
 | `C_SetCommonDenominator` | `C_SetCommonDenominator` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_SetMosaic` | `C_SetMosaic` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_SetQualitySplit` | `C_SetQualitySplit` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
@@ -123,7 +123,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | Talos function | core op | role | IGNIS | STOA | $ (ignis) | charge breakdown |
 |----------------|---------|------|------:|-----:|----------:|------------------|
 | `C_CombineTripletScoreModel` | `C_CombineTripletScoreModel` | SETUP | **100** | — | $1.00 | deter:combine-triplet 100 |
-| `C_ControlScore` | `C_Control` | SETUP | **3** | — | $0.03 | medium 3 |
+| `C_ControlScore` | `C_Control` | SETUP | **18** | — | $0.18 | deter:setup 5 + components:AQP-SCR|C_ControlScore 13 |
 | `C_CreateScoreBoostClassLink` | `C_CreateBoostClassLink` | ISSUE | **5** | — | $0.05 | biggest 5 |
 | `C_CreateScoreBoostLink` | `C_CreateBoostLink` | ISSUE | **5** | — | $0.05 | biggest 5 |
 | `C_EnableDebBoost` | `C_EnableDebBoost` | SETUP | **3** | — | $0.03 | medium 3 |
@@ -138,7 +138,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_IssueSingleScoreModel` | `C_IssueSingleScoreModel` | ISSUE | **100** | — | $1.00 | deter:combine-triplet 100 |
 | `C_IssueTriplet` | `C_IssueTriplet` | ISSUE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_IssueTrueFungibleScore` | `C_IssueTrueFungibleScore` | ISSUE | **?** | 0.02 | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_RotateScoreOwnership` | `C_RotateOwnership` | SETUP | **3** | — | $0.03 | medium 3 |
+| `C_RotateScoreOwnership` | `C_RotateOwnership` | AUTH | **23** | — | $0.23 | deter:auth 10 + components:AQP-SCR|C_RotateScoreOwnership 13 |
 
 ## ATS
 
@@ -153,8 +153,8 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_ColdRecovery` | `C_ColdRecovery` | SETUP | **≥ 6** | — | COMPLEX | charge multiplies by an item count; legs: biggest 5 + smallest 1 |
 | `C_Constrict` | `C_Constrict` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_Control` | `C_Control` | SETUP | **24** | — | $0.24 | deter:setup 5 + components:ATS|C_Control 19 |
-| `C_ControlColdRecoveryFees` | `C_ControlColdRecoveryFees` | SETUP | **44** | — | $0.44 | deter:fee 25 + components:ATS|C_ControlColdRecoveryFees 19 |
-| `C_ControlHotRecoveryFee` | `C_ControlHotRecoveryFee` | SETUP | **44** | — | $0.44 | deter:fee 25 + components:ATS|C_ControlHotRecoveryFee 19 |
+| `C_ControlColdRecoveryFees` | `C_ControlColdRecoveryFees` | FEE | **44** | — | $0.44 | deter:fee 25 + components:ATS|C_ControlColdRecoveryFees 19 |
+| `C_ControlHotRecoveryFee` | `C_ControlHotRecoveryFee` | FEE | **44** | — | $0.44 | deter:fee 25 + components:ATS|C_ControlHotRecoveryFee 19 |
 | `C_Cull` | `C_Cull` | SETUP | **≥ 5** | — | COMPLEX | wrapper fans out over a list; legs: biggest 5 |
 | `C_Curl` | `C_Curl` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_DirectRecovery` | `C_DirectRecovery` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
@@ -165,12 +165,12 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_Redeem` | `C_Redeem` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_RemoveSecondary` | `C_RemoveSecondary` | SETUP | **500** | — | $5.00 | token-issue 500 |
 | `C_Reverse` | `C_Recover` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_RotateOwnership` | `C_RotateOwnership` | SETUP | **29** | — | $0.29 | deter:auth 10 + components:ATS|C_RotateOwnership 19 |
+| `C_RotateOwnership` | `C_RotateOwnership` | AUTH | **29** | — | $0.29 | deter:auth 10 + components:ATS|C_RotateOwnership 19 |
 | `C_SetColdRecoveryDuration` | `C_SetColdRecoveryDuration` | SETUP | **29** | — | $0.29 | deter:setup 5 + components:ATS|C_SetColdRecoveryDuration 24 |
 | `C_SetColdRecoveryFees` | `C_SetColdRecoveryFees` | SETUP | **5** | — | $0.05 | biggest 5 |
-| `C_SetDirectRecoveryFee` | `C_SetDirectRecoveryFee` | SETUP | **44** | — | $0.44 | deter:fee 25 + components:ATS|C_SetDirectRecoveryFee 19 |
-| `C_SetHibernationFees` | `C_SetHibernationFees` | SETUP | **44** | — | $0.44 | deter:fee 25 + components:ATS|C_SetHibernationFees 19 |
-| `C_SetHotRecoveryFee` | `C_SetHotRecoveryFees` | SETUP | **5** | — | $0.05 | biggest 5 |
+| `C_SetDirectRecoveryFee` | `C_SetDirectRecoveryFee` | FEE | **44** | — | $0.44 | deter:fee 25 + components:ATS|C_SetDirectRecoveryFee 19 |
+| `C_SetHibernationFees` | `C_SetHibernationFees` | FEE | **44** | — | $0.44 | deter:fee 25 + components:ATS|C_SetHibernationFees 19 |
+| `C_SetHotRecoveryFee` | `C_SetHotRecoveryFees` | FEE | **40** | — | $0.40 | deter:fee 25 + components:ATS|C_SetHotRecoveryFee 15 |
 | `C_SwitchColdRecovery` | `C_SwitchColdRecovery` | SETUP | **24** | — | $0.24 | deter:setup 5 + components:ATS|C_SwitchColdRecovery 19 |
 | `C_SwitchDirectRecovery` | `C_SwitchDirectRecovery` | SETUP | **24** | — | $0.24 | deter:setup 5 + components:ATS|C_SwitchDirectRecovery 19 |
 | `C_SwitchHotRecovery` | `C_SwitchHotRecovery` | SETUP | **24** | — | $0.24 | deter:setup 5 + components:ATS|C_SwitchHotRecovery 19 |
@@ -179,7 +179,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_ToggleParameterLock` | `C_ToggleParameterLock` | SETUP | **2** | — | $0.02 | small 2 |
 | `C_ToggleUpgrade` | `C_ToggleUpgrade` | SETUP | **24** | — | $0.24 | deter:setup 5 + components:ATS|C_ToggleUpgrade 19 |
 | `C_UpdatePendingBranding` | `C_UpdatePendingBranding` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_UpdateRoyalty` | `C_UpdateRoyalty` | SETUP | **44** | — | $0.44 | deter:fee 25 + components:ATS|C_UpdateRoyalty 19 |
+| `C_UpdateRoyalty` | `C_UpdateRoyalty` | FEE | **44** | — | $0.44 | deter:fee 25 + components:ATS|C_UpdateRoyalty 19 |
 | `C_UpdateSyphon` | `C_UpdateSyphon` | USAGE | **20** | — | $0.20 | deter:usage 1 + components:ATS|C_UpdateSyphon 19 |
 | `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **?** | 0.025 | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_VestedCoil` | `C_Coil` ×2 | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
@@ -260,7 +260,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 |----------------|---------|------|------:|-----:|----------:|------------------|
 | `C_Break` | `C_BreakNonFungibleSet` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_Burn` | `C_BurnNFT` | SETUP | **18** | — | $0.18 | deter:setup 5 + components:DPNF|C_Burn 13 |
-| `C_Control` | `C_Control` | SETUP | **40** | — | $0.40 | biggest 5 + deter:setup 5 + components:DPSF|C_Control 15 + components:DPNF|C_Control 15 |
+| `C_Control` | `C_Control` | SETUP | **20** | — | $0.20 | deter:setup 5 + components:DPNF|C_Control 15 |
 | `C_Create` | `C_CreateNewNonce` ×2 | ISSUE | **1** | — | $0.01 | smallest 1 |
 | `C_DefineCompositeSet` | `C_DefineCompositeSet` | ISSUE | **500** | — | $5.00 | token-issue 500 |
 | `C_DefineHybridSet` | `C_DefineHybridSet` | ISSUE | **500** | — | $5.00 | token-issue 500 |
@@ -269,24 +269,24 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_EnableSetClassFragmentation` | `C_EnableSetClassFragmentation` | SETUP | **5** | — | $0.05 | biggest 5 |
 | `C_Issue` | `C_IssueDigitalCollection` | ISSUE | **2500** | — | $25.00 | deter:issue-nft 2500 |
 | `C_Make` | `C_MakeNonFungibleSet` | ISSUE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_MakeFragments` | `C_MakeFragments` | USAGE | **5** | — | $0.05 | biggest 5 |
-| `C_MergeFragments` | `C_MergeFragments` | USAGE | **39** | — | $0.39 | deter:setup 5 + components:DPSF|C_MergeFragments 17 + components:DPNF|C_MergeFragments 17 |
-| `C_MoveCreateRole` | `C_MoveCreateRole` | SETUP | **48** | — | $0.48 | deter:auth 10 + components:DPSF|C_MoveCreateRole 19 + components:DPNF|C_MoveCreateRole 19 |
-| `C_MoveRecreateRole` | `C_MoveRecreateRole` | SETUP | **48** | — | $0.48 | deter:auth 10 + components:DPSF|C_MoveRecreateRole 19 + components:DPNF|C_MoveRecreateRole 19 |
-| `C_MoveSetUriRole` | `C_MoveSetUriRole` | SETUP | **48** | — | $0.48 | deter:auth 10 + components:DPSF|C_MoveSetUriRole 19 + components:DPNF|C_MoveSetUriRole 19 |
+| `C_MakeFragments` | `C_MakeFragments` | USAGE | **18** | — | $0.18 | deter:usage 1 + components:DPNF|C_MakeFragments 17 |
+| `C_MergeFragments` | `C_MergeFragments` | USAGE | **18** | — | $0.18 | deter:usage 1 + components:DPNF|C_MergeFragments 17 |
+| `C_MoveCreateRole` | `C_MoveCreateRole` | AUTH | **29** | — | $0.29 | deter:auth 10 + components:DPNF|C_MoveCreateRole 19 |
+| `C_MoveRecreateRole` | `C_MoveRecreateRole` | AUTH | **29** | — | $0.29 | deter:auth 10 + components:DPNF|C_MoveRecreateRole 19 |
+| `C_MoveSetUriRole` | `C_MoveSetUriRole` | AUTH | **29** | — | $0.29 | deter:auth 10 + components:DPNF|C_MoveSetUriRole 19 |
 | `C_RenameSet` | `C_RenameSet` | SETUP | **2** | — | $0.02 | small 2 |
 | `C_Repurpose` | `C_RepurposeCollectable` | USAGE | **≥ 5** | — | COMPLEX | charge multiplies by an item count; legs: small 2 + medium 3 |
 | `C_RepurposeFragments` | `C_RepurposeCollectableFragments` | USAGE | **5** | — | $0.05 | small 2 + medium 3 |
-| `C_Respawn` | `C_RespawnNFT` | SETUP | **3** | — | $0.03 | medium 3 |
-| `C_ToggleBurnRole` | `C_ToggleBurnRole` | SETUP | **36** | — | $0.36 | deter:auth 10 + components:DPSF|C_ToggleBurnRole 13 + components:DPNF|C_ToggleBurnRole 13 |
-| `C_ToggleExemptionRole` | `C_ToggleExemptionRole` | SETUP | **36** | — | $0.36 | deter:auth 10 + components:DPSF|C_ToggleExemptionRole 13 + components:DPNF|C_ToggleExemptionRole 13 |
-| `C_ToggleFreezeAccount` | `C_ToggleFreezeAccount` | SETUP | **31** | — | $0.31 | deter:setup 5 + components:DPSF|C_ToggleFreezeAccount 13 + components:DPNF|C_ToggleFreezeAccount 13 |
-| `C_ToggleModifyCreatorRole` | `C_ToggleModifyCreatorRole` | SETUP | **36** | — | $0.36 | deter:auth 10 + components:DPSF|C_ToggleModifyCreatorRole 13 + components:DPNF|C_ToggleModifyCreatorRole 13 |
-| `C_ToggleModifyRoyaltiesRole` | `C_ToggleModifyRoyaltiesRole` | SETUP | **51** | — | $0.51 | deter:fee 25 + components:DPSF|C_ToggleModifyRoyaltiesRole 13 + components:DPNF|C_ToggleModifyRoyaltiesRole 13 |
-| `C_TogglePause` | `C_TogglePause` | SETUP | **23** | — | $0.23 | deter:setup 5 + components:DPSF|C_TogglePause 9 + components:DPNF|C_TogglePause 9 |
+| `C_Respawn` | `C_RespawnNFT` | SETUP | **14** | — | $0.14 | deter:setup 5 + components:DPNF|C_Respawn 9 |
+| `C_ToggleBurnRole` | `C_ToggleBurnRole` | AUTH | **23** | — | $0.23 | deter:auth 10 + components:DPNF|C_ToggleBurnRole 13 |
+| `C_ToggleExemptionRole` | `C_ToggleExemptionRole` | AUTH | **23** | — | $0.23 | deter:auth 10 + components:DPNF|C_ToggleExemptionRole 13 |
+| `C_ToggleFreezeAccount` | `C_ToggleFreezeAccount` | SETUP | **18** | — | $0.18 | deter:setup 5 + components:DPNF|C_ToggleFreezeAccount 13 |
+| `C_ToggleModifyCreatorRole` | `C_ToggleModifyCreatorRole` | AUTH | **23** | — | $0.23 | deter:auth 10 + components:DPNF|C_ToggleModifyCreatorRole 13 |
+| `C_ToggleModifyRoyaltiesRole` | `C_ToggleModifyRoyaltiesRole` | FEE | **38** | — | $0.38 | deter:fee 25 + components:DPNF|C_ToggleModifyRoyaltiesRole 13 |
+| `C_TogglePause` | `C_TogglePause` | SETUP | **14** | — | $0.14 | deter:setup 5 + components:DPNF|C_TogglePause 9 |
 | `C_ToggleSet` | `C_ToggleSet` | SETUP | **5** | — | $0.05 | biggest 5 |
-| `C_ToggleTransferRole` | `C_ToggleTransferRole` | USAGE | **27** | — | $0.27 | deter:usage 1 + components:DPSF|C_ToggleTransferRole 13 + components:DPNF|C_ToggleTransferRole 13 |
-| `C_ToggleUpdateRole` | `C_ToggleUpdateRole` | SETUP | **36** | — | $0.36 | deter:auth 10 + components:DPSF|C_ToggleUpdateRole 13 + components:DPNF|C_ToggleUpdateRole 13 |
+| `C_ToggleTransferRole` | `C_ToggleTransferRole` | USAGE | **14** | — | $0.14 | deter:usage 1 + components:DPNF|C_ToggleTransferRole 13 |
+| `C_ToggleUpdateRole` | `C_ToggleUpdateRole` | AUTH | **23** | — | $0.23 | deter:auth 10 + components:DPNF|C_ToggleUpdateRole 13 |
 | `C_TransferNonce` | `C_IgnisRoyaltyCollector` ×2 | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_TransferNonces` | `C_IgnisRoyaltyCollector` ×2 | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_UpdateNonce` | `C_UpdateNonces` | SETUP | **≥ 1** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 |
@@ -312,7 +312,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_WipeClean` | `C_WipeClean` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_WipeDirty` | `C_WipeDirty` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_WipeHeavy` | `C_WipeHeavy` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_WipeNonce` | `C_WipeNonce` | SETUP | **≥ 59** | — | COMPLEX | per-nonce / per-item work; legs: big 4 + deter:setup 5 + components:DPSF|C_WipeNonce 25 + components:DPNF|C_WipeNonce 25 |
+| `C_WipeNonce` | `C_WipeNonce` | SETUP | **≥ 30** | — | COMPLEX | per-nonce / per-item work; legs: deter:setup 5 + components:DPNF|C_WipeNonce 25 |
 | `C_WipePure` | `C_WipePure` | SETUP | **≥ 5** | — | COMPLEX | per-nonce / per-item work; legs: weight:wipe-nonce 5 |
 | `Cp_WipeSlice` | `Cp_WipeSlice` | USAGE | **≥ 5** | — | COMPLEX | heavy / parallel-slice op; legs: weight:wipe-nonce 5 |
 
@@ -327,11 +327,11 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_Control` | `C_Control` | SETUP | **25** | — | $0.25 | deter:setup 5 + components:DPOF|C_Control 20 |
 | `C_DeployAccount` | `C_DeployAccount` | ISSUE | **50** | — | $0.50 | deter:token-account 50 |
 | `C_Issue` | `C_Issue` | ISSUE | **≥ 1000** | — | COMPLEX | charge multiplies by an item count; legs: deter:issue-of 1000 |
-| `C_Mint` | `C_Mint` | ISSUE | **≥ 85** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Mint 80 |
-| `C_MoveCreateRole` | `C_MoveCreateRole` | SETUP | **57** | — | $0.57 | deter:auth 10 + components:DPOF|C_MoveCreateRole 47 |
-| `C_RotateOwnership` | `C_RotateOwnership` | SETUP | **29** | — | $0.29 | deter:auth 10 + components:DPOF|C_RotateOwnership 19 |
-| `C_ToggleAddQuantityRole` | `C_ToggleAddQuantityRole` | SETUP | **63** | — | $0.63 | deter:auth 10 + components:DPOF|C_ToggleAddQuantityRole 53 |
-| `C_ToggleBurnRole` | `C_ToggleBurnRole` | SETUP | **63** | — | $0.63 | deter:auth 10 + components:DPOF|C_ToggleBurnRole 53 |
+| `C_Mint` | `C_Mint` | SETUP | **≥ 85** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Mint 80 |
+| `C_MoveCreateRole` | `C_MoveCreateRole` | AUTH | **57** | — | $0.57 | deter:auth 10 + components:DPOF|C_MoveCreateRole 47 |
+| `C_RotateOwnership` | `C_RotateOwnership` | AUTH | **29** | — | $0.29 | deter:auth 10 + components:DPOF|C_RotateOwnership 19 |
+| `C_ToggleAddQuantityRole` | `C_ToggleAddQuantityRole` | AUTH | **63** | — | $0.63 | deter:auth 10 + components:DPOF|C_ToggleAddQuantityRole 53 |
+| `C_ToggleBurnRole` | `C_ToggleBurnRole` | AUTH | **63** | — | $0.63 | deter:auth 10 + components:DPOF|C_ToggleBurnRole 53 |
 | `C_ToggleFreezeAccount` | `C_ToggleFreezeAccount` | SETUP | **58** | — | $0.58 | deter:setup 5 + components:DPOF|C_ToggleFreezeAccount 53 |
 | `C_TogglePause` | `C_TogglePause` | SETUP | **24** | — | $0.24 | deter:setup 5 + components:DPOF|C_TogglePause 19 |
 | `C_ToggleTransferRole` | `C_ToggleTransferRole` | USAGE | **54** | — | $0.54 | deter:usage 1 + components:DPOF|C_ToggleTransferRole 53 |
@@ -349,10 +349,10 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 
 | Talos function | core op | role | IGNIS | STOA | $ (ignis) | charge breakdown |
 |----------------|---------|------|------:|-----:|----------:|------------------|
-| `C_AddQuantity` | `C_AddQuantity` | SETUP | **2** | — | $0.02 | small 2 |
+| `C_AddQuantity` | `C_AddQuantity` | SETUP | **18** | — | $0.18 | deter:setup 5 + components:DPSF|C_AddQuantity 13 |
 | `C_Break` | `C_BreakSemiFungibleSet` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_Burn` | `C_BurnSFT` | SETUP | **20** | — | $0.20 | deter:setup 5 + components:DPSF|C_Burn 15 |
-| `C_Control` | `C_Control` | SETUP | **40** | — | $0.40 | biggest 5 + deter:setup 5 + components:DPSF|C_Control 15 + components:DPNF|C_Control 15 |
+| `C_Control` | `C_Control` | SETUP | **20** | — | $0.20 | deter:setup 5 + components:DPSF|C_Control 15 |
 | `C_Create` | `C_CreateNewNonce` ×2 | ISSUE | **1** | — | $0.01 | smallest 1 |
 | `C_DefineCompositeSet` | `C_DefineCompositeSet` | ISSUE | **500** | — | $5.00 | token-issue 500 |
 | `C_DefineHybridSet` | `C_DefineHybridSet` | ISSUE | **500** | — | $5.00 | token-issue 500 |
@@ -362,25 +362,25 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_Issue` | `C_IssueDigitalCollection` | ISSUE | **2000** | — | $20.00 | deter:issue-sft 2000 |
 | `C_IssueCompany` | `C_IssueShareholderCollection` | ISSUE | **10000** | — | $100.00 | deter:issue-shareholder 10000 |
 | `C_Make` | `C_MakeSemiFungibleSet` | ISSUE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_MakeFragments` | `C_MakeFragments` | USAGE | **5** | — | $0.05 | biggest 5 |
-| `C_MergeFragments` | `C_MergeFragments` | USAGE | **39** | — | $0.39 | deter:setup 5 + components:DPSF|C_MergeFragments 17 + components:DPNF|C_MergeFragments 17 |
+| `C_MakeFragments` | `C_MakeFragments` | USAGE | **18** | — | $0.18 | deter:usage 1 + components:DPSF|C_MakeFragments 17 |
+| `C_MergeFragments` | `C_MergeFragments` | USAGE | **18** | — | $0.18 | deter:usage 1 + components:DPSF|C_MergeFragments 17 |
 | `C_MorphEquity` | `C_MorphPackageShares` ×2 | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_MoveCreateRole` | `C_MoveCreateRole` | SETUP | **48** | — | $0.48 | deter:auth 10 + components:DPSF|C_MoveCreateRole 19 + components:DPNF|C_MoveCreateRole 19 |
-| `C_MoveRecreateRole` | `C_MoveRecreateRole` | SETUP | **48** | — | $0.48 | deter:auth 10 + components:DPSF|C_MoveRecreateRole 19 + components:DPNF|C_MoveRecreateRole 19 |
-| `C_MoveSetUriRole` | `C_MoveSetUriRole` | SETUP | **48** | — | $0.48 | deter:auth 10 + components:DPSF|C_MoveSetUriRole 19 + components:DPNF|C_MoveSetUriRole 19 |
+| `C_MoveCreateRole` | `C_MoveCreateRole` | AUTH | **29** | — | $0.29 | deter:auth 10 + components:DPSF|C_MoveCreateRole 19 |
+| `C_MoveRecreateRole` | `C_MoveRecreateRole` | AUTH | **29** | — | $0.29 | deter:auth 10 + components:DPSF|C_MoveRecreateRole 19 |
+| `C_MoveSetUriRole` | `C_MoveSetUriRole` | AUTH | **29** | — | $0.29 | deter:auth 10 + components:DPSF|C_MoveSetUriRole 19 |
 | `C_RenameSet` | `C_RenameSet` | SETUP | **2** | — | $0.02 | small 2 |
 | `C_Repurpose` | `C_RepurposeCollectable` | USAGE | **≥ 5** | — | COMPLEX | charge multiplies by an item count; legs: small 2 + medium 3 |
 | `C_RepurposeFragments` | `C_RepurposeCollectableFragments` | USAGE | **5** | — | $0.05 | small 2 + medium 3 |
-| `C_ToggleAddQuantityRole` | `C_ToggleAddQuantityRole` | SETUP | **10** | — | $0.10 | deter:auth 10 |
-| `C_ToggleBurnRole` | `C_ToggleBurnRole` | SETUP | **36** | — | $0.36 | deter:auth 10 + components:DPSF|C_ToggleBurnRole 13 + components:DPNF|C_ToggleBurnRole 13 |
-| `C_ToggleExemptionRole` | `C_ToggleExemptionRole` | SETUP | **36** | — | $0.36 | deter:auth 10 + components:DPSF|C_ToggleExemptionRole 13 + components:DPNF|C_ToggleExemptionRole 13 |
-| `C_ToggleFreezeAccount` | `C_ToggleFreezeAccount` | SETUP | **31** | — | $0.31 | deter:setup 5 + components:DPSF|C_ToggleFreezeAccount 13 + components:DPNF|C_ToggleFreezeAccount 13 |
-| `C_ToggleModifyCreatorRole` | `C_ToggleModifyCreatorRole` | SETUP | **36** | — | $0.36 | deter:auth 10 + components:DPSF|C_ToggleModifyCreatorRole 13 + components:DPNF|C_ToggleModifyCreatorRole 13 |
-| `C_ToggleModifyRoyaltiesRole` | `C_ToggleModifyRoyaltiesRole` | SETUP | **51** | — | $0.51 | deter:fee 25 + components:DPSF|C_ToggleModifyRoyaltiesRole 13 + components:DPNF|C_ToggleModifyRoyaltiesRole 13 |
-| `C_TogglePause` | `C_TogglePause` | SETUP | **23** | — | $0.23 | deter:setup 5 + components:DPSF|C_TogglePause 9 + components:DPNF|C_TogglePause 9 |
+| `C_ToggleAddQuantityRole` | `C_ToggleAddQuantityRole` | AUTH | **10** | — | $0.10 | deter:auth 10 |
+| `C_ToggleBurnRole` | `C_ToggleBurnRole` | AUTH | **23** | — | $0.23 | deter:auth 10 + components:DPSF|C_ToggleBurnRole 13 |
+| `C_ToggleExemptionRole` | `C_ToggleExemptionRole` | AUTH | **23** | — | $0.23 | deter:auth 10 + components:DPSF|C_ToggleExemptionRole 13 |
+| `C_ToggleFreezeAccount` | `C_ToggleFreezeAccount` | SETUP | **18** | — | $0.18 | deter:setup 5 + components:DPSF|C_ToggleFreezeAccount 13 |
+| `C_ToggleModifyCreatorRole` | `C_ToggleModifyCreatorRole` | AUTH | **23** | — | $0.23 | deter:auth 10 + components:DPSF|C_ToggleModifyCreatorRole 13 |
+| `C_ToggleModifyRoyaltiesRole` | `C_ToggleModifyRoyaltiesRole` | FEE | **38** | — | $0.38 | deter:fee 25 + components:DPSF|C_ToggleModifyRoyaltiesRole 13 |
+| `C_TogglePause` | `C_TogglePause` | SETUP | **14** | — | $0.14 | deter:setup 5 + components:DPSF|C_TogglePause 9 |
 | `C_ToggleSet` | `C_ToggleSet` | SETUP | **5** | — | $0.05 | biggest 5 |
-| `C_ToggleTransferRole` | `C_ToggleTransferRole` | USAGE | **27** | — | $0.27 | deter:usage 1 + components:DPSF|C_ToggleTransferRole 13 + components:DPNF|C_ToggleTransferRole 13 |
-| `C_ToggleUpdateRole` | `C_ToggleUpdateRole` | SETUP | **36** | — | $0.36 | deter:auth 10 + components:DPSF|C_ToggleUpdateRole 13 + components:DPNF|C_ToggleUpdateRole 13 |
+| `C_ToggleTransferRole` | `C_ToggleTransferRole` | USAGE | **14** | — | $0.14 | deter:usage 1 + components:DPSF|C_ToggleTransferRole 13 |
+| `C_ToggleUpdateRole` | `C_ToggleUpdateRole` | AUTH | **23** | — | $0.23 | deter:auth 10 + components:DPSF|C_ToggleUpdateRole 13 |
 | `C_TransferNonce` | `C_IgnisRoyaltyCollector` ×2 | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_TransferNonces` | `C_IgnisRoyaltyCollector` ×2 | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_UpdateNonce` | `C_UpdateNonces` | SETUP | **≥ 1** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 |
@@ -406,7 +406,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_WipeClean` | `C_WipeClean` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_WipeDirty` | `C_WipeDirty` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_WipeHeavy` | `C_WipeHeavy` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_WipeNonce` | `C_WipeNonce` | SETUP | **≥ 59** | — | COMPLEX | per-nonce / per-item work; legs: big 4 + deter:setup 5 + components:DPSF|C_WipeNonce 25 + components:DPNF|C_WipeNonce 25 |
+| `C_WipeNonce` | `C_WipeNonce` | SETUP | **≥ 30** | — | COMPLEX | per-nonce / per-item work; legs: deter:setup 5 + components:DPSF|C_WipeNonce 25 |
 | `C_WipeNoncePartialy` | `C_WipeSlim` | SETUP | **≥ 20** | — | COMPLEX | per-nonce / per-item work; legs: deter:setup 5 + components:DPSF|C_WipeNoncePartialy 15 |
 | `C_WipePure` | `C_WipePure` | SETUP | **≥ 5** | — | COMPLEX | per-nonce / per-item work; legs: weight:wipe-nonce 5 |
 | `Cp_WipeSlice` | `Cp_WipeSlice` | USAGE | **≥ 5** | — | COMPLEX | heavy / parallel-slice op; legs: weight:wipe-nonce 5 |
@@ -424,22 +424,22 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_ClearDispo` | `C_ClearDispo` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_Control` | `C_Control` | SETUP | **25** | — | $0.25 | deter:setup 5 + components:DPTF|C_Control 20 |
 | `C_DeployAccount` | `C_DeployAccount` | ISSUE | **50** | — | $0.50 | deter:token-account 50 |
-| `C_DonateFees` | `C_SetFeeTarget` | SETUP | **44** | — | $0.44 | deter:fee 25 + components:DPTF|C_SetFeeTarget 19 |
+| `C_DonateFees` | `C_SetFeeTarget` | FEE | **44** | — | $0.44 | deter:fee 25 + components:DPTF|C_SetFeeTarget 19 |
 | `C_Issue` | `C_Issue` | ISSUE | **≥ 1000** | — | COMPLEX | charge multiplies by an item count; legs: deter:issue-tf 1000 |
 | `C_Mint` | `C_Mint` | ISSUE | **7** | — | $0.07 | biggest 5 + small 2 |
 | `C_MultiBulkTransfer` | `C_MultiBulkTransfer` | USAGE | **≥ 6** | — | COMPLEX | per-nonce / per-item work; legs: small 2 + smallest 1 + medium 3 |
 | `C_MultiTransfer` | `C_MultiTransfer` | USAGE | **≥ 6** | — | COMPLEX | per-nonce / per-item work; legs: smallest 1 + small 2 + medium 3 |
-| `C_ResetFeeTarget` | `C_SetFeeTarget` | SETUP | **44** | — | $0.44 | deter:fee 25 + components:DPTF|C_SetFeeTarget 19 |
-| `C_RotateOwnership` | `C_RotateOwnership` | SETUP | **29** | — | $0.29 | deter:auth 10 + components:DPTF|C_RotateOwnership 19 |
-| `C_SetFee` | `C_SetFee` | SETUP | **44** | — | $0.44 | deter:fee 25 + components:DPTF|C_SetFee 19 |
-| `C_SetFeeTarget` | `C_SetFeeTarget` | SETUP | **44** | — | $0.44 | deter:fee 25 + components:DPTF|C_SetFeeTarget 19 |
+| `C_ResetFeeTarget` | `C_SetFeeTarget` | FEE | **44** | — | $0.44 | deter:fee 25 + components:DPTF|C_SetFeeTarget 19 |
+| `C_RotateOwnership` | `C_RotateOwnership` | AUTH | **29** | — | $0.29 | deter:auth 10 + components:DPTF|C_RotateOwnership 19 |
+| `C_SetFee` | `C_SetFee` | FEE | **44** | — | $0.44 | deter:fee 25 + components:DPTF|C_SetFee 19 |
+| `C_SetFeeTarget` | `C_SetFeeTarget` | FEE | **44** | — | $0.44 | deter:fee 25 + components:DPTF|C_SetFeeTarget 19 |
 | `C_SetMinMove` | `C_SetMinMove` | SETUP | **24** | — | $0.24 | deter:setup 5 + components:DPTF|C_SetMinMove 19 |
-| `C_ToggleBurnRole` | `C_ToggleBurnRole` | SETUP | **68** | — | $0.68 | deter:auth 10 + components:DPTF|C_ToggleBurnRole 58 |
-| `C_ToggleFee` | `C_ToggleFee` | SETUP | **44** | — | $0.44 | deter:fee 25 + components:DPTF|C_ToggleFee 19 |
-| `C_ToggleFeeExemptionRole` | `C_ToggleFeeExemptionRole` | SETUP | **83** | — | $0.83 | deter:fee 25 + components:DPTF|C_ToggleFeeExemptionRole 58 |
+| `C_ToggleBurnRole` | `C_ToggleBurnRole` | AUTH | **68** | — | $0.68 | deter:auth 10 + components:DPTF|C_ToggleBurnRole 58 |
+| `C_ToggleFee` | `C_ToggleFee` | FEE | **44** | — | $0.44 | deter:fee 25 + components:DPTF|C_ToggleFee 19 |
+| `C_ToggleFeeExemptionRole` | `C_ToggleFeeExemptionRole` | FEE | **83** | — | $0.83 | deter:fee 25 + components:DPTF|C_ToggleFeeExemptionRole 58 |
 | `C_ToggleFeeLock` | `C_ToggleFeeLock` | SETUP | **2** | — | $0.02 | small 2 |
 | `C_ToggleFreezeAccount` | `C_ToggleFreezeAccount` | SETUP | **63** | — | $0.63 | deter:setup 5 + components:DPTF|C_ToggleFreezeAccount 58 |
-| `C_ToggleMintRole` | `C_ToggleMintRole` | SETUP | **68** | — | $0.68 | deter:auth 10 + components:DPTF|C_ToggleMintRole 58 |
+| `C_ToggleMintRole` | `C_ToggleMintRole` | AUTH | **68** | — | $0.68 | deter:auth 10 + components:DPTF|C_ToggleMintRole 58 |
 | `C_TogglePause` | `C_TogglePause` | SETUP | **24** | — | $0.24 | deter:setup 5 + components:DPTF|C_TogglePause 19 |
 | `C_ToggleReservation` | `C_ToggleReservation` | SETUP | **24** | — | $0.24 | deter:setup 5 + components:DPTF|C_ToggleReservation 19 |
 | `C_ToggleTransferRole` | `C_ToggleTransferRole` | USAGE | **59** | — | $0.59 | deter:usage 1 + components:DPTF|C_ToggleTransferRole 58 |
@@ -530,7 +530,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_AddIcedLiquidity` | `C_AddIcedLiquidity` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_AddSleepingLiquidity` | `C_AddSleepingLiquidity` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_AddStandardLiquidity` | `C_AddStandardLiquidity` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_ChangeOwnership` | `C_ChangeOwnership` | SETUP | **29** | — | $0.29 | deter:auth 10 + components:SWP|C_ChangeOwnership 19 |
+| `C_ChangeOwnership` | `C_ChangeOwnership` | AUTH | **29** | — | $0.29 | deter:auth 10 + components:SWP|C_ChangeOwnership 19 |
 | `C_EnableFrozenLP` | `C_EnableFrozenLP` | SETUP | **3** | — | $0.03 | medium 3 |
 | `C_EnableSleepingLP` | `C_EnableSleepingLP` | SETUP | **3** | — | $0.03 | medium 3 |
 | `C_Firestarter` | `C_WrapStoa` ×3 | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
@@ -540,8 +540,8 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_IssueStandardPool` | `C_IssueStandardPool` | ISSUE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_IssueWeighted` | `C_Issue` | ISSUE | **5000** | — | $50.00 | deter:issue-swp-pair 5000 |
 | `C_IssueWeightedPool` | `C_IssueWeightedPool` | ISSUE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_ModifyCanChangeOwner` | `C_ModifyCanChangeOwner` | SETUP | **29** | — | $0.29 | deter:auth 10 + components:SWP|C_ModifyCanChangeOwner 19 |
-| `C_ModifyWeights` | `C_ModifyWeights` | SETUP | **44** | — | $0.44 | deter:fee 25 + components:SWP|C_ModifyWeights 19 |
+| `C_ModifyCanChangeOwner` | `C_ModifyCanChangeOwner` | AUTH | **29** | — | $0.29 | deter:auth 10 + components:SWP|C_ModifyCanChangeOwner 19 |
+| `C_ModifyWeights` | `C_ModifyWeights` | FEE | **44** | — | $0.44 | deter:fee 25 + components:SWP|C_ModifyWeights 19 |
 | `C_MultiSwapNoSlippage` | `C_Swap` | USAGE | **≥ 0** | — | COMPLEX | charge multiplies by an item count; legs: literal 0 |
 | `C_MultiSwapWithSlippage` | `C_Swap` | USAGE | **≥ 0** | — | COMPLEX | charge multiplies by an item count; legs: literal 0 |
 | `C_RemoveLiquidity` | `C_RemoveLiquidity` | USAGE | **1000** | — | $10.00 | deter:lp-churn 1000 |
@@ -552,11 +552,11 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_ToggleAddLiquidity` | `C_ToggleAddLiquidity` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_ToggleFeeLock` | `C_ToggleFeeLock` | SETUP | **2** | — | $0.02 | small 2 |
 | `C_ToggleSwapCapability` | `C_ToggleSwapCapability` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_UpdateAmplifier` | `C_UpdateAmplifier` | SETUP | **44** | — | $0.44 | deter:fee 25 + components:SWP|C_UpdateAmplifier 19 |
-| `C_UpdateFee` | `C_UpdateFee` | SETUP | **45** | — | $0.45 | deter:fee 25 + components:SWP|C_UpdateFee 20 |
+| `C_UpdateAmplifier` | `C_UpdateAmplifier` | FEE | **44** | — | $0.44 | deter:fee 25 + components:SWP|C_UpdateAmplifier 19 |
+| `C_UpdateFee` | `C_UpdateFee` | FEE | **45** | — | $0.45 | deter:fee 25 + components:SWP|C_UpdateFee 20 |
 | `C_UpdatePendingBranding` | `C_UpdatePendingBranding` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_UpdatePendingBrandingLPs` | `C_UpdatePendingBrandingLPs` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_UpdateSpecialFeeTargets` | `C_UpdateSpecialFeeTargets` | SETUP | **44** | — | $0.44 | deter:fee 25 + components:SWP|C_UpdateSpecialFeeTargets 19 |
+| `C_UpdateSpecialFeeTargets` | `C_UpdateSpecialFeeTargets` | FEE | **44** | — | $0.44 | deter:fee 25 + components:SWP|C_UpdateSpecialFeeTargets 19 |
 | `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **?** | 0.025 | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_UpgradeBrandingLPs` | `C_UpgradeBrandingLPs` | SETUP | **?** | 0.025 | — | cumulator not resolvable statically (reader lives in another module) |
 | `CC_SmartSwapNoSlippage` | `CC_SmartSwap` | USAGE | **≥ 0** | — | COMPLEX | heavy / parallel-slice op; legs: literal 0 |

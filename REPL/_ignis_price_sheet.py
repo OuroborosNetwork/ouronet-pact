@@ -150,11 +150,21 @@ def charge(src, core_fn, entity=None, extra=''):
             if k in USAGE and not k.startswith('ignis'):
                 st.append((k, USAGE[k]))
     # `(if son A B)` branches: DPSF is son=true (first branch), DPNF is son=false (second).
-    # Without this the SFT and NFT prices get SUMMED (2000+2500) instead of selected.
+    # Without this the SFT and NFT prices get SUMMED instead of selected.
     if entity in ('DPSF', 'DPNF') and re.search(r'\(if\s+son', txt):
-        pick = 0 if entity == 'DPSF' else 1
-        if len(ig) == 2: ig = [ig[pick]]
-        if len(st) == 2: st = [st[pick]]
+        # migrated form — the branch is visible in the leg LABELS
+        # (components:DPSF|C_Control vs components:DPNF|C_Control), so select by entity rather
+        # than by position. Positional picking only worked for a bare 2-leg tier pair and left
+        # every son-branching UC_IgnisPrice op summing BOTH components (DPSF|C_Control showed
+        # 35 = 5 + 15 + 15 while the chain charges 20).
+        keyed = [lab for lab, _ in ig if lab.startswith('components:')]
+        if any(l.startswith('components:DPSF|') for l in keyed) and \
+           any(l.startswith('components:DPNF|') for l in keyed):
+            ig = [(lab, amt) for lab, amt in ig
+                  if not lab.startswith('components:') or lab.startswith(f'components:{entity}|')]
+        elif len(ig) == 2:
+            ig = [ig[0 if entity == 'DPSF' else 1]]
+        if len(st) == 2: st = [st[0 if entity == 'DPSF' else 1]]
     # de-dup identical legs (same reader reached by several paths)
     def dedup(v):
         out=[]; seen=set()
@@ -249,6 +259,20 @@ print("*Caveat:* `components` is the modelled compute cost (Option-A buckets, ca
 print("measured gas in rehaul substage 6). It counts the core op's own module-internal work;")
 print("cross-module callee internals are not re-summed, so delegating ops read a little low.\n")
 
+DETER_ROLE = {'usage': 'USAGE', 'setup': 'SETUP', 'auth': 'AUTH', 'fee': 'FEE',
+              'small': 'SETUP', 'token-account': 'ISSUE', 'fee-unlock': 'FEE'}
+
+
+def role_from_legs(igl):
+    """Role as the CODE charges it: the deter key an op bills through. None when the op does not
+    resolve to a single deterrence tier (composed ops, legacy flat tiers)."""
+    keys = [lab.split(':', 1)[1] for lab, _ in igl if lab.startswith('deter:')]
+    if len(set(keys)) != 1:
+        return None
+    k = keys[0]
+    return DETER_ROLE.get(k, 'ISSUE' if k.startswith('issue-') else None)
+
+
 nsimple=ncomplex=nexempt=nunknown=0
 for entity in sorted(rows):
     print(f"\n## {entity}\n")
@@ -258,6 +282,10 @@ for entity in sorted(rows):
             rows[entity], key=lambda z: z[0].split('|', 1)[-1].lower()):
         compose = f" ×{ncall}" if ncall > 1 else ""
         tfn_s, cf_s = md(tfn.split('|', 1)[-1]), md(cf)
+        # The role column used to come from a NAME heuristic, which drifts from what the code
+        # actually charges (C_RotateOwnership read "SETUP" while billing deter:auth). When the
+        # op bills through UC_IgnisPrice the deter key IS the role — prefer that ground truth.
+        role = role_from_legs(igl) or role
         ig_sum = sum(a for _, a in igl)
         st_sum = sum(a for _, a in stl)
         st_cell = f"{st_sum:g}" if stl else "—"

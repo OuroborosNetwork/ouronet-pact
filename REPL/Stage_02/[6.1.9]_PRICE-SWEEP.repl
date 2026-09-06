@@ -164,11 +164,11 @@
             (expect "<<TX-DPP-001>> DPNF|C_MakeFragments == deter(usage) + components"
                 (ref-IGNIS::UC_IgnisPrice "DPNF|C_MakeFragments" "usage")
                 (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-F::URCi_MakeFragments nft false)))))
-            (expect "<<TX-DPP-001>> DPSF|C_MergeFragments == deter(setup) + components"
-                (ref-IGNIS::UC_IgnisPrice "DPSF|C_MergeFragments" "setup")
+            (expect "<<TX-DPP-001>> DPSF|C_MergeFragments == deter(usage) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPSF|C_MergeFragments" "usage")
                 (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-F::URCi_MergeFragments sft true)))))
-            (expect "<<TX-DPP-001>> DPNF|C_MergeFragments == deter(setup) + components"
-                (ref-IGNIS::UC_IgnisPrice "DPNF|C_MergeFragments" "setup")
+            (expect "<<TX-DPP-001>> DPNF|C_MergeFragments == deter(usage) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPNF|C_MergeFragments" "usage")
                 (at "ignis" (at 0 (at "cumulator-chain" (ref-DPDC-F::URCi_MergeFragments nft false)))))
             ;;the fragmentation ISSUE gate is deter-only (one nonce enabled per call)
             (expect "<<TX-DPP-001>> DPSF EnableNonceFragmentation == deter(frag-enable), no components"

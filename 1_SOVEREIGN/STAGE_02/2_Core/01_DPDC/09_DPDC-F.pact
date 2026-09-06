@@ -329,8 +329,11 @@
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
-                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_MergeFragments" "setup")
-                       (ref-IGNIS::UC_IgnisPrice "DPNF|C_MergeFragments" "setup"))
+                ;;USAGE, not setup — pairs with C_MakeFragments; the issue gate of the
+                ;;fragmentation family is C_EnableNonceFragmentation (owner directive, recorded
+                ;;in REPL/_ignis_deter_worksheet.py OWNER_DECISIONS)
+                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_MergeFragments" "usage")
+                       (ref-IGNIS::UC_IgnisPrice "DPNF|C_MergeFragments" "usage"))
                 (ref-DPDC::UR_CreatorKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
