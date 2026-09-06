@@ -684,10 +684,10 @@
                 (ref-DPDC:module{DpdcV2} DPDC)
                 (owner:string (ref-DPDC::UR_OwnerKonto id son))
             )
-            (if son (ref-IGNIS::UDC_ConstructOutputCumulator
+            (ref-IGNIS::UDC_ConstructOutputCumulator
                 (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_Control" "setup")
-                       (ref-IGNIS::UC_IgnisPrice "DPNF|C_Control" "setup"))
-                owner (ref-IGNIS::URC_IsVirtualGasZero) []) (ref-IGNIS::UDC_BiggestCumulator owner))
+                        (ref-IGNIS::UC_IgnisPrice "DPNF|C_Control" "setup"))
+                owner (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_TogglePause:object{IgnisCollectorV2.OutputCumulator}
@@ -783,10 +783,10 @@
                 (ref-DPDC:module{DpdcV2} DPDC)
                 (owner:string (ref-DPDC::UR_OwnerKonto id son))
             )
-            (if son (ref-IGNIS::UDC_ConstructOutputCumulator
+            (ref-IGNIS::UDC_ConstructOutputCumulator
                 (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_WipeNonce" "setup")
-                       (ref-IGNIS::UC_IgnisPrice "DPNF|C_WipeNonce" "setup"))
-                owner (ref-IGNIS::URC_IsVirtualGasZero) []) (ref-IGNIS::UDC_BigCumulator owner))
+                        (ref-IGNIS::UC_IgnisPrice "DPNF|C_WipeNonce" "setup"))
+                owner (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     ;;{5.4}  Validate [UEV/CAP]

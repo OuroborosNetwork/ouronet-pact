@@ -575,3 +575,28 @@ un-migrated tail and shrink as P5 proceeds.
 `XB_SetBenCollectableAnkSyncCount` + 2. Mostly `Medium` (3 ignis). Option B (name them as
 `IG|WEIGHTS` legs) is therefore ~10 edits, not the 20-30 first estimated.
 
+## DEFECT I INTRODUCED AND FIXED — half-migrated son-branches (2026-09-06)
+
+`DPDC-MNG::URCi_Control` and `URCi_WipeNonce` were ALREADY branchy before migration:
+`(if son (UDC_BigCumulator owner) (UDC_BiggestCumulator owner))`. My migrator replaces the
+FIRST tier call it finds, so it produced:
+
+    (if son (UDC_ConstructOutputCumulator (if son PRICE_SFT PRICE_NFT) owner ...)
+            (UDC_BiggestCumulator owner))          ;; <-- NFT branch still legacy!
+
+i.e. son=true got the new price while **son=false silently kept the old flat tier**. The NFT ops
+looked migrated and were not. **ZALL stayed green throughout** — the code is syntactically valid
+and merely charges the wrong number, which no existing test asserted. Found only by noticing
+those two functions still appeared in a "still on legacy tiers" scan AFTER being reported as
+migrated.
+
+Detector (run after ANY migration batch): flag any `URCi_*` whose body contains BOTH
+`UC_IgnisPrice` AND a `UDC_*Cumulator` — that combination means a partially-rewritten function.
+Result was exactly 2; both repaired to a single `UDC_ConstructOutputCumulator` wrapping one
+`(if son ...)` price. Detector now reports 0.
+
+LESSON: a migrator that replaces "the first match" is unsafe on any function with BRANCHES.
+Either replace ALL tier calls in the body, or refuse functions containing more than one and
+handle them by hand. And note what this says about the test suite: P7-style price assertions are
+the ONLY thing that would have caught this — pipeline-green proves nothing about prices.
+
