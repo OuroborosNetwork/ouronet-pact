@@ -712,7 +712,10 @@
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
-            (ref-IGNIS::UDC_SmallCumulator (ref-DPDC::UR_OwnerKonto id true))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                ;;minting-type op: NO special issuance price (owner 2026-09-06) — generic tier
+                (ref-IGNIS::UC_IgnisPrice "DPSF|C_AddQuantity" "setup")
+                (ref-DPDC::UR_OwnerKonto id true) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_RespawnNFT:object{IgnisCollectorV2.OutputCumulator}
@@ -723,7 +726,10 @@
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
-            (ref-IGNIS::UDC_MediumCumulator (ref-DPDC::UR_OwnerKonto id false))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                ;;minting-type op: NO special issuance price (owner 2026-09-06) — generic tier
+                (ref-IGNIS::UC_IgnisPrice "DPNF|C_Respawn" "setup")
+                (ref-DPDC::UR_OwnerKonto id false) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_BurnSFT:object{IgnisCollectorV2.OutputCumulator}

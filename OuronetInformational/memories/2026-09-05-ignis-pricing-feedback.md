@@ -545,3 +545,33 @@ Talos functions. The unresolved bulk is the un-migrated tail — it shrinks as P
 other, so grep counts came back empty and I re-launched repeatedly. Always `cd REPL && pact
 Z.repl > /tmp/<unique>.log`.
 
+## Owner answers + findings (2026-09-06, after commit 3371ea8)
+
+Work to date committed on branch `ignis-pricing-rehaul` (3371ea8). Owner decisions:
+  1. **Minting-type ops get NO special deter/STOA** — generic tiers only. Wired:
+     `URCi_AddQuantity`->`DPSF|C_AddQuantity` (setup), `URCi_RespawnNFT`->`DPNF|C_Respawn`
+     (setup), `URCi_MakeFragments`->`DPSF|C_MakeFragments` (usage). ZALL green.
+  4. **DPMF is dead code — leave it alone.** No migration, ever.
+  2. Per-leg vs tier question: owner leans per-leg but asked for the difference first (answered;
+     awaiting the call). 3. `URCi_UpdateNonceField` still unanswered.
+
+**`AQP-POOL|C_Issue` needed NOTHING — it was a false alarm from a real migrator bug.** It bills
+`GAS|ISSUE-POOL` (= `issue-pool` 1000) and has no tier call at all. The migrator "found" one
+because its body regex ends a defun at `\n    )\n`, while AQP closes defuns as `        ))` on
+the same line — so the body OVERRAN into the next function and matched a tier belonging to
+`URCi_SyncTrueFungibleAnchorsFull`. Applying it would have rewritten the WRONG function's price.
+Hazard is now documented in the tool header. **Never bulk-edit the AQP family without real paren
+balancing.** (This is the 4th distinct way naive regex editing has tried to corrupt this repo:
+interface-vs-module, non-unique text, hand-rolled paren deletion, and now body overrun.)
+
+**The "162 unresolved" measured, not guessed:** ~55 are ops that COMPOSE other client ops'
+cumulators (e.g. `VST|C_Freeze` = Concatenate[TFT::C_Transfer, DPTF::C_Mint, TFT::C_Transfer]) —
+their price is derived, so they belong in COMPLEX, not "unresolved"; ~107 are the genuine
+un-migrated tail and shrink as P5 proceeds.
+
+**The per-leg population is only 10 sites** (all AQP): `XI_1|WriteDptfTrackerSlot`,
+`XI_1|ZeroDptfTrackerSlot`, `XI_1|WriteCollectableTrackerSlot`, `XI_2|BumpBenDpsfNonceTotal`,
+`XI_2|BumpBenDpnfNonceTotal`, `XI_1|BumpBenDptfTotalSlot`, `XB_SetBenDptfAnkSyncCount`,
+`XB_SetBenCollectableAnkSyncCount` + 2. Mostly `Medium` (3 ignis). Option B (name them as
+`IG|WEIGHTS` legs) is therefore ~10 edits, not the 20-30 first estimated.
+

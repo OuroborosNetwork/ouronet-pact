@@ -312,7 +312,10 @@
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
-            (ref-IGNIS::UDC_BiggestCumulator (ref-DPDC::UR_CreatorKonto id son))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                ;;minting-type op: NO special issuance price (owner 2026-09-06) — generic tier
+                (ref-IGNIS::UC_IgnisPrice "DPSF|C_MakeFragments" "usage")
+                (ref-DPDC::UR_CreatorKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_MergeFragments:object{IgnisCollectorV2.OutputCumulator}
