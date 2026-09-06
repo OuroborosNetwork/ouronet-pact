@@ -85,7 +85,11 @@ def billing_text(src, name, depth=3):
             if not b: continue
             txt += ' ' + b
             nxt.extend((csrc, f) for f in BILL_FN.findall(b))
-            for mod, rf in re.findall(r'ref-([A-Za-z0-9|_+-]+)::((?:[A-Za-z0-9-]+\|)?(?:URCi[x]?_|XB_|XI_|XE_)[A-Za-z0-9|_-]+)', b):
+            # Follow cross-module CLIENT ops too (ref-TFT::C_Transfer, ref-DPTF::C_Mint …):
+            # ops like VST|C_Freeze hold no cumulator of their own, they CONCATENATE the
+            # cumulators of the client ops they drive. Without this they read as unresolved
+            # even though every leg is knowable.
+            for mod, rf in re.findall(r'ref-([A-Za-z0-9|_+-]+)::((?:[A-Za-z0-9-]+\|)?(?:URCi[x]?_|XB_|XI_|XE_|CC?p?_)[A-Za-z0-9|_-]+)', b):
                 mf = MOD2FILE.get(mod)
                 if mf: nxt.append((_src(mf), rf))
         frontier = nxt
@@ -99,6 +103,12 @@ def is_variable(core_file, core_fn, talos_body):
     role, comp, d, why = OPS[core_file][core_fn]
     if SCALES.search(billing_text(src, core_fn)):
         return 'charge multiplies by an item count'
+    # Composed op: it holds no cumulator of its own, it concatenates the cumulators of the
+    # client ops it drives. The static walk reaches every leg but CANNOT count repeats (a
+    # two-transfer op collapses to one transfer leg on de-dup), so the sum is a FLOOR, never
+    # an exact price. Saying "exact" here would be a lie of precision.
+    if re.search(r'ref-[A-Za-z0-9|_+-]+::(?:[A-Za-z0-9-]+\|)?CC?p?_', defun_body(src, core_fn) or ''):
+        return 'composes other client ops (legs may repeat — floor)'
     # a Talos wrapper that fans out over a list argument composes a varying number of sub-ops
     if re.search(r'\(map\s|\(fold\s', talos_body):
         return 'wrapper fans out over a list'
@@ -116,6 +126,8 @@ def _parse_map(nm):
 IG_DETER  = _parse_map('IG|DETER')
 IG_COMPONENTS = _parse_map('IG|COMPONENTS')
 IG_WEIGHT = _parse_map('IG|WEIGHTS')
+# tier words that also occur as ordinary strings — never inferred from a bare literal
+GENERIC_DETER = {'usage', 'setup', 'auth', 'fee', 'small'}
 USAGE = {k: float(v) for k, v in re.findall(
     r'A_UpdateUsagePrice\s+"([^"]+)"\s+([0-9.]+)',
     open('REPL/Stage_01/[4.0]_Sovereign-Executor.repl').read())}
@@ -141,6 +153,13 @@ def charge(src, core_fn, entity=None, extra=''):
         ig.append(('deter:' + k, IG_DETER.get(k, 0.0)))
     for k in re.findall(r'UC_IgnisWeight\s+"([a-z0-9|-]+)"', txt):
         ig.append(('weight:' + k, IG_WEIGHT.get(k, 0.0)))
+    # Deter key passed AS AN ARGUMENT, not written literally at the UC_IgnisDeter call site:
+    #   (URCi_IssueAnchor "anchor-nf" [...])  ->  the reader does (UC_IgnisDeter deter-key).
+    # Whole families (ANK/POOL/FVT issuance) bill this way and were showing as unresolved.
+    # Only distinctive keys count — the generic tier words appear in unrelated strings.
+    for k in re.findall(r'"([a-z][a-z0-9-]*)"', txt):
+        if k in IG_DETER and k not in GENERIC_DETER:
+            ig.append(('deter:' + k, IG_DETER[k]))
     for k in re.findall(r'UR_UsagePrice\s+"(ignis\|[a-z-]+)"', txt):
         ig.append((k.split('|')[-1], USAGE.get(k, 0.0)))
     for lit in re.findall(r'UDC_ConstructOutputCumulator\s+([0-9]+\.[0-9]+)', txt):

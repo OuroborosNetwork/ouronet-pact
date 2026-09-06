@@ -38,10 +38,10 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 
 | Talos function | core op | role | IGNIS | STOA | $ (ignis) | charge breakdown |
 |----------------|---------|------|------:|-----:|----------:|------------------|
-| `C_IssueNonFungibleAnchor` | `C_IssueNonFungibleAnchor` | ISSUE | **?** | 0.01 | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_IssueNonFungibleSetAnchor` | `C_IssueNonFungibleSetAnchor` | ISSUE | **?** | 0.01 | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_IssueSemiFungibleAnchor` | `C_IssueSemiFungibleAnchor` | ISSUE | **?** | 0.01 | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_IssueTrueFungibleAnchor` | `C_IssueTrueFungibleAnchor` | ISSUE | **?** | 0.01 | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_IssueNonFungibleAnchor` | `C_IssueNonFungibleAnchor` | ISSUE | **≥ 1250** | 0.01 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:anchor-nf 1250 |
+| `C_IssueNonFungibleSetAnchor` | `C_IssueNonFungibleSetAnchor` | ISSUE | **≥ 1250** | 0.01 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:anchor-nf 1250 |
+| `C_IssueSemiFungibleAnchor` | `C_IssueSemiFungibleAnchor` | ISSUE | **≥ 1000** | 0.01 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:anchor-sf 1000 |
+| `C_IssueTrueFungibleAnchor` | `C_IssueTrueFungibleAnchor` | ISSUE | **≥ 500** | 0.01 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:anchor-tf 500 |
 | `C_RevokeAnchor` | `C_RevokeAnchor` | SETUP | **100** | — | $1.00 | deter:revoke-anchor 100 |
 | `C_RevokeBoostClass` | `C_RevokeBoostClass` | SETUP | **500** | — | $5.00 | deter:revoke-boost 500 |
 
@@ -112,11 +112,11 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `CC_UnstakeSemiFungibleCollectable` | `CC_CollectableStakeFlow` | USAGE | **≥ 3** | — | COMPLEX | heavy / parallel-slice op; legs: medium 3 |
 | `CC_UnstakeTrueFungible` | `CC_TrueFungibleStakeFlow` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `CCp_BatchDrainCollectable` | `CCp_BatchDrainCollectable` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `CCp_BatchDrainOrtoFungible` | `CCp_BatchDrainOrtoFungible` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `CCp_BatchDrainTrueFungible` | `CCp_BatchDrainTrueFungible` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `CCp_BatchDrainOrtoFungible` | `CCp_BatchDrainOrtoFungible` | USAGE | **≥ 3** | — | COMPLEX | heavy / parallel-slice op; legs: small 2 + smallest 1 |
+| `CCp_BatchDrainTrueFungible` | `CCp_BatchDrainTrueFungible` | USAGE | **≥ 6** | — | COMPLEX | heavy / parallel-slice op; legs: small 2 + smallest 1 + medium 3 |
 | `CCp_BatchVacateCollectables` | `CCp_BatchVacateCollectables` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `CCp_BatchVacateOrtoFungible` | `CCp_BatchVacateOrtoFungible` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `CCp_BatchVacateTrueFungible` | `CCp_BatchVacateTrueFungible` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `CCp_BatchVacateOrtoFungible` | `CCp_BatchVacateOrtoFungible` | USAGE | **≥ 3** | — | COMPLEX | heavy / parallel-slice op; legs: small 2 + smallest 1 |
+| `CCp_BatchVacateTrueFungible` | `CCp_BatchVacateTrueFungible` | USAGE | **≥ 6** | — | COMPLEX | heavy / parallel-slice op; legs: small 2 + smallest 1 + medium 3 |
 
 ## AQP-SCR
 
@@ -146,25 +146,25 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 |----------------|---------|------|------:|-----:|----------:|------------------|
 | `A_KickStart` | `A_KickStart` | SETUP | **0** | — | free | admin/exempt |
 | `A_RemoveSecondary` | `A_RemoveSecondary` | SETUP | **0** | — | free | admin/exempt |
-| `C_AddHotRBT` | `C_AddHotRBT` | SETUP | **500** | — | $5.00 | token-issue 500 |
+| `C_AddHotRBT` | `C_AddHotRBT` | SETUP | **≥ 554** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:auth 10 + components:DPOF|C_RotateOwnership 19 + deter:setup 5 + components:DPOF|C_Control 20 + token-issue 500 |
 | `C_AddSecondary` | `C_AddSecondary` | SETUP | **500** | — | $5.00 | token-issue 500 |
-| `C_Brumate` | `C_Brumate` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_Coil` | `C_Coil` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_ColdRecovery` | `C_ColdRecovery` | SETUP | **≥ 6** | — | COMPLEX | charge multiplies by an item count; legs: biggest 5 + smallest 1 |
-| `C_Constrict` | `C_Constrict` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_Brumate` | `C_Brumate` | USAGE | **≥ 11** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: biggest 5 + small 2 + smallest 1 + medium 3 |
+| `C_Coil` | `C_Coil` | USAGE | **≥ 11** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: biggest 5 + small 2 + smallest 1 + medium 3 |
+| `C_ColdRecovery` | `C_ColdRecovery` | SETUP | **≥ 11** | — | COMPLEX | charge multiplies by an item count; legs: biggest 5 + smallest 1 + small 2 + medium 3 |
+| `C_Constrict` | `C_Constrict` | USAGE | **≥ 11** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: biggest 5 + small 2 + smallest 1 + medium 3 |
 | `C_Control` | `C_Control` | SETUP | **24** | — | $0.24 | deter:setup 5 + components:ATS|C_Control 19 |
 | `C_ControlColdRecoveryFees` | `C_ControlColdRecoveryFees` | FEE | **44** | — | $0.44 | deter:fee 25 + components:ATS|C_ControlColdRecoveryFees 19 |
 | `C_ControlHotRecoveryFee` | `C_ControlHotRecoveryFee` | FEE | **44** | — | $0.44 | deter:fee 25 + components:ATS|C_ControlHotRecoveryFee 19 |
-| `C_Cull` | `C_Cull` | SETUP | **≥ 5** | — | COMPLEX | wrapper fans out over a list; legs: biggest 5 |
-| `C_Curl` | `C_Curl` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_DirectRecovery` | `C_DirectRecovery` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_Fuel` | `C_Fuel` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_HotRecovery` | `C_HotRecovery` | SETUP | **5** | — | $0.05 | biggest 5 |
+| `C_Cull` | `C_Cull` | SETUP | **≥ 11** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: biggest 5 + smallest 1 + small 2 + medium 3 |
+| `C_Curl` | `C_Curl` | USAGE | **≥ 11** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: biggest 5 + small 2 + smallest 1 + medium 3 |
+| `C_DirectRecovery` | `C_DirectRecovery` | SETUP | **≥ 6** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: small 2 + smallest 1 + medium 3 |
+| `C_Fuel` | `C_Fuel` | USAGE | **≥ 6** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: smallest 1 + small 2 + medium 3 |
+| `C_HotRecovery` | `C_HotRecovery` | SETUP | **≥ 96** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Mint 80 + biggest 5 + small 2 + smallest 1 + medium 3 |
 | `C_Issue` | `C_Issue` | ISSUE | **≥ 4000** | — | COMPLEX | charge multiplies by an item count; legs: deter:issue-ats-pair 4000 |
-| `C_KickStart` | `C_KickStart` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_Redeem` | `C_Redeem` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_KickStart` | `C_KickStart` | SETUP | **7** | — | $0.07 | biggest 5 + small 2 |
+| `C_Redeem` | `C_Redeem` | SETUP | **≥ 56** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Burn 45 + small 2 + smallest 1 + medium 3 |
 | `C_RemoveSecondary` | `C_RemoveSecondary` | SETUP | **500** | — | $5.00 | token-issue 500 |
-| `C_Reverse` | `C_Recover` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_Reverse` | `C_Recover` | SETUP | **≥ 61** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Burn 45 + small 2 + smallest 1 + biggest 5 + medium 3 |
 | `C_RotateOwnership` | `C_RotateOwnership` | AUTH | **29** | — | $0.29 | deter:auth 10 + components:ATS|C_RotateOwnership 19 |
 | `C_SetColdRecoveryDuration` | `C_SetColdRecoveryDuration` | SETUP | **29** | — | $0.29 | deter:setup 5 + components:ATS|C_SetColdRecoveryDuration 24 |
 | `C_SetColdRecoveryFees` | `C_SetColdRecoveryFees` | SETUP | **5** | — | $0.05 | biggest 5 |
@@ -174,17 +174,17 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_SwitchColdRecovery` | `C_SwitchColdRecovery` | SETUP | **24** | — | $0.24 | deter:setup 5 + components:ATS|C_SwitchColdRecovery 19 |
 | `C_SwitchDirectRecovery` | `C_SwitchDirectRecovery` | SETUP | **24** | — | $0.24 | deter:setup 5 + components:ATS|C_SwitchDirectRecovery 19 |
 | `C_SwitchHotRecovery` | `C_SwitchHotRecovery` | SETUP | **24** | — | $0.24 | deter:setup 5 + components:ATS|C_SwitchHotRecovery 19 |
-| `C_Syphon` | `C_Syphon` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_Syphon` | `C_Syphon` | USAGE | **≥ 6** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: smallest 1 + small 2 + medium 3 |
 | `C_ToggleElite` | `C_ToggleElite` | SETUP | **24** | — | $0.24 | deter:setup 5 + components:ATS|C_ToggleElite 19 |
-| `C_ToggleParameterLock` | `C_ToggleParameterLock` | SETUP | **2** | — | $0.02 | small 2 |
+| `C_ToggleParameterLock` | `C_ToggleParameterLock` | SETUP | **≥ 2** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: small 2 |
 | `C_ToggleUpgrade` | `C_ToggleUpgrade` | SETUP | **24** | — | $0.24 | deter:setup 5 + components:ATS|C_ToggleUpgrade 19 |
 | `C_UpdatePendingBranding` | `C_UpdatePendingBranding` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_UpdateRoyalty` | `C_UpdateRoyalty` | FEE | **44** | — | $0.44 | deter:fee 25 + components:ATS|C_UpdateRoyalty 19 |
 | `C_UpdateSyphon` | `C_UpdateSyphon` | USAGE | **20** | — | $0.20 | deter:usage 1 + components:ATS|C_UpdateSyphon 19 |
 | `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **?** | 0.025 | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_VestedCoil` | `C_Coil` ×2 | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_VestedCurl` | `C_Curl` ×2 | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_WithdrawRoyalties` | `C_WithdrawRoyalties` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_VestedCoil` | `C_Coil` ×2 | USAGE | **≥ 11** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: biggest 5 + small 2 + smallest 1 + medium 3 |
+| `C_VestedCurl` | `C_Curl` ×2 | USAGE | **≥ 11** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: biggest 5 + small 2 + smallest 1 + medium 3 |
+| `C_WithdrawRoyalties` | `C_WithdrawRoyalties` | USAGE | **≥ 6** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: smallest 1 + small 2 + medium 3 |
 
 ## BRD
 
@@ -236,13 +236,13 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 
 | Talos function | core op | role | IGNIS | STOA | $ (ignis) | charge breakdown |
 |----------------|---------|------|------:|-----:|----------:|------------------|
-| `C_Deposit` | `C_Deposit` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_Deposit` | `C_Deposit` | USAGE | **≥ 11** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: biggest 5 + small 2 + smallest 1 + medium 3 |
 | `C_FuelNonFungible` | `C_TransmitNonFungibles` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_FuelOrtoFungible` | `C_TransmitOrtoFungible` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_FuelOrtoFungible` | `C_TransmitOrtoFungible` | SETUP | **≥ 3** | — | COMPLEX | charge multiplies by an item count; legs: small 2 + smallest 1 |
 | `C_FuelSemiFungible` | `C_TransmitSemiFungibles` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_FuelTrueFungible` | `C_TransmitTrueFungible` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_RetrieveNonFungible` | `C_TransmitNonFungibles` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_RetrieveOrtoFungible` | `C_TransmitOrtoFungible` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_RetrieveOrtoFungible` | `C_TransmitOrtoFungible` | SETUP | **≥ 3** | — | COMPLEX | charge multiplies by an item count; legs: small 2 + smallest 1 |
 | `C_RetrieveSemiFungible` | `C_TransmitSemiFungibles` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_RetrieveTrueFungible` | `C_TransmitTrueFungible` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_Withdraw` | `C_Withdraw` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
@@ -262,15 +262,15 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_Burn` | `C_BurnNFT` | SETUP | **18** | — | $0.18 | deter:setup 5 + components:DPNF|C_Burn 13 |
 | `C_Control` | `C_Control` | SETUP | **20** | — | $0.20 | deter:setup 5 + components:DPNF|C_Control 15 |
 | `C_Create` | `C_CreateNewNonce` ×2 | ISSUE | **1** | — | $0.01 | smallest 1 |
-| `C_DefineCompositeSet` | `C_DefineCompositeSet` | ISSUE | **500** | — | $5.00 | token-issue 500 |
-| `C_DefineHybridSet` | `C_DefineHybridSet` | ISSUE | **500** | — | $5.00 | token-issue 500 |
-| `C_DefinePrimordialSet` | `C_DefinePrimordialSet` | ISSUE | **500** | — | $5.00 | token-issue 500 |
+| `C_DefineCompositeSet` | `C_DefineCompositeSet` | ISSUE | **≥ 1** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: smallest 1 |
+| `C_DefineHybridSet` | `C_DefineHybridSet` | ISSUE | **≥ 1** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: smallest 1 |
+| `C_DefinePrimordialSet` | `C_DefinePrimordialSet` | ISSUE | **≥ 1** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: smallest 1 |
 | `C_EnableNonceFragmentation` | `C_EnableNonceFragmentation` | ISSUE | **100** | — | $1.00 | deter:frag-enable 100 |
 | `C_EnableSetClassFragmentation` | `C_EnableSetClassFragmentation` | SETUP | **5** | — | $0.05 | biggest 5 |
-| `C_Issue` | `C_IssueDigitalCollection` | ISSUE | **2500** | — | $25.00 | deter:issue-nft 2500 |
-| `C_Make` | `C_MakeNonFungibleSet` | ISSUE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_MakeFragments` | `C_MakeFragments` | USAGE | **18** | — | $0.18 | deter:usage 1 + components:DPNF|C_MakeFragments 17 |
-| `C_MergeFragments` | `C_MergeFragments` | USAGE | **18** | — | $0.18 | deter:usage 1 + components:DPNF|C_MergeFragments 17 |
+| `C_Issue` | `C_IssueDigitalCollection` | ISSUE | **≥ 4500** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-sft 2000 + deter:issue-nft 2500 |
+| `C_Make` | `C_MakeNonFungibleSet` | ISSUE | **≥ 1** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: smallest 1 |
+| `C_MakeFragments` | `C_MakeFragments` | USAGE | **≥ 18** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPNF|C_MakeFragments 17 |
+| `C_MergeFragments` | `C_MergeFragments` | USAGE | **≥ 18** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPNF|C_MergeFragments 17 |
 | `C_MoveCreateRole` | `C_MoveCreateRole` | AUTH | **29** | — | $0.29 | deter:auth 10 + components:DPNF|C_MoveCreateRole 19 |
 | `C_MoveRecreateRole` | `C_MoveRecreateRole` | AUTH | **29** | — | $0.29 | deter:auth 10 + components:DPNF|C_MoveRecreateRole 19 |
 | `C_MoveSetUriRole` | `C_MoveSetUriRole` | AUTH | **29** | — | $0.29 | deter:auth 10 + components:DPNF|C_MoveSetUriRole 19 |
@@ -354,17 +354,17 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_Burn` | `C_BurnSFT` | SETUP | **20** | — | $0.20 | deter:setup 5 + components:DPSF|C_Burn 15 |
 | `C_Control` | `C_Control` | SETUP | **20** | — | $0.20 | deter:setup 5 + components:DPSF|C_Control 15 |
 | `C_Create` | `C_CreateNewNonce` ×2 | ISSUE | **1** | — | $0.01 | smallest 1 |
-| `C_DefineCompositeSet` | `C_DefineCompositeSet` | ISSUE | **500** | — | $5.00 | token-issue 500 |
-| `C_DefineHybridSet` | `C_DefineHybridSet` | ISSUE | **500** | — | $5.00 | token-issue 500 |
-| `C_DefinePrimordialSet` | `C_DefinePrimordialSet` | ISSUE | **500** | — | $5.00 | token-issue 500 |
+| `C_DefineCompositeSet` | `C_DefineCompositeSet` | ISSUE | **≥ 500** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: token-issue 500 |
+| `C_DefineHybridSet` | `C_DefineHybridSet` | ISSUE | **≥ 500** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: token-issue 500 |
+| `C_DefinePrimordialSet` | `C_DefinePrimordialSet` | ISSUE | **≥ 500** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: token-issue 500 |
 | `C_EnableNonceFragmentation` | `C_EnableNonceFragmentation` | ISSUE | **100** | — | $1.00 | deter:frag-enable 100 |
 | `C_EnableSetClassFragmentation` | `C_EnableSetClassFragmentation` | SETUP | **5** | — | $0.05 | biggest 5 |
-| `C_Issue` | `C_IssueDigitalCollection` | ISSUE | **2000** | — | $20.00 | deter:issue-sft 2000 |
-| `C_IssueCompany` | `C_IssueShareholderCollection` | ISSUE | **10000** | — | $100.00 | deter:issue-shareholder 10000 |
+| `C_Issue` | `C_IssueDigitalCollection` | ISSUE | **≥ 4500** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-sft 2000 + deter:issue-nft 2500 |
+| `C_IssueCompany` | `C_IssueShareholderCollection` | ISSUE | **≥ 14501** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-shareholder 10000 + deter:issue-sft 2000 + deter:issue-nft 2500 + smallest 1 |
 | `C_Make` | `C_MakeSemiFungibleSet` | ISSUE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_MakeFragments` | `C_MakeFragments` | USAGE | **18** | — | $0.18 | deter:usage 1 + components:DPSF|C_MakeFragments 17 |
-| `C_MergeFragments` | `C_MergeFragments` | USAGE | **18** | — | $0.18 | deter:usage 1 + components:DPSF|C_MergeFragments 17 |
-| `C_MorphEquity` | `C_MorphPackageShares` ×2 | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_MakeFragments` | `C_MakeFragments` | USAGE | **≥ 18** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPSF|C_MakeFragments 17 |
+| `C_MergeFragments` | `C_MergeFragments` | USAGE | **≥ 18** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPSF|C_MergeFragments 17 |
+| `C_MorphEquity` | `C_MorphPackageShares` ×2 | SETUP | **≥ 33** | — | COMPLEX | wrapper fans out over a list; legs: deter:setup 5 + components:DPSF|C_AddQuantity 13 + components:DPSF|C_Burn 15 |
 | `C_MoveCreateRole` | `C_MoveCreateRole` | AUTH | **29** | — | $0.29 | deter:auth 10 + components:DPSF|C_MoveCreateRole 19 |
 | `C_MoveRecreateRole` | `C_MoveRecreateRole` | AUTH | **29** | — | $0.29 | deter:auth 10 + components:DPSF|C_MoveRecreateRole 19 |
 | `C_MoveSetUriRole` | `C_MoveSetUriRole` | AUTH | **29** | — | $0.29 | deter:auth 10 + components:DPSF|C_MoveSetUriRole 19 |
@@ -421,7 +421,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `A_WipeTreasuryDebtPartial` | `A_WipeTreasuryDebtPartial` | SETUP | **0** | — | free | admin/exempt |
 | `C_BulkTransfer` | `C_MultiBulkTransfer` | USAGE | **≥ 6** | — | COMPLEX | per-nonce / per-item work; legs: small 2 + smallest 1 + medium 3 |
 | `C_Burn` | `C_Burn` | SETUP | **2** | — | $0.02 | small 2 |
-| `C_ClearDispo` | `C_ClearDispo` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_ClearDispo` | `C_ClearDispo` | SETUP | **≥ 145** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:setup 5 + components:DPTF|C_ToggleFreezeAccount 58 + components:DPTF|C_WipeSlim 80 + small 2 |
 | `C_Control` | `C_Control` | SETUP | **25** | — | $0.25 | deter:setup 5 + components:DPTF|C_Control 20 |
 | `C_DeployAccount` | `C_DeployAccount` | ISSUE | **50** | — | $0.50 | deter:token-account 50 |
 | `C_DonateFees` | `C_SetFeeTarget` | FEE | **44** | — | $0.44 | deter:fee 25 + components:DPTF|C_SetFeeTarget 19 |
@@ -437,7 +437,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_ToggleBurnRole` | `C_ToggleBurnRole` | AUTH | **68** | — | $0.68 | deter:auth 10 + components:DPTF|C_ToggleBurnRole 58 |
 | `C_ToggleFee` | `C_ToggleFee` | FEE | **44** | — | $0.44 | deter:fee 25 + components:DPTF|C_ToggleFee 19 |
 | `C_ToggleFeeExemptionRole` | `C_ToggleFeeExemptionRole` | FEE | **83** | — | $0.83 | deter:fee 25 + components:DPTF|C_ToggleFeeExemptionRole 58 |
-| `C_ToggleFeeLock` | `C_ToggleFeeLock` | SETUP | **2** | — | $0.02 | small 2 |
+| `C_ToggleFeeLock` | `C_ToggleFeeLock` | SETUP | **≥ 2** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: small 2 |
 | `C_ToggleFreezeAccount` | `C_ToggleFreezeAccount` | SETUP | **63** | — | $0.63 | deter:setup 5 + components:DPTF|C_ToggleFreezeAccount 58 |
 | `C_ToggleMintRole` | `C_ToggleMintRole` | AUTH | **68** | — | $0.68 | deter:auth 10 + components:DPTF|C_ToggleMintRole 58 |
 | `C_TogglePause` | `C_TogglePause` | SETUP | **24** | — | $0.24 | deter:setup 5 + components:DPTF|C_TogglePause 19 |
@@ -454,7 +454,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 
 | Talos function | core op | role | IGNIS | STOA | $ (ignis) | charge breakdown |
 |----------------|---------|------|------:|-----:|----------:|------------------|
-| `C_BuyStoicPay` | `C_BuyStoicPay` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_BuyStoicPay` | `C_BuyStoicPay` | SETUP | **≥ 6** | — | COMPLEX | charge multiplies by an item count; legs: small 2 + smallest 1 + medium 3 |
 
 ## LIQUID
 
@@ -466,10 +466,10 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 
 | Talos function | core op | role | IGNIS | STOA | $ (ignis) | charge breakdown |
 |----------------|---------|------|------:|-----:|----------:|------------------|
-| `C_UnwrapStoa` | `C_UnwrapStoa` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_UnwrapUrStoa` | `C_UnwrapUrStoa` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_WrapStoa` | `C_WrapStoa` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_WrapUrStoa` | `C_WrapUrStoa` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_UnwrapStoa` | `C_UnwrapStoa` | SETUP | **≥ 6** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: small 2 + smallest 1 + medium 3 |
+| `C_UnwrapUrStoa` | `C_UnwrapUrStoa` | SETUP | **≥ 6** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: small 2 + smallest 1 + medium 3 |
+| `C_WrapStoa` | `C_WrapStoa` | USAGE | **≥ 11** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: biggest 5 + small 2 + smallest 1 + medium 3 |
+| `C_WrapUrStoa` | `C_WrapUrStoa` | USAGE | **≥ 11** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: biggest 5 + small 2 + smallest 1 + medium 3 |
 
 ## MTX-AQP
 
@@ -485,7 +485,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_Compress` | `C_Compress` | USAGE | **0** | — | free | admin/exempt |
 | `C_Sublimate` | `C_Sublimate` | SETUP | **0** | — | free | admin/exempt |
 | `C_SublimateV2` | `C_SublimateV2` | SETUP | **0** | — | free | admin/exempt |
-| `C_WithdrawFees` | `C_WithdrawFees` | USAGE | **500** | — | $5.00 | token-issue 500 |
+| `C_WithdrawFees` | `C_WithdrawFees` | USAGE | **≥ 506** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: token-issue 500 + smallest 1 + small 2 + medium 3 |
 
 ## PYTHIA
 
@@ -531,27 +531,27 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_AddSleepingLiquidity` | `C_AddSleepingLiquidity` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_AddStandardLiquidity` | `C_AddStandardLiquidity` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_ChangeOwnership` | `C_ChangeOwnership` | AUTH | **29** | — | $0.29 | deter:auth 10 + components:SWP|C_ChangeOwnership 19 |
-| `C_EnableFrozenLP` | `C_EnableFrozenLP` | SETUP | **3** | — | $0.03 | medium 3 |
-| `C_EnableSleepingLP` | `C_EnableSleepingLP` | SETUP | **3** | — | $0.03 | medium 3 |
-| `C_Firestarter` | `C_WrapStoa` ×3 | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_Fuel` | `C_Fuel` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_IssueStable` | `C_Issue` | ISSUE | **5000** | — | $50.00 | deter:issue-swp-pair 5000 |
+| `C_EnableFrozenLP` | `C_EnableFrozenLP` | SETUP | **≥ 3** | 0.2 | COMPLEX | composes other client ops (legs may repeat — floor); legs: medium 3 |
+| `C_EnableSleepingLP` | `C_EnableSleepingLP` | SETUP | **≥ 3** | 0.3 | COMPLEX | composes other client ops (legs may repeat — floor); legs: medium 3 |
+| `C_Firestarter` | `C_WrapStoa` ×3 | USAGE | **≥ 11** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: biggest 5 + small 2 + smallest 1 + medium 3 |
+| `C_Fuel` | `C_Fuel` | USAGE | **≥ 6** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: smallest 1 + small 2 + medium 3 |
+| `C_IssueStable` | `C_Issue` | ISSUE | **≥ 5007** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-swp-pair 5000 + biggest 5 + small 2 |
 | `C_IssueStablePool` | `C_IssueStablePool` | ISSUE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_IssueStandardPool` | `C_IssueStandardPool` | ISSUE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_IssueWeighted` | `C_Issue` | ISSUE | **5000** | — | $50.00 | deter:issue-swp-pair 5000 |
+| `C_IssueWeighted` | `C_Issue` | ISSUE | **≥ 5007** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-swp-pair 5000 + biggest 5 + small 2 |
 | `C_IssueWeightedPool` | `C_IssueWeightedPool` | ISSUE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_ModifyCanChangeOwner` | `C_ModifyCanChangeOwner` | AUTH | **29** | — | $0.29 | deter:auth 10 + components:SWP|C_ModifyCanChangeOwner 19 |
 | `C_ModifyWeights` | `C_ModifyWeights` | FEE | **44** | — | $0.44 | deter:fee 25 + components:SWP|C_ModifyWeights 19 |
 | `C_MultiSwapNoSlippage` | `C_Swap` | USAGE | **≥ 0** | — | COMPLEX | charge multiplies by an item count; legs: literal 0 |
 | `C_MultiSwapWithSlippage` | `C_Swap` | USAGE | **≥ 0** | — | COMPLEX | charge multiplies by an item count; legs: literal 0 |
-| `C_RemoveLiquidity` | `C_RemoveLiquidity` | USAGE | **1000** | — | $10.00 | deter:lp-churn 1000 |
+| `C_RemoveLiquidity` | `C_RemoveLiquidity` | USAGE | **≥ 1006** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:lp-churn 1000 + small 2 + smallest 1 + medium 3 |
 | `C_SingleSwapNoSlippage` | `C_Swap` | USAGE | **≥ 0** | — | COMPLEX | charge multiplies by an item count; legs: literal 0 |
 | `C_SingleSwapWithSlippage` | `C_Swap` | USAGE | **≥ 0** | — | COMPLEX | charge multiplies by an item count; legs: literal 0 |
 | `C_SmartSwapNoSlippage` | `C_SmartSwap` | USAGE | **≥ 0** | — | COMPLEX | per-nonce / per-item work; legs: literal 0 |
 | `C_SmartSwapWithSlippage` | `C_SmartSwap` | USAGE | **≥ 0** | — | COMPLEX | per-nonce / per-item work; legs: literal 0 |
-| `C_ToggleAddLiquidity` | `C_ToggleAddLiquidity` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_ToggleFeeLock` | `C_ToggleFeeLock` | SETUP | **2** | — | $0.02 | small 2 |
-| `C_ToggleSwapCapability` | `C_ToggleSwapCapability` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_ToggleAddLiquidity` | `C_ToggleAddLiquidity` | USAGE | **≥ 5** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: biggest 5 |
+| `C_ToggleFeeLock` | `C_ToggleFeeLock` | SETUP | **≥ 2** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: small 2 |
+| `C_ToggleSwapCapability` | `C_ToggleSwapCapability` | USAGE | **≥ 5** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: biggest 5 |
 | `C_UpdateAmplifier` | `C_UpdateAmplifier` | FEE | **44** | — | $0.44 | deter:fee 25 + components:SWP|C_UpdateAmplifier 19 |
 | `C_UpdateFee` | `C_UpdateFee` | FEE | **45** | — | $0.45 | deter:fee 25 + components:SWP|C_UpdateFee 20 |
 | `C_UpdatePendingBranding` | `C_UpdatePendingBranding` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
@@ -566,36 +566,36 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 
 | Talos function | core op | role | IGNIS | STOA | $ (ignis) | charge breakdown |
 |----------------|---------|------|------:|-----:|----------:|------------------|
-| `C_Awake` | `C_Awake` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_CreateFrozenLink` | `C_CreateFrozenLink` | ISSUE | **≥ 1005** | 0.2 | COMPLEX | charge multiplies by an item count; legs: biggest 5 + deter:issue-tf 1000 |
-| `C_CreateHibernatingLink` | `C_CreateHibernatingLink` | ISSUE | **≥ 1005** | 0.3 | COMPLEX | charge multiplies by an item count; legs: biggest 5 + deter:issue-of 1000 |
-| `C_CreateReservationLink` | `C_CreateReservationLink` | ISSUE | **≥ 1005** | 0.2 | COMPLEX | charge multiplies by an item count; legs: biggest 5 + deter:issue-tf 1000 |
-| `C_CreateSleepingLink` | `C_CreateSleepingLink` | ISSUE | **≥ 1005** | 0.3 | COMPLEX | charge multiplies by an item count; legs: biggest 5 + deter:issue-of 1000 |
-| `C_CreateVestingLink` | `C_CreateVestingLink` | ISSUE | **≥ 1005** | 0.3 | COMPLEX | charge multiplies by an item count; legs: biggest 5 + deter:issue-of 1000 |
-| `C_Freeze` | `C_Freeze` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_Hibernate` | `C_Hibernate` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_Merge` | `C_Merge` | SETUP | **≥ 5** | — | COMPLEX | charge multiplies by an item count; legs: biggest 5 |
-| `C_RepurposeFrozen` | `C_RepurposeFrozen` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_RepurposeHibernating` | `C_RepurposeHibernating` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_RepurposeMerge` | `C_RepurposeMerge` | SETUP | **≥ 5** | — | COMPLEX | charge multiplies by an item count; legs: biggest 5 |
-| `C_RepurposeReserved` | `C_RepurposeReserved` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_RepurposeSleeping` | `C_RepurposeSleeping` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_RepurposeSlumber` | `C_RepurposeSlumber` | SETUP | **≥ 5** | — | COMPLEX | charge multiplies by an item count; legs: biggest 5 |
-| `C_RepurposeVested` | `C_RepurposeVested` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_Reserve` | `C_Reserve` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_Sleep` | `C_Sleep` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_Slumber` | `C_Slumber` | SETUP | **≥ 5** | — | COMPLEX | charge multiplies by an item count; legs: biggest 5 |
-| `C_ToggleTransferRoleFrozenDPTF` | `C_ToggleTransferRoleFrozenDPTF` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_ToggleTransferRoleHibernatingDPOF` | `C_ToggleTransferRoleHibernatingDPOF` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_ToggleTransferRoleReservedDPTF` | `C_ToggleTransferRoleReservedDPTF` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_ToggleTransferRoleSleepingDPOF` | `C_ToggleTransferRoleSleepingDPOF` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_Unreserve` | `C_Unreserve` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_Unsleep` | `C_Unsleep` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_Unvest` | `C_Unvest` | SETUP | **≥ 1** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 |
-| `C_Vest` | `C_Vest` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_Awake` | `C_Awake` | SETUP | **≥ 56** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Burn 45 + small 2 + smallest 1 + medium 3 |
+| `C_CreateFrozenLink` | `C_CreateFrozenLink` | ISSUE | **≥ 1064** | 0.2 | COMPLEX | charge multiplies by an item count; legs: biggest 5 + deter:usage 1 + components:DPTF|C_ToggleTransferRole 58 + deter:issue-tf 1000 |
+| `C_CreateHibernatingLink` | `C_CreateHibernatingLink` | ISSUE | **≥ 1059** | 0.3 | COMPLEX | charge multiplies by an item count; legs: biggest 5 + deter:usage 1 + components:DPOF|C_ToggleTransferRole 53 + deter:issue-of 1000 |
+| `C_CreateReservationLink` | `C_CreateReservationLink` | ISSUE | **≥ 1064** | 0.2 | COMPLEX | charge multiplies by an item count; legs: biggest 5 + deter:usage 1 + components:DPTF|C_ToggleTransferRole 58 + deter:issue-tf 1000 |
+| `C_CreateSleepingLink` | `C_CreateSleepingLink` | ISSUE | **≥ 1059** | 0.3 | COMPLEX | charge multiplies by an item count; legs: biggest 5 + deter:usage 1 + components:DPOF|C_ToggleTransferRole 53 + deter:issue-of 1000 |
+| `C_CreateVestingLink` | `C_CreateVestingLink` | ISSUE | **≥ 1059** | 0.3 | COMPLEX | charge multiplies by an item count; legs: biggest 5 + deter:usage 1 + components:DPOF|C_ToggleTransferRole 53 + deter:issue-of 1000 |
+| `C_Freeze` | `C_Freeze` | SETUP | **≥ 11** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: biggest 5 + small 2 + smallest 1 + medium 3 |
+| `C_Hibernate` | `C_Hibernate` | SETUP | **≥ 91** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Mint 80 + small 2 + smallest 1 + medium 3 |
+| `C_Merge` | `C_Merge` | SETUP | **≥ 146** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_ToggleFreezeAccount 53 + components:DPOF|C_Mint 80 + biggest 5 + small 2 + smallest 1 |
+| `C_RepurposeFrozen` | `C_RepurposeFrozen` | SETUP | **150** | — | $1.50 | deter:setup 5 + components:DPTF|C_ToggleFreezeAccount 58 + components:DPTF|C_Wipe 80 + biggest 5 + small 2 |
+| `C_RepurposeHibernating` | `C_RepurposeHibernating` | SETUP | **≥ 141** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_ToggleFreezeAccount 53 + components:DPOF|C_Mint 80 + small 2 + smallest 1 |
+| `C_RepurposeMerge` | `C_RepurposeMerge` | SETUP | **≥ 146** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_ToggleFreezeAccount 53 + components:DPOF|C_Mint 80 + biggest 5 + small 2 + smallest 1 |
+| `C_RepurposeReserved` | `C_RepurposeReserved` | SETUP | **150** | — | $1.50 | deter:setup 5 + components:DPTF|C_ToggleFreezeAccount 58 + components:DPTF|C_Wipe 80 + biggest 5 + small 2 |
+| `C_RepurposeSleeping` | `C_RepurposeSleeping` | SETUP | **≥ 141** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_ToggleFreezeAccount 53 + components:DPOF|C_Mint 80 + small 2 + smallest 1 |
+| `C_RepurposeSlumber` | `C_RepurposeSlumber` | SETUP | **≥ 146** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_ToggleFreezeAccount 53 + components:DPOF|C_Mint 80 + biggest 5 + small 2 + smallest 1 |
+| `C_RepurposeVested` | `C_RepurposeVested` | SETUP | **≥ 141** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_ToggleFreezeAccount 53 + components:DPOF|C_Mint 80 + small 2 + smallest 1 |
+| `C_Reserve` | `C_Reserve` | SETUP | **≥ 11** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: biggest 5 + small 2 + smallest 1 + medium 3 |
+| `C_Sleep` | `C_Sleep` | SETUP | **≥ 91** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Mint 80 + small 2 + smallest 1 + medium 3 |
+| `C_Slumber` | `C_Slumber` | SETUP | **≥ 146** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_ToggleFreezeAccount 53 + components:DPOF|C_Mint 80 + biggest 5 + small 2 + smallest 1 |
+| `C_ToggleTransferRoleFrozenDPTF` | `C_ToggleTransferRoleFrozenDPTF` | USAGE | **≥ 59** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPTF|C_ToggleTransferRole 58 |
+| `C_ToggleTransferRoleHibernatingDPOF` | `C_ToggleTransferRoleHibernatingDPOF` | USAGE | **≥ 54** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPOF|C_ToggleTransferRole 53 |
+| `C_ToggleTransferRoleReservedDPTF` | `C_ToggleTransferRoleReservedDPTF` | USAGE | **≥ 59** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPTF|C_ToggleTransferRole 58 |
+| `C_ToggleTransferRoleSleepingDPOF` | `C_ToggleTransferRoleSleepingDPOF` | USAGE | **≥ 54** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPOF|C_ToggleTransferRole 53 |
+| `C_Unreserve` | `C_Unreserve` | SETUP | **≥ 6** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: small 2 + smallest 1 + medium 3 |
+| `C_Unsleep` | `C_Unsleep` | SETUP | **≥ 56** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Burn 45 + small 2 + smallest 1 + medium 3 |
+| `C_Unvest` | `C_Unvest` | SETUP | **≥ 136** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Mint 80 + components:DPOF|C_Burn 45 + smallest 1 + small 2 + medium 3 |
+| `C_Vest` | `C_Vest` | SETUP | **≥ 91** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Mint 80 + small 2 + smallest 1 + medium 3 |
 
 ---
-166 simple (exact price) · 62 complex (floor price) · 40 exempt · 162 unresolved · 268 Talos client functions
+145 simple (exact price) · 136 complex (floor price) · 40 exempt · 109 unresolved · 321 Talos client functions
 
 `×N` on a core op = the wrapper drives N priced core ops in a FIXED composition (still exactly knowable).
 
