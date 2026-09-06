@@ -409,7 +409,7 @@
                         )
                     )
                 )
-                (ref-IGNIS|V2::STOA|C_CollectWTEx patron fee-anchor deploy-fee false)
+                (ref-IGNIS|V2::STOA|C_CollectFull patron deploy-fee false)   ;;PYTHIA fees are NON-discountable (spec)
                 msg
             )
         )
@@ -433,7 +433,7 @@
                         )
                     )
                 )
-                (ref-IGNIS|V2::STOA|C_CollectWTEx patron fee-anchor rename-fee false)
+                (ref-IGNIS|V2::STOA|C_CollectFull patron rename-fee false)   ;;PYTHIA fees are NON-discountable (spec)
                 msg
             )
         )

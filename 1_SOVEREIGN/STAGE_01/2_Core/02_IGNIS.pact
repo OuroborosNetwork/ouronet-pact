@@ -77,6 +77,13 @@
     (defun UDC_CompressOutputCumulator:object{CompressedCumulator} (input-output-cumulator:object{OutputCumulator}))
     (defun UDC_PrimeIgnisCumulator:object{PrimedCumulator} (patron:string input:object{CompressedCumulator}))
     ;;{5.2}  Compute [UC]
+    (defun UC_IgnisWeight:decimal (key:string))
+    (defun UC_IgnisDeter:decimal (key:string))
+    (defun UC_IgnisComponents:decimal (op-key:string))
+    (defun UC_IgnisPrice:decimal (op-key:string deter-key:string))
+    (defun UC_IgnisPriceScaled:decimal (op-key:string deter-key:string weight-key:string n:integer))
+    (defun UC_StoaPrice:decimal (deter-key:string))
+    (defun UC_FeeUnlockPrice:[decimal] ())
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
     ;;  [URC]
@@ -118,6 +125,7 @@
     (defun STOA|C_Collect (sender:string amount:decimal))
     (defun STOA|C_CollectWT (sender:string amount:decimal trigger:bool))
     (defun STOA|C_CollectWTEx (payer:string discount-account:string amount:decimal trigger:bool))
+    (defun STOA|C_CollectFull (payer:string amount:decimal trigger:bool))
 
 )
 
@@ -354,6 +362,503 @@
         )
     )
     (defconst GAS_QUARTER 0.25)
+    ;;
+    ;;  IGNIS COST REHAUL (owner batch 2026-09-05) — THE single home of every pricing constant.
+    ;;  1 ignis = 1 USD/EUR cent (hard peg). Everyone reads these via UC_IgnisWeight /
+    ;;  UC_IgnisDeter; no module keeps local GAS|/deter constants. Adding a new op later
+    ;;  means adding its key here (IGNIS module upgrade) — accepted trade-off for one
+    ;;  manageable location. Source of values: OWNER_DECISIONS in
+    ;;  REPL/_ignis_deter_worksheet.py == OuronetInformational/IGNIS-DETER-WORKSHEET.md.
+    ;;
+    (defconst IG|WEIGHTS
+        {"tx"         : 1.0
+        ,"ins"        : 3.0
+        ;;update granularity CALIBRATED (substage 6, REPL/Kursan/IGNIS-bucket-calibration.repl):
+        ;;measured 5-field vs 1-field update = 2.08x, but the original ceil(fields/2) model
+        ;;predicted 3.0x — updates have a HIGH fixed base and a small marginal per field, so the
+        ;;divisor moved 2 -> 4 (ceil(fields/4) => 1 field=1, 5 fields=2, ratio 2.0 ~= measured).
+        ,"upd-per-4f" : 1.0
+        ,"xcall"      : 2.0
+        ,"w-s"        : 1.0
+        ,"w-m"        : 2.0
+        ,"w-l"        : 3.0
+        ,"w-xl"       : 5.0
+        ;;read multipliers CALIBRATED against measured Pact gas (substage 6,
+        ;;REPL/Kursan/IGNIS-bucket-calibration.repl): measured M/L/XL vs S = 2.4 / 5.4 / 9.4.
+        ;;The original 1/1/2/3 guess was far too flat — a big row costs nearly as much to read
+        ;;as to write. Write multipliers measured 1.72/3.28/5.36 vs model 2/3/5 => kept as-is.
+        ,"r-s"        : 1.0
+        ,"r-m"        : 2.0
+        ,"r-l"        : 5.0
+        ,"r-xl"       : 9.0
+        ,"wipe-nonce" : 5.0
+        ,"frag-nonce" : 100.0}
+    )
+    (defconst IG|DETER
+        {"usage"             : 1.0
+        ,"setup"             : 5.0
+        ,"auth"              : 10.0
+        ,"fee"               : 25.0
+        ,"small"             : 50.0
+        ,"token-account"     : 50.0
+        ,"issue-tf"          : 1000.0
+        ,"issue-of"          : 1000.0
+        ,"issue-sft"         : 2000.0
+        ,"issue-nft"         : 2500.0
+        ,"issue-ats-pair"    : 4000.0
+        ,"issue-swp-pair"    : 5000.0
+        ,"issue-shareholder" : 10000.0
+        ,"issue-dsa-vault"   : 5000.0
+        ,"issue-dsa-agency"  : 2000.0
+        ;;a VST link's OWN deterrence ($2.50); the DPTF/DPOF it issues is charged separately
+        ,"vst-link"          : 250.0
+        ,"lp-churn"          : 1000.0
+        ,"anchor-tf"         : 500.0
+        ,"anchor-sf"         : 1000.0
+        ,"anchor-nf"         : 1250.0
+        ,"revoke-anchor"     : 100.0
+        ,"revoke-boost"      : 500.0
+        ,"combine-triplet"   : 100.0
+        ,"add-score"         : 200.0
+        ,"revoke-score"      : 250.0
+        ,"pool-stake-toggle" : 50.0
+        ,"fvt-split-setup"   : 100.0
+        ,"fvt-link-toggle"   : 50.0
+        ,"unstale"           : 100.0
+        ,"frag-enable"       : 100.0
+        ;; legacy-honored flat values (owner batch did NOT reprice these — values preserved,
+        ;; now sourced from here instead of module-local GAS| defconsts; substage 5 rewire):
+        ,"issue-score"       : 1000.0
+        ,"issue-triplet"     : 500.0
+        ,"issue-score-model" : 500.0
+        ,"issue-pool"        : 1000.0
+        ,"issue-fvt"         : 1000.0
+        ,"issue-multiplet"   : 500.0
+        ,"add-score-entity"  : 500.0
+        ,"add-reward-link"   : 500.0
+        ,"aqp-inject"        : 500.0
+        ,"aqp-collect"       : 500.0
+        ,"sync-anchors"      : 50.0
+        ,"recompute-capture" : 300.0
+        ,"set-oracle-auth"   : 300.0
+        ,"oracle-write"      : 200.0
+        ,"royalty-dispose"   : 400.0
+        ,"royalty-fuel"      : 500.0
+        ,"set-agency-fee"    : 300.0
+        ;;Ouronet ACCOUNT CREATION carries NO IGNIS charge — these two entries are the DOLLAR
+        ;;BASIS for its STOA leg only ($5 standard / $10 smart), consumed via UC_StoaPrice and
+        ;;gated by DALOS's account-creation-stoa switch.
+        ,"acct-standard"     : 500.0
+        ,"acct-smart"        : 1000.0
+        ;;Unlocking fee parameters costs a FLAT $50 in IGNIS and $50 in STOA, every time
+        ;;(owner 2026-09-06). This REPLACES the old escalating ladder (base x (unlocks+1),
+        ;;unbounded), whose intent was cheap-first/punitive-later; flat makes unlocking
+        ;;uniformly expensive and not worth doing casually.
+        ,"fee-unlock"        : 5000.0}
+    )
+    ;;
+    ;;  IG|COMPONENTS — the PROPER IGNIS COMPUTATION per client op: the cost of the work it
+    ;;  actually does (writes/updates/reads/scans/cross-module hops), priced with IG|WEIGHTS
+    ;;  and calibrated against measured gas. This is the half that is NOT deterrence: an op's
+    ;;  total is UC_IgnisPrice = deter + components. Keyed by the TALOS client name
+    ;;  <ENTITY>|<FN>, so this map, the price sheet and the deter worksheet are one list.
+    ;;  GENERATED — regenerate with REPL/_ignis_price_sheet.py's analyser after code changes.
+    ;;
+    (defconst IG|COMPONENTS
+        {"AQP-ANK|C_IssueNonFungibleAnchor"             : 74.0
+        ,"AQP-ANK|C_IssueNonFungibleSetAnchor"          : 74.0
+        ,"AQP-ANK|C_IssueSemiFungibleAnchor"            : 74.0
+        ,"AQP-ANK|C_IssueTrueFungibleAnchor"            : 74.0
+        ,"AQP-ANK|C_RevokeAnchor"                       : 67.0
+        ,"AQP-ANK|C_RevokeBoostClass"                   : 10.0
+        ,"AQP-DSA|C_BurnRoyalty"                        : 5.0
+        ,"AQP-DSA|C_DefineDelegationVault"              : 11.0
+        ,"AQP-DSA|C_FuelRoyalty"                        : 5.0
+        ,"AQP-DSA|C_OpenAgency"                         : 11.0
+        ,"AQP-DSA|C_OracleWrite"                        : 22.0
+        ,"AQP-DSA|C_RecomputeCapture"                   : 21.0
+        ,"AQP-DSA|C_SetAgencyFee"                       : 8.0
+        ,"AQP-DSA|C_SetOracleAuth"                      : 10.0
+        ,"AQP-DSA|C_WithdrawRoyalty"                    : 5.0
+        ,"AQP-FVT|CC_Collect"                           : 57.0
+        ,"AQP-FVT|CC_Inject"                            : 21.0
+        ,"AQP-FVT|CC_InjectFinalize"                    : 7.0
+        ,"AQP-FVT|CC_InjectStream"                      : 5.0
+        ,"AQP-FVT|CC_SweepBegin"                        : 19.0
+        ,"AQP-FVT|CC_SweepRevokeAnchor"                 : 29.0
+        ,"AQP-FVT|CC_UnstaleMyScores"                   : 11.0
+        ,"AQP-FVT|CCp_InjectFixChunk"                   : 13.0
+        ,"AQP-FVT|CCp_SweepRecomputeChunk"              : 17.0
+        ,"AQP-FVT|CCp_UnstaleAll"                       : 23.0
+        ,"AQP-FVT|C_AddRewardLink"                      : 11.0
+        ,"AQP-FVT|C_AddScoreEntity"                     : 39.0
+        ,"AQP-FVT|C_Control"                            : 8.0
+        ,"AQP-FVT|C_Issue"                              : 19.0
+        ,"AQP-FVT|C_IssueMultipletFamily"               : 9.0
+        ,"AQP-FVT|C_RotateOwnership"                    : 7.0
+        ,"AQP-FVT|C_SetCommonDenominator"               : 10.0
+        ,"AQP-FVT|C_SetMosaic"                          : 11.0
+        ,"AQP-FVT|C_SetQualitySplit"                    : 11.0
+        ,"AQP-FVT|C_SetSplitMode"                       : 11.0
+        ,"AQP-FVT|C_ToggleRewardLink"                   : 11.0
+        ,"AQP-FVT|C_ToggleScoreEntityLink"              : 11.0
+        ,"AQP-POOL|CC_FullVacate"                       : 97.0
+        ,"AQP-POOL|CC_StakeNonFungibleCollectable"      : 39.0
+        ,"AQP-POOL|CC_StakeOrtoFungible"                : 27.0
+        ,"AQP-POOL|CC_StakeSemiFungibleCollectable"     : 39.0
+        ,"AQP-POOL|CC_StakeTrueFungible"                : 39.0
+        ,"AQP-POOL|CC_UnstakeNonFungibleCollectable"    : 39.0
+        ,"AQP-POOL|CC_UnstakeOrtoFungible"              : 27.0
+        ,"AQP-POOL|CC_UnstakeSemiFungibleCollectable"   : 39.0
+        ,"AQP-POOL|CC_UnstakeTrueFungible"              : 39.0
+        ,"AQP-POOL|CCp_BatchDrainCollectable"           : 41.0
+        ,"AQP-POOL|CCp_BatchDrainOrtoFungible"          : 37.0
+        ,"AQP-POOL|CCp_BatchDrainTrueFungible"          : 43.0
+        ,"AQP-POOL|CCp_BatchVacateCollectables"         : 63.0
+        ,"AQP-POOL|CCp_BatchVacateOrtoFungible"         : 59.0
+        ,"AQP-POOL|CCp_BatchVacateTrueFungible"         : 65.0
+        ,"AQP-POOL|C_AbortVacate"                       : 13.0
+        ,"AQP-POOL|C_AddScore"                          : 43.0
+        ,"AQP-POOL|C_DisablePoolStake"                  : 6.0
+        ,"AQP-POOL|C_EnablePoolStake"                   : 6.0
+        ,"AQP-POOL|C_FinalizeVacate"                    : 17.0
+        ,"AQP-POOL|C_Issue"                             : 20.0
+        ,"AQP-POOL|C_RevokeScore"                       : 48.0
+        ,"AQP-POOL|C_SyncNonFungibleAnchors"            : 36.0
+        ,"AQP-POOL|C_SyncSemiFungibleAnchors"           : 36.0
+        ,"AQP-POOL|C_SyncTrueFungibleAnchors"           : 16.0
+        ,"AQP-SCR|C_CombineTripletScoreModel"           : 16.0
+        ,"AQP-SCR|C_ControlScore"                       : 13.0
+        ,"AQP-SCR|C_CreateScoreBoostClassLink"          : 26.0
+        ,"AQP-SCR|C_CreateScoreBoostLink"               : 13.0
+        ,"AQP-SCR|C_EnableDebBoost"                     : 13.0
+        ,"AQP-SCR|C_IssueLiquidityScore"                : 28.0
+        ,"AQP-SCR|C_IssueNonFungibleScore"              : 28.0
+        ,"AQP-SCR|C_IssueNonFungibleScoreDefinition"    : 48.0
+        ,"AQP-SCR|C_IssueNonFungibleSetScoreDefinition" : 48.0
+        ,"AQP-SCR|C_IssueOrtoFungibleScore"             : 28.0
+        ,"AQP-SCR|C_IssueScoreFromModel"                : 69.0
+        ,"AQP-SCR|C_IssueSemiFungibleScore"             : 28.0
+        ,"AQP-SCR|C_IssueSemiFungibleScoreDefinition"   : 26.0
+        ,"AQP-SCR|C_IssueSingleScoreModel"              : 16.0
+        ,"AQP-SCR|C_IssueTriplet"                       : 39.0
+        ,"AQP-SCR|C_IssueTrueFungibleScore"             : 28.0
+        ,"AQP-SCR|C_RotateScoreOwnership"               : 13.0
+        ,"ATS|A_RemoveSecondary"                        : 41.0
+        ,"ATS|C_AddHotRBT"                              : 26.0
+        ,"ATS|C_AddSecondary"                           : 29.0
+        ,"ATS|C_Brumate"                                : 37.0
+        ,"ATS|C_Coil"                                   : 17.0
+        ,"ATS|C_ColdRecovery"                           : 123.0
+        ,"ATS|C_Constrict"                              : 29.0
+        ,"ATS|C_Control"                                : 19.0
+        ,"ATS|C_ControlColdRecoveryFees"                : 19.0
+        ,"ATS|C_ControlHotRecoveryFee"                  : 19.0
+        ,"ATS|C_Cull"                                   : 125.0
+        ,"ATS|C_Curl"                                   : 25.0
+        ,"ATS|C_DirectRecovery"                         : 27.0
+        ,"ATS|C_Fuel"                                   : 7.0
+        ,"ATS|C_HotRecovery"                            : 25.0
+        ,"ATS|C_Issue"                                  : 52.0
+        ,"ATS|C_KickStart"                              : 3.0
+        ,"ATS|C_Redeem"                                 : 41.0
+        ,"ATS|C_RemoveSecondary"                        : 41.0
+        ,"ATS|C_Reverse"                                : 19.0
+        ,"ATS|C_RotateOwnership"                        : 19.0
+        ,"ATS|C_SetColdRecoveryDuration"                : 24.0
+        ,"ATS|C_SetColdRecoveryFees"                    : 14.0
+        ,"ATS|C_SetDirectRecoveryFee"                   : 19.0
+        ,"ATS|C_SetHibernationFees"                     : 19.0
+        ,"ATS|C_SetHotRecoveryFee"                      : 15.0
+        ,"ATS|C_SwitchColdRecovery"                     : 19.0
+        ,"ATS|C_SwitchDirectRecovery"                   : 19.0
+        ,"ATS|C_SwitchHotRecovery"                      : 19.0
+        ,"ATS|C_Syphon"                                 : 13.0
+        ,"ATS|C_ToggleElite"                            : 19.0
+        ,"ATS|C_ToggleParameterLock"                    : 26.0
+        ,"ATS|C_ToggleUpgrade"                          : 19.0
+        ,"ATS|C_UpdatePendingBranding"                  : 16.0
+        ,"ATS|C_UpdateRoyalty"                          : 19.0
+        ,"ATS|C_UpdateSyphon"                           : 19.0
+        ,"ATS|C_UpgradeBranding"                        : 18.0
+        ,"ATS|C_VestedCoil"                             : 17.0
+        ,"ATS|C_VestedCurl"                             : 25.0
+        ,"ATS|C_WithdrawRoyalties"                      : 11.0
+        ,"CODEX|C_RecordArweaveUpload"                  : 9.0
+        ,"CODEX|C_RegisterStoicTag"                     : 17.0
+        ,"CODEX|C_ReleaseStoicTag"                      : 7.0
+        ,"CODEX|C_RotateCodexGuard"                     : 4.0
+        ,"CUSTODIANS|C_Acquire"                         : 29.0
+        ,"DALOS|C_ControlSmartAccount"                  : 4.0
+        ,"DALOS|C_RotateGovernor"                       : 4.0
+        ,"DALOS|C_RotateGuard"                          : 14.0
+        ,"DALOS|C_RotateSovereign"                      : 4.0
+        ,"DALOS|C_RotateStoa"                           : 24.0
+        ,"DEMIPAD|C_Deposit"                            : 117.0
+        ,"DEMIPAD|C_FuelNonFungible"                    : 13.0
+        ,"DEMIPAD|C_FuelOrtoFungible"                   : 9.0
+        ,"DEMIPAD|C_FuelSemiFungible"                   : 13.0
+        ,"DEMIPAD|C_FuelTrueFungible"                   : 9.0
+        ,"DEMIPAD|C_RetrieveNonFungible"                : 13.0
+        ,"DEMIPAD|C_RetrieveOrtoFungible"               : 9.0
+        ,"DEMIPAD|C_RetrieveSemiFungible"               : 13.0
+        ,"DEMIPAD|C_RetrieveTrueFungible"               : 9.0
+        ,"DEMIPAD|C_Withdraw"                           : 29.0
+        ,"DPDC|C_BulkTransfer"                          : 25.0
+        ,"DPDC|C_MultiTransfer"                         : 25.0
+        ,"DPNF|C_Break"                                 : 19.0
+        ,"DPNF|C_Burn"                                  : 13.0
+        ,"DPNF|C_Control"                               : 15.0
+        ,"DPNF|C_Create"                                : 47.0
+        ,"DPNF|C_DefineCompositeSet"                    : 43.0
+        ,"DPNF|C_DefineHybridSet"                       : 45.0
+        ,"DPNF|C_DefinePrimordialSet"                   : 43.0
+        ,"DPNF|C_EnableNonceFragmentation"              : 17.0
+        ,"DPNF|C_EnableSetClassFragmentation"           : 11.0
+        ,"DPNF|C_Issue"                                 : 49.0
+        ,"DPNF|C_Make"                                  : 31.0
+        ,"DPNF|C_MakeFragments"                         : 17.0
+        ,"DPNF|C_MergeFragments"                        : 17.0
+        ,"DPNF|C_MoveCreateRole"                        : 19.0
+        ,"DPNF|C_MoveRecreateRole"                      : 19.0
+        ,"DPNF|C_MoveSetUriRole"                        : 19.0
+        ,"DPNF|C_RenameSet"                             : 9.0
+        ,"DPNF|C_Repurpose"                             : 37.0
+        ,"DPNF|C_RepurposeFragments"                    : 37.0
+        ,"DPNF|C_Respawn"                               : 9.0
+        ,"DPNF|C_ToggleBurnRole"                        : 13.0
+        ,"DPNF|C_ToggleExemptionRole"                   : 13.0
+        ,"DPNF|C_ToggleFreezeAccount"                   : 13.0
+        ,"DPNF|C_ToggleModifyCreatorRole"               : 13.0
+        ,"DPNF|C_ToggleModifyRoyaltiesRole"             : 13.0
+        ,"DPNF|C_TogglePause"                           : 9.0
+        ,"DPNF|C_ToggleSet"                             : 9.0
+        ,"DPNF|C_ToggleTransferRole"                    : 13.0
+        ,"DPNF|C_ToggleUpdateRole"                      : 13.0
+        ,"DPNF|C_TransferNonce"                         : 25.0
+        ,"DPNF|C_TransferNonces"                        : 25.0
+        ,"DPNF|C_UpdateNonce"                           : 17.0
+        ,"DPNF|C_UpdateNonceDescription"                : 17.0
+        ,"DPNF|C_UpdateNonceIgnisRoyalty"               : 17.0
+        ,"DPNF|C_UpdateNonceMetaData"                   : 17.0
+        ,"DPNF|C_UpdateNonceName"                       : 17.0
+        ,"DPNF|C_UpdateNonceRoyalty"                    : 17.0
+        ,"DPNF|C_UpdateNonceScore"                      : 17.0
+        ,"DPNF|C_UpdateNonceURI"                        : 17.0
+        ,"DPNF|C_UpdateNonces"                          : 17.0
+        ,"DPNF|C_UpdatePendingBranding"                 : 7.0
+        ,"DPNF|C_UpdateSetNonce"                        : 17.0
+        ,"DPNF|C_UpdateSetNonceDescription"             : 17.0
+        ,"DPNF|C_UpdateSetNonceIgnisRoyalty"            : 17.0
+        ,"DPNF|C_UpdateSetNonceMetaData"                : 17.0
+        ,"DPNF|C_UpdateSetNonceName"                    : 17.0
+        ,"DPNF|C_UpdateSetNonceRoyalty"                 : 17.0
+        ,"DPNF|C_UpdateSetNonceScore"                   : 17.0
+        ,"DPNF|C_UpdateSetNonceURI"                     : 17.0
+        ,"DPNF|C_UpdateSetNonces"                       : 17.0
+        ,"DPNF|C_UpgradeBranding"                       : 7.0
+        ,"DPNF|C_WipeClean"                             : 35.0
+        ,"DPNF|C_WipeDirty"                             : 33.0
+        ,"DPNF|C_WipeHeavy"                             : 33.0
+        ,"DPNF|C_WipeNonce"                             : 25.0
+        ,"DPNF|C_WipePure"                              : 33.0
+        ,"DPNF|Cp_WipeSlice"                            : 23.0
+        ,"DPOF|A_DeployAccount"                         : 27.0
+        ,"DPOF|C_AddQuantity"                           : 78.0
+        ,"DPOF|C_BulkTransfer"                          : 54.0
+        ,"DPOF|C_Burn"                                  : 45.0
+        ,"DPOF|C_Control"                               : 20.0
+        ,"DPOF|C_DeployAccount"                         : 27.0
+        ,"DPOF|C_Issue"                                 : 73.0
+        ,"DPOF|C_Mint"                                  : 80.0
+        ,"DPOF|C_MoveCreateRole"                        : 47.0
+        ,"DPOF|C_RotateOwnership"                       : 19.0
+        ,"DPOF|C_ToggleAddQuantityRole"                 : 53.0
+        ,"DPOF|C_ToggleBurnRole"                        : 53.0
+        ,"DPOF|C_ToggleFreezeAccount"                   : 53.0
+        ,"DPOF|C_TogglePause"                           : 19.0
+        ,"DPOF|C_ToggleTransferRole"                    : 53.0
+        ,"DPOF|C_Transfer"                              : 54.0
+        ,"DPOF|C_Transmit"                              : 85.0
+        ,"DPOF|C_UpdatePendingBranding"                 : 16.0
+        ,"DPOF|C_UpgradeBranding"                       : 47.0
+        ,"DPOF|C_WipeClean"                             : 7.0
+        ,"DPOF|C_WipeHeavy"                             : 49.0
+        ,"DPOF|C_WipePure"                              : 49.0
+        ,"DPOF|C_WipeSlim"                              : 45.0
+        ,"DPOF|Cp_WipeSlice"                            : 48.0
+        ,"DPSF|C_AddQuantity"                           : 13.0
+        ,"DPSF|C_Break"                                 : 33.0
+        ,"DPSF|C_Burn"                                  : 15.0
+        ,"DPSF|C_Control"                               : 15.0
+        ,"DPSF|C_Create"                                : 47.0
+        ,"DPSF|C_DefineCompositeSet"                    : 43.0
+        ,"DPSF|C_DefineHybridSet"                       : 45.0
+        ,"DPSF|C_DefinePrimordialSet"                   : 43.0
+        ,"DPSF|C_EnableNonceFragmentation"              : 17.0
+        ,"DPSF|C_EnableSetClassFragmentation"           : 11.0
+        ,"DPSF|C_Issue"                                 : 49.0
+        ,"DPSF|C_IssueCompany"                          : 93.0
+        ,"DPSF|C_Make"                                  : 19.0
+        ,"DPSF|C_MakeFragments"                         : 17.0
+        ,"DPSF|C_MergeFragments"                        : 17.0
+        ,"DPSF|C_MorphEquity"                           : 37.0
+        ,"DPSF|C_MoveCreateRole"                        : 19.0
+        ,"DPSF|C_MoveRecreateRole"                      : 19.0
+        ,"DPSF|C_MoveSetUriRole"                        : 19.0
+        ,"DPSF|C_RenameSet"                             : 9.0
+        ,"DPSF|C_Repurpose"                             : 37.0
+        ,"DPSF|C_RepurposeFragments"                    : 37.0
+        ,"DPSF|C_ToggleAddQuantityRole"                 : 13.0
+        ,"DPSF|C_ToggleBurnRole"                        : 13.0
+        ,"DPSF|C_ToggleExemptionRole"                   : 13.0
+        ,"DPSF|C_ToggleFreezeAccount"                   : 13.0
+        ,"DPSF|C_ToggleModifyCreatorRole"               : 13.0
+        ,"DPSF|C_ToggleModifyRoyaltiesRole"             : 13.0
+        ,"DPSF|C_TogglePause"                           : 9.0
+        ,"DPSF|C_ToggleSet"                             : 9.0
+        ,"DPSF|C_ToggleTransferRole"                    : 13.0
+        ,"DPSF|C_ToggleUpdateRole"                      : 13.0
+        ,"DPSF|C_TransferNonce"                         : 25.0
+        ,"DPSF|C_TransferNonces"                        : 25.0
+        ,"DPSF|C_UpdateNonce"                           : 17.0
+        ,"DPSF|C_UpdateNonceDescription"                : 17.0
+        ,"DPSF|C_UpdateNonceIgnisRoyalty"               : 17.0
+        ,"DPSF|C_UpdateNonceMetaData"                   : 17.0
+        ,"DPSF|C_UpdateNonceName"                       : 17.0
+        ,"DPSF|C_UpdateNonceRoyalty"                    : 17.0
+        ,"DPSF|C_UpdateNonceScore"                      : 17.0
+        ,"DPSF|C_UpdateNonceURI"                        : 17.0
+        ,"DPSF|C_UpdateNonces"                          : 17.0
+        ,"DPSF|C_UpdatePendingBranding"                 : 7.0
+        ,"DPSF|C_UpdateSetNonce"                        : 17.0
+        ,"DPSF|C_UpdateSetNonceDescription"             : 17.0
+        ,"DPSF|C_UpdateSetNonceIgnisRoyalty"            : 17.0
+        ,"DPSF|C_UpdateSetNonceMetaData"                : 17.0
+        ,"DPSF|C_UpdateSetNonceName"                    : 17.0
+        ,"DPSF|C_UpdateSetNonceRoyalty"                 : 17.0
+        ,"DPSF|C_UpdateSetNonceScore"                   : 17.0
+        ,"DPSF|C_UpdateSetNonceURI"                     : 17.0
+        ,"DPSF|C_UpdateSetNonces"                       : 17.0
+        ,"DPSF|C_UpgradeBranding"                       : 7.0
+        ,"DPSF|C_WipeClean"                             : 35.0
+        ,"DPSF|C_WipeDirty"                             : 33.0
+        ,"DPSF|C_WipeHeavy"                             : 33.0
+        ,"DPSF|C_WipeNonce"                             : 25.0
+        ,"DPSF|C_WipeNoncePartialy"                     : 15.0
+        ,"DPSF|C_WipePure"                              : 33.0
+        ,"DPSF|Cp_WipeSlice"                            : 23.0
+        ,"DPTF|A_DeployAccount"                         : 24.0
+        ,"DPTF|C_BulkTransfer"                          : 143.0
+        ,"DPTF|C_Burn"                                  : 71.0
+        ,"DPTF|C_ClearDispo"                            : 51.0
+        ,"DPTF|C_Control"                               : 20.0
+        ,"DPTF|C_DeployAccount"                         : 24.0
+        ,"DPTF|C_DonateFees"                            : 19.0
+        ,"DPTF|C_Issue"                                 : 70.0
+        ,"DPTF|C_Mint"                                  : 86.0
+        ,"DPTF|C_MultiBulkTransfer"                     : 143.0
+        ,"DPTF|C_MultiTransfer"                         : 139.0
+        ,"DPTF|C_ResetFeeTarget"                        : 19.0
+        ,"DPTF|C_RotateOwnership"                       : 19.0
+        ,"DPTF|C_SetFee"                                : 19.0
+        ,"DPTF|C_SetFeeTarget"                          : 19.0
+        ,"DPTF|C_SetMinMove"                            : 19.0
+        ,"DPTF|C_ToggleBurnRole"                        : 58.0
+        ,"DPTF|C_ToggleFee"                             : 19.0
+        ,"DPTF|C_ToggleFeeExemptionRole"                : 58.0
+        ,"DPTF|C_ToggleFeeLock"                         : 35.0
+        ,"DPTF|C_ToggleFreezeAccount"                   : 58.0
+        ,"DPTF|C_ToggleMintRole"                        : 58.0
+        ,"DPTF|C_TogglePause"                           : 19.0
+        ,"DPTF|C_ToggleReservation"                     : 19.0
+        ,"DPTF|C_ToggleTransferRole"                    : 58.0
+        ,"DPTF|C_Transfer"                              : 137.0
+        ,"DPTF|C_Transmute"                             : 101.0
+        ,"DPTF|C_UpdatePendingBranding"                 : 16.0
+        ,"DPTF|C_UpgradeBranding"                       : 36.0
+        ,"DPTF|C_Wipe"                                  : 80.0
+        ,"DPTF|C_WipeSlim"                              : 80.0
+        ,"KPAY|C_BuyStoicPay"                           : 17.0
+        ,"LQD|C_UnwrapStoa"                             : 17.0
+        ,"LQD|C_UnwrapUrStoa"                           : 17.0
+        ,"LQD|C_WrapStoa"                               : 15.0
+        ,"LQD|C_WrapUrStoa"                             : 15.0
+        ,"MTX-AQP|2|C_Inject"                           : 11.0
+        ,"MTX-AQP|2|C_SweepRevokeAnchor"                : 21.0
+        ,"ORBR|C_WithdrawFees"                          : 15.0
+        ,"PYTHIA|C_DeployApiKey"                        : 9.0
+        ,"PYTHIA|C_Link"                                : 10.0
+        ,"PYTHIA|C_RevokeLink"                          : 7.0
+        ,"PYTHIA|C_UpdateDualConsumerLane"              : 4.0
+        ,"SNAKES|C_Acquire"                             : 31.0
+        ,"SPARK|C_BuySparks"                            : 15.0
+        ,"SPARK|C_RedemAllSparks"                       : 27.0
+        ,"SPARK|C_RedemFewSparks"                       : 25.0
+        ,"SWP|CC_SmartSwapNoSlippage"                   : 117.0
+        ,"SWP|CC_SmartSwapWithSlippage"                 : 117.0
+        ,"SWP|C_AddFrozenLiquidity"                     : 57.0
+        ,"SWP|C_AddGlacialLiquidity"                    : 51.0
+        ,"SWP|C_AddIcedLiquidity"                       : 51.0
+        ,"SWP|C_AddSleepingLiquidity"                   : 65.0
+        ,"SWP|C_AddStandardLiquidity"                   : 51.0
+        ,"SWP|C_ChangeOwnership"                        : 19.0
+        ,"SWP|C_EnableFrozenLP"                         : 32.0
+        ,"SWP|C_EnableSleepingLP"                       : 32.0
+        ,"SWP|C_Firestarter"                            : 15.0
+        ,"SWP|C_Fuel"                                   : 21.0
+        ,"SWP|C_IssueStable"                            : 35.0
+        ,"SWP|C_IssueStablePool"                        : 43.0
+        ,"SWP|C_IssueStandardPool"                      : 43.0
+        ,"SWP|C_IssueWeighted"                          : 35.0
+        ,"SWP|C_IssueWeightedPool"                      : 43.0
+        ,"SWP|C_ModifyCanChangeOwner"                   : 19.0
+        ,"SWP|C_ModifyWeights"                          : 19.0
+        ,"SWP|C_MultiSwapNoSlippage"                    : 105.0
+        ,"SWP|C_MultiSwapWithSlippage"                  : 105.0
+        ,"SWP|C_RemoveLiquidity"                        : 29.0
+        ,"SWP|C_SingleSwapNoSlippage"                   : 105.0
+        ,"SWP|C_SingleSwapWithSlippage"                 : 105.0
+        ,"SWP|C_SmartSwapNoSlippage"                    : 165.0
+        ,"SWP|C_SmartSwapWithSlippage"                  : 165.0
+        ,"SWP|C_ToggleAddLiquidity"                     : 5.0
+        ,"SWP|C_ToggleFeeLock"                          : 35.0
+        ,"SWP|C_ToggleSwapCapability"                   : 5.0
+        ,"SWP|C_UpdateAmplifier"                        : 19.0
+        ,"SWP|C_UpdateFee"                              : 20.0
+        ,"SWP|C_UpdatePendingBranding"                  : 16.0
+        ,"SWP|C_UpdatePendingBrandingLPs"               : 19.0
+        ,"SWP|C_UpdateSpecialFeeTargets"                : 19.0
+        ,"SWP|C_UpgradeBranding"                        : 18.0
+        ,"SWP|C_UpgradeBrandingLPs"                     : 17.0
+        ,"VST|C_Awake"                                  : 23.0
+        ,"VST|C_CreateFrozenLink"                       : 29.0
+        ,"VST|C_CreateHibernatingLink"                  : 29.0
+        ,"VST|C_CreateReservationLink"                  : 29.0
+        ,"VST|C_CreateSleepingLink"                     : 29.0
+        ,"VST|C_CreateVestingLink"                      : 29.0
+        ,"VST|C_Freeze"                                 : 13.0
+        ,"VST|C_Hibernate"                              : 17.0
+        ,"VST|C_Merge"                                  : 39.0
+        ,"VST|C_RepurposeFrozen"                        : 17.0
+        ,"VST|C_RepurposeHibernating"                   : 21.0
+        ,"VST|C_RepurposeMerge"                         : 39.0
+        ,"VST|C_RepurposeReserved"                      : 17.0
+        ,"VST|C_RepurposeSleeping"                      : 21.0
+        ,"VST|C_RepurposeSlumber"                       : 39.0
+        ,"VST|C_RepurposeVested"                        : 21.0
+        ,"VST|C_Reserve"                                : 13.0
+        ,"VST|C_Sleep"                                  : 23.0
+        ,"VST|C_Slumber"                                : 39.0
+        ,"VST|C_ToggleTransferRoleFrozenDPTF"           : 5.0
+        ,"VST|C_ToggleTransferRoleHibernatingDPOF"      : 5.0
+        ,"VST|C_ToggleTransferRoleReservedDPTF"         : 5.0
+        ,"VST|C_ToggleTransferRoleSleepingDPOF"         : 5.0
+        ,"VST|C_Unreserve"                              : 13.0
+        ,"VST|C_Unsleep"                                : 19.0
+        ,"VST|C_Unvest"                                 : 37.0
+        ,"VST|C_Vest"                                   : 23.0}
+    )
     (defconst GAS_EXCEPTION
         [
             DALOS|SC_NAME
@@ -913,6 +1418,55 @@
         )
     )
     ;;{5.2}  Compute [UC]
+    (defun UC_IgnisWeight:decimal (key:string)
+        @doc "Reads one mechanical pricing weight from the central IG|WEIGHTS map (tx, ins, \
+            \ upd-per-4f, xcall, w-s..w-xl, r-s..r-xl, wipe-nonce, frag-nonce). The SINGLE \
+            \ source of truth for component pricing — an unknown key fails fast via <at>."
+        (at key IG|WEIGHTS)
+    )
+    (defun UC_IgnisDeter:decimal (key:string)
+        @doc "Reads one deterrence multiplier (on the IG|TX base unit) from the central \
+            \ IG|DETER map — usage/setup/auth/fee tiers + the owner-priced issuance and \
+            \ AQP-family tiers (2026-09-05 batch). 1 ignis = 1 USD/EUR cent. An unknown \
+            \ key fails fast via <at>."
+        (at key IG|DETER)
+    )
+    (defun UC_IgnisComponents:decimal (op-key:string)
+        @doc "The op's own computed IGNIS consumption (its real work), from IG|COMPONENTS. \
+            \ Keyed by the Talos client name <ENTITY>|<FN>. Fails fast on an unknown op."
+        (at op-key IG|COMPONENTS)
+    )
+    (defun UC_IgnisPrice:decimal (op-key:string deter-key:string)
+        @doc "THE price of a client op: deterrence + its proper ignis computation. Every \
+            \ URCi_* reader should bill through this, so a price lives in exactly one place. \
+            \ 1 IGNIS = 1 US/EUR cent."
+        (+ (UC_IgnisDeter deter-key) (UC_IgnisComponents op-key))
+    )
+    (defun UC_IgnisPriceScaled:decimal (op-key:string deter-key:string weight-key:string n:integer)
+        @doc "Per-item variant: deter + components + n x the per-item surcharge (wipe-nonce, \
+            \ frag-nonce, ...). For ops whose work scales with a nonce/receiver/hop count."
+        (+ (UC_IgnisPrice op-key deter-key) (* (dec n) (UC_IgnisWeight weight-key)))
+    )
+    (defun UC_StoaPrice:decimal (deter-key:string)
+        @doc "STOA leg for ISSUE functions: the SAME DOLLAR VALUE as the deter, converted at \
+            \ the live STOA price. 1 IGNIS = 1 cent, so deter/100 = dollars; dividing by the \
+            \ STOA price gives the STOA amount. STOA is hard-pegged at $0.10 today, so $40 of \
+            \ deter = 400 STOA; when a real price lands the AMOUNT moves but the VALUE holds."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (/ (/ (UC_IgnisDeter deter-key) 100.0) (ref-DALOS::UR_UsagePrice "stoa|price"))
+        )
+    )
+    (defun UC_FeeUnlockPrice:[decimal] ()
+        @doc "Cost of unlocking fee parameters: [IGNIS STOA] = a FLAT $50 + $50, every unlock \
+            \ (owner 2026-09-06). Returns the same 2-element shape the retired escalating \
+            \ ladder (U|DEC::UC_UnlockPrice) returned, so call sites keep their structure — \
+            \ but the <unlocks> count no longer changes the price. Used by DPTF|C_ToggleFeeLock, \
+            \ ATS|C_ToggleParameterLock and SWP|C_ToggleFeeLock."
+        [(UC_IgnisDeter "fee-unlock") (UC_StoaPrice "fee-unlock")]
+    )
     (defun UC_FindKeyIndex:integer (key-lst:[string] key:string)
         @doc "First index of key in key-lst, or -1 if absent. Single linear scan, local to the \
             \ compress/prime pipeline below (UDC_CompressOutputCumulator/UDC_PrimeIgnisCumulator) \
@@ -1091,19 +1645,27 @@
     )
     ;;  STOA-billed DALOS ops: the URCi returns the native fair price (the tier "key" single-sourced)
     (defun DALOS|URCi_DeploySmartAccount:decimal ()
+        @doc "STOA price of deploying a smart Ouronet account: $10 of value, converted at the live \
+            \ STOA price (UC_StoaPrice). Returns 0.0 while DALOS's account-creation-stoa switch \
+            \ is OFF, so onboarding is free even when global STOA collection is ON — that switch \
+            \ is the single gate, and both the exec path and the INFO preview read it here."
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
-            (ref-DALOS::UR_UsagePrice "smart")
+            (if (ref-DALOS::UR_AccountCreationStoa) (UC_StoaPrice "acct-smart") 0.0)
         )
     )
     (defun DALOS|URCi_DeployStandardAccount:decimal ()
+        @doc "STOA price of deploying a standard Ouronet account: $5 of value, converted at the live \
+            \ STOA price (UC_StoaPrice). Returns 0.0 while DALOS's account-creation-stoa switch \
+            \ is OFF, so onboarding is free even when global STOA collection is ON — that switch \
+            \ is the single gate, and both the exec path and the INFO preview read it here."
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
-            (ref-DALOS::UR_UsagePrice "standard")
+            (if (ref-DALOS::UR_AccountCreationStoa) (UC_StoaPrice "acct-standard") 0.0)
         )
     )
     (defun OI|UR_StoaTargets:[string] ()
@@ -1267,6 +1829,36 @@
     )
     (defun STOA|C_CollectWT (sender:string amount:decimal trigger:bool)
         (STOA|C_CollectWTEx sender sender amount trigger)
+    )
+    (defun STOA|C_CollectFull (payer:string amount:decimal trigger:bool)
+        @doc "Collect native STOA taxed in FULL — no Elite discount. The pricing spec marks a \
+            \ few costs as non-discountable (PYTHIA's fees, some asymmetric-liquidity legs); \
+            \ everything else must keep using STOA|C_Collect* so the discount applies."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (split-full:[decimal] (ref-DALOS::URC_SplitSTOAPricesFull amount))
+                (am0:decimal (at 0 split-full))
+                (am1:decimal (at 1 split-full))
+                (am2:decimal (at 2 split-full))
+                (am3:decimal (at 3 split-full))
+                (stoa-sender:string (ref-DALOS::UR_AccountStoa payer))
+                (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))
+                (stoa-cto:string (ref-DALOS::UR_AccountStoa (at 1 demiurgoi)))
+                (stoa-hov:string (ref-DALOS::UR_AccountStoa (at 2 demiurgoi)))
+                (stoa-ouroboros:string (ref-DALOS::UR_AccountStoa OUROBOROS|SC_NAME))
+                (stoa-dalos:string (ref-DALOS::UR_AccountStoa DALOS|SC_NAME))
+            )
+            (if (not trigger)
+                (do
+                    (C_TransferDalosFuel stoa-sender stoa-hov am0)          ;;10% to Demiourgos.Holdings
+                    (C_TransferDalosFuel stoa-sender stoa-cto am2)          ;;30% to Ouronet Maintenance
+                    (C_TransferDalosFuel stoa-sender stoa-ouroboros am3)    ;;40% to STOA-Ouroboros
+                    (C_TransferDalosFuel stoa-sender stoa-dalos am1)        ;;20% to STOA-Dalos (Gas Station)
+                )
+                (format "While Stoa Collection is {}, the {} STOA could not be collected" [trigger amount])
+            )
+        )
     )
     (defun STOA|C_CollectWTEx (payer:string discount-account:string amount:decimal trigger:bool)
         @doc "Collect native STOA from payer Stoa account; Elite split from discount-account."

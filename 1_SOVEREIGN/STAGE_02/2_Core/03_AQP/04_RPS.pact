@@ -232,18 +232,18 @@
        \ older than this (now − oracle-ts > DSA_ORACLE_TTL) captures NOTHING (effective weight 0 ⇒ its whole \
        \ share routes to the royalty pool). Only consulted when the FVT's oracle-on flag is set.")
     (defconst FVT|DSA-ORACLE-KEY:string "GLOBAL")
-    (defconst GAS|ADD-REWARD-LINK                       500.0)
-    (defconst GAS|ADD-SCORE-ENTITY                      500.0)
-    (defconst GAS|COLLECT                               500.0)
-    (defconst GAS|INJECT                                500.0)
-    (defconst GAS|ISSUE-MULTIPLET-FAMILY                500.0)
-    (defconst GAS|SET-COMMON-DENOMINATOR                500.0)
-    (defconst GAS|SET-MOSAIC                            500.0)
-    (defconst GAS|SET-QUALITY-SPLIT                     500.0)
-    (defconst GAS|SET-SPLIT-MODE                        500.0)
-    (defconst GAS|TOGGLE-REWARD-LINK                    500.0)
-    (defconst GAS|TOGGLE-SCORE-ENTITY-LINK              500.0)
-    (defconst GAS|UNSTALE                               500.0)
+    (defconst GAS|ADD-REWARD-LINK                   (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UC_IgnisDeter "add-reward-link")))
+    (defconst GAS|ADD-SCORE-ENTITY                  (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UC_IgnisDeter "add-score-entity")))
+    (defconst GAS|COLLECT                           (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UC_IgnisDeter "aqp-collect")))
+    (defconst GAS|INJECT                            (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UC_IgnisDeter "aqp-inject")))
+    (defconst GAS|ISSUE-MULTIPLET-FAMILY            (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UC_IgnisDeter "issue-multiplet")))
+    (defconst GAS|SET-COMMON-DENOMINATOR            (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UC_IgnisDeter "fvt-split-setup")))
+    (defconst GAS|SET-MOSAIC                        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UC_IgnisDeter "fvt-split-setup")))
+    (defconst GAS|SET-QUALITY-SPLIT                 (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UC_IgnisDeter "fvt-split-setup")))
+    (defconst GAS|SET-SPLIT-MODE                    (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UC_IgnisDeter "fvt-split-setup")))
+    (defconst GAS|TOGGLE-REWARD-LINK                (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UC_IgnisDeter "fvt-link-toggle")))
+    (defconst GAS|TOGGLE-SCORE-ENTITY-LINK          (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UC_IgnisDeter "fvt-link-toggle")))
+    (defconst GAS|UNSTALE                           (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UC_IgnisDeter "unstale")))
     (defconst STREAM_MAX_LANES 49
         "Hard ceiling on concurrent streams per lane (7x7 grid). The per-account cap (URC_MaxStreamLanes, by \
        \ Elite tier of the FVT owner konto) is always <= this.")
@@ -462,7 +462,7 @@
             \ stakers accrue net), and the whole member-slice·fee is credited DIRECTLY to the operator's pending — \
             \ giving the operator its own weighted share + the fee (effective weight own + fee·Σdelegators), \
             \ delegators (1−fee), conserved. The fee is never baked into a stored weight, so a fee change is O(1) \
-            \ (it only reprices the NEXT inject). Set by DSA at open + A_SetAgencyFee."
+            \ (it only reprices the NEXT inject). Set by DSA at open + C_SetAgencyFee."
         operator-konto:string
         fee-per-mille:integer
     )

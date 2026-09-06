@@ -103,6 +103,7 @@
     (defun DPSF|C_WipePure (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV2.RemovableNonces}))
     (defun DPSF|C_WipeClean (patron:string account:string id:string nonces:[integer]))
     (defun DPSF|C_WipeDirty (patron:string account:string id:string nonces:[integer]))
+    (defun DPSF|Cp_WipeSlice (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV2.RemovableNonces}))
     ;;
     ;;  [7] DPDC-T
     ;;
@@ -828,8 +829,32 @@
                     (total-nonces-supplies:integer (fold (+) 0 (at "r-amounts" (at 0 (at "output" ico)))))
                 )
                 (ref-IGNIS::C_Collect patron ico)
-                (format 
-                    "Successfully executed Dirty Wipe of SFT {} on Account {}, wiping {} Nonces With a Total Supply of {}" 
+                (format
+                    "Successfully executed Dirty Wipe of SFT {} on Account {}, wiping {} Nonces With a Total Supply of {}"
+                    [id (UC_ShortAccount account) no-of-nonces total-nonces-supplies]
+                )
+            )
+        )
+    )
+    (defun DPSF|Cp_WipeSlice (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV2.RemovableNonces})
+        @doc "Hydra parallel wipe slice: wipes ONE <URHC_BuildWipeSlicePlan> slice of the SFT \
+            \ <account>'s <id> nonces. The UI dirty-reads the plan and fires one such tx per \
+            \ slice, all in parallel; slices are disjoint, order-independent and retryable \
+            \ (replay REVERTS on the zeroed account supply)."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
+                    (ico:object{IgnisCollectorV2.OutputCumulator}
+                        (ref-DPDC-MNG::Cp_WipeSlice account id true removable-nonces-obj)
+                    )
+                    (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
+                    (total-nonces-supplies:integer (fold (+) 0 (at "r-amounts" (at 0 (at "output" ico)))))
+                )
+                (ref-IGNIS::C_Collect patron ico)
+                (format
+                    "Successfully executed Hydra Wipe Slice of SFT {} on Account {}, wiping {} Nonces With a Total Supply of {}"
                     [id (UC_ShortAccount account) no-of-nonces total-nonces-supplies]
                 )
             )
@@ -1508,6 +1533,10 @@
                     )
                 )
                 (ref-IGNIS::C_Collect patron ico)
+                ;;Issuing a COMPANY is $100 in IGNIS deter and $100 in STOA (spec): the equity
+                ;;premium leg. The underlying SFT collection issue carries its own cost on top,
+                ;;in both currencies — same composition rule as the VST links.
+                (ref-IGNIS::STOA|C_Collect patron (ref-IGNIS::UC_StoaPrice "issue-shareholder"))
                 (ref-TS01-A::XB_DynamicFuelSTOA)
                 (at 0 (at "output" ico))
             )

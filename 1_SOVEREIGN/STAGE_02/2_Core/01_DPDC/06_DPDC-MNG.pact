@@ -32,6 +32,16 @@
         r-nonces:[integer]
         r-amounts:[integer]
     )
+    (defschema DPDC-MNG|WipeSlicePlan
+        @doc "Hydra wipe slice plan: the URHC_WipePure output partitioned into <slice-count> \
+        \ disjoint contiguous |RemovableNonces| slices, each fed to one <Cp_WipeSlice> tx. \
+        \ Offline plan only (UI dirty-read) — never persisted on-chain."
+        account:string
+        id:string
+        son:bool
+        slice-count:integer
+        slices:[object{RemovableNonces}]
+    )
     ;;{3.3}  tables  ⟨cannot exist in an interface⟩
 
     ;;<=========================================================================>
@@ -45,7 +55,12 @@
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
     (defun UDC_RemovableNonces:object{RemovableNonces} (a:[integer] b:[integer]))
+    (defun UDC_WipeSlicePlan:object{DPDC-MNG|WipeSlicePlan}
+        (a:string b:string c:bool d:integer e:[object{RemovableNonces}]))
     ;;{5.2}  Compute [UC]
+    (defun UC_ComputeMinWipeSliceCount:integer (nonce-count:integer))
+    (defun UC_BuildWipeSlicePlan:object{DPDC-MNG|WipeSlicePlan}
+        (account:string id:string son:bool removable-nonces-obj:object{RemovableNonces} slice-count:integer))
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
     ;;  [URCi]
@@ -62,6 +77,7 @@
     ;;
     ;;  [URDC/URC/UDC]  RemovableNonces builders (dirty-read helpers, also used by INFO preview)
     (defun URHC_WipePure:object{RemovableNonces} (account:string id:string son:bool))
+    (defun URHC_BuildWipeSlicePlan:object{DPDC-MNG|WipeSlicePlan} (account:string id:string son:bool slice-count:integer))
     (defun URC_FilterAccountViableNonces:object{RemovableNonces} (account:string id:string son:bool nonces:[integer]))
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
@@ -94,6 +110,7 @@
     (defun C_WipePure:object{IgnisCollectorV2.OutputCumulator} (account:string id:string son:bool removable-nonces-obj:object{RemovableNonces}))
     (defun C_WipeClean:object{IgnisCollectorV2.OutputCumulator} (account:string id:string son:bool nonces:[integer]))
     (defun C_WipeDirty:object{IgnisCollectorV2.OutputCumulator} (account:string id:string son:bool nonces:[integer]))
+    (defun Cp_WipeSlice:object{IgnisCollectorV2.OutputCumulator} (account:string id:string son:bool removable-nonces-obj:object{RemovableNonces}))
 
 )
 ;;
@@ -213,6 +230,13 @@
     ;;{3}  CST
     ;;{3.1}  constants
     (defconst BAR                                       (CT_Bar))
+    (defconst WIPE-SLICE-MAX-NONCES                     500
+        "Hydra wipe: max nonces per <Cp_WipeSlice> tx. UI SEED + generous backstop, NOT the \
+        \ optimizer — the UI /local-simulates each slice and adds slices when one does not fit; \
+        \ the node gas meter is the real enforcement (an oversized slice aborts atomically). \
+        \ CALIBRATED REPL/Kursan/DPDC-scale-wipe.repl: measured 952.4 gas per nonce wiped => ~2091 nonces fit a \
+        \ 2,000,000-gas tx. Set well under that because the probe used the LIGHTEST possible \
+        \ nonces (zero URI data, no metadata); real nonces carry more payload per row.")
     ;;{3.2}  schemas
     ;;{3.3}  tables
 
@@ -466,6 +490,14 @@
         {"r-nonces"     : a
         ,"r-amounts"    : b}
     )
+    (defun UDC_WipeSlicePlan:object{DpdcManagementV2.DPDC-MNG|WipeSlicePlan}
+        (a:string b:string c:bool d:integer e:[object{DpdcManagementV2.RemovableNonces}])
+        {"account"      : a
+        ,"id"           : b
+        ,"son"          : c
+        ,"slice-count"  : d
+        ,"slices"       : e}
+    )
     ;;{5.2}  Compute [UC]
     (defun UC_TakePureWipe:object{DpdcManagementV2.RemovableNonces} (input:object{DpdcManagementV2.RemovableNonces} size:integer)
         @doc "Takes <size> and returns a smaller |object{DpdcManagementV2.RemovableNonces}|"
@@ -482,19 +514,74 @@
             )
         )
     )
+    (defun UC_CeilDiv:integer (numerator:integer denominator:integer)
+        @doc "Integer ceiling division: smallest integer >= numerator/denominator."
+        (if (= (mod numerator denominator) 0)
+            (/ numerator denominator)
+            (+ 1 (/ numerator denominator))
+        )
+    )
+    (defun UC_ComputeMinWipeSliceCount:integer (nonce-count:integer)
+        @doc "Hydra wipe UI SEED: the minimum <Cp_WipeSlice> count for <nonce-count> nonces \
+            \ under the <WIPE-SLICE-MAX-NONCES> per-tx backstop; minimum 1. NOT the optimizer — \
+            \ the UI /local-simulates each candidate slice and adds slices when one does not fit."
+        (let
+            (
+                (raw:integer (UC_CeilDiv nonce-count WIPE-SLICE-MAX-NONCES))
+            )
+            (if (> raw 1) raw 1)
+        )
+    )
+    (defun UC_BuildWipeSlicePlan:object{DpdcManagementV2.DPDC-MNG|WipeSlicePlan}
+        (account:string id:string son:bool removable-nonces-obj:object{DpdcManagementV2.RemovableNonces} slice-count:integer)
+        @doc "Hydra wipe partitioner (pure compute, no table reads): splits a |RemovableNonces| \
+            \ object into disjoint CONTIGUOUS slices via take/drop index ranges. The requested \
+            \ <slice-count> is clamped to [1, nonce-count] and then recomputed from the per-slice \
+            \ width, so the returned plan NEVER contains an empty slice (an empty nonce list \
+            \ aborts the executor); the plan's own <slice-count> field is the authoritative count."
+        (let*
+            (
+                (nonces:[integer] (at "r-nonces" removable-nonces-obj))
+                (amounts:[integer] (at "r-amounts" removable-nonces-obj))
+                (l:integer (length nonces))
+                (n-clamped:integer (if (< slice-count 1) 1 (if (> slice-count l) (if (> l 0) l 1) slice-count)))
+                (per-slice:integer (UC_CeilDiv (if (> l 0) l 1) n-clamped))
+                (n-final:integer (UC_CeilDiv (if (> l 0) l 1) per-slice))
+            )
+            (UDC_WipeSlicePlan account id son n-final
+                (map
+                    (lambda
+                        (slice-idx:integer)
+                        (let*
+                            (
+                                (start:integer (* slice-idx per-slice))
+                                (rest:integer (- l start))
+                                (count:integer (if (< per-slice rest) per-slice rest))
+                            )
+                            (UDC_RemovableNonces
+                                (take count (drop start nonces))
+                                (take count (drop start amounts))
+                            )
+                        )
+                    )
+                    (enumerate 0 (- n-final 1))
+                )
+            )
+        )
+    )
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     (defun URCi_WipeCumulator:object{IgnisCollectorV2.OutputCumulator}
         (id:string son:bool removable-nonces-obj:object{DpdcManagementV2.RemovableNonces})
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
                 (no-of-nonces:integer (length (at "r-nonces" removable-nonces-obj)))
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
-                (*  ;;Cost 2 IGNIS per Nonce wiped
-                    (ref-DALOS::UR_UsagePrice "ignis|small")
+                (*  ;;5 IGNIS per nonce wiped (owner 2026-09-05; central IG|WEIGHTS wipe-nonce).
+                    ;;Collectible wipe MIRRORS the DPOF ortofungible rule, per owner confirmation.
+                    (ref-IGNIS::UC_IgnisWeight "wipe-nonce")
                     (dec no-of-nonces)
                 )
                 (ref-DPDC::UR_OwnerKonto id son)
@@ -513,6 +600,15 @@
             (URC_FilterAccountViableNonces account id son (ref-DPDC::URH_AccountNonces account id son))
         )
     )
+    (defun URHC_BuildWipeSlicePlan:object{DpdcManagementV2.DPDC-MNG|WipeSlicePlan}
+        (account:string id:string son:bool slice-count:integer)
+        @doc "Hydra wipe PREFLIGHT (UI /local ONLY — the one heavy read of the flow): dirty-reads \
+            \ the full viable wipeable set via <URHC_WipePure> and partitions it into the slice \
+            \ plan. The UI fires one <Cp_WipeSlice> tx per slice, all in parallel; a re-read after \
+            \ a partial campaign naturally returns the outstanding remains (re-plan is implicit). \
+            \ Seed <slice-count> with <UC_ComputeMinWipeSliceCount>."
+        (UC_BuildWipeSlicePlan account id son (URHC_WipePure account id son) slice-count)
+    )
     (defun URC_FilterClassZeroNonces:[integer] (id:string son:bool nonces:[integer])
         (let
             (
@@ -529,6 +625,10 @@
     )
     (defun URC_FilterAccountViableNonces:object{DpdcManagementV2.RemovableNonces}
         (account:string id:string son:bool nonces:[integer])
+        ;;Empty input short-circuit: (enumerate 0 -1) DESCENDS ([0 -1]), so the fold below
+        ;;would (at 0) an empty list. A finished Hydra campaign re-reads to an empty object.
+        (if (= (length nonces) 0)
+        (UDC_RemovableNonces [] [])
         (let
             (
                 (ref-DPDC:module{DpdcV2} DPDC)
@@ -571,6 +671,7 @@
                 (at 1 matrix)
             )
         )
+        )
     )
     ;;
     ;;  (URCi_WipeCumulator, above, covers the multiple-debit wipe family.)
@@ -583,7 +684,10 @@
                 (ref-DPDC:module{DpdcV2} DPDC)
                 (owner:string (ref-DPDC::UR_OwnerKonto id son))
             )
-            (if son (ref-IGNIS::UDC_BigCumulator owner) (ref-IGNIS::UDC_BiggestCumulator owner))
+            (if son (ref-IGNIS::UDC_ConstructOutputCumulator
+                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_Control" "setup")
+                       (ref-IGNIS::UC_IgnisPrice "DPNF|C_Control" "setup"))
+                owner (ref-IGNIS::URC_IsVirtualGasZero) []) (ref-IGNIS::UDC_BiggestCumulator owner))
         )
     )
     (defun URCi_TogglePause:object{IgnisCollectorV2.OutputCumulator}
@@ -594,7 +698,10 @@
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
-            (ref-IGNIS::UDC_MediumCumulator (ref-DPDC::UR_OwnerKonto id son))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_TogglePause" "setup")
+                       (ref-IGNIS::UC_IgnisPrice "DPNF|C_TogglePause" "setup"))
+                (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_AddQuantity:object{IgnisCollectorV2.OutputCumulator}
@@ -627,7 +734,10 @@
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
-            (ref-IGNIS::UDC_SmallCumulator (ref-DPDC::UR_OwnerKonto id true))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                ;;NOTE: core reader name != Talos op name — billed as DPSF|C_Burn
+                (ref-IGNIS::UC_IgnisPrice "DPSF|C_Burn" "setup")
+                (ref-DPDC::UR_OwnerKonto id true) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_WipeSlim:object{IgnisCollectorV2.OutputCumulator}
@@ -638,7 +748,10 @@
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
-            (ref-IGNIS::UDC_SmallestCumulator (ref-DPDC::UR_OwnerKonto id true))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                ;;NOTE: core reader name != Talos op name — billed as DPSF|C_WipeNoncePartialy
+                (ref-IGNIS::UC_IgnisPrice "DPSF|C_WipeNoncePartialy" "setup")
+                (ref-DPDC::UR_OwnerKonto id true) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_BurnNFT:object{IgnisCollectorV2.OutputCumulator}
@@ -649,7 +762,10 @@
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
-            (ref-IGNIS::UDC_MediumCumulator (ref-DPDC::UR_OwnerKonto id false))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                ;;NOTE: core reader name != Talos op name — billed as DPNF|C_Burn
+                (ref-IGNIS::UC_IgnisPrice "DPNF|C_Burn" "setup")
+                (ref-DPDC::UR_OwnerKonto id false) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_WipeNonce:object{IgnisCollectorV2.OutputCumulator}
@@ -661,7 +777,10 @@
                 (ref-DPDC:module{DpdcV2} DPDC)
                 (owner:string (ref-DPDC::UR_OwnerKonto id son))
             )
-            (if son (ref-IGNIS::UDC_SmallCumulator owner) (ref-IGNIS::UDC_BigCumulator owner))
+            (if son (ref-IGNIS::UDC_ConstructOutputCumulator
+                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_WipeNonce" "setup")
+                       (ref-IGNIS::UC_IgnisPrice "DPNF|C_WipeNonce" "setup"))
+                owner (ref-IGNIS::URC_IsVirtualGasZero) []) (ref-IGNIS::UDC_BigCumulator owner))
         )
     )
     ;;{5.4}  Validate [UEV/CAP]
@@ -968,6 +1087,37 @@
         @doc "Wipes <id> select <nonces> of an SFT or NFT <account> (at least 1 nonce must be viable)"
         (P|UEV_IMC)
         (C_WipePure account id son (URC_FilterAccountViableNonces account id son nonces))
+    )
+    (defun Cp_WipeSlice:object{IgnisCollectorV2.OutputCumulator}
+        (account:string id:string son:bool removable-nonces-obj:object{DpdcManagementV2.RemovableNonces})
+        @doc "Hydra parallel wipe slice: wipes exactly ONE <URHC_BuildWipeSlicePlan> slice of \
+            \ <account>'s <id> nonces (SFT if <son>, else NFT). Order-independent and retryable: \
+            \ slices are disjoint by construction, the frozen target account cannot move nonces \
+            \ mid-campaign, and a replayed/duplicate slice REVERTS (a wiped nonce's account \
+            \ supply is 0, failing the 0 < amount enforce in REMOVE-CLASS-ZERO-NONCES) — no job \
+            \ state, the live table is the completion ledger. Same authority chain as \
+            \ <C_WipePure>: collection owner via wipe-mode debit, can-wipe ON, target frozen, \
+            \ escrow split-data guard intact. True Cp_ — no heavy read anywhere in its tree \
+            \ (SFT amounts are re-read LIVE inside the cap; a stale plan cannot over-wipe)."
+        (P|UEV_IMC)
+        (let
+            (
+                (viable-nonces:[integer] (at "r-nonces" removable-nonces-obj))
+                (viable-amounts:[integer] (at "r-amounts" removable-nonces-obj))
+            )
+            (if son
+                (with-capability (DPDC-MNG|C>WIPE-SFT-NONCES account id viable-nonces)
+                    ;;Burn SemiFungible and Update Nonce Supplies
+                    (XI_DecreaseClassZeroSemiFungibles account id viable-nonces viable-amounts true)
+                )
+                (with-capability (DPDC-MNG|C>WIPE-NFT-NONCES account id viable-nonces)
+                    ;;Burn NonFungible
+                    (XI_DecreaseClassZeroNonFungibles account id viable-nonces true)
+                )
+            )
+            ;;Costs 2 IGNIS per Nonce Wiped
+            (URCi_WipeCumulator id son removable-nonces-obj)
+        )
     )
 
 )

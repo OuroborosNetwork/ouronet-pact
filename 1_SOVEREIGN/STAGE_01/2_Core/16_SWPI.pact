@@ -2331,7 +2331,7 @@
                     (ref-TFT::URCi_MultiTransferCumulator pool-token-ids account swp-sc pool-token-amounts)
                     (ref-IGNIS::UDC_ConstructOutputCumulator (ref-DALOS::UR_UsagePrice "ignis|biggest") swp-sc trigger [])
                     (ref-IGNIS::UDC_ConstructOutputCumulator (ref-DALOS::UR_UsagePrice "ignis|smallest") swp-sc trigger [])
-                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-DALOS::UR_UsagePrice "ignis|swp-issue") swp-sc trigger [])
+                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisDeter "issue-swp-pair") swp-sc trigger [])
                 ]
                 []
             )
@@ -2642,10 +2642,11 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
-                    (stoa-dptf-cost:decimal (ref-DALOS::UR_UsagePrice "dptf"))
-                    (stoa-swp-cost:decimal (ref-DALOS::UR_UsagePrice "swp"))
-                    (stoa-costs:decimal (+ stoa-dptf-cost stoa-swp-cost))
-                    (gas-swp-cost:decimal (ref-DALOS::UR_UsagePrice "ignis|swp-issue"))
+                    ;;STOA leg of a swap-pair issue: the SAME DOLLAR VALUE as its IGNIS deter
+                    ;;($50 => 500 STOA at the $0.10 peg), via UC_StoaPrice. Replaces the two
+                    ;;legacy sub-cent UsagePrice legs ("dptf" + "swp").
+                    (stoa-costs:decimal (ref-IGNIS::UC_StoaPrice "issue-swp-pair"))
+                    (gas-swp-cost:decimal (ref-IGNIS::UC_IgnisDeter "issue-swp-pair"))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                     (write-result:list (XE_IssueWrite account pool-tokens fee-lp weights amp p))
                     (swpair:string (at 0 write-result))

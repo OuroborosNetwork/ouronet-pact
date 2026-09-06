@@ -1,12 +1,12 @@
 ;;
 ;; REPL/Kursan/dsa-agency-tests.repl — DSA Phase 2 verification: VAULT DEFINE + AGENCY OPEN surface.
-;; Proves: (1) A_DefineDelegationVault binds a class-0 FVT as a delegation vault (model + unit-score,
+;; Proves: (1) C_DefineDelegationVault binds a class-0 FVT as a delegation vault (model + unit-score,
 ;; active) and only the FVT owner may run it; (2) C_OpenAgency's one-time quintessence open gate + the
 ;; fee-range + vault-active guards reject as designed. The STAKED happy-path open (gate passes) lands in
 ;; Phase 3 once the Custodians fragment→stake fixture exists — here the operator's factory triplet is
 ;; unstaked (Q=0), so the gate is proven by its rejection.
-;; Source: 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/08_DSA.pact (A_DefineDelegationVault / C_OpenAgency),
-;;         3_Talos/04_TS02-C3.pact (AQP-DSA|A_DefineDelegationVault / AQP-DSA|C_OpenAgency).
+;; Source: 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/08_DSA.pact (C_DefineDelegationVault / C_OpenAgency),
+;;         3_Talos/04_TS02-C3.pact (AQP-DSA|C_DefineDelegationVault / AQP-DSA|C_OpenAgency).
 ;;
 (print "")
 (print "================================================================")
@@ -75,7 +75,7 @@
 (print "")
 ;;
 ;;|| NEXT >
-;;|| A_DefineDelegationVault binds the class-0 FVT as a vault (model + unit-score, active); only the owner may.
+;;|| C_DefineDelegationVault binds the class-0 FVT as a vault (model + unit-score, active); only the owner may.
 ;;
 (begin-tx "DSA-VAULT-01 - define vault + owner/positive/duplicate guards")
 (namespace "ouronet-ns")
@@ -102,7 +102,7 @@
             (model-id:string  (ref-U|DALOS::UDC_Makeid "DsaAgnModel"))
         )
         ;; define the vault (unit-score 20000 → open gate = 10000 quintessence)
-        (print (format "<(define)> => \"{}\"" [(ref-TS02-C3::AQP-DSA|A_DefineDelegationVault anhd fvt-id model-id 20000)]))
+        (print (format "<(define)> => \"{}\"" [(ref-TS02-C3::AQP-DSA|C_DefineDelegationVault anhd fvt-id model-id 20000)]))
         (map print
             [ (expect "<<DSA-VAULT-01>> template records the model" model-id (at "model-id" (ref-DSA::UR_DSA-TMP|Template fvt-id)))
               (expect "<<DSA-VAULT-01>> template unit-score" 20000 (ref-DSA::UR_DSA-TMP|UnitScore fvt-id))
@@ -111,13 +111,13 @@
         (map print
             [ ;; a non-owner cannot define the vault (patron != FVT owner)
               (expect-failure "<<DSA-VAULT-01>> non-owner define rejected"
-                  (ref-TS02-C3::AQP-DSA|A_DefineDelegationVault "k:not-the-owner" fvt-id model-id 20000))
+                  (ref-TS02-C3::AQP-DSA|C_DefineDelegationVault "k:not-the-owner" fvt-id model-id 20000))
               ;; unit-score must be positive
               (expect-failure "<<DSA-VAULT-01>> zero unit-score rejected"
-                  (ref-TS02-C3::AQP-DSA|A_DefineDelegationVault anhd fvt-id model-id 0))
+                  (ref-TS02-C3::AQP-DSA|C_DefineDelegationVault anhd fvt-id model-id 0))
               ;; re-defining an already-bound vault is rejected
               (expect-failure "<<DSA-VAULT-01>> duplicate vault-define rejected"
-                  (ref-TS02-C3::AQP-DSA|A_DefineDelegationVault anhd fvt-id model-id 20000)) ])
+                  (ref-TS02-C3::AQP-DSA|C_DefineDelegationVault anhd fvt-id model-id 20000)) ])
         ""
     )
 )

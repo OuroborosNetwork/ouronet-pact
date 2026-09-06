@@ -382,12 +382,13 @@
     ;;
     (defun URCi_IssueShareholderCollection:object{IgnisCollectorV2.OutputCumulator} ()
         @doc "Cost preview for C_IssueShareholderCollection's IGNIS cumulator (the collection- \
-            \ issue STOA price previews separately via DPDC-I::URCi_IssueCollectionStoa). Two legs, \
+            \ issue STOA price previews separately via DPDC-I::URCi_IssueCollectionStoa). Three legs, \
             \ ARG-INDEPENDENT: \
             \ ico1 = the digital-collection issue (URCi_IssueDigitalCollection son=true on the DPDC \
             \ SC, which owns every Equity collection — owner-account is C_IssueDigitalCollection's \
             \ 3rd arg = dpdc); \
-            \ ico2 = the 8-nonce populate at the DISCOUNTED first-Elite-SFT price. \
+            \ ico2 = the $100 equity premium (central IG|DETER key issue-shareholder, owner 2026-09-05); \
+            \ ico3 = the 8-nonce populate at the DISCOUNTED first-Elite-SFT price. \
             \ The discount is CODE-PROVEN to fire at exec time: XI_IssueDigitalCollection inits the \
             \ collection with nonces-used=0 and creates NO nonce, so the immediately-following \
             \ C_CreateNewNonces runs while nonces-used is still 0; the id is Elite (UC_EquityID forces \
@@ -413,6 +414,7 @@
             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                 [
                     (ref-DPDC-I::URCi_IssueDigitalCollection true dpdc)
+                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisDeter "issue-shareholder") dpdc (ref-IGNIS::URC_IsVirtualGasZero) [])
                     (ref-IGNIS::UDC_ConstructOutputCumulator populate-price dpdc (ref-IGNIS::URC_IsVirtualGasZero) [])
                 ]
                 []
@@ -718,7 +720,9 @@
             (ref-IGNIS::UDC_ConcatenateOutputCumulators 
                 [
                     ico
-                    ;;2]Populate Equity SFT Collection
+                    ;;2]Equity premium: $100 flat in IGNIS (owner 2026-09-05), central IG|DETER
+                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisDeter "issue-shareholder") dpdc (ref-IGNIS::URC_IsVirtualGasZero) [])
+                    ;;3]Populate Equity SFT Collection
                     (ref-DPDC-C::C_CreateNewNonces
                         equity-id true [1000000 0 0 0 0 0 0 0]
                         [

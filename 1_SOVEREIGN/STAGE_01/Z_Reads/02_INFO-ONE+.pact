@@ -117,6 +117,8 @@
     (defun INFO_DPOF|WipePure:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces}))
     (defun INFO_DPOF|WipeHeavy:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string))
     (defun INFO_DPOF|WipeClean:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonces:[integer]))
+    (defun INFO_DPOF|WipeSlice:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces}))
+    (defun INFO_DPOF|WipeFull:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string plan:object{DpofUdcV2.DPOF|WipeSlicePlan}))
     ;;
     (defun INFO_VST|CreateFrozenLink:object{OuronetInfoV2.ClientInfo} (patron:string dptf:string))
     (defun INFO_VST|CreateReservationLink:object{OuronetInfoV2.ClientInfo} (patron:string dptf:string))
@@ -850,7 +852,7 @@
                 (prices:[decimal]
                     (if toggle
                         [0.0 0.0]
-                        (ref-U|DPTF::UC_UnlockPrice fee-unlocks)
+                        (ref-IGNIS::UC_FeeUnlockPrice)
                     )
                 )
             )
@@ -1974,6 +1976,56 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_WipeCumulator id (ref-DPOF::UDC_RemovableNonces nonces (ref-DPOF::UR_NoncesSupplies id nonces)))))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [nonces]
+            )
+        )
+    )
+    (defun INFO_DPOF|WipeSlice:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces})
+        @doc "Hydra wipe SLICE preview: exact IGNIS cost of one <Cp_WipeSlice> tx, computed \
+            \ from the slice's own payload via the same URCi the executor bills from."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                (n:integer (length (at "r-nonces" removable-nonces-obj)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Hydra wipe slice of {} DPOF {} Nonce(s) from Account {}" [n id sa])]
+                [(format "Succesfully sliced-wiped {} DPOF {} Nonce(s) from Account {}" [n id sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_WipeCumulator id removable-nonces-obj)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [n]
+            )
+        )
+    )
+    (defun INFO_DPOF|WipeFull:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string plan:object{DpofUdcV2.DPOF|WipeSlicePlan})
+        @doc "Hydra wipe FULL preview: grand-total IGNIS across the whole <URHC_BuildWipeSlicePlan> \
+            \ plan = the sum of every slice's own <INFO_DPOF|WipeSlice> cost (per-slice ifp sums \
+            \ mirror the executor byte-for-byte)."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                (slices:[object{DpofUdcV2.RemovableNonces}] (at "slices" plan))
+                (total-ifp:decimal
+                    (fold (+) 0.0
+                        (map
+                            (lambda
+                                (slice:object{DpofUdcV2.RemovableNonces})
+                                (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_WipeCumulator id slice))
+                            )
+                            slices
+                        )
+                    )
+                )
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Hydra wipe campaign of DPOF {} on Account {} over {} slice tx(s)" [id sa (at "slice-count" plan)])]
+                [(format "Succesfully hydra-wiped DPOF {} on Account {} in {} slice tx(s)" [id sa (at "slice-count" plan)])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron total-ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [(at "slice-count" plan)]
             )
         )
     )

@@ -467,12 +467,15 @@
 (print "--- [TX-03 [4.3] - Issue Shareholders Collection · 01 · let / invocation] ---")
 (let
     (
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (issuing-account:string KST.ANHD)
         (split-stoa:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices
                 issuing-account
-                (ref-DALOS::UR_UsagePrice "dpsf")
+                ;;IssueCompany charges the underlying SFT collection issue PLUS the $100
+                ;;equity premium, so the cap must authorise both legs.
+                (+ (ref-DALOS::UR_UsagePrice "dpsf") (ref-IGNIS::UC_StoaPrice "issue-shareholder"))
             )
         )
     )

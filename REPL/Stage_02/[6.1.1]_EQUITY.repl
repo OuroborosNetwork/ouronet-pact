@@ -38,9 +38,13 @@
 (print "--- [TX-EQUITY-001 · 01 · env-sigs (caps)] ---")
 (let
     (
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (owner:string KST.ANHD)
-        (dpsf-price:decimal (ref-DALOS::UR_UsagePrice "dpsf"))
+        (dpsf-price:decimal
+            ;;IssueCompany = the underlying SFT collection issue PLUS the $100 equity premium,
+            ;;so the cap must authorise both legs (see IGNIS-PRICING-SPEC.md).
+            (+ (ref-DALOS::UR_UsagePrice "dpsf") (ref-IGNIS::UC_StoaPrice "issue-shareholder")))
         (split-stoa:[decimal] (ref-DALOS::URC_SplitSTOAPrices owner dpsf-price))
     )
     (env-sigs

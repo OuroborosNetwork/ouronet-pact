@@ -235,6 +235,261 @@
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-IGC-001 Central pricing constants")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-IGC-001 · 01 · IG|WEIGHTS + IG|DETER reader asserts ==== ================================
+(print "--- [TX-IGC-001 · 01 · IG|WEIGHTS + IG|DETER reader asserts] ---")
+(let
+    (
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+    )
+    (map (print)
+        [
+            (expect "<<TX-IGC-001>> weight: tx base unit = 1"
+                1.0 (ref-IGNIS::UC_IgnisWeight "tx"))
+            (expect "<<TX-IGC-001>> weight: xcall = 2 (Talos hop excluded by construction)"
+                2.0 (ref-IGNIS::UC_IgnisWeight "xcall"))
+            (expect "<<TX-IGC-001>> weight: XL write bucket = 5"
+                5.0 (ref-IGNIS::UC_IgnisWeight "w-xl"))
+            (expect "<<TX-IGC-001>> weight: wipe surcharge = 5 ignis/nonce"
+                5.0 (ref-IGNIS::UC_IgnisWeight "wipe-nonce"))
+            (expect "<<TX-IGC-001>> deter: true-fungible issuance = $10 = 1000 ignis"
+                1000.0 (ref-IGNIS::UC_IgnisDeter "issue-tf"))
+            (expect "<<TX-IGC-001>> deter: NFT issuance = $25 = 2500 ignis"
+                2500.0 (ref-IGNIS::UC_IgnisDeter "issue-nft"))
+            (expect "<<TX-IGC-001>> deter: shareholder collection = $100 = 10000 ignis"
+                10000.0 (ref-IGNIS::UC_IgnisDeter "issue-shareholder"))
+            (expect "<<TX-IGC-001>> deter: usage tier = 1 (no deterrent)"
+                1.0 (ref-IGNIS::UC_IgnisDeter "usage"))
+            (expect-failure "<<TX-IGC-001>> unknown key FAILS FAST (no silent default)"
+                (ref-IGNIS::UC_IgnisDeter "no-such-tier"))
+        ]
+    )
+)
+(print "")
+(print "<<TX-IGC-001>> central IG|WEIGHTS / IG|DETER maps + fail-fast reader OK")
+(print "")
+;;==== TX-IGC-001 · 02 · price helpers: deter + components, and the STOA dollar peg ==== =========
+(print "--- [TX-IGC-001 · 02 · price helpers] ---")
+(let
+    (
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+    )
+    (map (print)
+        [
+            (expect "<<TX-IGC-002>> components: a known op resolves its computed work cost"
+                26.0 (ref-IGNIS::UC_IgnisComponents "ATS|C_AddHotRBT"))
+            (expect "<<TX-IGC-002>> PRICE = deter + components (ATS C_Issue: 4000 + its work)"
+                (+ 4000.0 (ref-IGNIS::UC_IgnisComponents "ATS|C_Issue"))
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_Issue" "issue-ats-pair"))
+            (expect "<<TX-IGC-002>> scaled: +5 ignis per nonce (3 nonces = base + 15)"
+                (+ (ref-IGNIS::UC_IgnisPrice "ATS|C_AddHotRBT" "setup") 15.0)
+                (ref-IGNIS::UC_IgnisPriceScaled "ATS|C_AddHotRBT" "setup" "wipe-nonce" 3))
+            (expect "<<TX-IGC-002>> STOA: $40 of deter = 400 STOA at the $0.10 peg"
+                400.0 (ref-IGNIS::UC_StoaPrice "issue-ats-pair"))
+            (expect "<<TX-IGC-002>> STOA: $100 (shareholder) = 1000 STOA"
+                1000.0 (ref-IGNIS::UC_StoaPrice "issue-shareholder"))
+            (expect-failure "<<TX-IGC-002>> unknown op key FAILS FAST (no silent 0 price)"
+                (ref-IGNIS::UC_IgnisComponents "NOPE|C_Nothing"))
+        ]
+    )
+)
+(print "")
+(print "<<TX-IGC-002>> price helpers (deter+components, per-item scaling, STOA dollar peg) OK")
+(print "")
+;;==== TX-IGC-001 · 03 · account-creation STOA switch (P2) ==== ===================================
+(print "--- [TX-IGC-001 · 03 · account-creation STOA switch] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+(let
+    (
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+        ;;snapshot the GLOBAL stoa switch: flipping ours must not disturb it, whatever it is
+        (global-before:bool (ref-DALOS::UR_NativeToggle))
+    )
+    (map (print)
+        [
+            (expect "<<TX-IGC-003>> default OFF — onboarding is free"
+                false (ref-DALOS::UR_AccountCreationStoa))
+            (expect "<<TX-IGC-003>> switch OFF => smart-account deploy collects NO stoa"
+                0.0 (ref-IGNIS::DALOS|URCi_DeploySmartAccount))
+            (expect "<<TX-IGC-003>> switch OFF => standard-account deploy collects NO stoa"
+                0.0 (ref-IGNIS::DALOS|URCi_DeployStandardAccount))
+        ]
+    )
+    ;;flip it ON through the Talos admin wrapper
+    (ref-TS01-A::DALOS|A_AccountCreationStoaToggle true)
+    (map (print)
+        [
+            (expect "<<TX-IGC-003>> switch ON" true (ref-DALOS::UR_AccountCreationStoa))
+            (expect "<<TX-IGC-003>> smart deploy = $10 => 100 STOA at the $0.10 peg"
+                100.0 (ref-IGNIS::DALOS|URCi_DeploySmartAccount))
+            (expect "<<TX-IGC-003>> standard deploy = $5 => 50 STOA at the $0.10 peg"
+                50.0 (ref-IGNIS::DALOS|URCi_DeployStandardAccount))
+            (expect "<<TX-IGC-003>> INDEPENDENT: flipping ours left the GLOBAL switch untouched"
+                global-before (ref-DALOS::UR_NativeToggle))
+        ]
+    )
+    ;;restore the default so later suites see the world unchanged
+    (ref-TS01-A::DALOS|A_AccountCreationStoaToggle false)
+    (map (print)
+        [
+            (expect "<<TX-IGC-003>> restored to OFF" false (ref-DALOS::UR_AccountCreationStoa))
+            ""
+        ]
+    )
+)
+(print "")
+(print "<<TX-IGC-003>> account-creation STOA switch (independent, dollar-pegged) OK")
+(print "")
+;;==== TX-IGC-001 · 04 · P3: issuance STOA legs are dollar-pegged ==== ============================
+(print "--- [TX-IGC-001 · 04 · issuance STOA legs] ---")
+(let
+    (
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-ATS:module{AutostakeV3} ATS)
+    )
+    (map (print)
+        [
+            (expect "<<TX-IGC-004>> DPTF issue: $10 => 100 STOA per token"
+                100.0 (ref-DPTF::URCi_IssueStoa 1))
+            (expect "<<TX-IGC-004>> DPOF issue: $10 => 100 STOA per token"
+                100.0 (ref-DPOF::URCi_IssueStoa 1))
+            (expect "<<TX-IGC-004>> ATS pair issue: $40 => 400 STOA"
+                400.0 (ref-ATS::URCi_IssueStoa 1))
+            (expect "<<TX-IGC-004>> STOA scales with token count (3 true fungibles = 300)"
+                300.0 (ref-DPTF::URCi_IssueStoa 3))
+            (expect "<<TX-IGC-004>> SFT collection: $20 => 200 STOA"
+                200.0 (ref-IGNIS::UC_StoaPrice "issue-sft"))
+            (expect "<<TX-IGC-004>> NFT collection: $25 => 250 STOA"
+                250.0 (ref-IGNIS::UC_StoaPrice "issue-nft"))
+            (expect "<<TX-IGC-004>> swap pair: $50 => 500 STOA"
+                500.0 (ref-IGNIS::UC_StoaPrice "issue-swp-pair"))
+            (expect "<<TX-IGC-004>> VST link deter is its OWN $2.50, not the token's price"
+                250.0 (ref-IGNIS::UC_IgnisDeter "vst-link"))
+            ;;the legacy per-asset keys are DERIVED, so caps everywhere track the real charge
+            (expect "<<TX-IGC-004>> legacy key dptf is derived from the peg (= 100)"
+                100.0 (ref-DALOS::UR_UsagePrice "dptf"))
+            (expect "<<TX-IGC-004>> legacy key ats is derived from the peg (= 400)"
+                400.0 (ref-DALOS::UR_UsagePrice "ats"))
+            ""
+        ]
+    )
+)
+(print "")
+(print "<<TX-IGC-004>> issuance STOA legs dollar-pegged + legacy keys derived OK")
+(print "")
+;;==== TX-IGC-001 · 05 · P7 ACCEPTANCE: observed price == planned price ==== ======================
+(print "--- [TX-IGC-001 · 05 · observed vs planned price] ---")
+;;The gate the rehaul is built for: call the REAL cost reader a client op bills through, pull the
+;;IGNIS out of the OutputCumulator it returns, and assert it equals deter + components exactly.
+;;If these drift, either a price moved without the table moving, or vice versa.
+(let*
+    (
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-ATS:module{AutostakeV3} ATS)
+        (ouro:string (ref-DALOS::UR_OuroborosID))
+    )
+    (map (print)
+        [
+            (expect "<<TX-IGC-005>> DPTF|C_Control charges deter(setup)+components, not a flat tier"
+                (ref-IGNIS::UC_IgnisPrice "DPTF|C_Control" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPTF::URCi_Control ouro)))))
+            (expect "<<TX-IGC-005>> DPTF|C_SetFee charges the FEE tier + its components"
+                (ref-IGNIS::UC_IgnisPrice "DPTF|C_SetFee" "fee")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPTF::URCi_SetFee ouro)))))
+            (expect "<<TX-IGC-005>> DPTF|C_ToggleTransferRole is USAGE-tiered (deter 1)"
+                (ref-IGNIS::UC_IgnisPrice "DPTF|C_ToggleTransferRole" "usage")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPTF::URCi_ToggleTransferRole ouro)))))
+            ;;a migrated op must NOT still be charging a legacy flat tier
+            (expect "<<TX-IGC-005>> DPTF|C_Control is no longer the flat ignis|small (2)"
+                true (> (at "ignis" (at 0 (at "cumulator-chain" (ref-DPTF::URCi_Control ouro))))
+                        (ref-DALOS::UR_UsagePrice "ignis|small")))
+            ""
+        ]
+    )
+)
+(print "")
+(print "<<TX-IGC-005>> P7 acceptance: observed IGNIS == planned (deter + components) OK")
+(print "")
+;;==== TX-IGC-001 · 06 · P7 sweep: EVERY migrated DPTF reader ==== ================================
+(print "--- [TX-IGC-001 · 06 · P7 sweep, all migrated DPTF readers] ---")
+;;Full-module sweep, not a sample: if any migrated reader drifts from deter+components — or is
+;;reverted to a legacy flat tier — exactly one of these fails and names the op.
+(let
+    (
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ouro:string (ref-DALOS::UR_OuroborosID))
+    )
+    (map (print)
+        [
+            (expect "<<TX-IGC-006>> DPTF|C_RotateOwnership == deter(auth) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPTF|C_RotateOwnership" "auth")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPTF::URCi_RotateOwnership ouro)))))
+            (expect "<<TX-IGC-006>> DPTF|C_Control == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPTF|C_Control" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPTF::URCi_Control ouro)))))
+            (expect "<<TX-IGC-006>> DPTF|C_TogglePause == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPTF|C_TogglePause" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPTF::URCi_TogglePause ouro)))))
+            (expect "<<TX-IGC-006>> DPTF|C_ToggleReservation == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPTF|C_ToggleReservation" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPTF::URCi_ToggleReservation ouro)))))
+            (expect "<<TX-IGC-006>> DPTF|C_ToggleFee == deter(fee) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPTF|C_ToggleFee" "fee")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPTF::URCi_ToggleFee ouro)))))
+            (expect "<<TX-IGC-006>> DPTF|C_SetMinMove == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPTF|C_SetMinMove" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPTF::URCi_SetMinMove ouro)))))
+            (expect "<<TX-IGC-006>> DPTF|C_SetFee == deter(fee) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPTF|C_SetFee" "fee")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPTF::URCi_SetFee ouro)))))
+            (expect "<<TX-IGC-006>> DPTF|C_SetFeeTarget == deter(fee) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPTF|C_SetFeeTarget" "fee")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPTF::URCi_SetFeeTarget ouro)))))
+            (expect "<<TX-IGC-006>> DPTF|C_ToggleFreezeAccount == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPTF|C_ToggleFreezeAccount" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPTF::URCi_ToggleFreezeAccount ouro)))))
+            (expect "<<TX-IGC-006>> DPTF|C_ToggleBurnRole == deter(auth) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPTF|C_ToggleBurnRole" "auth")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPTF::URCi_ToggleBurnRole ouro)))))
+            (expect "<<TX-IGC-006>> DPTF|C_ToggleMintRole == deter(auth) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPTF|C_ToggleMintRole" "auth")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPTF::URCi_ToggleMintRole ouro)))))
+            (expect "<<TX-IGC-006>> DPTF|C_ToggleFeeExemptionRole == deter(fee) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPTF|C_ToggleFeeExemptionRole" "fee")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPTF::URCi_ToggleFeeExemptionRole ouro)))))
+            (expect "<<TX-IGC-006>> DPTF|C_ToggleTransferRole == deter(usage) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPTF|C_ToggleTransferRole" "usage")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPTF::URCi_ToggleTransferRole ouro)))))
+            (expect "<<TX-IGC-006>> DPTF|C_WipeSlim == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPTF|C_WipeSlim" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPTF::URCi_WipeSlim ouro)))))
+            (expect "<<TX-IGC-006>> DPTF|C_Wipe == deter(setup) + components"
+                (ref-IGNIS::UC_IgnisPrice "DPTF|C_Wipe" "setup")
+                (at "ignis" (at 0 (at "cumulator-chain" (ref-DPTF::URCi_Wipe ouro)))))
+            ""
+        ]
+    )
+)
+(print "")
+(print "<<TX-IGC-006>> P7 sweep: all 15 migrated DPTF readers price correctly")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
 ;;
 ;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;

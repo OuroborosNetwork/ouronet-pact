@@ -303,7 +303,7 @@
     (defun AQP-FVT|CC_Collect:string
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
     )
-    (defun AQP-DSA|A_DefineDelegationVault:string
+    (defun AQP-DSA|C_DefineDelegationVault:string
         (patron:string fvt-id:string model-id:string unit-score:integer)
     )
     (defun AQP-DSA|C_OpenAgency:string
@@ -313,22 +313,22 @@
     (defun AQP-DSA|C_RecomputeCapture:string
         (patron:string fvt-id:string score-entity-id:string)
     )
-    (defun AQP-DSA|A_SetOracleAuth:string
+    (defun AQP-DSA|C_SetOracleAuth:string
         (patron:string fvt-id:string oracle-guard:guard)
     )
-    (defun AQP-DSA|A_OracleWrite:string
+    (defun AQP-DSA|C_OracleWrite:string
         (patron:string fvt-id:string score-entity-id:string nodes:integer uptime:integer)
     )
-    (defun AQP-DSA|A_WithdrawRoyalty:string
+    (defun AQP-DSA|C_WithdrawRoyalty:string
         (patron:string fvt-id:string reward-dptf-id:string)
     )
-    (defun AQP-DSA|A_BurnRoyalty:string
+    (defun AQP-DSA|C_BurnRoyalty:string
         (patron:string fvt-id:string reward-dptf-id:string)
     )
-    (defun AQP-DSA|A_FuelRoyalty:string
+    (defun AQP-DSA|C_FuelRoyalty:string
         (patron:string fvt-id:string reward-dptf-id:string swpair:string)
     )
-    (defun AQP-DSA|A_SetAgencyFee:string
+    (defun AQP-DSA|C_SetAgencyFee:string
         (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer)
     )
     (defun AQP-DSA|A_ToggleExternalOracle:string (on:bool))
@@ -768,7 +768,7 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun AQP-DSA|A_DefineDelegationVault:string
+    (defun AQP-DSA|C_DefineDelegationVault:string
         (patron:string fvt-id:string model-id:string unit-score:integer)
         @doc "DSA (Talos): bind a class-0 FVT as a delegation vault (score-entity model + unit-score); collects \
             \ IGNIS on patron. Only the FVT owner may run it."
@@ -778,7 +778,7 @@
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (ref-DSA:module{DsaV2} AQP-DSA)
                     (ico:object{IgnisCollectorV2.OutputCumulator}
-                        (ref-DSA::A_DefineDelegationVault patron fvt-id model-id unit-score)
+                        (ref-DSA::C_DefineDelegationVault patron fvt-id model-id unit-score)
                     )
                 )
                 (ref-IGNIS::C_Collect patron ico)
@@ -786,7 +786,7 @@
             )
         )
     )
-    (defun AQP-DSA|A_SetOracleAuth:string
+    (defun AQP-DSA|C_SetOracleAuth:string
         (patron:string fvt-id:string oracle-guard:guard)
         @doc "DSA (Talos): owner authorizes the delegated oracle key for a vault + arms the 25h capture expiry; \
             \ collects IGNIS on patron."
@@ -796,7 +796,7 @@
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (ref-DSA:module{DsaV2} AQP-DSA)
                     (ico:object{IgnisCollectorV2.OutputCumulator}
-                        (ref-DSA::A_SetOracleAuth patron fvt-id oracle-guard)
+                        (ref-DSA::C_SetOracleAuth patron fvt-id oracle-guard)
                     )
                 )
                 (ref-IGNIS::C_Collect patron ico)
@@ -804,7 +804,7 @@
             )
         )
     )
-    (defun AQP-DSA|A_OracleWrite:string
+    (defun AQP-DSA|C_OracleWrite:string
         (patron:string fvt-id:string score-entity-id:string nodes:integer uptime:integer)
         @doc "DSA (Talos): the delegated oracle writes an agency's daily {nodes, uptime} + recomputes its capture \
             \ (fresh oracle-ts); collects IGNIS on patron."
@@ -814,7 +814,7 @@
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (ref-DSA:module{DsaV2} AQP-DSA)
                     (ico:object{IgnisCollectorV2.OutputCumulator}
-                        (ref-DSA::A_OracleWrite patron fvt-id score-entity-id nodes uptime)
+                        (ref-DSA::C_OracleWrite patron fvt-id score-entity-id nodes uptime)
                     )
                 )
                 (ref-IGNIS::C_Collect patron ico)
@@ -822,7 +822,7 @@
             )
         )
     )
-    (defun AQP-DSA|A_WithdrawRoyalty:string
+    (defun AQP-DSA|C_WithdrawRoyalty:string
         (patron:string fvt-id:string reward-dptf-id:string)
         @doc "DSA (Talos): the FVT owner withdraws the whole royalty pool of <reward-dptf-id> on vault <fvt-id> to \
             \ the owner konto; collects IGNIS on patron."
@@ -832,7 +832,7 @@
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (ref-DSA:module{DsaV2} AQP-DSA)
                     (ico:object{IgnisCollectorV2.OutputCumulator}
-                        (ref-DSA::A_WithdrawRoyalty patron fvt-id reward-dptf-id)
+                        (ref-DSA::C_WithdrawRoyalty patron fvt-id reward-dptf-id)
                     )
                 )
                 (ref-IGNIS::C_Collect patron ico)
@@ -840,7 +840,7 @@
             )
         )
     )
-    (defun AQP-DSA|A_BurnRoyalty:string
+    (defun AQP-DSA|C_BurnRoyalty:string
         (patron:string fvt-id:string reward-dptf-id:string)
         @doc "DSA (Talos): the FVT owner BURNS the whole royalty pool of <reward-dptf-id> on vault <fvt-id>; \
             \ collects IGNIS on patron."
@@ -850,7 +850,7 @@
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (ref-DSA:module{DsaV2} AQP-DSA)
                     (ico:object{IgnisCollectorV2.OutputCumulator}
-                        (ref-DSA::A_BurnRoyalty patron fvt-id reward-dptf-id)
+                        (ref-DSA::C_BurnRoyalty patron fvt-id reward-dptf-id)
                     )
                 )
                 (ref-IGNIS::C_Collect patron ico)
@@ -858,7 +858,7 @@
             )
         )
     )
-    (defun AQP-DSA|A_FuelRoyalty:string
+    (defun AQP-DSA|C_FuelRoyalty:string
         (patron:string fvt-id:string reward-dptf-id:string swpair:string)
         @doc "DSA (Talos): the FVT owner FUELS <swpair> with the whole royalty pool of <reward-dptf-id> on vault \
             \ <fvt-id> (adds liquidity, no LP mint); collects IGNIS on patron."
@@ -868,7 +868,7 @@
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (ref-DSA:module{DsaV2} AQP-DSA)
                     (ico:object{IgnisCollectorV2.OutputCumulator}
-                        (ref-DSA::A_FuelRoyalty patron fvt-id reward-dptf-id swpair)
+                        (ref-DSA::C_FuelRoyalty patron fvt-id reward-dptf-id swpair)
                     )
                 )
                 (ref-IGNIS::C_Collect patron ico)
@@ -876,7 +876,7 @@
             )
         )
     )
-    (defun AQP-DSA|A_SetAgencyFee:string
+    (defun AQP-DSA|C_SetAgencyFee:string
         (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer)
         @doc "DSA (Talos): the FVT owner changes a delegation agency's operator fee (reprices only future injects); \
             \ collects IGNIS on patron."
@@ -886,7 +886,7 @@
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (ref-DSA:module{DsaV2} AQP-DSA)
                     (ico:object{IgnisCollectorV2.OutputCumulator}
-                        (ref-DSA::A_SetAgencyFee patron fvt-id score-entity-id fee-per-mille)
+                        (ref-DSA::C_SetAgencyFee patron fvt-id score-entity-id fee-per-mille)
                     )
                 )
                 (ref-IGNIS::C_Collect patron ico)

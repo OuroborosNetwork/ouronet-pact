@@ -779,7 +779,10 @@
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
-            (ref-IGNIS::UDC_BiggestCumulator (ref-DPDC::UR_CreatorKonto id son))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_EnableSetClassFragmentation" "setup")
+                       (ref-IGNIS::UC_IgnisPrice "DPNF|C_EnableSetClassFragmentation" "setup"))
+                (ref-DPDC::UR_CreatorKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_ToggleSet:object{IgnisCollectorV2.OutputCumulator}
@@ -790,7 +793,10 @@
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
-            (ref-IGNIS::UDC_BiggestCumulator (ref-DPDC::UR_CreatorKonto id son))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_ToggleSet" "setup")
+                       (ref-IGNIS::UC_IgnisPrice "DPNF|C_ToggleSet" "setup"))
+                (ref-DPDC::UR_CreatorKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_RenameSet:object{IgnisCollectorV2.OutputCumulator}
@@ -801,7 +807,10 @@
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
-            (ref-IGNIS::UDC_SmallCumulator (ref-DPDC::UR_CreatorKonto id son))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_RenameSet" "setup")
+                       (ref-IGNIS::UC_IgnisPrice "DPNF|C_RenameSet" "setup"))
+                (ref-DPDC::UR_CreatorKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     ;;{5.4}  Validate [UEV/CAP]

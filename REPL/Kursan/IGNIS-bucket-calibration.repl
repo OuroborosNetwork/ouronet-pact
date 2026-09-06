@@ -1,0 +1,122 @@
+;;
+;; REPL/Kursan/IGNIS-bucket-calibration.repl — canonical integration layout
+;;   Inter-tx:   ;;|| NEXT >
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [...] ---")
+;;
+;; IGNIS COST REHAUL — substage 6 calibration probe.
+;; Measures REAL Pact gas for insert / read / update against four synthetic tables whose
+;; schemas mirror the repo's actual S/M/L/XL size classes, then prints the MEASURED ratios
+;; next to the Option-A model multipliers now living in IGNIS IG|WEIGHTS:
+;;     write  S:1  M:2  L:3  XL:5      read  S:1  M:1  L:2  XL:3
+;; Purpose: confirm (or retune) those defconsts against ground truth. Read-only w.r.t. the
+;; sovereign chain — this probe deploys its OWN module and tables, nothing else is touched.
+;;
+;; Schema points (bool/int/dec/time=1, string/guard=2, object/list=4), mirroring real tables:
+;;   S  =  3 pts  (cf. P|T 2, P|MT 4)
+;;   M  =  8 pts  (cf. BRD|BrandingTable 8, SWPT|PathCache 9)
+;;   L  = 20 pts  (cf. DPTF|RoleTable 20, DPOF|T|VerumRoles 18)
+;;   XL = 36 pts  (cf. ATS|Ledger 36, ATS|Pairs 48)
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Kursan/IGNIS-bucket-calibration.repl")
+(print "================================================================")
+(print "Legend: <(model)> = IG|WEIGHTS multiplier · <(meas)> = measured gas ratio vs S")
+(print "")
+
+(begin-tx "TX-CAL-001 Probe module + tables")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-CAL-001 · 01 · env-sigs ==== ============================================================
+(print "--- [TX-CAL-001 · 01 · env-sigs] ---")
+(env-sigs [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-CAL-001 · 02 · probe module ==== ========================================================
+(print "--- [TX-CAL-001 · 02 · probe module] ---")
+(module IGCAL GOVERNANCE
+    @doc "REPL-only IGNIS bucket-calibration probe: four tables shaped like the repo's real \
+        \ S/M/L/XL size classes, so measured insert/read gas can be compared to the Option-A \
+        \ multipliers in IGNIS IG|WEIGHTS."
+    (defcap GOVERNANCE () true)
+    ;;S = 3 pts
+    (defschema s-row  a:string b:bool)
+    ;;M = 8 pts
+    (defschema m-row  a:string b:string c:string d:string)
+    ;;L = 20 pts
+    (defschema l-row  a:string b:string c:string d:string e:string f:string g:string h:string
+                      i:string j:string)
+    ;;XL = 36 pts
+    (defschema xl-row a:string b:string c:string d:string e:string f:string g:string h:string
+                      i:string j:string k:string l:string m:string n:string o:string p:string
+                      q:string r:string)
+    (deftable S-T:{s-row})
+    (deftable M-T:{m-row})
+    (deftable L-T:{l-row})
+    (deftable XL-T:{xl-row})
+    (defconst V "Ouronet-calibration-value-0123456789")
+    (defun W_S  (k:string) (insert S-T  k {"a":V,"b":true}))
+    (defun W_M  (k:string) (insert M-T  k {"a":V,"b":V,"c":V,"d":V}))
+    (defun W_L  (k:string) (insert L-T  k {"a":V,"b":V,"c":V,"d":V,"e":V,"f":V,"g":V,"h":V,"i":V,"j":V}))
+    (defun W_XL (k:string) (insert XL-T k {"a":V,"b":V,"c":V,"d":V,"e":V,"f":V,"g":V,"h":V,"i":V,"j":V
+                                          ,"k":V,"l":V,"m":V,"n":V,"o":V,"p":V,"q":V,"r":V}))
+    (defun R_S  (k:string) (read S-T  k))
+    (defun R_M  (k:string) (read M-T  k))
+    (defun R_L  (k:string) (read L-T  k))
+    (defun R_XL (k:string) (read XL-T k))
+    (defun U1_L (k:string) (update L-T k {"a":V}))
+    (defun U5_L (k:string) (update L-T k {"a":V,"b":V,"c":V,"d":V,"e":V}))
+)
+(create-table S-T)(create-table M-T)(create-table L-T)(create-table XL-T)
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-CAL-002 Measure insert / read / update gas")
+(env-gasmodel "table")(env-gaslimit 100000000)
+(namespace "ouronet-ns")
+;;==== TX-CAL-002 · 01 · measure + compare to IG|WEIGHTS ==== =====================================
+(print "--- [TX-CAL-002 · 01 · measure + compare to IG|WEIGHTS] ---")
+(let*
+    (
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        ;;WRITES
+        (z0:string (env-gas 0))       (x1:string (IGCAL.W_S  "k1"))  (ws:integer (env-gas))
+        (z1:string (env-gas 0))       (x2:string (IGCAL.W_M  "k1"))  (wm:integer (env-gas))
+        (z2:string (env-gas 0))       (x3:string (IGCAL.W_L  "k1"))  (wl:integer (env-gas))
+        (z3:string (env-gas 0))       (x4:string (IGCAL.W_XL "k1"))  (wxl:integer (env-gas))
+        ;;READS
+        (z4:string (env-gas 0))       (y1:object (IGCAL.R_S  "k1"))  (rs:integer (env-gas))
+        (z5:string (env-gas 0))       (y2:object (IGCAL.R_M  "k1"))  (rm:integer (env-gas))
+        (z6:string (env-gas 0))       (y3:object (IGCAL.R_L  "k1"))  (rl:integer (env-gas))
+        (z7:string (env-gas 0))       (y4:object (IGCAL.R_XL "k1"))  (rxl:integer (env-gas))
+        ;;UPDATES (1-field vs 5-field on the same L table)
+        (z8:string (env-gas 0))       (u1:string (IGCAL.U1_L "k1"))  (u1g:integer (env-gas))
+        (z9:string (env-gas 0))       (u5:string (IGCAL.U5_L "k1"))  (u5g:integer (env-gas))
+    )
+    (print (format "WRITE  gas: S={} M={} L={} XL={}" [ws wm wl wxl]))
+    (print (format "WRITE  <(meas)>  ratios vs S: M={} L={} XL={}"
+        [(round (/ (dec wm) (dec ws)) 2) (round (/ (dec wl) (dec ws)) 2) (round (/ (dec wxl) (dec ws)) 2)]))
+    (print (format "WRITE  <(model)> IG|WEIGHTS:  M={} L={} XL={}"
+        [(ref-IGNIS::UC_IgnisWeight "w-m") (ref-IGNIS::UC_IgnisWeight "w-l") (ref-IGNIS::UC_IgnisWeight "w-xl")]))
+    (print "")
+    (print (format "READ   gas: S={} M={} L={} XL={}" [rs rm rl rxl]))
+    (print (format "READ   <(meas)>  ratios vs S: M={} L={} XL={}"
+        [(round (/ (dec rm) (dec rs)) 2) (round (/ (dec rl) (dec rs)) 2) (round (/ (dec rxl) (dec rs)) 2)]))
+    (print (format "READ   <(model)> IG|WEIGHTS:  M={} L={} XL={}"
+        [(ref-IGNIS::UC_IgnisWeight "r-m") (ref-IGNIS::UC_IgnisWeight "r-l") (ref-IGNIS::UC_IgnisWeight "r-xl")]))
+    (print "")
+    (print (format "UPDATE gas on L: 1-field={} 5-field={} ratio={}"
+        [u1g u5g (round (/ (dec u5g) (dec u1g)) 2)]))
+    (print "UPDATE <(model)>: ceil(fields/2) => 1-field=1 5-field=3 ratio=3.0")
+    ""
+)
+(print "")
+(print "<<TX-CAL-002>> bucket calibration measured — compare <(meas)> vs <(model)> above")
+(print "===^^^===")
+(commit-tx)
+;;
+;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+;;

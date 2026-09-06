@@ -100,6 +100,7 @@
     (defun DPNF|C_WipePure (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV2.RemovableNonces}))
     (defun DPNF|C_WipeClean (patron:string account:string id:string nonces:[integer]))
     (defun DPNF|C_WipeDirty (patron:string account:string id:string nonces:[integer]))
+    (defun DPNF|Cp_WipeSlice (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV2.RemovableNonces}))
     ;;
     ;;  [7] DPDC-T
     ;;
@@ -746,8 +747,32 @@
                     (total-nonces-supplies:integer (fold (+) 0 (at "r-amounts" (at 0 (at "output" ico)))))
                 )
                 (ref-IGNIS::C_Collect patron ico)
-                (format 
-                    "Succesfuly executed Dirty Wipe of NFT {} on Account {}, wiping {} Nonces With a Total Supply of {}" 
+                (format
+                    "Succesfuly executed Dirty Wipe of NFT {} on Account {}, wiping {} Nonces With a Total Supply of {}"
+                    [id (UC_ShortAccount account) no-of-nonces total-nonces-supplies]
+                )
+            )
+        )
+    )
+    (defun DPNF|Cp_WipeSlice (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV2.RemovableNonces})
+        @doc "Hydra parallel wipe slice: wipes ONE <URHC_BuildWipeSlicePlan> slice of the NFT \
+            \ <account>'s <id> nonces. The UI dirty-reads the plan and fires one such tx per \
+            \ slice, all in parallel; slices are disjoint, order-independent and retryable \
+            \ (replay REVERTS on the zeroed account supply)."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
+                    (ico:object{IgnisCollectorV2.OutputCumulator}
+                        (ref-DPDC-MNG::Cp_WipeSlice account id false removable-nonces-obj)
+                    )
+                    (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
+                    (total-nonces-supplies:integer (fold (+) 0 (at "r-amounts" (at 0 (at "output" ico)))))
+                )
+                (ref-IGNIS::C_Collect patron ico)
+                (format
+                    "Succesfuly executed Hydra Wipe Slice of NFT {} on Account {}, wiping {} Nonces With a Total Supply of {}"
                     [id (UC_ShortAccount account) no-of-nonces total-nonces-supplies]
                 )
             )

@@ -1563,7 +1563,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_BigCumulator (UR_Konto id))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "DPTF|C_RotateOwnership" "auth")
+                (UR_Konto id) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_Control:object{IgnisCollectorV2.OutputCumulator} (id:string)
@@ -1571,7 +1573,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_SmallCumulator (UR_Konto id))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "DPTF|C_Control" "setup")
+                (UR_Konto id) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_TogglePause:object{IgnisCollectorV2.OutputCumulator} (id:string)
@@ -1579,7 +1583,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_MediumCumulator (UR_Konto id))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "DPTF|C_TogglePause" "setup")
+                (UR_Konto id) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_ToggleReservation:object{IgnisCollectorV2.OutputCumulator} (id:string)
@@ -1587,7 +1593,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_MediumCumulator (UR_Konto id))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "DPTF|C_ToggleReservation" "setup")
+                (UR_Konto id) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_ToggleFee:object{IgnisCollectorV2.OutputCumulator} (id:string)
@@ -1595,7 +1603,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_SmallCumulator (UR_Konto id))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "DPTF|C_ToggleFee" "fee")
+                (UR_Konto id) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_SetMinMove:object{IgnisCollectorV2.OutputCumulator} (id:string)
@@ -1603,7 +1613,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_SmallCumulator (UR_Konto id))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "DPTF|C_SetMinMove" "setup")
+                (UR_Konto id) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_SetFee:object{IgnisCollectorV2.OutputCumulator} (id:string)
@@ -1611,7 +1623,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_SmallCumulator (UR_Konto id))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "DPTF|C_SetFee" "fee")
+                (UR_Konto id) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_SetFeeTarget:object{IgnisCollectorV2.OutputCumulator} (id:string)
@@ -1619,7 +1633,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_SmallCumulator (UR_Konto id))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "DPTF|C_SetFeeTarget" "fee")
+                (UR_Konto id) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_ToggleFreezeAccount:object{IgnisCollectorV2.OutputCumulator} (id:string)
@@ -1627,7 +1643,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_BigCumulator (UR_Konto id))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "DPTF|C_ToggleFreezeAccount" "setup")
+                (UR_Konto id) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_ToggleBurnRole:object{IgnisCollectorV2.OutputCumulator} (id:string)
@@ -1635,7 +1653,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_BigCumulator (UR_Konto id))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "DPTF|C_ToggleBurnRole" "auth")
+                (UR_Konto id) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_ToggleMintRole:object{IgnisCollectorV2.OutputCumulator} (id:string)
@@ -1643,7 +1663,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_BigCumulator (UR_Konto id))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "DPTF|C_ToggleMintRole" "auth")
+                (UR_Konto id) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_ToggleFeeExemptionRole:object{IgnisCollectorV2.OutputCumulator} (id:string)
@@ -1651,7 +1673,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_BigCumulator (UR_Konto id))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "DPTF|C_ToggleFeeExemptionRole" "fee")
+                (UR_Konto id) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_ToggleTransferRole:object{IgnisCollectorV2.OutputCumulator} (id:string)
@@ -1659,7 +1683,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_BigCumulator (UR_Konto id))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "DPTF|C_ToggleTransferRole" "usage")
+                (UR_Konto id) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_WipeSlim:object{IgnisCollectorV2.OutputCumulator} (id:string)
@@ -1667,7 +1693,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_BiggestCumulator (UR_Konto id))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "DPTF|C_WipeSlim" "setup")
+                (UR_Konto id) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_Wipe:object{IgnisCollectorV2.OutputCumulator} (id:string)
@@ -1675,7 +1703,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_BiggestCumulator (UR_Konto id))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "DPTF|C_Wipe" "setup")
+                (UR_Konto id) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_Burn:object{IgnisCollectorV2.OutputCumulator} (id:string account:string)
@@ -1715,7 +1745,7 @@
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-U|DPTF:module{UtilityDptfV2} U|DPTF)
-                (unlock-costs:[decimal] (if toggle [0.0 0.0] (ref-U|DPTF::UC_UnlockPrice (UR_FeeUnlocks id))))
+                (unlock-costs:[decimal] (if toggle [0.0 0.0] (ref-IGNIS::UC_FeeUnlockPrice)))
                 (gas-costs:decimal (+ (ref-DALOS::UR_UsagePrice "ignis|small") (at 0 unlock-costs)))
                 (output:bool (> (at 1 unlock-costs) 0.0))
             )
@@ -1724,19 +1754,26 @@
     )
     ;;  Issue: two native/gas price rails per issued token; the cumulator's output (created IDs) stays in XB_IssueFree.
     (defun URCi_IssueGas:decimal (token-count:integer)
+        @doc "IGNIS issuance price per token. Sourced from the CENTRAL IG|DETER map in the \
+            \ IGNIS module (rehaul substage 5, 1 ignis = 1 cent): true fungible issuance = $10 = 1000 ignis/token (owner 2026-09-05). \
+            \ Shared by the exec path and its INFO_* preview, so both move as one."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (* (dec token-count) (ref-DALOS::UR_UsagePrice "ignis|token-issue"))
+            (* (dec token-count) (ref-IGNIS::UC_IgnisDeter "issue-tf"))
         )
     )
     (defun URCi_IssueStoa:decimal (token-count:integer)
+        @doc "STOA leg of issuance, per token. Carries the SAME DOLLAR VALUE as the IGNIS deter \
+            \ (true fungible = $10 => 100 STOA), converted at the live STOA price by UC_StoaPrice — so \
+            \ when a real STOA price replaces the $0.10 peg the AMOUNT moves but the value the \
+            \ user pays does not. Shared by the exec path and its INFO_* preview."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (* (dec token-count) (ref-DALOS::UR_UsagePrice "dptf"))
+            (* (dec token-count) (ref-IGNIS::UC_StoaPrice "issue-tf"))
         )
     )
     ;;  UpgradeBranding: STOA price is unconditionally months x "blue" (BRD's XE_UpgradeBranding returns the same).
@@ -1751,11 +1788,15 @@
     ;;  DeployAccount: CORE C_DeployAccount returns no cumulator; the ignis|small toll is billed
     ;;  by Talos keyed on the deployed account. This reader single-sources that toll for exec + INFO.
     (defun URCi_DeployAccount:object{IgnisCollectorV2.OutputCumulator} (account:string)
+        @doc "IGNIS cost of DELIBERATE token-account creation (the explicit C_DeployAccount \
+            \ entrypoint, billed at its Talos wrapper): the central IG|DETER token-account tier \
+            \ (50) — an anti-spam deterrent per owner 2026-09-05. Auto-creation inside a transfer \
+            \ never reaches this reader and stays FREE (S1 constraint). Shared by exec + INFO_*."
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_SmallCumulator account)
+            (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisDeter "token-account") account (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     ;;  ToggleFeeLock STOA leg: the unlock price rail (0.0 when locking); mirrors the STOA amount
@@ -1763,9 +1804,10 @@
     (defun URCi_ToggleFeeLockStoa:decimal (id:string toggle:bool)
         (let
             (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-U|DPTF:module{UtilityDptfV2} U|DPTF)
             )
-            (if toggle 0.0 (at 1 (ref-U|DPTF::UC_UnlockPrice (UR_FeeUnlocks id))))
+            (if toggle 0.0 (at 1 (ref-IGNIS::UC_FeeUnlockPrice)))
         )
     )
     ;;{5.4}  Validate [UEV/CAP]
@@ -2271,6 +2313,7 @@
         (require-capability (DPTF|S>X_TG_FEE-LOCK id toggle))
         (let
             (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-U|DPTF:module{UtilityDptfV2} U|DPTF)
             )
             (update DPTF|PropertiesTable id
@@ -2278,7 +2321,7 @@
             )
             (if (= toggle true)
                 [0.0 0.0]
-                (ref-U|DPTF::UC_UnlockPrice (UR_FeeUnlocks id))
+                (ref-IGNIS::UC_FeeUnlockPrice)
             )
         )
     )

@@ -1,0 +1,136 @@
+;;
+;; REPL/Kursan/DPOF-scale-wipe.repl — canonical integration layout
+;;   Inter-tx:   ;;|| NEXT >
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [...] ---")
+;;
+;; IGNIS COST REHAUL / Hydra wipe — WIPE-SLICE-MAX-NONCES calibration probe (substage 1
+;; follow-up, referenced from 06_DPOF.pact's UC_ComputeMinWipeSliceCount @doc).
+;;
+;; WHY: the per-tx slice ceiling (WIPE-SLICE-MAX-NONCES, currently a GUESS of 120 in both
+;; 06_DPOF.pact and 06_DPDC-MNG.pact) is the backstop the UI seeds its slice count from. If it
+;; is too high the UI builds slices that abort on the chain gas limit; too low and users pay
+;; for needless extra transactions. This probe measures the REAL marginal gas per nonce wiped
+;; and derives the safe ceiling, mirroring VCT's measured model (VACATE-GAS-BUDGET 2,000,000
+;; with VACATE-GAS-PER-POS 4,000 => ~481 positions).
+;;
+;; METHOD: fund one frozen account with N segmented nonces, then wipe in slices of increasing
+;; width, measuring (env-gas) per slice. Marginal gas/nonce = (gas(bigger) - gas(smaller)) /
+;; (width difference), which cancels the fixed per-tx overhead.
+;;
+(load "../Stage00_Sanboxes.repl")
+(load "../Stage01_Tester.repl")
+(load "../Stage02_Tester.repl")
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Kursan/DPOF-scale-wipe.repl")
+(print "================================================================")
+(print "Legend: <(gas)> = measured STOA gas · <(mgn)> = marginal gas per nonce")
+(print "")
+
+(begin-tx "TX-WSCALE-001 Fund + freeze a wide account")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-WSCALE-001 · 01 · env-sigs ==== =========================================================
+(print "--- [TX-WSCALE-001 · 01 · env-sigs] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+;;==== TX-WSCALE-001 · 02 · fund 60 segmented nonces + freeze ==== ================================
+(print "--- [TX-WSCALE-001 · 02 · fund 60 segmented nonces + freeze] ---")
+(let
+    (
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (id:string "COF-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+    )
+    ;;[6.1.6] TX-OF-002 spent most of nonce 1, so MINT a fresh nonce and fund from that one
+    ;;(DPOF mint creates a NEW nonce rather than topping up an existing one).
+    (ref-TS01-C1::DPOF|C_Mint patron id patron 500.0 [])
+    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron id emma false)
+    ;;60 transmits of 1.0 from the freshly minted nonce => 60 distinct nonces on EMMA
+    (let
+        (
+            (src:integer
+                (let ((ns:[integer] (ref-DPOF::URH_AccountNonces patron id)))
+                    (at (- (length ns) 1) ns)))
+        )
+        (print (format "<(setup)> funding from owner nonce {}" [src]))
+        (map
+            (lambda (i:integer) (ref-TS01-C1::DPOF|C_Transmit patron id [src] [1.0] patron emma false))
+            (enumerate 1 60)
+        )
+    )
+    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron id emma true)
+    (print (format "<(setup)> EMMA now holds {} wipeable nonces"
+        [(length (at "r-nonces" (ref-DPOF::URHC_WipePure emma id)))]))
+)
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-WSCALE-002 Measure slice gas at widths 10 / 20 / 30")
+(env-gasmodel "table")(env-gaslimit 150000000)
+(namespace "ouronet-ns")
+;;==== TX-WSCALE-002 · 01 · env-sigs ==== =========================================================
+(print "--- [TX-WSCALE-002 · 01 · env-sigs] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+;;==== TX-WSCALE-002 · 02 · widths 10 / 20 / 30 + derived ceiling ==== ============================
+(print "--- [TX-WSCALE-002 · 02 · widths 10 / 20 / 30 + derived ceiling] ---")
+(let*
+    (
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (id:string "COF-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        ;;plan the 60 nonces into 6 slices of 10, then fire widths 10, 20, 30 by
+        ;;concatenating consecutive slices (the plan is a pure partition, so this is legal)
+        (plan:object{DpofUdcV2.DPOF|WipeSlicePlan} (ref-DPOF::URHC_BuildWipeSlicePlan emma id 6))
+        (sl:[object{DpofUdcV2.RemovableNonces}] (at "slices" plan))
+        (w10:object{DpofUdcV2.RemovableNonces} (at 0 sl))
+        (w20:object{DpofUdcV2.RemovableNonces}
+            (ref-DPOF::UDC_RemovableNonces
+                (+ (at "r-nonces" (at 1 sl)) (at "r-nonces" (at 2 sl)))
+                (+ (at "r-amounts" (at 1 sl)) (at "r-amounts" (at 2 sl)))))
+        (w30:object{DpofUdcV2.RemovableNonces}
+            (ref-DPOF::UDC_RemovableNonces
+                (+ (+ (at "r-nonces" (at 3 sl)) (at "r-nonces" (at 4 sl))) (at "r-nonces" (at 5 sl)))
+                (+ (+ (at "r-amounts" (at 3 sl)) (at "r-amounts" (at 4 sl))) (at "r-amounts" (at 5 sl)))))
+        ;;measure
+        (r0:string (env-gas 0))
+        (x1:bool (ref-TS01-C1::DPOF|Cp_WipeSlice patron id emma w10))
+        (g10:integer (env-gas))
+        (r1:string (env-gas 0))
+        (x2:bool (ref-TS01-C1::DPOF|Cp_WipeSlice patron id emma w20))
+        (g20:integer (env-gas))
+        (r2:string (env-gas 0))
+        (x3:bool (ref-TS01-C1::DPOF|Cp_WipeSlice patron id emma w30))
+        (g30:integer (env-gas))
+        ;;marginal gas per nonce, fixed overhead cancelled out
+        (mgn:decimal (/ (dec (- g30 g10)) 20.0))
+        (fixed:decimal (- (dec g10) (* mgn 10.0)))
+        (budget:decimal 2000000.0)
+        (safe:integer (floor (/ (- budget fixed) mgn)))
+    )
+    (print (format "<(gas)> width 10 = {} · width 20 = {} · width 30 = {}" [g10 g20 g30]))
+    (print (format "<(mgn)> marginal gas per nonce wiped = {}" [(round mgn 1)]))
+    (print (format "<(fixed)> per-tx fixed overhead = {}" [(round fixed 1)]))
+    (print (format "<(derived)> max nonces per 2,000,000-gas tx = {}" [safe]))
+    (print (format "<(current)> WIPE-SLICE-MAX-NONCES constant = {}" [(ref-DPOF::UC_ComputeMinWipeSliceCount 1)]))
+    (print "")
+    (print (format "VERDICT: set WIPE-SLICE-MAX-NONCES <= {} (leave headroom; VCT uses a" [safe]))
+    (print "         deliberately generous backstop and lets the node gas meter be the real gate)")
+    ""
+)
+(print "")
+(print "<<TX-WSCALE-002>> wipe-slice gas calibration measured")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;
+;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+;;

@@ -388,12 +388,12 @@
     ;;{3}  CST
     ;;{3.1}  constants
     (defconst BAR                                       (CT_Bar))
-    (defconst GAS|ISSUE-POOL                            1000.0)
-    (defconst GAS|ADD-SCORE                             500.0)
-    (defconst GAS|REVOKE-SCORE                          500.0)
-    (defconst GAS|SET-POOL-STAKE                        500.0)
-    (defconst GAS|SYNC-TF-ANCHORS                       50.0)
-    (defconst GAS|SYNC-COLLECTABLE-ANCHORS              50.0)
+    (defconst GAS|ISSUE-POOL                        (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UC_IgnisDeter "issue-pool")))
+    (defconst GAS|ADD-SCORE                         (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UC_IgnisDeter "add-score")))
+    (defconst GAS|REVOKE-SCORE                      (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UC_IgnisDeter "revoke-score")))
+    (defconst GAS|SET-POOL-STAKE                    (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UC_IgnisDeter "pool-stake-toggle")))
+    (defconst GAS|SYNC-TF-ANCHORS                   (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UC_IgnisDeter "sync-anchors")))
+    (defconst GAS|SYNC-COLLECTABLE-ANCHORS          (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UC_IgnisDeter "sync-anchors")))
     (defconst EOC                                       (CT_EmptyCumulator))
     (defconst AQP|SC_NAME                               (CT_AqpScName))
     ;;{3.2}  schemas

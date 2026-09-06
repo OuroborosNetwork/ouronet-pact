@@ -1,0 +1,359 @@
+;;
+;; REPL/Stage_02/[6.1.8]_DPDC-HYDRA-WIPE.repl — DPNF Hydra parallel wipe (IGNIS rehaul substage 1)
+;;   Canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   Reuses the CNF collection from [6.1.4] (owner ANHD, 8 nonces used, EMMA wiped+frozen there).
+;;   Mints 12 fresh nonces (9..20) to EMMA, then drives a REAL multi-tx Hydra campaign with
+;;   STATIC slice payloads held across txs (exactly what the UI does): plan tx -> slice txs
+;;   (freeze holds between them) -> replay negative -> unfreeze negative -> terminal empty.
+;;   Also revives SFT multi-nonce wipe coverage gap tracking: see [6.1]_DPDC.repl TX 005b.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[6.1.8]_DPDC-HYDRA-WIPE.repl  (DPNF Hydra wipe)")
+(print "================================================================")
+(print "")
+
+;;================================================================================
+(begin-tx "TX-HW-001 - Mint nonces 9..20 to EMMA (unfreeze/fund/refreeze)")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-HW-001 · 01 · env-sigs (caps) ====
+(print "--- [TX-HW-001 · 01 · env-sigs] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+;;==== TX-HW-001 · 02 · create/fund/freeze ====
+(print "--- [TX-HW-001 · 02 · create/fund/freeze] ---")
+(let
+    (
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (id:string "CNF-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+    )
+    ;; 12 fresh native nonces on the owner (values 9..20; 8 were used in [6.1.4])
+    (let*
+        (
+            (type:object{DpdcUdcV2.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+            (nd:object{DpdcUdcV2.DPDC|NonceData}
+                (ref-DPDC-UDC::UDC_NonceData
+                    0.0 0.0 "N" "N" (ref-DPDC-UDC::UDC_NoMetaData) type
+                    (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
+                )
+            )
+        )
+        (ref-TS02-C2::DPNF|C_Create patron id (make-list 12 nd))
+    )
+    ;; EMMA left FROZEN by [6.1.4] TX-NF-009 — unfreeze, fund all 12, re-freeze for the campaign
+    (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron id emma false)
+    (ref-TS02-C2::DPNF|C_BulkTransfer patron id
+        [[9 10 11 12 13 14 15 16 17 18 19 20]] [[1 1 1 1 1 1 1 1 1 1 1 1]] patron [emma] false)
+    (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron id emma true)
+    (map print
+        [
+            (expect "<<TX-HW-001>> EMMA holds 12 wipeable nonces"
+                12 (length (at "r-nonces" (ref-DPDC-MNG::URHC_WipePure emma id false))))
+            ""
+        ]
+    )
+)
+(print "===^^^===")
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+
+;;================================================================================
+(begin-tx "TX-HW-002 - Preflight: seed math + slice plan shape (UI /local step)")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-HW-002 · 01 · plan asserts ====
+(print "--- [TX-HW-002 · 01 · plan asserts] ---")
+(let*
+    (
+        (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
+        (id:string "CNF-98c486052a51")
+        (emma:string KST.EMMA)
+        (full:object{DpdcManagementV2.RemovableNonces} (ref-DPDC-MNG::URHC_WipePure emma id false))
+        (plan:object{DpdcManagementV2.DPDC-MNG|WipeSlicePlan} (ref-DPDC-MNG::URHC_BuildWipeSlicePlan emma id false 3))
+        (slices:[object{DpdcManagementV2.RemovableNonces}] (at "slices" plan))
+    )
+    (map print
+        [
+            (expect "<<TX-HW-002>> seed: 12 nonces fit 1 slice" 1 (ref-DPDC-MNG::UC_ComputeMinWipeSliceCount 12))
+            (expect "<<TX-HW-002>> seed: 1001 nonces need 3 slices (ceiling 500, calibrated)" 3 (ref-DPDC-MNG::UC_ComputeMinWipeSliceCount 1001))
+            (expect "<<TX-HW-002>> plan: 3 slices over 12 nonces" 3 (at "slice-count" plan))
+            (expect "<<TX-HW-002>> plan: slice widths 4/4/4"
+                [4 4 4] (map (lambda (s:object{DpdcManagementV2.RemovableNonces}) (length (at "r-nonces" s))) slices))
+            (expect "<<TX-HW-002>> plan: disjoint slices cover the full set exactly"
+                (at "r-nonces" full)
+                (fold (lambda (acc:[integer] ns:[integer]) (+ acc ns)) []
+                    (map (lambda (s:object{DpdcManagementV2.RemovableNonces}) (at "r-nonces" s)) slices)))
+            ;; slice order follows the select's LEXICOGRAPHIC key order ("…|10" < "…|9"),
+            ;; not numeric nonce order — the UI must treat plan slices as opaque payloads
+            (expect "<<TX-HW-002>> plan: slice 0 follows lex key order (10..13, NOT 9..12)"
+                [10 11 12 13] (at "r-nonces" (at 0 slices)))
+            (expect "<<TX-HW-002>> plan: uneven ask (5) recomputes to 4 non-empty slices of 3"
+                4 (at "slice-count" (ref-DPDC-MNG::URHC_BuildWipeSlicePlan emma id false 5)))
+            (expect "<<TX-HW-002>> plan: over-ask (100) clamps to 12 x 1-nonce slices"
+                12 (at "slice-count" (ref-DPDC-MNG::URHC_BuildWipeSlicePlan emma id false 100)))
+            ""
+        ]
+    )
+)
+(print "===^^^===")
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+
+;;================================================================================
+(begin-tx "TX-HW-003 - Slice 0 (nonces 9..12): static payload, freeze holds")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-HW-003 · 01 · env-sigs (caps) ====
+(print "--- [TX-HW-003 · 01 · env-sigs] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+;;==== TX-HW-003 · 02 · fire slice 0 ====
+(print "--- [TX-HW-003 · 02 · fire slice 0] ---")
+(let
+    (
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (id:string "CNF-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+    )
+    ;; the UI holds the plan offline — each tx carries its own STATIC slice payload
+    (ref-TS02-C2::DPNF|Cp_WipeSlice patron emma id
+        (ref-DPDC-MNG::UDC_RemovableNonces [9 10 11 12] [1 1 1 1]))
+    (map print
+        [
+            (expect "<<TX-HW-003>> 8 nonces remain after slice 0"
+                8 (length (at "r-nonces" (ref-DPDC-MNG::URHC_WipePure emma id false))))
+            (expect "<<TX-HW-003>> freeze HOLDS between slices"
+                true (ref-DPDC::UR_CA|R-Frozen id false emma))
+            ""
+        ]
+    )
+)
+(print "===^^^===")
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+
+;;================================================================================
+(begin-tx "TX-HW-004 - Replay slice 0 REVERTS (idempotency: live table = completion ledger)")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-HW-004 · 01 · env-sigs (caps) ====
+(print "--- [TX-HW-004 · 01 · env-sigs] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+;;==== TX-HW-004 · 02 · replay negative ====
+(print "--- [TX-HW-004 · 02 · replay negative] ---")
+(let
+    (
+        (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (id:string "CNF-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+    )
+    (map print
+        [
+            (expect-failure "<<TX-HW-004>> replayed slice 0 REVERTS (wiped nonces fail 0 < amount)"
+                (ref-TS02-C2::DPNF|Cp_WipeSlice patron emma id
+                    (ref-DPDC-MNG::UDC_RemovableNonces [9 10 11 12] [1 1 1 1])))
+            (expect "<<TX-HW-004>> nothing changed: still 8 nonces"
+                8 (length (at "r-nonces" (ref-DPDC-MNG::URHC_WipePure emma id false))))
+            ""
+        ]
+    )
+)
+(print "===^^^===")
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+
+;;================================================================================
+(begin-tx "TX-HW-005 - Unfreeze mid-campaign: slice 1 REVERTS, refreeze, slice 1 lands")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-HW-005 · 01 · env-sigs (caps) ====
+(print "--- [TX-HW-005 · 01 · env-sigs] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+;;==== TX-HW-005 · 02 · freeze negative + slice 1 ====
+(print "--- [TX-HW-005 · 02 · freeze negative + slice 1] ---")
+(let
+    (
+        (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (id:string "CNF-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+    )
+    (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron id emma false)
+    (map print
+        [
+            (expect-failure "<<TX-HW-005>> slice on UNFROZEN account REVERTS (fail-safe)"
+                (ref-TS02-C2::DPNF|Cp_WipeSlice patron emma id
+                    (ref-DPDC-MNG::UDC_RemovableNonces [13 14 15 16] [1 1 1 1])))
+            ""
+        ]
+    )
+    (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron id emma true)
+    (ref-TS02-C2::DPNF|Cp_WipeSlice patron emma id
+        (ref-DPDC-MNG::UDC_RemovableNonces [13 14 15 16] [1 1 1 1]))
+    (map print
+        [
+            (expect "<<TX-HW-005>> 4 nonces remain after slice 1"
+                4 (length (at "r-nonces" (ref-DPDC-MNG::URHC_WipePure emma id false))))
+            ""
+        ]
+    )
+)
+(print "===^^^===")
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+
+;;================================================================================
+(begin-tx "TX-HW-006 - Slice 2 (last): terminal state exactly empty")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-HW-006 · 01 · env-sigs (caps) ====
+(print "--- [TX-HW-006 · 01 · env-sigs] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+;;==== TX-HW-006 · 02 · fire slice 2 + terminal asserts ====
+(print "--- [TX-HW-006 · 02 · fire slice 2 + terminal asserts] ---")
+(let
+    (
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (id:string "CNF-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+    )
+    (ref-TS02-C2::DPNF|Cp_WipeSlice patron emma id
+        (ref-DPDC-MNG::UDC_RemovableNonces [17 18 19 20] [1 1 1 1]))
+    (map print
+        [
+            (expect "<<TX-HW-006>> terminal: EMMA has NO wipeable nonces left"
+                0 (length (at "r-nonces" (ref-DPDC-MNG::URHC_WipePure emma id false))))
+            (expect "<<TX-HW-006>> terminal: nonce 20 account supply zeroed"
+                0 (ref-DPDC::UR_AccountNonceSupply emma id false 20))
+            (expect "<<TX-HW-006>> terminal: nonce 9 account supply zeroed"
+                0 (ref-DPDC::UR_AccountNonceSupply emma id false 9))
+            ""
+        ]
+    )
+)
+(print "===^^^===")
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+
+;;================================================================================
+;; SFT (son=true) Hydra wipe — closes the coverage gap left by [6.1]_DPDC.repl TX 005b,
+;; whose SFT wipe block is entirely commented out (SFT multi-nonce wipes had ZERO live
+;; coverage). Self-contained: creates its OWN fresh nonces on the DHCD SFT collection, so it
+;; depends on no prior suite's balances and leaves earlier state untouched.
+(begin-tx "TX-HW-007 - SFT Hydra wipe: fresh nonces, 2 slices, replay reverts, terminal empty")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-HW-007 · 01 · env-sigs (caps) ====
+(print "--- [TX-HW-007 · 01 · env-sigs] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+;;==== TX-HW-007 · 02 · create 8 SFT nonces / fund LUMY / freeze ====
+(print "--- [TX-HW-007 · 02 · create 8 SFT nonces / fund LUMY / freeze] ---")
+(let
+    (
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (id:string "DHCD-98c486052a51")
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+    )
+    (let*
+        (
+            (type:object{DpdcUdcV2.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+            (nd:object{DpdcUdcV2.DPDC|NonceData}
+                (ref-DPDC-UDC::UDC_NonceData
+                    0.0 0.0 "S" "S" (ref-DPDC-UDC::UDC_NoMetaData) type
+                    (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
+                )
+            )
+            ;;8 FRESH nonces of 100 units each, appended after whatever DHCD already holds
+            (before:integer (ref-DPDC::UR_NoncesUsed id true))
+            (fresh:[integer] (map (lambda (i:integer) (+ before i)) (enumerate 1 8)))
+        )
+        (ref-TS02-C1::DPSF|C_Create patron id (make-list 8 100) (make-list 8 nd))
+        ;;LUMY starts UNfrozen on DHCD (no prior suite freezes it here), so fund then freeze —
+        ;;a defensive unfreeze would abort, since unfreezing enforces the account IS frozen.
+        (ref-TS02-C1::DPSF|C_BulkTransfer patron id
+            [fresh] [(make-list 8 100)] patron [lumy] false)
+        (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron id lumy true)
+        (map print
+            [
+                (expect "<<TX-HW-007>> LUMY holds 8 wipeable SFT nonces"
+                    8 (length (at "r-nonces" (ref-DPDC-MNG::URHC_WipePure lumy id true))))
+                ""
+            ]
+        )
+        ;;==== TX-HW-007 · 03 · plan 2 slices, fire both, replay negative, terminal ====
+        (print "--- [TX-HW-007 · 03 · plan 2 slices / fire / replay / terminal] ---")
+        (let*
+            (
+                (plan:object{DpdcManagementV2.DPDC-MNG|WipeSlicePlan}
+                    (ref-DPDC-MNG::URHC_BuildWipeSlicePlan lumy id true 2))
+                (sl:[object{DpdcManagementV2.RemovableNonces}] (at "slices" plan))
+                (s0:object{DpdcManagementV2.RemovableNonces} (at 0 sl))
+                (s1:object{DpdcManagementV2.RemovableNonces} (at 1 sl))
+            )
+            (ref-TS02-C1::DPSF|Cp_WipeSlice patron lumy id s0)
+            (map print
+                [
+                    (expect "<<TX-HW-007>> plan: 2 slices of 4 over 8 SFT nonces"
+                        [4 4] (map (lambda (x:object{DpdcManagementV2.RemovableNonces}) (length (at "r-nonces" x))) sl))
+                    (expect "<<TX-HW-007>> after slice 0: 4 SFT nonces remain"
+                        4 (length (at "r-nonces" (ref-DPDC-MNG::URHC_WipePure lumy id true))))
+                    (expect-failure "<<TX-HW-007>> replayed SFT slice 0 REVERTS (live table = completion ledger)"
+                        (ref-TS02-C1::DPSF|Cp_WipeSlice patron lumy id s0))
+                    ""
+                ]
+            )
+            (ref-TS02-C1::DPSF|Cp_WipeSlice patron lumy id s1)
+            (map print
+                [
+                    (expect "<<TX-HW-007>> terminal: LUMY has NO wipeable SFT nonces left"
+                        0 (length (at "r-nonces" (ref-DPDC-MNG::URHC_WipePure lumy id true))))
+                    ""
+                ]
+            )
+        )
+    )
+    ;;RESTORE STATE: this tx froze LUMY to run the campaign; later suites (e.g. [6.1]_DPDC
+    ;;TX 007's DPSF|C_TransferNonce) expect it UNfrozen. A test must leave the world as it
+    ;;found it — the wipe is done, so unfreeze.
+    (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron id lumy false)
+    (print "<<TX-HW-007>> SFT multi-nonce Hydra wipe OK (closes the [6.1]_DPDC TX 005b gap)")
+)
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== END FILE [6.1.8]_DPDC-HYDRA-WIPE.repl (DPNF + DPSF Hydra wipe campaigns) ===")

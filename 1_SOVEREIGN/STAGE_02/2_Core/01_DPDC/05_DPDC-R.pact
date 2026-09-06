@@ -370,7 +370,9 @@
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
-            (ref-IGNIS::UDC_BigCumulator (ref-DPDC::UR_OwnerKonto id true))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "DPSF|C_ToggleAddQuantityRole" "auth")
+                (ref-DPDC::UR_OwnerKonto id true) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_ToggleFreezeAccount:object{IgnisCollectorV2.OutputCumulator}
@@ -381,7 +383,10 @@
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
-            (ref-IGNIS::UDC_BiggestCumulator (ref-DPDC::UR_OwnerKonto id son))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_ToggleFreezeAccount" "setup")
+                       (ref-IGNIS::UC_IgnisPrice "DPNF|C_ToggleFreezeAccount" "setup"))
+                (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_ToggleExemptionRole:object{IgnisCollectorV2.OutputCumulator}
@@ -392,7 +397,10 @@
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
-            (ref-IGNIS::UDC_BiggestCumulator (ref-DPDC::UR_OwnerKonto id son))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_ToggleExemptionRole" "auth")
+                       (ref-IGNIS::UC_IgnisPrice "DPNF|C_ToggleExemptionRole" "auth"))
+                (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_ToggleBurnRole:object{IgnisCollectorV2.OutputCumulator}
@@ -403,7 +411,10 @@
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
-            (ref-IGNIS::UDC_BigCumulator (ref-DPDC::UR_OwnerKonto id son))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_ToggleBurnRole" "auth")
+                       (ref-IGNIS::UC_IgnisPrice "DPNF|C_ToggleBurnRole" "auth"))
+                (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_ToggleUpdateRole:object{IgnisCollectorV2.OutputCumulator}
@@ -414,7 +425,10 @@
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
-            (ref-IGNIS::UDC_BigCumulator (ref-DPDC::UR_OwnerKonto id son))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_ToggleUpdateRole" "auth")
+                       (ref-IGNIS::UC_IgnisPrice "DPNF|C_ToggleUpdateRole" "auth"))
+                (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_ToggleModifyCreatorRole:object{IgnisCollectorV2.OutputCumulator}
@@ -425,7 +439,10 @@
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
-            (ref-IGNIS::UDC_BigCumulator (ref-DPDC::UR_OwnerKonto id son))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_ToggleModifyCreatorRole" "auth")
+                       (ref-IGNIS::UC_IgnisPrice "DPNF|C_ToggleModifyCreatorRole" "auth"))
+                (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_ToggleModifyRoyaltiesRole:object{IgnisCollectorV2.OutputCumulator}
@@ -436,7 +453,10 @@
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
-            (ref-IGNIS::UDC_BigCumulator (ref-DPDC::UR_OwnerKonto id son))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_ToggleModifyRoyaltiesRole" "fee")
+                       (ref-IGNIS::UC_IgnisPrice "DPNF|C_ToggleModifyRoyaltiesRole" "fee"))
+                (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_ToggleTransferRole:object{IgnisCollectorV2.OutputCumulator}
@@ -447,7 +467,10 @@
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
-            (ref-IGNIS::UDC_BigCumulator (ref-DPDC::UR_OwnerKonto id son))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_ToggleTransferRole" "usage")
+                       (ref-IGNIS::UC_IgnisPrice "DPNF|C_ToggleTransferRole" "usage"))
+                (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_MoveCreateRole:object{IgnisCollectorV2.OutputCumulator}
@@ -458,7 +481,10 @@
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
-            (ref-IGNIS::UDC_BiggestCumulator (ref-DPDC::UR_OwnerKonto id son))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_MoveCreateRole" "auth")
+                       (ref-IGNIS::UC_IgnisPrice "DPNF|C_MoveCreateRole" "auth"))
+                (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_MoveRecreateRole:object{IgnisCollectorV2.OutputCumulator}
@@ -469,7 +495,10 @@
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
-            (ref-IGNIS::UDC_BiggestCumulator (ref-DPDC::UR_OwnerKonto id son))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_MoveRecreateRole" "auth")
+                       (ref-IGNIS::UC_IgnisPrice "DPNF|C_MoveRecreateRole" "auth"))
+                (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_MoveSetUriRole:object{IgnisCollectorV2.OutputCumulator}
@@ -480,7 +509,10 @@
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
-            (ref-IGNIS::UDC_BiggestCumulator (ref-DPDC::UR_OwnerKonto id son))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_MoveSetUriRole" "auth")
+                       (ref-IGNIS::UC_IgnisPrice "DPNF|C_MoveSetUriRole" "auth"))
+                (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     ;;{5.4}  Validate [UEV/CAP]

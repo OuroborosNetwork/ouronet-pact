@@ -215,6 +215,7 @@
         (ref-U|CT:module{OuronetConstantsV2} U|CT)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
         ;;
         (bar:string (ref-U|CT::CT_BAR))
@@ -246,6 +247,20 @@
         (ref-TS01-A::DALOS|A_UpdateUsagePrice "ignis|ats-issue"        5000.0)
         (ref-TS01-A::DALOS|A_UpdateUsagePrice "ignis|swp-issue"        4000.0)
         (ref-TS01-A::DALOS|A_UpdateUsagePrice "ignis|swp-liquidity"      20.0)
+        ;;STOA oracle price in USD. HARD-PEGGED at $0.10 until a real price feed exists.
+        ;;UC_StoaPrice divides by this, so ISSUE functions charge a constant DOLLAR value:
+        ;;when this moves, the STOA amount moves but the value the user pays does not.
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "stoa|price"                 0.1)
+        ;;The legacy per-asset STOA issuance keys are now DERIVED from the dollar-pegged
+        ;;UC_StoaPrice, not hand-set: one source of truth (IG|DETER + the stoa|price oracle).
+        ;;Every REPL that sizes a coin.TRANSFER cap off these keys therefore stays exactly in
+        ;;step with what the modules actually charge, and moves automatically when the peg does.
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "dptf" (ref-IGNIS::UC_StoaPrice "issue-tf"))
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "dpmf" (ref-IGNIS::UC_StoaPrice "issue-of"))
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "dpsf" (ref-IGNIS::UC_StoaPrice "issue-sft"))
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "dpnf" (ref-IGNIS::UC_StoaPrice "issue-nft"))
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "ats"  (ref-IGNIS::UC_StoaPrice "issue-ats-pair"))
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "swp"  (ref-IGNIS::UC_StoaPrice "issue-swp-pair"))
 
         ;;REPL-VARIANT:
         (acquire-module-admin ouronet-ns.DALOS)
@@ -281,7 +296,10 @@
             ,"virtual-gas-spent"            : 0.0
             ,"native-gas-toggle"            : false
             ,"native-gas-spent"             : 0.0
-            ,"native-gas-pump"              : false}
+            ,"native-gas-pump"              : false
+            ;;STOA on account creation: OFF by default so onboarding stays free even when the
+            ;;global STOA switch is ON. Flip with TS01-A::DALOS|A_AccountCreationStoaToggle.
+            ,"account-creation-stoa"         : false}
         )
         ;;REPL-VARIANT:
         ;(acquire-module-admin ouronet-ns.LIQUID)
@@ -1196,10 +1214,14 @@
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
         (split-stoa:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices
                 KST.ANHD
-                (+ (* (ref-DALOS::UR_UsagePrice "dptf") 3.0) (ref-DALOS::UR_UsagePrice "dpmf"))
+                ;;Cap must be derived from the SAME source as the actual charge, else it goes
+                ;;stale the moment prices move: 3 true-fungible issues + 1 ortofungible, priced
+                ;;by UC_StoaPrice (dollar-pegged), not by the legacy sub-cent UsagePrice keys.
+                (+ (* (ref-IGNIS::UC_StoaPrice "issue-tf") 3.0) (ref-IGNIS::UC_StoaPrice "issue-of"))
             )
         )
     )

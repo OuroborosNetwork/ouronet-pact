@@ -55,6 +55,7 @@
     (defun DALOS|A_DeploySmartAccount (account:string guard:guard stoa:string sovereign:string public:string))
     (defun DALOS|A_DeployStandardAccount (account:string guard:guard stoa:string public:string))
     (defun DALOS|A_IgnisToggle (native:bool toggle:bool))
+    (defun DALOS|A_AccountCreationStoaToggle (toggle:bool))
     (defun DALOS|A_SetIgnisSourcePrice (price:decimal))
     (defun DALOS|A_SetAutoFueling (toggle:bool))
     (defun DALOS|A_UpdatePublicKey (account:string new-public:string))
@@ -382,6 +383,24 @@
                 )
                 (ref-DALOS::A_DeployStandardAccount account guard stoa public)
                 (format "Succesfuly deployed Standard Account {} in Admin Mode!" [sa])
+            )
+        )
+    )
+    (defun DALOS|A_AccountCreationStoaToggle (toggle:bool)
+        @doc "ADMIN: switch STOA collection on Ouronet ACCOUNT CREATION on/off, INDEPENDENTLY \
+            \ of the global STOA switch (DALOS|A_IgnisToggle native=true). OFF — the default — \
+            \ keeps onboarding free while global STOA collection is ON. Admin op, so this \
+            \ entrypoint is itself IGNIS+STOA exempt."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                )
+                (ref-DALOS::A_ToggleAccountCreationStoa toggle)
+                (if toggle
+                    "Account-Creation STOA Collection succesfully turned ON"
+                    "Account-Creation STOA Collection succesfully turned OFF"
+                )
             )
         )
     )

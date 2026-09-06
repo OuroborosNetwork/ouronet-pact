@@ -574,6 +574,36 @@
             (INFO_DPDC-MNG|WipeMulti patron id true (r::URC_FilterAccountViableNonces account id true nonces) "Dirty")
         )
     )
+    (defun INFO_DPNF|WipeSlice:object{OuronetInfoV2.ClientInfo} (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV2.RemovableNonces}) (INFO_DPDC-MNG|WipeMulti patron id false removable-nonces-obj "Hydra-Slice"))
+    (defun INFO_DPSF|WipeSlice:object{OuronetInfoV2.ClientInfo} (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV2.RemovableNonces}) (INFO_DPDC-MNG|WipeMulti patron id true removable-nonces-obj "Hydra-Slice"))
+    (defun INFO_DPDC-MNG|WipeFull:object{OuronetInfoV2.ClientInfo} (patron:string id:string son:bool plan:object{DpdcManagementV2.DPDC-MNG|WipeSlicePlan})
+        @doc "Hydra wipe FULL preview: grand-total IGNIS across the whole <URHC_BuildWipeSlicePlan> \
+            \ plan = the sum of every slice's own ifp (mirrors the per-slice executor byte-for-byte)."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (r:module{DpdcManagementV2} DPDC-MNG)
+                (slice-count:integer (at "slice-count" plan))
+                (total-ifp:decimal
+                    (fold (+) 0.0
+                        (map
+                            (lambda
+                                (slice:object{DpdcManagementV2.RemovableNonces})
+                                (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (r::URCi_WipeCumulator id son slice))
+                            )
+                            (at "slices" plan)
+                        )
+                    )
+                )
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Hydra wipe campaign of {} {} over {} slice tx(s)" [(if son "SFT" "NFT") id slice-count])]
+                [(format "Hydra wipe campaign of {} {} over {} slice tx(s) succesful" [(if son "SFT" "NFT") id slice-count])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron total-ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [slice-count])
+        ))
+    (defun INFO_DPNF|WipeFull:object{OuronetInfoV2.ClientInfo} (patron:string account:string id:string plan:object{DpdcManagementV2.DPDC-MNG|WipeSlicePlan}) (INFO_DPDC-MNG|WipeFull patron id false plan))
+    (defun INFO_DPSF|WipeFull:object{OuronetInfoV2.ClientInfo} (patron:string account:string id:string plan:object{DpdcManagementV2.DPDC-MNG|WipeSlicePlan}) (INFO_DPDC-MNG|WipeFull patron id true plan))
     ;;  [DPDC burn] — DPDC-MNG single-nonce burn
     (defun INFO_DPNF|Burn:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonce:integer)
         (let

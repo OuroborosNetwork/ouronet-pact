@@ -135,6 +135,7 @@
     (defun URCi_IssueNonFungibleScoreDefinition:object{IgnisCollectorV2.OutputCumulator} (score-id:string trait-keys:[string]))
     (defun URCi_IssueNonFungibleSetScoreDefinition:object{IgnisCollectorV2.OutputCumulator} (score-id:string dpnf-nonce-classes:[integer]))
     (defun URCi_IssueScoreModel:object{IgnisCollectorV2.OutputCumulator} (patron:string output:[string]))
+    (defun URCi_CombineTripletModel:object{IgnisCollectorV2.OutputCumulator} (patron:string output:[string]))
     ;;{5.4}  Validate [UEV/CAP]
     ;; [UEV] enforce
     (defun UEV_NonFungibleScoreDefinition
@@ -327,9 +328,9 @@
     ;;{3}  CST
     ;;{3.1}  constants
     (defconst BAR                                       (CT_Bar))
-    (defconst GAS|ISSUE-SCORE                           1000.0)
-    (defconst GAS|ISSUE-TRIPLET                         500.0)
-    (defconst GAS|ISSUE-SCORE-MODEL                     500.0)
+    (defconst GAS|ISSUE-SCORE                       (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UC_IgnisDeter "issue-score")))
+    (defconst GAS|ISSUE-TRIPLET                     (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UC_IgnisDeter "issue-triplet")))
+    (defconst GAS|ISSUE-SCORE-MODEL                 (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UC_IgnisDeter "issue-score-model")))
     (defconst CT_SCORE_MODEL_SINGLE:integer             1)
     (defconst CT_SCORE_MODEL_TRIPLET:integer            3)
     (defconst EOC                                       (CT_EmptyCumulator))
@@ -2615,12 +2616,22 @@
             (r::UDC_ConstructOutputCumulator (* (dec (length dpnf-nonce-classes)) (d::UR_UsagePrice "ignis|biggest")) (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])
         ))
     (defun URCi_IssueScoreModel:object{IgnisCollectorV2.OutputCumulator} (patron:string output:[string])
-        @doc "GAS|ISSUE-SCORE-MODEL (shared by IssueSingleScoreModel / CombineTripletScoreModel / IssueScoreFromModel)."
+        @doc "GAS|ISSUE-SCORE-MODEL (shared by IssueSingleScoreModel / IssueScoreFromModel; \
+            \ CombineTripletScoreModel split off to URCi_CombineTripletModel — owner-priced 100, 2026-09-05)."
         (let
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
             (r::UDC_ConstructOutputCumulator GAS|ISSUE-SCORE-MODEL patron (r::URC_IsVirtualGasZero) output)
+        ))
+    (defun URCi_CombineTripletModel:object{IgnisCollectorV2.OutputCumulator} (patron:string output:[string])
+        @doc "Owner-priced (2026-09-05) combine-triplet deter (100 ignis) via the central IGNIS \
+            \ IG|DETER map — split from URCi_IssueScoreModel so the shared 500 tier stays put."
+        (let
+            (
+                (r:module{IgnisCollectorV2} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator (r::UC_IgnisDeter "combine-triplet") patron (r::URC_IsVirtualGasZero) output)
         ))
     ;;{5.4}  Validate [UEV/CAP]
     ;; [UEV] enforce
@@ -4059,7 +4070,7 @@
                 )
                 (WI_ScoreEntityModel model-id
                     (UDC_SCR|ScoreEntityModel CT_SCORE_MODEL_TRIPLET 0 BAR 0 [] [] bronze-model-id silver-model-id golden-model-id model-id))
-                (URCi_IssueScoreModel patron [model-id])
+                (URCi_CombineTripletModel patron [model-id])
             )
         )
     )

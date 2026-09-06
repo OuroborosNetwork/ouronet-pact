@@ -237,13 +237,15 @@
     ;;
     (defun URCi_IssueCollectionPrice:decimal
         (son:bool)
-        @doc "IGNIS issue price for a digital collection: token-issue * (son?5:10). \
+        @doc "IGNIS issue price for a digital collection, from the CENTRAL IG|DETER map in the \
+            \ IGNIS module (rehaul substage 5, 1 ignis = 1 cent): son=true (SFT) = $20 = 2000 \
+            \ ignis, son=false (NFT) = $25 = 2500 ignis (owner 2026-09-05). \
             \ Single source for the exec construct and the INFO preview."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (* (ref-DALOS::UR_UsagePrice "ignis|token-issue") (if son 5.0 10.0))
+            (if son (ref-IGNIS::UC_IgnisDeter "issue-sft") (ref-IGNIS::UC_IgnisDeter "issue-nft"))
         )
     )
     (defun URCi_IssueCollectionStoa:decimal
@@ -252,9 +254,9 @@
             \ Single source for STOA|C_Collect and the INFO preview."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (if son (ref-DALOS::UR_UsagePrice "dpsf") (ref-DALOS::UR_UsagePrice "dpnf"))
+            (if son (ref-IGNIS::UC_StoaPrice "issue-sft") (ref-IGNIS::UC_StoaPrice "issue-nft"))
         )
     )
     (defun URCi_IssueDigitalCollection:object{IgnisCollectorV2.OutputCumulator}

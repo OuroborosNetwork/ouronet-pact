@@ -115,6 +115,7 @@
     (defun DPOF|C_WipeHeavy (patron:string id:string account:string))
     (defun DPOF|C_WipePure (patron:string id:string account:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces}))
     (defun DPOF|C_WipeClean (patron:string id:string account:string nonces:[integer]))
+    (defun DPOF|Cp_WipeSlice (patron:string id:string account:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces}))
         ;;
     (defun DPOF|C_Transmit (patron:string id:string nonces:[integer] amounts:[decimal] sender:string receiver:string method:bool))
     (defun DPOF|C_Transfer (patron:string id:string nonces:[integer] sender:string receiver:string method:bool))    
@@ -1333,6 +1334,27 @@
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPOF::C_WipeClean id account nonces)
+                )
+                ;;Update Elite Account
+                (ref-ELITE::XE_UpdateEliteSingle id account)
+            )
+        )
+    )
+    (defun DPOF|Cp_WipeSlice (patron:string id:string account:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces})
+        @doc "Hydra parallel wipe slice: wipes ONE <URHC_BuildWipeSlicePlan> slice of <account>'s \
+            \ <id> nonces. The UI dirty-reads the plan and fires one such tx per slice, all in \
+            \ parallel; slices are disjoint, order-independent and retryable (replay REVERTS). \
+            \ Elite re-rank runs per slice — it recomputes from live state, so whichever slice \
+            \ lands last leaves the correct final rank under any arrival order."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-ELITE:module{EliteV2} ELITE)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-DPOF::Cp_WipeSlice id account removable-nonces-obj)
                 )
                 ;;Update Elite Account
                 (ref-ELITE::XE_UpdateEliteSingle id account)

@@ -99,7 +99,7 @@
                  (if acnoi "Creates a new BoostClass inline (2x STOA)." "Links to an existing BoostClass (1x STOA).")
                  "Executes via TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor."]
                 [(format "Anchor '{}' issued on DPTF {}." [anchor-name dptf-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ANK::URCi_IssueAnchor [])))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ANK::URCi_IssueAnchor "anchor-tf" [])))
                 (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-ANK::URCi_IssueAnchorStoa acnoi))
                 []
             )
@@ -118,7 +118,7 @@
                  (if acnoi "Creates a new BoostClass inline (2x STOA)." "Links to an existing BoostClass (1x STOA).")
                  "Executes via TS02-C3.AQP-ANK|C_IssueSemiFungibleAnchor."]
                 [(format "Anchor '{}' issued on DPSF {} nonce {}." [anchor-name dpsf-id dpsf-nonce])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ANK::URCi_IssueAnchor [])))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ANK::URCi_IssueAnchor "anchor-sf" [])))
                 (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-ANK::URCi_IssueAnchorStoa acnoi))
                 []
             )
@@ -137,7 +137,7 @@
                  (if acnoi "Creates a new BoostClass inline (2x STOA)." "Links to an existing BoostClass (1x STOA).")
                  "Executes via TS02-C3.AQP-ANK|C_IssueNonFungibleAnchor."]
                 [(format "Anchor '{}' issued on DPNF {} trait {}={}." [anchor-name dpnf-id dpnf-trait-key dpnf-trait-value])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ANK::URCi_IssueAnchor [])))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ANK::URCi_IssueAnchor "anchor-nf" [])))
                 (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-ANK::URCi_IssueAnchorStoa acnoi))
                 []
             )
@@ -156,7 +156,7 @@
                  (if acnoi "Creates a new BoostClass inline (2x STOA)." "Links to an existing BoostClass (1x STOA).")
                  "Executes via TS02-C3.AQP-ANK|C_IssueNonFungibleSetAnchor."]
                 [(format "Anchor '{}' issued on DPNF {} nonce-class {}." [anchor-name dpnf-id dpnf-nonce-class])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ANK::URCi_IssueAnchor [])))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ANK::URCi_IssueAnchor "anchor-nf" [])))
                 (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-ANK::URCi_IssueAnchorStoa acnoi))
                 []
             )
@@ -390,7 +390,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Combine three SINGLE models into a TRIPLET model." "Executes via TS02-C3.AQP-SCR|C_CombineTripletScoreModel."]
                 [(format "Triplet score model '{}' combined." [model-name])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueScoreModel patron [])))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_CombineTripletModel patron [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [])
         )
@@ -1257,13 +1257,13 @@
     ;;[AQP-DSA] Delegated Staking Agencies
     (defun INFO_AQP-DSA|DefineDelegationVault:object{OuronetInfoV2.ClientInfo}
         (patron:string fvt-id:string model-id:string unit-score:integer)
-        @doc "Cost preview for AQP-DSA|A_DefineDelegationVault. IGNIS GAS|DEFINE-VAULT; no STOA."
+        @doc "Cost preview for AQP-DSA|C_DefineDelegationVault. IGNIS GAS|DEFINE-VAULT; no STOA."
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Bind a class-0 FVT as a DSA delegation vault." "Executes via TS02-C3.AQP-DSA|A_DefineDelegationVault."]
+                ["Operation: Bind a class-0 FVT as a DSA delegation vault." "Executes via TS02-C3.AQP-DSA|C_DefineDelegationVault."]
                 [(format "FVT {} bound as delegation vault (model {})." [fvt-id model-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-DSA.URCi_DefineDelegationVault patron [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
@@ -1305,13 +1305,13 @@
     )
     (defun INFO_AQP-DSA|SetOracleAuth:object{OuronetInfoV2.ClientInfo}
         (patron:string fvt-id:string oracle-guard:guard)
-        @doc "Cost preview for AQP-DSA|A_SetOracleAuth. IGNIS GAS|SET-ORACLE-AUTH; no STOA."
+        @doc "Cost preview for AQP-DSA|C_SetOracleAuth. IGNIS GAS|SET-ORACLE-AUTH; no STOA."
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Authorize the delegated oracle key + arm the capture expiry." "Executes via TS02-C3.AQP-DSA|A_SetOracleAuth."]
+                ["Operation: Authorize the delegated oracle key + arm the capture expiry." "Executes via TS02-C3.AQP-DSA|C_SetOracleAuth."]
                 [(format "Oracle authority set on vault {}." [fvt-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-DSA.URCi_SetOracleAuth patron [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
@@ -1320,13 +1320,13 @@
     )
     (defun INFO_AQP-DSA|OracleWrite:object{OuronetInfoV2.ClientInfo}
         (patron:string fvt-id:string score-entity-id:string nodes:integer uptime:integer)
-        @doc "Cost preview for AQP-DSA|A_OracleWrite. IGNIS GAS|ORACLE-WRITE; no STOA."
+        @doc "Cost preview for AQP-DSA|C_OracleWrite. IGNIS GAS|ORACLE-WRITE; no STOA."
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Oracle writes an agency's daily {nodes, uptime} + recomputes its capture." "Executes via TS02-C3.AQP-DSA|A_OracleWrite."]
+                ["Operation: Oracle writes an agency's daily {nodes, uptime} + recomputes its capture." "Executes via TS02-C3.AQP-DSA|C_OracleWrite."]
                 [(format "Oracle wrote nodes {} / uptime {} for agency {}." [nodes uptime score-entity-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-DSA.URCi_OracleWrite patron [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
@@ -1369,7 +1369,7 @@
     )
     (defun INFO_AQP-DSA|WithdrawRoyalty:object{OuronetInfoV2.ClientInfo}
         (patron:string fvt-id:string reward-dptf-id:string)
-        @doc "Cost preview for AQP-DSA|A_WithdrawRoyalty. FULL IGNIS: GAS|WITHDRAW-ROYALTY gas leg + the state- \
+        @doc "Cost preview for AQP-DSA|C_WithdrawRoyalty. FULL IGNIS: GAS|WITHDRAW-ROYALTY gas leg + the state- \
             \ dependent custody-move leg (normalize + TFT transfer of the live royalty pool to the FVT owner); STOA none."
         (let
             (
@@ -1378,7 +1378,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Withdraw the whole royalty pool to the FVT owner."
                  "Full IGNIS shown: gas + custody move (reconstructed from the live royalty balance)."
-                 "Executes via TS02-C3.AQP-DSA|A_WithdrawRoyalty."]
+                 "Executes via TS02-C3.AQP-DSA|C_WithdrawRoyalty."]
                 [(format "Royalty pool of reward {} on FVT {} withdrawn to owner." [reward-dptf-id fvt-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (AQP-DSA.URCi_WithdrawRoyaltyFull patron fvt-id reward-dptf-id))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
@@ -1387,7 +1387,7 @@
     )
     (defun INFO_AQP-DSA|BurnRoyalty:object{OuronetInfoV2.ClientInfo}
         (patron:string fvt-id:string reward-dptf-id:string)
-        @doc "Cost preview for AQP-DSA|A_BurnRoyalty. FULL IGNIS: GAS|BURN-ROYALTY gas leg + the state-dependent \
+        @doc "Cost preview for AQP-DSA|C_BurnRoyalty. FULL IGNIS: GAS|BURN-ROYALTY gas leg + the state-dependent \
             \ custody-burn leg (normalize + DPTF burn of the live royalty pool); STOA none."
         (let
             (
@@ -1396,7 +1396,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Burn the whole royalty pool."
                  "Full IGNIS shown: gas + custody burn (reconstructed from the live royalty balance)."
-                 "Executes via TS02-C3.AQP-DSA|A_BurnRoyalty."]
+                 "Executes via TS02-C3.AQP-DSA|C_BurnRoyalty."]
                 [(format "Royalty pool of reward {} on FVT {} burned." [reward-dptf-id fvt-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (AQP-DSA.URCi_BurnRoyaltyFull patron fvt-id reward-dptf-id))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
@@ -1405,7 +1405,7 @@
     )
     (defun INFO_AQP-DSA|FuelRoyalty:object{OuronetInfoV2.ClientInfo}
         (patron:string fvt-id:string reward-dptf-id:string swpair:string)
-        @doc "Cost preview for AQP-DSA|A_FuelRoyalty. FULL IGNIS: GAS|FUEL-ROYALTY gas leg + the state-dependent \
+        @doc "Cost preview for AQP-DSA|C_FuelRoyalty. FULL IGNIS: GAS|FUEL-ROYALTY gas leg + the state-dependent \
             \ custody-fuel leg (normalize + SWPLC fuel of the live royalty pool into the swpair); STOA none."
         (let
             (
@@ -1414,7 +1414,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Fuel a swap pair with the whole royalty pool (no LP mint)."
                  "Full IGNIS shown: gas + custody fuel (reconstructed from the live royalty balance)."
-                 "Executes via TS02-C3.AQP-DSA|A_FuelRoyalty."]
+                 "Executes via TS02-C3.AQP-DSA|C_FuelRoyalty."]
                 [(format "Royalty pool of reward {} on FVT {} fueled into {}." [reward-dptf-id fvt-id swpair])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (AQP-DSA.URCi_FuelRoyaltyFull patron fvt-id reward-dptf-id swpair))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
@@ -1423,13 +1423,13 @@
     )
     (defun INFO_AQP-DSA|SetAgencyFee:object{OuronetInfoV2.ClientInfo}
         (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer)
-        @doc "Cost preview for AQP-DSA|A_SetAgencyFee. IGNIS GAS|SET-AGENCY-FEE; no STOA. O(1) reprice."
+        @doc "Cost preview for AQP-DSA|C_SetAgencyFee. IGNIS GAS|SET-AGENCY-FEE; no STOA. O(1) reprice."
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Change a delegation agency's operator fee (reprices only future injects)." "Executes via TS02-C3.AQP-DSA|A_SetAgencyFee."]
+                ["Operation: Change a delegation agency's operator fee (reprices only future injects)." "Executes via TS02-C3.AQP-DSA|C_SetAgencyFee."]
                 [(format "Agency {} fee set to {} per-mille." [score-entity-id fee-per-mille])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-DSA.URCi_SetAgencyFee patron [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)

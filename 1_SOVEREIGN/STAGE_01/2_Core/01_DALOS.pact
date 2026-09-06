@@ -216,6 +216,7 @@
     (defun UR_VirtualToggle:bool ())
     (defun UR_VirtualSpent:decimal ())
     (defun UR_NativeToggle:bool ())
+    (defun UR_AccountCreationStoa:bool ())
     (defun UR_NativeSpent:decimal ())
     (defun UR_AutoFuel:bool ())
     ;; [3]      DALOS|PricesTable:{DALOS|PricesSchema}
@@ -256,6 +257,7 @@
     (defun URC_StoaGasDiscount:decimal (account:string))
     (defun URC_GasDiscount:decimal (account:string native:bool))
     (defun URC_SplitSTOAPrices:[decimal] (account:string stoa-price:decimal))
+    (defun URC_SplitSTOAPricesFull:[decimal] (stoa-price:decimal))
     (defun URC_Transferability:bool (sender:string receiver:string method:bool))
     ;;{5.4}  Validate [UEV/CAP]
     ;;
@@ -304,6 +306,7 @@
     (defun A_DeploySmartAccount (account:string guard:guard stoa:string sovereign:string public:string))
     (defun A_DeployStandardAccount (account:string guard:guard stoa:string public:string))
     (defun A_ToggleGasCollection (native:bool toggle:bool))
+    (defun A_ToggleAccountCreationStoa (toggle:bool))
     (defun A_SetIgnisSourcePrice (price:decimal))
     (defun A_SetAutoFueling (toggle:bool))
     (defun A_UpdatePublicKey (account:string new-public:string))
@@ -603,6 +606,10 @@
         native-gas-toggle:bool              ;;STOA collection toggle
         native-gas-spent:decimal            ;;STOA spent
         native-gas-pump:bool                ;;controls automatic LiquidStaking fueling
+        account-creation-stoa:bool          ;;STOA collection on Ouronet ACCOUNT CREATION only.
+                                            ;;Deliberately INDEPENDENT of native-gas-toggle so the
+                                            ;;global STOA collection can be ON while onboarding
+                                            ;;stays free. Default FALSE (onboarding is free).
     )
     (defschema DALOS|PricesSchema
         price:decimal                       ;;Stores price for action
@@ -700,6 +707,15 @@
             (UEV_StoaCollectionState (not toggle))
             (UEV_IgnisCollectionState (not toggle))
         )
+    )
+    (defcap DALOS|C>TOGGLE-ACCOUNT-CREATION-STOA (toggle:bool)
+        @doc "Admin gate for the account-creation STOA switch. Deliberately does NOT reuse \
+            \ DALOS|C>TOGGLE-GAS-COLLECTION: that one validates the GLOBAL STOA state, which \
+            \ would couple this switch to the very flag it must stay independent of. Guards \
+            \ only against a redundant flip of its own field."
+        (compose-capability (GOV|DALOS_ADMIN))
+        (enforce (!= toggle (UR_AccountCreationStoa))
+            "Account-creation STOA collection is already in that state")
     )
     (defcap DALOS|C>CONTROL-SMART-OURONET-ACCOUNT (account:string pasc:bool pbsc:bool pbm:bool)
         @event
@@ -923,6 +939,16 @@
             tg
         )
     )
+    (defun UR_AccountCreationStoa:bool ()
+        @doc "Is STOA collected on Ouronet account creation? Independent of the global STOA \
+            \ toggle (UR_NativeToggle) so onboarding can stay free while global STOA is ON. \
+            \ Defaults FALSE for rows written before this flag existed."
+        (with-default-read DALOS|GasManagementTable DALOS|VGD
+            {"account-creation-stoa" : false}
+            {"account-creation-stoa" := t}
+            t
+        )
+    )
     (defun UR_NativeSpent:decimal ()
         (at "native-gas-spent" (read DALOS|GasManagementTable DALOS|VGD ["native-gas-spent"]))
     )
@@ -1084,6 +1110,19 @@
                 (discounted-stoa:decimal (* stoa-discount stoa-price))
             )
             (ref-U|DALOS::UC_TenTwentyThirtyFourtySplit discounted-stoa stoa-prec)
+        )
+    )
+    (defun URC_SplitSTOAPricesFull:[decimal] (stoa-price:decimal)
+        @doc "Same 10/20/30/40 STOA split as URC_SplitSTOAPrices but WITHOUT the Elite \
+            \ discount — for the rare costs the pricing spec says are taxed in FULL (PYTHIA's \
+            \ fees, and some asymmetric-liquidity legs). Takes no account precisely BECAUSE no \
+            \ account-dependent discount applies."
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+            )
+            (ref-U|DALOS::UC_TenTwentyThirtyFourtySplit stoa-price (ref-U|CT::CT_STOA_PRECISION))
         )
     )
     (defun URC_Transferability:bool (sender:string receiver:string method:bool)
@@ -1322,6 +1361,12 @@
             (update DALOS|GasManagementTable DALOS|VGD
                 {"virtual-gas-toggle" : toggle}
             )
+        )
+    )
+    (defun XI_ToggleAccountCreationStoa (toggle:bool)
+        (require-capability (GOV|DALOS_ADMIN))
+        (update DALOS|GasManagementTable DALOS|VGD
+            {"account-creation-stoa" : toggle}
         )
     )
     (defun XB_UpdateOuroPrice (price:decimal)
@@ -1596,6 +1641,15 @@
         (P|UEV_IMC)
         (with-capability (DALOS|C>TOGGLE-GAS-COLLECTION native toggle)
             (XI_GasToggle native toggle)
+        )
+    )
+    (defun A_ToggleAccountCreationStoa (toggle:bool)
+        @doc "ADMIN: switch STOA collection for Ouronet account creation on/off, independently \
+            \ of the global STOA switch. OFF = onboarding is free (the default). Admin op, so \
+            \ it is itself IGNIS+STOA exempt."
+        (P|UEV_IMC)
+        (with-capability (DALOS|C>TOGGLE-ACCOUNT-CREATION-STOA toggle)
+            (XI_ToggleAccountCreationStoa toggle)
         )
     )
     (defun A_SetIgnisSourcePrice (price:decimal)

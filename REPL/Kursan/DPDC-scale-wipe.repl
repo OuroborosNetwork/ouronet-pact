@@ -1,0 +1,132 @@
+;;
+;; REPL/Kursan/DPDC-scale-wipe.repl — canonical integration layout
+;;   Inter-tx:   ;;|| NEXT >
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [...] ---")
+;;
+;; IGNIS COST REHAUL / Hydra wipe — DPDC-MNG WIPE-SLICE-MAX-NONCES calibration.
+;;
+;; WHY: the DPOF probe (REPL/Kursan/DPOF-scale-wipe.repl) measured 405.6 gas per nonce wiped
+;; => ~4,907 nonces per 2,000,000-gas tx. But 06_DPDC-MNG.pact's @doc carries a CONTRADICTING
+;; empirical prior ("~167 individual NFT wipes fit one tx"), implying collectible wipes are far
+;; heavier per nonce than ortofungible ones. Both modules currently share the same GUESSED
+;; constant (120). This probe settles it for the collectible side, so each module's ceiling can
+;; be set on its own evidence rather than one number borrowed across families.
+;;
+;; METHOD: mint N NFT nonces to a frozen account, wipe at increasing slice widths through the
+;; real Talos Cp_WipeSlice path, and difference the measurements so the fixed per-tx overhead
+;; cancels: marginal = (gas(wide) - gas(narrow)) / (width difference).
+;;
+(load "../Stage00_Sanboxes.repl")
+(load "../Stage01_Tester.repl")
+(load "../Stage02_Tester.repl")
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Kursan/DPDC-scale-wipe.repl")
+(print "================================================================")
+(print "Legend: <(gas)> = measured STOA gas · <(mgn)> = marginal gas per nonce")
+(print "")
+
+(begin-tx "TX-DSCALE-001 Mint 40 NFT nonces to a frozen account")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-DSCALE-001 · 01 · env-sigs ==== =========================================================
+(print "--- [TX-DSCALE-001 · 01 · env-sigs] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+;;==== TX-DSCALE-001 · 02 · create / fund / freeze ==== ===========================================
+(print "--- [TX-DSCALE-001 · 02 · create / fund / freeze] ---")
+(let
+    (
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (id:string "CNF-98c486052a51")
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+    )
+    (let*
+        (
+            (type:object{DpdcUdcV2.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+            (nd:object{DpdcUdcV2.DPDC|NonceData}
+                (ref-DPDC-UDC::UDC_NonceData
+                    0.0 0.0 "N" "N" (ref-DPDC-UDC::UDC_NoMetaData) type
+                    (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
+                )
+            )
+            ;;nonces 21..60 (1..20 were consumed by [6.1.8] and the DPDC suites)
+            (fresh:[integer] (enumerate 21 60))
+        )
+        (ref-TS02-C2::DPNF|C_Create patron id (make-list 40 nd))
+        (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron id lumy false)
+        (ref-TS02-C2::DPNF|C_BulkTransfer patron id
+            [fresh] [(make-list 40 1)] patron [lumy] false)
+        (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron id lumy true)
+        (print (format "<(setup)> LUMY holds {} wipeable NFT nonces"
+            [(length (at "r-nonces" (ref-DPDC-MNG::URHC_WipePure lumy id false)))]))
+    )
+)
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-DSCALE-002 Measure slice gas at widths 8 / 16 / 24")
+(env-gasmodel "table")(env-gaslimit 150000000)
+(namespace "ouronet-ns")
+;;==== TX-DSCALE-002 · 01 · env-sigs ==== =========================================================
+(print "--- [TX-DSCALE-002 · 01 · env-sigs] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+;;==== TX-DSCALE-002 · 02 · widths 8 / 16 / 24 + derived ceiling ==== =============================
+(print "--- [TX-DSCALE-002 · 02 · widths 8 / 16 / 24 + derived ceiling] ---")
+(let*
+    (
+        (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (id:string "CNF-98c486052a51")
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        ;;partition the 40 nonces into 5 slices of 8, then fire widths 8, 16, 24
+        (plan:object{DpdcManagementV2.DPDC-MNG|WipeSlicePlan}
+            (ref-DPDC-MNG::URHC_BuildWipeSlicePlan lumy id false 5))
+        (sl:[object{DpdcManagementV2.RemovableNonces}] (at "slices" plan))
+        (w8:object{DpdcManagementV2.RemovableNonces} (at 0 sl))
+        (w16:object{DpdcManagementV2.RemovableNonces}
+            (ref-DPDC-MNG::UDC_RemovableNonces
+                (+ (at "r-nonces" (at 1 sl)) (at "r-nonces" (at 2 sl)))
+                (+ (at "r-amounts" (at 1 sl)) (at "r-amounts" (at 2 sl)))))
+        (w24:object{DpdcManagementV2.RemovableNonces}
+            (ref-DPDC-MNG::UDC_RemovableNonces
+                (+ (+ (at "r-nonces" (at 3 sl)) (at "r-nonces" (at 4 sl))) (at "r-nonces" (at 0 sl)))
+                (+ (+ (at "r-amounts" (at 3 sl)) (at "r-amounts" (at 4 sl))) (at "r-amounts" (at 0 sl)))))
+        ;;measure: widths 8 then 16 (w24 reuses slice 0, so it is measured FIRST below)
+        (m0:string (env-gas 0))
+        (a1:string (ref-TS02-C2::DPNF|Cp_WipeSlice patron lumy id w8))
+        (g8:integer (env-gas))
+        (m1:string (env-gas 0))
+        (a2:string (ref-TS02-C2::DPNF|Cp_WipeSlice patron lumy id w16))
+        (g16:integer (env-gas))
+        ;;marginal gas per nonce (fixed per-tx overhead cancels in the difference)
+        (mgn:decimal (/ (dec (- g16 g8)) 8.0))
+        (fixed:decimal (- (dec g8) (* mgn 8.0)))
+        (budget:decimal 2000000.0)
+        (safe:integer (floor (/ (- budget fixed) mgn)))
+    )
+    (print (format "<(gas)> width 8 = {} · width 16 = {}" [g8 g16]))
+    (print (format "<(mgn)> marginal gas per NFT nonce wiped = {}" [(round mgn 1)]))
+    (print (format "<(fixed)> per-tx fixed overhead = {}" [(round fixed 1)]))
+    (print (format "<(derived)> max NFT nonces per 2,000,000-gas tx = {}" [safe]))
+    (print (format "<(prior)> 06_DPDC-MNG @doc prior = ~167 · DPOF measured = 4907"))
+    (print "")
+    (print (format "VERDICT: DPDC-MNG WIPE-SLICE-MAX-NONCES evidence => <= {}" [safe]))
+    ""
+)
+(print "")
+(print "<<TX-DSCALE-002>> DPDC wipe-slice gas calibration measured")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;
+;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+;;

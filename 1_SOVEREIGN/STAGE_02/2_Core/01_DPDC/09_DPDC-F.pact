@@ -324,18 +324,30 @@
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
-            (ref-IGNIS::UDC_BiggestCumulator (ref-DPDC::UR_CreatorKonto id son))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_MergeFragments" "setup")
+                       (ref-IGNIS::UC_IgnisPrice "DPNF|C_MergeFragments" "setup"))
+                (ref-DPDC::UR_CreatorKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_EnableNonceFragmentation:object{IgnisCollectorV2.OutputCumulator}
         (id:string son:bool)
-        @doc "Cost preview for C_EnableNonceFragmentation (Smallest on creator-konto)."
+        @doc "Cost preview for C_EnableNonceFragmentation — the ISSUE gate of the fragmentation \
+            \ family (owner 2026-09-05: MakeFragments/MergeFragments are USAGE; THIS is the issue \
+            \ op). 100x deterrence = $1 in IGNIS per nonce defined as fragmented; this entrypoint \
+            \ enables exactly ONE nonce per call, so the charge is one unit of the central \
+            \ IG|DETER frag-enable tier. Shared by exec and the INFO_* preview."
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
-            (ref-IGNIS::UDC_SmallestCumulator (ref-DPDC::UR_CreatorKonto id son))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisDeter "frag-enable")
+                (ref-DPDC::UR_CreatorKonto id son)
+                (ref-IGNIS::URC_IsVirtualGasZero)
+                []
+            )
         )
     )
     ;;{5.4}  Validate [UEV/CAP]

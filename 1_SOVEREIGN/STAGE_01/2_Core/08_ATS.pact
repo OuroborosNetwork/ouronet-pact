@@ -2045,7 +2045,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto atspair))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_RotateOwnership" "auth")
+                (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_Control:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
@@ -2053,7 +2055,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_BigCumulator (UR_OwnerKonto atspair))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_Control" "setup")
+                (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_UpdateRoyalty:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
@@ -2061,7 +2065,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_SmallCumulator (UR_OwnerKonto atspair))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_UpdateRoyalty" "fee")
+                (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_UpdateSyphon:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
@@ -2069,7 +2075,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_SmallCumulator (UR_OwnerKonto atspair))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_UpdateSyphon" "usage")
+                (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_SetHibernationFees:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
@@ -2077,7 +2085,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_SmallCumulator (UR_OwnerKonto atspair))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_SetHibernationFees" "fee")
+                (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_ControlColdRecoveryFees:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
@@ -2085,7 +2095,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_MediumCumulator (UR_OwnerKonto atspair))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_ControlColdRecoveryFees" "fee")
+                (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_SetColdRecoveryDuration:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
@@ -2093,7 +2105,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_SmallCumulator (UR_OwnerKonto atspair))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_SetColdRecoveryDuration" "setup")
+                (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_ToggleElite:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
@@ -2101,7 +2115,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_SmallCumulator (UR_OwnerKonto atspair))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_ToggleElite" "setup")
+                (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_ToggleUpgrade:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
@@ -2109,7 +2125,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_SmallCumulator (UR_OwnerKonto atspair))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_ToggleUpgrade" "setup")
+                (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_SwitchColdRecovery:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
@@ -2117,7 +2135,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto atspair))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_SwitchColdRecovery" "setup")
+                (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_ControlHotRecoveryFee:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
@@ -2125,7 +2145,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_MediumCumulator (UR_OwnerKonto atspair))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_ControlHotRecoveryFee" "fee")
+                (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_SetHotRecoveryFees:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
@@ -2141,7 +2163,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto atspair))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_SwitchHotRecovery" "setup")
+                (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_SetDirectRecoveryFee:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
@@ -2149,7 +2173,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto atspair))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_SetDirectRecoveryFee" "fee")
+                (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_SwitchDirectRecovery:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
@@ -2157,7 +2183,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto atspair))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_SwitchDirectRecovery" "setup")
+                (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     ;;  Construct-with-price (pure): also reused for C_AddHotRBT's ico0 (identical token-issue construct).
@@ -2206,7 +2234,7 @@
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-                (unlock-costs:[decimal] (if toggle [0.0 0.0] (ref-U|ATS::UC_UnlockPrice (UR_Unlocks atspair))))
+                (unlock-costs:[decimal] (if toggle [0.0 0.0] (ref-IGNIS::UC_FeeUnlockPrice)))
                 (gas-costs:decimal (+ (ref-DALOS::UR_UsagePrice "ignis|small") (at 0 unlock-costs)))
                 (output:bool (> (at 1 unlock-costs) 0.0))
             )
@@ -2215,19 +2243,26 @@
     )
     ;;  Issue/UpgradeBranding: :decimal price rails (cumulator output / write side-effect stays in the C_/XI).
     (defun URCi_IssueGas:decimal (token-count:integer)
+        @doc "IGNIS issuance price per token. Sourced from the CENTRAL IG|DETER map in the \
+            \ IGNIS module (rehaul substage 5, 1 ignis = 1 cent): autostake pair issuance = $40 = 4000 ignis/pair (owner 2026-09-05). \
+            \ Shared by the exec path and its INFO_* preview, so both move as one."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (* (dec token-count) (ref-DALOS::UR_UsagePrice "ignis|ats-issue"))
+            (* (dec token-count) (ref-IGNIS::UC_IgnisDeter "issue-ats-pair"))
         )
     )
     (defun URCi_IssueStoa:decimal (token-count:integer)
+        @doc "STOA leg of issuance, per token. Carries the SAME DOLLAR VALUE as the IGNIS deter \
+            \ (autostake pair = $40 => 400 STOA), converted at the live STOA price by UC_StoaPrice — so \
+            \ when a real STOA price replaces the $0.10 peg the AMOUNT moves but the value the \
+            \ user pays does not. Shared by the exec path and its INFO_* preview."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (* (dec token-count) (ref-DALOS::UR_UsagePrice "ats"))
+            (* (dec token-count) (ref-IGNIS::UC_StoaPrice "issue-ats-pair"))
         )
     )
     (defun URCi_UpgradeBranding:decimal (months:integer)
@@ -2536,9 +2571,10 @@
             [0.0 0.0]
             (let
                 (
-                    (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
                 )
-                (ref-U|ATS::UC_UnlockPrice (UR_Unlocks atspair))
+                (ref-IGNIS::UC_FeeUnlockPrice)
             )
         )
     )

@@ -837,7 +837,9 @@
                 [
                     ;;1]Issue the special DPTF wrapper (gas rail only; STOA collected separately)
                     (ref-IGNIS::UDC_ConstructOutputCumulator
-                        (ref-DPTF::URCi_IssueGas 1) VST|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
+                        ;;the link's OWN deterrence ($2.50) PLUS the cost of the DPTF it issues
+                        (+ (ref-IGNIS::UC_IgnisDeter "vst-link") (ref-DPTF::URCi_IssueGas 1))
+                        VST|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
                     ;;2]Link <dptf> <-> special wrapper
                     (ref-DPTF::URCi_UpdateSpecialTrueFungible dptf)
                     ;;3]Toggle transfer-role on the VST-owned special wrapper
@@ -864,7 +866,9 @@
                 [
                     ;;1]Issue the special DPOF wrapper (gas rail only; STOA collected separately)
                     (ref-IGNIS::UDC_ConstructOutputCumulator
-                        (ref-DPOF::URCi_IssueGas 1) VST|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
+                        ;;the link's OWN deterrence ($2.50) PLUS the cost of the DPOF it issues
+                        (+ (ref-IGNIS::UC_IgnisDeter "vst-link") (ref-DPOF::URCi_IssueGas 1))
+                        VST|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
                     ;;2]Link <dptf> <-> special wrapper
                     (ref-DPOF::URCi_UpdateSpecialOrtoFungible dptf)
                     ;;3]Toggle transfer-role only for Vesting/Sleeping wrappers

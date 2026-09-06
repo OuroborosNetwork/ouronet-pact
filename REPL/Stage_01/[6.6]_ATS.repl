@@ -1185,6 +1185,7 @@
         (atsc:string KST.ATSTK)
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
         (ref-U|ATS:module{UtilityAtsV3} U|ATS)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
@@ -1209,7 +1210,9 @@
         (ouro:string "OURO-98c486052a51")
 
         (f-toggle-costs:[decimal]
-            (ref-U|ATS::UC_UnlockPrice (ref-ATS::UR_Unlocks ps))
+            ;;flat $50 IGNIS + $50 STOA per unlock (the escalating ladder was retired in the
+            ;;pricing rehaul); sized from the same source the module charges from
+            (ref-IGNIS::UC_FeeUnlockPrice)
         )
         (split-stoa:[decimal] 
             (ref-DALOS::URC_SplitSTOAPrices

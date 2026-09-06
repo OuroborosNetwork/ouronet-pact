@@ -669,7 +669,7 @@
                                 (ref-TFT::URCi_MultiTransferCumulator pt-ids KST.ANHD swp-sc pt-amts)
                                 (ref-DPTF::URCi_Mint lp swp-sc true)
                                 (ref-TFT::URCi_Transfer lp swp-sc KST.ANHD 10000000.0)
-                                (ref-IGNIS::UDC_ConstructOutputCumulator (ref-DALOS::UR_UsagePrice "ignis|swp-issue") swp-sc trigger [])
+                                (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisDeter "issue-swp-pair") swp-sc trigger [])
                             ]
                             []))
                 )

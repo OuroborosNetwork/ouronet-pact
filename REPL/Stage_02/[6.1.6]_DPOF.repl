@@ -76,5 +76,84 @@
 )
 (print "===^^^===")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
-(print "=== END FILE [6.1.6]_DPOF.repl (all 7 DPOF tail ops) ===")
+
+;;================================================================================
+(begin-tx "TX-OF-002 - DPOF Hydra wipe: seed math / plan build / 3 slices / replay reverts")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-OF-002 · 01 · env-sigs (caps) ====
+(print "--- [TX-OF-002 · 01 · env-sigs] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+;;==== TX-OF-002 · 02 · fund EMMA 6 nonces / freeze / plan asserts ====
+(print "--- [TX-OF-002 · 02 · fund EMMA 6 nonces / freeze / plan asserts] ---")
+(let
+    (
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (id:string "COF-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+    )
+    ;; re-fund EMMA with SIX segmented nonces (6 transmits of 15.0 — owner's nonce 1 holds
+    ;; only 100 units after TX-OF-001), then freeze for the wipe
+    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron id emma false)
+    (map
+        (lambda (i:integer) (ref-TS01-C1::DPOF|C_Transmit patron id [1] [15.0] patron emma false))
+        (enumerate 1 6)
+    )
+    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron id emma true)
+    (let*
+        (
+            (full:object{DpofUdcV2.RemovableNonces} (ref-DPOF::URHC_WipePure emma id))
+            (plan:object{DpofUdcV2.DPOF|WipeSlicePlan} (ref-DPOF::URHC_BuildWipeSlicePlan emma id 3))
+            (slices:[object{DpofUdcV2.RemovableNonces}] (at "slices" plan))
+            (s0:object{DpofUdcV2.RemovableNonces} (at 0 slices))
+            (s1:object{DpofUdcV2.RemovableNonces} (at 1 slices))
+            (s2:object{DpofUdcV2.RemovableNonces} (at 2 slices))
+        )
+        (map print
+            [
+                (expect "<<TX-OF-002>> seed: 6 nonces fit 1 slice" 1 (ref-DPOF::UC_ComputeMinWipeSliceCount 6))
+                (expect "<<TX-OF-002>> seed: 1001 nonces need 2 slices (ceiling 1000, calibrated)" 2 (ref-DPOF::UC_ComputeMinWipeSliceCount 1001))
+                (expect "<<TX-OF-002>> seed: 2001 nonces need 3 slices (ceiling 1000, calibrated)" 3 (ref-DPOF::UC_ComputeMinWipeSliceCount 2001))
+                (expect "<<TX-OF-002>> plan: 3 slices over 6 nonces" 3 (at "slice-count" plan))
+                (expect "<<TX-OF-002>> plan: slice widths 2/2/2" [2 2 2] (map (lambda (s:object{DpofUdcV2.RemovableNonces}) (length (at "r-nonces" s))) slices))
+                (expect "<<TX-OF-002>> plan: disjoint slices cover the full set exactly"
+                    (at "r-nonces" full)
+                    (fold (lambda (acc:[integer] ns:[integer]) (+ acc ns)) []
+                        (map (lambda (s:object{DpofUdcV2.RemovableNonces}) (at "r-nonces" s)) slices)))
+                (expect "<<TX-OF-002>> plan: over-asking 100 slices clamps to 6 x 1-nonce slices" 6
+                    (at "slice-count" (ref-DPOF::URHC_BuildWipeSlicePlan emma id 100)))
+                ""
+            ]
+        )
+        ;;==== TX-OF-002 · 03 · fire 3 slices (parallel in production) + replay negative ====
+        (print "--- [TX-OF-002 · 03 · fire 3 slices + replay negative] ---")
+        (ref-TS01-C1::DPOF|Cp_WipeSlice patron id emma s0)
+        (map print
+            [
+                (expect "<<TX-OF-002>> after slice 0: 4 nonces remain" 4 (length (at "r-nonces" (ref-DPOF::URHC_WipePure emma id))))
+                ""
+            ]
+        )
+        (ref-TS01-C1::DPOF|Cp_WipeSlice patron id emma s1)
+        (ref-TS01-C1::DPOF|Cp_WipeSlice patron id emma s2)
+        (map print
+            [
+                (expect-failure "<<TX-OF-002>> replayed slice 0 REVERTS (live table is the completion ledger)"
+                    (ref-TS01-C1::DPOF|Cp_WipeSlice patron id emma s0))
+                (expect "<<TX-OF-002>> terminal: EMMA fully wiped (remains empty)" 0 (length (at "r-nonces" (ref-DPOF::URHC_WipePure emma id))))
+                (expect "<<TX-OF-002>> terminal: EMMA account supply zeroed" 0.0 (ref-DPOF::UR_AccountSupply id emma))
+                ""
+            ]
+        )
+    )
+)
+(print "===^^^===")
+(commit-tx)
+(print "")
+(print "=== END FILE [6.1.6]_DPOF.repl (7 DPOF tail ops + Hydra wipe) ===")

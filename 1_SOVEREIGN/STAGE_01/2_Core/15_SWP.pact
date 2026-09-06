@@ -1247,7 +1247,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto swpair))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "SWP|C_ChangeOwnership" "auth")
+                (UR_OwnerKonto swpair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_ModifyCanChangeOwner:object{IgnisCollectorV2.OutputCumulator} (swpair:string)
@@ -1255,7 +1257,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto swpair))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "SWP|C_ModifyCanChangeOwner" "auth")
+                (UR_OwnerKonto swpair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_ModifyWeights:object{IgnisCollectorV2.OutputCumulator} (swpair:string)
@@ -1263,7 +1267,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto swpair))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "SWP|C_ModifyWeights" "fee")
+                (UR_OwnerKonto swpair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_UpdateAmplifier:object{IgnisCollectorV2.OutputCumulator} (swpair:string)
@@ -1271,7 +1277,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_MediumCumulator (UR_OwnerKonto swpair))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "SWP|C_UpdateAmplifier" "fee")
+                (UR_OwnerKonto swpair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_UpdateFee:object{IgnisCollectorV2.OutputCumulator} (swpair:string)
@@ -1279,7 +1287,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_SmallCumulator (UR_OwnerKonto swpair))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "SWP|C_UpdateFee" "fee")
+                (UR_OwnerKonto swpair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_UpdateSpecialFeeTargets:object{IgnisCollectorV2.OutputCumulator} (swpair:string)
@@ -1287,7 +1297,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_MediumCumulator (UR_OwnerKonto swpair))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "SWP|C_UpdateSpecialFeeTargets" "fee")
+                (UR_OwnerKonto swpair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_ToggleFeeLock:object{IgnisCollectorV2.OutputCumulator} (swpair:string toggle:bool)
@@ -1296,7 +1308,7 @@
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-                (unlock-costs:[decimal] (if toggle [0.0 0.0] (ref-U|ATS::UC_UnlockPrice (UR_FeeUnlocks swpair))))
+                (unlock-costs:[decimal] (if toggle [0.0 0.0] (ref-IGNIS::UC_FeeUnlockPrice)))
                 (gas-costs:decimal (+ (ref-DALOS::UR_UsagePrice "ignis|small") (at 0 unlock-costs)))
                 (output:bool (> (at 1 unlock-costs) 0.0))
             )
@@ -1800,6 +1812,7 @@
         (require-capability (SWP|C>TG_FEE-LOCK swpair toggle))
         (let
             (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-U|ATS:module{UtilityAtsV3} U|ATS)
             )
             (update SWP|Pairs swpair
@@ -1807,7 +1820,7 @@
             )
             (if (= toggle true)
                 [0.0 0.0]
-                (ref-U|ATS::UC_UnlockPrice (UR_FeeUnlocks swpair))
+                (ref-IGNIS::UC_FeeUnlockPrice)
             )
         )
     )
