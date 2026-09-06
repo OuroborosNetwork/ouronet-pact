@@ -401,7 +401,7 @@
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                     (ref-ELITE:module{EliteV2} ELITE)
-                    (ea-id:string (ref-DALOS::EliteAurynID))
+                    (ea-id:string (ref-DALOS::UR_EliteAurynID))
                 )
                 (ref-ELITE::XE_UpdateEliteSingle ea-id account)
                 (ref-IGNIS::C_Collect patron
@@ -420,7 +420,7 @@
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                     (ref-ELITE:module{EliteV2} ELITE)
-                    (ea-id:string (ref-DALOS::EliteAurynID))
+                    (ea-id:string (ref-DALOS::UR_EliteAurynID))
                 )
                 (ref-ELITE::XE_UpdateElite ea-id sender receiver)
                 (ref-IGNIS::C_Collect patron

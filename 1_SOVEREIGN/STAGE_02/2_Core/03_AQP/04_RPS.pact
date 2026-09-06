@@ -2668,19 +2668,27 @@
     )
 
     (defun URCi_RotateOwnership:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string)
+        @doc "Cost preview for AQP-FVT|C_RotateOwnership on the (pre-rotate) FVT owner \
+            \ — deter(auth) + components, like every other module's RotateOwnership."
         (let
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_MediumCumulator (UR_FVT|OwnerKonto fvt-id))
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-FVT|C_RotateOwnership" "auth")
+                (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) [])
         ))
 
     (defun URCi_Control:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string)
+        @doc "Cost preview for AQP-FVT|C_Control on the FVT owner — deter(setup) + components, \
+            \ like every other module's Control."
         (let
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_MediumCumulator (UR_FVT|OwnerKonto fvt-id))
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-FVT|C_Control" "setup")
+                (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) [])
         ))
 
     (defun URCi_SetCommonDenominator:object{IgnisCollectorV2.OutputCumulator} (fvt-id:string output:[string])

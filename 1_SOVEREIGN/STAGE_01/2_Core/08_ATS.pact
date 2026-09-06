@@ -2151,11 +2151,15 @@
         )
     )
     (defun URCi_SetHotRecoveryFees:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
+        @doc "Cost preview for the ATS|C_SetHotRecoveryFee client (core fn is plural, the \
+            \ Talos op is singular — billed under the TALOS name like every other key)."
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (ref-IGNIS::UDC_BiggestCumulator (UR_OwnerKonto atspair))
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_SetHotRecoveryFee" "fee")
+                (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_SwitchHotRecovery:object{IgnisCollectorV2.OutputCumulator} (atspair:string)

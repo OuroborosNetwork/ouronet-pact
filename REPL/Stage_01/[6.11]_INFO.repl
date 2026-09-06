@@ -31,7 +31,14 @@
           (expect "INFO_DALOS|RotateStoa -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_DALOS|RotateStoa p a)))
           (expect "INFO_DALOS|RotateSovereign -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_DALOS|RotateSovereign p a)))
           (expect "INFO_DALOS|UpdateEliteAccount -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_DALOS|UpdateEliteAccount p a)))
-          (expect "INFO_DALOS|UpdateEliteAccountSquared -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_DALOS|UpdateEliteAccountSquared p a a))) ]))
+          (expect "INFO_DALOS|UpdateEliteAccountSquared -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_DALOS|UpdateEliteAccountSquared p a a)))
+          ;;EXEC coverage, not just the preview: both Talos elite ops called (ref-DALOS::EliteAurynID),
+          ;;a member DALOS does not have (it is UR_EliteAurynID). Pact resolves module-reference
+          ;;members at RUNTIME, so this loaded clean and only the caller died — and nothing called it.
+          (expect "DALOS|C_UpdateEliteAccount executes (was a dead modref call)" true
+              (!= "" (TS01-C1.DALOS|C_UpdateEliteAccount p a)))
+          (expect "DALOS|C_UpdateEliteAccountSquared executes (was a dead modref call)" true
+              (!= "" (TS01-C1.DALOS|C_UpdateEliteAccountSquared p a a))) ]))
 (print "")
 (commit-tx)
 (print "")
@@ -132,4 +139,34 @@
 (print "")
 (commit-tx)
 (print "")
-(print "=== [6.11]_INFO — DALOS + DPTF + DPOF + VST blocks complete ===")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;==== TX-I05 · 01 · ATS INFO — the three previews that used to die on arity ====
+(begin-tx "TX-I05 - INFO ATS: previously-broken ATS previews now execute end-to-end")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-I05 · 01 · ATS INFO smoke] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;; REGRESSION GUARD. Three INFO_ATS|* wrappers passed <ats> to URCi_ readers that take a
+;; DIFFERENT number of parameters (ToggleParameterLock takes 2, AddSecondary and
+;; SetColdRecoveryFees take 0). Pact does not arity-check module-reference calls at load, so
+;; INFO-ONE deployed clean and these three failed only when actually called — which no test did.
+;; They are exercised here so the next arity slip cannot hide.
+(let
+    (
+        (p:string KST.ANHD)
+        (atspair:string (at 0 (DPTF.UR_RewardBearingToken (DALOS.UR_AurynID))))
+    )
+    (map print
+        [ (expect "INFO_ATS|ToggleParameterLock -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_ATS|ToggleParameterLock p atspair true)))
+          (expect "INFO_ATS|AddSecondary -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_ATS|AddSecondary p atspair KST.ANHD false)))
+          (expect "INFO_ATS|SetColdRecoveryFees -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_ATS|SetColdRecoveryFees p atspair 1 [1.0] [[1.0]])))
+          ;;newly migrated: the ATS hot-fee setter now bills deter(fee) + components like its siblings
+          (expect "INFO_ATS|SetHotRecoveryFee -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_ATS|SetHotRecoveryFee p atspair 1.0 1))) ]))
+(print "")
+(commit-tx)
+(print "")
+(print "=== [6.11]_INFO — DALOS + DPTF + DPOF + VST + ATS blocks complete ===")

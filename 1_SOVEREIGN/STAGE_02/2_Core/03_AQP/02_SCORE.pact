@@ -2545,19 +2545,26 @@
             (d::UR_UsagePrice "smart")
         ))
     (defun URCi_RotateOwnership:object{IgnisCollectorV2.OutputCumulator} (score-id:string)
-        @doc "Medium tier on the (pre-rotate) score owner."
+        @doc "Cost preview for AQP-SCR|C_RotateScoreOwnership on the (pre-rotate) score owner \
+            \ — deter(auth) + components, like every other module's RotateOwnership."
         (let
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_MediumCumulator (UR_SCR|ScoreOwnerKonto score-id))
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-SCR|C_RotateScoreOwnership" "auth")
+                (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])
         ))
     (defun URCi_Control:object{IgnisCollectorV2.OutputCumulator} (score-id:string)
+        @doc "Cost preview for AQP-SCR|C_ControlScore on the score owner — deter(setup) + \
+            \ components, like every other module's Control."
         (let
             (
                 (r:module{IgnisCollectorV2} IGNIS)
             )
-            (r::UDC_MediumCumulator (UR_SCR|ScoreOwnerKonto score-id))
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-SCR|C_ControlScore" "setup")
+                (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])
         ))
     (defun URCi_CreateBoostClassLink:object{IgnisCollectorV2.OutputCumulator} (score-id:string)
         (let

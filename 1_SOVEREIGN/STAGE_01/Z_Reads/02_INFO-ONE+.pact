@@ -3050,7 +3050,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(if toggle (format "Operation: Locks Parameters of ATS-Pair {}" [ats]) (format "Operation: Unlocks Parameters of ATS-Pair {}" [ats]))]
                 [(if toggle (format "Parameters of ATS-Pair {} succesfully locked" [ats]) (format "Parameters of ATS-Pair {} succesfully unlocked" [ats]))]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_ToggleParameterLock ats)))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_ToggleParameterLock ats toggle)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [toggle])
         ))
     (defun INFO_ATS|AddSecondary:object{OuronetInfoV2.ClientInfo} (patron:string ats:string reward-token:string rt-nfr:bool)
@@ -3062,7 +3062,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Adds Secondary Reward-Token {} to ATS-Pair {}" [reward-token ats])]
                 [(format "Secondary Reward-Token {} succesfully added to ATS-Pair {}" [reward-token ats])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_AddSecondary ats)))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_AddSecondary)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
         ))
     (defun INFO_ATS|ControlColdRecoveryFees:object{OuronetInfoV2.ClientInfo} (patron:string ats:string c-nfr:bool c-fr:bool)
@@ -3086,7 +3086,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Sets the {} Cold-Recovery Fee positions of ATS-Pair {}" [fee-positions ats])]
                 [(format "Cold-Recovery Fees of ATS-Pair {} succesfully set" [ats])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_SetColdRecoveryFees ats)))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_SetColdRecoveryFees)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
         ))
     (defun INFO_ATS|SetColdRecoveryDuration:object{OuronetInfoV2.ClientInfo} (patron:string ats:string soft-or-hard:bool base:integer growth:integer)
