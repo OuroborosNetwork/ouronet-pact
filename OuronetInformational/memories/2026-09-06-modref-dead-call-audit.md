@@ -40,6 +40,21 @@ Separately, three INFO-ONE+ previews passed `ats` to `URCi_` readers taking a di
 parameters (`ToggleParameterLock` takes 2, `AddSecondary` and `SetColdRecoveryFees` take 0). All
 three were dead on call; fixed, and now exercised by `[6.11] TX-I05`.
 
+## The audit is now a checked-in tool
+
+`python3 REPL/_audit_modref_calls.py` (from the repo root) reproduces this audit: it reports dead
+calls and arity mismatches, and exits 1 when either is non-empty, so it can gate a pre-deploy
+check. Current baseline: **11 dead calls** (2 of them in dead `00_DPMF.pact`), **0 arity
+mismatches**. It is mutation-tested — planting a wrong-arity call makes it fire, so a clean run
+means the check ran, not that it silently did nothing.
+
+Coverage sibling-fact: of 442 Talos client ops, only ~10 are never referenced by any REPL
+(`VST|C_RepurposeSlumber`, `VST|C_RepurposeHibernating`,
+`VST|C_ToggleTransferRoleHibernatingDPOF`, `PYTHIA|A_RevokeLink`, `AQP-FVT|CC_SweepRevokeAnchor`,
+`DEMIPAD|C_Withdraw`, `SPARK|C_RedemAllSparks`, `SNAKES|C_Acquire`, `CUSTODIANS|C_Acquire`,
+`STOAICO|C_Collect`). The two elite ops were on that list until this session. Untested-and-dead is
+the combination to fear: the auditor now covers the "dead" half statically.
+
 ## Scanner methodology — three traps that produce garbage findings
 
 Every one of these bit this session before the result was trustworthy (411 → 150 → 56 → 13 hits):
