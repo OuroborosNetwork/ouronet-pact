@@ -769,7 +769,8 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (stoa-fee:decimal (UC_StoicTagStoaFee tag-name))
+                ;;single-source: the SAME reader the TS01-C4 exec path collects from
+                (stoa-fee:decimal (URCi_RegisterStoicTag tag-name))
                 (glyph-count:integer (length tag-name))
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account-address))
             )
@@ -831,7 +832,8 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (tag-fee:decimal (UC_StoicTagStoaFee tag-name))
+                ;;single-source: the SAME reader the TS01-C4 exec path collects from
+                (tag-fee:decimal (URCi_ReleaseStoicTag tag-name))
                 (glyph-count:integer (length tag-name))
                 (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
             )
