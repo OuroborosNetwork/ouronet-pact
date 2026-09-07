@@ -56,6 +56,13 @@ STOA *amount* moves but the *value* the user pays does not. The full asset-issua
 | `ATS\|C_Issue` | 4000 | $40 | 400 |
 | `SWP\|C_IssueStable` / `C_IssueWeighted` | 5000 | $50 | 500 |
 | `DPSF\|C_IssueCompany` | 10000 + 2000 | $120 | 1200 |
+| `AQP-POOL\|C_Issue` / `AQP-FVT\|C_Issue` / `AQP-SCR\|C_Issue*Score` | 1000 | $10 | 100 |
+| `AQP-ANK\|C_Issue*Anchor` | 500 | $5 | 50 |
+| account deploy — standard / smart | 500 / 1000 | $5 / $10 | 50 / 100 |
+| branding blue flag, **per month** | 2500 | $25 | 250 |
+
+Every one of these derives from `IG|DETER` through `UC_StoaPrice`. **No STOA price is a hardcoded
+amount** — retune the dollar value in `IG|DETER` and every consumer follows.
 
 ## The model in one line
 

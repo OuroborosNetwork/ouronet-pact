@@ -750,3 +750,37 @@ baseline run.
     non-dollar amount. What should a month of blue-flag branding cost in dollars?
   * `codex` = 100.0 is seeded in the executor but **read nowhere** — a dead key. Delete, or wire
     it to something?
+
+## 2026-09-07 (4) — blue branding priced; the last raw STOA amounts identified
+
+Owner: blue-flag branding was meant to be **$25 in STOA — 250 at the locked price**. Added
+`IG|DETER "branding-blue" : 2500.0` as the dollar basis and derived the `blue` usage key from it
+in the executor, so `BRD::URCi_UpgradeBranding` = months x 250 STOA at the $0.10 peg (was 0.025
+raw). Found and removed a THIRD dead binding of the same shape in `BRD::XE_UpgradeBranding`
+(`(blue:decimal (UR_UsagePrice "blue"))`, one occurrence in the body = the binding itself; the
+real payment already went through `URCi_UpgradeBranding`). That makes 8 dead price bindings
+deleted this session — the pattern is: a `let` binds a usage price, then the code bills through a
+`URCi_` reader instead and the binding is never removed. Worth grepping for after any re-pricing.
+
+Also fixed the owner's `01_DALOS.pact` missing `)` at the `ceiling-anu` binding (they had spotted
+it independently on deploy); it had been blocking ZALL at load.
+
+**The `codex` key, answered.** `[4.0]_Sovereign-Executor.repl:237` seeds
+`A_UpdateUsagePrice "codex" 100.0`, and `UR_UsagePrice "codex"` is read **nowhere** in the repo —
+that one seed line is the ONLY occurrence of the string. CODEX's StoicTag registration does not
+use it; it charges `UC_StoicTagStoaFee` = `(dec (length tag-name))`, i.e. 1 STOA per glyph,
+hardcoded. So `codex` is a dead placeholder from before glyph-pricing landed.
+
+**Remaining raw (non-dollar-denominated) STOA amounts — the complete list.** After this session
+these are the only ones left; every other STOA price derives from `IG|DETER` via `UC_StoaPrice`:
+  1. `CODEX::UC_StoicTagStoaFee` = **1 STOA per glyph**, hardcoded in the function body. Under the
+     dollar rule this should be $X per glyph converted at the peg (e.g. $0.10/glyph = 1 STOA/glyph
+     today, which may be exactly the intent — but it is not pegged, so it drifts with the oracle).
+  2. `PYTHIA|DEFAULT-DEPLOY-PRICE` = **500.0** and `PYTHIA|DEFAULT-RENAME-PRICE` = **100.0**, raw
+     STOA defaults, admin-tunable via `A_UpdateDeployPrice`/`A_UpdateRenamePrice`. These match the
+     owner's earlier spec ("PYTHIA 500/100 STOA, non-discountable") stated in STOA units, so they
+     are $50/$10 at today's peg — but being raw, their DOLLAR value moves with the oracle, which
+     is the opposite of the rule everywhere else.
+  3. `codex` 100.0 — dead, see above.
+
+Verified: `ZALL.repl` green, 6279 lines, "Load successful".

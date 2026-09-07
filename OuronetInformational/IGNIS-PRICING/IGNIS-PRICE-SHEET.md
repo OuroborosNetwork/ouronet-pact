@@ -181,7 +181,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_UpdatePendingBranding` | `C_UpdatePendingBranding` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_UpdateRoyalty` | `C_UpdateRoyalty` | FEE | **44** | — | $0.44 | deter:fee 25 + components:ATS|C_UpdateRoyalty 19 |
 | `C_UpdateSyphon` | `C_UpdateSyphon` | USAGE | **20** | — | $0.20 | deter:usage 1 + components:ATS|C_UpdateSyphon 19 |
-| `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **?** | 0.025 | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **?** | 250 | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_VestedCoil` | `C_Coil` ×2 | USAGE | **≥ 11** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: biggest 5 + small 2 + smallest 1 + medium 3 |
 | `C_VestedCurl` | `C_Curl` ×2 | USAGE | **≥ 11** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: biggest 5 + small 2 + smallest 1 + medium 3 |
 | `C_WithdrawRoyalties` | `C_WithdrawRoyalties` | USAGE | **≥ 6** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: smallest 1 + small 2 + medium 3 |
@@ -308,7 +308,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_UpdateSetNonces` | `C_UpdateNonces` | SETUP | **≥ 1** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 |
 | `C_UpdateSetNonceScore` | `C_UpdateNonceScore` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
 | `C_UpdateSetNonceURI` | `C_UpdateNonceURI` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
-| `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **?** | 0.025 | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **?** | 250 | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_WipeClean` | `C_WipeClean` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_WipeDirty` | `C_WipeDirty` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_WipeHeavy` | `C_WipeHeavy` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
@@ -338,7 +338,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_Transfer` | `C_Transfer` | USAGE | **≥ 3** | — | COMPLEX | charge multiplies by an item count; legs: small 2 + smallest 1 |
 | `C_Transmit` | `C_Transmit` | SETUP | **≥ 3** | — | COMPLEX | charge multiplies by an item count; legs: small 2 + smallest 1 |
 | `C_UpdatePendingBranding` | `C_UpdatePendingBranding` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **?** | 0.025 | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **?** | 250 | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_WipeClean` | `C_WipeClean` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_WipeHeavy` | `C_WipeHeavy` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_WipePure` | `C_WipePure` | SETUP | **≥ 5** | — | COMPLEX | per-nonce / per-item work; legs: weight:wipe-nonce 5 |
@@ -402,7 +402,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_UpdateSetNonces` | `C_UpdateNonces` | SETUP | **≥ 1** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 |
 | `C_UpdateSetNonceScore` | `C_UpdateNonceScore` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
 | `C_UpdateSetNonceURI` | `C_UpdateNonceURI` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
-| `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **?** | 0.025 | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **?** | 250 | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_WipeClean` | `C_WipeClean` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_WipeDirty` | `C_WipeDirty` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_WipeHeavy` | `C_WipeHeavy` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
@@ -446,7 +446,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_Transfer` | `C_Transfer` | USAGE | **6** | — | $0.06 | smallest 1 + small 2 + medium 3 |
 | `C_Transmute` | `C_Transmute` | SETUP | **5** | — | $0.05 | medium 3 + small 2 |
 | `C_UpdatePendingBranding` | `C_UpdatePendingBranding` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **?** | 0.025 | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **?** | 250 | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_Wipe` | `C_Wipe` | SETUP | **≥ 85** | — | COMPLEX | per-nonce / per-item work; legs: deter:setup 5 + components:DPTF|C_Wipe 80 |
 | `C_WipeSlim` | `C_WipeSlim` | SETUP | **≥ 85** | — | COMPLEX | per-nonce / per-item work; legs: deter:setup 5 + components:DPTF|C_WipeSlim 80 |
 
@@ -557,8 +557,8 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_UpdatePendingBranding` | `C_UpdatePendingBranding` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_UpdatePendingBrandingLPs` | `C_UpdatePendingBrandingLPs` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_UpdateSpecialFeeTargets` | `C_UpdateSpecialFeeTargets` | FEE | **44** | — | $0.44 | deter:fee 25 + components:SWP|C_UpdateSpecialFeeTargets 19 |
-| `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **?** | 0.025 | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_UpgradeBrandingLPs` | `C_UpgradeBrandingLPs` | SETUP | **?** | 0.025 | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **?** | 250 | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_UpgradeBrandingLPs` | `C_UpgradeBrandingLPs` | SETUP | **?** | 250 | — | cumulator not resolvable statically (reader lives in another module) |
 | `CC_SmartSwapNoSlippage` | `CC_SmartSwap` | USAGE | **≥ 0** | — | COMPLEX | heavy / parallel-slice op; legs: literal 0 |
 | `CC_SmartSwapWithSlippage` | `CC_SmartSwap` | USAGE | **≥ 0** | — | COMPLEX | heavy / parallel-slice op; legs: literal 0 |
 

@@ -345,6 +345,8 @@
     ;;{#}  GASSTATION
     ;;
     ;;Ouronet DALOS Gas-Station
+    (defconst DALOS|GAS-BUDGET                          2000000)
+    (defconst DALOS|GAS-PRICE-HEADROOM-ANU              100)
     ;;
     (defcap GAS_PAYER:bool (user:string limit:integer price:decimal)
         (let
@@ -360,7 +362,8 @@
                 "Add multiple conditions needed to use Ouronet DALOS Gas-Station"
                 [
                     (enforce-guard GOV|MD_DALOS)
-                    (enforce-guard (ref-U|ST::UEV_max-gas-notional 0.02))
+                    (UEV_enforce-notional-at-floor)
+                    ;;(enforce-guard (ref-U|ST::UEV_max-gas-notional 0.02))
                 ]
             )
             (enforce iz-single "Only for transactions with code")
@@ -421,6 +424,29 @@
         GOV|DALOS|GUARD
     )
     (defun CT_VirtualGasData ()                         (at 0 ["VirtualGasData"]))
+    (defun UEV_enforce-notional-at-floor:bool ()
+        @doc "Enforces that gas-price * gas-limit stays within DALOS|GAS-BUDGET gas units \
+            \ priced at the CURRENT protocol minimum. Takes NO argument on purpose: the floor \
+            \ is read live from <coin> on every enforcement, so the allowance no longer decays \
+            \ as the minimum gas price rises. Comparison is scaled UP into ANU by multiplying, \
+            \ never dividing, so no precision is lost."
+        (let
+            (
+                (gas-price:decimal      (at "gas-price" (chain-data)))
+                (gas-limit:integer      (at "gas-limit" (chain-data)))
+                (floor-anu:integer      (coin.UC_MinimumGasPriceANU))
+                (ceiling-anu:integer    (+ floor-anu DALOS|GAS-PRICE-HEADROOM-ANU))
+            )
+            (enforce
+                (<= (* (* gas-price (dec gas-limit)) 1000000000000.0)
+                    (* (dec DALOS|GAS-BUDGET) (dec ceiling-anu)))
+                (format
+                    "Gas notional exceeds the Gas-Station allowance of {} gas at the current protocol minimum of {} ANU"
+                    [DALOS|GAS-BUDGET floor-anu]
+                )
+            )
+        )
+    )
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE

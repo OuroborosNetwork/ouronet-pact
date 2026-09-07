@@ -481,6 +481,10 @@
         ;;(owner 2026-09-06). This REPLACES the old escalating ladder (base x (unlocks+1),
         ;;unbounded), whose intent was cheap-first/punitive-later; flat makes unlocking
         ;;uniformly expensive and not worth doing casually.
+        ;;Blue-flag BRANDING carries no IGNIS charge either — this is the DOLLAR BASIS for its
+        ;;STOA leg only: $25 per month (owner 2026-09-07), consumed via UC_StoaPrice, so
+        ;;BRD::URCi_UpgradeBranding = months x 250 STOA at the $0.10 peg.
+        ,"branding-blue"     : 2500.0
         ,"fee-unlock"        : 5000.0}
     )
     ;;

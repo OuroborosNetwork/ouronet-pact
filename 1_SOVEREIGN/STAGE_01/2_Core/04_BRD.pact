@@ -362,9 +362,11 @@
         )
     )
     (defun URCi_UpgradeBranding:decimal (months:integer)
-        @doc "Blue-flag upgrade cost = months * UsagePrice(\"blue\"). Single source \
-            \ for both the XE_UpgradeBranding write (exec billing) and every module's \
-            \ C_UpgradeBranding cost preview (INFO)."
+        @doc "Blue-flag upgrade cost = months * UsagePrice(\"blue\"), a STOA price. \
+            \ \"blue\" is DERIVED from IG|DETER \"branding-blue\" via UC_StoaPrice, so the month \
+            \ carries a fixed DOLLAR value ($25 = 250 STOA at the $0.10 peg) and the amount \
+            \ moves with the oracle while the value does not. Single source for both the \
+            \ XE_UpgradeBranding write (exec billing) and every C_UpgradeBranding INFO preview."
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -429,7 +431,6 @@
             (let
                 (
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
-                    (blue:decimal (ref-DALOS::UR_UsagePrice "blue"))
                     (branding:object{BrandingV2.Schema} (UR_Branding entity-id false))
                     (branding-pending:object{BrandingV2.Schema} (UR_Branding entity-id true))
                     (flag:integer (UR_Flag entity-id false))

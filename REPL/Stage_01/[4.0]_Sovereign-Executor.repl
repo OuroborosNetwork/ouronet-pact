@@ -267,6 +267,9 @@
         ;;rule uniform: every STOA price is a DOLLAR price divided by the STOA oracle price.
         (ref-TS01-A::DALOS|A_UpdateUsagePrice "standard" (ref-IGNIS::UC_StoaPrice "acct-standard"))
         (ref-TS01-A::DALOS|A_UpdateUsagePrice "smart"    (ref-IGNIS::UC_StoaPrice "acct-smart"))
+        ;;Blue-flag branding: $25/month (owner 2026-09-07) => 250 STOA at the $0.10 peg. Was
+        ;;0.025 raw, the last STOA key still holding a non-dollar amount.
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "blue"     (ref-IGNIS::UC_StoaPrice "branding-blue"))
 
         ;;REPL-VARIANT:
         (acquire-module-admin ouronet-ns.DALOS)
