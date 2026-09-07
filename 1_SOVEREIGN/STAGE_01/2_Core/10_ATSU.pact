@@ -878,7 +878,7 @@
                 (c-rbt-fee-split:[decimal] (ref-U|ATS::UC_PromilleSplit fee-promile ra c-rbt-precision))
                 (c-rbt-fee:decimal (at 1 c-rbt-fee-split))
                 (c-fr:bool (ref-ATS::UR_ColdRecoveryFeeRedirection ats))
-                (price:decimal (* 2.0 (ref-DALOS::UR_UsagePrice "ignis|biggest")))
+                (price:decimal (ref-IGNIS::UC_IgnisPrice "ATS|C_ColdRecovery" "usage"))
                 ;;
                 (ico0:object{IgnisCollectorV2.OutputCumulator}
                     (ref-IGNIS::UDC_ConstructOutputCumulator price ATS|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
@@ -942,7 +942,7 @@
                 (ca:[[decimal]] [c0 c1 c2 c3 c4 c5 c6 c7])
                 (cw:[decimal] (ref-U|DEC::UC_AddHybridArray ca))
                 ;;
-                (price:decimal (* 2.0 (ref-DALOS::UR_UsagePrice "ignis|biggest")))
+                (price:decimal (ref-IGNIS::UC_IgnisPrice "ATS|C_Cull" "usage"))
                 (ico1:object{IgnisCollectorV2.OutputCumulator}
                     (ref-IGNIS::UDC_ConstructOutputCumulator price ATS|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
                 )
@@ -985,7 +985,7 @@
                 ;;
                 (ico1:object{IgnisCollectorV2.OutputCumulator}
                     (ref-IGNIS::UDC_ConstructOutputCumulator
-                        (* 3.0 (ref-DALOS::UR_UsagePrice "ignis|biggest"))
+                        (ref-IGNIS::UC_IgnisPrice "ATS|C_HotRecovery" "usage")
                         ATS|SC_NAME
                         (ref-IGNIS::URC_IsVirtualGasZero)
                         []
@@ -1731,8 +1731,7 @@
                                 (ref-ATS::URC_RTSplitAmounts ats c-rbt-fee)
                             )
                             ;;
-                            (biggest:decimal (ref-DALOS::UR_UsagePrice "ignis|biggest"))
-                            (price:decimal (* 2.0 biggest))
+                            (price:decimal (ref-IGNIS::UC_IgnisPrice "ATS|C_ColdRecovery" "usage"))
                             (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                             ;;
 
@@ -1827,8 +1826,7 @@
                     (ca:[[decimal]] [c0 c1 c2 c3 c4 c5 c6 c7])
                     (cw:[decimal] (ref-U|DEC::UC_AddHybridArray ca))
                     ;;
-                    (biggest:decimal (ref-DALOS::UR_UsagePrice "ignis|biggest"))
-                    (price:decimal (* 2.0 biggest))
+                    (price:decimal (ref-IGNIS::UC_IgnisPrice "ATS|C_Cull" "usage"))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                     ;;
                     (ico1:object{IgnisCollectorV2.OutputCumulator}
@@ -1885,7 +1883,7 @@
                     (
                         (ico1:object{IgnisCollectorV2.OutputCumulator}
                             (ref-IGNIS::UDC_ConstructOutputCumulator 
-                                (* 3.0 (ref-DALOS::UR_UsagePrice "ignis|biggest"))
+                                (ref-IGNIS::UC_IgnisPrice "ATS|C_HotRecovery" "usage")
                                 ATS|SC_NAME
                                 (ref-IGNIS::URC_IsVirtualGasZero)
                                 []

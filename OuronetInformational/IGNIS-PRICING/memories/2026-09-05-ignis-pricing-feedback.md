@@ -859,3 +859,47 @@ Treating B as if it were A would be the same class of error as the AQP `smart` k
 DETERRENCE where the code only ever meant a unit cost.
 
 Verified: `ZALL.repl` green, 6279 lines, "Load successful".
+
+## 2026-09-07 (7) — four more owner tiers; the "1x is neutral" principle stated plainly
+
+Owner, closing the four open tiering questions and giving the governing principle:
+**"no deterrence means 1x, as 1 is the neutral element of multiplication — the deterrence factor
+is a MULTIPLIER."** So an op with no deterrence still pays its full IGNIS computation; it just
+carries no premium. That is `UC_IgnisPrice "<op>" "usage"` (deter 1 + components), NOT a bare
+component charge and NOT a legacy flat tier.
+
+  1. **`SCORE|C_Issue*ScoreDefinition` — leave as is.** A score definition IS an issuance of a
+     definition, correctly priced a little below the NonFungible/SetScore variants. Untouched.
+  2. **`ATSU|C_ColdRecovery` / `C_Cull` / `C_HotRecovery` — ordinary usage, no deterrence.**
+     MIGRATED: the legacy flat `2 x ignis|biggest` (10) / `3 x ignis|biggest` (15) was a
+     stand-in for computation that badly under-counted it. Now
+     `UC_IgnisPrice "ATS|C_<op>" "usage"`:
+       * `C_ColdRecovery` 10 -> **130** (deter:usage 1 + components 123 + composed legs)
+       * `C_Cull`         10 -> **132** (deter:usage 1 + components 125 + composed legs)
+       * `C_HotRecovery`  15 -> **117** (deter:usage 1 + components 25 + a composed DPOF mint)
+     These are ~13x INCREASES, and they are the point of the rehaul: the ops were charging a
+     flat 10 for work that actually costs ~125. Two `biggest` let-bindings orphaned by the
+     migration were removed (dead-binding count for the session: 10).
+  3. **`SWP|C_EnableFrozenLP` / `C_EnableSleepingLP` / `C_ToggleAddOrSwap` — leave as is.** The
+     Enable* pair are ENABLERS that issue a true/ortofungible when the needed one is absent, so
+     the issuance is taxed on its own; ToggleAddOrSwap is the core add/swap toggle and is
+     correctly priced. Untouched.
+  4. **`VST|C_Vest` / `C_Unvest` — normal operation, no deterrence.** NO CHANGE NEEDED: VST
+     already adds no deterrence of its own. Investigation showed its only legacy reads are
+     PER-ITEM scaling units (`(/ (* obj-l smallest) 5.0)` in Unvest, `(* how-many biggest)` in
+     MergeNonces) — group B legs, not per-op prices. The `deter:setup 5` the sheet shows for
+     Vest/Unvest comes from the COMPOSED `DPOF|C_Mint`/`C_Burn`, which is DPOF's own price and
+     legitimately charged.
+
+Also confirmed **`ToggleFeeLock` / `ToggleParameterLock` are already done** — DPTF/ATS/SWP all
+call `IGNIS::UC_FeeUnlockPrice` (the flat $50 + $50). The `small 2` those rows show is only the
+LOCKING direction's base; unlocking adds the 5000. They were never part of the legacy tail.
+
+**Owner is separately syncing the Stoa sandbox `coin` to current on-chain** (MAX-GAS-PRICE
+400000 -> 1,000,000, GENESIS-TIME moved) and added `stoa-env/min-gas-price-pinning.repl`, a
+pinning test asserting `coin.UC_MinimumGasPriceANU` matches the Haskell consensus floor
+(`Chainweb.Version.Stoa.GasFloor`) vector-for-vector — a disagreement there is a chain split.
+That confirms the earlier finding: the sandbox tracks CURRENT chain state, not genesis. Left
+untouched, and not committed with this work.
+
+Verified: `ZALL.repl` green, 6279 lines, "Load successful".

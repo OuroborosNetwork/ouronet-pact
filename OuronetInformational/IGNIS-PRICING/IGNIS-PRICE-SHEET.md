@@ -150,16 +150,16 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_AddSecondary` | `C_AddSecondary` | SETUP | **279** | — | $2.79 | deter:ats-secondary 250 + components:ATS|C_AddSecondary 29 |
 | `C_Brumate` | `C_Brumate` | USAGE | **≥ 11** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: biggest 5 + small 2 + smallest 1 + medium 3 |
 | `C_Coil` | `C_Coil` | USAGE | **≥ 11** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: biggest 5 + small 2 + smallest 1 + medium 3 |
-| `C_ColdRecovery` | `C_ColdRecovery` | SETUP | **≥ 11** | — | COMPLEX | charge multiplies by an item count; legs: biggest 5 + smallest 1 + small 2 + medium 3 |
+| `C_ColdRecovery` | `C_ColdRecovery` | USAGE | **≥ 130** | — | COMPLEX | charge multiplies by an item count; legs: deter:usage 1 + components:ATS|C_ColdRecovery 123 + smallest 1 + small 2 + medium 3 |
 | `C_Constrict` | `C_Constrict` | USAGE | **≥ 11** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: biggest 5 + small 2 + smallest 1 + medium 3 |
 | `C_Control` | `C_Control` | SETUP | **24** | — | $0.24 | deter:setup 5 + components:ATS|C_Control 19 |
 | `C_ControlColdRecoveryFees` | `C_ControlColdRecoveryFees` | FEE | **44** | — | $0.44 | deter:fee 25 + components:ATS|C_ControlColdRecoveryFees 19 |
 | `C_ControlHotRecoveryFee` | `C_ControlHotRecoveryFee` | FEE | **44** | — | $0.44 | deter:fee 25 + components:ATS|C_ControlHotRecoveryFee 19 |
-| `C_Cull` | `C_Cull` | SETUP | **≥ 11** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: biggest 5 + smallest 1 + small 2 + medium 3 |
+| `C_Cull` | `C_Cull` | USAGE | **≥ 132** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:ATS|C_Cull 125 + smallest 1 + small 2 + medium 3 |
 | `C_Curl` | `C_Curl` | USAGE | **≥ 11** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: biggest 5 + small 2 + smallest 1 + medium 3 |
 | `C_DirectRecovery` | `C_DirectRecovery` | SETUP | **≥ 6** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: small 2 + smallest 1 + medium 3 |
 | `C_Fuel` | `C_Fuel` | USAGE | **≥ 6** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: smallest 1 + small 2 + medium 3 |
-| `C_HotRecovery` | `C_HotRecovery` | SETUP | **≥ 96** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Mint 80 + biggest 5 + small 2 + smallest 1 + medium 3 |
+| `C_HotRecovery` | `C_HotRecovery` | SETUP | **≥ 117** | — | COMPLEX | charge multiplies by an item count; legs: deter:usage 1 + components:ATS|C_HotRecovery 25 + deter:setup 5 + components:DPOF|C_Mint 80 + small 2 + smallest 1 + medium 3 |
 | `C_Issue` | `C_Issue` | ISSUE | **≥ 4000** | 400 | COMPLEX | charge multiplies by an item count; legs: deter:issue-ats-pair 4000 | STOA: stoa:issue-ats-pair 400 |
 | `C_KickStart` | `C_KickStart` | SETUP | **7** | — | $0.07 | biggest 5 + small 2 |
 | `C_Redeem` | `C_Redeem` | SETUP | **≥ 56** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Burn 45 + small 2 + smallest 1 + medium 3 |
