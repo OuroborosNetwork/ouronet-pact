@@ -485,6 +485,11 @@
         ;;STOA leg only: $25 per month (owner 2026-09-07), consumed via UC_StoaPrice, so
         ;;BRD::URCi_UpgradeBranding = months x 250 STOA at the $0.10 peg.
         ,"branding-blue"     : 2500.0
+        ;;PYTHIA tolls carry NO IGNIS charge — dollar basis for their STOA leg only, and they
+        ;;are NON-DISCOUNTABLE (collected with STOA|C_CollectFull). $50 deploy / $10 rename
+        ;;(owner 2026-09-07) = 500 / 100 STOA at the $0.10 peg, i.e. exactly today's amounts.
+        ,"pythia-deploy"     : 5000.0
+        ,"pythia-rename"     : 1000.0
         ,"fee-unlock"        : 5000.0}
     )
     ;;

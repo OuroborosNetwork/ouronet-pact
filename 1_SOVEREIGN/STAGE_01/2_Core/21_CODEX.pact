@@ -572,7 +572,11 @@
         )
     )
     (defun UC_StoicTagStoaFee:decimal (tag-name:string)
-        @doc "Native STOA due for registering <tag-name>: exactly 1 STOA per glyph (= string length). E.g. bytales → 7.0 STOA."
+        @doc "Native STOA due for registering <tag-name>: exactly 1 STOA per glyph (= string \
+            \ length). E.g. bytales -> 7.0 STOA. DELIBERATE EXCEPTION to the dollar rule (owner \
+            \ 2026-09-07): this toll is FIXED IN STOA UNITS, not denominated in dollars and \
+            \ converted, so a glyph always costs one STOA whatever the oracle says. It is also \
+            \ non-discountable. Do NOT change it to derive from IG|DETER."
         (dec (length tag-name))
     )
     (defun UC_ValidateStoicTagName:bool (tag-name:string)

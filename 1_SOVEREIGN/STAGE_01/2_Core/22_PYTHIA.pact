@@ -342,8 +342,6 @@
     (defconst PYTHIA|INFO:string                        "config")
     (defconst PYTHIA|REVOCATION:string                  "revocation")
     (defconst PYTHIA|STOACHAIN:string                   "stoachain")
-    (defconst PYTHIA|DEFAULT-DEPLOY-PRICE:decimal       500.0)
-    (defconst PYTHIA|DEFAULT-RENAME-PRICE:decimal       100.0)
     (defconst PYTHIA|REVOKE-IGNIS-FEE:decimal           1.0)
     (defconst PYTHIA|EPOCH-BLOCKS:integer               120)
     (defconst PYTHIA|APOLLO-STANDARD:string             "₱")
@@ -899,19 +897,29 @@
     ;;
     ;; [3] PYTHIA|T|Config  (PYTHIA|S|Config)  Key = PYTHIA|INFO
     (defun UR_Config ()
-        @doc "Full Config row (deploy-price + rename-price); defaults when unset."
-        (with-default-read PYTHIA|T|Config PYTHIA|INFO
-            {"deploy-price" : PYTHIA|DEFAULT-DEPLOY-PRICE, "rename-price" : PYTHIA|DEFAULT-RENAME-PRICE}
-            {"deploy-price" := d, "rename-price" := r}
-            {"deploy-price" : d, "rename-price" : r}
+        @doc "Full Config row (deploy-price + rename-price); defaults when unset. The defaults \
+            \ are DERIVED, not hardcoded: every Ouronet price is denominated in DOLLARS and \
+            \ converted to STOA at the oracle, so these read $50 deploy / $10 rename out of \
+            \ IG|DETER through UC_StoaPrice (= 500 / 100 STOA at the $0.10 peg, unchanged from \
+            \ the raw constants they replace). Governance may still override either in-table."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (with-default-read PYTHIA|T|Config PYTHIA|INFO
+                {"deploy-price" : (ref-IGNIS::UC_StoaPrice "pythia-deploy")
+                ,"rename-price" : (ref-IGNIS::UC_StoaPrice "pythia-rename")}
+                {"deploy-price" := d, "rename-price" := r}
+                {"deploy-price" : d, "rename-price" : r}
+            )
         )
     )
     (defun UR_DeployPrice:decimal ()
-        @doc "Governance-tunable deploy toll (default 500 STOA per Apollo half; collected in TS01-C4)."
+        @doc "Governance-tunable deploy toll (default $50 = 500 STOA per Apollo half; collected in TS01-C4)."
         (at "deploy-price" (UR_Config))
     )
     (defun UR_RenamePrice:decimal ()
-        @doc "Governance-tunable consumer-lane rename toll (default 100 STOA; collected in TS01-C4)."
+        @doc "Governance-tunable consumer-lane rename toll (default $10 = 100 STOA; collected in TS01-C4)."
         (at "rename-price" (UR_Config))
     )
     ;;

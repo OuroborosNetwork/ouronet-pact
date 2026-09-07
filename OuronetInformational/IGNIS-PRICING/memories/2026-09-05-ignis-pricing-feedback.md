@@ -784,3 +784,36 @@ these are the only ones left; every other STOA price derives from `IG|DETER` via
   3. `codex` 100.0 — dead, see above.
 
 Verified: `ZALL.repl` green, 6279 lines, "Load successful".
+
+## 2026-09-07 (5) — the two STOA outliers settled; STOA side is DONE
+
+Owner rulings closing the last two raw-STOA amounts:
+  1. **StoicTag stays 1 STOA per glyph, fixed in STOA units, non-discountable.** This is a
+     DELIBERATE EXCEPTION to the dollar rule, not an oversight — a glyph costs one STOA whatever
+     the oracle says. Recorded in `UC_StoicTagStoaFee`'s `@doc` so nobody "fixes" it later.
+  2. **PYTHIA becomes dollar-denominated**: $50 deploy / $10 rename, which is exactly today's
+     500 / 100 STOA at the $0.10 peg — so the change moves NO price, only the denomination.
+     Added `IG|DETER "pythia-deploy" : 5000.0` and `"pythia-rename" : 1000.0`; deleted
+     `PYTHIA|DEFAULT-DEPLOY-PRICE`/`-RENAME-PRICE` and made `UR_Config`'s `with-default-read`
+     defaults derive through `UC_StoaPrice`. Governance can still override either in-table.
+
+**The STOA side of the rehaul is now complete**: every STOA price in the system derives from one
+dollar figure in `IG|DETER` via `UC_StoaPrice`, with exactly one documented exception (StoicTag).
+
+**Repeated my own known bug.** Wrote `Do not "fix" it` inside a Pact `@doc` — the bare `"`
+terminates the string. Caught before the gate this time. The `@doc` quote rule has now bitten
+three times (unterminated continuation, trailing text after the close quote, bare inner quotes);
+when templating a `@doc`, never emit a `"` inside the body.
+
+**NEXT REAL WORK — the legacy-tier tail (P7), now measured.** ~90 live reads of the pre-rehaul
+`ignis|*` usage-price tiers remain, i.e. ops still charging a flat legacy price instead of
+`UC_IgnisPrice = deter + components`:
+  `ignis|biggest` 24 · `ignis|small` 19 · `ignis|medium` 17 · `ignis|smallest` 14 ·
+  `ignis|token-issue` 13 · `ignis|big` 2 · `ignis|branding` 1
+The `ignis|token-issue` ones (flat 500) are the most visibly wrong, and sit in live client ops:
+`ATS|C_AddSecondary`, `ATS|C_AddHotRBT`, ATSU x2, `ORBR|C_WithdrawFees`, MTX-SWP, and
+`DPDC-S|C_DefinePrimordialSet`/`C_DefineCompositeSet`/`C_DefineHybridSet`.
+All 11 remaining `UDC_<tier>Cumulator` references are in **DPMF only** — dead code the owner has
+ruled out of scope — so P6 is effectively closed for live code.
+
+Verified: `ZALL.repl` green, 6279 lines, "Load successful".
