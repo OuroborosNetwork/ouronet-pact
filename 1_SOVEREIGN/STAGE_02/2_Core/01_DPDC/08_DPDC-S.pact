@@ -744,7 +744,8 @@
                 (ref-DPDC:module{DpdcV2} DPDC)
                 (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
                 (creator:string (ref-DPDC::UR_CreatorKonto id son))
-                (price:decimal (ref-DALOS::UR_UsagePrice "ignis|token-issue"))
+                (price:decimal (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_DefinePrimordialSet" "define-set")
+                                (ref-IGNIS::UC_IgnisPrice "DPNF|C_DefinePrimordialSet" "define-set")))
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                 [
@@ -1380,7 +1381,8 @@
                     (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
                     ;;
                     (creator:string (ref-DPDC::UR_CreatorKonto id son))
-                    (price:decimal (ref-DALOS::UR_UsagePrice "ignis|token-issue"))
+                    (price:decimal (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_DefinePrimordialSet" "define-set")
+                                (ref-IGNIS::UC_IgnisPrice "DPNF|C_DefinePrimordialSet" "define-set")))
                     (set-class:integer (XI_PrimordialSet id son set-name score-multiplier set-definition ind))
                     (ico0:object{IgnisCollectorV2.OutputCumulator}
                         (ref-IGNIS::UDC_ConstructOutputCumulator price creator false [])
@@ -1412,7 +1414,8 @@
                     (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
                     ;;
                     (creator:string (ref-DPDC::UR_CreatorKonto id son))
-                    (price:decimal (ref-DALOS::UR_UsagePrice "ignis|token-issue"))
+                    (price:decimal (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_DefineCompositeSet" "define-set")
+                                (ref-IGNIS::UC_IgnisPrice "DPNF|C_DefineCompositeSet" "define-set")))
                     (set-class:integer (XI_CompositeSet id son set-name score-multiplier set-definition ind))
                     (ico0:object{IgnisCollectorV2.OutputCumulator}
                         (ref-IGNIS::UDC_ConstructOutputCumulator price creator false [])
@@ -1446,7 +1449,8 @@
                     (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
                     ;;
                     (creator:string (ref-DPDC::UR_CreatorKonto id son))
-                    (price:decimal (ref-DALOS::UR_UsagePrice "ignis|token-issue"))
+                    (price:decimal (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_DefineHybridSet" "define-set")
+                                (ref-IGNIS::UC_IgnisPrice "DPNF|C_DefineHybridSet" "define-set")))
                     (set-class:integer (XI_HybridSet id son set-name score-multiplier primordial-sd composite-sd ind))
                     (ico0:object{IgnisCollectorV2.OutputCumulator}
                         (ref-IGNIS::UDC_ConstructOutputCumulator price creator false [])

@@ -559,7 +559,7 @@
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 (withdraw-amount:decimal (ref-DPTF::UR_AccountSupply id ORBR|SC_NAME))
-                (price:decimal (ref-DALOS::UR_UsagePrice "ignis|token-issue"))
+                (price:decimal (ref-IGNIS::UC_IgnisDeter "fee-withdraw"))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators
@@ -795,7 +795,7 @@
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 (withdraw-amount:decimal (ref-DPTF::UR_AccountSupply id ORBR|SC_NAME))
-                (price:decimal (ref-DALOS::UR_UsagePrice "ignis|token-issue"))
+                (price:decimal (ref-IGNIS::UC_IgnisDeter "fee-withdraw"))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
             )
             (enforce (> withdraw-amount 0.0) (format "There are no {} fees to be withdrawn from {}" [id ORBR|SC_NAME]))

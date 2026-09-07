@@ -817,3 +817,45 @@ All 11 remaining `UDC_<tier>Cumulator` references are in **DPMF only** — dead 
 ruled out of scope — so P6 is effectively closed for live code.
 
 Verified: `ZALL.repl` green, 6279 lines, "Load successful".
+
+## 2026-09-07 (6) — three owner tiers land; the legacy tail is now CLASSIFIED
+
+Owner rulings, all three implemented as new `IG|DETER` keys:
+  * **`define-set` : 500.0** — defining a collectable Set is NOT an issuance (no STOA leg); it
+    carries $5 of IGNIS deterrence only. The collectable itself is taxed on its own issue.
+    Applied son-branched across `DPDC-S` `C_DefinePrimordialSet` / `C_DefineCompositeSet` /
+    `C_DefineHybridSet` + the `URCi_` reader.
+  * **`ats-secondary` : 250.0** — adding/removing an ATS secondary is a LINK, not an issuance:
+    a small deterrent, the same deal as a VST link. The ortofungible is taxed on its own issue.
+    Applied to `ATS|C_AddSecondary`, `ATS|C_AddHotRBT`, `ATS|C_RemoveSecondary` (ATSU).
+  * **`fee-withdraw` : 100.0** — `ORBR|C_WithdrawFees` is a FLAT 100x deterrence and nothing
+    else. This is the ONE op that deliberately charges deter with **no component cost**, so it
+    uses `UC_IgnisDeter` directly rather than `UC_IgnisPrice`. Noted as an explicit exception to
+    the "no reader charges deterrence alone" rule in the README.
+
+11 of the 13 `ignis|token-issue` reads are gone. The 2 left are both deliberate: `00_DPMF.pact`
+(dead code, owner ruled out of scope) and `MTX-SWP::C_AddSleepingLiquidity`, where the 500 is a
+**leg inside** a defpact that already carries `deter:issue-swp-pair` 5000 — not its own price, so
+it belongs in `IG|LEGS`, not `IG|DETER`.
+
+**The remaining legacy tail is ~77 reads and splits cleanly in two** (this is the classification
+that was missing, and it changes the shape of the work):
+
+  **A. Genuine per-op prices still on a flat legacy tier** — need `UC_IgnisPrice` migration:
+  `DPTF|C_Mint`/`C_Burn`/`C_ToggleFeeLock` · `ATS|C_SetColdRecoveryFees`/`C_ToggleParameterLock` ·
+  `ATSU|C_ColdRecovery`/`C_Cull`/`C_HotRecovery` · `SWP|C_ToggleAddOrSwap`/`C_EnableFrozenLP`/
+  `C_EnableSleepingLP`/`C_ToggleFeeLock` · `VST|C_Unvest`/`MergeNonces` ·
+  `SCORE|C_Issue*ScoreDefinition` (x4) · `DPDC-T|C_RepurposeCollectable` ·
+  `DPDC-F|C_RepurposeCollectableFragments` · `DPDC-N|C_UpdateNonces` · `DPOF|URCi_MoveCumulator`.
+
+  **B. Internal legs / per-item unit prices, NOT per-op prices** — these belong in `IG|LEGS` at
+  their current values (parity lift, moves no price): the whole `TFT` transfer ladder
+  (`Unity`/`Small`/`Medium`/`Large`/`Bulk` cumulators) · `DPDC-T::URC_TotalTransferPrice` ·
+  `RPS::URC_Tier*` + stake accounting units · `ANK::URC_TrueFungibleStakeAnchorRefreshIgnis` ·
+  `DPDC-C::URCi_RegisterCollectablesPrice` · `IGNIS::UDC_CustomCodeCumulator` +
+  `UDC_BrandingCumulator` · `EQUITY+::URCi_IssueShareholderCollection`'s smallest leg.
+
+Treating B as if it were A would be the same class of error as the AQP `smart` key: charging a
+DETERRENCE where the code only ever meant a unit cost.
+
+Verified: `ZALL.repl` green, 6279 lines, "Load successful".

@@ -1198,7 +1198,7 @@
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                 [
-                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-DALOS::UR_UsagePrice "ignis|token-issue") ATS|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
+                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisPrice "ATS|C_RemoveSecondary" "ats-secondary") ATS|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
                     (ref-TFT::URCi_Transfer reward-token ATS|SC_NAME remover remove-sum)
                     (ref-TFT::URCi_Transfer primal-rt remover ATS|SC_NAME remove-sum)
                 ]
@@ -1452,7 +1452,7 @@
                 ;;
                 (ico1:object{IgnisCollectorV2.OutputCumulator}
                     (ref-IGNIS::UDC_ConstructOutputCumulator
-                        (ref-DALOS::UR_UsagePrice "ignis|token-issue")
+                        (ref-IGNIS::UC_IgnisPrice "ATS|C_RemoveSecondary" "ats-secondary")
                         ATS|SC_NAME
                         (ref-IGNIS::URC_IsVirtualGasZero)
                         []

@@ -146,8 +146,8 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 |----------------|---------|------|------:|-----:|----------:|------------------|
 | `A_KickStart` | `A_KickStart` | SETUP | **0** | — | free | admin/exempt |
 | `A_RemoveSecondary` | `A_RemoveSecondary` | SETUP | **0** | — | free | admin/exempt |
-| `C_AddHotRBT` | `C_AddHotRBT` | SETUP | **≥ 554** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:auth 10 + components:DPOF|C_RotateOwnership 19 + deter:setup 5 + components:DPOF|C_Control 20 + token-issue 500 |
-| `C_AddSecondary` | `C_AddSecondary` | SETUP | **500** | — | $5.00 | token-issue 500 |
+| `C_AddHotRBT` | `C_AddHotRBT` | SETUP | **≥ 359** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:ats-secondary 250 + components:ATS|C_AddHotRBT 26 + components:ATS|C_AddSecondary 29 + deter:auth 10 + components:DPOF|C_RotateOwnership 19 + deter:setup 5 + components:DPOF|C_Control 20 |
+| `C_AddSecondary` | `C_AddSecondary` | SETUP | **279** | — | $2.79 | deter:ats-secondary 250 + components:ATS|C_AddSecondary 29 |
 | `C_Brumate` | `C_Brumate` | USAGE | **≥ 11** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: biggest 5 + small 2 + smallest 1 + medium 3 |
 | `C_Coil` | `C_Coil` | USAGE | **≥ 11** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: biggest 5 + small 2 + smallest 1 + medium 3 |
 | `C_ColdRecovery` | `C_ColdRecovery` | SETUP | **≥ 11** | — | COMPLEX | charge multiplies by an item count; legs: biggest 5 + smallest 1 + small 2 + medium 3 |
@@ -163,7 +163,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_Issue` | `C_Issue` | ISSUE | **≥ 4000** | 400 | COMPLEX | charge multiplies by an item count; legs: deter:issue-ats-pair 4000 | STOA: stoa:issue-ats-pair 400 |
 | `C_KickStart` | `C_KickStart` | SETUP | **7** | — | $0.07 | biggest 5 + small 2 |
 | `C_Redeem` | `C_Redeem` | SETUP | **≥ 56** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Burn 45 + small 2 + smallest 1 + medium 3 |
-| `C_RemoveSecondary` | `C_RemoveSecondary` | SETUP | **500** | — | $5.00 | token-issue 500 |
+| `C_RemoveSecondary` | `C_RemoveSecondary` | SETUP | **291** | — | $2.91 | deter:ats-secondary 250 + components:ATS|C_RemoveSecondary 41 |
 | `C_Reverse` | `C_Recover` | SETUP | **≥ 61** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Burn 45 + small 2 + smallest 1 + biggest 5 + medium 3 |
 | `C_RotateOwnership` | `C_RotateOwnership` | AUTH | **29** | — | $0.29 | deter:auth 10 + components:ATS|C_RotateOwnership 19 |
 | `C_SetColdRecoveryDuration` | `C_SetColdRecoveryDuration` | SETUP | **29** | — | $0.29 | deter:setup 5 + components:ATS|C_SetColdRecoveryDuration 24 |
@@ -262,9 +262,9 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_Burn` | `C_BurnNFT` | SETUP | **18** | — | $0.18 | deter:setup 5 + components:DPNF|C_Burn 13 |
 | `C_Control` | `C_Control` | SETUP | **20** | — | $0.20 | deter:setup 5 + components:DPNF|C_Control 15 |
 | `C_Create` | `C_CreateNewNonce` ×2 | ISSUE | **1** | — | $0.01 | smallest 1 |
-| `C_DefineCompositeSet` | `C_DefineCompositeSet` | ISSUE | **≥ 1** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: smallest 1 |
-| `C_DefineHybridSet` | `C_DefineHybridSet` | ISSUE | **≥ 1** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: smallest 1 |
-| `C_DefinePrimordialSet` | `C_DefinePrimordialSet` | ISSUE | **≥ 1** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: smallest 1 |
+| `C_DefineCompositeSet` | `C_DefineCompositeSet` | ISSUE | **≥ 544** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:define-set 500 + components:DPNF|C_DefineCompositeSet 43 + smallest 1 |
+| `C_DefineHybridSet` | `C_DefineHybridSet` | ISSUE | **≥ 546** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:define-set 500 + components:DPNF|C_DefineHybridSet 45 + smallest 1 |
+| `C_DefinePrimordialSet` | `C_DefinePrimordialSet` | ISSUE | **≥ 544** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:define-set 500 + components:DPNF|C_DefinePrimordialSet 43 + smallest 1 |
 | `C_EnableNonceFragmentation` | `C_EnableNonceFragmentation` | ISSUE | **117** | — | $1.17 | deter:frag-enable 100 + components:DPNF|C_EnableNonceFragmentation 17 |
 | `C_EnableSetClassFragmentation` | `C_EnableSetClassFragmentation` | SETUP | **16** | — | $0.16 | deter:setup 5 + components:DPNF|C_EnableSetClassFragmentation 11 |
 | `C_Issue` | `C_IssueDigitalCollection` | ISSUE | **≥ 2549** | 250 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-nft 2500 + components:DPNF|C_Issue 49 | STOA: stoa:issue-nft 250 |
@@ -354,9 +354,9 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_Burn` | `C_BurnSFT` | SETUP | **20** | — | $0.20 | deter:setup 5 + components:DPSF|C_Burn 15 |
 | `C_Control` | `C_Control` | SETUP | **20** | — | $0.20 | deter:setup 5 + components:DPSF|C_Control 15 |
 | `C_Create` | `C_CreateNewNonce` ×2 | ISSUE | **1** | — | $0.01 | smallest 1 |
-| `C_DefineCompositeSet` | `C_DefineCompositeSet` | ISSUE | **≥ 500** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: token-issue 500 |
-| `C_DefineHybridSet` | `C_DefineHybridSet` | ISSUE | **≥ 500** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: token-issue 500 |
-| `C_DefinePrimordialSet` | `C_DefinePrimordialSet` | ISSUE | **≥ 500** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: token-issue 500 |
+| `C_DefineCompositeSet` | `C_DefineCompositeSet` | ISSUE | **≥ 544** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:define-set 500 + components:DPSF|C_DefineCompositeSet 43 + smallest 1 |
+| `C_DefineHybridSet` | `C_DefineHybridSet` | ISSUE | **≥ 546** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:define-set 500 + components:DPSF|C_DefineHybridSet 45 + smallest 1 |
+| `C_DefinePrimordialSet` | `C_DefinePrimordialSet` | ISSUE | **≥ 544** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:define-set 500 + components:DPSF|C_DefinePrimordialSet 43 + smallest 1 |
 | `C_EnableNonceFragmentation` | `C_EnableNonceFragmentation` | ISSUE | **117** | — | $1.17 | deter:frag-enable 100 + components:DPSF|C_EnableNonceFragmentation 17 |
 | `C_EnableSetClassFragmentation` | `C_EnableSetClassFragmentation` | SETUP | **16** | — | $0.16 | deter:setup 5 + components:DPSF|C_EnableSetClassFragmentation 11 |
 | `C_Issue` | `C_IssueDigitalCollection` | ISSUE | **≥ 2049** | 200 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-sft 2000 + components:DPSF|C_Issue 49 | STOA: stoa:issue-sft 200 |
@@ -485,7 +485,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_Compress` | `C_Compress` | USAGE | **0** | — | free | admin/exempt |
 | `C_Sublimate` | `C_Sublimate` | SETUP | **0** | — | free | admin/exempt |
 | `C_SublimateV2` | `C_SublimateV2` | SETUP | **0** | — | free | admin/exempt |
-| `C_WithdrawFees` | `C_WithdrawFees` | USAGE | **≥ 506** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: token-issue 500 + smallest 1 + small 2 + medium 3 |
+| `C_WithdrawFees` | `C_WithdrawFees` | USAGE | **≥ 106** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:fee-withdraw 100 + smallest 1 + small 2 + medium 3 |
 
 ## PYTHIA
 

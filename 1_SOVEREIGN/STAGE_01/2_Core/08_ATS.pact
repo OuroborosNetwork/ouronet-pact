@@ -2199,7 +2199,7 @@
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
-            (ref-IGNIS::UDC_ConstructOutputCumulator (ref-DALOS::UR_UsagePrice "ignis|token-issue") ATS|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
+            (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisPrice "ATS|C_AddSecondary" "ats-secondary") ATS|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_AddHotRBT:object{IgnisCollectorV2.OutputCumulator} (atspair:string hot-rbt:string)
@@ -3100,7 +3100,7 @@
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 ;;
-                (price:decimal (ref-DALOS::UR_UsagePrice "ignis|token-issue"))
+                (price:decimal (ref-IGNIS::UC_IgnisPrice "ATS|C_AddSecondary" "ats-secondary"))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
             )
             (with-capability (ATS|C>ADD-REWARD-TOKEN atspair reward-token)
@@ -3208,7 +3208,7 @@
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                     ;;
-                    (price:decimal (ref-DALOS::UR_UsagePrice "ignis|token-issue"))
+                    (price:decimal (ref-IGNIS::UC_IgnisPrice "ATS|C_AddHotRBT" "ats-secondary"))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                     (hot-rbt-owner:string (ref-DPOF::UR_Konto hot-rbt))
                     ;;

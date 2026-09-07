@@ -488,6 +488,17 @@
         ;;PYTHIA tolls carry NO IGNIS charge — dollar basis for their STOA leg only, and they
         ;;are NON-DISCOUNTABLE (collected with STOA|C_CollectFull). $50 deploy / $10 rename
         ;;(owner 2026-09-07) = 500 / 100 STOA at the $0.10 peg, i.e. exactly today's amounts.
+        ;;Defining a collectable SET is NOT an issuance (no STOA leg) -- it only carries its
+        ;;own IGNIS deterrence of $5 (owner 2026-09-07). The collectable itself is taxed on
+        ;;its own issue.
+        ,"define-set"        : 500.0
+        ;;Adding/removing an ATS secondary is a LINK, not an issuance: small deterrent only,
+        ;;the same deal as a VST link (owner 2026-09-07). The ortofungible being linked is
+        ;;taxed on its own issue.
+        ,"ats-secondary"     : 250.0
+        ;;Withdrawing accrued fees is a FLAT 100x deterrence and nothing else -- the one
+        ;;op that deliberately charges deter with NO component cost (owner 2026-09-07).
+        ,"fee-withdraw"      : 100.0
         ,"pythia-deploy"     : 5000.0
         ,"pythia-rename"     : 1000.0
         ,"fee-unlock"        : 5000.0}
