@@ -1251,7 +1251,7 @@
     )
     (defun DPSF|C_RemoveSetNonceScore (patron:string id:string account:string set-class:integer nos:bool)
         @doc "[5b] Removes Set Nonce Score, setting it to -1.0, either Native or Split, for an SFT"
-        (DPSF|C_UpdateNonceScore patron id account set-class nos -1.0)
+        (DPSF|C_UpdateSetNonceScore patron id account set-class nos -1.0)
     )
     (defun DPSF|C_UpdateSetNonceMetaData
         (patron:string id:string account:string set-class:integer nos:bool meta-data:object)

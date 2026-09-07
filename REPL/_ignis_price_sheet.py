@@ -181,7 +181,13 @@ def charge(src, core_fn, entity=None, extra=''):
            any(l.startswith('components:DPNF|') for l in keyed):
             ig = [(lab, amt) for lab, amt in ig
                   if not lab.startswith('components:') or lab.startswith(f'components:{entity}|')]
-        elif len(ig) == 2:
+        elif len(ig) == 2 and not any(
+                lab.startswith(('deter:', 'components:')) for lab, _ in ig):
+            # LEGACY TIER PAIR ONLY. A single migrated `UC_IgnisPrice "<op>" "<deter>"` emits
+            # exactly TWO legs (deter: + components:) that must be SUMMED, not chosen between.
+            # Without this guard the positional pick fired on the ~28 nonce-field updates and
+            # kept one half each way: DPSF showed deter 5, DPNF showed components 17, where the
+            # chain charges 5 + 17 = 22 for both (URCi_UpdateNonceField, one shared reader).
             ig = [ig[0 if entity == 'DPSF' else 1]]
         if len(st) == 2: st = [st[0 if entity == 'DPSF' else 1]]
     # de-dup identical legs (same reader reached by several paths)

@@ -623,16 +623,16 @@
         (UC_StoicTagStoaFee tag-name)
     )
     (defun URCi_RotateCodexGuard:object{IgnisCollectorV2.OutputCumulator} (patron:string)
-        @doc "Cost single-source for CODEX|C_RotateCodexGuard — deter(auth) + components, on the \
-            \ patron (the codex row carries no konto of its own). AUTH tier: rotating a guard is \
-            \ an authority change, the same class as every other module's RotateOwnership. \
+        @doc "Cost single-source for CODEX|C_RotateCodexGuard — deter(usage) + components, on the \
+            \ patron (the codex row carries no konto of its own). USAGE tier (deterrence 1x, owner \
+            \ 2026-09-07): CODEX ops pay what they structurally cost and carry no deterrent premium. \
             \ Consumed by the TS01-C4 exec path + INFO, so the two cannot drift."
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
-                (ref-IGNIS::UC_IgnisPrice "CODEX|C_RotateCodexGuard" "auth")
+                (ref-IGNIS::UC_IgnisPrice "CODEX|C_RotateCodexGuard" "usage")
                 patron (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
@@ -834,9 +834,9 @@
     )
     (defun INFO_CODEX|RecordArweaveUpload:object{OuronetInfoV2.ClientInfo}
         (patron:string codex-id:string arweave-tx-id:string uploaded-bytes:integer)
-        @doc "ClientInfo preview for TS01-C4 CODEX|C_RecordArweaveUpload. Gasless today for the \
-            \ same reason as RotateCodexGuard (IG|COMPONENTS entry: CODEX|C_RecordArweaveUpload \
-            \ 9). Records the Arweave transaction id and the uploaded byte count."
+        @doc "ClientInfo preview for TS01-C4 CODEX|C_RecordArweaveUpload — deter(usage) + \
+            \ components via URCi_RecordArweaveUpload, so preview and execution cannot drift. \
+            \ Records the Arweave transaction id and the uploaded byte count."
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)

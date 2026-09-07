@@ -201,7 +201,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_RecordArweaveUpload` | `C_RecordArweaveUpload` | USAGE | **10** | — | $0.10 | deter:usage 1 + components:CODEX|C_RecordArweaveUpload 9 |
 | `C_RegisterStoicTag` | `C_RegisterStoicTag` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_ReleaseStoicTag` | `C_ReleaseStoicTag` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_RotateCodexGuard` | `C_RotateCodexGuard` | AUTH | **14** | — | $0.14 | deter:auth 10 + components:CODEX|C_RotateCodexGuard 4 |
+| `C_RotateCodexGuard` | `C_RotateCodexGuard` | USAGE | **5** | — | $0.05 | deter:usage 1 + components:CODEX|C_RotateCodexGuard 4 |
 
 ## CUSTODIANS
 
@@ -290,24 +290,24 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_TransferNonce` | `C_IgnisRoyaltyCollector` ×2 | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_TransferNonces` | `C_IgnisRoyaltyCollector` ×2 | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_UpdateNonce` | `C_UpdateNonces` | SETUP | **≥ 1** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 |
-| `C_UpdateNonceDescription` | `C_UpdateNonceDescription` | SETUP | **17** | — | $0.17 | components:DPNF|C_UpdateNonce 17 |
-| `C_UpdateNonceIgnisRoyalty` | `C_UpdateNonceIgnisRoyalty` | SETUP | **17** | — | $0.17 | components:DPNF|C_UpdateNonce 17 |
-| `C_UpdateNonceMetaData` | `C_UpdateNonceMetaData` | SETUP | **17** | — | $0.17 | components:DPNF|C_UpdateNonce 17 |
-| `C_UpdateNonceName` | `C_UpdateNonceName` | SETUP | **17** | — | $0.17 | components:DPNF|C_UpdateNonce 17 |
-| `C_UpdateNonceRoyalty` | `C_UpdateNonceRoyalty` | SETUP | **17** | — | $0.17 | components:DPNF|C_UpdateNonce 17 |
+| `C_UpdateNonceDescription` | `C_UpdateNonceDescription` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
+| `C_UpdateNonceIgnisRoyalty` | `C_UpdateNonceIgnisRoyalty` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
+| `C_UpdateNonceMetaData` | `C_UpdateNonceMetaData` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
+| `C_UpdateNonceName` | `C_UpdateNonceName` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
+| `C_UpdateNonceRoyalty` | `C_UpdateNonceRoyalty` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
 | `C_UpdateNonces` | `C_UpdateNonces` | SETUP | **≥ 1** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 |
-| `C_UpdateNonceScore` | `C_UpdateNonceScore` | SETUP | **17** | — | $0.17 | components:DPNF|C_UpdateNonce 17 |
-| `C_UpdateNonceURI` | `C_UpdateNonceURI` | SETUP | **17** | — | $0.17 | components:DPNF|C_UpdateNonce 17 |
+| `C_UpdateNonceScore` | `C_UpdateNonceScore` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
+| `C_UpdateNonceURI` | `C_UpdateNonceURI` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
 | `C_UpdatePendingBranding` | `C_UpdatePendingBranding` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_UpdateSetNonce` | `C_UpdateNonces` | SETUP | **≥ 1** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 |
-| `C_UpdateSetNonceDescription` | `C_UpdateNonceDescription` | SETUP | **17** | — | $0.17 | components:DPNF|C_UpdateNonce 17 |
-| `C_UpdateSetNonceIgnisRoyalty` | `C_UpdateNonceIgnisRoyalty` | SETUP | **17** | — | $0.17 | components:DPNF|C_UpdateNonce 17 |
-| `C_UpdateSetNonceMetaData` | `C_UpdateNonceMetaData` | SETUP | **17** | — | $0.17 | components:DPNF|C_UpdateNonce 17 |
-| `C_UpdateSetNonceName` | `C_UpdateNonceName` | SETUP | **17** | — | $0.17 | components:DPNF|C_UpdateNonce 17 |
-| `C_UpdateSetNonceRoyalty` | `C_UpdateNonceRoyalty` | SETUP | **17** | — | $0.17 | components:DPNF|C_UpdateNonce 17 |
+| `C_UpdateSetNonceDescription` | `C_UpdateNonceDescription` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
+| `C_UpdateSetNonceIgnisRoyalty` | `C_UpdateNonceIgnisRoyalty` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
+| `C_UpdateSetNonceMetaData` | `C_UpdateNonceMetaData` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
+| `C_UpdateSetNonceName` | `C_UpdateNonceName` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
+| `C_UpdateSetNonceRoyalty` | `C_UpdateNonceRoyalty` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
 | `C_UpdateSetNonces` | `C_UpdateNonces` | SETUP | **≥ 1** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 |
-| `C_UpdateSetNonceScore` | `C_UpdateNonceScore` | SETUP | **17** | — | $0.17 | components:DPNF|C_UpdateNonce 17 |
-| `C_UpdateSetNonceURI` | `C_UpdateNonceURI` | SETUP | **17** | — | $0.17 | components:DPNF|C_UpdateNonce 17 |
+| `C_UpdateSetNonceScore` | `C_UpdateNonceScore` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
+| `C_UpdateSetNonceURI` | `C_UpdateNonceURI` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
 | `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **?** | 0.025 | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_WipeClean` | `C_WipeClean` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_WipeDirty` | `C_WipeDirty` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
@@ -371,7 +371,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_RenameSet` | `C_RenameSet` | SETUP | **14** | — | $0.14 | deter:setup 5 + components:DPSF|C_RenameSet 9 |
 | `C_Repurpose` | `C_RepurposeCollectable` | USAGE | **≥ 5** | — | COMPLEX | charge multiplies by an item count; legs: small 2 + medium 3 |
 | `C_RepurposeFragments` | `C_RepurposeCollectableFragments` | USAGE | **5** | — | $0.05 | small 2 + medium 3 |
-| `C_ToggleAddQuantityRole` | `C_ToggleAddQuantityRole` | AUTH | **10** | — | $0.10 | deter:auth 10 |
+| `C_ToggleAddQuantityRole` | `C_ToggleAddQuantityRole` | AUTH | **23** | — | $0.23 | deter:auth 10 + components:DPSF|C_ToggleAddQuantityRole 13 |
 | `C_ToggleBurnRole` | `C_ToggleBurnRole` | AUTH | **23** | — | $0.23 | deter:auth 10 + components:DPSF|C_ToggleBurnRole 13 |
 | `C_ToggleExemptionRole` | `C_ToggleExemptionRole` | AUTH | **23** | — | $0.23 | deter:auth 10 + components:DPSF|C_ToggleExemptionRole 13 |
 | `C_ToggleFreezeAccount` | `C_ToggleFreezeAccount` | SETUP | **18** | — | $0.18 | deter:setup 5 + components:DPSF|C_ToggleFreezeAccount 13 |
@@ -384,24 +384,24 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_TransferNonce` | `C_IgnisRoyaltyCollector` ×2 | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_TransferNonces` | `C_IgnisRoyaltyCollector` ×2 | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_UpdateNonce` | `C_UpdateNonces` | SETUP | **≥ 1** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 |
-| `C_UpdateNonceDescription` | `C_UpdateNonceDescription` | SETUP | **5** | — | $0.05 | deter:setup 5 |
-| `C_UpdateNonceIgnisRoyalty` | `C_UpdateNonceIgnisRoyalty` | SETUP | **5** | — | $0.05 | deter:setup 5 |
-| `C_UpdateNonceMetaData` | `C_UpdateNonceMetaData` | SETUP | **5** | — | $0.05 | deter:setup 5 |
-| `C_UpdateNonceName` | `C_UpdateNonceName` | SETUP | **5** | — | $0.05 | deter:setup 5 |
-| `C_UpdateNonceRoyalty` | `C_UpdateNonceRoyalty` | SETUP | **5** | — | $0.05 | deter:setup 5 |
+| `C_UpdateNonceDescription` | `C_UpdateNonceDescription` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
+| `C_UpdateNonceIgnisRoyalty` | `C_UpdateNonceIgnisRoyalty` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
+| `C_UpdateNonceMetaData` | `C_UpdateNonceMetaData` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
+| `C_UpdateNonceName` | `C_UpdateNonceName` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
+| `C_UpdateNonceRoyalty` | `C_UpdateNonceRoyalty` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
 | `C_UpdateNonces` | `C_UpdateNonces` | SETUP | **≥ 1** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 |
-| `C_UpdateNonceScore` | `C_UpdateNonceScore` | SETUP | **5** | — | $0.05 | deter:setup 5 |
-| `C_UpdateNonceURI` | `C_UpdateNonceURI` | SETUP | **5** | — | $0.05 | deter:setup 5 |
+| `C_UpdateNonceScore` | `C_UpdateNonceScore` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
+| `C_UpdateNonceURI` | `C_UpdateNonceURI` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
 | `C_UpdatePendingBranding` | `C_UpdatePendingBranding` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_UpdateSetNonce` | `C_UpdateNonces` | SETUP | **≥ 1** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 |
-| `C_UpdateSetNonceDescription` | `C_UpdateNonceDescription` | SETUP | **5** | — | $0.05 | deter:setup 5 |
-| `C_UpdateSetNonceIgnisRoyalty` | `C_UpdateNonceIgnisRoyalty` | SETUP | **5** | — | $0.05 | deter:setup 5 |
-| `C_UpdateSetNonceMetaData` | `C_UpdateNonceMetaData` | SETUP | **5** | — | $0.05 | deter:setup 5 |
-| `C_UpdateSetNonceName` | `C_UpdateNonceName` | SETUP | **5** | — | $0.05 | deter:setup 5 |
-| `C_UpdateSetNonceRoyalty` | `C_UpdateNonceRoyalty` | SETUP | **5** | — | $0.05 | deter:setup 5 |
+| `C_UpdateSetNonceDescription` | `C_UpdateNonceDescription` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
+| `C_UpdateSetNonceIgnisRoyalty` | `C_UpdateNonceIgnisRoyalty` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
+| `C_UpdateSetNonceMetaData` | `C_UpdateNonceMetaData` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
+| `C_UpdateSetNonceName` | `C_UpdateNonceName` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
+| `C_UpdateSetNonceRoyalty` | `C_UpdateNonceRoyalty` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
 | `C_UpdateSetNonces` | `C_UpdateNonces` | SETUP | **≥ 1** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 |
-| `C_UpdateSetNonceScore` | `C_UpdateNonceScore` | SETUP | **5** | — | $0.05 | deter:setup 5 |
-| `C_UpdateSetNonceURI` | `C_UpdateNonceURI` | SETUP | **5** | — | $0.05 | deter:setup 5 |
+| `C_UpdateSetNonceScore` | `C_UpdateNonceScore` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
+| `C_UpdateSetNonceURI` | `C_UpdateNonceURI` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
 | `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **?** | 0.025 | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_WipeClean` | `C_WipeClean` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_WipeDirty` | `C_WipeDirty` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |

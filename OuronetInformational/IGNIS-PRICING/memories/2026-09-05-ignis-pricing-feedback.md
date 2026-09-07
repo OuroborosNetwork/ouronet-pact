@@ -600,3 +600,53 @@ Either replace ALL tier calls in the body, or refuse functions containing more t
 handle them by hand. And note what this says about the test suite: P7-style price assertions are
 the ONLY thing that would have caught this — pipeline-green proves nothing about prices.
 
+
+## 2026-09-07 — owner answers + three defects found while acting on them
+
+**Owner rulings.** (1) CODEX ops are *not* free: they pay their structural IGNIS (components)
+at **deterrence 1x**. (2) The DPNF/DPSF bulk-transfer and remove-nonce-score ops must pay too;
+the bulk ones are composite, so their cost must come from a scaling reader. (3) The
+IGNIS-PRICING folder had too many files to navigate — one front door is required.
+
+**My earlier "CODEX is gasless" diagnostic was WRONG.** It tested the *core* `C_RotateCodexGuard`,
+which returns a `string`. The cumulator comes from `URCi_RotateCodexGuard` at the **Talos hop**
+(`TS01-C4`), which was already wired. Lesson: to decide whether an op charges, follow the Talos
+wrapper's `IGNIS::C_Collect` argument, never the core `C_`'s return type. Applied change:
+RotateCodexGuard `auth`(10) → `usage`(1) per the 1x ruling; 14 → **5**. RecordArweaveUpload was
+already `usage`; unchanged at **10**. Two stale "Gasless today" `@doc`s corrected.
+
+**The six "unpriced" ops were never unpriced.** `DPSF|`/`DPNF|` `C_BulkTransfer`,
+`C_RemoveNonceScore`, `C_RemoveSetNonceScore` are **thin aliases** that delegate to a priced op,
+so they carry no `C_Collect` of their own and the generator skipped them. Bulk transfer already
+scales correctly — `DPDC-T::URCi_BulkTransferCumulator` folds `URC_TotalTransferPrice` over every
+receiver leg. No pricing work was needed. **The general lesson: an op with no `IG|COMPONENTS`
+entry is not necessarily unpriced — it may bill through a shared or delegated reader.** A
+`IG|COMPONENTS`-key liveness scan reports 222/396 keys "never read"; that is expected, because
+whole families (all ~20 `C_UpdateNonce*`) bill through ONE shared reader
+(`DPDC-N::URCi_UpdateNonceField`) keyed on a single representative op.
+
+**GENERATOR BUG — the price sheet under-reported 29 rows.** In `_ignis_price_sheet.py` the
+`(if son ...)` DPSF/DPNF branch-picker had a positional fallback `elif len(ig) == 2:` that chose
+ONE leg. But a single migrated `UC_IgnisPrice "<op>" "<deter>"` also emits exactly **two** legs —
+`deter:` and `components:` — which must be **SUMMED, not chosen between**. So it kept one half
+each way: DPSF rows showed `deter:setup 5`, DPNF rows showed `components 17`, where the chain
+charges **5 + 17 = 22** for both. Fixed by restricting the fallback to legacy tier pairs
+(`not lab.startswith(('deter:','components:'))`). 29 rows corrected; the sheet's
+"components-only" row count went 14 → **0**. The 13 remaining deter-only rows are legitimate —
+all are already flagged `≥`/COMPLEX composite ops. **The CODE was always right; only the
+published sheet was wrong.**
+
+**CORRECTNESS BUG (not pricing) — `C_RemoveSetNonceScore` wrote to the wrong row.** In DPDC-N,
+`nost` = *NoNCe-Or-SET*: `true` → nonce data, `false` → set data. `C_UpdateSetNonceScore` passes
+`nost=false`; `C_UpdateNonceScore` passes `nost=true`. But **both** `DPSF|` and `DPNF|`
+`C_RemoveSetNonceScore` delegated to `C_UpdateNonceScore`, handing it a **set-class** integer down
+the **nonce** path — so removing a set-nonce score targeted `UR_NativeNonceData id son set-class`
+instead of the set row. Rerouted to `C_UpdateSetNonceScore` in both Talos modules. No price
+change (both bill 22 via the same shared reader). Found only by tracing delegation for pricing —
+`ZALL` was green with the bug present, and two REPLs exercise the path.
+
+**Docs.** `IGNIS-PRICING/README.md` now opens with a single answer ("want a price? →
+`IGNIS-PRICE-SHEET.md`, that is the only file you need") plus how to read a row (bold = exact,
+`≥` = scales with item count). Four pre-rehaul/never-shipped files moved to `archive/`.
+
+Verified with `ZALL.repl` (exit 0, "Load successful"), not `Z.repl`.
