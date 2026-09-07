@@ -131,6 +131,22 @@ GENERIC_DETER = {'usage', 'setup', 'auth', 'fee', 'small'}
 USAGE = {k: float(v) for k, v in re.findall(
     r'A_UpdateUsagePrice\s+"([^"]+)"\s+([0-9.]+)',
     open('REPL/Stage_01/[4.0]_Sovereign-Executor.repl').read())}
+# The rehaul RE-SEEDS the per-asset STOA keys later in the same executor file, as DERIVED
+# expressions the literal regex above cannot see:
+#     (DALOS|A_UpdateUsagePrice "dptf" (ref-IGNIS::UC_StoaPrice "issue-tf"))
+# Those overrides come LAST, so they are what the chain actually holds -- but the sheet kept
+# reporting the STALE pre-rehaul literals seeded earlier (dptf 0.2, dpnf 0.5, ats 0.1 ...).
+# Owner rule: an issuance op's STOA fee is its DETERRENCE EXPRESSED IN DOLLARS, converted at
+# the hard peg. UC_StoaPrice(k) == (IG|DETER[k] / 100) / stoa|price, i.e. deter/10 at $0.10.
+# So issue-tf 1000 -> $10 -> 100 STOA; issue-nft 2500 -> $25 -> 250 STOA.
+STOA_PEG = USAGE.get('stoa|price', 0.1)
+STOA_DETER = {}          # usage-price key -> the IG|DETER key its STOA fee is derived from
+for _k, _dk in re.findall(
+        r'A_UpdateUsagePrice\s+"([^"]+)"\s+\([^)]*UC_StoaPrice\s+"([^"]+)"\)',
+        open('REPL/Stage_01/[4.0]_Sovereign-Executor.repl').read()):
+    USAGE[_k] = (IG_DETER.get(_dk, 0.0) / 100.0) / STOA_PEG
+    STOA_DETER[_k] = _dk
+
 TIER = {'UDC_SmallestCumulator':'ignis|smallest','UDC_SmallCumulator':'ignis|small',
         'UDC_MediumCumulator':'ignis|medium','UDC_BigCumulator':'ignis|big',
         'UDC_BiggestCumulator':'ignis|biggest'}
@@ -168,6 +184,15 @@ def charge(src, core_fn, entity=None, extra=''):
         for k in re.findall(r'UR_UsagePrice\s+"([a-z]+)"', txt):
             if k in USAGE and not k.startswith('ignis'):
                 st.append((k, USAGE[k]))
+    # The issuance STOA readers (URCi_IssueStoa, URCi_IssueCollectionStoa, ...) call
+    # UC_StoaPrice DIRECTLY on an IG|DETER key instead of going through UR_UsagePrice, so the
+    # scan above never saw them and EVERY issuance row printed "-" in the STOA column while the
+    # chain was charging correctly all along. Owner rule: an issuance op's STOA fee carries the
+    # SAME DOLLAR VALUE as its deterrence, converted at the peg --
+    #     UC_StoaPrice(k) == (IG|DETER[k] / 100) / stoa|price
+    # so issue-tf 1000 -> $10 -> 100 STOA, issue-nft 2500 -> $25 -> 250 STOA.
+    for k in re.findall(r'UC_StoaPrice\s+"([a-z0-9-]+)"', txt):
+        st.append(('stoa:' + k, (IG_DETER.get(k, 0.0) / 100.0) / STOA_PEG))
     # `(if son A B)` branches: DPSF is son=true (first branch), DPNF is son=false (second).
     # Without this the SFT and NFT prices get SUMMED instead of selected.
     if entity in ('DPSF', 'DPNF') and re.search(r'\(if\s+son', txt):
@@ -181,6 +206,11 @@ def charge(src, core_fn, entity=None, extra=''):
            any(l.startswith('components:DPNF|') for l in keyed):
             ig = [(lab, amt) for lab, amt in ig
                   if not lab.startswith('components:') or lab.startswith(f'components:{entity}|')]
+        # same branch, deter side: `(if son (UC_IgnisPrice .. "issue-sft") (.. "issue-nft"))`
+        sft, nft = 'deter:issue-sft', 'deter:issue-nft'
+        if any(l == sft for l, _ in ig) and any(l == nft for l, _ in ig):
+            drop = nft if entity == 'DPSF' else sft
+            ig = [(lab, amt) for lab, amt in ig if lab != drop]
         elif len(ig) == 2 and not any(
                 lab.startswith(('deter:', 'components:')) for lab, _ in ig):
             # LEGACY TIER PAIR ONLY. A single migrated `UC_IgnisPrice "<op>" "<deter>"` emits
@@ -189,7 +219,12 @@ def charge(src, core_fn, entity=None, extra=''):
             # kept one half each way: DPSF showed deter 5, DPNF showed components 17, where the
             # chain charges 5 + 17 = 22 for both (URCi_UpdateNonceField, one shared reader).
             ig = [ig[0 if entity == 'DPSF' else 1]]
-        if len(st) == 2: st = [st[0 if entity == 'DPSF' else 1]]
+        ssft, snft = 'stoa:issue-sft', 'stoa:issue-nft'
+        if any(l == ssft for l, _ in st) and any(l == snft for l, _ in st):
+            drop = snft if entity == 'DPSF' else ssft
+            st = [(lab, amt) for lab, amt in st if lab != drop]
+        elif len(st) == 2:
+            st = [st[0 if entity == 'DPSF' else 1]]
     # de-dup identical legs (same reader reached by several paths)
     def dedup(v):
         out=[]; seen=set()
@@ -315,6 +350,8 @@ for entity in sorted(rows):
         st_sum = sum(a for _, a in stl)
         st_cell = f"{st_sum:g}" if stl else "—"
         legs = " + ".join(f"{lab} {amt:g}" for lab, amt in igl) if igl else "—"
+        if stl:
+            legs += " | STOA: " + " + ".join(f"{lab} {amt:g}" for lab, amt in stl)
         # An admin (A_/AA_) Talos entrypoint is IGNIS+STOA exempt REGARDLESS of what legs the
         # core op it drives would otherwise charge — classify from the Talos prefix.
         if d is None:

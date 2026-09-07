@@ -33,6 +33,30 @@ any of it to read a price.
   real charge is that much *or more*. The Cost column reads `COMPLEX` for these.
 * `—` in the STOA column means no STOA is charged. STOA is charged on **ISSUE ops only**.
 
+### The STOA rule
+
+An issuance op's STOA fee carries the **same dollar value as its deterrence**, converted at the
+hard peg (`stoa|price` = $0.10):
+
+```
+STOA = (deter / 100) / stoa|price          ;; IGNIS::UC_StoaPrice
+     =  dollars(deter) / 0.10
+```
+
+So `issue-tf` deter 1000 → $10 → **100 STOA**; `issue-nft` 2500 → $25 → **250 STOA**;
+`issue-swp-pair` 5000 → $50 → **500 STOA**. When a real oracle price replaces the $0.10 peg the
+STOA *amount* moves but the *value* the user pays does not. The full asset-issuance table:
+
+| op | deter | = | STOA @ $0.10 |
+|---|---:|---:|---:|
+| `DPTF\|C_Issue` | 1000 | $10 | 100 |
+| `DPOF\|C_Issue` | 1000 | $10 | 100 |
+| `DPSF\|C_Issue` | 2000 | $20 | 200 |
+| `DPNF\|C_Issue` | 2500 | $25 | 250 |
+| `ATS\|C_Issue` | 4000 | $40 | 400 |
+| `SWP\|C_IssueStable` / `C_IssueWeighted` | 5000 | $50 | 500 |
+| `DPSF\|C_IssueCompany` | 10000 + 2000 | $120 | 1200 |
+
 ## The model in one line
 
 ```

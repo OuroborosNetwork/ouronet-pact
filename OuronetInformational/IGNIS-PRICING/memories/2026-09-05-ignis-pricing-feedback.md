@@ -650,3 +650,48 @@ change (both bill 22 via the same shared reader). Found only by tracing delegati
 `≥` = scales with item count). Four pre-rehaul/never-shipped files moved to `archive/`.
 
 Verified with `ZALL.repl` (exit 0, "Load successful"), not `Z.repl`.
+
+## 2026-09-07 (2) — the STOA column was blind; the chain was right
+
+Owner: "for issuance functions that have a STOA fee, the STOA amount equals the deterrence price
+in dollars, converted at the hardcoded $0.10 oracle price — 4500 IGNIS deter = $45 = 450 STOA.
+This isn't properly added in the document, and probably neither in the code."
+
+**Half right, and the important half is the good news: the CODE already implements this exactly.**
+`IGNIS::UC_StoaPrice(k) = (IG|DETER[k] / 100) / stoa|price`, and every asset-issuance reader
+already calls it — `DPTF/DPOF/ATS::URCi_IssueStoa`, `DPDC-I::URCi_IssueCollectionStoa` (son-branch
+covering BOTH issue-sft and issue-nft), `SWPI` for issue-swp-pair, `TS02-C1` for
+issue-shareholder. Their `@doc`s already spell the rule out. **Only the published sheet was
+wrong** — the third time this session that the generator, not the chain, was the defect.
+
+**Why the sheet showed `—`.** It detected STOA only via `UR_UsagePrice "<key>"`, but the issuance
+readers call `UC_StoaPrice "<deter-key>"` directly, so no leg was ever found. Compounding it,
+`[4.0]_Sovereign-Executor.repl` seeds the per-asset keys TWICE: stale pre-rehaul literals at
+L228-237 (`dptf 0.2`, `dpnf 0.5` …), then DERIVED overrides at L258-263
+(`A_UpdateUsagePrice "dptf" (UC_StoaPrice "issue-tf")`). The generator's literal-only regex read
+the stale first set and never saw the overrides that actually win on chain.
+
+**Also fixed: son-branch legs were SUMMED, not selected, on the deter side.** `DPSF|C_Issue` and
+`DPNF|C_Issue` both reach `(if son ... "issue-sft" ... "issue-nft")`, and the branch-picker only
+covered `components:` labels. The sheet published **4549** for both — a number no caller can ever
+pay. Correct: SFT **2049**, NFT **2549**. `DPSF|C_IssueCompany` 14643 -> **12143**.
+
+Published asset-issuance table now (deter -> dollars -> STOA @ $0.10):
+`DPTF|C_Issue` 1000/$10/**100** · `DPOF|C_Issue` 1000/$10/**100** · `DPSF|C_Issue` 2000/$20/**200**
+· `DPNF|C_Issue` 2500/$25/**250** · `ATS|C_Issue` 4000/$40/**400** · `SWP|C_IssueStable` and
+`C_IssueWeighted` 5000/$50/**500** · `DPSF|C_IssueCompany` 12000/$120/**1200**.
+The rule is now stated in `IGNIS-PRICING/README.md` with this table, so it cannot be lost again.
+
+**OPEN — inconsistent account-creation STOA (owner decision needed, NOT changed).** Two live
+sources of truth for what a deployed account costs in STOA:
+  * new, gated by the `UR_AccountCreationStoa` global switch:
+    `UC_StoaPrice "acct-standard"` = **50 STOA**, `"acct-smart"` = **100 STOA**;
+  * legacy raw literals never re-derived: `UR_UsagePrice "standard"` = **0.01**,
+    `"smart"` = **0.02** — still read directly by `AQP/03_AQP`, `05_FVT`, `02_SCORE`, `01_ANK`.
+So AQP pool/FVT/score issuance charges 0.02 STOA for a smart account while the account-creation
+path charges 100 — a 5000x gap that also bypasses the global switch. Left alone deliberately:
+closing it is a price change, not a bug fix.
+
+**Rule learned (three for three).** A price defect found in a generated document is far more
+likely to be in the generator than in the chain. Verify against the `URCi_`/`UC_*Price` call site
+before touching a `defconst`.

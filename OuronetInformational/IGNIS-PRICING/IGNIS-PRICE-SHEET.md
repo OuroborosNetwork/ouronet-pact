@@ -38,10 +38,10 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 
 | Talos function | core op | role | IGNIS | STOA | $ (ignis) | charge breakdown |
 |----------------|---------|------|------:|-----:|----------:|------------------|
-| `C_IssueNonFungibleAnchor` | `C_IssueNonFungibleAnchor` | ISSUE | **≥ 500** | 0.01 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:anchor 500 |
-| `C_IssueNonFungibleSetAnchor` | `C_IssueNonFungibleSetAnchor` | ISSUE | **≥ 500** | 0.01 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:anchor 500 |
-| `C_IssueSemiFungibleAnchor` | `C_IssueSemiFungibleAnchor` | ISSUE | **≥ 500** | 0.01 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:anchor 500 |
-| `C_IssueTrueFungibleAnchor` | `C_IssueTrueFungibleAnchor` | ISSUE | **≥ 500** | 0.01 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:anchor 500 |
+| `C_IssueNonFungibleAnchor` | `C_IssueNonFungibleAnchor` | ISSUE | **≥ 500** | 0.01 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:anchor 500 | STOA: standard 0.01 |
+| `C_IssueNonFungibleSetAnchor` | `C_IssueNonFungibleSetAnchor` | ISSUE | **≥ 500** | 0.01 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:anchor 500 | STOA: standard 0.01 |
+| `C_IssueSemiFungibleAnchor` | `C_IssueSemiFungibleAnchor` | ISSUE | **≥ 500** | 0.01 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:anchor 500 | STOA: standard 0.01 |
+| `C_IssueTrueFungibleAnchor` | `C_IssueTrueFungibleAnchor` | ISSUE | **≥ 500** | 0.01 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:anchor 500 | STOA: standard 0.01 |
 | `C_RevokeAnchor` | `C_RevokeAnchor` | SETUP | **167** | — | $1.67 | deter:revoke-anchor 100 + components:AQP-ANK|C_RevokeAnchor 67 |
 | `C_RevokeBoostClass` | `C_RevokeBoostClass` | SETUP | **510** | — | $5.10 | deter:revoke-boost 500 + components:AQP-ANK|C_RevokeBoostClass 10 |
 
@@ -68,7 +68,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_AddRewardLink` | `C_AddRewardLink` | SETUP | **511** | — | $5.11 | deter:add-reward-link 500 + components:AQP-FVT|C_AddRewardLink 11 |
 | `C_AddScoreEntity` | `C_AddScoreEntity` | SETUP | **539** | — | $5.39 | deter:add-score-entity 500 + components:AQP-FVT|C_AddScoreEntity 39 |
 | `C_Control` | `C_Control` | SETUP | **13** | — | $0.13 | deter:setup 5 + components:AQP-FVT|C_Control 8 |
-| `C_Issue` | `C_Issue` | ISSUE | **≥ 1019** | 0.02 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-fvt 1000 + components:AQP-FVT|C_Issue 19 |
+| `C_Issue` | `C_Issue` | ISSUE | **≥ 1019** | 0.02 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-fvt 1000 + components:AQP-FVT|C_Issue 19 | STOA: smart 0.02 |
 | `C_IssueMultipletFamily` | `C_IssueMultipletFamily` | ISSUE | **509** | — | $5.09 | deter:issue-multiplet 500 + components:AQP-FVT|C_IssueMultipletFamily 9 |
 | `C_RotateOwnership` | `C_RotateOwnership` | AUTH | **17** | — | $0.17 | deter:auth 10 + components:AQP-FVT|C_RotateOwnership 7 |
 | `C_SetCommonDenominator` | `C_SetCommonDenominator` | SETUP | **110** | — | $1.10 | deter:fvt-split-setup 100 + components:AQP-FVT|C_SetCommonDenominator 10 |
@@ -97,7 +97,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_DisablePoolStake` | `C_DisablePoolStake` | USAGE | **56** | — | $0.56 | deter:pool-stake-toggle 50 + components:AQP-POOL|C_EnablePoolStake 6 |
 | `C_EnablePoolStake` | `C_EnablePoolStake` | USAGE | **56** | — | $0.56 | deter:pool-stake-toggle 50 + components:AQP-POOL|C_EnablePoolStake 6 |
 | `C_FinalizeVacate` | `C_FinalizeVacate` | USAGE | **≥ 18** | — | COMPLEX | per-nonce / per-item work; legs: deter:usage 1 + components:AQP-POOL|C_FinalizeVacate 17 |
-| `C_Issue` | `C_Issue` | ISSUE | **≥ 1020** | 0.02 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-pool 1000 + components:AQP-POOL|C_Issue 20 |
+| `C_Issue` | `C_Issue` | ISSUE | **≥ 1020** | 0.02 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-pool 1000 + components:AQP-POOL|C_Issue 20 | STOA: smart 0.02 |
 | `C_RevokeScore` | `C_RevokeScore` | SETUP | **298** | — | $2.98 | deter:revoke-score 250 + components:AQP-POOL|C_RevokeScore 48 |
 | `C_SyncNonFungibleAnchors` | `C_SyncCollectableAnchors` | USAGE | **86** | — | $0.86 | deter:sync-anchors 50 + components:AQP-POOL|C_SyncSemiFungibleAnchors 36 |
 | `C_SyncSemiFungibleAnchors` | `C_SyncCollectableAnchors` | USAGE | **86** | — | $0.86 | deter:sync-anchors 50 + components:AQP-POOL|C_SyncSemiFungibleAnchors 36 |
@@ -127,17 +127,17 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_CreateScoreBoostClassLink` | `C_CreateBoostClassLink` | SETUP | **31** | — | $0.31 | deter:setup 5 + components:AQP-SCR|C_CreateScoreBoostClassLink 26 |
 | `C_CreateScoreBoostLink` | `C_CreateBoostLink` | SETUP | **18** | — | $0.18 | deter:setup 5 + components:AQP-SCR|C_CreateScoreBoostLink 13 |
 | `C_EnableDebBoost` | `C_EnableDebBoost` | SETUP | **18** | — | $0.18 | deter:setup 5 + components:AQP-SCR|C_EnableDebBoost 13 |
-| `C_IssueLiquidityScore` | `C_IssueLiquidityScore` | ISSUE | **≥ 1028** | 0.02 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-score 1000 + components:AQP-SCR|C_IssueTrueFungibleScore 28 |
-| `C_IssueNonFungibleScore` | `C_IssueNonFungibleScore` | ISSUE | **≥ 1028** | 0.02 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-score 1000 + components:AQP-SCR|C_IssueTrueFungibleScore 28 |
+| `C_IssueLiquidityScore` | `C_IssueLiquidityScore` | ISSUE | **≥ 1028** | 0.02 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-score 1000 + components:AQP-SCR|C_IssueTrueFungibleScore 28 | STOA: smart 0.02 |
+| `C_IssueNonFungibleScore` | `C_IssueNonFungibleScore` | ISSUE | **≥ 1028** | 0.02 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-score 1000 + components:AQP-SCR|C_IssueTrueFungibleScore 28 | STOA: smart 0.02 |
 | `C_IssueNonFungibleScoreDefinition` | `C_IssueNonFungibleScoreDefinition` | ISSUE | **≥ 5** | — | COMPLEX | charge multiplies by an item count; legs: biggest 5 |
 | `C_IssueNonFungibleSetScoreDefinition` | `C_IssueNonFungibleSetScoreDefinition` | ISSUE | **≥ 5** | — | COMPLEX | charge multiplies by an item count; legs: biggest 5 |
-| `C_IssueOrtoFungibleScore` | `C_IssueOrtoFungibleScore` | ISSUE | **≥ 1028** | 0.02 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-score 1000 + components:AQP-SCR|C_IssueTrueFungibleScore 28 |
+| `C_IssueOrtoFungibleScore` | `C_IssueOrtoFungibleScore` | ISSUE | **≥ 1028** | 0.02 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-score 1000 + components:AQP-SCR|C_IssueTrueFungibleScore 28 | STOA: smart 0.02 |
 | `C_IssueScoreFromModel` | `C_IssueScoreFromModel` | ISSUE | **616** | — | $6.16 | deter:combine-triplet 100 + components:AQP-SCR|C_CombineTripletScoreModel 16 + deter:issue-score-model 500 |
-| `C_IssueSemiFungibleScore` | `C_IssueSemiFungibleScore` | ISSUE | **≥ 1028** | 0.02 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-score 1000 + components:AQP-SCR|C_IssueTrueFungibleScore 28 |
+| `C_IssueSemiFungibleScore` | `C_IssueSemiFungibleScore` | ISSUE | **≥ 1028** | 0.02 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-score 1000 + components:AQP-SCR|C_IssueTrueFungibleScore 28 | STOA: smart 0.02 |
 | `C_IssueSemiFungibleScoreDefinition` | `C_IssueSemiFungibleScoreDefinition` | ISSUE | **≥ 4** | — | COMPLEX | charge multiplies by an item count; legs: big 4 |
 | `C_IssueSingleScoreModel` | `C_IssueSingleScoreModel` | ISSUE | **616** | — | $6.16 | deter:combine-triplet 100 + components:AQP-SCR|C_CombineTripletScoreModel 16 + deter:issue-score-model 500 |
 | `C_IssueTriplet` | `C_IssueTriplet` | ISSUE | **539** | — | $5.39 | deter:issue-triplet 500 + components:AQP-SCR|C_IssueTriplet 39 |
-| `C_IssueTrueFungibleScore` | `C_IssueTrueFungibleScore` | ISSUE | **≥ 1028** | 0.02 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-score 1000 + components:AQP-SCR|C_IssueTrueFungibleScore 28 |
+| `C_IssueTrueFungibleScore` | `C_IssueTrueFungibleScore` | ISSUE | **≥ 1028** | 0.02 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-score 1000 + components:AQP-SCR|C_IssueTrueFungibleScore 28 | STOA: smart 0.02 |
 | `C_RotateScoreOwnership` | `C_RotateOwnership` | AUTH | **23** | — | $0.23 | deter:auth 10 + components:AQP-SCR|C_RotateScoreOwnership 13 |
 
 ## ATS
@@ -160,7 +160,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_DirectRecovery` | `C_DirectRecovery` | SETUP | **≥ 6** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: small 2 + smallest 1 + medium 3 |
 | `C_Fuel` | `C_Fuel` | USAGE | **≥ 6** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: smallest 1 + small 2 + medium 3 |
 | `C_HotRecovery` | `C_HotRecovery` | SETUP | **≥ 96** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Mint 80 + biggest 5 + small 2 + smallest 1 + medium 3 |
-| `C_Issue` | `C_Issue` | ISSUE | **≥ 4000** | — | COMPLEX | charge multiplies by an item count; legs: deter:issue-ats-pair 4000 |
+| `C_Issue` | `C_Issue` | ISSUE | **≥ 4000** | 400 | COMPLEX | charge multiplies by an item count; legs: deter:issue-ats-pair 4000 | STOA: stoa:issue-ats-pair 400 |
 | `C_KickStart` | `C_KickStart` | SETUP | **7** | — | $0.07 | biggest 5 + small 2 |
 | `C_Redeem` | `C_Redeem` | SETUP | **≥ 56** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Burn 45 + small 2 + smallest 1 + medium 3 |
 | `C_RemoveSecondary` | `C_RemoveSecondary` | SETUP | **500** | — | $5.00 | token-issue 500 |
@@ -267,7 +267,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_DefinePrimordialSet` | `C_DefinePrimordialSet` | ISSUE | **≥ 1** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: smallest 1 |
 | `C_EnableNonceFragmentation` | `C_EnableNonceFragmentation` | ISSUE | **117** | — | $1.17 | deter:frag-enable 100 + components:DPNF|C_EnableNonceFragmentation 17 |
 | `C_EnableSetClassFragmentation` | `C_EnableSetClassFragmentation` | SETUP | **16** | — | $0.16 | deter:setup 5 + components:DPNF|C_EnableSetClassFragmentation 11 |
-| `C_Issue` | `C_IssueDigitalCollection` | ISSUE | **≥ 4549** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-sft 2000 + deter:issue-nft 2500 + components:DPNF|C_Issue 49 |
+| `C_Issue` | `C_IssueDigitalCollection` | ISSUE | **≥ 2549** | 250 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-nft 2500 + components:DPNF|C_Issue 49 | STOA: stoa:issue-nft 250 |
 | `C_Make` | `C_MakeNonFungibleSet` | ISSUE | **≥ 1** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: smallest 1 |
 | `C_MakeFragments` | `C_MakeFragments` | USAGE | **≥ 18** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPNF|C_MakeFragments 17 |
 | `C_MergeFragments` | `C_MergeFragments` | USAGE | **≥ 18** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPNF|C_MergeFragments 17 |
@@ -326,7 +326,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_Burn` | `C_Burn` | SETUP | **≥ 50** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Burn 45 |
 | `C_Control` | `C_Control` | SETUP | **25** | — | $0.25 | deter:setup 5 + components:DPOF|C_Control 20 |
 | `C_DeployAccount` | `C_DeployAccount` | ISSUE | **77** | — | $0.77 | deter:token-account 50 + components:DPOF|C_DeployAccount 27 |
-| `C_Issue` | `C_Issue` | ISSUE | **≥ 1000** | — | COMPLEX | charge multiplies by an item count; legs: deter:issue-of 1000 |
+| `C_Issue` | `C_Issue` | ISSUE | **≥ 1000** | 100 | COMPLEX | charge multiplies by an item count; legs: deter:issue-of 1000 | STOA: stoa:issue-of 100 |
 | `C_Mint` | `C_Mint` | SETUP | **≥ 85** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Mint 80 |
 | `C_MoveCreateRole` | `C_MoveCreateRole` | AUTH | **57** | — | $0.57 | deter:auth 10 + components:DPOF|C_MoveCreateRole 47 |
 | `C_RotateOwnership` | `C_RotateOwnership` | AUTH | **29** | — | $0.29 | deter:auth 10 + components:DPOF|C_RotateOwnership 19 |
@@ -359,8 +359,8 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_DefinePrimordialSet` | `C_DefinePrimordialSet` | ISSUE | **≥ 500** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: token-issue 500 |
 | `C_EnableNonceFragmentation` | `C_EnableNonceFragmentation` | ISSUE | **117** | — | $1.17 | deter:frag-enable 100 + components:DPSF|C_EnableNonceFragmentation 17 |
 | `C_EnableSetClassFragmentation` | `C_EnableSetClassFragmentation` | SETUP | **16** | — | $0.16 | deter:setup 5 + components:DPSF|C_EnableSetClassFragmentation 11 |
-| `C_Issue` | `C_IssueDigitalCollection` | ISSUE | **≥ 4549** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-sft 2000 + components:DPSF|C_Issue 49 + deter:issue-nft 2500 |
-| `C_IssueCompany` | `C_IssueShareholderCollection` | ISSUE | **≥ 14643** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-shareholder 10000 + components:DPSF|C_IssueCompany 93 + deter:issue-sft 2000 + components:DPSF|C_Issue 49 + deter:issue-nft 2500 + smallest 1 |
+| `C_Issue` | `C_IssueDigitalCollection` | ISSUE | **≥ 2049** | 200 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-sft 2000 + components:DPSF|C_Issue 49 | STOA: stoa:issue-sft 200 |
+| `C_IssueCompany` | `C_IssueShareholderCollection` | ISSUE | **≥ 12143** | 1200 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-shareholder 10000 + components:DPSF|C_IssueCompany 93 + deter:issue-sft 2000 + components:DPSF|C_Issue 49 + smallest 1 | STOA: stoa:issue-sft 200 + stoa:issue-shareholder 1000 |
 | `C_Make` | `C_MakeSemiFungibleSet` | ISSUE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_MakeFragments` | `C_MakeFragments` | USAGE | **≥ 18** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPSF|C_MakeFragments 17 |
 | `C_MergeFragments` | `C_MergeFragments` | USAGE | **≥ 18** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPSF|C_MergeFragments 17 |
@@ -425,7 +425,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_Control` | `C_Control` | SETUP | **25** | — | $0.25 | deter:setup 5 + components:DPTF|C_Control 20 |
 | `C_DeployAccount` | `C_DeployAccount` | ISSUE | **74** | — | $0.74 | deter:token-account 50 + components:DPTF|C_DeployAccount 24 |
 | `C_DonateFees` | `C_SetFeeTarget` | FEE | **44** | — | $0.44 | deter:fee 25 + components:DPTF|C_SetFeeTarget 19 |
-| `C_Issue` | `C_Issue` | ISSUE | **≥ 1000** | — | COMPLEX | charge multiplies by an item count; legs: deter:issue-tf 1000 |
+| `C_Issue` | `C_Issue` | ISSUE | **≥ 1000** | 100 | COMPLEX | charge multiplies by an item count; legs: deter:issue-tf 1000 | STOA: stoa:issue-tf 100 |
 | `C_Mint` | `C_Mint` | ISSUE | **7** | — | $0.07 | biggest 5 + small 2 |
 | `C_MultiBulkTransfer` | `C_MultiBulkTransfer` | USAGE | **≥ 6** | — | COMPLEX | per-nonce / per-item work; legs: small 2 + smallest 1 + medium 3 |
 | `C_MultiTransfer` | `C_MultiTransfer` | USAGE | **≥ 6** | — | COMPLEX | per-nonce / per-item work; legs: smallest 1 + small 2 + medium 3 |
@@ -531,14 +531,14 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_AddSleepingLiquidity` | `C_AddSleepingLiquidity` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_AddStandardLiquidity` | `C_AddStandardLiquidity` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_ChangeOwnership` | `C_ChangeOwnership` | AUTH | **29** | — | $0.29 | deter:auth 10 + components:SWP|C_ChangeOwnership 19 |
-| `C_EnableFrozenLP` | `C_EnableFrozenLP` | SETUP | **≥ 3** | 0.2 | COMPLEX | composes other client ops (legs may repeat — floor); legs: medium 3 |
-| `C_EnableSleepingLP` | `C_EnableSleepingLP` | SETUP | **≥ 3** | 0.3 | COMPLEX | composes other client ops (legs may repeat — floor); legs: medium 3 |
+| `C_EnableFrozenLP` | `C_EnableFrozenLP` | SETUP | **≥ 3** | 100 | COMPLEX | composes other client ops (legs may repeat — floor); legs: medium 3 | STOA: dptf 100 |
+| `C_EnableSleepingLP` | `C_EnableSleepingLP` | SETUP | **≥ 3** | 100 | COMPLEX | composes other client ops (legs may repeat — floor); legs: medium 3 | STOA: dpmf 100 |
 | `C_Firestarter` | `C_WrapStoa` ×3 | USAGE | **≥ 11** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: biggest 5 + small 2 + smallest 1 + medium 3 |
 | `C_Fuel` | `C_Fuel` | USAGE | **≥ 6** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: smallest 1 + small 2 + medium 3 |
-| `C_IssueStable` | `C_Issue` | ISSUE | **≥ 5007** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-swp-pair 5000 + biggest 5 + small 2 |
+| `C_IssueStable` | `C_Issue` | ISSUE | **≥ 5007** | 500 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-swp-pair 5000 + biggest 5 + small 2 | STOA: stoa:issue-swp-pair 500 |
 | `C_IssueStablePool` | `C_IssueStablePool` | ISSUE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_IssueStandardPool` | `C_IssueStandardPool` | ISSUE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_IssueWeighted` | `C_Issue` | ISSUE | **≥ 5007** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-swp-pair 5000 + biggest 5 + small 2 |
+| `C_IssueWeighted` | `C_Issue` | ISSUE | **≥ 5007** | 500 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-swp-pair 5000 + biggest 5 + small 2 | STOA: stoa:issue-swp-pair 500 |
 | `C_IssueWeightedPool` | `C_IssueWeightedPool` | ISSUE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_ModifyCanChangeOwner` | `C_ModifyCanChangeOwner` | AUTH | **29** | — | $0.29 | deter:auth 10 + components:SWP|C_ModifyCanChangeOwner 19 |
 | `C_ModifyWeights` | `C_ModifyWeights` | FEE | **44** | — | $0.44 | deter:fee 25 + components:SWP|C_ModifyWeights 19 |
@@ -567,11 +567,11 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | Talos function | core op | role | IGNIS | STOA | $ (ignis) | charge breakdown |
 |----------------|---------|------|------:|-----:|----------:|------------------|
 | `C_Awake` | `C_Awake` | SETUP | **≥ 56** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Burn 45 + small 2 + smallest 1 + medium 3 |
-| `C_CreateFrozenLink` | `C_CreateFrozenLink` | ISSUE | **≥ 1059** | 0.2 | COMPLEX | charge multiplies by an item count; legs: deter:usage 1 + components:DPTF|C_ToggleTransferRole 58 + deter:issue-tf 1000 |
-| `C_CreateHibernatingLink` | `C_CreateHibernatingLink` | ISSUE | **≥ 1054** | 0.3 | COMPLEX | charge multiplies by an item count; legs: deter:usage 1 + components:DPOF|C_ToggleTransferRole 53 + deter:issue-of 1000 |
-| `C_CreateReservationLink` | `C_CreateReservationLink` | ISSUE | **≥ 1059** | 0.2 | COMPLEX | charge multiplies by an item count; legs: deter:usage 1 + components:DPTF|C_ToggleTransferRole 58 + deter:issue-tf 1000 |
-| `C_CreateSleepingLink` | `C_CreateSleepingLink` | ISSUE | **≥ 1054** | 0.3 | COMPLEX | charge multiplies by an item count; legs: deter:usage 1 + components:DPOF|C_ToggleTransferRole 53 + deter:issue-of 1000 |
-| `C_CreateVestingLink` | `C_CreateVestingLink` | ISSUE | **≥ 1054** | 0.3 | COMPLEX | charge multiplies by an item count; legs: deter:usage 1 + components:DPOF|C_ToggleTransferRole 53 + deter:issue-of 1000 |
+| `C_CreateFrozenLink` | `C_CreateFrozenLink` | ISSUE | **≥ 1059** | 100 | COMPLEX | charge multiplies by an item count; legs: deter:usage 1 + components:DPTF|C_ToggleTransferRole 58 + deter:issue-tf 1000 | STOA: dptf 100 |
+| `C_CreateHibernatingLink` | `C_CreateHibernatingLink` | ISSUE | **≥ 1054** | 100 | COMPLEX | charge multiplies by an item count; legs: deter:usage 1 + components:DPOF|C_ToggleTransferRole 53 + deter:issue-of 1000 | STOA: dpmf 100 |
+| `C_CreateReservationLink` | `C_CreateReservationLink` | ISSUE | **≥ 1059** | 100 | COMPLEX | charge multiplies by an item count; legs: deter:usage 1 + components:DPTF|C_ToggleTransferRole 58 + deter:issue-tf 1000 | STOA: dptf 100 |
+| `C_CreateSleepingLink` | `C_CreateSleepingLink` | ISSUE | **≥ 1054** | 100 | COMPLEX | charge multiplies by an item count; legs: deter:usage 1 + components:DPOF|C_ToggleTransferRole 53 + deter:issue-of 1000 | STOA: dpmf 100 |
+| `C_CreateVestingLink` | `C_CreateVestingLink` | ISSUE | **≥ 1054** | 100 | COMPLEX | charge multiplies by an item count; legs: deter:usage 1 + components:DPOF|C_ToggleTransferRole 53 + deter:issue-of 1000 | STOA: dpmf 100 |
 | `C_Freeze` | `C_Freeze` | SETUP | **≥ 11** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: biggest 5 + small 2 + smallest 1 + medium 3 |
 | `C_Hibernate` | `C_Hibernate` | SETUP | **≥ 91** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Mint 80 + small 2 + smallest 1 + medium 3 |
 | `C_Merge` | `C_Merge` | SETUP | **≥ 146** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_ToggleFreezeAccount 53 + components:DPOF|C_Mint 80 + biggest 5 + small 2 + smallest 1 |
