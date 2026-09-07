@@ -2081,11 +2081,15 @@
                 AQP|SC_NAME (r::URC_IsVirtualGasZero) output)
         ))
     (defun URCi_IssueStoa:decimal ()
+        @doc "STOA cost for pool-issue: the deterrence expressed in DOLLARS, converted at the live \
+            \ STOA price by UC_StoaPrice (issue-pool = $10 => 100 STOA). Previously read the raw \
+            \ 'smart' usage price (0.02), a pre-rehaul STOA amount that was never \
+            \ dollar-denominated and so ignored the peg entirely."
         (let
             (
-                (d:module{OuronetDalosV2} DALOS)
+                (r:module{IgnisCollectorV2} IGNIS)
             )
-            (d::UR_UsagePrice "smart")
+            (r::UC_StoaPrice "issue-pool")
         ))
     (defun URCi_AddScore:object{IgnisCollectorV2.OutputCumulator} (output:[string])
         (let
@@ -3253,7 +3257,6 @@
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     ;;
-                    (smart-price:decimal (ref-DALOS::UR_UsagePrice "smart"))
                     (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )

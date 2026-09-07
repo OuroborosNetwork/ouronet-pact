@@ -695,3 +695,58 @@ closing it is a price change, not a bug fix.
 **Rule learned (three for three).** A price defect found in a generated document is far more
 likely to be in the generator than in the chain. Verify against the `URCi_`/`UC_*Price` call site
 before touching a `defconst`.
+
+## 2026-09-07 (3) — every STOA price is now a DOLLAR price divided by the oracle
+
+Owner, stating the rule a third time and closing the question I had left open: "the prices are
+always in dollars and converted into STOA value following the STOA price oracle. Standard account
+is $5, smart account $10 — at $0.10/STOA that's 50 and 100 respectively. Price is ALWAYS in
+dollars, converted to STOA units using its price."
+
+So the AQP `0.01`/`0.02` reads were never a pricing decision to preserve — they were raw
+pre-rehaul STOA amounts that had never been dollar-denominated at all, and therefore ignored the
+peg entirely. Fixed rather than flagged.
+
+**What the reads actually were.** Not account creation. Every one of the 11 `UR_UsagePrice
+"smart"/"standard"` reads sat inside an **Issue** function, borrowing the account-price keys as a
+convenient small number. Four cost readers carried the price; the other seven were **dead
+`smart-price` let-bindings** (verified: each name appears exactly once in its defun body, the
+binding itself, while the real collection went through the `URCi_*Stoa` reader). Readers now
+derive from their OWN deter key, the same way DPTF/DPOF/ATS/SWP already did; the seven dead
+bindings are deleted.
+
+| reader | now derives from | deter | $ | old STOA | new STOA |
+|---|---|---:|---:|---:|---:|
+| `AQP-POOL::URCi_IssueStoa` | `issue-pool` | 1000 | $10 | 0.02 | **100** |
+| `AQP-FVT::URCi_IssueStoa` | `issue-fvt` | 1000 | $10 | 0.02 | **100** |
+| `AQP-SCORE::URCi_IssueScoreStoa` | `issue-score` | 1000 | $10 | 0.02 | **100** |
+| `ANK::URCi_IssueAnchorStoa` | `anchor` (x2 if acnoi) | 500 | $5 | 0.01 | **50** / 100 |
+| account `standard` (executor) | `acct-standard` | 500 | $5 | 0.01 | **50** |
+| account `smart` (executor) | `acct-smart` | 1000 | $10 | 0.02 | **100** |
+
+The two account keys are fixed at the SEED, not the call site: `[4.0]_Sovereign-Executor.repl`
+now re-seeds `standard`/`smart` from `UC_StoaPrice "acct-standard"/"acct-smart"`, so every
+consumer (incl. `DPL-UR::URC_0029_AccountOverview`'s activation preview) becomes correct at once.
+`UR_UsagePrice "smart"/"standard"` no longer appears anywhere in sovereign code.
+
+**Test fallout was real and is the proof the change bit.** ZALL failed at
+`AQP-POOL|C_Issue` collecting **100.0** STOA against a fixture holding 19.4 — the price moved
+5000x exactly as intended. The AQP fixtures cap STOA with hardcoded `(coin.TRANSFER ... 50.0)`
+allowances; 301 of them across 3 files were raised to 1000.0. Note the same fixtures compute
+`split-smart` as `(* 2.0 (UR_UsagePrice "smart"))`, which auto-scaled correctly — derived fixture
+values survive a re-pricing, hardcoded ones do not. Prefer derived.
+
+**Self-inflicted break worth remembering.** My generated `@doc` appended " Doubled when <acnoi>."
+AFTER the closing quote, producing `... entirely." Doubled when <acnoi>.` -> `Expected: [IDENT]`.
+When templating a Pact `@doc`, the trailing text must go INSIDE the final quote. Same family as
+the earlier `"`-inside-a-continuation bug.
+
+Verified: `ZALL.repl` green, 6279 lines, "Load successful" — byte-identical length to the clean
+baseline run.
+
+**STILL OPEN (needs an owner dollar price, deliberately untouched):**
+  * `blue` = **0.025** raw STOA per month, the branding upgrade price
+    (`BRD::URCi_UpgradeBranding` = months x blue). It is the LAST STOA key still holding a raw
+    non-dollar amount. What should a month of blue-flag branding cost in dollars?
+  * `codex` = 100.0 is seeded in the executor but **read nowhere** — a dead key. Delete, or wire
+    it to something?

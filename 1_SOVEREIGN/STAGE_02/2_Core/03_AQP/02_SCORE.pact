@@ -2543,12 +2543,15 @@
                 owner-konto (r::URC_IsVirtualGasZero) output)
         ))
     (defun URCi_IssueScoreStoa:decimal ()
-        @doc "STOA cost for score-issue: UR_UsagePrice 'smart'."
+        @doc "STOA cost for score-issue: the deterrence expressed in DOLLARS, converted at the live \
+            \ STOA price by UC_StoaPrice (issue-score = $10 => 100 STOA). Previously read the raw \
+            \ 'smart' usage price (0.02), a pre-rehaul STOA amount that was never \
+            \ dollar-denominated and so ignored the peg entirely."
         (let
             (
-                (d:module{OuronetDalosV2} DALOS)
+                (r:module{IgnisCollectorV2} IGNIS)
             )
-            (d::UR_UsagePrice "smart")
+            (r::UC_StoaPrice "issue-score")
         ))
     (defun URCi_RotateOwnership:object{IgnisCollectorV2.OutputCumulator} (score-id:string)
         @doc "Cost preview for AQP-SCR|C_RotateScoreOwnership on the (pre-rotate) score owner \
@@ -3809,7 +3812,6 @@
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     ;;
-                    (smart-price:decimal (ref-DALOS::UR_UsagePrice "smart"))
                     (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
@@ -3830,7 +3832,6 @@
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     ;;
-                    (smart-price:decimal (ref-DALOS::UR_UsagePrice "smart"))
                     (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
@@ -3852,7 +3853,6 @@
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     ;;
-                    (smart-price:decimal (ref-DALOS::UR_UsagePrice "smart"))
                     (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
@@ -3873,7 +3873,6 @@
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     ;;
-                    (smart-price:decimal (ref-DALOS::UR_UsagePrice "smart"))
                     (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
@@ -3894,7 +3893,6 @@
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     ;;
-                    (smart-price:decimal (ref-DALOS::UR_UsagePrice "smart"))
                     (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )

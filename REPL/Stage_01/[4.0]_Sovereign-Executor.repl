@@ -261,6 +261,12 @@
         (ref-TS01-A::DALOS|A_UpdateUsagePrice "dpnf" (ref-IGNIS::UC_StoaPrice "issue-nft"))
         (ref-TS01-A::DALOS|A_UpdateUsagePrice "ats"  (ref-IGNIS::UC_StoaPrice "issue-ats-pair"))
         (ref-TS01-A::DALOS|A_UpdateUsagePrice "swp"  (ref-IGNIS::UC_StoaPrice "issue-swp-pair"))
+        ;;Account creation (owner 2026-09-07): standard = $5, smart = $10. These two were the
+        ;;last STOA keys still holding raw pre-rehaul amounts (0.01 / 0.02) that were never
+        ;;dollar-denominated, so they ignored the peg entirely. Deriving them here keeps the
+        ;;rule uniform: every STOA price is a DOLLAR price divided by the STOA oracle price.
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "standard" (ref-IGNIS::UC_StoaPrice "acct-standard"))
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "smart"    (ref-IGNIS::UC_StoaPrice "acct-smart"))
 
         ;;REPL-VARIANT:
         (acquire-module-admin ouronet-ns.DALOS)

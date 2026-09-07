@@ -38,10 +38,10 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 
 | Talos function | core op | role | IGNIS | STOA | $ (ignis) | charge breakdown |
 |----------------|---------|------|------:|-----:|----------:|------------------|
-| `C_IssueNonFungibleAnchor` | `C_IssueNonFungibleAnchor` | ISSUE | **≥ 500** | 0.01 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:anchor 500 | STOA: standard 0.01 |
-| `C_IssueNonFungibleSetAnchor` | `C_IssueNonFungibleSetAnchor` | ISSUE | **≥ 500** | 0.01 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:anchor 500 | STOA: standard 0.01 |
-| `C_IssueSemiFungibleAnchor` | `C_IssueSemiFungibleAnchor` | ISSUE | **≥ 500** | 0.01 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:anchor 500 | STOA: standard 0.01 |
-| `C_IssueTrueFungibleAnchor` | `C_IssueTrueFungibleAnchor` | ISSUE | **≥ 500** | 0.01 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:anchor 500 | STOA: standard 0.01 |
+| `C_IssueNonFungibleAnchor` | `C_IssueNonFungibleAnchor` | ISSUE | **≥ 500** | 50 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:anchor 500 | STOA: stoa:anchor 50 |
+| `C_IssueNonFungibleSetAnchor` | `C_IssueNonFungibleSetAnchor` | ISSUE | **≥ 500** | 50 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:anchor 500 | STOA: stoa:anchor 50 |
+| `C_IssueSemiFungibleAnchor` | `C_IssueSemiFungibleAnchor` | ISSUE | **≥ 500** | 50 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:anchor 500 | STOA: stoa:anchor 50 |
+| `C_IssueTrueFungibleAnchor` | `C_IssueTrueFungibleAnchor` | ISSUE | **≥ 500** | 50 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:anchor 500 | STOA: stoa:anchor 50 |
 | `C_RevokeAnchor` | `C_RevokeAnchor` | SETUP | **167** | — | $1.67 | deter:revoke-anchor 100 + components:AQP-ANK|C_RevokeAnchor 67 |
 | `C_RevokeBoostClass` | `C_RevokeBoostClass` | SETUP | **510** | — | $5.10 | deter:revoke-boost 500 + components:AQP-ANK|C_RevokeBoostClass 10 |
 
@@ -68,7 +68,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_AddRewardLink` | `C_AddRewardLink` | SETUP | **511** | — | $5.11 | deter:add-reward-link 500 + components:AQP-FVT|C_AddRewardLink 11 |
 | `C_AddScoreEntity` | `C_AddScoreEntity` | SETUP | **539** | — | $5.39 | deter:add-score-entity 500 + components:AQP-FVT|C_AddScoreEntity 39 |
 | `C_Control` | `C_Control` | SETUP | **13** | — | $0.13 | deter:setup 5 + components:AQP-FVT|C_Control 8 |
-| `C_Issue` | `C_Issue` | ISSUE | **≥ 1019** | 0.02 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-fvt 1000 + components:AQP-FVT|C_Issue 19 | STOA: smart 0.02 |
+| `C_Issue` | `C_Issue` | ISSUE | **≥ 1019** | 100 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-fvt 1000 + components:AQP-FVT|C_Issue 19 | STOA: stoa:issue-fvt 100 |
 | `C_IssueMultipletFamily` | `C_IssueMultipletFamily` | ISSUE | **509** | — | $5.09 | deter:issue-multiplet 500 + components:AQP-FVT|C_IssueMultipletFamily 9 |
 | `C_RotateOwnership` | `C_RotateOwnership` | AUTH | **17** | — | $0.17 | deter:auth 10 + components:AQP-FVT|C_RotateOwnership 7 |
 | `C_SetCommonDenominator` | `C_SetCommonDenominator` | SETUP | **110** | — | $1.10 | deter:fvt-split-setup 100 + components:AQP-FVT|C_SetCommonDenominator 10 |
@@ -97,7 +97,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_DisablePoolStake` | `C_DisablePoolStake` | USAGE | **56** | — | $0.56 | deter:pool-stake-toggle 50 + components:AQP-POOL|C_EnablePoolStake 6 |
 | `C_EnablePoolStake` | `C_EnablePoolStake` | USAGE | **56** | — | $0.56 | deter:pool-stake-toggle 50 + components:AQP-POOL|C_EnablePoolStake 6 |
 | `C_FinalizeVacate` | `C_FinalizeVacate` | USAGE | **≥ 18** | — | COMPLEX | per-nonce / per-item work; legs: deter:usage 1 + components:AQP-POOL|C_FinalizeVacate 17 |
-| `C_Issue` | `C_Issue` | ISSUE | **≥ 1020** | 0.02 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-pool 1000 + components:AQP-POOL|C_Issue 20 | STOA: smart 0.02 |
+| `C_Issue` | `C_Issue` | ISSUE | **≥ 1020** | 100 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-pool 1000 + components:AQP-POOL|C_Issue 20 | STOA: stoa:issue-pool 100 |
 | `C_RevokeScore` | `C_RevokeScore` | SETUP | **298** | — | $2.98 | deter:revoke-score 250 + components:AQP-POOL|C_RevokeScore 48 |
 | `C_SyncNonFungibleAnchors` | `C_SyncCollectableAnchors` | USAGE | **86** | — | $0.86 | deter:sync-anchors 50 + components:AQP-POOL|C_SyncSemiFungibleAnchors 36 |
 | `C_SyncSemiFungibleAnchors` | `C_SyncCollectableAnchors` | USAGE | **86** | — | $0.86 | deter:sync-anchors 50 + components:AQP-POOL|C_SyncSemiFungibleAnchors 36 |
@@ -127,17 +127,17 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_CreateScoreBoostClassLink` | `C_CreateBoostClassLink` | SETUP | **31** | — | $0.31 | deter:setup 5 + components:AQP-SCR|C_CreateScoreBoostClassLink 26 |
 | `C_CreateScoreBoostLink` | `C_CreateBoostLink` | SETUP | **18** | — | $0.18 | deter:setup 5 + components:AQP-SCR|C_CreateScoreBoostLink 13 |
 | `C_EnableDebBoost` | `C_EnableDebBoost` | SETUP | **18** | — | $0.18 | deter:setup 5 + components:AQP-SCR|C_EnableDebBoost 13 |
-| `C_IssueLiquidityScore` | `C_IssueLiquidityScore` | ISSUE | **≥ 1028** | 0.02 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-score 1000 + components:AQP-SCR|C_IssueTrueFungibleScore 28 | STOA: smart 0.02 |
-| `C_IssueNonFungibleScore` | `C_IssueNonFungibleScore` | ISSUE | **≥ 1028** | 0.02 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-score 1000 + components:AQP-SCR|C_IssueTrueFungibleScore 28 | STOA: smart 0.02 |
+| `C_IssueLiquidityScore` | `C_IssueLiquidityScore` | ISSUE | **≥ 1028** | 100 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-score 1000 + components:AQP-SCR|C_IssueTrueFungibleScore 28 | STOA: stoa:issue-score 100 |
+| `C_IssueNonFungibleScore` | `C_IssueNonFungibleScore` | ISSUE | **≥ 1028** | 100 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-score 1000 + components:AQP-SCR|C_IssueTrueFungibleScore 28 | STOA: stoa:issue-score 100 |
 | `C_IssueNonFungibleScoreDefinition` | `C_IssueNonFungibleScoreDefinition` | ISSUE | **≥ 5** | — | COMPLEX | charge multiplies by an item count; legs: biggest 5 |
 | `C_IssueNonFungibleSetScoreDefinition` | `C_IssueNonFungibleSetScoreDefinition` | ISSUE | **≥ 5** | — | COMPLEX | charge multiplies by an item count; legs: biggest 5 |
-| `C_IssueOrtoFungibleScore` | `C_IssueOrtoFungibleScore` | ISSUE | **≥ 1028** | 0.02 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-score 1000 + components:AQP-SCR|C_IssueTrueFungibleScore 28 | STOA: smart 0.02 |
+| `C_IssueOrtoFungibleScore` | `C_IssueOrtoFungibleScore` | ISSUE | **≥ 1028** | 100 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-score 1000 + components:AQP-SCR|C_IssueTrueFungibleScore 28 | STOA: stoa:issue-score 100 |
 | `C_IssueScoreFromModel` | `C_IssueScoreFromModel` | ISSUE | **616** | — | $6.16 | deter:combine-triplet 100 + components:AQP-SCR|C_CombineTripletScoreModel 16 + deter:issue-score-model 500 |
-| `C_IssueSemiFungibleScore` | `C_IssueSemiFungibleScore` | ISSUE | **≥ 1028** | 0.02 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-score 1000 + components:AQP-SCR|C_IssueTrueFungibleScore 28 | STOA: smart 0.02 |
+| `C_IssueSemiFungibleScore` | `C_IssueSemiFungibleScore` | ISSUE | **≥ 1028** | 100 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-score 1000 + components:AQP-SCR|C_IssueTrueFungibleScore 28 | STOA: stoa:issue-score 100 |
 | `C_IssueSemiFungibleScoreDefinition` | `C_IssueSemiFungibleScoreDefinition` | ISSUE | **≥ 4** | — | COMPLEX | charge multiplies by an item count; legs: big 4 |
 | `C_IssueSingleScoreModel` | `C_IssueSingleScoreModel` | ISSUE | **616** | — | $6.16 | deter:combine-triplet 100 + components:AQP-SCR|C_CombineTripletScoreModel 16 + deter:issue-score-model 500 |
 | `C_IssueTriplet` | `C_IssueTriplet` | ISSUE | **539** | — | $5.39 | deter:issue-triplet 500 + components:AQP-SCR|C_IssueTriplet 39 |
-| `C_IssueTrueFungibleScore` | `C_IssueTrueFungibleScore` | ISSUE | **≥ 1028** | 0.02 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-score 1000 + components:AQP-SCR|C_IssueTrueFungibleScore 28 | STOA: smart 0.02 |
+| `C_IssueTrueFungibleScore` | `C_IssueTrueFungibleScore` | ISSUE | **≥ 1028** | 100 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-score 1000 + components:AQP-SCR|C_IssueTrueFungibleScore 28 | STOA: stoa:issue-score 100 |
 | `C_RotateScoreOwnership` | `C_RotateOwnership` | AUTH | **23** | — | $0.23 | deter:auth 10 + components:AQP-SCR|C_RotateScoreOwnership 13 |
 
 ## ATS

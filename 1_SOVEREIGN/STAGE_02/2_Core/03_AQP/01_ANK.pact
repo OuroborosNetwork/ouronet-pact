@@ -1528,12 +1528,15 @@
             (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisPrice op-key "anchor") AQP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) output)
         ))
     (defun URCi_IssueAnchorStoa:decimal (acnoi:bool)
-        @doc "STOA cost for anchor-issue: 'standard' usage price x(2 if acnoi else 1)."
+        @doc "STOA cost for anchor-issue: the deterrence expressed in DOLLARS, converted at the live \
+            \ STOA price by UC_StoaPrice (anchor = $5 => 50 STOA). Previously read the raw \
+            \ 'standard' usage price (0.01), a pre-rehaul STOA amount that was never \
+            \ dollar-denominated and so ignored the peg entirely. Doubled when <acnoi>."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (* (ref-DALOS::UR_UsagePrice "standard") (if acnoi 2.0 1.0))
+            (* (ref-IGNIS::UC_StoaPrice "anchor") (if acnoi 2.0 1.0))
         ))
     (defun URCi_RevokeAnchor:object{IgnisCollectorV2.OutputCumulator} ()
         @doc "IGNIS cost for C_RevokeAnchor — owner-priced 100 deterrence + its component cost, via the central IG|DETER/IG|COMPONENTS \
