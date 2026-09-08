@@ -255,11 +255,14 @@ STOA; the constants-only conversion (65 table reads lifted); the `define-set` / 
 
 ## What is open
 
-**P8: 82 of 348 rows in the price sheet have no price.**
+**P8: 74 of the price sheet's rows still have no price.**
 
 ```
-170 exact  ·  138 floor  ·  40 exempt  ·  82 unresolved
+170 exact  ·  146 floor  ·  40 exempt  ·  74 unresolved
 ```
+
+Largest remaining clusters: **SWP 20** (including every swap — `C_SingleSwap`, `C_MultiSwap`,
+`C_SmartSwap`), AQP-POOL 10, DEMIPAD 7, DPSF 6, DPNF 5, AQP-FVT 5, PYTHIA 4.
 
 The chain charges correctly for all 82 — this is the sheet generator's static analysis failing to
 reach the cost reader, not a missing price. The known blocker is documented in §7.
@@ -285,21 +288,31 @@ caller can pay); multiplied tiers ignored (`ATS|C_SetColdRecoveryFees` published
 100); and a literal `0.0` identity cumulator counted as a price (**every SWP swap published as
 FREE**).
 
-**The remaining blocker — the coupled-text problem.** The walk must follow same-module `C_*`
-delegation to resolve ~26 rows (`DPOF::C_WipeClean` is a thin alias onto `C_WipePure`, so the walk
-stops before the cumulator). But `BILL_FN` then also matches function names inside **`@doc`
-prose** — `ATS::C_ToggleUpgrade`'s doc says "Gates C_Control", and C_Control's components got
-charged to it, moving an exact price 24 -> 43. Stripping strings before the call scan fixes that
-but breaks the extractor, because `charge()` **also harvests deter keys FROM string literals**
-(`(URCi_IssueAnchor "anchor-nf" ...)`). **The walk must ignore strings while the extractor must
-read them**, and they currently share one text blob. Separating the two is a real refactor and is
-the highest-value next step.
+**Fixed 2026-09-09 — doc-prose stripping.** The walk follows calls found in CODE only; `@doc`
+prose names other functions constantly and a name matched in prose charges that function's cost to
+this op. The strip **must** use `\\[\\s\\S]`, never `\\.` — every Pact `@doc` is a multi-line
+continuation, `\\.` cannot cross a newline, so the string never closes, docs go unstripped AND the
+unmatched quote mis-pairs with a later one and strips REAL CODE. That single wrong character class
+is what made an earlier attempt look like a deep "the walk and the extractor are coupled" problem
+when it was a broken regex. `txt` deliberately keeps the RAW body, because `charge()` harvests
+deter keys out of string literals (`(URCi_IssueAnchor "anchor-nf" ...)`).
 
-**Two approaches tried and rejected — do not retry blind:**
-1. Raising walk depth 3 -> 5 makes it cross into SIBLING operations: `AQP-FVT|CC_Collect` absorbed
-   `deter:aqp-inject` 500 and `DPTF|C_Mint`'s components, its floor going 557 -> 1150.
-2. Following same-module `C_*` without solving the coupled-text problem: resolves 26 rows but
-   causes 12 new regressions and silently drops legs elsewhere.
+**Fixed 2026-09-09 — direct same-module delegation.** `DPOF::C_WipeClean` is a thin alias onto
+`C_WipePure`, so a walk chasing only `URCi_`/`X*_` stops before the cumulator. Same-module `C_*`
+calls are now followed, but **from the op's own body only (one hop)**.
+
+**Why only one hop — the boundary that keeps being crossed.** Following `C_*` transitively reaches
+neighbouring client ops and charges their deterrence here: `DPDC-F::C_MergeFragments` absorbed
+`frag-enable` 100 plus `C_MakeFragments`, floor 18 -> 152, though its code calls only `C_Transfer`.
+The same failure appears if walk depth is raised 3 -> 5: `AQP-FVT|CC_Collect` absorbed
+`deter:aqp-inject` 500 and `DPTF|C_Mint`, floor 557 -> 1150. **One hop captures a delegation alias;
+more hops capture the neighbourhood.** Depth stays 3 and `C_` following stays at round 0.
+
+**The remaining blocker is per-cluster, not systemic.** The SWP swaps bury their cost several hops
+inside swap math: `C_Swap` -> `XI_STOA-PID|Swap` -> `XI_Swap` -> pool-math helpers, with no
+pricing primitive on the path the extractor recognises. Each remaining cluster needs the same
+treatment: trace one representative from the Talos wrapper to its cumulator and find what the
+extractor cannot see.
 
 ---
 

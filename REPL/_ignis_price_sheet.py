@@ -49,6 +49,11 @@ VARIABLE_FAMILY = re.compile(r'(Wipe|MultiTransfer|MultiBulk|BulkTransfer|SmartS
 SCALES = re.compile(r'\(dec\s*\(length|\(dec\s+token-count\)|\(dec\s+no-of-nonces\)'
                     r'|\(dec\s+number-of-nonces\)|fold\s*\(\+\)\s*0\.0'
                     r'|\(\*\s*\(dec|per-nonce|price-per-nonce')
+# Same-module delegation must be followed too: DPOF::C_WipeClean is a thin alias that just calls
+# C_WipePure in its OWN module, so a walk chasing only URCi_/X*_ stops before the cumulator and the
+# op publishes "?". Bare C_/CC_/Cp_/CCp_ names are same-module client calls. This is only safe
+# because the caller strips @doc prose first (see billing_text) -- without that it charges an op
+# for every function its documentation happens to mention.
 BILL_FN = re.compile(r'((?:[A-Za-z0-9-]+\|)?(?:URCi[x]?_|XB_|XI_|XE_)[A-Za-z0-9|_-]+)')
 
 def defun_body(src, name):
@@ -75,7 +80,7 @@ def billing_text(src, name, depth=3):
     cross-module ones (`ref-MOD::URCi_X`), since many ops delegate their cumulator to another
     module (e.g. MTX-SWP -> SWPI, DALOS ops -> IGNIS's DALOS|URCi_* readers)."""
     seen=set(); frontier=[(src, name)]; txt=''
-    for _ in range(depth+1):
+    for _round in range(depth+1):
         nxt=[]
         for csrc, fn in frontier:
             key=(id(csrc), fn)
@@ -84,7 +89,29 @@ def billing_text(src, name, depth=3):
             b = defun_body(csrc, fn)
             if not b: continue
             txt += ' ' + b
-            nxt.extend((csrc, f) for f in BILL_FN.findall(b))
+            # Follow calls found in CODE ONLY. @doc prose names other functions constantly --
+            # ATS::C_ToggleUpgrade's doc says "Gates C_Control (...)" -- and a name matched in
+            # prose gets that function's cost charged to this op.
+            #
+            # The strip MUST use \\[\\s\\S], not \\. : every Pact @doc is a multi-line
+            # continuation ("... \\" newline "\\ ..."), and \\. cannot cross a newline, so the
+            # string never closed, docs went unstripped AND the unmatched quote mis-paired with a
+            # later one and stripped REAL CODE. That is what made the first attempt at this look
+            # like a deep "walk vs extractor are coupled" problem when it was a broken regex.
+            #
+            # <txt> keeps the RAW body on purpose: charge() harvests deter keys out of string
+            # literals, e.g. (URCi_IssueAnchor "anchor-nf" ...).
+            b_code = re.sub(r'"(?:[^"\\]|\\[\s\S])*"', ' ', b)
+            nxt.extend((csrc, f) for f in BILL_FN.findall(b_code))
+            # DIRECT same-module delegation only, and only from the op's OWN body (round 0).
+            # DPOF::C_WipeClean is a thin alias onto C_WipePure, so without this the walk stops
+            # before the cumulator. Following C_ TRANSITIVELY is what breaks: at depth it reaches
+            # sibling client ops and charges their deterrence here (DPDC-F::C_MergeFragments
+            # absorbed frag-enable 100 + C_MakeFragments, floor 18 -> 152, though its code calls
+            # only C_Transfer). One hop captures the alias; more hops capture the neighbourhood.
+            if _round == 0:
+                nxt.extend((csrc, f) for f in
+                           re.findall(r'\((C{1,2}p?_[A-Za-z0-9|_-]+)', b_code))
             # Follow cross-module CLIENT ops too (ref-TFT::C_Transfer, ref-DPTF::C_Mint …):
             # ops like VST|C_Freeze hold no cumulator of their own, they CONCATENATE the
             # cumulators of the client ops they drive. Without this they read as unresolved
@@ -96,7 +123,7 @@ def billing_text(src, name, depth=3):
             # even though it charges. Read the real module out of the let-binding first.
             alias2mod = dict((a, mm) for a, _i, mm in
                              re.findall(r'\((ref-[A-Za-z0-9|_+-]+):module\{([A-Za-z0-9|_+-]+)\}\s+([A-Za-z0-9|_+-]+)\)', b))
-            for mod, rf in re.findall(r'(ref-[A-Za-z0-9|_+-]+)::((?:[A-Za-z0-9-]+\|)?(?:URCi[x]?_|XB_|XI_|XE_|CC?p?_)[A-Za-z0-9|_-]+)', b):
+            for mod, rf in re.findall(r'(ref-[A-Za-z0-9|_+-]+)::((?:[A-Za-z0-9-]+\|)?(?:URCi[x]?_|XB_|XI_|XE_|CC?p?_)[A-Za-z0-9|_-]+)', b_code):
                 real = alias2mod.get(mod) or mod[4:]
                 mf = MOD2FILE.get(real) or MOD2FILE.get(mod[4:])
                 if mf: nxt.append((_src(mf), rf))

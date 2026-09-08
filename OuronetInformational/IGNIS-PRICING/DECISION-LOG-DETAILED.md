@@ -1042,3 +1042,39 @@ delegation would resolve.
 **Method note that saved this round:** every step was measured against a fixed invariant —
 "an already-priced row must not change value" — by diffing the regenerated sheet. That is what
 caught the depth-5 sibling bleed and the `@doc` false leg immediately, instead of shipping either.
+
+## 2026-09-09 — the "coupled text" diagnosis was wrong; it was one character class
+
+Last round I concluded the sheet generator needed a refactor because "the walk must ignore strings
+while the extractor must read them, and they share one text blob." **That was wrong.** The strip
+regex was `"(?:[^"\\]|\\.)*"`, and `\\.` cannot cross a newline. Every Pact `@doc` is a multi-line
+continuation, so no doc string ever closed: prose went unstripped (the `C_Control` false leg
+survived, `C_ToggleUpgrade` stayed at 43) AND the unmatched quote mis-paired with a later one and
+stripped REAL CODE, which is what produced the 12 "regressions" I then blamed on coupling.
+`"(?:[^"\\]|\\[\s\S])*"` fixes it. Verified on a synthetic Pact doc before applying.
+
+With the strip actually working, same-module `C_*` delegation could be followed — but only **one
+hop, from the op's own body**. Transitive `C_` following reaches sibling client ops and charges
+their deterrence to the caller: `DPDC-F::C_MergeFragments` absorbed `frag-enable` 100 and
+`C_MakeFragments` (floor 18 -> 152) though its code calls only `C_Transfer`. Identical failure mode
+to raising walk depth to 5. One hop captures a delegation alias; more hops capture the
+neighbourhood.
+
+**Result: 82 -> 74 unresolved.** Measured section-aware: 428 rows both sides, none dropped,
+**8 resolved, 0 demoted, 5 repriced** — and each of the 5 was verified against source:
+  * `AQP-SCR|C_CombineTripletScoreModel` 616 -> **116**, `C_IssueScoreFromModel` and
+    `C_IssueSingleScoreModel` 616 -> **500** — these three siblings were CROSS-CONTAMINATING each
+    other. `C_IssueScoreFromModel` calls `XI_IssueOneFromModel`/`XI_IssueTriplet`, never
+    `C_CombineTripletScoreModel`, so the shared 616 was false in all three. Corrections, not losses.
+  * `VST|C_Brumate` and `C_Constrict` `≥ 93` -> **`≥ 178`** — real legs previously missed:
+    `C_Brumate` directly calls same-module `C_Hibernate` (plus `ref-DPTF::C_Mint`).
+
+**Measurement lesson.** My first count claimed 23 rows resolved. It was keyed on
+`(talos_fn, core_fn)`, which COLLIDES across modules — a dozen modules have `C_Issue`/`C_Issue` —
+so distinct rows overwrote each other and the diff was fiction. Keying on
+`(section, talos_fn, core_fn, role)` gave the true 8. **A row key must include the module section.**
+
+**Remaining 74, by cluster:** SWP 20 (every swap), AQP-POOL 10, DEMIPAD 7, DPSF 6, DPNF 5,
+AQP-FVT 5, PYTHIA 4, then singles. The swaps bury their cost several hops inside swap math
+(`C_Swap` -> `XI_STOA-PID|Swap` -> `XI_Swap` -> pool helpers) with no primitive the extractor
+recognises on the path. This is now a per-cluster tracing job, not one systemic fix.
