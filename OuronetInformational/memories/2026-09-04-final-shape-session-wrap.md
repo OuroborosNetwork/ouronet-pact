@@ -36,7 +36,7 @@ fixtures (Populate mass-mints).
   documented in `LIVE-INTERFACE-VERSIONS.md` ✅
 - Deploy-ready gate (#83): fresh deploy green + 0/93 modules over the ~6,635-line cliff (max RPS 5,617,
   ~624K gas vs 2M) → `DEPLOY-READY-GATE.md` ✅
-- IGNIS (#76): full cost-vs-complexity inventory → `IGNIS-COST-INVENTORY.md` ✅ (prep only)
+- IGNIS (#76): full cost-vs-complexity inventory → `IGNIS-PRICING/IGNIS-PRICING.md` ✅ (prep only; inventory folded in 2026-09-07)
 
 ## The two OWNER decisions that gate the red team (nothing else does)
 1. **Interface version policy** for the never-live AQP/RPS interfaces — V1 ("new work → V1") vs the

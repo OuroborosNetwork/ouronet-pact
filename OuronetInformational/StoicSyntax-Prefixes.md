@@ -86,7 +86,7 @@ because it does no reads. A conditionally-heavy function takes the heavy prefix 
 | `CT_`   | constant | Constant accessor — wraps a shared `defconst` / utility constant | yes | **CONSTANT** |
 
 > **`URCi_` — IMPLEMENTED (Phase 1.1, 2026-08-30).** The **cost-emitting** reader family for the URCi
-> cost architecture (spec `URCI-COST-ARCHITECTURE.md`; the `i` = IGNIS cost). A **leaf** `URCi_` returns
+> cost architecture (spec `IGNIS-PRICING/IGNIS-PRICING.md` § 5; the `i` = IGNIS cost). A **leaf** `URCi_` returns
 > an IGNIS cost cumulator (`object{IgnisCollectorV1.OutputCumulator}`) or a native fair-price `decimal`;
 > a **composer** `URCi_` totals a `C_`/`CC_`/`A_`. It is the **single source** both the exec path
 > (billing) and INFO (preview) call, so the two can never drift. Lives **in the module it prices** —

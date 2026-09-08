@@ -16,9 +16,10 @@ Authoritative docs live under `OuronetInformational/`:
 - `CONTEXT.md` — consolidated project facts and vocabulary.
 - `MODULE_ARCHITECTURE.md` — prefixes, capability bands, Talos, client flows. Read before touching any sovereign core or Talos module.
 - `ARCHITECTURE/README.md` + `ARCHITECTURE/*` — inventory, interface versioning, REPL layout spec, module deep dive.
-- `IGNIS-PRICING/` — the #76 pricing work: plan + status, owner spec, the generated price sheet and
-  deterrence worksheet, plus the historical pre-rehaul analyses. Start at
-  `IGNIS-PRICING/README.md`.
+- `IGNIS-PRICING/` — how Ouronet charges. **`IGNIS-PRICING/IGNIS-PRICING.md` is the single
+  authoritative reference** (cost model, every price decision, architecture, status, lessons);
+  `IGNIS-PRICE-SHEET.md` is the GENERATED per-function price list that feeds the Chapter-2
+  documentation. Do not add more pricing docs to this folder — fold new facts into the one file.
 - `HANDOFFS/` — long-form handover documents (PYTHIA, SWP path search, bulk transfer).
 - `skills/` — repeatable procedures (enforce grouping, UR layout, REPL test layout, etc.).
 - `memories/` — dated conversation captures and decisions.
@@ -42,7 +43,7 @@ cd REPL && pact ZALL.repl             # EXHAUSTIVE runner — every suite, incl.
 variants run instead) and the Stage-1 scenario tail (`[6.6]_ATS`, `[6.7]_VST`, …). **Any change to
 pricing, STOA collection or IGNIS billing must be verified with `ZALL.repl`** — a green `Z.repl` on
 a pricing change does not execute the assertions written to protect it (see
-`OuronetInformational/IGNIS-PRICING/IGNIS-PRICING/memories/2026-09-06-zall-is-the-real-gate-not-z.md`).
+`OuronetInformational/IGNIS-PRICING/IGNIS-PRICING.md` § 8).
 
 Individual scenario REPLs live in `REPL/Stage_01/[*].repl` and `REPL/Stage_02/[*].repl`. The reference hand-maintained integration suites are `REPL/Stage_02/[6.2.1]_AQP-ANK.repl` and `REPL/Stage_02/[6.2.2]_AQP-SCORE.repl` — mirror these when writing new integration tests.
 

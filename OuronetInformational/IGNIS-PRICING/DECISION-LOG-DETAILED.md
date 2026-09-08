@@ -1,3 +1,14 @@
+> **What this file is.** The raw, dated working log of the #76 re-pricing — every decision,
+> finding, incident and dead end, in the order they happened. It is HISTORY, not the reference.
+>
+> **The authoritative reference is [`IGNIS-PRICING.md`](IGNIS-PRICING.md).** If the two disagree,
+> that file wins. Read this one only when you need the reasoning behind a specific decision or
+> want to know why an approach was abandoned.
+>
+> Links below to `README.md`, `IGNIS-PRICING-PLAN.md`, `IGNIS-PRICING-SPEC.md`,
+> `URCI-COST-ARCHITECTURE.md`, `HYDRA-WIPE-DESIGN.md`, `memories/…` and `archive/…` refer to files
+> that were folded into `IGNIS-PRICING.md` and deleted on 2026-09-07; git history keeps them.
+
 # IGNIS re-pricing — owner feedback resolved + open items (2026-09-05)
 
 **Context:** continuation of a stalled conversation (recovered via
