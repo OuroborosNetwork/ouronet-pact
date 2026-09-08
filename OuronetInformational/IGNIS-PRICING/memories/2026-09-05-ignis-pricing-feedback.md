@@ -980,3 +980,54 @@ name so the breakdown text is unchanged from the table era — which is what mad
 parity diff possible.
 
 Verified: `ZALL.repl` green, 6279 lines, "Load successful".
+
+## 2026-09-07 (10) — the sheet was publishing SWAPS AS FREE; two generator fixes, two rejected
+
+Goal for this round: the 76 rows printing `?` ("cumulator not resolvable statically"). Every one
+spot-checked DOES charge, so this was a generator-reach problem, not a pricing gap. Diagnosed
+three candidate causes; two were real, and the investigation turned up something worse than `?`.
+
+**THE FINDING: 8 rows published a price of ZERO for ops that charge.** Every SWP swap —
+`C_SingleSwap*`, `C_MultiSwap*`, `C_SmartSwap*`, `CC_SmartSwap*` — read `≥ 0`. Cause: `charge()`
+counted a literal `UDC_ConstructOutputCumulator 0.0` as a price leg, but a 0.0 cumulator is the
+IDENTITY ELEMENT of a conditional (the "no charge on this branch" arm), not a charge. Publishing
+"swaps are free" is strictly worse than publishing "unknown". Now filtered; those 8 read `?`.
+
+**FIX A (kept) — an alias is not a module name.** `(ref-B|DPOF:module{BrandingUsagePrimaryV2}
+DPOF)` binds alias `B|DPOF` to module `DPOF`. The cross-module hop did `MOD2FILE.get("B|DPOF")`
+-> None and silently dropped the hop. Affects 20+ aliases: every `B|*` and `P|*` form,
+`ANK`->`AQP-ANK`, `AQP`->`AQP-POOL`, `ORBR`->`OUROBOROS`, `LEDGER`->`PYTHIA`, `I|OURONET`->`IGNIS`.
+Now the real module is read out of the let-binding first. (Same class as the `ref-AQP` bug fixed
+earlier for op keys — that fix was applied to a DIFFERENT code path and never reached
+`billing_text`'s walk.)
+
+Net, verified against the previous sheet: **10 rows changed, 0 regressions** — 2 genuine
+resolutions (`CC_Stake/UnstakeOrtoFungible` -> `≥ 3`) and 8 false-zero corrections.
+
+### TWO FIXES TRIED AND REJECTED — do not retry these blind
+
+  1. **Walk depth 3 -> 5.** Resolves more, but the walk CROSSES INTO SIBLING OPERATIONS:
+     `AQP-FVT|CC_Collect` absorbed `deter:aqp-inject 500` and `DPTF|C_Mint`'s components, its
+     floor going 557 -> 1150 with legs it never charges. Depth stays 3, with a comment saying why.
+  2. **Following same-module `C_*` delegation (`BILL_FN` + `CC?p?_`).** This is the RIGHT idea —
+     `DPOF::C_WipeClean` is a thin alias onto `C_WipePure`, so the walk stops before the
+     cumulator — and it resolved 26 rows. But it also follows function names out of **`@doc`
+     prose**: `ATS::C_ToggleUpgrade`'s doc reads "Gates C_Control (...)", so C_Control's
+     components were charged to it, moving an EXACT price 24 -> 43. Adding string-stripping
+     before the call scan fixed that one but caused 12 NEW regressions (`C_IssueNonFungibleAnchor`
+     `≥ 500` -> `?`, `C_IssueScoreFromModel` 616 -> `?`) and dropped legs elsewhere
+     (`C_Merge` `≥ 146` -> `≥ 8`, `C_IssueCompany` `≥ 12143` -> `≥ 10094`) — because `charge()`
+     ALSO harvests deter keys from string literals (`(URCi_IssueAnchor "anchor-nf" ...)`), so
+     stripping strings from the walk shrinks the text those keys are found in. The two mechanisms
+     are coupled: **the walk must ignore strings while the extractor must read them.** Reverted
+     whole. Doing this properly means separating "text I follow calls in" from "text I harvest
+     keys from" throughout, which is a real refactor, not a patch.
+
+**Remaining: 74 rows still `?`** (76 - 2 resolved, +8 that were falsely priced at 0 and are now
+honestly `?` -- net 74 by value, and the unresolved COUNT is the honest number now). The single
+highest-value next step is the coupled-text refactor above, which unlocks the ~26 that same-module
+delegation would resolve.
+
+**Method note that saved this round:** every step was measured against a fixed invariant —
+"an already-priced row must not change value" — by diffing the regenerated sheet. That is what
+caught the depth-5 sibling bleed and the `@doc` false leg immediately, instead of shipping either.

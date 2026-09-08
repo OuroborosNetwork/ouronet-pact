@@ -89,8 +89,16 @@ def billing_text(src, name, depth=3):
             # ops like VST|C_Freeze hold no cumulator of their own, they CONCATENATE the
             # cumulators of the client ops they drive. Without this they read as unresolved
             # even though every leg is knowable.
-            for mod, rf in re.findall(r'ref-([A-Za-z0-9|_+-]+)::((?:[A-Za-z0-9-]+\|)?(?:URCi[x]?_|XB_|XI_|XE_|CC?p?_)[A-Za-z0-9|_-]+)', b):
-                mf = MOD2FILE.get(mod)
+            # An alias is NOT the module name. `(ref-B|DPOF:module{BrandingUsagePrimaryV2} DPOF)`
+            # binds alias `B|DPOF` to module `DPOF`; likewise ref-ANK -> AQP-ANK, ref-ORBR ->
+            # OUROBOROS, ref-LEDGER -> PYTHIA, and every B|*/P|* form. Looking the ALIAS up in
+            # MOD2FILE returned None, so the hop was silently dropped and the op published "?"
+            # even though it charges. Read the real module out of the let-binding first.
+            alias2mod = dict((a, mm) for a, _i, mm in
+                             re.findall(r'\((ref-[A-Za-z0-9|_+-]+):module\{([A-Za-z0-9|_+-]+)\}\s+([A-Za-z0-9|_+-]+)\)', b))
+            for mod, rf in re.findall(r'(ref-[A-Za-z0-9|_+-]+)::((?:[A-Za-z0-9-]+\|)?(?:URCi[x]?_|XB_|XI_|XE_|CC?p?_)[A-Za-z0-9|_-]+)', b):
+                real = alias2mod.get(mod) or mod[4:]
+                mf = MOD2FILE.get(real) or MOD2FILE.get(mod[4:])
                 if mf: nxt.append((_src(mf), rf))
         frontier = nxt
     return txt
@@ -207,6 +215,7 @@ def charge(src, core_fn, entity=None, extra=''):
     for k in re.findall(r'UR_UsagePrice\s+"(ignis\|[a-z-]+)"', txt):
         ig.append((k.split('|')[-1], USAGE.get(k, 0.0)))
     for lit in re.findall(r'UDC_ConstructOutputCumulator\s+([0-9]+\.[0-9]+)', txt):
+        if float(lit) == 0.0: continue    # identity element in a conditional, not a charge
         ig.append(('literal', float(lit)))
     if 'STOA|C_Collect' in txt or re.search(r'URCi_\w*Stoa', txt):
         for k in re.findall(r'UR_UsagePrice\s+"([a-z]+)"', txt):
