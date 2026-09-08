@@ -1053,7 +1053,7 @@
                 (return-amount:decimal (- nonce-supply culled-amount))
                 ;;
                 (obj-l:decimal (dec (length remint-meta-data-chain)))
-                (smallest:decimal (ref-DALOS::UR_UsagePrice "ignis|smallest"))
+                (smallest:decimal (ref-IGNIS::UC_IgnisLeg "tier-smallest"))
                 (price:decimal (/ (* obj-l smallest) 5.0))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 ;;
@@ -1186,7 +1186,7 @@
                 (nonces-used:integer (ref-DPOF::UR_NoncesUsed dpof))
                 (nonces-supplies:[decimal] (ref-DPOF::UR_NoncesSupplies dpof nonces))
                 (how-many:decimal (dec (length nonces)))
-                (biggest:decimal (ref-DALOS::UR_UsagePrice "ignis|biggest"))
+                (biggest:decimal (ref-IGNIS::UC_IgnisLeg "tier-biggest"))
                 (price:decimal (* how-many biggest))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 ;;
@@ -1614,7 +1614,7 @@
                 (nonces-supplies:[decimal] (ref-DPOF::UR_NoncesSupplies dpof nonces))
                 (sum:decimal (fold (+) 0.0 nonces-supplies))
                 (how-many:decimal (dec (length nonces)))
-                (biggest:decimal (ref-DALOS::UR_UsagePrice "ignis|biggest"))
+                (biggest:decimal (ref-IGNIS::UC_IgnisLeg "tier-biggest"))
                 (price:decimal (* how-many biggest))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 ;;
@@ -1889,7 +1889,7 @@
                         (remint-meta-data-chain:[object{VestingV2.VST|MetaDataSchema}] (at 1 culled-data))
                         ;;
                         (obj-l:decimal (dec (length remint-meta-data-chain)))
-                        (smallest:decimal (ref-DALOS::UR_UsagePrice "ignis|smallest"))
+                        (smallest:decimal (ref-IGNIS::UC_IgnisLeg "tier-smallest"))
                         ;;
                         (price:decimal (/ (* obj-l smallest) 5.0))
                         (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))

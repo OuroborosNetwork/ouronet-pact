@@ -126,6 +126,7 @@ def _parse_map(nm):
 IG_DETER  = _parse_map('IG|DETER')
 IG_COMPONENTS = _parse_map('IG|COMPONENTS')
 IG_WEIGHT = _parse_map('IG|WEIGHTS')
+IG_LEGS   = _parse_map('IG|LEGS')
 # tier words that also occur as ordinary strings — never inferred from a bare literal
 GENERIC_DETER = {'usage', 'setup', 'auth', 'fee', 'small'}
 USAGE = {k: float(v) for k, v in re.findall(
@@ -180,6 +181,21 @@ def charge(src, core_fn, entity=None, extra=''):
     # charges `(* (UR_UsagePrice "ignis|biggest") 20.0)` = 100, but a bare scan reported the
     # unmultiplied 5, understating the op 20x. Consume the multiplied forms FIRST, then let
     # the plain scan handle whatever is left.
+    # Unit tiers now come from the IG|LEGS CONSTANTS, not the DALOS usage-price table
+    # (owner 2026-09-07: "no more table values"). Label them by their bare tier name so the
+    # breakdown text is unchanged from the table era -- the conversion moved no price, and the
+    # sheet must show that.
+    def _leg(m):
+        k = m.group('k'); n = float(m.group('n') or 1)
+        lab = k[5:] if k.startswith('tier-') else 'leg:' + k
+        ig.append((lab if n == 1 else f'{lab}x{n:g}', IG_LEGS.get(k, 0.0) * n))
+        return ' '
+    txt = re.sub(r'\(\*\s*\(?[\w:|-]*UC_IgnisLeg\s+"(?P<k>[a-z0-9-]+)"\)\s*(?P<n>[0-9]+\.[0-9]+)\s*\)', _leg, txt)
+    txt = re.sub(r'\(\*\s*(?P<n>[0-9]+\.[0-9]+)\s*\(?[\w:|-]*UC_IgnisLeg\s+"(?P<k>[a-z0-9-]+)"\)\s*\)', _leg, txt)
+    for _k in re.findall(r'UC_IgnisLeg\s+"([a-z0-9-]+)"', txt):
+        _lab = _k[5:] if _k.startswith('tier-') else 'leg:' + _k
+        ig.append((_lab, IG_LEGS.get(_k, 0.0)))
+
     def _mul(m):
         k = m.group('k'); n = float(m.group('n'))
         ig.append((f"{k.split('|')[-1]}x{n:g}", USAGE.get(k, 0.0) * n))

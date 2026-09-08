@@ -2372,10 +2372,10 @@
             \ ignis|biggest × |settle-scores| + ignis|medium × Σ enabled-reward-count over distinct-fvts."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 ;;
-                (biggest:decimal (ref-DALOS::UR_UsagePrice "ignis|biggest"))
-                (medium:decimal (ref-DALOS::UR_UsagePrice "ignis|medium"))
+                (biggest:decimal (ref-IGNIS::UC_IgnisLeg "tier-biggest"))
+                (medium:decimal (ref-IGNIS::UC_IgnisLeg "tier-medium"))
                 (reward-tokens:integer
                     (fold (+) 0
                         ;; map: distinct FVT entities (sum enabled-reward-count for IGNIS medium leg)
@@ -2399,9 +2399,9 @@
         @doc "Internal: IGNIS for XI_BookStakeUnclaimedCounts — ignis|medium × |distinct-fvts|."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (* (ref-DALOS::UR_UsagePrice "ignis|medium") (dec (length distinct-fvts)))
+            (* (ref-IGNIS::UC_IgnisLeg "tier-medium") (dec (length distinct-fvts)))
         )
     )
 
@@ -2409,9 +2409,9 @@
         @doc "Internal: IGNIS for XI_CheckpointStakeRps — flat 2 × ignis|biggest."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (* 2.0 (ref-DALOS::UR_UsagePrice "ignis|biggest"))
+            (* 2.0 (ref-IGNIS::UC_IgnisLeg "tier-biggest"))
         )
     )
 
@@ -3032,7 +3032,7 @@
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
-            (UC_GasPrice (ref-DALOS::UR_UsagePrice "ignis|medium") (ref-IGNIS::URC_IsVirtualGasZero))
+            (UC_GasPrice (ref-IGNIS::UC_IgnisLeg "tier-medium") (ref-IGNIS::URC_IsVirtualGasZero))
         )
     )
 
@@ -3043,7 +3043,7 @@
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
-            (UC_GasPrice (ref-DALOS::UR_UsagePrice "ignis|biggest") (ref-IGNIS::URC_IsVirtualGasZero))
+            (UC_GasPrice (ref-IGNIS::UC_IgnisLeg "tier-biggest") (ref-IGNIS::URC_IsVirtualGasZero))
         )
     )
 

@@ -919,9 +919,9 @@
                         (fold (+) 0.0 
                             [
                                 (ref-IGNIS::UC_IgnisDeter "issue-swp-pair")
-                                (ref-DALOS::UR_UsagePrice "ignis|token-issue")
-                                (ref-DALOS::UR_UsagePrice "ignis|biggest")
-                                (ref-DALOS::UR_UsagePrice "ignis|smallest")
+                                (ref-IGNIS::UC_IgnisLeg "tier-token-issue")
+                                (ref-IGNIS::UC_IgnisLeg "tier-biggest")
+                                (ref-IGNIS::UC_IgnisLeg "tier-smallest")
                             ]
                         )
                     )

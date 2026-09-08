@@ -2460,9 +2460,9 @@
             \ +2×ignis|biggest if score-class 0 (LP)."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 ;;
-                (highest:decimal (ref-DALOS::UR_UsagePrice "ignis|biggest"))
+                (highest:decimal (ref-IGNIS::UC_IgnisLeg "tier-biggest"))
                 (c:integer (UR_SCR|ScoreClass score-id))
                 (bcc:string (UR_SCR|ScoreBoostClassLink score-id))
                 (bl:string (UR_SCR|ScoreBoostLink score-id))
@@ -2625,7 +2625,7 @@
                 (r:module{IgnisCollectorV2} IGNIS)
                 (d:module{OuronetDalosV2} DALOS)
             )
-            (r::UDC_ConstructOutputCumulator (* (dec (length nonces)) (d::UR_UsagePrice "ignis|big")) (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])
+            (r::UDC_ConstructOutputCumulator (* (dec (length nonces)) (r::UC_IgnisLeg "tier-big")) (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])
         ))
     (defun URCi_IssueNonFungibleScoreDefinition:object{IgnisCollectorV2.OutputCumulator} (score-id:string trait-keys:[string])
         @doc "IGNIS = |trait-keys| x UsagePrice('ignis|biggest'), konto = score owner."
@@ -2634,7 +2634,7 @@
                 (r:module{IgnisCollectorV2} IGNIS)
                 (d:module{OuronetDalosV2} DALOS)
             )
-            (r::UDC_ConstructOutputCumulator (* (dec (length trait-keys)) (d::UR_UsagePrice "ignis|biggest")) (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])
+            (r::UDC_ConstructOutputCumulator (* (dec (length trait-keys)) (r::UC_IgnisLeg "tier-biggest")) (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])
         ))
     (defun URCi_IssueNonFungibleSetScoreDefinition:object{IgnisCollectorV2.OutputCumulator} (score-id:string dpnf-nonce-classes:[integer])
         @doc "IGNIS = |nonce-classes| x UsagePrice('ignis|biggest'), konto = score owner."
@@ -2643,7 +2643,7 @@
                 (r:module{IgnisCollectorV2} IGNIS)
                 (d:module{OuronetDalosV2} DALOS)
             )
-            (r::UDC_ConstructOutputCumulator (* (dec (length dpnf-nonce-classes)) (d::UR_UsagePrice "ignis|biggest")) (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])
+            (r::UDC_ConstructOutputCumulator (* (dec (length dpnf-nonce-classes)) (r::UC_IgnisLeg "tier-biggest")) (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])
         ))
     (defun URCi_IssueScoreModel:object{IgnisCollectorV2.OutputCumulator}
         (op-key:string patron:string output:[string])
@@ -4011,7 +4011,7 @@
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 ;;
                 (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
-                (big:decimal (ref-DALOS::UR_UsagePrice "ignis|big"))
+                (big:decimal (ref-IGNIS::UC_IgnisLeg "tier-big"))
                 (how-many:decimal (dec (length nonces)))
                 (price:decimal (* how-many big))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -4032,7 +4032,7 @@
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 ;;
                 (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
-                (biggest:decimal (ref-DALOS::UR_UsagePrice "ignis|biggest"))
+                (biggest:decimal (ref-IGNIS::UC_IgnisLeg "tier-biggest"))
                 (how-many:decimal (dec (length trait-keys)))
                 (price:decimal (* how-many biggest))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -4055,7 +4055,7 @@
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 ;;
                 (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
-                (biggest:decimal (ref-DALOS::UR_UsagePrice "ignis|biggest"))
+                (biggest:decimal (ref-IGNIS::UC_IgnisLeg "tier-biggest"))
                 (how-many:decimal (dec (length dpnf-nonce-classes)))
                 (price:decimal (* how-many biggest))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))

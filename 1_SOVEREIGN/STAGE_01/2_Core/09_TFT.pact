@@ -704,9 +704,9 @@
         @doc "UNITY will only be used with Complex Transfers, as it will have a VTT"
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (if (<= transfer-amount 10.0) (ref-DALOS::UR_UsagePrice "ignis|small") 0.0)
+            (if (<= transfer-amount 10.0) (ref-IGNIS::UC_IgnisLeg "tier-small") 0.0)
         )
     )
     (defun URC_TransferClasses:object{TrueFungibleTransferV2.TransferClass}
@@ -998,7 +998,7 @@
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
-                (ref-DALOS::UR_UsagePrice "ignis|small") transmuter
+                (ref-IGNIS::UC_IgnisLeg "tier-small") transmuter
                 (ref-IGNIS::URC_IsVirtualGasZeroAbsolutely id) []
             )
         )
@@ -1011,7 +1011,7 @@
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
-                (ref-DALOS::UR_UsagePrice "ignis|medium") transmuter
+                (ref-IGNIS::UC_IgnisLeg "tier-medium") transmuter
                 (ref-IGNIS::URC_IsVirtualGasZeroAbsolutely id) []
             )
         )
@@ -1067,7 +1067,7 @@
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (price:decimal
                     (if (< amount 10.0)
-                        (ref-DALOS::UR_UsagePrice "ignis|smallest")
+                        (ref-IGNIS::UC_IgnisLeg "tier-smallest")
                         0.0
                     )
                 )
@@ -1107,7 +1107,7 @@
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
-                (ref-DALOS::UR_UsagePrice "ignis|smallest")  sender
+                (ref-IGNIS::UC_IgnisLeg "tier-smallest")  sender
                 (ref-IGNIS::URC_ZeroGAZ id sender receiver) []
             )
         )
@@ -1120,7 +1120,7 @@
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
-                (ref-DALOS::UR_UsagePrice "ignis|small") sender
+                (ref-IGNIS::UC_IgnisLeg "tier-small") sender
                 (ref-IGNIS::URC_ZeroGAZ id sender receiver) []
             )
         )
@@ -1133,7 +1133,7 @@
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
-                (ref-DALOS::UR_UsagePrice "ignis|medium") sender
+                (ref-IGNIS::UC_IgnisLeg "tier-medium") sender
                 (ref-IGNIS::URC_ZeroEliteGAZ sender receiver) []
             )
         )
@@ -1250,27 +1250,27 @@
         (id:string sender:string size:integer)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (UDCx_BulkTransferCumulator id sender size (ref-DALOS::UR_UsagePrice "ignis|smallest"))
+            (UDCx_BulkTransferCumulator id sender size (ref-IGNIS::UC_IgnisLeg "tier-smallest"))
         )
     )
     (defun URCi_ComplexBulkTransferCumulator:object{IgnisCollectorV2.OutputCumulator}
         (id:string sender:string size:integer)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (UDCx_BulkTransferCumulator id sender size (ref-DALOS::UR_UsagePrice "ignis|small"))
+            (UDCx_BulkTransferCumulator id sender size (ref-IGNIS::UC_IgnisLeg "tier-small"))
         )
     )
     (defun URCi_EliteBulkTransferCumulator:object{IgnisCollectorV2.OutputCumulator}
         (id:string sender:string size:integer)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
-            (UDCx_BulkTransferCumulator id sender size (ref-DALOS::UR_UsagePrice "ignis|medium"))
+            (UDCx_BulkTransferCumulator id sender size (ref-IGNIS::UC_IgnisLeg "tier-medium"))
         )
     )
     ;;{5.4}  Validate [UEV/CAP]

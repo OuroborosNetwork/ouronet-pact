@@ -486,11 +486,11 @@
             \ exec write and the INFO preview."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
                 (nu:integer (ref-DPDC::UR_NoncesUsed id son))
                 (s-amounts:integer (fold (+) 0 amounts))
-                (smallest:decimal (ref-DALOS::UR_UsagePrice "ignis|smallest"))
+                (smallest:decimal (ref-IGNIS::UC_IgnisLeg "tier-smallest"))
                 (ft:string (take 2 id))
                 (raw-price:decimal (* smallest (dec s-amounts)))
             )

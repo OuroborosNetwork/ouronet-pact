@@ -937,3 +937,46 @@ UC_StoaPrice, son-branch deter summing, and now multipliers) — every one of th
 published sheet disagree with a chain that was already right.
 
 Verified: `ZALL.repl` green, 6279 lines, "Load successful".
+
+## 2026-09-07 (9) — all price reads are CONSTANTS now; and a near-miss worth reading twice
+
+Owner: **"we convert all, we run no more table values, but constants for determining prices now."**
+Done: all **65** live `UR_UsagePrice "ignis|*"` reads became `UC_IgnisLeg "tier-*"` against six new
+`IG|LEGS` constants lifted VERBATIM from the old DALOS table values
+(smallest 1 / small 2 / medium 3 / big 4 / biggest 5 / branding 100), plus `tier-token-issue` 500
+for the one surviving `ignis|token-issue` leg in `MTX-SWP::C_AddSleepingLiquidity`.
+**Parity is PROVEN, not asserted**: the regenerated price sheet is byte-identical to the
+pre-conversion one (`diff` empty). Zero prices moved; only where the number lives changed.
+Eleven functions had no `IgnisCollectorV2` binding in scope; where their `ref-DALOS` became unused
+it was swapped in place, otherwise an IGNIS binding was inserted (3 added lines total).
+`DPMF`'s 4 reads stay (dead code, owner-scoped out), so the executor keeps seeding the legacy
+`ignis|*` keys for it alone — no live pricing path touches the table any more.
+
+### NEAR-MISS: I destroyed 19 source files and caught it in one command
+
+The first attempt at this conversion used a **paren-depth scanner** to find defun boundaries. On a
+body whose depth count it got wrong, the computed end ran PAST later defuns; `last=b` then jumped
+ahead of the next match's start, `s[last:a]` went negative-empty, and overlapping segments were
+appended again and again. Result: **1,780,444 insertions across 19 files** — SCORE went 4,165 ->
+~390,000 lines. The reported "converted 4537 sites" (from 65 real ones) was the tell.
+
+Recovery was clean only because of process, not luck: everything was committed, the damage touched
+`1_SOVEREIGN/` exclusively, and `git checkout -- 1_SOVEREIGN/` restored it while leaving the
+owner's in-flight `00_StoaSandbox/coin.pact` untouched. Verified with
+`git diff HEAD --stat -- 1_SOVEREIGN/` = 0 lines before retrying.
+
+**This is the SECOND time a hand-rolled paren scanner has destroyed source in this repo** (the
+first deleted 624 lines across four utility files). The rule is now unconditional:
+
+> **NEVER use paren-depth scanning to define an edit region in Pact.** Use LINE-based boundaries
+> (`^    \(defun `), which are monotonic and cannot overlap by construction. And assert an
+> invariant that the edit must preserve — here `output.count('\n') == input.count('\n')`, since an
+> in-line substitution cannot change the line count. That single assertion turns a silent
+> catastrophe into a clean abort; the safe rewrite tripped it zero times and produced a
+> 80-insert/77-delete diff, which is exactly what 65 in-line substitutions should look like.
+
+Also taught the generator to resolve `UC_IgnisLeg` from `IG|LEGS`, labelling tiers by their bare
+name so the breakdown text is unchanged from the table era — which is what made the byte-identical
+parity diff possible.
+
+Verified: `ZALL.repl` green, 6279 lines, "Load successful".

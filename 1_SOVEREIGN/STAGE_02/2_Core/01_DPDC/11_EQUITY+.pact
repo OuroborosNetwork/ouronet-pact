@@ -409,7 +409,7 @@
                 (ref-DPDC-I:module{DpdcIssueV2} DPDC-I)
                 ;;
                 (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
-                (populate-price:decimal (/ (* (ref-DALOS::UR_UsagePrice "ignis|smallest") 1000000.0) 1000.0))
+                (populate-price:decimal (/ (* (ref-IGNIS::UC_IgnisLeg "tier-smallest") 1000000.0) 1000.0))
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                 [

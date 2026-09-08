@@ -701,7 +701,7 @@
                 ;;
                 (p0:[object{UtilityAtsV3.Awo}] (ref-ATS::UR_P0 ats account))
                 (size:decimal (dec (length p0)))
-                (smallest:decimal (ref-DALOS::UR_UsagePrice "ignis|smallest"))
+                (smallest:decimal (ref-IGNIS::UC_IgnisLeg "tier-smallest"))
                 (price:decimal (* size smallest))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
             )

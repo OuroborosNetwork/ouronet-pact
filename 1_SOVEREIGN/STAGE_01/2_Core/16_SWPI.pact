@@ -2329,8 +2329,8 @@
                 [
                     (ref-IGNIS::UDC_ConstructOutputCumulator (ref-DPTF::URCi_IssueGas 1) swp-sc trigger [])
                     (ref-TFT::URCi_MultiTransferCumulator pool-token-ids account swp-sc pool-token-amounts)
-                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-DALOS::UR_UsagePrice "ignis|biggest") swp-sc trigger [])
-                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-DALOS::UR_UsagePrice "ignis|smallest") swp-sc trigger [])
+                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisLeg "tier-biggest") swp-sc trigger [])
+                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisLeg "tier-smallest") swp-sc trigger [])
                     (ref-IGNIS::UDC_ConstructOutputCumulator
                     ;;the six issue variants share this reader but NOT their component cost
                     ;;(plain 35 vs pool 43), so the caller passes its Talos op key

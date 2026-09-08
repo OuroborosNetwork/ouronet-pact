@@ -1309,7 +1309,7 @@
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-U|ATS:module{UtilityAtsV3} U|ATS)
                 (unlock-costs:[decimal] (if toggle [0.0 0.0] (ref-IGNIS::UC_FeeUnlockPrice)))
-                (gas-costs:decimal (+ (ref-DALOS::UR_UsagePrice "ignis|small") (at 0 unlock-costs)))
+                (gas-costs:decimal (+ (ref-IGNIS::UC_IgnisLeg "tier-small") (at 0 unlock-costs)))
                 (output:bool (> (at 1 unlock-costs) 0.0))
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator gas-costs (UR_OwnerKonto swpair) (ref-IGNIS::URC_IsVirtualGasZero) [output])
@@ -1340,7 +1340,7 @@
             (if (= current-frozen-link BAR)
                 (ref-VST::URCi_CreateSpecialTrueFungibleLink lp-id)
                 (ref-IGNIS::UDC_ConstructOutputCumulator
-                    (ref-DALOS::UR_UsagePrice "ignis|medium")
+                    (ref-IGNIS::UC_IgnisLeg "tier-medium")
                     (UR_OwnerKonto swpair)
                     (ref-IGNIS::URC_IsVirtualGasZero)
                     [current-frozen-link]
@@ -1365,7 +1365,7 @@
             (if (= current-sleeping-link BAR)
                 (ref-VST::URCi_CreateSpecialOrtoFungibleLink lp-id 2)
                 (ref-IGNIS::UDC_ConstructOutputCumulator
-                    (ref-DALOS::UR_UsagePrice "ignis|medium")
+                    (ref-IGNIS::UC_IgnisLeg "tier-medium")
                     (UR_OwnerKonto swpair)
                     (ref-IGNIS::URC_IsVirtualGasZero)
                     [current-sleeping-link]
@@ -1386,7 +1386,7 @@
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (biggest:decimal (ref-DALOS::UR_UsagePrice "ignis|biggest"))
+                (biggest:decimal (ref-IGNIS::UC_IgnisLeg "tier-biggest"))
                 (price:decimal (* 5.0 biggest))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 (ico0:object{IgnisCollectorV2.OutputCumulator}
@@ -2065,7 +2065,7 @@
                 (if (= current-frozen-link BAR)
                     (ref-VST::C_CreateFrozenLink patron lp-id)    
                     (ref-IGNIS::UDC_ConstructOutputCumulator
-                        (ref-DALOS::UR_UsagePrice "ignis|medium")
+                        (ref-IGNIS::UC_IgnisLeg "tier-medium")
                         (UR_OwnerKonto swpair)
                         (ref-IGNIS::URC_IsVirtualGasZero)
                         [current-frozen-link]
@@ -2091,7 +2091,7 @@
                 (if (= current-sleeping-link BAR)
                     (ref-VST::C_CreateSleepingLink patron lp-id)
                     (ref-IGNIS::UDC_ConstructOutputCumulator
-                        (ref-DALOS::UR_UsagePrice "ignis|medium")
+                        (ref-IGNIS::UC_IgnisLeg "tier-medium")
                         (UR_OwnerKonto swpair)
                         (ref-IGNIS::URC_IsVirtualGasZero)
                         [current-sleeping-link]
@@ -2149,7 +2149,7 @@
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-ATS:module{AutostakeV3} ATS)
-                (biggest:decimal (ref-DALOS::UR_UsagePrice "ignis|biggest"))
+                (biggest:decimal (ref-IGNIS::UC_IgnisLeg "tier-biggest"))
                 (price:decimal (* 5.0 biggest))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 (ico0:object{IgnisCollectorV2.OutputCumulator}

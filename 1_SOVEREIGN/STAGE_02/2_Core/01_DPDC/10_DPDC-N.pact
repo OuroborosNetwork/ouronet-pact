@@ -388,7 +388,7 @@
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (price:decimal (* (dec count) (ref-DALOS::UR_UsagePrice "ignis|smallest")))
+                (price:decimal (* (dec count) (ref-IGNIS::UC_IgnisLeg "tier-smallest")))
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator price account (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
@@ -668,7 +668,7 @@
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (smallest:decimal (ref-DALOS::UR_UsagePrice "ignis|smallest"))
+                (smallest:decimal (ref-IGNIS::UC_IgnisLeg "tier-smallest"))
                 (how-many:decimal (dec (length nosc)))
                 (price:decimal (* how-many smallest))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))

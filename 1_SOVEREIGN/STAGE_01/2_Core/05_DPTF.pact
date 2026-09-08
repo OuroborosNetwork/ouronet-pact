@@ -1744,7 +1744,7 @@
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-U|DPTF:module{UtilityDptfV2} U|DPTF)
                 (unlock-costs:[decimal] (if toggle [0.0 0.0] (ref-IGNIS::UC_FeeUnlockPrice)))
-                (gas-costs:decimal (+ (ref-DALOS::UR_UsagePrice "ignis|small") (at 0 unlock-costs)))
+                (gas-costs:decimal (+ (ref-IGNIS::UC_IgnisLeg "tier-small") (at 0 unlock-costs)))
                 (output:bool (> (at 1 unlock-costs) 0.0))
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator gas-costs (UR_Konto id) (ref-IGNIS::URC_IsVirtualGasZero) [output])

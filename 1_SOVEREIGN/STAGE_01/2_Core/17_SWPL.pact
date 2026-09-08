@@ -945,7 +945,7 @@
                                     ;;Ico4 for IGNIS burn is always zero;removed
                                     ;;Used for the OURO Mint (2)
                                     (ref-IGNIS::UDC_ConstructOutputCumulator 
-                                        (ref-DALOS::UR_UsagePrice "ignis|small") 
+                                        (ref-IGNIS::UC_IgnisLeg "tier-small") 
                                         SWP|SC_NAME 
                                         (ref-IGNIS::URC_ZeroGAS ouro-id account) []
                                     )
@@ -953,7 +953,7 @@
                                 (ico6:object{IgnisCollectorV2.OutputCumulator}
                                     ;;Used for SSTOA Burn (2)
                                     (ref-IGNIS::UDC_ConstructOutputCumulator 
-                                        (ref-DALOS::UR_UsagePrice "ignis|small") 
+                                        (ref-IGNIS::UC_IgnisLeg "tier-small") 
                                         SWP|SC_NAME 
                                         (ref-IGNIS::URC_ZeroGAS sstoa-id account) []
                                     )

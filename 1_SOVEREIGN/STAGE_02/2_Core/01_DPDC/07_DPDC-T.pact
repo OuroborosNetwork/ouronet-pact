@@ -516,12 +516,12 @@
         (id:string son:bool nonces:[integer] amounts:[integer])
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ft:string (take 2 id))
                 (sh:string "E|")
-                (sl:decimal (ref-DALOS::UR_UsagePrice "ignis|smallest"))
-                (s:decimal (ref-DALOS::UR_UsagePrice "ignis|small"))
-                (m:decimal (ref-DALOS::UR_UsagePrice "ignis|medium"))
+                (sl:decimal (ref-IGNIS::UC_IgnisLeg "tier-smallest"))
+                (s:decimal (ref-IGNIS::UC_IgnisLeg "tier-small"))
+                (m:decimal (ref-IGNIS::UC_IgnisLeg "tier-medium"))
                 (th:decimal (/ sl 1000.0))
             )
             (fold
@@ -628,7 +628,7 @@
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPDC:module{DpdcV2} DPDC)
                 (owner:string (ref-DPDC::UR_OwnerKonto id son))
-                (p:decimal (if son (ref-DALOS::UR_UsagePrice "ignis|small") (ref-DALOS::UR_UsagePrice "ignis|medium")))
+                (p:decimal (if son (ref-IGNIS::UC_IgnisLeg "tier-small") (ref-IGNIS::UC_IgnisLeg "tier-medium")))
                 (sum-amounts:decimal (dec (fold (+) 1 amounts)))
                 (price:decimal (* p sum-amounts))
             )
@@ -826,8 +826,8 @@
                     ;;
                     (l:integer (length nonces))
                     (owner:string (ref-DPDC::UR_OwnerKonto id son))
-                    (s:decimal (ref-DALOS::UR_UsagePrice "ignis|small"))
-                    (m:decimal (ref-DALOS::UR_UsagePrice "ignis|medium"))
+                    (s:decimal (ref-IGNIS::UC_IgnisLeg "tier-small"))
+                    (m:decimal (ref-IGNIS::UC_IgnisLeg "tier-medium"))
                     (p:decimal (if son s m))
                     (sum-amounts:decimal (dec (fold (+) 1 amounts)))
                     (price:decimal (* p sum-amounts))

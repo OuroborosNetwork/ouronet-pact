@@ -417,7 +417,23 @@
         ,"special-of-link"           : 5.0
         ,"vst-link-role-toggle-tf"   : 4.0
         ,"vst-link-role-toggle-of"   : 5.0
-        ,"lp-mint"                   : 2.0}
+        ,"lp-mint"                   : 2.0
+        ;;GENERIC UNIT TIERS. Owner 2026-09-07: "we run no more table values, but constants for
+        ;;determining prices now." These six are the pre-rehaul DALOS usage-price tiers
+        ;;(ignis|smallest .. ignis|biggest, ignis|branding) lifted here VERBATIM, so the move
+        ;;changed no price -- only where the number lives. They are per-ITEM units fed to scaling
+        ;;formulas (per nonce, per amount, per fragment, per transfer-size band), NOT per-op
+        ;;prices; those are IG|DETER + IG|COMPONENTS. Retune a unit here and every site follows.
+        ,"tier-smallest"             : 1.0
+        ,"tier-small"                : 2.0
+        ,"tier-medium"               : 3.0
+        ,"tier-big"                  : 4.0
+        ,"tier-biggest"              : 5.0
+        ,"tier-branding"             : 100.0
+        ;;The old ignis|token-issue (500), kept as a LEG because its one surviving live site is
+        ;;MTX-SWP::C_AddSleepingLiquidity, where it is a leg INSIDE a defpact that already
+        ;;carries deter:issue-swp-pair 5000 -- it was never that op's own price.
+        ,"tier-token-issue"          : 500.0}
     )
     (defconst IG|DETER
         {"usage"             : 1.0
@@ -1063,7 +1079,7 @@
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (UDC_ConstructOutputCumulator
-                (* multiplier (ref-DALOS::UR_UsagePrice "ignis|branding"))
+                (* multiplier (UC_IgnisLeg "tier-branding"))
                 active-account
                 (URC_IsVirtualGasZero)
                 []
@@ -1088,7 +1104,7 @@
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (UDC_ConstructOutputCumulator
-                (* 5.0 (ref-DALOS::UR_UsagePrice "ignis|biggest"))
+                (* 5.0 (UC_IgnisLeg "tier-biggest"))
                 (at 1 (ref-DALOS::UR_DemiurgoiID))
                 (URC_IsVirtualGasZero)
                 []

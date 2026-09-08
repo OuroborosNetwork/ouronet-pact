@@ -2228,7 +2228,7 @@
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
-            (ref-IGNIS::UDC_ConstructOutputCumulator (* (ref-DALOS::UR_UsagePrice "ignis|biggest") 20.0) ATS|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
+            (ref-IGNIS::UDC_ConstructOutputCumulator (* (ref-IGNIS::UC_IgnisLeg "tier-biggest") 20.0) ATS|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     ;;  ToggleParameterLock: full cumulator re-derived from unlocks (read PRE-increment — see C_).
@@ -2239,7 +2239,7 @@
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-U|ATS:module{UtilityAtsV3} U|ATS)
                 (unlock-costs:[decimal] (if toggle [0.0 0.0] (ref-IGNIS::UC_FeeUnlockPrice)))
-                (gas-costs:decimal (+ (ref-DALOS::UR_UsagePrice "ignis|small") (at 0 unlock-costs)))
+                (gas-costs:decimal (+ (ref-IGNIS::UC_IgnisLeg "tier-small") (at 0 unlock-costs)))
                 (output:bool (> (at 1 unlock-costs) 0.0))
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator gas-costs ATS|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [output])
@@ -3132,7 +3132,7 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (gas-costs:decimal (* (ref-DALOS::UR_UsagePrice "ignis|biggest") 20.0))
+                (gas-costs:decimal (* (ref-IGNIS::UC_IgnisLeg "tier-biggest") 20.0))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
             )
             (with-capability (ATS|C>SET_COLD_FEES atspair fee-positions fee-thresholds fee-array)

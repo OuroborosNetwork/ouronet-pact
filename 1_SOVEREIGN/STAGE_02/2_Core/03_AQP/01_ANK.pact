@@ -1411,9 +1411,9 @@
             0.0
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     ;;
-                    (unit:decimal (ref-DALOS::UR_UsagePrice "ignis|small"))
+                    (unit:decimal (ref-IGNIS::UC_IgnisLeg "tier-small"))
                 )
                 (* (dec n-live) unit)
             )

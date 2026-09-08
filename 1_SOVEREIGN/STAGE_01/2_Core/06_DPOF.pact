@@ -1329,16 +1329,19 @@
     )
     (defun URCi_MoveCumulator:object{IgnisCollectorV2.OutputCumulator}
         (id:string nonces:[integer] transmit-or-transfer:bool)
+        @doc "PER-NONCE unit for an ortofungible move: transmit costs the small unit, transfer \
+            \ the smallest, multiplied by the nonce count in URCix_NoncesCumulator. Units come \
+            \ from the IG|LEGS constants, not a DALOS table (owner 2026-09-07)."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
             (URCix_NoncesCumulator 
                 id 
                 (length nonces)
                 (if transmit-or-transfer
-                    (ref-DALOS::UR_UsagePrice "ignis|small")
-                    (ref-DALOS::UR_UsagePrice "ignis|smallest")
+                    (ref-IGNIS::UC_IgnisLeg "tier-small")
+                    (ref-IGNIS::UC_IgnisLeg "tier-smallest")
                 )
                 {}
             )
