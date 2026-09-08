@@ -81,18 +81,18 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `CC_Inject` | `CC_Inject` | USAGE | **≥ 500** | — | COMPLEX | heavy / parallel-slice op; legs: deter:aqp-inject 500 |
 | `CC_InjectFinalize` | `CC_InjectFinalize` | USAGE | **≥ 500** | — | COMPLEX | heavy / parallel-slice op; legs: deter:aqp-inject 500 |
 | `CC_InjectStream` | `CC_InjectStream` | USAGE | **≥ 500** | — | COMPLEX | heavy / parallel-slice op; legs: deter:aqp-inject 500 |
-| `CC_SweepBegin` | `CC_SweepBegin` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `CC_SweepRevokeAnchor` | `CC_SweepRevokeAnchor` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `CC_SweepBegin` | `CC_SweepBegin` | USAGE | **0** | — | free | free by design — Talos wrapper collects no IGNIS and no STOA |
+| `CC_SweepRevokeAnchor` | `CC_SweepRevokeAnchor` | USAGE | **0** | — | free | core op returns an empty cumulator — charges nothing |
 | `CC_UnstaleMyScores` | `CC_UnstaleMyScores` | USAGE | **≥ 111** | — | COMPLEX | heavy / parallel-slice op; legs: deter:unstale 100 + components:AQP-FVT|CC_UnstaleMyScores 11 |
-| `CCp_InjectFixChunk` | `CCp_InjectFixChunk` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `CCp_SweepRecomputeChunk` | `CCp_SweepRecomputeChunk` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `CCp_UnstaleAll` | `CCp_UnstaleAll` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `CCp_InjectFixChunk` | `CCp_InjectFixChunk` | USAGE | **0** | — | free | core op returns an empty cumulator — charges nothing |
+| `CCp_SweepRecomputeChunk` | `CCp_SweepRecomputeChunk` | USAGE | **0** | — | free | core op returns an empty cumulator — charges nothing |
+| `CCp_UnstaleAll` | `CCp_UnstaleAll` | USAGE | **0** | — | free | core op returns an empty cumulator — charges nothing |
 
 ## AQP-POOL
 
 | Talos function | core op | role | IGNIS | STOA | $ (ignis) | charge breakdown |
 |----------------|---------|------|------:|-----:|----------:|------------------|
-| `C_AbortVacate` | `C_AbortVacate` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_AbortVacate` | `C_AbortVacate` | USAGE | **0** | — | free | core op returns an empty cumulator — charges nothing |
 | `C_AddScore` | `C_AddScore` | SETUP | **243** | — | $2.43 | deter:add-score 200 + components:AQP-POOL|C_AddScore 43 |
 | `C_DisablePoolStake` | `C_DisablePoolStake` | USAGE | **56** | — | $0.56 | deter:pool-stake-toggle 50 + components:AQP-POOL|C_EnablePoolStake 6 |
 | `C_EnablePoolStake` | `C_EnablePoolStake` | USAGE | **56** | — | $0.56 | deter:pool-stake-toggle 50 + components:AQP-POOL|C_EnablePoolStake 6 |
@@ -181,7 +181,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_UpdatePendingBranding` | `C_UpdatePendingBranding` | SETUP | **100** | — | $1.00 | branding 100 |
 | `C_UpdateRoyalty` | `C_UpdateRoyalty` | FEE | **44** | — | $0.44 | deter:fee 25 + components:ATS|C_UpdateRoyalty 19 |
 | `C_UpdateSyphon` | `C_UpdateSyphon` | USAGE | **20** | — | $0.20 | deter:usage 1 + components:ATS|C_UpdateSyphon 19 |
-| `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **0** | 250 | STOA only | no IGNIS charged — priced in STOA only |
+| `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **0** | 250 | STOA only | no IGNIS charged — priced in STOA only; STOA: blue 250 |
 | `C_VestedCoil` | `C_Coil` ×2 | USAGE | **≥ 93** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPTF|C_Mint 86 + smallest 1 + small 2 + medium 3 |
 | `C_VestedCurl` | `C_Curl` ×2 | USAGE | **≥ 93** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPTF|C_Mint 86 + smallest 1 + small 2 + medium 3 |
 | `C_WithdrawRoyalties` | `C_WithdrawRoyalties` | USAGE | **≥ 6** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 + small 2 + medium 3 |
@@ -199,8 +199,8 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 |----------------|---------|------|------:|-----:|----------:|------------------|
 | `A_RegisterCodexIdentity` | `A_RegisterCodexIdentity` | SETUP | **0** | — | free | admin/exempt |
 | `C_RecordArweaveUpload` | `C_RecordArweaveUpload` | USAGE | **10** | — | $0.10 | deter:usage 1 + components:CODEX|C_RecordArweaveUpload 9 |
-| `C_RegisterStoicTag` | `C_RegisterStoicTag` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_ReleaseStoicTag` | `C_ReleaseStoicTag` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_RegisterStoicTag` | `C_RegisterStoicTag` | SETUP | **0** | 1 | STOA only | no IGNIS charged — priced in STOA only; STOA: stoa:per-glyph 1 |
+| `C_ReleaseStoicTag` | `C_ReleaseStoicTag` | SETUP | **1** | — | $0.01 | per-glyph 1 |
 | `C_RotateCodexGuard` | `C_RotateCodexGuard` | USAGE | **5** | — | $0.05 | deter:usage 1 + components:CODEX|C_RotateCodexGuard 4 |
 
 ## CUSTODIANS
@@ -308,7 +308,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_UpdateSetNonces` | `C_UpdateNonces` | SETUP | **≥ 1** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 |
 | `C_UpdateSetNonceScore` | `C_UpdateNonceScore` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
 | `C_UpdateSetNonceURI` | `C_UpdateNonceURI` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
-| `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **0** | 250 | STOA only | no IGNIS charged — priced in STOA only |
+| `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **0** | 250 | STOA only | no IGNIS charged — priced in STOA only; STOA: blue 250 |
 | `C_WipeClean` | `C_WipeClean` | SETUP | **≥ 5** | — | COMPLEX | per-nonce / per-item work; legs: weight:wipe-nonce 5 |
 | `C_WipeDirty` | `C_WipeDirty` | SETUP | **≥ 5** | — | COMPLEX | per-nonce / per-item work; legs: weight:wipe-nonce 5 |
 | `C_WipeHeavy` | `C_WipeHeavy` | SETUP | **≥ 5** | — | COMPLEX | per-nonce / per-item work; legs: weight:wipe-nonce 5 |
@@ -338,7 +338,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_Transfer` | `C_Transfer` | USAGE | **≥ 3** | — | COMPLEX | charge multiplies by an item count; legs: small 2 + smallest 1 |
 | `C_Transmit` | `C_Transmit` | SETUP | **≥ 3** | — | COMPLEX | charge multiplies by an item count; legs: small 2 + smallest 1 |
 | `C_UpdatePendingBranding` | `C_UpdatePendingBranding` | SETUP | **100** | — | $1.00 | branding 100 |
-| `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **0** | 250 | STOA only | no IGNIS charged — priced in STOA only |
+| `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **0** | 250 | STOA only | no IGNIS charged — priced in STOA only; STOA: blue 250 |
 | `C_WipeClean` | `C_WipeClean` | SETUP | **≥ 5** | — | COMPLEX | per-nonce / per-item work; legs: weight:wipe-nonce 5 |
 | `C_WipeHeavy` | `C_WipeHeavy` | SETUP | **≥ 5** | — | COMPLEX | per-nonce / per-item work; legs: weight:wipe-nonce 5 |
 | `C_WipePure` | `C_WipePure` | SETUP | **≥ 5** | — | COMPLEX | per-nonce / per-item work; legs: weight:wipe-nonce 5 |
@@ -402,7 +402,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_UpdateSetNonces` | `C_UpdateNonces` | SETUP | **≥ 1** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 |
 | `C_UpdateSetNonceScore` | `C_UpdateNonceScore` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
 | `C_UpdateSetNonceURI` | `C_UpdateNonceURI` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
-| `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **0** | 250 | STOA only | no IGNIS charged — priced in STOA only |
+| `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **0** | 250 | STOA only | no IGNIS charged — priced in STOA only; STOA: blue 250 |
 | `C_WipeClean` | `C_WipeClean` | SETUP | **≥ 5** | — | COMPLEX | per-nonce / per-item work; legs: weight:wipe-nonce 5 |
 | `C_WipeDirty` | `C_WipeDirty` | SETUP | **≥ 5** | — | COMPLEX | per-nonce / per-item work; legs: weight:wipe-nonce 5 |
 | `C_WipeHeavy` | `C_WipeHeavy` | SETUP | **≥ 5** | — | COMPLEX | per-nonce / per-item work; legs: weight:wipe-nonce 5 |
@@ -446,7 +446,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_Transfer` | `C_Transfer` | USAGE | **≥ 6** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 + small 2 + medium 3 |
 | `C_Transmute` | `C_Transmute` | SETUP | **5** | — | $0.05 | medium 3 + small 2 |
 | `C_UpdatePendingBranding` | `C_UpdatePendingBranding` | SETUP | **100** | — | $1.00 | branding 100 |
-| `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **0** | 250 | STOA only | no IGNIS charged — priced in STOA only |
+| `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **0** | 250 | STOA only | no IGNIS charged — priced in STOA only; STOA: blue 250 |
 | `C_Wipe` | `C_Wipe` | SETUP | **≥ 85** | — | COMPLEX | per-nonce / per-item work; legs: deter:setup 5 + components:DPTF|C_Wipe 80 |
 | `C_WipeSlim` | `C_WipeSlim` | SETUP | **≥ 85** | — | COMPLEX | per-nonce / per-item work; legs: deter:setup 5 + components:DPTF|C_WipeSlim 80 |
 
@@ -476,7 +476,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | Talos function | core op | role | IGNIS | STOA | $ (ignis) | charge breakdown |
 |----------------|---------|------|------:|-----:|----------:|------------------|
 | 2\|C_Inject | C_2\|Inject | USAGE | **≥ 500** | — | COMPLEX | charge multiplies by an item count; legs: deter:aqp-inject 500 |
-| 2\|C_SweepRevokeAnchor | C_2\|SweepRevokeAnchor | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| 2\|C_SweepRevokeAnchor | C_2\|SweepRevokeAnchor | USAGE | **0** | — | free | free by design — Talos wrapper collects no IGNIS and no STOA |
 
 ## ORBR
 
@@ -496,10 +496,10 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `A_RevokeLink` | `A_RevokeDualLink` | SETUP | **0** | — | free | admin/exempt |
 | `A_UpdateDeployPrice` | `A_UpdateDeployPrice` | SETUP | **0** | — | free | admin/exempt |
 | `A_UpdateRenamePrice` | `A_UpdateRenamePrice` | SETUP | **0** | — | free | admin/exempt |
-| `C_DeployApiKey` | `C_DeployApolloPythiaApiKey` | ISSUE | **0** | 500 | STOA only | no IGNIS charged — priced in STOA only |
-| `C_Link` | `C_LinkDualApiKey` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_RevokeLink` | `C_RevokeDualLink` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_UpdateDualConsumerLane` | `C_UpdateDualConsumerLane` | SETUP | **0** | 100 | STOA only | no IGNIS charged — priced in STOA only |
+| `C_DeployApiKey` | `C_DeployApolloPythiaApiKey` | ISSUE | **0** | 500 | STOA only | no IGNIS charged — priced in STOA only; STOA: stoa:pythia-deploy 500 |
+| `C_Link` | `C_LinkDualApiKey` | SETUP | **0** | — | free | free by design — Talos wrapper collects no IGNIS and no STOA |
+| `C_RevokeLink` | `C_RevokeDualLink` | SETUP | **1** | — | $0.01 | const:PYTHIA|REVOKE-IGNIS-FEE 1 |
+| `C_UpdateDualConsumerLane` | `C_UpdateDualConsumerLane` | SETUP | **0** | 100 | STOA only | no IGNIS charged — priced in STOA only; STOA: stoa:pythia-rename 100 |
 
 ## SNAKES
 
@@ -557,8 +557,8 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_UpdatePendingBranding` | `C_UpdatePendingBranding` | SETUP | **100** | — | $1.00 | branding 100 |
 | `C_UpdatePendingBrandingLPs` | `C_UpdatePendingBrandingLPs` | SETUP | **100** | — | $1.00 | branding 100 |
 | `C_UpdateSpecialFeeTargets` | `C_UpdateSpecialFeeTargets` | FEE | **44** | — | $0.44 | deter:fee 25 + components:SWP|C_UpdateSpecialFeeTargets 19 |
-| `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **0** | 250 | STOA only | no IGNIS charged — priced in STOA only |
-| `C_UpgradeBrandingLPs` | `C_UpgradeBrandingLPs` | SETUP | **0** | 250 | STOA only | no IGNIS charged — priced in STOA only |
+| `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **0** | 250 | STOA only | no IGNIS charged — priced in STOA only; STOA: blue 250 |
+| `C_UpgradeBrandingLPs` | `C_UpgradeBrandingLPs` | SETUP | **0** | 250 | STOA only | no IGNIS charged — priced in STOA only; STOA: blue 250 |
 | `CC_SmartSwapNoSlippage` | `CC_SmartSwap` | USAGE | **≥ 6** | — | COMPLEX | heavy / parallel-slice op; legs: small 2 + smallest 1 + medium 3 |
 | `CC_SmartSwapWithSlippage` | `CC_SmartSwap` | USAGE | **≥ 6** | — | COMPLEX | heavy / parallel-slice op; legs: small 2 + smallest 1 + medium 3 |
 
@@ -595,7 +595,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_Vest` | `C_Vest` | SETUP | **≥ 91** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Mint 80 + small 2 + smallest 1 + medium 3 |
 
 ---
-180 simple (exact price) · 190 complex (floor price) · 9 STOA-only · 40 exempt · 11 unresolved · 410 Talos client functions
+182 simple (exact price) · 190 complex (floor price) · 10 STOA-only · 48 exempt · 0 unresolved · 420 Talos client functions
 
 `×N` on a core op = the wrapper drives N priced core ops in a FIXED composition (still exactly knowable).
 

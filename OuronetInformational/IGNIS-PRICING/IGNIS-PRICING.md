@@ -246,7 +246,7 @@ table is the completion ledger.
 | **P5** migrate ~200 `URCi_` readers off legacy tiers | **done** — zero deterrence-only readers, zero legacy tier calls on a client path |
 | **P6** retire dead cumulator constructors | **done in practice** — the 11 surviving `UDC_<tier>Cumulator` refs are all in `00_DPMF.pact`, dead code that is out of scope |
 | **P7** REPL price assertions (acceptance gate) | **done** — 73 assertions in `[6.1]_Cumulator.repl` plus 8 full-module sweeps (DPTF, ATS, DPDC, DPOF, SWP, SCORE/RPS, AQP, IG\|LEGS) |
-| **P8** the documentation price list | **open — the only remaining work** |
+| **P8** the documentation price list | **done** — all 420 Talos client functions priced, 0 unresolved |
 
 **Beyond the original plan** (owner decisions taken after it was written): the dollar rule for all
 STOA; the constants-only conversion (65 table reads lifted); the `define-set` / `ats-secondary` /
@@ -255,64 +255,58 @@ STOA; the constants-only conversion (65 table reads lifted); the `define-set` / 
 
 ## What is open
 
-**P8: 74 of the price sheet's rows still have no price.**
+**Nothing on pricing.** Every one of the **420** Talos client functions now carries a price:
 
 ```
-170 exact  ·  146 floor  ·  40 exempt  ·  74 unresolved
+182 exact  ·  190 floor  ·  10 STOA-only  ·  48 exempt  ·  0 unresolved
 ```
 
-Largest remaining clusters: **SWP 20** (including every swap — `C_SingleSwap`, `C_MultiSwap`,
-`C_SmartSwap`), AQP-POOL 10, DEMIPAD 7, DPSF 6, DPNF 5, AQP-FVT 5, PYTHIA 4.
+`IGNIS-PRICE-SHEET.md` is complete and ready as the Chapter-2 input.
 
-The chain charges correctly for all 82 — this is the sheet generator's static analysis failing to
-reach the cost reader, not a missing price. The known blocker is documented in §7.
-
-Smaller open items:
-* `MTX-SWP::C_AddSleepingLiquidity` carries `tier-token-issue` 500 — the last legacy number under
-  a new name. It is a leg inside a defpact that already carries `issue-swp-pair` 5000. Keep or fold?
+Two small judgement calls remain, neither blocking:
+* `MTX-SWP::C_AddSleepingLiquidity` carries `tier-token-issue` 500 — the last legacy number
+  under a new name. It is a leg inside a defpact that already carries `issue-swp-pair` 5000.
+  Keep, or fold into components?
 * `MTX-AQP|2|C_Inject` / `2|C_SweepRevokeAnchor` — odd double-piped Talos names; intentional
   defpact step marker, or a naming slip?
 
 ---
 
-# 7. The sheet generator — known limits
+# 7. The sheet generator
 
 `REPL/_ignis_price_sheet.py` walks the Talos client surface and extracts the real cumulator legs.
-**Four defects in it were found and fixed during the rehaul, and every one made the published sheet
-disagree with a chain that was already correct.** When a price looks wrong, suspect the sheet first.
+**Every defect found in it made the published sheet disagree with a chain that was already
+correct.** When a price looks wrong, suspect the sheet first.
 
-Fixed: the son-branch positional pick that kept one of two legs (29 rows understated); STOA legs
-invisible because the readers call `UC_StoaPrice` not `UR_UsagePrice` (every issuance row showed
-"—"); son-branch deter legs summed instead of selected (`C_Issue` published 4549, a price no
-caller can pay); multiplied tiers ignored (`ATS|C_SetColdRecoveryFees` published 5 when it charges
-100); and a literal `0.0` identity cumulator counted as a price (**every SWP swap published as
-FREE**).
+The full-coverage pass (2026-09-09) took it from 82 unresolved rows to **0**, resolving 80 and
+repricing 14, with **zero rows demoted**. The fixes, each a distinct blind spot:
 
-**Fixed 2026-09-09 — doc-prose stripping.** The walk follows calls found in CODE only; `@doc`
-prose names other functions constantly and a name matched in prose charges that function's cost to
-this op. The strip **must** use `\\[\\s\\S]`, never `\\.` — every Pact `@doc` is a multi-line
-continuation, `\\.` cannot cross a newline, so the string never closes, docs go unstripped AND the
-unmatched quote mis-pairs with a later one and strips REAL CODE. That single wrong character class
-is what made an earlier attempt look like a deep "the walk and the extractor are coupled" problem
-when it was a broken regex. `txt` deliberately keeps the RAW body, because `charge()` harvests
-deter keys out of string literals (`(URCi_IssueAnchor "anchor-nf" ...)`).
+| blind spot | what it hid |
+|---|---|
+| `@doc` prose not stripped (`\\.` cannot cross a newline, so no doc string ever closed — and the unmatched quote then stripped REAL CODE) | doc-mentioned functions charged to the wrong op; the mis-pairing looked like a deep "walk vs extractor" coupling problem |
+| aliases read as module names (`ref-B|DPOF` is module `DPOF`) | every branding op |
+| same-module delegation not followed (`C_WipeClean` -> `C_WipePure`) | thin alias ops |
+| `defpact` bodies invisible (`defun_body` matched only `(defun`) | all 5 SWP liquidity adds + 3 pool issuances |
+| `ENTITY\|` prefixes on client names (`MTX\|C_AddLiquidity`) | the same SWP family |
+| cumulator constructors not followed cross-module (`IGNIS::UDC_BrandingCumulator`) | the 100-ignis branding charge, and the **flat $50 fee-unlock**, which published as 2 ignis |
+| price helpers not followed (`UC_DeployPrice` -> `UR_Config` -> `UC_StoaPrice`) | the PYTHIA tolls |
+| flat fees held as a `defconst`, not a map entry | `PYTHIA\|REVOKE-IGNIS-FEE` |
+| a literal `0.0` cumulator counted as a price | **every SWP swap published as FREE** |
+| no notion of a STOA-only or free-by-design op | 58 rows that read `?` when the honest answer was "no IGNIS charged" or "charges nothing" |
 
-**Fixed 2026-09-09 — direct same-module delegation.** `DPOF::C_WipeClean` is a thin alias onto
-`C_WipePure`, so a walk chasing only `URCi_`/`X*_` stops before the cumulator. Same-module `C_*`
-calls are now followed, but **from the op's own body only (one hop)**.
+**Two rules the walk must keep.** Both were violated, caught by the invariant, and reverted:
+1. **Depth stays 3**, escalating to 5 then 7 *only for a row that resolved to nothing*. Raising
+   it globally crosses into SIBLING operations — `AQP-FVT|CC_Collect` absorbed `deter:aqp-inject`
+   500 and `DPTF|C_Mint`, floor 557 -> 1150.
+2. **Same-module `C_*` is followed for ONE hop, from the op's own body.** Transitively it reaches
+   neighbouring client ops — `DPDC-F|C_MergeFragments` absorbed `frag-enable` 100 and
+   `C_MakeFragments`, floor 18 -> 152, though its code calls only `C_Transfer`.
+   *One hop captures a delegation alias; more hops capture the neighbourhood.*
 
-**Why only one hop — the boundary that keeps being crossed.** Following `C_*` transitively reaches
-neighbouring client ops and charges their deterrence here: `DPDC-F::C_MergeFragments` absorbed
-`frag-enable` 100 plus `C_MakeFragments`, floor 18 -> 152, though its code calls only `C_Transfer`.
-The same failure appears if walk depth is raised 3 -> 5: `AQP-FVT|CC_Collect` absorbed
-`deter:aqp-inject` 500 and `DPTF|C_Mint`, floor 557 -> 1150. **One hop captures a delegation alias;
-more hops capture the neighbourhood.** Depth stays 3 and `C_` following stays at round 0.
-
-**The remaining blocker is per-cluster, not systemic.** The SWP swaps bury their cost several hops
-inside swap math: `C_Swap` -> `XI_STOA-PID|Swap` -> `XI_Swap` -> pool-math helpers, with no
-pricing primitive on the path the extractor recognises. Each remaining cluster needs the same
-treatment: trace one representative from the Talos wrapper to its cumulator and find what the
-extractor cannot see.
+**Classification rules that make "no price" a real answer, not a gap.** Talos is the only place
+IGNIS is collected, so a wrapper with no `C_Collect` charges nothing (free by design — the
+gas-station-subsidised hydra slices). A core op returning `UC_EmptyOc` charges nothing
+(`AQP-VCT::C_AbortVacate`). An op with a STOA leg and no IGNIS leg is STOA-only, not unresolved.
 
 ---
 

@@ -1078,3 +1078,65 @@ so distinct rows overwrote each other and the diff was fiction. Keying on
 AQP-FVT 5, PYTHIA 4, then singles. The swaps bury their cost several hops inside swap math
 (`C_Swap` -> `XI_STOA-PID|Swap` -> `XI_Swap` -> pool helpers) with no primitive the extractor
 recognises on the path. This is now a per-cluster tracing job, not one systemic fix.
+
+## 2026-09-09 (2) — P8 closed: 82 unresolved rows -> 0
+
+Owner: "we do everything until ALL is settled." Worked the remaining clusters one at a time,
+each diagnosed by tracing a representative op from its Talos wrapper to its cumulator and asking
+what the extractor could not see. **Result: 80 rows resolved, 14 repriced, 0 demoted, 0 dropped
+— 428 rows before and after.** Every reprice was checked against source before acceptance.
+
+**The blind spots, in the order they were found:**
+  1. **Literal `0.0` counted as a price.** A 0.0 cumulator is the identity arm of a conditional.
+     Every SWP swap published as **FREE**. (Found in the previous round; the worst of the set.)
+  2. **Aliases read as module names.** `ref-B|DPOF` is module `DPOF`. Killed every branding op.
+  3. **`@doc` prose not stripped**, because `\\.` cannot cross a newline and every Pact doc is a
+     multi-line continuation — so no doc string closed, prose was followed as code, AND the
+     unmatched quote mis-paired and stripped real code. That mis-pairing is what made the
+     previous round misdiagnose this as a "walk vs extractor are coupled" refactor.
+  4. **Same-module delegation not followed.** `DPOF::C_WipeClean` is a thin alias onto
+     `C_WipePure`; the walk stopped before the cumulator.
+  5. **Depth budget spent on delegation hops.** `C_Swap` -> `XI_STOA-PID|Swap` -> `XI_Swap`
+     before the first real leg. Solved by escalating depth ONLY for rows that resolved to nothing.
+  6. **No notion of a STOA-only op.** No IGNIS legs + a real STOA leg is not "unresolved", it is
+     "charges no IGNIS". Branding, PYTHIA and StoicTag are all like this.
+  7. **Price helpers not followed.** `URCi_DeployApiKey` is literally `(UC_DeployPrice)`, which
+     forwards through `UR_DeployPrice` -> `UR_Config` -> `UC_StoaPrice "pythia-deploy"`.
+  8. **Cumulator constructors not followed cross-module.** `IGNIS::UDC_BrandingCumulator` holds
+     the 100-ignis branding charge. Adding `UDC_` to `BILL_FN` alone did nothing — these are
+     always reached through a `ref`, so the CROSS-MODULE regex had to cover the same name classes.
+  9. **Wrong core op chosen.** The sheet priced "first `ref-MOD::C_*` in the wrapper", but
+     `DPDC|C_BulkTransfer` binds `C_IgnisRoyaltyCollector` in an earlier let. The billed op is
+     literally the argument to `IGNIS::C_Collect`.
+ 10. **`defpact` bodies invisible** (`defun_body` matched only `(defun`) and **`ENTITY|` prefixes**
+     on client names (`MTX|C_AddLiquidity`). Together these were all 8 SWP liquidity/pool rows.
+ 11. **Flat fees held as a `defconst`**, not a map entry — `PYTHIA|REVOKE-IGNIS-FEE` 1.0.
+ 12. **No notion of free-by-design.** Talos is the only place IGNIS is collected, so a wrapper
+     with no `C_Collect` charges nothing (the gas-station-subsidised hydra slices), and a core op
+     returning `UC_EmptyOc` charges nothing (`AQP-VCT::C_AbortVacate`).
+
+**Two corrections that matter more than the count.** `DPTF|C_ToggleFeeLock`,
+`SWP|C_ToggleFeeLock` and `ATS|C_ToggleParameterLock` were published at **2 ignis**; they are
+**≥ 5002 IGNIS + 500 STOA**, the flat $50 + $50 set on 2026-09-06 — the sheet had been showing
+only the LOCKING direction's base and the entire unlock charge was invisible. And PYTHIA briefly
+read **6000 IGNIS** for an op with no IGNIS cost at all, charging deploy AND rename together
+because `UR_Config` reads both tolls; fixed by excluding STOA-only deter keys from IGNIS legs and
+disambiguating on which helper the op's own reader called.
+
+**`C_ReleaseStoicTag` was about to be published as a STOA charge it never makes.** Both StoicTag
+ops price off `UC_StoicTagStoaFee`, but Register pays in STOA and Release pays in **IGNIS**. Route
+by the collector the wrapper actually uses, never by the helper's name.
+
+**Two rules the walk must keep** (both violated, both caught by the invariant, both reverted):
+depth stays 3 and escalates only for unresolved rows; same-module `C_*` is followed for ONE hop
+from the op's own body. Transitive following reaches sibling ops and charges their deterrence to
+the caller — `CC_Collect` absorbed `aqp-inject` 500 (557 -> 1150), `C_MergeFragments` absorbed
+`frag-enable` 100 (18 -> 152). One hop captures a delegation alias; more hops capture the
+neighbourhood.
+
+**Method.** A fixed invariant — "an already-priced row must not change value" — checked by
+regenerating and diffing after every single change. It caught both bad fixes immediately. The row
+key must be `(section, talos_fn, core_fn, role)`: keying on `(talos_fn, core_fn)` collides across
+modules (a dozen have `C_Issue`) and an earlier measurement claiming 23 resolved was fiction.
+
+Final: **182 exact · 190 floor · 10 STOA-only · 48 exempt · 0 unresolved · 420 functions.**
