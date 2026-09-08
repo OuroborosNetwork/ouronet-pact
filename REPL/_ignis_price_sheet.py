@@ -188,11 +188,30 @@ TIER = {'UDC_SmallestCumulator':'ignis|smallest','UDC_SmallCumulator':'ignis|sma
         'UDC_BiggestCumulator':'ignis|biggest'}
 
 def charge(src, core_fn, entity=None, extra=''):
+    """Depth-3 first; if that yields NOTHING, retry deeper (see _charge_at).
+
+    Escalating only on an unresolved op is what makes deeper walking safe. Depth 5 applied
+    globally bleeds sibling operations into already-priced rows (AQP-FVT|CC_Collect absorbed
+    deter:aqp-inject 500, floor 557 -> 1150). A row that resolves at 3 keeps its depth-3 answer,
+    so it cannot move; a row that resolves to NOTHING at 3 has no price to protect, and any leg
+    found deeper is strictly more than the "?" it would otherwise publish. Ops that need this are
+    the ones whose cost sits behind pure delegation hops that burn the budget before reaching it:
+    SWP|C_Swap goes C_Swap -> XI_STOA-PID|Swap -> XI_Swap before its first real leg.
+    """
+    ig, st = _charge_at(src, core_fn, entity, extra, 3)
+    if not ig:
+        for deeper in (5, 7):
+            ig2, st2 = _charge_at(src, core_fn, entity, extra, deeper)
+            if ig2: return ig2, st2
+    return ig, st
+
+
+def _charge_at(src, core_fn, entity=None, extra='', _depth=3):
     """Return (ignis_legs, stoa_legs) actually billed, each a list of (label, amount)."""
     # Many Talos wrappers build the cumulator THEMSELVES —
     #   (ref-IGNIS::C_Collect patron (ref-IGNIS::DALOS|URCi_ControlSmartAccount account))
     # so the price leg lives in the wrapper, not the core op. Scan both.
-    txt = billing_text(src, core_fn, depth=3) + ' ' + extra
+    txt = billing_text(src, core_fn, depth=_depth) + ' ' + extra
     ig, st = [], []
     for m in re.finditer(r'UDC_(?:Smallest|Small|Medium|Big|Biggest)Cumulator', txt):
         key = TIER['UDC_' + m.group(0)[4:]]

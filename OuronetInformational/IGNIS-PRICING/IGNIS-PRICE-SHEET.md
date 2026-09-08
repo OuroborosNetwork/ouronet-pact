@@ -102,15 +102,15 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_SyncNonFungibleAnchors` | `C_SyncCollectableAnchors` | USAGE | **86** | — | $0.86 | deter:sync-anchors 50 + components:AQP-POOL|C_SyncSemiFungibleAnchors 36 |
 | `C_SyncSemiFungibleAnchors` | `C_SyncCollectableAnchors` | USAGE | **86** | — | $0.86 | deter:sync-anchors 50 + components:AQP-POOL|C_SyncSemiFungibleAnchors 36 |
 | `C_SyncTrueFungibleAnchors` | `C_SyncTrueFungibleAnchors` | SETUP | **66** | — | $0.66 | deter:sync-anchors 50 + components:AQP-POOL|C_SyncTrueFungibleAnchors 16 |
-| `CC_FullVacate` | `CC_FullVacate` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `CC_FullVacate` | `CC_FullVacate` | USAGE | **≥ 6** | — | COMPLEX | heavy / parallel-slice op; legs: small 2 + smallest 1 + medium 3 |
 | `CC_StakeNonFungibleCollectable` | `CC_CollectableStakeFlow` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `CC_StakeOrtoFungible` | `CC_OrtoFungibleStakeFlow` | USAGE | **≥ 3** | — | COMPLEX | heavy / parallel-slice op; legs: small 2 + smallest 1 |
 | `CC_StakeSemiFungibleCollectable` | `CC_CollectableStakeFlow` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `CC_StakeTrueFungible` | `CC_TrueFungibleStakeFlow` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `CC_StakeTrueFungible` | `CC_TrueFungibleStakeFlow` | USAGE | **≥ 6** | — | COMPLEX | heavy / parallel-slice op; legs: smallest 1 + small 2 + medium 3 |
 | `CC_UnstakeNonFungibleCollectable` | `CC_CollectableStakeFlow` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `CC_UnstakeOrtoFungible` | `CC_OrtoFungibleStakeFlow` | USAGE | **≥ 3** | — | COMPLEX | heavy / parallel-slice op; legs: small 2 + smallest 1 |
 | `CC_UnstakeSemiFungibleCollectable` | `CC_CollectableStakeFlow` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `CC_UnstakeTrueFungible` | `CC_TrueFungibleStakeFlow` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `CC_UnstakeTrueFungible` | `CC_TrueFungibleStakeFlow` | USAGE | **≥ 6** | — | COMPLEX | heavy / parallel-slice op; legs: smallest 1 + small 2 + medium 3 |
 | `CCp_BatchDrainCollectable` | `CCp_BatchDrainCollectable` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `CCp_BatchDrainOrtoFungible` | `CCp_BatchDrainOrtoFungible` | USAGE | **≥ 3** | — | COMPLEX | heavy / parallel-slice op; legs: small 2 + smallest 1 |
 | `CCp_BatchDrainTrueFungible` | `CCp_BatchDrainTrueFungible` | USAGE | **≥ 6** | — | COMPLEX | heavy / parallel-slice op; legs: small 2 + smallest 1 + medium 3 |
@@ -207,7 +207,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 
 | Talos function | core op | role | IGNIS | STOA | $ (ignis) | charge breakdown |
 |----------------|---------|------|------:|-----:|----------:|------------------|
-| `C_Acquire` | `C_Acquire` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_Acquire` | `C_Acquire` | USAGE | **≥ 164** | — | COMPLEX | charge multiplies by an item count; legs: deter:usage 1 + components:DPTF|C_Mint 86 + components:DPTF|C_Burn 71 + smallest 1 + small 2 + medium 3 |
 
 ## DALOS
 
@@ -240,12 +240,12 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_FuelNonFungible` | `C_TransmitNonFungibles` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_FuelOrtoFungible` | `C_TransmitOrtoFungible` | SETUP | **≥ 3** | — | COMPLEX | charge multiplies by an item count; legs: small 2 + smallest 1 |
 | `C_FuelSemiFungible` | `C_TransmitSemiFungibles` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_FuelTrueFungible` | `C_TransmitTrueFungible` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_FuelTrueFungible` | `C_TransmitTrueFungible` | SETUP | **≥ 6** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 + small 2 + medium 3 |
 | `C_RetrieveNonFungible` | `C_TransmitNonFungibles` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_RetrieveOrtoFungible` | `C_TransmitOrtoFungible` | SETUP | **≥ 3** | — | COMPLEX | charge multiplies by an item count; legs: small 2 + smallest 1 |
 | `C_RetrieveSemiFungible` | `C_TransmitSemiFungibles` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_RetrieveTrueFungible` | `C_TransmitTrueFungible` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_Withdraw` | `C_Withdraw` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_RetrieveTrueFungible` | `C_TransmitTrueFungible` | SETUP | **≥ 6** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 + small 2 + medium 3 |
+| `C_Withdraw` | `C_Withdraw` | USAGE | **≥ 6** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 + small 2 + medium 3 |
 
 ## DPDC
 
@@ -505,15 +505,15 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 
 | Talos function | core op | role | IGNIS | STOA | $ (ignis) | charge breakdown |
 |----------------|---------|------|------:|-----:|----------:|------------------|
-| `C_Acquire` | `C_Acquire` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_Acquire` | `C_Acquire` | USAGE | **≥ 164** | — | COMPLEX | charge multiplies by an item count; legs: deter:usage 1 + components:DPTF|C_Mint 86 + components:DPTF|C_Burn 71 + smallest 1 + small 2 + medium 3 |
 
 ## SPARK
 
 | Talos function | core op | role | IGNIS | STOA | $ (ignis) | charge breakdown |
 |----------------|---------|------|------:|-----:|----------:|------------------|
-| `C_BuySparks` | `C_BuySparks` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_RedemAllSparks` | `C_RedemAllSparks` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_RedemFewSparks` | `C_RedemFewSparks` | SETUP | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_BuySparks` | `C_BuySparks` | USAGE | **≥ 164** | — | COMPLEX | charge multiplies by an item count; legs: deter:usage 1 + components:DPTF|C_Mint 86 + components:DPTF|C_Burn 71 + smallest 1 + small 2 + medium 3 |
+| `C_RedemAllSparks` | `C_RedemAllSparks` | SETUP | **≥ 236** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPTF|C_ToggleFreezeAccount 58 + components:DPTF|C_WipeSlim 80 + deter:usage 1 + components:DPTF|C_Mint 86 + smallest 1 + small 2 + medium 3 |
+| `C_RedemFewSparks` | `C_RedemFewSparks` | SETUP | **≥ 236** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPTF|C_ToggleFreezeAccount 58 + components:DPTF|C_WipeSlim 80 + deter:usage 1 + components:DPTF|C_Mint 86 + smallest 1 + small 2 + medium 3 |
 
 ## SWP
 
@@ -542,13 +542,13 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_IssueWeightedPool` | `C_IssueWeightedPool` | ISSUE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_ModifyCanChangeOwner` | `C_ModifyCanChangeOwner` | AUTH | **29** | — | $0.29 | deter:auth 10 + components:SWP|C_ModifyCanChangeOwner 19 |
 | `C_ModifyWeights` | `C_ModifyWeights` | FEE | **44** | — | $0.44 | deter:fee 25 + components:SWP|C_ModifyWeights 19 |
-| `C_MultiSwapNoSlippage` | `C_Swap` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_MultiSwapWithSlippage` | `C_Swap` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_MultiSwapNoSlippage` | `C_Swap` | USAGE | **≥ 6** | — | COMPLEX | charge multiplies by an item count; legs: small 2 + smallest 1 + medium 3 |
+| `C_MultiSwapWithSlippage` | `C_Swap` | USAGE | **≥ 6** | — | COMPLEX | charge multiplies by an item count; legs: small 2 + smallest 1 + medium 3 |
 | `C_RemoveLiquidity` | `C_RemoveLiquidity` | USAGE | **≥ 1078** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPTF|C_Burn 71 + deter:lp-churn 1000 + smallest 1 + small 2 + medium 3 |
-| `C_SingleSwapNoSlippage` | `C_Swap` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_SingleSwapWithSlippage` | `C_Swap` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_SmartSwapNoSlippage` | `C_SmartSwap` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_SmartSwapWithSlippage` | `C_SmartSwap` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_SingleSwapNoSlippage` | `C_Swap` | USAGE | **≥ 6** | — | COMPLEX | charge multiplies by an item count; legs: small 2 + smallest 1 + medium 3 |
+| `C_SingleSwapWithSlippage` | `C_Swap` | USAGE | **≥ 6** | — | COMPLEX | charge multiplies by an item count; legs: small 2 + smallest 1 + medium 3 |
+| `C_SmartSwapNoSlippage` | `C_SmartSwap` | USAGE | **≥ 6** | — | COMPLEX | per-nonce / per-item work; legs: small 2 + smallest 1 + medium 3 |
+| `C_SmartSwapWithSlippage` | `C_SmartSwap` | USAGE | **≥ 6** | — | COMPLEX | per-nonce / per-item work; legs: small 2 + smallest 1 + medium 3 |
 | `C_ToggleAddLiquidity` | `C_ToggleAddLiquidity` | USAGE | **≥ 214** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:auth 10 + components:DPTF|C_ToggleBurnRole 58 + components:DPTF|C_ToggleMintRole 58 + deter:fee 25 + components:DPTF|C_ToggleFeeExemptionRole 58 + biggest 5 |
 | `C_ToggleFeeLock` | `C_ToggleFeeLock` | SETUP | **≥ 2** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: small 2 |
 | `C_ToggleSwapCapability` | `C_ToggleSwapCapability` | USAGE | **≥ 214** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:auth 10 + components:DPTF|C_ToggleBurnRole 58 + components:DPTF|C_ToggleMintRole 58 + deter:fee 25 + components:DPTF|C_ToggleFeeExemptionRole 58 + biggest 5 |
@@ -559,8 +559,8 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_UpdateSpecialFeeTargets` | `C_UpdateSpecialFeeTargets` | FEE | **44** | — | $0.44 | deter:fee 25 + components:SWP|C_UpdateSpecialFeeTargets 19 |
 | `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **?** | 250 | — | cumulator not resolvable statically (reader lives in another module) |
 | `C_UpgradeBrandingLPs` | `C_UpgradeBrandingLPs` | SETUP | **?** | 250 | — | cumulator not resolvable statically (reader lives in another module) |
-| `CC_SmartSwapNoSlippage` | `CC_SmartSwap` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `CC_SmartSwapWithSlippage` | `CC_SmartSwap` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `CC_SmartSwapNoSlippage` | `CC_SmartSwap` | USAGE | **≥ 6** | — | COMPLEX | heavy / parallel-slice op; legs: small 2 + smallest 1 + medium 3 |
+| `CC_SmartSwapWithSlippage` | `CC_SmartSwap` | USAGE | **≥ 6** | — | COMPLEX | heavy / parallel-slice op; legs: small 2 + smallest 1 + medium 3 |
 
 ## VST
 
@@ -595,7 +595,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_Vest` | `C_Vest` | SETUP | **≥ 91** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Mint 80 + small 2 + smallest 1 + medium 3 |
 
 ---
-170 simple (exact price) · 146 complex (floor price) · 40 exempt · 74 unresolved · 356 Talos client functions
+170 simple (exact price) · 165 complex (floor price) · 40 exempt · 55 unresolved · 375 Talos client functions
 
 `×N` on a core op = the wrapper drives N priced core ops in a FIXED composition (still exactly knowable).
 
