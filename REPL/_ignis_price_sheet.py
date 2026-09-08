@@ -112,6 +112,14 @@ def billing_text(src, name, depth=3):
             if _round == 0:
                 nxt.extend((csrc, f) for f in
                            re.findall(r'\((C{1,2}p?_[A-Za-z0-9|_-]+)', b_code))
+            # Same-module PRICE HELPERS, at any depth. A cost reader often just forwards to one:
+            # PYTHIA's URCi_DeployApiKey is literally (UC_DeployPrice), which forwards to
+            # UR_DeployPrice -> UR_Config -> UC_StoaPrice "pythia-deploy". None of those are
+            # URCi_/X*_ names, so the walk stopped one call short of the price and the op
+            # published "?" while charging $50. Deliberately NARROW -- only names that say they
+            # are about price/fee/cost/config/stoa -- so this cannot become "follow everything".
+            nxt.extend((csrc, f) for f in re.findall(
+                r'\((U(?:C|R|RC)_[A-Za-z0-9|_-]*(?:Price|Fee|Cost|Config|Stoa)[A-Za-z0-9|_-]*)', b_code))
             # Follow cross-module CLIENT ops too (ref-TFT::C_Transfer, ref-DPTF::C_Mint …):
             # ops like VST|C_Freeze hold no cumulator of their own, they CONCATENATE the
             # cumulators of the client ops they drive. Without this they read as unresolved
@@ -164,6 +172,13 @@ IG_WEIGHT = _parse_map('IG|WEIGHTS')
 IG_LEGS   = _parse_map('IG|LEGS')
 # tier words that also occur as ordinary strings — never inferred from a bare literal
 GENERIC_DETER = {'usage', 'setup', 'auth', 'fee', 'small'}
+# IG|DETER keys that are a DOLLAR BASIS FOR A STOA LEG ONLY — the op charges no IGNIS at all.
+# They must never produce an IGNIS deter leg: PYTHIA carries no IGNIS cost (owner-confirmed),
+# account deploys and branding are STOA-priced. Without this, seeing UC_StoaPrice "pythia-deploy"
+# in the text made PYTHIA|C_DeployApiKey publish 6000 IGNIS ($60) for a free-in-IGNIS op — and
+# because UR_Config reads BOTH tolls, it charged deploy AND rename together.
+STOA_ONLY_DETER = {'acct-standard', 'acct-smart', 'pythia-deploy', 'pythia-rename',
+                   'branding-blue'}
 USAGE = {k: float(v) for k, v in re.findall(
     r'A_UpdateUsagePrice\s+"([^"]+)"\s+([0-9.]+)',
     open('REPL/Stage_01/[4.0]_Sovereign-Executor.repl').read())}
@@ -229,7 +244,7 @@ def _charge_at(src, core_fn, entity=None, extra='', _depth=3):
     # Whole families (ANK/POOL/FVT issuance) bill this way and were showing as unresolved.
     # Only distinctive keys count — the generic tier words appear in unrelated strings.
     for k in re.findall(r'"([a-z][a-z0-9-]*)"', txt):
-        if k in IG_DETER and k not in GENERIC_DETER:
+        if k in IG_DETER and k not in GENERIC_DETER and k not in STOA_ONLY_DETER:
             ig.append(('deter:' + k, IG_DETER[k]))
     # A legacy tier is often MULTIPLIED at the call site -- ATS::URCi_SetColdRecoveryFees
     # charges `(* (UR_UsagePrice "ignis|biggest") 20.0)` = 100, but a bare scan reported the
@@ -308,6 +323,15 @@ def _charge_at(src, core_fn, entity=None, extra='', _depth=3):
             st = [(lab, amt) for lab, amt in st if lab != drop]
         elif len(st) == 2:
             st = [st[0 if entity == 'DPSF' else 1]]
+    # PYTHIA: UR_Config reads BOTH tolls in one row, so walking into it collects deploy AND
+    # rename for whichever op we are pricing (both published 600 STOA = $60). Disambiguate on the
+    # specific helper the op's own reader called: URCi_DeployApiKey -> UC_DeployPrice,
+    # URCi_UpdateDualConsumerLane -> UC_RenamePrice.
+    _has_dep, _has_ren = 'UC_DeployPrice' in txt, 'UC_RenamePrice' in txt
+    if _has_dep != _has_ren:
+        _drop = 'stoa:pythia-rename' if _has_dep else 'stoa:pythia-deploy'
+        st = [(lab, amt) for lab, amt in st if lab != _drop]
+
     # de-dup identical legs (same reader reached by several paths)
     def dedup(v):
         out=[]; seen=set()
@@ -370,9 +394,17 @@ for tf in TALOS:
             reason = None   # fixed multi-call composition is still exactly knowable
         # resolve any cumulator readers the WRAPPER itself calls (cross-module)
         extra = body
-        for mod2, rf in re.findall(r'ref-([A-Za-z0-9|_+-]+)::((?:[A-Za-z0-9-]+\|)?URCi[x]?_[A-Za-z0-9|_-]+)', body):
-            mf = MOD2FILE.get(mod2)
-            if mf: extra += ' ' + defun_body(_src(mf), rf)
+        # WALK the wrapper's cost readers, do not merely append their body. PYTHIA's toll is
+        # three hops past the reader (URCi_DeployApiKey -> UC_DeployPrice -> UR_DeployPrice ->
+        # UR_Config -> UC_StoaPrice "pythia-deploy"), so a one-level append stops short and the
+        # op published "?" despite charging $50. Alias-resolved for the same reason billing_text
+        # is: `ref-LEDGER` is PYTHIA, `ref-B|DPTF` is DPTF.
+        _alias2mod = dict((a, mm) for a, _i, mm in
+                          re.findall(r'\((ref-[A-Za-z0-9|_+-]+):module\{([A-Za-z0-9|_+-]+)\}\s+([A-Za-z0-9|_+-]+)\)', body))
+        for mod2, rf in re.findall(r'(ref-[A-Za-z0-9|_+-]+)::((?:[A-Za-z0-9-]+\|)?URCi[x]?_[A-Za-z0-9|_-]+)', body):
+            real = _alias2mod.get(mod2) or mod2[4:]
+            mf = MOD2FILE.get(real) or MOD2FILE.get(mod2[4:])
+            if mf: extra += ' ' + billing_text(_src(mf), rf, depth=3)
         igl, stl = charge(_src(cfile), cf, entity, extra)
         rows[entity].append((f'{entity}|{fn}', cf, role, d, comp, reason, len(cores), igl, stl))
 
@@ -416,7 +448,7 @@ def role_from_legs(igl):
     return DETER_ROLE.get(k, 'ISSUE' if k.startswith('issue-') else None)
 
 
-nsimple=ncomplex=nexempt=nunknown=0
+nsimple=ncomplex=nexempt=nunknown=nstoaonly=0
 for entity in sorted(rows):
     print(f"\n## {entity}\n")
     print("| Talos function | core op | role | IGNIS | STOA | $ (ignis) | charge breakdown |")
@@ -440,6 +472,15 @@ for entity in sorted(rows):
         if d is None:
             nexempt += 1
             print(f"| {tfn_s} | {cf_s}{compose} | {role} | **0** | — | free | admin/exempt |")
+        elif not igl and stl:
+            # NO ignis legs but a REAL STOA leg = an op that is priced in STOA only, by design
+            # (its Talos wrapper carries no IGNIS::C_Collect at all). Branding upgrades, the
+            # PYTHIA tolls and the CODEX StoicTag family are all like this. Printing "?" for
+            # them said "we could not work it out" when the honest answer is "no IGNIS is
+            # charged, here is the STOA".
+            nstoaonly += 1
+            print(f"| {tfn_s} | {cf_s}{compose} | {role} | **0** | {st_cell} | STOA only | "
+                  f"no IGNIS charged — priced in STOA only |")
         elif not igl:
             nunknown += 1
             print(f"| {tfn_s} | {cf_s}{compose} | {role} | **?** | {st_cell} | — | "
@@ -453,7 +494,8 @@ for entity in sorted(rows):
             print(f"| {tfn_s} | {cf_s}{compose} | {role} | **{ig_sum:g}** | {st_cell} | "
                   f"{money(ig_sum)} | {legs} |")
 
-print(f"\n---\n{nsimple} simple (exact price) · {ncomplex} complex (floor price) · {nexempt} exempt"
+print(f"\n---\n{nsimple} simple (exact price) · {ncomplex} complex (floor price) · "
+      f"{nstoaonly} STOA-only · {nexempt} exempt"
       f" · {nunknown} unresolved"
       f" · {nsimple+ncomplex+nexempt} Talos client functions"
       f"\n\n`×N` on a core op = the wrapper drives N priced core ops in a FIXED composition"
