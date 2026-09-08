@@ -60,7 +60,7 @@ SCALES = re.compile(r'\(dec\s*\(length|\(dec\s+token-count\)|\(dec\s+no-of-nonce
 BILL_FN = re.compile(r'((?:[A-Za-z0-9-]+\|)?(?:URCi[x]?_|XB_|XI_|XE_|UDC_[A-Za-z]*Cumulator)[A-Za-z0-9|_-]*)')
 
 def defun_body(src, name):
-    hits = [m for m in re.finditer(r'\(defun\s+' + re.escape(name) + r'(?::[^\s(]+)?\s*\(', src)]
+    hits = [m for m in re.finditer(r'\(def(?:un|pact)\s+' + re.escape(name) + r'(?::[^\s(]+)?\s*\(', src)]
     if not hits: return ''
     m = hits[-1]; j = m.start() + 1; depth = 1; instr = False
     while j < len(src) and depth:
@@ -114,7 +114,7 @@ def billing_text(src, name, depth=3):
             # only C_Transfer). One hop captures the alias; more hops capture the neighbourhood.
             if _round == 0:
                 nxt.extend((csrc, f) for f in
-                           re.findall(r'\((C{1,2}p?_[A-Za-z0-9|_-]+)', b_code))
+                           re.findall(r'\(((?:[A-Za-z0-9-]+\|)*C{1,2}p?_[A-Za-z0-9|_-]+)', b_code))
             # Same-module PRICE HELPERS, at any depth. A cost reader often just forwards to one:
             # PYTHIA's URCi_DeployApiKey is literally (UC_DeployPrice), which forwards to
             # UR_DeployPrice -> UR_Config -> UC_StoaPrice "pythia-deploy". None of those are
@@ -392,8 +392,18 @@ for tf in TALOS:
         if (entity, fn) in emitted:      # Talos files declare each fn twice (interface + module)
             continue
         emitted.add((entity, fn))
-        # price from the PRIMARY core op (the first priced call); extra fixed calls noted below
+        # price from the PRIMARY core op. "First call in the body" is the WRONG heuristic when a
+        # wrapper binds a helper before the op it bills: DPDC|C_BulkTransfer binds
+        # ref-DPDC-T::C_IgnisRoyaltyCollector in an earlier let, so the sheet priced the ROYALTY
+        # COLLECTOR and reported "?" for the transfer. The billed op is literally the argument to
+        # IGNIS::C_Collect -- prefer that, then a name match with the wrapper, then first call.
+        _billed = re.search(r'C_Collect\w*\s+[A-Za-z0-9|_-]+\s*\(\s*ref-([A-Za-z0-9|_+-]+)::([A-Za-z0-9_|+-]+)', body)
         mod, cf = cores[0]
+        if _billed:
+            _m, _c = alias.get(_billed.group(1), _billed.group(1)), _billed.group(2)
+            if (_m, _c) in cores: mod, cf = _m, _c
+        elif any(c[1] == fn for c in cores):
+            mod, cf = next(c for c in cores if c[1] == fn)
         cfile = MOD2FILE.get(mod)
         if not cfile or cfile not in OPS or cf not in OPS[cfile]:
             skipped += 1; continue

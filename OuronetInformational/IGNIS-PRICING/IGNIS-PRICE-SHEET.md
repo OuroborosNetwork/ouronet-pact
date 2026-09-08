@@ -251,8 +251,8 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 
 | Talos function | core op | role | IGNIS | STOA | $ (ignis) | charge breakdown |
 |----------------|---------|------|------:|-----:|----------:|------------------|
-| `C_BulkTransfer` | `C_IgnisRoyaltyCollector` ×2 | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_MultiTransfer` | `C_IgnisRoyaltyCollector` ×2 | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_BulkTransfer` | `C_BulkTransfer` ×2 | USAGE | **≥ 6** | — | COMPLEX | per-nonce / per-item work; legs: smallest 1 + small 2 + medium 3 |
+| `C_MultiTransfer` | `C_Transfer` ×2 | USAGE | **≥ 6** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 + small 2 + medium 3 |
 
 ## DPNF
 
@@ -287,8 +287,8 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_ToggleSet` | `C_ToggleSet` | SETUP | **14** | — | $0.14 | deter:setup 5 + components:DPNF|C_ToggleSet 9 |
 | `C_ToggleTransferRole` | `C_ToggleTransferRole` | USAGE | **14** | — | $0.14 | deter:usage 1 + components:DPNF|C_ToggleTransferRole 13 |
 | `C_ToggleUpdateRole` | `C_ToggleUpdateRole` | AUTH | **23** | — | $0.23 | deter:auth 10 + components:DPNF|C_ToggleUpdateRole 13 |
-| `C_TransferNonce` | `C_IgnisRoyaltyCollector` ×2 | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_TransferNonces` | `C_IgnisRoyaltyCollector` ×2 | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_TransferNonce` | `C_Transfer` ×2 | USAGE | **≥ 6** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 + small 2 + medium 3 |
+| `C_TransferNonces` | `C_Transfer` ×2 | USAGE | **≥ 6** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 + small 2 + medium 3 |
 | `C_UpdateNonce` | `C_UpdateNonces` | SETUP | **≥ 1** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 |
 | `C_UpdateNonceDescription` | `C_UpdateNonceDescription` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
 | `C_UpdateNonceIgnisRoyalty` | `C_UpdateNonceIgnisRoyalty` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
@@ -381,8 +381,8 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_ToggleSet` | `C_ToggleSet` | SETUP | **14** | — | $0.14 | deter:setup 5 + components:DPSF|C_ToggleSet 9 |
 | `C_ToggleTransferRole` | `C_ToggleTransferRole` | USAGE | **14** | — | $0.14 | deter:usage 1 + components:DPSF|C_ToggleTransferRole 13 |
 | `C_ToggleUpdateRole` | `C_ToggleUpdateRole` | AUTH | **23** | — | $0.23 | deter:auth 10 + components:DPSF|C_ToggleUpdateRole 13 |
-| `C_TransferNonce` | `C_IgnisRoyaltyCollector` ×2 | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_TransferNonces` | `C_IgnisRoyaltyCollector` ×2 | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_TransferNonce` | `C_Transfer` ×2 | USAGE | **≥ 6** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 + small 2 + medium 3 |
+| `C_TransferNonces` | `C_Transfer` ×2 | USAGE | **≥ 6** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 + small 2 + medium 3 |
 | `C_UpdateNonce` | `C_UpdateNonces` | SETUP | **≥ 1** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 |
 | `C_UpdateNonceDescription` | `C_UpdateNonceDescription` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
 | `C_UpdateNonceIgnisRoyalty` | `C_UpdateNonceIgnisRoyalty` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
@@ -475,7 +475,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 
 | Talos function | core op | role | IGNIS | STOA | $ (ignis) | charge breakdown |
 |----------------|---------|------|------:|-----:|----------:|------------------|
-| 2\|C_Inject | C_2\|Inject | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| 2\|C_Inject | C_2\|Inject | USAGE | **≥ 500** | — | COMPLEX | charge multiplies by an item count; legs: deter:aqp-inject 500 |
 | 2\|C_SweepRevokeAnchor | C_2\|SweepRevokeAnchor | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
 
 ## ORBR
@@ -525,21 +525,21 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `A_UpdateLimit` | `A_UpdateLimit` | SETUP | **0** | — | free | admin/exempt |
 | `A_UpdateLiquidBoost` | `A_UpdateLiquidBoost` | SETUP | **0** | — | free | admin/exempt |
 | `A_UpdatePrincipal` | `A_UpdatePrincipal` | SETUP | **0** | — | free | admin/exempt |
-| `C_AddFrozenLiquidity` | `C_AddFrozenLiquidity` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_AddGlacialLiquidity` | `C_AddGlacialLiquidity` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_AddIcedLiquidity` | `C_AddIcedLiquidity` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_AddSleepingLiquidity` | `C_AddSleepingLiquidity` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_AddStandardLiquidity` | `C_AddStandardLiquidity` | USAGE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_AddFrozenLiquidity` | `C_AddFrozenLiquidity` | USAGE | **≥ 172** | — | COMPLEX | charge multiplies by an item count; legs: deter:usage 1 + components:DPTF|C_Burn 71 + literal 100 |
+| `C_AddGlacialLiquidity` | `C_AddGlacialLiquidity` | USAGE | **≥ 100** | — | COMPLEX | charge multiplies by an item count; legs: literal 100 |
+| `C_AddIcedLiquidity` | `C_AddIcedLiquidity` | USAGE | **≥ 100** | — | COMPLEX | charge multiplies by an item count; legs: literal 100 |
+| `C_AddSleepingLiquidity` | `C_AddSleepingLiquidity` | SETUP | **≥ 153** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Burn 45 + small 2 + smallest 1 + literal 100 |
+| `C_AddStandardLiquidity` | `C_AddStandardLiquidity` | USAGE | **≥ 100** | — | COMPLEX | charge multiplies by an item count; legs: literal 100 |
 | `C_ChangeOwnership` | `C_ChangeOwnership` | AUTH | **29** | — | $0.29 | deter:auth 10 + components:SWP|C_ChangeOwnership 19 |
 | `C_EnableFrozenLP` | `C_EnableFrozenLP` | SETUP | **≥ 3** | 100 | COMPLEX | composes other client ops (legs may repeat — floor); legs: medium 3 | STOA: dptf 100 |
 | `C_EnableSleepingLP` | `C_EnableSleepingLP` | SETUP | **≥ 3** | 100 | COMPLEX | composes other client ops (legs may repeat — floor); legs: medium 3 | STOA: dpmf 100 |
 | `C_Firestarter` | `C_WrapStoa` ×3 | USAGE | **≥ 93** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPTF|C_Mint 86 + smallest 1 + small 2 + medium 3 |
 | `C_Fuel` | `C_Fuel` | USAGE | **≥ 6** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 + small 2 + medium 3 |
 | `C_IssueStable` | `C_Issue` | ISSUE | **≥ 5087** | 500 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPTF|C_Mint 86 + deter:issue-swp-pair 5000 | STOA: stoa:issue-swp-pair 500 |
-| `C_IssueStablePool` | `C_IssueStablePool` | ISSUE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
-| `C_IssueStandardPool` | `C_IssueStandardPool` | ISSUE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_IssueStablePool` | `C_IssueStablePool` | ISSUE | **≥ 5606** | 600 | COMPLEX | charge multiplies by an item count; legs: deter:issue-swp-pair 5000 + token-issue 500 + biggest 5 + smallest 1 + literal 100 | STOA: dptf 100 + swp 500 |
+| `C_IssueStandardPool` | `C_IssueStandardPool` | ISSUE | **≥ 5606** | 600 | COMPLEX | charge multiplies by an item count; legs: deter:issue-swp-pair 5000 + token-issue 500 + biggest 5 + smallest 1 + literal 100 | STOA: dptf 100 + swp 500 |
 | `C_IssueWeighted` | `C_Issue` | ISSUE | **≥ 5087** | 500 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPTF|C_Mint 86 + deter:issue-swp-pair 5000 | STOA: stoa:issue-swp-pair 500 |
-| `C_IssueWeightedPool` | `C_IssueWeightedPool` | ISSUE | **?** | — | — | cumulator not resolvable statically (reader lives in another module) |
+| `C_IssueWeightedPool` | `C_IssueWeightedPool` | ISSUE | **≥ 5606** | 600 | COMPLEX | charge multiplies by an item count; legs: deter:issue-swp-pair 5000 + token-issue 500 + biggest 5 + smallest 1 + literal 100 | STOA: dptf 100 + swp 500 |
 | `C_ModifyCanChangeOwner` | `C_ModifyCanChangeOwner` | AUTH | **29** | — | $0.29 | deter:auth 10 + components:SWP|C_ModifyCanChangeOwner 19 |
 | `C_ModifyWeights` | `C_ModifyWeights` | FEE | **44** | — | $0.44 | deter:fee 25 + components:SWP|C_ModifyWeights 19 |
 | `C_MultiSwapNoSlippage` | `C_Swap` | USAGE | **≥ 6** | — | COMPLEX | charge multiplies by an item count; legs: small 2 + smallest 1 + medium 3 |
@@ -595,7 +595,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_Vest` | `C_Vest` | SETUP | **≥ 91** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Mint 80 + small 2 + smallest 1 + medium 3 |
 
 ---
-180 simple (exact price) · 175 complex (floor price) · 9 STOA-only · 40 exempt · 26 unresolved · 395 Talos client functions
+180 simple (exact price) · 190 complex (floor price) · 9 STOA-only · 40 exempt · 11 unresolved · 410 Talos client functions
 
 `×N` on a core op = the wrapper drives N priced core ops in a FIXED composition (still exactly knowable).
 
