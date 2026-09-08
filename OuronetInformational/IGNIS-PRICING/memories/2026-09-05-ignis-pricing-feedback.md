@@ -903,3 +903,37 @@ That confirms the earlier finding: the sandbox tracks CURRENT chain state, not g
 untouched, and not committed with this work.
 
 Verified: `ZALL.repl` green, 6279 lines, "Load successful".
+
+## 2026-09-07 (8) — group A applied, but it was 2 ops, not 6 (classification was too coarse)
+
+Owner approved raising the ops still on placeholder flat tiers to their real computation at 1x.
+Applying it required checking each site individually, and **four of the six I had listed turned
+out not to be per-op prices at all** — they are PER-ITEM UNIT prices, where the legacy tier is
+multiplied by a count:
+  * `DPOF::URCi_MoveCumulator` — the tier is the per-NONCE unit fed to `URCix_NoncesCumulator`.
+  * `DPDC-T::URCi_RepurposeCollectable` — `p * sum-amounts`, per-amount unit.
+  * `DPDC-F::URCi_RepurposeCollectableFragments` — `((if son small else medium)/1000) * sum`.
+  * `DPDC-N::URCi_UpdateNonces` — `count * smallest`, per-nonce unit.
+Migrating those to `deter + components` would have replaced a UNIT price with a WHOLE-OP price
+and multiplied it by the item count — a compounding error, far worse than the flat tier. They
+belong in group B (unit lift, no price change). **Lesson: before migrating a legacy tier read,
+check whether it is multiplied by a count. If it is, it is a unit, not a price.**
+
+So only **two** ops actually moved, both flat per-op charges, both verified against their
+worksheet rows first (`C_Burn`'s 71 is 11 xcalls + 7 reads, not a modelling artifact):
+  * `DPTF|C_Burn`  2 -> **72**  ($0.02 -> $0.72)
+  * `DPTF|C_Mint`  7 -> **87**  ($0.07 -> $0.87)
+`URCi_Mint`'s `(if origin biggest small)` split collapsed into one real price. Two more orphaned
+`ref-DALOS` bindings removed (12 dead bindings this session).
+
+**`ATS|C_SetColdRecoveryFees` deliberately NOT migrated — and it exposed a sheet bug.** Its real
+charge is `(* (UR_UsagePrice "ignis|biggest") 20.0)` = **100 ignis ($1.00)**, an intentional
+price. The sheet reported **5**, because the generator scanned for bare `UR_UsagePrice` reads and
+ignored the multiplier — a 20x understatement. Migrating to deter+components would have CUT it
+to 15. Fixed the generator to consume multiplied forms first (`(* (UR_UsagePrice "ignis|K") N)`
+and `(* N (UR_UsagePrice "ignis|K"))`) before the plain scan. Exactly one row changed: 5 -> 100.
+That is the FOURTH generator defect found this session (son-branch positional pick, STOA legs via
+UC_StoaPrice, son-branch deter summing, and now multipliers) — every one of them made the
+published sheet disagree with a chain that was already right.
+
+Verified: `ZALL.repl` green, 6279 lines, "Load successful".

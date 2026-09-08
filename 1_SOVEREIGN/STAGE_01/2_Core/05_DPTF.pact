@@ -1712,19 +1712,17 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
-            (ref-IGNIS::UDC_ConstructOutputCumulator (ref-DALOS::UR_UsagePrice "ignis|small") account (ref-IGNIS::URC_ZeroGAS id account) [])
+            (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisPrice "DPTF|C_Burn" "usage") account (ref-IGNIS::URC_ZeroGAS id account) [])
         )
     )
     (defun URCi_Mint:object{IgnisCollectorV2.OutputCumulator} (id:string account:string origin:bool)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
-                (if origin (ref-DALOS::UR_UsagePrice "ignis|biggest") (ref-DALOS::UR_UsagePrice "ignis|small"))
+                (ref-IGNIS::UC_IgnisPrice "DPTF|C_Mint" "usage")
                 account (ref-IGNIS::URC_ZeroGAS id account) []
             )
         )

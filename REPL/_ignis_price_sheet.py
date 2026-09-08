@@ -176,6 +176,18 @@ def charge(src, core_fn, entity=None, extra=''):
     for k in re.findall(r'"([a-z][a-z0-9-]*)"', txt):
         if k in IG_DETER and k not in GENERIC_DETER:
             ig.append(('deter:' + k, IG_DETER[k]))
+    # A legacy tier is often MULTIPLIED at the call site -- ATS::URCi_SetColdRecoveryFees
+    # charges `(* (UR_UsagePrice "ignis|biggest") 20.0)` = 100, but a bare scan reported the
+    # unmultiplied 5, understating the op 20x. Consume the multiplied forms FIRST, then let
+    # the plain scan handle whatever is left.
+    def _mul(m):
+        k = m.group('k'); n = float(m.group('n'))
+        ig.append((f"{k.split('|')[-1]}x{n:g}", USAGE.get(k, 0.0) * n))
+        return ' '
+    txt = re.sub(r'\(\*\s*\(?[\w:|-]*UR_UsagePrice\s+"(?P<k>ignis\|[a-z-]+)"\)\s*(?P<n>[0-9]+\.[0-9]+)\s*\)',
+                 _mul, txt)
+    txt = re.sub(r'\(\*\s*(?P<n>[0-9]+\.[0-9]+)\s*\(?[\w:|-]*UR_UsagePrice\s+"(?P<k>ignis\|[a-z-]+)"\)\s*\)',
+                 _mul, txt)
     for k in re.findall(r'UR_UsagePrice\s+"(ignis\|[a-z-]+)"', txt):
         ig.append((k.split('|')[-1], USAGE.get(k, 0.0)))
     for lit in re.findall(r'UDC_ConstructOutputCumulator\s+([0-9]+\.[0-9]+)', txt):
