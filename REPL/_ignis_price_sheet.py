@@ -54,7 +54,10 @@ SCALES = re.compile(r'\(dec\s*\(length|\(dec\s+token-count\)|\(dec\s+no-of-nonce
 # op publishes "?". Bare C_/CC_/Cp_/CCp_ names are same-module client calls. This is only safe
 # because the caller strips @doc prose first (see billing_text) -- without that it charges an op
 # for every function its documentation happens to mention.
-BILL_FN = re.compile(r'((?:[A-Za-z0-9-]+\|)?(?:URCi[x]?_|XB_|XI_|XE_)[A-Za-z0-9|_-]+)')
+# UDC_*Cumulator constructors are cost SOURCES, not plumbing: IGNIS::UDC_BrandingCumulator holds
+# the 100-ignis branding charge, so every C_UpdatePendingBranding ended at "?" while its own @doc
+# said "costing 100 IGNIS". Follow them like any other cost reader.
+BILL_FN = re.compile(r'((?:[A-Za-z0-9-]+\|)?(?:URCi[x]?_|XB_|XI_|XE_|UDC_[A-Za-z]*Cumulator)[A-Za-z0-9|_-]*)')
 
 def defun_body(src, name):
     hits = [m for m in re.finditer(r'\(defun\s+' + re.escape(name) + r'(?::[^\s(]+)?\s*\(', src)]
@@ -131,7 +134,15 @@ def billing_text(src, name, depth=3):
             # even though it charges. Read the real module out of the let-binding first.
             alias2mod = dict((a, mm) for a, _i, mm in
                              re.findall(r'\((ref-[A-Za-z0-9|_+-]+):module\{([A-Za-z0-9|_+-]+)\}\s+([A-Za-z0-9|_+-]+)\)', b))
-            for mod, rf in re.findall(r'(ref-[A-Za-z0-9|_+-]+)::((?:[A-Za-z0-9-]+\|)?(?:URCi[x]?_|XB_|XI_|XE_|CC?p?_)[A-Za-z0-9|_-]+)', b_code):
+            # Cross-module hops must cover the SAME name classes the same-module walk does:
+            # cumulator constructors (ref-IGNIS::UDC_BrandingCumulator holds the 100-ignis
+            # branding charge) and price helpers. Listing UDC_ only in BILL_FN fixed nothing,
+            # because these are always reached through a ref.
+            for mod, rf in re.findall(
+                    r'(ref-[A-Za-z0-9|_+-]+)::((?:[A-Za-z0-9-]+\|)?'
+                    r'(?:URCi[x]?_|XB_|XI_|XE_|CC?p?_|UDC_[A-Za-z]*Cumulator'
+                    r'|U(?:C|R|RC)_[A-Za-z0-9|_-]*(?:Price|Fee|Cost|Config|Stoa))'
+                    r'[A-Za-z0-9|_-]*)', b_code):
                 real = alias2mod.get(mod) or mod[4:]
                 mf = MOD2FILE.get(real) or MOD2FILE.get(mod[4:])
                 if mf: nxt.append((_src(mf), rf))
