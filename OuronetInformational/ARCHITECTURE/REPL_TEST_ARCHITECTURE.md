@@ -50,9 +50,30 @@ in-memory DB, so testers share nothing and parallelise perfectly.
 **But wall time = the SLOWEST SINGLE TESTER, not total/cores.** With enough cores, a suite of
 40 testers where one takes 30 minutes still takes 30 minutes.
 
-> ## RULE 1 — no single tester may exceed ~2 minutes.
-> If it does, split it. This is what makes an exhaustive suite affordable: 200 testers of 60 s
-> each finish in ~2 minutes wall on 16 cores. The same tests as one serial run would be 3+ hours.
+### Why independence does not make it faster than the slowest file
+
+The testers ARE independent — that is what gives us parallelism. But **one file can only use one
+core**, so a single long file is a hard floor:
+
+```
+wall time = max( longest single file , total work / cores )
+```
+
+Our measured case: 26 testers, **326 s total**, longest = ADMIN at **49.3 s**.
+
+| cores | work bound (326/n) | longest file | => wall |
+|---:|---:|---:|---:|
+| 8 | 41 s | 49 s | **49 s** (measured ~50 s) |
+| 16 | 20 s | 49 s | **49 s** |
+| 32 | 10 s | 49 s | **49 s** |
+
+Past ~7 cores, extra cores buy NOTHING here, because ADMIN alone cannot be split.
+
+> ## RULE 1 — balance the split: aim for `longest_file ≈ total_work / cores`.
+> Not a fixed minute count — the target moves with the suite. If the full suite grows to 60 min
+> of work on 16 cores, the ideal is ~4 min per file and nothing should exceed it. Splitting files
+> that are already below the work bound wastes effort; leaving one file far above it wastes
+> hardware. **Whatever the longest file costs is what the whole suite costs.**
 
 Run the matrix with:
 ```bash
@@ -125,6 +146,67 @@ ledger makes it the first thing you see.
 
 ---
 
+# 4b. How to write tests for things nobody thought of
+
+The obvious objection: *"adversarial and red-team testing means thinking of what we didn't think
+of — that is paradoxical."* It is paradoxical for one of them and not the other, and the
+difference is the whole reason they are separate suites.
+
+## Adversarial needs NO creativity — it is derived from the source
+
+The code contains **1,015 `enforce` sites**. Each one is a claim: *this must be true*. The test
+writes itself: construct the state that makes it false, assert rejection. The worklist is
+generated, not invented, and it is finished when the counts match. Same for the 998 defcaps:
+the right caller succeeds, every wrong caller is rejected.
+
+**Nothing is being thought of here.** If a rejection test cannot be written, RULE 3 applies — the
+`enforce` is dead code and gets deleted.
+
+## Red team IS the paradox — so do not rely on inspiration, use generators
+
+Mature practice does not ask people to be clever on demand. It applies techniques that
+**produce hypotheses systematically**. Each is auditable: you can state the coverage claim.
+
+| technique | what it generates | why it needs no inspiration |
+|---|---|---|
+| **Invariants + fuzzing** | violations of properties that must ALWAYS hold — supply conservation, no negative balance, Σ shares = total, nonce monotonicity | you assert the property and let random valid input search for the counterexample |
+| **Metamorphic / differential** | disagreements between paths that must agree — transfer 100 once vs 50 twice, bulk vs individual, **INFO preview vs actual charge** | divergence IS the bug; no attack needs imagining |
+| **Attack taxonomy** | one hypothesis per (module x known attack class): access control, rounding/precision, overflow, composition order, oracle manipulation, economic griefing, governance capture, front-running | you walk a checklist, you do not invent it |
+| **State machines** | illegal transitions — every lifecycle state x every op that should be refused in it | enumerable from the state set |
+| **Cross-role** | every defcap x every wrong caller | enumerable from the cap list |
+| **Mutation testing** | proof that the tests themselves are weak | corrupt the code; if NO test fails, that is a hole, demonstrated |
+
+**Mutation testing is the answer to "how do we know we didn't miss anything?"** It converts the
+philosophical question into a measurement: flip a `>=` to `>`, delete an `enforce`, weaken a cap —
+then run the suite. A surviving mutation is a proven gap, not a suspicion. It is fully
+automatable and it is the only technique here that grades the tests rather than the code.
+
+**What red teaming still cannot reach**, and must be stated as a limit rather than quietly
+skipped: cross-block ordering and front-running, gas-station economic exhaustion, `defpact`
+interruption at adversarial step boundaries, and real multi-signer keyset semantics. These need a
+devnet or a formal model, not a REPL.
+
+---
+
+# 4c. The audit document is GENERATED, not written
+
+The end product — the testing chapter of the audit book — must be reproducible from artifacts, so
+that a reader can recompute every number in it. Sources, in order:
+
+1. **`REPL-TEST-LEDGER.md`** — every entrypoint, invocations, positive/adversarial assertions,
+   which files. The evidence base.
+2. **`_coverage.py`** — G1 / G2 / G3 as numbers, with the untested lists.
+3. **Findings log** — each red-team finding: hypothesis, technique that generated it, outcome,
+   and the regression test that now pins it. A finding with no test is not closed.
+4. **Mutation report** — mutations killed vs survived, per module.
+5. **The limits section** — what REPL cannot test (above), stated plainly.
+
+> ## RULE 7 — every red-team finding closes with a regression test, named for the finding.
+> The existing `_verify_finding_*` / `_scratch_*` files are exactly this pattern from the earlier
+> audits — ~32 of them, currently run by nothing. Rescuing them is P1.
+
+---
+
 # 5. Layout
 
 ```
@@ -133,7 +215,8 @@ REPL/
   boot/            sandbox · stage1 · stage2 · stagezz        (deploy cores, no tests)
   modules/         one tester per MODULE          — normal + adversarial for that module
   entities/        one tester per LOGICAL ENTITY  — e.g. SWP = SWP+SWPI+SWPL+SWPLC+SWPU+MTX-SWP
-  redteam/         attack suites (the third suite; grows with each campaign)
+  redteam/         attack suites: invariants · metamorphic · taxonomy · state-machine · cross-role
+  mutation/        mutation-testing harness (grades the TESTS, not the code)
   archive/         scratch and superseded probes — never run, kept for history
   Z.repl           the single "run everything" endpoint (serial, for the published number)
   _coverage.py     prints G1 / G2 / G3 and fails on regression
