@@ -53,11 +53,36 @@ def main():
     a = ap.parse_args()
 
     # --- every expected-message a negative test pins -------------------------------------------
+    # The first version required the message to sit on its OWN line (`"…"` followed by a
+    # newline). Nine assertions written inline -- `"cannot be wiped" (ref-DPTF::UEV_CanWipeON b))`
+    # -- were invisible to it, so a real coverage gain read as almost none and nearly got the
+    # whole guard-family approach discarded. Extract the THIRD ARGUMENT structurally instead of
+    # pattern-matching the layout.
     pinned = []
     for f in glob.glob("**/*.repl", recursive=True):
         if f.startswith("archive" + os.sep): continue
-        for m in re.finditer(r'\(expect-failure\s(?:.|\n)*?\n\s*"((?:[^"\\]|\\.)+)"\s*\n', open(f, encoding='utf8', errors='ignore').read()):
-            pinned.append(m.group(1).replace('\\"', '"').replace('\\\\', '\\'))
+        src = open(f, encoding='utf8', errors='ignore').read()
+        for m in re.finditer(r'\(expect-failure[\s\n]', src):
+            # walk the form; collect top-level string literals. arg2 = doc, arg3 = expected msg.
+            depth, i, n, strs, cur, in_str, esc = 0, m.start(), len(src), [], None, False, False
+            while i < n:
+                c = src[i]
+                if in_str:
+                    if esc: esc = False
+                    elif c == '\\': esc = True
+                    elif c == '"':
+                        in_str = False
+                        if depth == 1: strs.append(cur)
+                        cur = None
+                    if in_str and cur is not None: cur += c
+                elif c == '"': in_str = True; cur = ''
+                elif c == '(': depth += 1
+                elif c == ')':
+                    depth -= 1
+                    if depth == 0: break
+                i += 1
+            if len(strs) >= 2:
+                pinned.append(strs[1].replace('\\"', '"').replace('\\\\', '\\'))
     pinned = [p for p in pinned if len(p) >= 8]
 
     # --- every enforce site --------------------------------------------------------------------

@@ -430,3 +430,127 @@
     ""
 )
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-G1 — the UEV_ guard family, probed DIRECTLY")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-G1 · 01 · property guards: same guard, two tokens, opposite answers] ---")
+;;P3.3 pattern-setter. 44% of the 768 unpinned `enforce` sites live in `UEV_*` functions, and
+;;`UEV_*` is UNPROTECTED -- callable straight from the REPL with no capability, no transaction
+;;choreography and no fixture beyond a token that exists. So the whole family fits in ONE
+;;transaction at one line per guard, instead of one client operation per guard.
+;;
+;;Every guard is asserted DIFFERENTIALLY: the same call on MOCKA (flag ON, from DPTF-09) must
+;;PASS and on MOCKB (flag OFF, from DPTF-07's C_Control) must REJECT. A rejection test alone
+;;cannot tell "the guard works" from "the guard always fires" -- and a guard that always fires is
+;;a bug that no expect-failure would ever catch.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (a:string "MOCKA-98c486052a51")
+        (b:string "MOCKB-98c486052a51")
+    )
+    (map print
+        [
+            ;;precondition: the two tokens really do differ, or the pairs below prove nothing
+            (expect "<<DPTF-G1>> MOCKA can be wiped"      true  (ref-DPTF::UR_CanWipe a))
+            (expect "<<DPTF-G1>> MOCKB cannot"            false (ref-DPTF::UR_CanWipe b))
+            (expect "<<DPTF-G1>> MOCKA can be frozen"     true  (ref-DPTF::UR_CanFreeze a))
+            (expect "<<DPTF-G1>> MOCKB cannot"            false (ref-DPTF::UR_CanFreeze b))
+            (expect "<<DPTF-G1>> MOCKA can be paused"     true  (ref-DPTF::UR_CanPause a))
+            (expect "<<DPTF-G1>> MOCKB cannot"            false (ref-DPTF::UR_CanPause b))
+            ;;--- can-wipe
+            (expect "<<DPTF-G1>> UEV_CanWipeON passes when the flag is on"
+                true (!= "" (format "{}" [(ref-DPTF::UEV_CanWipeON a)])))
+            (expect-failure "<<DPTF-G1>> UEV_CanWipeON rejects when it is off"
+                "cannot be wiped" (ref-DPTF::UEV_CanWipeON b))
+            ;;--- can-freeze
+            (expect "<<DPTF-G1>> UEV_CanFreezeON passes when the flag is on"
+                true (!= "" (format "{}" [(ref-DPTF::UEV_CanFreezeON a)])))
+            (expect-failure "<<DPTF-G1>> UEV_CanFreezeON rejects when it is off"
+                "cannot be freezed" (ref-DPTF::UEV_CanFreezeON b))    ;;sic: the source message says "freezed"
+            ;;--- can-pause
+            (expect "<<DPTF-G1>> UEV_CanPauseON passes when the flag is on"
+                true (!= "" (format "{}" [(ref-DPTF::UEV_CanPauseON a)])))
+            (expect-failure "<<DPTF-G1>> UEV_CanPauseON rejects when it is off"
+                "cannot be paused" (ref-DPTF::UEV_CanPauseON b))
+            ;;--- flags both tokens share as ON: only the passing half is assertable here, and
+            ;;    saying so is better than inventing a token to fail them against.
+            (expect "<<DPTF-G1>> UEV_CanChangeOwnerON passes on both"
+                true (!= "" (format "{}{}" [(ref-DPTF::UEV_CanChangeOwnerON a)
+                                            (ref-DPTF::UEV_CanChangeOwnerON b)])))
+            (expect "<<DPTF-G1>> UEV_CanAddSpecialRoleON passes on both"
+                true (!= "" (format "{}{}" [(ref-DPTF::UEV_CanAddSpecialRoleON a)
+                                            (ref-DPTF::UEV_CanAddSpecialRoleON b)])))
+        ]
+    )
+    ""
+)
+(print "--- [DPTF-G1 · 02 · identity, amount and state guards] ---")
+;;These are tripped from the CURRENT state rather than a hardcoded expectation: read what the
+;;flag actually is, then call the guard with its negation. That is durable against whatever the
+;;earlier transactions in this file did, and it asserts something stronger -- that the guard
+;;TRACKS the live value rather than agreeing with a constant that happened to be right the day
+;;the test was written. Three of these initially "passed" against guessed constants, which is a
+;;silent false negative: an expect-failure that does not fail proves nothing at all.
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (a:string "MOCKA-98c486052a51")
+        (emma:string KST.EMMA)
+    )
+    (let
+        (
+            (rez:bool (ref-DPTF::UR_IzReservationOpen a))
+            (brn:bool (ref-DPTF::UR_AccountRoleBurn a emma))
+            (xfr:bool (ref-DPTF::UR_AccountRoleTransfer a emma))
+            (pau:bool (ref-DPTF::UR_Paused a))
+        )
+        (map print
+            [
+                ;;--- UEV_id: existence
+                (expect-failure "<<DPTF-G1>> UEV_id rejects an id that was never issued"
+                    "does not exist" (ref-DPTF::UEV_id "NOPE-98c486052a51"))
+                ;;--- UEV_Amount: MOCKA carries 24 decimals, so 25 is one too many. Guessing 13
+                ;;    here passed, which is exactly the false negative described above.
+                (expect-failure "<<DPTF-G1>> UEV_Amount rejects one more decimal than the token has"
+                    "is not conform with the" (ref-DPTF::UEV_Amount a 0.0000000000000000000000001))
+                (expect-failure "<<DPTF-G1>> UEV_Amount rejects zero"
+                    "is not a Valid Transaction amount" (ref-DPTF::UEV_Amount a 0.0))
+                (expect-failure "<<DPTF-G1>> UEV_Amount rejects a negative"
+                    "is not a Valid Transaction amount" (ref-DPTF::UEV_Amount a -1.0))
+                ;;--- state guards: assert the live value, then trip on its negation
+                (expect "<<DPTF-G1>> the guard agrees with the live pause state"
+                    true (!= "" (format "{}" [(ref-DPTF::UEV_PauseState a pau)])))
+                (expect-failure "<<DPTF-G1>> UEV_PauseState rejects the state the token is NOT in"
+                    "paused" (ref-DPTF::UEV_PauseState a (not pau)))
+                ;;FINDING: UEV_ReservationState's two messages are INVERTED.
+                ;;    (if state
+                ;;        (enforce x       "{} is already open for reservations")
+                ;;        (enforce (not x) "{} is already closed for reservations"))
+                ;;The first arm fires when x is FALSE -- reservations are CLOSED -- and reports
+                ;;"already open". The second fires when they are OPEN and reports "already
+                ;;closed". The GUARD is right (state must match the live value); both MESSAGES
+                ;;say the opposite of the condition that produced them. Same class as
+                ;;GOV|MIGRATE's "offline" wording (Part II finding #4), and the first defect this
+                ;;guard-family pass turned up.
+                (expect "<<DPTF-G1>> the guard passes when <state> matches the live value"
+                    true (!= "" (format "{}" [(ref-DPTF::UEV_ReservationState a rez)])))
+                (expect-failure "<<DPTF-G1>> ...and rejects when it does not -- with the WRONG message"
+                    "is already open for reservations" (ref-DPTF::UEV_ReservationState a (not rez)))
+                (expect "<<DPTF-G1>> (reservations are in fact CLOSED, so that message is inverted)"
+                    false rez)
+                (expect-failure "<<DPTF-G1>> UEV_AccountBurnState rejects the negation of the live role"
+                    "must be set to" (ref-DPTF::UEV_AccountBurnState a emma (not brn)))
+                (expect-failure "<<DPTF-G1>> UEV_AccountTransferState rejects the negation of the live role"
+                    "must be set to" (ref-DPTF::UEV_AccountTransferState a emma (not xfr)))
+            ]
+        )
+    )
+    ""
+)
+(print "===^^^===")
+(commit-tx)

@@ -453,7 +453,7 @@ and the protection rows with `cd REPL && python3 _gate.py`.*
 | B6 | `enforce` sites | 1,015 | 1,015 | — |
 | B7 | `expect-failure` assertions | 234 | **306** | >= 1,015 |
 | B8 | **`expect-failure` that accept ANY error** | ~~137~~ **210** | **51** | **0** |
-| B8b | **`enforce` sites PINNED by a negative test** | — | **121 / 889 (13%)** | 889 |
+| B8b | **`enforce` sites PINNED by a negative test** | — | **161 / 889 (18%)** | 889 |
 | B9 | module testers passing standalone | 26 / 26 | 24 / 24 | all, incl. new |
 | B9b | **module testers asserting NOTHING about their module** | **8 / 26** | **0** ✅ | **0** |
 | B10 | **G1 surface coverage (gated)** | ~65% | **100%** ✅ | 100% |
@@ -614,6 +614,40 @@ purposes only, no modifications and no testing.** That removes 33 sites from the
 * **3.1** **Tighten the 137 weak `expect-failure`s to the 3-arg form (RULE 8) — do this FIRST.**
   Until it is done, every adversarial number is inflated.
 * **3.2** Enumerate all 1,015 `enforce` sites + 998 defcap rejections into a worklist.
+### 3.3 — the shape, settled on DPTF (2026-09-09)
+
+**Guard-family blocks, not one test per `enforce`.** Measured on `05_DPTF`: one `begin-tx`, ~60
+lines, 22 assertions -> **13 enforce sites pinned** (45 -> 32 unpinned). One client operation per
+guard would have been ~13 transactions and several hundred lines for the same 13 sites.
+
+It generalises because of one structural fact: **335 of the 768 unpinned sites (44%) live in
+`UEV_*` functions, and `UEV_*` is UNPROTECTED** — callable straight from the REPL with no
+capability, no transaction choreography and no fixture beyond a token that exists. The remaining
+293 sit in defcaps and DO need a real client operation; those are the expensive half.
+
+```
+768 unpinned sites, by the kind of function they live in
+   335  UEV_          <- one line each, no setup
+   293  defcap/other  <- needs a client operation
+    54  GOV
+    31  UC / UCv
+    18  URC / URCv
+    16  C_ ; 10 XI_ ; 4 UR_ ; the rest scattered
+```
+
+**TRIP EACH GUARD FROM THE LIVE STATE, never from a guessed constant.** Three assertions in the
+first draft PASSED — `UEV_Amount a 0.0000000000001` does not trip a 24-decimal token, and
+`UEV_AccountBurnState a emma false` matches a role that is already false. *An `expect-failure`
+that does not fail proves nothing, and nothing flags it.* The block reads the live value and
+trips on its negation, which survives whatever earlier transactions did and asserts the stronger
+property: that the guard tracks the live value rather than agreeing with a constant that happened
+to be right the day the test was written.
+
+**Assert the guard DIFFERENTIALLY where two fixtures differ.** MOCKA has can-wipe/freeze/pause
+ON and MOCKB has them OFF, so each guard is asserted to pass on one and reject on the other. A
+rejection test alone cannot distinguish "the guard works" from "the guard always fires" — and a
+guard that always fires is a bug no `expect-failure` would ever catch.
+
 * **3.3** One agent per module: write the missing rejection test for each site.
 * **3.4** Any `enforce` for which no failing test can be written is DEAD -> delete it (RULE 3).
   Record each deletion with its justification.

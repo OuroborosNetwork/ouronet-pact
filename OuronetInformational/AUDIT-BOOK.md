@@ -47,6 +47,8 @@ not exist at all. `REPL/_conformance.py` (static) + `REPL/modules/CONFORMANCE.re
 
 | 11 ✅ **FIXED** | 14 ops in 4 families | **single `C_`/`A_` prefix on ops that reach a heavy `URH_*`/`URHC_*` scan** — the prefix promises bounded gas, the tree does not deliver it. `DPOF::C_WipeHeavy`'s own docstring says it uses "expensive functions like `select` or `keys` (that arent meant to be used in transactional context)"; `ATSU::C_RemoveSecondary`'s says it derives the complete account list via `URH_ExistingAutostakePairs`. **The prefix contradicts the docstring inside the same function.** Renamed to `CC_`/`AA_` on the owner's ruling — 126 replacements across 30 files, since the names are also IGNIS price-table keys. `single-reaches-heavy` is now 0. | medium |
 
+| 12 | `05_DPTF.pact:1939` | **`UEV_ReservationState`'s two messages are INVERTED.** `(if state (enforce x "…already open…") (enforce (not x) "…already closed…"))` — the first arm fires when reservations are CLOSED and reports "already open"; the second fires when they are OPEN and reports "already closed". The guard is correct; both messages state the opposite of the condition that produced them. Same class as finding #4. | low |
+
 Two further results are **documentation gaps, not defects**, and are recorded as such: 24 `UC_`
 functions `enforce` over their own arguments (with `UC-no-read` at **0**, so the purity half of
 the contract is obeyed exactly), and 40 core `C_`s build no cumulator because a second, equally
