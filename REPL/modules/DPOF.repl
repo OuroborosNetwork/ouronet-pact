@@ -1,6 +1,194 @@
-;; REPL/modules/DPOF.repl — STANDALONE DPOF tester (blockchain-env-in-a-repl).
-;; Fresh boot: Stage 00 sandbox + deploy core(s) + the DPOF suite only.
-;; Run: cd REPL && pact modules/DPOF.repl   (see ARCHITECTURE/REPL_TEST_ARCHITECTURE.md)
+;; REPL/modules/DPOF.repl — STANDALONE DPOF (ortofungible) tester.
+;;
+;; P2 rebuild. The previous version asserted NOTHING about DPOF -- it printed exactly the deploy
+;; core's 11 expect / 7 expect-failure baseline and passed because booting a chain passes.
+;;
+;; DPOF is nonce-bearing: a mint creates a NEW NONCE rather than adding to a flat supply, which
+;; is the property most of these assertions are really about.
+;;
+;; Run: cd REPL && pact modules/DPOF.repl
 (load "../deploy-stage00.repl")
 (load "../deploy-stage01.repl")
-(load "../Stage_01/[6.5]_DPOF.repl")
+(load "../fixtures/mock-of.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-01 — issuance properties (C_Issue, via fixture)")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-01 · 01 · issuance properties] ---")
+(let
+    (
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (o:string "MOCKO-98c486052a51")
+    )
+    (map print
+        [
+            (expect "<<DPOF-01>> C_Issue set the owner konto"          KST.ANHD (ref-DPOF::UR_Konto o))
+            (expect "<<DPOF-01>> C_Issue set decimals to 24"           24     (ref-DPOF::UR_Decimals o))
+            (expect "<<DPOF-01>> C_Issue set the ticker"               "MOCKO" (ref-DPOF::UR_Ticker o))
+            (expect "<<DPOF-01>> C_Issue set can-upgrade ON"           true   (ref-DPOF::UR_CanUpgrade o))
+            (expect "<<DPOF-01>> C_Issue set can-change-owner ON"      true   (ref-DPOF::UR_CanChangeOwner o))
+            (expect "<<DPOF-01>> C_Issue set can-transfer-create-role ON"
+                true (ref-DPOF::UR_CanTransferOftCreateRole o))
+            (expect "<<DPOF-01>> C_Issue set can-freeze OFF"           false  (ref-DPOF::UR_CanFreeze o))
+            (expect "<<DPOF-01>> C_Issue set can-wipe OFF"             false  (ref-DPOF::UR_CanWipe o))
+            (expect "<<DPOF-01>> C_Issue registered the id"            true   (ref-DPOF::UR_IzId o))
+            (expect "<<DPOF-01>> a fresh ortofungible has no nonces yet" 0    (ref-DPOF::UR_NoncesUsed o))
+            (expect "<<DPOF-01>> a fresh ortofungible has zero supply" 0.0    (ref-DPOF::UR_Supply o))
+        ]
+    )
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-02 — C_Mint creates a NEW NONCE (not a flat supply bump)")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-02 · 01 · mint creates a nonce] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (o:string "MOCKO-98c486052a51")
+        (patron:string KST.ANHD)
+    )
+    (let
+        (
+            (n0:integer (ref-DPOF::UR_NoncesUsed o))
+            (s0:decimal (ref-DPOF::UR_Supply o))
+        )
+        (map print
+            [
+                ;;GATE: for an ortofungible, minting a new nonce is itself ADD-QUANTITY gated --
+                ;;the role is required even of the token OWNER, and even though no nonce exists
+                ;;yet to add to.
+                (expect-failure
+                    "<<DPOF-02>> C_Mint is rejected while the add-quantity role is unset"
+                    "must be set to true for exec"
+                    (ref-TS01-C1::DPOF|C_Mint patron o patron 1000.0 [{}]))
+            ]
+        )
+        (ref-TS01-C1::DPOF|C_ToggleAddQuantityRole patron o patron true)
+        (ref-TS01-C1::DPOF|C_Mint patron o patron 1000.0 [{}])
+        (map print
+            [
+                (expect "<<DPOF-02>> C_Mint used exactly one new nonce"
+                    (+ n0 1) (ref-DPOF::UR_NoncesUsed o))
+                (expect "<<DPOF-02>> C_Mint raised total supply by the minted amount"
+                    (+ s0 1000.0) (ref-DPOF::UR_Supply o))
+                (expect "<<DPOF-02>> the new nonce holds the whole minted amount"
+                    1000.0 (ref-DPOF::UR_NonceSupply o 1))
+                (expect "<<DPOF-02>> the minter holds the new nonce"
+                    patron (ref-DPOF::UR_NonceHolder o 1))
+                (expect "<<DPOF-02>> nonce 1 is registered"
+                    true (ref-DPOF::UR_IzNonce o 1))
+            ]
+        )
+    )
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-03 — C_AddQuantity grows an EXISTING nonce in place")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-03 · 01 · add-quantity grows in place] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (o:string "MOCKO-98c486052a51")
+        (patron:string KST.ANHD)
+    )
+    (let
+        (
+            (n0:integer (ref-DPOF::UR_NoncesUsed o))
+            (v0:decimal (ref-DPOF::UR_NonceSupply o 1))
+        )
+        (ref-TS01-C1::DPOF|C_AddQuantity patron o patron 1 250.0)
+        (map print
+            [
+                (expect "<<DPOF-03>> C_AddQuantity grew the EXISTING nonce, creating none"
+                    n0 (ref-DPOF::UR_NoncesUsed o))
+                (expect "<<DPOF-03>> C_AddQuantity added exactly the amount to that nonce"
+                    (+ v0 250.0) (ref-DPOF::UR_NonceSupply o 1))
+            ]
+        )
+    )
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-04 — C_Transfer moves a whole nonce; supply is conserved")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-04 · 01 · nonce transfer] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (o:string "MOCKO-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+    )
+    (let
+        (
+            (s0:decimal (ref-DPOF::UR_Supply o))
+            (v1:decimal (ref-DPOF::UR_NonceSupply o 1))
+        )
+        (ref-TS01-C1::DPOF|C_Transfer patron o [1] patron emma false)
+        (map print
+            [
+                (expect "<<DPOF-04>> C_Transfer moved the nonce to the receiver"
+                    emma (ref-DPOF::UR_NonceHolder o 1))
+                (expect "<<DPOF-04>> the nonce kept its full value across the move"
+                    v1 (ref-DPOF::UR_NonceSupply o 1))
+                (expect "<<DPOF-04>> INVARIANT: a nonce transfer conserves total supply"
+                    s0 (ref-DPOF::UR_Supply o))
+            ]
+        )
+    )
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-05 — pause + control properties")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-05 · 01 · pause + control] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (o:string "MOCKO-98c486052a51")
+        (patron:string KST.ANHD)
+    )
+    (map print [(expect "<<DPOF-05>> token starts unpaused" false (ref-DPOF::UR_IsPaused o))])
+    (ref-TS01-C1::DPOF|C_TogglePause patron o true)
+    (map print [(expect "<<DPOF-05>> C_TogglePause paused the token" true (ref-DPOF::UR_IsPaused o))])
+    (ref-TS01-C1::DPOF|C_TogglePause patron o false)
+    (map print [(expect "<<DPOF-05>> C_TogglePause unpaused the token" false (ref-DPOF::UR_IsPaused o))])
+    ;;C_Control (cu cco casr ctocr cf cw cp sg) — turn can-pause OFF, keep the rest
+    (ref-TS01-C1::DPOF|C_Control patron o true true true true false false false false)
+    (map print
+        [
+            (expect "<<DPOF-05>> C_Control turned can-pause OFF"  false (ref-DPOF::UR_CanPause o))
+            (expect "<<DPOF-05>> C_Control left can-upgrade ON"   true  (ref-DPOF::UR_CanUpgrade o))
+        ]
+    )
+    ""
+)
+(commit-tx)

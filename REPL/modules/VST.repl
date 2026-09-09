@@ -1,6 +1,135 @@
-;; REPL/modules/VST.repl — STANDALONE VST tester (blockchain-env-in-a-repl).
-;; Fresh boot: Stage 00 sandbox + deploy core(s) + the VST suite only.
-;; Run: cd REPL && pact modules/VST.repl   (see ARCHITECTURE/REPL_TEST_ARCHITECTURE.md)
+;; REPL/modules/VST.repl — STANDALONE VST (vesting/freezing/sleeping) tester.
+;;
+;; P2 rebuild. The previous version asserted NOTHING about VST -- it printed exactly the deploy
+;; core's 11 expect / 7 expect-failure baseline and passed because booting a chain passes.
+;;
+;; VST keeps almost no state of its own (it has 2 readers): a VST operation converts a DPTF
+;; balance into a nonce on a LINKED special ortofungible. So the assertions here are about the
+;; DPTF side (URC_Has*, supply) and the DPOF side (nonce created, holder, value) -- which is the
+;; honest shape of what VST does.
+;;
+;; Run: cd REPL && pact modules/VST.repl
 (load "../deploy-stage00.repl")
 (load "../deploy-stage01.repl")
-(load "../Stage_01/[6.7]_VST.repl")
+(load "../fixtures/mock-tf.repl")
+(load "../fixtures/mock-tf-supply.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "VST-01 — a plain DPTF has no special links yet")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-01 · 01 · no links on a fresh token] ---")
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (a:string "MOCKA-98c486052a51")
+    )
+    (map print
+        [
+            (expect "<<VST-01>> fresh DPTF has no frozen link"      false (ref-DPTF::URC_HasFrozen a))
+            (expect "<<VST-01>> fresh DPTF has no reserved link"    false (ref-DPTF::URC_HasReserved a))
+            (expect "<<VST-01>> fresh DPTF has no sleeping link"    false (ref-DPTF::URC_HasSleeping a))
+            (expect "<<VST-01>> fresh DPTF has no hibernation link" false (ref-DPTF::URC_HasHibernation a))
+            (expect "<<VST-01>> fresh DPTF has no vesting link"     false (ref-DPTF::URC_HasVesting a))
+        ]
+    )
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-02 — C_CreateFrozenLink mints the linked special ortofungible")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-02 · 01 · create the frozen link] ---")
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+    )
+    ;;A special LINK issues a real ortofungible, so it carries the DPOF issuance STOA cost
+    ;;("dpmf" -- the historical DPMF->DPOF key). Derived, never hardcoded.
+    (let ((split-stoa:[decimal]
+              (ref-DALOS::URC_SplitSTOAPrices patron (ref-DALOS::UR_UsagePrice "dpmf"))))
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa))
+                ]
+            }
+        ]
+    )
+    (let ((created:[string] (ref-TS01-C2::VST|C_CreateFrozenLink patron a)))
+        (print (format "<(VST|C_CreateFrozenLink)> => {}" [created]))
+        (map print
+            [
+                (expect "<<VST-02>> C_CreateFrozenLink registered the frozen link on the DPTF"
+                    true (ref-DPTF::URC_HasFrozen a))
+                (expect "<<VST-02>> creating the FROZEN link did not create the others"
+                    false (ref-DPTF::URC_HasSleeping a))
+                (expect "<<VST-02>> C_CreateFrozenLink returned the new special id"
+                    true (< 0 (length created)))
+            ]
+        )
+    ))
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-03 — C_Freeze moves balance into the linked FROZEN DPTF")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-03 · 01 · freeze] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (a:string "MOCKA-98c486052a51")
+        ;;NOTE: the FROZEN link is itself a DPTF ("F|<id>"), not an ortofungible. Sleeping and
+        ;;Hibernating are the nonce-bearing (time-locked) forms; Frozen is not. An earlier draft
+        ;;read it with DPOF readers and the suite rejected that.
+        (frozen:string "F|MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+    )
+    (let
+        (
+            (bal0:decimal (ref-DPTF::UR_AccountSupply a patron))
+            (fs0:decimal (ref-DPTF::UR_Supply frozen))
+        )
+        ;;C_Freeze (patron freezer FREEZE-OUTPUT dptf amount): freeze-output is the ACCOUNT
+        ;;that receives the frozen balance, NOT the frozen token id.
+        (ref-TS01-C2::VST|C_Freeze patron patron patron a 300.0)
+        (map print
+            [
+                (expect "<<VST-03>> C_Freeze debited the source DPTF by exactly the amount"
+                    (- bal0 300.0) (ref-DPTF::UR_AccountSupply a patron))
+                (expect "<<VST-03>> C_Freeze raised the FROZEN token supply by the same amount"
+                    (+ fs0 300.0) (ref-DPTF::UR_Supply frozen))
+                (expect "<<VST-03>> the freezer holds the frozen balance"
+                    300.0 (ref-DPTF::UR_AccountSupply frozen patron))
+                (expect "<<VST-03>> the frozen token is linked back to its parent"
+                    a (ref-DPTF::URC_Parent frozen))
+            ]
+        )
+    )
+    ""
+)
+(commit-tx)
