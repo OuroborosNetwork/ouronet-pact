@@ -13,8 +13,10 @@ This is the evidence base for the audit and documentation papers: every client e
 | client entrypoints (the auditable contract) | 448 |
 | exercised at least once | 448 (100%) |
 | **never exercised** | **0** |
-| exercised but with NO adversarial assertion in any of its blocks | **298** |
-| total invocations across the suite | 3092 |
+| **exercised by a file the GATE RUNS** | **448 (100%)** |
+| exercised ONLY in an ungated file (= not protected) | **0** |
+| exercised but with NO adversarial assertion in any of its blocks | **289** |
+| total invocations across the suite | 3115 |
 
 ## Exercised but never adversarially probed — G2 gap
 
@@ -23,7 +25,6 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | entrypoint | invocations | +asserts |
 |---|---:|---:|
 | <code>ATS&#124;C_ColdRecovery</code> | 273 | 0 |
-| <code>DPTF&#124;C_Transfer</code> | 58 | 67 |
 | <code>P&#124;A_Define</code> | 58 | 0 |
 | <code>AQP-FVT&#124;CC_Collect</code> | 55 | 146 |
 | <code>AQP-FVT&#124;CC_Inject</code> | 39 | 155 |
@@ -77,12 +78,16 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>CODEX&#124;C_RegisterStoicTag</code> | 4 | 11 |
 | <code>DPNF&#124;C_BulkTransfer</code> | 4 | 4 |
 | <code>DPNF&#124;C_TogglePause</code> | 4 | 5 |
+| <code>DPOF&#124;C_MoveCreateRole</code> | 4 | 12 |
 | <code>DPOF&#124;C_TogglePause</code> | 4 | 5 |
 | <code>DPTF&#124;C_DonateFees</code> | 4 | 0 |
 | <code>DPTF&#124;C_MultiTransfer</code> | 4 | 0 |
+| <code>PYTHIA&#124;A_UpdateDeployPrice</code> | 4 | 6 |
+| <code>PYTHIA&#124;A_UpdateRenamePrice</code> | 4 | 6 |
 | <code>SWP&#124;C_SmartSwapWithSlippage</code> | 4 | 13 |
 | <code>VST&#124;C_CreateFrozenLink</code> | 4 | 3 |
 | <code>VST&#124;C_CreateSleepingLink</code> | 4 | 2 |
+| <code>VST&#124;C_ToggleTransferRoleFrozenDPTF</code> | 4 | 8 |
 | <code>AQP-DSA&#124;A_SetOracleValidity</code> | 3 | 6 |
 | <code>AQP-DSA&#124;C_SetOracleAuth</code> | 3 | 9 |
 | <code>ATS&#124;C_SetColdRecoveryFees</code> | 3 | 0 |
@@ -100,7 +105,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>SWP&#124;C_SingleSwapWithSlippage</code> | 3 | 2 |
 | <code>VST&#124;C_CreateVestingLink</code> | 3 | 0 |
 | <code>VST&#124;C_Freeze</code> | 3 | 4 |
-| <code>VST&#124;C_Vest</code> | 3 | 0 |
+| <code>VST&#124;C_ToggleTransferRoleReservedDPTF</code> | 3 | 8 |
 | <code>AQP-DSA&#124;C_SetAgencyFee</code> | 2 | 8 |
 | <code>AQP-FVT&#124;CC_SweepBegin</code> | 2 | 13 |
 | <code>AQP-FVT&#124;C_ToggleRewardLink</code> | 2 | 5 |
@@ -141,7 +146,6 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DPNF&#124;C_ToggleTransferRole</code> | 2 | 7 |
 | <code>DPOF&#124;A_DeployAccount</code> | 2 | 0 |
 | <code>DPOF&#124;C_AddQuantity</code> | 2 | 2 |
-| <code>DPOF&#124;C_MoveCreateRole</code> | 2 | 6 |
 | <code>DPSF&#124;C_AddQuantity</code> | 2 | 0 |
 | <code>DPSF&#124;C_MoveCreateRole</code> | 2 | 0 |
 | <code>DPSF&#124;C_MoveRecreateRole</code> | 2 | 0 |
@@ -152,12 +156,9 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DPSF&#124;C_ToggleTransferRole</code> | 2 | 0 |
 | <code>DPTF&#124;C_ResetFeeTarget</code> | 2 | 6 |
 | <code>DPTF&#124;C_RotateOwnership</code> | 2 | 4 |
-| <code>DPTF&#124;C_ToggleReservation</code> | 2 | 0 |
 | <code>DPTF&#124;C_UpdatePendingBranding</code> | 2 | 0 |
 | <code>KPAY&#124;C_BuyStoicPay</code> | 2 | 2 |
 | <code>MTX-AQP&#124;2&#124;C_Inject</code> | 2 | 2 |
-| <code>PYTHIA&#124;A_UpdateDeployPrice</code> | 2 | 0 |
-| <code>PYTHIA&#124;A_UpdateRenamePrice</code> | 2 | 0 |
 | <code>PYTHIA&#124;C_Link</code> | 2 | 6 |
 | <code>PYTHIA&#124;C_RevokeLink</code> | 2 | 5 |
 | <code>PYTHIA&#124;C_UpdateDualConsumerLane</code> | 2 | 3 |
@@ -173,9 +174,6 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>SWP&#124;C_UpdatePendingBrandingLPs</code> | 2 | 3 |
 | <code>VST&#124;C_RepurposeFrozen</code> | 2 | 0 |
 | <code>VST&#124;C_RepurposeMerge</code> | 2 | 0 |
-| <code>VST&#124;C_Reserve</code> | 2 | 0 |
-| <code>VST&#124;C_ToggleTransferRoleFrozenDPTF</code> | 2 | 0 |
-| <code>VST&#124;C_ToggleTransferRoleReservedDPTF</code> | 2 | 0 |
 | <code>VST&#124;C_Unreserve</code> | 2 | 0 |
 | <code>VST&#124;C_Unvest</code> | 2 | 0 |
 | <code>AQP-ANK&#124;C_IssueNonFungibleAnchor</code> | 1 | 0 |
@@ -312,14 +310,9 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>SWP&#124;C_ToggleFeeLock</code> | 1 | 0 |
 | <code>SWP&#124;C_UpdatePendingBranding</code> | 1 | 0 |
 | <code>SWP&#124;C_UpgradeBrandingLPs</code> | 1 | 3 |
-| <code>VST&#124;C_Awake</code> | 1 | 0 |
 | <code>VST&#124;C_CreateReservationLink</code> | 1 | 0 |
 | <code>VST&#124;C_Merge</code> | 1 | 8 |
 | <code>VST&#124;C_RepurposeHibernating</code> | 1 | 8 |
-| <code>VST&#124;C_RepurposeReserved</code> | 1 | 0 |
-| <code>VST&#124;C_RepurposeSleeping</code> | 1 | 0 |
-| <code>VST&#124;C_RepurposeVested</code> | 1 | 0 |
-| <code>VST&#124;C_Unsleep</code> | 1 | 0 |
 
 ## Full ledger
 
@@ -440,7 +433,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>ATS&#124;C_ToggleElite</code> | 1 | 0 | 0 | `[4.0]_Sovereign-Executor.repl` |
 | <code>ATS&#124;C_ToggleParameterLock</code> | 3 | 0 | 0 | `[6.6]_ATS.repl`, `_audit_ats_baseline.repl` |
 | <code>ATS&#124;C_ToggleUpgrade</code> | 8 | 2 | 4 | `[6.6]_ATS.repl`, `_audit_ats_baseline.repl`, `_cov_draft.repl` |
-| <code>ATS&#124;C_UpdatePendingBranding</code> | 2 | 0 | 1 | `_audit_ats_baseline.repl` |
+| <code>ATS&#124;C_UpdatePendingBranding</code> | 3 | 8 | 1 | `_audit_ats_baseline.repl`, `ATS.repl` |
 | <code>ATS&#124;C_UpdateRoyalty</code> | 10 | 5 | 4 | `[4.0]_Sovereign-Executor.repl`, `[6.6]_ATS.repl`, `_audit_ats_baseline.repl` +1 |
 | <code>ATS&#124;C_UpdateSyphon</code> | 1 | 0 | 0 | `[6.6]_ATS.repl` |
 | <code>ATS&#124;C_UpgradeBranding</code> | 1 | 3 | 1 | `ATS.repl` |
@@ -558,7 +551,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DPOF&#124;C_DeployAccount</code> | 1 | 0 | 0 | `[6.3]_SWP.repl` |
 | <code>DPOF&#124;C_Issue</code> | 9 | 0 | 0 | `[5.1]_Aoz+.repl`, `[6.5]_DPOF.repl`, `[6.6]_ATS.repl` +6 |
 | <code>DPOF&#124;C_Mint</code> | 25 | 19 | 1 | `[6.5]_DPOF.repl`, `[6.1.5]_DEMIPAD.repl`, `[6.2.4]_AQP-FVT-OF.repl` +8 |
-| <code>DPOF&#124;C_MoveCreateRole</code> | 2 | 6 | 0 | `_scratch_dpof_c2_moverole.repl` |
+| <code>DPOF&#124;C_MoveCreateRole</code> | 4 | 12 | 0 | `_scratch_dpof_c2_moverole.repl`, `DPOF.repl` |
 | <code>DPOF&#124;C_RotateOwnership</code> | 1 | 0 | 0 | `[6.5]_DPOF.repl` |
 | <code>DPOF&#124;C_ToggleAddQuantityRole</code> | 10 | 13 | 1 | `[6.5]_DPOF.repl`, `[6.1.5]_DEMIPAD.repl`, `[6.2.5]_AQP-VCT.repl` +5 |
 | <code>DPOF&#124;C_ToggleBurnRole</code> | 1 | 0 | 0 | `[6.5]_DPOF.repl` |
@@ -664,9 +657,9 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DPTF&#124;C_ToggleFreezeAccount</code> | 4 | 7 | 1 | `[6.4]_Admin.repl`, `DPTF.repl` |
 | <code>DPTF&#124;C_ToggleMintRole</code> | 8 | 4 | 1 | `[5.2]_Dispenser+.repl`, `[6.7]_VST.repl`, `[5.3]_Launchpad.repl` +2 |
 | <code>DPTF&#124;C_TogglePause</code> | 3 | 5 | 1 | `[6.4]_Admin.repl`, `DPTF.repl` |
-| <code>DPTF&#124;C_ToggleReservation</code> | 2 | 0 | 0 | `[6.3]_SWP.repl`, `vst-harness.repl` |
+| <code>DPTF&#124;C_ToggleReservation</code> | 3 | 8 | 1 | `[6.3]_SWP.repl`, `VST.repl`, `vst-harness.repl` |
 | <code>DPTF&#124;C_ToggleTransferRole</code> | 3 | 9 | 1 | `[6.3]_SWP.repl`, `DPTF.repl` |
-| <code>DPTF&#124;C_Transfer</code> | 58 | 67 | 0 | `AQP-scale-inject.repl`, `AQP-stream-tests.repl`, `[4.0]_Sovereign-Executor.repl` +19 |
+| <code>DPTF&#124;C_Transfer</code> | 59 | 75 | 1 | `AQP-scale-inject.repl`, `AQP-stream-tests.repl`, `[4.0]_Sovereign-Executor.repl` +20 |
 | <code>DPTF&#124;C_Transmute</code> | 6 | 0 | 0 | `[4.0]_Sovereign-Executor.repl`, `[6.2]_DPTF.repl`, `[6.8]_Dispenser.repl` |
 | <code>DPTF&#124;C_UpdatePendingBranding</code> | 2 | 0 | 0 | `[6.4]_Admin.repl` |
 | <code>DPTF&#124;C_UpgradeBranding</code> | 1 | 0 | 0 | `[6.4]_Admin.repl` |
@@ -691,8 +684,8 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>PYTHIA&#124;A_Flush</code> | 56 | 14 | 2 | `[6.10]_PYTHIA-flush-gas-probe.repl`, `[6.10b]_PYTHIA-ledger-v2.repl` |
 | <code>PYTHIA&#124;A_Link</code> | 6 | 13 | 0 | `[6.10]_PYTHIA.repl` |
 | <code>PYTHIA&#124;A_RevokeLink</code> | 5 | 15 | 3 | `[6.10]_PYTHIA.repl` |
-| <code>PYTHIA&#124;A_UpdateDeployPrice</code> | 2 | 0 | 0 | `_scratch_pythia_h12_price_wiring.repl` |
-| <code>PYTHIA&#124;A_UpdateRenamePrice</code> | 2 | 0 | 0 | `_scratch_pythia_h12_price_wiring.repl` |
+| <code>PYTHIA&#124;A_UpdateDeployPrice</code> | 4 | 6 | 0 | `_scratch_pythia_h12_price_wiring.repl`, `PYTHIA.repl` |
+| <code>PYTHIA&#124;A_UpdateRenamePrice</code> | 4 | 6 | 0 | `_scratch_pythia_h12_price_wiring.repl`, `PYTHIA.repl` |
 | <code>PYTHIA&#124;C_DeployApiKey</code> | 8 | 11 | 0 | `[6.10]_PYTHIA.repl` |
 | <code>PYTHIA&#124;C_Link</code> | 2 | 6 | 0 | `[6.10]_PYTHIA.repl` |
 | <code>PYTHIA&#124;C_RevokeLink</code> | 2 | 5 | 0 | `[6.10]_PYTHIA.repl` |
@@ -746,30 +739,30 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>SWP&#124;C_UpdateSpecialFeeTargets</code> | 17 | 0 | 0 | `[6.2+3]_DPTF-SWP_Issuance-Only.repl`, `[6.3]_SWP.repl` |
 | <code>SWP&#124;C_UpgradeBranding</code> | 1 | 9 | 1 | `SWP.repl` |
 | <code>SWP&#124;C_UpgradeBrandingLPs</code> | 1 | 3 | 0 | `[6.4]_Admin.repl` |
-| <code>VST&#124;C_Awake</code> | 1 | 0 | 0 | `vst-harness.repl` |
+| <code>VST&#124;C_Awake</code> | 2 | 13 | 1 | `VST.repl`, `vst-harness.repl` |
 | <code>VST&#124;C_CreateFrozenLink</code> | 4 | 3 | 0 | `[4.0]_Sovereign-Executor.repl`, `[5.3]_Launchpad.repl`, `VST.repl` +1 |
 | <code>VST&#124;C_CreateHibernatingLink</code> | 6 | 8 | 0 | `[4.0]_Sovereign-Executor.repl`, `_scratch_dpof_h7_hibernation_immutability.repl`, `ATS.repl` +2 |
 | <code>VST&#124;C_CreateReservationLink</code> | 1 | 0 | 0 | `[4.0]_Sovereign-Executor.repl` |
 | <code>VST&#124;C_CreateSleepingLink</code> | 4 | 2 | 0 | `[4.0]_Sovereign-Executor.repl`, `[6.3]_SWP.repl`, `VST.repl` +1 |
 | <code>VST&#124;C_CreateVestingLink</code> | 3 | 0 | 0 | `[4.0]_Sovereign-Executor.repl` |
 | <code>VST&#124;C_Freeze</code> | 3 | 4 | 0 | `[6.3]_SWP.repl`, `VST.repl`, `vst-harness.repl` |
-| <code>VST&#124;C_Hibernate</code> | 4 | 12 | 1 | `VST.repl`, `vst-harness.repl` |
+| <code>VST&#124;C_Hibernate</code> | 5 | 25 | 2 | `VST.repl`, `vst-harness.repl` |
 | <code>VST&#124;C_Merge</code> | 1 | 8 | 0 | `VST.repl` |
 | <code>VST&#124;C_RepurposeFrozen</code> | 2 | 0 | 0 | `[6.3]_SWP.repl`, `vst-harness.repl` |
 | <code>VST&#124;C_RepurposeHibernating</code> | 1 | 8 | 0 | `VST.repl` |
 | <code>VST&#124;C_RepurposeMerge</code> | 2 | 0 | 0 | `[6.3]_SWP.repl`, `vst-harness.repl` |
-| <code>VST&#124;C_RepurposeReserved</code> | 1 | 0 | 0 | `vst-harness.repl` |
-| <code>VST&#124;C_RepurposeSleeping</code> | 1 | 0 | 0 | `vst-harness.repl` |
+| <code>VST&#124;C_RepurposeReserved</code> | 2 | 8 | 1 | `VST.repl`, `vst-harness.repl` |
+| <code>VST&#124;C_RepurposeSleeping</code> | 2 | 13 | 1 | `VST.repl`, `vst-harness.repl` |
 | <code>VST&#124;C_RepurposeSlumber</code> | 2 | 11 | 2 | `VST.repl` |
-| <code>VST&#124;C_RepurposeVested</code> | 1 | 0 | 0 | `vst-harness.repl` |
-| <code>VST&#124;C_Reserve</code> | 2 | 0 | 0 | `[6.3]_SWP.repl`, `vst-harness.repl` |
-| <code>VST&#124;C_Sleep</code> | 78 | 21 | 1 | `[6.3]_SWP.repl`, `[6.7]_VST.repl`, `[6.4]_AQP-TRIPLET-COLLECT.repl` +2 |
+| <code>VST&#124;C_RepurposeVested</code> | 2 | 8 | 1 | `VST.repl`, `vst-harness.repl` |
+| <code>VST&#124;C_Reserve</code> | 4 | 8 | 1 | `[6.3]_SWP.repl`, `VST.repl`, `vst-harness.repl` |
+| <code>VST&#124;C_Sleep</code> | 79 | 34 | 2 | `[6.3]_SWP.repl`, `[6.7]_VST.repl`, `[6.4]_AQP-TRIPLET-COLLECT.repl` +2 |
 | <code>VST&#124;C_Slumber</code> | 2 | 7 | 1 | `VST.repl`, `vst-harness.repl` |
-| <code>VST&#124;C_ToggleTransferRoleFrozenDPTF</code> | 2 | 0 | 0 | `[6.7]_VST.repl`, `vst-harness.repl` |
+| <code>VST&#124;C_ToggleTransferRoleFrozenDPTF</code> | 4 | 8 | 0 | `[6.7]_VST.repl`, `VST.repl`, `vst-harness.repl` |
 | <code>VST&#124;C_ToggleTransferRoleHibernatingDPOF</code> | 2 | 12 | 1 | `VST.repl` |
-| <code>VST&#124;C_ToggleTransferRoleReservedDPTF</code> | 2 | 0 | 0 | `[6.7]_VST.repl`, `vst-harness.repl` |
+| <code>VST&#124;C_ToggleTransferRoleReservedDPTF</code> | 3 | 8 | 0 | `[6.7]_VST.repl`, `VST.repl`, `vst-harness.repl` |
 | <code>VST&#124;C_ToggleTransferRoleSleepingDPOF</code> | 4 | 13 | 1 | `[6.7]_VST.repl`, `[6.4]_AQP-TRIPLET-COLLECT.repl`, `VST.repl` +1 |
 | <code>VST&#124;C_Unreserve</code> | 2 | 0 | 0 | `[6.3]_SWP.repl`, `vst-harness.repl` |
-| <code>VST&#124;C_Unsleep</code> | 1 | 0 | 0 | `vst-harness.repl` |
+| <code>VST&#124;C_Unsleep</code> | 3 | 13 | 1 | `VST.repl`, `vst-harness.repl` |
 | <code>VST&#124;C_Unvest</code> | 2 | 0 | 0 | `[6.3]_SWP.repl`, `vst-harness.repl` |
-| <code>VST&#124;C_Vest</code> | 3 | 0 | 0 | `[6.3]_SWP.repl`, `vst-harness.repl` |
+| <code>VST&#124;C_Vest</code> | 4 | 8 | 1 | `[6.3]_SWP.repl`, `VST.repl`, `vst-harness.repl` |

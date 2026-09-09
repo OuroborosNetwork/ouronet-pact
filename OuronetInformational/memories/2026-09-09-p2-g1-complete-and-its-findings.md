@@ -1,8 +1,16 @@
 # 2026-09-09 — G1 reaches 100%, and the six defects it found on the way
 
-**Status: P2 complete.** Every one of the 448 Talos client entrypoints is now invoked by at
-least one asserting test (`B4 = 0`, `B10 = 100%`). Regenerate with
-`python3 REPL/_test_ledger.py > OuronetInformational/ARCHITECTURE/REPL-TEST-LEDGER.md`.
+**Status: P2 complete.** All 448 Talos client entrypoints are invoked by an asserting test **AND
+every one of those tests is executed by the gate** (`B4 = 0`, `B4b = 0`, `B10 = 100%`). Regenerate
+with `python3 REPL/_test_ledger.py > OuronetInformational/ARCHITECTURE/REPL-TEST-LEDGER.md`.
+
+> **The first "100%" was wrong and is worth remembering.** It was published while NINE entrypoints
+> lived exclusively in files the gate does not run (`vst-harness.repl`, `_audit_ats_baseline.repl`,
+> two `_scratch_` probes) — invoked, therefore absent from the G1 gap, and re-executed by nothing.
+> The protected figure was 439/448. Same error as RULE 10 (comments) and RULE 11 (ZALL vs written),
+> in a third disguise: *a metric computed over the whole tree instead of over what actually runs.*
+> `_test_ledger.py` now imports `_gate.py`'s GATE list and closure and prints both rows, so the two
+> cannot drift apart.
 
 The point of this note is **not** the coverage number. It is that "call every entrypoint once and
 assert on what actually happened" — the weakest possible discipline above a smoke test — found
@@ -55,6 +63,14 @@ the crash is **data-dependent** and surfaces months later as a table read naming
 nor the cause.
 **Test:** `REPL/modules/VST.repl` VST-09. The suite's own earlier transaction had created a
 malformed nonce without noticing.
+
+**ESCALATION (VST-11 * 04): the malformed position is PERMANENTLY UNRECOVERABLE.** `C_Unsleep` is
+the only release path for a sleeping nonce, and on the malformed one it dies with
+`Runtime typecheck failure, argument is list, but expected type list (object{VST|MetaDataSchema})`
+inside `URC_CullMetaDataAmountWithObject` — not a guard, not a named rejection. The nonce is fully
+matured and holds 200.0 of real value that can never be withdrawn. So finding #2 is not "writes a
+malformed record"; it is **"silently and irreversibly destroys access to the underlying tokens,
+and reports success."**
 
 ### 3. Five `(format "literal")` calls with no argument list
 Pact's `format` takes a template AND a list. One argument is an arity error that resolves to a
@@ -116,7 +132,15 @@ defence-in-depth argument.
 * **Repurpose is a FORCED move** — the collection owner debits a third party who does not sign.
 * **`VST` "repurpose" is decommission + re-issue, not a transfer.** The source nonce is consumed
   (holder `"|"`, supply `-1`) and a NEW nonce is minted. Anything tracking a position by nonce id
-  must follow the re-issue.
+  must follow the re-issue. True of `C_RepurposeHibernating`, `C_RepurposeSleeping` and
+  `C_RepurposeVested` alike.
+* **`VST|C_RepurposeReserved` takes the RESERVED token id, not the parent.** Passing the parent
+  silently repurposes the holder's plain balance and leaves the reserve untouched —
+  `vst-harness.repl` passes the parent id and asserts nothing, so it had been doing exactly that.
+* **`C_Reserve` needs the reservation OPENED first** (`DPTF|C_ToggleReservation`), and the
+  RESERVER must sign — recovery afterwards does not need their signature. That asymmetry is the op.
+* **`C_Unsleep` releases a SLEEPING nonce; `C_Awake` releases a HIBERNATING one.** Release is not
+  a transfer: the position is destroyed and the underlying DPTF returns as liquid balance.
 * **`LQD|C_UnwrapStoa` needs the CALLER to sign a `coin.TRANSFER` out of the LIQUID escrow** — an
   account they do not own and cannot discover from the signature (`LIQUID.pact:516` has the in-code
   install commented out as "added instead in the JavaCode"). The signed amount is the real per-tx

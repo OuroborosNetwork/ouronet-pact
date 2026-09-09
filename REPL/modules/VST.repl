@@ -502,3 +502,364 @@
     ""
 )
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-10 — the four RECOVERY repurposes, and the two release ops")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-10 · 01 · vest and reserve on OURO] ---")
+;;These five ops (C_Awake, C_Unsleep, C_RepurposeReserved, C_RepurposeSleeping,
+;;C_RepurposeVested) were invoked ONLY by vst-harness.repl -- a file the gate does not run. The
+;;ledger counted them as exercised, which is RULE 11 applied to G1: an invocation nothing
+;;re-executes is not protection. They move here, into a gated tester, with real assertions.
+;;
+;;OURO carries vesting/reservation/sleeping/hibernation links from [4.0]_Sovereign-Executor, so
+;;this block uses OURO rather than rebuilding four link types on MOCKA.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+    )
+    (let
+        (
+            (ouro:string (ref-DALOS::UR_OuroborosID))
+        )
+        (let
+            (
+                (vested:string (ref-DPTF::UR_Vesting ouro))
+                (reserved:string (ref-DPTF::UR_Reservation ouro))
+                (bal0:decimal (ref-DPTF::UR_AccountSupply ouro patron))
+            )
+            ;;VEST to EMMA: 100 OURO over 30 days, one milestone. Vesting mints a NONCE-bearing
+            ;;position on the vested DPOF, held by the target -- not a balance on the DPTF.
+            (ref-TS01-C2::VST|C_Vest patron patron emma ouro 100.0 0 2592000 1)
+            (map print
+                [
+                    (expect "<<VST-10>> vesting debited the vester's liquid OURO"
+                        (- bal0 100.0) (ref-DPTF::UR_AccountSupply ouro patron))
+                    (expect "<<VST-10>> the target holds exactly one vested nonce"
+                        1 (length (ref-DPOF::URH_AccountNonces emma vested)))
+                ]
+            )
+            ;;RECOVER that vested nonce to the patron. C_RepurposeVested is the account-recovery
+            ;;path: the asset owner pulls a vested position out of a third party WITHOUT that
+            ;;party signing -- only PK_AncientHodler is in env-sigs.
+            (let ((n:integer (at 0 (ref-DPOF::URH_AccountNonces emma vested))))
+                (ref-TS01-C2::VST|C_RepurposeVested patron vested n emma patron)
+                (map print
+                    [
+                        (expect "<<VST-10>> C_RepurposeVested emptied the holder's vested nonces"
+                            0 (length (ref-DPOF::URH_AccountNonces emma vested)))
+                        (expect "<<VST-10>> ...and the recoverer now holds a vested nonce"
+                            true (< 0 (length (ref-DPOF::URH_AccountNonces patron vested))))
+                    ]
+                )
+            )
+            ;;RESERVE: the reservation must be OPENED on the DPTF first -- the RESERVE capability
+            ;;gates on UR_IzReservationOpen, so the toggle is a precondition, not a convenience.
+            (map print
+                [
+                    (expect-failure "<<VST-10>> reserving before the reservation is opened is refused"
+                        "Reservation"
+                        (ref-TS01-C2::VST|C_Reserve patron emma ouro 10.0))
+                ]
+            )
+            (ref-TS01-C1::DPTF|C_ToggleReservation patron ouro true)
+            (map print
+                [
+                    (expect "<<VST-10>> C_ToggleReservation opened it"
+                        true (ref-DPTF::UR_IzReservationOpen ouro))
+                ]
+            )
+            ;;Reserve on EMMA's behalf, then RECOVER the whole reserved balance to the patron.
+            ;;Unlike the nonce forms, C_RepurposeReserved takes no nonce: reserved value is a
+            ;;plain balance on the reserved DPTF, so recovery moves ALL of it.
+            ;;
+            ;;<dptf-to-repurpose> is the token whose balance actually moves, so it must be the
+            ;;RESERVED id -- passing the parent OURO id silently repurposes the holder's plain
+            ;;OURO instead, leaving the reserve untouched. vst-harness.repl passes the parent id
+            ;;and asserts nothing, so it has been doing exactly that unnoticed.
+            (ref-TS01-C1::DPTF|C_Transfer patron ouro patron emma 50.0 true)
+            ;;The RESERVER is the account whose balance moves, so EMMA must sign this leg --
+            ;;C_Reserve enforces her account ownership. The signature is dropped again before
+            ;;the recovery below, which is the point of the pair.
+            (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+            (ref-TS01-C2::VST|C_Reserve patron emma ouro 50.0)
+            (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+            (map print
+                [
+                    (expect "<<VST-10>> C_Reserve moved the balance onto the reserved DPTF"
+                        50.0 (ref-DPTF::UR_AccountSupply reserved emma))
+                ]
+            )
+            (let ((p0:decimal (try 0.0 (ref-DPTF::UR_AccountSupply reserved patron))))
+                (ref-TS01-C2::VST|C_RepurposeReserved patron reserved emma patron)
+                (map print
+                    [
+                        (expect "<<VST-10>> C_RepurposeReserved took the WHOLE reserved balance"
+                            0.0 (ref-DPTF::UR_AccountSupply reserved emma))
+                        (expect "<<VST-10>> ...and credited the recoverer with all of it"
+                            (+ p0 50.0) (ref-DPTF::UR_AccountSupply reserved patron))
+                    ]
+                )
+            )
+        )
+    )
+    ""
+)
+(print "===^^^===")
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-11 — C_RepurposeSleeping, then the two MATURITY releases")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-11 · 01 · sleep to a third party, recover it] ---")
+;;MOCKA, not OURO: OURO carries vesting and reservation links from [4.0]_Sovereign-Executor but
+;;NOT a sleeping one, and C_Sleep's capability enforces the link exists. VST-06 created MOCKA's.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+    )
+    (let ((ouro:string "MOCKA-98c486052a51"))
+        (let ((sleeping:string (ref-DPTF::UR_Sleeping ouro)))
+            (ref-TS01-C2::VST|C_Sleep patron patron emma ouro 100.0 2592000)
+            ;;Also open a HIBERNATING position for the patron here, BEFORE the time jump in
+            ;;VST-11 * 02 -- C_Awake needs one that has MATURED, and VST-08 repurposed every
+            ;;pre-existing hibernating nonce away to EMMA.
+            (ref-TS01-C2::VST|C_Hibernate patron patron patron ouro 60.0 30)
+            (map print
+                [
+                    (expect "<<VST-11>> the sleep created a nonce held by the target"
+                        true (< 0 (length (ref-DPOF::URH_AccountNonces emma sleeping))))
+                    (expect "<<VST-11>> the hibernate created one held by the patron"
+                        true (< 0 (length (ref-DPOF::URH_AccountNonces patron
+                                            (ref-DPTF::UR_Hibernation ouro)))))
+                ]
+            )
+            (let
+                (
+                    (n:integer (at 0 (ref-DPOF::URH_AccountNonces emma sleeping)))
+                    (p0:integer (length (ref-DPOF::URH_AccountNonces patron sleeping)))
+                )
+                (ref-TS01-C2::VST|C_RepurposeSleeping patron sleeping n emma patron)
+                (map print
+                    [
+                        (expect "<<VST-11>> C_RepurposeSleeping emptied the holder"
+                            0 (length (ref-DPOF::URH_AccountNonces emma sleeping)))
+                        ;;Recovery is DECOMMISSION + RE-ISSUE, not a transfer -- the same shape
+                        ;;VST-05 found for C_RepurposeHibernating. The source nonce is consumed
+                        ;;and a NEW one is minted, so the recoverer does NOT receive nonce <n>.
+                        (expect "<<VST-11>> the source nonce is decommissioned, not moved"
+                            -1.0 (ref-DPOF::UR_NonceSupply sleeping n))
+                        (expect "<<VST-11>> the recoverer gains a nonce -- a NEW one"
+                            (+ p0 1) (length (ref-DPOF::URH_AccountNonces patron sleeping)))
+                        (expect "<<VST-11>> ...and it is not the one that was taken"
+                            false (contains n (ref-DPOF::URH_AccountNonces patron sleeping)))
+                    ]
+                )
+            )
+        )
+    )
+    ""
+)
+(print "--- [VST-11 · 02 · MATURITY: C_Unsleep and C_Awake] ---")
+;;Both release ops require the lock to have EXPIRED, so this is the last transaction in the file:
+;;advancing block-time is destructive to anything asserted before it. C_Unsleep releases a
+;;SLEEPING nonce; C_Awake releases a HIBERNATING one -- the same naming split that makes
+;;C_Merge/C_Slumber easy to swap (see VST-08/VST-09).
+(env-chain-data { "block-time": (time "2035-01-01T00:00:00Z") })
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (patron:string KST.ANHD)
+    )
+    (let ((ouro:string "MOCKA-98c486052a51"))
+        (let
+            (
+                (sleeping:string (ref-DPTF::UR_Sleeping ouro))
+                (bal0:decimal (ref-DPTF::UR_AccountSupply ouro patron))
+            )
+            ;;Take the LAST nonce the patron holds: the recovery above minted it, and it is
+            ;;well-formed. `at 0` would pick nonce 3 -- the malformed one VST-09 documented --
+            ;;which cannot be unslept at all (proven immediately below).
+            (let ((n:integer (at (- (length (ref-DPOF::URH_AccountNonces patron sleeping)) 1)
+                                 (ref-DPOF::URH_AccountNonces patron sleeping))))
+                (let ((amt:decimal (ref-DPOF::UR_NonceSupply sleeping n)))
+                    (ref-TS01-C2::VST|C_Unsleep patron patron sleeping n)
+                    (map print
+                        [
+                            ;;Release is not a transfer between accounts: the locked position is
+                            ;;destroyed and the underlying DPTF comes back as liquid balance.
+                            (expect "<<VST-11>> C_Unsleep returned the slept amount as liquid DPTF"
+                                (+ bal0 amt) (ref-DPTF::UR_AccountSupply ouro patron))
+                            (expect "<<VST-11>> the sleeping nonce is decommissioned"
+                                -1.0 (ref-DPOF::UR_NonceSupply sleeping n))
+                        ]
+                    )
+                )
+            )
+        )
+    )
+    ""
+)
+(print "--- [VST-11 · 03 · C_Awake releases the HIBERNATING twin] ---")
+;;C_Unsleep and C_Awake are the two release ops and they are NOT interchangeable: C_Unsleep takes
+;;a nonce on the SLEEPING link, C_Awake one on the HIBERNATING link. Same split that makes
+;;C_Merge/C_Slumber easy to swap. Block-time is already past both locks.
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (patron:string KST.ANHD)
+        (a:string "MOCKA-98c486052a51")
+        (hib:string "H|MOCKA-98c486052a51")
+    )
+    (let
+        (
+            (held:[integer] (ref-DPOF::URH_AccountNonces patron hib))
+            (bal0:decimal (ref-DPTF::UR_AccountSupply a patron))
+        )
+        (map print
+            [
+                (expect "<<VST-11>> precondition: the patron holds a hibernating nonce"
+                    true (< 0 (length held)))
+            ]
+        )
+        (let ((n:integer (at 0 held)))
+            (let ((amt:decimal (ref-DPOF::UR_NonceSupply hib n)))
+                (ref-TS01-C2::VST|C_Awake patron patron hib n)
+                (map print
+                    [
+                        (expect "<<VST-11>> C_Awake returned the hibernated amount as liquid DPTF"
+                            (+ bal0 amt) (ref-DPTF::UR_AccountSupply a patron))
+                        (expect "<<VST-11>> the hibernating nonce is decommissioned"
+                            -1.0 (ref-DPOF::UR_NonceSupply hib n))
+                    ]
+                )
+            )
+        )
+    )
+    ""
+)
+(print "--- [VST-11 · 04 · FINDING: the malformed nonce is PERMANENTLY LOCKED] ---")
+;;VST-09 showed C_Slumber (the HIBERNATION merge) succeeds on a SLEEPING dpof and mints the wrong
+;;METADATA SHAPE. This is what that costs. Nonce 3 carries {mint-time, release-date} where
+;;VST|MetaDataSchema wants {release-amount, release-date}, so C_Unsleep dies in
+;;URC_CullMetaDataAmountWithObject on a RUNTIME TYPECHECK -- not a guard, not a named rejection.
+;;
+;;The nonce is fully matured (block-time is 2035) and holds 200.0 of real value. There is no
+;;other release path for a sleeping position: C_Unsleep is it. So the value is locked FOREVER,
+;;and the operation that locked it reported success. That escalates VST-09 from "writes a
+;;malformed record" to "silently and irreversibly destroys access to the underlying tokens".
+(let
+    (
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (patron:string KST.ANHD)
+        (slp:string "Z|MOCKA-98c486052a51")
+    )
+    (map print
+        [
+            (expect "<<VST-11>> the malformed nonce still holds its full value"
+                200.0 (ref-DPOF::UR_NonceSupply slp 3))
+            (expect-failure "<<VST-11>> FINDING: it cannot be released -- runtime typecheck, not a guard"
+                "Runtime typecheck failure"
+                (ref-TS01-C2::VST|C_Unsleep patron patron slp 3))
+            (expect "<<VST-11>> ...and it is still sitting there after the failed release"
+                200.0 (ref-DPOF::UR_NonceSupply slp 3))
+        ]
+    )
+    ""
+)
+(print "===^^^===")
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-12 — the two SPECIAL-DPTF transfer-role toggles")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-12 · 01 · frozen and reserved transfer roles] ---")
+;;VST|C_ToggleTransferRoleFrozenDPTF and VST|C_ToggleTransferRoleReservedDPTF were reachable only
+;;through Stage_01/[6.7]_VST.repl, a mid-chain suite that nothing but ZALL loads -- so a VST
+;;change could break them and only the 3-minute full run would say so. They belong in the focused
+;;tester.
+;;
+;;These two exist because a FROZEN or RESERVED DPTF is deliberately non-transferable by default:
+;;that is the point of freezing and reserving. The toggle is the narrow exception, and the
+;;property worth asserting is that granting on one special link does NOT leak to the other.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+    )
+    (let
+        (
+            (frozen:string "F|MOCKA-98c486052a51")
+            (reserved:string (ref-DPTF::UR_Reservation (ref-DALOS::UR_OuroborosID)))
+        )
+        (map print
+            [
+                (expect "<<VST-12>> baseline: no transfer role on the frozen DPTF"
+                    false (ref-DPTF::UR_AccountRoleTransfer frozen lumy))
+                (expect "<<VST-12>> baseline: none on the reserved DPTF either"
+                    false (ref-DPTF::UR_AccountRoleTransfer reserved lumy))
+            ]
+        )
+        (ref-TS01-C2::VST|C_ToggleTransferRoleFrozenDPTF patron frozen lumy true)
+        (map print
+            [
+                (expect "<<VST-12>> the frozen-DPTF toggle granted it"
+                    true (ref-DPTF::UR_AccountRoleTransfer frozen lumy))
+                ;;THE POINT: the two special links are separate tokens with separate role sets.
+                (expect "<<VST-12>> ...and it did NOT leak to the reserved DPTF"
+                    false (ref-DPTF::UR_AccountRoleTransfer reserved lumy))
+            ]
+        )
+        (ref-TS01-C2::VST|C_ToggleTransferRoleReservedDPTF patron reserved lumy true)
+        (map print
+            [
+                (expect "<<VST-12>> the reserved-DPTF toggle granted it"
+                    true (ref-DPTF::UR_AccountRoleTransfer reserved lumy))
+                (expect "<<VST-12>> the frozen grant is still standing"
+                    true (ref-DPTF::UR_AccountRoleTransfer frozen lumy))
+            ]
+        )
+        ;;Revoking one must leave the other alone -- the mirror of the leak check above.
+        (ref-TS01-C2::VST|C_ToggleTransferRoleFrozenDPTF patron frozen lumy false)
+        (map print
+            [
+                (expect "<<VST-12>> revoking the frozen role removed it"
+                    false (ref-DPTF::UR_AccountRoleTransfer frozen lumy))
+                (expect "<<VST-12>> ...and left the reserved role untouched"
+                    true (ref-DPTF::UR_AccountRoleTransfer reserved lumy))
+            ]
+        )
+    )
+    ""
+)
+(print "===^^^===")
+(commit-tx)

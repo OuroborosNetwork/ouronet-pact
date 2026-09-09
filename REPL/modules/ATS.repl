@@ -164,3 +164,68 @@
 )
 (print "===^^^===")
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "ATS-PBRD — C_UpdatePendingBranding writes PENDING, never LIVE")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [ATS-PBRD · 01 · pending vs live] ---")
+;;ATS|C_UpdatePendingBranding appeared ONLY in _audit_ats_baseline.repl, which the gate does not
+;;run and which no longer completes -- so the ledger scored it as exercised while nothing
+;;re-executed it (RULE 11 applied to G1).
+;;
+;;The property that gives the op its PURPOSE is the pending/live split: an unreviewed submission
+;;must land in the pending row and leave the live row alone. A test that only checked "it wrote
+;;something" would pass even if the two rows were swapped, which is the whole risk.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-BRD:module{BrandingV2} BRD)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (patron:string KST.ANHD)
+        (auryndex:string "Auryndex-98c486052a51")
+    )
+    (let
+        (
+            (live0:object{BrandingV2.Schema} (ref-BRD::UR_Branding auryndex false))
+        )
+        (ref-TS01-C2::ATS|C_UpdatePendingBranding patron auryndex
+            "ipfs://pending-logo" "a pending description" "https://pending.example"
+            [ { "social-media-name": "x", "social-media-link": "https://x.example/ouronet" } ])
+        (let
+            (
+                (pend:object{BrandingV2.Schema} (ref-BRD::UR_Branding auryndex true))
+                (live:object{BrandingV2.Schema} (ref-BRD::UR_Branding auryndex false))
+            )
+            (map print
+                [
+                    (expect "<<ATS-PBRD>> the submission landed in PENDING: logo"
+                        "ipfs://pending-logo" (at "logo" pend))
+                    (expect "<<ATS-PBRD>> ...description"
+                        "a pending description" (at "description" pend))
+                    (expect "<<ATS-PBRD>> ...website"
+                        "https://pending.example" (at "website" pend))
+                    (expect "<<ATS-PBRD>> ...and the social list"
+                        "https://x.example/ouronet"
+                        (at "social-media-link" (at 0 (at "social" pend))))
+                    ;;THE POINT: live branding is what clients render, and an unreviewed
+                    ;;submission must not reach it.
+                    (expect "<<ATS-PBRD>> LIVE branding is untouched: logo"
+                        (at "logo" live0) (at "logo" live))
+                    (expect "<<ATS-PBRD>> LIVE branding is untouched: description"
+                        (at "description" live0) (at "description" live))
+                    (expect "<<ATS-PBRD>> LIVE branding is untouched: website"
+                        (at "website" live0) (at "website" live))
+                    ;;...and the paid premium the upgrade bought is not disturbed by a free
+                    ;;pending write.
+                    (expect "<<ATS-PBRD>> the paid premium window survives a pending write"
+                        (at "premium-until" live0) (at "premium-until" live))
+                ]
+            )
+        )
+    )
+    ""
+)
+(print "===^^^===")
+(commit-tx)

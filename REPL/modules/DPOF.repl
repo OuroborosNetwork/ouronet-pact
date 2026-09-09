@@ -192,3 +192,65 @@
     ""
 )
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-MCR — C_MoveCreateRole MOVES, it does not merely grant (audit #2C)")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-MCR · 01 · two consecutive moves] ---")
+;;DPOF|C_MoveCreateRole existed ONLY in _scratch_dpof_c2_moverole.repl -- an audit-finding proof
+;;the gate does not run, and which no longer executes at all. The finding it proves (#2C) is
+;;precisely the kind that regresses silently, so it belongs in a gated tester.
+;;
+;;THE BUG IT GUARDS: XI_SwitchCreateRole re-derived "who is the previous holder" via UR_Verum4
+;;AFTER XI_UpdateVerum4 had already overwritten that value with the NEW holder. So the revoke
+;;targeted the new holder and cancelled itself, and "move" only ever GRANTED.
+;;
+;;A single move cannot detect this -- after one move the previous holder IS the owner, who keeps
+;;the role for other reasons. It takes TWO consecutive moves, so that the second one's previous
+;;holder is a third party with nothing else granting them the role.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (id:string "MOCKO-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+    )
+    (map print
+        [
+            (expect "<<DPOF-MCR>> precondition: the collection permits moving the create role"
+                true (ref-DPOF::UR_CanTransferOftCreateRole id))
+        ]
+    )
+    ;;MOVE 1 — owner to EMMA. Granting is the half that always worked.
+    (ref-TS01-C1::DPOF|C_MoveCreateRole patron id emma)
+    (map print
+        [
+            (expect "<<DPOF-MCR>> move 1 recorded EMMA as the create-role holder"
+                emma (ref-DPOF::UR_Verum4 id))
+            (expect "<<DPOF-MCR>> move 1 granted EMMA the role"
+                true (ref-DPOF::UR_R-Create id emma))
+        ]
+    )
+    ;;MOVE 2 — EMMA to LUMY. THE TEST: EMMA is the real previous holder and is NOT the owner,
+    ;;so nothing else keeps the role on her. If the revoke targets the wrong account she keeps it.
+    (ref-TS01-C1::DPOF|C_MoveCreateRole patron id lumy)
+    (map print
+        [
+            (expect "<<DPOF-MCR>> move 2 recorded LUMY as the holder"
+                lumy (ref-DPOF::UR_Verum4 id))
+            (expect "<<DPOF-MCR>> move 2 granted LUMY the role"
+                true (ref-DPOF::UR_R-Create id lumy))
+            ;;#2C REGRESSION GUARD — this is the assertion the finding exists for.
+            (expect "<<DPOF-MCR>> #2C: the PREVIOUS holder lost it -- a move, not a grant"
+                false (ref-DPOF::UR_R-Create id emma))
+        ]
+    )
+    ""
+)
+(print "===^^^===")
+(commit-tx)

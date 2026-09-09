@@ -27,7 +27,7 @@ Full write-up, with mechanism and reproduction, in
 | # | where | defect | severity |
 |---|---|---|---|
 | 1 | `05_STOAICO.pact:496` | unguarded zero-amount urSTOA mint **deadlocks the distribution vault from round 2** — self-collect, admin flush and new-round inject all blocked | **severe** |
-| 2 | `11_VST.pact` `XI_MergeNonces` | `C_Merge`/`C_Slumber` do not validate the dpof against their `vzh-tag`; wrong-kind merge mints the wrong metadata shape and crashes later, data-dependently | high |
+| 2 | `11_VST.pact` `XI_MergeNonces` | `C_Merge`/`C_Slumber` do not validate the dpof against their `vzh-tag`. The wrong-kind merge REPORTS SUCCESS and mints the wrong metadata shape — after which `C_Unsleep`, the only release path, fails a runtime typecheck. **The position and its value are permanently unrecoverable.** | **severe** |
 | 3 | 5 sites, incl. `INFO-ONE+.pact:2465` | `(format "literal")` with no argument list — arity error; **`INFO_ATS\|Cull` is broken on every call** | high |
 | 4 | `12_LIQUID.pact:125`, `01_DALOS.pact:489` | migration guard message says "offline" while `enforce gap` requires the pause **ON** | low |
 | 5 | `16_SWPI.pact` / `UC_SlippageMinMax` | slippage bound is measured in **fee-less** tokens; delivered came in 8.2× the chosen tolerance below the floor, and a breach returns a string instead of reverting | design/UI |

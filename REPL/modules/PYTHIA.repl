@@ -4,3 +4,62 @@
 (load "../deploy-stage00.repl")
 (load "../deploy-stage01.repl")
 (load "../Stage_01/[6.10]_PYTHIA.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "PYTHIA-PRICE — the two admin price setters (previously only in an UNGATED probe)")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [PYTHIA-PRICE · 01 · deploy and rename prices] ---")
+;;PYTHIA|A_UpdateDeployPrice and PYTHIA|A_UpdateRenamePrice existed ONLY in
+;;_scratch_pythia_h12_price_wiring.repl -- a file the gate does not run. The ledger counted them
+;;as exercised; nothing re-executed them. That is RULE 11 applied to G1, and it is why the ledger
+;;now reports "exercised by a file the GATE RUNS" as a separate number.
+;;
+;;These two ARE the finding's fix: the core setters existed and were properly gated, but no Talos
+;;client path reached them, so the admin could not actually change either price. The test that
+;;matters is therefore that the Talos wrapper MOVES THE VALUE the readers return -- not that it
+;;returns a string.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-PYTHIA:module{PythiaV5} PYTHIA)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
+    )
+    (let
+        (
+            (d0:decimal (ref-PYTHIA::UR_DeployPrice))
+            (r0:decimal (ref-PYTHIA::UR_RenamePrice))
+        )
+        (ref-TS01-C4::PYTHIA|A_UpdateDeployPrice 999.0)
+        (ref-TS01-C4::PYTHIA|A_UpdateRenamePrice 888.0)
+        (map print
+            [
+                (expect "<<PYTHIA-PRICE>> the deploy price is what the admin set" 999.0
+                    (ref-PYTHIA::UR_DeployPrice))
+                (expect "<<PYTHIA-PRICE>> the rename price is what the admin set" 888.0
+                    (ref-PYTHIA::UR_RenamePrice))
+                ;;The two are independent settings sharing one shape -- exactly where a
+                ;;copy-paste slip would put both writes on the same row.
+                (expect "<<PYTHIA-PRICE>> they are stored separately, not aliased"
+                    false (= (ref-PYTHIA::UR_DeployPrice) (ref-PYTHIA::UR_RenamePrice)))
+                (expect "<<PYTHIA-PRICE>> and both actually moved off their previous values"
+                    true (and (!= d0 999.0) (!= r0 888.0)))
+            ]
+        )
+        ;;restore, so this block leaves the chain as it found it
+        (ref-TS01-C4::PYTHIA|A_UpdateDeployPrice d0)
+        (ref-TS01-C4::PYTHIA|A_UpdateRenamePrice r0)
+        (map print
+            [
+                (expect "<<PYTHIA-PRICE>> the setter is reversible -- deploy price restored"
+                    d0 (ref-PYTHIA::UR_DeployPrice))
+                (expect "<<PYTHIA-PRICE>> ...and rename price restored"
+                    r0 (ref-PYTHIA::UR_RenamePrice))
+            ]
+        )
+    )
+    ""
+)
+(print "===^^^===")
+(commit-tx)

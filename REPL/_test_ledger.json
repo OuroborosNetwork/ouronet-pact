@@ -1190,11 +1190,12 @@
   ]
  },
  "ATS|C_UpdatePendingBranding": {
-  "invocations": 2,
-  "pos": 0,
+  "invocations": 3,
+  "pos": 8,
   "neg": 1,
   "files": [
-   "REPL/_audit_ats_baseline.repl"
+   "REPL/_audit_ats_baseline.repl",
+   "REPL/modules/ATS.repl"
   ]
  },
  "ATS|C_UpdateRoyalty": {
@@ -2234,11 +2235,12 @@
   ]
  },
  "DPOF|C_MoveCreateRole": {
-  "invocations": 2,
-  "pos": 6,
+  "invocations": 4,
+  "pos": 12,
   "neg": 0,
   "files": [
-   "REPL/_scratch_dpof_c2_moverole.repl"
+   "REPL/_scratch_dpof_c2_moverole.repl",
+   "REPL/modules/DPOF.repl"
   ]
  },
  "DPOF|C_RotateOwnership": {
@@ -3213,11 +3215,12 @@
   ]
  },
  "DPTF|C_ToggleReservation": {
-  "invocations": 2,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 3,
+  "pos": 8,
+  "neg": 1,
   "files": [
    "REPL/Stage_01/[6.3]_SWP.repl",
+   "REPL/modules/VST.repl",
    "REPL/vst-harness.repl"
   ]
  },
@@ -3231,9 +3234,9 @@
   ]
  },
  "DPTF|C_Transfer": {
-  "invocations": 58,
-  "pos": 67,
-  "neg": 0,
+  "invocations": 59,
+  "pos": 75,
+  "neg": 1,
   "files": [
    "REPL/Kursan/AQP-scale-inject.repl",
    "REPL/Kursan/AQP-stream-tests.repl",
@@ -3256,6 +3259,7 @@
    "REPL/Stage_02/[6.4]_AQP-TRIPLET-COLLECT.repl",
    "REPL/_audit_ats_baseline.repl",
    "REPL/modules/DPTF.repl",
+   "REPL/modules/VST.repl",
    "REPL/vst-harness.repl"
   ]
  },
@@ -3436,19 +3440,21 @@
   ]
  },
  "PYTHIA|A_UpdateDeployPrice": {
-  "invocations": 2,
-  "pos": 0,
+  "invocations": 4,
+  "pos": 6,
   "neg": 0,
   "files": [
-   "REPL/_scratch_pythia_h12_price_wiring.repl"
+   "REPL/_scratch_pythia_h12_price_wiring.repl",
+   "REPL/modules/PYTHIA.repl"
   ]
  },
  "PYTHIA|A_UpdateRenamePrice": {
-  "invocations": 2,
-  "pos": 0,
+  "invocations": 4,
+  "pos": 6,
   "neg": 0,
   "files": [
-   "REPL/_scratch_pythia_h12_price_wiring.repl"
+   "REPL/_scratch_pythia_h12_price_wiring.repl",
+   "REPL/modules/PYTHIA.repl"
   ]
  },
  "PYTHIA|C_DeployApiKey": {
@@ -3928,10 +3934,11 @@
   ]
  },
  "VST|C_Awake": {
-  "invocations": 1,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 2,
+  "pos": 13,
+  "neg": 1,
   "files": [
+   "REPL/modules/VST.repl",
    "REPL/vst-harness.repl"
   ]
  },
@@ -3996,9 +4003,9 @@
   ]
  },
  "VST|C_Hibernate": {
-  "invocations": 4,
-  "pos": 12,
-  "neg": 1,
+  "invocations": 5,
+  "pos": 25,
+  "neg": 2,
   "files": [
    "REPL/modules/VST.repl",
    "REPL/vst-harness.repl"
@@ -4039,18 +4046,20 @@
   ]
  },
  "VST|C_RepurposeReserved": {
-  "invocations": 1,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 2,
+  "pos": 8,
+  "neg": 1,
   "files": [
+   "REPL/modules/VST.repl",
    "REPL/vst-harness.repl"
   ]
  },
  "VST|C_RepurposeSleeping": {
-  "invocations": 1,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 2,
+  "pos": 13,
+  "neg": 1,
   "files": [
+   "REPL/modules/VST.repl",
    "REPL/vst-harness.repl"
   ]
  },
@@ -4063,26 +4072,28 @@
   ]
  },
  "VST|C_RepurposeVested": {
-  "invocations": 1,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 2,
+  "pos": 8,
+  "neg": 1,
   "files": [
+   "REPL/modules/VST.repl",
    "REPL/vst-harness.repl"
   ]
  },
  "VST|C_Reserve": {
-  "invocations": 2,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 4,
+  "pos": 8,
+  "neg": 1,
   "files": [
    "REPL/Stage_01/[6.3]_SWP.repl",
+   "REPL/modules/VST.repl",
    "REPL/vst-harness.repl"
   ]
  },
  "VST|C_Sleep": {
-  "invocations": 78,
-  "pos": 21,
-  "neg": 1,
+  "invocations": 79,
+  "pos": 34,
+  "neg": 2,
   "files": [
    "REPL/Stage_01/[6.3]_SWP.repl",
    "REPL/Stage_01/[6.7]_VST.repl",
@@ -4101,11 +4112,12 @@
   ]
  },
  "VST|C_ToggleTransferRoleFrozenDPTF": {
-  "invocations": 2,
-  "pos": 0,
+  "invocations": 4,
+  "pos": 8,
   "neg": 0,
   "files": [
    "REPL/Stage_01/[6.7]_VST.repl",
+   "REPL/modules/VST.repl",
    "REPL/vst-harness.repl"
   ]
  },
@@ -4118,11 +4130,12 @@
   ]
  },
  "VST|C_ToggleTransferRoleReservedDPTF": {
-  "invocations": 2,
-  "pos": 0,
+  "invocations": 3,
+  "pos": 8,
   "neg": 0,
   "files": [
    "REPL/Stage_01/[6.7]_VST.repl",
+   "REPL/modules/VST.repl",
    "REPL/vst-harness.repl"
   ]
  },
@@ -4147,10 +4160,11 @@
   ]
  },
  "VST|C_Unsleep": {
-  "invocations": 1,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 3,
+  "pos": 13,
+  "neg": 1,
   "files": [
+   "REPL/modules/VST.repl",
    "REPL/vst-harness.repl"
   ]
  },
@@ -4164,11 +4178,12 @@
   ]
  },
  "VST|C_Vest": {
-  "invocations": 3,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 4,
+  "pos": 8,
+  "neg": 1,
   "files": [
    "REPL/Stage_01/[6.3]_SWP.repl",
+   "REPL/modules/VST.repl",
    "REPL/vst-harness.repl"
   ]
  }

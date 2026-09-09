@@ -254,7 +254,7 @@ REPL/
 > `ZALL.repl` is NOT the gate and never could be: a suite that boots the chain its own way
 > (every `modules/*.repl`, every `deb-staleness-*` driver) cannot be `(load)`-ed into an
 > already-booted process. The gate is therefore a RUNNER over **59 independent entrypoints**, in
-> parallel — **9158 assertions in 167 seconds of wall time**, because wall time is the slowest
+> parallel — **9209 assertions in 166 seconds of wall time**, because wall time is the slowest
 > single entrypoint, not the sum.
 >
 > The gate has two jobs and **the second is the one that matters**: it refuses to pass while any
@@ -275,7 +275,7 @@ REPL/
 > so the gate cannot get meaningfully faster without splitting ZALL itself. Adding entrypoints
 > shorter than ~150 s is free; adding one longer than ZALL moves the wall directly.
 >
-> Note 9158 is assertions EXECUTED, not distinct: entrypoints each boot the chain, so shared
+> Note 9209 is assertions EXECUTED, not distinct: entrypoints each boot the chain, so shared
 > boot assertions are counted once per entrypoint. The number to quote for coverage is the
 > ledger's; this one is for protection.
 >
@@ -397,8 +397,27 @@ REPL/
 >
 > **Two numbers must be published side by side, never one alone:** entrypoints exercised
 > (coverage) and assertions executed by the gate (protection). A coverage figure quoted without
-> its gated companion overstates what the suite actually defends. This is what P4 exists to fix;
-> the measurement above is its acceptance criterion.
+> its gated companion overstates what the suite actually defends.
+>
+> ### RULE 11 applies to G1 itself — and it was missed once
+> "448/448 exercised" was published while **nine entrypoints lived exclusively in ungated files**
+> (`vst-harness.repl`, `_audit_ats_baseline.repl`, two `_scratch_` probes). They were invoked, so
+> they never appeared in the G1 gap — and nothing re-executed them. The real protected figure was
+> 439/448. That is the same mistake as RULE 10 (comments) and the ZALL measurement above, in a
+> third disguise: **a metric computed over the whole tree instead of over what actually runs.**
+>
+> The fix is structural, not a habit. `_test_ledger.py` now imports `_gate.py`'s own `GATE` list
+> and `closure()` and reports **two** rows that cannot drift apart:
+>
+> ```
+> | exercised at least once                          | 448 (100%) |
+> | exercised by a file the GATE RUNS                | 448 (100%) |
+> | exercised ONLY in an ungated file (not protected)|   0        |
+> ```
+>
+> When the second row is below the first, the ledger prints the offending entrypoints and the
+> ungated files they hide in. **Quote the second row.** This is what P4 exists to fix; the
+> measurement above is its acceptance criterion.
 
 ## Assertion style
 * `(expect (format "…" [vals]) expected actual)` — one `format` for the doc string, never wrapping
@@ -426,17 +445,18 @@ and the protection rows with `cd REPL && python3 _gate.py`.*
 |---|---|---:|---:|---:|
 | B1 | `.repl` files | 241 | 241 | all classified |
 | B2 | asserting files the gate executes | **51%** | **95%** | 100% |
-| B2b | assertions the gate executes | 1,156 | **9,158** | — |
+| B2b | assertions the gate executes | 1,156 | **9,209** | — |
 | B3 | Talos client entrypoints | 448 | 448 | — |
 | B4 | **entrypoints never invoked** | **17** | **0** ✅ | **0** |
-| B5 | entrypoints with no adversarial assertion | 319 | **298** | **0** |
+| B4b | **entrypoints invoked only OUTSIDE the gate** | 9 | **0** ✅ | **0** |
+| B5 | entrypoints with no adversarial assertion | 319 | **289** | **0** |
 | B6 | `enforce` sites | 1,015 | 1,015 | — |
 | B7 | `expect-failure` assertions | 234 | **306** | >= 1,015 |
 | B8 | **`expect-failure` that accept ANY error** | **137** | *re-measure* | **0** |
 | B9 | module testers passing standalone | 26 / 26 | 24 / 24 | all, incl. new |
 | B9b | **module testers asserting NOTHING about their module** | **8 / 26** | **0** ✅ | **0** |
-| B10 | **G1 surface coverage** | ~65% | **100%** ✅ | 100% |
-| B11 | G2 adversarial coverage | 29% | **33%** | 100% |
+| B10 | **G1 surface coverage (gated)** | ~65% | **100%** ✅ | 100% |
+| B11 | G2 adversarial coverage | 29% | **35%** | 100% |
 
 **B4 and B10 are the P2 exit criteria and both are met.** B10 went 65% → 94% (once the ledger
 learned to strip comments — see RULE 10) → 96% → **100%**. Note B9 counts 24, not 26: the three
@@ -508,6 +528,16 @@ it properly**, since every adversarial number downstream is scaled by it.
   DPTF 50%, DPDC 50%, DPOF 54-58%, PYTHIA 66%, DPNF 73%, DEMIPAD 80%, SWP 84%, ATS 88%.
 * **2.3** Every new test asserts an OBSERVABLE OUTCOME, never merely "did not crash".
 * **Exit:** **B10 = 100%**, B4 = 0.  ✅
+* **2.4 (added after 2.1-2.3 closed, from re-reading the section TITLE): every entrypoint in an
+  OWNING tester, not merely somewhere.** Two distinct gaps hid behind the global figure:
+  * **9 ops were invoked only in files the gate does not run** — the protected figure was
+    439/448, not 448/448. Closed by moving them into `modules/VST.repl` (5), `modules/DPOF.repl`,
+    `modules/ATS.repl` and `modules/PYTHIA.repl` (2). See RULE 11's G1 note.
+  * **5 ops were reachable only through the mega-suites** (`ZALL` / `AQP-FULL`), so a change to
+    them would surface only in the full 3-minute run. Two are now in `modules/VST.repl`; the
+    remaining three (`ATS|C_VestedCoil`, `ATS|C_VestedCurl`, `AQP-FVT|C_ToggleRewardLink`) are
+    owned by `[6.7]_VST.repl` and `[6.4]_AQP-EXHAUSTIVE-FVT-ADMIN.repl`, which ARE focused suites
+    — they simply cannot boot standalone. Recorded as accepted, not silently counted.
 * **Carried into P3:** 2.2's "fill each tester to 100% of its module" is *entrypoint* coverage,
   which is now global. Per-tester depth (the rejection paths inside each) is B5/B11 and belongs
   to P3 — it is not a separate P2 debt.

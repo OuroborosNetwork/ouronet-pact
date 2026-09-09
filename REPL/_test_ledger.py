@@ -90,6 +90,39 @@ tested   = [o for o in ops_sorted if inv[o]]
 untested = [o for o in ops_sorted if not inv[o]]
 no_neg   = [o for o in tested if not neg[o]]
 
+# ---- GATED coverage (RULE 11 applied to G1 itself) ----------------------------------------------
+# "Exercised" counts an invocation in ANY .repl in the tree. An op invoked only in a file the GATE
+# does not run is not protected by anything: nothing re-executes it when the code changes. This
+# distinction was missed once already -- 448/448 was published while nine ops lived exclusively in
+# vst-harness.repl, _audit_ats_baseline.repl and two _scratch_ probes, all ungated. Import the
+# gate's own GATE list and closure so the two can never drift apart.
+def _gated_files():
+    import importlib.util, sys as _sys
+    here = os.path.dirname(os.path.abspath(__file__))
+    spec = importlib.util.spec_from_file_location('_gate', os.path.join(here, '_gate.py'))
+    m = importlib.util.module_from_spec(spec)
+    argv, _sys.argv = _sys.argv, ['_gate', '--audit-only']
+    cwd = os.getcwd()
+    try:
+        spec.loader.exec_module(m)      # chdir()s to REPL/ and may sys.exit on a missing pact
+    except SystemExit:
+        pass
+    finally:
+        _sys.argv = argv
+    out = set()
+    for e in m.GATE:
+        out |= {os.path.normpath(x) for x in m.closure(e)}
+    os.chdir(cwd)
+    return out
+
+def _rel(p):                            # ledger paths are repo-relative, gate paths are REPL-relative
+    return os.path.normpath(p[5:]) if p.startswith('REPL/') else os.path.normpath(p)
+
+GATED    = _gated_files()
+ungated  = [o for o in tested
+            if not ({_rel(f) for f in where[o]} & GATED)]
+gated    = [o for o in tested if o not in set(ungated)]
+
 # ---- report ------------------------------------------------------------------------------------
 print("# REPL TEST LEDGER — what is tested, how often, and how\n")
 print("**GENERATED — do not edit.** `python3 REPL/_test_ledger.py > "
@@ -109,6 +142,9 @@ print(f"| metric | value |\n|---|---:|")
 print(f"| client entrypoints (the auditable contract) | {len(ENTRY)} |")
 print(f"| exercised at least once | {len(tested)} ({100*len(tested)//len(ENTRY)}%) |")
 print(f"| **never exercised** | **{len(untested)}** |")
+print(f"| **exercised by a file the GATE RUNS** | **{len(gated)} "
+      f"({100*len(gated)//len(ENTRY)}%)** |")
+print(f"| exercised ONLY in an ungated file (= not protected) | **{len(ungated)}** |")
 print(f"| exercised but with NO adversarial assertion in any of its blocks | **{len(no_neg)}** |")
 print(f"| total invocations across the suite | {sum(inv.values())} |")
 
@@ -116,6 +152,17 @@ if untested:
     print("\n## Never exercised — G1 gap\n")
     print("These entrypoints are reachable by a client and no test calls them.\n")
     for o in untested: print(f"* `{o.replace('|','&#124;')}`")
+
+if ungated:
+    print("\n## Exercised, but only OUTSIDE the gate — protection gap\n")
+    print("These are invoked, so they do not appear in the G1 gap above — but every file that "
+          "invokes them is one `_gate.py` does not run. Nothing re-executes them when the code "
+          "changes, so counting them as covered overstates what the suite defends (RULE 11 "
+          "applied to G1 itself). Each needs its invocation moved into a gated tester.\n")
+    print("| entrypoint | invocations | only in |\n|---|---:|---|")
+    for o in sorted(ungated):
+        fs = ', '.join('`%s`' % os.path.basename(x) for x in sorted(where[o])[:3])
+        print(f"| <code>{o.replace('|','&#124;')}</code> | {inv[o]} | {fs} |")
 
 print("\n## Exercised but never adversarially probed — G2 gap\n")
 print("Called by at least one test, but no `expect-failure` appears in any block that calls them. "
