@@ -6,6 +6,7 @@
 |---|---|---|---|
 | `mock-tf.repl` | 2 DPTFs — MOCKA, MOCKB | stage00+01 | ~3.1 s |
 | `mock-of.repl` | 1 DPOF — MOCKO | stage00+01 | ~3.2 s |
+| `mock-tf-supply.repl` | 1,000,000 each of MOCKA/MOCKB | stage00+01 + `mock-tf` | ~3.2 s |
 | `mock-collections.repl` | NFT MOCKN + SFT MOCKS, 3 nonces each | stage00+01+02 | ~5.0 s |
 
 **Ids derive from the TICKER, not the name**: `MOCKA-98c486052a51`. Resolve with
@@ -20,6 +21,25 @@
    derived fixtures survived a 5000x re-pricing untouched; the hardcoded ones needed 301 hand edits.
 4. **Use a real/live-shaped collection only when SCALE or the live set definition IS the subject** —
    set composition, fragments, make/break, gas ladders. Everything else uses these.
+
+## There is deliberately NO mock-pool — pools are economically bootstrapped
+
+Attempted and abandoned, because the dependency is circular by design:
+
+1. `SWPI::UEV_Issue` requires the pool's **first token to be a Principal** — solvable, via the
+   admin `TS01-A::SWP|A_UpdatePrincipal`.
+2. It then requires the pool's initial worth to clear `SWP::UR_SpawnLimit` (**1000 wSTOA**) —
+   and worth is priced **through existing pools**. A freshly-issued token has no price path, and
+   after boot there is no pool to provide one. Even anchoring on OURO (already a principal, 1.5M
+   held by the patron) fails: with no pool, OURO itself has no wSTOA valuation.
+
+**The first pool is the thing that creates the price path every later pool needs.** So the real
+`Stage_01/[6.3]_SWP.repl` suite IS the bootstrap and cannot be replaced by a fixture — SWP and
+ADMIN testers keep loading it. This is a genuine exception to RULE 2, recorded rather than
+worked around.
+
+Worth knowing for red teaming (P6): the spawn-limit check is a **price-path dependency**, which
+is exactly the shape that oracle-manipulation attacks exploit.
 
 ## Why these exist
 

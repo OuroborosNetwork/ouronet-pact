@@ -1,0 +1,45 @@
+;; REPL/fixtures/mock-tf-supply.repl — mint circulating supply into the mock true fungibles.
+;;
+;; PROVIDES : 1,000,000 MOCKA + 1,000,000 MOCKB held by KST.ANHD.
+;; REQUIRES : deploy-stage00 + deploy-stage01 + fixtures/mock-tf.repl.   LOAD ONCE (RULE 5).
+;; ASSERTS  : its own postcondition only.
+;;
+;; THERE IS DELIBERATELY NO mock-pool FIXTURE. See fixtures/README.md — pool creation is
+;; economically bootstrapped and cannot be reduced to a minimal fixture.
+
+(begin-tx "FIXTURE mock-tf-supply — mint supply into MOCKA/MOCKB")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [FIXTURE mock-tf-supply · 01 · mint supply] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+    )
+    (ref-TS01-C1::DPTF|C_Mint patron "MOCKA-98c486052a51" patron 1000000.0 true)
+    (ref-TS01-C1::DPTF|C_Mint patron "MOCKB-98c486052a51" patron 1000000.0 true)
+    (print "<(FIXTURE mock-tf-supply)> minted 1,000,000 of each")
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "FIXTURE mock-tf-supply — postcondition")
+(namespace "ouronet-ns")
+(print "--- [FIXTURE mock-tf-supply · 05 · postcondition] ---")
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+    )
+    (map print
+        [
+            (expect "<<FIXTURE mock-tf-supply>> MOCKA supply minted"
+                true (> (ref-DPTF::UR_Supply "MOCKA-98c486052a51") 0.0))
+            (expect "<<FIXTURE mock-tf-supply>> MOCKB supply minted"
+                true (> (ref-DPTF::UR_Supply "MOCKB-98c486052a51") 0.0))
+        ]
+    )
+    ""
+)
+(commit-tx)
