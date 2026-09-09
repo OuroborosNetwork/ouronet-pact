@@ -347,3 +347,86 @@
     ""
 )
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-09 — DPTF|C_Wipe: the account must be FROZEN first")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-09 · 01 · wipe preconditions] ---")
+;; C_Wipe appears in no asserting test in the suite. Its capability chain is the interesting
+;; part and it is not obvious from the name:
+;;     DPTF|C>WIPE -> DPTF|C>X_WIPE -> UEV_CanWipeON + UEV_AccountFreezeState(atbw, true)
+;; so an account cannot be wiped unless it has FIRST been frozen. Wipe is the second half of a
+;; two-step confiscation, not a one-shot -- and each half is separately visible on chain.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+    )
+    (map print
+        [
+            (expect "<<DPTF-09>> as issued, MOCKA cannot be wiped" false (ref-DPTF::UR_CanWipe a))
+        ]
+    )
+    ;;C_Control (cu cco casr cf cw cp) — turn can-freeze AND can-wipe ON
+    (ref-TS01-C1::DPTF|C_Control patron a true true true true true true)
+    (map print
+        [
+            (expect "<<DPTF-09>> C_Control turned can-wipe ON"   true (ref-DPTF::UR_CanWipe a))
+            (expect "<<DPTF-09>> C_Control turned can-freeze ON" true (ref-DPTF::UR_CanFreeze a))
+        ]
+    )
+    ;;the flag alone is not enough: an UNFROZEN account still cannot be wiped
+    (map print
+        [
+            (expect-failure "<<DPTF-09>> can-wipe ON is NOT sufficient -- the account must be frozen"
+                "Frozen for MOCKA-98c486052a51"
+                (ref-TS01-C1::DPTF|C_Wipe patron a emma))
+        ]
+    )
+    ""
+)
+(print "--- [DPTF-09 · 02 · freeze then wipe] ---")
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+    )
+    (let
+        (
+            (s0:decimal (ref-DPTF::UR_Supply a))
+            (e0:decimal (ref-DPTF::UR_AccountSupply a emma))
+            (p0:decimal (ref-DPTF::UR_AccountSupply a patron))
+        )
+        (map print
+            [
+                (expect "<<DPTF-09>> precondition: the target actually holds something"
+                    true (> e0 0.0))
+            ]
+        )
+        (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron a emma true)
+        (ref-TS01-C1::DPTF|C_Wipe patron a emma)
+        (map print
+            [
+                (expect "<<DPTF-09>> the wiped account is emptied to exactly zero"
+                    0.0 (ref-DPTF::UR_AccountSupply a emma))
+                ;; A wipe BURNS. Contrast DPNF|C_Repurpose, which moves the same units to another
+                ;; holder and leaves total supply unchanged.
+                (expect "<<DPTF-09>> total supply falls by exactly the wiped amount"
+                    (- s0 e0) (ref-DPTF::UR_Supply a))
+                (expect "<<DPTF-09>> the wiped units go NOWHERE -- the owner is not credited"
+                    p0 (ref-DPTF::UR_AccountSupply a patron))
+            ]
+        )
+    )
+    ""
+)
+(commit-tx)

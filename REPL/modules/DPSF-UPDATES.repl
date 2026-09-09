@@ -1,7 +1,312 @@
-;; REPL/modules/DPSF-UPDATES.repl — STANDALONE DPSF set-element update tester.
-;; Reuses TSFS (SFT, set-class 1) from [6.1.3].
+;; REPL/modules/DPSF-UPDATES.repl — STANDALONE DPSF set-element / nonce update tester.
+;;
+;; P2 rebuild. The previous version was three (load) lines and NOTHING else: it inherited
+;; Stage_02/[6.1.7]_DPSF-UPDATES.repl, which fires 14 DPSF tail ops and asserts nothing about
+;; any of them. Fourteen invocations, zero assertions -- the ledger read that as coverage.
+;;
+;; This file keeps [6.1.7] as the FIXTURE it always was and adds the assertions, plus the three
+;; DPSF entrypoints no test in the suite had ever called:
+;;     DPSF|C_RemoveNonceScore   DPSF|C_UpdateNonceURI   DPSF|C_Repurpose
+;;
+;; Nonce/set addressing (DPDC-N::UR_Nonce) -- the two flags are easy to get backwards:
+;;     nost = true  -> <nosc> is a NONCE        nost = false -> <nosc> is a SET-CLASS
+;;     nos  = true  -> NATIVE                   nos  = false -> SPLIT (fragment)
+;; The DPSF|C_*Nonce* Talos wrappers hardcode nost=true; the DPSF|C_*SetNonce* ones hardcode
+;; nost=false. So `nos` is the only flag a client passes, and it selects native vs fragment.
+;;
+;; Run: cd REPL && pact modules/DPSF-UPDATES.repl
 (load "../deploy-stage00.repl")
 (load "../deploy-stage01.repl")
 (load "../deploy-stage02.repl")
 (load "../Stage_02/[6.1.3]_DPDC-S.repl")
 (load "../Stage_02/[6.1.7]_DPSF-UPDATES.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "DSU-01 — what [6.1.7] actually wrote (14 ops, previously unasserted)")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== DSU-01 · 01 · native nonce 7 after UpdateNonces + BulkTransfer ====
+(print "--- [DSU-01 · 01 · native nonce 7] ---")
+(let
+    (
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (id:string "TSFS-98c486052a51")
+        (nd:object{DpdcUdcV2.DPDC|NonceData} (DPDC.UR_NativeNonceData "TSFS-98c486052a51" true 7))
+    )
+    (map print
+        [
+            (expect "<<DSU-01>> UpdateNonces wrote the name"        "NonceUpd" (at "name" nd))
+            (expect "<<DSU-01>> UpdateNonces wrote the description" "SFT native nonce updated"
+                                                                    (at "description" nd))
+            (expect "<<DSU-01>> UpdateNonces wrote the ignis royalty" 3.0 (at "ignis" nd))
+            ;; BulkTransfer moved 100 of 1000 to EMMA. Supply is conserved across the two accounts.
+            (expect "<<DSU-01>> BulkTransfer debited the sender" 900
+                (ref-DPDC::UR_AccountNonceSupply KST.ANHD id true 7))
+            (expect "<<DSU-01>> BulkTransfer credited the receiver" 100
+                (ref-DPDC::UR_AccountNonceSupply KST.EMMA id true 7))
+            ;; A nonce the suite never touched keeps the mint amount -- proof the bulk write is
+            ;; scoped to the nonce it names.
+            (expect "<<DSU-01>> untouched sibling nonce 8 still whole" 1000
+                (ref-DPDC::UR_AccountNonceSupply KST.ANHD id true 8))
+            (expect "<<DSU-01>> EMMA never held nonce 8 -- the -1 SENTINEL, not 0" -1
+                (ref-DPDC::UR_AccountNonceSupply KST.EMMA id true 8))
+        ]
+    )
+    ""
+)
+;;==== DSU-01 · 02 · set-class 1 after the 10 UpdateSetNonce* ops ====
+(print "--- [DSU-01 · 02 · set-class 1] ---")
+(let
+    (
+        (sd:object{DpdcUdcV2.DPDC|NonceData} (DPDC-S.UR_SetNonceData "TSFS-98c486052a51" true 1))
+    )
+    (map print
+        [
+            (expect "<<DSU-01>> UpdateSetNonceName"        "SetName" (at "name" sd))
+            (expect "<<DSU-01>> UpdateSetNonceDescription" "SetDesc" (at "description" sd))
+            (expect "<<DSU-01>> UpdateSetNonceRoyalty"     3.0 (at "royalty" sd))
+            (expect "<<DSU-01>> UpdateSetNonceIgnisRoyalty" 2.0 (at "ignis" sd))
+            ;; RemoveSetNonceScore ran AFTER UpdateSetNonceScore 5.0 and is the last writer.
+            ;; -1.0 is the "no score" value, and it is what Remove* means.
+            (expect "<<DSU-01>> RemoveSetNonceScore left -1.0, overwriting the 5.0 set before it"
+                -1.0 (at "score" (at "meta-data" sd)))
+        ]
+    )
+    ""
+)
+;;==== DSU-01 · 03 · UpgradeBranding is a PAID level-1 upgrade ====
+(print "--- [DSU-01 · 03 · branding] ---")
+(let
+    (
+        (b:object{BrandingV2.Schema} (BRD.UR_Branding "TSFS-98c486052a51" false))
+    )
+    (map print
+        [
+            (expect "<<DSU-01>> UpgradeBranding set flag 1" 1 (at "flag" b))
+            ;; The level buys 30 days of premium measured from genesis, not from "now".
+            (expect "<<DSU-01>> premium runs 30 days from branding genesis"
+                (add-time (at "genesis" b) (days 30)) (at "premium-until" b))
+        ]
+    )
+    ""
+)
+(print "===^^^===")
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DSU-02 — DPSF|C_RemoveNonceScore (never exercised before)")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DSU-02 · 01 · set a score, then remove it ====
+(print "--- [DSU-02 · 01 · score set then removed] ---")
+(let
+    (
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (id:string "TSFS-98c486052a51")
+        (patron:string KST.ANHD)
+    )
+    ;; C_RemoveNonceScore is a one-line wrapper over C_UpdateNonceScore with score = -1.0.
+    ;; Asserting only "it ran" would not distinguish it from ANY other score write, so the test
+    ;; is differential: put a real score in first, then prove Remove lands on exactly -1.0.
+    (ref-TS02-C1::DPSF|C_UpdateNonceScore patron id patron 8 true 42.5)
+    (map print
+        [
+            (expect "<<DSU-02>> the score to be removed is in place" 42.5
+                (at "score" (at "meta-data" (ref-DPDC::UR_NativeNonceData id true 8))))
+        ]
+    )
+    (ref-TS02-C1::DPSF|C_RemoveNonceScore patron id patron 8 true)
+    (map print
+        [
+            (expect "<<DSU-02>> RemoveNonceScore writes the -1.0 no-score value" -1.0
+                (at "score" (at "meta-data" (ref-DPDC::UR_NativeNonceData id true 8))))
+            ;; Removing a score must not disturb the rest of the nonce record.
+            (expect "<<DSU-02>> the nonce's own name survived the score removal" "N"
+                (at "name" (ref-DPDC::UR_NativeNonceData id true 8)))
+            (expect "<<DSU-02>> holdings are untouched by a metadata write" 1000
+                (ref-DPDC::UR_AccountNonceSupply patron id true 8))
+            ;; Score is per-nonce: nonce 7 must not move when 8 is edited.
+            (expect "<<DSU-02>> sibling nonce 7's score is unaffected" -1.0
+                (at "score" (at "meta-data" (ref-DPDC::UR_NativeNonceData id true 7))))
+        ]
+    )
+    ""
+)
+(print "===^^^===")
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DSU-03 — DPSF|C_UpdateNonceURI (never exercised before)")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DSU-03 · 01 · all three URI slots ====
+(print "--- [DSU-03 · 01 · URI slots] ---")
+(let
+    (
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (id:string "TSFS-98c486052a51")
+        (patron:string KST.ANHD)
+    )
+    ;; UDC_URI|Data field order is image audio video document archive model exotic.
+    ;; The three slots (primary/secondary/tertiary) are separate rows of the same shape, so the
+    ;; failure mode worth catching is one slot's payload landing in another.
+    (ref-TS02-C1::DPSF|C_UpdateNonceURI patron id patron 9 true
+        (ref-DPDC-UDC::UDC_URI|Type true false false false false false false)
+        (ref-DPDC-UDC::UDC_URI|Data "ipfs://primary"   "|" "|" "|" "|" "|" "|")
+        (ref-DPDC-UDC::UDC_URI|Data "ipfs://secondary" "|" "|" "|" "|" "|" "|")
+        (ref-DPDC-UDC::UDC_URI|Data "ipfs://tertiary"  "|" "|" "|" "|" "|" "|")
+    )
+    (let
+        (
+            (nd:object{DpdcUdcV2.DPDC|NonceData} (ref-DPDC::UR_NativeNonceData id true 9))
+        )
+        (map print
+            [
+                (expect "<<DSU-03>> primary slot"   "ipfs://primary"   (at "image" (at "uri-primary" nd)))
+                (expect "<<DSU-03>> secondary slot" "ipfs://secondary" (at "image" (at "uri-secondary" nd)))
+                (expect "<<DSU-03>> tertiary slot"  "ipfs://tertiary"  (at "image" (at "uri-tertiary" nd)))
+                ;; asset-type is written by the same op and rides with the URI payload
+                (expect "<<DSU-03>> asset-type image flag set" true
+                    (at "image" (at "asset-type" nd)))
+                (expect "<<DSU-03>> asset-type video flag left off" false
+                    (at "video" (at "asset-type" nd)))
+                ;; Non-image members of the URI row keep the "|" empty marker.
+                (expect "<<DSU-03>> unused audio member stays the empty marker" "|"
+                    (at "audio" (at "uri-primary" nd)))
+                ;; A URI write must not reach a sibling nonce.
+                (expect "<<DSU-03>> sibling nonce 8 has no URI" "|"
+                    (at "image" (at "uri-primary" (ref-DPDC::UR_NativeNonceData id true 8))))
+            ]
+        )
+    )
+    ""
+)
+(print "===^^^===")
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DSU-04 — DPSF|C_Repurpose is a FORCED move, single and multi mode")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== DSU-04 · 01 · reclaim from a third party WITHOUT their signature ====
+(print "--- [DSU-04 · 01 · single-nonce repurpose] ---")
+;; The security-relevant property of Repurpose is that the COLLECTION OWNER moves units out of
+;; someone else's holding. EMMA holds 100 of nonce 7 from [6.1.7]'s BulkTransfer and does NOT
+;; sign here -- only ANHD, the collection owner, does. If this needed EMMA's consent it would be
+;; a transfer, not a repurpose.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (id:string "TSFS-98c486052a51")
+        (patron:string KST.ANHD)
+    )
+    (ref-TS02-C1::DPSF|C_Repurpose patron id KST.EMMA KST.ANHD [7] [40])
+    (map print
+        [
+            (expect "<<DSU-04>> repurposed OUT of EMMA without EMMA signing" 60
+                (ref-DPDC::UR_AccountNonceSupply KST.EMMA id true 7))
+            (expect "<<DSU-04>> and INTO the collection owner" 940
+                (ref-DPDC::UR_AccountNonceSupply KST.ANHD id true 7))
+        ]
+    )
+    ""
+)
+;;==== DSU-04 · 02 · multi mode is a DIFFERENT code path ====
+(print "--- [DSU-04 · 02 · multi-nonce repurpose] ---")
+;; C_RepurposeCollectable branches on (= (length nonces) 1): single mode calls XE_Debit*-Nonce
+;; and multi mode calls the plural XE_Debit*-Nonces. Two nonces exercise the second branch.
+(let
+    (
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (id:string "TSFS-98c486052a51")
+        (patron:string KST.ANHD)
+    )
+    ;; seed EMMA on a second nonce so a two-nonce repurpose has something to take
+    (ref-TS02-C1::DPSF|C_TransferNonce patron id patron KST.EMMA 8 250 false)
+    (map print
+        [
+            (expect "<<DSU-04>> EMMA seeded on nonce 8" 250
+                (ref-DPDC::UR_AccountNonceSupply KST.EMMA id true 8))
+        ]
+    )
+    (ref-TS02-C1::DPSF|C_Repurpose patron id KST.EMMA KST.ANHD [7 8] [10 50])
+    (map print
+        [
+            (expect "<<DSU-04>> multi mode debited nonce 7"  50 (ref-DPDC::UR_AccountNonceSupply KST.EMMA id true 7))
+            (expect "<<DSU-04>> multi mode debited nonce 8" 200 (ref-DPDC::UR_AccountNonceSupply KST.EMMA id true 8))
+            (expect "<<DSU-04>> multi mode credited nonce 7" 950 (ref-DPDC::UR_AccountNonceSupply KST.ANHD id true 7))
+            (expect "<<DSU-04>> multi mode credited nonce 8" 800 (ref-DPDC::UR_AccountNonceSupply KST.ANHD id true 8))
+        ]
+    )
+    ""
+)
+(print "===^^^===")
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DSU-05 — repurpose rejections")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== DSU-05 · 01 · a non-owner cannot repurpose ====
+(print "--- [DSU-05 · 01 · non-owner rejected] ---")
+;; NOTE (Rule 9): expect-failure catches the abort but does NOT roll back writes made before it.
+;; Both probes below reject inside the capability, before any debit, so nothing is left behind --
+;; and the guard assertion after each one is what PROVES that rather than assuming it.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (id:string "TSFS-98c486052a51")
+    )
+    (map print
+        [
+            ;; The rejection surfaces as a KEYSET failure naming the owner's key -- not as a
+            ;; message saying "you are not the collection owner". Correct, but it tells a caller
+            ;; which key was wanted rather than which rule they broke.
+            (expect-failure "<<DSU-05>> EMMA is not the collection owner and cannot repurpose"
+                "Keyset failure (keys-all): [PK_Ancie...]"
+                (ref-TS02-C1::DPSF|C_Repurpose KST.EMMA id KST.ANHD KST.EMMA [7] [10]))
+            (expect "<<DSU-05>> and nothing moved" 950
+                (ref-DPDC::UR_AccountNonceSupply KST.ANHD id true 7))
+        ]
+    )
+    ""
+)
+;;==== DSU-05 · 02 · cannot repurpose more than the holder has ====
+(print "--- [DSU-05 · 02 · over-repurpose rejected] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (id:string "TSFS-98c486052a51")
+    )
+    (map print
+        [
+            (expect-failure "<<DSU-05>> EMMA holds 50 of nonce 7; taking 51 must reject"
+                "Nonce 7 in sufficient quantity for Operation"
+                (ref-TS02-C1::DPSF|C_Repurpose KST.ANHD id KST.EMMA KST.ANHD [7] [51]))
+            (expect "<<DSU-05>> EMMA's holding is intact after the rejected take" 50
+                (ref-DPDC::UR_AccountNonceSupply KST.EMMA id true 7))
+        ]
+    )
+    ""
+)
+(print "===^^^===")
+(commit-tx)
+(print "")
+(print "=== END modules/DPSF-UPDATES.repl ===")

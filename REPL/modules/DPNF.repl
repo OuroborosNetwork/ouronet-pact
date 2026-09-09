@@ -188,3 +188,54 @@
     ""
 )
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPNF-05 — DPNF|C_Repurpose: the collection owner takes a nonce BACK")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPNF-05 · 01 · forced reclaim] ---")
+;; Never exercised by any test before. Repurpose is NOT a transfer: the collection owner moves a
+;; nonce out of a third party's holding, and that party does not sign. EMMA received nonce 3 in
+;; DPNF-03 and signs nothing here -- only ANHD does. That asymmetry IS the op.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (nf:string "MOCKN-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+    )
+    (map print
+        [
+            (expect "<<DPNF-05>> precondition: EMMA holds nonce 3"
+                (ref-I|OURONET::OI|UC_ShortAccount emma) (ref-DPDC::UR_NonceHolder nf false 3))
+        ]
+    )
+    (let ((used0:integer (ref-DPDC::UR_NoncesUsed nf false)))
+        (ref-TS02-C2::DPNF|C_Repurpose patron nf emma patron [3] [1])
+        (map print
+            [
+                (expect "<<DPNF-05>> the nonce is back with the collection owner"
+                    (ref-I|OURONET::OI|UC_ShortAccount patron) (ref-DPDC::UR_NonceHolder nf false 3))
+                ;; 0, NOT the -1 "never held" sentinel: being repurposed away leaves a residue
+                ;; row, so a former holder stays distinguishable from an account that never held
+                ;; the nonce. Same distinction the DPSF bulk wipes make.
+                (expect "<<DPNF-05>> a FORMER holder reads 0, not the -1 never-held sentinel" 0
+                    (ref-DPDC::UR_AccountNonceSupply emma nf false 3))
+                (expect "<<DPNF-05>> the owner holds exactly one unit of it" 1
+                    (ref-DPDC::UR_AccountNonceSupply patron nf false 3))
+                ;; A repurpose moves an existing nonce; it must not mint.
+                (expect "<<DPNF-05>> repurpose creates no new nonce" used0
+                    (ref-DPDC::UR_NoncesUsed nf false))
+                ;; and it is scoped to the nonce named
+                (expect "<<DPNF-05>> an unrelated nonce keeps its holder"
+                    (ref-I|OURONET::OI|UC_ShortAccount patron) (ref-DPDC::UR_NonceHolder nf false 1))
+            ]
+        )
+    )
+    ""
+)
+(commit-tx)

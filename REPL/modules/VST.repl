@@ -416,3 +416,89 @@
     ""
 )
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-09 — VST|C_Merge, and the guard that SHOULD separate it from C_Slumber")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-09 · 01 · C_Merge on the sleeping link] ---")
+;;VST|C_Merge was invoked by NOTHING in any asserting test (ledger G1 gap). It is the SLEEPING
+;;merge; C_Slumber is the HIBERNATION merge. Both land on the same private helper:
+;;      C_Merge   -> XI_MergeNonces(... vzh-tag 2)   tag 2 = Sleeping
+;;      C_Slumber -> XI_MergeNonces(... vzh-tag 3)   tag 3 = Hibernating
+;;and the tag decides TWO things: which link resolves the underlying DPTF, and which METADATA
+;;SHAPE the surviving nonce is minted with.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (a:string "MOCKA-98c486052a51")
+        (slp:string "Z|MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+    )
+    (let ((used0:integer (ref-DPOF::UR_NoncesUsed slp)))
+        (ref-TS01-C2::VST|C_Sleep patron patron patron a 30.0 3600)
+        (ref-TS01-C2::VST|C_Sleep patron patron patron a 70.0 3600)
+        (let
+            (
+                (n1:integer (+ used0 1))
+                (n2:integer (+ used0 2))
+                (nm:integer (+ used0 3))
+            )
+            (ref-TS01-C2::VST|C_Merge patron patron slp [n1 n2])
+            (map print
+                [
+                    (expect "<<VST-09>> C_Merge decommissioned the first source nonce"
+                        -1.0 (ref-DPOF::UR_NonceSupply slp n1))
+                    (expect "<<VST-09>> C_Merge decommissioned the second source nonce"
+                        -1.0 (ref-DPOF::UR_NonceSupply slp n2))
+                    (expect "<<VST-09>> C_Merge minted exactly ONE surviving nonce"
+                        nm (ref-DPOF::UR_NoncesUsed slp))
+                    (expect "<<VST-09>> INVARIANT: the merge conserves the slept total"
+                        100.0 (ref-DPOF::UR_NonceSupply slp nm))
+                    ;;The tag-2 branch mints SLEEPING metadata: release-amount + release-date.
+                    (expect "<<VST-09>> C_Merge wrote the SLEEPING metadata shape"
+                        true (contains "release-amount" (at 0 (ref-DPOF::UR_NonceMetaData slp nm))))
+                ]
+            )
+        )
+    )
+    ""
+)
+(print "--- [VST-09 · 02 · FINDING: no guard ties the merge op to the link kind] ---")
+;;VST-07 called C_Slumber -- the HIBERNATION merge -- on this SLEEPING dpof, and it SUCCEEDED.
+;;Nothing in C_Slumber, VST|C>SLUMBER or XI_MergeNonces checks that <dpof> is actually the
+;;hibernating link. Two consequences, both provable from the state VST-07 left behind:
+;;
+;;  1] The surviving nonce is minted with the WRONG METADATA SHAPE. Sleeping positions carry
+;;     {release-amount, release-date}; hibernating ones carry {mint-time, release-date}. Nonce 3
+;;     below lives in the SLEEPING dpof and carries the hibernating shape -- permanently.
+;;  2] The underlying DPTF is resolved by the same tag (UR_Sleeping vs UR_Hibernation), so the
+;;     wrong call gets the "|" sentinel. It does NOT fail here, because the release branch is
+;;     only reached when some nonce has already expired (free-amount != 0.0). The mismatch is
+;;     therefore DATA-DEPENDENT: it stays silent until a batch unlocks, then dies inside a table
+;;     read that names neither the op nor the real problem.
+;;
+;;A UEV_ asserting the dpof matches the tag's link would turn both into a named rejection at the
+;;call site. This test pins the CURRENT behaviour so the fix has something to break.
+(let
+    (
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (slp:string "Z|MOCKA-98c486052a51")
+    )
+    (map print
+        [
+            (expect "<<VST-09>> nonce 3 sits in the SLEEPING dpof"
+                200.0 (ref-DPOF::UR_NonceSupply slp 3))
+            (expect "<<VST-09>> ...yet C_Slumber gave it the HIBERNATING metadata shape"
+                true (contains "mint-time" (at 0 (ref-DPOF::UR_NonceMetaData slp 3))))
+            (expect "<<VST-09>> ...and it is MISSING the release-amount every sleeping reader wants"
+                false (contains "release-amount" (at 0 (ref-DPOF::UR_NonceMetaData slp 3))))
+        ]
+    )
+    ""
+)
+(commit-tx)
