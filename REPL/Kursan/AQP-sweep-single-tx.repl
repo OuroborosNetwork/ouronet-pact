@@ -1,0 +1,209 @@
+;;
+;; REPL/Kursan/AQP-sweep-single-tx.repl — the SINGLE-TX anchor sweep, at the same
+;; 50-holder population its paginated twin uses.
+;;
+;; AQP-FVT|CC_SweepRevokeAnchor had NO live invocation anywhere in the suite. Its scalable
+;; twin (CC_SweepBegin + CCp_SweepRecomputeChunk) is covered by AQP-scale-sweep.repl, so the
+;; useful test is not "does the single-tx form run" but METAMORPHIC: the one-shot op must land
+;; on exactly the END STATE the four-transaction pagination reaches -- cursor closed, pool
+;; unfrozen, anchor revoked, every holder's promile recomputed to 0. If the two ever diverge,
+;; the choice between them stops being an operational one and becomes a correctness one.
+;;
+;; The boot + fixture below is copied verbatim from AQP-scale-sweep.repl (same anchor, same
+;; pool, same 50 synth stakers) precisely so the comparison is like-for-like.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Kursan/AQP-sweep-single-tx.repl  —  50-holder SINGLE-TX anchor sweep")
+(print "================================================================")
+(load "../Stage00_Sanboxes.repl")
+(load "../Stage01_Tester.repl")
+(load "../Stage_02/[0.1]_Interfaces.repl")
+(load "../Stage_02/[2.1]_DpdcCore.repl")
+(load "../Stage_02/[2.2]_DemiPad.repl")
+(load "../Stage_02/[2.3]_EarningPools.repl")
+(load "../Stage_02/[3]_Talos.repl")
+(load "../Stage_02/[4.0]_Sovereign-Executor.repl")
+(begin-tx "SCALE-SWP-BOOT - KBN citizen")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+(load "../../2_CITIZEN/4_BunniesMinter/02_KBunnies.pact")
+(commit-tx)
+(begin-tx "SCALE-SWP-BOOT - AQP-BOOT")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+(load "../../2_CITIZEN/5_VaultsMinter/04_AQP-BOOT.pact")
+(commit-tx)
+(begin-tx "SCALE-SWP-BOOT - Step0")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print (format "<(Step0)> => \"{}\"" [(AQP-BOOT.C_Step0_WireImcAndGovernor KST.ANHD)]))
+(commit-tx)
+(load "../Stage_02/[6.2.6]_AQP-VCT-GAS-BASE.repl")
+(print "")
+;;
+;; ============================================================================
+;; SCALE-SWP-01 — anchor on OURO + boost-linked score + 50 synth stakers (each gains promile)
+;; ============================================================================
+(begin-tx "SCALE-SWP-01 - anchor + boost-linked score + 50 synth stakers")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+            ]
+        }
+    ]
+)
+(print "--- [SCALE-SWP-01 · anchor + boost-linked score + stake 50] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpPool"))
+        (score-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpScore"))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpFvt"))
+        (anchor-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpAnchor"))
+        (boost-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpBoost"))
+    )
+    ;; 1. anchor on OURO (promile 500 / reference 1000) — acnoi=true creates the boost-class
+    (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "ScaleSwpAnchor" ouro-id true "ScaleSwpBoost" 3 500.0 1000.0)
+    ;; 2. pool + score, LINK the score to the boost-class WHILE EMPTY, then vault + enable
+    (ref-TS02-C3::AQP-POOL|C_Issue patron "ScaleSwpPool" ouro-id 1)
+    (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron "ScaleSwpScore" 12 1.0)
+    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostClassLink patron score-id boost-id)
+    (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
+    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+    ;; 3. stake 50 synth (2 OURO each) → each gains proportional promile (2/1000 * 500 = 1.0)
+    (VCTGAS.XI_TfStakeOnly patron pool-id ouro-id 50 2.0)
+    (let
+        (
+            (probe-user:string (VCTGAS.UC_SynthAccount 1))
+        )
+        (map print
+            [
+                (format "<(SWP-01 · anchor state / boost-class / synth-1 promile)> => {} / {} / {}"
+                    [(ref-ANK::UR_ANK|State anchor-id) boost-id (ref-ANK::UR_UB|AggregatePromile probe-user boost-id)])
+                (expect "<<SCALE-SWP-01>> anchor ACTIVE" true (ref-ANK::UR_ANK|State anchor-id))
+                (expect "<<SCALE-SWP-01>> synth-1 gained boost promile from staking anchored OURO" true (> (ref-ANK::UR_UB|AggregatePromile probe-user boost-id) 0.0))
+            ]
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;
+;; ============================================================================
+;; SWP1-EXEC — the whole sweep in ONE transaction.
+;; ============================================================================
+(begin-tx "SWP1-EXEC - AQP-FVT|CC_SweepRevokeAnchor (single tx, 50 holders)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+            ]
+        }
+    ]
+)
+(print "--- [SWP1-EXEC · CC_SweepRevokeAnchor] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)
+        (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (anchor-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpAnchor"))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpPool"))
+        (boost-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpBoost"))
+    )
+    (let
+        (
+            (u1:string (VCTGAS.UC_SynthAccount 1))
+            (u25:string (VCTGAS.UC_SynthAccount 25))
+            (u50:string (VCTGAS.UC_SynthAccount 50))
+        )
+        ;;PRE: this is the state the paginated twin also starts from.
+        (map print
+            [
+                (expect "<<SWP1-EXEC>> pre: anchor ACTIVE" true (ref-ANK::UR_ANK|State anchor-id))
+                (expect "<<SWP1-EXEC>> pre: pool NOT frozen" false (ref-AQP::UR_AQP|PoolSweepInProgress pool-id))
+                (expect "<<SWP1-EXEC>> pre: no sweep cursor open" false (AQP-FVT.UR_FVT|SweepActive anchor-id))
+                (expect "<<SWP1-EXEC>> pre: first holder carries anchor promile"
+                    true (> (ref-ANK::UR_UB|AggregatePromile u1 boost-id) 0.0))
+                (expect "<<SWP1-EXEC>> pre: middle holder carries anchor promile"
+                    true (> (ref-ANK::UR_UB|AggregatePromile u25 boost-id) 0.0))
+                (expect "<<SWP1-EXEC>> pre: last holder carries anchor promile"
+                    true (> (ref-ANK::UR_UB|AggregatePromile u50 boost-id) 0.0))
+            ]
+        )
+        (env-gas 0)
+        (ref-TS02-C3::AQP-FVT|CC_SweepRevokeAnchor patron anchor-id)
+        (let ((g:integer (env-gas)))
+            (print (format "<<SWP1-EXEC>> single-tx sweep gas over 50 holders = {}" [g]))
+            (map print
+                [
+                    ;;POST: byte-for-byte the end state AQP-scale-sweep.repl reaches after
+                    ;;CC_SweepBegin + four CCp_SweepRecomputeChunk calls. Same assertions, same
+                    ;;expected values -- that equality IS the test.
+                    (expect "<<SWP1-EXEC>> anchor swept-revoked" false (ref-ANK::UR_ANK|State anchor-id))
+                    (expect "<<SWP1-EXEC>> cursor CLOSED (never left open by the one-shot form)"
+                        false (AQP-FVT.UR_FVT|SweepActive anchor-id))
+                    (expect "<<SWP1-EXEC>> pool UNFROZEN -- the op unwinds its own freeze"
+                        false (ref-AQP::UR_AQP|PoolSweepInProgress pool-id))
+                    ;;The recompute is the part pagination defers; the single-tx form must NOT.
+                    (expect "<<SWP1-EXEC>> first holder's promile recomputed to 0"
+                        0.0 (ref-ANK::UR_UB|AggregatePromile u1 boost-id))
+                    (expect "<<SWP1-EXEC>> middle holder's promile recomputed to 0"
+                        0.0 (ref-ANK::UR_UB|AggregatePromile u25 boost-id))
+                    (expect "<<SWP1-EXEC>> last holder's promile recomputed to 0 -- no truncation"
+                        0.0 (ref-ANK::UR_UB|AggregatePromile u50 boost-id))
+                ]
+            )
+        )
+        ;;A revoked anchor cannot be swept twice -- and the ORDER in which it refuses matters.
+        (map print
+            [
+                (expect-failure "<<SWP1-EXEC>> sweeping an already-revoked anchor is refused"
+                    "Anchor"
+                    (ref-TS02-C3::AQP-FVT|CC_SweepRevokeAnchor patron anchor-id))
+                ;;The op FREEZES THE POOLS FIRST and only then finds the anchor already revoked,
+                ;;so the pool is left frozen behind the abort. On chain that is harmless -- a
+                ;;failed transaction reverts everything, including the freeze. It is visible here
+                ;;only because expect-failure catches the abort MID-TRANSACTION with no rollback
+                ;;(RULE 9). Recorded rather than "fixed" in the test, because the observation is
+                ;;real: the guard is act-then-check, not check-then-act, and any future path that
+                ;;reaches this state NON-atomically would strand the pool frozen.
+                (expect "<<SWP1-EXEC>> RULE 9: the caught abort leaves the freeze behind, un-rolled-back"
+                    true (ref-AQP::UR_AQP|PoolSweepInProgress pool-id))
+            ]
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== END AQP-sweep-single-tx.repl — 50-holder anchor sweep in ONE transaction ===")

@@ -14,12 +14,11 @@
 (print "================================================================")
 (load "../Stage00_Sanboxes.repl")
 (load "../Stage01_Tester.repl")
-(load "../Stage_02/[0.1]_Interfaces.repl")
-(load "../Stage_02/[2.1]_DpdcCore.repl")
-(load "../Stage_02/[2.2]_DemiPad.repl")
-(load "../Stage_02/[2.3]_EarningPools.repl")
-(load "../Stage_02/[3]_Talos.repl")
-(load "../Stage_02/[4.0]_Sovereign-Executor.repl")
+;;#P2 REPAIR: this hand-rolled Stage-2 deploy block predated deploy-stage02.repl and never ran
+;;AQP-BOOT Step0, so RPS's inter-module-call policy was unwired and the very first AQP-FVT|C_Issue
+;;died in RPS::P|UEV_IMC. The file could not execute AT ALL. deploy-stage02.repl IS this block
+;;plus [Z]_Reads, KBN, AQP-BOOT and Step0.
+(load "../deploy-stage02.repl")
 (print "")
 ;;
 ;; ============================================================================
