@@ -18,6 +18,24 @@ capability splits, and the REPL coverage-completion + single-run refactor. Each 
 same treatment as a fix in Part I (location stated up front, diff, proof, rationale).
 → **Implication:** document main-work continuously — don't leave Part II as a retro write-up.
 
+### Part II findings register — REPL coverage completion (P2/G1, closed 2026-09-09)
+Six defects found by nothing more adversarial than *invoking every client entrypoint once and
+asserting on the observable outcome*. Each has a pinning test in the suite; none are fixed yet.
+Full write-up, with mechanism and reproduction, in
+[`memories/2026-09-09-p2-g1-complete-and-its-findings.md`](memories/2026-09-09-p2-g1-complete-and-its-findings.md).
+
+| # | where | defect | severity |
+|---|---|---|---|
+| 1 | `05_STOAICO.pact:496` | unguarded zero-amount urSTOA mint **deadlocks the distribution vault from round 2** — self-collect, admin flush and new-round inject all blocked | **severe** |
+| 2 | `11_VST.pact` `XI_MergeNonces` | `C_Merge`/`C_Slumber` do not validate the dpof against their `vzh-tag`; wrong-kind merge mints the wrong metadata shape and crashes later, data-dependently | high |
+| 3 | 5 sites, incl. `INFO-ONE+.pact:2465` | `(format "literal")` with no argument list — arity error; **`INFO_ATS\|Cull` is broken on every call** | high |
+| 4 | `12_LIQUID.pact:125`, `01_DALOS.pact:489` | migration guard message says "offline" while `enforce gap` requires the pause **ON** | low |
+| 5 | `16_SWPI.pact` / `UC_SlippageMinMax` | slippage bound is measured in **fee-less** tokens; delivered came in 8.2× the chosen tolerance below the floor, and a breach returns a string instead of reverting | design/UI |
+| 6 | `DEMIPAD\|C>WITHDRAW` | provably dead `enforce` — `UR_Funds` enforces the identical predicate first | dead code |
+
+**The methodological point for Part III:** all six were reachable without a red team. Whatever the
+adversarial phase costs, it should not be spent re-finding what a first invocation would have.
+
 ## Part III — Red-team attack audit (Phase 6.1)
 The comprehensive multi-agent adversarial attack on ALL modules, in final shape, before redeploy.
 Attack surfaces: capability/auth bypass (module-boundary guard, composed caps), arithmetic/rounding/

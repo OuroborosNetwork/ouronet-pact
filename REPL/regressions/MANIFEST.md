@@ -7,7 +7,14 @@
 | **RUNNABLE now** | **19** | **189** |
 | blocked (see below) | 29 | 195 |
 
-Run any of them from `REPL/`: `pact <path>` — they self-boot.
+**These are GATE ENTRYPOINTS now.** `regressions/run.sh` has been deleted: a second runner that
+the primary runner excluded is exactly the situation RULE 4 exists to prevent, and it is how these
+proofs stayed orphaned while a manifest claimed they were runnable. `python3 _gate.py` runs every
+file listed under *Runnable* below, in parallel with the rest of the suite. Any one of them can
+still be run alone with `./_run1.sh <path>` — they self-boot.
+
+The *Blocked* list below is now mirrored, file by file with the reason, in `_gate.py`'s EXCLUDED —
+so the gate states its own gaps rather than leaving them here where nothing enforces them.
 
 ## Runnable
 
@@ -37,7 +44,16 @@ Run any of them from `REPL/`: `pact <path>` — they self-boot.
 
 **Root cause for most of these is ONE line.** `Stage_02/[6.1.4]_DPDC-NF.repl:333` upgrades CNF's branding by 1 month, and `BRD` rejects with *"Blue Flag has more than 15 days remainig!"* when the flag is still fresh. It passes in `ZALL.repl` and fails here because these files load `Stage00a_StoaTests.repl`, which **ZALL never loads** — a longer chain leaves CNF already branded.
 
-That is a **G3 determinism violation**: the test passes in one context only, so it is not proving what it claims. Resolving it is P4 (contamination), not P1.
+That is a **G3 determinism violation**: the test passes in one context only, so it is not proving what it claims. Resolving it is P4 (contamination), not P1. All seven remaining `_verify_finding_*`
+entries share it, so **one line unblocks all seven**; each is listed individually in `_gate.py`'s
+EXCLUDED with that reason, so the gate states the gap rather than leaving it here.
+
+**Four files left this list on 2026-09-09** — `aqp-info-tests` (69), `dsa-grand-tour` (29),
+`dsa-hetero-split-tests` (15) and `dsa-agency-tests` (12). None was blocked by the `[6.1.4]:333`
+defect; each carried a **hand-rolled Stage-2 deploy block predating `deploy-stage02.repl`** that
+stopped provisioning KBN (or, for `dsa-agency-tests`, `AQP-BOOT Step0`, which wires RPS's IMC
+policy). They now load `deploy-stage02.repl` and are gate entrypoints. Blocked was not the same as
+unfixable — it just meant nobody had run them since the deploy core moved.
 
 | file | +asserts | -asserts |
 |---|---:|---:|
@@ -48,10 +64,6 @@ That is a **G3 determinism violation**: the test passes in one context only, so 
 | `Kursan/_verify_finding_DPDC-S_32M_hybrid_constituent_order.repl` | 2 | 0 |
 | `Kursan/_verify_finding_DPDC-UDC-S_38M_sentinel_unreachable.repl` | 0 | 2 |
 | `Kursan/_verify_finding_DPDC_34M_empty_nonces_with_supplies.repl` | 3 | 0 |
-| `Kursan/aqp-info-tests.repl` | 55 | 0 |
-| `Kursan/dsa-agency-tests.repl` | 5 | 7 |
-| `Kursan/dsa-grand-tour.repl` | 29 | 0 |
-| `Kursan/dsa-hetero-split-tests.repl` | 10 | 5 |
 | `_audit_ats_baseline.repl` | 14 | 18 |
 | `_scratch_dalos_m1_rotatekadena_orphan.repl` | 0 | 0 |
 | `_scratch_dalos_m2_deploysmart_capsplit.repl` | 0 | 2 |

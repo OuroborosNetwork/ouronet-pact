@@ -35,25 +35,90 @@ if not os.path.exists(PACT) and not shutil.which(PACT):
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 # --- the gate ------------------------------------------------------------------------------
-GATE = (["ZALL.repl", "AQP-FULL.repl", "AQP-core-vct.repl", "triplet-collect-golden.repl"]
+# The Kursan/ suites and the _scratch_ audit proofs are HERE, not in EXCLUDED. They used to be
+# excluded wholesale ("one-off finding-verification harnesses") which hid 343 assertions --
+# including dsa-capture-tests (68) and aqp-info-tests (69) -- while regressions/MANIFEST.md
+# listed many of the SAME files as runnable and regressions/run.sh ran them. A second runner the
+# first one excludes is exactly what RULE 4 forbids: regressions/run.sh is deleted and these are
+# gate entrypoints now.
+KURSAN = [
+    "Kursan/AQP-scale-inject.repl",
+    "Kursan/AQP-scale-sweep.repl",
+    "Kursan/AQP-scale-vacate.repl",
+    "Kursan/AQP-stream-tests.repl",
+    "Kursan/AQP-sweep-single-tx.repl",
+    "Kursan/aqp-info-tests.repl",
+    "Kursan/dsa-agency-tests.repl",
+    "Kursan/dsa-capture-tests.repl",
+    "Kursan/dsa-fee-tests.repl",
+    "Kursan/dsa-grand-tour.repl",
+    "Kursan/dsa-hetero-split-tests.repl",
+    "Kursan/dsa-model-tests.repl",
+    "Kursan/_verify_finding_DPDC-C_24M_fragment_credit_amount.repl",
+    "Kursan/_verify_finding_DPDC-N_12Hc_set_instance_lock.repl",
+    "Kursan/_verify_finding_DPDC-R_13H_unfreeze_release_valve.repl",
+    "Kursan/_verify_finding_DPDC-S_15H_multiplier_bound.repl",
+    "Kursan/_verify_finding_DPDC-S_C1_update_multiplier.repl",
+    "Kursan/_verify_finding_DPDC_12Hb_metadata_caps.repl",
+]
+# Audit proofs that live in REPL/ root under the _scratch_ prefix. The prefix is excluded as a
+# class (most _scratch_ files really are one-question probes with no assertions); these six are
+# named individually because regressions/MANIFEST.md calls them runnable audit proofs, and a
+# finding's regression test that nothing runs is not a regression test (RULE 7).
+SCRATCH_PROOFS = [
+    "_scratch_dptf_m6_urhibernation_purefetch.repl",
+    "_scratch_ts01a_n3_treasury_gate_check.repl",
+    "_scratch_udalos_h1_msdc.repl",
+    "_scratch_ulst_75l_stringpresence_empty.repl",
+    "_scratch_ulst_m20_uev_izunique.repl",
+    "_scratch_urs_m18_overblock.repl",
+]
+GATE = (["ZALL.repl", "AQP-FULL.repl", "AQP-core-vct.repl", "triplet-collect-golden.repl",
+         "launchpad-groundtruth.repl", "Stage00b_Run.repl", "Stage00b_RunGas.repl"]
         + sorted(glob.glob("deb-staleness-*.repl"))
-        + sorted(glob.glob("modules/*.repl")))
+        + sorted(glob.glob("modules/*.repl"))
+        + KURSAN + SCRATCH_PROOFS)
 
 # --- what is deliberately NOT gated, and why ------------------------------------------------
 # Each entry must carry a reason. "It is slow" is not a reason; "it is an alternative path to
 # something already gated" is. Reviewing this list IS reviewing the suite's honesty.
 EXCLUDED = [
     ("archive/",       "retired probes; kept for provenance, not run"),
-    ("Kursan/",        "one-off finding-verification harnesses, each re-booting the full chain"),
+    # The eight Kursan verify-finding harnesses below share ONE root cause and are the G3
+    # order-dependence defect, not eight separate problems: [6.1.4]_DPDC-NF.repl:333 upgrades
+    # CNF's branding by a month and BRD rejects with "Blue Flag has more than 15 days remainig!"
+    # when the flag is still fresh. They pass inside ZALL and fail standalone because they load
+    # Stage00a_StoaTests.repl, which ZALL never loads, so the longer chain leaves CNF already
+    # branded. Fixing that one line unblocks all eight at once -- tracked for P4/G3.
+    ("Kursan/_verify_finding_DPDC-I_33M_makeid_same_block_collision.repl",   "G3: [6.1.4]:333"),
+    ("Kursan/_verify_finding_DPDC-F-S_47L-51L_empty_definition_guards.repl", "G3: [6.1.4]:333"),
+    ("Kursan/_verify_finding_DPDC-S_30M_enable-frag-active-gate.repl",       "G3: [6.1.4]:333"),
+    ("Kursan/_verify_finding_DPDC-S_31M_primordial_element_bounds.repl",     "G3: [6.1.4]:333"),
+    ("Kursan/_verify_finding_DPDC-S_32M_hybrid_constituent_order.repl",      "G3: [6.1.4]:333"),
+    ("Kursan/_verify_finding_DPDC-UDC-S_38M_sentinel_unreachable.repl",      "G3: [6.1.4]:333"),
+    ("Kursan/_verify_finding_DPDC_34M_empty_nonces_with_supplies.repl",      "G3: [6.1.4]:333"),
+    ("Kursan/VCT-comprehensive.repl",
+                       "driver for [6.2.6]_AQP-VCT-GAS, which fails inside its own VCTGAS probe "
+                       "module -- same known breakage as VCT-gas-sweep.repl below"),
+    ("Kursan/table-write-partial-test",
+                       "Pact-semantics scratch probes about partial table writes; their expects "
+                       "are deliberately unsatisfied experiments, not suite assertions"),
     ("fixtures/",      "loaded BY testers, never standalone"),
-    ("regressions/",   "rescued audit proofs with their own runner (regressions/run.sh)"),
+    ("regressions/",   "MANIFEST.md only -- documentation; the proofs it lists are gate entrypoints"),
     ("_scratch_",      "single-question scratch probes"),
     ("_probe",         "single-question scratch probes"),
-    ("_audit_",        "one-off audit baselines"),
+    ("_audit_",        "one-off audit baselines; _audit_ats_baseline.repl does not currently run "
+                       "to completion, so its 32 assertions are NOT coverage"),
     ("_cov_draft",     "coverage tooling draft"),
     ("Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl",
                        "ALTERNATIVE to [6.2]+[6.3], both of which ZALL runs"),
-    ("Stage00b_",      "Stoa bulk/gas benchmarks, not correctness suites"),
+    # NOT ("Stage00b_") as a class: that fragment also caught Stage00b_Run.repl and
+    # Stage00b_RunGas.repl, the DRIVERS, so 51 working assertions sat outside the gate because
+    # the exclusion was written against a filename prefix instead of a role. The two suites
+    # below are loadable-only (their headers say "after Stage00_Sanboxes.repl"); the drivers
+    # that load them are gate entrypoints.
+    ("Stage00b_StoaBulkTests.repl",    "loaded BY Stage00b_Run.repl, which IS gated"),
+    ("Stage00b_StoaBulkGasTests.repl", "loaded BY Stage00b_RunGas.repl, which IS gated"),
     ("Stage_02/[6.2.6]_AQP-VCT-GAS.repl",
                        "gas-ladder BENCHMARK (3 fits-in-2M assertions, not correctness). Its only "
                        "loader VCT-gas-sweep.repl was archived on the assertion-free heuristic; "
@@ -65,8 +130,6 @@ EXCLUDED = [
     ("AQP-comprehensive.repl",
                        "byte-identical LOAD SET to AQP-FULL.repl, which IS gated -- one of the "
                        "two is redundant and should be deleted"),
-    ("launchpad-groundtruth.repl",
-                       "gas-measurement driver over suites ZALL already runs"),
     ("vst-harness.repl", "exploratory VST harness superseded by modules/VST.repl"),
     ("Stage_01/[6.10]_PYTHIA-flush-gas-probe.repl", "gas probe, not a correctness suite"),
     ("Stage_02/OF-stake-smoke.repl", "smoke driver over gated suites"),

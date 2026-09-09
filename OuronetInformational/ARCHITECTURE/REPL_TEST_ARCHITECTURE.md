@@ -253,8 +253,8 @@ REPL/
 >
 > `ZALL.repl` is NOT the gate and never could be: a suite that boots the chain its own way
 > (every `modules/*.repl`, every `deb-staleness-*` driver) cannot be `(load)`-ed into an
-> already-booted process. The gate is therefore a RUNNER over 31 independent entrypoints, in
-> parallel — **5670 assertions in 123 seconds of wall time**, because wall time is the slowest
+> already-booted process. The gate is therefore a RUNNER over **59 independent entrypoints**, in
+> parallel — **9158 assertions in 167 seconds of wall time**, because wall time is the slowest
 > single entrypoint, not the sum.
 >
 > The gate has two jobs and **the second is the one that matters**: it refuses to pass while any
@@ -262,9 +262,28 @@ REPL/
 > and each carries a reason; "it is slow" is not a reason, "it is an alternative path to
 > something already gated" is. **Reviewing that list is reviewing the suite's honesty.**
 >
-> Note 5670 is assertions EXECUTED, not distinct: entrypoints each boot the chain, so shared
+> That list is also where the gate has been WRONG. Its first version excluded `Kursan/` wholesale
+> as "one-off finding-verification harnesses" — hiding **343 assertions**, including
+> `dsa-capture-tests` (68) and `aqp-info-tests` (69) — while `regressions/MANIFEST.md` listed
+> many of the SAME files as runnable and `regressions/run.sh` ran them. A second runner that the
+> first one excludes is precisely the situation RULE 4 exists to prevent. `run.sh` is deleted;
+> those suites and the `_scratch_` audit proofs are gate entrypoints (2026-09-09).
+>
+> **RULE 1 is currently satisfied and worth re-checking whenever entrypoints are added.** Total
+> CPU across them is ~2400 s; the theoretical floor on 16 workers is ~**150 s**, and
+> actual wall time is **167 s** — ~90% packing. The binding entrypoint is `ZALL.repl` at ~166 s,
+> so the gate cannot get meaningfully faster without splitting ZALL itself. Adding entrypoints
+> shorter than ~150 s is free; adding one longer than ZALL moves the wall directly.
+>
+> Note 9158 is assertions EXECUTED, not distinct: entrypoints each boot the chain, so shared
 > boot assertions are counted once per entrypoint. The number to quote for coverage is the
 > ledger's; this one is for protection.
+>
+> **Verifying ONE file: `./_run1.sh <path>`, never `pact <path> | grep FAILURE`.** A file that
+> aborts *before reaching any assertion* produces zero `FAILURE:` lines and reads as green. The
+> gate's real criterion is "`Load successful` present AND `Load failed` absent"; `_run1.sh`
+> applies exactly that. A broken `modules/LIQUID.repl` passed the weaker check and had to be
+> caught by the gate.
 
 > ## RULE 5 — every test file belongs to exactly one tester.
 > No file is loaded twice in one process. Double-loading re-issues fixtures and corrupts state;
@@ -350,23 +369,31 @@ REPL/
 > assertion in the first set but not the second is written, passing, and **not protecting
 > anything** — nothing re-runs it when the code changes.
 >
-> **Measured 2026-09-09: ZALL executes 1156 of 2245 written assertions — 51%.** Nearly half the
-> suite is outside the gate, including every `modules/*.repl` tester built in P2 and several
-> real Stage-02 suites:
+> **Measured 2026-09-09, before the gate existed: ZALL executed 1156 of 2245 written assertions
+> — 51%.** Nearly half the suite was written, passing, and protecting nothing.
 >
-> | assertions | file |
-> |---:|---|
-> | 74 | `Stage_02/[6.2.7]_AQP-DEB-MTX.repl` |
-> | 68 | `Kursan/dsa-capture-tests.repl` |
-> | 58 | `modules/DPDC.repl` |
-> | 55 | `Stage_02/[6.5]_AQP-INFO.repl` |
-> | 55 | `Kursan/aqp-info-tests.repl` |
-> | 41 | `modules/DPTF.repl` |
-> | 37 | `modules/VST.repl` |
+> **Same day, after `_gate.py`: 2329 of 2430 — 95%.** What closed the gap was not writing tests;
+> it was three exclusions that were wrong:
 >
-> Some are legitimately outside — `[6.2+3]_DPTF-SWP_Issuance-Only.repl` is an ALTERNATIVE to
-> `[6.2]`+`[6.3]`, and a one-off probe like `_audit_ats_baseline.repl` is not a suite. The rest
-> are simply not wired in.
+> | was excluded as | reality | assertions |
+> |---|---|---:|
+> | `Kursan/` — "one-off harnesses" | 18 real suites, several named RUNNABLE by `regressions/MANIFEST.md` | 343 |
+> | `Stage00b_` — "benchmarks, not correctness" | the fragment also caught the two DRIVERS | 51 |
+> | `launchpad-groundtruth.repl` — "gas driver" | 210 positive + 46 negative assertions | 256 |
+>
+> Each was written against a **filename prefix instead of a role**, which is how a plausible
+> exclusion hides working tests. The lesson is narrow and mechanical: *an exclusion must name a
+> file and a role, never a prefix.*
+>
+> **The residual 101 are not a backlog of skipped tests — they are DEAD FILES, and that was
+> checked rather than assumed.** Every ungated asserting file was run individually with
+> `_run1.sh`: all 11 remaining `_scratch_` probes abort before reaching an assertion, the 8
+> `Kursan/_verify_finding_*` share the one `[6.1.4]:333` G3 defect, `_audit_ats_baseline.repl`
+> (32 — the largest single entry) does not complete, and the rest are documented alternatives
+> (`AQP-comprehensive.repl` is a byte-identical load set to `AQP-FULL.repl`). So the gate is not
+> excluding coverage; it is listing rot, by name, with the reason. That distinction is the whole
+> point of keeping the list readable — and it only holds because each entry was executed once to
+> earn it.
 >
 > **Two numbers must be published side by side, never one alone:** entrypoints exercised
 > (coverage) and assertions executed by the gate (protection). A coverage figure quoted without
@@ -391,20 +418,34 @@ assembled. 175 files never ran, including **~32 audit-finding regression tests**
 
 ### Baseline — measured 2026-09-09 (every phase moves one of these)
 
-| # | metric | now | target |
-|---|---|---:|---:|
-| B1 | `.repl` files | 241 | all classified |
-| B2 | files the full runner executes | **66 (27%)** | 100% |
-| B3 | Talos client entrypoints | 448 | — |
-| B4 | entrypoints never invoked | **17** | **0** |
-| B5 | entrypoints with no adversarial assertion | **319** | **0** |
-| B6 | `enforce` sites | 1,015 | — |
-| B7 | `expect-failure` assertions | 234 | >= 1,015 |
-| B8 | **`expect-failure` that accept ANY error** | **137** | **0** |
-| B9 | module testers passing standalone | 26 / 26 | all, incl. new |
-| B9b | **module testers asserting NOTHING about their module** | **8 / 26** | **0** |
-| B10 | G1 surface coverage | ~65% | 100% |
-| B11 | G2 adversarial coverage | **29%** | 100% |
+*"start" is the measurement that opened this campaign; "now" is the current value. Regenerate the
+coverage rows with `python3 REPL/_test_ledger.py > OuronetInformational/ARCHITECTURE/REPL-TEST-LEDGER.md`
+and the protection rows with `cd REPL && python3 _gate.py`.*
+
+| # | metric | start | now | target |
+|---|---|---:|---:|---:|
+| B1 | `.repl` files | 241 | 241 | all classified |
+| B2 | asserting files the gate executes | **51%** | **95%** | 100% |
+| B2b | assertions the gate executes | 1,156 | **9,158** | — |
+| B3 | Talos client entrypoints | 448 | 448 | — |
+| B4 | **entrypoints never invoked** | **17** | **0** ✅ | **0** |
+| B5 | entrypoints with no adversarial assertion | 319 | **298** | **0** |
+| B6 | `enforce` sites | 1,015 | 1,015 | — |
+| B7 | `expect-failure` assertions | 234 | **306** | >= 1,015 |
+| B8 | **`expect-failure` that accept ANY error** | **137** | *re-measure* | **0** |
+| B9 | module testers passing standalone | 26 / 26 | 24 / 24 | all, incl. new |
+| B9b | **module testers asserting NOTHING about their module** | **8 / 26** | **0** ✅ | **0** |
+| B10 | **G1 surface coverage** | ~65% | **100%** ✅ | 100% |
+| B11 | G2 adversarial coverage | 29% | **33%** | 100% |
+
+**B4 and B10 are the P2 exit criteria and both are met.** B10 went 65% → 94% (once the ledger
+learned to strip comments — see RULE 10) → 96% → **100%**. Note B9 counts 24, not 26: the three
+`POPULATE*` files were reclassified as fixtures (they asserted nothing about anything) and
+`modules/LIQUID.repl` was added.
+
+B8's start figure was produced by a regex that also matches a 3-arg `expect-failure` whose message
+string sits on its own line, so it is not trustworthy as written; **3.1 must begin by re-counting
+it properly**, since every adversarial number downstream is scaled by it.
 
 ---
 
@@ -425,7 +466,27 @@ assembled. 175 files never ran, including **~32 audit-finding regression tests**
 * **1.4** Triage the 58 no-assertion scratch files -> `archive/`.
 * **Exit:** B1 fully classified; every asserting file belongs to exactly one tester (RULE 5).
 
-## P2 — G1: every entrypoint invoked in its OWN tester
+## P2 — G1: every entrypoint invoked in its OWN tester   ✅ **DONE 2026-09-09**
+> **Exit met: B4 = 0, B10 = 100% (448/448).** What the phase actually cost, and what it found,
+> is worth recording because almost none of it was "write the missing test":
+>
+> * **The starting number was wrong twice.** 65% → 94% once the ledger stripped comments (RULE
+>   10: 13 entrypoints were "covered" by commented-out lines alone), then 96% → 100%.
+> * **Eight testers asserted nothing** about the module they were named for; three of those
+>   ("POPULATE*") were 5,618 lines of pure population and are now `fixtures/`, not testers.
+> * **Several ops were "covered" by archived probe files that assert nothing** — one opens by
+>   declaring it "covers the uncovered `ATS|C_Constrict` client op" and then only prints.
+> * Reaching the last handful meant REPAIRING harnesses, not writing them: three DSA suites and
+>   four deb-staleness drivers could not execute at all, each on a hand-rolled Stage-2 deploy
+>   block that predated `deploy-stage02.repl`.
+>
+> **The defects G1 surfaced are the argument for the phase.** Merely *invoking* every entrypoint
+> once — with an assertion on the observable outcome — found: the StoicIco round-2 vault
+> deadlock, the VST merge tag mismatch, five `(format "…")` arity errors including one that
+> breaks `INFO_ATS|Cull` on every call, the fee-less slippage bound, and a dead `enforce` in
+> `DEMIPAD|C>WITHDRAW`. None needed an adversarial test to find; they needed *someone to call the
+> function and look at what happened*.
+
 > **Measured in P0 and worse than the 65% figure suggests.** A bare boot
 > (`deploy-stage00` + `deploy-stage01`) already prints **11 `expect` + 7 `expect-failure`** — the
 > deploy core's own checks. Eight testers print EXACTLY that and nothing more, so they assert
@@ -446,7 +507,10 @@ assembled. 175 files never ran, including **~32 audit-finding regression tests**
 * **2.2** Fill each tester to 100% of its module: VST 37%, DPSF-UPDATES 39%, DALOS-ADMIN 45%,
   DPTF 50%, DPDC 50%, DPOF 54-58%, PYTHIA 66%, DPNF 73%, DEMIPAD 80%, SWP 84%, ATS 88%.
 * **2.3** Every new test asserts an OBSERVABLE OUTCOME, never merely "did not crash".
-* **Exit:** **B10 = 100%**, B4 = 0.
+* **Exit:** **B10 = 100%**, B4 = 0.  ✅
+* **Carried into P3:** 2.2's "fill each tester to 100% of its module" is *entrypoint* coverage,
+  which is now global. Per-tester depth (the rejection paths inside each) is B5/B11 and belongs
+  to P3 — it is not a separate P2 debt.
 
 ## P3 — G2: every rejection path proven  *(the bulk)*
 * **3.1** **Tighten the 137 weak `expect-failure`s to the 3-arg form (RULE 8) — do this FIRST.**

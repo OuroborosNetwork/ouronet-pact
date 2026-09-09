@@ -11,32 +11,10 @@ This is the evidence base for the audit and documentation papers: every client e
 | metric | value |
 |---|---:|
 | client entrypoints (the auditable contract) | 448 |
-| exercised at least once | 431 (96%) |
-| **never exercised** | **17** |
-| exercised but with NO adversarial assertion in any of its blocks | **295** |
-| total invocations across the suite | 3045 |
-
-## Never exercised — G1 gap
-
-These entrypoints are reachable by a client and no test calls them.
-
-* `AQP-FVT&#124;CC_SweepRevokeAnchor`
-* `ATS&#124;C_UpgradeBranding`
-* `DPNF&#124;C_Repurpose`
-* `DPSF&#124;C_RemoveNonceScore`
-* `DPSF&#124;C_Repurpose`
-* `DPSF&#124;C_UpdateNonceURI`
-* `DPTF&#124;C_Wipe`
-* `LIQUID&#124;A_MigrateLiquidFunds`
-* `LQD&#124;C_UnwrapStoa`
-* `SPARK&#124;C_RedemAllSparks`
-* `SPARK&#124;C_RedemFewSparks`
-* `STOAICO&#124;C_Collect`
-* `SWP&#124;C_ChangeOwnership`
-* `SWP&#124;C_IssueStandardPool`
-* `SWP&#124;C_IssueWeightedPool`
-* `SWP&#124;C_UpgradeBranding`
-* `VST&#124;C_Merge`
+| exercised at least once | 448 (100%) |
+| **never exercised** | **0** |
+| exercised but with NO adversarial assertion in any of its blocks | **298** |
+| total invocations across the suite | 3092 |
 
 ## Exercised but never adversarially probed — G2 gap
 
@@ -45,8 +23,8 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | entrypoint | invocations | +asserts |
 |---|---:|---:|
 | <code>ATS&#124;C_ColdRecovery</code> | 273 | 0 |
+| <code>DPTF&#124;C_Transfer</code> | 58 | 67 |
 | <code>P&#124;A_Define</code> | 58 | 0 |
-| <code>DPTF&#124;C_Transfer</code> | 57 | 60 |
 | <code>AQP-FVT&#124;CC_Collect</code> | 55 | 146 |
 | <code>AQP-FVT&#124;CC_Inject</code> | 39 | 155 |
 | <code>DALOS&#124;A_UpdateUsagePrice</code> | 32 | 5 |
@@ -66,10 +44,10 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DPSF&#124;C_TransferNonces</code> | 14 | 15 |
 | <code>DPSF&#124;C_Make</code> | 13 | 23 |
 | <code>DALOS&#124;C_RotateGovernor</code> | 12 | 0 |
+| <code>DPSF&#124;C_TransferNonce</code> | 12 | 35 |
 | <code>ATS&#124;C_SwitchHotRecovery</code> | 11 | 4 |
 | <code>DALOS&#124;A_DeployStandardAccount</code> | 11 | 1 |
 | <code>DPSF&#124;C_Break</code> | 11 | 23 |
-| <code>DPSF&#124;C_TransferNonce</code> | 11 | 28 |
 | <code>AQP-POOL&#124;CCp_BatchVacateOrtoFungible</code> | 10 | 12 |
 | <code>DPTF&#124;A_DeployAccount</code> | 10 | 0 |
 | <code>AQP-POOL&#124;CC_UnstakeTrueFungible</code> | 9 | 33 |
@@ -91,6 +69,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>AQP-FVT&#124;CCp_SweepRecomputeChunk</code> | 5 | 21 |
 | <code>ATS&#124;C_Fuel</code> | 5 | 2 |
 | <code>DPOF&#124;C_Control</code> | 5 | 8 |
+| <code>LQD&#124;C_WrapStoa</code> | 5 | 3 |
 | <code>AQP-DSA&#124;A_ToggleExternalOracle</code> | 4 | 8 |
 | <code>AQP-POOL&#124;CCp_BatchDrainCollectable</code> | 4 | 10 |
 | <code>AQP-SCR&#124;C_ControlScore</code> | 4 | 6 |
@@ -101,7 +80,6 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DPOF&#124;C_TogglePause</code> | 4 | 5 |
 | <code>DPTF&#124;C_DonateFees</code> | 4 | 0 |
 | <code>DPTF&#124;C_MultiTransfer</code> | 4 | 0 |
-| <code>LQD&#124;C_WrapStoa</code> | 4 | 0 |
 | <code>SWP&#124;C_SmartSwapWithSlippage</code> | 4 | 13 |
 | <code>VST&#124;C_CreateFrozenLink</code> | 4 | 3 |
 | <code>VST&#124;C_CreateSleepingLink</code> | 4 | 2 |
@@ -117,7 +95,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DPSF&#124;C_MergeFragments</code> | 3 | 5 |
 | <code>DPTF&#124;C_BulkTransfer</code> | 3 | 0 |
 | <code>DPTF&#124;C_SetFeeTarget</code> | 3 | 6 |
-| <code>DPTF&#124;C_ToggleFreezeAccount</code> | 3 | 0 |
+| <code>SPARK&#124;C_BuySparks</code> | 3 | 5 |
 | <code>SWP&#124;A_DefinePrimordialPool</code> | 3 | 0 |
 | <code>SWP&#124;C_SingleSwapWithSlippage</code> | 3 | 2 |
 | <code>VST&#124;C_CreateVestingLink</code> | 3 | 0 |
@@ -128,6 +106,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>AQP-FVT&#124;C_ToggleRewardLink</code> | 2 | 5 |
 | <code>AQP-POOL&#124;CCp_BatchDrainOrtoFungible</code> | 2 | 8 |
 | <code>AQP-POOL&#124;C_FinalizeVacate</code> | 2 | 13 |
+| <code>AQP-SCR&#124;C_CreateScoreBoostClassLink</code> | 2 | 4 |
 | <code>ATS&#124;A_RemoveSecondary</code> | 2 | 1 |
 | <code>ATS&#124;C_AddHotRBT</code> | 2 | 2 |
 | <code>ATS&#124;C_AddSecondary</code> | 2 | 2 |
@@ -171,7 +150,6 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DPSF&#124;C_ToggleModifyCreatorRole</code> | 2 | 0 |
 | <code>DPSF&#124;C_TogglePause</code> | 2 | 0 |
 | <code>DPSF&#124;C_ToggleTransferRole</code> | 2 | 0 |
-| <code>DPTF&#124;C_Control</code> | 2 | 4 |
 | <code>DPTF&#124;C_ResetFeeTarget</code> | 2 | 6 |
 | <code>DPTF&#124;C_RotateOwnership</code> | 2 | 4 |
 | <code>DPTF&#124;C_ToggleReservation</code> | 2 | 0 |
@@ -183,7 +161,6 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>PYTHIA&#124;C_Link</code> | 2 | 6 |
 | <code>PYTHIA&#124;C_RevokeLink</code> | 2 | 5 |
 | <code>PYTHIA&#124;C_UpdateDualConsumerLane</code> | 2 | 3 |
-| <code>SPARK&#124;C_BuySparks</code> | 2 | 2 |
 | <code>SWP&#124;A_ToggleAsymetricLiquidityAddition</code> | 2 | 0 |
 | <code>SWP&#124;A_UpdateLimit</code> | 2 | 0 |
 | <code>SWP&#124;C_AddFrozenLiquidity</code> | 2 | 0 |
@@ -214,7 +191,6 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>AQP-POOL&#124;C_SyncNonFungibleAnchors</code> | 1 | 6 |
 | <code>AQP-POOL&#124;C_SyncSemiFungibleAnchors</code> | 1 | 6 |
 | <code>AQP-POOL&#124;C_SyncTrueFungibleAnchors</code> | 1 | 6 |
-| <code>AQP-SCR&#124;C_CreateScoreBoostClassLink</code> | 1 | 2 |
 | <code>AQP-SCR&#124;C_IssueLiquidityScore</code> | 1 | 2 |
 | <code>AQP-SCR&#124;C_IssueTriplet</code> | 1 | 0 |
 | <code>ATS&#124;A_KickStart</code> | 1 | 2 |
@@ -253,6 +229,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DPNF&#124;C_RemoveNonceScore</code> | 1 | 0 |
 | <code>DPNF&#124;C_RemoveSetNonceScore</code> | 1 | 0 |
 | <code>DPNF&#124;C_RenameSet</code> | 1 | 0 |
+| <code>DPNF&#124;C_Repurpose</code> | 1 | 6 |
 | <code>DPNF&#124;C_RepurposeFragments</code> | 1 | 1 |
 | <code>DPNF&#124;C_Respawn</code> | 1 | 1 |
 | <code>DPNF&#124;C_UpdateNonce</code> | 1 | 7 |
@@ -289,12 +266,14 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DPOF&#124;C_WipeSlim</code> | 1 | 0 |
 | <code>DPSF&#124;C_Burn</code> | 1 | 0 |
 | <code>DPSF&#124;C_Control</code> | 1 | 0 |
+| <code>DPSF&#124;C_RemoveNonceScore</code> | 1 | 5 |
 | <code>DPSF&#124;C_RemoveSetNonceScore</code> | 1 | 0 |
 | <code>DPSF&#124;C_ToggleAddQuantityRole</code> | 1 | 0 |
 | <code>DPSF&#124;C_ToggleBurnRole</code> | 1 | 0 |
 | <code>DPSF&#124;C_ToggleModifyRoyaltiesRole</code> | 1 | 0 |
 | <code>DPSF&#124;C_ToggleUpdateRole</code> | 1 | 0 |
 | <code>DPSF&#124;C_UpdateNonce</code> | 1 | 5 |
+| <code>DPSF&#124;C_UpdateNonceURI</code> | 1 | 7 |
 | <code>DPSF&#124;C_UpdateNonces</code> | 1 | 0 |
 | <code>DPSF&#124;C_UpdatePendingBranding</code> | 1 | 5 |
 | <code>DPSF&#124;C_UpdateSetNonce</code> | 1 | 0 |
@@ -324,6 +303,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>ORBR&#124;C_Compress</code> | 1 | 0 |
 | <code>ORBR&#124;C_SublimateV2</code> | 1 | 0 |
 | <code>ORBR&#124;C_WithdrawFees</code> | 1 | 0 |
+| <code>SPARK&#124;C_RedemFewSparks</code> | 1 | 7 |
 | <code>SWP&#124;CC_SmartSwapWithSlippage</code> | 1 | 1 |
 | <code>SWP&#124;C_AddStandardLiquidity</code> | 1 | 0 |
 | <code>SWP&#124;C_Firestarter</code> | 1 | 0 |
@@ -334,6 +314,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>SWP&#124;C_UpgradeBrandingLPs</code> | 1 | 3 |
 | <code>VST&#124;C_Awake</code> | 1 | 0 |
 | <code>VST&#124;C_CreateReservationLink</code> | 1 | 0 |
+| <code>VST&#124;C_Merge</code> | 1 | 8 |
 | <code>VST&#124;C_RepurposeHibernating</code> | 1 | 8 |
 | <code>VST&#124;C_RepurposeReserved</code> | 1 | 0 |
 | <code>VST&#124;C_RepurposeSleeping</code> | 1 | 0 |
@@ -347,7 +328,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>AQP-ANK&#124;C_IssueNonFungibleAnchor</code> | 1 | 0 | 0 | `[6.2.15]_AQP-NF-ANCHOR.repl` |
 | <code>AQP-ANK&#124;C_IssueNonFungibleSetAnchor</code> | 1 | 6 | 0 | `[6.2.4]_AQP-FVT-NF.repl` |
 | <code>AQP-ANK&#124;C_IssueSemiFungibleAnchor</code> | 1 | 6 | 0 | `[6.2.4]_AQP-FVT-DC.repl` |
-| <code>AQP-ANK&#124;C_IssueTrueFungibleAnchor</code> | 43 | 11 | 9 | `AQP-scale-sweep.repl`, `AQP-stream-tests.repl`, `[6.2.1]_AQP-ANK.repl` +3 |
+| <code>AQP-ANK&#124;C_IssueTrueFungibleAnchor</code> | 44 | 13 | 9 | `AQP-scale-sweep.repl`, `AQP-stream-tests.repl`, `AQP-sweep-single-tx.repl` +4 |
 | <code>AQP-ANK&#124;C_RevokeAnchor</code> | 14 | 5 | 5 | `[6.2.10]_AQP-NEGATIVES.repl`, `[6.2.1]_AQP-ANK.repl` |
 | <code>AQP-ANK&#124;C_RevokeBoostClass</code> | 10 | 5 | 2 | `[6.2.1]_AQP-ANK.repl` |
 | <code>AQP-DSA&#124;A_SetOracleValidity</code> | 3 | 6 | 0 | `dsa-capture-tests.repl`, `dsa-grand-tour.repl` |
@@ -366,7 +347,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>AQP-FVT&#124;CC_InjectFinalize</code> | 3 | 6 | 1 | `AQP-scale-inject.repl`, `[6.2.8c]_AQP-INJECT-CC.repl` |
 | <code>AQP-FVT&#124;CC_InjectStream</code> | 10 | 22 | 3 | `AQP-stream-tests.repl`, `[6.2.4]_AQP-FVT.repl` |
 | <code>AQP-FVT&#124;CC_SweepBegin</code> | 2 | 13 | 0 | `AQP-scale-sweep.repl`, `[6.2.8]_AQP-SWEEP-CC.repl` |
-| <code>AQP-FVT&#124;CC_SweepRevokeAnchor</code> | 0 | 0 | 0 | — |
+| <code>AQP-FVT&#124;CC_SweepRevokeAnchor</code> | 2 | 13 | 1 | `AQP-sweep-single-tx.repl` |
 | <code>AQP-FVT&#124;CC_UnstaleMyScores</code> | 1 | 5 | 0 | `[6.2.8b]_AQP-UNSTALE.repl` |
 | <code>AQP-FVT&#124;CCp_InjectFixChunk</code> | 5 | 10 | 0 | `AQP-scale-inject.repl`, `[6.2.8c]_AQP-INJECT-CC.repl` |
 | <code>AQP-FVT&#124;CCp_SweepRecomputeChunk</code> | 5 | 21 | 0 | `AQP-scale-sweep.repl`, `[6.2.8]_AQP-SWEEP-CC.repl` |
@@ -399,18 +380,18 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>AQP-POOL&#124;CCp_BatchVacateOrtoFungible</code> | 10 | 12 | 0 | `[6.2.4]_AQP-FVT-OF.repl`, `[6.2.5]_AQP-VCT.repl`, `[6.2.6]_AQP-VCT-GAS-BASE.repl` +2 |
 | <code>AQP-POOL&#124;CCp_BatchVacateTrueFungible</code> | 17 | 31 | 2 | `[6.2.5]_AQP-VCT.repl`, `[6.2.6]_AQP-VCT-GAS-BASE.repl`, `[6.2.6]_AQP-VCT-GAS.repl` +1 |
 | <code>AQP-POOL&#124;C_AbortVacate</code> | 3 | 4 | 3 | `[6.2.5]_AQP-VCT.repl` |
-| <code>AQP-POOL&#124;C_AddScore</code> | 106 | 105 | 5 | `AQP-scale-inject.repl`, `AQP-scale-sweep.repl`, `AQP-scale-vacate.repl` +17 |
+| <code>AQP-POOL&#124;C_AddScore</code> | 107 | 107 | 5 | `AQP-scale-inject.repl`, `AQP-scale-sweep.repl`, `AQP-scale-vacate.repl` +18 |
 | <code>AQP-POOL&#124;C_DisablePoolStake</code> | 2 | 1 | 4 | `[6.2.10]_AQP-NEGATIVES.repl` |
-| <code>AQP-POOL&#124;C_EnablePoolStake</code> | 32 | 71 | 5 | `AQP-scale-inject.repl`, `AQP-scale-sweep.repl`, `AQP-scale-vacate.repl` +6 |
+| <code>AQP-POOL&#124;C_EnablePoolStake</code> | 33 | 73 | 5 | `AQP-scale-inject.repl`, `AQP-scale-sweep.repl`, `AQP-scale-vacate.repl` +7 |
 | <code>AQP-POOL&#124;C_FinalizeVacate</code> | 2 | 13 | 0 | `AQP-scale-vacate.repl`, `[6.2.5]_AQP-VCT.repl` |
-| <code>AQP-POOL&#124;C_Issue</code> | 85 | 105 | 2 | `AQP-scale-inject.repl`, `AQP-scale-sweep.repl`, `AQP-scale-vacate.repl` +15 |
+| <code>AQP-POOL&#124;C_Issue</code> | 86 | 107 | 2 | `AQP-scale-inject.repl`, `AQP-scale-sweep.repl`, `AQP-scale-vacate.repl` +16 |
 | <code>AQP-POOL&#124;C_RevokeScore</code> | 10 | 14 | 4 | `[6.2.10]_AQP-NEGATIVES.repl`, `[6.2.3]_AQP-POOL.repl` |
 | <code>AQP-POOL&#124;C_SyncNonFungibleAnchors</code> | 1 | 6 | 0 | `[6.2.4]_AQP-FVT-NF.repl` |
 | <code>AQP-POOL&#124;C_SyncSemiFungibleAnchors</code> | 1 | 6 | 0 | `[6.2.4]_AQP-FVT-DC.repl` |
 | <code>AQP-POOL&#124;C_SyncTrueFungibleAnchors</code> | 1 | 6 | 0 | `[6.2.4]_AQP-FVT.repl` |
 | <code>AQP-SCR&#124;C_CombineTripletScoreModel</code> | 6 | 15 | 3 | `dsa-agency-tests.repl`, `dsa-capture-tests.repl`, `dsa-fee-tests.repl` +2 |
 | <code>AQP-SCR&#124;C_ControlScore</code> | 4 | 6 | 0 | `[6.2.2]_AQP-SCORE.repl` |
-| <code>AQP-SCR&#124;C_CreateScoreBoostClassLink</code> | 1 | 2 | 0 | `AQP-scale-sweep.repl` |
+| <code>AQP-SCR&#124;C_CreateScoreBoostClassLink</code> | 2 | 4 | 0 | `AQP-scale-sweep.repl`, `AQP-sweep-single-tx.repl` |
 | <code>AQP-SCR&#124;C_CreateScoreBoostLink</code> | 6 | 9 | 3 | `[6.2.3]_AQP-POOL.repl`, `[6.2.7]_AQP-DEB-MTX.repl` |
 | <code>AQP-SCR&#124;C_EnableDebBoost</code> | 3 | 6 | 5 | `AQP-scale-inject.repl`, `[6.2.10]_AQP-NEGATIVES.repl`, `[6.2.7]_AQP-DEB-MTX.repl` |
 | <code>AQP-SCR&#124;C_IssueLiquidityScore</code> | 1 | 2 | 0 | `AQP-stream-tests.repl` |
@@ -423,7 +404,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>AQP-SCR&#124;C_IssueSemiFungibleScoreDefinition</code> | 6 | 0 | 1 | `[6.2.2]_AQP-SCORE.repl` |
 | <code>AQP-SCR&#124;C_IssueSingleScoreModel</code> | 17 | 15 | 3 | `dsa-agency-tests.repl`, `dsa-capture-tests.repl`, `dsa-fee-tests.repl` +2 |
 | <code>AQP-SCR&#124;C_IssueTriplet</code> | 1 | 0 | 0 | `[6.2.13]_AQP-TRIPLET.repl` |
-| <code>AQP-SCR&#124;C_IssueTrueFungibleScore</code> | 24 | 38 | 1 | `AQP-scale-inject.repl`, `AQP-scale-sweep.repl`, `AQP-scale-vacate.repl` +9 |
+| <code>AQP-SCR&#124;C_IssueTrueFungibleScore</code> | 25 | 40 | 1 | `AQP-scale-inject.repl`, `AQP-scale-sweep.repl`, `AQP-scale-vacate.repl` +10 |
 | <code>AQP-SCR&#124;C_RotateScoreOwnership</code> | 4 | 6 | 0 | `[6.2.2]_AQP-SCORE.repl` |
 | <code>ATS&#124;A_KickStart</code> | 1 | 2 | 0 | `[6.6]_ATS.repl` |
 | <code>ATS&#124;A_RemoveSecondary</code> | 2 | 1 | 0 | `[6.6]_ATS.repl`, `_cov_draft.repl` |
@@ -462,7 +443,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>ATS&#124;C_UpdatePendingBranding</code> | 2 | 0 | 1 | `_audit_ats_baseline.repl` |
 | <code>ATS&#124;C_UpdateRoyalty</code> | 10 | 5 | 4 | `[4.0]_Sovereign-Executor.repl`, `[6.6]_ATS.repl`, `_audit_ats_baseline.repl` +1 |
 | <code>ATS&#124;C_UpdateSyphon</code> | 1 | 0 | 0 | `[6.6]_ATS.repl` |
-| <code>ATS&#124;C_UpgradeBranding</code> | 0 | 0 | 0 | — |
+| <code>ATS&#124;C_UpgradeBranding</code> | 1 | 3 | 1 | `ATS.repl` |
 | <code>ATS&#124;C_VestedCoil</code> | 1 | 0 | 0 | `[6.7]_VST.repl` |
 | <code>ATS&#124;C_VestedCurl</code> | 1 | 0 | 0 | `[6.7]_VST.repl` |
 | <code>ATS&#124;C_WithdrawRoyalties</code> | 2 | 2 | 0 | `[6.6]_ATS.repl`, `_cov_draft.repl` |
@@ -484,7 +465,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DALOS&#124;A_MigrateLiquidFunds</code> | 3 | 10 | 2 | `DALOS-ADMIN.repl` |
 | <code>DALOS&#124;A_SetAutoFueling</code> | 2 | 4 | 0 | `[6.12]_DALOS-ADMIN.repl`, `[6.4]_Admin.repl` |
 | <code>DALOS&#124;A_SetIgnisSourcePrice</code> | 2 | 4 | 0 | `[6.12]_DALOS-ADMIN.repl`, `[6.4]_Admin.repl` |
-| <code>DALOS&#124;A_ToggleGAP</code> | 6 | 19 | 2 | `[6.12]_DALOS-ADMIN.repl`, `DALOS-ADMIN.repl` |
+| <code>DALOS&#124;A_ToggleGAP</code> | 7 | 29 | 2 | `[6.12]_DALOS-ADMIN.repl`, `DALOS-ADMIN.repl`, `LIQUID.repl` |
 | <code>DALOS&#124;A_ToggleOAPU</code> | 1 | 4 | 0 | `[6.12]_DALOS-ADMIN.repl` |
 | <code>DALOS&#124;A_UpdatePublicKey</code> | 1 | 0 | 0 | `[6.4]_Admin.repl` |
 | <code>DALOS&#124;A_UpdateUsagePrice</code> | 32 | 5 | 0 | `[4.0]_Sovereign-Executor.repl`, `DALOS-ADMIN.repl` |
@@ -529,7 +510,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DPNF&#124;C_RemoveNonceScore</code> | 1 | 0 | 0 | `[6.1.4]_DPDC-NF.repl` |
 | <code>DPNF&#124;C_RemoveSetNonceScore</code> | 1 | 0 | 0 | `[6.1.4]_DPDC-NF.repl` |
 | <code>DPNF&#124;C_RenameSet</code> | 1 | 0 | 0 | `[6.1.4]_DPDC-NF.repl` |
-| <code>DPNF&#124;C_Repurpose</code> | 0 | 0 | 0 | — |
+| <code>DPNF&#124;C_Repurpose</code> | 1 | 6 | 0 | `DPNF.repl` |
 | <code>DPNF&#124;C_RepurposeFragments</code> | 1 | 1 | 0 | `[6.1.4]_DPDC-NF.repl` |
 | <code>DPNF&#124;C_Respawn</code> | 1 | 1 | 0 | `[6.1.4]_DPDC-NF.repl` |
 | <code>DPNF&#124;C_ToggleBurnRole</code> | 3 | 1 | 0 | `[6.1.4]_DPDC-NF.repl` |
@@ -613,10 +594,10 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DPSF&#124;C_MoveCreateRole</code> | 2 | 0 | 0 | `[6.1]_DPDC.repl` |
 | <code>DPSF&#124;C_MoveRecreateRole</code> | 2 | 0 | 0 | `[6.1]_DPDC.repl` |
 | <code>DPSF&#124;C_MoveSetUriRole</code> | 2 | 0 | 0 | `[6.1]_DPDC.repl` |
-| <code>DPSF&#124;C_RemoveNonceScore</code> | 0 | 0 | 0 | — |
+| <code>DPSF&#124;C_RemoveNonceScore</code> | 1 | 5 | 0 | `DPSF-UPDATES.repl` |
 | <code>DPSF&#124;C_RemoveSetNonceScore</code> | 1 | 0 | 0 | `[6.1.7]_DPSF-UPDATES.repl` |
 | <code>DPSF&#124;C_RenameSet</code> | 2 | 4 | 1 | `[6.1.3]_DPDC-S.repl` |
-| <code>DPSF&#124;C_Repurpose</code> | 0 | 0 | 0 | — |
+| <code>DPSF&#124;C_Repurpose</code> | 4 | 9 | 2 | `DPSF-UPDATES.repl` |
 | <code>DPSF&#124;C_RepurposeFragments</code> | 5 | 4 | 6 | `_verify_finding_DPDC-F-S_47L-51L_empty_definition_guards.repl`, `[6.1.2]_DPDC-FRAGMENTS.repl` |
 | <code>DPSF&#124;C_ToggleAddQuantityRole</code> | 1 | 0 | 0 | `[6.1]_DPDC.repl` |
 | <code>DPSF&#124;C_ToggleBurnRole</code> | 1 | 0 | 0 | `[6.1]_DPDC.repl` |
@@ -628,7 +609,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DPSF&#124;C_ToggleSet</code> | 6 | 4 | 2 | `_verify_finding_DPDC-S_30M_enable-frag-active-gate.repl`, `[6.1.3]_DPDC-S.repl` |
 | <code>DPSF&#124;C_ToggleTransferRole</code> | 2 | 0 | 0 | `[6.1]_DPDC.repl` |
 | <code>DPSF&#124;C_ToggleUpdateRole</code> | 1 | 0 | 0 | `[6.1]_DPDC.repl` |
-| <code>DPSF&#124;C_TransferNonce</code> | 11 | 28 | 0 | `dsa-fee-tests.repl`, `dsa-grand-tour.repl`, `[6.1.2]_DPDC-FRAGMENTS.repl` +4 |
+| <code>DPSF&#124;C_TransferNonce</code> | 12 | 35 | 0 | `dsa-fee-tests.repl`, `dsa-grand-tour.repl`, `[6.1.2]_DPDC-FRAGMENTS.repl` +5 |
 | <code>DPSF&#124;C_TransferNonces</code> | 14 | 15 | 0 | `[6.2.4]_AQP-FVT-DC.repl`, `[6.2.5]_AQP-VCT.repl`, `[6.2.6]_AQP-VCT-GAS-BASE.repl` +2 |
 | <code>DPSF&#124;C_UpdateNonce</code> | 1 | 5 | 0 | `DPDC.repl` |
 | <code>DPSF&#124;C_UpdateNonceDescription</code> | 1 | 0 | 1 | `[6.1]_DPDC.repl` |
@@ -636,8 +617,8 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DPSF&#124;C_UpdateNonceMetaData</code> | 1 | 0 | 1 | `[6.1]_DPDC.repl` |
 | <code>DPSF&#124;C_UpdateNonceName</code> | 2 | 0 | 1 | `_verify_finding_DPDC-N_12Hc_set_instance_lock.repl`, `[6.1]_DPDC.repl` |
 | <code>DPSF&#124;C_UpdateNonceRoyalty</code> | 1 | 0 | 1 | `[6.1]_DPDC.repl` |
-| <code>DPSF&#124;C_UpdateNonceScore</code> | 2 | 0 | 1 | `[6.1]_DPDC.repl` |
-| <code>DPSF&#124;C_UpdateNonceURI</code> | 0 | 0 | 0 | — |
+| <code>DPSF&#124;C_UpdateNonceScore</code> | 3 | 5 | 1 | `[6.1]_DPDC.repl`, `DPSF-UPDATES.repl` |
+| <code>DPSF&#124;C_UpdateNonceURI</code> | 1 | 7 | 0 | `DPSF-UPDATES.repl` |
 | <code>DPSF&#124;C_UpdateNonces</code> | 1 | 0 | 0 | `[6.1.7]_DPSF-UPDATES.repl` |
 | <code>DPSF&#124;C_UpdatePendingBranding</code> | 1 | 5 | 0 | `DPDC.repl` |
 | <code>DPSF&#124;C_UpdateSetNonce</code> | 1 | 0 | 0 | `[6.1.7]_DPSF-UPDATES.repl` |
@@ -664,7 +645,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DPTF&#124;C_BulkTransfer</code> | 3 | 0 | 0 | `[6.2]_DPTF.repl`, `[6.2.6]_AQP-VCT-GAS-BASE.repl`, `[6.2.6]_AQP-VCT-GAS.repl` |
 | <code>DPTF&#124;C_Burn</code> | 3 | 4 | 1 | `[6.4]_Admin.repl`, `DPTF.repl` |
 | <code>DPTF&#124;C_ClearDispo</code> | 1 | 0 | 0 | `[6.2]_DPTF.repl` |
-| <code>DPTF&#124;C_Control</code> | 2 | 4 | 0 | `[6.4]_Admin.repl`, `DPTF.repl` |
+| <code>DPTF&#124;C_Control</code> | 3 | 11 | 1 | `[6.4]_Admin.repl`, `DPTF.repl` |
 | <code>DPTF&#124;C_DeployAccount</code> | 2 | 0 | 1 | `[6.3]_SWP.repl`, `_scratch_tft_n2_deployaccount_ownership.repl` |
 | <code>DPTF&#124;C_DonateFees</code> | 4 | 0 | 0 | `[6.2+3]_DPTF-SWP_Issuance-Only.repl`, `[6.2]_DPTF.repl`, `[6.3]_SWP.repl` +1 |
 | <code>DPTF&#124;C_Issue</code> | 24 | 0 | 0 | `[4.0]_Sovereign-Executor.repl`, `[5.1]_Aoz+.repl`, `[6.2+3]_DPTF-SWP_Issuance-Only.repl` +7 |
@@ -680,22 +661,22 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DPTF&#124;C_ToggleFee</code> | 27 | 6 | 0 | `[4.0]_Sovereign-Executor.repl`, `[5.1]_Aoz+.repl`, `[6.2+3]_DPTF-SWP_Issuance-Only.repl` +3 |
 | <code>DPTF&#124;C_ToggleFeeExemptionRole</code> | 1 | 5 | 1 | `DPTF.repl` |
 | <code>DPTF&#124;C_ToggleFeeLock</code> | 23 | 0 | 0 | `[4.0]_Sovereign-Executor.repl`, `[5.1]_Aoz+.repl`, `[6.2+3]_DPTF-SWP_Issuance-Only.repl` +1 |
-| <code>DPTF&#124;C_ToggleFreezeAccount</code> | 3 | 0 | 0 | `[6.4]_Admin.repl` |
+| <code>DPTF&#124;C_ToggleFreezeAccount</code> | 4 | 7 | 1 | `[6.4]_Admin.repl`, `DPTF.repl` |
 | <code>DPTF&#124;C_ToggleMintRole</code> | 8 | 4 | 1 | `[5.2]_Dispenser+.repl`, `[6.7]_VST.repl`, `[5.3]_Launchpad.repl` +2 |
 | <code>DPTF&#124;C_TogglePause</code> | 3 | 5 | 1 | `[6.4]_Admin.repl`, `DPTF.repl` |
 | <code>DPTF&#124;C_ToggleReservation</code> | 2 | 0 | 0 | `[6.3]_SWP.repl`, `vst-harness.repl` |
 | <code>DPTF&#124;C_ToggleTransferRole</code> | 3 | 9 | 1 | `[6.3]_SWP.repl`, `DPTF.repl` |
-| <code>DPTF&#124;C_Transfer</code> | 57 | 60 | 0 | `AQP-scale-inject.repl`, `AQP-stream-tests.repl`, `[4.0]_Sovereign-Executor.repl` +18 |
+| <code>DPTF&#124;C_Transfer</code> | 58 | 67 | 0 | `AQP-scale-inject.repl`, `AQP-stream-tests.repl`, `[4.0]_Sovereign-Executor.repl` +19 |
 | <code>DPTF&#124;C_Transmute</code> | 6 | 0 | 0 | `[4.0]_Sovereign-Executor.repl`, `[6.2]_DPTF.repl`, `[6.8]_Dispenser.repl` |
 | <code>DPTF&#124;C_UpdatePendingBranding</code> | 2 | 0 | 0 | `[6.4]_Admin.repl` |
 | <code>DPTF&#124;C_UpgradeBranding</code> | 1 | 0 | 0 | `[6.4]_Admin.repl` |
-| <code>DPTF&#124;C_Wipe</code> | 0 | 0 | 0 | — |
+| <code>DPTF&#124;C_Wipe</code> | 2 | 7 | 1 | `DPTF.repl` |
 | <code>DPTF&#124;C_WipeSlim</code> | 1 | 0 | 0 | `[6.4]_Admin.repl` |
 | <code>KPAY&#124;C_BuyStoicPay</code> | 2 | 2 | 0 | `launchpad-groundtruth.repl` |
-| <code>LIQUID&#124;A_MigrateLiquidFunds</code> | 0 | 0 | 0 | — |
-| <code>LQD&#124;C_UnwrapStoa</code> | 0 | 0 | 0 | — |
+| <code>LIQUID&#124;A_MigrateLiquidFunds</code> | 2 | 12 | 1 | `LIQUID.repl` |
+| <code>LQD&#124;C_UnwrapStoa</code> | 3 | 4 | 2 | `LIQUID.repl` |
 | <code>LQD&#124;C_UnwrapUrStoa</code> | 1 | 3 | 0 | `[4.0]_Sovereign-Executor.repl` |
-| <code>LQD&#124;C_WrapStoa</code> | 4 | 0 | 0 | `[4.0]_Sovereign-Executor.repl`, `[6.2+3]_DPTF-SWP_Issuance-Only.repl`, `[6.3]_SWP.repl` |
+| <code>LQD&#124;C_WrapStoa</code> | 5 | 3 | 0 | `[4.0]_Sovereign-Executor.repl`, `[6.2+3]_DPTF-SWP_Issuance-Only.repl`, `[6.3]_SWP.repl` +1 |
 | <code>LQD&#124;C_WrapUrStoa</code> | 1 | 3 | 0 | `[4.0]_Sovereign-Executor.repl` |
 | <code>MTX-AQP&#124;2&#124;C_Inject</code> | 2 | 2 | 0 | `[6.2.7]_AQP-DEB-MTX.repl` |
 | <code>MTX-AQP&#124;2&#124;C_SweepRevokeAnchor</code> | 1 | 6 | 0 | `[6.2.7]_AQP-DEB-MTX.repl` |
@@ -717,10 +698,10 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>PYTHIA&#124;C_RevokeLink</code> | 2 | 5 | 0 | `[6.10]_PYTHIA.repl` |
 | <code>PYTHIA&#124;C_UpdateDualConsumerLane</code> | 2 | 3 | 0 | `[6.10]_PYTHIA.repl` |
 | <code>SNAKES&#124;C_Acquire</code> | 4 | 10 | 2 | `[5.3]_Launchpad.repl` |
-| <code>SPARK&#124;C_BuySparks</code> | 2 | 2 | 0 | `launchpad-groundtruth.repl` |
-| <code>SPARK&#124;C_RedemAllSparks</code> | 0 | 0 | 0 | — |
-| <code>SPARK&#124;C_RedemFewSparks</code> | 0 | 0 | 0 | — |
-| <code>STOAICO&#124;C_Collect</code> | 0 | 0 | 0 | — |
+| <code>SPARK&#124;C_BuySparks</code> | 3 | 5 | 0 | `[5.3]_Launchpad.repl`, `launchpad-groundtruth.repl` |
+| <code>SPARK&#124;C_RedemAllSparks</code> | 2 | 5 | 1 | `[5.3]_Launchpad.repl` |
+| <code>SPARK&#124;C_RedemFewSparks</code> | 1 | 7 | 0 | `[5.3]_Launchpad.repl` |
+| <code>STOAICO&#124;C_Collect</code> | 1 | 8 | 3 | `[6.3]_STOAICO.repl` |
 | <code>SWP&#124;A_DefinePrimordialPool</code> | 3 | 0 | 0 | `[6.2+3]_DPTF-SWP_Issuance-Only.repl`, `[6.3]_SWP.repl` |
 | <code>SWP&#124;A_RotatePrincipal</code> | 5 | 11 | 6 | `[6.2+3]_DPTF-SWP_Issuance-Only.repl` |
 | <code>SWP&#124;A_ToggleAsymetricLiquidityAddition</code> | 2 | 0 | 0 | `[6.2+3]_DPTF-SWP_Issuance-Only.repl`, `[6.3]_SWP.repl` |
@@ -735,7 +716,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>SWP&#124;C_AddLiquidity</code> | 13 | 50 | 1 | `dsa-hetero-split-tests.repl`, `[6.2+3]_DPTF-SWP_Issuance-Only.repl`, `[6.3]_SWP.repl` +4 |
 | <code>SWP&#124;C_AddSleepingLiquidity</code> | 2 | 0 | 0 | `[6.3]_SWP.repl` |
 | <code>SWP&#124;C_AddStandardLiquidity</code> | 1 | 0 | 0 | `[6.3]_SWP.repl` |
-| <code>SWP&#124;C_ChangeOwnership</code> | 0 | 0 | 0 | — |
+| <code>SWP&#124;C_ChangeOwnership</code> | 2 | 9 | 1 | `SWP.repl` |
 | <code>SWP&#124;C_EnableFrozenLP</code> | 4 | 4 | 2 | `[6.3]_SWP.repl` |
 | <code>SWP&#124;C_EnableSleepingLP</code> | 5 | 10 | 2 | `[6.3]_SWP.repl`, `[6.4]_AQP-TRIPLET-COLLECT.repl` |
 | <code>SWP&#124;C_Firestarter</code> | 1 | 0 | 0 | `[6.3]_SWP.repl` |
@@ -743,9 +724,9 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>SWP&#124;C_IssueStable</code> | 25 | 0 | 1 | `[6.2+3]_DPTF-SWP_Issuance-Only.repl`, `[6.3]_SWP.repl` |
 | <code>SWP&#124;C_IssueStablePool</code> | 2 | 0 | 0 | `[6.2+3]_DPTF-SWP_Issuance-Only.repl`, `[6.3]_SWP.repl` |
 | <code>SWP&#124;C_IssueStandard</code> | 20 | 5 | 4 | `[6.2+3]_DPTF-SWP_Issuance-Only.repl`, `[6.3]_SWP.repl` |
-| <code>SWP&#124;C_IssueStandardPool</code> | 0 | 0 | 0 | — |
+| <code>SWP&#124;C_IssueStandardPool</code> | 3 | 1 | 2 | `SWP.repl` |
 | <code>SWP&#124;C_IssueWeighted</code> | 9 | 0 | 3 | `[6.2+3]_DPTF-SWP_Issuance-Only.repl`, `[6.3]_SWP.repl` |
-| <code>SWP&#124;C_IssueWeightedPool</code> | 0 | 0 | 0 | — |
+| <code>SWP&#124;C_IssueWeightedPool</code> | 3 | 0 | 2 | `SWP.repl` |
 | <code>SWP&#124;C_ModifyCanChangeOwner</code> | 2 | 0 | 0 | `[6.3]_SWP.repl` |
 | <code>SWP&#124;C_ModifyWeights</code> | 6 | 0 | 4 | `[6.2+3]_DPTF-SWP_Issuance-Only.repl`, `[6.3]_SWP.repl` |
 | <code>SWP&#124;C_MultiSwapNoSlippage</code> | 1 | 0 | 0 | `[6.3]_SWP.repl` |
@@ -763,7 +744,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>SWP&#124;C_UpdatePendingBranding</code> | 1 | 0 | 0 | `[6.4]_Admin.repl` |
 | <code>SWP&#124;C_UpdatePendingBrandingLPs</code> | 2 | 3 | 0 | `[6.4]_Admin.repl` |
 | <code>SWP&#124;C_UpdateSpecialFeeTargets</code> | 17 | 0 | 0 | `[6.2+3]_DPTF-SWP_Issuance-Only.repl`, `[6.3]_SWP.repl` |
-| <code>SWP&#124;C_UpgradeBranding</code> | 0 | 0 | 0 | — |
+| <code>SWP&#124;C_UpgradeBranding</code> | 1 | 9 | 1 | `SWP.repl` |
 | <code>SWP&#124;C_UpgradeBrandingLPs</code> | 1 | 3 | 0 | `[6.4]_Admin.repl` |
 | <code>VST&#124;C_Awake</code> | 1 | 0 | 0 | `vst-harness.repl` |
 | <code>VST&#124;C_CreateFrozenLink</code> | 4 | 3 | 0 | `[4.0]_Sovereign-Executor.repl`, `[5.3]_Launchpad.repl`, `VST.repl` +1 |
@@ -773,7 +754,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>VST&#124;C_CreateVestingLink</code> | 3 | 0 | 0 | `[4.0]_Sovereign-Executor.repl` |
 | <code>VST&#124;C_Freeze</code> | 3 | 4 | 0 | `[6.3]_SWP.repl`, `VST.repl`, `vst-harness.repl` |
 | <code>VST&#124;C_Hibernate</code> | 4 | 12 | 1 | `VST.repl`, `vst-harness.repl` |
-| <code>VST&#124;C_Merge</code> | 0 | 0 | 0 | — |
+| <code>VST&#124;C_Merge</code> | 1 | 8 | 0 | `VST.repl` |
 | <code>VST&#124;C_RepurposeFrozen</code> | 2 | 0 | 0 | `[6.3]_SWP.repl`, `vst-harness.repl` |
 | <code>VST&#124;C_RepurposeHibernating</code> | 1 | 8 | 0 | `VST.repl` |
 | <code>VST&#124;C_RepurposeMerge</code> | 2 | 0 | 0 | `[6.3]_SWP.repl`, `vst-harness.repl` |
@@ -782,7 +763,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>VST&#124;C_RepurposeSlumber</code> | 2 | 11 | 2 | `VST.repl` |
 | <code>VST&#124;C_RepurposeVested</code> | 1 | 0 | 0 | `vst-harness.repl` |
 | <code>VST&#124;C_Reserve</code> | 2 | 0 | 0 | `[6.3]_SWP.repl`, `vst-harness.repl` |
-| <code>VST&#124;C_Sleep</code> | 76 | 13 | 1 | `[6.3]_SWP.repl`, `[6.7]_VST.repl`, `[6.4]_AQP-TRIPLET-COLLECT.repl` +2 |
+| <code>VST&#124;C_Sleep</code> | 78 | 21 | 1 | `[6.3]_SWP.repl`, `[6.7]_VST.repl`, `[6.4]_AQP-TRIPLET-COLLECT.repl` +2 |
 | <code>VST&#124;C_Slumber</code> | 2 | 7 | 1 | `VST.repl`, `vst-harness.repl` |
 | <code>VST&#124;C_ToggleTransferRoleFrozenDPTF</code> | 2 | 0 | 0 | `[6.7]_VST.repl`, `vst-harness.repl` |
 | <code>VST&#124;C_ToggleTransferRoleHibernatingDPOF</code> | 2 | 12 | 1 | `VST.repl` |
