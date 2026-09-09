@@ -55,4 +55,112 @@
 (print "===^^^===")
 (commit-tx)
 (print "")
-(print "=== END FILE [6.12]_DALOS-ADMIN.repl (4 admin toggles covered) ===")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-DA-002 - P|A_Add: the named-policy lane, and where it is inert")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "=== TX-DA-002 - P|A_Add on a Talos module ===============================")
+;;==== TX-DA-002 · 01 · P|A_Add round-trip ==== ====================================================
+(print "--- [TX-DA-002 · 01 · P|A_Add round-trip] ---")
+;; P|A_Add is OuronetPolicyV2 boilerplate: every module that implements the interface has one,
+;; all 11 Talos modules included. It writes a NAMED guard into P|T, whose only reader is P|UR.
+;;
+;; It was the last never-exercised admin entrypoint on the Talos contract, and measuring WHY is
+;; the point of this test. Across the whole tree there are 26 ::P|A_Add call sites; every one
+;; targets a CORE module (AQP-POOL, ATS, DALOS, DEMIPAD, DPDC, SWP, VST). None targets a Talos
+;; module, and no Talos module ever calls its own P|UR. So on Talos the named-policy lane is
+;; inert -- not by accident but by position: Talos is the top of the deploy graph, so it is the
+;; thing that registers INTO others, never the thing others register into.
+;;
+;; Contrast the SIBLING lane, which is live on Talos: TS02-CPAD's P|A_Define calls
+;; TS01-A::P|A_AddIMP so the launchpad wrappers' XB_DynamicFuelSTOA refuel passes P|UEV_IMC.
+;; The IMP list is load-bearing on TS01-A; the named table is not. They are easy to conflate --
+;; the only cross-module P|UR reads in the tree are AQP-BOOT's two "RemoteAqpGov" lookups.
+;;
+;; So this asserts the mechanism works when invoked, and pins the reason it never is.
+(env-data
+    { "P_ADD_TEST_KS"  : { "keys": ["PK_Emma"], "pred": "keys-all" }
+    , "P_ADD_TEST_KS2" : { "keys": ["PK_Lumy"], "pred": "keys-all" } }
+)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-P|TS01-A:module{OuronetPolicyV2} TS01-A)
+        (g:guard (read-keyset "P_ADD_TEST_KS"))
+    )
+    (map print
+        [
+            ;;P|UR is a HARD read: before the write there is no row, and the lookup aborts
+            ;;rather than returning a null guard. Any future Talos code that starts consulting
+            ;;a named policy must therefore register it at deploy time or it will abort here.
+            (expect-failure "<<TX-DA-002>> P|UR aborts on an unregistered policy name"
+                "No value found in table"
+                (ref-P|TS01-A::P|UR "TEST|NeverRegistered"))
+        ]
+    )
+    (ref-P|TS01-A::P|A_Add "TEST|Policy" g)
+    (map print
+        [
+            (expect "<<TX-DA-002>> P|A_Add stored the guard P|UR reads back"
+                g (ref-P|TS01-A::P|UR "TEST|Policy"))
+        ]
+    )
+    ;;LAST-WRITE-WINS: P|A_Add uses `write`, not `insert`, so re-registering an EXISTING name
+    ;;silently REPLACES the guard -- there is no "already registered" rejection. Proven by
+    ;;registering a DIFFERENT guard under the SAME name and reading the new one back. For a
+    ;;table of authorization guards this is a real property, not a detail: whoever holds the
+    ;;module admin key can REPOINT an existing named policy, not merely add new ones. On Talos
+    ;;that is harmless (nothing reads P|T); on AQP-POOL, whose "FVT|RemoteAqpGov" /
+    ;;"VCT|RemoteAqpGov" entries ARE read by AQP-BOOT, the same call is a governance repoint.
+    (ref-P|TS01-A::P|A_Add "TEST|Policy" (read-keyset "P_ADD_TEST_KS2"))
+    (map print
+        [
+            (expect "<<TX-DA-002>> re-registering the SAME name replaced the guard"
+                (read-keyset "P_ADD_TEST_KS2") (ref-P|TS01-A::P|UR "TEST|Policy"))
+            (expect "<<TX-DA-002>> ...and the original guard is gone, not merged"
+                false (= g (ref-P|TS01-A::P|UR "TEST|Policy")))
+        ]
+    )
+    ""
+)
+(commit-tx)
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-DA-002b - P|A_Add rejects a non-admin")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "=== TX-DA-002b - P|A_Add admin gate ====================================")
+;;==== TX-DA-002b · 01 · admin gate ==== ===========================================================
+(print "--- [TX-DA-002b · 01 · admin gate] ---")
+;; Given last-write-wins above, the ONLY thing standing between an attacker and repointing a
+;; named policy guard is GOV|TS01-A_ADMIN (dh_master-keyset). Worth an explicit assertion.
+(env-data
+    { "P_ADD_TEST_KS": { "keys": ["PK_Emma"], "pred": "keys-all" } }
+)
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-P|TS01-A:module{OuronetPolicyV2} TS01-A)
+    )
+    (map print
+        [
+            (expect-failure "<<TX-DA-002b>> a non-Demiurgos cannot register a named policy"
+                "Keyset failure (keys-any): [PK_Ancie..., PK_Flore...]"
+                (ref-P|TS01-A::P|A_Add "TEST|Hijack" (read-keyset "P_ADD_TEST_KS")))
+            (expect-failure "<<TX-DA-002b>> ...and the rejected name was never written"
+                "No value found in table"
+                (ref-P|TS01-A::P|UR "TEST|Hijack"))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== END FILE [6.12]_DALOS-ADMIN.repl (4 admin toggles + P|A_Add named-policy lane) ===")

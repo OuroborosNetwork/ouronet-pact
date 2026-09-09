@@ -11,10 +11,10 @@ This is the evidence base for the audit and documentation papers: every client e
 | metric | value |
 |---|---:|
 | client entrypoints (the auditable contract) | 448 |
-| exercised at least once | 436 (97%) |
-| **never exercised** | **12** |
-| exercised but with NO adversarial assertion in any of its blocks | **308** |
-| total invocations across the suite | 3100 |
+| exercised at least once | 439 (97%) |
+| **never exercised** | **9** |
+| exercised but with NO adversarial assertion in any of its blocks | **307** |
+| total invocations across the suite | 3115 |
 
 ## Never exercised — G1 gap
 
@@ -22,11 +22,8 @@ These entrypoints are reachable by a client and no test calls them.
 
 * `AQP-FVT&#124;CC_SweepRevokeAnchor`
 * `CUSTODIANS&#124;C_Acquire`
-* `DALOS&#124;A_MigrateLiquidFunds`
 * `DEMIPAD&#124;C_Deposit`
 * `DEMIPAD&#124;C_Withdraw`
-* `PYTHIA&#124;A_RevokeLink`
-* `P&#124;A_Add`
 * `SNAKES&#124;C_Acquire`
 * `SPARK&#124;C_RedemAllSparks`
 * `SPARK&#124;C_RedemFewSparks`
@@ -77,7 +74,6 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>ATS&#124;C_Issue</code> | 7 | 0 |
 | <code>AQP-FVT&#124;C_ToggleScoreEntityLink</code> | 6 | 6 |
 | <code>ATS&#124;C_HotRecovery</code> | 6 | 7 |
-| <code>DALOS&#124;A_ToggleGAP</code> | 6 | 9 |
 | <code>DPNF&#124;C_ToggleUpdateRole</code> | 6 | 3 |
 | <code>DPTF&#124;C_ToggleFreezeAccount</code> | 6 | 0 |
 | <code>DPTF&#124;C_Transmute</code> | 6 | 0 |
@@ -489,10 +485,10 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DALOS&#124;A_DeploySmartAccount</code> | 16 | 0 | 1 | `[4.0]_Sovereign-Executor.repl`, `[5.2]_Dispenser+.repl`, `[2.1]_DpdcCore.repl` +1 |
 | <code>DALOS&#124;A_DeployStandardAccount</code> | 12 | 1 | 0 | `[4.0]_Sovereign-Executor.repl`, `[5.2]_Dispenser+.repl`, `[5.3]_Launchpad.repl` +2 |
 | <code>DALOS&#124;A_IgnisToggle</code> | 2 | 0 | 0 | `[4.0]_Sovereign-Executor.repl` |
-| <code>DALOS&#124;A_MigrateLiquidFunds</code> | 0 | 0 | 0 | — |
+| <code>DALOS&#124;A_MigrateLiquidFunds</code> | 3 | 10 | 2 | `DALOS-ADMIN.repl` |
 | <code>DALOS&#124;A_SetAutoFueling</code> | 2 | 4 | 0 | `[6.12]_DALOS-ADMIN.repl`, `[6.4]_Admin.repl` |
 | <code>DALOS&#124;A_SetIgnisSourcePrice</code> | 2 | 4 | 0 | `[6.12]_DALOS-ADMIN.repl`, `[6.4]_Admin.repl` |
-| <code>DALOS&#124;A_ToggleGAP</code> | 6 | 9 | 0 | `[6.12]_DALOS-ADMIN.repl`, `[6.3]_SWP.repl`, `DALOS-ADMIN.repl` |
+| <code>DALOS&#124;A_ToggleGAP</code> | 8 | 19 | 2 | `[6.12]_DALOS-ADMIN.repl`, `[6.3]_SWP.repl`, `DALOS-ADMIN.repl` |
 | <code>DALOS&#124;A_ToggleOAPU</code> | 1 | 4 | 0 | `[6.12]_DALOS-ADMIN.repl` |
 | <code>DALOS&#124;A_UpdatePublicKey</code> | 1 | 0 | 0 | `[6.4]_Admin.repl` |
 | <code>DALOS&#124;A_UpdateUsagePrice</code> | 32 | 5 | 0 | `[4.0]_Sovereign-Executor.repl`, `DALOS-ADMIN.repl` |
@@ -712,12 +708,12 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>ORBR&#124;C_Sublimate</code> | 7 | 0 | 1 | `[4.0]_Sovereign-Executor.repl`, `[6.2]_DPTF.repl`, `[6.3]_SWP.repl` |
 | <code>ORBR&#124;C_SublimateV2</code> | 1 | 0 | 0 | `[4.0]_Sovereign-Executor.repl` |
 | <code>ORBR&#124;C_WithdrawFees</code> | 1 | 0 | 0 | `[6.3]_SWP.repl` |
-| <code>P&#124;A_Add</code> | 0 | 0 | 0 | — |
-| <code>P&#124;A_AddIMP</code> | 3 | 8 | 7 | `[2.1]_Dalos.repl`, `[5.3]_Launchpad.repl`, `[6.3]_STOAICO.repl` |
+| <code>P&#124;A_Add</code> | 4 | 3 | 3 | `[6.12]_DALOS-ADMIN.repl` |
+| <code>P&#124;A_AddIMP</code> | 4 | 11 | 8 | `[2.1]_Dalos.repl`, `[6.12]_DALOS-ADMIN.repl`, `[5.3]_Launchpad.repl` +1 |
 | <code>P&#124;A_Define</code> | 58 | 0 | 0 | `[4.0]_Sovereign-Executor.repl`, `[5.2]_Dispenser+.repl`, `[4.0]_Sovereign-Executor.repl` +2 |
 | <code>PYTHIA&#124;A_Flush</code> | 56 | 14 | 2 | `[6.10]_PYTHIA-flush-gas-probe.repl`, `[6.10b]_PYTHIA-ledger-v2.repl` |
 | <code>PYTHIA&#124;A_Link</code> | 6 | 13 | 0 | `[6.10]_PYTHIA.repl` |
-| <code>PYTHIA&#124;A_RevokeLink</code> | 0 | 0 | 0 | — |
+| <code>PYTHIA&#124;A_RevokeLink</code> | 5 | 15 | 3 | `[6.10]_PYTHIA.repl` |
 | <code>PYTHIA&#124;A_UpdateDeployPrice</code> | 2 | 0 | 0 | `_scratch_pythia_h12_price_wiring.repl` |
 | <code>PYTHIA&#124;A_UpdateRenamePrice</code> | 2 | 0 | 0 | `_scratch_pythia_h12_price_wiring.repl` |
 | <code>PYTHIA&#124;C_DeployApiKey</code> | 8 | 11 | 0 | `[6.10]_PYTHIA.repl` |
