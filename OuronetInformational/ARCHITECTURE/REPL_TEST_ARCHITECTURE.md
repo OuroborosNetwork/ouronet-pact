@@ -314,6 +314,33 @@ assumed:
   against stated invariants. The REPL is deterministic, so randomness lives in the GENERATOR and
   every generated case is reproducible from its seed. Record the seed in the file header.
 
+## The feedback loop — G2's denominator is not fixed
+
+The likeliest and most valuable red-team outcome is not "an attack succeeded" but **"there should
+have been an `enforce` here and there isn't."** That closes as: add the guard, and the guard is a
+new rejection path that needs its own test.
+
+```
+red team finds a missing guard
+   -> add the enforce            (G2 denominator +1, coverage DROPS below 100%)
+   -> write its rejection test   (G2 back to 100%)
+   -> re-run the FULL suite      (a new enforce can legitimately break passing tests)
+```
+
+Three consequences worth stating before anyone reads a coverage number:
+
+1. **G2 = 100% is an invariant to hold, not a milestone to reach once.** It will be re-broken by
+   every productive red-team campaign, and that is the system working.
+2. **A DROP in G2 after a campaign is a GOOD signal** — it means real gaps were found. A campaign
+   that leaves G2 untouched found nothing, and should be read with suspicion rather than relief.
+3. **Adding an `enforce` is a behaviour change.** An operation that used to succeed may now be
+   rejected — correctly, because it was a bug — so every added guard requires a full-suite re-run
+   and possibly a fixture correction. Budget for that; do not treat a newly-red test as a
+   regression without checking which side was wrong.
+
+The same loop applies to `IG|DETER`/`IG|COMPONENTS`: a new guard can change an op's compute cost,
+so the price sheet regenerates too (`IGNIS-PRICING/IGNIS-PRICING.md`).
+
 ## Known limits of this plan
 
 * REPL cannot reach cross-block ordering, gas-station economics, `defpact` interruption across
