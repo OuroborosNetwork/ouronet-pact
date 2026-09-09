@@ -11,17 +11,16 @@ This is the evidence base for the audit and documentation papers: every client e
 | metric | value |
 |---|---:|
 | client entrypoints (the auditable contract) | 448 |
-| exercised at least once | 442 (98%) |
-| **never exercised** | **6** |
+| exercised at least once | 443 (98%) |
+| **never exercised** | **5** |
 | exercised but with NO adversarial assertion in any of its blocks | **309** |
-| total invocations across the suite | 3127 |
+| total invocations across the suite | 3133 |
 
 ## Never exercised — G1 gap
 
 These entrypoints are reachable by a client and no test calls them.
 
 * `AQP-FVT&#124;CC_SweepRevokeAnchor`
-* `CUSTODIANS&#124;C_Acquire`
 * `SNAKES&#124;C_Acquire`
 * `SPARK&#124;C_RedemAllSparks`
 * `SPARK&#124;C_RedemFewSparks`
@@ -149,6 +148,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DALOS&#124;A_IgnisToggle</code> | 2 | 0 |
 | <code>DALOS&#124;A_SetAutoFueling</code> | 2 | 4 |
 | <code>DALOS&#124;A_SetIgnisSourcePrice</code> | 2 | 4 |
+| <code>DEMIPAD&#124;C_FuelSemiFungible</code> | 2 | 6 |
 | <code>DPDC&#124;C_MultiTransfer</code> | 2 | 5 |
 | <code>DPNF&#124;C_Break</code> | 2 | 6 |
 | <code>DPNF&#124;C_MoveCreateRole</code> | 2 | 0 |
@@ -243,7 +243,6 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DALOS&#124;C_UpdateEliteAccountSquared</code> | 1 | 11 |
 | <code>DEMIPAD&#124;C_FuelNonFungible</code> | 1 | 1 |
 | <code>DEMIPAD&#124;C_FuelOrtoFungible</code> | 1 | 0 |
-| <code>DEMIPAD&#124;C_FuelSemiFungible</code> | 1 | 0 |
 | <code>DEMIPAD&#124;C_FuelTrueFungible</code> | 1 | 0 |
 | <code>DEMIPAD&#124;C_RetrieveNonFungible</code> | 1 | 1 |
 | <code>DEMIPAD&#124;C_RetrieveOrtoFungible</code> | 1 | 0 |
@@ -479,7 +478,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>CODEX&#124;C_RegisterStoicTag</code> | 4 | 11 | 0 | `[6.9]_CODEX.repl` |
 | <code>CODEX&#124;C_ReleaseStoicTag</code> | 2 | 4 | 0 | `[6.9]_CODEX.repl` |
 | <code>CODEX&#124;C_RotateCodexGuard</code> | 2 | 1 | 0 | `[6.9]_CODEX.repl` |
-| <code>CUSTODIANS&#124;C_Acquire</code> | 0 | 0 | 0 | — |
+| <code>CUSTODIANS&#124;C_Acquire</code> | 4 | 10 | 2 | `[5.3]_Launchpad.repl` |
 | <code>DALOS&#124;A_AccountCreationStoaToggle</code> | 4 | 76 | 2 | `[6.1]_Cumulator.repl`, `DALOS-ADMIN.repl` |
 | <code>DALOS&#124;A_DeploySmartAccount</code> | 16 | 0 | 1 | `[4.0]_Sovereign-Executor.repl`, `[5.2]_Dispenser+.repl`, `[2.1]_DpdcCore.repl` +1 |
 | <code>DALOS&#124;A_DeployStandardAccount</code> | 12 | 1 | 0 | `[4.0]_Sovereign-Executor.repl`, `[5.2]_Dispenser+.repl`, `[5.3]_Launchpad.repl` +2 |
@@ -503,7 +502,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DEMIPAD&#124;C_Deposit</code> | 3 | 19 | 0 | `[5.3]_Launchpad.repl`, `_probe_dpad2.repl` |
 | <code>DEMIPAD&#124;C_FuelNonFungible</code> | 1 | 1 | 0 | `[6.1.5]_DEMIPAD.repl` |
 | <code>DEMIPAD&#124;C_FuelOrtoFungible</code> | 1 | 0 | 0 | `[6.1.5]_DEMIPAD.repl` |
-| <code>DEMIPAD&#124;C_FuelSemiFungible</code> | 1 | 0 | 0 | `[6.1.5]_DEMIPAD.repl` |
+| <code>DEMIPAD&#124;C_FuelSemiFungible</code> | 2 | 6 | 0 | `[5.3]_Launchpad.repl`, `[6.1.5]_DEMIPAD.repl` |
 | <code>DEMIPAD&#124;C_FuelTrueFungible</code> | 1 | 0 | 0 | `[6.1.5]_DEMIPAD.repl` |
 | <code>DEMIPAD&#124;C_RetrieveNonFungible</code> | 1 | 1 | 0 | `[6.1.5]_DEMIPAD.repl` |
 | <code>DEMIPAD&#124;C_RetrieveOrtoFungible</code> | 1 | 0 | 0 | `[6.1.5]_DEMIPAD.repl` |
@@ -610,7 +609,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DPSF&#124;C_Issue</code> | 14 | 3 | 1 | `_verify_finding_DPDC-I_33M_makeid_same_block_collision.repl`, `_verify_finding_DPDC-N_12Hc_set_instance_lock.repl`, `[4.0]_Sovereign-Executor.repl` +3 |
 | <code>DPSF&#124;C_IssueCompany</code> | 3 | 6 | 0 | `[4.0]_Sovereign-Executor.repl`, `[6.1.1]_EQUITY.repl` |
 | <code>DPSF&#124;C_Make</code> | 13 | 23 | 0 | `_verify_finding_DPDC-N_12Hc_set_instance_lock.repl`, `[6.1.3]_DPDC-S.repl`, `[6.1]_DPDC.repl` |
-| <code>DPSF&#124;C_MakeFragments</code> | 13 | 22 | 2 | `dsa-capture-tests.repl`, `dsa-fee-tests.repl`, `dsa-grand-tour.repl` +2 |
+| <code>DPSF&#124;C_MakeFragments</code> | 14 | 28 | 2 | `dsa-capture-tests.repl`, `dsa-fee-tests.repl`, `dsa-grand-tour.repl` +3 |
 | <code>DPSF&#124;C_MergeFragments</code> | 3 | 5 | 0 | `[6.1.2]_DPDC-FRAGMENTS.repl`, `[6.1]_DPDC.repl` |
 | <code>DPSF&#124;C_MorphEquity</code> | 16 | 10 | 5 | `[6.1.1]_EQUITY.repl`, `[6.1]_DPDC.repl`, `[6.4]_AQP-EXHAUSTIVE-PREP.repl` |
 | <code>DPSF&#124;C_MoveCreateRole</code> | 2 | 0 | 0 | `[6.1]_DPDC.repl` |

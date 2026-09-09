@@ -11,4 +11,7 @@
 (load "../Stage_01/[6.2]_DPTF.repl")
 (load "../Stage_01/[6.3]_SWP.repl")
 (load "../deploy-stage02.repl")
+;;DHOC (the Custodians collection) and its fragment-enabled nonce 1 are built here -- the
+;;sale fixture in [5.3] fragments and fuels from them.
+(load "../Stage_02/[6.1]_DPDC.repl")
 (load "../Stage_02/[5.3]_Launchpad.repl")

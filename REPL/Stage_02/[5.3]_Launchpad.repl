@@ -1225,3 +1225,326 @@
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "TX-ACQ-01 - fuel the pad: fragment a DHOC nonce and transmit it for sale")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(print "=== TX-ACQ-01 — fuel the Custodians sale ================================")
+;;==== TX-ACQ-01 · 01 · fragment + fuel ==== =======================================================
+(print "--- [TX-ACQ-01 · 01 · fragment + fuel] ---")
+;; "Fuel Assets for Sale must be done separately" -- the Custodians init above says so, and
+;; separately never happened, which is why all four citizen sales sat at zero coverage. This
+;; establishes the missing fixture.
+;;
+;; Custodians sells FRAGMENT nonces: UEV_AcquisitionNonce admits only [-3 -2 -1]
+;; (Bronze/Silver/Golden). Fragments are minted by DPDC-F, which "locks a native nonce,
+;; credits 1000x negative fragment nonces" -- so native nonce N becomes fragment nonce -N at
+;; 1000x the count. ANHD holds DHOC nonce 1, and [6.1]_DPDC already enabled fragmentation on
+;; it, so C_MakeFragments is the only step needed.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+        (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+        (owner:string KST.ANHD)
+        (asset:string "DHOC-98c486052a51")
+    )
+    (let
+        (
+            (lpad:string (ref-DPAD::GOV|DEMIPAD|SC_NAME))
+            (native-before:integer (ref-DPDC::UR_AccountNonceSupply KST.ANHD asset true 1))
+        )
+        (map print
+            [
+                ;;The pad starts holding NONE. -1 is DPDC's "holds none" sentinel, not 0 --
+                ;;asserting 0 here would silently pass on a different failure.
+                (expect "<<TX-ACQ-01>> the pad holds no fragments before fuelling (-1 sentinel)"
+                    -1 (ref-DPDC::UR_AccountNonceSupply lpad asset true -1))
+            ]
+        )
+        (ref-TS02-C1::DPSF|C_MakeFragments owner owner asset 1 10)
+        (map print
+            [
+                ;;1000x, and the native units are LOCKED (spent), not copied.
+                (expect "<<TX-ACQ-01>> fragmenting 10 native units credits 10,000 fragments at nonce -1"
+                    10000 (ref-DPDC::UR_AccountNonceSupply owner asset true -1))
+                (expect "<<TX-ACQ-01>> ...and the 10 native units are consumed, not duplicated"
+                    (- native-before 10) (ref-DPDC::UR_AccountNonceSupply owner asset true 1))
+            ]
+        )
+        (ref-TS02-DPAD::DEMIPAD|C_FuelSemiFungible owner owner asset [-1] [10000])
+        (map print
+            [
+                (expect "<<TX-ACQ-01>> the pad now holds the fragments"
+                    10000 (ref-DPDC::UR_AccountNonceSupply lpad asset true -1))
+                (expect "<<TX-ACQ-01>> ...transferred out of the owner, not minted"
+                    0 (ref-DPDC::UR_AccountNonceSupply owner asset true -1))
+                ;;The sale's own availability reader must agree with the raw DPDC supply, or
+                ;;the supply cap in CUSTODIANS|ACQUIRE guards the wrong number.
+                (expect "<<TX-ACQ-01>> the sale's availability reader agrees with DPDC's supply"
+                    10000 (DEMIPAD-CUSTODIANS.UR_NonceSaleAvailability -1))
+            ]
+        )
+        ""
+    )
+)
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "TX-ACQ-02 - CUSTODIANS|C_Acquire: the first citizen sale ever executed")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(print "=== TX-ACQ-02 — CUSTODIANS|C_Acquire ===================================")
+;;==== TX-ACQ-02 · 01 · quote the sale the way a client must ==== ==================================
+(print "--- [TX-ACQ-02 · 01 · quote the sale the way a client must] ---")
+;; URC_Acquire is the documented client entry: it returns the coin.TRANSFER capability
+;; DESCRIPTIONS the UI must sign. Quote first, then sign exactly those, then submit.
+(let
+    (
+        (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+        (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
+        (asset:string "DHOC-98c486052a51")
+    )
+    (let
+        (
+            (costs:object (DEMIPAD-CUSTODIANS.URC_NonceAmountCosts -1 10))
+            (unit:decimal (at "quintessence-price" (ref-DPAD::UR_Price asset)))
+            (stoa-price:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
+        )
+        (map print
+            [
+                ;;Price is per FRAGMENT and quoted in dollars; the token leg is that divided by
+                ;;the live STOA price. Both derived, so a price move does not falsify the test.
+                (expect "<<TX-ACQ-02>> 10 fragments cost 10x the quintessence price, in dollars"
+                    (* unit 10.0) (at "pid" costs))
+                (expect "<<TX-ACQ-02>> the token leg is the dollar cost at the live STOA price"
+                    (/ (at "pid" costs) stoa-price) (at "wstoa" costs))
+                ;;FINDING -- UNGUARDED NEGATIVE SLIPPAGE. URC_Acquire pads each signed cap by
+                ;;UC_SlippageFactor = (1 + slippage/100), and that helper has NO non-negative
+                ;;guard. A negative slippage therefore SHRINKS the ceilings below the true
+                ;;cost, so the transaction can only ever fail -- at the coin layer, with
+                ;;"Managed capability not installed", naming neither DEMIPAD nor slippage.
+                ;;
+                ;;What makes this more than theoretical: the value most likely to be passed by
+                ;;mistake is -1.0, because that is the documented "slippage off" SENTINEL for
+                ;;C_Acquire's <max-cost> -- the sibling argument in the very same call. The
+                ;;same number means "off" in one and "-1%" in the other. (Variant 2, genuinely
+                ;;slippage-off, is the separate install-based CAP_Acquire.) One
+                ;;(enforce (>= slippage 0.0)) in UC_SlippageFactor removes the trap.
+                (expect "<<TX-ACQ-02>> FINDING: a NEGATIVE slippage silently shrinks the signed caps below cost"
+                    true
+                    (< (ref-DPAD::UC_SlippageFactor -1.0) 1.0))
+                (expect "<<TX-ACQ-02>> ...while 0.0 is the documented 'exact caps' value"
+                    1.0 (ref-DPAD::UC_SlippageFactor 0.0))
+            ]
+        )
+        ""
+    )
+)
+;;==== TX-ACQ-02 · 02 · FINDING probe, isolated in a rolled-back tx ==== ===========================
+(print "--- [TX-ACQ-02 · 02 · FINDING probe, isolated in a rolled-back tx] ---")
+(env-sigs
+    [ { "key": "PK_AncientHodler", "caps": [] }
+    , { "key": "PK_Emma", "caps": [] }
+    , { "key": "ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48", "caps":
+        [ (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" "c:ZNfuj3iZI83n7MUSKGuoXoSxFg1cyMxCzB3szUHVvrI" 142.5)
+        , (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 0.75)
+        , (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1.5)
+        , (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 2.25)
+        , (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 3.0)
+        ] }
+    ])
+;;FINDING -- THE CREATOR CANNOT BE THE PATRON. DPDC's collectable transfer pays an IGNIS
+;;royalty from the PATRON to the collection's CREATOR. ANHD created DHOC, so with ANHD as
+;;patron the leg becomes a self-payment and IGNIS|C>ROYALTY rejects it with "Sender and
+;;Receiver must be different" -- naming neither royalty nor the collection. This is a real
+;;operational shape, not a contrivance: the launchpad operator paying gas for their own sale
+;;IS the creator. UC_CleanseAggregatedRoyalties already drops ZERO-royalty entries; dropping
+;;creator == patron entries the same way would close it.
+;;
+;;WHY THIS PROBE LIVES ALONE IN A ROLLED-BACK TRANSACTION -- a REPL hazard worth stating
+;;plainly, because it silently cost me two assertions before I noticed. `expect-failure`
+;;CATCHES the abort but does NOT roll back writes already applied: there is no savepoint.
+;;The sale moves the buyer's money (C_Deposit) BEFORE the collectable leg that fails here, so
+;;the caught failure leaves the buyer debited and the dollar ledger advanced. Run inline, the
+;;happy-path assertions below then saw a DOUBLE debit (300 STOA, not 150) and a doubled
+;;ledger -- failing for a reason that had nothing to do with what they test.
+;;
+;;On-chain this cannot happen: a failed transaction reverts entirely. It is purely an
+;;artefact of catching mid-transaction. The remedy is structural -- give any expect-failure
+;;on a STATE-MUTATING op its own transaction and end it with (rollback-tx), never
+;;(commit-tx). Recorded as Rule 9 in REPL_TEST_ARCHITECTURE.md; the suite has 22 other
+;;expect-failure sites on C_/A_ ops that need the same audit, and used (rollback-tx) in
+;;exactly zero places before this one.
+(let
+    (
+        (ref-CPAD:module{CitizenLaunchpadTalosV2} TS02-CPAD)
+    )
+    (map print
+        [
+            (expect-failure "<<TX-ACQ-02>> FINDING: the collection creator cannot patron a sale of their own collection"
+                "Sender and Receiver must be different"
+                (ref-CPAD::CUSTODIANS|C_Acquire KST.ANHD KST.EMMA -1 10 true -1.0))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+;;ROLLBACK, not commit -- discards whatever the caught failure left half-written.
+(rollback-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "TX-ACQ-02b - CUSTODIANS|C_Acquire: the first citizen sale ever executed")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+;;==== TX-ACQ-02b · 01 · sign the quoted caps and buy ==== =========================================
+(print "--- [TX-ACQ-02b · 01 · sign the quoted caps and buy] ---")
+;;These five caps are exactly what URC_Acquire returns at slippage 0.0 for 10 fragments
+;;($15 = 150 wSTOA): the 142.5 non-environment leg plus the 0.75/1.5/2.25/3.0 environment
+;;split. Granted at the exact amounts, so the signature block independently restates the
+;;economics TX-DEP-01 measured.
+(env-sigs
+    [ { "key": "PK_AncientHodler", "caps": [] }
+    , { "key": "PK_Emma", "caps": [] }
+    , { "key": "ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48", "caps":
+        [ (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" "c:ZNfuj3iZI83n7MUSKGuoXoSxFg1cyMxCzB3szUHVvrI" 142.5)
+        , (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 0.75)
+        , (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1.5)
+        , (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 2.25)
+        , (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 3.0)
+        ] }
+    ])
+(let
+    (
+        (ref-CPAD:module{CitizenLaunchpadTalosV2} TS02-CPAD)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-coin:module{stoa-ns.fungible-v1} coin)
+        (asset:string "DHOC-98c486052a51")
+        (buyer:string KST.EMMA)
+    )
+    (let
+        (
+            (lpad:string (ref-DPAD::GOV|DEMIPAD|SC_NAME))
+            (buyer-stoa:string (ref-DALOS::UR_AccountStoa KST.EMMA))
+        )
+        (let
+            (
+                (pad-before:integer (ref-DPDC::UR_AccountNonceSupply lpad asset true -1))
+                (buyer-frags-before:integer (ref-DPDC::UR_AccountNonceSupply buyer asset true -1))
+                (buyer-stoa-before:decimal (ref-coin::get-balance buyer-stoa))
+                (raised-before:decimal (ref-DPAD::UR_TotalDollarzRaised asset))
+                (cost-pid:decimal (at "pid" (DEMIPAD-CUSTODIANS.URC_NonceAmountCosts -1 10)))
+                (cost-tok:decimal (at "wstoa" (DEMIPAD-CUSTODIANS.URC_NonceAmountCosts -1 10)))
+            )
+            (map print
+                [
+                    ;;Proves the rollback above actually took: had the caught failure's writes
+                    ;;survived, the buyer would already hold fragments and the pad would be short.
+                    (expect "<<TX-ACQ-02b>> the rolled-back probe left NO fragments with the buyer"
+                        -1 buyer-frags-before)
+                    (expect "<<TX-ACQ-02b>> ...and the pad's stock is still whole"
+                        10000 pad-before)
+                ]
+            )
+            (let
+                (
+                    (r (ref-CPAD::CUSTODIANS|C_Acquire buyer buyer -1 10 true -1.0))
+                )
+                (print (format "<(TS02-CPAD.CUSTODIANS|C_Acquire)> => \"{}\"" [r]))
+                (map print
+                    [
+                        ;;FINDING -- the wrapper DISCARDS the sale's own result. Its last form is
+                        ;;(XB_DynamicFuelSTOA), whose value is a bare true, so the caller cannot
+                        ;;tell what was bought. CLAUDE.md's Talos rule asks for "a clear format
+                        ;;result string explaining the branch taken". KPAY|C_BuyStoicPay in the
+                        ;;SAME file does it correctly -- it binds acquisition-text and returns
+                        ;;that after the refuel. SPARK|C_BuySparks and SNAKES|C_Acquire share the
+                        ;;defect: 3 of the 4 refuel-carrying sale wrappers.
+                        (expect "<<TX-ACQ-02b>> FINDING: the wrapper returns the refuel's bare true, discarding the sale result"
+                            true r)
+                        ;;THE SALE ITSELF.
+                        (expect "<<TX-ACQ-02b>> the buyer receives exactly the fragments bought"
+                            10 (ref-DPDC::UR_AccountNonceSupply buyer asset true -1))
+                        (expect "<<TX-ACQ-02b>> the pad's stock drops by exactly that many"
+                            (- pad-before 10) (ref-DPDC::UR_AccountNonceSupply lpad asset true -1))
+                        ;;PAID IN NATIVE STOA (iz-native true), at the quoted token cost.
+                        (expect "<<TX-ACQ-02b>> the buyer pays the quoted token cost in native STOA"
+                            (- buyer-stoa-before cost-tok) (ref-coin::get-balance buyer-stoa))
+                        ;;The sale routes its money through DEMIPAD|C_Deposit, so the dollar
+                        ;;ledger must advance by the quoted dollars -- this is what ties the
+                        ;;citizen sale to the sovereign launchpad accounting.
+                        (expect "<<TX-ACQ-02b>> the sale is recorded in the launchpad's dollar ledger"
+                            (+ raised-before cost-pid) (ref-DPAD::UR_TotalDollarzRaised asset))
+                    ]
+                )
+                ""
+            )
+        )
+    )
+)
+;;==== TX-ACQ-02b · 02 · the supply cap, against a stocked pad ==== ================================
+(print "--- [TX-ACQ-02b · 02 · the supply cap, against a stocked pad] ---")
+;;The pre-existing #3H test proves over-supply is rejected on an EMPTY pad, where any
+;;non-zero request exceeds availability. That is a weaker statement than it looks. Now that
+;;the pad genuinely holds stock, re-run the cap at the boundary: one more than available.
+(let
+    (
+        (ref-CPAD:module{CitizenLaunchpadTalosV2} TS02-CPAD)
+        (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+    )
+    (let
+        (
+            (avail:integer (DEMIPAD-CUSTODIANS.UR_NonceSaleAvailability -1))
+            (raised:decimal (ref-DPAD::UR_TotalDollarzRaised "DHOC-98c486052a51"))
+        )
+        (map print
+            [
+                (expect "<<TX-ACQ-02b>> the pad is genuinely stocked, so the cap is tested against real supply"
+                    true (> avail 0))
+                (expect-failure "<<TX-ACQ-02b>> buying one more than the pad holds is rejected"
+                    "Insufficient Assets for Acquisiton"
+                    (ref-CPAD::CUSTODIANS|C_Acquire KST.EMMA KST.EMMA -1 (+ avail 1) true -1.0))
+                ;;And a nonce outside the Bronze/Silver/Golden set is rejected by its own guard,
+                ;;not by the supply cap -- distinct message, so the two are not conflated.
+                (expect-failure "<<TX-ACQ-02b>> a non-acquisition nonce is rejected by its own named guard"
+                    "Invalid Custodian Acquisition Nonce"
+                    (ref-CPAD::CUSTODIANS|C_Acquire KST.EMMA KST.EMMA 1 1 true -1.0))
+            ]
+        )
+        ;;RULE 9 DISCHARGE. Both rejections above are expect-failures on a MUTATING op inside a
+        ;;COMMITTED transaction, which is exactly the shape that silently corrupted TX-ACQ-02b
+        ;;before the rollback fix. They are safe here for a specific, checkable reason: both
+        ;;fire inside CUSTODIANS|ACQUIRE, which C_Acquire opens BEFORE any money or asset
+        ;;moves, so nothing was written to leave behind. Asserted rather than assumed -- that
+        ;;is the whole point of the rule.
+        (map print
+            [
+                (expect "<<TX-ACQ-02b>> the two rejections left the pad's stock untouched"
+                    avail (DEMIPAD-CUSTODIANS.UR_NonceSaleAvailability -1))
+                (expect "<<TX-ACQ-02b>> ...and the dollar ledger untouched"
+                    raised (ref-DPAD::UR_TotalDollarzRaised "DHOC-98c486052a51"))
+            ]
+        )
+        ""
+    )
+)
+(print "")
+(print "")
+;;==== TX-ACQ-02b · 03 · gas echo ==== =============================================================
+(print "--- [TX-ACQ-02b · 03 · gas echo] ---")
+(format "<<<<<<<TX-ACQ-02 CUSTODIANS|C_Acquire ==> {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)

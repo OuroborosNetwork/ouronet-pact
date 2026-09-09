@@ -279,6 +279,30 @@ REPL/
 > in the current suite, and it is in the TESTS, not the code. Every one of the 137 must be
 > tightened before any adversarial coverage number is published.
 
+> ## RULE 9 — an `expect-failure` on a STATE-MUTATING op needs its own `(rollback-tx)`.
+> `expect-failure` catches the abort but does **NOT** roll back writes already applied — there is
+> no savepoint. If the op moved money or minted before the line that failed, that state SURVIVES
+> into every later assertion in the file.
+>
+> **Found 2026-09-09, the expensive way.** `CUSTODIANS|C_Acquire` moves the buyer's STOA through
+> `DEMIPAD|C_Deposit` *before* the collectable leg that rejects a creator-as-patron sale. Probing
+> that rejection inline left the buyer debited and the launchpad's dollar ledger advanced, so the
+> happy-path assertions two lines below saw a **double** debit (300 STOA, not 150) and failed for
+> a reason with nothing to do with what they tested. On-chain this is impossible — a failed
+> transaction reverts entirely. It is purely an artefact of catching mid-transaction.
+>
+> **The shape:** give the probe its own `(begin-tx …)`, and end it with `(rollback-tx)`, never
+> `(commit-tx)`. Then ASSERT in the next transaction that the rollback took (the buyer holds
+> nothing, the stock is whole) — the rollback is part of the test, so it gets an assertion like
+> anything else.
+>
+> A rejection that fires in a `defcap` before any write is safe to leave inline, but say so and
+> **prove it** with an assertion that the observable state is unchanged, rather than assuming it.
+>
+> **Open:** the suite has 22 `expect-failure` sites on `C_`/`A_` ops and used `(rollback-tx)` in
+> exactly ZERO places before this rule existed. Every one needs the audit above. Any that leaked
+> state has been silently weakening whatever ran after it. Folded into P3.
+
 ## Assertion style
 * `(expect (format "…" [vals]) expected actual)` — one `format` for the doc string, never wrapping
   the whole `expect`.
