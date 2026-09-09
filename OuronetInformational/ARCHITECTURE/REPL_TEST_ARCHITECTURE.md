@@ -50,6 +50,20 @@ in-memory DB, so testers share nothing and parallelise perfectly.
 **But wall time = the SLOWEST SINGLE TESTER, not total/cores.** With enough cores, a suite of
 40 testers where one takes 30 minutes still takes 30 minutes.
 
+### Parallel execution is safe — Pact needs no support for it
+
+**Verified 2026-09-09 with `strace`: a `pact <file>.repl` run opens ZERO files for writing.**
+Every run is a separate OS process holding its own in-memory database; source files are read-only
+and shared. Parallelism therefore comes from the operating system, not from Pact, and there is no
+shared mutable state for runs to corrupt. `xargs -P 16` is all the infrastructure required:
+
+```bash
+cd REPL && ls modules/*.repl entities/*.repl | xargs -P 16 -I{} pact {}
+```
+
+The only shared resources are CPU, RAM (62 GB here — a run peaks well under 1 GB) and the
+read-only source tree.
+
 ### Why independence does not make it faster than the slowest file
 
 The testers ARE independent — that is what gives us parallelism. But **one file can only use one
@@ -249,6 +263,16 @@ REPL/
    (`IGNIS-PRICING/IGNIS-PRICE-SHEET.md`).
 8. **Keep it under 2 minutes** (Rule 1). Split by concern if it grows.
 
+> ## RULE 8 — an `expect-failure` MUST assert the expected error message.
+> `(expect-failure "doc" "the expected error text" expr)`, never the two-argument form.
+>
+> **Measured 2026-09-09: 137 of 234 `expect-failure` assertions accept ANY failure.** Those pass if
+> the code rejects for a completely different reason — a typo in the test, a wrong argument count,
+> a missing capability, an unrelated guard firing first. A test that passes for the wrong reason is
+> worse than no test, because it is counted as coverage. This is the single biggest quality defect
+> in the current suite, and it is in the TESTS, not the code. Every one of the 137 must be
+> tightened before any adversarial coverage number is published.
+
 ## Assertion style
 * `(expect (format "…" [vals]) expected actual)` — one `format` for the doc string, never wrapping
   the whole `expect`.
@@ -277,3 +301,25 @@ assembled. 175 files never ran, including **~32 audit-finding regression tests**
 
 P3 is the bulk and is embarrassingly parallel — one agent per module, each enumerating its own
 `enforce` sites. P0–P2 are the prerequisite.
+
+## Tooling that does not exist yet and must be built
+
+Pact ships no test-quality tooling, so two small harnesses are part of the plan rather than
+assumed:
+
+* **Mutation harness** (`REPL/mutation/`) — apply a catalogue of source mutations (`>=` -> `>`,
+  `and` -> `or`, delete an `enforce`, weaken a cap, off-by-one a bound), run the affected module
+  tester, record killed vs survived. Pure scripting over `sed` + `pact`; it needs no Pact support.
+* **Fuzz generator** (`REPL/redteam/_fuzz.py`) — emit `.repl` files with randomised valid inputs
+  against stated invariants. The REPL is deterministic, so randomness lives in the GENERATOR and
+  every generated case is reproducible from its seed. Record the seed in the file header.
+
+## Known limits of this plan
+
+* REPL cannot reach cross-block ordering, gas-station economics, `defpact` interruption across
+  blocks, or real multi-signer keyset semantics (section 4b). Those need a devnet or a formal
+  model and are explicitly out of scope for the REPL suite.
+* Assertion attribution in the ledger is per transaction block, not per op (section 4b note).
+* G2 counts `enforce` SITES, not reachable paths: one `enforce` inside a branch may need several
+  tests to cover every way of reaching it. G2 = 100% is a floor on adversarial coverage, not a
+  ceiling.
