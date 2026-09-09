@@ -308,6 +308,7 @@ assembled. 175 files never ran, including **~32 audit-finding regression tests**
 | B7 | `expect-failure` assertions | 234 | >= 1,015 |
 | B8 | **`expect-failure` that accept ANY error** | **137** | **0** |
 | B9 | module testers passing standalone | 26 / 26 | all, incl. new |
+| B9b | **module testers asserting NOTHING about their module** | **8 / 26** | **0** |
 | B10 | G1 surface coverage | ~65% | 100% |
 | B11 | G2 adversarial coverage | **29%** | 100% |
 
@@ -331,6 +332,21 @@ assembled. 175 files never ran, including **~32 audit-finding regression tests**
 * **Exit:** B1 fully classified; every asserting file belongs to exactly one tester (RULE 5).
 
 ## P2 — G1: every entrypoint invoked in its OWN tester
+> **Measured in P0 and worse than the 65% figure suggests.** A bare boot
+> (`deploy-stage00` + `deploy-stage01`) already prints **11 `expect` + 7 `expect-failure`** — the
+> deploy core's own checks. Eight testers print EXACTLY that and nothing more, so they assert
+> nothing about the module they are named for and pass because booting a chain passes:
+> **DPTF, DPOF, VST, DPDC, DISPENSER, POPULATE-BLOODSHED, POPULATE-BUNNIES, POPULATE-NOSFERATU.**
+>
+> Net assertions per tester, after subtracting that 11/7 baseline: AQP 399, ADMIN 77, SWP 74,
+> CUMULATOR 71, PYTHIA 61, DPOF-S2 56, DEMIPAD 46, INFO-ONE 40, ATS 39, DPDC-S 39,
+> DPSF-UPDATES 39, CODEX 21, STOAICO 19, EQUITY 14, LAUNCHPAD 12, DPDC-FRAGMENTS 10, DPNF 6,
+> DALOS-ADMIN 4, **and eight zeros**.
+>
+> The cause is visible in `Stage_01/[6.2]_DPTF.repl`: **1,493 lines, ZERO assertions.** It is a
+> FIXTURE BUILDER, and `modules/DPTF.repl` loads it and calls that a test suite. Fifteen of the
+> 45 files the current runner executes are like this — 11,260 lines of setup with no assertion in
+> them. **"All 26 testers pass" was true and meaningless.**
 * **2.1** Add the 17 never-invoked entrypoints (B4) — incl. `DEMIPAD|C_Deposit`/`C_Withdraw`,
   `DPDC|C_BulkTransfer`, `SWP|C_SmartSwapWithSlippage`, 3 VST repurpose ops.
 * **2.2** Fill each tester to 100% of its module: VST 37%, DPSF-UPDATES 39%, DALOS-ADMIN 45%,

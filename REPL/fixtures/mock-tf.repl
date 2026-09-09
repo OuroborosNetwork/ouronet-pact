@@ -1,0 +1,93 @@
+;; REPL/fixtures/mock-tf.repl — MINIMAL true-fungible fixture.
+;;
+;; PROVIDES : 2 DPTFs owned by KST.ANHD — "MockAlpha"/MOCKA and "MockBeta"/MOCKB,
+;;            precision 24, all properties permissive (change-owner/upgrade/special-role ON,
+;;            freeze/wipe OFF, pause ON). Resolve an id with (U|DALOS::UDC_Makeid "MOCKA") -- the id derives from the TICKER,
+;;            not the name: MOCKA-98c486052a51.
+;; REQUIRES : deploy-stage00 + deploy-stage01.
+;; ASSERTS  : only its OWN postcondition (the tokens exist). A fixture must fail loudly and be
+;;            blamed for its own breakage — it must NOT carry tests for the module under test.
+;; LOAD ONCE per process (RULE 5): re-loading re-issues and corrupts downstream balances.
+;;
+;; Replaces preloading Stage_01/[6.2]_DPTF.repl (1,493 lines, ZERO assertions) purely to obtain
+;; tokens. Use the big suite only when SCALE is the subject (RULE 2).
+
+(begin-tx "FIXTURE mock-tf — issue MOCKA + MOCKB")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [FIXTURE mock-tf · 01 · let / STOA split] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        ;;DERIVED, never hardcoded: this survived a 5000x re-pricing untouched (RULE 2 note).
+        (split-stoa:[decimal]
+            (ref-DALOS::URC_SplitSTOAPrices patron (* (ref-DALOS::UR_UsagePrice "dptf") 2.0))
+        )
+    )
+(print "--- [FIXTURE mock-tf · 02 · env-sigs (caps)] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa))
+                ]
+            }
+        ]
+    )
+(print "--- [FIXTURE mock-tf · 03 · issue] ---")
+    (let
+        (
+            (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+            (issued-ids:[string]
+                (ref-TS01-C1::DPTF|C_Issue
+                    patron patron
+                    ["MockAlpha" "MockBeta"]
+                    ["MOCKA" "MOCKB"]
+                    (make-list 2 24)        ;;precision
+                    (make-list 2 true)      ;;can-change-owner
+                    (make-list 2 true)      ;;can-upgrade
+                    (make-list 2 true)      ;;can-add-special-role
+                    (make-list 2 false)     ;;can-freeze
+                    (make-list 2 false)     ;;can-wipe
+                    (make-list 2 true)      ;;can-pause
+                )
+            )
+        )
+        (print (format "<(FIXTURE mock-tf)> issued => {}" [issued-ids]))
+    )
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "FIXTURE mock-tf — postcondition")
+(namespace "ouronet-ns")
+(print "--- [FIXTURE mock-tf · 04 · postcondition] ---")
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (a:string (ref-U|DALOS::UDC_Makeid "MOCKA"))
+        (b:string (ref-U|DALOS::UDC_Makeid "MOCKB"))
+    )
+    (map print
+        [
+            (expect (format "<<FIXTURE mock-tf>> MOCKA {} exists and is owned by the patron" [a])
+                KST.ANHD (ref-DPTF::UR_Konto a))
+            (expect (format "<<FIXTURE mock-tf>> MOCKB {} exists and is owned by the patron" [b])
+                KST.ANHD (ref-DPTF::UR_Konto b))
+        ]
+    )
+    ""
+)
+(commit-tx)
