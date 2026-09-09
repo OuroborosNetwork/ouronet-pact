@@ -122,3 +122,144 @@
     ""
 )
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-04 — C_BulkTransfer: one sender, many receivers, in one call")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-04 · 01 · bulk transfer] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;Previously invoked by NOTHING in any asserting test (ledger G1 gap).
+(let
+    (
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (sf:string "MOCKS-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+    )
+    (let
+        (
+            (tot0:integer (ref-DPDC::UR_NonceSupply sf true 2))
+            (e0:integer (ref-DPDC::UR_AccountNonceSupply emma sf true 2))
+            (l0:integer (ref-DPDC::UR_AccountNonceSupply lumy sf true 2))
+        )
+        ;;nonce 2, 3 to EMMA and 2 to LUMY, in a single bulk call
+        (ref-TS02-C1::DPDC|C_BulkTransfer patron sf true [[2] [2]] [[3] [2]] patron [emma lumy] false)
+        (map print
+            [
+                ;;NOTE: UR_AccountNonceSupply returns -1 as the "holds none" SENTINEL, not 0.
+                ;;Baseline arithmetic that assumes 0 is wrong; assert the absolute holding.
+                (expect "<<DPDC-04>> neither receiver held this nonce beforehand (-1 sentinel)"
+                    [-1 -1] [e0 l0])
+                (expect "<<DPDC-04>> first receiver credited exactly its leg"
+                    3 (ref-DPDC::UR_AccountNonceSupply emma sf true 2))
+                (expect "<<DPDC-04>> second receiver credited exactly its leg"
+                    2 (ref-DPDC::UR_AccountNonceSupply lumy sf true 2))
+                (expect "<<DPDC-04>> INVARIANT: a bulk transfer conserves the nonce total"
+                    tot0 (ref-DPDC::UR_NonceSupply sf true 2))
+            ]
+        )
+    )
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-05 — C_UpdatePendingBranding writes PENDING, leaving live branding alone")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-05 · 01 · pending branding] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;Both DPNF| and DPSF| C_UpdatePendingBranding were invoked by NOTHING (ledger G1 gap).
+;;The point of the op is the PENDING/LIVE split, so that is what gets asserted.
+(let
+    (
+        (ref-BRD:module{BrandingV2} BRD)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (nf:string "MOCKN-98c486052a51")
+        (sf:string "MOCKS-98c486052a51")
+        (patron:string KST.ANHD)
+    )
+    (let ((live0:string (ref-BRD::UR_Logo nf false)))
+        (ref-TS02-C2::DPNF|C_UpdatePendingBranding patron nf "nf-logo" "nf-desc" "https://nf" [])
+        (ref-TS02-C1::DPSF|C_UpdatePendingBranding patron sf "sf-logo" "sf-desc" "https://sf" [])
+        (map print
+            [
+                (expect "<<DPDC-05>> NFT pending logo was written"
+                    "nf-logo" (ref-BRD::UR_Logo nf true))
+                (expect "<<DPDC-05>> NFT pending description was written"
+                    "nf-desc" (ref-BRD::UR_Description nf true))
+                (expect "<<DPDC-05>> SFT pending website was written"
+                    "https://sf" (ref-BRD::UR_Website sf true))
+                (expect "<<DPDC-05>> the LIVE branding is untouched by a PENDING write"
+                    live0 (ref-BRD::UR_Logo nf false))
+                (expect "<<DPDC-05>> the two collections did not cross-contaminate"
+                    "sf-logo" (ref-BRD::UR_Logo sf true))
+            ]
+        )
+    )
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-06 — DPSF|C_UpdateNonce: the SFT whole-object writer")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-06 · 01 · SFT whole-object nonce write] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;Previously invoked by NOTHING (ledger G1 gap). Tested here rather than in a separate SFT
+;;tester because it operates on the SAME shared collectable core and the SAME mock fixture --
+;;the DPNF counterpart is asserted in modules/DPNF.repl (DPNF-04).
+(let
+    (
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (sf:string "MOCKS-98c486052a51")
+        (patron:string KST.ANHD)
+    )
+    (let
+        (
+            (type:object{DpdcUdcV2.URI|Type}
+                (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        )
+        (let
+            (
+                (nd:object{DpdcUdcV2.DPDC|NonceData}
+                    (ref-DPDC-UDC::UDC_NonceData 9.0 8.0 "SftWholeWrite" "sft object write"
+                        (ref-DPDC-UDC::UDC_MetaData { "sft": "yes" }) type
+                        (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
+                        (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+            )
+            (ref-TS02-C1::DPSF|C_UpdateNonce patron sf patron 3 true nd)
+            (let ((got:object{DpdcUdcV2.DPDC|NonceData} (ref-DPDC::UR_NonceData sf true 3)))
+                (map print
+                    [
+                        (expect "<<DPDC-06>> DPSF|C_UpdateNonce wrote the name"
+                            "SftWholeWrite" (at "name" got))
+                        (expect "<<DPDC-06>> DPSF|C_UpdateNonce wrote the royalty"
+                            9.0 (at "royalty" got))
+                        (expect "<<DPDC-06>> DPSF|C_UpdateNonce wrote the ignis royalty"
+                            8.0 (at "ignis" got))
+                        ;;The NFT collection must be untouched -- its nonce 2 is still at the
+                        ;;fixture default "M". (Each tester is its OWN process with its own DB, so
+                        ;;this cannot borrow state from modules/DPNF.repl, which writes that nonce.)
+                        (expect "<<DPDC-06>> the SFT write did not touch the NFT collection"
+                            "M" (at "name" (ref-DPDC::UR_NonceData "MOCKN-98c486052a51" false 2)))
+                        (expect "<<DPDC-06>> the SFT nonce still carries its supply after a metadata write"
+                            10 (ref-DPDC::UR_NonceSupply sf true 3))
+                    ]
+                )
+            )
+        )
+    )
+    ""
+)
+(commit-tx)

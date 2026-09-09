@@ -1583,10 +1583,12 @@
   "files": []
  },
  "DPDC|C_BulkTransfer": {
-  "invocations": 0,
-  "pos": 0,
+  "invocations": 1,
+  "pos": 4,
   "neg": 0,
-  "files": []
+  "files": [
+   "REPL/modules/DPDC.repl"
+  ]
  },
  "DPDC|C_MultiTransfer": {
   "invocations": 2,
@@ -1992,10 +1994,12 @@
   ]
  },
  "DPNF|C_UpdatePendingBranding": {
-  "invocations": 0,
-  "pos": 0,
+  "invocations": 1,
+  "pos": 5,
   "neg": 0,
-  "files": []
+  "files": [
+   "REPL/modules/DPDC.repl"
+  ]
  },
  "DPNF|C_UpdateSetNonce": {
   "invocations": 1,
@@ -2709,10 +2713,12 @@
   ]
  },
  "DPSF|C_UpdateNonce": {
-  "invocations": 0,
-  "pos": 0,
+  "invocations": 1,
+  "pos": 5,
   "neg": 0,
-  "files": []
+  "files": [
+   "REPL/modules/DPDC.repl"
+  ]
  },
  "DPSF|C_UpdateNonceDescription": {
   "invocations": 1,
@@ -2780,10 +2786,12 @@
   ]
  },
  "DPSF|C_UpdatePendingBranding": {
-  "invocations": 0,
-  "pos": 0,
+  "invocations": 1,
+  "pos": 5,
   "neg": 0,
-  "files": []
+  "files": [
+   "REPL/modules/DPDC.repl"
+  ]
  },
  "DPSF|C_UpdateSetNonce": {
   "invocations": 1,

@@ -11,10 +11,10 @@ This is the evidence base for the audit and documentation papers: every client e
 | metric | value |
 |---|---:|
 | client entrypoints (the auditable contract) | 448 |
-| exercised at least once | 428 (95%) |
-| **never exercised** | **20** |
-| exercised but with NO adversarial assertion in any of its blocks | **306** |
-| total invocations across the suite | 3078 |
+| exercised at least once | 432 (96%) |
+| **never exercised** | **16** |
+| exercised but with NO adversarial assertion in any of its blocks | **310** |
+| total invocations across the suite | 3082 |
 
 ## Never exercised — G1 gap
 
@@ -26,10 +26,6 @@ These entrypoints are reachable by a client and no test calls them.
 * `DALOS&#124;A_MigrateLiquidFunds`
 * `DEMIPAD&#124;C_Deposit`
 * `DEMIPAD&#124;C_Withdraw`
-* `DPDC&#124;C_BulkTransfer`
-* `DPNF&#124;C_UpdatePendingBranding`
-* `DPSF&#124;C_UpdateNonce`
-* `DPSF&#124;C_UpdatePendingBranding`
 * `PYTHIA&#124;A_RevokeLink`
 * `P&#124;A_Add`
 * `SNAKES&#124;C_Acquire`
@@ -263,6 +259,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DEMIPAD&#124;C_RetrieveOrtoFungible</code> | 1 | 0 |
 | <code>DEMIPAD&#124;C_RetrieveSemiFungible</code> | 1 | 0 |
 | <code>DEMIPAD&#124;C_RetrieveTrueFungible</code> | 1 | 0 |
+| <code>DPDC&#124;C_BulkTransfer</code> | 1 | 4 |
 | <code>DPNF&#124;C_Burn</code> | 1 | 1 |
 | <code>DPNF&#124;C_DefineCompositeSet</code> | 1 | 0 |
 | <code>DPNF&#124;C_DefineHybridSet</code> | 1 | 0 |
@@ -279,6 +276,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DPNF&#124;C_UpdateNonceRoyalty</code> | 1 | 7 |
 | <code>DPNF&#124;C_UpdateNonceScore</code> | 1 | 7 |
 | <code>DPNF&#124;C_UpdateNonces</code> | 1 | 0 |
+| <code>DPNF&#124;C_UpdatePendingBranding</code> | 1 | 5 |
 | <code>DPNF&#124;C_UpdateSetNonce</code> | 1 | 0 |
 | <code>DPNF&#124;C_UpdateSetNonceDescription</code> | 1 | 0 |
 | <code>DPNF&#124;C_UpdateSetNonceIgnisRoyalty</code> | 1 | 0 |
@@ -309,7 +307,9 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DPSF&#124;C_RemoveSetNonceScore</code> | 1 | 0 |
 | <code>DPSF&#124;C_Repurpose</code> | 1 | 0 |
 | <code>DPSF&#124;C_ToggleAddQuantityRole</code> | 1 | 0 |
+| <code>DPSF&#124;C_UpdateNonce</code> | 1 | 5 |
 | <code>DPSF&#124;C_UpdateNonces</code> | 1 | 0 |
+| <code>DPSF&#124;C_UpdatePendingBranding</code> | 1 | 5 |
 | <code>DPSF&#124;C_UpdateSetNonce</code> | 1 | 0 |
 | <code>DPSF&#124;C_UpdateSetNonceDescription</code> | 1 | 0 |
 | <code>DPSF&#124;C_UpdateSetNonceIgnisRoyalty</code> | 1 | 0 |
@@ -521,7 +521,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DEMIPAD&#124;C_RetrieveSemiFungible</code> | 1 | 0 | 0 | `[6.1.5]_DEMIPAD.repl` |
 | <code>DEMIPAD&#124;C_RetrieveTrueFungible</code> | 1 | 0 | 0 | `[6.1.5]_DEMIPAD.repl` |
 | <code>DEMIPAD&#124;C_Withdraw</code> | 0 | 0 | 0 | — |
-| <code>DPDC&#124;C_BulkTransfer</code> | 0 | 0 | 0 | — |
+| <code>DPDC&#124;C_BulkTransfer</code> | 1 | 4 | 0 | `DPDC.repl` |
 | <code>DPDC&#124;C_MultiTransfer</code> | 2 | 5 | 0 | `[6.1]_DPDC.repl`, `DPDC.repl` |
 | <code>DPNF&#124;C_Break</code> | 2 | 6 | 0 | `[6.1.3]_DPDC-S.repl` |
 | <code>DPNF&#124;C_BulkTransfer</code> | 4 | 4 | 0 | `[6.1.4]_DPDC-NF.repl`, `[6.1.8]_DPDC-HYDRA-WIPE.repl` |
@@ -566,7 +566,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DPNF&#124;C_UpdateNonceScore</code> | 1 | 7 | 0 | `DPNF.repl` |
 | <code>DPNF&#124;C_UpdateNonceURI</code> | 3 | 0 | 8 | `_verify_finding_DPDC_12Hb_metadata_caps.repl` |
 | <code>DPNF&#124;C_UpdateNonces</code> | 1 | 0 | 0 | `[6.1.4]_DPDC-NF.repl` |
-| <code>DPNF&#124;C_UpdatePendingBranding</code> | 0 | 0 | 0 | — |
+| <code>DPNF&#124;C_UpdatePendingBranding</code> | 1 | 5 | 0 | `DPDC.repl` |
 | <code>DPNF&#124;C_UpdateSetNonce</code> | 1 | 0 | 0 | `[6.1.4]_DPDC-NF.repl` |
 | <code>DPNF&#124;C_UpdateSetNonceDescription</code> | 1 | 0 | 0 | `[6.1.4]_DPDC-NF.repl` |
 | <code>DPNF&#124;C_UpdateSetNonceIgnisRoyalty</code> | 1 | 0 | 0 | `[6.1.4]_DPDC-NF.repl` |
@@ -644,7 +644,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DPSF&#124;C_ToggleUpdateRole</code> | 2 | 0 | 0 | `[6.1]_DPDC.repl` |
 | <code>DPSF&#124;C_TransferNonce</code> | 10 | 17 | 0 | `dsa-fee-tests.repl`, `dsa-grand-tour.repl`, `[6.1.2]_DPDC-FRAGMENTS.repl` +3 |
 | <code>DPSF&#124;C_TransferNonces</code> | 15 | 15 | 0 | `[6.1]_DPDC.repl`, `[6.2.4]_AQP-FVT-DC.repl`, `[6.2.5]_AQP-VCT.repl` +3 |
-| <code>DPSF&#124;C_UpdateNonce</code> | 0 | 0 | 0 | — |
+| <code>DPSF&#124;C_UpdateNonce</code> | 1 | 5 | 0 | `DPDC.repl` |
 | <code>DPSF&#124;C_UpdateNonceDescription</code> | 1 | 0 | 1 | `[6.1]_DPDC.repl` |
 | <code>DPSF&#124;C_UpdateNonceIgnisRoyalty</code> | 1 | 0 | 1 | `[6.1]_DPDC.repl` |
 | <code>DPSF&#124;C_UpdateNonceMetaData</code> | 1 | 0 | 1 | `[6.1]_DPDC.repl` |
@@ -653,7 +653,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DPSF&#124;C_UpdateNonceScore</code> | 2 | 0 | 1 | `[6.1]_DPDC.repl` |
 | <code>DPSF&#124;C_UpdateNonceURI</code> | 1 | 0 | 1 | `[6.1]_DPDC.repl` |
 | <code>DPSF&#124;C_UpdateNonces</code> | 1 | 0 | 0 | `[6.1.7]_DPSF-UPDATES.repl` |
-| <code>DPSF&#124;C_UpdatePendingBranding</code> | 0 | 0 | 0 | — |
+| <code>DPSF&#124;C_UpdatePendingBranding</code> | 1 | 5 | 0 | `DPDC.repl` |
 | <code>DPSF&#124;C_UpdateSetNonce</code> | 1 | 0 | 0 | `[6.1.7]_DPSF-UPDATES.repl` |
 | <code>DPSF&#124;C_UpdateSetNonceDescription</code> | 1 | 0 | 0 | `[6.1.7]_DPSF-UPDATES.repl` |
 | <code>DPSF&#124;C_UpdateSetNonceIgnisRoyalty</code> | 1 | 0 | 0 | `[6.1.7]_DPSF-UPDATES.repl` |
