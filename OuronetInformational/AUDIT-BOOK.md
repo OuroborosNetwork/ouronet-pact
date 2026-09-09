@@ -33,6 +33,23 @@ Full write-up, with mechanism and reproduction, in
 | 5 | `16_SWPI.pact` / `UC_SlippageMinMax` | slippage bound is measured in **fee-less** tokens; delivered came in 8.2× the chosen tolerance below the floor, and a breach returns a string instead of reverting | design/UI |
 | 6 | `DEMIPAD\|C>WITHDRAW` | provably dead `enforce` — `UR_Funds` enforces the identical predicate first | dead code |
 
+### Part II findings register — architectural conformance (P2.5, 2026-09-09)
+
+Derived from the STATED design rules rather than from the `enforce` statements, so the guard may
+not exist at all. `REPL/_conformance.py` (static) + `REPL/modules/CONFORMANCE.repl` (dynamic).
+
+| # | where | defect | severity |
+|---|---|---|---|
+| 7 | `Stage_01/[2.1]_Dalos.repl:220` | the **master keyset is registered as a DALOS inter-module policy**, so `P|UEV_IMC` passes for any holder of it. "Talos is the only supported client path" therefore has an undocumented admin exception, and admin ops on that path are **unbilled**. The collector itself is NOT operable this way — `C_Collect` enforces the payer's own ownership. | medium / doc |
+| 8 | 29 sites across `UR_`/`URC_`/`XI_` | **state-dependent `enforce` in unprotected readers and writers** — validation living outside the defcap. One has already caused a defect: `DEMIPAD::UR_Funds` is why `C>WITHDRAW`'s own `enforce` is dead code (finding #6). | medium |
+| 9 | `02_DPDC.pact:1361` | `XE_DeployAccountWNE` has no `P|UEV_IMC`, unlike its immediate neighbour `XE_U|Rnaq`. | low |
+| 10 | `99_TS02-CPAD.pact` ×4 | calls `TS01-A::XB_DynamicFuelSTOA`, a protected `X*` on a sovereign module. CLAUDE.md calls CPAD "the **citizen** launchpad Talos" in one sentence and the co-located DPAD "sovereign-role" in another. **The code is consistent; the two sentences are not.** | doc |
+
+Two further results are **documentation gaps, not defects**, and are recorded as such: 24 `UC_`
+functions `enforce` over their own arguments (with `UC-no-read` at **0**, so the purity half of
+the contract is obeyed exactly), and 40 core `C_`s build no cumulator because a second, equally
+correct billing shape exists that CLAUDE.md does not describe.
+
 **The methodological point for Part III:** all six were reachable without a red team. Whatever the
 adversarial phase costs, it should not be spent re-finding what a first invocation would have.
 

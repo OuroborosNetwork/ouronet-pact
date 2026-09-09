@@ -1,0 +1,279 @@
+;; REPL/modules/CONFORMANCE.repl — G4 DYNAMIC: the reachability claims, proven.
+;;
+;; The static half lives in REPL/_conformance.py. This is the half a linter cannot do: the
+;; architecture claims certain calls are IMPOSSIBLE, and an impossibility is only established by
+;; attempting it and being refused.
+;;
+;; Each block below is a claim from CLAUDE.md, the attempt that would break it, and the refusal.
+;; These are deliberately made from the REPL TOP LEVEL -- which is exactly the position an
+;; attacker occupies: a transaction author with signatures but no module context. Nothing here
+;; constructs an exotic setup; the whole point is that the ordinary caller cannot get through.
+;;
+;; Run: cd REPL && ./_run1.sh modules/CONFORMANCE.repl
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+(load "../fixtures/mock-tf.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "CONF-01 — a core C_ cannot be reached without Talos … except by one keyset")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [CONF-01 · 01 · an ordinary user cannot skip Talos] ---")
+;;CLAIM (CLAUDE.md): "Talos ... is THE ONLY SUPPORTED CLIENT PATH", and every core client op
+;;opens with (P|UEV_IMC), which requires at least one registered inter-module-caller guard to be
+;;in scope. This is the claim that makes the gas model enforceable at all: IGNIS is collected in
+;;Talos, so a caller who reaches the core directly transacts for FREE.
+;;
+;;EMMA is a real, funded Ouronet account signing her own key -- so this is not "an unknown key is
+;;refused", it is "a legitimate user cannot skip the toll booth".
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (emma:string KST.EMMA)
+    )
+    (let ((stoa0:string (ref-DALOS::UR_AccountStoa emma)))
+        (map print
+            [
+                (expect-failure "<<CONF-01>> DPTF::C_DeployAccount is refused from outside Talos"
+                    "None of the guards passed"
+                    (ref-DPTF::C_DeployAccount a emma))
+                (expect-failure "<<CONF-01>> DALOS::C_RotateStoa likewise, for an ordinary signer"
+                    "None of the guards passed"
+                    (ref-DALOS::C_RotateStoa emma
+                        "k:0000000000000000000000000000000000000000000000000000000000000000"))
+                ;;RULE 9 discharge: both refuse before any write.
+                (expect "<<CONF-01>> EMMA's STOA address is untouched by the attempt"
+                    stoa0 (ref-DALOS::UR_AccountStoa emma))
+            ]
+        )
+    )
+    ""
+)
+(print "--- [CONF-01 · 02 · FINDING: the MASTER KEYSET is an undocumented exception] ---")
+;;The same call, signed by the Demiurgoi master key, SUCCEEDS -- and it succeeds because
+;;Stage_01/[2.1]_Dalos.repl:220 registers the master keyset itself as a DALOS inter-module policy:
+;;
+;;    (DALOS.P|A_AddIMP (keyset-ref-guard "ouronet-ns.dh_master-keyset"))
+;;
+;;P|UEV_IMC is UEV_Any over that list, so ANY holder of the master key satisfies the
+;;"came from a registered module" gate without being a module at all. Two consequences worth
+;;stating plainly, neither of which is written down anywhere:
+;;
+;;  1] "Talos is the only supported client path" has an ADMIN EXCEPTION on DALOS. The exception is
+;;     presumably deliberate -- the bootstrap has to reach DALOS core ops before Talos exists --
+;;     but it is invisible at every call site, because P|UEV_IMC reads like a module-identity
+;;     check everywhere it appears.
+;;  2] Anything the admin does on this path is UNBILLED: IGNIS is collected in Talos, and this
+;;     route never enters Talos. Admin account operations therefore cost no virtual gas.
+;;
+;;Pinned, not judged: if the exception is intended it belongs in CLAUDE.md next to the "only
+;;supported client path" sentence; if it is not, the registration is the thing to remove.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (patron:string KST.ANHD)
+        (new-stoa:string "k:0000000000000000000000000000000000000000000000000000000000000000")
+    )
+    (let
+        (
+            (stoa0:string (ref-DALOS::UR_AccountStoa patron))
+            (gas0:decimal (ref-DPTF::UR_AccountSupply (ref-DALOS::UR_IgnisID) patron))
+        )
+        (ref-DALOS::C_RotateStoa patron new-stoa)
+        (map print
+            [
+                (expect "<<CONF-01>> FINDING: the master key reaches DALOS core WITHOUT Talos"
+                    new-stoa (ref-DALOS::UR_AccountStoa patron))
+                ;;...and the whole point: no Talos means no IGNIS.
+                (expect "<<CONF-01>> ...and pays NO ignis for it, because Talos was never entered"
+                    gas0 (ref-DPTF::UR_AccountSupply (ref-DALOS::UR_IgnisID) patron))
+            ]
+        )
+        ;;restore, so later blocks see the account as they expect
+        (ref-DALOS::C_RotateStoa patron stoa0)
+        (map print
+            [
+                (expect "<<CONF-01>> (restored)" stoa0 (ref-DALOS::UR_AccountStoa patron))
+            ]
+        )
+    )
+    ""
+)
+(print "===^^^===")
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "CONF-02 — XI_ is internal-only; XE_ is IMC-gated")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [CONF-02 · 01 · the protected X* surface] ---")
+;;CLAIM (CLAUDE.md): "`XI_*` — Internal-only protected (this module)" and "`XE_*` — For external
+;;modules only". The two use DIFFERENT mechanisms and this block proves both, because confusing
+;;them is how a reviewer talks themselves into believing an unguarded write is safe:
+;;   XI_  is guarded by (require-capability (SECURE)) -- SECURE is granted only inside the
+;;        module's own with-capability scopes, so it is unreachable from anywhere else.
+;;   XE_  is guarded by (P|UEV_IMC) -- reachable from a REGISTERED module, never from top level.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (a:string "MOCKA-98c486052a51")
+    )
+    (map print
+        [
+            (expect-failure "<<CONF-02>> XI_ is unreachable: SECURE is not in scope out here"
+                "require-capability"
+                (DPTF.XI_IncrementFeeUnlocks a))
+            (expect-failure "<<CONF-02>> XE_ is unreachable: the IMC guard has nothing to match"
+                "None of the guards passed"
+                (ref-DPTF::XE_UpdateFeeVolume a 1.0 true))
+            (expect "<<CONF-02>> and the fee-unlock counter is untouched by both attempts"
+                0 (ref-DPTF::UR_FeeUnlocks a))
+        ]
+    )
+    ""
+)
+(print "===^^^===")
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "CONF-03 — IGNIS cannot be collected outside a Talos wrapper")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [CONF-03 · 01 · the billing boundary] ---")
+;;CLAIM (CLAUDE.md): "Talos is the only place that collects IGNIS (virtual-chain gas) after a
+;;`C_`." If IGNIS::C_Collect were reachable directly, a caller could bill THEMSELVES an arbitrary
+;;amount -- or, worse, bill someone else -- so this is the other half of CONF-01: one proves you
+;;cannot skip the toll booth, this proves you cannot operate it.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+    )
+    (let
+        (
+            (gas0:decimal (ref-DPTF::UR_AccountSupply (ref-DALOS::UR_IgnisID) patron))
+        )
+        (map print
+            [
+                (expect-failure "<<CONF-03>> IGNIS::C_Collect is refused for an ordinary signer"
+                    "Keyset failure"
+                    (ref-IGNIS::C_Collect patron
+                        (ref-IGNIS::UDC_ConstructOutputCumulator 1.0 patron false [])))
+                ;;...and the fabricated charge never landed.
+                (expect "<<CONF-03>> the patron's gas balance is untouched"
+                    gas0 (ref-DPTF::UR_AccountSupply (ref-DALOS::UR_IgnisID) patron))
+            ]
+        )
+    )
+    ""
+)
+(print "--- [CONF-03 · 02 · what the MASTER KEY can do at the toll booth] ---")
+;;CONF-01 showed the master keyset is registered as an inter-module policy, so it satisfies
+;;P|UEV_IMC without being a module. The question this block settles is how far that reaches: can
+;;the admin OPERATE the collector -- bill an arbitrary account an arbitrary amount, outside any
+;;Talos wrapper and outside any priced operation?
+;;
+;;The answer is the difference between "the admin can skip paying" (CONF-01, already true) and
+;;"the admin can charge anyone anything", which is a strictly larger power.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+    )
+    (let
+        (
+            (gas-id:string (ref-DALOS::UR_IgnisID))
+        )
+        (let
+            (
+                (e0:decimal (ref-DPTF::UR_AccountSupply gas-id emma))
+                (p0:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+            )
+            (print (format "<<CONF-03>> admin-signed C_Collect on a THIRD PARTY => {}"
+                [(try "REFUSED" (ref-IGNIS::C_Collect emma
+                    (ref-IGNIS::UDC_ConstructOutputCumulator 1.0 emma false [])))]))
+            (map print
+                [
+                    ;;Pin the REFUSAL, not just the unchanged balances -- otherwise a future
+                    ;;change that makes this succeed would still pass the two balance assertions
+                    ;;below if it happened to charge zero.
+                    ;;
+                    ;;AND THE MECHANISM IS THE ANSWER: the refusal is "Keyset failure … [PK_Emma]"
+                    ;;-- C_Collect enforces the PAYER's own account ownership, so the payer must
+                    ;;sign their own billing. That is what stops the master key here and does not
+                    ;;stop it in CONF-01: skipping your OWN toll needs no third party's signature,
+                    ;;charging someone else's does. The boundary holds exactly where it matters.
+                    (expect-failure "<<CONF-03>> the master key CANNOT bill a third party -- the PAYER must sign"
+                        "Keyset failure (keys-all): [PK_Emma...]"
+                        (ref-IGNIS::C_Collect emma
+                            (ref-IGNIS::UDC_ConstructOutputCumulator 1.0 emma false [])))
+                ]
+            )
+            (map print
+                [
+                    ;;Whatever the call did, record the OBSERVABLE outcome rather than the return
+                    ;;string: the only thing that matters is whether a balance moved.
+                    (expect "<<CONF-03>> third party's gas after an admin-signed collect"
+                        e0 (ref-DPTF::UR_AccountSupply gas-id emma))
+                    (expect "<<CONF-03>> the admin's own gas is unchanged too"
+                        p0 (ref-DPTF::UR_AccountSupply gas-id patron))
+                ]
+            )
+        )
+    )
+    ""
+)
+(print "===^^^===")
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "CONF-04 — an admin A_ is refused without the admin key")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [CONF-04 · 01 · the admin boundary] ---")
+;;CLAIM (CLAUDE.md): "`A_*` / `AA_*` — Admin-key mutations." Unlike the three above, this one is
+;;about WHO signs rather than WHERE the call comes from: the Talos admin path is the supported
+;;entry, and it must still refuse a caller who is not the Demiurgoi keyset.
+;;
+;;EMMA is a real, funded Ouronet account -- so this is not "an unknown key is rejected", it is
+;;"a legitimate user cannot act as the administrator", which is the property that matters.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+    )
+    (let ((gap0:bool (ref-DALOS::UR_GAP)))
+        (map print
+            [
+                (expect-failure "<<CONF-04>> DALOS|A_ToggleGAP is refused for a non-admin signer"
+                    "DALOS Admin not satisfed"
+                    (ref-TS01-A::DALOS|A_ToggleGAP true))
+                (expect "<<CONF-04>> the global pause is unchanged by the attempt"
+                    gap0 (ref-DALOS::UR_GAP))
+            ]
+        )
+    )
+    ""
+)
+(print "===^^^===")
+(commit-tx)
+(print "")
+(print "=== END modules/CONFORMANCE.repl ===")

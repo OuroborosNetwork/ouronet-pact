@@ -647,6 +647,46 @@ are an argument for amending one sentence in CLAUDE.md.
   `URC_` no `enforce`, `XI_` bodies end on a write with no trailing `true`, `XE_` starts with
   `UEV_IMC`. **Line-based function boundaries only — a paren-depth scan of this codebase reported
   932 violations of which the first three sampled were all false positives.**
+### 2.5.2 measured 2026-09-09 — `REPL/modules/CONFORMANCE.repl` (gated)
+
+The half a linter cannot do: an impossibility is only established by attempting it and being
+refused. Every attempt is made from the REPL **top level**, which is exactly the position an
+attacker occupies — a transaction author with signatures but no module context.
+
+| claim | result |
+|---|---|
+| a core `C_` reached without Talos | refused — `None of the guards passed` |
+| `XI_` reached from outside its module | refused — `require-capability` (SECURE not in scope) |
+| `XE_` reached from top level | refused — the IMC guard has nothing to match |
+| IGNIS collected outside Talos, ordinary signer | refused |
+| an admin `A_` without the admin key | refused — `DALOS Admin not satisfed` |
+
+**FINDING — "Talos is the only supported client path" has an undocumented ADMIN EXCEPTION.**
+`Stage_01/[2.1]_Dalos.repl:220` registers the master keyset itself as a DALOS inter-module
+policy:
+
+```
+(DALOS.P|A_AddIMP (keyset-ref-guard "ouronet-ns.dh_master-keyset"))
+```
+
+`P|UEV_IMC` is `UEV_Any` over that list, so **any holder of the master key satisfies the "came
+from a registered module" gate without being a module at all.** `DALOS::C_RotateStoa` executes
+directly, proven in CONF-01·02. Two consequences, neither written down:
+
+1. The exception is invisible at every call site — `P|UEV_IMC` reads like a module-identity check
+   everywhere it appears.
+2. Anything the admin does on that path is **unbilled**: IGNIS is collected in Talos, and this
+   route never enters Talos.
+
+It is probably deliberate (the bootstrap must reach DALOS core ops before Talos exists). Pinned,
+not judged: if intended it belongs in CLAUDE.md beside the "only supported client path" sentence;
+if not, the registration is what to remove.
+
+**And the boundary holds exactly where it matters.** CONF-03·02 asks the strictly larger question
+— can the master key *operate* the collector, billing an arbitrary account? **No.** The refusal is
+`Keyset failure … [PK_Emma]`: `C_Collect` enforces the **payer's own** account ownership. Skipping
+your own toll needs nobody else's signature; charging someone else's does.
+
 * **2.5.2 Reachability rules, dynamically (REPL)** — the architecture claims these are impossible;
   each needs an `expect-failure` proving it:
   - a core `C_` invoked from inside its own module
