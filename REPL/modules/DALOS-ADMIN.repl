@@ -87,3 +87,152 @@
     ""
 )
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DALOS-ADMIN-03 — A_MigrateLiquidFunds: the gas-station escape hatch")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DALOS-ADMIN-03 · 01 · migrate the gas station] ---")
+;; A_MigrateLiquidFunds is the highest-value admin op in DALOS: it sweeps the ENTIRE STOA
+;; balance of the Ouronet gas station to an arbitrary target, so that the funds can follow a
+;; namespace/module migration. It is deliberately the LAST test in this file -- it drains the
+;; gas station, and it lives in the module tester (not [6.12], which ZALL loads) precisely so
+;; that drain can never leak into the full run.
+;;
+;; Three preconditions, and the first one is stated BACKWARDS in the code:
+;;
+;;   (enforce gap "Migration can only be executed when Global Administrative Pause is offline")
+;;
+;; `enforce gap` passes when gap is TRUE -- i.e. when the pause is ONLINE. The message claims
+;; the opposite. See DALOS-ADMIN-03b, which pins the real behaviour against the wrong words.
+;; The behaviour itself is right and deliberate: P|TS (the cap behind nearly every other Talos
+;; client op) enforces (not gap), so requiring GAP ON means the chain is frozen for the whole
+;; window in which the gas station is empty. Only the message needs fixing.
+(env-data
+    { "MIGRATE_TARGET_KS": { "keys": ["PK_AncientHodler"], "pred": "keys-all" } }
+)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+        (ref-coin:module{stoa-ns.fungible-v1} coin)
+    )
+    (let
+        (
+            (sc-stoa:string (ref-DALOS::GOV|DALOS|SC_STOA-NAME))
+            (target:string (create-principal (read-keyset "MIGRATE_TARGET_KS")))
+        )
+        (ref-coin::create-account target (read-keyset "MIGRATE_TARGET_KS"))
+        (let
+            (
+                (sc-before:decimal (ref-coin::get-balance sc-stoa))
+                (gap0:bool (ref-DALOS::UR_GAP))
+            )
+            (map print
+                [
+                    ;;The gas station is NOT empty after a bare boot: deploying the sovereign
+                    ;;accounts already paid STOA into it. Migration therefore has something
+                    ;;real to move -- and a zero-balance station would abort inside coin's own
+                    ;;"amount must be positive" guard, never reaching a DALOS message.
+                    (expect "<<DALOS-ADMIN-03>> the gas station holds STOA after boot"
+                        true (> sc-before 0.0))
+                    (expect "<<DALOS-ADMIN-03>> the migration target starts empty (cap precondition)"
+                        0.0 (ref-coin::get-balance target))
+                    (expect "<<DALOS-ADMIN-03>> GAP is OFF before we arm the migration"
+                        false gap0)
+                ]
+            )
+            ;;PRECONDITION (a): arm the pause. Without this the op is rejected -- see 03b.
+            (ref-TS01-A::DALOS|A_ToggleGAP true)
+            (let
+                (
+                    (moved:decimal (ref-TS01-A::DALOS|A_MigrateLiquidFunds target))
+                )
+                (map print
+                    [
+                        ;;The return value is the CONTRACT: an operator scripting the migration
+                        ;;reads it to confirm how much followed. It must be the pre-balance, not
+                        ;;a post-read (which is always 0.0 and would look identical on success
+                        ;;while hiding a partial transfer).
+                        (expect "<<DALOS-ADMIN-03>> A_MigrateLiquidFunds returns the amount moved"
+                            sc-before moved)
+                        (expect "<<DALOS-ADMIN-03>> the gas station is swept to exactly zero"
+                            0.0 (ref-coin::get-balance sc-stoa))
+                        (expect "<<DALOS-ADMIN-03>> the target received the full balance"
+                            sc-before (ref-coin::get-balance target))
+                        ;;CONSERVATION: nothing was minted or burned, only relocated.
+                        (expect "<<DALOS-ADMIN-03>> STOA is conserved across the migration"
+                            sc-before
+                            (+ (ref-coin::get-balance sc-stoa) (ref-coin::get-balance target)))
+                    ]
+                )
+                ""
+            )
+        )
+    )
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DALOS-ADMIN-03b — the migration gate, and the message that lies about it")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DALOS-ADMIN-03b · 01 · migration gate] ---")
+(env-data
+    { "MIGRATE_TARGET_KS"  : { "keys": ["PK_AncientHodler"], "pred": "keys-all" }
+    , "MIGRATE_TARGET_KS2" : { "keys": ["PK_Emma"], "pred": "keys-all" } }
+)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+        (ref-coin:module{stoa-ns.fungible-v1} coin)
+    )
+    (let
+        (
+            (funded:string (create-principal (read-keyset "MIGRATE_TARGET_KS")))
+            (fresh:string (create-principal (read-keyset "MIGRATE_TARGET_KS2")))
+        )
+        (ref-coin::create-account fresh (read-keyset "MIGRATE_TARGET_KS2"))
+        ;;GAP is still ON from 03. Re-running the migration now fails on the SECOND
+        ;;precondition, not the first: the target already holds the swept funds.
+        (map print
+            [
+                (expect "<<DALOS-ADMIN-03b>> GAP is still armed from the previous tx"
+                    true (ref-DALOS::UR_GAP))
+                ;;NON-EMPTY TARGET. This guard is what stops a migration from silently
+                ;;co-mingling the gas station with someone's live balance -- and it also makes
+                ;;the op non-idempotent: a retried migration cannot land twice on the same
+                ;;target. The caller must treat "empty stoa account" as "already migrated".
+                (expect-failure "<<DALOS-ADMIN-03b>> a non-empty target is rejected"
+                    "Migration can only be executed to an empty stoa account"
+                    (ref-TS01-A::DALOS|A_MigrateLiquidFunds funded))
+            ]
+        )
+        ;;Now disarm GAP and aim at a genuinely empty account, isolating the FIRST guard.
+        (ref-TS01-A::DALOS|A_ToggleGAP false)
+        (map print
+            [
+                (expect "<<DALOS-ADMIN-03b>> GAP is now OFF" false (ref-DALOS::UR_GAP))
+                (expect "<<DALOS-ADMIN-03b>> the fresh target is empty, so only GAP can be at fault"
+                    0.0 (ref-coin::get-balance fresh))
+                ;;FINDING — INVERTED MESSAGE. The op is rejected because the pause is OFF, but
+                ;;the message it prints says migration "can only be executed when Global
+                ;;Administrative Pause is offline". An operator following that text would
+                ;;disarm the pause and retry forever. The assertion below is deliberately
+                ;;written to look self-contradictory, because the code is:
+                ;;    GAP is OFF  ->  "can only be executed when ... Pause is offline"
+                ;;Fix is one word in 01_DALOS.pact's GOV|MIGRATE: offline -> online.
+                (expect-failure "<<DALOS-ADMIN-03b>> FINDING: rejected with GAP OFF, by a message that says GAP must be off"
+                    "Migration can only be executed when Global Administrative Pause is offline"
+                    (ref-TS01-A::DALOS|A_MigrateLiquidFunds fresh))
+            ]
+        )
+        ""
+    )
+)
+(commit-tx)

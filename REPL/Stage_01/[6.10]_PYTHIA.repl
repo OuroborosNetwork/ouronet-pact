@@ -443,6 +443,171 @@
 )
 (commit-tx)
 (print "")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX007d - A_RevokeLink Cronoton patronless + adversarial")
+(namespace "ouronet-ns")
+(env-chain-data
+    {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
+     "block-time": TV.TIME00,
+     "block-height": 379200}
+)
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "=== TX007d - A_RevokeLink (Cronoton, patronless) ========================")
+;;==== TX007d · 01 · positive: Cronoton revokes the pair-2 link ==== ===============================
+(print "--- [TX007d · 01 · positive: Cronoton revokes the pair-2 link] ---")
+;; TS01-C4's PYTHIA|A_RevokeLink takes ONLY a dual-link-key -- there is no patron
+;; parameter at all. That is the STRUCTURAL proof of patronlessness: no IGNIS can be
+;; collected on a path that never names an account to bill. Contrast C_RevokeLink
+;; (TX005), which takes a patron and bills URCi_RevokeLink. Both land on the same
+;; two writes (iz-active false + XI_RecordRevocationAtHeight) through DIFFERENT caps:
+;; A>REVOKE-DUAL (PYTHIA|CRONOTON keyset) vs C>REVOKE-DUAL (PYTHIA|OWNER of a half).
+;; Pair-2 was created ACTIVE by A_Link in TX007c, so it is revocable here.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
+        (ref-PYTHIA:module{PythiaV5} PYTHIA)
+        (apollo-std:string (read-string "PYTHIA|APOLLO-STANDARD-2"))
+        (apollo-smt:string (read-string "PYTHIA|APOLLO-SMART-2"))
+    )
+    (let
+        (
+            (dlk:string (ref-PYTHIA::UC_DualLinkKey apollo-std apollo-smt))
+        )
+        (let
+            (
+                (lane-before:string (ref-PYTHIA::UR_DualLinkConsumerLane dlk))
+                (inactive-before:integer (length (ref-PYTHIA::URH_ListInactiveDualLinks)))
+                (active-before:integer (length (ref-PYTHIA::URH_ActiveDualLinkSet)))
+                (height-before:integer (ref-PYTHIA::UR_RevocationAtHeight))
+            )
+            (let
+                (
+                    (rev-msg:string (ref-TS01-C4::PYTHIA|A_RevokeLink dlk))
+                )
+                (print (format "<(TS01-C4.PYTHIA|A_RevokeLink)> => \"{}\"" [rev-msg]))
+                (map print
+                    [
+                        ;;The Cronoton branch names ITSELF in the result string: an operator
+                        ;;reading the tx log can tell an admin revoke from an owner revoke
+                        ;;("...revoked by owner", TX005) without re-reading the row.
+                        (expect "<<TX007d-01>> A_RevokeLink returns the Cronoton branch message"
+                            (format "Pythia dual link {} revoked by Cronoton" [dlk]) rev-msg)
+                        (expect "<<TX007d-01>> UR_DualLinkIzActive false after Cronoton revoke"
+                            false (ref-PYTHIA::UR_DualLinkIzActive dlk))
+                        (expect "<<TX007d-01>> UR_DualLinkIzActiveOrFalse agrees (row still exists)"
+                            false (ref-PYTHIA::UR_DualLinkIzActiveOrFalse dlk))
+                        (expect "<<TX007d-01>> URH_ActiveDualLinkSet drops the revoked key"
+                            false (contains dlk (ref-PYTHIA::URH_ActiveDualLinkSet)))
+                        (expect "<<TX007d-01>> active set shrank by exactly one"
+                            (- active-before 1) (length (ref-PYTHIA::URH_ActiveDualLinkSet)))
+                        (expect "<<TX007d-01>> inactive list grew by exactly one"
+                            (+ inactive-before 1) (length (ref-PYTHIA::URH_ListInactiveDualLinks)))
+                        ;;REVOKE IS A DEACTIVATION, NOT AN UNLINK. The counterpart pointers and
+                        ;;the consumer lane survive untouched -- which is precisely why A_Link
+                        ;;can later flip the SAME row back to active (TX006 does this for pair-1)
+                        ;;instead of minting a new lane. If revoke cleared these, re-activation
+                        ;;would silently change the consumer's lane identity.
+                        (expect "<<TX007d-01>> counterpart Standard->Smart survives revoke"
+                            apollo-smt (ref-PYTHIA::UR_Counterpart apollo-std))
+                        (expect "<<TX007d-01>> counterpart Smart->Standard survives revoke"
+                            apollo-std (ref-PYTHIA::UR_Counterpart apollo-smt))
+                        (expect "<<TX007d-01>> consumer-lane survives revoke (re-activation keeps identity)"
+                            lane-before (ref-PYTHIA::UR_DualLinkConsumerLane dlk))
+                        ;;The revocation stamp is GLOBAL, not per-link: one singleton row that the
+                        ;;Pythia off-chain cache polls to know its mirror is stale.
+                        (expect "<<TX007d-01>> UR_RevocationAtHeight stamped with THIS block"
+                            379200 (ref-PYTHIA::UR_RevocationAtHeight))
+                        (expect "<<TX007d-01>> revocation height advanced past the TX005 stamp"
+                            true (> (ref-PYTHIA::UR_RevocationAtHeight) height-before))
+                        (expect "<<TX007d-01>> UR_RevocationEpoch is floor(379200/120)"
+                            3160 (ref-PYTHIA::UR_RevocationEpoch))
+                        (expect "<<TX007d-01>> epoch derives from the stamped height"
+                            (ref-PYTHIA::UC_ChainEpoch (ref-PYTHIA::UR_RevocationAtHeight))
+                            (ref-PYTHIA::UR_RevocationEpoch))
+                        ;;The auth-path lookup is what actually gates Pythia API calls: it must
+                        ;;report the revoked consumer as inactive, or a revoked key keeps working.
+                        (expect "<<TX007d-01>> URH_ApiKeyByConsumer reports iz-active false"
+                            false (at "iz-active" (ref-PYTHIA::URH_ApiKeyByConsumer apollo-smt)))
+                    ]
+                )
+                ""
+            )
+        )
+    )
+)
+;;==== TX007d · 02 · adversarial: the revoke gate ==== =============================================
+(print "--- [TX007d · 02 · adversarial: the revoke gate] ---")
+;; PYTHIA has had ZERO rejection coverage on its link lifecycle until here: every prior
+;; assertion in this file is a positive. These three pin the gate.
+;;
+;;(a) NOT IDEMPOTENT. A>REVOKE-DUAL enforces iz-active BEFORE composing, so a retried
+;;Cronoton revoke is rejected rather than absorbed. This matters operationally: a cron
+;;that re-fires after a transient failure will abort, so the CALLER must treat "already
+;;inactive" as success -- the contract will not absorb the retry for it.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
+        (ref-PYTHIA:module{PythiaV5} PYTHIA)
+    )
+    (print
+        (expect-failure "<<TX007d-02a>> re-revoking an already-inactive link is rejected"
+            "Dual link is already inactive"
+            (ref-TS01-C4::PYTHIA|A_RevokeLink
+                (ref-PYTHIA::UC_DualLinkKey
+                    (read-string "PYTHIA|APOLLO-STANDARD-2") (read-string "PYTHIA|APOLLO-SMART-2")))))
+)
+;;(b) WRONG SIGNER. PK_Emma is a valid Ouronet key but not a Sith Master, so the
+;;PYTHIA|CRONOTON keyset guard rejects her. Deliberately aimed at the PAIR-1 link, which
+;;TX006 left ACTIVE -- so the ONLY reason this fails is the signer, not the link state.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
+        (ref-PYTHIA:module{PythiaV5} PYTHIA)
+    )
+    ;;The message pins the keyset MEMBERS (keys-any over the two Sith Masters), which is
+    ;;as specific as Pact gets -- it never names the keyset REF. Note dh_master-keyset,
+    ;;codex-keyset and pythia-cronoton-keyset are all defined from the SAME
+    ;;DemiourgosSithMasters keyset, so this text alone cannot tell them apart; what makes
+    ;;this test discriminating is the TARGET: an ACTIVE link, so PYTHIA|CRONOTON is the
+    ;;only guard on the path that can produce it.
+    (print
+        (expect-failure "<<TX007d-02b>> a non-Cronoton signer cannot revoke an active link"
+            "Keyset failure (keys-any): [PK_Ancie..., PK_Flore...]"
+            (ref-TS01-C4::PYTHIA|A_RevokeLink
+                (ref-PYTHIA::UC_DualLinkKey
+                    (read-string "PYTHIA|APOLLO-STANDARD") (read-string "PYTHIA|APOLLO-SMART")))))
+)
+;;(c) UNKNOWN KEY -- FINDING. A>REVOKE-DUAL's first act is UR_DualLinkIzActive, a HARD
+;;read. Handed a dual-link-key that was never created, the op does not reject with a
+;;named guard; it dies inside the table read with a raw "No value found in table" that
+;;names neither PYTHIA nor the operation. The sibling reader UR_DualLinkIzActiveOrFalse
+;;already returns false for an absent row -- using it in the defcap would collapse this
+;;case into the (a) message above, at no cost.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
+        (ref-PYTHIA:module{PythiaV5} PYTHIA)
+    )
+    (map print
+        [
+            (expect-failure "<<TX007d-02c>> FINDING: an unknown dual-link-key dies in the table read, not a guard"
+                "No value found in table"
+                (ref-TS01-C4::PYTHIA|A_RevokeLink "PYTHIA-NEVER-CREATED-KEY"))
+            (expect "<<TX007d-02c>> the OrFalse reader that would have caught it returns false"
+                false (ref-PYTHIA::UR_DualLinkIzActiveOrFalse "PYTHIA-NEVER-CREATED-KEY"))
+        ]
+    )
+    ""
+)
+(commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
