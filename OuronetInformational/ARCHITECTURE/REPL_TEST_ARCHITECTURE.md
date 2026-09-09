@@ -638,9 +638,41 @@ called them 104 violations would be false, and the reader would stop trusting th
   module is reaching a protected `X*` on a sovereign one. **The code is consistent; the two
   sentences are not.**
 
-**2.5.4 is therefore a decision, not a task:** for each of the 29 state-dependent sites, either
-move the check into the defcap or record why the reader must own it. The 33 argument-domain sites
-are an argument for amending one sentence in CLAUDE.md.
+### 2.5.4 — owner rulings, 2026-09-09
+
+All four open questions answered. Three closed on the spot; one produced a 126-replacement rename.
+
+| question | ruling | state |
+|---|---|---|
+| `UC_` that `enforce`s | **not a rule change — it is a MIS-SPELLED `UCv_`.** StoicSyntax-Prefixes §1 already defines the lowercase `v` role: "enforce intrinsic to its own computation … not business validation", legitimate as `UCv_`/`URCv_`/`URDCv_`. | linter re-pointed; **21** `UC_`→`UCv_` and **13** `URC_`→`URCv_` rename candidates remain |
+| state-dependent `enforce` in readers | **ideally in the defcap; acceptable in place where relocating is harder than leaving it.** Which is exactly the `v`-role test — an intrinsic guard stays, a business check moves. | per-site call; `DEMIPAD::UR_Funds` is the one with a proven cost (dead `enforce` in `C>WITHDRAW`) |
+| `TS02-CPAD` role | **citizen module authored by the admin — deliberately in between.** It is the sole gas-funded launchpad path, so its wrappers must reach `TS01-A::XB_DynamicFuelSTOA`. | recorded as an ACCEPTED exception in the linter, with the bound: those four calls are expected, a fifth is not |
+| 14 mis-marked heavy ops | **rename to follow the doubling rule.** | **DONE** |
+
+**The rename: 126 replacements across 30 files, `single-reaches-heavy` 14 → 0.**
+
+```
+C_WipeHeavy            -> CC_WipeHeavy              (22)
+C_RemoveSecondary      -> CC_RemoveSecondary        (11)
+A_RemoveSecondary      -> AA_RemoveSecondary        (28)
+C_BreakSemiFungibleSet -> CC_BreakSemiFungibleSet    (6)
+DPSF|C_Break           -> DPSF|CC_Break             (14)
+C_OpenAgency           -> CC_OpenAgency             (23)
+MTX-AQP|2|C_Inject     -> MTX-AQP|2|CC_Inject       (15)
+MTX-AQP|2|C_SweepRevokeAnchor -> …|CC_SweepRevokeAnchor (7)
+```
+
+It reached further than "rename a function". These names are also **IGNIS price-table keys** in
+`02_IGNIS.pact`, `INFO_` doc strings, interface declarations and REPL call sites — which is why a
+scoped, idempotent regex over every `.pact` and `.repl` was the right tool and a per-file edit was
+not. Each rule carries a lookbehind so a second pass cannot produce `CCC_`/`AAA_`.
+
+**`DPNF|C_Break` was deliberately NOT renamed, and checking why is the interesting part.** Its SFT
+twin `DPSF|C_Break` reaches `URH_NonceListFromCSD` through `URC_SemiFungibleConstituents`; the NFT
+path goes through `URC_NonFungibleConstituents`, which does not. The asymmetry between twins is
+real, not a hole in the call graph — verified in source before trusting it.
+
+
 
 * **2.5.1 Static conformance linter** (`REPL/_conformance.py`, no REPL needed) — the prefix
   contracts: `UC_` pure (no table read, no `enforce`, no cross-module read), `UR_` reads only,

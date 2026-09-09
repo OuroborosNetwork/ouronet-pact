@@ -54,12 +54,12 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_BurnRoyalty` | `C_BurnRoyalty` | SETUP | **405** | — | $4.05 | deter:royalty-dispose 400 + components:AQP-DSA|C_BurnRoyalty 5 |
 | `C_DefineDelegationVault` | `C_DefineDelegationVault` | ISSUE | **5011** | — | $50.11 | deter:issue-dsa-vault 5000 + components:AQP-DSA|C_DefineDelegationVault 11 |
 | `C_FuelRoyalty` | `C_FuelRoyalty` | USAGE | **505** | — | $5.05 | deter:royalty-fuel 500 + components:AQP-DSA|C_FuelRoyalty 5 |
-| `C_OpenAgency` | `C_AdmitAgency` ×2 | ISSUE | **2011** | — | $20.11 | deter:issue-dsa-agency 2000 + components:AQP-DSA|C_OpenAgency 11 |
 | `C_OracleWrite` | `C_OracleWrite` | SETUP | **222** | — | $2.22 | deter:oracle-write 200 + components:AQP-DSA|C_OracleWrite 22 |
 | `C_RecomputeCapture` | `C_RecomputeCapture` | SETUP | **321** | — | $3.21 | deter:recompute-capture 300 + components:AQP-DSA|C_RecomputeCapture 21 |
 | `C_SetAgencyFee` | `C_SetAgencyFee` | SETUP | **308** | — | $3.08 | deter:set-agency-fee 300 + components:AQP-DSA|C_SetAgencyFee 8 |
 | `C_SetOracleAuth` | `C_SetOracleAuth` | SETUP | **310** | — | $3.10 | deter:set-oracle-auth 300 + components:AQP-DSA|C_SetOracleAuth 10 |
 | `C_WithdrawRoyalty` | `C_WithdrawRoyalty` | USAGE | **405** | — | $4.05 | deter:royalty-dispose 400 + components:AQP-DSA|C_WithdrawRoyalty 5 |
+| `CC_OpenAgency` | `C_AdmitAgency` ×2 | ISSUE | **2011** | — | $20.11 | deter:issue-dsa-agency 2000 + components:AQP-DSA|CC_OpenAgency 11 |
 
 ## AQP-FVT
 
@@ -145,7 +145,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | Talos function | core op | role | IGNIS | STOA | $ (ignis) | charge breakdown |
 |----------------|---------|------|------:|-----:|----------:|------------------|
 | `A_KickStart` | `A_KickStart` | USAGE | **0** | — | free | admin/exempt |
-| `A_RemoveSecondary` | `A_RemoveSecondary` | SETUP | **0** | — | free | admin/exempt |
+| `AA_RemoveSecondary` | `AA_RemoveSecondary` | SETUP | **0** | — | free | admin/exempt |
 | `C_AddHotRBT` | `C_AddHotRBT` | SETUP | **≥ 359** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:ats-secondary 250 + components:ATS|C_AddHotRBT 26 + components:ATS|C_AddSecondary 29 + deter:auth 10 + components:DPOF|C_RotateOwnership 19 + deter:setup 5 + components:DPOF|C_Control 20 |
 | `C_AddSecondary` | `C_AddSecondary` | SETUP | **279** | — | $2.79 | deter:ats-secondary 250 + components:ATS|C_AddSecondary 29 |
 | `C_Brumate` | `C_Brumate` | USAGE | **≥ 178** | — | COMPLEX | charge multiplies by an item count; legs: deter:usage 1 + components:DPTF|C_Mint 86 + deter:setup 5 + components:DPOF|C_Mint 80 + small 2 + smallest 1 + medium 3 |
@@ -163,7 +163,6 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_Issue` | `C_Issue` | ISSUE | **≥ 4000** | 400 | COMPLEX | charge multiplies by an item count; legs: deter:issue-ats-pair 4000 | STOA: stoa:issue-ats-pair 400 |
 | `C_KickStart` | `C_KickStart` | USAGE | **87** | — | $0.87 | deter:usage 1 + components:DPTF|C_Mint 86 |
 | `C_Redeem` | `C_Redeem` | SETUP | **≥ 128** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Burn 45 + deter:usage 1 + components:DPTF|C_Burn 71 + small 2 + smallest 1 + medium 3 |
-| `C_RemoveSecondary` | `C_RemoveSecondary` | SETUP | **291** | — | $2.91 | deter:ats-secondary 250 + components:ATS|C_RemoveSecondary 41 |
 | `C_Reverse` | `C_Recover` | SETUP | **≥ 143** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Burn 45 + deter:usage 1 + components:DPTF|C_Mint 86 + small 2 + smallest 1 + medium 3 |
 | `C_RotateOwnership` | `C_RotateOwnership` | AUTH | **29** | — | $0.29 | deter:auth 10 + components:ATS|C_RotateOwnership 19 |
 | `C_SetColdRecoveryDuration` | `C_SetColdRecoveryDuration` | SETUP | **29** | — | $0.29 | deter:setup 5 + components:ATS|C_SetColdRecoveryDuration 24 |
@@ -185,6 +184,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_VestedCoil` | `C_Coil` ×2 | USAGE | **≥ 93** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPTF|C_Mint 86 + smallest 1 + small 2 + medium 3 |
 | `C_VestedCurl` | `C_Curl` ×2 | USAGE | **≥ 93** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPTF|C_Mint 86 + smallest 1 + small 2 + medium 3 |
 | `C_WithdrawRoyalties` | `C_WithdrawRoyalties` | USAGE | **≥ 6** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 + small 2 + medium 3 |
+| `CC_RemoveSecondary` | `CC_RemoveSecondary` | SETUP | **≥ 291** | — | COMPLEX | heavy / parallel-slice op; legs: deter:ats-secondary 250 + components:ATS|CC_RemoveSecondary 41 |
 
 ## BRD
 
@@ -311,9 +311,9 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **0** | 250 | STOA only | no IGNIS charged — priced in STOA only; STOA: blue 250 |
 | `C_WipeClean` | `C_WipeClean` | SETUP | **≥ 5** | — | COMPLEX | per-nonce / per-item work; legs: weight:wipe-nonce 5 |
 | `C_WipeDirty` | `C_WipeDirty` | SETUP | **≥ 5** | — | COMPLEX | per-nonce / per-item work; legs: weight:wipe-nonce 5 |
-| `C_WipeHeavy` | `C_WipeHeavy` | SETUP | **≥ 5** | — | COMPLEX | per-nonce / per-item work; legs: weight:wipe-nonce 5 |
 | `C_WipeNonce` | `C_WipeNonce` | SETUP | **≥ 30** | — | COMPLEX | per-nonce / per-item work; legs: deter:setup 5 + components:DPNF|C_WipeNonce 25 |
 | `C_WipePure` | `C_WipePure` | SETUP | **≥ 5** | — | COMPLEX | per-nonce / per-item work; legs: weight:wipe-nonce 5 |
+| `CC_WipeHeavy` | `CC_WipeHeavy` | SETUP | **≥ 5** | — | COMPLEX | heavy / parallel-slice op; legs: weight:wipe-nonce 5 |
 | `Cp_WipeSlice` | `Cp_WipeSlice` | USAGE | **≥ 5** | — | COMPLEX | heavy / parallel-slice op; legs: weight:wipe-nonce 5 |
 
 ## DPOF
@@ -340,9 +340,9 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_UpdatePendingBranding` | `C_UpdatePendingBranding` | SETUP | **100** | — | $1.00 | branding 100 |
 | `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **0** | 250 | STOA only | no IGNIS charged — priced in STOA only; STOA: blue 250 |
 | `C_WipeClean` | `C_WipeClean` | SETUP | **≥ 5** | — | COMPLEX | per-nonce / per-item work; legs: weight:wipe-nonce 5 |
-| `C_WipeHeavy` | `C_WipeHeavy` | SETUP | **≥ 5** | — | COMPLEX | per-nonce / per-item work; legs: weight:wipe-nonce 5 |
 | `C_WipePure` | `C_WipePure` | SETUP | **≥ 5** | — | COMPLEX | per-nonce / per-item work; legs: weight:wipe-nonce 5 |
 | `C_WipeSlim` | `C_WipeSlim` | SETUP | **≥ 50** | — | COMPLEX | per-nonce / per-item work; legs: deter:setup 5 + components:DPOF|C_WipeSlim 45 |
+| `CC_WipeHeavy` | `CC_WipeHeavy` | SETUP | **≥ 5** | — | COMPLEX | heavy / parallel-slice op; legs: weight:wipe-nonce 5 |
 | `Cp_WipeSlice` | `Cp_WipeSlice` | USAGE | **≥ 5** | — | COMPLEX | heavy / parallel-slice op; legs: weight:wipe-nonce 5 |
 
 ## DPSF
@@ -350,7 +350,6 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | Talos function | core op | role | IGNIS | STOA | $ (ignis) | charge breakdown |
 |----------------|---------|------|------:|-----:|----------:|------------------|
 | `C_AddQuantity` | `C_AddQuantity` | SETUP | **18** | — | $0.18 | deter:setup 5 + components:DPSF|C_AddQuantity 13 |
-| `C_Break` | `C_BreakSemiFungibleSet` | SETUP | **≥ 6** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 + small 2 + medium 3 |
 | `C_Burn` | `C_BurnSFT` | SETUP | **20** | — | $0.20 | deter:setup 5 + components:DPSF|C_Burn 15 |
 | `C_Control` | `C_Control` | SETUP | **20** | — | $0.20 | deter:setup 5 + components:DPSF|C_Control 15 |
 | `C_Create` | `C_CreateNewNonce` ×2 | ISSUE | **1** | — | $0.01 | smallest 1 |
@@ -405,10 +404,11 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **0** | 250 | STOA only | no IGNIS charged — priced in STOA only; STOA: blue 250 |
 | `C_WipeClean` | `C_WipeClean` | SETUP | **≥ 5** | — | COMPLEX | per-nonce / per-item work; legs: weight:wipe-nonce 5 |
 | `C_WipeDirty` | `C_WipeDirty` | SETUP | **≥ 5** | — | COMPLEX | per-nonce / per-item work; legs: weight:wipe-nonce 5 |
-| `C_WipeHeavy` | `C_WipeHeavy` | SETUP | **≥ 5** | — | COMPLEX | per-nonce / per-item work; legs: weight:wipe-nonce 5 |
 | `C_WipeNonce` | `C_WipeNonce` | SETUP | **≥ 30** | — | COMPLEX | per-nonce / per-item work; legs: deter:setup 5 + components:DPSF|C_WipeNonce 25 |
 | `C_WipeNoncePartialy` | `C_WipeSlim` | SETUP | **≥ 20** | — | COMPLEX | per-nonce / per-item work; legs: deter:setup 5 + components:DPSF|C_WipeNoncePartialy 15 |
 | `C_WipePure` | `C_WipePure` | SETUP | **≥ 5** | — | COMPLEX | per-nonce / per-item work; legs: weight:wipe-nonce 5 |
+| `CC_Break` | `CC_BreakSemiFungibleSet` | SETUP | **≥ 6** | — | COMPLEX | heavy / parallel-slice op; legs: smallest 1 + small 2 + medium 3 |
+| `CC_WipeHeavy` | `CC_WipeHeavy` | SETUP | **≥ 5** | — | COMPLEX | heavy / parallel-slice op; legs: weight:wipe-nonce 5 |
 | `Cp_WipeSlice` | `Cp_WipeSlice` | USAGE | **≥ 5** | — | COMPLEX | heavy / parallel-slice op; legs: weight:wipe-nonce 5 |
 
 ## DPTF
@@ -475,8 +475,8 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 
 | Talos function | core op | role | IGNIS | STOA | $ (ignis) | charge breakdown |
 |----------------|---------|------|------:|-----:|----------:|------------------|
-| 2\|C_Inject | C_2\|Inject | USAGE | **≥ 500** | — | COMPLEX | charge multiplies by an item count; legs: deter:aqp-inject 500 |
-| 2\|C_SweepRevokeAnchor | C_2\|SweepRevokeAnchor | USAGE | **0** | — | free | free by design — Talos wrapper collects no IGNIS and no STOA |
+| 2\|CC_Inject | C_2\|Inject | USAGE | **≥ 500** | — | COMPLEX | charge multiplies by an item count; legs: deter:aqp-inject 500 |
+| 2\|CC_SweepRevokeAnchor | C_2\|SweepRevokeAnchor | USAGE | **0** | — | free | free by design — Talos wrapper collects no IGNIS and no STOA |
 
 ## ORBR
 
@@ -595,7 +595,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_Vest` | `C_Vest` | SETUP | **≥ 91** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Mint 80 + small 2 + smallest 1 + medium 3 |
 
 ---
-182 simple (exact price) · 190 complex (floor price) · 10 STOA-only · 48 exempt · 0 unresolved · 420 Talos client functions
+181 simple (exact price) · 191 complex (floor price) · 10 STOA-only · 48 exempt · 0 unresolved · 420 Talos client functions
 
 `×N` on a core op = the wrapper drives N priced core ops in a FIXED composition (still exactly knowable).
 

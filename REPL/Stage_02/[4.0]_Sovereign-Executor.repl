@@ -119,7 +119,7 @@
         ;;
         ;;MTX-AQP — registers its caller guard in AQP-FVT's IMP so the MTX|n|C_Inject defpact's XE_ calls pass P|UEV_IMC
         (ref-P|MTX-AQP::P|A_Define)
-        ;;DSA — registers its caller guard in AQP-FVT's IMP so C_OpenAgency's XE_ admit/delegation calls pass P|UEV_IMC
+        ;;DSA — registers its caller guard in AQP-FVT's IMP so CC_OpenAgency's XE_ admit/delegation calls pass P|UEV_IMC
         (ref-P|DSA::P|A_Define)
         ;;
         ;;Set DPDC Governor

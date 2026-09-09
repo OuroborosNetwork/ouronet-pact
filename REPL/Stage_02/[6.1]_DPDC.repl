@@ -521,7 +521,7 @@
 
         ;;Block 1 of Testing
         ;(ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron id patron t)
-        ;    (ref-TS02-C1::DPSF|C_WipeHeavy patron patron id)
+        ;    (ref-TS02-C1::DPSF|CC_WipeHeavy patron patron id)
         ;(ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron id patron f)
 
         ;;Block 2 of Testing
@@ -884,7 +884,7 @@
         (ref-DPDC::UR_AccountNonceSupply patron id true 9)
         (ref-DPDC::UR_AccountNonceSupply patron id true 10)
         (ref-DPDC::UR_AccountNonceSupply patron id true 11)
-        (ouronet-ns.TS02-C1.DPSF|C_Break
+        (ouronet-ns.TS02-C1.DPSF|CC_Break
             patron
             patron
             id

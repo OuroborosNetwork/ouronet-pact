@@ -64,7 +64,7 @@
     )
     ;; LUMY: freeze -> WipeHeavy (empties whole account, no nonce number needed)
     (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron id lumy true)
-    (ref-TS01-C1::DPOF|C_WipeHeavy patron id lumy)
+    (ref-TS01-C1::DPOF|CC_WipeHeavy patron id lumy)
     ;; re-fund EMMA (unfreeze, transmit, refreeze) -> WipePure via the computed removable obj
     (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron id emma false)
     (ref-TS01-C1::DPOF|C_Transmit patron id [1] [300.0] patron emma false)

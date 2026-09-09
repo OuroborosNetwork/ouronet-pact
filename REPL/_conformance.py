@@ -85,6 +85,8 @@ def state_dependent(body):
     capability does, runs FIRST, and thereby makes the capability's own check dead code."""
     return any(READ_PRIM.search(l) or STATE_CALL.search(l) for l in body)
 
+def local_name(name): return name.split('|')[-1].split(':')[0]
+
 def pfx(name, p):
     """Prefix match on the LOCAL part: 'DPTF|UR_Foo' and 'UR_Foo' both count as UR_."""
     return name.split('|')[-1].startswith(p)
@@ -100,11 +102,27 @@ def _(kind, name, body):
     for i, ln in enumerate(body):
         if READ_PRIM.search(ln): return i
 
-@rule("UC-no-enforce", "`UC_*` — Pure compute on arguments only: NO `enforce`. (CLAUDE.md)")
+# StoicSyntax-Prefixes.md §1: the lowercase `v` role. `UCv_`/`URCv_`/`URDCv_` are the SANCTIONED
+# spellings for a function whose `enforce` is intrinsic to its own computation -- a shape/domain
+# guard on the computation itself, not business validation. So a `UC_` that enforces is not a
+# design violation; it is a MIS-SPELLED `UCv_`. (Owner ruling, 2026-09-09.)
+#
+# Plus the documented carve-out (StoicSyntax.md §6.1, v1.9.0): U|LST's bounds-guard helpers
+# UC_ReplaceAt / UC_RemoveItemAt / UC_LE / UC_FE -- and any UC_* calling them -- stay UC_*.
+LST_EXEMPT = {"UC_ReplaceAt", "UC_RemoveItemAt", "UC_LE", "UC_FE"}
+
+@rule("UC-should-be-UCv", "`UC_*` that `enforce`s should be spelled **`UCv_`** — the `v` role, "
+                          "\"enforce intrinsic to its own computation\". "
+                          "(StoicSyntax-Prefixes.md §1)")
 def _(kind, name, body):
-    if kind != "defun" or not pfx(name, "UC_"): return
+    if kind != "defun" or not pfx(name, "UC_") or pfx(name, "UCv_"): return
+    if local_name(name) in LST_EXEMPT: return
     for i, ln in enumerate(body):
-        if ENFORCE.search(ln): return i
+        if ENFORCE.search(ln):
+            # UC_Try wraps enforce-guard in `try` precisely so it CANNOT abort -- a guard TESTER,
+            # not a guard. Nothing downstream can observe an abort from it.
+            if "(try " in ln: continue
+            return i
 
 @rule("UR-no-enforce", "`UR_*` — Table reads. Validation belongs in `UEV_*`/defcap. (CLAUDE.md)")
 def _(kind, name, body):
@@ -112,10 +130,10 @@ def _(kind, name, body):
     for i, ln in enumerate(body):
         if ENFORCE.search(ln): return i
 
-@rule("URC-no-enforce", "`URC_*` — Read + derive. **No `enforce`** (validation lives in "
-                        "`UEV_*` / defcap). (CLAUDE.md)")
+@rule("URC-should-be-URCv", "`URC_*` that `enforce`s should be spelled **`URCv_`** — same `v` "
+                            "role. (StoicSyntax-Prefixes.md §1)")
 def _(kind, name, body):
-    if kind != "defun" or not pfx(name, "URC_"): return
+    if kind != "defun" or not pfx(name, "URC_") or pfx(name, "URCv_"): return
     for i, ln in enumerate(body):
         if ENFORCE.search(ln): return i
 
@@ -219,7 +237,11 @@ MODULE_DOC = {
         "makes it a deliberate, uniform design rather than a slip.",
     "citizen-calls-X":
         "Citizen modules call **only** into sovereign public APIs — never a protected `X*`. "
-        "(CLAUDE.md)",
+        "(CLAUDE.md) — ACCEPTED EXCEPTION (owner ruling, 2026-09-09): `TS02-CPAD` is a CITIZEN "
+        "module AUTHORED BY THE ADMIN, deliberately in between the two roles. It is the sole "
+        "gas-funded launchpad path, so its wrappers must reach `TS01-A::XB_DynamicFuelSTOA` to "
+        "refuel the station. The four hits are that call and are expected; a FIFTH hit, or the "
+        "same call from any other citizen module, is not.",
     "C-without-cumulator":
         "OBSERVATION, not a violation. CLAUDE.md says `C_*` \"builds IGNIS cumulators and "
         "returns OutputCumulator\" — but TWO billing shapes are in use and both are correct: "

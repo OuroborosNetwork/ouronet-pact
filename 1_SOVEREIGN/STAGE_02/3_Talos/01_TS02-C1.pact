@@ -99,7 +99,7 @@
     (defun DPSF|C_WipeNoncePartialy (patron:string id:string account:string nonce:integer amount:integer))
     (defun DPSF|C_WipeNonce (patron:string id:string account:string nonce:integer))
         ;;
-    (defun DPSF|C_WipeHeavy (patron:string account:string id:string))
+    (defun DPSF|CC_WipeHeavy (patron:string account:string id:string))
     (defun DPSF|C_WipePure (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV2.RemovableNonces}))
     (defun DPSF|C_WipeClean (patron:string account:string id:string nonces:[integer]))
     (defun DPSF|C_WipeDirty (patron:string account:string id:string nonces:[integer]))
@@ -114,7 +114,7 @@
     ;;  [8] DPDC-S
     ;;
     (defun DPSF|C_Make (patron:string account:string id:string nonces:[integer] set-class:integer how-many-sets:integer))
-    (defun DPSF|C_Break (patron:string account:string id:string nonce:integer how-many-sets:integer))
+    (defun DPSF|CC_Break (patron:string account:string id:string nonce:integer how-many-sets:integer))
     (defun DPSF|C_DefinePrimordialSet 
         (
             patron:string id:string set-name:string score-multiplier:decimal
@@ -756,14 +756,14 @@
             )
         )
     )
-    (defun DPSF|C_WipeHeavy (patron:string account:string id:string)
+    (defun DPSF|CC_WipeHeavy (patron:string account:string id:string)
         (with-capability (P|TS)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
                     (ico:object{IgnisCollectorV2.OutputCumulator}
-                        (ref-DPDC-MNG::C_WipeHeavy account id true)
+                        (ref-DPDC-MNG::CC_WipeHeavy account id true)
                     )
                     (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
                     (total-nonces-supplies:integer (fold (+) 0 (at "r-amounts" (at 0 (at "output" ico)))))
@@ -1012,7 +1012,7 @@
             )
         )
     )
-    (defun DPSF|C_Break
+    (defun DPSF|CC_Break
         (patron:string account:string id:string nonce:integer how-many-sets:integer)
         @doc "Brakes an SFT Nonce representing an SFT Set"
         (with-capability (P|TS)
@@ -1026,7 +1026,7 @@
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-DPDC-S::C_BreakSemiFungibleSet account id nonce how-many-sets)
+                    (ref-DPDC-S::CC_BreakSemiFungibleSet account id nonce how-many-sets)
                 )
                 (format "Successfully broken {} Class {} Sets (Nonce {}) of SFT Collection {} on Account {}" [how-many-sets set-class nonce id sa])
             )

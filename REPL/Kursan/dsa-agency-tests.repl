@@ -1,12 +1,12 @@
 ;;
 ;; REPL/Kursan/dsa-agency-tests.repl — DSA Phase 2 verification: VAULT DEFINE + AGENCY OPEN surface.
 ;; Proves: (1) C_DefineDelegationVault binds a class-0 FVT as a delegation vault (model + unit-score,
-;; active) and only the FVT owner may run it; (2) C_OpenAgency's one-time quintessence open gate + the
+;; active) and only the FVT owner may run it; (2) CC_OpenAgency's one-time quintessence open gate + the
 ;; fee-range + vault-active guards reject as designed. The STAKED happy-path open (gate passes) lands in
 ;; Phase 3 once the Custodians fragment→stake fixture exists — here the operator's factory triplet is
 ;; unstaked (Q=0), so the gate is proven by its rejection.
-;; Source: 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/08_DSA.pact (C_DefineDelegationVault / C_OpenAgency),
-;;         3_Talos/04_TS02-C3.pact (AQP-DSA|C_DefineDelegationVault / AQP-DSA|C_OpenAgency).
+;; Source: 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/08_DSA.pact (C_DefineDelegationVault / CC_OpenAgency),
+;;         3_Talos/04_TS02-C3.pact (AQP-DSA|C_DefineDelegationVault / AQP-DSA|CC_OpenAgency).
 ;;
 (print "")
 (print "================================================================")
@@ -124,7 +124,7 @@
 (print "")
 ;;
 ;;|| NEXT >
-;;|| C_OpenAgency's guards: vault-active + fee-range + the one-time quintessence open gate (Q=0 ⇒ rejected).
+;;|| CC_OpenAgency's guards: vault-active + fee-range + the one-time quintessence open gate (Q=0 ⇒ rejected).
 ;;
 (begin-tx "DSA-VAULT-02 - agency-open guards (gate / fee / vault-active)")
 (namespace "ouronet-ns")
@@ -164,16 +164,16 @@
             (map print
                 [ ;; fee below the floor (10 = 1%) — rejected in the cap, before the body
                   (expect-failure "<<DSA-VAULT-02>> open rejected — fee below floor"
-                      (ref-TS02-C3::AQP-DSA|C_OpenAgency anhd fvt-id "dummy-pool" triplet-id 5 "DHOC-98c486052a51" []))
+                      (ref-TS02-C3::AQP-DSA|CC_OpenAgency anhd fvt-id "dummy-pool" triplet-id 5 "DHOC-98c486052a51" []))
                   ;; fee above the ceiling (500 = 50%) — rejected in the cap
                   (expect-failure "<<DSA-VAULT-02>> open rejected — fee above ceiling"
-                      (ref-TS02-C3::AQP-DSA|C_OpenAgency anhd fvt-id "dummy-pool" triplet-id 600 "DHOC-98c486052a51" []))
+                      (ref-TS02-C3::AQP-DSA|CC_OpenAgency anhd fvt-id "dummy-pool" triplet-id 600 "DHOC-98c486052a51" []))
                   ;; opening on a non-vault FVT (no template) — rejected in the cap (vault-active)
                   (expect-failure "<<DSA-VAULT-02>> open rejected — FVT is not a DSA vault"
-                      (ref-TS02-C3::AQP-DSA|C_OpenAgency anhd "not-a-vault-fvt" "dummy-pool" triplet-id 100 "DHOC-98c486052a51" []))
+                      (ref-TS02-C3::AQP-DSA|CC_OpenAgency anhd "not-a-vault-fvt" "dummy-pool" triplet-id 100 "DHOC-98c486052a51" []))
                   ;; triplet not employed in a pool (silver has no aqpool) — admit precondition fails in the body
                   (expect-failure "<<DSA-VAULT-02>> open rejected — triplet not set up (no pool employ)"
-                      (ref-TS02-C3::AQP-DSA|C_OpenAgency anhd fvt-id "dummy-pool" triplet-id 100 "DHOC-98c486052a51" [])) ])
+                      (ref-TS02-C3::AQP-DSA|CC_OpenAgency anhd fvt-id "dummy-pool" triplet-id 100 "DHOC-98c486052a51" [])) ])
             ""
         )
     )

@@ -165,7 +165,7 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
-(begin-tx "COV DRAFT 4 - A_RemoveSecondary (admin) + WithdrawRoyalties + DirectRecovery")
+(begin-tx "COV DRAFT 4 - AA_RemoveSecondary (admin) + WithdrawRoyalties + DirectRecovery")
 (namespace "ouronet-ns")
 (env-sigs [ { "key": "PK_AOZ", "caps": [] } { "key": "PK_AncientHodler", "caps": [] } ])
 (let
@@ -179,7 +179,7 @@
         (pd-k:string "PDKOSON-98c486052a51")
     )
     (print (format "ps RT list before admin removal: {}" [(ATS.UR_RewardTokenList ps)]))
-    (ref-TS01-A::ATS|A_RemoveSecondary ancienthodler ancienthodler ps e-k [])
+    (ref-TS01-A::ATS|AA_RemoveSecondary ancienthodler ancienthodler ps e-k [])
     (print (format "ps RT list after admin removal: {}" [(ATS.UR_RewardTokenList ps)]))
     ;; WithdrawRoyalties - ensure some royalty exists first
     (ref-TS01-C2::ATS|C_UpdateRoyalty aoz ps 5.0)

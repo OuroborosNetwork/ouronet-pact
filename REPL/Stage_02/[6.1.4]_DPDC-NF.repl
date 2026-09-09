@@ -401,7 +401,7 @@
     (ref-TS02-C2::DPNF|C_WipeNonce patron id emma 3)
     (ref-TS02-C2::DPNF|C_WipeClean patron emma id [4])
     (ref-TS02-C2::DPNF|C_WipeDirty patron emma id [5])
-    (ref-TS02-C2::DPNF|C_WipeHeavy patron emma id)
+    (ref-TS02-C2::DPNF|CC_WipeHeavy patron emma id)
     ;; WipePure on LUMY via the computed RemovableNonces object
     (ref-TS02-C2::DPNF|C_WipePure patron lumy id (ref-DPDC-MNG::URHC_WipePure lumy id false))
     (map print

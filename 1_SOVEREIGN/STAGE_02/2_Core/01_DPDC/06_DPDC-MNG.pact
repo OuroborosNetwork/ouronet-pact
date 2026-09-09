@@ -106,7 +106,7 @@
     ;;
     ;;  [DEBIT-MULTIPLE]
     ;;  [SFT+NFT]
-    (defun C_WipeHeavy:object{IgnisCollectorV2.OutputCumulator} (account:string id:string son:bool))
+    (defun CC_WipeHeavy:object{IgnisCollectorV2.OutputCumulator} (account:string id:string son:bool))
     (defun C_WipePure:object{IgnisCollectorV2.OutputCumulator} (account:string id:string son:bool removable-nonces-obj:object{RemovableNonces}))
     (defun C_WipeClean:object{IgnisCollectorV2.OutputCumulator} (account:string id:string son:bool nonces:[integer]))
     (defun C_WipeDirty:object{IgnisCollectorV2.OutputCumulator} (account:string id:string son:bool nonces:[integer]))
@@ -1031,7 +1031,7 @@
     ;;
     ;;  [DEBIT-MULTIPLE]
     ;;  [SFT+NFT]
-    (defun C_WipeHeavy:object{IgnisCollectorV2.OutputCumulator}
+    (defun CC_WipeHeavy:object{IgnisCollectorV2.OutputCumulator}
         (account:string id:string son:bool)
         @doc "Wipes all viable <id> Nonces of an SFT or NFT <account> \
             \ \

@@ -270,7 +270,7 @@
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [DPDC-07 · 01 · stage a holder with three nonces, then freeze] ---")
-;;The four bulk wipes (C_WipeClean / C_WipeDirty / C_WipePure / C_WipeHeavy) were invoked by
+;;The four bulk wipes (C_WipeClean / C_WipeDirty / C_WipePure / CC_WipeHeavy) were invoked by
 ;;NOTHING. They are the most destructive ops on the collectable surface -- they delete a
 ;;holder's entire position -- and the ONLY prior wipe coverage was DPSF|C_WipeNonce in
 ;;[6.1]_DPDC, inside a transaction block that asserts nothing at all (pure `format` echoes).
@@ -278,7 +278,7 @@
 ;;The four differ only in HOW the nonce set is chosen, which is exactly what makes them easy to
 ;;confuse and worth a differential test rather than four separate happy paths:
 ;;
-;;   C_WipeHeavy  discovers the set itself with select/keys  (expensive; small sets only)
+;;   CC_WipeHeavy  discovers the set itself with select/keys  (expensive; small sets only)
 ;;   C_WipePure   takes a pre-read RemovableNonces object    (URHC_WipePure, dirty read)
 ;;   C_WipeClean  takes a nonce LIST -- STRICT: "Fails if a single nonce is not viable"
 ;;   C_WipeDirty  takes a nonce LIST -- LENIENT: filters to the viable ones first
@@ -484,7 +484,7 @@
         ;;Heavy, with no set supplied at all: it must find the remainder on its own and reach
         ;;the same conclusion the dirty read did.
         (let ((tot2:integer (ref-DPDC::UR_NonceSupply sf true 2)))
-            (ref-TS02-C1::DPSF|C_WipeHeavy KST.ANHD emma sf)
+            (ref-TS02-C1::DPSF|CC_WipeHeavy KST.ANHD emma sf)
             (map print
                 [
                     (expect "<<DPDC-08>> Heavy discovered and wiped the remaining nonce unaided"

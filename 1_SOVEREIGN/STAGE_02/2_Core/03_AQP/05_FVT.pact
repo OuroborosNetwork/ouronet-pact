@@ -2471,7 +2471,7 @@
             )
             (P|UEV_IMC)
         (with-capability (FVT|C>INJECT patron fvt-id reward-dptf-id amount)
-            (ref-RPS::XE_XI_FvtInjectCore "MTX-AQP|2|C_Inject" patron fvt-id reward-dptf-id amount)
+            (ref-RPS::XE_XI_FvtInjectCore "MTX-AQP|2|CC_Inject" patron fvt-id reward-dptf-id amount)
         )
     )
     )

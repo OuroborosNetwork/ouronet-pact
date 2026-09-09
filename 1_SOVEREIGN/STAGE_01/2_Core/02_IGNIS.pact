@@ -537,7 +537,7 @@
         ,"AQP-DSA|C_BurnRoyalty"                        : 5.0
         ,"AQP-DSA|C_DefineDelegationVault"              : 11.0
         ,"AQP-DSA|C_FuelRoyalty"                        : 5.0
-        ,"AQP-DSA|C_OpenAgency"                         : 11.0
+        ,"AQP-DSA|CC_OpenAgency"                         : 11.0
         ,"AQP-DSA|C_OracleWrite"                        : 22.0
         ,"AQP-DSA|C_RecomputeCapture"                   : 21.0
         ,"AQP-DSA|C_SetAgencyFee"                       : 8.0
@@ -607,7 +607,7 @@
         ,"AQP-SCR|C_IssueTriplet"                       : 39.0
         ,"AQP-SCR|C_IssueTrueFungibleScore"             : 28.0
         ,"AQP-SCR|C_RotateScoreOwnership"               : 13.0
-        ,"ATS|A_RemoveSecondary"                        : 41.0
+        ,"ATS|AA_RemoveSecondary"                        : 41.0
         ,"ATS|C_AddHotRBT"                              : 26.0
         ,"ATS|C_AddSecondary"                           : 29.0
         ,"ATS|C_Brumate"                                : 37.0
@@ -625,7 +625,7 @@
         ,"ATS|C_Issue"                                  : 52.0
         ,"ATS|C_KickStart"                              : 3.0
         ,"ATS|C_Redeem"                                 : 41.0
-        ,"ATS|C_RemoveSecondary"                        : 41.0
+        ,"ATS|CC_RemoveSecondary"                        : 41.0
         ,"ATS|C_Reverse"                                : 19.0
         ,"ATS|C_RotateOwnership"                        : 19.0
         ,"ATS|C_SetColdRecoveryDuration"                : 24.0
@@ -727,7 +727,7 @@
         ,"DPNF|C_UpgradeBranding"                       : 7.0
         ,"DPNF|C_WipeClean"                             : 35.0
         ,"DPNF|C_WipeDirty"                             : 33.0
-        ,"DPNF|C_WipeHeavy"                             : 33.0
+        ,"DPNF|CC_WipeHeavy"                             : 33.0
         ,"DPNF|C_WipeNonce"                             : 25.0
         ,"DPNF|C_WipePure"                              : 33.0
         ,"DPNF|Cp_WipeSlice"                            : 23.0
@@ -751,12 +751,12 @@
         ,"DPOF|C_UpdatePendingBranding"                 : 16.0
         ,"DPOF|C_UpgradeBranding"                       : 47.0
         ,"DPOF|C_WipeClean"                             : 7.0
-        ,"DPOF|C_WipeHeavy"                             : 49.0
+        ,"DPOF|CC_WipeHeavy"                             : 49.0
         ,"DPOF|C_WipePure"                              : 49.0
         ,"DPOF|C_WipeSlim"                              : 45.0
         ,"DPOF|Cp_WipeSlice"                            : 48.0
         ,"DPSF|C_AddQuantity"                           : 13.0
-        ,"DPSF|C_Break"                                 : 33.0
+        ,"DPSF|CC_Break"                                 : 33.0
         ,"DPSF|C_Burn"                                  : 15.0
         ,"DPSF|C_Control"                               : 15.0
         ,"DPSF|C_Create"                                : 47.0
@@ -811,7 +811,7 @@
         ,"DPSF|C_UpgradeBranding"                       : 7.0
         ,"DPSF|C_WipeClean"                             : 35.0
         ,"DPSF|C_WipeDirty"                             : 33.0
-        ,"DPSF|C_WipeHeavy"                             : 33.0
+        ,"DPSF|CC_WipeHeavy"                             : 33.0
         ,"DPSF|C_WipeNonce"                             : 25.0
         ,"DPSF|C_WipeNoncePartialy"                     : 15.0
         ,"DPSF|C_WipePure"                              : 33.0
@@ -852,8 +852,8 @@
         ,"LQD|C_UnwrapUrStoa"                           : 17.0
         ,"LQD|C_WrapStoa"                               : 15.0
         ,"LQD|C_WrapUrStoa"                             : 15.0
-        ,"MTX-AQP|2|C_Inject"                           : 11.0
-        ,"MTX-AQP|2|C_SweepRevokeAnchor"                : 21.0
+        ,"MTX-AQP|2|CC_Inject"                           : 11.0
+        ,"MTX-AQP|2|CC_SweepRevokeAnchor"                : 21.0
         ,"ORBR|C_WithdrawFees"                          : 15.0
         ,"PYTHIA|C_DeployApiKey"                        : 9.0
         ,"PYTHIA|C_Link"                                : 10.0

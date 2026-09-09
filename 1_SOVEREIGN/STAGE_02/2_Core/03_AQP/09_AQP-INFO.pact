@@ -1272,7 +1272,7 @@
     )
     (defun INFO_AQP-DSA|OpenAgency:object{OuronetInfoV2.ClientInfo}
         (patron:string fvt-id:string pool-id:string score-entity-id:string fee-per-mille:integer collectable-id:string stake-nonces:[integer])
-        @doc "Cost preview for AQP-DSA|C_OpenAgency. IGNIS GAS|OPEN-AGENCY base; the atomic open also stakes the \
+        @doc "Cost preview for AQP-DSA|CC_OpenAgency. IGNIS GAS|OPEN-AGENCY base; the atomic open also stakes the \
             \ operator's collateral (staking legs added at execution). No STOA."
         (let
             (
@@ -1281,7 +1281,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Open a delegation agency (admit + operator-stake + terminal gate)."
                  "Base IGNIS shown; the operator collateral stake adds its legs at execution."
-                 "Executes via TS02-C3.AQP-DSA|C_OpenAgency."]
+                 "Executes via TS02-C3.AQP-DSA|CC_OpenAgency."]
                 [(format "Agency {} opened on vault {} (fee {} per-mille)." [score-entity-id fvt-id fee-per-mille])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-DSA.URCi_OpenAgency patron [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
@@ -1440,23 +1440,23 @@
     ;;[AQP-MTX] Matrix drivers (spike-fallback defpacts)
     (defun INFO_AQP-MTX|2Inject:object{OuronetInfoV2.ClientInfo}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
-        @doc "Cost preview for MTX-AQP|2|C_Inject (2-step enforced-fresh inject). IGNIS GAS|INJECT (inner XB_FvtInject); STOA none."
+        @doc "Cost preview for MTX-AQP|2|CC_Inject (2-step enforced-fresh inject). IGNIS GAS|INJECT (inner XB_FvtInject); STOA none."
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: 2-step enforced-fresh inject (spike fallback for CC_Inject on vault/treasury)."
-                 "Executes via TS02-C3.MTX-AQP|2|C_Inject."]
+                 "Executes via TS02-C3.MTX-AQP|2|CC_Inject."]
                 [(format "2-step fresh-injected {} of {} into FVT {}." [amount reward-dptf-id fvt-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (RPS.URCi_Inject "MTX-AQP|2|C_Inject" fvt-id [])))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (RPS.URCi_Inject "MTX-AQP|2|CC_Inject" fvt-id [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount])
         )
     )
     (defun INFO_AQP-MTX|2SweepRevokeAnchor:object{OuronetInfoV2.ClientInfo}
         (patron:string anchor-id:string)
-        @doc "Cost preview for MTX-AQP|2|C_SweepRevokeAnchor. Gas-station subsidised — no IGNIS/STOA to the patron."
+        @doc "Cost preview for MTX-AQP|2|CC_SweepRevokeAnchor. Gas-station subsidised — no IGNIS/STOA to the patron."
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
@@ -1464,7 +1464,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: 2-step paginated sweep retiring an employed anchor (spike fallback for CC_SweepRevokeAnchor)."
                  "Gas-station subsidised — costs you nothing."
-                 "Executes via TS02-C3.MTX-AQP|2|C_SweepRevokeAnchor."]
+                 "Executes via TS02-C3.MTX-AQP|2|CC_SweepRevokeAnchor."]
                 [(format "2-step swept + retired anchor {}." [anchor-id])]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)

@@ -73,7 +73,7 @@
     ;;
     (defun DPOF|A_DeployAccount (patron:string id:string account:string))
     ;;
-    (defun ATS|A_RemoveSecondary (patron:string remover:string ats:string reward-token:string accounts-with-ats-data:[string]))
+    (defun ATS|AA_RemoveSecondary (patron:string remover:string ats:string reward-token:string accounts-with-ats-data:[string]))
     (defun ATS|A_KickStart (patron:string kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
     ;;
     (defun LIQUID|A_MigrateLiquidFunds:decimal (migration-target-stoa-account:string))
@@ -203,7 +203,7 @@
         @doc "Fix (audit finding #22L test-coverage sweep): ATS and ATSU were never \
             \ registered as permitted callers here (ATS was even bound - ref-P|ATS - \
             \ but never used), so any TS01-A admin function routing into either module \
-            \ (e.g. ATS|A_RemoveSecondary, ATS|A_KickStart) always failed P|UEV_IMC's \
+            \ (e.g. ATS|AA_RemoveSecondary, ATS|A_KickStart) always failed P|UEV_IMC's \
             \ whitelist check - unconditionally, regardless of caller/key. Never caught \
             \ because those functions had zero test coverage. Every other Talos module's \
             \ own P|A_Define already registers into both ATS and ATSU; this just matches \
@@ -606,7 +606,7 @@
         )
     )
     ;;  [ATS_Administrator]
-    (defun ATS|A_RemoveSecondary (patron:string remover:string ats:string reward-token:string accounts-with-ats-data:[string])
+    (defun ATS|AA_RemoveSecondary (patron:string remover:string ats:string reward-token:string accounts-with-ats-data:[string])
         @doc "Administrative Variant, queries <accounts-with-ats-data> via <DPTF-DPOF-ATS|UR_FilterKeysForInfo>"
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
@@ -615,7 +615,7 @@
                     (ref-ATSU:module{AutostakeUsageV2} ATSU)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-ATSU::A_RemoveSecondary remover ats reward-token accounts-with-ats-data)
+                    (ref-ATSU::AA_RemoveSecondary remover ats reward-token accounts-with-ats-data)
                 )
             )
         )

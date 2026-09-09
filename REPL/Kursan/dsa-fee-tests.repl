@@ -170,7 +170,7 @@
             (gsid:string (ref-U|DALOS::UDC_Makeid (concat ["FeeAgency" "Golden"])))
         )
         (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bsid ssid gsid)))
-            (ref-TS02-C3::AQP-DSA|C_OpenAgency anhd fvt-id pool-id triplet-id 100 dhoc [-2])
+            (ref-TS02-C3::AQP-DSA|CC_OpenAgency anhd fvt-id pool-id triplet-id 100 dhoc [-2])
             (map print
               [ (expect "<<FEE-03>> agency Q = 1000 (operator own)" 1000.0 (AQP-DSA.URC_AgencyQuintessence triplet-id)) ]))
     )

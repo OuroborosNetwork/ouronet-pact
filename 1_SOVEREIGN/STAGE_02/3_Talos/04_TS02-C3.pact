@@ -282,10 +282,10 @@
     (defun AQP-FVT|CCp_UnstaleAll:string
         (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
     )
-    (defun MTX-AQP|2|C_Inject:string
+    (defun MTX-AQP|2|CC_Inject:string
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
-    (defun MTX-AQP|2|C_SweepRevokeAnchor:string
+    (defun MTX-AQP|2|CC_SweepRevokeAnchor:string
         (patron:string anchor-id:string)
     )
     (defun AQP-FVT|CC_SweepRevokeAnchor:string
@@ -306,7 +306,7 @@
     (defun AQP-DSA|C_DefineDelegationVault:string
         (patron:string fvt-id:string model-id:string unit-score:integer)
     )
-    (defun AQP-DSA|C_OpenAgency:string
+    (defun AQP-DSA|CC_OpenAgency:string
         (patron:string fvt-id:string pool-id:string score-entity-id:string fee-per-mille:integer
          collectable-id:string stake-nonces:[integer])
     )
@@ -2215,7 +2215,7 @@
             )
         )
     )
-    (defun MTX-AQP|2|C_Inject:string
+    (defun MTX-AQP|2|CC_Inject:string
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "Starts the 2-step enforced-fresh inject defpact (MTX-AQP — spike fallback for AQP-FVT|CC_Inject when \
             \ the stale set exceeds one tx). Step 0 runs here; advance with (continue-pact 1). Each defpact step \
@@ -2236,7 +2236,7 @@
             )
         )
     )
-    (defun MTX-AQP|2|C_SweepRevokeAnchor:string
+    (defun MTX-AQP|2|CC_SweepRevokeAnchor:string
         (patron:string anchor-id:string)
         @doc "Starts the 2-step paginated re-score SWEEP defpact (MTX-AQP — spike fallback for \
             \ AQP-FVT|CC_SweepRevokeAnchor when the recompute set exceeds one tx). Step 0 brackets (freeze + \
@@ -2370,7 +2370,7 @@
             )
         )
     )
-    (defun AQP-DSA|C_OpenAgency:string
+    (defun AQP-DSA|CC_OpenAgency:string
         (patron:string fvt-id:string pool-id:string score-entity-id:string fee-per-mille:integer
          collectable-id:string stake-nonces:[integer])
         @doc "DSA (Talos): open a delegation agency ATOMICALLY under P|TS — (1) admit the operator's BLANK triplet \

@@ -1614,7 +1614,7 @@
             ;(ref-TFT::DPTF-DPOF-ATS|UR_FilterKeysForInfo ps 3 false)
             (format "BEFORE {} has as RTs: {}" [ps (ref-ATS::UR_RewardTokenList ps)])
             (format "BEFORE {} has registered ATS as {}" [a-k (ref-DPTF::UR_RewardToken a-k)])
-            (ref-TS01-C2::ATS|C_RemoveSecondary aoz aoz ps a-k)
+            (ref-TS01-C2::ATS|CC_RemoveSecondary aoz aoz ps a-k)
         ]
         [
             (format "AFTER {} has as RTs: {}" [ps (ref-ATS::UR_RewardTokenList ps)])
@@ -2761,7 +2761,7 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
 ;; ================================================================================================
-;; Fresh, self-contained ATS-Pair — AddHotRBT, AddSecondary/A_RemoveSecondary and A_KickStart all
+;; Fresh, self-contained ATS-Pair — AddHotRBT, AddSecondary/AA_RemoveSecondary and A_KickStart all
 ;; require pool state (no Hot-RBT registered yet / a removable secondary / index = -1.0 "never
 ;; fueled") that the living "PlebeicStrength" pool (ps) no longer has after the rest of this file's
 ;; sections. A brand-new pair, issued and used only in this block, sidesteps that entanglement
@@ -3053,7 +3053,7 @@
 (namespace "ouronet-ns")
 ;;==== A_KickStart Proof · 01 · env-sigs (caps) ==== ===============================================
 (print "--- [A_KickStart Proof · 01 · env-sigs (caps)] ---")
-;; ATS|A_RemoveSecondary / ATS|A_KickStart regression proof — the P|A_Define fix (01_TS01-A.pact):
+;; ATS|AA_RemoveSecondary / ATS|A_KickStart regression proof — the P|A_Define fix (01_TS01-A.pact):
 ;; ATS and ATSU were never registered as permitted callers there (ATS was even bound - ref-P|ATS -
 ;; but never used), so this admin path used to fail unconditionally inside ATSU's own P|UEV_IMC with
 ;; "None of the guards passed", regardless of who signed. "DemiourgosSithMasters" (keys-any over
@@ -3104,18 +3104,18 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
-(begin-tx "A_RemoveSecondary Proof 1|2 - AddSecondary and Fuel")
+(begin-tx "AA_RemoveSecondary Proof 1|2 - AddSecondary and Fuel")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
-;;==== A_RemoveSecondary Proof 1|2 · 01 · env-sigs (caps) ==== ====================================
-(print "--- [A_RemoveSecondary Proof 1|2 · 01 · env-sigs (caps)] ---")
+;;==== AA_RemoveSecondary Proof 1|2 · 01 · env-sigs (caps) ==== ====================================
+(print "--- [AA_RemoveSecondary Proof 1|2 · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AOZ", "caps": [] }
     ]
 )
-;;==== A_RemoveSecondary Proof 1|2 · 02 · let / invocation ==== ===================================
-(print "--- [A_RemoveSecondary Proof 1|2 · 02 · let / invocation] ---")
+;;==== AA_RemoveSecondary Proof 1|2 · 02 · let / invocation ==== ===================================
+(print "--- [AA_RemoveSecondary Proof 1|2 · 02 · let / invocation] ---")
 ;; X_RemoveSecondary (10_ATSU.pact) buys back the pool-level resident/unbonding/royalty (RUR 1/2/3)
 ;; sum for the removed RT via a TFT transfer — a zero remove-sum hits DPTF's own UEV_Amount
 ;; (amount > 0.0) enforce. A freshly-AddSecondary'd RT starts at a zero RUR sum, so it must be
@@ -3145,9 +3145,9 @@
 
 (print "")
 (print "")
-;;==== A_RemoveSecondary Proof 1|2 · 03 · gas echo ==== =============================================
-(print "--- [A_RemoveSecondary Proof 1|2 · 03 · gas echo] ---")
-(format "<<<<<<<A_RemoveSecondary Proof 1|2 {} GAS>>>>>>>" [(env-gas)])
+;;==== AA_RemoveSecondary Proof 1|2 · 03 · gas echo ==== =============================================
+(print "--- [AA_RemoveSecondary Proof 1|2 · 03 · gas echo] ---")
+(format "<<<<<<<AA_RemoveSecondary Proof 1|2 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
@@ -3156,11 +3156,11 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
-(begin-tx "A_RemoveSecondary Proof 2|2 - Administrative Remove")
+(begin-tx "AA_RemoveSecondary Proof 2|2 - Administrative Remove")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
-;;==== A_RemoveSecondary Proof 2|2 · 01 · env-sigs (caps) ==== ====================================
-(print "--- [A_RemoveSecondary Proof 2|2 · 01 · env-sigs (caps)] ---")
+;;==== AA_RemoveSecondary Proof 2|2 · 01 · env-sigs (caps) ==== ====================================
+(print "--- [AA_RemoveSecondary Proof 2|2 · 01 · env-sigs (caps)] ---")
 ;; Same admin-gate regression as A_KickStart above (P|A_Define fix).
 (env-sigs
     [
@@ -3168,8 +3168,8 @@
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
-;;==== A_RemoveSecondary Proof 2|2 · 02 · let / invocation ==== ===================================
-(print "--- [A_RemoveSecondary Proof 2|2 · 02 · let / invocation] ---")
+;;==== AA_RemoveSecondary Proof 2|2 · 02 · let / invocation ==== ===================================
+(print "--- [AA_RemoveSecondary Proof 2|2 · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
@@ -3178,7 +3178,7 @@
         (tkp:string "TestKickPair-98c486052a51")
         (e-k:string "EKOSON-98c486052a51")
     )
-    (ref-TS01-A::ATS|A_RemoveSecondary aoz aoz tkp e-k [aoz])
+    (ref-TS01-A::ATS|AA_RemoveSecondary aoz aoz tkp e-k [aoz])
     (map print
         [
             (expect "EKOSON is no longer a registered RT for TestKickPair" false (contains e-k (ref-ATS::UR_RewardTokenList tkp)))
@@ -3188,9 +3188,9 @@
 
 (print "")
 (print "")
-;;==== A_RemoveSecondary Proof 2|2 · 03 · gas echo ==== =============================================
-(print "--- [A_RemoveSecondary Proof 2|2 · 03 · gas echo] ---")
-(format "<<<<<<<A_RemoveSecondary Proof 2|2 {} GAS>>>>>>>" [(env-gas)])
+;;==== AA_RemoveSecondary Proof 2|2 · 03 · gas echo ==== =============================================
+(print "--- [AA_RemoveSecondary Proof 2|2 · 03 · gas echo] ---")
+(format "<<<<<<<AA_RemoveSecondary Proof 2|2 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")

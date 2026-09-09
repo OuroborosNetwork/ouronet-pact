@@ -105,7 +105,7 @@
     ;;  [C]
     ;;
     (defun C_MakeSemiFungibleSet:object{IgnisCollectorV2.OutputCumulator} (account:string id:string nonces:[integer] set-class:integer how-many-sets:integer))
-    (defun C_BreakSemiFungibleSet:object{IgnisCollectorV2.OutputCumulator} (account:string id:string nonce:integer how-many-sets:integer))
+    (defun CC_BreakSemiFungibleSet:object{IgnisCollectorV2.OutputCumulator} (account:string id:string nonce:integer how-many-sets:integer))
     (defun C_MakeNonFungibleSet:object{IgnisCollectorV2.OutputCumulator} (account:string id:string nonces:[integer] set-class:integer))
     (defun C_BreakNonFungibleSet:object{IgnisCollectorV2.OutputCumulator} (account:string id:string nonce:integer))
         ;;
@@ -149,7 +149,7 @@
         \ score-multiplier). Owners define set-classes via \
         \ C_DefinePrimordialSet/C_DefineCompositeSet/C_DefineHybridSet and can enable \
         \ fragmentation, toggle and rename them. Users compose and decompose via \
-        \ C_MakeSemiFungibleSet/C_BreakSemiFungibleSet (SFT, quantity) and \
+        \ C_MakeSemiFungibleSet/CC_BreakSemiFungibleSet (SFT, quantity) and \
         \ C_MakeNonFungibleSet/C_BreakNonFungibleSet (NFT, minting/burning a set nonce whose \
         \ score sums its constituents)."
 
@@ -668,7 +668,7 @@
     )
     (defun URCi_BreakSemiFungibleSet:object{IgnisCollectorV2.OutputCumulator}
         (account:string id:string nonce:integer how-many-sets:integer)
-        @doc "Cost preview for C_BreakSemiFungibleSet: account->DPDC set transfer + DPDC->account \
+        @doc "Cost preview for CC_BreakSemiFungibleSet: account->DPDC set transfer + DPDC->account \
             \ constituents release (the XE_DebitSFT-Nonce burn is discarded). Purely derived."
         (let
             (
@@ -1247,7 +1247,7 @@
             )
         )
     )
-    (defun C_BreakSemiFungibleSet:object{IgnisCollectorV2.OutputCumulator}
+    (defun CC_BreakSemiFungibleSet:object{IgnisCollectorV2.OutputCumulator}
         (account:string id:string nonce:integer how-many-sets:integer)
         (P|UEV_IMC)
         (let

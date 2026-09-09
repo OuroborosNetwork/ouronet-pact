@@ -387,7 +387,7 @@
     (defun C_Mint:object{IgnisCollectorV2.OutputCumulator} (id:string account:string amount:decimal meta-data-chain:[object]))
         ;;
     (defun C_WipeSlim:object{IgnisCollectorV2.OutputCumulator} (id:string account:string nonce:integer amount:decimal))
-    (defun C_WipeHeavy:object{IgnisCollectorV2.OutputCumulator} (id:string account:string))
+    (defun CC_WipeHeavy:object{IgnisCollectorV2.OutputCumulator} (id:string account:string))
     (defun C_WipePure:object{IgnisCollectorV2.OutputCumulator} (id:string account:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces}))
     (defun C_WipeClean:object{IgnisCollectorV2.OutputCumulator} (id:string account:string nonces:[integer]))
     (defun Cp_WipeSlice:object{IgnisCollectorV2.OutputCumulator} (id:string account:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces}))
@@ -3109,7 +3109,7 @@
             )
         )
     )
-    (defun C_WipeHeavy:object{IgnisCollectorV2.OutputCumulator} (id:string account:string)
+    (defun CC_WipeHeavy:object{IgnisCollectorV2.OutputCumulator} (id:string account:string)
         @doc "Wipes all viable <id> Nonces of an DPOF <account> \
             \ \
             \ |Heavy| reffers to the usage of expensive functions like <select> or <keys> \

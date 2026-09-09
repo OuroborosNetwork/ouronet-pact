@@ -2774,7 +2774,7 @@
     (defun URCi_Inject:object{IgnisCollectorV2.OutputCumulator} (op-key:string fvt-id:string output:[string])
         @doc "Gas leg (konto = FVT owner) for the inject family. The ops sharing it have \
             \ DIFFERENT component costs (CC_Inject 21 / CC_InjectStream 5 / \
-            \ CC_InjectFinalize 7 / MTX-AQP|2|C_Inject 11), so the caller passes its \
+            \ CC_InjectFinalize 7 / MTX-AQP|2|CC_Inject 11), so the caller passes its \
             \ TALOS OP KEY down through the XE_/XI_ inject boundary."
         (let
             (

@@ -152,7 +152,7 @@
     ;; declared) — it always self-derives the complete list on-chain via
     ;; URD_ExistingAutostakePairs. patron is never mentioned anywhere in this call — the
     ;; real, production, Talos-driven owner removal path finds and reshapes patron anyway.
-    (ref-TS01-C2::ATS|C_RemoveSecondary aoz aoz ps e-k)
+    (ref-TS01-C2::ATS|CC_RemoveSecondary aoz aoz ps e-k)
 )
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>

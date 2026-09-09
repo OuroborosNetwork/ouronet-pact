@@ -10,7 +10,7 @@
 ;;   5. a second operator stake grows Q, and the PERMISSIONLESS C_RecomputeCapture picks it up while
 ;;      PRESERVING the stored oracle-ts (a stake must not refresh oracle freshness).
 ;; unit-score = 2000 => open gate = 1000. Custodians quintessence: -1->1, -2->10, -3->100 (x0.001 fragment scale).
-;; Source: 08_DSA.pact (C_OpenAgency atomic, C_SetOracleAuth, C_OracleWrite, C_RecomputeCapture, URC_CaptureUnits).
+;; Source: 08_DSA.pact (CC_OpenAgency atomic, C_SetOracleAuth, C_OracleWrite, C_RecomputeCapture, URC_CaptureUnits).
 ;;
 (print "")
 (print "================================================================")
@@ -182,7 +182,7 @@
         (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bronze-sid silver-sid gold-sid)))
             ;; atomic: admit blank triplet -> stake ANHD's full -1/-2/-3 supply (Q1 = 50+500+3000 = 3550) -> gate
             (print (format "<(open)> => \"{}\""
-                [ (ref-TS02-C3::AQP-DSA|C_OpenAgency anhd fvt-id pool-id triplet-id 100 dhoc [-1 -2 -3]) ]))
+                [ (ref-TS02-C3::AQP-DSA|CC_OpenAgency anhd fvt-id pool-id triplet-id 100 dhoc [-1 -2 -3]) ]))
             (map print
               [ (expect "<<TX-P3-03>> agency operator recorded" anhd (AQP-DSA.UR_DSA-AGN|Operator fvt-id triplet-id))
                 (expect "<<TX-P3-03>> member flagged as delegation" true (AQP-FVT.UR_FVT-SEL|Delegation fvt-id triplet-id))

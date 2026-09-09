@@ -78,7 +78,7 @@
     (defun ATS|C_SetDirectRecoveryFee (patron:string ats:string promile:decimal))
     (defun ATS|C_SwitchDirectRecovery (patron:string ats:string toggle:bool))
         ;;
-    (defun ATS|C_RemoveSecondary (patron:string remover:string ats:string reward-token:string))
+    (defun ATS|CC_RemoveSecondary (patron:string remover:string ats:string reward-token:string))
     (defun ATS|C_WithdrawRoyalties (patron:string ats:string target:string))
     (defun ATS|C_KickStart (patron:string kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
     (defun ATS|C_Fuel (patron:string fueler:string ats:string reward-token:string amount:decimal))
@@ -739,7 +739,7 @@
     )
     ;;
     ;;
-    (defun ATS|C_RemoveSecondary (patron:string remover:string ats:string reward-token:string)
+    (defun ATS|CC_RemoveSecondary (patron:string remover:string ats:string reward-token:string)
         @doc "Controls Direct Recovery Fees"
         (with-capability (P|TS)
             (let
@@ -748,7 +748,7 @@
                     (ref-ATSU:module{AutostakeUsageV2} ATSU)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-ATSU::C_RemoveSecondary remover ats reward-token)
+                    (ref-ATSU::CC_RemoveSecondary remover ats reward-token)
                 )
                 (format "Succesfully removed RT {} from ATS-Pair" [reward-token ats])
             )

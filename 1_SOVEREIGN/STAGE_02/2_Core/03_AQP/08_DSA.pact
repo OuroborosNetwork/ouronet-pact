@@ -296,7 +296,7 @@
     (defcap DSA|C>DEFINE-VAULT (patron:string fvt-id:string model-id:string unit-score:integer)
         @doc "Bind a class-0 FVT as a DSA delegation vault. Enforces: the FVT exists + is class-0, patron IS the \
             \ FVT owner (+ signs), unit-score positive, no template yet. Composes SECURE for the template write. \
-            \ (The model-id's validity is enforced when C_OpenAgency calls the SCORE factory.)"
+            \ (The model-id's validity is enforced when CC_OpenAgency calls the SCORE factory.)"
         @event
         (let
             (
@@ -317,7 +317,7 @@
             \ active and the fee is in [DSA_FEE_MIN, DSA_FEE_MAX]. Composes P|SECURE-CALLER so DSA's registered IMC \
             \ guard + SECURE are active for the FVT admit/delegation/stake calls + the DSA|Agency write. The \
             \ one-time quintessence ≥ unit-score/2 OPEN GATE is NOT here — it is a TERMINAL enforce at the END of \
-            \ C_OpenAgency's body, AFTER the operator's initial stake (the cap runs before the body, when Q is still \
+            \ CC_OpenAgency's body, AFTER the operator's initial stake (the cap runs before the body, when Q is still \
             \ 0; a score can only be staked once admission has linked it, so the stake must live inside open). \
             \ Operator account-ownership is enforced downstream in FVT|XE>ADMIT-DELEGATION."
         @event
@@ -597,7 +597,7 @@
                 (r:module{IgnisCollectorV2} IGNIS)
             )
             (r::UDC_ConstructOutputCumulator
-                (r::UC_IgnisPrice "AQP-DSA|C_OpenAgency" "issue-dsa-agency")
+                (r::UC_IgnisPrice "AQP-DSA|CC_OpenAgency" "issue-dsa-agency")
                 patron (r::URC_IsVirtualGasZero) output)
         ))
     (defun URCi_RecomputeCapture:object{IgnisCollectorV2.OutputCumulator} (patron:string output:[string])
@@ -704,7 +704,7 @@
     ;; [UEV] enforce
     (defun UEV_OpenGate:bool (fvt-id:string score-entity-id:string)
         @doc "Terminal open gate — after the operator's initial stake, the agency quintessence must clear \
-            \ unit-score/2. The Talos AQP-DSA|C_OpenAgency flow calls this at the END of the atomic open (admit → \
+            \ unit-score/2. The Talos AQP-DSA|CC_OpenAgency flow calls this at the END of the atomic open (admit → \
             \ stake → THIS); a short operator stake fails here and rolls the whole open back. Unprotected read+enforce."
         (enforce (>= (URC_AgencyQuintessence score-entity-id) (/ (dec (UR_DSA-TMP|UnitScore fvt-id)) 2.0))
             "Open gate: operator must stake quintessence >= unit-score/2 to open")
@@ -922,7 +922,7 @@
     ;; [C]   client
     (defun C_AdmitAgency:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer)
-        @doc "Core admit of the ATOMIC open (the Talos AQP-DSA|C_OpenAgency flow drives the full sequence): admit \
+        @doc "Core admit of the ATOMIC open (the Talos AQP-DSA|CC_OpenAgency flow drives the full sequence): admit \
             \ the operator's BLANK triplet as a delegation member of the class-0 vault FVT (XE_AdmitDelegationMember \
             \ — requires the sub-scores' fvt-links BAR, i.e. unstaked) + flip delegation on + record DSA|Agency. \
             \ Does NOT stake or gate: the deep DPDC custody transfer of the operator's stake needs the caller's \

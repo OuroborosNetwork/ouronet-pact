@@ -69,7 +69,7 @@
     ;;
     ;;  [A]
     ;;
-    (defun A_RemoveSecondary:object{IgnisCollectorV2.OutputCumulator}
+    (defun AA_RemoveSecondary:object{IgnisCollectorV2.OutputCumulator}
         (remover:string ats:string reward-token:string accounts-with-ats-data:[string])
     )
     (defun A_KickStart:object{IgnisCollectorV2.OutputCumulator}
@@ -78,7 +78,7 @@
     ;;
     ;;  [C]
     ;;
-    (defun C_RemoveSecondary:object{IgnisCollectorV2.OutputCumulator}
+    (defun CC_RemoveSecondary:object{IgnisCollectorV2.OutputCumulator}
         (remover:string ats:string reward-token:string)
     )
     (defun C_WithdrawRoyalties:object{IgnisCollectorV2.OutputCumulator}(ats:string target:string))
@@ -1176,7 +1176,7 @@
     )
     (defun URCi_RemoveSecondary:object{IgnisCollectorV2.OutputCumulator}
         (remover:string ats:string reward-token:string)
-        @doc "Cost preview for C_RemoveSecondary — pure re-derivation of its 3-leg concat: one \
+        @doc "Cost preview for CC_RemoveSecondary — pure re-derivation of its 3-leg concat: one \
             \ ignis|token-issue construct + two full-amount transfers (reward-token in to \
             \ remover, primal-rt out from remover), moving the combined resident+unbound+ \
             \ royalty balance at the removed reward-token position."
@@ -1198,7 +1198,7 @@
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                 [
-                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisPrice "ATS|C_RemoveSecondary" "ats-secondary") ATS|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
+                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisPrice "ATS|CC_RemoveSecondary" "ats-secondary") ATS|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
                     (ref-TFT::URCi_Transfer reward-token ATS|SC_NAME remover remove-sum)
                     (ref-TFT::URCi_Transfer primal-rt remover ATS|SC_NAME remove-sum)
                 ]
@@ -1452,7 +1452,7 @@
                 ;;
                 (ico1:object{IgnisCollectorV2.OutputCumulator}
                     (ref-IGNIS::UDC_ConstructOutputCumulator
-                        (ref-IGNIS::UC_IgnisPrice "ATS|C_RemoveSecondary" "ats-secondary")
+                        (ref-IGNIS::UC_IgnisPrice "ATS|CC_RemoveSecondary" "ats-secondary")
                         ATS|SC_NAME
                         (ref-IGNIS::URC_IsVirtualGasZero)
                         []
@@ -1492,7 +1492,7 @@
     )
     ;;{5.7}  User [A/C]
     ;;
-    (defun A_RemoveSecondary:object{IgnisCollectorV2.OutputCumulator}
+    (defun AA_RemoveSecondary:object{IgnisCollectorV2.OutputCumulator}
         (remover:string ats:string reward-token:string accounts-with-ats-data:[string])
         @doc "Administrative Variant. Fix (audit finding #1C / C2b): <accounts-with-ats-data> is now \
             \ IGNORED — XI_RemoveSecondary always re-derives the complete account list on-chain via \
@@ -1515,7 +1515,7 @@
             (XI_KickStart kickstarter ats rt-amounts rbt-request-amount)
         )
     )
-    (defun C_RemoveSecondary:object{IgnisCollectorV2.OutputCumulator}
+    (defun CC_RemoveSecondary:object{IgnisCollectorV2.OutputCumulator}
         (remover:string ats:string reward-token:string)
         @doc "Client Variant. XI_RemoveSecondary derives the complete account list itself via \
             \ <ATS.URH_ExistingAutostakePairs ats>."

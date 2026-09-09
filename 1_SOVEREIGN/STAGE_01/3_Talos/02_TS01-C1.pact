@@ -112,7 +112,7 @@
     (defun DPOF|C_Burn (patron:string id:string account:string nonce:integer amount:decimal))
     (defun DPOF|C_Mint (patron:string id:string account:string amount:decimal meta-data-chain:[object]))
     (defun DPOF|C_WipeSlim (patron:string id:string account:string nonce:integer amount:decimal))
-    (defun DPOF|C_WipeHeavy (patron:string id:string account:string))
+    (defun DPOF|CC_WipeHeavy (patron:string id:string account:string))
     (defun DPOF|C_WipePure (patron:string id:string account:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces}))
     (defun DPOF|C_WipeClean (patron:string id:string account:string nonces:[integer]))
     (defun DPOF|Cp_WipeSlice (patron:string id:string account:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces}))
@@ -1278,7 +1278,7 @@
             )
         )
     )
-    (defun DPOF|C_WipeHeavy (patron:string id:string account:string)
+    (defun DPOF|CC_WipeHeavy (patron:string id:string account:string)
         @doc "Wipes all viable <id> Nonces of an DPOF <account> \
             \ \
             \ |Heavy| reffers to the usage of expensive functions like <select> or <keys> \
@@ -1292,7 +1292,7 @@
                     (ref-ELITE:module{EliteV2} ELITE)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-DPOF::C_WipeHeavy id account)
+                    (ref-DPOF::CC_WipeHeavy id account)
                 )
                 ;;Update Elite Account
                 (ref-ELITE::XE_UpdateEliteSingle id account)

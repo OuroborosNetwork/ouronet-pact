@@ -96,7 +96,7 @@
     (defun DPNF|C_Burn (patron:string id:string account:string nonce:integer))
     (defun DPNF|C_WipeNonce (patron:string id:string account:string nonce:integer))
         ;;
-    (defun DPNF|C_WipeHeavy (patron:string account:string id:string))
+    (defun DPNF|CC_WipeHeavy (patron:string account:string id:string))
     (defun DPNF|C_WipePure (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV2.RemovableNonces}))
     (defun DPNF|C_WipeClean (patron:string account:string id:string nonces:[integer]))
     (defun DPNF|C_WipeDirty (patron:string account:string id:string nonces:[integer]))
@@ -674,14 +674,14 @@
             )
         )
     )
-    (defun DPNF|C_WipeHeavy (patron:string account:string id:string)
+    (defun DPNF|CC_WipeHeavy (patron:string account:string id:string)
         (with-capability (P|TS)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
                     (ico:object{IgnisCollectorV2.OutputCumulator}
-                        (ref-DPDC-MNG::C_WipeHeavy account id false)
+                        (ref-DPDC-MNG::CC_WipeHeavy account id false)
                     )
                     (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
                     (total-nonces-supplies:integer (fold (+) 0 (at "r-amounts" (at 0 (at "output" ico)))))

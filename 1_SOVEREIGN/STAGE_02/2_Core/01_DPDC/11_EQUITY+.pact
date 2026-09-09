@@ -599,7 +599,7 @@
         (account:string id:string shares-amount:integer package-share-tier:integer)
         @doc "Combines Nonce 1 to Nonce 2,3,4,5,6,7,8. \
             \ DPDC Audit #49L: this is an intentionally separate, bespoke implementation of the \
-            \ same conceptual pattern as DPDC-S::C_MakeSemiFungibleSet/C_BreakSemiFungibleSet -- EQUITY \
+            \ same conceptual pattern as DPDC-S::C_MakeSemiFungibleSet/CC_BreakSemiFungibleSet -- EQUITY \
             \ wants freely-transferable tier tokens, not opaque set-bundles, so it shares no code with \
             \ DPDC-S. A future DPDC-S invariant fix will NOT automatically propagate here; cross-link \
             \ any such change to this pair of functions for manual review."

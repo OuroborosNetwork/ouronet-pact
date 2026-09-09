@@ -257,8 +257,8 @@
     )
     (map print
         [
-            (format "<(TS02-C1.DPSF|C_Break SC1 x5)> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_Break owner owner sft-id 11 5)])
+            (format "<(TS02-C1.DPSF|CC_Break SC1 x5)> => \"{}\""
+                [(ref-TS02-C1::DPSF|CC_Break owner owner sft-id 11 5)])
         ]
     )
     (map print
@@ -336,8 +336,8 @@
     )
     (map print
         [
-            (format "<(TS02-C1.DPSF|C_Break SC2 x3)> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_Break owner owner sft-id 12 3)])
+            (format "<(TS02-C1.DPSF|CC_Break SC2 x3)> => \"{}\""
+                [(ref-TS02-C1::DPSF|CC_Break owner owner sft-id 12 3)])
         ]
     )
     (map print
@@ -354,8 +354,8 @@
     )
     (map print
         [
-            (format "<(TS02-C1.DPSF|C_Break SC1 x5)> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_Break owner owner sft-id 11 5)])
+            (format "<(TS02-C1.DPSF|CC_Break SC1 x5)> => \"{}\""
+                [(ref-TS02-C1::DPSF|CC_Break owner owner sft-id 11 5)])
         ]
     )
     (map print
@@ -438,8 +438,8 @@
     )
     (map print
         [
-            (format "<(TS02-C1.DPSF|C_Break SC3 x2)> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_Break owner owner sft-id 13 2)])
+            (format "<(TS02-C1.DPSF|CC_Break SC3 x2)> => \"{}\""
+                [(ref-TS02-C1::DPSF|CC_Break owner owner sft-id 13 2)])
         ]
     )
     (map print
@@ -460,8 +460,8 @@
     )
     (map print
         [
-            (format "<(TS02-C1.DPSF|C_Break SC1 x5)> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_Break owner owner sft-id 11 5)])
+            (format "<(TS02-C1.DPSF|CC_Break SC1 x5)> => \"{}\""
+                [(ref-TS02-C1::DPSF|CC_Break owner owner sft-id 11 5)])
         ]
     )
     (map print
