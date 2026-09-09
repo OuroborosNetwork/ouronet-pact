@@ -14,7 +14,7 @@
 (env-data { "ks": { "keys": ["abc123"], "pred": "keys-all" } })
 (let
     (
-        (ref-U|RS:module{ReservedAccountsV1} U|RS)
+        (ref-U|RS:module{ReservedAccountsV2} U|RS)
         (g:guard (read-keyset "ks"))
         (legit-custom-name:string "z:legit-custom-name")
     )

@@ -13,7 +13,7 @@
 (namespace "ouronet-ns")
 (let
     (
-        (ref-U|LST:module{StringProcessorV1} U|LST)
+        (ref-U|LST:module{StringProcessorV2} U|LST)
     )
     (map print
         [

@@ -48,22 +48,22 @@
                 (coin.TRANSFER
                     "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"
                     "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
-                    (at 2 (DALOS.URC_SplitKDAPrices KST.EMMA (DALOS.UR_UsagePrice "dpmf")))
+                    (at 2 (DALOS.URC_SplitSTOAPrices KST.EMMA (DALOS.UR_UsagePrice "dpmf")))
                 )
                 (coin.TRANSFER
                     "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"
                     "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
-                    (at 0 (DALOS.URC_SplitKDAPrices KST.EMMA (DALOS.UR_UsagePrice "dpmf")))
+                    (at 0 (DALOS.URC_SplitSTOAPrices KST.EMMA (DALOS.UR_UsagePrice "dpmf")))
                 )
                 (coin.TRANSFER
                     "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"
                     "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
-                    (at 3 (DALOS.URC_SplitKDAPrices KST.EMMA (DALOS.UR_UsagePrice "dpmf")))
+                    (at 3 (DALOS.URC_SplitSTOAPrices KST.EMMA (DALOS.UR_UsagePrice "dpmf")))
                 )
                 (coin.TRANSFER
                     "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"
                     "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
-                    (at 1 (DALOS.URC_SplitKDAPrices KST.EMMA (DALOS.UR_UsagePrice "dpmf")))
+                    (at 1 (DALOS.URC_SplitSTOAPrices KST.EMMA (DALOS.UR_UsagePrice "dpmf")))
                 )
             ]
         }

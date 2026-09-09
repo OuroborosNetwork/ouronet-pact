@@ -97,7 +97,7 @@
     (
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
         (ref-ATS:module{AutostakeV2} ATS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (patron:string KST.ANHD)
         (ps:string "PlebeicStrength-98c486052a51")
         (p-k:string "PKOSON-98c486052a51")
@@ -165,7 +165,7 @@
     (
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
         (ref-ATS:module{AutostakeV2} ATS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (patron:string KST.ANHD)
         (ps:string "PlebeicStrength-98c486052a51")
         (p-k:string "PKOSON-98c486052a51")

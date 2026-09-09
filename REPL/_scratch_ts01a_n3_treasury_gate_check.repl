@@ -24,7 +24,7 @@
 (env-sigs [ { "key": "PK_Lumy", "caps": [] } ])
 (let
     (
-        (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+        (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
     )
     (print
         (expect-failure

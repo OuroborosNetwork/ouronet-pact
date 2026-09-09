@@ -61,7 +61,7 @@
     (
         (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (patron:string KST.ANHD)
         (dptf-id:string
             (at 0

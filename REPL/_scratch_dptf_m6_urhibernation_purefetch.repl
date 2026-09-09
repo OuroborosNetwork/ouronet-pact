@@ -16,7 +16,7 @@
 (namespace "ouronet-ns")
 (let
     (
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ouro-id:string "OURO-98c486052a51")
     )
     (print (format "UR_Hibernation(OURO) => {} (expected BAR/empty, unaffected by the fix)" [(ref-DPTF::UR_Hibernation ouro-id)]))

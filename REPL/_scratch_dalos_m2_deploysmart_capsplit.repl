@@ -23,7 +23,7 @@
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
 (let
     (
-        (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+        (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
         (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
         (ref-U|CT:module{OuronetConstantsV1} U|CT)
         (ref-DALOS:module{OuronetDalosV1} DALOS)
