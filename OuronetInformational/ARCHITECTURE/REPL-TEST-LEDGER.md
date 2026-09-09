@@ -11,10 +11,10 @@ This is the evidence base for the audit and documentation papers: every client e
 | metric | value |
 |---|---:|
 | client entrypoints (the auditable contract) | 448 |
-| exercised at least once | 435 (97%) |
-| **never exercised** | **13** |
-| exercised but with NO adversarial assertion in any of its blocks | **313** |
-| total invocations across the suite | 3090 |
+| exercised at least once | 436 (97%) |
+| **never exercised** | **12** |
+| exercised but with NO adversarial assertion in any of its blocks | **308** |
+| total invocations across the suite | 3100 |
 
 ## Never exercised — G1 gap
 
@@ -32,7 +32,6 @@ These entrypoints are reachable by a client and no test calls them.
 * `SPARK&#124;C_RedemFewSparks`
 * `STOAICO&#124;C_Collect`
 * `SWP&#124;C_SmartSwapWithSlippage`
-* `VST&#124;C_RepurposeSlumber`
 
 ## Exercised but never adversarially probed — G2 gap
 
@@ -41,7 +40,6 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | entrypoint | invocations | +asserts |
 |---|---:|---:|
 | <code>ATS&#124;C_ColdRecovery</code> | 275 | 0 |
-| <code>VST&#124;C_Sleep</code> | 74 | 6 |
 | <code>DPTF&#124;C_Transfer</code> | 60 | 60 |
 | <code>P&#124;A_Define</code> | 58 | 0 |
 | <code>AQP-FVT&#124;CC_Collect</code> | 55 | 146 |
@@ -103,6 +101,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>SWP&#124;C_IssueStablePool</code> | 4 | 0 |
 | <code>SWP&#124;C_UpdatePendingBrandingLPs</code> | 4 | 3 |
 | <code>VST&#124;C_CreateFrozenLink</code> | 4 | 3 |
+| <code>VST&#124;C_CreateSleepingLink</code> | 4 | 2 |
 | <code>AQP-DSA&#124;A_SetOracleValidity</code> | 3 | 6 |
 | <code>AQP-DSA&#124;C_SetOracleAuth</code> | 3 | 9 |
 | <code>ATS&#124;C_SetColdRecoveryFees</code> | 3 | 0 |
@@ -122,11 +121,9 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>SWP&#124;A_DefinePrimordialPool</code> | 3 | 0 |
 | <code>SWP&#124;C_AddSleepingLiquidity</code> | 3 | 0 |
 | <code>SWP&#124;C_SingleSwapWithSlippage</code> | 3 | 2 |
-| <code>VST&#124;C_CreateSleepingLink</code> | 3 | 0 |
 | <code>VST&#124;C_CreateVestingLink</code> | 3 | 0 |
 | <code>VST&#124;C_Freeze</code> | 3 | 4 |
 | <code>VST&#124;C_RepurposeMerge</code> | 3 | 0 |
-| <code>VST&#124;C_ToggleTransferRoleSleepingDPOF</code> | 3 | 6 |
 | <code>VST&#124;C_Unsleep</code> | 3 | 0 |
 | <code>VST&#124;C_Vest</code> | 3 | 0 |
 | <code>AQP-DSA&#124;C_SetAgencyFee</code> | 2 | 8 |
@@ -203,7 +200,6 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>SWP&#124;C_MultiSwapWithSlippage</code> | 2 | 0 |
 | <code>SWP&#124;C_SingleSwapNoSlippage</code> | 2 | 0 |
 | <code>SWP&#124;C_UpgradeBrandingLPs</code> | 2 | 3 |
-| <code>VST&#124;C_Hibernate</code> | 2 | 8 |
 | <code>VST&#124;C_Merge</code> | 2 | 0 |
 | <code>VST&#124;C_RepurposeFrozen</code> | 2 | 0 |
 | <code>VST&#124;C_RepurposeReserved</code> | 2 | 0 |
@@ -351,8 +347,6 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>VST&#124;C_CreateReservationLink</code> | 1 | 0 |
 | <code>VST&#124;C_RepurposeHibernating</code> | 1 | 8 |
 | <code>VST&#124;C_RepurposeVested</code> | 1 | 0 |
-| <code>VST&#124;C_Slumber</code> | 1 | 0 |
-| <code>VST&#124;C_ToggleTransferRoleHibernatingDPOF</code> | 1 | 8 |
 
 ## Full ledger
 
@@ -783,25 +777,25 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>VST&#124;C_CreateFrozenLink</code> | 4 | 3 | 0 | `[4.0]_Sovereign-Executor.repl`, `[5.3]_Launchpad.repl`, `VST.repl` +1 |
 | <code>VST&#124;C_CreateHibernatingLink</code> | 6 | 8 | 0 | `[4.0]_Sovereign-Executor.repl`, `_scratch_dpof_h7_hibernation_immutability.repl`, `ATS.repl` +2 |
 | <code>VST&#124;C_CreateReservationLink</code> | 1 | 0 | 0 | `[4.0]_Sovereign-Executor.repl` |
-| <code>VST&#124;C_CreateSleepingLink</code> | 3 | 0 | 0 | `[4.0]_Sovereign-Executor.repl`, `[6.3]_SWP.repl`, `vst-harness.repl` |
+| <code>VST&#124;C_CreateSleepingLink</code> | 4 | 2 | 0 | `[4.0]_Sovereign-Executor.repl`, `[6.3]_SWP.repl`, `VST.repl` +1 |
 | <code>VST&#124;C_CreateVestingLink</code> | 3 | 0 | 0 | `[4.0]_Sovereign-Executor.repl` |
 | <code>VST&#124;C_Freeze</code> | 3 | 4 | 0 | `[6.3]_SWP.repl`, `VST.repl`, `vst-harness.repl` |
-| <code>VST&#124;C_Hibernate</code> | 2 | 8 | 0 | `VST.repl`, `vst-harness.repl` |
+| <code>VST&#124;C_Hibernate</code> | 4 | 12 | 1 | `VST.repl`, `vst-harness.repl` |
 | <code>VST&#124;C_Merge</code> | 2 | 0 | 0 | `[6.3]_SWP.repl` |
 | <code>VST&#124;C_RepurposeFrozen</code> | 2 | 0 | 0 | `[6.3]_SWP.repl`, `vst-harness.repl` |
 | <code>VST&#124;C_RepurposeHibernating</code> | 1 | 8 | 0 | `VST.repl` |
 | <code>VST&#124;C_RepurposeMerge</code> | 3 | 0 | 0 | `[6.3]_SWP.repl`, `vst-harness.repl` |
 | <code>VST&#124;C_RepurposeReserved</code> | 2 | 0 | 0 | `[6.3]_SWP.repl`, `vst-harness.repl` |
 | <code>VST&#124;C_RepurposeSleeping</code> | 2 | 0 | 0 | `[6.3]_SWP.repl`, `vst-harness.repl` |
-| <code>VST&#124;C_RepurposeSlumber</code> | 0 | 0 | 0 | — |
+| <code>VST&#124;C_RepurposeSlumber</code> | 2 | 11 | 2 | `VST.repl` |
 | <code>VST&#124;C_RepurposeVested</code> | 1 | 0 | 0 | `vst-harness.repl` |
 | <code>VST&#124;C_Reserve</code> | 2 | 0 | 0 | `[6.3]_SWP.repl`, `vst-harness.repl` |
-| <code>VST&#124;C_Sleep</code> | 74 | 6 | 0 | `[6.3]_SWP.repl`, `[6.7]_VST.repl`, `[6.4]_AQP-TRIPLET-COLLECT.repl` +1 |
-| <code>VST&#124;C_Slumber</code> | 1 | 0 | 0 | `vst-harness.repl` |
+| <code>VST&#124;C_Sleep</code> | 76 | 13 | 1 | `[6.3]_SWP.repl`, `[6.7]_VST.repl`, `[6.4]_AQP-TRIPLET-COLLECT.repl` +2 |
+| <code>VST&#124;C_Slumber</code> | 2 | 7 | 1 | `VST.repl`, `vst-harness.repl` |
 | <code>VST&#124;C_ToggleTransferRoleFrozenDPTF</code> | 2 | 0 | 0 | `[6.7]_VST.repl`, `vst-harness.repl` |
-| <code>VST&#124;C_ToggleTransferRoleHibernatingDPOF</code> | 1 | 8 | 0 | `VST.repl` |
+| <code>VST&#124;C_ToggleTransferRoleHibernatingDPOF</code> | 2 | 12 | 1 | `VST.repl` |
 | <code>VST&#124;C_ToggleTransferRoleReservedDPTF</code> | 2 | 0 | 0 | `[6.7]_VST.repl`, `vst-harness.repl` |
-| <code>VST&#124;C_ToggleTransferRoleSleepingDPOF</code> | 3 | 6 | 0 | `[6.7]_VST.repl`, `[6.4]_AQP-TRIPLET-COLLECT.repl`, `vst-harness.repl` |
+| <code>VST&#124;C_ToggleTransferRoleSleepingDPOF</code> | 4 | 13 | 1 | `[6.7]_VST.repl`, `[6.4]_AQP-TRIPLET-COLLECT.repl`, `VST.repl` +1 |
 | <code>VST&#124;C_Unreserve</code> | 2 | 0 | 0 | `[6.3]_SWP.repl`, `vst-harness.repl` |
 | <code>VST&#124;C_Unsleep</code> | 3 | 0 | 0 | `[6.7]_VST.repl`, `vst-harness.repl` |
 | <code>VST&#124;C_Unvest</code> | 4 | 0 | 1 | `[6.3]_SWP.repl`, `vst-harness.repl` |

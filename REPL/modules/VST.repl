@@ -246,3 +246,173 @@
     ""
 )
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-06 — sleeping link + Sleep + Slumber + RepurposeSlumber")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-06 · 01 · sleeping link] ---")
+;;VST|C_RepurposeSlumber was invoked by NOTHING in any asserting test (ledger G1 gap).
+;;Reaching it needs the full chain: link -> sleep (twice, to have something to merge) ->
+;;slumber (merge) -> repurpose.
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+    )
+    (let ((split-stoa:[decimal]
+              (ref-DALOS::URC_SplitSTOAPrices patron (ref-DALOS::UR_UsagePrice "dpmf"))))
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa))
+                ]
+            }
+        ]
+    )
+    (ref-TS01-C2::VST|C_CreateSleepingLink patron a)
+    (map print
+        [
+            (expect "<<VST-06>> C_CreateSleepingLink registered the sleeping link"
+                true (ref-DPTF::URC_HasSleeping a))
+            (expect "<<VST-06>> the frozen and hibernating links are still separate and present"
+                [true true] [(ref-DPTF::URC_HasFrozen a) (ref-DPTF::URC_HasHibernation a)])
+        ]
+    ))
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-07 — Slumber merges sleeping nonces; RepurposeSlumber re-issues them")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-07 · 01 · sleep, slumber, repurpose] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (a:string "MOCKA-98c486052a51")
+        (slp:string "Z|MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+    )
+    (let ((bal0:decimal (ref-DPTF::UR_AccountSupply a patron)))
+        (ref-TS01-C2::VST|C_Sleep patron patron patron a 120.0 3600)
+        (ref-TS01-C2::VST|C_Sleep patron patron patron a  80.0 3600)
+        (map print
+            [
+                (expect "<<VST-07>> two Sleeps created two sleeping nonces"
+                    2 (ref-DPOF::UR_NoncesUsed slp))
+                (expect "<<VST-07>> C_Sleep debited the DPTF by the SUM of both amounts"
+                    (- bal0 200.0) (ref-DPTF::UR_AccountSupply a patron))
+                (expect "<<VST-07>> each sleeping nonce carries its own amount"
+                    [120.0 80.0] [(ref-DPOF::UR_NonceSupply slp 1) (ref-DPOF::UR_NonceSupply slp 2)])
+            ]
+        )
+        ;;SLUMBER = merge several sleeping nonces into one position
+        (ref-TS01-C2::VST|C_Slumber patron patron slp [1 2])
+        (map print
+            [
+                (expect "<<VST-07>> C_Slumber decommissioned the first merged nonce"
+                    -1.0 (ref-DPOF::UR_NonceSupply slp 1))
+                (expect "<<VST-07>> C_Slumber decommissioned the second merged nonce"
+                    -1.0 (ref-DPOF::UR_NonceSupply slp 2))
+                (expect "<<VST-07>> C_Slumber minted ONE merged nonce"
+                    3 (ref-DPOF::UR_NoncesUsed slp))
+                (expect "<<VST-07>> INVARIANT: the merge conserves the slept total"
+                    200.0 (ref-DPOF::UR_NonceSupply slp 3))
+            ]
+        )
+        ;;REPURPOSE the merged position to another account
+        (ref-TS01-C2::VST|C_ToggleTransferRoleSleepingDPOF patron slp emma true)
+        (map print
+            [
+                ;;GATE: the repurpose-MERGE forms re-issue several positions as one, so a single
+                ;;nonce is refused.
+                (expect-failure "<<VST-07>> a repurpose-merge refuses a single nonce"
+                    "Merging requires at least 2 nonces"
+                    (ref-TS01-C2::VST|C_RepurposeSlumber patron slp [3] patron emma))
+            ]
+        )
+    )
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-08 — SLUMBER is the HIBERNATION merge, not the sleeping one")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-08 · 01 · repurpose-slumber on the hibernating token] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;THE NAMES DO NOT SAY THIS, and getting it backwards costs a confusing crash rather than a
+;;clean rejection:
+;;   C_Merge   / C_RepurposeMerge   -> vzh-tag 2 = SLEEPING
+;;   C_Slumber / C_RepurposeSlumber -> vzh-tag 3 = HIBERNATION
+;;Applied to the wrong kind, VST|X>REPURPOSE-ORTO-FUNGIBLE resolves the parent through
+;;UR_Hibernation on a sleeping token, gets the "|" sentinel back, and dies inside DPTF::UR_Konto
+;;with "No value found in table ... for key: |" -- a table miss that names nothing useful.
+(let
+    (
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (a:string "MOCKA-98c486052a51")
+        (hib:string "H|MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+    )
+    ;;two fresh hibernating positions to merge (VST-05 left nonce 1 decommissioned, 2 with emma)
+    (ref-TS01-C2::VST|C_Hibernate patron patron patron a 60.0 30)
+    (ref-TS01-C2::VST|C_Hibernate patron patron patron a 40.0 30)
+    (let ((n:integer (ref-DPOF::UR_NoncesUsed hib)))
+        (map print
+            [
+                (expect "<<VST-08>> two more hibernations exist to merge"
+                    [60.0 40.0] [(ref-DPOF::UR_NonceSupply hib (- n 1)) (ref-DPOF::UR_NonceSupply hib n)])
+            ]
+        )
+        (map print
+            [
+                ;;The role toggle is NOT idempotent: granting a role that is already granted is
+                ;;rejected ("must be set to false for exec"). VST-05 already gave EMMA this role,
+                ;;so re-granting fails -- which is worth pinning, because a caller that re-asserts
+                ;;desired state (a common, reasonable pattern) breaks against this op.
+                (expect-failure "<<VST-08>> re-granting an already-granted transfer role is rejected"
+                    "must be set to false for exec"
+                    (ref-TS01-C2::VST|C_ToggleTransferRoleHibernatingDPOF patron hib emma true))
+            ]
+        )
+        (ref-TS01-C2::VST|C_RepurposeSlumber patron hib [(- n 1) n] patron emma)
+        (map print
+            [
+                (expect "<<VST-08>> C_RepurposeSlumber decommissioned both source nonces"
+                    [-1.0 -1.0] [(ref-DPOF::UR_NonceSupply hib (- n 1)) (ref-DPOF::UR_NonceSupply hib n)])
+                (expect "<<VST-08>> C_RepurposeSlumber re-issued ONE nonce to the target"
+                    emma (ref-DPOF::UR_NonceHolder hib (+ n 1)))
+                (expect "<<VST-08>> INVARIANT: repurpose-merge conserves the summed value"
+                    100.0 (ref-DPOF::UR_NonceSupply hib (+ n 1)))
+            ]
+        )
+    )
+    ""
+)
+(commit-tx)
