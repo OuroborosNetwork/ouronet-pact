@@ -8515,3 +8515,247 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
+(begin-tx "SWP|TX 054 - C_SmartSwapWithSlippage: the bundle path's slippage branch")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+;;==== SWP|TX 054 - C_SmartSwapWithSlippage · 01 · env-sigs (caps) ====
+(print "--- [SWP|TX 054 - C_SmartSwapWithSlippage · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+    ]
+)
+;;SWP|C_SmartSwapWithSlippage was the last never-exercised SWAP entrypoint. Its
+;;no-slippage twin (SWP|C_SmartSwapNoSlippage) is proven end-to-end at 032z6 and
+;;probed adversarially at 032z9+ (wrong endpoint, depth cap, fabricated edge,
+;;inactive edge, bad boost, bad stoa) -- but every one of those enters
+;;SWPU|C>SMART-SWAP-EXPLICIT-ROUTE-NO-SLIPPAGE. The WITH-SLIPPAGE defcap had never
+;;been entered by any test at all.
+;;
+;;Reading the two defcaps side by side explains why that matters less than it
+;;looks, and more than it looks:
+;;
+;;  SWPU|C>SMART-SWAP-EXPLICIT-ROUTE-WITH-SLIPPAGE  -> composes X>SMART-SWAP-EXPLICIT-ROUTE
+;;  SWPU|C>SMART-SWAP-EXPLICIT-ROUTE-NO-SLIPPAGE    -> composes X>SMART-SWAP-EXPLICIT-ROUTE
+;;
+;;They are identical in effect. The with-slippage cap RECEIVES slippage-bounds and
+;;does nothing with them -- it validates the route exactly as the no-slippage cap
+;;does. So the slippage bound is NOT a capability-level guard, and the route
+;;validation both share is already covered. What is uncovered is where the bound
+;;actually bites: a plain (if) inside the exec fold. That is what 02/03 pin.
+;;==== SWP|TX 054 - C_SmartSwapWithSlippage · 02 · the bound is measured FEE-LESS ====
+(print "--- [SWP|TX 054 - C_SmartSwapWithSlippage · 02 · the bound is measured FEE-LESS] ---")
+;;THE UNIT OF THE SLIPPAGE BOUND IS NOT DELIVERED TOKENS.
+;;
+;;Both halves of the mechanism work on the FEE-LESS multi-hop output, and the code says
+;;so in three places:
+;;    SWPU {1}      "slippage quote using fee-less multi-hop path tracing"
+;;    UDC_SpawnSmartSwapSlippageBounds  "using fee-less multi-hop output via URC_Hopper"
+;;    XI_SmartSwapRouter                "slippage check using fee-less multi-hop output"
+;;
+;;So quote and check agree with each other -- the design is internally consistent, and
+;;what it genuinely protects against is RESERVE MOVEMENT between quote and execution
+;;(front-running, sandwiching). What it does NOT do is bound the amount the caller
+;;actually receives, because per-hop pool fees are outside the compared quantity.
+;;
+;;On this 6-hop route that gap is not academic: the assertions below measure the
+;;delivered amount landing MATERIALLY BELOW the "min" the caller's own 1% tolerance
+;;produced, while the guard passes. UC_SlippageMinMax returns [min max]; any UI that
+;;renders that min as "minimum you will receive" is wrong, and wrong by roughly the
+;;total fee drag of the route -- which grows with hop count, exactly where a user is
+;;least able to estimate it. 1% tolerance on six hops is not a 1% guarantee.
+(let*
+    (
+        (ref-SWPI:module{SwapperIssueV4} SWPI)
+        (ref-SWP:module{SwapperV4} SWP)
+        (ref-SWPU:module{SwapperUsageV3} SWPU)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
+        (input-id "W1-98c486052a51")
+        (output-id "W7-98c486052a51")
+        (amount 5.0)
+        (dwk:string (ref-DALOS::UR_WrappedStoaID))
+        (dlk:string (ref-DALOS::UR_SilverStoaID))
+        ;;Bundle assembled exactly as 032z6 does -- off-chain dirty reads, the shape a real
+        ;;client submits. Reused verbatim so any difference in OUTCOME between this test and
+        ;;032z6 is attributable to the slippage branch alone.
+        (route-h:object{SwapperIssueV4.Hopper} (ref-SWPI::URC_HopperActive input-id output-id amount))
+        (boost-h:object{SwapperIssueV4.Hopper} (ref-SWPI::URC_HopperActiveShortest output-id dlk 1.0))
+        (route-edges:[string] (at "edges" route-h))
+        (first-tokens:[string]
+            (distinct (map (lambda (sp:string) (at 0 (ref-SWP::UR_PoolTokens sp))) (distinct route-edges))))
+        (stoa-paths:list
+            (map
+                (lambda (ft:string)
+                    (let ((h:object{SwapperIssueV4.Hopper} (ref-SWPI::URC_Hopper ft dwk 1.0)))
+                        {"first-token" : ft
+                        ,"path" : {"nodes" : (at "nodes" h), "edges" : (at "edges" h), "is-new" : false}}
+                    )
+                )
+                first-tokens
+            )
+        )
+        (bundle
+            {"swap-route" : {"nodes" : (at "nodes" route-h), "edges" : route-edges}
+            ,"boost-path" : {"nodes" : (at "nodes" boost-h), "edges" : (at "edges" boost-h), "is-new" : false}
+            ,"stoa-paths" : stoa-paths}
+        )
+        ;;The UI path: UDC_SpawnSmartSwapSlippageBounds runs its OWN live URC_HopperActive to
+        ;;quote, then the caller picks a tolerance. 1% is a perfectly ordinary choice.
+        (bounds:object{SwapperUsageV3.Slippage}
+            (ref-SWPU::UDC_SpawnSmartSwapSlippageBounds input-id amount output-id 1.0))
+        ;;The exact quantity the guard will compare: the last fee-less hop output.
+        (feeless:decimal (at 0 (take -1 (at "output-values" route-h))))
+        (floor-min:decimal (at 0 (ref-SWPU::UC_SlippageMinMax bounds)))
+        (in-before:decimal (ref-DPTF::UR_AccountSupply input-id KST.ANHD))
+        (out-before:decimal (ref-DPTF::UR_AccountSupply output-id KST.ANHD))
+    )
+    (map print
+        [
+            ;;The quote and the guard read the SAME source -- this is what makes the design
+            ;;internally consistent, and it is worth pinning before measuring the gap.
+            (expect "<<SWP|TX 054-02>> the quoted expected-output IS the fee-less hop output"
+                feeless (at "expected-output-amount" bounds))
+        ]
+    )
+    (let
+        (
+            (r:string (ref-TS01-C3::SWP|C_SmartSwapWithSlippage
+                KST.ANHD KST.ANHD input-id amount output-id bounds bundle))
+        )
+        (let
+            (
+                (delivered:decimal (- (ref-DPTF::UR_AccountSupply output-id KST.ANHD) out-before))
+            )
+            (print (format "<(TS01-C3.SWP|C_SmartSwapWithSlippage)> => \"{}\"" [r]))
+            (print (format "  fee-less quote = {} | caller's 1% floor = {} | ACTUALLY DELIVERED = {}"
+                [feeless floor-min delivered]))
+            (map print
+                [
+                    (expect "<<SWP|TX 054-02>> a bound the fee-less quote clears executes the full 6-hop route"
+                        true (contains "via 6 Swaps" r))
+                    ;;Conservation on the input leg is exact: no dust, no fee off the top of INPUT.
+                    (expect "<<SWP|TX 054-02>> exactly <amount> of the input token was spent"
+                        (- in-before amount) (ref-DPTF::UR_AccountSupply input-id KST.ANHD))
+                    (expect "<<SWP|TX 054-02>> the output balance actually grew"
+                        true (> delivered 0.0))
+                    ;;What the guard compared, and why it passed.
+                    (expect "<<SWP|TX 054-02>> the FEE-LESS quote clears the floor -- so the guard passes"
+                        true (>= feeless floor-min))
+                    ;;FINDING, and the reason this test exists: the delivered amount does NOT.
+                    (expect "<<SWP|TX 054-02>> FINDING: DELIVERED output is BELOW the caller's 1% floor, yet the swap executed"
+                        true (< delivered floor-min))
+                    ;;Quantify it, so a later re-run that changes the fee model moves this number
+                    ;;visibly instead of silently. The shortfall is the route's fee drag: it scales
+                    ;;with HOP COUNT, which is precisely what a caller choosing a percentage cannot
+                    ;;see. Asserted as a band rather than a constant so ordinary pool drift does not
+                    ;;produce a false alarm -- the point is the ORDER OF MAGNITUDE, not the digits.
+                    (expect "<<SWP|TX 054-02>> the shortfall is several times the tolerance the caller chose"
+                        true (> (- floor-min delivered) (* 3.0 (- feeless floor-min))))
+                ]
+            )
+        )
+    )
+)
+(print "")
+;;==== SWP|TX 054 - C_SmartSwapWithSlippage · 03 · breached bound is a SOFT no-op ====
+(print "--- [SWP|TX 054 - C_SmartSwapWithSlippage · 03 · breached bound is a SOFT no-op] ---")
+;;THE INTEGRATION HAZARD. A breached slippage bound does NOT revert the transaction.
+;;C_SmartSwap's exec fold is a plain (if actual >= min) exec (empty-cumulator), and the
+;;Talos wrapper turns the empty cumulator into a RETURN STRING:
+;;    (if (= (length out) 4) "Succesfully smart-swapped ..." "Smart Swap not executed: ...")
+;;So a client that fires and forgets -- submits, sees the tx succeed, never parses the
+;;return string -- will believe it swapped when it did not. There is no event, no
+;;failure, and no balance change to trip over. Every assertion below exists to pin that
+;;this is the ACTUAL behaviour and not an oversight in the test.
+(let*
+    (
+        (ref-SWPI:module{SwapperIssueV4} SWPI)
+        (ref-SWP:module{SwapperV4} SWP)
+        (ref-SWPU:module{SwapperUsageV3} SWPU)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
+        (input-id "W1-98c486052a51")
+        (output-id "W7-98c486052a51")
+        (amount 5.0)
+        (dwk:string (ref-DALOS::UR_WrappedStoaID))
+        (dlk:string (ref-DALOS::UR_SilverStoaID))
+        (route-h:object{SwapperIssueV4.Hopper} (ref-SWPI::URC_HopperActive input-id output-id amount))
+        (boost-h:object{SwapperIssueV4.Hopper} (ref-SWPI::URC_HopperActiveShortest output-id dlk 1.0))
+        (route-edges:[string] (at "edges" route-h))
+        (first-tokens:[string]
+            (distinct (map (lambda (sp:string) (at 0 (ref-SWP::UR_PoolTokens sp))) (distinct route-edges))))
+        (stoa-paths:list
+            (map
+                (lambda (ft:string)
+                    (let ((h:object{SwapperIssueV4.Hopper} (ref-SWPI::URC_Hopper ft dwk 1.0)))
+                        {"first-token" : ft
+                        ,"path" : {"nodes" : (at "nodes" h), "edges" : (at "edges" h), "is-new" : false}}
+                    )
+                )
+                first-tokens
+            )
+        )
+        (bundle
+            {"swap-route" : {"nodes" : (at "nodes" route-h), "edges" : route-edges}
+            ,"boost-path" : {"nodes" : (at "nodes" boost-h), "edges" : (at "edges" boost-h), "is-new" : false}
+            ,"stoa-paths" : stoa-paths}
+        )
+        ;;An expected output of 1000.0 for a 5.0 input, at 0% tolerance -> min = 1000.0.
+        ;;Built with UDC_Slippage directly rather than the UI spawner, because the spawner
+        ;;quotes the REAL output and can never produce an unreachable bound -- the whole
+        ;;point is to simulate a caller whose quote has gone stale (or been manipulated).
+        ;;Note 0.0 is still != -1.0, so this takes the WITH-SLIPPAGE branch, not the
+        ;;no-slippage sentinel path.
+        (impossible:object{SwapperUsageV3.Slippage} (ref-SWPU::UDC_Slippage 1000.0 24 0.0))
+        (in-before:decimal (ref-DPTF::UR_AccountSupply input-id KST.ANHD))
+        (out-before:decimal (ref-DPTF::UR_AccountSupply output-id KST.ANHD))
+        (ignis-id:string (ref-DALOS::UR_IgnisID))
+        (ignis-before:decimal (ref-DPTF::UR_AccountSupply ignis-id KST.ANHD))
+    )
+    (map print
+        [
+            (expect "<<SWP|TX 054-03>> the fabricated floor really is unreachable"
+                1000.0 (at 0 (ref-SWPU::UC_SlippageMinMax impossible)))
+        ]
+    )
+    (let
+        (
+            (r:string (ref-TS01-C3::SWP|C_SmartSwapWithSlippage
+                KST.ANHD KST.ANHD input-id amount output-id impossible bundle))
+        )
+        (print (format "<(TS01-C3.SWP|C_SmartSwapWithSlippage breached)> => \"{}\"" [r]))
+        (map print
+            [
+                ;;IT RETURNS. It does not abort -- there is no expect-failure here on purpose,
+                ;;and that absence IS the finding.
+                (expect "<<SWP|TX 054-03>> FINDING: a breached bound RETURNS a message, it does not revert"
+                    true (contains "Smart Swap not executed" r))
+                (expect "<<SWP|TX 054-03>> ...and it is NOT reported as a success"
+                    false (contains "Succesfully smart-swapped" r))
+                ;;State is untouched: the no-op is total, not partial. A partially-applied
+                ;;multi-hop swap would be far worse than either outcome.
+                (expect "<<SWP|TX 054-03>> the input balance is untouched"
+                    in-before (ref-DPTF::UR_AccountSupply input-id KST.ANHD))
+                (expect "<<SWP|TX 054-03>> the output balance is untouched"
+                    out-before (ref-DPTF::UR_AccountSupply output-id KST.ANHD))
+                ;;The empty cumulator (UDC_ConstructOutputCumulator 0.0 BAR true []) is still
+                ;;handed to IGNIS::C_Collect, which runs BEFORE the branch that builds the
+                ;;message. Charging 0.0 is the correct outcome and worth pinning: a caller
+                ;;retrying a stale quote in a loop must not be billed for each miss.
+                (expect "<<SWP|TX 054-03>> the patron is charged NO ignis for a non-executed swap"
+                    ignis-before (ref-DPTF::UR_AccountSupply ignis-id KST.ANHD))
+            ]
+        )
+    )
+)
+(print "")
+;;==== SWP|TX 054 - C_SmartSwapWithSlippage · 04 · gas echo ====
+(print "--- [SWP|TX 054 - C_SmartSwapWithSlippage · 04 · gas echo] ---")
+(format "<<<<<<<SWP|TX 054 C_SmartSwapWithSlippage ==> {} STOA GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)

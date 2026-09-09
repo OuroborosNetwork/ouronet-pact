@@ -11,10 +11,10 @@ This is the evidence base for the audit and documentation papers: every client e
 | metric | value |
 |---|---:|
 | client entrypoints (the auditable contract) | 448 |
-| exercised at least once | 439 (97%) |
-| **never exercised** | **9** |
-| exercised but with NO adversarial assertion in any of its blocks | **307** |
-| total invocations across the suite | 3115 |
+| exercised at least once | 440 (98%) |
+| **never exercised** | **8** |
+| exercised but with NO adversarial assertion in any of its blocks | **308** |
+| total invocations across the suite | 3119 |
 
 ## Never exercised — G1 gap
 
@@ -28,7 +28,6 @@ These entrypoints are reachable by a client and no test calls them.
 * `SPARK&#124;C_RedemAllSparks`
 * `SPARK&#124;C_RedemFewSparks`
 * `STOAICO&#124;C_Collect`
-* `SWP&#124;C_SmartSwapWithSlippage`
 
 ## Exercised but never adversarially probed — G2 gap
 
@@ -95,6 +94,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DPTF&#124;C_MultiTransfer</code> | 4 | 0 |
 | <code>LQD&#124;C_WrapStoa</code> | 4 | 0 |
 | <code>SWP&#124;C_IssueStablePool</code> | 4 | 0 |
+| <code>SWP&#124;C_SmartSwapWithSlippage</code> | 4 | 13 |
 | <code>SWP&#124;C_UpdatePendingBrandingLPs</code> | 4 | 3 |
 | <code>VST&#124;C_CreateFrozenLink</code> | 4 | 3 |
 | <code>VST&#124;C_CreateSleepingLink</code> | 4 | 2 |
@@ -758,7 +758,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>SWP&#124;C_SingleSwapNoSlippage</code> | 2 | 0 | 0 | `[6.3]_SWP.repl` |
 | <code>SWP&#124;C_SingleSwapWithSlippage</code> | 3 | 2 | 0 | `[6.2+3]_DPTF-SWP_Issuance-Only.repl`, `[6.3]_SWP.repl` |
 | <code>SWP&#124;C_SmartSwapNoSlippage</code> | 8 | 8 | 4 | `[6.3]_SWP.repl` |
-| <code>SWP&#124;C_SmartSwapWithSlippage</code> | 0 | 0 | 0 | — |
+| <code>SWP&#124;C_SmartSwapWithSlippage</code> | 4 | 13 | 0 | `[6.3]_SWP.repl` |
 | <code>SWP&#124;C_ToggleAddLiquidity</code> | 22 | 0 | 1 | `[6.2+3]_DPTF-SWP_Issuance-Only.repl`, `[6.3]_SWP.repl` |
 | <code>SWP&#124;C_ToggleFeeLock</code> | 1 | 0 | 0 | `[6.3]_SWP.repl` |
 | <code>SWP&#124;C_ToggleSwapCapability</code> | 42 | 6 | 4 | `[6.2+3]_DPTF-SWP_Issuance-Only.repl`, `[6.3]_SWP.repl` |
