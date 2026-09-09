@@ -80,11 +80,11 @@
     (defconst STOA_PREC                             MINIMUM_PRECISION)
     ;;
     (defconst GENESIS-SUPPLY                        16000000.0)
-    (defconst GENESIS-TIME                          (time "2026-02-18T21:30:00Z"))
+    (defconst GENESIS-TIME                          (time "2026-02-23T18:00:00Z"))
     (defconst BPD                                   2880)
     ;;
     (defconst GENESIS-MIN-GAS-PRICE                 10000)          ; 10,000 ANU
-    (defconst MAX-GAS-PRICE                         400000)         ; 400,000 ANU
+    (defconst MAX-GAS-PRICE                         1000000)        ; 1,000,000 ANU
     (defconst GAS-PRICE-INTERVAL                    10800.0)        ; 3 hours in seconds
     (defconst MAX_BULK_BATCH                        5000
         "Maximum recipients per bulk transfer call"
