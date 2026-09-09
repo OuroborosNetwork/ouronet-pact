@@ -103,7 +103,7 @@
     (defun UC_GasDiscount (major:integer minor:integer native:bool))
     (defun UC_IzCharacterANC:bool (c:string capital:bool iz-special:bool))
     (defun UC_IzStringANC:bool (s:string capital:bool iz-special:bool))
-    (defun UC_NewRoleList (current-lst:[string] account:string direction:bool))
+    (defun UCv_NewRoleList (current-lst:[string] account:string direction:bool))
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;{5.4}  Validate [UEV/CAP]
     ;;
@@ -407,7 +407,7 @@
             (str-to-list s)
         )
     )
-    (defun UC_NewRoleList (current-lst:[string] account:string direction:bool)
+    (defun UCv_NewRoleList (current-lst:[string] account:string direction:bool)
         (let
             (
                 (ref-U|CT:module{OuronetConstantsV2} U|CT)

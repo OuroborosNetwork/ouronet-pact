@@ -686,7 +686,7 @@
             (
                 (ref-U|VST:module{UtilityVstV2} U|VST)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (amount-lst:[decimal] (ref-U|VST::UC_SplitBalanceForVesting (ref-DPTF::UR_Decimals dptf) amount milestones))
+                (amount-lst:[decimal] (ref-U|VST::UCv_SplitBalanceForVesting (ref-DPTF::UR_Decimals dptf) amount milestones))
                 (date-lst:[time] (ref-U|VST::UC_MakeVestingDateList offset duration milestones))
                 (meta-data-chain:[object{VestingV2.VST|MetaDataSchema}] (zip (lambda (x:decimal y:time) { "release-amount": x, "release-date": y }) amount-lst date-lst))
             )

@@ -507,8 +507,8 @@
 
 ;; ============================================================================
 ;; FIX PROOF (#16M / M7) — UEV_ColdDurationParameters never required growth > 0
-;; on either branch. The duration table these params build (UC_MakeSoftIntervals
-;; / UC_MakeHardIntervals) is designed to always DECREASE wait-time as elite tier
+;; on either branch. The duration table these params build (UCv_MakeSoftIntervals
+;; / UCv_MakeHardIntervals) is designed to always DECREASE wait-time as elite tier
 ;; increases, never the reverse (owner-confirmed) — a negative growth silently
 ;; inverted that curve. Added an explicit (> growth 0) floor to both branches.
 ;; ============================================================================

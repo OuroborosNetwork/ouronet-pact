@@ -190,7 +190,7 @@
     (defun UC_IdAccount:string (id:string account:string))
     (defun UC_IzSingular:bool (id:string nonces:[integer]))
     (defun UC_IzConsecutive:bool (id:string nonces:[integer]))
-    (defun UC_TakePureWipe:object{DpofUdcV2.RemovableNonces} (input:object{DpofUdcV2.RemovableNonces} size:integer))
+    (defun UCv_TakePureWipe:object{DpofUdcV2.RemovableNonces} (input:object{DpofUdcV2.RemovableNonces} size:integer))
     (defun UC_ComputeMinWipeSliceCount:integer (nonce-count:integer))
     (defun UC_BuildWipeSlicePlan:object{DpofUdcV2.DPOF|WipeSlicePlan}
         (account:string id:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces} slice-count:integer))
@@ -1228,7 +1228,7 @@
             )
         )
     )
-    (defun UC_TakePureWipe:object{DpofUdcV2.RemovableNonces} 
+    (defun UCv_TakePureWipe:object{DpofUdcV2.RemovableNonces} 
         (input:object{DpofUdcV2.RemovableNonces} size:integer)
         @doc "Takes <size> and returns a smaller |object{DpofUdcV2.RemovableNonces}|"
         (let
@@ -2920,7 +2920,7 @@
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (verum-one:[string] (UR_Verum1 id))
-                    (updated-verum-one:[string] (ref-U|DALOS::UC_NewRoleList verum-one account toggle))
+                    (updated-verum-one:[string] (ref-U|DALOS::UCv_NewRoleList verum-one account toggle))
                 )
                 ;;Deploy WNE
                 (XB_DeployAccountWNE account id)
@@ -2943,7 +2943,7 @@
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (verum-two:[string] (UR_Verum2 id))
-                    (updated-verum-two:[string] (ref-U|DALOS::UC_NewRoleList verum-two account toggle))
+                    (updated-verum-two:[string] (ref-U|DALOS::UCv_NewRoleList verum-two account toggle))
                 )
                 ;;Deploy WNE
                 (XB_DeployAccountWNE account id)
@@ -2966,7 +2966,7 @@
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (verum-three:[string] (UR_Verum3 id))
-                    (updated-verum-three:[string] (ref-U|DALOS::UC_NewRoleList verum-three account toggle))
+                    (updated-verum-three:[string] (ref-U|DALOS::UCv_NewRoleList verum-three account toggle))
                 )
                 ;;Deploy WNE
                 (XB_DeployAccountWNE account id)
@@ -3013,7 +3013,7 @@
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (verum-five:[string] (UR_Verum5 id))
-                    (updated-verum-five:[string] (ref-U|DALOS::UC_NewRoleList verum-five account toggle))
+                    (updated-verum-five:[string] (ref-U|DALOS::UCv_NewRoleList verum-five account toggle))
                 )
                 ;;Deploy WNE
                 (XB_DeployAccountWNE account id)
@@ -3126,7 +3126,7 @@
             \ \
             \ Example to retrieve the <removable-nonces-obj> \
             \ <(URHC_WipePure account id)> ; to get the whole object \
-            \ <(UC_TakePureWipe (URHC_WipePure account id) 165)> ; to get only the first 165 units \
+            \ <(UCv_TakePureWipe (URHC_WipePure account id) 165)> ; to get only the first 165 units \
             \ Aproximately xx Individual Wipes fit inside one TX (for NFTs)."
         (P|UEV_IMC)
         (let

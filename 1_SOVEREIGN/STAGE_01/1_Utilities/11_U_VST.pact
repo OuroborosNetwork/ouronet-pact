@@ -37,7 +37,7 @@
     ;;{5.2}  Compute [UC]
     ;;
     (defun UC_MakeVestingDateList:[time] (offset:integer duration:integer milestones:integer))
-    (defun UC_SplitBalanceForVesting:[decimal] (precision:integer amount:decimal milestones:integer))
+    (defun UCv_SplitBalanceForVesting:[decimal] (precision:integer amount:decimal milestones:integer))
     (defun UC_VestingID:[string] (dptf-name:string dptf-ticker:string))
     (defun UC_SleepingID:[string] (dptf-name:string dptf-ticker:string))
     (defun UC_HibernationID:[string] (dptf-name:string dptf-ticker:string))
@@ -154,7 +154,7 @@
 
         )
     )
-    (defun UC_SplitBalanceForVesting:[decimal] (precision:integer amount:decimal milestones:integer)
+    (defun UCv_SplitBalanceForVesting:[decimal] (precision:integer amount:decimal milestones:integer)
         @doc "Splits an Amount according to vesting parameters"
         (UEV_Milestone milestones)
         (enforce (!= milestones 0) "Cannot split with zero milestones")

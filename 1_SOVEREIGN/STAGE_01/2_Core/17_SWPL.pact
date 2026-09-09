@@ -1259,7 +1259,7 @@
                             (ref-SWP::UR_GenesisWeigths swpair)
                             (ref-SWP::UR_Weigths swpair)
                         )
-                        (ref-U|VST::UC_SplitBalanceForVesting 24 1.0 li)
+                        (ref-U|VST::UCv_SplitBalanceForVesting 24 1.0 li)
                     )
                 )
                 (lp-amounts:[decimal]
@@ -1823,7 +1823,7 @@
                         (w:[decimal] (ref-SWP::UR_Weigths swpair))
                         (n:decimal (dec (length w)))
                         (max-dev:decimal (floor (* 0.4 (/ (- n 1.0) n)) 24))
-                        (dev:decimal (ref-SWPI::UC_DeviationInValueShares virtual-pool-token-supplies asymmetric-liquidity w))
+                        (dev:decimal (ref-SWPI::UCv_DeviationInValueShares virtual-pool-token-supplies asymmetric-liquidity w))
                     )
                     (enforce (<= dev max-dev) (format "asymmetric Liqudity incurrs {} deviation, which is greater than the maximum allowed deviation of {}" [dev max-dev]))
                     [dev max-dev]

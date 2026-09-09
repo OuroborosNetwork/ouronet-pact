@@ -320,7 +320,7 @@
         )
     )
     ;;{5.2}  Compute [UC]
-    (defun UC_OrderMultiplier:decimal (rarity-range:integer position:integer rarity-elements:integer)
+    (defun UCv_OrderMultiplier:decimal (rarity-range:integer position:integer rarity-elements:integer)
         (enforce (<= position rarity-elements) "Invalid Position To Rarity Elements Value")
         (let
             (
@@ -332,7 +332,7 @@
         )
     )
     (defun UC_CommonOM (position:integer)
-        (UC_OrderMultiplier 400 position COMMON-S)
+        (UCv_OrderMultiplier 400 position COMMON-S)
     )
     (defun UC_CommonScore (position:integer)
         (floor (* COMMON (UC_CommonOM position)) BS-PREC)

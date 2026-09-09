@@ -1686,7 +1686,7 @@
                     (ref-U|LST:module{StringProcessorV2} U|LST)
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
                     (current-verum-chain:[string] (UR_GetVerumChain id son rp))
-                    (ul:[string] (ref-U|DALOS::UC_NewRoleList current-verum-chain account aor))
+                    (ul:[string] (ref-U|DALOS::UCv_NewRoleList current-verum-chain account aor))
                 )
                 (with-capability (SECURE)
                     (cond

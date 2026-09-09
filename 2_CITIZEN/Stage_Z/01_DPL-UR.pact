@@ -211,7 +211,7 @@
             )
         )
     )
-    (defun UC_LpFuelToLpStrings:[string] (input-ids:[string] lp-fuel:[decimal])
+    (defun UCv_LpFuelToLpStrings:[string] (input-ids:[string] lp-fuel:[decimal])
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)

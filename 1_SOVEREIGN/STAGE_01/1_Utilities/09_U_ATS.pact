@@ -46,13 +46,13 @@
     (defun UC_IzCullable:bool (input:object{Awo}))
     (defun UC_IzUnstakeObjectValid:bool (input:object{Awo}))
     (defun UC_KickStartIndex:decimal (rt-amounts:[decimal] rbt-request-amount:decimal))
-    (defun UC_MakeHardIntervals:[integer] (start:integer growth:integer))
-    (defun UC_MakeSoftIntervals:[integer] (start:integer growth:integer))
+    (defun UCv_MakeHardIntervals:[integer] (start:integer growth:integer))
+    (defun UCv_MakeSoftIntervals:[integer] (start:integer growth:integer))
     (defun UC_MultiReshapeUnstakeObject:[object{Awo}] (input:[object{Awo}] remove-position:integer))
     (defun UC_PromilleSplit:[decimal] (promille:decimal input:decimal input-precision:integer))
     (defun UC_ReshapeUnstakeObject:object{Awo} (input:object{Awo} remove-position:integer))
-    (defun UC_SolidifyUnstakeObject:object{Awo} (input:object{Awo} remove-position:integer))
-    (defun UC_SplitBalanceWithBooleans:[decimal] (precision:integer amount:decimal milestones:integer boolean:[bool]))
+    (defun UCv_SolidifyUnstakeObject:object{Awo} (input:object{Awo} remove-position:integer))
+    (defun UCv_SplitBalanceWithBooleans:[decimal] (precision:integer amount:decimal milestones:integer boolean:[bool]))
     (defun UC_SplitByIndexedRBT:[decimal] (rbt-amount:decimal pair-rbt-supply:decimal index:decimal resident-amounts:[decimal] rt-precisions:[integer]))
     (defun UC_UnlockPrice:[decimal] (unlocks:integer))
     (defun UC_IzStoicTagIndexChar:bool (c:string))
@@ -315,7 +315,7 @@
             -1.0
         )
     )
-    (defun UC_MakeHardIntervals:[integer] (start:integer growth:integer)
+    (defun UCv_MakeHardIntervals:[integer] (start:integer growth:integer)
         @doc "Creates a Soft Interval List"
         (enforce (= (mod start growth) 0) (format "{} must be divisible by {} and it is not" [start growth]))
         (let*
@@ -339,7 +339,7 @@
             (reverse final-lst)
         )
     )
-    (defun UC_MakeSoftIntervals:[integer] (start:integer growth:integer)
+    (defun UCv_MakeSoftIntervals:[integer] (start:integer growth:integer)
         @doc "Creates a Soft Interval List of Integers \
             \ Used when creating|setting-up an Autostake Pair"
         (enforce (= (mod start growth) 0) (format "{} must be divisible by {} and it is not" [start growth]))
@@ -386,7 +386,7 @@
         (let*
             (
                 (ref-U|DEC:module{OuronetDecimalsV2} U|DEC)
-                (fee:decimal (ref-U|DEC::UC_Promille input promille input-precision))
+                (fee:decimal (ref-U|DEC::UCv_Promille input promille input-precision))
                 (remainder:decimal (- input fee))
             )
             [remainder fee]
@@ -399,11 +399,11 @@
             \ Awo still needs its array shrunk to match the post-removal reward-token list, or every later \
             \ read (URCx_PosObjSt, XI_StoreUnstakeObject) that structurally compares it against a freshly \
             \ length-derived zero/negative sentinel will see a stale, longer array and misclassify an \
-            \ empty slot as permanently occupied. UC_SolidifyUnstakeObject is safe to run unconditionally: \
+            \ empty slot as permanently occupied. UCv_SolidifyUnstakeObject is safe to run unconditionally: \
             \ merging a 0.0 removee into slot 0 is a no-op on the value, it only ever needs to shrink the array."
-        (UC_SolidifyUnstakeObject input remove-position)
+        (UCv_SolidifyUnstakeObject input remove-position)
     )
-    (defun UC_SolidifyUnstakeObject:object{UtilityAtsV3.Awo} (input:object{UtilityAtsV3.Awo} remove-position:integer)
+    (defun UCv_SolidifyUnstakeObject:object{UtilityAtsV3.Awo} (input:object{UtilityAtsV3.Awo} remove-position:integer)
         (let*
             (
                 (values:[decimal] (at "reward-tokens" input))
@@ -424,7 +424,7 @@
             )
         )
     )
-    (defun UC_SplitBalanceWithBooleans:[decimal] (precision:integer amount:decimal milestones:integer boolean:[bool])
+    (defun UCv_SplitBalanceWithBooleans:[decimal] (precision:integer amount:decimal milestones:integer boolean:[bool])
         @doc "Splits an Amount according to specific ATS-Pair Parameters related to the list of Reward Tokens \
             \ Helper function used in the Autostake Module"
         (enforce (> milestones 0) "Cannot split with zero milestones")
@@ -743,10 +743,10 @@
             \ 3rd argument built from an incomplete `format` call (no {} placeholder, \
             \ no substitution list) - a hard arity error that made the soft-duration \
             \ path unconditionally uncallable. Collapsed to a single, correctly-formed \
-            \ 2-arg enforce, matching the UC_MakeSoftIntervals convention above. Fix \
+            \ 2-arg enforce, matching the UCv_MakeSoftIntervals convention above. Fix \
             \ (audit finding #16M / M7): neither branch required growth > 0. The \
-            \ duration table these parameters build (UC_MakeSoftIntervals / \
-            \ UC_MakeHardIntervals) is designed to always decrease wait-time as elite \
+            \ duration table these parameters build (UCv_MakeSoftIntervals / \
+            \ UCv_MakeHardIntervals) is designed to always decrease wait-time as elite \
             \ tier increases, never the reverse; a negative growth silently inverted \
             \ that curve, so added an explicit floor to both branches."
         (if soft-or-hard

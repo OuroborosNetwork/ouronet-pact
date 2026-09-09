@@ -2509,7 +2509,7 @@
                 ,"c-limits"                 : [0.0]
                 ,"c-array"                  : [[0.0]]
                 ,"c-fr"                     : true
-                ,"c-duration"               : (ref-U|ATS::UC_MakeSoftIntervals 300 6)
+                ,"c-duration"               : (ref-U|ATS::UCv_MakeSoftIntervals 300 6)
                 ,"c-elite-mode"             : false
                 ;;
                 ;;Hot Recovery
@@ -2632,10 +2632,10 @@
             )
             (if soft-or-hard
                 (update ATS|Pairs atspair
-                    { "c-duration" : (ref-U|ATS::UC_MakeSoftIntervals base growth)}
+                    { "c-duration" : (ref-U|ATS::UCv_MakeSoftIntervals base growth)}
                 )
                 (update ATS|Pairs atspair
-                    { "c-duration" : (ref-U|ATS::UC_MakeHardIntervals base growth)}
+                    { "c-duration" : (ref-U|ATS::UCv_MakeHardIntervals base growth)}
                 )
             )
         )

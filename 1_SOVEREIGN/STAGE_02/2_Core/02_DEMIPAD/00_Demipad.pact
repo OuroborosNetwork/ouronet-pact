@@ -119,7 +119,7 @@
     ;;
     (defun UC_Type:string (asset-id:string fungibility:[bool]))
     (defun UC_GenerateRoyaltyIntervals:[object{RoyaltyInterval}] ())
-    (defun UC_ComputeDepositRoyalty:decimal (current-balance:decimal deposit-amount:decimal))
+    (defun UCv_ComputeDepositRoyalty:decimal (current-balance:decimal deposit-amount:decimal))
     (defun UC_LaunchpadEnviromentSplit:[decimal] (amount-in-stoa:decimal))
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
@@ -718,7 +718,7 @@
             \ the signed coin.TRANSFER cap ceilings in URC_Acquire (Variant 1)."
         (+ 1.0 (/ slippage 100.0))
     )
-    (defun UC_ComputeDepositRoyalty:decimal (current-balance:decimal deposit-amount:decimal)
+    (defun UCv_ComputeDepositRoyalty:decimal (current-balance:decimal deposit-amount:decimal)
         @doc "Compute fee for a deposit given current balance and deposit amount"
         (enforce (>= current-balance 0.0) "Current balance must be non-negative")
         (enforce (>= deposit-amount 0.0) "Deposit amount must be non-negative")
@@ -892,7 +892,7 @@
                 (ouro-prec:integer (ref-DPTF::UR_Decimals ouro-id))
                 ;;
                 (total-dollarz-raised:decimal (UR_TotalDollarzRaised asset-id))
-                (deposit-royalty:decimal (UC_ComputeDepositRoyalty total-dollarz-raised amount-in-dollars))
+                (deposit-royalty:decimal (UCv_ComputeDepositRoyalty total-dollarz-raised amount-in-dollars))
                 (five-percent-dollarz:decimal (floor (/ deposit-royalty 3.0) 5))
                 (ten-percent-dollarz:decimal (- deposit-royalty five-percent-dollarz))
                 (remainder-percent-dollarz:decimal (- amount-in-dollars deposit-royalty))

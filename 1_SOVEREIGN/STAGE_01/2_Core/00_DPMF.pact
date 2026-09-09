@@ -1467,7 +1467,7 @@
                     ,"a-frozen"             := af}
                     (if (= rp 1)
                         (write DPMF|RoleTable id
-                            {"r-nft-burn"           : (ref-U|DALOS::UC_NewRoleList rb account d)
+                            {"r-nft-burn"           : (ref-U|DALOS::UCv_NewRoleList rb account d)
                             ,"r-nft-create"         : rnc
                             ,"r-nft-add-quantity"   : rnaq
                             ,"r-transfer"           : rt
@@ -1476,7 +1476,7 @@
                         (if (= rp 2)
                             (write DPMF|RoleTable id
                                 {"r-nft-burn"           : rb
-                                ,"r-nft-create"         : (ref-U|DALOS::UC_NewRoleList rnc account d)
+                                ,"r-nft-create"         : (ref-U|DALOS::UCv_NewRoleList rnc account d)
                                 ,"r-nft-add-quantity"   : rnaq
                                 ,"r-transfer"           : rt
                                 ,"a-frozen"             : af}
@@ -1485,7 +1485,7 @@
                                 (write DPMF|RoleTable id
                                     {"r-nft-burn"           : rb
                                     ,"r-nft-create"         : rnc
-                                    ,"r-nft-add-quantity"   : (ref-U|DALOS::UC_NewRoleList rnaq account d)
+                                    ,"r-nft-add-quantity"   : (ref-U|DALOS::UCv_NewRoleList rnaq account d)
                                     ,"r-transfer"           : rt
                                     ,"a-frozen"             : af}
                                 )
@@ -1494,7 +1494,7 @@
                                         {"r-nft-burn"           : rb
                                         ,"r-nft-create"         : rnc
                                         ,"r-nft-add-quantity"   : rnaq
-                                        ,"r-transfer"           : (ref-U|DALOS::UC_NewRoleList rt account d)
+                                        ,"r-transfer"           : (ref-U|DALOS::UCv_NewRoleList rt account d)
                                         ,"a-frozen"             : af}
                                     )
                                     (write DPMF|RoleTable id
@@ -1502,7 +1502,7 @@
                                         ,"r-nft-create"        : rnc
                                         ,"r-nft-add-quantity"  : rnaq
                                         ,"r-transfer"          : rt
-                                        ,"a-frozen"            : (ref-U|DALOS::UC_NewRoleList af account d)}
+                                        ,"a-frozen"            : (ref-U|DALOS::UCv_NewRoleList af account d)}
                                     )
                                 )
                             )

@@ -1751,7 +1751,7 @@
 (env-sigs [])
 ;;==== SWP|TX 015b - #72C Regression: Stable-Swap Inverse Newton Domain Guard · 02 · let / invocation ====
 (print "--- [SWP|TX 015b - #72C Regression: Stable-Swap Inverse Newton Domain Guard · 02 · let / invocation] ---")
-;;Audit ref: Audit/SWP/ROUND-01-FINDINGS.md #C2 — UC_ComputeInverseY is C2's still-open inverse-
+;;Audit ref: Audit/SWP/ROUND-01-FINDINGS.md #C2 — UCv_ComputeInverseY is C2's still-open inverse-
 ;;direction sibling (SWP|TX 015 above fixed the direct direction only). <xo-minus = xo -
 ;;output-amount> feeds <P-Prime> as a plain factor: at <output-amount> == <xo>, <P-Prime> == 0.0,
 ;;dividing by zero inside <UC_YNext>'s `c` term — an uncatchable-via-`try` native crash (confirmed
@@ -1781,19 +1781,19 @@
         ;;  at-boundary    : output-amount == xo — pre-fix: uncatchable native crash
         ;;  over-boundary  : output-amount > xo (1.01x/1.5x/5x) — pre-fix: silent corrupted output
         (in-domain-input:decimal
-            (ref-U|SWP::UC_ComputeInverseY (ref-U|SWP::UDC_InverseRawSwapInput A X (* xo 0.5) op ip i-prec w))
+            (ref-U|SWP::UCv_ComputeInverseY (ref-U|SWP::UDC_InverseRawSwapInput A X (* xo 0.5) op ip i-prec w))
         )
         (at-boundary-rejected:bool
-            (try true (let ((r:decimal (ref-U|SWP::UC_ComputeInverseY (ref-U|SWP::UDC_InverseRawSwapInput A X xo op ip i-prec w)))) false))
+            (try true (let ((r:decimal (ref-U|SWP::UCv_ComputeInverseY (ref-U|SWP::UDC_InverseRawSwapInput A X xo op ip i-prec w)))) false))
         )
         (just-over-rejected:bool
-            (try true (let ((r:decimal (ref-U|SWP::UC_ComputeInverseY (ref-U|SWP::UDC_InverseRawSwapInput A X (* xo 1.01) op ip i-prec w)))) false))
+            (try true (let ((r:decimal (ref-U|SWP::UCv_ComputeInverseY (ref-U|SWP::UDC_InverseRawSwapInput A X (* xo 1.01) op ip i-prec w)))) false))
         )
         (well-over-rejected:bool
-            (try true (let ((r:decimal (ref-U|SWP::UC_ComputeInverseY (ref-U|SWP::UDC_InverseRawSwapInput A X (* xo 1.5) op ip i-prec w)))) false))
+            (try true (let ((r:decimal (ref-U|SWP::UCv_ComputeInverseY (ref-U|SWP::UDC_InverseRawSwapInput A X (* xo 1.5) op ip i-prec w)))) false))
         )
         (extreme-over-rejected:bool
-            (try true (let ((r:decimal (ref-U|SWP::UC_ComputeInverseY (ref-U|SWP::UDC_InverseRawSwapInput A X (* xo 5.0) op ip i-prec w)))) false))
+            (try true (let ((r:decimal (ref-U|SWP::UCv_ComputeInverseY (ref-U|SWP::UDC_InverseRawSwapInput A X (* xo 5.0) op ip i-prec w)))) false))
         )
     )
     (map print
@@ -1932,12 +1932,12 @@
                 (ref-U|SWP::UDC_DirectRawSwapInput As Xs1 [leg1-out-s] [op-s] ip-s i-prec-s Ws)
             )
         )
-        ;;Also directly exercise UC_ComputeInverseY/UC_ZNext (not touched by leg1/leg2 above, which only
+        ;;Also directly exercise UCv_ComputeInverseY/UC_ZNext (not touched by leg1/leg2 above, which only
         ;;call UC_ComputeY) — on the ORIGINAL pool state, "how much DLK input is needed to get exactly
         ;;<leg1-out-s> OURO out" should round-trip consistently with the direct quote (>= leg1-input-s,
-        ;;since UC_ComputeInverseY now ceilings — must never require less than was actually used).
+        ;;since UCv_ComputeInverseY now ceilings — must never require less than was actually used).
         (inverse-check-s:decimal
-            (ref-U|SWP::UC_ComputeInverseY
+            (ref-U|SWP::UCv_ComputeInverseY
                 (ref-U|SWP::UDC_InverseRawSwapInput As Xs leg1-out-s op-s ip-s i-prec-s Ws)
             )
         )
@@ -3326,7 +3326,7 @@
 ;;computation is already fully converged (bit-identical to 255 iterations) by iteration 10.
 ;;Owner direction: Pact has no dynamic-length/early-exit loop (Turing-incomplete), so the fix is
 ;;a plain fixed bump to 12 (2 iterations of margin past the measured convergence point) across
-;;UC_ComputeD AND UC_ComputeY/UC_ComputeInverseY (the latter two were already fully converged at
+;;UC_ComputeD AND UC_ComputeY/UCv_ComputeInverseY (the latter two were already fully converged at
 ;;11, bumped anyway for uniformity). Measured gas cost of the change: UC_ComputeD +58 gas,
 ;;UC_ComputeY/InverseY +6 gas each — a fixed, tiny, swap-state-independent increment.
 (let

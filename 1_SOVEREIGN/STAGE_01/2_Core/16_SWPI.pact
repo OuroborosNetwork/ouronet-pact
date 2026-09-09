@@ -64,7 +64,7 @@
     ;;
     ;;  [UC] Functions
     ;;
-    (defun UC_DeviationInValueShares:decimal (pool-reserves:[decimal] asymmetric-liq:[decimal] w:[decimal]))
+    (defun UCv_DeviationInValueShares:decimal (pool-reserves:[decimal] asymmetric-liq:[decimal] w:[decimal]))
     (defun UC_DeviatedShares:[decimal] (pool-reserves:[decimal] pool-shares:[decimal] new-total-shares:decimal))
     (defun UC_PoolShares:[decimal] (pool-reserves:[decimal] w:[decimal]))
     (defun UC_VirtualSwap:object{UtilitySwpV2.VirtualSwapEngine} 
@@ -84,9 +84,9 @@
             A:decimal X:[decimal] X-prec:[integer] output-position:integer input-position:integer weights:[decimal]
         )
     )
-    (defun UC_BareboneSwap:decimal (pool-type:string drsi:object{UtilitySwpV2.DirectRawSwapInput}))
+    (defun UCv_BareboneSwap:decimal (pool-type:string drsi:object{UtilitySwpV2.DirectRawSwapInput}))
     (defun UC_BareboneInverseSwap:decimal (pool-type:string irsi:object{UtilitySwpV2.InverseRawSwapInput}))
-    (defun UC_PoolTokenPositions:[integer] (swpair:string input-ids:[string]))
+    (defun UCv_PoolTokenPositions:[integer] (swpair:string input-ids:[string]))
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
     ;;
@@ -482,7 +482,7 @@
         ,"output-values"    : c}
     )
     ;;{5.2}  Compute [UC]
-    (defun UC_DeviationInValueShares:decimal (pool-reserves:[decimal] asymmetric-liq:[decimal] w:[decimal])
+    (defun UCv_DeviationInValueShares:decimal (pool-reserves:[decimal] asymmetric-liq:[decimal] w:[decimal])
         @doc "Maximum Pool Deviation is (n-1)/n, and max allowed deviation for asymmetric liq is 40% of this value"
         (let
             (
@@ -506,7 +506,7 @@
                     (new-total-shares:decimal (+ 5040000.0 (fold (+) 0.0 asymmetric-shares)))
                     (new-supply:[decimal] (zip (+) pool-reserves asymmetric-liq))
                     ;;
-                    (aw:[decimal] (if iz-weigthed w (ref-U|VST::UC_SplitBalanceForVesting 24 1.0 l1)))
+                    (aw:[decimal] (if iz-weigthed w (ref-U|VST::UCv_SplitBalanceForVesting 24 1.0 l1)))
                     (deviated-shares:[decimal] (UC_DeviatedShares new-supply initial-shares new-total-shares))
                     (diff-with-deviated-shares:[decimal] (zip (-) aw deviated-shares))
                     (abs-dwds:[decimal]
@@ -605,8 +605,8 @@
                 (ref-SWPI:module{SwapperIssueV4} SWPI)
                 ;;
                 (pool-type:string (ref-U|SWP::UC_PoolType swpair))
-                (input-positions:[integer] (UC_PoolTokenPositions swpair input-ids))
-                (output-position:integer (at 0 (UC_PoolTokenPositions swpair [output-id])))
+                (input-positions:[integer] (UCv_PoolTokenPositions swpair input-ids))
+                (output-position:integer (at 0 (UCv_PoolTokenPositions swpair [output-id])))
                 ;;
                 (swap-result:object{UtilitySwpV2.DirectTaxedSwapOutput}
                     (UC_BareboneSwapWithFeez account pool-type dsid F A X v-prec input-positions output-position W)
@@ -683,7 +683,7 @@
                 ;;
                 ;;Total-Swap-Output-Amount <tsoa> is computed without them, then splited into 3 parts: 
                 ;;special, boost, remainder
-                (tsoa:decimal (UC_BareboneSwap pool-type drsi))
+                (tsoa:decimal (UCv_BareboneSwap pool-type drsi))
                 (special:decimal (floor (* (/ f2 fselp) tsoa) o-prec))
                 (boost:decimal (floor (* (/ f3 fselp) tsoa) o-prec))
                 (remainder:decimal (- tsoa (+ special boost)))
@@ -761,7 +761,7 @@
         )
     )
     ;;
-    (defun UC_BareboneSwap:decimal
+    (defun UCv_BareboneSwap:decimal
         (pool-type:string drsi:object{UtilitySwpV2.DirectRawSwapInput})
         (let
             (
@@ -787,14 +787,14 @@
                 (ref-U|SWP:module{UtilitySwpV2} U|SWP)
             )
             (cond
-                ((= pool-type "S") (ref-U|SWP::UC_ComputeInverseY irsi))
+                ((= pool-type "S") (ref-U|SWP::UCv_ComputeInverseY irsi))
                 ((= pool-type "W") (ref-U|SWP::UC_ComputeInverseWP irsi))
                 ((= pool-type "P") (ref-U|SWP::UC_ComputeInverseEP irsi))
                 -1.0
             )
         )
     )
-    (defun UC_PoolTokenPositions:[integer] (swpair:string input-ids:[string])
+    (defun UCv_PoolTokenPositions:[integer] (swpair:string input-ids:[string])
         @doc "Same result as <URC_PoolTokenPositions> but being done without reading <swpair> data \
         \ Result is simply computed, through the <swpair> string"
         (let
@@ -811,7 +811,7 @@
                     (acc:[integer] idx:integer)
                     (ref-U|LST::UC_AppL
                         acc
-                        (ref-SWP::UC_PoolTokenPosition swpair (at idx input-ids))
+                        (ref-SWP::UCv_PoolTokenPosition swpair (at idx input-ids))
                     )
                 )
                 []
@@ -1258,7 +1258,7 @@
             (
                 (ref-U|SWP:module{UtilitySwpV2} U|SWP)
             )
-            (ref-U|SWP::UC_ComputeInverseY
+            (ref-U|SWP::UCv_ComputeInverseY
                 (URC_InverseRawSwapInput swpair rsid)
             )
         )

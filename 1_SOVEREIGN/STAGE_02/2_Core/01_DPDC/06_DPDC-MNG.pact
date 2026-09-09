@@ -499,7 +499,7 @@
         ,"slices"       : e}
     )
     ;;{5.2}  Compute [UC]
-    (defun UC_TakePureWipe:object{DpdcManagementV2.RemovableNonces} (input:object{DpdcManagementV2.RemovableNonces} size:integer)
+    (defun UCv_TakePureWipe:object{DpdcManagementV2.RemovableNonces} (input:object{DpdcManagementV2.RemovableNonces} size:integer)
         @doc "Takes <size> and returns a smaller |object{DpdcManagementV2.RemovableNonces}|"
         (let
             (
@@ -1049,7 +1049,7 @@
             \ \
             \ Example to retrieve the <removable-nonces-obj> \
             \ <(URHC_WipePure account id son)> ; to get the whole object \
-            \ <(UC_TakePureWipe (URHC_WipePure account id son) 165)> ; to get only the first 165 units \
+            \ <(UCv_TakePureWipe (URHC_WipePure account id son) 165)> ; to get only the first 165 units \
             \ Aproximately 167 Individual Wipes fit inside one TX (for NFTs)."
         (P|UEV_IMC)
         (let

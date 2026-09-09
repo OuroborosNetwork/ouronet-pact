@@ -986,7 +986,7 @@
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (prec:integer (ref-DPTF::UR_Decimals id))
             )
-            (ref-U|ATS::UC_SplitBalanceWithBooleans prec amount milestones boolean)
+            (ref-U|ATS::UCv_SplitBalanceWithBooleans prec amount milestones boolean)
         )
     )
     ;;

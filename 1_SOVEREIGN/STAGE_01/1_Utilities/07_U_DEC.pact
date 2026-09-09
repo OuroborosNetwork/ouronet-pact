@@ -39,8 +39,8 @@
     (defun UC_AddArray:[decimal] (array:[[decimal]]))
     (defun UC_AddHybridArray (lists)) ;;2
     (defun UC_Max (x y))
-    (defun UC_Percent:decimal (x:decimal percent:decimal precision:integer)) ;;3
-    (defun UC_Promille:decimal (x:decimal promille:decimal precision:integer)) ;;1
+    (defun UCv_Percent:decimal (x:decimal percent:decimal precision:integer)) ;;3
+    (defun UCv_Promille:decimal (x:decimal promille:decimal precision:integer)) ;;1
     (defun UC_UnlockPrice:[decimal] (unlocks:integer dptf-or-ats:bool)) ;;2
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;{5.4}  Validate [UEV/CAP]
@@ -54,7 +54,7 @@
 
 (module U|DEC GOV
     @doc "Decimal math helpers (implements OuronetDecimalsV2). Column-wise adds decimal \
-        \ arrays (equal-length and ragged rows), plus UC_Max, UC_Percent, UC_Promille, and \
+        \ arrays (equal-length and ragged rows), plus UC_Max, UCv_Percent, UCv_Promille, and \
         \ UC_UnlockPrice (computes ATS/DPTF unlock gas costs as [IGNIS STOA]). \
         \ UEV_DecimalArray enforces that all inner fee-array lists share one length."
 
@@ -173,11 +173,11 @@
     (defun UC_Max (x y)
         (if (> x y) x y)
     )
-    (defun UC_Percent:decimal (x:decimal percent:decimal precision:integer)
+    (defun UCv_Percent:decimal (x:decimal percent:decimal precision:integer)
         (enforce (and (>= percent 0.0)(<= percent 100.0)) "Invalid percent amount")
         (floor (* (/ percent 100.0) x) precision)
     )
-    (defun UC_Promille:decimal (x:decimal promille:decimal precision:integer)
+    (defun UCv_Promille:decimal (x:decimal promille:decimal precision:integer)
         (enforce (and (>= promille 0.0)(<= promille 1000.0)) "Invalid permille amount")
         (floor (* (/ promille 1000.0) x) precision)
     )

@@ -141,7 +141,7 @@
     ;;{5.2}  Compute [UC]
     ;;
     (defun UC_ComputeY (drsi:object{DirectRawSwapInput}))
-    (defun UC_ComputeInverseY (irsi:object{InverseRawSwapInput}))
+    (defun UCv_ComputeInverseY (irsi:object{InverseRawSwapInput}))
     (defun UC_YNext (Y:decimal A:decimal D:decimal n:decimal S-Prime:decimal P-Prime:decimal))
     (defun UC_ZNext (Y:decimal A:decimal D:decimal n:decimal S-Prime:decimal P-Prime:decimal))
     (defun UC_ComputeD:decimal (A:decimal X:[decimal]))
@@ -382,7 +382,7 @@
             (floor (- xo (ref-U|LST::UC_LE output-lst)) o-prec)
         )
     )
-    (defun UC_ComputeInverseY
+    (defun UCv_ComputeInverseY
         (irsi:object{UtilitySwpV2.InverseRawSwapInput})
         @doc "Computes the <input-amount> for the Swap given the <output-amount>"
         (let        
@@ -419,7 +419,7 @@
                 ;;already documents for this exact function (the <U|LST> bounds-guard exception).
                 (domain-guard:bool
                     (enforce (< output-amount xo)
-                        "UC_ComputeInverseY: output-amount must be strictly less than the pool's current output-token reserve"))
+                        "UCv_ComputeInverseY: output-amount must be strictly less than the pool's current output-token reserve"))
                 (xo-minus:decimal (- xo output-amount))
                 (X1:[decimal] (ref-U|LST::UC_ReplaceAt X op xo-minus))
                 (X2:[decimal] (ref-U|LST::UC_ReplaceAt X1 ip -1.0))

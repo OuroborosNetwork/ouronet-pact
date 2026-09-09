@@ -115,8 +115,10 @@ Unprotected (callable without caps — safe by construction):
 | Prefix | Meaning |
 |--------|---------|
 | `UC_*` | Pure compute on arguments only — **no table reads, no `enforce`**. First under FUNCTIONS. |
+| `UCv_*` | `UC_` whose `enforce` is **intrinsic to its own computation** (a shape/domain guard on the computation itself), not business validation. See the `v` role in `StoicSyntax-Prefixes.md` §1. |
 | `UR_*` | Table reads. **No raw `read` on domain tables outside `UR_*`.** Per-field `UR_*` take table keys, not row objects. |
 | `URC_*` | Read + derive. **No `enforce`** (validation lives in `UEV_*` / defcap). May call `UR` / `UC` / other `URC`. |
+| `URCv_*` | `URC_` whose `enforce` is **intrinsic to its own computation** — same `v` role as `UCv_`. Use it when the guard is unavoidable in the derivation itself and relocating it would mean duplicating the identical check at every real call site; use a `UEV_*` / defcap when the check is a business rule. |
 | `UEV_*` | Read + `enforce`. Failure aborts the tx. Unprotected. |
 | `UDC_*` | Data construction — named constructors for objects; prefer over ad-hoc `object{}` literals. |
 | `CAP_*` | Ouronet account-ownership enforcement (UEV-like but specifically tied to account ownership). |

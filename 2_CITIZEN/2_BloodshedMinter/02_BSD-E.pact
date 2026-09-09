@@ -224,7 +224,7 @@
         )
     )
     ;;{5.2}  Compute [UC]
-    (defun UC_OrderMultiplier:decimal (rarity-range:integer position:integer rarity-elements:integer)
+    (defun UCv_OrderMultiplier:decimal (rarity-range:integer position:integer rarity-elements:integer)
         (enforce (<= position rarity-elements) "Invalid Position To Rarity Elements Value")
         (let
             (
@@ -236,7 +236,7 @@
         )
     )
     (defun UC_EpicOM (position:integer)
-        (UC_OrderMultiplier 200 position EPIC-S)
+        (UCv_OrderMultiplier 200 position EPIC-S)
     )
     (defun UC_EpicScore (position:integer)
         (floor (* EPIC (UC_EpicOM position)) BS-PREC)
