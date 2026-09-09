@@ -1,6 +1,301 @@
-;; REPL/modules/DPTF.repl — STANDALONE DPTF tester (blockchain-env-in-a-repl).
-;; Fresh boot: Stage 00 sandbox + Stage 1 deploy core + the DPTF suite only.
-;; Run: cd REPL && pact modules/DPTF.repl   (see OuronetInformational/ARCHITECTURE/REPL_TEST_ARCHITECTURE.md)
+;; REPL/modules/DPTF.repl — STANDALONE DPTF tester.
+;;
+;; P2 rebuild. The previous version loaded Stage_01/[6.2]_DPTF.repl -- 1,493 lines with ZERO
+;; assertions -- and therefore asserted NOTHING about DPTF: it printed exactly the deploy core's
+;; own 11 expect / 7 expect-failure baseline and passed because booting a chain passes.
+;;
+;; This version builds MINIMAL fixtures (RULE 2) and asserts an OBSERVABLE OUTCOME for every
+;; entrypoint it exercises (RULE: never "did not crash").
+;;
+;; Run: cd REPL && pact modules/DPTF.repl
 (load "../deploy-stage00.repl")
 (load "../deploy-stage01.repl")
-(load "../Stage_01/[6.2]_DPTF.repl")
+(load "../fixtures/mock-tf.repl")
+(load "../fixtures/mock-tf-supply.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-01 — issuance properties (C_Issue, via fixture)")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-01 · 01 · issuance properties] ---")
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (a:string "MOCKA-98c486052a51")
+    )
+    (map print
+        [
+            (expect "<<DPTF-01>> C_Issue set the owner konto"      KST.ANHD (ref-DPTF::UR_Konto a))
+            (expect "<<DPTF-01>> C_Issue set decimals to 24"       24       (ref-DPTF::UR_Decimals a))
+            (expect "<<DPTF-01>> C_Issue set can-upgrade ON"       true     (ref-DPTF::UR_CanUpgrade a))
+            (expect "<<DPTF-01>> C_Issue set can-change-owner ON"  true     (ref-DPTF::UR_CanChangeOwner a))
+            (expect "<<DPTF-01>> C_Issue set can-freeze OFF"       false    (ref-DPTF::UR_CanFreeze a))
+            (expect "<<DPTF-01>> C_Issue set can-wipe OFF"         false    (ref-DPTF::UR_CanWipe a))
+            (expect "<<DPTF-01>> C_Issue set can-pause ON"         true     (ref-DPTF::UR_CanPause a))
+            (expect "<<DPTF-01>> C_Issue registered the id"        true     (ref-DPTF::UR_IzId a))
+        ]
+    )
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-02 — C_Mint raises supply and credits the account")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-02 · 01 · mint] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+    )
+    (let
+        (
+            (before-supply:decimal (ref-DPTF::UR_Supply a))
+            (before-bal:decimal (ref-DPTF::UR_AccountSupply a patron))
+        )
+        (map print
+            [
+                ;;GATE: a non-origin mint requires the mint role, even for the token OWNER.
+                (expect-failure
+                    "<<DPTF-02>> non-origin C_Mint is rejected while the mint role is unset"
+                    "must be set to true for exec"
+                    (ref-TS01-C1::DPTF|C_Mint patron a patron 500.0 false))
+                (expect "<<DPTF-02>> mint role starts unset"
+                    false (ref-DPTF::UR_AccountRoleMint a patron))
+            ]
+        )
+        (ref-TS01-C1::DPTF|C_ToggleMintRole patron a patron true)
+        (map print
+            [
+                (expect "<<DPTF-02>> C_ToggleMintRole granted the role"
+                    true (ref-DPTF::UR_AccountRoleMint a patron))
+            ]
+        )
+        (ref-TS01-C1::DPTF|C_Mint patron a patron 500.0 false)
+        (map print
+            [
+                (expect "<<DPTF-02>> C_Mint raised total supply by exactly the minted amount"
+                    (+ before-supply 500.0) (ref-DPTF::UR_Supply a))
+                (expect "<<DPTF-02>> C_Mint credited the receiving account by the same amount"
+                    (+ before-bal 500.0) (ref-DPTF::UR_AccountSupply a patron))
+            ]
+        )
+    )
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-03 — C_Transfer moves balance, conserving supply")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-03 · 01 · transfer] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+    )
+    (let
+        (
+            (s0:decimal (ref-DPTF::UR_Supply a))
+            (p0:decimal (ref-DPTF::UR_AccountSupply a patron))
+            (e0:decimal (try 0.0 (ref-DPTF::UR_AccountSupply a emma)))
+        )
+        (ref-TS01-C1::DPTF|C_Transfer patron a patron emma 100.0 false)
+        (map print
+            [
+                (expect "<<DPTF-03>> C_Transfer debited the sender by exactly the amount"
+                    (- p0 100.0) (ref-DPTF::UR_AccountSupply a patron))
+                (expect "<<DPTF-03>> C_Transfer credited the receiver by exactly the amount"
+                    (+ e0 100.0) (ref-DPTF::UR_AccountSupply a emma))
+                (expect "<<DPTF-03>> INVARIANT: transfer conserves total supply"
+                    s0 (ref-DPTF::UR_Supply a))
+            ]
+        )
+    )
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-04 — C_Burn lowers supply and debits the account")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-04 · 01 · burn] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+    )
+    (let
+        (
+            (s0:decimal (ref-DPTF::UR_Supply a))
+            (p0:decimal (ref-DPTF::UR_AccountSupply a patron))
+        )
+        (map print
+            [
+                ;;GATE: burning requires the burn role, even for the token OWNER.
+                (expect-failure
+                    "<<DPTF-04>> C_Burn is rejected while the burn role is unset"
+                    "must be set to true for exec"
+                    (ref-TS01-C1::DPTF|C_Burn patron a patron 50.0))
+                (expect "<<DPTF-04>> burn role starts unset"
+                    false (ref-DPTF::UR_AccountRoleBurn a patron))
+            ]
+        )
+        (ref-TS01-C1::DPTF|C_ToggleBurnRole patron a patron true)
+        (map print
+            [
+                (expect "<<DPTF-04>> C_ToggleBurnRole granted the role"
+                    true (ref-DPTF::UR_AccountRoleBurn a patron))
+            ]
+        )
+        (ref-TS01-C1::DPTF|C_Burn patron a patron 50.0)
+        (map print
+            [
+                (expect "<<DPTF-04>> C_Burn lowered total supply by exactly the burned amount"
+                    (- s0 50.0) (ref-DPTF::UR_Supply a))
+                (expect "<<DPTF-04>> C_Burn debited the burning account by the same amount"
+                    (- p0 50.0) (ref-DPTF::UR_AccountSupply a patron))
+            ]
+        )
+    )
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-05 — fee surface: SetFee / ToggleFee / SetFeeTarget / ResetFeeTarget")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-05 · 01 · fee surface] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+    )
+    (let ((target0:string (ref-DPTF::UR_FeeTarget a)))
+    (ref-TS01-C1::DPTF|C_SetFee patron a 25.0)
+    (ref-TS01-C1::DPTF|C_ToggleFee patron a true)
+    (ref-TS01-C1::DPTF|C_SetFeeTarget patron a emma)
+    (map print
+        [
+            (expect "<<DPTF-05>> C_SetFee stored the fee promile"     25.0 (ref-DPTF::UR_FeePromile a))
+            (expect "<<DPTF-05>> C_ToggleFee turned the fee ON"       true (ref-DPTF::UR_FeeToggle a))
+            (expect "<<DPTF-05>> C_SetFeeTarget stored the target"    emma (ref-DPTF::UR_FeeTarget a))
+        ]
+    )
+    (ref-TS01-C1::DPTF|C_ResetFeeTarget patron a)
+    (map print
+        [
+            ;;METAMORPHIC: set-then-reset must restore the ORIGINAL target, whatever it was.
+            ;;Asserting a literal here would encode an assumption -- the default is the DPTF
+            ;;smart-contract account, not the token owner, which is exactly what the first
+            ;;version of this test got wrong.
+            (expect "<<DPTF-05>> C_ResetFeeTarget restored the ORIGINAL fee target"
+                target0 (ref-DPTF::UR_FeeTarget a))
+            (expect "<<DPTF-05>> C_ResetFeeTarget left the fee promile untouched"
+                25.0 (ref-DPTF::UR_FeePromile a))
+        ]
+    )
+    (ref-TS01-C1::DPTF|C_ToggleFee patron a false)
+    (map print [(expect "<<DPTF-05>> C_ToggleFee turned the fee OFF again"
+                    false (ref-DPTF::UR_FeeToggle a))])
+    "")
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-06 — C_SetMinMove / C_TogglePause / C_ToggleTransferRole / C_ToggleFeeExemptionRole")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-06 · 01 · properties + roles] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+    )
+    (ref-TS01-C1::DPTF|C_SetMinMove patron a 7.0)
+    (ref-TS01-C1::DPTF|C_ToggleTransferRole patron a emma true)
+
+    (map print
+        [
+            (expect "<<DPTF-06>> C_SetMinMove stored the minimum move"  7.0  (ref-DPTF::UR_MinMove a))
+            (expect "<<DPTF-06>> C_ToggleTransferRole granted transfer" true (ref-DPTF::UR_AccountRoleTransfer a emma))
+            ;;GATE: the fee-exemption role targets a SMART account only.
+            (expect-failure "<<DPTF-06>> C_ToggleFeeExemptionRole on a STANDARD account is rejected"
+                "Operation requires a Smart DALOS Account"
+                (ref-TS01-C1::DPTF|C_ToggleFeeExemptionRole patron a emma true))
+            (expect "<<DPTF-06>> token starts unpaused"                 false (ref-DPTF::UR_Paused a))
+        ]
+    )
+    (ref-TS01-C1::DPTF|C_TogglePause patron a true)
+    (map print [(expect "<<DPTF-06>> C_TogglePause paused the token" true (ref-DPTF::UR_Paused a))])
+    (ref-TS01-C1::DPTF|C_TogglePause patron a false)
+    (map print [(expect "<<DPTF-06>> C_TogglePause unpaused the token" false (ref-DPTF::UR_Paused a))])
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-07 — C_Control flips properties; C_RotateOwnership moves the konto")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-07 · 01 · control + ownership] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }, { "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (b:string "MOCKB-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+    )
+    ;;C_Control (cu cco casr cf cw cp) — turn can-pause OFF on MOCKB, leave the rest as issued
+    (ref-TS01-C1::DPTF|C_Control patron b true true true false false false)
+    (map print
+        [
+            (expect "<<DPTF-07>> C_Control turned can-pause OFF"   false (ref-DPTF::UR_CanPause b))
+            (expect "<<DPTF-07>> C_Control left can-upgrade ON"    true  (ref-DPTF::UR_CanUpgrade b))
+            (expect "<<DPTF-07>> C_Control left can-change-owner ON" true (ref-DPTF::UR_CanChangeOwner b))
+        ]
+    )
+    ;;NOTE: the smart-account requirement belongs to the FEE-EXEMPTION role (DPTF-06), NOT to
+    ;;ownership rotation -- rotation to a standard account is legitimate. An earlier draft of
+    ;;this file asserted the opposite and the suite corrected it.
+    (ref-TS01-C1::DPTF|C_RotateOwnership patron b emma)
+    (map print
+        [
+            (expect "<<DPTF-07>> C_RotateOwnership moved the konto to the new owner"
+                emma (ref-DPTF::UR_Konto b))
+        ]
+    )
+    ""
+)
+(commit-tx)
