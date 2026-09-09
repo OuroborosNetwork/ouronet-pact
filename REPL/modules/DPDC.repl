@@ -1,7 +1,124 @@
-;; REPL/modules/DPDC.repl — STANDALONE DPDC tester (blockchain-env-in-a-repl).
-;; Fresh boot: Stage 00 sandbox + deploy core(s) + the DPDC suite only.
-;; Run: cd REPL && pact modules/DPDC.repl   (see ARCHITECTURE/REPL_TEST_ARCHITECTURE.md)
+;; REPL/modules/DPDC.repl — STANDALONE DPDC (collectable core) tester.
+;;
+;; P2 rebuild. The previous version loaded Stage_02/[6.1]_DPDC.repl, which carries no
+;; assertions, so this tester asserted NOTHING about DPDC and passed because booting a chain
+;; passes.
+;;
+;; DPDC is the shared core behind BOTH collectable kinds, discriminated by <son>: son=true is
+;; semi-fungible (DPSF), son=false is non-fungible (DPNF). Its own Talos surface is just the two
+;; multi/bulk transfers; per-kind ops live under DPSF|/DPNF|. These assertions therefore pin the
+;; SHARED behaviour and the son discriminator itself.
+;;
+;; Run: cd REPL && pact modules/DPDC.repl
 (load "../deploy-stage00.repl")
 (load "../deploy-stage01.repl")
 (load "../deploy-stage02.repl")
-(load "../Stage_02/[6.1]_DPDC.repl")
+(load "../fixtures/mock-collections.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-01 — the son discriminator separates two collections that share the core")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-01 · 01 · son discrimination] ---")
+(let
+    (
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (nf:string "MOCKN-98c486052a51")
+        (sf:string "MOCKS-98c486052a51")
+    )
+    (map print
+        [
+            (expect "<<DPDC-01>> NFT owner konto reads through son=false" KST.ANHD (ref-DPDC::UR_OwnerKonto nf false))
+            (expect "<<DPDC-01>> SFT owner konto reads through son=true"  KST.ANHD (ref-DPDC::UR_OwnerKonto sf true))
+            (expect "<<DPDC-01>> NFT creator konto"        KST.ANHD (ref-DPDC::UR_CreatorKonto nf false))
+            (expect "<<DPDC-01>> SFT creator konto"        KST.ANHD (ref-DPDC::UR_CreatorKonto sf true))
+            (expect "<<DPDC-01>> NFT ticker"               "MOCKN"  (ref-DPDC::UR_Ticker nf false))
+            (expect "<<DPDC-01>> SFT ticker"               "MOCKS"  (ref-DPDC::UR_Ticker sf true))
+            (expect "<<DPDC-01>> NFT has 3 nonces"         3        (ref-DPDC::UR_NoncesUsed nf false))
+            (expect "<<DPDC-01>> SFT has 3 nonces"         3        (ref-DPDC::UR_NoncesUsed sf true))
+            (expect "<<DPDC-01>> neither collection is paused (NFT)" false (ref-DPDC::UR_IsPaused nf false))
+            (expect "<<DPDC-01>> neither collection is paused (SFT)" false (ref-DPDC::UR_IsPaused sf true))
+        ]
+    )
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-02 — supply semantics differ by kind: NFT nonce = 1, SFT nonce = quantity")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-02 · 01 · per-kind supply] ---")
+(let
+    (
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+        (nf:string "MOCKN-98c486052a51")
+        (sf:string "MOCKS-98c486052a51")
+        (patron:string KST.ANHD)
+    )
+    (map print
+        [
+            ;;mock-collections created NFT nonces with no quantity and SFT nonces with 10 each.
+            (expect "<<DPDC-02>> an NFT nonce is unique (supply 1)"
+                1 (ref-DPDC::UR_NonceSupply nf false 1))
+            (expect "<<DPDC-02>> an SFT nonce carries its minted quantity (10)"
+                10 (ref-DPDC::UR_NonceSupply sf true 1))
+            ;;UR_NonceHolder returns the SHORT display form of the account, not the full id.
+            (expect "<<DPDC-02>> the NFT nonce is held by its creator"
+                (ref-I|OURONET::OI|UC_ShortAccount patron) (ref-DPDC::UR_NonceHolder nf false 1))
+            (expect "<<DPDC-02>> the account holds all 3 SFT nonces"
+                30 (fold (+) 0 [(ref-DPDC::UR_AccountNonceSupply patron sf true 1)
+                                (ref-DPDC::UR_AccountNonceSupply patron sf true 2)
+                                (ref-DPDC::UR_AccountNonceSupply patron sf true 3)]))
+        ]
+    )
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-03 — DPDC|C_MultiTransfer moves nonces across BOTH kinds in one call")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-03 · 01 · cross-kind multi transfer] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+        (nf:string "MOCKN-98c486052a51")
+        (sf:string "MOCKS-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+    )
+    (let
+        (
+            (sf-tot0:integer (ref-DPDC::UR_NonceSupply sf true 1))
+            (nf-hold0:string (ref-DPDC::UR_NonceHolder nf false 1))
+        )
+        ;;one call, both kinds: NFT nonce 1 (amount 1) and SFT nonce 1 (amount 4)
+        (ref-TS02-C1::DPDC|C_MultiTransfer patron [nf sf] [false true] patron emma
+            [[1] [1]] [[1] [4]] false)
+        (map print
+            [
+                (expect "<<DPDC-03>> the NFT nonce moved to the receiver"
+                    (ref-I|OURONET::OI|UC_ShortAccount emma) (ref-DPDC::UR_NonceHolder nf false 1))
+                (expect "<<DPDC-03>> the NFT nonce was held by the sender before the move"
+                    (ref-I|OURONET::OI|UC_ShortAccount patron) nf-hold0)
+                (expect "<<DPDC-03>> the receiver got exactly 4 of the SFT nonce"
+                    4 (ref-DPDC::UR_AccountNonceSupply emma sf true 1))
+                (expect "<<DPDC-03>> the sender kept the remainder of the SFT nonce"
+                    (- sf-tot0 4) (ref-DPDC::UR_AccountNonceSupply patron sf true 1))
+                (expect "<<DPDC-03>> INVARIANT: the SFT nonce total is conserved by the transfer"
+                    sf-tot0 (ref-DPDC::UR_NonceSupply sf true 1))
+            ]
+        )
+    )
+    ""
+)
+(commit-tx)

@@ -1,6 +1,86 @@
-;; REPL/modules/DISPENSER.repl — STANDALONE DISPENSER tester (blockchain-env-in-a-repl).
-;; Fresh boot: Stage 00 sandbox + deploy core(s) + the DISPENSER suite only.
-;; Run: cd REPL && pact modules/DISPENSER.repl   (see ARCHITECTURE/REPL_TEST_ARCHITECTURE.md)
+;; REPL/modules/DISPENSER.repl — STANDALONE DISPENSER tester.
+;;
+;; P2 rebuild. The previous version loaded Stage_01/[6.8]_Dispenser.repl (477 lines, ZERO
+;; assertions) and so asserted nothing -- it printed the deploy core's 11/7 baseline and passed
+;; because booting a chain passes.
+;;
+;; The dispenser is the DHV1 vault that holds and prices the sovereign tokens (OURO, AURYN,
+;; ELITE-AURYN, IGNIS). These assertions pin the invariants a dispenser must satisfy: the
+;; sovereign ids resolve, the vault account exists, and its holdings/price are coherent.
+;;
+;; Run: cd REPL && pact modules/DISPENSER.repl
 (load "../deploy-stage00.repl")
 (load "../deploy-stage01.repl")
 (load "../Stage_01/[6.8]_Dispenser.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "DISPENSER-01 — the sovereign token ids resolve and are distinct")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DISPENSER-01 · 01 · sovereign ids] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+    )
+    (let
+        (
+            (ouro:string (ref-DALOS::UR_OuroborosID))
+            (auryn:string (ref-DALOS::UR_AurynID))
+            (elite:string (ref-DALOS::UR_EliteAurynID))
+            (ignis:string (ref-DALOS::UR_IgnisID))
+        )
+        (map print
+            [
+                (expect "<<DISPENSER-01>> OURO is a registered DPTF"        true (ref-DPTF::UR_IzId ouro))
+                (expect "<<DISPENSER-01>> AURYN is a registered DPTF"       true (ref-DPTF::UR_IzId auryn))
+                (expect "<<DISPENSER-01>> ELITE-AURYN is a registered DPTF" true (ref-DPTF::UR_IzId elite))
+                (expect "<<DISPENSER-01>> IGNIS is a registered DPTF"       true (ref-DPTF::UR_IzId ignis))
+                (expect "<<DISPENSER-01>> the four sovereign ids are distinct"
+                    4 (length (distinct [ouro auryn elite ignis])))
+                (expect "<<DISPENSER-01>> OURO has a positive circulating supply"
+                    true (< 0.0 (ref-DPTF::UR_Supply ouro)))
+            ]
+        )
+    )
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DISPENSER-02 — the dispenser vault account exists and prices OURO")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DISPENSER-02 · 01 · vault + price] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+    )
+    (let
+        (
+            (vault:string (ref-DALOS::GOV|DHV1|SC_NAME))
+            (ouro:string (ref-DALOS::UR_OuroborosID))
+            (price:decimal (ref-DALOS::UR_OuroborosPrice))
+        )
+        (map print
+            [
+                (expect "<<DISPENSER-02>> the dispenser vault resolves to a named account"
+                    true (< 0 (length vault)))
+                ;;The price is 0.0 after a bare boot -- the dispenser has not been primed yet.
+                ;;"Strictly positive" was an assumption; NON-NEGATIVE is the actual invariant,
+                ;;and it is the one worth pinning because a negative price would be a real defect.
+                (expect "<<DISPENSER-02>> INVARIANT: the OURO price is never negative"
+                    true (<= 0.0 price))
+                (expect "<<DISPENSER-02>> the vault's OURO holding is never negative"
+                    true (<= 0.0 (ref-DPTF::UR_AccountSupply ouro vault)))
+                (expect "<<DISPENSER-02>> INVARIANT: no account can hold more OURO than exists"
+                    true (<= (ref-DPTF::UR_AccountSupply ouro vault) (ref-DPTF::UR_Supply ouro)))
+            ]
+        )
+    )
+    ""
+)
+(commit-tx)

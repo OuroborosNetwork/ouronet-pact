@@ -1,0 +1,15 @@
+;; REPL/fixtures/populate-bunnies.repl — HEAVY, LIVE-SHAPED BUNNIES COLLECTION.
+;;
+;; This is a FIXTURE, not a test: the suite it drives carries ZERO assertions and exists to
+;; MINT a large, live-shaped collection. It sat in modules/ as "the Bunnies tester" and
+;; therefore reported a pass while asserting nothing about anything.
+;;
+;; Kept at full size ON PURPOSE (the RULE 2 exception): set composition, fragments and
+;; make/break need a collection with a real set definition, and this mirrors the live one.
+;; For anything else use fixtures/mock-collections.repl -- nothing about C_BurnSFT needs
+;; hundreds of nonces.
+;;
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+(load "../deploy-stage02.repl")
+(load "../Stage_02/[5.4]_PopulateBunnies.repl")

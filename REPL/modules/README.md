@@ -43,7 +43,11 @@ they set up their own SubsidiaryTreasury/staker fixtures that aren't boot-compos
 These are the module testers for the AQP deb-fix / CC-batch / ground-truth paths that ZALL's
 `[6.2]_AQP` umbrella does not carry.
 
-- **`POPULATE-NOSFERATU.repl`** / **`POPULATE-BLOODSHED.repl`** / **`POPULATE-BUNNIES.repl`** — the mass-mint scale fixtures (slow). Each passes green in a fresh boot; they are NOT chained into ZALL because they cross-suite contaminate (DPDC-S nonce/sclass state), which is a test-ordering artifact, not a code bug.
+- The three mass-mint POPULATE drivers moved to **`REPL/fixtures/populate-*.repl`** (P2). They are
+  FIXTURES, not testers: the suites they drive carry ZERO assertions, so as "testers" they
+  reported a pass while asserting nothing. They stay full-size on purpose (the RULE 2 exception:
+  set composition / fragments / make-break need a live-shaped collection). They are not chained
+  into ZALL because they cross-suite contaminate DPDC-S nonce/sclass state.
 
 ## Adding a new module tester
 1. Copy an existing one of the same stage.

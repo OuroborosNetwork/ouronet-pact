@@ -84,8 +84,9 @@
 (load "Stage_02/[5.1]_PopulateNosferatu.repl")
 ;;P2-NOTE> [5.2]_PopulateBloodshed + [5.4]_PopulateBunnies are NOT chained here: they cross-suite
 ;;         contaminate when run after the other populates/AQP suites (DPDC-S nonce/sclass state) —
-;;         NOT code bugs (both pass green in a fresh boot: modules/POPULATE-BLOODSHED.repl /
-;;         POPULATE-BUNNIES.repl / POPULATE-NOSFERATU.repl). Covered there per the two-variant design.
+;;         NOT code bugs (both pass green in a fresh boot: fixtures/populate-bloodshed.repl /
+;;         populate-bunnies.repl / populate-nosferatu.repl). They are FIXTURES, not testers: the
+;;         suites they drive carry zero assertions.
 ;(load "Stage_02/[5.2]_PopulateBloodshed.repl")
 ;(load "Stage_02/[5.4]_PopulateBunnies.repl")
 
