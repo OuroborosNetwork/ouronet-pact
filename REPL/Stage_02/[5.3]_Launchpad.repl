@@ -1548,3 +1548,209 @@
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "TX-ACQ-03 - SNAKES|C_Acquire: the Shareholders sale")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(print "=== TX-ACQ-03 — SNAKES|C_Acquire (E|DH shares) =========================")
+;;==== TX-ACQ-03 · 01 · fuel the share sale ==== ===================================================
+(print "--- [TX-ACQ-03 · 01 · fuel the share sale] ---")
+;; The Custodians twin, on a different asset model. Snakes sells EQUITY SHARES from the
+;; E|DH collection at a flat price-per-share, so there is no fragmentation step: ANHD already
+;; holds nonce-1 shares (minted by C_MorphEquity in [6.1]_DPDC) and they go straight into the
+;; pad.
+;;
+;; ONE REAL ASYMMETRY BETWEEN THE TWINS, worth stating because it looks like an omission and
+;; is not quite one. Custodians guards its nonce explicitly:
+;;      CUSTODIANS|ACQUIRE -> (UEV_AcquisitionNonce nonce)  ;; enforces [-3 -2 -1]
+;; SNAKES|ACQUIRE has NO nonce guard at all -- only the supply cap. It is still safe, but
+;; only implicitly: UR_NonceSaleAvailability returns DPDC's -1 "holds none" sentinel for a
+;; nonce the pad never stocked, and (<= amount -1) is false for every positive amount. So an
+;; invalid nonce IS rejected -- by the SUPPLY message, not a nonce message. Asserted below,
+;; because the two failure modes being indistinguishable is exactly the kind of thing a
+;; caller debugging a bad nonce would waste time on.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+        (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+        (owner:string KST.ANHD)
+        (asset:string "E|DH-98c486052a51")
+    )
+    (let
+        (
+            (lpad:string (ref-DPAD::GOV|DEMIPAD|SC_NAME))
+            (owner-before:integer (ref-DPDC::UR_AccountNonceSupply KST.ANHD asset true 1))
+        )
+        (map print
+            [
+                (expect "<<TX-ACQ-03>> the pad holds no shares before fuelling (-1 sentinel)"
+                    -1 (ref-DPDC::UR_AccountNonceSupply lpad asset true 1))
+                (expect "<<TX-ACQ-03>> the owner has shares to sell"
+                    true (> owner-before 100))
+            ]
+        )
+        (ref-TS02-DPAD::DEMIPAD|C_FuelSemiFungible owner owner asset [1] [100])
+        (map print
+            [
+                (expect "<<TX-ACQ-03>> the pad now holds the shares"
+                    100 (ref-DPDC::UR_AccountNonceSupply lpad asset true 1))
+                (expect "<<TX-ACQ-03>> ...moved out of the owner, not minted"
+                    (- owner-before 100) (ref-DPDC::UR_AccountNonceSupply owner asset true 1))
+                (expect "<<TX-ACQ-03>> the sale's availability reader agrees with DPDC"
+                    100 (DEMIPAD-SNAKES.UR_NonceSaleAvailability 1))
+            ]
+        )
+        ""
+    )
+)
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "TX-ACQ-03b - SNAKES|C_Acquire: buy two shares")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+;;==== TX-ACQ-03b · 01 · quote ==== ================================================================
+(print "--- [TX-ACQ-03b · 01 · quote] ---")
+(let
+    (
+        (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+        (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
+        (asset:string "E|DH-98c486052a51")
+    )
+    (let
+        (
+            (costs:object (DEMIPAD-SNAKES.URC_NonceAmountCosts 1 2))
+            (unit:decimal (at "price-per-share-in-dollars" (ref-DPAD::UR_Price asset)))
+            (stoa-price:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
+        )
+        (map print
+            [
+                ;;Note the price KEY differs from Custodians' "quintessence-price": each sale
+                ;;defines its own price object shape against the same DEMIPAD|Price slot.
+                (expect "<<TX-ACQ-03b>> 2 shares cost twice the per-share dollar price"
+                    (* unit 2.0) (at "pid" costs))
+                (expect "<<TX-ACQ-03b>> the token leg is that at the live STOA price"
+                    (/ (at "pid" costs) stoa-price) (at "wstoa" costs))
+            ]
+        )
+        ""
+    )
+)
+;;==== TX-ACQ-03b · 02 · sign the quoted caps and buy ==== =========================================
+(print "--- [TX-ACQ-03b · 02 · sign the quoted caps and buy] ---")
+;;$20 = 200 wSTOA. Royalty 15% = 30 (env 10, coding 20), remainder 170, non-environment 190.
+;;Environment legs 10/20/30/40 of 10.0 = 1.0/2.0/3.0/4.0. Exact grants, as in TX-DEP-01.
+(env-sigs
+    [ { "key": "PK_AncientHodler", "caps": [] }
+    , { "key": "PK_Emma", "caps": [] }
+    , { "key": "ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48", "caps":
+        [ (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" "c:ZNfuj3iZI83n7MUSKGuoXoSxFg1cyMxCzB3szUHVvrI" 190.0)
+        , (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1.0)
+        , (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 2.0)
+        , (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 3.0)
+        , (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 4.0)
+        ] }
+    ])
+(let
+    (
+        (ref-CPAD:module{CitizenLaunchpadTalosV2} TS02-CPAD)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-coin:module{stoa-ns.fungible-v1} coin)
+        (asset:string "E|DH-98c486052a51")
+        (buyer:string KST.EMMA)
+    )
+    (let
+        (
+            (lpad:string (ref-DPAD::GOV|DEMIPAD|SC_NAME))
+            (buyer-stoa:string (ref-DALOS::UR_AccountStoa KST.EMMA))
+        )
+        (let
+            (
+                (pad-before:integer (ref-DPDC::UR_AccountNonceSupply lpad asset true 1))
+                (stoa-before:decimal (ref-coin::get-balance buyer-stoa))
+                (raised-before:decimal (ref-DPAD::UR_TotalDollarzRaised asset))
+                (cost-pid:decimal (at "pid" (DEMIPAD-SNAKES.URC_NonceAmountCosts 1 2)))
+                (cost-tok:decimal (at "wstoa" (DEMIPAD-SNAKES.URC_NonceAmountCosts 1 2)))
+            )
+            (let
+                (
+                    (r (ref-CPAD::SNAKES|C_Acquire buyer buyer 1 2 true -1.0))
+                )
+                (print (format "<(TS02-CPAD.SNAKES|C_Acquire)> => \"{}\"" [r]))
+                (map print
+                    [
+                        ;;Same wrapper defect as Custodians: the sale's own result is discarded
+                        ;;in favour of the refuel's bare true.
+                        (expect "<<TX-ACQ-03b>> FINDING: SNAKES|C_Acquire also returns the refuel's bare true"
+                            true r)
+                        (expect "<<TX-ACQ-03b>> the buyer receives the shares"
+                            2 (ref-DPDC::UR_AccountNonceSupply buyer asset true 1))
+                        (expect "<<TX-ACQ-03b>> the pad's stock drops by exactly that many"
+                            (- pad-before 2) (ref-DPDC::UR_AccountNonceSupply lpad asset true 1))
+                        (expect "<<TX-ACQ-03b>> the buyer pays the quoted token cost in native STOA"
+                            (- stoa-before cost-tok) (ref-coin::get-balance buyer-stoa))
+                        (expect "<<TX-ACQ-03b>> the sale reaches the launchpad's dollar ledger"
+                            (+ raised-before cost-pid) (ref-DPAD::UR_TotalDollarzRaised asset))
+                    ]
+                )
+                ""
+            )
+        )
+    )
+)
+;;==== TX-ACQ-03b · 03 · the missing nonce guard ==== ==============================================
+(print "--- [TX-ACQ-03b · 03 · the missing nonce guard] ---")
+(let
+    (
+        (ref-CPAD:module{CitizenLaunchpadTalosV2} TS02-CPAD)
+        (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+        (asset:string "E|DH-98c486052a51")
+    )
+    (let
+        (
+            (avail:integer (DEMIPAD-SNAKES.UR_NonceSaleAvailability 1))
+            (raised:decimal (ref-DPAD::UR_TotalDollarzRaised asset))
+        )
+        (map print
+            [
+                ;;A nonce the pad never stocked reports the -1 sentinel...
+                (expect "<<TX-ACQ-03b>> an unstocked nonce reports the 'holds none' sentinel"
+                    -1 (DEMIPAD-SNAKES.UR_NonceSaleAvailability 77))
+                ;;...so the supply cap rejects it. Safe, but the message is about SUPPLY, not
+                ;;about the nonce -- the Custodians twin would say "Invalid ... Acquisition
+                ;;Nonce" here. Pinning both makes the asymmetry visible instead of folklore.
+                (expect-failure "<<TX-ACQ-03b>> FINDING: a bad nonce is rejected by the SUPPLY cap, since Snakes has no nonce guard"
+                    "Insufficient Assets for Acquisiton"
+                    (ref-CPAD::SNAKES|C_Acquire KST.EMMA KST.EMMA 77 1 true -1.0))
+                (expect-failure "<<TX-ACQ-03b>> over-buying real stock gives the SAME message, so the two are indistinguishable"
+                    "Insufficient Assets for Acquisiton"
+                    (ref-CPAD::SNAKES|C_Acquire KST.EMMA KST.EMMA 1 (+ avail 1) true -1.0))
+                ;;RULE 9 discharge: both fire inside SNAKES|ACQUIRE before any write.
+                (expect "<<TX-ACQ-03b>> the two rejections left the pad's stock untouched"
+                    avail (DEMIPAD-SNAKES.UR_NonceSaleAvailability 1))
+                (expect "<<TX-ACQ-03b>> ...and the dollar ledger untouched"
+                    raised (ref-DPAD::UR_TotalDollarzRaised asset))
+            ]
+        )
+        ""
+    )
+)
+(print "")
+(print "")
+;;==== TX-ACQ-03b · 04 · gas echo ==== =============================================================
+(print "--- [TX-ACQ-03b · 04 · gas echo] ---")
+(format "<<<<<<<TX-ACQ-03b SNAKES|C_Acquire ==> {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)

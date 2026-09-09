@@ -303,6 +303,30 @@ REPL/
 > exactly ZERO places before this rule existed. Every one needs the audit above. Any that leaked
 > state has been silently weakening whatever ran after it. Folded into P3.
 
+> ## RULE 10 — a COMMENTED-OUT invocation is not coverage. Measure with comments stripped.
+> A disabled test still contains the text of the call it used to make. Any coverage tool that
+> greps source counts it, and reports the entrypoint as exercised.
+>
+> **Measured 2026-09-09, and it moved a headline number.** `_test_ledger.py` matched against raw
+> file text. Stripping Pact line comments first (outside string literals; comments blanked to
+> spaces so line and column structure is provably unchanged) moved the suite from a reported
+> **98% exercised / 6 never exercised** to the true **94% / 24**. Eighteen entrypoints were
+> phantom coverage. Thirteen of them had NO live invocation anywhere in the suite — their entire
+> claim to being tested was a `;` at the start of a line.
+>
+> **The suite contains 85 commented-out Talos invocation sites across 16 files, naming 55
+> distinct ops.** Each one is a disabled test. They are not neutral: they inflate the coverage
+> number while contributing nothing. Every one needs a decision — restore it, or delete it. A
+> commented-out call left in place is the worst of both, because it reads as coverage to a tool
+> and to a human skimming the file.
+>
+> Worst offenders: `[6.1]_DPDC.repl` (20), `[6.3]_SWP.repl` (18), `[6.5]_DPOF.repl` (16),
+> `[4.0]_Sovereign-Executor.repl` (10).
+>
+> Generalisation: **no coverage metric may be computed from raw source text.** Strip comments
+> first, and assert the strip preserved length and line count so the stripper itself cannot
+> silently corrupt the measurement.
+
 ## Assertion style
 * `(expect (format "…" [vals]) expected actual)` — one `format` for the doc string, never wrapping
   the whole `expect`.

@@ -40,9 +40,40 @@ neg   = collections.Counter()                       # op -> expect-failure in it
 where = collections.defaultdict(set)                # op -> files
 ops_sorted = sorted(ENTRY)
 
+def strip_comments(src):
+    """Blank out Pact line comments (`;` to EOL) that are OUTSIDE string literals.
+
+    Comments are replaced with spaces, never deleted, so line and column structure is
+    preserved exactly -- the line count is asserted unchanged below. Without this the
+    ledger counts COMMENTED-OUT invocations as real coverage: measured 2026-09-09,
+    `SWP|C_ChangeOwnership` was reported as exercised on the strength of two commented
+    lines in [6.3]_SWP.repl and nothing else.
+    """
+    out, in_str, esc = [], False, False
+    i, n = 0, len(src)
+    while i < n:
+        c = src[i]
+        if in_str:
+            out.append(c)
+            if esc:          esc = False
+            elif c == '\\': esc = True
+            elif c == '"':   in_str = False
+            i += 1
+        elif c == '"':
+            in_str = True; out.append(c); i += 1
+        elif c == ';':
+            while i < n and src[i] != '\n':
+                out.append(' '); i += 1
+        else:
+            out.append(c); i += 1
+    res = ''.join(out)
+    assert res.count('\n') == src.count('\n'), "strip_comments changed the line count"
+    assert len(res) == len(src), "strip_comments changed the length"
+    return res
+
 for p in sorted(glob.glob('REPL/**/*.repl', recursive=True)):
     if '/archive/' in p: continue
-    txt = open(p, errors='ignore').read()
+    txt = strip_comments(open(p, errors='ignore').read())
     for blk in BLOCK.findall(txt) or [txt]:
         hits = [o for o in ops_sorted
                 if re.search(r'(?:::|\.)' + re.escape(o) + r'[\s\)]', blk)]
