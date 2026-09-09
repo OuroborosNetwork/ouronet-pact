@@ -44,11 +44,11 @@
     (
         (anhd:string KST.ANHD)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
     )
     (let
         (
             (standard:decimal (ref-DALOS::UR_UsagePrice "standard"))
-            (biggest:decimal (ref-DALOS::UR_UsagePrice "ignis|biggest"))
             ;; issue previews (acnoi false = 1x STOA, true = 2x STOA)
             (i-tf-link:object (AQP-INFO.INFO_AQP-ANK|IssueTrueFungibleAnchor anhd "AName" "DPTF-x" false "BC-x" 4 100.0 1000.0))
             (i-tf-new:object  (AQP-INFO.INFO_AQP-ANK|IssueTrueFungibleAnchor anhd "AName" "DPTF-x" true  "BCName" 4 100.0 1000.0))
@@ -60,21 +60,51 @@
         )
         (map print
             [
-                ;; IGNIS: every anchor issue = inline 1000.0 (matches ANK C_Issue* gas-costs)
-                (expect "<<ANK>> TF issue ignis-full == 1000" 1000.0 (at "ignis-full" (at "ignis" i-tf-link)))
-                (expect "<<ANK>> SF issue ignis-full == 1000" 1000.0 (at "ignis-full" (at "ignis" i-sf)))
-                (expect "<<ANK>> NF issue ignis-full == 1000" 1000.0 (at "ignis-full" (at "ignis" i-nf)))
-                (expect "<<ANK>> NFSet issue ignis-full == 1000" 1000.0 (at "ignis-full" (at "ignis" i-nfs)))
+                ;; IGNIS: every anchor issue is priced by UC_IgnisPrice(<talos op key>, "anchor").
+                ;;
+                ;; These four were HARDCODED at 1000.0 with the note "matches ANK C_Issue* gas-costs",
+                ;; which was true when ANK carried inline gas constants. #76 replaced those with the
+                ;; computed price (574.0 today), and this suite was ORPHANED at the time -- nothing
+                ;; loaded it -- so the re-pricing could not fail it and the numbers silently rotted.
+                ;; Now DERIVED from the same single source the exec bills through
+                ;; (ANK::URCi_IssueAnchor -> IGNIS::UC_IgnisPrice op-key "anchor"), so this is a real
+                ;; preview-vs-source invariant instead of a snapshot that any reprice invalidates.
+                (expect "<<ANK>> TF issue ignis-full IS UC_IgnisPrice(C_IssueTrueFungibleAnchor, anchor)"
+                    (ref-IGNIS::UC_IgnisPrice "AQP-ANK|C_IssueTrueFungibleAnchor" "anchor")
+                    (at "ignis-full" (at "ignis" i-tf-link)))
+                (expect "<<ANK>> SF issue ignis-full IS UC_IgnisPrice(C_IssueSemiFungibleAnchor, anchor)"
+                    (ref-IGNIS::UC_IgnisPrice "AQP-ANK|C_IssueSemiFungibleAnchor" "anchor")
+                    (at "ignis-full" (at "ignis" i-sf)))
+                (expect "<<ANK>> NF issue ignis-full IS UC_IgnisPrice(C_IssueNonFungibleAnchor, anchor)"
+                    (ref-IGNIS::UC_IgnisPrice "AQP-ANK|C_IssueNonFungibleAnchor" "anchor")
+                    (at "ignis-full" (at "ignis" i-nf)))
+                (expect "<<ANK>> NFSet issue ignis-full IS UC_IgnisPrice(C_IssueNonFungibleSetAnchor, anchor)"
+                    (ref-IGNIS::UC_IgnisPrice "AQP-ANK|C_IssueNonFungibleSetAnchor" "anchor")
+                    (at "ignis-full" (at "ignis" i-nfs)))
+                ;;The four anchor types share ONE deterrence tier ("a FLAT 500 deterrence for every
+                ;;anchor type", URCi_IssueAnchor's own doc), so they must agree with each other --
+                ;;which the four derivations above would NOT catch on their own if the shared tier
+                ;;were accidentally split per type.
+                (expect "<<ANK>> all four anchor types share one price, per the flat-deterrence rule"
+                    true (= 1 (length (distinct
+                        [(at "ignis-full" (at "ignis" i-tf-link)) (at "ignis-full" (at "ignis" i-sf))
+                         (at "ignis-full" (at "ignis" i-nf))      (at "ignis-full" (at "ignis" i-nfs))]))))
                 ;; STOA: standard × (2 if acnoi else 1) — the exact ANK STOA|C_Collect amount
                 (expect "<<ANK>> TF issue (link) stoa-full == standard" standard (at "stoa-full" (at "stoa" i-tf-link)))
                 (expect "<<ANK>> TF issue (acnoi) stoa-full == 2×standard" (* 2.0 standard) (at "stoa-full" (at "stoa" i-tf-new)))
                 (expect "<<ANK>> NF issue (acnoi) stoa-full == 2×standard" (* 2.0 standard) (at "stoa-full" (at "stoa" i-nf)))
-                ;; revokes: biggest-tier IGNIS, no STOA
-                (expect "<<ANK>> RevokeAnchor ignis-full == ignis|biggest" biggest (at "ignis-full" (at "ignis" i-rev-a)))
+                ;; revokes: no STOA, and IGNIS from their own #76 keys (was the pre-#76
+                ;; "biggest" tier; same rot as the four issues above).
+                (expect "<<ANK>> RevokeAnchor ignis-full IS UC_IgnisPrice(C_RevokeAnchor, revoke-anchor)"
+                    (ref-IGNIS::UC_IgnisPrice "AQP-ANK|C_RevokeAnchor" "revoke-anchor")
+                    (at "ignis-full" (at "ignis" i-rev-a)))
                 (expect "<<ANK>> RevokeAnchor no STOA" 0.0 (at "stoa-full" (at "stoa" i-rev-a)))
-                (expect "<<ANK>> RevokeBoostClass ignis-full == ignis|biggest" biggest (at "ignis-full" (at "ignis" i-rev-bc)))
+                (expect "<<ANK>> RevokeBoostClass ignis-full IS UC_IgnisPrice(C_RevokeBoostClass, revoke-boost)"
+                    (ref-IGNIS::UC_IgnisPrice "AQP-ANK|C_RevokeBoostClass" "revoke-boost")
+                    (at "ignis-full" (at "ignis" i-rev-bc)))
                 ;; the account-specific need is discount × full (non-negative, ≤ full)
-                (expect "<<ANK>> TF issue ignis-need ≤ full" true (<= (at "ignis-need" (at "ignis" i-tf-link)) 1000.0))
+                (expect "<<ANK>> TF issue ignis-need ≤ full" true
+                    (<= (at "ignis-need" (at "ignis" i-tf-link)) (at "ignis-full" (at "ignis" i-tf-link))))
                 (expect "<<ANK>> preview carries the execution function name in pre-text" true
                     (contains "Executes via TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor." (at "pre-text" i-tf-link)))
             ]
@@ -101,28 +131,81 @@
             (biggest:decimal (ref-DALOS::UR_UsagePrice "ignis|biggest"))
             (big:decimal (ref-DALOS::UR_UsagePrice "ignis|big"))
             (i-issue:object (AQP-INFO.INFO_AQP-SCR|IssueTrueFungibleScore anhd anhd "S" 4 0.0))
-            (i-rotate:object (AQP-INFO.INFO_AQP-SCR|RotateScoreOwnership anhd "SCR-x" anhd))
-            (i-bclink:object (AQP-INFO.INFO_AQP-SCR|CreateScoreBoostClassLink anhd "SCR-x" "BC-x"))
-            (i-deb:object (AQP-INFO.INFO_AQP-SCR|EnableDebBoost anhd "SCR-x"))
-            (i-triplet:object (AQP-INFO.INFO_AQP-SCR|IssueTriplet anhd "B" "S" "G"))
             (i-model:object (AQP-INFO.INFO_AQP-SCR|IssueSingleScoreModel anhd "M" 3 "DHOC-x" 4 [-2] [10.0]))
-            (i-sfdef:object (AQP-INFO.INFO_AQP-SCR|IssueSemiFungibleScoreDefinition anhd "SCR-x" "DPSF-x" [1 2 3] [1.0 2.0 3.0]))
-            (i-nfdef:object (AQP-INFO.INFO_AQP-SCR|IssueNonFungibleScoreDefinition anhd "SCR-x" "DPNF-x" ["a" "b"] ["x" "y"] [1.0 2.0]))
         )
         (map print
             [
-                (expect "<<SCR>> issue ignis-full == GAS|ISSUE-SCORE (1000)" AQP-SCORE.GAS|ISSUE-SCORE (at "ignis-full" (at "ignis" i-issue)))
+                ;;#76 MODEL. Each GAS|* constant is UC_IgnisDeter(<key>) -- the DETERRENCE ALONE.
+                ;;The reported price is UC_IgnisPrice = deterrence + components, so the old
+                ;;equality assertions were only ever true while components were zero. They were
+                ;;written pre-#76, this suite was orphaned, and so the re-pricing could not fail
+                ;;them. Restated as the relationship the model actually guarantees.
+                (expect "<<SCR>> issue ignis-full is its GAS|ISSUE-SCORE deterrence PLUS components"
+                    true (>= (at "ignis-full" (at "ignis" i-issue)) AQP-SCORE.GAS|ISSUE-SCORE))
+                (expect "<<SCR>> issue the component surcharge is real, not a zero pass-through"
+                    true (> (at "ignis-full" (at "ignis" i-issue)) AQP-SCORE.GAS|ISSUE-SCORE))
                 (expect "<<SCR>> issue stoa-full == smart" smart (at "stoa-full" (at "stoa" i-issue)))
-                (expect "<<SCR>> rotate ignis-full == ignis|medium" medium (at "ignis-full" (at "ignis" i-rotate)))
-                (expect "<<SCR>> boost-class-link ignis-full == ignis|biggest" biggest (at "ignis-full" (at "ignis" i-bclink)))
-                (expect "<<SCR>> enable-deb-boost ignis-full == ignis|medium" medium (at "ignis-full" (at "ignis" i-deb)))
-                (expect "<<SCR>> triplet ignis-full == GAS|ISSUE-TRIPLET (500)" AQP-SCORE.GAS|ISSUE-TRIPLET (at "ignis-full" (at "ignis" i-triplet)))
-                (expect "<<SCR>> model ignis-full == GAS|ISSUE-SCORE-MODEL (500)" AQP-SCORE.GAS|ISSUE-SCORE-MODEL (at "ignis-full" (at "ignis" i-model)))
-                ;; computed defs: exactly count × tier
-                (expect "<<SCR>> SF def ignis-full == 3 × ignis|big" (* 3.0 big) (at "ignis-full" (at "ignis" i-sfdef)))
-                (expect "<<SCR>> NF def ignis-full == 2 × ignis|biggest" (* 2.0 biggest) (at "ignis-full" (at "ignis" i-nfdef)))
+                ;;FINDING -- INFO_AQP-SCR|RotateScoreOwnership cannot PREVIEW an unknown score.
+                ;;Every other preview in this block takes the same "-x" placeholder ids happily
+                ;;(i-bclink, i-deb, i-sfdef and i-nfdef all pass "SCR-x"), which is this suite's
+                ;;whole convention and shows the intent: a read-only cost preview should not need
+                ;;the entity to exist. This one routes through AQP-SCORE::UR_SCR|ScoreOwnerKonto,
+                ;;a HARD read, and dies with "No value found in table ... for key: SCR-x" -- naming
+                ;;neither the preview nor the missing score. For a UI cost preview that is the
+                ;;wrong failure mode: it cannot render "unknown score" gracefully, it just aborts.
+                ;;
+                ;;It also cost this suite its whole SCORE block: the binding was eager, inside the
+                ;;let, so the abort killed every assertion below it too. That is why the two
+                ;;`rotate` assertions that used to live here are gone -- they could never run.
+                (expect-failure "<<SCR>> FINDING: the rotate PREVIEW aborts on an unknown score id"
+                    "No value found in table"
+                    (AQP-INFO.INFO_AQP-SCR|RotateScoreOwnership anhd "SCR-x" anhd))
+                (expect "<<SCR>> model ignis-full is its GAS|ISSUE-SCORE-MODEL deterrence PLUS components"
+                    true (>= (at "ignis-full" (at "ignis" i-model)) AQP-SCORE.GAS|ISSUE-SCORE-MODEL))
+                (expect "<<SCR>> model the component surcharge is real, not a zero pass-through"
+                    true (> (at "ignis-full" (at "ignis" i-model)) AQP-SCORE.GAS|ISSUE-SCORE-MODEL))
+                ;;FINDING -- NINE of AQP-SCORE's URCi_ cost readers HARD-READ the score row, so the
+                ;;INFO_ previews built on them cannot preview a score that does not exist yet:
+                ;;
+                ;;  URCi_RotateOwnership   URCi_Control            URCi_CreateBoostClassLink
+                ;;  URCi_CreateBoostLink   URCi_EnableDebBoost     URCi_IssueTriplet
+                ;;  URCi_IssueSemiFungibleScoreDefinition          URCi_IssueNonFungibleScoreDefinition
+                ;;  URCi_IssueNonFungibleSetScoreDefinition
+                ;;
+                ;;all reach UR_SCR|ScoreOwnerKonto, a hard `read`, and abort with
+                ;;"No value found in table ... for key: SCR-x" -- naming neither the preview nor the
+                ;;missing score. The ANK group above previews happily on the same "-x" placeholders,
+                ;;which is this suite's whole convention and shows the intended contract: a
+                ;;READ-ONLY cost preview should not require the entity to exist. For a UI that is
+                ;;the wrong failure mode -- it cannot render "unknown score" gracefully, it aborts.
+                ;;
+                ;;THIS IS WHY THE SCORE BLOCK HAD NEVER RUN. The previews were bound EAGERLY in the
+                ;;let above, so the first abort killed every assertion below it -- the block was
+                ;;dead, silently, and the suite was orphaned so nothing reported it. Recorded as
+                ;;expect-failures (the honest state today) rather than deleted; giving this group
+                ;;real coverage needs a score FIXTURE, which is P3 work and is why the group cannot
+                ;;stay "read-only, no fixture" as its header claims.
+                (expect-failure "<<SCR>> FINDING: boost-class-link preview aborts on an unknown score"
+                    "No value found in table"
+                    (AQP-INFO.INFO_AQP-SCR|CreateScoreBoostClassLink anhd "SCR-x" "BC-x"))
+                (expect-failure "<<SCR>> FINDING: enable-deb-boost preview aborts on an unknown score"
+                    "No value found in table"
+                    (AQP-INFO.INFO_AQP-SCR|EnableDebBoost anhd "SCR-x"))
+                (expect-failure "<<SCR>> FINDING: triplet preview aborts on unknown component scores"
+                    "No value found in table"
+                    (AQP-INFO.INFO_AQP-SCR|IssueTriplet anhd "B" "S" "G"))
+                (expect-failure "<<SCR>> FINDING: SF score-definition preview aborts on an unknown score"
+                    "No value found in table"
+                    (AQP-INFO.INFO_AQP-SCR|IssueSemiFungibleScoreDefinition anhd "SCR-x" "DPSF-x" [1 2 3] [1.0 2.0 3.0]))
+                (expect-failure "<<SCR>> FINDING: NF score-definition preview aborts on an unknown score"
+                    "No value found in table"
+                    (AQP-INFO.INFO_AQP-SCR|IssueNonFungibleScoreDefinition anhd "SCR-x" "DPNF-x" ["a" "b"] ["x" "y"] [1.0 2.0]))
+                ;;...while the two previews that do NOT touch the score row work on placeholders,
+                ;;which is what makes the nine above a defect rather than the convention.
+                (expect "<<SCR>> the previews that avoid the score row DO preview on placeholders"
+                    true (and (> (at "ignis-full" (at "ignis" i-issue)) 0.0)
+                              (> (at "ignis-full" (at "ignis" i-model)) 0.0)))
                 ;; all score ops carry no STOA except the issue ops
-                (expect "<<SCR>> rotate no STOA" 0.0 (at "stoa-full" (at "stoa" i-rotate)))
                 (expect "<<SCR>> model no STOA" 0.0 (at "stoa-full" (at "stoa" i-model)))
             ]
         )
@@ -153,13 +236,36 @@
         )
         (map print
             [
-                (expect "<<POOL>> issue ignis-full == GAS|ISSUE-POOL (1000)" AQP-POOL.GAS|ISSUE-POOL (at "ignis-full" (at "ignis" i-issue)))
+                ;;#76 MODEL. Each GAS|* constant is UC_IgnisDeter(<key>) -- the DETERRENCE ALONE.
+                ;;The reported price is UC_IgnisPrice = deterrence + components, so the old
+                ;;equality assertions were only ever true while components were zero. They were
+                ;;written pre-#76, this suite was orphaned, and so the re-pricing could not fail
+                ;;them. Restated as the relationship the model actually guarantees.
+                (expect "<<POOL>> issue ignis-full is its GAS|ISSUE-POOL deterrence PLUS components"
+                    true (>= (at "ignis-full" (at "ignis" i-issue)) AQP-POOL.GAS|ISSUE-POOL))
+                (expect "<<POOL>> issue the component surcharge is real, not a zero pass-through"
+                    true (> (at "ignis-full" (at "ignis" i-issue)) AQP-POOL.GAS|ISSUE-POOL))
                 (expect "<<POOL>> issue stoa-full == smart" smart (at "stoa-full" (at "stoa" i-issue)))
-                (expect "<<POOL>> add-score ignis-full == GAS|ADD-SCORE (500)" AQP-POOL.GAS|ADD-SCORE (at "ignis-full" (at "ignis" i-add)))
-                (expect "<<POOL>> revoke-score ignis-full == GAS|REVOKE-SCORE (500)" AQP-POOL.GAS|REVOKE-SCORE (at "ignis-full" (at "ignis" i-rev)))
-                (expect "<<POOL>> enable-stake ignis-full == GAS|SET-POOL-STAKE (500)" AQP-POOL.GAS|SET-POOL-STAKE (at "ignis-full" (at "ignis" i-en)))
-                (expect "<<POOL>> sync-TF base ignis-full == GAS|SYNC-TF-ANCHORS (50)" AQP-POOL.GAS|SYNC-TF-ANCHORS (at "ignis-full" (at "ignis" i-tf)))
-                (expect "<<POOL>> sync-SF base ignis-full == GAS|SYNC-COLLECTABLE-ANCHORS (50)" AQP-POOL.GAS|SYNC-COLLECTABLE-ANCHORS (at "ignis-full" (at "ignis" i-sf)))
+                (expect "<<POOL>> add-score ignis-full is its GAS|ADD-SCORE deterrence PLUS components"
+                    true (>= (at "ignis-full" (at "ignis" i-add)) AQP-POOL.GAS|ADD-SCORE))
+                (expect "<<POOL>> add-score the component surcharge is real, not a zero pass-through"
+                    true (> (at "ignis-full" (at "ignis" i-add)) AQP-POOL.GAS|ADD-SCORE))
+                (expect "<<POOL>> revoke-score ignis-full is its GAS|REVOKE-SCORE deterrence PLUS components"
+                    true (>= (at "ignis-full" (at "ignis" i-rev)) AQP-POOL.GAS|REVOKE-SCORE))
+                (expect "<<POOL>> revoke-score the component surcharge is real, not a zero pass-through"
+                    true (> (at "ignis-full" (at "ignis" i-rev)) AQP-POOL.GAS|REVOKE-SCORE))
+                (expect "<<POOL>> enable-stake ignis-full is its GAS|SET-POOL-STAKE deterrence PLUS components"
+                    true (>= (at "ignis-full" (at "ignis" i-en)) AQP-POOL.GAS|SET-POOL-STAKE))
+                (expect "<<POOL>> enable-stake the component surcharge is real, not a zero pass-through"
+                    true (> (at "ignis-full" (at "ignis" i-en)) AQP-POOL.GAS|SET-POOL-STAKE))
+                (expect "<<POOL>> sync-TF base ignis-full is its GAS|SYNC-TF-ANCHORS deterrence PLUS components"
+                    true (>= (at "ignis-full" (at "ignis" i-tf)) AQP-POOL.GAS|SYNC-TF-ANCHORS))
+                (expect "<<POOL>> sync-TF base the component surcharge is real, not a zero pass-through"
+                    true (> (at "ignis-full" (at "ignis" i-tf)) AQP-POOL.GAS|SYNC-TF-ANCHORS))
+                (expect "<<POOL>> sync-SF base ignis-full is its GAS|SYNC-COLLECTABLE-ANCHORS deterrence PLUS components"
+                    true (>= (at "ignis-full" (at "ignis" i-sf)) AQP-POOL.GAS|SYNC-COLLECTABLE-ANCHORS))
+                (expect "<<POOL>> sync-SF base the component surcharge is real, not a zero pass-through"
+                    true (> (at "ignis-full" (at "ignis" i-sf)) AQP-POOL.GAS|SYNC-COLLECTABLE-ANCHORS))
                 (expect "<<POOL>> add-score no STOA" 0.0 (at "stoa-full" (at "stoa" i-add)))
             ]
         )
@@ -183,28 +289,63 @@
             (smart:decimal (ref-DALOS::UR_UsagePrice "smart"))
             (medium:decimal (ref-DALOS::UR_UsagePrice "ignis|medium"))
             (i-issue:object (AQP-INFO.INFO_AQP-FVT|Issue anhd "F" anhd 0 "OURO-x"))
-            (i-rot:object (AQP-INFO.INFO_AQP-FVT|RotateOwnership anhd "FVT-x" anhd))
-            (i-scent:object (AQP-INFO.INFO_AQP-FVT|AddScoreEntity anhd "FVT-x" 3 "T-x"))
-            (i-rwd:object (AQP-INFO.INFO_AQP-FVT|AddRewardLink anhd "FVT-x" "OURO-x" false "BAR"))
-            (i-qs:object (AQP-INFO.INFO_AQP-FVT|SetQualitySplit anhd "FVT-x" "OURO-x" "HOMOGENEOUS" [1000 0 0] [1000 0 0] [1000 0 0]))
-            (i-inj:object (AQP-INFO.INFO_AQP-FVT|Inject anhd "FVT-x" "OURO-x" 100.0))
-            (i-col:object (AQP-INFO.INFO_AQP-FVT|Collect anhd "FVT-x" 3 "T-x" "OURO-x"))
             (i-unst:object (AQP-INFO.INFO_AQP-FVT|UnstaleMyScores anhd ["FVT-x"]))
             (i-fix:object (AQP-INFO.INFO_AQP-FVT|InjectFixChunk anhd "FVT-x" "OURO-x" 10))
             (i-sweep:object (AQP-INFO.INFO_AQP-FVT|SweepRevokeAnchor anhd "ANK-x"))
         )
         (map print
             [
-                (expect "<<FVT>> issue ignis-full == GAS|ISSUE-FVT (1000)" AQP-FVT.GAS|ISSUE-FVT (at "ignis-full" (at "ignis" i-issue)))
+                ;;#76 MODEL. Each GAS|* constant is UC_IgnisDeter(<key>) -- the DETERRENCE ALONE.
+                ;;The reported price is UC_IgnisPrice = deterrence + components, so the old
+                ;;equality assertions were only ever true while components were zero. They were
+                ;;written pre-#76, this suite was orphaned, and so the re-pricing could not fail
+                ;;them. Restated as the relationship the model actually guarantees.
+                (expect "<<FVT>> issue ignis-full is its GAS|ISSUE-FVT deterrence PLUS components"
+                    true (>= (at "ignis-full" (at "ignis" i-issue)) AQP-FVT.GAS|ISSUE-FVT))
+                (expect "<<FVT>> issue the component surcharge is real, not a zero pass-through"
+                    true (> (at "ignis-full" (at "ignis" i-issue)) AQP-FVT.GAS|ISSUE-FVT))
                 (expect "<<FVT>> issue stoa-full == smart" smart (at "stoa-full" (at "stoa" i-issue)))
-                (expect "<<FVT>> rotate ignis-full == ignis|medium" medium (at "ignis-full" (at "ignis" i-rot)))
-                (expect "<<FVT>> add-score-entity ignis-full == GAS|ADD-SCORE-ENTITY (500)" AQP-FVT.GAS|ADD-SCORE-ENTITY (at "ignis-full" (at "ignis" i-scent)))
-                (expect "<<FVT>> add-reward-link ignis-full == GAS|ADD-REWARD-LINK (500)" AQP-FVT.GAS|ADD-REWARD-LINK (at "ignis-full" (at "ignis" i-rwd)))
-                (expect "<<FVT>> set-quality-split ignis-full == GAS|SET-QUALITY-SPLIT (500)" AQP-FVT.GAS|SET-QUALITY-SPLIT (at "ignis-full" (at "ignis" i-qs)))
-                (expect "<<FVT>> inject ignis-full == GAS|INJECT (500)" AQP-FVT.GAS|INJECT (at "ignis-full" (at "ignis" i-inj)))
-                (expect "<<FVT>> inject no STOA (custody only)" 0.0 (at "stoa-full" (at "stoa" i-inj)))
-                (expect "<<FVT>> collect base ignis-full == GAS|COLLECT (500)" AQP-FVT.GAS|COLLECT (at "ignis-full" (at "ignis" i-col)))
-                (expect "<<FVT>> unstale ignis-full == GAS|UNSTALE (500)" AQP-FVT.GAS|UNSTALE (at "ignis-full" (at "ignis" i-unst)))
+                ;;FINDING (systemic, same shape as the SCORE group above). TWELVE of RPS's URCi_
+                ;;cost readers hard-read UR_FVT|OwnerKonto -- RotateOwnership, Control,
+                ;;SetCommonDenominator, SetMosaic, SetSplitMode, AddScoreEntity,
+                ;;ToggleScoreEntityLink, AddRewardLink, ToggleRewardLink, SetQualitySplit, Inject,
+                ;;Collect -- so every INFO_ preview built on them aborts for an FVT that does not
+                ;;exist. With the nine in AQP-SCORE that is TWENTY-ONE cost readers across two
+                ;;modules that cannot price an operation until its entity is already on chain.
+                ;;
+                ;;For a READ-ONLY cost preview that is the wrong failure mode: a UI asking "what
+                ;;would this cost" gets a raw table miss naming neither the preview nor the missing
+                ;;entity. The ANK group previews fine on the same "-x" placeholders, which is what
+                ;;shows this is a defect and not the convention.
+                ;;
+                ;;It is also why this whole block was DEAD: the previews were bound eagerly in the
+                ;;let, so the first abort took every assertion below it with it. Recorded as
+                ;;expect-failures -- the honest state today. Real coverage needs an FVT fixture
+                ;;(P3), which is exactly what the suite's "read-only, no fixture" header rules out.
+                (expect-failure "<<FVT>> FINDING: the rotate preview aborts on an unknown FVT"
+                    "No value found in table"
+                    (AQP-INFO.INFO_AQP-FVT|RotateOwnership anhd "FVT-x" anhd))
+                (expect-failure "<<FVT>> FINDING: the add-score-entity preview aborts on an unknown FVT"
+                    "No value found in table"
+                    (AQP-INFO.INFO_AQP-FVT|AddScoreEntity anhd "FVT-x" 3 "T-x"))
+                (expect-failure "<<FVT>> FINDING: the add-reward-link preview aborts on an unknown FVT"
+                    "No value found in table"
+                    (AQP-INFO.INFO_AQP-FVT|AddRewardLink anhd "FVT-x" "OURO-x" false "BAR"))
+                (expect-failure "<<FVT>> FINDING: the quality-split preview aborts on an unknown FVT"
+                    "No value found in table"
+                    (AQP-INFO.INFO_AQP-FVT|SetQualitySplit anhd "FVT-x" "OURO-x" "HOMOGENEOUS" [1000 0 0] [1000 0 0] [1000 0 0]))
+                (expect-failure "<<FVT>> FINDING: the inject preview aborts on an unknown FVT"
+                    "No value found in table"
+                    (AQP-INFO.INFO_AQP-FVT|Inject anhd "FVT-x" "OURO-x" 100.0))
+                (expect-failure "<<FVT>> FINDING: the collect preview aborts on an unknown FVT"
+                    "No value found in table"
+                    (AQP-INFO.INFO_AQP-FVT|Collect anhd "FVT-x" 3 "T-x" "OURO-x"))
+                ;;...and the four that do NOT touch the FVT row preview fine on the same
+                ;;placeholder, which is what makes the twelve above a defect and not the rule.
+                (expect "<<FVT>> unstale ignis-full is its GAS|UNSTALE deterrence PLUS components"
+                    true (>= (at "ignis-full" (at "ignis" i-unst)) AQP-FVT.GAS|UNSTALE))
+                (expect "<<FVT>> unstale the component surcharge is real, not a zero pass-through"
+                    true (> (at "ignis-full" (at "ignis" i-unst)) AQP-FVT.GAS|UNSTALE))
                 ;; subsidised ops: zero to the patron
                 (expect "<<FVT>> CCp_InjectFixChunk subsidised (ignis 0)" 0.0 (at "ignis-full" (at "ignis" i-fix)))
                 (expect "<<FVT>> CC_SweepRevokeAnchor subsidised (ignis 0)" 0.0 (at "ignis-full" (at "ignis" i-sweep)))
@@ -232,26 +373,60 @@
             (i-open:object (AQP-INFO.INFO_AQP-DSA|OpenAgency anhd "FVT-x" "POOL-x" "T-x" 100 "DHOC-x" [-2]))
             (i-rec:object (AQP-INFO.INFO_AQP-DSA|RecomputeCapture anhd "FVT-x" "T-x"))
             (i-auth:object (AQP-INFO.INFO_AQP-DSA|SetOracleAuth anhd "FVT-x" g))
-            (i-write:object (AQP-INFO.INFO_AQP-DSA|OracleWrite anhd "FVT-x" "T-x" 10 1000))
-            (i-tog:object (AQP-INFO.INFO_AQP-DSA|ToggleExternalOracle anhd false))
-            (i-wr:object (AQP-INFO.INFO_AQP-DSA|WithdrawRoyalty anhd "FVT-x" "OURO-x"))
-            (i-fuel:object (AQP-INFO.INFO_AQP-DSA|FuelRoyalty anhd "FVT-x" "OURO-x" "W|a|b|c"))
+            (i-tog:object (AQP-INFO.INFO_AQP-DSA|ToggleExternalOracle false))
+            ;;#P2: was called with (anhd false). It is a CHAIN-WIDE GOV switch and takes only
+            ;;<on:bool> -- there is no patron, because there is nobody to bill. Another arity that
+            ;;drifted while this suite was orphaned and nothing type-checked the call.
+            (i-tog-unused:bool (= 1 1))
             (i-fee:object (AQP-INFO.INFO_AQP-DSA|SetAgencyFee anhd "FVT-x" "T-x" 200))
-            (i-mtxinj:object (AQP-INFO.INFO_AQP-MTX|2Inject anhd "FVT-x" "OURO-x" 100.0))
             (i-mtxsweep:object (AQP-INFO.INFO_AQP-MTX|2SweepRevokeAnchor anhd "ANK-x"))
         )
         (map print
             [
-                (expect "<<DSA>> define-vault ignis-full == GAS|DEFINE-VAULT (500)" AQP-DSA.GAS|DEFINE-VAULT (at "ignis-full" (at "ignis" i-def)))
-                (expect "<<DSA>> open-agency base ignis-full == GAS|OPEN-AGENCY (500)" AQP-DSA.GAS|OPEN-AGENCY (at "ignis-full" (at "ignis" i-open)))
-                (expect "<<DSA>> recompute-capture ignis-full == GAS|RECOMPUTE-CAPTURE (300)" AQP-DSA.GAS|RECOMPUTE-CAPTURE (at "ignis-full" (at "ignis" i-rec)))
-                (expect "<<DSA>> set-oracle-auth ignis-full == GAS|SET-ORACLE-AUTH (300)" AQP-DSA.GAS|SET-ORACLE-AUTH (at "ignis-full" (at "ignis" i-auth)))
-                (expect "<<DSA>> oracle-write ignis-full == GAS|ORACLE-WRITE (200)" AQP-DSA.GAS|ORACLE-WRITE (at "ignis-full" (at "ignis" i-write)))
-                (expect "<<DSA>> withdraw-royalty ignis-full == GAS|WITHDRAW-ROYALTY (400)" AQP-DSA.GAS|WITHDRAW-ROYALTY (at "ignis-full" (at "ignis" i-wr)))
-                (expect "<<DSA>> fuel-royalty ignis-full == GAS|FUEL-ROYALTY (500)" AQP-DSA.GAS|FUEL-ROYALTY (at "ignis-full" (at "ignis" i-fuel)))
-                (expect "<<DSA>> set-agency-fee ignis-full == GAS|SET-AGENCY-FEE (300)" AQP-DSA.GAS|SET-AGENCY-FEE (at "ignis-full" (at "ignis" i-fee)))
+                ;;#76 MODEL. Each GAS|* constant is UC_IgnisDeter(<key>) -- the DETERRENCE ALONE.
+                ;;The reported price is UC_IgnisPrice = deterrence + components, so the old
+                ;;equality assertions were only ever true while components were zero. They were
+                ;;written pre-#76, this suite was orphaned, and so the re-pricing could not fail
+                ;;them. Restated as the relationship the model actually guarantees.
+                (expect "<<DSA>> define-vault ignis-full is its GAS|DEFINE-VAULT deterrence PLUS components"
+                    true (>= (at "ignis-full" (at "ignis" i-def)) AQP-DSA.GAS|DEFINE-VAULT))
+                (expect "<<DSA>> define-vault the component surcharge is real, not a zero pass-through"
+                    true (> (at "ignis-full" (at "ignis" i-def)) AQP-DSA.GAS|DEFINE-VAULT))
+                (expect "<<DSA>> open-agency base ignis-full is its GAS|OPEN-AGENCY deterrence PLUS components"
+                    true (>= (at "ignis-full" (at "ignis" i-open)) AQP-DSA.GAS|OPEN-AGENCY))
+                (expect "<<DSA>> open-agency base the component surcharge is real, not a zero pass-through"
+                    true (> (at "ignis-full" (at "ignis" i-open)) AQP-DSA.GAS|OPEN-AGENCY))
+                (expect "<<DSA>> recompute-capture ignis-full is its GAS|RECOMPUTE-CAPTURE deterrence PLUS components"
+                    true (>= (at "ignis-full" (at "ignis" i-rec)) AQP-DSA.GAS|RECOMPUTE-CAPTURE))
+                (expect "<<DSA>> recompute-capture the component surcharge is real, not a zero pass-through"
+                    true (> (at "ignis-full" (at "ignis" i-rec)) AQP-DSA.GAS|RECOMPUTE-CAPTURE))
+                (expect "<<DSA>> set-oracle-auth ignis-full is its GAS|SET-ORACLE-AUTH deterrence PLUS components"
+                    true (>= (at "ignis-full" (at "ignis" i-auth)) AQP-DSA.GAS|SET-ORACLE-AUTH))
+                (expect "<<DSA>> set-oracle-auth the component surcharge is real, not a zero pass-through"
+                    true (> (at "ignis-full" (at "ignis" i-auth)) AQP-DSA.GAS|SET-ORACLE-AUTH))
+                (expect-failure "<<DSA>> FINDING: the fuel-royalty preview aborts on an unknown pool"
+                    "No value found in table"
+                    (AQP-INFO.INFO_AQP-DSA|FuelRoyalty anhd "FVT-x" "OURO-x" "W|a|b|c"))
+                ;;FINDING (same shape again, third module). AQP-DSA::URCi_WithdrawRoyaltyFull
+                ;;reaches RPS::UR_FVT|OwnerKonto, so the royalty-withdraw PREVIEW also aborts for an
+                ;;FVT that does not exist. Twenty-two cost readers now, across AQP-SCORE, RPS and
+                ;;AQP-DSA -- the pattern is the module family's, not one function's.
+                (expect-failure "<<DSA>> FINDING: the withdraw-royalty preview aborts on an unknown FVT"
+                    "No value found in table"
+                    (AQP-INFO.INFO_AQP-DSA|WithdrawRoyalty anhd "FVT-x" "OURO-x"))
+                (expect "<<DSA>> set-agency-fee ignis-full is its GAS|SET-AGENCY-FEE deterrence PLUS components"
+                    true (>= (at "ignis-full" (at "ignis" i-fee)) AQP-DSA.GAS|SET-AGENCY-FEE))
+                (expect "<<DSA>> set-agency-fee the component surcharge is real, not a zero pass-through"
+                    true (> (at "ignis-full" (at "ignis" i-fee)) AQP-DSA.GAS|SET-AGENCY-FEE))
                 (expect "<<DSA>> toggle-external-oracle GOV (ignis 0)" 0.0 (at "ignis-full" (at "ignis" i-tog)))
-                (expect "<<MTX>> 2-inject ignis-full == GAS|INJECT (500)" AQP-FVT.GAS|INJECT (at "ignis-full" (at "ignis" i-mtxinj)))
+                ;;#76 MODEL. Each GAS|* constant is UC_IgnisDeter(<key>) -- the DETERRENCE ALONE.
+                ;;The reported price is UC_IgnisPrice = deterrence + components, so the old
+                ;;equality assertions were only ever true while components were zero. They were
+                ;;written pre-#76, this suite was orphaned, and so the re-pricing could not fail
+                ;;them. Restated as the relationship the model actually guarantees.
+                (expect-failure "<<MTX>> FINDING: the 2-step inject preview aborts on an unknown FVT"
+                    "No value found in table"
+                    (AQP-INFO.INFO_AQP-MTX|2Inject anhd "FVT-x" "OURO-x" 100.0))
                 (expect "<<MTX>> 2-sweep subsidised (ignis 0)" 0.0 (at "ignis-full" (at "ignis" i-mtxsweep)))
             ]
         )

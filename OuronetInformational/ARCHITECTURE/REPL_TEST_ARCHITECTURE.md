@@ -243,10 +243,28 @@ REPL/
   _test_ledger.py  generates the per-entrypoint test ledger (md + json)
 ```
 
-> ## RULE 4 — ONE authoritative runner.
-> `Z.repl` runs everything. There is no second runner with a different subset. Two gates that
-> disagree is how a pricing change once passed green while executing none of the assertions
-> written to protect it (`Z.repl` skipped the suite holding them).
+> ## RULE 4 — ONE authoritative runner.  **→ `REPL/_gate.py` (built 2026-09-09)**
+> ```
+> cd REPL && python3 _gate.py            # run the gate
+> cd REPL && python3 _gate.py --audit-only   # orphan check only, runs nothing
+> ```
+> There is no second gate with a different subset. Two gates that disagree is how a pricing
+> change once passed green while executing none of the assertions written to protect it.
+>
+> `ZALL.repl` is NOT the gate and never could be: a suite that boots the chain its own way
+> (every `modules/*.repl`, every `deb-staleness-*` driver) cannot be `(load)`-ed into an
+> already-booted process. The gate is therefore a RUNNER over 31 independent entrypoints, in
+> parallel — **5670 assertions in 123 seconds of wall time**, because wall time is the slowest
+> single entrypoint, not the sum.
+>
+> The gate has two jobs and **the second is the one that matters**: it refuses to pass while any
+> asserting `.repl` is unreachable from an entrypoint. Exclusions live in one list in the script
+> and each carries a reason; "it is slow" is not a reason, "it is an alternative path to
+> something already gated" is. **Reviewing that list is reviewing the suite's honesty.**
+>
+> Note 5670 is assertions EXECUTED, not distinct: entrypoints each boot the chain, so shared
+> boot assertions are counted once per entrypoint. The number to quote for coverage is the
+> ledger's; this one is for protection.
 
 > ## RULE 5 — every test file belongs to exactly one tester.
 > No file is loaded twice in one process. Double-loading re-issues fixtures and corrupts state;

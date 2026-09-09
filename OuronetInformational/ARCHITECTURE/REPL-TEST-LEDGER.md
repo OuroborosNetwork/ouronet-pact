@@ -14,7 +14,7 @@ This is the evidence base for the audit and documentation papers: every client e
 | exercised at least once | 431 (96%) |
 | **never exercised** | **17** |
 | exercised but with NO adversarial assertion in any of its blocks | **295** |
-| total invocations across the suite | 3046 |
+| total invocations across the suite | 3045 |
 
 ## Never exercised — G1 gap
 
@@ -110,7 +110,6 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>ATS&#124;C_SetColdRecoveryFees</code> | 3 | 0 |
 | <code>ATS&#124;C_SwitchDirectRecovery</code> | 3 | 2 |
 | <code>ATS&#124;C_ToggleParameterLock</code> | 3 | 0 |
-| <code>DEMIPAD&#124;C_Deposit</code> | 3 | 19 |
 | <code>DEMIPAD&#124;C_FuelSemiFungible</code> | 3 | 11 |
 | <code>DPNF&#124;C_ToggleBurnRole</code> | 3 | 1 |
 | <code>DPSF&#124;C_DefineHybridSet</code> | 3 | 6 |
@@ -151,6 +150,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DALOS&#124;A_IgnisToggle</code> | 2 | 0 |
 | <code>DALOS&#124;A_SetAutoFueling</code> | 2 | 4 |
 | <code>DALOS&#124;A_SetIgnisSourcePrice</code> | 2 | 4 |
+| <code>DEMIPAD&#124;C_Deposit</code> | 2 | 19 |
 | <code>DPNF&#124;C_Break</code> | 2 | 6 |
 | <code>DPNF&#124;C_MoveCreateRole</code> | 2 | 0 |
 | <code>DPNF&#124;C_MoveRecreateRole</code> | 2 | 0 |
@@ -497,7 +497,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DALOS&#124;C_RotateStoa</code> | 2 | 18 | 1 | `[6.12]_DALOS-ADMIN.repl` |
 | <code>DALOS&#124;C_UpdateEliteAccount</code> | 1 | 11 | 0 | `[6.11]_INFO.repl` |
 | <code>DALOS&#124;C_UpdateEliteAccountSquared</code> | 1 | 11 | 0 | `[6.11]_INFO.repl` |
-| <code>DEMIPAD&#124;C_Deposit</code> | 3 | 19 | 0 | `[5.3]_Launchpad.repl`, `_probe_dpad2.repl` |
+| <code>DEMIPAD&#124;C_Deposit</code> | 2 | 19 | 0 | `[5.3]_Launchpad.repl` |
 | <code>DEMIPAD&#124;C_FuelNonFungible</code> | 1 | 1 | 0 | `[6.1.5]_DEMIPAD.repl` |
 | <code>DEMIPAD&#124;C_FuelOrtoFungible</code> | 1 | 0 | 0 | `[6.1.5]_DEMIPAD.repl` |
 | <code>DEMIPAD&#124;C_FuelSemiFungible</code> | 3 | 11 | 0 | `[5.3]_Launchpad.repl`, `[6.1.5]_DEMIPAD.repl` |

@@ -1,0 +1,24 @@
+;;
+;; REPL/VCT-gas-sweep.repl — vacate slice gas profiling at 2M chain limit (all asset kinds)
+;; Skips Bloodshed population; synth Ouronet accounts from KST.ANHD last-3 suffix 001..N.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/VCT-gas-sweep.repl")
+(print "================================================================")
+(print "Legend: <<VCT-GAS-*>> probe summary; <(REPL|env-gas)> vacate chunk at 2M limit.")
+(print "Source: Stage00/01 → Stage02 deploy → sovereign executor → AQP-BOOT → [6.2.6]_AQP-VCT-GAS.repl")
+(print "REPL tests: multi-leg C_Vacate*Legs vs env-gaslimit 2000000 per asset kind.")
+(print "")
+(load "Stage00_Sanboxes.repl")
+(load "Stage01_Tester.repl")
+;;#P2 REPAIR: paths were rewritten for archive/ when this driver was archived on the
+;;"assertion-free" heuristic -- true of the driver, false of [6.2.6]_AQP-VCT-GAS which it is the
+;;only loader of. Also swapped the drifted hand-rolled Stage-2 block for deploy-stage02.repl.
+(load "deploy-stage02.repl")
+(print "")
+(print "")
+(print "")
+(print "")
+(load "Stage_01/[6.5]_DPOF.repl")
+(load "Stage_02/[6.2.6]_AQP-VCT-GAS.repl")

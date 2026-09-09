@@ -35,12 +35,11 @@
 ;; ================================================================
 (load "Stage00_Sanboxes.repl")
 (load "Stage01_Tester.repl")
-(load "Stage_02/[0.1]_Interfaces.repl")
-(load "Stage_02/[2.1]_DpdcCore.repl")
-(load "Stage_02/[2.2]_DemiPad.repl")
-(load "Stage_02/[2.3]_EarningPools.repl")
-(load "Stage_02/[3]_Talos.repl")
-(load "Stage_02/[4.0]_Sovereign-Executor.repl")
+;;#P2 REPAIR: same drift as the deb-staleness-* drivers. This hand-rolled Stage-2 block predates
+;;deploy-stage02.repl and no longer deploys KBN, which [5.4]_PopulateBunnies stopped deploying
+;;itself once deploy-stage02 took it over -- so the run died at "Module KBN has no such member:
+;;A_Step01". deploy-stage02.repl IS this block plus [Z]_Reads, KBN, AQP-BOOT and Step0.
+(load "deploy-stage02.repl")
 (print "")
 (print "=== POPULATION — Bloodshed / Nosferatu / Bunnies (full DPNF mint) ===")
 (print "Note: KBN deploy is TX-01 inside PopulateBunnies — do not pre-load KBN here.")
@@ -48,19 +47,7 @@
 (load "Stage_02/[5.1]_PopulateNosferatu.repl")
 (load "Stage_02/[5.4]_PopulateBunnies.repl")
 (print "")
-(begin-tx "TX-AQP-BOOT - AQP-BOOT module")
-(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
-(namespace "ouronet-ns")
-(env-sigs [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
-(load "../2_CITIZEN/5_VaultsMinter/04_AQP-BOOT.pact")
-(commit-tx)
 (print "")
-(begin-tx "TX-AQP-BOOT - AQP-BOOT Step0 IMC + vault governor")
-(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
-(namespace "ouronet-ns")
-(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-(print (format "<(AQP-BOOT|C_Step0_WireImcAndGovernor)> => \"{}\"" [(AQP-BOOT.C_Step0_WireImcAndGovernor KST.ANHD)]))
-(commit-tx)
 (print "")
 
 ;; ================================================================
@@ -127,6 +114,18 @@
 ;;   (load "Stage_02/[6.4]_AQP-TRIPLET-COLLECT.repl")     ; triplet dual-stream vacate
 ;;   (load "Stage_02/[6.2.5]_AQP-VCT.repl")               ; vacate (drains pools)
 ;;   (load "Stage_02/[6.2.8]_AQP-SWEEP-CC.repl")          ; retire AurynRain (LAST)
+
+;;#P2: [6.5]_AQP-INFO is READ-ONLY (no fixture, no mutation) and its own header says it was
+;;extracted from Kursan/aqp-info-tests.repl "so it composes under a shared boot (AQP-FULL) as
+;;well as standalone" -- and then was never loaded here by anything, so it rotted: stale
+;;pre-#76 price constants, a wrong arity, and a dead SCORE/FVT/DSA block whose eager `let`
+;;bindings aborted before any assertion ran. Repaired and wired in.
+(load "Stage_02/[6.5]_AQP-INFO.repl")
+;;[6.5.1] is the ground-truth companion: it proves INFO_AQP-POOL|StakeTrueFungible.ignis-need
+;;equals the REAL IGNIS balance delta of the actual stake. It needs TfStakePool, provisioned by
+;;[6.2.4]_AQP-FVT above, and AQP-INFO deployed, which [6.5] does -- so this is its only correct
+;;home, and it has never had one.
+(load "Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl")
 
 (print "================================================================")
 (print "AQP-FULL — NON-DESTRUCTIVE CORE COMPLETE (single boot)")
