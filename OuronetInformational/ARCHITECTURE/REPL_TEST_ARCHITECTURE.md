@@ -695,6 +695,46 @@ your own toll needs nobody else's signature; charging someone else's does.
   - IGNIS collected anywhere except a Talos wrapper
   - a citizen module invoking a protected `X*` on a sovereign module
   - an admin `A_` executed without the admin key
+### 2.5.3 measured 2026-09-09 — `REPL/_heavy.py`, whole-program call graph
+
+93 files, 6,426 members, **15,863 static call edges**. The doubled-prefix rule is a claim about a
+call TREE ("at any depth, transitive"), so it needs reachability, not a per-member scan.
+
+```
+[single-reaches-heavy]     14   <- the dangerous direction
+[doubled-without-heavy]    13
+```
+
+**It reported 49 doubled-without-heavy on the first run. That was an artefact of my own parser:**
+member names carry their return type in the source (`CC_Collect:object{…OutputCumulator}`), so
+every bare call to a typed member failed to resolve and whole subtrees vanished. Normalising both
+sides took the edge count from 12,311 to 15,863 and the false hits from 49 to 13. Two runs, two
+different plausible numbers — which is the argument for never reporting the first one.
+
+**`single-reaches-heavy` = 14, and the code's own `@doc`s corroborate them.** These carry a
+single `C_`/`A_`, promising bounded cost, while reaching a `URH_*`/`URHC_*` scan:
+
+| family | reaches |
+|---|---|
+| `C_WipeHeavy` — DPOF, DPDC-MNG, + the DPSF/DPNF/DPOF Talos wrappers (5) | `URHC_WipePure` |
+| `ATS\|C_RemoveSecondary` / `A_RemoveSecondary`, core + both Talos (4) | `ATS.URH_ExistingAutostakePairs` |
+| `DPSF\|C_Break` / `C_BreakSemiFungibleSet` (2) | `DPDC-S.URH_NonceListFromCSD` |
+| `AQP-DSA\|C_OpenAgency`, `MTX-AQP\|2\|C_Inject`, `…C_SweepRevokeAnchor` (3) | `RPS.URH_FvtEnabledScoreEntityIdsForFvt` |
+
+`DPOF::C_WipeHeavy`'s own docstring reads *"|Heavy| reffers to the usage of expensive functions
+like `select` or `keys` (that arent meant to be used in transactional context)"* — and it carries
+a **single** `C_`. `ATSU::C_RemoveSecondary`'s says *"XI_RemoveSecondary derives the complete
+account list itself via `ATS.URH_ExistingAutostakePairs`"*. **The prefix contradicts the
+docstring inside the same function.** These are not graph artefacts.
+
+**`doubled-without-heavy` = 13 is the rule being narrower than the convention.** The `AQP-VCT`
+`CCp_Batch*` family takes its slice as ARGUMENTS (`owner-ids`, `nonces-array`, `amounts-array`) —
+the `URH_` preflight already happened, so the slice reads nothing heavy. By the letter of the rule
+they should be `Cp_`. But their cost is unbounded in the ARGUMENT SIZE rather than in a scan, and
+`CC` is the honest signal to a caller. So the rule's definition ("reaches a heavy read") is
+narrower than what the doubling actually communicates ("expensive"). Same shape as the `UC_`
+finding: the code is right and one sentence is too tight.
+
 * **2.5.3 Structural claims** — `CC_`/`AA_` (doubled) must reach a heavy `URH_*`/`URHC_*`/`URD_*`
   read somewhere in its tree, and single `C_`/`A_` must not. Statically checkable, and a
   mis-marked op is a gas-model lie.

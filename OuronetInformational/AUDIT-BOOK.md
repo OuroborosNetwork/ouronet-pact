@@ -45,6 +45,8 @@ not exist at all. `REPL/_conformance.py` (static) + `REPL/modules/CONFORMANCE.re
 | 9 | `02_DPDC.pact:1361` | `XE_DeployAccountWNE` has no `P|UEV_IMC`, unlike its immediate neighbour `XE_U|Rnaq`. | low |
 | 10 | `99_TS02-CPAD.pact` ×4 | calls `TS01-A::XB_DynamicFuelSTOA`, a protected `X*` on a sovereign module. CLAUDE.md calls CPAD "the **citizen** launchpad Talos" in one sentence and the co-located DPAD "sovereign-role" in another. **The code is consistent; the two sentences are not.** | doc |
 
+| 11 | 14 ops in 4 families | **single `C_`/`A_` prefix on ops that reach a heavy `URH_*`/`URHC_*` scan** — the prefix promises bounded gas, the tree does not deliver it. `DPOF::C_WipeHeavy`'s own docstring says it uses "expensive functions like `select` or `keys` (that arent meant to be used in transactional context)"; `ATSU::C_RemoveSecondary`'s says it derives the complete account list via `URH_ExistingAutostakePairs`. **The prefix contradicts the docstring inside the same function.** | medium |
+
 Two further results are **documentation gaps, not defects**, and are recorded as such: 24 `UC_`
 functions `enforce` over their own arguments (with `UC-no-read` at **0**, so the purity half of
 the contract is obeyed exactly), and 40 core `C_`s build no cumulator because a second, equally
