@@ -103,6 +103,26 @@ difference is exactly why a module tester cannot currently be trusted on its own
 **Every test passes standalone AND inside the full run.** A test that only passes in one context is
 depending on fixture contamination and is not proving what it claims.
 
+### The ledger — the evidence base
+
+`REPL/_test_ledger.py` generates `ARCHITECTURE/REPL-TEST-LEDGER.md` (+ a `.json` twin): **every
+client entrypoint, how many times it is invoked, how many positive and adversarial assertions
+surround it, and which test files touch it.** This is what a later audit or documentation agent
+reads to write the testing paper from evidence instead of recollection, and it doubles as the
+worklist for G1 and G2.
+
+Assertions are attributed **by transaction block** — credited to every op invoked in the same
+`(begin-tx … commit-tx)`. That is a stated approximation: it measures how well an op's
+*neighbourhood* is asserted, not that an assertion targets that op. **Invocation counts are exact.**
+
+The pattern it exists to catch: `ATS|C_ColdRecovery` is invoked **275 times with zero
+assertions** — heavily exercised, never actually checked. Raw invocation counts hide that; the
+ledger makes it the first thing you see.
+
+> ## RULE 6 — regenerate the ledger with the suite.
+> A test that is not in the ledger does not count, and an op with invocations but no assertions is
+> a gap, not coverage.
+
 ---
 
 # 5. Layout
@@ -117,6 +137,7 @@ REPL/
   archive/         scratch and superseded probes — never run, kept for history
   Z.repl           the single "run everything" endpoint (serial, for the published number)
   _coverage.py     prints G1 / G2 / G3 and fails on regression
+  _test_ledger.py  generates the per-entrypoint test ledger (md + json)
 ```
 
 > ## RULE 4 — ONE authoritative runner.
