@@ -1,6 +1,89 @@
-;; REPL/modules/DALOS-ADMIN.repl — STANDALONE DALOS-ADMIN tester (blockchain-env-in-a-repl).
-;; Fresh boot: Stage 00 sandbox + deploy core(s) + the DALOS-ADMIN suite only.
-;; Run: cd REPL && pact modules/DALOS-ADMIN.repl   (see ARCHITECTURE/REPL_TEST_ARCHITECTURE.md)
+;; REPL/modules/DALOS-ADMIN.repl — STANDALONE DALOS admin-surface tester.
+;;
+;; P2 rebuild: 4 net assertions against a 20-entrypoint admin surface, now covering the toggles
+;; and the usage-price setter with observable outcomes, plus the invariant that admin ops are
+;; IGNIS/STOA exempt.
+;;
+;; Every op here is admin-gated (A_*), so this doubles as a check that the admin path is
+;; reachable at all after boot.
+;;
+;; Run: cd REPL && pact modules/DALOS-ADMIN.repl
 (load "../deploy-stage00.repl")
 (load "../deploy-stage01.repl")
 (load "../Stage_01/[6.12]_DALOS-ADMIN.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "DALOS-ADMIN-01 — global toggles round-trip")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DALOS-ADMIN-01 · 01 · toggles] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+    )
+    (let ((gap0:bool (ref-DALOS::UR_GAP)) (acs0:bool (ref-DALOS::UR_AccountCreationStoa)))
+        ;;GAP — the global administrative pause. Flipping it ON must be observable, and flipping
+        ;;it back must restore EXACTLY the prior value (metamorphic, not a hardcoded default).
+        (ref-TS01-A::DALOS|A_ToggleGAP true)
+        (map print [(expect "<<DALOS-ADMIN-01>> A_ToggleGAP turned the global pause ON"
+                        true (ref-DALOS::UR_GAP))])
+        (ref-TS01-A::DALOS|A_ToggleGAP gap0)
+        (map print [(expect "<<DALOS-ADMIN-01>> A_ToggleGAP restored the original GAP state"
+                        gap0 (ref-DALOS::UR_GAP))])
+        ;;Account-creation STOA switch — added in the #76 pricing work, default OFF (onboarding).
+        (ref-TS01-A::DALOS|A_AccountCreationStoaToggle true)
+        (map print [(expect "<<DALOS-ADMIN-01>> A_AccountCreationStoaToggle turned it ON"
+                        true (ref-DALOS::UR_AccountCreationStoa))])
+        (ref-TS01-A::DALOS|A_AccountCreationStoaToggle acs0)
+        (map print
+            [
+                (expect "<<DALOS-ADMIN-01>> A_AccountCreationStoaToggle restored the original"
+                    acs0 (ref-DALOS::UR_AccountCreationStoa))
+                (expect "<<DALOS-ADMIN-01>> account-creation STOA is OFF by default (onboarding)"
+                    false acs0)
+            ]
+        )
+    )
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DALOS-ADMIN-02 — A_UpdateUsagePrice writes the price the pricing layer reads")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DALOS-ADMIN-02 · 01 · usage price] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+    )
+    (let ((p0:decimal (ref-DALOS::UR_UsagePrice "dptf")))
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "dptf" 12345.0)
+        (map print [(expect "<<DALOS-ADMIN-02>> A_UpdateUsagePrice stored the new price"
+                        12345.0 (ref-DALOS::UR_UsagePrice "dptf"))])
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "dptf" p0)
+        (map print
+            [
+                (expect "<<DALOS-ADMIN-02>> A_UpdateUsagePrice restored the original price"
+                    p0 (ref-DALOS::UR_UsagePrice "dptf"))
+                ;;#76 INVARIANT: the seeded per-asset STOA price must equal what UC_StoaPrice
+                ;;derives from IG|DETER. If these ever diverge, the sheet and the chain disagree.
+                (expect "<<DALOS-ADMIN-02>> INVARIANT: the dptf STOA price IS UC_StoaPrice(issue-tf)"
+                    (ref-IGNIS::UC_StoaPrice "issue-tf") p0)
+                (expect "<<DALOS-ADMIN-02>> INVARIANT: the smart-account STOA price IS UC_StoaPrice(acct-smart)"
+                    (ref-IGNIS::UC_StoaPrice "acct-smart") (ref-DALOS::UR_UsagePrice "smart"))
+                (expect "<<DALOS-ADMIN-02>> INVARIANT: blue branding IS UC_StoaPrice(branding-blue)"
+                    (ref-IGNIS::UC_StoaPrice "branding-blue") (ref-DALOS::UR_UsagePrice "blue"))
+            ]
+        )
+    )
+    ""
+)
+(commit-tx)

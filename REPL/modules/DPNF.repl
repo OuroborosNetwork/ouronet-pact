@@ -1,7 +1,127 @@
-;; REPL/modules/DPNF.repl — STANDALONE DPNF tester (blockchain-env-in-a-repl).
-;; Fresh boot: Stage 00 sandbox + deploy core(s) + the DPNF suite only.
-;; Run: cd REPL && pact modules/DPNF.repl   (see ARCHITECTURE/REPL_TEST_ARCHITECTURE.md)
+;; REPL/modules/DPNF.repl — STANDALONE DPNF (non-fungible collection) tester.
+;;
+;; P2 rebuild. The previous version loaded Stage_02/[6.1.4]_DPDC-NF.repl and produced only 6 net
+;; assertions against a 61-entrypoint surface. It also inherited that file's known G3 problem:
+;; [6.1.4]:333 upgrades CNF branding and fails outside ZALL's exact ordering (see
+;; regressions/MANIFEST.md).
+;;
+;; This version builds a minimal collection (fixtures/mock-collections) and asserts an OBSERVABLE
+;; OUTCOME per entrypoint. The nonce-field family (Name/Description/Royalty/IgnisRoyalty/Score/
+;; MetaData/URI) shares one uniform price and one shared reader, so each is pinned to the FIELD
+;; it actually writes -- a family where a copy-paste slip is invisible without per-field assertions.
+;;
+;; Run: cd REPL && pact modules/DPNF.repl
 (load "../deploy-stage00.repl")
 (load "../deploy-stage01.repl")
 (load "../deploy-stage02.repl")
-(load "../Stage_02/[6.1.4]_DPDC-NF.repl")
+(load "../fixtures/mock-collections.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "DPNF-01 — collection properties and nonce baseline")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPNF-01 · 01 · properties] ---")
+(let
+    (
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (nf:string "MOCKN-98c486052a51")
+    )
+    (map print
+        [
+            (expect "<<DPNF-01>> owner konto"          KST.ANHD (ref-DPDC::UR_OwnerKonto nf false))
+            (expect "<<DPNF-01>> creator konto"        KST.ANHD (ref-DPDC::UR_CreatorKonto nf false))
+            (expect "<<DPNF-01>> name"                 "MockNonFungible" (ref-DPDC::UR_Name nf false))
+            (expect "<<DPNF-01>> can-upgrade ON"       true  (ref-DPDC::UR_CanUpgrade nf false))
+            (expect "<<DPNF-01>> can-change-owner ON"  true  (ref-DPDC::UR_CanChangeOwner nf false))
+            (expect "<<DPNF-01>> can-change-creator ON" true (ref-DPDC::UR_CanChangeCreator nf false))
+            (expect "<<DPNF-01>> not paused"           false (ref-DPDC::UR_IsPaused nf false))
+            (expect "<<DPNF-01>> 3 nonces from the fixture" 3 (ref-DPDC::UR_NoncesUsed nf false))
+            (expect "<<DPNF-01>> no set classes defined yet" 0 (ref-DPDC::UR_SetClassesUsed nf false))
+        ]
+    )
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPNF-02 — the nonce-field family each writes ITS OWN field")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPNF-02 · 01 · per-field updates] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (nf:string "MOCKN-98c486052a51")
+        (patron:string KST.ANHD)
+    )
+    (ref-TS02-C2::DPNF|C_UpdateNonceName        patron nf patron 1 true "RenamedNonce")
+    (ref-TS02-C2::DPNF|C_UpdateNonceDescription patron nf patron 1 true "A described nonce")
+    (ref-TS02-C2::DPNF|C_UpdateNonceRoyalty     patron nf patron 1 true 12.0)
+    (ref-TS02-C2::DPNF|C_UpdateNonceScore       patron nf patron 1 true 44.0)
+    (let ((nd:object{DpdcUdcV2.DPDC|NonceData} (ref-DPDC::UR_NonceData nf false 1)))
+        (map print
+            [
+                (expect "<<DPNF-02>> C_UpdateNonceName wrote the NAME field"
+                    "RenamedNonce" (at "name" nd))
+                (expect "<<DPNF-02>> C_UpdateNonceDescription wrote the DESCRIPTION field"
+                    "A described nonce" (at "description" nd))
+                (expect "<<DPNF-02>> C_UpdateNonceRoyalty wrote the ROYALTY field"
+                    12.0 (at "royalty" nd))
+                (expect "<<DPNF-02>> C_UpdateNonceScore wrote score INSIDE meta-data"
+                    44.0 (at "score" (at "meta-data" nd)))
+                ;;CROSS-CHECK: the shared reader must not have let one update clobber another.
+                (expect "<<DPNF-02>> updating the score left the name intact"
+                    "RenamedNonce" (at "name" nd))
+                (expect "<<DPNF-02>> updating the royalty left the description intact"
+                    "A described nonce" (at "description" nd))
+                (expect "<<DPNF-02>> a sibling nonce was NOT touched by nonce-1 updates"
+                    "M" (at "name" (ref-DPDC::UR_NonceData nf false 2)))
+            ]
+        )
+    )
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPNF-03 — C_TransferNonce moves a unique nonce; roles gate what they claim")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPNF-03 · 01 · transfer + roles] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (nf:string "MOCKN-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+    )
+    (let ((used0:integer (ref-DPDC::UR_NoncesUsed nf false)))
+        (ref-TS02-C2::DPNF|C_TransferNonce patron nf patron emma 3 1 false)
+        (map print
+            [
+                (expect "<<DPNF-03>> C_TransferNonce moved nonce 3 to the receiver"
+                    (ref-I|OURONET::OI|UC_ShortAccount emma) (ref-DPDC::UR_NonceHolder nf false 3))
+                (expect "<<DPNF-03>> a transfer creates no new nonce"
+                    used0 (ref-DPDC::UR_NoncesUsed nf false))
+                (expect "<<DPNF-03>> an untransferred nonce keeps its holder"
+                    (ref-I|OURONET::OI|UC_ShortAccount patron) (ref-DPDC::UR_NonceHolder nf false 1))
+            ]
+        )
+    )
+    (ref-TS02-C2::DPNF|C_TogglePause patron nf true)
+    (map print [(expect "<<DPNF-03>> C_TogglePause paused the collection"
+                    true (ref-DPDC::UR_IsPaused nf false))])
+    (ref-TS02-C2::DPNF|C_TogglePause patron nf false)
+    (map print [(expect "<<DPNF-03>> C_TogglePause unpaused the collection"
+                    false (ref-DPDC::UR_IsPaused nf false))])
+    ""
+)
+(commit-tx)
