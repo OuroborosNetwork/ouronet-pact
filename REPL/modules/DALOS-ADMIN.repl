@@ -236,3 +236,137 @@
     )
 )
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DALOS-G1 — the account-type guard family, probed DIRECTLY")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DALOS-G1 · 01 · standard vs smart: the guards DISCRIMINATE] ---")
+;;P3.3, fourth module. DALOS's guards are the most interesting shape yet: UEV_StandardAccOwn and
+;;UEV_SmartAccOwn are not two names for one check -- they enforce OPPOSITE structural properties
+;;of the account they are given.
+;;
+;;    standard: (enforce (=  sovereign account) …)   the account is its own sovereign
+;;    smart:    (enforce (!= sovereign account) …)   it is governed by another account
+;;
+;;So crossing two account KINDS against two guards gives a 2x2 where the diagonal must pass and
+;;the off-diagonal must reject. That is strictly stronger than testing either guard alone: it
+;;proves each one refuses the other's input, which is the property a caller actually relies on
+;;when it picks which to call.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (standard:string KST.ANHD)
+    )
+    (let
+        (
+            (smart:string (ref-DALOS::GOV|DALOS|SC_NAME))
+        )
+        (map print
+            [
+                ;;preconditions: the two accounts really are of different kinds
+                (expect "<<DALOS-G1>> the standard account is its own sovereign"
+                    standard (ref-DALOS::UR_AccountSovereign standard))
+                (expect "<<DALOS-G1>> the smart account is NOT"
+                    false (= smart (ref-DALOS::UR_AccountSovereign smart)))
+                (expect "<<DALOS-G1>> and only the smart one carries autonomic roles"
+                    [false true] [(ref-DALOS::UR_AutonomicRoles standard)
+                                  (ref-DALOS::UR_AutonomicRoles smart)])
+                ;;--- the diagonal: each guard accepts its own kind
+                (expect "<<DALOS-G1>> UEV_StandardAccOwn accepts a standard account"
+                    true (!= "" (format "{}" [(ref-DALOS::UEV_StandardAccOwn standard)])))
+                ;;--- the off-diagonal: each guard REFUSES the other's kind
+                (expect-failure "<<DALOS-G1>> UEV_StandardAccOwn refuses a SMART account"
+                    "Incompatible Sovereign detected for a Standard DALOS Account"
+                    (ref-DALOS::UEV_StandardAccOwn smart))
+                (expect-failure "<<DALOS-G1>> UEV_SmartAccOwn refuses a STANDARD account"
+                    "Incompatible Sovereign detected for Smart DALOS Account"
+                    (ref-DALOS::UEV_SmartAccOwn standard))
+                ;;--- the smart-account predicate, both directions
+                (expect "<<DALOS-G1>> UEV_NotSmartOuronetAccount accepts a standard account"
+                    true (!= "" (format "{}" [(ref-DALOS::UEV_NotSmartOuronetAccount standard)])))
+                (expect-failure "<<DALOS-G1>> ...and refuses a smart one"
+                    "Non Smart Ouronet Accounts required for exec"
+                    (ref-DALOS::UEV_NotSmartOuronetAccount smart))
+                ;;--- UEV_EnforceAccountType takes the kind as an ARGUMENT, so it is the same
+                ;;    2x2 expressed the other way round.
+                (expect "<<DALOS-G1>> UEV_EnforceAccountType agrees on both kinds"
+                    true (!= "" (format "{}{}" [(ref-DALOS::UEV_EnforceAccountType standard false)
+                                                (ref-DALOS::UEV_EnforceAccountType smart true)])))
+                ;;The expected messages here are the FULL literal run of each `format` template,
+                ;;not a short word. `"Account"` was the first draft and it is worthless twice
+                ;;over: it matches almost any DALOS rejection, and _enforce_coverage.py discards
+                ;;expected-messages under 8 characters, so it pinned nothing either.
+                (expect-failure "<<DALOS-G1>> ...and rejects a standard account claimed as smart"
+                    "Operation requires a Smart DALOS Account"
+                    (ref-DALOS::UEV_EnforceAccountType standard true))
+                (expect-failure "<<DALOS-G1>> ...and a smart account claimed as standard"
+                    "Operation requires a Standard DALOS Account"
+                    (ref-DALOS::UEV_EnforceAccountType smart false))
+                ;;--- existence
+                (expect-failure "<<DALOS-G1>> UEV_EnforceAccountExists rejects an unknown account"
+                    "DALOS Account doesnt exist"
+                    (ref-DALOS::UEV_EnforceAccountExists "Ouronet-nonexistent-account"))
+            ]
+        )
+    )
+    ""
+)
+(print "--- [DALOS-G1 · 02 · guard PROTOCOL: key-based vs not, both directions] ---")
+;;UEV_EnforceGuardProtocol is the structural counterpart of the account-kind 2x2 above: an
+;;account's GUARD must be key-based (k:/w:/r:) while its GOVERNOR must not be (u:/c:/m:/p:).
+;;Crossing the two guard kinds against the two modes is the same shape of test, one level down.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+    )
+    (env-data { "gp-ks": { "keys": ["PK_AncientHodler"], "pred": "keys-all" } })
+    (let
+        (
+            (keyed:guard (read-keyset "gp-ks"))
+            (capg:guard (create-capability-guard (DALOS.SECURE)))
+        )
+        (map print
+            [
+                (expect "<<DALOS-G1>> a keyset guard IS key-based, a capability guard is not"
+                    true (!= "" (format "{}{}" [(ref-DALOS::UEV_EnforceGuardProtocol keyed true)
+                                                (ref-DALOS::UEV_EnforceGuardProtocol capg false)])))
+                (expect-failure "<<DALOS-G1>> a capability guard is refused where a KEY is required"
+                    "Guard must be key-based"
+                    (ref-DALOS::UEV_EnforceGuardProtocol capg true))
+                (expect-failure "<<DALOS-G1>> a keyset guard is refused where a NON-key is required"
+                    "Governor must be non-key-based"
+                    (ref-DALOS::UEV_EnforceGuardProtocol keyed false))
+            ]
+        )
+    )
+    ""
+)
+(print "--- [DALOS-G1 · 03 · the global collection toggles, tripped from live state] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+    )
+    (let
+        (
+            (virt:bool (ref-DALOS::UR_VirtualToggle))
+            (natv:bool (ref-DALOS::UR_NativeToggle))
+        )
+        (map print
+            [
+                (expect "<<DALOS-G1>> UEV_IgnisCollectionState agrees with the live toggle"
+                    true (!= "" (format "{}" [(ref-DALOS::UEV_IgnisCollectionState virt)])))
+                (expect-failure "<<DALOS-G1>> ...and rejects its negation"
+                    "Invalid virtual gas collection state"
+                    (ref-DALOS::UEV_IgnisCollectionState (not virt)))
+                (expect-failure "<<DALOS-G1>> UEV_StoaCollectionState rejects the negation of the live toggle"
+                    "collection state" (ref-DALOS::UEV_StoaCollectionState (not natv)))
+            ]
+        )
+    )
+    ""
+)
+(print "===^^^===")
+(commit-tx)

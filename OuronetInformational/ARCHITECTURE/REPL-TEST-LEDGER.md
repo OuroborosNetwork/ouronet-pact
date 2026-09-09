@@ -16,7 +16,7 @@ This is the evidence base for the audit and documentation papers: every client e
 | **exercised by a file the GATE RUNS** | **448 (100%)** |
 | exercised ONLY in an ungated file (= not protected) | **0** |
 | exercised but with NO adversarial assertion in any of its blocks | **289** |
-| total invocations across the suite | 3115 |
+| total invocations across the suite | 3116 |
 
 ## Exercised but never adversarially probed — G2 gap
 
@@ -48,7 +48,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DPSF&#124;C_TransferNonce</code> | 12 | 35 |
 | <code>ATS&#124;C_SwitchHotRecovery</code> | 11 | 4 |
 | <code>DALOS&#124;A_DeployStandardAccount</code> | 11 | 1 |
-| <code>DPSF&#124;C_Break</code> | 11 | 23 |
+| <code>DPSF&#124;CC_Break</code> | 11 | 23 |
 | <code>AQP-POOL&#124;CCp_BatchVacateOrtoFungible</code> | 10 | 12 |
 | <code>DPTF&#124;A_DeployAccount</code> | 10 | 0 |
 | <code>AQP-POOL&#124;CC_UnstakeTrueFungible</code> | 9 | 33 |
@@ -112,13 +112,13 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>AQP-POOL&#124;CCp_BatchDrainOrtoFungible</code> | 2 | 8 |
 | <code>AQP-POOL&#124;C_FinalizeVacate</code> | 2 | 13 |
 | <code>AQP-SCR&#124;C_CreateScoreBoostClassLink</code> | 2 | 4 |
-| <code>ATS&#124;A_RemoveSecondary</code> | 2 | 1 |
+| <code>ATS&#124;AA_RemoveSecondary</code> | 2 | 1 |
+| <code>ATS&#124;CC_RemoveSecondary</code> | 2 | 0 |
 | <code>ATS&#124;C_AddHotRBT</code> | 2 | 2 |
 | <code>ATS&#124;C_AddSecondary</code> | 2 | 2 |
 | <code>ATS&#124;C_DirectRecovery</code> | 2 | 2 |
 | <code>ATS&#124;C_KickStart</code> | 2 | 0 |
 | <code>ATS&#124;C_Redeem</code> | 2 | 5 |
-| <code>ATS&#124;C_RemoveSecondary</code> | 2 | 0 |
 | <code>ATS&#124;C_Reverse</code> | 2 | 3 |
 | <code>ATS&#124;C_RotateOwnership</code> | 2 | 0 |
 | <code>ATS&#124;C_SetColdRecoveryDuration</code> | 2 | 0 |
@@ -158,7 +158,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DPTF&#124;C_RotateOwnership</code> | 2 | 4 |
 | <code>DPTF&#124;C_UpdatePendingBranding</code> | 2 | 0 |
 | <code>KPAY&#124;C_BuyStoicPay</code> | 2 | 2 |
-| <code>MTX-AQP&#124;2&#124;C_Inject</code> | 2 | 2 |
+| <code>MTX-AQP&#124;2&#124;CC_Inject</code> | 2 | 2 |
 | <code>PYTHIA&#124;C_Link</code> | 2 | 6 |
 | <code>PYTHIA&#124;C_RevokeLink</code> | 2 | 5 |
 | <code>PYTHIA&#124;C_UpdateDualConsumerLane</code> | 2 | 3 |
@@ -219,6 +219,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DEMIPAD&#124;C_RetrieveTrueFungible</code> | 1 | 0 |
 | <code>DPDC&#124;C_BulkTransfer</code> | 1 | 4 |
 | <code>DPDC&#124;C_MultiTransfer</code> | 1 | 5 |
+| <code>DPNF&#124;CC_WipeHeavy</code> | 1 | 2 |
 | <code>DPNF&#124;C_Burn</code> | 1 | 1 |
 | <code>DPNF&#124;C_DefineCompositeSet</code> | 1 | 0 |
 | <code>DPNF&#124;C_DefineHybridSet</code> | 1 | 0 |
@@ -247,9 +248,9 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DPNF&#124;C_UpgradeBranding</code> | 1 | 0 |
 | <code>DPNF&#124;C_WipeClean</code> | 1 | 2 |
 | <code>DPNF&#124;C_WipeDirty</code> | 1 | 2 |
-| <code>DPNF&#124;C_WipeHeavy</code> | 1 | 2 |
 | <code>DPNF&#124;C_WipeNonce</code> | 1 | 2 |
 | <code>DPNF&#124;C_WipePure</code> | 1 | 2 |
+| <code>DPOF&#124;CC_WipeHeavy</code> | 1 | 0 |
 | <code>DPOF&#124;C_BulkTransfer</code> | 1 | 0 |
 | <code>DPOF&#124;C_Burn</code> | 1 | 0 |
 | <code>DPOF&#124;C_DeployAccount</code> | 1 | 0 |
@@ -259,9 +260,9 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DPOF&#124;C_UpdatePendingBranding</code> | 1 | 0 |
 | <code>DPOF&#124;C_UpgradeBranding</code> | 1 | 0 |
 | <code>DPOF&#124;C_WipeClean</code> | 1 | 0 |
-| <code>DPOF&#124;C_WipeHeavy</code> | 1 | 0 |
 | <code>DPOF&#124;C_WipePure</code> | 1 | 0 |
 | <code>DPOF&#124;C_WipeSlim</code> | 1 | 0 |
+| <code>DPSF&#124;CC_WipeHeavy</code> | 1 | 11 |
 | <code>DPSF&#124;C_Burn</code> | 1 | 0 |
 | <code>DPSF&#124;C_Control</code> | 1 | 0 |
 | <code>DPSF&#124;C_RemoveNonceScore</code> | 1 | 5 |
@@ -284,7 +285,6 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DPSF&#124;C_UpdateSetNonceURI</code> | 1 | 0 |
 | <code>DPSF&#124;C_UpdateSetNonces</code> | 1 | 0 |
 | <code>DPSF&#124;C_UpgradeBranding</code> | 1 | 0 |
-| <code>DPSF&#124;C_WipeHeavy</code> | 1 | 11 |
 | <code>DPSF&#124;C_WipeNonce</code> | 1 | 0 |
 | <code>DPSF&#124;C_WipeNoncePartialy</code> | 1 | 0 |
 | <code>DPSF&#124;C_WipePure</code> | 1 | 11 |
@@ -296,7 +296,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DPTF&#124;C_WipeSlim</code> | 1 | 0 |
 | <code>LQD&#124;C_UnwrapUrStoa</code> | 1 | 3 |
 | <code>LQD&#124;C_WrapUrStoa</code> | 1 | 3 |
-| <code>MTX-AQP&#124;2&#124;C_SweepRevokeAnchor</code> | 1 | 6 |
+| <code>MTX-AQP&#124;2&#124;CC_SweepRevokeAnchor</code> | 1 | 6 |
 | <code>ORBR&#124;A_Fuel</code> | 1 | 0 |
 | <code>ORBR&#124;C_Compress</code> | 1 | 0 |
 | <code>ORBR&#124;C_SublimateV2</code> | 1 | 0 |
@@ -326,10 +326,10 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>AQP-ANK&#124;C_RevokeBoostClass</code> | 10 | 5 | 2 | `[6.2.1]_AQP-ANK.repl` |
 | <code>AQP-DSA&#124;A_SetOracleValidity</code> | 3 | 6 | 0 | `dsa-capture-tests.repl`, `dsa-grand-tour.repl` |
 | <code>AQP-DSA&#124;A_ToggleExternalOracle</code> | 4 | 8 | 0 | `dsa-capture-tests.repl`, `dsa-grand-tour.repl` |
+| <code>AQP-DSA&#124;CC_OpenAgency</code> | 7 | 7 | 4 | `dsa-agency-tests.repl`, `dsa-capture-tests.repl`, `dsa-fee-tests.repl` +1 |
 | <code>AQP-DSA&#124;C_BurnRoyalty</code> | 1 | 3 | 0 | `dsa-capture-tests.repl` |
 | <code>AQP-DSA&#124;C_DefineDelegationVault</code> | 7 | 8 | 3 | `dsa-agency-tests.repl`, `dsa-capture-tests.repl`, `dsa-fee-tests.repl` +1 |
 | <code>AQP-DSA&#124;C_FuelRoyalty</code> | 1 | 4 | 0 | `dsa-capture-tests.repl` |
-| <code>AQP-DSA&#124;C_OpenAgency</code> | 7 | 7 | 4 | `dsa-agency-tests.repl`, `dsa-capture-tests.repl`, `dsa-fee-tests.repl` +1 |
 | <code>AQP-DSA&#124;C_OracleWrite</code> | 11 | 24 | 1 | `dsa-capture-tests.repl`, `dsa-fee-tests.repl`, `dsa-grand-tour.repl` |
 | <code>AQP-DSA&#124;C_RecomputeCapture</code> | 1 | 4 | 0 | `dsa-capture-tests.repl` |
 | <code>AQP-DSA&#124;C_SetAgencyFee</code> | 2 | 8 | 0 | `dsa-fee-tests.repl`, `dsa-grand-tour.repl` |
@@ -399,8 +399,9 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>AQP-SCR&#124;C_IssueTriplet</code> | 1 | 0 | 0 | `[6.2.13]_AQP-TRIPLET.repl` |
 | <code>AQP-SCR&#124;C_IssueTrueFungibleScore</code> | 25 | 40 | 1 | `AQP-scale-inject.repl`, `AQP-scale-sweep.repl`, `AQP-scale-vacate.repl` +10 |
 | <code>AQP-SCR&#124;C_RotateScoreOwnership</code> | 4 | 6 | 0 | `[6.2.2]_AQP-SCORE.repl` |
+| <code>ATS&#124;AA_RemoveSecondary</code> | 2 | 1 | 0 | `[6.6]_ATS.repl`, `_cov_draft.repl` |
 | <code>ATS&#124;A_KickStart</code> | 1 | 2 | 0 | `[6.6]_ATS.repl` |
-| <code>ATS&#124;A_RemoveSecondary</code> | 2 | 1 | 0 | `[6.6]_ATS.repl`, `_cov_draft.repl` |
+| <code>ATS&#124;CC_RemoveSecondary</code> | 2 | 0 | 0 | `[6.6]_ATS.repl`, `_audit_ats_baseline.repl` |
 | <code>ATS&#124;C_AddHotRBT</code> | 2 | 2 | 0 | `[6.6]_ATS.repl`, `_cov_draft.repl` |
 | <code>ATS&#124;C_AddSecondary</code> | 2 | 2 | 0 | `[6.6]_ATS.repl` |
 | <code>ATS&#124;C_Brumate</code> | 1 | 0 | 0 | `[6.6]_ATS.repl` |
@@ -418,7 +419,6 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>ATS&#124;C_Issue</code> | 7 | 0 | 0 | `[4.0]_Sovereign-Executor.repl`, `[5.1]_Aoz+.repl`, `[6.2]_DPTF.repl` +1 |
 | <code>ATS&#124;C_KickStart</code> | 2 | 0 | 0 | `[4.0]_Sovereign-Executor.repl` |
 | <code>ATS&#124;C_Redeem</code> | 2 | 5 | 0 | `[6.6]_ATS.repl` |
-| <code>ATS&#124;C_RemoveSecondary</code> | 2 | 0 | 0 | `[6.6]_ATS.repl`, `_audit_ats_baseline.repl` |
 | <code>ATS&#124;C_Reverse</code> | 2 | 3 | 0 | `[6.6]_ATS.repl`, `_cov_draft.repl` |
 | <code>ATS&#124;C_RotateOwnership</code> | 2 | 0 | 0 | `[6.6]_ATS.repl` |
 | <code>ATS&#124;C_SetColdRecoveryDuration</code> | 2 | 0 | 0 | `[4.0]_Sovereign-Executor.repl` |
@@ -458,7 +458,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DALOS&#124;A_MigrateLiquidFunds</code> | 3 | 10 | 2 | `DALOS-ADMIN.repl` |
 | <code>DALOS&#124;A_SetAutoFueling</code> | 2 | 4 | 0 | `[6.12]_DALOS-ADMIN.repl`, `[6.4]_Admin.repl` |
 | <code>DALOS&#124;A_SetIgnisSourcePrice</code> | 2 | 4 | 0 | `[6.12]_DALOS-ADMIN.repl`, `[6.4]_Admin.repl` |
-| <code>DALOS&#124;A_ToggleGAP</code> | 7 | 29 | 2 | `[6.12]_DALOS-ADMIN.repl`, `DALOS-ADMIN.repl`, `LIQUID.repl` |
+| <code>DALOS&#124;A_ToggleGAP</code> | 8 | 30 | 3 | `[6.12]_DALOS-ADMIN.repl`, `CONFORMANCE.repl`, `DALOS-ADMIN.repl` +1 |
 | <code>DALOS&#124;A_ToggleOAPU</code> | 1 | 4 | 0 | `[6.12]_DALOS-ADMIN.repl` |
 | <code>DALOS&#124;A_UpdatePublicKey</code> | 1 | 0 | 0 | `[6.4]_Admin.repl` |
 | <code>DALOS&#124;A_UpdateUsagePrice</code> | 32 | 5 | 0 | `[4.0]_Sovereign-Executor.repl`, `DALOS-ADMIN.repl` |
@@ -483,6 +483,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DEMIPAD&#124;C_Withdraw</code> | 5 | 7 | 4 | `[5.3]_Launchpad.repl` |
 | <code>DPDC&#124;C_BulkTransfer</code> | 1 | 4 | 0 | `DPDC.repl` |
 | <code>DPDC&#124;C_MultiTransfer</code> | 1 | 5 | 0 | `DPDC.repl` |
+| <code>DPNF&#124;CC_WipeHeavy</code> | 1 | 2 | 0 | `[6.1.4]_DPDC-NF.repl` |
 | <code>DPNF&#124;C_Break</code> | 2 | 6 | 0 | `[6.1.3]_DPDC-S.repl` |
 | <code>DPNF&#124;C_BulkTransfer</code> | 4 | 4 | 0 | `[6.1.4]_DPDC-NF.repl`, `[6.1.8]_DPDC-HYDRA-WIPE.repl` |
 | <code>DPNF&#124;C_Burn</code> | 1 | 1 | 0 | `[6.1.4]_DPDC-NF.repl` |
@@ -539,11 +540,11 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DPNF&#124;C_UpgradeBranding</code> | 1 | 0 | 0 | `[6.1.4]_DPDC-NF.repl` |
 | <code>DPNF&#124;C_WipeClean</code> | 1 | 2 | 0 | `[6.1.4]_DPDC-NF.repl` |
 | <code>DPNF&#124;C_WipeDirty</code> | 1 | 2 | 0 | `[6.1.4]_DPDC-NF.repl` |
-| <code>DPNF&#124;C_WipeHeavy</code> | 1 | 2 | 0 | `[6.1.4]_DPDC-NF.repl` |
 | <code>DPNF&#124;C_WipeNonce</code> | 1 | 2 | 0 | `[6.1.4]_DPDC-NF.repl` |
 | <code>DPNF&#124;C_WipePure</code> | 1 | 2 | 0 | `[6.1.4]_DPDC-NF.repl` |
 | <code>DPNF&#124;Cp_WipeSlice</code> | 5 | 7 | 2 | `[6.1.8]_DPDC-HYDRA-WIPE.repl` |
 | <code>DPOF&#124;A_DeployAccount</code> | 2 | 0 | 0 | `[6.1.6]_DPOF.repl` |
+| <code>DPOF&#124;CC_WipeHeavy</code> | 1 | 0 | 0 | `[6.1.6]_DPOF.repl` |
 | <code>DPOF&#124;C_AddQuantity</code> | 2 | 2 | 0 | `[6.5]_DPOF.repl`, `DPOF.repl` |
 | <code>DPOF&#124;C_BulkTransfer</code> | 1 | 0 | 0 | `[6.5]_DPOF.repl` |
 | <code>DPOF&#124;C_Burn</code> | 1 | 0 | 0 | `[6.5]_DPOF.repl` |
@@ -563,12 +564,12 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DPOF&#124;C_UpdatePendingBranding</code> | 1 | 0 | 0 | `[6.4]_Admin.repl` |
 | <code>DPOF&#124;C_UpgradeBranding</code> | 1 | 0 | 0 | `[6.1.6]_DPOF.repl` |
 | <code>DPOF&#124;C_WipeClean</code> | 1 | 0 | 0 | `[6.1.6]_DPOF.repl` |
-| <code>DPOF&#124;C_WipeHeavy</code> | 1 | 0 | 0 | `[6.1.6]_DPOF.repl` |
 | <code>DPOF&#124;C_WipePure</code> | 1 | 0 | 0 | `[6.1.6]_DPOF.repl` |
 | <code>DPOF&#124;C_WipeSlim</code> | 1 | 0 | 0 | `[6.1.6]_DPOF.repl` |
 | <code>DPOF&#124;Cp_WipeSlice</code> | 4 | 10 | 1 | `[6.1.6]_DPOF.repl` |
+| <code>DPSF&#124;CC_Break</code> | 11 | 23 | 0 | `[6.1.3]_DPDC-S.repl`, `[6.1]_DPDC.repl` |
+| <code>DPSF&#124;CC_WipeHeavy</code> | 1 | 11 | 0 | `DPDC.repl` |
 | <code>DPSF&#124;C_AddQuantity</code> | 2 | 0 | 0 | `[6.1]_DPDC.repl` |
-| <code>DPSF&#124;C_Break</code> | 11 | 23 | 0 | `[6.1.3]_DPDC-S.repl`, `[6.1]_DPDC.repl` |
 | <code>DPSF&#124;C_BulkTransfer</code> | 2 | 4 | 1 | `[6.1.7]_DPSF-UPDATES.repl`, `[6.1.8]_DPDC-HYDRA-WIPE.repl` |
 | <code>DPSF&#124;C_Burn</code> | 1 | 0 | 0 | `[6.1]_DPDC.repl` |
 | <code>DPSF&#124;C_Control</code> | 1 | 0 | 0 | `[6.1]_DPDC.repl` |
@@ -626,7 +627,6 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DPSF&#124;C_UpgradeBranding</code> | 1 | 0 | 0 | `[6.1.7]_DPSF-UPDATES.repl` |
 | <code>DPSF&#124;C_WipeClean</code> | 1 | 8 | 1 | `DPDC.repl` |
 | <code>DPSF&#124;C_WipeDirty</code> | 1 | 8 | 1 | `DPDC.repl` |
-| <code>DPSF&#124;C_WipeHeavy</code> | 1 | 11 | 0 | `DPDC.repl` |
 | <code>DPSF&#124;C_WipeNonce</code> | 1 | 0 | 0 | `[6.1]_DPDC.repl` |
 | <code>DPSF&#124;C_WipeNoncePartialy</code> | 1 | 0 | 0 | `[6.1]_DPDC.repl` |
 | <code>DPSF&#124;C_WipePure</code> | 1 | 11 | 0 | `DPDC.repl` |
@@ -671,8 +671,8 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>LQD&#124;C_UnwrapUrStoa</code> | 1 | 3 | 0 | `[4.0]_Sovereign-Executor.repl` |
 | <code>LQD&#124;C_WrapStoa</code> | 5 | 3 | 0 | `[4.0]_Sovereign-Executor.repl`, `[6.2+3]_DPTF-SWP_Issuance-Only.repl`, `[6.3]_SWP.repl` +1 |
 | <code>LQD&#124;C_WrapUrStoa</code> | 1 | 3 | 0 | `[4.0]_Sovereign-Executor.repl` |
-| <code>MTX-AQP&#124;2&#124;C_Inject</code> | 2 | 2 | 0 | `[6.2.7]_AQP-DEB-MTX.repl` |
-| <code>MTX-AQP&#124;2&#124;C_SweepRevokeAnchor</code> | 1 | 6 | 0 | `[6.2.7]_AQP-DEB-MTX.repl` |
+| <code>MTX-AQP&#124;2&#124;CC_Inject</code> | 2 | 2 | 0 | `[6.2.7]_AQP-DEB-MTX.repl` |
+| <code>MTX-AQP&#124;2&#124;CC_SweepRevokeAnchor</code> | 1 | 6 | 0 | `[6.2.7]_AQP-DEB-MTX.repl` |
 | <code>ORBR&#124;A_Fuel</code> | 1 | 0 | 0 | `[6.3]_SWP.repl` |
 | <code>ORBR&#124;C_Compress</code> | 1 | 0 | 0 | `[6.3]_SWP.repl` |
 | <code>ORBR&#124;C_Sublimate</code> | 7 | 0 | 0 | `[4.0]_Sovereign-Executor.repl`, `[6.2]_DPTF.repl`, `[6.3]_SWP.repl` |

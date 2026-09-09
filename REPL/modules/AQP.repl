@@ -99,3 +99,71 @@
 )
 (print "===^^^===")
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "AQP-G2 — the SCORE stake-context family, as a CROSS-KIND matrix")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [AQP-G2 · 01 · each asset kind's validator refuses the others] ---")
+;;P3.3, fifth module. SCORE has five stake-context validators -- one per asset kind -- and they
+;;differ in exactly one enforce: the score's CLASS. So the useful test is not five independent
+;;rejections but a MATRIX: give each validator a score of the wrong class and it must refuse.
+;;
+;;That is the same shape as DALOS's standard/smart 2x2, widened. It proves each validator is
+;;discriminating rather than merely present -- five validators that all accepted everything
+;;would satisfy five independent "it rejects garbage" tests and still be broken.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (patron:string KST.ANHD)
+    )
+    (let
+        (
+            (tf-score:string (ref-U|DALOS::UDC_Makeid "TfStakeScore"))
+            (tf-pool:string  (ref-U|DALOS::UDC_Makeid "TfStakePool"))
+            (of-score:string (ref-U|DALOS::UDC_Makeid "OfStakeScore"))
+            (of-pool:string  (ref-U|DALOS::UDC_Makeid "OfStakePool"))
+            (sf-score:string (ref-U|DALOS::UDC_Makeid "SfStakeScore"))
+            (sf-pool:string  (ref-U|DALOS::UDC_Makeid "SfStakePool"))
+        )
+        (map print
+            [
+                ;;preconditions -- the classes really are what the matrix assumes
+                (expect "<<AQP-G2>> TfStakeScore is class 1 (true fungible)"
+                    1 (ref-SCR::UR_SCR|ScoreClass tf-score))
+                (expect "<<AQP-G2>> OfStakeScore is class 2 (orto fungible)"
+                    2 (ref-SCR::UR_SCR|ScoreClass of-score))
+                ;;--- the diagonal: each validator accepts its own kind
+                (expect "<<AQP-G2>> the DPTF validator accepts a class-1 score"
+                    true (!= "" (format "{}"
+                        [(ref-SCR::UEV_DptfStakeScoreContext patron tf-pool tf-score)])))
+                (expect "<<AQP-G2>> the DPOF validator accepts a class-2 score"
+                    true (!= "" (format "{}"
+                        [(ref-SCR::UEV_DpofStakeScoreContext patron of-pool of-score)])))
+                ;;--- the off-diagonal: each refuses the other's class
+                ;;NOTE: both halves of this guard share ONE message. CLAUDE.md prescribes
+                ;;combining 3+ booleans into a single `(enforce (fold (and) true [...]) "msg")`,
+                ;;which is good for brevity and bad for diagnosis: a class mismatch and a
+                ;;pool-link mismatch are INDISTINGUISHABLE from the error text. These two tests
+                ;;tell them apart only because each varies a different argument -- a caller
+                ;;debugging in production has no such handle.
+                (expect-failure "<<AQP-G2>> the DPTF validator refuses a class-2 score"
+                    "score-class must be 1 (true fungible score)"
+                    (ref-SCR::UEV_DptfStakeScoreContext patron of-pool of-score))
+                (expect-failure "<<AQP-G2>> the DPOF validator refuses a class-1 score"
+                    "score-class must be 2"
+                    (ref-SCR::UEV_DpofStakeScoreContext patron tf-pool tf-score))
+                ;;--- and the pool-link half of the same enforce: right class, WRONG pool
+                (expect-failure "<<AQP-G2>> the DPTF validator refuses a score linked to another pool"
+                    "pool-id must match aqpool-link"
+                    (ref-SCR::UEV_DptfStakeScoreContext patron sf-pool tf-score))
+            ]
+        )
+    )
+    ""
+)
+(print "===^^^===")
+(commit-tx)

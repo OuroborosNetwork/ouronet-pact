@@ -72,6 +72,17 @@
    "REPL/Kursan/dsa-grand-tour.repl"
   ]
  },
+ "AQP-DSA|CC_OpenAgency": {
+  "invocations": 7,
+  "pos": 7,
+  "neg": 4,
+  "files": [
+   "REPL/Kursan/dsa-agency-tests.repl",
+   "REPL/Kursan/dsa-capture-tests.repl",
+   "REPL/Kursan/dsa-fee-tests.repl",
+   "REPL/Kursan/dsa-grand-tour.repl"
+  ]
+ },
  "AQP-DSA|C_BurnRoyalty": {
   "invocations": 1,
   "pos": 3,
@@ -97,17 +108,6 @@
   "neg": 0,
   "files": [
    "REPL/Kursan/dsa-capture-tests.repl"
-  ]
- },
- "AQP-DSA|C_OpenAgency": {
-  "invocations": 7,
-  "pos": 7,
-  "neg": 4,
-  "files": [
-   "REPL/Kursan/dsa-agency-tests.repl",
-   "REPL/Kursan/dsa-capture-tests.repl",
-   "REPL/Kursan/dsa-fee-tests.repl",
-   "REPL/Kursan/dsa-grand-tour.repl"
   ]
  },
  "AQP-DSA|C_OracleWrite": {
@@ -880,6 +880,15 @@
    "REPL/Stage_02/[6.2.2]_AQP-SCORE.repl"
   ]
  },
+ "ATS|AA_RemoveSecondary": {
+  "invocations": 2,
+  "pos": 1,
+  "neg": 0,
+  "files": [
+   "REPL/Stage_01/[6.6]_ATS.repl",
+   "REPL/_cov_draft.repl"
+  ]
+ },
  "ATS|A_KickStart": {
   "invocations": 1,
   "pos": 2,
@@ -888,13 +897,13 @@
    "REPL/Stage_01/[6.6]_ATS.repl"
   ]
  },
- "ATS|A_RemoveSecondary": {
+ "ATS|CC_RemoveSecondary": {
   "invocations": 2,
-  "pos": 1,
+  "pos": 0,
   "neg": 0,
   "files": [
    "REPL/Stage_01/[6.6]_ATS.repl",
-   "REPL/_cov_draft.repl"
+   "REPL/_audit_ats_baseline.repl"
   ]
  },
  "ATS|C_AddHotRBT": {
@@ -1049,15 +1058,6 @@
   "neg": 0,
   "files": [
    "REPL/Stage_01/[6.6]_ATS.repl"
-  ]
- },
- "ATS|C_RemoveSecondary": {
-  "invocations": 2,
-  "pos": 0,
-  "neg": 0,
-  "files": [
-   "REPL/Stage_01/[6.6]_ATS.repl",
-   "REPL/_audit_ats_baseline.repl"
   ]
  },
  "ATS|C_Reverse": {
@@ -1409,11 +1409,12 @@
   ]
  },
  "DALOS|A_ToggleGAP": {
-  "invocations": 7,
-  "pos": 29,
-  "neg": 2,
+  "invocations": 8,
+  "pos": 30,
+  "neg": 3,
   "files": [
    "REPL/Stage_01/[6.12]_DALOS-ADMIN.repl",
+   "REPL/modules/CONFORMANCE.repl",
    "REPL/modules/DALOS-ADMIN.repl",
    "REPL/modules/LIQUID.repl"
   ]
@@ -1615,6 +1616,14 @@
   "neg": 0,
   "files": [
    "REPL/modules/DPDC.repl"
+  ]
+ },
+ "DPNF|CC_WipeHeavy": {
+  "invocations": 1,
+  "pos": 2,
+  "neg": 0,
+  "files": [
+   "REPL/Stage_02/[6.1.4]_DPDC-NF.repl"
   ]
  },
  "DPNF|C_Break": {
@@ -2115,14 +2124,6 @@
    "REPL/Stage_02/[6.1.4]_DPDC-NF.repl"
   ]
  },
- "DPNF|C_WipeHeavy": {
-  "invocations": 1,
-  "pos": 2,
-  "neg": 0,
-  "files": [
-   "REPL/Stage_02/[6.1.4]_DPDC-NF.repl"
-  ]
- },
  "DPNF|C_WipeNonce": {
   "invocations": 1,
   "pos": 2,
@@ -2149,6 +2150,14 @@
  },
  "DPOF|A_DeployAccount": {
   "invocations": 2,
+  "pos": 0,
+  "neg": 0,
+  "files": [
+   "REPL/Stage_02/[6.1.6]_DPOF.repl"
+  ]
+ },
+ "DPOF|CC_WipeHeavy": {
+  "invocations": 1,
   "pos": 0,
   "neg": 0,
   "files": [
@@ -2353,14 +2362,6 @@
    "REPL/Stage_02/[6.1.6]_DPOF.repl"
   ]
  },
- "DPOF|C_WipeHeavy": {
-  "invocations": 1,
-  "pos": 0,
-  "neg": 0,
-  "files": [
-   "REPL/Stage_02/[6.1.6]_DPOF.repl"
-  ]
- },
  "DPOF|C_WipePure": {
   "invocations": 1,
   "pos": 0,
@@ -2385,20 +2386,28 @@
    "REPL/Stage_02/[6.1.6]_DPOF.repl"
   ]
  },
- "DPSF|C_AddQuantity": {
-  "invocations": 2,
-  "pos": 0,
-  "neg": 0,
-  "files": [
-   "REPL/Stage_02/[6.1]_DPDC.repl"
-  ]
- },
- "DPSF|C_Break": {
+ "DPSF|CC_Break": {
   "invocations": 11,
   "pos": 23,
   "neg": 0,
   "files": [
    "REPL/Stage_02/[6.1.3]_DPDC-S.repl",
+   "REPL/Stage_02/[6.1]_DPDC.repl"
+  ]
+ },
+ "DPSF|CC_WipeHeavy": {
+  "invocations": 1,
+  "pos": 11,
+  "neg": 0,
+  "files": [
+   "REPL/modules/DPDC.repl"
+  ]
+ },
+ "DPSF|C_AddQuantity": {
+  "invocations": 2,
+  "pos": 0,
+  "neg": 0,
+  "files": [
    "REPL/Stage_02/[6.1]_DPDC.repl"
   ]
  },
@@ -2909,14 +2918,6 @@
    "REPL/modules/DPDC.repl"
   ]
  },
- "DPSF|C_WipeHeavy": {
-  "invocations": 1,
-  "pos": 11,
-  "neg": 0,
-  "files": [
-   "REPL/modules/DPDC.repl"
-  ]
- },
  "DPSF|C_WipeNonce": {
   "invocations": 1,
   "pos": 0,
@@ -3356,7 +3357,7 @@
    "REPL/Stage_01/[4.0]_Sovereign-Executor.repl"
   ]
  },
- "MTX-AQP|2|C_Inject": {
+ "MTX-AQP|2|CC_Inject": {
   "invocations": 2,
   "pos": 2,
   "neg": 0,
@@ -3364,7 +3365,7 @@
    "REPL/Stage_02/[6.2.7]_AQP-DEB-MTX.repl"
   ]
  },
- "MTX-AQP|2|C_SweepRevokeAnchor": {
+ "MTX-AQP|2|CC_SweepRevokeAnchor": {
   "invocations": 1,
   "pos": 6,
   "neg": 0,

@@ -1,0 +1,256 @@
+;; REPL/modules/UTILITIES.repl — STANDALONE tester for the U_* utility guards.
+;;
+;; P3.3, sixth module — and the cheapest class in the worklist. 09_U_ATS's guards are almost all
+;; on UCv_ / UEV_ functions: pure compute whose enforce is intrinsic to the computation (the `v`
+;; role, CLAUDE.md § prefixes). No fixture, no capability, no state — a direct call with a bad
+;; argument is the whole test. Contrast 05_FVT, whose guards are composite context validators
+;; needing a pool mid-sweep or a disabled reward link to trip.
+;;
+;; The utilities had NO tester at all, so 27 unpinned sites sat behind the cheapest possible
+;; tests in the codebase.
+;;
+;; Run: cd REPL && pact modules/UTILITIES.repl
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "UTIL-01 — UCv_SplitBalanceWithBooleans: four SEQUENTIAL guards, four distinct trips")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [UTIL-01 · 01 · sequential guards, each tripped past the ones before it] ---")
+;;This function carries FOUR enforces in a row, and each one masks every guard after it. So four
+;;independent "it rejects bad input" tests would all have hit the FIRST enforce and proved the
+;;other three do nothing. Every trip below is constructed to PASS the preceding guards and fail
+;;exactly one:
+;;
+;;   1  (> milestones 0)                      "Cannot split with zero milestones"
+;;   2  (> split 0.0)                         "Amount {} to small to split into {} milestones"
+;;   3  (= milestones tr-nr)                  "Input Lists do not sync"
+;;   4  (= (+ big-chunk last-split) amount)   "Amount of {} could not be split ... succesfully"
+(let
+    (
+        (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+    )
+    ;;HAPPY PATH FIRST. Without it a guard that always fired would satisfy all four rejections
+    ;;below and still be broken. 9.0 over 3 milestones splits exactly at precision 2.
+    (map print
+        [
+            (expect "<<UTIL-01>> the happy split returns one amount per milestone"
+                3 (length (ref-U|ATS::UCv_SplitBalanceWithBooleans 2 9.0 3 [true true true])))
+            (expect "<<UTIL-01>> ...and the split is CONSERVING: the parts sum to the input"
+                9.0 (fold (+) 0.0 (ref-U|ATS::UCv_SplitBalanceWithBooleans 2 9.0 3 [true true true])))
+        ]
+    )
+    (map print
+        [
+            ;;1] zero milestones — the outermost guard.
+            (expect-failure "<<UTIL-01>> guard 1: zero milestones is refused"
+                "Cannot split with zero milestones"
+                (ref-U|ATS::UCv_SplitBalanceWithBooleans 2 9.0 0 [true]))
+            ;;2] milestones fine, but the per-milestone share FLOORS to zero at this precision.
+            ;;    0.001 / 10 = 0.0001, floored to 2 dp = 0.0. Passes guard 1, trips guard 2.
+            (expect-failure "<<UTIL-01>> guard 2: an amount too small to split at this precision"
+                "Amount 0.001 to small to split into 10 milestones"
+                (ref-U|ATS::UCv_SplitBalanceWithBooleans 2 0.001 10
+                    [true true true true true true true true true true]))
+            ;;3] amount and milestones both fine; the BOOLEAN list carries a different number of
+            ;;    trues than there are milestones. Passes 1 and 2, trips 3.
+            (expect-failure "<<UTIL-01>> guard 3: the boolean list must carry one true per milestone"
+                "Input Lists do not sync"
+                (ref-U|ATS::UCv_SplitBalanceWithBooleans 2 9.0 3 [true true false]))
+            ;;4] the CONSERVATION guard, and the only one that needs a genuinely subtle input:
+            ;;    an amount carrying more decimals than <precision> can represent. 10.005 at
+            ;;    precision 2 floors to 5.00 + 5.00 = 10.00, which is NOT 10.005 — so the split
+            ;;    would silently lose 0.005 and the guard refuses. Passes 1, 2 and 3.
+            (expect-failure "<<UTIL-01>> guard 4: an amount finer than <precision> cannot split conservatively"
+                "Amount of 10.005 could not be split into 2 milestones succesfully"
+                (ref-U|ATS::UCv_SplitBalanceWithBooleans 2 10.005 2 [true true]))
+        ]
+    )
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "UTIL-02 — the interval builders: two guards that differ by ONE divisor")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [UTIL-02 · 01 · hard vs soft intervals] ---")
+;;UCv_MakeHardIntervals and UCv_MakeSoftIntervals are near-twins: Soft carries the SAME
+;;divisibility guard as Hard, plus one more (growth must divide by 3, because Soft splits each
+;;growth step into thirds). Testing them as a pair is what shows the extra guard exists —
+;;a single test on Soft would pass against a copy of Hard.
+(let
+    (
+        (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+    )
+    (map print
+        [
+            ;;happy path on both, with the SAME arguments, so the only difference measured
+            ;;below is the extra guard.
+            (expect "<<UTIL-02>> hard intervals build for a divisible (start, growth)"
+                true (> (length (ref-U|ATS::UCv_MakeHardIntervals 30 3)) 0))
+            (expect "<<UTIL-02>> soft intervals build for the same pair"
+                true (> (length (ref-U|ATS::UCv_MakeSoftIntervals 30 3)) 0))
+            ;;the SHARED guard: start must divide by growth. Both must refuse.
+            (expect-failure "<<UTIL-02>> hard refuses a start not divisible by growth"
+                "10 must be divisible by 3 and it is not"
+                (ref-U|ATS::UCv_MakeHardIntervals 10 3))
+            (expect-failure "<<UTIL-02>> soft refuses it too, by the same rule"
+                "10 must be divisible by 3 and it is not"
+                (ref-U|ATS::UCv_MakeSoftIntervals 10 3))
+            ;;THE DIVERGENCE. growth 4 divides start 4 cleanly, so the shared guard passes --
+            ;;and only Soft has anything left to object to. Hard accepts the very same input.
+            (expect "<<UTIL-02>> hard ACCEPTS growth=4 (it has no thirds rule)"
+                true (> (length (ref-U|ATS::UCv_MakeHardIntervals 4 4)) 0))
+            (expect-failure "<<UTIL-02>> ...while soft refuses it: its growth must divide into thirds"
+                "4 must be divisible by 3 and it is not"
+                (ref-U|ATS::UCv_MakeSoftIntervals 4 4))
+        ]
+    )
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "UTIL-03 — UEV_ColdDurationParameters: one predicate, two messages")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [UTIL-03 · 01 · the soft/hard branch] ---")
+;;Same check on both branches, but the SOFT message names the offending values and the HARD one
+;;does not. Asserted as a pair because the branch flag is the only thing that differs: a caller
+;;that passed the flag the wrong way round would get a correct-looking rejection with the wrong
+;;noun in it, and no test that looked at one branch alone would notice.
+(let
+    (
+        (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+    )
+    (map print
+        [
+            (expect "<<UTIL-03>> a divisible (base, growth) is accepted on the HARD branch"
+                true (!= "" (format "{}" [(ref-U|ATS::UEV_ColdDurationParameters false 30 3)])))
+            (expect-failure "<<UTIL-03>> HARD refuses an indivisible pair, naming neither value"
+                "Invalid Hard Cold Recovery Duration Parameters"
+                (ref-U|ATS::UEV_ColdDurationParameters false 10 3))
+            (expect-failure "<<UTIL-03>> SOFT refuses the same pair, and DOES name both values"
+                "Invalid Soft Cold Recovery Duration Parameters: Base 10 Growth 3"
+                (ref-U|ATS::UEV_ColdDurationParameters true 10 3))
+            ;;growth 0 would divide by zero; the guard's (> growth 0) half stops it first.
+            (expect-failure "<<UTIL-03>> a zero growth is refused before it can divide by zero"
+                "Invalid Hard Cold Recovery Duration Parameters"
+                (ref-U|ATS::UEV_ColdDurationParameters false 10 0))
+        ]
+    )
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "UTIL-04 — the bounded scalars, and what a folded enforce costs in diagnosis")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [UTIL-04 · 01 · fee, decay, fee-position] ---")
+;;UEV_Fee folds THREE independent conditions into one enforce and one message:
+;;    (fold (and) true [(>= fee 0.0) (<= fee 999.0) (= (floor fee 4) fee)])
+;;CLAUDE.md prescribes exactly this form for 3+ booleans, and it is good for brevity. The cost
+;;is diagnosis: a negative fee, an oversized fee and an over-precise fee are INDISTINGUISHABLE
+;;from the error text. The three tests below tell them apart only because each varies one input
+;;— a caller debugging in production has no such handle. Recorded here rather than argued: the
+;;rule is the house style, and this is what it buys and what it costs.
+(let
+    (
+        (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+    )
+    (map print
+        [
+            ;;boundaries ACCEPTED — the edges of the valid range, which is where an off-by-one
+            ;;in the comparison would show.
+            (expect "<<UTIL-04>> fee 0.0 is valid (the lower bound is inclusive)"
+                true (!= "" (format "{}" [(ref-U|ATS::UEV_Fee 0.0)])))
+            (expect "<<UTIL-04>> fee 999.0 is valid (the upper bound is inclusive)"
+                true (!= "" (format "{}" [(ref-U|ATS::UEV_Fee 999.0)])))
+            ;;three DIFFERENT causes, one message.
+            (expect-failure "<<UTIL-04>> a negative fee is refused"
+                "Invalid Autostake Fee Value" (ref-U|ATS::UEV_Fee -0.0001))
+            (expect-failure "<<UTIL-04>> ...an over-range fee is refused, with the SAME text"
+                "Invalid Autostake Fee Value" (ref-U|ATS::UEV_Fee 999.0001))
+            (expect-failure "<<UTIL-04>> ...and so is one carrying more than 4 decimals"
+                "Invalid Autostake Fee Value" (ref-U|ATS::UEV_Fee 1.00001))
+            ;;UEV_Decay — a plain range, both edges asserted.
+            (expect "<<UTIL-04>> decay 1 day is valid (lower bound)"
+                true (!= "" (format "{}" [(ref-U|ATS::UEV_Decay 1)])))
+            (expect "<<UTIL-04>> decay 9125 days is valid (upper bound = 25 years)"
+                true (!= "" (format "{}" [(ref-U|ATS::UEV_Decay 9125)])))
+            (expect-failure "<<UTIL-04>> decay 0 is below the range"
+                "No More than 25 years (9125 days) can be set for Decay Period"
+                (ref-U|ATS::UEV_Decay 0))
+            (expect-failure "<<UTIL-04>> decay 9126 is one day over the range"
+                "No More than 25 years (9125 days) can be set for Decay Period"
+                (ref-U|ATS::UEV_Decay 9126))
+            ;;UEV_CRF|Positions — the valid set is [-1] plus 1..7, so 0 is a HOLE inside the
+            ;;range rather than a boundary. A naive (and (>= n -1) (<= n 7)) would accept it;
+            ;;this asserts the hole is real.
+            (expect "<<UTIL-04>> fee-position -1 (the disabled sentinel) is valid"
+                true (!= "" (format "{}" [(ref-U|ATS::UEV_CRF|Positions -1)])))
+            (expect "<<UTIL-04>> fee-position 7 is valid (top of the range)"
+                true (!= "" (format "{}" [(ref-U|ATS::UEV_CRF|Positions 7)])))
+            (expect-failure "<<UTIL-04>> fee-position 0 is a HOLE between the sentinel and the range"
+                "Fee Position 0 is invalid" (ref-U|ATS::UEV_CRF|Positions 0))
+            (expect-failure "<<UTIL-04>> fee-position 8 is past the top"
+                "Fee Position 8 is invalid" (ref-U|ATS::UEV_CRF|Positions 8))
+        ]
+    )
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "UTIL-05 — UCv_SolidifyUnstakeObject: a bounds guard with one message for both ends")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [UTIL-05 · 01 · remove-position bounds] ---")
+;;(and (> remove-position 0) (< remove-position how-many-rts)) under a single "Invalid
+;;<remove-position>". Position 0 is excluded deliberately: index 0 is the PRIMAL reward token
+;;that everything else folds INTO, so removing it is meaningless rather than merely out of
+;;range. Both ends asserted; both give the same text.
+(let
+    (
+        (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+    )
+    (let
+        (
+            (awo:object{UtilityAtsV3.Awo}
+                { "reward-tokens" : [10.0 5.0 2.0]
+                , "cull-time"     : (time "2026-01-01T00:00:00Z")})
+        )
+        (map print
+            [
+                ;;HAPPY PATH: removing position 1 folds its 5.0 into the primal 10.0.
+                (expect "<<UTIL-05>> solidifying position 1 folds its value into the primal"
+                    [15.0 2.0] (at "reward-tokens" (ref-U|ATS::UCv_SolidifyUnstakeObject awo 1)))
+                (expect "<<UTIL-05>> ...and the list is one shorter"
+                    2 (length (at "reward-tokens" (ref-U|ATS::UCv_SolidifyUnstakeObject awo 1))))
+                (expect "<<UTIL-05>> ...while the cull-time rides through untouched"
+                    (time "2026-01-01T00:00:00Z")
+                    (at "cull-time" (ref-U|ATS::UCv_SolidifyUnstakeObject awo 1)))
+                ;;INVARIANT: solidifying moves value, it never creates or destroys it.
+                (expect "<<UTIL-05>> INVARIANT: the total is conserved by solidification"
+                    (fold (+) 0.0 (at "reward-tokens" awo))
+                    (fold (+) 0.0 (at "reward-tokens" (ref-U|ATS::UCv_SolidifyUnstakeObject awo 1))))
+                ;;both ends of the bound, same message.
+                (expect-failure "<<UTIL-05>> position 0 (the primal itself) is refused"
+                    "Invalid <remove-position>" (ref-U|ATS::UCv_SolidifyUnstakeObject awo 0))
+                (expect-failure "<<UTIL-05>> position == length is refused (the last valid index is length-1)"
+                    "Invalid <remove-position>" (ref-U|ATS::UCv_SolidifyUnstakeObject awo 3))
+            ]
+        )
+        ""
+    )
+)
+(commit-tx)
+(print "=== END modules/UTILITIES.repl ===")

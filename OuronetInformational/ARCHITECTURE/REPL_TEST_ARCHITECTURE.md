@@ -635,6 +635,29 @@ capability, no transaction choreography and no fixture beyond a token that exist
     16  C_ ; 10 XI_ ; 4 UR_ ; the rest scattered
 ```
 
+**THE WORKLIST HAD 76 SITES IN IT THAT CANNOT BE DONE.** Two categories, both now split out by
+`_enforce_coverage.py` rather than left to inflate the total:
+
+* **45 `enforce`s nested inside an `enforce-one` branch list.** Pact tries each branch and, when
+  every one fails, raises the **enforce-one's own** message — the inner messages are never
+  surfaced. Verified rather than assumed:
+
+  ```
+  (enforce-one "OUTER" [(enforce false "INNER-ONE") (enforce false "INNER-TWO")])
+    => expected error message 'INNER-ONE', got 'OUTER-MESSAGE'
+  ```
+
+  So those messages document intent inside the branch list and nothing more: no caller can see
+  them, no test can pin them. `01_DALOS` carried **9** of them and sat at #2 on the worklist
+  largely because of it. The enforce-one's own message IS matchable and is still counted.
+* **21 in `00_DPMF`,** which is dead (superseded by DPOF; deployed by `[2.2]_Core` for migration
+  provenance, but grep finds exactly one call in the whole tree — `P|A_Define`, the policy
+  boilerplate every module carries). Pinning a guard no caller can reach is ceremony.
+
+Live worklist after both: **619**, not 695. A number that includes work which cannot be done is
+the same failure as counting a commented-out test as coverage (RULE 10) — it just fails in the
+optimistic direction instead.
+
 **TRIP EACH GUARD FROM THE LIVE STATE, never from a guessed constant.** Three assertions in the
 first draft PASSED — `UEV_Amount a 0.0000000000001` does not trip a 24-decimal token, and
 `UEV_AccountBurnState a emma false` matches a role that is already false. *An `expect-failure`
