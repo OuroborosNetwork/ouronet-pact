@@ -1,94 +1,175 @@
-# REPL Test Architecture — the two-variant rebuild
+# REPL Test Architecture — the canonical model
 
-Owner-directed (2026-09-04). The REPL test surface is rationalised into **two variants that share
-one deploy core and one set of suite files**, so the same tests power both an exhaustive run and
-fast single-module iteration with zero duplication.
+**This is the standard for how Ouronet is tested, and the best-practice reference for any module
+written from here on.** Rewritten 2026-09-09 after measuring the real state of the suite.
 
-## The two variants
+---
 
-### 1. `ZALL.repl` — the exhaustive top-to-bottom runner
-One `pact ZALL.repl` deploys the **entire** stack (Stage 00 → 01 → 02 → ZZ) and runs **every
-scenario suite we have ever built** — every module, every client/admin function, every ground-truth
-and regression harness — in one long run (accepting ~an hour). This is the single authoritative
-"tests EVERYTHING" artifact and the exact shape the red team attacks.
+# 1. The three suites
 
-- **Segmentable.** `ZALL.repl` is a flat, banner-grouped list of `(load …)` lines, each individually
-  commentable, grouped by module/stage. Disabling a group gives a faster partial big-run. (For true
-  single-module iteration, use variant 2 — that's its job.)
-- **Contamination-resolved.** Because one `pact` process = one shared DB, suites that mutate shared
-  canonical fixtures (account-guard rotations, canonical-asset re-issues) are made order-independent
-  — see *Contamination strategy* below. This is the real work of assembling ZALL.
+Testing splits into three kinds. They answer different questions, have different completion
+criteria, and must not be conflated.
 
-### 2. `modules/<MODULE>.repl` — standalone per-module testers
-Each bootstraps a **minimal blockchain-like environment in a single REPL flow**: Stage 00 sandbox +
-deploy the module's dependency closure + run that module's own suite(s). `pact modules/DPTF.repl`
-tests just DPTF in ~seconds-to-a-minute, so you never boot the whole world to check one edit. This is
-our stand-in for "keep a local devnet running and test against it" (a real StoaChain private
-dev/testnet is a later, separate decision).
+| suite | asks | derived from | can it be "complete"? |
+|---|---|---|---|
+| **NORMAL** | does the specified behaviour work? | the spec / the op list | **yes** — every entrypoint, exercised |
+| **ADVERSARIAL** | is every door we built actually locked? | **the code itself** — every `enforce`, every defcap | **yes** — it is ENUMERABLE |
+| **RED TEAM** | is there a door we forgot to build? | attack hypotheses | **no** — open-ended, grows forever |
 
-## The shared core (why there is no duplication)
+## Why red teaming is not just "more adversarial tests"
 
-The connective tissue answering "do the individual testers plug into the big flow?":
+The adversarial suite is **enumerable from the source**: list every `enforce`, write an
+`expect-failure` proving it rejects. When the count matches, that suite is provably finished.
 
-- **Deploy core** — the deploy sequence already separates cleanly from suites in each stage tester
-  (`[0.0]`–`[5.2]` = deploy; `[6.x]` = suites). It is extracted into authoritative includes:
-  `deploy-stage00.repl`, `deploy-stage01.repl`, `deploy-stage02.repl`, `deploy-stagezz.repl`.
-- **Suite files** — the `Stage_0N/[6.x]_*.repl` scenario files ARE the tests, unchanged.
-- **Both variants compose the same pieces.** ZALL = all deploy cores + all suites. A module tester =
-  sandbox + deploy core up to its deps + its suite file(s). So a module tester's "core parts" (its
-  deploy deps and its suite file) are literally the same files ZALL loads; only the thin wrapper that
-  selects *deploy depth + which suites* is per-module. Suites are never duplicated.
+Red teaming cannot be enumerated that way, because the bug it looks for is an **absence** —
+a missing `enforce`, a capability that composes wrongly, a value that should have been bounded
+and wasn't. You cannot derive "what we forgot" from the code that forgot it.
 
-## File layout (constrained by `(load)` semantics)
+**Red-team FINDINGS become REPL tests** (that is the durable artifact, and it is why the two feel
+alike). But the *activity* is hypothesis generation, and some of its attack classes cannot live in
+a REPL at all:
 
-**Verified:** Pact `(load "x")` resolves relative to the **loading file's directory**, not the
-process CWD. Therefore:
+* **cross-block ordering** — front-running, MEV, transaction reordering
+* **economic griefing** — gas-station exhaustion, dust-spam, fee-market attacks
+* **`defpact` interruption** — abandoning a multi-step flow at an adversarial step boundary
+* **multi-signer keyset composition** — real network signature semantics
+
+So: build the adversarial suite now (it is enumerable and finishable), and treat red teaming as a
+separate activity that **feeds a third suite**. Reaching 100% adversarial coverage does NOT mean
+the code is secure — it means every lock we installed has been tested. It says nothing about the
+doors we never built.
+
+---
+
+# 2. The parallelism rule (the thing that shapes everything)
+
+Verified 2026-09-09 on this machine: **16 cores, 62 GB RAM.** 26 module testers totalling
+**326 s serial** completed in **~50 s wall** at `-P 8`. Each `pact` process holds its own
+in-memory DB, so testers share nothing and parallelise perfectly.
+
+**But wall time = the SLOWEST SINGLE TESTER, not total/cores.** With enough cores, a suite of
+40 testers where one takes 30 minutes still takes 30 minutes.
+
+> ## RULE 1 — no single tester may exceed ~2 minutes.
+> If it does, split it. This is what makes an exhaustive suite affordable: 200 testers of 60 s
+> each finish in ~2 minutes wall on 16 cores. The same tests as one serial run would be 3+ hours.
+
+Run the matrix with:
+```bash
+cd REPL && ls modules/*.repl | xargs -P 16 -I{} pact {}
+```
+
+---
+
+# 3. Fixtures — mock by default, real only when the test IS the realism
+
+Today `POPULATE-BLOODSHED` spends 28 s minting a full live-shaped collection. That collection
+exists because it mirrors the **live** setup, and set/fragment/make-break tests genuinely needed a
+large collection with a real set definition. That was the right call at the time and those tests
+stay.
+
+But it is the wrong default for localised testing: nothing about `C_BurnSFT` needs 500 nonces.
+
+> ## RULE 2 — a module tester builds the SMALLEST fixture that exercises its logic.
+> Shared minimal fixtures live in `REPL/fixtures/`: `mock-tf`, `mock-of`, `mock-sft`, `mock-nft`,
+> `mock-pair`, `mock-pool`, `mock-accounts`. Use a large/live-shaped collection only when the
+> test's subject IS scale or the live set definition (set composition, fragments, make/break,
+> gas-ladder probes) — and say so in the file header.
+
+---
+
+# 4. The three coverage gates
+
+Every gate is a number anyone can recompute with `REPL/_coverage.py`. No gate is a matter of
+opinion.
+
+### G1 — Surface
+**Every Talos entrypoint is invoked inside its own module tester.**
+`Measured 2026-09-09: ~65%` (VST 37%, DPSF-UPDATES 39%, DPTF 50%, ATS 88%, AQP 100%).
+Note 95% of entrypoints are called *somewhere* in the tree — that is not the same thing, and the
+difference is exactly why a module tester cannot currently be trusted on its own.
+
+### G2 — Adversarial
+**Every `enforce` and every defcap rejection has an `expect-failure` proving it rejects.**
+`Measured 2026-09-09: 293 negative tests against 1,015 enforce sites = 29%.`
+
+> ## RULE 3 — an `enforce` you cannot write a failing test for is DEAD CODE. Delete it.
+> There is no "unreachable, skip it" category. Either a caller can violate the condition — in
+> which case write the test — or no caller can, in which case the `enforce` is noise and its
+> removal makes the module smaller and the guarantee clearer. This turns the awkward tail of G2
+> into code cleanup instead of an excuse, and it is why the target is **100%, with no exemptions**.
+
+### G3 — Determinism
+**Every test passes standalone AND inside the full run.** A test that only passes in one context is
+depending on fixture contamination and is not proving what it claims.
+
+---
+
+# 5. Layout
 
 ```
 REPL/
-  Z.repl                # KEEP: fast dev loop (AQP subset) — quick daily iteration
-  ZALL.repl             # NEW: exhaustive runner (everything)
-  deploy-stage00.repl   # NEW: extracted deploy cores (in REPL/ root so "Stage_0N/…" loads resolve)
-  deploy-stage01.repl
-  deploy-stage02.repl
-  deploy-stagezz.repl
-  Stage_00/ Stage_01/ Stage_02/   # suites (unchanged test bodies)
-  modules/              # NEW: standalone per-module testers
-    DPTF.repl SWP.repl ATS.repl DPOF.repl VST.repl DALOS.repl DPDC.repl
-    DEMIPAD.repl CODEX.repl PYTHIA.repl DSP.repl LIQUID.repl SWPI.repl …
-    AQP-ANK.repl AQP-SCORE.repl AQP-POOL.repl RPS.repl FVT.repl VCT.repl MTX-AQP.repl DSA.repl
-  # module testers use one-level `(load "../deploy-stageNN.repl")` + `(load "../Stage_0N/…")`
+  fixtures/        mock-tf · mock-of · mock-sft · mock-nft · mock-pair · mock-pool · mock-accounts
+  boot/            sandbox · stage1 · stage2 · stagezz        (deploy cores, no tests)
+  modules/         one tester per MODULE          — normal + adversarial for that module
+  entities/        one tester per LOGICAL ENTITY  — e.g. SWP = SWP+SWPI+SWPL+SWPLC+SWPU+MTX-SWP
+  redteam/         attack suites (the third suite; grows with each campaign)
+  archive/         scratch and superseded probes — never run, kept for history
+  Z.repl           the single "run everything" endpoint (serial, for the published number)
+  _coverage.py     prints G1 / G2 / G3 and fails on regression
 ```
 
-Deploy cores live in `REPL/` root so their `(load "Stage_0N/…")` paths stay root-relative. Module
-testers sit one level down and reach up with `../`.
+> ## RULE 4 — ONE authoritative runner.
+> `Z.repl` runs everything. There is no second runner with a different subset. Two gates that
+> disagree is how a pricing change once passed green while executing none of the assertions
+> written to protect it (`Z.repl` skipped the suite holding them).
 
-## Contamination strategy (making ZALL green end-to-end)
+> ## RULE 5 — every test file belongs to exactly one tester.
+> No file is loaded twice in one process. Double-loading re-issues fixtures and corrupts state;
+> that hazard is why the old entry points carried 24 commented-out `(load …)` lines.
 
-Discovered while enabling the full chain: some suites rotate the canonical account (`KST.ANHD`) guard
-or re-issue canonical assets (MVST), breaking later suites (e.g. `#12a`: `[6.5]_DPOF`/`[6.6]_ATS`
-self-loaded by the AQP path). Resolution, in priority order:
+---
 
-1. **Fixture isolation (preferred).** A suite that MUTATES shared state uses its own suite-scoped
-   accounts/assets (unique id prefix per suite) so it cannot corrupt another suite's fixtures.
-2. **Terminal ordering (fallback).** Genuinely destructive admin/rotation suites run in a final
-   segment of ZALL, after every suite that needs pristine canonical state.
-3. **Idempotent guards.** Deploy/issue steps guard on existence (`with-default-read` / "if not
-   exists") so a canonical asset is never double-issued across suites.
+# 6. What to write for a NEW module (the checklist)
 
-Each suite is audited for contamination as it is folded into ZALL; the standalone module testers are
-immune (fresh boot each).
+1. **Fixtures first** — the minimum assets the module needs, from `REPL/fixtures/`.
+2. **One positive test per entrypoint.** Assert the *observable outcome* (a table read, a returned
+   value), never just that it did not crash.
+3. **One `expect-failure` per `enforce` and per defcap rejection.** Name the assertion after the
+   condition it proves, so a failure names the guarantee that broke.
+4. **Boundaries** — empty list, zero amount, single element, max element, self-transfer,
+   duplicate entries, and the value one past each declared bound.
+5. **Authorisation** — for each defcap: the right caller succeeds, the wrong caller is rejected.
+6. **Composition** — if the op composes others, assert the composite outcome, not just the legs.
+7. **Cost** — if it bills, assert the charged IGNIS/STOA equals the published price
+   (`IGNIS-PRICING/IGNIS-PRICE-SHEET.md`).
+8. **Keep it under 2 minutes** (Rule 1). Split by concern if it grows.
 
-## Build phases
+## Assertion style
+* `(expect (format "…" [vals]) expected actual)` — one `format` for the doc string, never wrapping
+  the whole `expect`.
+* Batch with `(map print [ (expect …) … ])` so every line prints.
+* The message states the GUARANTEE, not the mechanics: *"non-owner cannot enable Frozen LP"*, not
+  *"call 3 returns false"*.
 
-- **P1** — extract deploy cores; refactor `Stage01_Tester`/`Stage02_Tester` to load them (DRY, no
-  behaviour change); green-gate `Z.repl`. ← *foundation*
-- **P2** — build `ZALL.repl`; fold in every suite; resolve contamination per-suite until the whole
-  Stage 1+2 run is green.
-- **P3** — build `modules/*.repl` standalone testers (one per sovereign + citizen module).
-- **P4** — fold the standalone harnesses (`*-groundtruth`, `*-harness`, `deb-staleness-*`, `triplet-*`)
-  into ZALL and/or the module testers; curate/retire the `_scratch_*` audit probes.
+---
 
-## Later decision (out of scope here)
-Whether to stand up a local devnet or a private StoaChain dev/testnet for integration testing
-(Kadena teams typically test on private nets, not public testnets). Until then, REPL is the harness.
+# 7. Status and plan
+
+**Measured 2026-09-09.** 241 `.repl` files; `ZALL.repl` executed **66 of them (27%)** in 54 s. Its
+own previous spec called for "every suite we have ever built, ~an hour" — that was never
+assembled. 175 files never ran, including **~32 audit-finding regression tests**, 7 DSA suites
+(155 assertions), and the whole `AQP-EXHAUSTIVE-*` family.
+
+| phase | work | gate |
+|---|---|---|
+| **P0** | `fixtures/` + `boot/` extraction | — |
+| **P1** | rescue the ~32 audit regressions + DSA + AQP-scale into real testers | G3 |
+| **P2** | fill every module tester to its full entrypoint surface | **G1 = 100%** |
+| **P3** | write the ~722 missing rejection tests; delete every `enforce` that cannot fail | **G2 = 100%** |
+| **P4** | `entities/` logical-entity testers; assemble `Z.repl` | G3 |
+| **P5** | `_coverage.py` in CI, failing on any regression | all |
+| **P6** | red-team campaign → `redteam/` suite | (open-ended) |
+
+P3 is the bulk and is embarrassingly parallel — one agent per module, each enumerating its own
+`enforce` sites. P0–P2 are the prerequisite.
