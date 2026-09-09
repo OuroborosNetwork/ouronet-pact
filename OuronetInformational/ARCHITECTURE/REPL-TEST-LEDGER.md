@@ -11,10 +11,10 @@ This is the evidence base for the audit and documentation papers: every client e
 | metric | value |
 |---|---:|
 | client entrypoints (the auditable contract) | 448 |
-| exercised at least once | 424 (94%) |
-| **never exercised** | **24** |
-| exercised but with NO adversarial assertion in any of its blocks | **293** |
-| total invocations across the suite | 3032 |
+| exercised at least once | 431 (96%) |
+| **never exercised** | **17** |
+| exercised but with NO adversarial assertion in any of its blocks | **295** |
+| total invocations across the suite | 3046 |
 
 ## Never exercised — G1 gap
 
@@ -22,17 +22,10 @@ These entrypoints are reachable by a client and no test calls them.
 
 * `AQP-FVT&#124;CC_SweepRevokeAnchor`
 * `ATS&#124;C_UpgradeBranding`
-* `DALOS&#124;C_RotateGuard`
-* `DALOS&#124;C_RotateSovereign`
-* `DALOS&#124;C_RotateStoa`
 * `DPNF&#124;C_Repurpose`
 * `DPSF&#124;C_RemoveNonceScore`
 * `DPSF&#124;C_Repurpose`
 * `DPSF&#124;C_UpdateNonceURI`
-* `DPSF&#124;C_WipeClean`
-* `DPSF&#124;C_WipeDirty`
-* `DPSF&#124;C_WipeHeavy`
-* `DPSF&#124;C_WipePure`
 * `DPTF&#124;C_Wipe`
 * `LIQUID&#124;A_MigrateLiquidFunds`
 * `LQD&#124;C_UnwrapStoa`
@@ -76,8 +69,8 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>ATS&#124;C_SwitchHotRecovery</code> | 11 | 4 |
 | <code>DALOS&#124;A_DeployStandardAccount</code> | 11 | 1 |
 | <code>DPSF&#124;C_Break</code> | 11 | 23 |
+| <code>DPSF&#124;C_TransferNonce</code> | 11 | 28 |
 | <code>AQP-POOL&#124;CCp_BatchVacateOrtoFungible</code> | 10 | 12 |
-| <code>DPSF&#124;C_TransferNonce</code> | 10 | 17 |
 | <code>DPTF&#124;A_DeployAccount</code> | 10 | 0 |
 | <code>AQP-POOL&#124;CC_UnstakeTrueFungible</code> | 9 | 33 |
 | <code>DPOF&#124;C_Issue</code> | 9 | 0 |
@@ -314,8 +307,10 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DPSF&#124;C_UpdateSetNonceURI</code> | 1 | 0 |
 | <code>DPSF&#124;C_UpdateSetNonces</code> | 1 | 0 |
 | <code>DPSF&#124;C_UpgradeBranding</code> | 1 | 0 |
+| <code>DPSF&#124;C_WipeHeavy</code> | 1 | 11 |
 | <code>DPSF&#124;C_WipeNonce</code> | 1 | 0 |
 | <code>DPSF&#124;C_WipeNoncePartialy</code> | 1 | 0 |
+| <code>DPSF&#124;C_WipePure</code> | 1 | 11 |
 | <code>DPTF&#124;A_UpdateTreasuryDispoParameters</code> | 1 | 0 |
 | <code>DPTF&#124;A_WipeTreasuryDebt</code> | 1 | 0 |
 | <code>DPTF&#124;C_ClearDispo</code> | 1 | 0 |
@@ -497,9 +492,9 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DALOS&#124;C_DeploySmartAccount</code> | 4 | 0 | 1 | `[6.3]_SWP.repl`, `_scratch_dalos_m2_deploysmart_capsplit.repl` |
 | <code>DALOS&#124;C_DeployStandardAccount</code> | 1 | 0 | 0 | `[6.3]_SWP.repl` |
 | <code>DALOS&#124;C_RotateGovernor</code> | 12 | 0 | 0 | `[4.0]_Sovereign-Executor.repl`, `[5.2]_Dispenser+.repl`, `[4.0]_Sovereign-Executor.repl` +2 |
-| <code>DALOS&#124;C_RotateGuard</code> | 0 | 0 | 0 | — |
-| <code>DALOS&#124;C_RotateSovereign</code> | 0 | 0 | 0 | — |
-| <code>DALOS&#124;C_RotateStoa</code> | 0 | 0 | 0 | — |
+| <code>DALOS&#124;C_RotateGuard</code> | 1 | 18 | 1 | `[6.12]_DALOS-ADMIN.repl` |
+| <code>DALOS&#124;C_RotateSovereign</code> | 3 | 18 | 1 | `[6.12]_DALOS-ADMIN.repl` |
+| <code>DALOS&#124;C_RotateStoa</code> | 2 | 18 | 1 | `[6.12]_DALOS-ADMIN.repl` |
 | <code>DALOS&#124;C_UpdateEliteAccount</code> | 1 | 11 | 0 | `[6.11]_INFO.repl` |
 | <code>DALOS&#124;C_UpdateEliteAccountSquared</code> | 1 | 11 | 0 | `[6.11]_INFO.repl` |
 | <code>DEMIPAD&#124;C_Deposit</code> | 3 | 19 | 0 | `[5.3]_Launchpad.repl`, `_probe_dpad2.repl` |
@@ -626,14 +621,14 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DPSF&#124;C_ToggleAddQuantityRole</code> | 1 | 0 | 0 | `[6.1]_DPDC.repl` |
 | <code>DPSF&#124;C_ToggleBurnRole</code> | 1 | 0 | 0 | `[6.1]_DPDC.repl` |
 | <code>DPSF&#124;C_ToggleExemptionRole</code> | 2 | 0 | 0 | `[6.1]_DPDC.repl` |
-| <code>DPSF&#124;C_ToggleFreezeAccount</code> | 6 | 4 | 1 | `[6.1.8]_DPDC-HYDRA-WIPE.repl`, `[6.1]_DPDC.repl` |
+| <code>DPSF&#124;C_ToggleFreezeAccount</code> | 9 | 20 | 1 | `[6.1.8]_DPDC-HYDRA-WIPE.repl`, `[6.1]_DPDC.repl`, `DPDC.repl` |
 | <code>DPSF&#124;C_ToggleModifyCreatorRole</code> | 2 | 0 | 0 | `[6.1]_DPDC.repl` |
 | <code>DPSF&#124;C_ToggleModifyRoyaltiesRole</code> | 1 | 0 | 0 | `[6.1]_DPDC.repl` |
 | <code>DPSF&#124;C_TogglePause</code> | 2 | 0 | 0 | `[6.1]_DPDC.repl` |
 | <code>DPSF&#124;C_ToggleSet</code> | 6 | 4 | 2 | `_verify_finding_DPDC-S_30M_enable-frag-active-gate.repl`, `[6.1.3]_DPDC-S.repl` |
 | <code>DPSF&#124;C_ToggleTransferRole</code> | 2 | 0 | 0 | `[6.1]_DPDC.repl` |
 | <code>DPSF&#124;C_ToggleUpdateRole</code> | 1 | 0 | 0 | `[6.1]_DPDC.repl` |
-| <code>DPSF&#124;C_TransferNonce</code> | 10 | 17 | 0 | `dsa-fee-tests.repl`, `dsa-grand-tour.repl`, `[6.1.2]_DPDC-FRAGMENTS.repl` +3 |
+| <code>DPSF&#124;C_TransferNonce</code> | 11 | 28 | 0 | `dsa-fee-tests.repl`, `dsa-grand-tour.repl`, `[6.1.2]_DPDC-FRAGMENTS.repl` +4 |
 | <code>DPSF&#124;C_TransferNonces</code> | 14 | 15 | 0 | `[6.2.4]_AQP-FVT-DC.repl`, `[6.2.5]_AQP-VCT.repl`, `[6.2.6]_AQP-VCT-GAS-BASE.repl` +2 |
 | <code>DPSF&#124;C_UpdateNonce</code> | 1 | 5 | 0 | `DPDC.repl` |
 | <code>DPSF&#124;C_UpdateNonceDescription</code> | 1 | 0 | 1 | `[6.1]_DPDC.repl` |
@@ -655,12 +650,12 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DPSF&#124;C_UpdateSetNonceURI</code> | 1 | 0 | 0 | `[6.1.7]_DPSF-UPDATES.repl` |
 | <code>DPSF&#124;C_UpdateSetNonces</code> | 1 | 0 | 0 | `[6.1.7]_DPSF-UPDATES.repl` |
 | <code>DPSF&#124;C_UpgradeBranding</code> | 1 | 0 | 0 | `[6.1.7]_DPSF-UPDATES.repl` |
-| <code>DPSF&#124;C_WipeClean</code> | 0 | 0 | 0 | — |
-| <code>DPSF&#124;C_WipeDirty</code> | 0 | 0 | 0 | — |
-| <code>DPSF&#124;C_WipeHeavy</code> | 0 | 0 | 0 | — |
+| <code>DPSF&#124;C_WipeClean</code> | 1 | 8 | 1 | `DPDC.repl` |
+| <code>DPSF&#124;C_WipeDirty</code> | 1 | 8 | 1 | `DPDC.repl` |
+| <code>DPSF&#124;C_WipeHeavy</code> | 1 | 11 | 0 | `DPDC.repl` |
 | <code>DPSF&#124;C_WipeNonce</code> | 1 | 0 | 0 | `[6.1]_DPDC.repl` |
 | <code>DPSF&#124;C_WipeNoncePartialy</code> | 1 | 0 | 0 | `[6.1]_DPDC.repl` |
-| <code>DPSF&#124;C_WipePure</code> | 0 | 0 | 0 | — |
+| <code>DPSF&#124;C_WipePure</code> | 1 | 11 | 0 | `DPDC.repl` |
 | <code>DPSF&#124;Cp_WipeSlice</code> | 3 | 4 | 1 | `[6.1.8]_DPDC-HYDRA-WIPE.repl` |
 | <code>DPTF&#124;A_DeployAccount</code> | 10 | 0 | 0 | `[4.0]_Sovereign-Executor.repl`, `[5.2]_Dispenser+.repl` |
 | <code>DPTF&#124;A_UpdateTreasuryDispoParameters</code> | 1 | 0 | 0 | `[6.3]_SWP.repl` |

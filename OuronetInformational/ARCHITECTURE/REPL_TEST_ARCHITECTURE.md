@@ -327,6 +327,34 @@ REPL/
 > first, and assert the strip preserved length and line count so the stripper itself cannot
 > silently corrupt the measurement.
 
+> ## RULE 11 — coverage counted is not coverage GATED. Measure both.
+> The ledger counts every `.repl` in the tree. The authoritative runner executes a subset. An
+> assertion in the first set but not the second is written, passing, and **not protecting
+> anything** — nothing re-runs it when the code changes.
+>
+> **Measured 2026-09-09: ZALL executes 1156 of 2245 written assertions — 51%.** Nearly half the
+> suite is outside the gate, including every `modules/*.repl` tester built in P2 and several
+> real Stage-02 suites:
+>
+> | assertions | file |
+> |---:|---|
+> | 74 | `Stage_02/[6.2.7]_AQP-DEB-MTX.repl` |
+> | 68 | `Kursan/dsa-capture-tests.repl` |
+> | 58 | `modules/DPDC.repl` |
+> | 55 | `Stage_02/[6.5]_AQP-INFO.repl` |
+> | 55 | `Kursan/aqp-info-tests.repl` |
+> | 41 | `modules/DPTF.repl` |
+> | 37 | `modules/VST.repl` |
+>
+> Some are legitimately outside — `[6.2+3]_DPTF-SWP_Issuance-Only.repl` is an ALTERNATIVE to
+> `[6.2]`+`[6.3]`, and a one-off probe like `_audit_ats_baseline.repl` is not a suite. The rest
+> are simply not wired in.
+>
+> **Two numbers must be published side by side, never one alone:** entrypoints exercised
+> (coverage) and assertions executed by the gate (protection). A coverage figure quoted without
+> its gated companion overstates what the suite actually defends. This is what P4 exists to fix;
+> the measurement above is its acceptance criterion.
+
 ## Assertion style
 * `(expect (format "…" [vals]) expected actual)` — one `format` for the doc string, never wrapping
   the whole `expect`.

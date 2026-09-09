@@ -163,4 +163,290 @@
 (env-sigs [])
 (commit-tx)
 (print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-DA-003 - the account rotations, billed through Talos")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "=== TX-DA-003 - DALOS rotations via Talos ==============================")
+;;==== TX-DA-003 · 01 · rotate the attached STOA address ==== ======================================
+(print "--- [TX-DA-003 · 01 · rotate the attached STOA address] ---")
+;; The three rotations control who owns an Ouronet account and which STOA address pays for it.
+;; [2.1]_Dalos already exercises the CORE functions (ref-DALOS::C_RotateGuard and friends), so
+;; their behaviour is covered -- but nothing had ever gone through the TALOS entrypoints, which
+;; means the IGNIS billing leg on all three had never executed once:
+;;
+;;      (ref-DALOS::C_RotateStoa account stoa)
+;;      (ref-IGNIS::C_Collect patron (ref-IGNIS::DALOS|URCi_RotateStoa account))   <-- never run
+;;
+;; Billing is the entire reason the Talos layer exists, so "the core function works" is not the
+;; same claim as "the client path works". Each rotation below asserts BOTH: the state change,
+;; and that the IGNIS actually collected equals what the URCi_ cost reader predicts. That
+;; preview-vs-exec equality is the invariant a desync breaks -- the same class of defect as the
+;; SWPI|URCi_Issue under-charge (#76), which sat undetected because no test compared the two.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (emma:string KST.EMMA)
+        (patron:string KST.ANHD)
+    )
+    (let
+        (
+            (ignis-id:string (ref-DALOS::UR_IgnisID))
+            (stoa-before:string (ref-DALOS::UR_AccountStoa KST.EMMA))
+            (new-stoa:string KC.KADN_NAME_000d)
+        )
+        (let
+            (
+                (fuel-before:decimal (ref-DPTF::UR_AccountSupply ignis-id patron))
+                ;;The cost reader IS the single source of truth the exec path bills from; read
+                ;;it before the call so the comparison cannot be circular.
+                (quoted:decimal
+                    (at "ignis" (at 0 (at "cumulator-chain" (ref-IGNIS::DALOS|URCi_RotateStoa emma)))))
+            )
+            (let
+                (
+                    (msg:string (ref-TS01-C1::DALOS|C_RotateStoa patron emma new-stoa))
+                )
+                (map print
+                    [
+                        (expect "<<TX-DA-003>> C_RotateStoa names the account in its result"
+                            (format "Ouronet Account {} Attached Stoa-Address rotated succesfully!" [emma]) msg)
+                        (expect "<<TX-DA-003>> the attached STOA address actually changed"
+                            new-stoa (ref-DALOS::UR_AccountStoa emma))
+                        (expect "<<TX-DA-003>> ...and it is not the old one"
+                            false (= stoa-before (ref-DALOS::UR_AccountStoa emma)))
+                        ;;THE BILLING LEG, first execution ever -- and it does NOT charge the
+                        ;;quoted number. The cost model has TWO layers, and this is where they
+                        ;;meet:
+                        ;;
+                        ;;    URCi_ quote     = the RAW cost definition            (34.0 here)
+                        ;;    charged         = raw x URC_IgnisGasDiscount(patron) (18.02 here)
+                        ;;
+                        ;;UDC_PrimeIgnisCumulator applies the patron discount inside C_Collect.
+                        ;;My first version of this assertion compared the charge to the RAW quote
+                        ;;and failed; I briefly wrote that up as a client-facing defect before
+                        ;;checking the presentation layer, which turns out to model it correctly:
+                        ;;OI|UDC_ClientIgnisCosts carries ignis-full, ignis-discount AND
+                        ;;ignis-need = discount x full, plus generated text naming the percentage.
+                        ;;So there is no defect -- URCi_ is a cost DEFINITION and INFO_ is the
+                        ;;patron quote. Recording the distinction here because getting it backwards
+                        ;;is the natural mistake, and this is the only test that pins the join.
+                        ;;
+                        ;;GAP, separately: the DALOS rotations have NO INFO_ preview at all, unlike
+                        ;;INFO_DPTF|RotateOwnership / INFO_DPOF|RotateOwnership. Not a defect in
+                        ;;what exists, but the client-facing preview surface is incomplete here.
+                        (expect "<<TX-DA-003>> INVARIANT: charged == URCi quote x the patron's ignis discount"
+                            (- fuel-before (* quoted (ref-DALOS::URC_IgnisGasDiscount patron)))
+                            (ref-DPTF::UR_AccountSupply ignis-id patron))
+                        ;;And the raw quote is the price-sheet entry, not an independent number.
+                        (expect "<<TX-DA-003>> the quote IS UC_IgnisPrice(DALOS|C_RotateStoa, auth)"
+                            (ref-IGNIS::UC_IgnisPrice "DALOS|C_RotateStoa" "auth") quoted)
+                        ;;The discount is real and non-trivial for this patron, so the assertion
+                        ;;above is genuinely distinguishing the two models rather than passing
+                        ;;because the factor happens to be 1.0.
+                        (expect "<<TX-DA-003>> the patron's discount is a real reduction, not 1.0"
+                            true (< (ref-DALOS::URC_IgnisGasDiscount patron) 1.0))
+                    ]
+                )
+                ""
+            )
+        )
+    )
+)
+;;==== TX-DA-003 · 02 · restore, and prove the rotation is reversible ==== =========================
+(print "--- [TX-DA-003 · 02 · restore, and prove the rotation is reversible] ---")
+;;Metamorphic: rotate back and assert the ORIGINAL value returns. A one-way test would pass
+;;just as well against an op that wrote a constant.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+    )
+    (ref-TS01-C1::DALOS|C_RotateStoa KST.ANHD KST.EMMA KC.KADN_NAME_000b)
+    (map print
+        [
+            (expect "<<TX-DA-003>> rotating back restores EMMA's original STOA address"
+                KC.KADN_NAME_000b (ref-DALOS::UR_AccountStoa KST.EMMA))
+        ]
+    )
+    ""
+)
+;;==== TX-DA-003 · 03 · rotate the primary guard ==== ==============================================
+(print "--- [TX-DA-003 · 03 · rotate the primary guard] ---")
+;;<safe> true additionally ENFORCES the incoming guard, so only a guard the caller can satisfy
+;;right now can be installed -- the anti-footgun that stops an account being rotated into a
+;;guard nobody holds. Exercised in the true direction here; [2.1]_Dalos covers the guard-TYPE
+;;rejections (u:, c:, r: prefixes) on the core function.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (emma:string KST.EMMA)
+        (patron:string KST.ANHD)
+    )
+    (let
+        (
+            (ignis-id:string (ref-DALOS::UR_IgnisID))
+            (guard-before:guard (ref-DALOS::UR_AccountGuard KST.EMMA))
+            (new-guard:guard (keyset-ref-guard "ouronet-ns.us-0001_emma-keyset"))
+        )
+        (let
+            (
+                (fuel-before:decimal (ref-DPTF::UR_AccountSupply ignis-id patron))
+                (quoted:decimal
+                    (at "ignis" (at 0 (at "cumulator-chain" (ref-IGNIS::DALOS|URCi_RotateGuard emma)))))
+            )
+            (let
+                (
+                    (msg:string (ref-TS01-C1::DALOS|C_RotateGuard patron emma new-guard true))
+                )
+                (map print
+                    [
+                        (expect "<<TX-DA-003>> C_RotateGuard names the account in its result"
+                            (format "Ouronet Account {} Primary-Guard rotated succesfully!" [emma]) msg)
+                        (expect "<<TX-DA-003>> the primary guard is now the one supplied"
+                            new-guard (ref-DALOS::UR_AccountGuard emma))
+                        (expect "<<TX-DA-003>> INVARIANT: charged == URCi quote x the patron's ignis discount"
+                            (- fuel-before (* quoted (ref-DALOS::URC_IgnisGasDiscount patron)))
+                            (ref-DPTF::UR_AccountSupply ignis-id patron))
+                        (expect "<<TX-DA-003>> the quote IS UC_IgnisPrice(DALOS|C_RotateGuard, auth)"
+                            (ref-IGNIS::UC_IgnisPrice "DALOS|C_RotateGuard" "auth") quoted)
+                    ]
+                )
+                ""
+            )
+        )
+    )
+)
+;;==== TX-DA-003 · 04 · rotate the SOVEREIGN of a smart account ==== ===============================
+(print "--- [TX-DA-003 · 04 · rotate the SOVEREIGN of a smart account] ---")
+;;The heaviest of the three: the sovereign IS the controlling identity of a SMART account, so
+;;this transfers control outright. Three preconditions in DALOS|S>ROTATE-OA-SOVEREIGN:
+;;  - the caller owns <account>            (CAP_EnforceAccountOwnership -- the CURRENT sovereign)
+;;  - <account> is SMART                   (UEV_EnforceAccountType account true)
+;;  - <new-sovereign> is STANDARD          (UEV_EnforceAccountType new-sovereign false)
+;;  - and differs from the current one     (UEV_SenderWithReceiver)
+;;BJ is the suite's smart account, sovereign BM -- so BM signs, not ANHD.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_BM", "caps": [] }])
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (bj:string KC.BJ)
+        (patron:string KST.ANHD)
+    )
+    (let
+        (
+            (ignis-id:string (ref-DALOS::UR_IgnisID))
+            (sov-before:string (ref-DALOS::UR_AccountSovereign KC.BJ))
+        )
+        (let
+            (
+                (fuel-before:decimal (ref-DPTF::UR_AccountSupply ignis-id patron))
+                (quoted:decimal
+                    (at "ignis" (at 0 (at "cumulator-chain" (ref-IGNIS::DALOS|URCi_RotateSovereign bj)))))
+            )
+            (map print
+                [
+                    ;;State the precondition rather than assuming it: BJ must really be smart and
+                    ;;BM must really be its sovereign, or the assertions below prove nothing.
+                    (expect "<<TX-DA-003>> BJ is a SMART account (rotation only applies to smart)"
+                        true (ref-DALOS::UR_AccountType bj))
+                    (expect "<<TX-DA-003>> ...and BM is currently its sovereign"
+                        KC.BM sov-before)
+                ]
+            )
+            (let
+                (
+                    (msg:string (ref-TS01-C1::DALOS|C_RotateSovereign patron bj KST.EMMA))
+                )
+                (map print
+                    [
+                        (expect "<<TX-DA-003>> control of the smart account moved to the new sovereign"
+                            KST.EMMA (ref-DALOS::UR_AccountSovereign bj))
+                        (expect "<<TX-DA-003>> INVARIANT: charged == URCi quote x the patron's ignis discount"
+                            (- fuel-before (* quoted (ref-DALOS::URC_IgnisGasDiscount patron)))
+                            (ref-DPTF::UR_AccountSupply ignis-id patron))
+                        (expect "<<TX-DA-003>> the quote IS UC_IgnisPrice(DALOS|C_RotateSovereign, auth)"
+                            (ref-IGNIS::UC_IgnisPrice "DALOS|C_RotateSovereign" "auth") quoted)
+                    ]
+                )
+                ""
+            )
+        )
+    )
+)
+;;==== TX-DA-003 · 05 · the rotation really moved authority ==== ==================================
+(print "--- [TX-DA-003 · 05 · the rotation really moved authority] ---")
+;;A rotation that only rewrites a field is not a rotation. The test that matters is whether the
+;;OLD sovereign has actually LOST control -- BM signing alone must no longer satisfy ownership
+;;of BJ, and EMMA signing alone must now satisfy it. Both directions asserted, because either
+;;one alone is compatible with a broken implementation (a field written but not consulted, or a
+;;guard that accepts everyone).
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_BM", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+    )
+    (map print
+        [
+            ;;The message is a NAMED one -- "Smart DALOS Account <id> Ownership could not be
+            ;;verified!" -- not a raw keyset failure. Worth noting as a positive: this is what
+            ;;the PYTHIA and DEMIPAD findings earlier in this session were missing. Matched on
+            ;;the stable tail because the account id in the middle is a 200-glyph string.
+            (expect-failure "<<TX-DA-003>> the OLD sovereign can no longer rotate the account"
+                "Ownership could not be verified!"
+                (ref-TS01-C1::DALOS|C_RotateSovereign KST.ANHD KC.BJ KST.LUMY))
+        ]
+    )
+    ""
+)
+;;Rule 9: the rejection above fires in CAP_EnforceAccountOwnership inside the defcap, before any
+;;write -- asserted, not assumed.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+    )
+    (map print
+        [
+            (expect "<<TX-DA-003>> the rejected rotation left the sovereign unchanged"
+                KST.EMMA (ref-DALOS::UR_AccountSovereign KC.BJ))
+        ]
+    )
+    ""
+)
+;;And the NEW sovereign can: rotate back, restoring the suite's original state so nothing
+;;downstream inherits a BJ owned by EMMA.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+    )
+    (ref-TS01-C1::DALOS|C_RotateSovereign KST.ANHD KC.BJ KC.BM)
+    (map print
+        [
+            (expect "<<TX-DA-003>> the NEW sovereign has real authority: it rotates control back"
+                KC.BM (ref-DALOS::UR_AccountSovereign KC.BJ))
+        ]
+    )
+    ""
+)
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+
 (print "=== END FILE [6.12]_DALOS-ADMIN.repl (4 admin toggles + P|A_Add named-policy lane) ===")
