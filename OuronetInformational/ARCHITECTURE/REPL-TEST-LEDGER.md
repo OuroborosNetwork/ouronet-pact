@@ -11,17 +11,16 @@ This is the evidence base for the audit and documentation papers: every client e
 | metric | value |
 |---|---:|
 | client entrypoints (the auditable contract) | 448 |
-| exercised at least once | 432 (96%) |
-| **never exercised** | **16** |
-| exercised but with NO adversarial assertion in any of its blocks | **310** |
-| total invocations across the suite | 3082 |
+| exercised at least once | 433 (96%) |
+| **never exercised** | **15** |
+| exercised but with NO adversarial assertion in any of its blocks | **311** |
+| total invocations across the suite | 3086 |
 
 ## Never exercised — G1 gap
 
 These entrypoints are reachable by a client and no test calls them.
 
 * `AQP-FVT&#124;CC_SweepRevokeAnchor`
-* `ATS&#124;C_Constrict`
 * `CUSTODIANS&#124;C_Acquire`
 * `DALOS&#124;A_MigrateLiquidFunds`
 * `DEMIPAD&#124;C_Deposit`
@@ -92,6 +91,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>ATS&#124;C_Fuel</code> | 5 | 2 |
 | <code>DPOF&#124;C_Control</code> | 5 | 8 |
 | <code>DPTF&#124;C_DonateFees</code> | 5 | 0 |
+| <code>VST&#124;C_CreateHibernatingLink</code> | 5 | 6 |
 | <code>AQP-DSA&#124;A_ToggleExternalOracle</code> | 4 | 8 |
 | <code>AQP-POOL&#124;CCp_BatchDrainCollectable</code> | 4 | 10 |
 | <code>AQP-SCR&#124;C_ControlScore</code> | 4 | 6 |
@@ -105,7 +105,6 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>SWP&#124;C_IssueStablePool</code> | 4 | 0 |
 | <code>SWP&#124;C_UpdatePendingBrandingLPs</code> | 4 | 3 |
 | <code>VST&#124;C_CreateFrozenLink</code> | 4 | 3 |
-| <code>VST&#124;C_CreateHibernatingLink</code> | 4 | 0 |
 | <code>AQP-DSA&#124;A_SetOracleValidity</code> | 3 | 6 |
 | <code>AQP-DSA&#124;C_SetOracleAuth</code> | 3 | 9 |
 | <code>ATS&#124;C_SetColdRecoveryFees</code> | 3 | 0 |
@@ -232,6 +231,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>AQP-SCR&#124;C_IssueTriplet</code> | 1 | 0 |
 | <code>ATS&#124;A_KickStart</code> | 1 | 2 |
 | <code>ATS&#124;C_Brumate</code> | 1 | 0 |
+| <code>ATS&#124;C_Constrict</code> | 1 | 6 |
 | <code>ATS&#124;C_ControlColdRecoveryFees</code> | 1 | 0 |
 | <code>ATS&#124;C_ControlHotRecoveryFee</code> | 1 | 0 |
 | <code>ATS&#124;C_Syphon</code> | 1 | 0 |
@@ -446,8 +446,8 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>ATS&#124;C_Brumate</code> | 1 | 0 | 0 | `[6.6]_ATS.repl` |
 | <code>ATS&#124;C_Coil</code> | 29 | 3 | 0 | `[4.0]_Sovereign-Executor.repl`, `[5.1]_Aoz+.repl`, `[6.2+3]_DPTF-SWP_Issuance-Only.repl` +5 |
 | <code>ATS&#124;C_ColdRecovery</code> | 275 | 0 | 0 | `[6.6]_ATS.repl`, `_audit_ats_baseline.repl` |
-| <code>ATS&#124;C_Constrict</code> | 0 | 0 | 0 | — |
-| <code>ATS&#124;C_Control</code> | 6 | 2 | 3 | `[4.0]_Sovereign-Executor.repl`, `[6.6]_ATS.repl`, `_audit_ats_baseline.repl` |
+| <code>ATS&#124;C_Constrict</code> | 1 | 6 | 0 | `ATS.repl` |
+| <code>ATS&#124;C_Control</code> | 7 | 8 | 3 | `[4.0]_Sovereign-Executor.repl`, `[6.6]_ATS.repl`, `_audit_ats_baseline.repl` +1 |
 | <code>ATS&#124;C_ControlColdRecoveryFees</code> | 1 | 0 | 0 | `[6.6]_ATS.repl` |
 | <code>ATS&#124;C_ControlHotRecoveryFee</code> | 1 | 0 | 0 | `[6.6]_ATS.repl` |
 | <code>ATS&#124;C_Cull</code> | 8 | 3 | 0 | `[6.6]_ATS.repl`, `_audit_ats_baseline.repl` |
@@ -464,7 +464,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>ATS&#124;C_SetColdRecoveryDuration</code> | 2 | 0 | 0 | `[4.0]_Sovereign-Executor.repl` |
 | <code>ATS&#124;C_SetColdRecoveryFees</code> | 3 | 0 | 0 | `[4.0]_Sovereign-Executor.repl` |
 | <code>ATS&#124;C_SetDirectRecoveryFee</code> | 2 | 0 | 0 | `[4.0]_Sovereign-Executor.repl`, `_cov_draft.repl` |
-| <code>ATS&#124;C_SetHibernationFees</code> | 3 | 2 | 2 | `[6.6]_ATS.repl`, `_audit_ats_baseline.repl`, `_cov_draft.repl` |
+| <code>ATS&#124;C_SetHibernationFees</code> | 4 | 8 | 2 | `[6.6]_ATS.repl`, `_audit_ats_baseline.repl`, `_cov_draft.repl` +1 |
 | <code>ATS&#124;C_SetHotRecoveryFee</code> | 2 | 4 | 0 | `[6.6]_ATS.repl`, `_cov_draft.repl` |
 | <code>ATS&#124;C_SwitchColdRecovery</code> | 14 | 0 | 0 | `[4.0]_Sovereign-Executor.repl`, `[5.1]_Aoz+.repl`, `[6.6]_ATS.repl` +2 |
 | <code>ATS&#124;C_SwitchDirectRecovery</code> | 3 | 2 | 0 | `[4.0]_Sovereign-Executor.repl`, `[6.6]_ATS.repl`, `_cov_draft.repl` |
@@ -781,7 +781,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>SWP&#124;C_UpgradeBrandingLPs</code> | 2 | 3 | 0 | `[6.4]_Admin.repl` |
 | <code>VST&#124;C_Awake</code> | 1 | 0 | 0 | `vst-harness.repl` |
 | <code>VST&#124;C_CreateFrozenLink</code> | 4 | 3 | 0 | `[4.0]_Sovereign-Executor.repl`, `[5.3]_Launchpad.repl`, `VST.repl` +1 |
-| <code>VST&#124;C_CreateHibernatingLink</code> | 4 | 0 | 0 | `[4.0]_Sovereign-Executor.repl`, `_scratch_dpof_h7_hibernation_immutability.repl`, `vst-harness.repl` |
+| <code>VST&#124;C_CreateHibernatingLink</code> | 5 | 6 | 0 | `[4.0]_Sovereign-Executor.repl`, `_scratch_dpof_h7_hibernation_immutability.repl`, `ATS.repl` +1 |
 | <code>VST&#124;C_CreateReservationLink</code> | 1 | 0 | 0 | `[4.0]_Sovereign-Executor.repl` |
 | <code>VST&#124;C_CreateSleepingLink</code> | 3 | 0 | 0 | `[4.0]_Sovereign-Executor.repl`, `[6.3]_SWP.repl`, `vst-harness.repl` |
 | <code>VST&#124;C_CreateVestingLink</code> | 3 | 0 | 0 | `[4.0]_Sovereign-Executor.repl` |

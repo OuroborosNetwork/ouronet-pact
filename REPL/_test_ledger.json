@@ -940,19 +940,22 @@
   ]
  },
  "ATS|C_Constrict": {
-  "invocations": 0,
-  "pos": 0,
+  "invocations": 1,
+  "pos": 6,
   "neg": 0,
-  "files": []
+  "files": [
+   "REPL/modules/ATS.repl"
+  ]
  },
  "ATS|C_Control": {
-  "invocations": 6,
-  "pos": 2,
+  "invocations": 7,
+  "pos": 8,
   "neg": 3,
   "files": [
    "REPL/Stage_01/[4.0]_Sovereign-Executor.repl",
    "REPL/Stage_01/[6.6]_ATS.repl",
-   "REPL/_audit_ats_baseline.repl"
+   "REPL/_audit_ats_baseline.repl",
+   "REPL/modules/ATS.repl"
   ]
  },
  "ATS|C_ControlColdRecoveryFees": {
@@ -1094,13 +1097,14 @@
   ]
  },
  "ATS|C_SetHibernationFees": {
-  "invocations": 3,
-  "pos": 2,
+  "invocations": 4,
+  "pos": 8,
   "neg": 2,
   "files": [
    "REPL/Stage_01/[6.6]_ATS.repl",
    "REPL/_audit_ats_baseline.repl",
-   "REPL/_cov_draft.repl"
+   "REPL/_cov_draft.repl",
+   "REPL/modules/ATS.repl"
   ]
  },
  "ATS|C_SetHotRecoveryFee": {
@@ -3933,12 +3937,13 @@
   ]
  },
  "VST|C_CreateHibernatingLink": {
-  "invocations": 4,
-  "pos": 0,
+  "invocations": 5,
+  "pos": 6,
   "neg": 0,
   "files": [
    "REPL/Stage_01/[4.0]_Sovereign-Executor.repl",
    "REPL/_scratch_dpof_h7_hibernation_immutability.repl",
+   "REPL/modules/ATS.repl",
    "REPL/vst-harness.repl"
   ]
  },

@@ -4,3 +4,78 @@
 (load "../deploy-stage00.repl")
 (load "../deploy-stage01.repl")
 (load "../Stage_01/[6.6]_ATS.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "ATS-CNS — C_Constrict: hibernating stake, previously tested by NOTHING")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [ATS-CNS · 01 · env-sigs] ---")
+;;ATS|C_Constrict appeared ONLY in archive/ats-constrict-harness.repl, a driver that opens by
+;;declaring it "covers the uncovered ATS|C_Constrict client op" and then asserts nothing at all.
+;;This is the same flow with observable outcomes.
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+            ]
+        }
+    ]
+)
+(print "--- [ATS-CNS · 02 · hibernation link + constrict] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (patron:string KST.ANHD)
+        (auryndex:string "Auryndex-98c486052a51")
+    )
+    (let
+        (
+            (ouro-id:string (ref-DALOS::UR_OuroborosID))
+            (auryn-id:string (ref-DALOS::UR_AurynID))
+        )
+        ;;The RBT needs a hibernation link before Control can flip hibernation ON.
+        (ref-TS01-C2::VST|C_CreateHibernatingLink patron auryn-id)
+        (map print
+            [
+                (expect "<<ATS-CNS>> C_CreateHibernatingLink registered the link on the RBT"
+                    true (ref-DPTF::URC_HasHibernation auryn-id))
+            ]
+        )
+        (ref-TS01-C2::ATS|C_Control patron auryndex
+            (ref-ATS::UR_CanChangeOwner auryndex) (ref-ATS::UR_Syphoning auryndex) true)
+        (ref-TS01-C2::ATS|C_SetHibernationFees patron auryndex 100.0 0.008)
+        (let ((bal0:decimal (ref-DPTF::UR_AccountSupply ouro-id patron)))
+            (ref-TS01-C2::ATS|C_Constrict patron patron auryndex ouro-id 100.0 30)
+            (map print
+                [
+                    (expect "<<ATS-CNS>> C_Constrict debited the staked OURO from the constricter"
+                        (- bal0 100.0) (ref-DPTF::UR_AccountSupply ouro-id patron))
+                    (expect "<<ATS-CNS>> INVARIANT: the pair index is never negative after a constrict"
+                        true (<= 0.0 (ref-ATS::URC_Index auryndex)))
+                    (expect "<<ATS-CNS>> hibernation stayed ON after the constrict"
+                        true (ref-ATS::UR_Hibernate auryndex))
+                    (expect "<<ATS-CNS>> C_SetHibernationFees stored the peak promile"
+                        100.0 (ref-ATS::UR_PeakHibernatePromile auryndex))
+                    (expect "<<ATS-CNS>> C_SetHibernationFees stored the decay"
+                        0.008 (ref-ATS::UR_HibernateDecay auryndex))
+                ]
+            )
+        )
+    )
+    ""
+)
+(commit-tx)
