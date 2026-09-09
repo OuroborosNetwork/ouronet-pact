@@ -1754,3 +1754,248 @@
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-SPK-01 - SPARK|C_BuySparks, then the two redemption ops nothing had ever called")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-SPK-01 · 01 · buy 25 Sparks for the holder ====
+(print "--- [TX-SPK-01 · 01 · buy] ---")
+;;SPARK|C_RedemAllSparks and SPARK|C_RedemFewSparks appeared in NO live invocation anywhere in
+;;the suite; SPARK|C_BuySparks appeared only in launchpad-groundtruth.repl, a gas driver the gate
+;;does not run. All three execute here, in a file the gate does run.
+(let
+    (
+        (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+        (ref-SPARK:module{SparksV2} DEMIPAD-SPARK)
+        (spark-id:string "SPARK-98c486052a51")
+        (amount:integer 25)
+    )
+    (let
+        (
+            (prices-obj:object{DemiourgosLaunchpadV2.DEMIPAD|Prices}
+                (ref-DPAD::URC_Prices spark-id (at "pid" (ref-SPARK::URC_SparkAmountCosts amount)) 0))
+        )
+        (let
+            (
+                (a1:decimal (at "amount-one" prices-obj))
+                (a2:decimal (at "amount-two" prices-obj))
+                (a3:decimal (at "amount-three" prices-obj))
+                (a4:decimal (at "amount-four" prices-obj))
+                (env-amount:decimal (at "enviroment-amount" prices-obj))
+                (non-enviroment:decimal
+                    (+ (at "coding-amount" prices-obj) (at "remainder-amount" prices-obj)))
+            )
+            (env-sigs
+                [ { "key": "PK_AncientHodler", "caps": [] }
+                  { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+                    "caps":
+                      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                            "c:ZNfuj3iZI83n7MUSKGuoXoSxFg1cyMxCzB3szUHVvrI" non-enviroment)
+                        (coin.TRANSFER "c:ZNfuj3iZI83n7MUSKGuoXoSxFg1cyMxCzB3szUHVvrI"
+                            "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" env-amount)
+                        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                            "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" a1)
+                        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                            "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" a2)
+                        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                            "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" a3)
+                        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                            "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" a4) ] } ])
+            (let
+                (
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-CPAD:module{CitizenLaunchpadTalosV2} TS02-CPAD)
+                    (pad:string DEMIPAD-SPARK.DEMIPAD|SC_NAME)
+                )
+                (let
+                    (
+                        (buyer0:decimal (ref-DPTF::UR_AccountSupply spark-id KST.ANHD))
+                        (pad0:decimal (ref-DPTF::UR_AccountSupply spark-id pad))
+                        (supply0:decimal (ref-DPTF::UR_Supply spark-id))
+                    )
+                    (ref-CPAD::SPARK|C_BuySparks KST.ANHD KST.ANHD amount true -1.0)
+                    (map print
+                        [
+                            (expect "<<TX-SPK-01>> the buyer received exactly <amount> Sparks"
+                                (+ buyer0 (dec amount)) (ref-DPTF::UR_AccountSupply spark-id KST.ANHD))
+                            ;;A Spark sale MOVES stock off the pad; it does not mint.
+                            (expect "<<TX-SPK-01>> the pad's stock fell by the same amount"
+                                (- pad0 (dec amount)) (ref-DPTF::UR_AccountSupply spark-id pad))
+                            (expect "<<TX-SPK-01>> INVARIANT: a sale conserves total Spark supply"
+                                supply0 (ref-DPTF::UR_Supply spark-id))
+                        ]
+                    )
+                )
+            )
+        )
+    )
+)
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-SPK-02 - SPARK|C_RedemFewSparks: liquid Sparks become FROZEN Sparks + wSTOA")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-SPK-02 · 01 · fund a separate redemption payer ====
+(print "--- [TX-SPK-02 · 01 · fund the payer] ---")
+;;The redemption PAYER and the account BEING redeemed must differ: step 1 of XI_RedeemSparks is a
+;;DPTF transfer between them, and DPTF refuses a self-transfer. Paying yourself to redeem your own
+;;Sparks therefore cannot work -- the same sender==receiver trap that blocks a collection creator
+;;from patroning their own sale (TX-ACQ-02).
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+    )
+    (let ((w:string (ref-DALOS::UR_WrappedStoaID)))
+        (ref-TS01-C1::DPTF|C_Transfer KST.ANHD w KST.ANHD KST.EMMA 1000.0 true)
+        (map print
+            [
+                (expect "<<TX-SPK-02>> the payer is funded with wrapped STOA"
+                    true (>= (ref-DPTF::UR_AccountSupply w KST.EMMA) 1000.0))
+            ]
+        )
+    )
+    ""
+)
+;;==== TX-SPK-02 · 02 · redeem 10 of the 25 ====
+(print "--- [TX-SPK-02 · 02 · redeem a few] ---")
+;;BOTH parties must sign. SPARK|C>REEDEM-FEW is scoped to the account BEING redeemed, but step 1
+;;is a wSTOA transfer FROM the payer, and DPTF enforces the sender's account ownership. So a
+;;redemption is a two-signature transaction and the payer's signature is not implied by the
+;;capability the entrypoint names.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+;;Redemption is a six-op choreography (transfer wSTOA -> freeze -> partial wipe -> unfreeze ->
+;;re-mint to the pad -> VST freeze-link back to the holder). The user does NOT simply sell: they
+;;exchange LIQUID Sparks for wSTOA plus the SAME number of FROZEN Sparks. Asserting only the
+;;wSTOA payment would miss the half of the trade that stays with them.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-SPARK:module{SparksV2} DEMIPAD-SPARK)
+        (ref-CPAD:module{CitizenLaunchpadTalosV2} TS02-CPAD)
+        (spark-id:string "SPARK-98c486052a51")
+        (frozen:string "F|SPARK-98c486052a51")
+        (pad:string DEMIPAD-SPARK.DEMIPAD|SC_NAME)
+        (qty:decimal 10.0)
+    )
+    (let
+        (
+            (w:string (ref-DALOS::UR_WrappedStoaID))
+            (cost:decimal (ref-SPARK::URC_SparkRedemptionCost))
+        )
+        (let
+            (
+                (holder0:decimal (ref-DPTF::UR_AccountSupply spark-id KST.ANHD))
+                (frozen0:decimal (ref-DPTF::UR_AccountSupply frozen KST.ANHD))
+                (payer-w0:decimal (ref-DPTF::UR_AccountSupply w KST.EMMA))
+                (holder-w0:decimal (ref-DPTF::UR_AccountSupply w KST.ANHD))
+                (pad0:decimal (ref-DPTF::UR_AccountSupply spark-id pad))
+                (supply0:decimal (ref-DPTF::UR_Supply spark-id))
+            )
+            (ref-CPAD::SPARK|C_RedemFewSparks KST.ANHD KST.EMMA KST.ANHD qty)
+            (map print
+                [
+                    (expect "<<TX-SPK-02>> the redeemed Sparks left the holder's liquid balance"
+                        (- holder0 qty) (ref-DPTF::UR_AccountSupply spark-id KST.ANHD))
+                    ;;...and came back FROZEN, one for one. This is the half a naive test misses.
+                    (expect "<<TX-SPK-02>> the same count returns as FROZEN Sparks"
+                        (+ frozen0 qty) (ref-DPTF::UR_AccountSupply frozen KST.ANHD))
+                    (expect "<<TX-SPK-02>> the holder was paid quantity x redemption cost in wSTOA"
+                        (+ holder-w0 (* qty cost)) (ref-DPTF::UR_AccountSupply w KST.ANHD))
+                    (expect "<<TX-SPK-02>> the PAYER, not the pad, funded that payment"
+                        (- payer-w0 (* qty cost)) (ref-DPTF::UR_AccountSupply w KST.EMMA))
+                    ;;The pad is a WAY STATION, not the destination. Step 5 re-mints the wiped
+                    ;;Sparks onto it and step 6 immediately freeze-links them out to the holder,
+                    ;;so the pad's liquid balance nets to no change. Asserting "+qty" here looks
+                    ;;right from reading the code top-to-bottom and is wrong by one step.
+                    (expect "<<TX-SPK-02>> the pad's liquid balance nets to NO change"
+                        pad0 (ref-DPTF::UR_AccountSupply spark-id pad))
+                    (expect "<<TX-SPK-02>> INVARIANT: wipe-then-remint conserves Spark supply"
+                        supply0 (ref-DPTF::UR_Supply spark-id))
+                ]
+            )
+        )
+    )
+    ""
+)
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-SPK-03 - SPARK|C_RedemAllSparks empties the liquid balance exactly")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-SPK-03 · 01 · redeem the remainder ====
+(print "--- [TX-SPK-03 · 01 · redeem all] ---")
+;;C_RedemAllSparks differs from C_RedemFewSparks in exactly one respect: it reads the holder's
+;;CURRENT balance and redeems that. So the test that distinguishes them is "the balance ends at
+;;zero whatever it was", not "it ran".
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-SPARK:module{SparksV2} DEMIPAD-SPARK)
+        (ref-CPAD:module{CitizenLaunchpadTalosV2} TS02-CPAD)
+        (spark-id:string "SPARK-98c486052a51")
+        (frozen:string "F|SPARK-98c486052a51")
+    )
+    (let
+        (
+            (w:string (ref-DALOS::UR_WrappedStoaID))
+            (cost:decimal (ref-SPARK::URC_SparkRedemptionCost))
+        )
+        (let
+            (
+                (holder0:decimal (ref-DPTF::UR_AccountSupply spark-id KST.ANHD))
+                (frozen0:decimal (ref-DPTF::UR_AccountSupply frozen KST.ANHD))
+                (holder-w0:decimal (ref-DPTF::UR_AccountSupply w KST.ANHD))
+                (supply0:decimal (ref-DPTF::UR_Supply spark-id))
+            )
+            (map print
+                [
+                    (expect "<<TX-SPK-03>> precondition: the holder still has liquid Sparks"
+                        true (> holder0 0.0))
+                ]
+            )
+            (ref-CPAD::SPARK|C_RedemAllSparks KST.ANHD KST.EMMA KST.ANHD)
+            (map print
+                [
+                    (expect "<<TX-SPK-03>> RedemAll empties the liquid balance to exactly zero"
+                        0.0 (ref-DPTF::UR_AccountSupply spark-id KST.ANHD))
+                    (expect "<<TX-SPK-03>> every one of them came back frozen"
+                        (+ frozen0 holder0) (ref-DPTF::UR_AccountSupply frozen KST.ANHD))
+                    (expect "<<TX-SPK-03>> paid for the WHOLE remaining balance, not a fixed amount"
+                        (+ holder-w0 (* holder0 cost)) (ref-DPTF::UR_AccountSupply w KST.ANHD))
+                    (expect "<<TX-SPK-03>> INVARIANT: Spark supply is still conserved"
+                        supply0 (ref-DPTF::UR_Supply spark-id))
+                    ;;Redeeming an empty balance is a zero-quantity transfer, which DPTF refuses.
+                    (expect-failure "<<TX-SPK-03>> redeeming an ALREADY-empty balance is refused"
+                        "Amount"
+                        (ref-CPAD::SPARK|C_RedemAllSparks KST.ANHD KST.EMMA KST.ANHD))
+                ]
+            )
+        )
+    )
+    ""
+)
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)

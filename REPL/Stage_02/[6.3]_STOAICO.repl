@@ -298,7 +298,7 @@
             (expect-failure
                 "#1C: A_Inject blocked while lumy is still uncollected (unclaimed-count != 0)"
                 "previous distribution-round not fully collected"
-                (STOAICO.A_Inject KST.ANHD KST.ANHD 1000000.0))
+                (STOAICO.A_Inject KST.ANHD KST.ANHD 1000.0))
             ""
         ]
     )
@@ -390,3 +390,109 @@
 (env-sigs [])
 (commit-tx)
 (print "=== END [6.3]_STOAICO.repl (with #1C + #5M + #6M proofs) ===")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "TX-TAL - STOAICO|C_Collect over the TALOS path, and a round-2 DEADLOCK")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "=== TX-TAL — the Talos wrapper, and the zero-amount mint that freezes the vault ===")
+;; Two things at once.
+;;
+;; (a) Every collect above calls STOAICO.C_Collect DIRECTLY on the core module. That is not the
+;;     supported client path and it bills NOTHING: Talos is the only place IGNIS is collected, so
+;;     a suite that only calls the core proves the state machine and skips the whole gas model.
+;;     TS02-CPAD::STOAICO|C_Collect -- the sole gas-funded entry -- had no live invocation
+;;     anywhere in the suite.
+;;
+;; (b) FINDING. Exercising it exposes a deadlock in the SECOND distribution round.
+;;     XI_CollectFor (05_STOAICO.pact:496) mints the account's urSTOA UNCONDITIONALLY:
+;;
+;;         (ref-TS01-C1::DPTF|C_Mint patron urSTOA-id DEMIPAD|SC_NAME urSTOA-supply false)
+;;         (if (!= urSTOA-supply 0.0) <multi-transfer> <single-transfer>)
+;;
+;;     The `if` guards the DELIVERY against a zero amount. The MINT above it is not guarded, and
+;;     DPTF::UEV_Amount refuses a zero-amount mint. An account's urSTOA entitlement is zeroed by
+;;     its FIRST collect, so from its second collect onward urSTOA-supply is 0.0 and the whole
+;;     transaction aborts -- even though it still has real wSTOA rewards waiting (probe below
+;;     shows emma with 0 urSTOA and ~309 claimable wSTOA).
+;;
+;;     This is not an end-of-ICO edge case. It is every account, every round after the first, and
+;;     it is a DEADLOCK rather than a nuisance:
+;;       * C_Collect aborts, so the account cannot self-collect;
+;;       * AA_FlushUncollected shares XI_CollectFor, so the admin cannot push-collect either;
+;;       * A_Inject is barred while unclaimed-count != 0, so no new round can open.
+;;     The vault stops paying and cannot be restarted from any entrypoint.
+;;
+;;     The one-line fix is the same guard the delivery already has, and IGNIS's own
+;;     C_TransferDalosFuel documents exactly this lesson ("A ZERO amount is a NO-OP, not a
+;;     transfer ... passing 0.0 aborts the whole transaction") -- it just was not applied here.
+;;
+;;     WHEN THE MINT IS GUARDED, this block must be rewritten as a POSITIVE collect: emma is paid
+;;     her wSTOA, the round closes, and -- the reason for routing through Talos at all -- the
+;;     patron is charged exactly what STOAICO.INFO_Collect quoted. That assertion is written and
+;;     waiting in the git history of this file; it cannot run until the deadlock is fixed.
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "PK_LPAD", "caps": [] }
+        { "key": "PK_Emma", "caps": [] }
+        { "key": "PK_Lumy", "caps": [] }
+    ]
+)
+;; A fresh inject opens the next distribution-round and re-arms both stakers.
+(STOAICO.A_Inject KST.ANHD KST.ANHD 1000.0)
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-CPAD:module{CitizenLaunchpadTalosV2} TS02-CPAD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+        (patron:string KST.ANHD)
+    )
+    (let
+        (
+            (gas-id:string (ref-DALOS::UR_IgnisID))
+            (wstoa-id:string (STOAICO.UR_Global8))
+            (dround:integer (STOAICO.UR_Global11))
+        )
+        (map print
+            [
+                (expect "<<TX-TAL>> the inject opened a new distribution-round" true (>= dround 2))
+                (expect "<<TX-TAL>> both stakers are re-armed for it" 2 (STOAICO.UR_Global7))
+                (expect "<<TX-TAL>> emma has not collected this round yet"
+                    true (< (STOAICO.UR_User5 emma) dround))
+                ;;The two halves of the trap, side by side.
+                (expect "<<TX-TAL>> emma's urSTOA entitlement was zeroed by her FIRST collect"
+                    0 (STOAICO.UR_User2 emma))
+                (expect "<<TX-TAL>> ...yet she has real wSTOA rewards waiting in this round"
+                    true (> (STOAICO.URC_ClaimableRewards emma) 0.0))
+                ;;...and the global urSTOA pool is nowhere near exhausted, so this is a per-account
+                ;;bug, not the ICO running out of urSTOA.
+                (expect "<<TX-TAL>> the global urSTOA pool still has plenty left"
+                    true (> (STOAICO.UR_Global2) 0))
+                ;;FINDING (a): the self-collect aborts on the unguarded zero-amount mint.
+                (expect-failure "<<TX-TAL>> FINDING: the Talos self-collect aborts on a ZERO-amount urSTOA mint"
+                    "0.0 is not a Valid Transaction amount"
+                    (ref-CPAD::STOAICO|C_Collect patron emma))
+                ;;FINDING (b): the admin escape hatch shares XI_CollectFor, so it fails identically.
+                (expect-failure "<<TX-TAL>> FINDING: the admin flush cannot rescue it -- same shared code path"
+                    "0.0 is not a Valid Transaction amount"
+                    (STOAICO.AA_FlushUncollected patron))
+                ;;FINDING (c): and the barrier means no new round can open either. Deadlock.
+                (expect-failure "<<TX-TAL>> FINDING: nor can a new round be opened past the barrier"
+                    "previous distribution-round not fully collected"
+                    (STOAICO.A_Inject patron patron 100.0))
+                ;;RULE 9 discharge: all three abort before any state change, so the round is left
+                ;;exactly as the inject created it.
+                (expect "<<TX-TAL>> the three refusals left the unclaimed count untouched"
+                    2 (STOAICO.UR_Global7))
+                (expect "<<TX-TAL>> ...and emma still uncollected for this round"
+                    true (< (STOAICO.UR_User5 emma) dround))
+            ]
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)

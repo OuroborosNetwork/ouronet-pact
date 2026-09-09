@@ -230,7 +230,10 @@
 ;; wrong; requiring GAP ON is correct, since it freezes the chain for the window in which the
 ;; escrow is empty.
 (env-data
-    { "LQD_MIGRATE_KS": { "keys": ["PK_AncientHodler"], "pred": "keys-all" } }
+    ;;A DIFFERENT keyset from LQD-03pre's on purpose: create-principal is deterministic, so the
+    ;;same keyset yields the same account and coin.create-account would abort on the second
+    ;;insert. GOV|MIGRATE also requires the target to be EMPTY, which a fresh principal is.
+    { "LQD_MIGRATE_KS": { "keys": ["PK_Emma"], "pred": "keys-all" } }
 )
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
