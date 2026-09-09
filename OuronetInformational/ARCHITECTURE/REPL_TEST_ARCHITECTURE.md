@@ -567,6 +567,50 @@ is a phase and not part of the open-ended campaign. And a violated architectural
 CLASS of vulnerability, not one bug: if `URC_` may `enforce`, then validation lives outside the
 defcaps and the "all authorisation is in the defcap" guarantee is false everywhere at once.
 
+### 2.5.1 measured 2026-09-09 — `REPL/_conformance.py` built, 93 modules / 7,615 members
+
+```
+[UC-no-read]          0     —   the purity half of the UC_ contract is obeyed EXACTLY
+[UC-no-enforce]      24     —    0 state-dependent, 24 argument-domain
+[UR-no-enforce]       6     —    5 state-dependent
+[URC-no-enforce]     13     —   13 state-dependent   <- the dangerous class
+[XE-starts-UEV_IMC]   1
+[XI-no-enforce]      18     —   10 state-dependent
+[XI-no-trailing-true] 0     —   all 9 first-pass hits were if-ARMS; detector fixed
+TOTAL                62     —   29 state-dependent, 33 argument-domain
+```
+
+**The plan's warning was right and cost one iteration.** A first-pass `XI-no-trailing-true`
+detector reported 9 violations; every one was the `true` arm of a trailing `(if …)`, not a
+returned constant. Fixed by comparing indentation against the `(defun` line. **Nothing here is a
+finding until it has been read in the source** — the linter's job is to produce a short list
+worth reading, not a verdict.
+
+**The classification is what makes the output actionable.** Every violation is tagged
+state-dependent or argument-domain: does the enforced predicate depend on chain state, or only on
+the function's own arguments? An argument-domain enforce is deterministic and caller-avoidable. A
+state-dependent one is validation living OUTSIDE the defcap — the exact guarantee the prefix
+system sells. `SWP` contains the pair that proves the axis is real: `UC_PoolTokenPosition` and
+`UR_PoolTokenPosition` are the same function with the same `enforce`, differing only in whether
+`pool-tokens` comes from parsing the swpair string or from reading the table.
+
+**Two conclusions, and they point opposite ways:**
+
+* **`UC_` — amend the rule, do not "fix" 24 sites.** `UC-no-read` is 0 and all 24 enforces are
+  argument-domain: the code obeys "pure / state-independent" perfectly and universally rejects
+  "no `enforce`". A `UC_` that bounds-checks its own list index has not broken any promise a
+  caller relies on. Proposed wording: *`UC_*` — pure compute on arguments only: no table reads,
+  no state dependence. MAY `enforce` a precondition over its own arguments.* (`UC_Try` is a
+  further special case: it wraps `enforce-guard` in `try` specifically so it CANNOT abort.)
+* **`URC_` — 13 real deviations, and one has already caused a defect.** DEMIPAD's `UR_Funds`
+  enforces the same predicate `C>WITHDRAW`'s capability does and runs first, which is why that
+  capability's `enforce` is provably dead code (Part II finding #6). That is G4 doing its job:
+  the architectural violation is the ROOT CAUSE of a bug found independently by G1.
+
+**2.5.4 is therefore a decision, not a task:** for each of the 29 state-dependent sites, either
+move the check into the defcap or record why the reader must own it. The 33 argument-domain sites
+are an argument for amending one sentence in CLAUDE.md.
+
 * **2.5.1 Static conformance linter** (`REPL/_conformance.py`, no REPL needed) — the prefix
   contracts: `UC_` pure (no table read, no `enforce`, no cross-module read), `UR_` reads only,
   `URC_` no `enforce`, `XI_` bodies end on a write with no trailing `true`, `XE_` starts with
