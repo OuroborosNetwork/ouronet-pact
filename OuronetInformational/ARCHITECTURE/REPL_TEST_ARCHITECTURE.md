@@ -289,18 +289,112 @@ own previous spec called for "every suite we have ever built, ~an hour" — that
 assembled. 175 files never ran, including **~32 audit-finding regression tests**, 7 DSA suites
 (155 assertions), and the whole `AQP-EXHAUSTIVE-*` family.
 
-| phase | work | gate |
-|---|---|---|
-| **P0** | `fixtures/` + `boot/` extraction | — |
-| **P1** | rescue the ~32 audit regressions + DSA + AQP-scale into real testers | G3 |
-| **P2** | fill every module tester to its full entrypoint surface | **G1 = 100%** |
-| **P3** | write the ~722 missing rejection tests; delete every `enforce` that cannot fail | **G2 = 100%** |
-| **P4** | `entities/` logical-entity testers; assemble `Z.repl` | G3 |
-| **P5** | `_coverage.py` in CI, failing on any regression | all |
-| **P6** | red-team campaign → `redteam/` suite | (open-ended) |
+### Baseline — measured 2026-09-09 (every phase moves one of these)
 
-P3 is the bulk and is embarrassingly parallel — one agent per module, each enumerating its own
-`enforce` sites. P0–P2 are the prerequisite.
+| # | metric | now | target |
+|---|---|---:|---:|
+| B1 | `.repl` files | 241 | all classified |
+| B2 | files the full runner executes | **66 (27%)** | 100% |
+| B3 | Talos client entrypoints | 448 | — |
+| B4 | entrypoints never invoked | **17** | **0** |
+| B5 | entrypoints with no adversarial assertion | **319** | **0** |
+| B6 | `enforce` sites | 1,015 | — |
+| B7 | `expect-failure` assertions | 234 | >= 1,015 |
+| B8 | **`expect-failure` that accept ANY error** | **137** | **0** |
+| B9 | module testers passing standalone | 26 / 26 | all, incl. new |
+| B10 | G1 surface coverage | ~65% | 100% |
+| B11 | G2 adversarial coverage | **29%** | 100% |
+
+---
+
+## P0 — Foundation
+* **0.1** Extract `boot/`: `sandbox`, `stage1`, `stage2`, `stagezz` (deploy only, zero tests).
+* **0.2** Build `fixtures/`: `mock-accounts`, `mock-tf`, `mock-of`, `mock-sft`, `mock-nft`,
+  `mock-pair`, `mock-pool` — smallest asset that exercises the logic (RULE 2).
+* **0.3** Keep the live-shaped collections ONLY where scale or the live set definition IS the
+  subject (sets, fragments, make/break, gas ladders); annotate each with why.
+* **0.4** Re-point the 26 existing testers at `boot/` + `fixtures/`.
+* **Exit:** 26/26 still green; no tester rebuilds a fixture another already provides.
+
+## P1 — Rescue what already exists
+* **1.1** Wire the ~32 `_verify_finding_*` / `_scratch_*` audit regressions into runnable testers,
+  one per finding, named for the finding (RULE 7).
+* **1.2** Rescue the 7 `Kursan/dsa-*` suites (155 assertions, incl. `dsa-capture-tests`: 68).
+* **1.3** Rescue `AQP-scale-*` (4) + `aqp-info-tests` (55 assertions).
+* **1.4** Triage the 58 no-assertion scratch files -> `archive/`.
+* **Exit:** B1 fully classified; every asserting file belongs to exactly one tester (RULE 5).
+
+## P2 — G1: every entrypoint invoked in its OWN tester
+* **2.1** Add the 17 never-invoked entrypoints (B4) — incl. `DEMIPAD|C_Deposit`/`C_Withdraw`,
+  `DPDC|C_BulkTransfer`, `SWP|C_SmartSwapWithSlippage`, 3 VST repurpose ops.
+* **2.2** Fill each tester to 100% of its module: VST 37%, DPSF-UPDATES 39%, DALOS-ADMIN 45%,
+  DPTF 50%, DPDC 50%, DPOF 54-58%, PYTHIA 66%, DPNF 73%, DEMIPAD 80%, SWP 84%, ATS 88%.
+* **2.3** Every new test asserts an OBSERVABLE OUTCOME, never merely "did not crash".
+* **Exit:** **B10 = 100%**, B4 = 0.
+
+## P3 — G2: every rejection path proven  *(the bulk)*
+* **3.1** **Tighten the 137 weak `expect-failure`s to the 3-arg form (RULE 8) — do this FIRST.**
+  Until it is done, every adversarial number is inflated.
+* **3.2** Enumerate all 1,015 `enforce` sites + 998 defcap rejections into a worklist.
+* **3.3** One agent per module: write the missing rejection test for each site.
+* **3.4** Any `enforce` for which no failing test can be written is DEAD -> delete it (RULE 3).
+  Record each deletion with its justification.
+* **3.5** Boundaries per the section-6 checklist: empty, zero, one, max, self, duplicate, +1 past
+  each bound.
+* **Exit:** **B11 = 100%**, B8 = 0, every deletion justified.
+
+## P4 — Assembly
+* **4.1** `entities/` testers per logical entity (SWP = SWP+SWPI+SWPL+SWPLC+SWPU+MTX-SWP; AQP =
+  ANK+SCORE+POOL+FVT+RPS+VCT+DSA; DPDC = the DPDC family).
+* **4.2** Fold every suite into a single `Z.repl`; resolve contamination per suite. **Expect the
+  first folds to fail** — that is the known cost (`[6.2.6]_AQP-VCT-GAS` already does).
+* **4.3** Delete the second runner (RULE 4).
+* **4.4** Balance splits to `longest_file ~ total_work / 16` (RULE 1).
+* **Exit:** **B2 = 100%**, G3 holds (every test green standalone AND in `Z.repl`).
+
+## P5 — Make it un-rottable
+* **5.1** `_coverage.py` printing G1/G2/G3 + the untested lists.
+* **5.2** `_test_ledger.py` regenerated with the suite (RULE 6).
+* **5.3** CI fails on any gate regression, on a new entrypoint without a tester, and on any
+  2-arg `expect-failure`.
+* **Exit:** a coverage regression cannot merge.
+
+## P6 — Red team  *(open-ended; hypotheses are GENERATED, not invented)*
+* **6.1** Invariants: supply conservation, no negative balance, sum-of-shares = total, nonce
+  monotonicity, cumulator = published price. Then fuzz against them.
+* **6.2** Metamorphic pairs: transfer-once vs split, bulk vs individual, **INFO preview vs actual
+  charge**, son=true vs son=false.
+* **6.3** Attack taxonomy per module: access control, rounding/precision, overflow, composition
+  order, oracle manipulation, economic griefing, governance capture.
+* **6.4** State machines: every lifecycle state x every op that must be refused in it.
+* **6.5** Cross-role: every defcap x every wrong caller.
+* **6.6** Each finding -> a named regression test (RULE 7) + an added `enforce` where a guard was
+  missing -> **re-run P3 for the new sites** (the feedback loop above).
+* **Exit:** taxonomy walked for every module; every finding closed with a test.
+
+## P7 — Mutation: grade the tests
+* **7.1** Build `mutation/`: `>=`->`>`, `and`->`or`, delete an `enforce`, weaken a cap, off-by-one.
+* **7.2** Run per module; record killed vs survived.
+* **7.3** Every survivor is a proven hole -> write the test that kills it.
+* **Exit:** mutation score reported per module; no unexplained survivor.
+
+## P8 — The audit document (generated)
+* **8.1** Testing chapter from `REPL-TEST-LEDGER.md` + `_coverage.py`.
+* **8.2** Findings chapter: hypothesis, generating technique, outcome, fix, pinning test.
+* **8.3** Mutation chapter.
+* **8.4** **Limits chapter** — what REPL cannot test, stated plainly (section 4b).
+* **Exit:** every number in the document recomputable by the reader from a script in the repo.
+
+---
+
+## Ordering constraints (what actually blocks what)
+
+* P0 blocks everything (fixtures).
+* **3.1 blocks every published adversarial number** — tighten the 137 before counting.
+* P3 blocks P7 (mutation only means something once the tests are real).
+* P6 re-opens P3 by design (the feedback loop) — that is not rework, it is the mechanism.
+* P4 can run alongside P2/P3 per module as each module completes.
+* P8 is continuous, not final: it is generated, so it is correct at every commit.
 
 ## Tooling that does not exist yet and must be built
 
