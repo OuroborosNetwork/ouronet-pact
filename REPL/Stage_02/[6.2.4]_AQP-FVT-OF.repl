@@ -359,6 +359,7 @@
                 [
                     (expect-failure
                         "<<TX-FVT-06b>> unstake naming beneficiary=owner (the OLD self-key) finds NO row → must fail"
+                "Invalid OF pool custody: pool class/dpof-id, equal nonce/amount"
                         (ref-TS02-C3::AQP-POOL|CC_UnstakeOrtoFungible patron pool-id owner-id owner-id dpof-id [stake-nonce]))
                 ]
             )

@@ -29,6 +29,7 @@
     (print
         (expect-failure
             "unrelated signer (lumy, no DPTF module-def key, no patron account guard) must be rejected by the real GOV|DPTF_ADMIN check inside A_WipeTreasuryDebtPartial, despite the weak TS01-A P|TS Talos-layer gate"
+                "Cannot Wipe Positive Treasury Balance"
             (ref-TS01-A::DPTF|A_WipeTreasuryDebtPartial 1.0)
         )
     )

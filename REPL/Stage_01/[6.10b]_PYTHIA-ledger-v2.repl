@@ -121,6 +121,7 @@
         [
             (expect-failure
                 "<<TX012>> reject flush sealed day 82"
+                "Pyth flush batch invalid or exceeds max 1000 entries per tx"
                 (ref-TS01-C4::PYTHIA|A_Flush bad)
             )
         ]
@@ -174,6 +175,7 @@
         [
             (expect-failure
                 "<<TX014>> reject pondus >3 dp"
+                "Pyth flush batch invalid or exceeds max 1000 entries per tx"
                 (ref-TS01-C4::PYTHIA|A_Flush bad)
             )
         ]

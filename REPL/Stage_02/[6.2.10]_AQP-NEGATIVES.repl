@@ -35,18 +35,23 @@
         [
             (expect-failure
                 (format "<<TX-AQP-NEG-IMC1>> direct AQP-VCT::CC_FullVacate rejected (P|UEV_IMC — Talos only)" [])
+                "None of the guards passed"
                 (ref-VCT::CC_FullVacate pool-id))
             (expect-failure
                 (format "<<TX-AQP-NEG-IMC1>> direct AQP-VCT::C_AbortVacate rejected (P|UEV_IMC)" [])
+                "None of the guards passed"
                 (ref-VCT::C_AbortVacate pool-id))
             (expect-failure
                 (format "<<TX-AQP-NEG-IMC1>> direct AQP-FVT::CC_Inject rejected (P|UEV_IMC)" [])
+                "None of the guards passed"
                 (ref-FVT::CC_Inject patron fvt-id ouro-id 1.0))
             (expect-failure
                 (format "<<TX-AQP-NEG-IMC1>> direct AQP-FVT::CC_SweepRevokeAnchor rejected (P|UEV_IMC)" [])
+                "None of the guards passed"
                 (ref-FVT::CC_SweepRevokeAnchor patron anchor-id))
             (expect-failure
                 (format "<<TX-AQP-NEG-IMC1>> direct MTX-AQP::C_2|Inject rejected (P|UEV_IMC)" [])
+                "None of the guards passed"
                 (ref-MTX::C_2|Inject patron fvt-id ouro-id 1.0))
         ]
     )
@@ -83,15 +88,19 @@
         [
             (expect-failure
                 (format "<<TX-AQP-NEG-IMC2>> direct AQP-ANK::C_RevokeAnchor rejected (P|UEV_IMC — Talos only)" [])
+                "None of the guards passed"
                 (ref-ANK::C_RevokeAnchor anchor-id))
             (expect-failure
                 (format "<<TX-AQP-NEG-IMC2>> direct AQP-SCR::C_EnableDebBoost rejected (P|UEV_IMC)" [])
+                "None of the guards passed"
                 (ref-SCR::C_EnableDebBoost score-id))
             (expect-failure
                 (format "<<TX-AQP-NEG-IMC2>> direct AQP-POOL::C_DisablePoolStake rejected (P|UEV_IMC)" [])
+                "None of the guards passed"
                 (ref-AQP::C_DisablePoolStake patron pool-id))
             (expect-failure
                 (format "<<TX-AQP-NEG-IMC2>> direct AQP-POOL::C_Issue rejected (P|UEV_IMC)" [])
+                "None of the guards passed"
                 (ref-AQP::C_Issue patron "NegProbePool" ouro-id 1))
         ]
     )
@@ -132,6 +141,7 @@
             (expect (format "<<TX-AQP-NEG-STATE>> pool now stake-disabled got={}" [(ref-AQP::UR_AQP|PoolStakeEnabled pool-id)]) false (ref-AQP::UR_AQP|PoolStakeEnabled pool-id))
             (expect-failure
                 (format "<<TX-AQP-NEG-STATE>> stake into a DISABLED pool rejected (URC_PoolStakeAdmissionOk)" [])
+                "Invalid pool-id: pool stake disabled or has no employed scores"
                 (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id 10.0))
         ]
     )
@@ -188,12 +198,15 @@
         [
             (expect-failure
                 (format "<<TX-AQP-NEG-OWNER>> non-owner C_DisablePoolStake rejected (pool-owner gate)" [])
+                "Smart DALOS Account"
                 (ref-TS02-C3::AQP-POOL|C_DisablePoolStake foreign pool-id))
             (expect-failure
                 (format "<<TX-AQP-NEG-OWNER>> non-owner C_AddScore rejected (pool-owner gate)" [])
+                "Invalid score-id for pool assignment (missing score, class mismatch,"
                 (ref-TS02-C3::AQP-POOL|C_AddScore foreign pool-id score-id))
             (expect-failure
                 (format "<<TX-AQP-NEG-OWNER>> non-owner C_RevokeScore rejected (pool-owner gate)" [])
+                "Invalid score revoke for pool (slot, aqpool-link, zero totals,"
                 (ref-TS02-C3::AQP-POOL|C_RevokeScore foreign pool-id score-id))
         ]
     )
@@ -232,12 +245,15 @@
         [
             (expect-failure
                 (format "<<TX-AQP-NEG-OWNER2>> non-owner AQP-ANK|C_RevokeAnchor rejected (anchor-owner gate)" [])
+                "No value found in table ouronet-ns.AQP-ANK_ANK|T|Anchor for key:"
                 (ref-TS02-C3::AQP-ANK|C_RevokeAnchor foreign anchor-id))
             (expect-failure
                 (format "<<TX-AQP-NEG-OWNER2>> non-owner AQP-SCR|C_EnableDebBoost rejected (score-owner gate)" [])
+                "Keyset failure (keys-all): [PK_Ancie...]"
                 (ref-TS02-C3::AQP-SCR|C_EnableDebBoost foreign score-id))
             (expect-failure
                 (format "<<TX-AQP-NEG-OWNER2>> non-owner AQP-FVT|C_Control rejected (fvt-owner gate)" [])
+                "Keyset failure (keys-all): [PK_Ancie...]"
                 (ref-TS02-C3::AQP-FVT|C_Control foreign fvt-id false false))
         ]
     )
@@ -276,12 +292,15 @@
         [
             (expect-failure
                 (format "<<TX-AQP-NEG-XE>> direct AQP-ANK::XE_SweepRevokeAnchor rejected (P|UEV_IMC — forward only)" [])
+                "None of the guards passed"
                 (ref-ANK::XE_SweepRevokeAnchor anchor-id))
             (expect-failure
                 (format "<<TX-AQP-NEG-XE>> direct AQP-SCR::XE_RefreshUserScoreDeb rejected (P|UEV_IMC)" [])
+                "None of the guards passed"
                 (ref-SCR::XE_RefreshUserScoreDeb account pool-id score-id))
             (expect-failure
                 (format "<<TX-AQP-NEG-XE>> direct AQP-POOL::XE_SetVacateJobState rejected (P|UEV_IMC)" [])
+                "None of the guards passed"
                 (ref-AQP::XE_SetVacateJobState pool-id true))
         ]
     )
@@ -319,6 +338,7 @@
         [
             (expect-failure
                 (format "<<TX-AQP-NEG-INPUT>> negative NF set-class score value (-1.0) rejected at definition (#19)" [])
+                "Invalid DPNF set score definition (nonce-class=0, value=-1.0,"
                 (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleSetScoreDefinition patron score-id dpnf-id [0] [-1.0]))
         ]
     )

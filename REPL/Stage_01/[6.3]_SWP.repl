@@ -3164,10 +3164,12 @@
         [
             (expect-failure
                 "Non-owner cannot enable Frozen LP on someone else's pool (#31M/M7 fix)"
+                "Keyset failure (keys-all): [PK_Ancie...]"
                 (ref-TS01-C3::SWP|C_EnableFrozenLP KST.EMMA pool5)
             )
             (expect-failure
                 "Non-owner cannot enable Sleeping LP on someone else's pool (#31M/M7 fix)"
+                "Keyset failure (keys-all): [PK_Ancie...]"
                 (ref-TS01-C3::SWP|C_EnableSleepingLP KST.EMMA pool5)
             )
             (expect
@@ -4443,6 +4445,7 @@
     (print
         (expect-failure
             "#74: issuing [OURO, OURO, W1] (duplicate token ID) is rejected — composed protection from TFT::C_MultiTransfer's own uniqueness guard, not UEV_Issue"
+                "Unique Items Required, duplicate item found: OURO-98c486052a51"
             (ref-TS01-C3::SWP|C_IssueWeighted KST.ANHD KST.ANHD
                 [
                     { "token-id": "OURO-98c486052a51", "token-supply": 5000.0}
@@ -6124,14 +6127,17 @@
         [
             (expect-failure
                 "Adversarial: swap-route claiming input-id but ending at a different (real, connected) token is rejected"
+                "swap-route in bundle does not end at output-id"
                 (ref-TS01-C3::SWP|C_SmartSwapNoSlippage KST.ANHD KST.ANHD input-id 1.0 output-id wrong-endpoint-bundle)
             )
             (expect-failure
                 "Adversarial: swap-route exceeding the P0.4 depth cap (8 nodes) is rejected"
+                "swap-route in bundle is not a valid, fully active path"
                 (ref-TS01-C3::SWP|C_SmartSwapNoSlippage KST.ANHD KST.ANHD input-id 1.0 output-id depth-cap-bundle)
             )
             (expect-failure
                 "Adversarial: swap-route with a fabricated, non-existent pool as its edge is rejected"
+                "swap-route in bundle is not a valid, fully active path"
                 (ref-TS01-C3::SWP|C_SmartSwapNoSlippage KST.ANHD KST.ANHD input-id 1.0 output-id fabricated-edge-bundle)
             )
         ]
@@ -6143,6 +6149,7 @@
     (print
         (expect-failure
             "Adversarial: swap-route over a real, connected, but can-swap=false pool is rejected"
+                "swap-route in bundle is not a valid, fully active path"
             (ref-TS01-C3::SWP|C_SmartSwapNoSlippage KST.ANHD KST.ANHD "W1-98c486052a51" 1.0 "OURO-98c486052a51" inactive-edge-bundle)
         )
     )

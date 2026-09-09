@@ -19,12 +19,14 @@
             ;; The [bar]-sentinel case - correctly caught with the specific message.
             (expect-failure
                 "UEV_StringPresence on the [bar] sentinel list gives the specific 'Empty List detected!' message"
+                "Empty List detected!"
                 (ref-U|LST::UEV_StringPresence "x" ["|"])
             )
             ;; A genuinely empty list [] - does it still abort (just with a different, generic
             ;; message), or does it silently pass through (a real bug)?
             (expect-failure
                 "UEV_StringPresence on a real empty [] still aborts, just via the generic not-present message"
+                "Empty List detected!"
                 (ref-U|LST::UEV_StringPresence "x" [])
             )
         ]

@@ -278,6 +278,7 @@
         [
             (expect-failure
                 "<<TX-FRAG-003>> non-owner (EMMA) repurposing LUMY's fragments to herself is rejected (CAP_Owner gate)"
+                "Keyset failure (keys-all): [PK_Ancie...]"
                 (ref-TS02-C1::DPSF|C_RepurposeFragments emma id lumy emma [-1] [100000])
             )
             ;;Isolation control: same call, patron=the real owner-konto (correct billing account) but the
@@ -285,6 +286,7 @@
             ;;owner-konto guard (CAP_Owner), not the <patron> argument used for IGNIS billing.
             (expect-failure
                 "<<TX-FRAG-003>> isolation control: patron=owner-konto but signer=EMMA is still rejected"
+                "Keyset failure (keys-all): [PK_Ancie...]"
                 (ref-TS02-C1::DPSF|C_RepurposeFragments (ref-DPDC::UR_OwnerKonto id true) id lumy emma [-1] [100000])
             )
         ]

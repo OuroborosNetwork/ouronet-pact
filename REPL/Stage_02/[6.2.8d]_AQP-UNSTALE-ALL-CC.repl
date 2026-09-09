@@ -85,6 +85,7 @@
         [
             ;; Emma is not the FVT owner ⇒ the CAP_EnforceAccountOwnership on the owner-konto refuses.
             (expect-failure "<<TX-UNSTALEALL02>> non-owner Emma REFUSED by the owner-gate"
+                "Keyset failure (keys-all): [PK_Ancie...]"
                 (ref-TS02-C3::AQP-FVT|CCp_UnstaleAll emma fvt-id auryn-id 100))
             ;; nothing was fixed — the staleness is untouched
             (expect "<<TX-UNSTALEALL02>> staleness untouched by the refused call" 1 (length (ref-FVT::URH_FvtStalePresentUsers fvt-id)))

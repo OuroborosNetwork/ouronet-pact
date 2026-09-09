@@ -145,6 +145,7 @@
         (map print
             [
                 (expect-failure "<<TX-OF-002>> replayed slice 0 REVERTS (live table is the completion ledger)"
+                "Nonce 10 of DPOF COF-98c486052a51 is not owned by account"
                     (ref-TS01-C1::DPOF|Cp_WipeSlice patron id emma s0))
                 (expect "<<TX-OF-002>> terminal: EMMA fully wiped (remains empty)" 0 (length (at "r-nonces" (ref-DPOF::URHC_WipePure emma id))))
                 (expect "<<TX-OF-002>> terminal: EMMA account supply zeroed" 0.0 (ref-DPOF::UR_AccountSupply id emma))

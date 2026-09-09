@@ -81,12 +81,16 @@
         ;; check through the real capability chain. Testing the validator function itself directly instead
         ;; (UEV_FragmentCreditAmount is a plain enforce-only function, not capability/IMC-gated).
         (print (expect-failure "<<24M-2>> UEV_FragmentCreditAmount rejects 500 (not a multiple of 1000)"
+                "NFT fragment credit amount of 500 must be a positive multiple of 1000"
             (ref-DPDC-C::UEV_FragmentCreditAmount 500)))
         (print (expect-failure "<<24M-3>> UEV_FragmentCreditAmount rejects 0"
+                "NFT fragment credit amount of 0 must be a positive multiple of 1000"
             (ref-DPDC-C::UEV_FragmentCreditAmount 0)))
         (print (expect-failure "<<24M-4>> UEV_FragmentCreditAmount rejects -1000"
+                "NFT fragment credit amount of -1000 must be a positive multiple of"
             (ref-DPDC-C::UEV_FragmentCreditAmount -1000)))
         (print (expect-failure "<<24M-4b>> UEV_FragmentCreditAmount rejects 1500 (multiple of neither)"
+                "NFT fragment credit amount of 1500 must be a positive multiple of"
             (ref-DPDC-C::UEV_FragmentCreditAmount 1500)))
         ;; Control: legal multiples of 1000 are accepted (proves the check isn't overbroad).
         (print (expect "<<24M-5>> UEV_FragmentCreditAmount accepts 1000"

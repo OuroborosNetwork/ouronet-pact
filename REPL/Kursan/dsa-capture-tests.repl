@@ -451,6 +451,7 @@
             ;; dsa-oracle-key is NOT signed here ⇒ the DSA|A>ORACLE-WRITE guard enforce fails
             (map print
               [ (expect-failure "<<TX-P3-09>> oracle write without the authorized key rejected"
+                "Keyset failure (keys-all): [dsa-orac...]"
                     (ref-TS02-C3::AQP-DSA|C_OracleWrite anhd fvt-id triplet-id 5 1000)) ]))
     )
 )
@@ -797,6 +798,7 @@
     (let ((fvt-id:string (ref-U|DALOS::UDC_Makeid "P3DelegationVault")))
         (map print
           [ (expect-failure "<<TX-P3-16>> non-owner royalty withdraw rejected"
+                "Only the FVT owner may withdraw royalty"
                 (ref-TS02-C3::AQP-DSA|C_WithdrawRoyalty "k:not-the-owner" fvt-id ouro)) ]))
 )
 (env-sigs [])

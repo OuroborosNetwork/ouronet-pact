@@ -91,6 +91,7 @@
                 biggest (ref-IGNIS::UC_IgnisLeg "ank-sync-count-collectable"))
             ;;an unknown leg key must fail fast, not silently price at zero
             (expect-failure "<<TX-AQPP-001>> an unknown IG|LEGS key fails fast"
+                "Key \"no-such-leg\" not found in object: {\"ank-sync-count-collectable\":"
                 (ref-IGNIS::UC_IgnisLeg "no-such-leg"))
             ""
         ]

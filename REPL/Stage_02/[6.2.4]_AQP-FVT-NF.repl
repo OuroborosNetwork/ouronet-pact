@@ -387,6 +387,7 @@
         [
             (expect-failure
                 (format "<<TX-FVT-NF-04 expect-failure>> unstake a non-staked NF nonce must fail" [])
+                "Invalid collectable pool custody: pool class/collectable-id, stake"
                 (ref-TS02-C3::AQP-POOL|CC_UnstakeNonFungibleCollectable
                     patron pool-id owner-id beneficiary-id dpnf-id [held-nonce] [1]))
         ]

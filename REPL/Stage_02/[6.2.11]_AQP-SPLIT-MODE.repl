@@ -161,10 +161,12 @@
             ;;==== TX-SPLIT-03 · 01 · invalid mode value rejected ====
             (expect-failure
                 (format "<<TX-SPLIT-03>> invalid split-mode value 'BOGUS' rejected (must be SPLIT|STAKED/SPLIT|TVL)" [])
+                "Split-mode: farm (class 0) only, value must be SPLIT|STAKED or"
                 (ref-TS02-C3::AQP-FVT|C_SetSplitMode patron farm-id "BOGUS"))
             ;;==== TX-SPLIT-03 · 02 · non-farm (class-1 vault) rejected ====
             (expect-failure
                 (format "<<TX-SPLIT-03>> split-mode on a class-1 vault rejected (farm-class-0 only)" [])
+                "Split-mode: farm (class 0) only, value must be SPLIT|STAKED or"
                 (ref-TS02-C3::AQP-FVT|C_SetSplitMode patron vault-id "SPLIT|TVL"))
         ]
     )

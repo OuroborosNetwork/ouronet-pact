@@ -70,6 +70,7 @@
         ;; 4] Regression: freezing (the other direction) must STILL be blocked while can-freeze=false --
         ;;    confirms the fix is correctly scoped to unfreeze only, not a blanket bypass.
         (print (expect-failure "<<13H-2>> freezing a NEW account is still rejected while can-freeze=false"
+                "FVPN-98c486052a51 cannot be freezed"
             (ref-TS02-C2::DPNF|C_ToggleFreezeAccount owner id creator true)))
         ""
     )

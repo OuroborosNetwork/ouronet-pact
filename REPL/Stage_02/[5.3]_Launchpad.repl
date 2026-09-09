@@ -581,6 +581,7 @@
             (expect "#7M: SF asset passes the Semi-Fungible cap check [false true] (son=true path)"
                 true (DEMIPAD.UEV_AssetFungibility sf-id [false true]))
             (expect-failure "#7M: SF asset REJECTED by the Non-Fungible cap check [false false] (son=false path now blocks the type mismatch)"
+                "ID DHOC-98c486052a51 fungibility as Non-Fungible is invalid"
                 (DEMIPAD.UEV_AssetFungibility sf-id [false false]))
             ""
         ]

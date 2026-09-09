@@ -93,6 +93,7 @@
             ;; savepoint where the enforce's URH_ select is itself disallowed, so the call fails with the DB read-only
             ;; error instead. Either way finalize cannot proceed while stale; the assertion above confirms >0 stale.)
             (expect-failure "<<TX-INJECT-CC02>> CC_InjectFinalize REFUSES while stale stakers remain"
+                "Stale stakers remain — page CCp_InjectFixChunk until none remain"
                 (ref-TS02-C3::AQP-FVT|CC_InjectFinalize anhd fvt-id auryn-id 10.0))
         ]
     )

@@ -2035,12 +2035,16 @@
     (map print
         [
             (expect-failure "C7 fix — length mismatch (2 weights on a 3-token pool) is rejected"
+                "List elements are not the same"
                 (ref-TS01-C3::SWP|C_ModifyWeights patron pool1 [0.5 0.5]))
             (expect-failure "C7 fix — a weight below the 0.1 floor is rejected"
+                "Weight 0.05 must respect fee precision and be at least 0.1"
                 (ref-TS01-C3::SWP|C_ModifyWeights patron pool1 [0.05 0.45 0.5]))
             (expect-failure "C7 fix — a negative weight (cancelling to sum=1.0) is rejected"
+                "Weight -0.5 must respect fee precision and be at least 0.1"
                 (ref-TS01-C3::SWP|C_ModifyWeights patron pool1 [1.2 0.3 -0.5]))
             (expect-failure "C7 fix — a weight violating fee precision (5 decimals) is rejected"
+                "Weight 0.30001 must respect fee precision and be at least 0.1"
                 (ref-TS01-C3::SWP|C_ModifyWeights patron pool1 [0.30001 0.5 0.19999]))
         ]
     )
@@ -2093,21 +2097,25 @@
     (ref-TS01-C3::SWP|C_UpdateAmplifier patron pool2 85.0)
     (map print
         [(expect-failure "C8 fix — new-amplifier = 0.0 (div-by-zero bricking risk) is rejected"
+                "Amplifier 0.0 must be between 1.0 and 2000.0"
             (ref-TS01-C3::SWP|C_UpdateAmplifier patron pool2 0.0))]
     )
     (ref-TS01-C3::SWP|C_UpdateAmplifier patron pool2 85.0)
     (map print
         [(expect-failure "C8 fix — new-amplifier = -1.0 (the non-stable-pool sentinel) is rejected"
+                "Amplifier -1.0 must be between 1.0 and 2000.0"
             (ref-TS01-C3::SWP|C_UpdateAmplifier patron pool2 -1.0))]
     )
     (ref-TS01-C3::SWP|C_UpdateAmplifier patron pool2 85.0)
     (map print
         [(expect-failure "C8 fix — a negative new-amplifier is rejected"
+                "Amplifier -5.0 must be between 1.0 and 2000.0"
             (ref-TS01-C3::SWP|C_UpdateAmplifier patron pool2 -5.0))]
     )
     (ref-TS01-C3::SWP|C_UpdateAmplifier patron pool2 85.0)
     (map print
         [(expect-failure "C8 fix — new-amplifier above the 2000.0 ceiling is rejected"
+                "Amplifier 5000.0 must be between 1.0 and 2000.0"
             (ref-TS01-C3::SWP|C_UpdateAmplifier patron pool2 5000.0))]
     )
     (ref-TS01-C3::SWP|C_UpdateAmplifier patron pool2 150.0)
@@ -2205,6 +2213,7 @@
         [
             ;;can-add=false must still block a NEW deposit — unchanged, legitimate behavior.
             (expect-failure "H11 fix — can-add=false still blocks a new deposit, as intended"
+                "Adding|Removing Liquidity isn't enabled on pool"
                 (ref-TS01-C3::SWP|C_AddLiquidity patron patron pool1 [10.0 10.0 10.0]))
         ]
     )
@@ -2899,10 +2908,12 @@
             [
                 (expect-failure
                     "#11C fix — a 0.0-weight token is rejected, not just the sum check"
+                "Weight 0.0 must respect fee precision and be at least 0.1"
                     (ref-TS01-C3::SWP|C_IssueWeighted KST.ANHD KST.ANHD tokens 10.0 [0.9 0.1 0.0] false)
                 )
                 (expect-failure
                     "#11C fix — a weight below the 0.1 floor is rejected"
+                "Weight 0.05 must respect fee precision and be at least 0.1"
                     (ref-TS01-C3::SWP|C_IssueWeighted KST.ANHD KST.ANHD tokens 10.0 [0.85 0.1 0.05] false)
                 )
             ]
@@ -3027,12 +3038,14 @@
     )
     (print (expect-failure
         "Principal cap fix — an 8th principal is rejected (7 maximum already defined)"
+                "Cannot add principal — 7 of 7 maximum already defined"
         (ref-TS01-A::SWP|A_UpdatePrincipal eighth true)
     ))
     (map (lambda (p:string) (ref-TS01-A::SWP|A_UpdatePrincipal p false)) test-principals)
     (print (format "Removal-floor proof — count after draining all 5 test principals (7 -> 2): {}" [(length (ref-SWP::UR_Principals))]))
     (print (expect-failure
         "Removal-floor fix — removing below 2 principals is rejected, even a genuine genesis principal (OURO)"
+                "Cannot remove principal — at least 2 must remain defined (2"
         (ref-TS01-A::SWP|A_UpdatePrincipal ouro false)
     ))
     (map (lambda (p:string) (ref-TS01-A::SWP|A_UpdatePrincipal p true)) test-principals)
@@ -3129,9 +3142,12 @@
     )
     (map print
         [
-            (expect-failure "Rotate fix — rotating a non-principal is rejected" (ref-TS01-A::SWP|A_RotatePrincipal "PT-98c486052a51_typo" ti))
-            (expect-failure "Rotate fix — rotating into an already-existing principal is rejected" (ref-TS01-A::SWP|A_RotatePrincipal hg ouro))
-            (expect-failure "Rotate fix — rotating a principal into itself is rejected" (ref-TS01-A::SWP|A_RotatePrincipal hg hg))
+            (expect-failure "Rotate fix — rotating a non-principal is rejected"
+                "String PT-98c486052a51_typo is not present in list" (ref-TS01-A::SWP|A_RotatePrincipal "PT-98c486052a51_typo" ti))
+            (expect-failure "Rotate fix — rotating into an already-existing principal is rejected"
+                "OURO-98c486052a51 is already a principal" (ref-TS01-A::SWP|A_RotatePrincipal hg ouro))
+            (expect-failure "Rotate fix — rotating a principal into itself is rejected"
+                "Cannot rotate a principal into itself" (ref-TS01-A::SWP|A_RotatePrincipal hg hg))
         ]
     )
     (ref-TS01-A::SWP|A_RotatePrincipal hg ti)
@@ -3190,6 +3206,7 @@
             [
                 (expect-failure
                     "Rotate fix — a NEW pool can no longer anchor to HG (retired as principal)"
+                "1st Token is not a Principal"
                     (ref-TS01-C3::SWP|C_IssueStandard KST.ANHD KST.ANHD [ { "token-id": hg, "token-supply": 500.0} { "token-id": ga, "token-supply": 500.0} ] 10.0 false)
                 )
             ]
@@ -3289,8 +3306,10 @@
             (expect "#65eL — DWK is major by primordial-pool membership, even though not currently a registered principal" true (ref-SWP::URC_IsMajorPrincipal dwk))
             (expect "#65eL — a genuine minor principal is NOT major" false (ref-SWP::URC_IsMajorPrincipal minor))
             (expect "#65eL — principal count is well above the floor (7), so the next 2 checks genuinely test the NEW major-principal guard, not the pre-existing floor guard" true (> before-count 2))
-            (expect-failure "#65eL — removing a major principal (OURO) is rejected outright, even with headroom above the floor" (ref-TS01-A::SWP|A_UpdatePrincipal ouro false))
-            (expect-failure "#65eL — rotating a major principal (OURO) away is rejected outright" (ref-TS01-A::SWP|A_RotatePrincipal ouro real-non-principal))
+            (expect-failure "#65eL — removing a major principal (OURO) is rejected outright, even with headroom above the floor"
+                "OURO-98c486052a51 is a major (primordial-pool) principal — cannot be" (ref-TS01-A::SWP|A_UpdatePrincipal ouro false))
+            (expect-failure "#65eL — rotating a major principal (OURO) away is rejected outright"
+                "OURO-98c486052a51 is a major (primordial-pool) principal — cannot be" (ref-TS01-A::SWP|A_RotatePrincipal ouro real-non-principal))
         ]
     )
     (ref-TS01-A::SWP|A_UpdatePrincipal minor false)

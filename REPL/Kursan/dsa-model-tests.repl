@@ -105,12 +105,15 @@
         [
             ;; re-defining DsaCustBronze → model-id already exists
             (expect-failure "<<DSA-MODEL-02>> duplicate model-id rejected"
+                "Model id already exists"
                 (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "DsaCustBronze" 3 cust 24 [-1] [1.0]))
             ;; combine over a non-existent sub-model → rejected
             (expect-failure "<<DSA-MODEL-02>> triplet over a missing sub-model rejected"
+                "The three sub-models must all exist"
                 (ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel anhd "DsaBadModel" "Nonexistent-Model-Id" "Nonexistent-Model-Id" "Nonexistent-Model-Id"))
             ;; nonces/values length mismatch → rejected
             (expect-failure "<<DSA-MODEL-02>> nonces/values length mismatch rejected"
+                "nonces and nonce-score-values must be the same non-empty length"
                 (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "DsaMismatch" 3 cust 24 [-1 -2] [1.0]))
         ]
     )
@@ -170,6 +173,7 @@
                         (expect "<<DSA-MODEL-03>> factory bundled the 3 scores into a triplet" true (ref-SCR::URC_TripletExists triplet-id))
                         ;; idempotent: re-issuing the same (operator, model) collides on the score-id ⇒ rejected
                         (expect-failure "<<DSA-MODEL-03>> re-issuing the same agency-name is rejected (score-id collision)"
+                "Error during database operation: Value already found while in Insert"
                             (ref-TS02-C3::AQP-SCR|C_IssueScoreFromModel anhd anhd model-id "AnhdAgency"))
                     ]
                 )

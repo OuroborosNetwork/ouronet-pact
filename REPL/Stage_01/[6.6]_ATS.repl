@@ -2652,6 +2652,7 @@
         [
             (expect "can-upgrade is now false" false (ref-ATS::UR_CanUpgrade ps))
             (expect-failure (format "{} properties cannot be upgraded" [ps])
+                "PlebeicStrength-98c486052a51 properties cannot be upgraded"
                 (ref-TS01-C2::ATS|C_Control aoz ps false false false)
             )
         ]
@@ -3686,9 +3687,11 @@
     (map print
         [
             (expect-failure "royalty above the new 500.0 ceiling (999.0, the old ceiling) is rejected"
+                "Royalty cannot exceed 500.0 promile (50%)"
                 (ref-TS01-C2::ATS|C_UpdateRoyalty aoz ps 999.0)
             )
             (expect-failure "royalty just above the new ceiling (500.0001) is rejected"
+                "Royalty cannot exceed 500.0 promile (50%)"
                 (ref-TS01-C2::ATS|C_UpdateRoyalty aoz ps 500.0001)
             )
         ]

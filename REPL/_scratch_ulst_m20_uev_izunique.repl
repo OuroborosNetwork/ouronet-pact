@@ -20,6 +20,7 @@
             (format "UEV_IzUnique on a unique list => {}" [(ref-U|LST::UEV_IzUnique ["a" "b" "c"])])
             (expect-failure
                 "UEV_IzUnique must still abort on a duplicate, same as UC_IzUnique did before the rename"
+                "Unique Items Required, duplicate item found: a"
                 (ref-U|LST::UEV_IzUnique ["a" "b" "a"])
             )
         ]

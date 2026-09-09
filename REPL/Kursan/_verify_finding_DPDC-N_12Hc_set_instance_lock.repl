@@ -83,8 +83,10 @@
         (print (format "nonce-class of spawned instance (6) = {}" [(ref-DPDC::UR_NonceClass id false 6)]))
         ;; #12Hc negative: direct edit of the Set INSTANCE's own data must now be rejected.
         (print (expect-failure "<<12Hc-1>> C_UpdateNonceName on a Set instance nonce (6) is rejected"
+                "NFT Set instance nonces cannot have their data directly modified —"
             (ref-TS02-C2::DPNF|C_UpdateNonceName owner id owner 6 true "hijacked")))
         (print (expect-failure "<<12Hc-2>> C_UpdateNonceMetaData on a Set instance nonce (6) is rejected"
+                "NFT Set instance nonces cannot have their data directly modified —"
             (ref-TS02-C2::DPNF|C_UpdateNonceMetaData owner id owner 6 true {"composition" : [999]})))
         ;; #12Hc positive: the Set-CLASS template (nost=false path) stays fully editable.
         (print (format "<<12Hc-3>> C_UpdateSetNonceName on the Set-Class (1) template RESULT = {}"

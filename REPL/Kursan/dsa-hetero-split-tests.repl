@@ -308,6 +308,7 @@
             (map print
                 [
                     (expect-failure "<<TX-HET-02>> non-owner cannot set quality split"
+                "Keyset failure (keys-all): [PK_Ancie...]"
                         (ref-TS02-C3::AQP-FVT|C_SetQualitySplit emma farm-id ouro-id "HETEROGENEOUS" [1000 0 0] [1000 0 0] [1000 0 0]))
                 ]
             )
@@ -316,10 +317,13 @@
             (map print
                 [
                     (expect-failure "<<TX-HET-02>> silver row [500 400 0] (sum 900) rejected"
+                "Each lane split must be [to-t0 to-t1 to-t2] non-negative per-mille"
                         (ref-TS02-C3::AQP-FVT|C_SetQualitySplit patron farm-id ouro-id "HETEROGENEOUS" [1000 0 0] [500 400 0] [1000 0 0]))
                     (expect-failure "<<TX-HET-02>> a 2-element row rejected"
+                "Each lane split must be [to-t0 to-t1 to-t2] non-negative per-mille"
                         (ref-TS02-C3::AQP-FVT|C_SetQualitySplit patron farm-id ouro-id "HETEROGENEOUS" [1000 0 0] [600 400] [1000 0 0]))
                     (expect-failure "<<TX-HET-02>> unknown mode rejected"
+                "mode must be HOMOGENEOUS or HETEROGENEOUS"
                         (ref-TS02-C3::AQP-FVT|C_SetQualitySplit patron farm-id ouro-id "BOGUS" [1000 0 0] [1000 0 0] [1000 0 0]))
                 ]
             )
@@ -327,6 +331,7 @@
             (map print
                 [
                     (expect-failure "<<TX-HET-02>> quality split on a non-existent reward link rejected"
+                "Reward link row must exist"
                         (ref-TS02-C3::AQP-FVT|C_SetQualitySplit patron farm-id "VESTA-98c486052a51" "HETEROGENEOUS" [1000 0 0] [1000 0 0] [1000 0 0]))
                 ]
             )

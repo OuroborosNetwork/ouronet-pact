@@ -438,6 +438,7 @@
                 [
                     (expect-failure
                         "<<TX-FVT-DC-03b>> unstake naming beneficiary=owner (the OLD self-key) finds NO row → must fail"
+                "Invalid collectable pool custody: pool class/collectable-id, stake"
                         (ref-TS02-C3::AQP-POOL|CC_UnstakeSemiFungibleCollectable patron pool-id owner-id owner-id dpsf-id [stake-nonce] [stake-amount]))
                 ]
             )

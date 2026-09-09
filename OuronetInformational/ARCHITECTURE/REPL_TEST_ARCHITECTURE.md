@@ -452,7 +452,8 @@ and the protection rows with `cd REPL && python3 _gate.py`.*
 | B5 | entrypoints with no adversarial assertion | 319 | **289** | **0** |
 | B6 | `enforce` sites | 1,015 | 1,015 | — |
 | B7 | `expect-failure` assertions | 234 | **306** | >= 1,015 |
-| B8 | **`expect-failure` that accept ANY error** | ~~137~~ **210** | **210** | **0** |
+| B8 | **`expect-failure` that accept ANY error** | ~~137~~ **210** | **51** | **0** |
+| B8b | **`enforce` sites PINNED by a negative test** | — | **121 / 889 (13%)** | 889 |
 | B9 | module testers passing standalone | 26 / 26 | 24 / 24 | all, incl. new |
 | B9b | **module testers asserting NOTHING about their module** | **8 / 26** | **0** ✅ | **0** |
 | B10 | **G1 surface coverage (gated)** | ~65% | **100%** ✅ | 100% |
@@ -480,6 +481,59 @@ string-stripped source, so the forms cannot be confused. Positive control:
 
 **P3 is therefore ~53% larger than the plan budgeted**, and every adversarial percentage
 published before this correction was computed against the wrong denominator.
+
+**3.1 closed 2026-09-09: 210 -> 51 weak, 96 -> 255 strong.** `REPL/_tighten.py` harvests the real
+message rather than guessing it: insert a deliberately-wrong sentinel, run the file through the
+gate entrypoint that LOADS it (most suites are mid-chain and die standalone), read the truth out
+of `expected error message 'SENTINEL', got '<actual>'`, substitute. It never invents a message.
+The 51 that remain are all in files the gate does not execute.
+
+> **Three separate bugs in that tool, each of which produced plausible-looking output, and only
+> the gate caught any of them.** (1) Blanking `"` to keep the Pact literal valid CORRUPTED every
+> message containing quoted data. (2) Cutting at the first `"` instead was a valid substring but
+> a useless one -- every `Key "…" not found` collapsed to `Key`. (3) Matching a harvested line to
+> a site with +/-1 tolerance let one site claim its NEIGHBOUR's message where two forms sat close
+> together; two bad lines in one file surfaced as 26 broken entrypoints. The rule this earns:
+> **a mechanical edit across 169 sites cannot be validated by inspection, only by execution.**
+
+### 3.2 — `REPL/_enforce_coverage.py`: which guards has a test actually PINNED?
+
+```
+enforce sites with a matchable message : 889
+PINNED by a negative test              : 121  (13%)
+not pinned                             : 768
+message is all {} holes (unmatchable)  :  18
+```
+
+This is only possible BECAUSE of 3.1: with real messages in the tests, an `enforce`'s own message
+text is the join key, so a match pins THAT guard and no other. Contrast the ledger, which credits
+assertions by transaction BLOCK and therefore measures a neighbourhood.
+
+**255 strong tests pin only 121 enforce sites, and the gap is informative:** the rest pin
+rejections that are not `enforce` at all -- keyset failures, `require-capability`, table misses.
+The suite tests more mechanisms than G2 counts.
+
+### 3.4 pre-pass — `REPL/_deadguard.py`, run BEFORE writing 768 tests
+
+Finds the shape that produced the one known dead guard: a client evaluates a READER that enforces
+predicate P in a `let` binding, then opens a CAPABILITY that enforces P again -- so the
+capability's copy is unreachable for every input.
+
+**It found exactly one: the `DEMIPAD::UR_Funds` / `C>WITHDRAW` case already known.** That pattern
+is a one-off, not a class, so **P3.3 really is ~768 sites** and there is no shortcut. A negative
+result worth the minutes it cost.
+
+> Two ways it lied before it told the truth. Matching on the enforce MESSAGE found zero -- the
+> known pair reads "Invalid Read Type" against "Invalid Withdrawal type" while both enforce the
+> identical `(contains type [1 2 3])`; duplicated guards get rewritten messages far more often
+> than copied ones, so the CONDITION is the only reliable key. Then it still found zero because
+> member names carry their return type (`UR_Funds:decimal`) and call sites do not -- the THIRD
+> analysis in this codebase silently emptied that way, each time returning a confident ZERO
+> rather than an error, which is the worst failure mode for a tool whose job is reporting an
+> absence.
+
+**`00_DPMF` is excluded from P3 by owner ruling (2026-09-09): dead weight kept for historical
+purposes only, no modifications and no testing.** That removes 33 sites from the worklist.
 
 ---
 

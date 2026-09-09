@@ -225,6 +225,7 @@
         [
             (expect-failure
                 (format "<<TX-POOL-02 expect-failure>> revoke hub while sat-a/sat-b employed (must fail)" [])
+                "Invalid score revoke for pool (slot, aqpool-link, zero totals,"
                 (ref-TS02-C3::AQP-POOL|C_RevokeScore patron pool-id hub-id)
             )
         ]

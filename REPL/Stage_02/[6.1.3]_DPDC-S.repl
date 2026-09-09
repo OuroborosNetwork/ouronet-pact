@@ -613,6 +613,7 @@
             )
             (expect-failure
                 "<<TX-SET-007>> EnableSetClassFragmentation on a deactivated set-class is rejected (DPDC Audit #30M)"
+                "Set Class 1 of SFT ID TSFS-98c486052a51 must be set to true for"
                 (ref-TS02-C1::DPSF|C_EnableSetClassFragmentation owner sft-id 1 nd)
             )
         ]

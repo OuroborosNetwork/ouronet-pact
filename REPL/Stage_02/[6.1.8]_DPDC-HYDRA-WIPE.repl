@@ -167,6 +167,7 @@
     (map print
         [
             (expect-failure "<<TX-HW-004>> replayed slice 0 REVERTS (wiped nonces fail 0 < amount)"
+                "Amount 1 is invalid for Debiting Nonce 9 of CNF-98c486052a51 on"
                 (ref-TS02-C2::DPNF|Cp_WipeSlice patron emma id
                     (ref-DPDC-MNG::UDC_RemovableNonces [9 10 11 12] [1 1 1 1])))
             (expect "<<TX-HW-004>> nothing changed: still 8 nonces"
@@ -203,6 +204,7 @@
     (map print
         [
             (expect-failure "<<TX-HW-005>> slice on UNFROZEN account REVERTS (fail-safe)"
+                "Frozen for CNF-98c486052a51 on Account"
                 (ref-TS02-C2::DPNF|Cp_WipeSlice patron emma id
                     (ref-DPDC-MNG::UDC_RemovableNonces [13 14 15 16] [1 1 1 1])))
             ""
@@ -332,6 +334,7 @@
                     (expect "<<TX-HW-007>> after slice 0: 4 SFT nonces remain"
                         4 (length (at "r-nonces" (ref-DPDC-MNG::URHC_WipePure lumy id true))))
                     (expect-failure "<<TX-HW-007>> replayed SFT slice 0 REVERTS (live table = completion ledger)"
+                "Amount 0 is invalid for Debiting Nonce 12 of DHCD-98c486052a51 on"
                         (ref-TS02-C1::DPSF|Cp_WipeSlice patron lumy id s0))
                     ""
                 ]

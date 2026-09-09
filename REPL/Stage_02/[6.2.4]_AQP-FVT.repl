@@ -900,6 +900,7 @@
     (map print
         [
             (expect-failure "<<TX-FVT-08>> SetMosaic blocked while ScoreEntityLink rows exist"
+                "Cannot change mosaic while ScoreEntityLink rows exist"
                 (ref-TS02-C3::AQP-FVT|C_SetMosaic patron fvt-id true))
         ]
     )

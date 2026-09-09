@@ -267,6 +267,7 @@
             (expect "<<TX-IGC-001>> deter: usage tier = 1 (no deterrent)"
                 1.0 (ref-IGNIS::UC_IgnisDeter "usage"))
             (expect-failure "<<TX-IGC-001>> unknown key FAILS FAST (no silent default)"
+                "Key \"no-such-tier\" not found in object: {\"acct-smart\":"
                 (ref-IGNIS::UC_IgnisDeter "no-such-tier"))
         ]
     )
@@ -295,6 +296,7 @@
             (expect "<<TX-IGC-002>> STOA: $100 (shareholder) = 1000 STOA"
                 1000.0 (ref-IGNIS::UC_StoaPrice "issue-shareholder"))
             (expect-failure "<<TX-IGC-002>> unknown op key FAILS FAST (no silent 0 price)"
+                "Key \"NOPE|C_Nothing\" not found in object:"
                 (ref-IGNIS::UC_IgnisComponents "NOPE|C_Nothing"))
         ]
     )

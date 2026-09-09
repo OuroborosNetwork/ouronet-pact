@@ -230,6 +230,7 @@
                 true (contains "Rarity" nonce1-meta))
             (expect-failure
                 (format "<<TX-AQP-NF-NEGDEF>> negative NF trait score value (-1.0) rejected at definition (#19)" [])
+                "Invalid DPNF trait definition (key=Rarity, value=Common, score=-1.0,"
                 (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScoreDefinition patron score-id kbn-id ["Rarity"] ["Common"] [-1.0]))
         ]
     )

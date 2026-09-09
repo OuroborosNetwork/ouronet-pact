@@ -637,12 +637,15 @@
         [
             (expect-failure
                 (format "<<TX-VCT-L04b expect-failure>> non-owner CC_FullVacate rejected (pool-owner gate)" [])
+                "Keyset failure (keys-all): [PK_Ancie...]"
                 (ref-TS02-C3::AQP-POOL|CC_FullVacate foreign pool-id))
             (expect-failure
                 (format "<<TX-VCT-L04b expect-failure>> non-owner C_AbortVacate rejected (pool-owner gate)" [])
+                "Keyset failure (keys-all): [PK_Ancie...]"
                 (ref-TS02-C3::AQP-POOL|C_AbortVacate foreign pool-id))
             (expect-failure
                 (format "<<TX-VCT-L04b expect-failure>> non-owner C_EnablePoolStake rejected (pool-owner gate)" [])
+                "Keyset failure (keys-all): [PK_Ancie...]"
                 (ref-TS02-C3::AQP-POOL|C_EnablePoolStake foreign pool-id))
         ]
     )
@@ -1097,6 +1100,7 @@
         [
             (expect-failure
                 (format "<<TX-VCT-N01 expect-failure>> empty batch arrays rejected (gas-ok requires l>0)" [])
+                "Array index out of bounds. Length (0), Index (0)"
                 (ref-TS02-C3::AQP-POOL|CCp_BatchVacateTrueFungible
                     patron pool-id ouro-id [] [] []
                 )
@@ -1157,6 +1161,7 @@
             [
                 (expect-failure
                     (format "<<TX-VCT-N02 expect-failure>> batch amount mismatch vs tracker must fail" [])
+                "Invalid TF vacate cap input"
                     (ref-TS02-C3::AQP-POOL|CCp_BatchVacateTrueFungible
                         patron pool-id ouro-id [owner-id] [beneficiary-id] [1.0]
                     )

@@ -121,6 +121,7 @@
         [
             (expect-failure
                 (format "<<TX001 expect-failure>> BoostClass must reject 8th anchor slot: <(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorfailslot)> (must fail)" [])
+                "{\"anchor-id\": \"|\",\"ouronet-account\": \"|\",\"promile\": 0.0} BoostClass"
                 (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorfailslot" ouro-id false core-class-id 3 990.0 9900.0)
             )
         ]
@@ -132,16 +133,22 @@
     (map print
         [
             (expect-failure "<<TX001 M6#15>> promile > 10000 rejected"
+                "Invalid Promile Variables: precision must be 3 and promile within [1,"
                 (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFbadPromileHi" ouro-id true "M6HiClass" 3 10001.0 1000.0))
             (expect-failure "<<TX001 M6#15>> promile < 1 rejected"
+                "Invalid Promile Variables: precision must be 3 and promile within [1,"
                 (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFbadPromileLo" ouro-id true "M6LoClass" 3 0.999 1000.0))
             (expect-failure "<<TX001 M6#15>> promile not conform to precision 3 rejected"
+                "Invalid Promile Variables: precision must be 3 and promile within [1,"
                 (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFbadConf" ouro-id true "M6ConfClass" 3 100.0001 1000.0))
             (expect-failure "<<TX001 M6#15>> precision != 3 rejected"
+                "Invalid Promile Variables: precision must be 3 and promile within [1,"
                 (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFbadPrec" ouro-id true "M6PrecClass" 4 100.0 1000.0))
             (expect-failure "<<TX001 M6#15>> dptf-amount < 1000 rejected"
+                "TF anchor denominated amount (dptf-amount) must be within [1000,"
                 (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFbadAmtLo" ouro-id true "M6AmtLoClass" 3 100.0 999.0))
             (expect-failure "<<TX001 M6#15>> dptf-amount > 1,000,000 rejected"
+                "TF anchor denominated amount (dptf-amount) must be within [1000,"
                 (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFbadAmtHi" ouro-id true "M6AmtHiClass" 3 100.0 1000001.0))
         ]
     )
@@ -255,6 +262,7 @@
         [
             (expect-failure
                 (format "<<TX002 expect-failure>> Cannot revoke non-empty BoostClass: <(TS02-C3.AQP-ANK|C_RevokeBoostClass TempClassTF)> (must fail)" [])
+                "{\"anchor-id\": \"|\",\"ouronet-account\": \"|\",\"promile\": 0.0} BoostClass"
                 (ref-TS02-C3::AQP-ANK|C_RevokeBoostClass patron temp-class-id)
             )
         ]
@@ -273,6 +281,7 @@
         [
             (expect-failure
                 "<<TX002 L4#17>> re-revoking an already-revoked anchor is rejected up front (anchor must be alive)"
+                "Anchor TFTEMPaa-98c486052a51 must be alive for operation"
                 (ref-TS02-C3::AQP-ANK|C_RevokeAnchor patron "TFTEMPaa-98c486052a51"))
         ]
     )
@@ -353,10 +362,12 @@
         [
             (expect-failure
                 (format "<<TX003 expect-failure>> XI_Update without cap (must fail on require SECURE)" [])
+                "require-capability: not granted: (ouronet-ns.AQP-ANK.SECURE)"
                 (AQP-ANK.XI_1|UpdateTrueFungibleUserAnchorValues beneficiary ouro-id total-dptf)
             )
             (expect-failure
                 (format "<<TX003 expect-failure>> XI_2|Recompute without cap (must fail on require SECURE)" [])
+                "require-capability: not granted: (ouronet-ns.AQP-ANK.SECURE)"
                 (AQP-ANK.XI_2|RecomputeAffectedBoostAggregates beneficiary [bc-id])
             )
         ]

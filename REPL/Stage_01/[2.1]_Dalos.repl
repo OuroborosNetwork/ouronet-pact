@@ -248,9 +248,11 @@
                 (ref-DALOS::UEV_EnforceGuardProtocol key-read true))
             (expect-failure
                 (format "<<TX-04 expect-failure>> <(DALOS|UEV_EnforceGuardProtocol user-guard true)> must reject u:" [])
+                "Guard must be key-based (keyset/keyset-ref); got 'u:"
                 (ref-DALOS::UEV_EnforceGuardProtocol user-g true))
             (expect-failure
                 (format "<<TX-04 expect-failure>> <(DALOS|UEV_EnforceGuardProtocol capability-guard true)> must reject c:" [])
+                "Guard must be key-based (keyset/keyset-ref); got 'c:"
                 (ref-DALOS::UEV_EnforceGuardProtocol cap-g true))
             (expect
                 (format "<<TX-04 expect>> <(DALOS|UEV_EnforceGuardProtocol capability-guard false)> must pass" [])
@@ -262,9 +264,11 @@
                 (ref-DALOS::UEV_EnforceGuardProtocol user-g false))
             (expect-failure
                 (format "<<TX-04 expect-failure>> <(DALOS|UEV_EnforceGuardProtocol keyset-ref false)> must reject r:" [])
+                "Governor must be non-key-based (user/capability/module/pact); got 'r:"
                 (ref-DALOS::UEV_EnforceGuardProtocol key-ref false))
             (expect-failure
                 (format "<<TX-04 expect-failure>> <(DALOS|UEV_EnforceGuardProtocol read-keyset false)> must reject k:/w:" [])
+                "Governor must be non-key-based (user/capability/module/pact); got 'w:"
                 (ref-DALOS::UEV_EnforceGuardProtocol key-read false))
         ]
     )
@@ -292,6 +296,7 @@
                 (ref-DALOS::C_RotateGovernor KC.BJ cap-gov))
             (expect-failure
                 (format "<<TX-04 expect-failure>> <(DALOS|C_RotateGovernor BJ keyset-ref)> must reject r:" [])
+                "Governor must be non-key-based (user/capability/module/pact); got 'r:"
                 (ref-DALOS::C_RotateGovernor KC.BJ key-gov))
         ]
     )
@@ -319,9 +324,11 @@
                 (ref-DALOS::C_RotateGuard KC.EMMA key-guard true))
             (expect-failure
                 (format "<<TX-04 expect-failure>> <(DALOS|C_RotateGuard EMMA user-guard)> must reject u:" [])
+                "Guard must be key-based (keyset/keyset-ref); got 'u:"
                 (ref-DALOS::C_RotateGuard KC.EMMA user-g false))
             (expect-failure
                 (format "<<TX-04 expect-failure>> <(DALOS|C_RotateGuard EMMA capability-guard)> must reject c:" [])
+                "Guard must be key-based (keyset/keyset-ref); got 'c:"
                 (ref-DALOS::C_RotateGuard KC.EMMA (create-capability-guard (ref-DALOS::SECURE)) false))
         ]
     )

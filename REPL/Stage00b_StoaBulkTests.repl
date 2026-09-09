@@ -216,6 +216,7 @@
         [
             (expect-failure
                 (format "<<TX-BULK-04>> under-authorized TRANSFER_BULK must fail" [])
+                "bulk total 3.0 exceeds authorized 2.9"
                 (coin.C_BulkTransfer sender receivers amounts))
             (expect
                 (format "<<TX-BULK-04>> sender unchanged after failed bulk" [])
@@ -251,27 +252,35 @@
     [
         (expect-failure
             (format "<<TX-BULK-05>> length mismatch" [])
+                "Bulk transfer list shape violation"
             (coin.C_BulkTransfer "stoa-foundation" [SKB.CS01_NAME] [1.0 2.0]))
         (expect-failure
             (format "<<TX-BULK-05>> empty receiver list" [])
+                "Bulk transfer list shape violation"
             (coin.C_BulkTransfer "stoa-foundation" [] []))
         (expect-failure
             (format "<<TX-BULK-05>> zero amount" [])
+                "Bulk transfer requires positive amounts"
             (coin.C_BulkTransfer "stoa-foundation" [SKB.CS01_NAME] [0.0]))
         (expect-failure
             (format "<<TX-BULK-05>> negative amount" [])
+                "Bulk transfer requires positive amounts"
             (coin.C_BulkTransfer "stoa-foundation" [SKB.CS01_NAME] [-1.0]))
         (expect-failure
             (format "<<TX-BULK-05>> precision violation" [])
+                "Amount 1.0000000000001 violates Stoa Precision of 12"
             (coin.C_BulkTransfer "stoa-foundation" [SKB.CS01_NAME] [1.0000000000001]))
         (expect-failure
             (format "<<TX-BULK-05>> sender in receiver list" [])
+                "Sender cannot appear in bulk receiver list"
             (coin.C_BulkTransfer "stoa-foundation" ["stoa-foundation" SKB.CS01_NAME] [1.0 2.0]))
         (expect-failure
             (format "<<TX-BULK-05>> duplicate receiver" [])
+                "Duplicate receiver in bulk transfer"
             (coin.C_BulkTransfer "stoa-foundation" [SKB.CS01_NAME SKB.CS01_NAME] [1.0 2.0]))
         (expect-failure
             (format "<<TX-BULK-05>> guard mismatch on anew" [])
+                "Account guards do not match !"
             (coin.C_BulkTransferAnew
                 "stoa-foundation"
                 [SKB.CS01_NAME]
@@ -389,6 +398,7 @@
   [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74", "caps": []}])
 (print (expect-failure
     (format "<<TX-BULK-09>> outer receivers not length 2" [])
+                "Hybrid bulk receivers must be [[existing][anew]]"
     (coin.C_HybridBulkTransmit
         "stoa-foundation"
         [[SKB.CS01_NAME]]
@@ -396,6 +406,7 @@
         [[1.0] [2.0]])))
 (print (expect-failure
     (format "<<TX-BULK-09>> existing partition receiver/amount mismatch" [])
+                "Hybrid bulk receivers and amounts shape violation"
     (coin.C_HybridBulkTransmit
         "stoa-foundation"
         [[SKB.CS01_NAME SKB.CS02_NAME] ["hybrid-fail-b"]]
@@ -403,6 +414,7 @@
         [[1.0] [2.0]])))
 (print (expect-failure
     (format "<<TX-BULK-09>> anew guards length mismatch" [])
+                "Hybrid bulk receivers and amounts shape violation"
     (coin.C_HybridBulkTransmit
         "stoa-foundation"
         [[SKB.CS01_NAME] ["hybrid-fail-c" "hybrid-fail-d"]]
@@ -410,6 +422,7 @@
         [[1.0] [2.0 3.0]])))
 (print (expect-failure
     (format "<<TX-BULK-09>> empty existing partition" [])
+                "Hybrid bulk receivers and amounts shape violation"
     (coin.C_HybridBulkTransmit
         "stoa-foundation"
         [[] ["hybrid-fail-e"]]
@@ -417,6 +430,7 @@
         [[] [1.0]])))
 (print (expect-failure
     (format "<<TX-BULK-09>> empty anew partition" [])
+                "Hybrid bulk receivers and amounts shape violation"
     (coin.C_HybridBulkTransmit
         "stoa-foundation"
         [[SKB.CS01_NAME] []]
@@ -424,6 +438,7 @@
         [[1.0] []])))
 (print (expect-failure
     (format "<<TX-BULK-09>> duplicate receiver across partitions" [])
+                "Duplicate receiver in bulk transfer"
     (coin.C_HybridBulkTransmit
         "stoa-foundation"
         [[SKB.CS01_NAME] [SKB.CS01_NAME]]
@@ -431,6 +446,7 @@
         [[1.0] [2.0]])))
 (print (expect-failure
     (format "<<TX-BULK-09>> sender in receiver list" [])
+                "Sender cannot appear in bulk receiver list"
     (coin.C_HybridBulkTransmit
         "stoa-foundation"
         [["stoa-foundation"] ["hybrid-fail-f"]]
@@ -438,6 +454,7 @@
         [[1.0] [2.0]])))
 (print (expect-failure
     (format "<<TX-BULK-09>> zero amount" [])
+                "Bulk transfer requires positive amounts"
     (coin.C_HybridBulkTransmit
         "stoa-foundation"
         [[SKB.CS01_NAME] ["hybrid-fail-g"]]
@@ -470,6 +487,7 @@
         ,"caps": [(coin.TRANSMIT_BULK sender total)]}])
     (print (expect-failure
         (format "<<TX-BULK-10>> insufficient balance must fail" [])
+                "The amount of 15999806.0 is to great to debit from Account"
         (coin.C_HybridBulkTransmit sender receivers guards amounts)))
     (print (expect
         (format "<<TX-BULK-10>> sender unchanged after failed hybrid" [])
