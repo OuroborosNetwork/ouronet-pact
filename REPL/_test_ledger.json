@@ -3937,13 +3937,14 @@
   ]
  },
  "VST|C_CreateHibernatingLink": {
-  "invocations": 5,
-  "pos": 6,
+  "invocations": 6,
+  "pos": 8,
   "neg": 0,
   "files": [
    "REPL/Stage_01/[4.0]_Sovereign-Executor.repl",
    "REPL/_scratch_dpof_h7_hibernation_immutability.repl",
    "REPL/modules/ATS.repl",
+   "REPL/modules/VST.repl",
    "REPL/vst-harness.repl"
   ]
  },
@@ -3984,10 +3985,11 @@
   ]
  },
  "VST|C_Hibernate": {
-  "invocations": 1,
-  "pos": 0,
+  "invocations": 2,
+  "pos": 8,
   "neg": 0,
   "files": [
+   "REPL/modules/VST.repl",
    "REPL/vst-harness.repl"
   ]
  },
@@ -4009,10 +4011,12 @@
   ]
  },
  "VST|C_RepurposeHibernating": {
-  "invocations": 0,
-  "pos": 0,
+  "invocations": 1,
+  "pos": 8,
   "neg": 0,
-  "files": []
+  "files": [
+   "REPL/modules/VST.repl"
+  ]
  },
  "VST|C_RepurposeMerge": {
   "invocations": 3,
@@ -4093,10 +4097,12 @@
   ]
  },
  "VST|C_ToggleTransferRoleHibernatingDPOF": {
-  "invocations": 0,
-  "pos": 0,
+  "invocations": 1,
+  "pos": 8,
   "neg": 0,
-  "files": []
+  "files": [
+   "REPL/modules/VST.repl"
+  ]
  },
  "VST|C_ToggleTransferRoleReservedDPTF": {
   "invocations": 2,

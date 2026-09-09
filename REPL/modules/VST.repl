@@ -133,3 +133,116 @@
     ""
 )
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-04 — hibernation: link, hibernate, and the nonce-bearing form")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-04 · 01 · hibernating link] ---")
+;;The hibernating link issues an ORTOFUNGIBLE (unlike the Frozen link, which is a DPTF): a
+;;hibernation is time-locked, so each one needs its own nonce carrying its unlock time.
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+    )
+    (let ((split-stoa:[decimal]
+              (ref-DALOS::URC_SplitSTOAPrices patron (ref-DALOS::UR_UsagePrice "dpmf"))))
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa))
+                ]
+            }
+        ]
+    )
+    (let ((created:[string] (ref-TS01-C2::VST|C_CreateHibernatingLink patron a)))
+        (print (format "<(VST|C_CreateHibernatingLink)> => {}" [created]))
+        (map print
+            [
+                (expect "<<VST-04>> C_CreateHibernatingLink registered the link"
+                    true (ref-DPTF::URC_HasHibernation a))
+                (expect "<<VST-04>> the FROZEN link is still present and separate"
+                    true (ref-DPTF::URC_HasFrozen a))
+            ]
+        )
+    ))
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-05 — C_Hibernate creates a time-locked nonce; C_RepurposeHibernating moves it")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-05 · 01 · hibernate + repurpose] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;C_RepurposeHibernating and C_ToggleTransferRoleHibernatingDPOF were invoked by NOTHING in any
+;;asserting test (ledger G1 gap).
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (a:string "MOCKA-98c486052a51")
+        (hib:string "H|MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+    )
+    (let
+        (
+            (bal0:decimal (ref-DPTF::UR_AccountSupply a patron))
+            (n0:integer (ref-DPOF::UR_NoncesUsed hib))
+        )
+        (ref-TS01-C2::VST|C_Hibernate patron patron patron a 250.0 30)
+        (map print
+            [
+                (expect "<<VST-05>> C_Hibernate debited the source DPTF by exactly the amount"
+                    (- bal0 250.0) (ref-DPTF::UR_AccountSupply a patron))
+                (expect "<<VST-05>> C_Hibernate created exactly one hibernating nonce"
+                    (+ n0 1) (ref-DPOF::UR_NoncesUsed hib))
+                (expect "<<VST-05>> the hibernating nonce carries the hibernated amount"
+                    250.0 (ref-DPOF::UR_NonceSupply hib (+ n0 1)))
+            ]
+        )
+        ;;the hibernating ortofungible is transfer-role gated; grant it to the receiver
+        (ref-TS01-C2::VST|C_ToggleTransferRoleHibernatingDPOF patron hib emma true)
+        (ref-TS01-C2::VST|C_RepurposeHibernating patron hib (+ n0 1) patron emma)
+        ;;REPURPOSE IS NOT A TRANSFER. It DECOMMISSIONS the source nonce and MINTS A NEW ONE for
+        ;;the target, conserving the value. A test asserting "the nonce moved" fails, and a test
+        ;;asserting only "it did not crash" would never reveal the difference -- which matters,
+        ;;because anything tracking positions by nonce id must follow the re-issue.
+        (map print
+            [
+                (expect "<<VST-05>> C_RepurposeHibernating DECOMMISSIONED the source nonce"
+                    -1.0 (ref-DPOF::UR_NonceSupply hib (+ n0 1)))
+                (expect "<<VST-05>> the decommissioned nonce has no holder"
+                    "|" (ref-DPOF::UR_NonceHolder hib (+ n0 1)))
+                (expect "<<VST-05>> C_RepurposeHibernating MINTED a replacement nonce"
+                    (+ n0 2) (ref-DPOF::UR_NoncesUsed hib))
+                (expect "<<VST-05>> the replacement nonce belongs to the repurpose target"
+                    emma (ref-DPOF::UR_NonceHolder hib (+ n0 2)))
+                (expect "<<VST-05>> INVARIANT: repurpose conserves the hibernated value"
+                    250.0 (ref-DPOF::UR_NonceSupply hib (+ n0 2)))
+            ]
+        )
+    )
+    ""
+)
+(commit-tx)

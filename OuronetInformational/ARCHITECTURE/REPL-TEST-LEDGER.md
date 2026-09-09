@@ -11,10 +11,10 @@ This is the evidence base for the audit and documentation papers: every client e
 | metric | value |
 |---|---:|
 | client entrypoints (the auditable contract) | 448 |
-| exercised at least once | 433 (96%) |
-| **never exercised** | **15** |
-| exercised but with NO adversarial assertion in any of its blocks | **311** |
-| total invocations across the suite | 3086 |
+| exercised at least once | 435 (97%) |
+| **never exercised** | **13** |
+| exercised but with NO adversarial assertion in any of its blocks | **313** |
+| total invocations across the suite | 3090 |
 
 ## Never exercised — G1 gap
 
@@ -32,9 +32,7 @@ These entrypoints are reachable by a client and no test calls them.
 * `SPARK&#124;C_RedemFewSparks`
 * `STOAICO&#124;C_Collect`
 * `SWP&#124;C_SmartSwapWithSlippage`
-* `VST&#124;C_RepurposeHibernating`
 * `VST&#124;C_RepurposeSlumber`
-* `VST&#124;C_ToggleTransferRoleHibernatingDPOF`
 
 ## Exercised but never adversarially probed — G2 gap
 
@@ -86,12 +84,12 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DPTF&#124;C_ToggleFreezeAccount</code> | 6 | 0 |
 | <code>DPTF&#124;C_Transmute</code> | 6 | 0 |
 | <code>PYTHIA&#124;A_Link</code> | 6 | 13 |
+| <code>VST&#124;C_CreateHibernatingLink</code> | 6 | 8 |
 | <code>AQP-FVT&#124;CCp_InjectFixChunk</code> | 5 | 10 |
 | <code>AQP-FVT&#124;CCp_SweepRecomputeChunk</code> | 5 | 21 |
 | <code>ATS&#124;C_Fuel</code> | 5 | 2 |
 | <code>DPOF&#124;C_Control</code> | 5 | 8 |
 | <code>DPTF&#124;C_DonateFees</code> | 5 | 0 |
-| <code>VST&#124;C_CreateHibernatingLink</code> | 5 | 6 |
 | <code>AQP-DSA&#124;A_ToggleExternalOracle</code> | 4 | 8 |
 | <code>AQP-POOL&#124;CCp_BatchDrainCollectable</code> | 4 | 10 |
 | <code>AQP-SCR&#124;C_ControlScore</code> | 4 | 6 |
@@ -205,6 +203,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>SWP&#124;C_MultiSwapWithSlippage</code> | 2 | 0 |
 | <code>SWP&#124;C_SingleSwapNoSlippage</code> | 2 | 0 |
 | <code>SWP&#124;C_UpgradeBrandingLPs</code> | 2 | 3 |
+| <code>VST&#124;C_Hibernate</code> | 2 | 8 |
 | <code>VST&#124;C_Merge</code> | 2 | 0 |
 | <code>VST&#124;C_RepurposeFrozen</code> | 2 | 0 |
 | <code>VST&#124;C_RepurposeReserved</code> | 2 | 0 |
@@ -350,9 +349,10 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>SWP&#124;C_UpgradeBranding</code> | 1 | 0 |
 | <code>VST&#124;C_Awake</code> | 1 | 0 |
 | <code>VST&#124;C_CreateReservationLink</code> | 1 | 0 |
-| <code>VST&#124;C_Hibernate</code> | 1 | 0 |
+| <code>VST&#124;C_RepurposeHibernating</code> | 1 | 8 |
 | <code>VST&#124;C_RepurposeVested</code> | 1 | 0 |
 | <code>VST&#124;C_Slumber</code> | 1 | 0 |
+| <code>VST&#124;C_ToggleTransferRoleHibernatingDPOF</code> | 1 | 8 |
 
 ## Full ledger
 
@@ -781,15 +781,15 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>SWP&#124;C_UpgradeBrandingLPs</code> | 2 | 3 | 0 | `[6.4]_Admin.repl` |
 | <code>VST&#124;C_Awake</code> | 1 | 0 | 0 | `vst-harness.repl` |
 | <code>VST&#124;C_CreateFrozenLink</code> | 4 | 3 | 0 | `[4.0]_Sovereign-Executor.repl`, `[5.3]_Launchpad.repl`, `VST.repl` +1 |
-| <code>VST&#124;C_CreateHibernatingLink</code> | 5 | 6 | 0 | `[4.0]_Sovereign-Executor.repl`, `_scratch_dpof_h7_hibernation_immutability.repl`, `ATS.repl` +1 |
+| <code>VST&#124;C_CreateHibernatingLink</code> | 6 | 8 | 0 | `[4.0]_Sovereign-Executor.repl`, `_scratch_dpof_h7_hibernation_immutability.repl`, `ATS.repl` +2 |
 | <code>VST&#124;C_CreateReservationLink</code> | 1 | 0 | 0 | `[4.0]_Sovereign-Executor.repl` |
 | <code>VST&#124;C_CreateSleepingLink</code> | 3 | 0 | 0 | `[4.0]_Sovereign-Executor.repl`, `[6.3]_SWP.repl`, `vst-harness.repl` |
 | <code>VST&#124;C_CreateVestingLink</code> | 3 | 0 | 0 | `[4.0]_Sovereign-Executor.repl` |
 | <code>VST&#124;C_Freeze</code> | 3 | 4 | 0 | `[6.3]_SWP.repl`, `VST.repl`, `vst-harness.repl` |
-| <code>VST&#124;C_Hibernate</code> | 1 | 0 | 0 | `vst-harness.repl` |
+| <code>VST&#124;C_Hibernate</code> | 2 | 8 | 0 | `VST.repl`, `vst-harness.repl` |
 | <code>VST&#124;C_Merge</code> | 2 | 0 | 0 | `[6.3]_SWP.repl` |
 | <code>VST&#124;C_RepurposeFrozen</code> | 2 | 0 | 0 | `[6.3]_SWP.repl`, `vst-harness.repl` |
-| <code>VST&#124;C_RepurposeHibernating</code> | 0 | 0 | 0 | — |
+| <code>VST&#124;C_RepurposeHibernating</code> | 1 | 8 | 0 | `VST.repl` |
 | <code>VST&#124;C_RepurposeMerge</code> | 3 | 0 | 0 | `[6.3]_SWP.repl`, `vst-harness.repl` |
 | <code>VST&#124;C_RepurposeReserved</code> | 2 | 0 | 0 | `[6.3]_SWP.repl`, `vst-harness.repl` |
 | <code>VST&#124;C_RepurposeSleeping</code> | 2 | 0 | 0 | `[6.3]_SWP.repl`, `vst-harness.repl` |
@@ -799,7 +799,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>VST&#124;C_Sleep</code> | 74 | 6 | 0 | `[6.3]_SWP.repl`, `[6.7]_VST.repl`, `[6.4]_AQP-TRIPLET-COLLECT.repl` +1 |
 | <code>VST&#124;C_Slumber</code> | 1 | 0 | 0 | `vst-harness.repl` |
 | <code>VST&#124;C_ToggleTransferRoleFrozenDPTF</code> | 2 | 0 | 0 | `[6.7]_VST.repl`, `vst-harness.repl` |
-| <code>VST&#124;C_ToggleTransferRoleHibernatingDPOF</code> | 0 | 0 | 0 | — |
+| <code>VST&#124;C_ToggleTransferRoleHibernatingDPOF</code> | 1 | 8 | 0 | `VST.repl` |
 | <code>VST&#124;C_ToggleTransferRoleReservedDPTF</code> | 2 | 0 | 0 | `[6.7]_VST.repl`, `vst-harness.repl` |
 | <code>VST&#124;C_ToggleTransferRoleSleepingDPOF</code> | 3 | 6 | 0 | `[6.7]_VST.repl`, `[6.4]_AQP-TRIPLET-COLLECT.repl`, `vst-harness.repl` |
 | <code>VST&#124;C_Unreserve</code> | 2 | 0 | 0 | `[6.3]_SWP.repl`, `vst-harness.repl` |
