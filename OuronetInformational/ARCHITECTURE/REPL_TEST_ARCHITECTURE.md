@@ -607,6 +607,37 @@ system sells. `SWP` contains the pair that proves the axis is real: `UC_PoolToke
   capability's `enforce` is provably dead code (Part II finding #6). That is G4 doing its job:
   the architectural violation is the ROOT CAUSE of a bug found independently by G1.
 
+### 2.5.3 (static half) — the module-scope claims
+
+```
+[self-C-call]          14 violations   — ALL on 2 functions, both cumulator-free
+[self-C-call-citizen]  64 observations — the minters' A_StepNN -> C_Spawn batch pattern
+[citizen-calls-X]       4 violations   — TS02-CPAD -> TS01-A::XB_DynamicFuelSTOA
+[C-without-cumulator]  40 observations — the doc describes one of TWO billing shapes
+```
+
+**Two of these turned out to be documentation gaps, and saying so is the point.** A report that
+called them 104 violations would be false, and the reader would stop trusting the other 80.
+
+* **`C_` without a cumulator — 40, and correct.** CLAUDE.md says `C_*` "builds IGNIS cumulators
+  and returns `OutputCumulator`". Two billing shapes are actually in use: **(A)** the core `C_`
+  returns a cumulator and Talos passes it to `IGNIS::C_Collect`; **(B)** the core `C_` returns a
+  plain value and the **Talos wrapper** builds the cumulator from a `URCi_` and collects —
+  `DALOS::C_RotateGuard` → `TS01-C1` is the worked example. Plus the STOA-priced ops, which bill
+  no IGNIS at all. **The doc describes shape A only.**
+* **"`C_` is never called from its own module" — the rule HOLDS, and is stronger than stated.**
+  All 14 sovereign hits target exactly two functions, `C_DeployAccount` and
+  `C_TransferDalosFuel`, and a cross-check confirms **both are cumulator-free**. So the true
+  statement is: *no BILLING client `C_` is ever invoked from inside its own module.* Those two
+  carry the `C_` prefix without the `C_` contract.
+* **`citizen-calls-X` — 4, and this one is a real question for the owner.** `TS02-CPAD`
+  (`2_CITIZEN/7_Launchpad/99_TS02-CPAD.pact`) calls `TS01-A::XB_DynamicFuelSTOA` from
+  `SPARK|C_BuySparks`, `SNAKES|C_Acquire`, `CUSTODIANS|C_Acquire` and one more. CLAUDE.md calls
+  CPAD "the **citizen** launchpad Talos" in one sentence and describes the co-located DPAD as
+  "sovereign-role" in another. Either CPAD is sovereign-role and the label is wrong, or a citizen
+  module is reaching a protected `X*` on a sovereign one. **The code is consistent; the two
+  sentences are not.**
+
 **2.5.4 is therefore a decision, not a task:** for each of the 29 state-dependent sites, either
 move the check into the defcap or record why the reader must own it. The 33 argument-domain sites
 are an argument for amending one sentence in CLAUDE.md.

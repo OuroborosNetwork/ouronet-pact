@@ -149,6 +149,87 @@ def _(kind, name, body):
             return i if ind <= head_indent + 4 else None
         return
 
+# --- whole-module rules -------------------------------------------------------------------------
+# The rules above are per-member. These two are claims about a MODULE as a whole, so they get the
+# full member list and the file path. Both are stated in CLAUDE.md as things that cannot happen;
+# the point of checking is that "cannot" is an architectural claim, not a language guarantee.
+
+SELF_C = re.compile(r'\(\s*(C_[A-Za-z0-9|_-]+)[\s)]')
+FWD_X  = re.compile(r'\(\s*ref-[A-Za-z0-9|_-]+::(X[IEB]_[A-Za-z0-9|_-]+)[\s)]')
+
+def module_rules(path, mems):
+    """Yield (rule-id, line, name, text) for the two module-scope contracts."""
+    own_c = {n for k, n, _s, _b in mems if k == "defun" and n.split('|')[-1].startswith("C_")}
+    for kind, name, start, body in mems:
+        # (a) a core C_ invoked from inside its OWN module
+        #     "C_ is blocked from being invoked inside its own module by design." (CLAUDE.md)
+        #     A bare (C_Foo …) call resolves to THIS module; (ref-X::C_Foo …) does not and is
+        #     excluded by the regex requiring no `::` before the name.
+        if name.split('|')[-1].startswith("C_"):
+            pass                      # a C_ calling itself recursively is caught below too
+        for i, ln in enumerate(body):
+            for m in SELF_C.finditer(ln):
+                callee = m.group(1)
+                if callee in own_c and callee != name and '::' not in ln[:m.start()+2]:
+                    # Split by ROLE. In the citizen minters this is a deliberate, uniform batch
+                    # pattern (A_Step01..A_StepNN each call the module's own C_Spawn over a
+                    # different range) -- 64 of the first 78 hits were exactly that, and calling
+                    # them 64 violations would drown the 2 patterns that actually matter.
+                    rid = ("self-C-call-citizen" if "/2_CITIZEN/" in path else "self-C-call")
+                    yield (rid, start + i, f"{name} -> {callee}", ln.strip()[:96])
+        # (b) a CITIZEN module reaching a protected X* on a sovereign module
+        #     "Citizen modules call ONLY into sovereign public APIs." (CLAUDE.md)
+        if "/2_CITIZEN/" in path:
+            for i, ln in enumerate(body):
+                for m in FWD_X.finditer(ln):
+                    yield ("citizen-calls-X", start + i, f"{name} -> {m.group(1)}",
+                           ln.strip()[:96])
+
+CUMULATOR = re.compile(r'OutputCumulator|URCi_|UDC_ConstructOutputCumulator')
+
+def cumulator_rules(path, mems):
+    """A core `C_*` that never touches an OutputCumulator is not a client entrypoint.
+
+    CLAUDE.md: "`C_*` — Client entry for citizen modules. Builds IGNIS cumulators and returns
+    OutputCumulator." A `C_` with no cumulator anywhere in signature or body is IMC-gated,
+    returns a plain value and is called internally -- which is the `XB_` contract wearing the
+    `C_` prefix. That mis-prefix is what makes the "C_ is never called from its own module"
+    rule look violated: the callers are right, the NAME is wrong."""
+    if "/2_Core/" not in path or "/1_SOVEREIGN/" not in path: return
+    for kind, name, start, body in mems:
+        if kind != "defun" or not name.split('|')[-1].startswith("C_"): continue
+        if not any(CUMULATOR.search(l) for l in body):
+            yield ("C-without-cumulator", start, name, body[0].strip()[:96])
+
+# Rules whose hits are OBSERVATIONS, not violations: the measurement is sound, but what it
+# reveals is that the DOCUMENTED rule is narrower than the code's actual (correct) practice.
+# Reporting these in the violation count would make the report lie.
+OBSERVATION = {"C-without-cumulator", "self-C-call-citizen"}
+
+MODULE_DOC = {
+    "self-C-call":
+        "`C_*` — **Cannot be invoked from its own module**; clients reach it via Talos. "
+        "(CLAUDE.md) — CROSS-CHECKED: every sovereign hit targets `C_DeployAccount` or "
+        "`C_TransferDalosFuel`, and BOTH are cumulator-free (see C-without-cumulator). So the "
+        "true, sharper statement is: **no BILLING client `C_` is ever invoked from inside its "
+        "own module.** The rule holds where it matters; these two carry the `C_` prefix without "
+        "the `C_` contract.",
+    "self-C-call-citizen":
+        "Same rule, in CITIZEN modules — where the minters' `A_StepNN -> C_Spawn` batch pattern "
+        "makes it a deliberate, uniform design rather than a slip.",
+    "citizen-calls-X":
+        "Citizen modules call **only** into sovereign public APIs — never a protected `X*`. "
+        "(CLAUDE.md)",
+    "C-without-cumulator":
+        "OBSERVATION, not a violation. CLAUDE.md says `C_*` \"builds IGNIS cumulators and "
+        "returns OutputCumulator\" — but TWO billing shapes are in use and both are correct: "
+        "(A) the core `C_` returns a cumulator and Talos passes it to `IGNIS::C_Collect`; "
+        "(B) the core `C_` returns a plain value and the TALOS WRAPPER builds the cumulator from "
+        "a `URCi_` and collects (e.g. DALOS::C_RotateGuard -> TS01-C1). The doc describes only "
+        "shape A. These are the shape-B ops plus the STOA-priced ones, which bill no IGNIS at "
+        "all.",
+}
+
 # --- run ----------------------------------------------------------------------------------------
 def main():
     ap = argparse.ArgumentParser()
@@ -162,7 +243,11 @@ def main():
     hits = collections.defaultdict(list)
     scanned = 0
     for f in files:
-        for kind, name, start, body in members(f):
+        mems = list(members(f))
+        for rid, line, name, txt in list(module_rules(f, mems)) + list(cumulator_rules(f, mems)):
+            if a.rule and rid != a.rule: continue
+            hits[rid].append((f, line, name, txt, False))
+        for kind, name, start, body in mems:
             scanned += 1
             for rid, doc, fn in RULES:
                 if a.rule and rid != a.rule: continue
@@ -173,11 +258,13 @@ def main():
 
     print(f"CONFORMANCE — {len(files)} modules, {scanned} members scanned\n")
     total = 0
-    for rid, doc, _fn in RULES:
+    for rid, doc, _fn in RULES + [(k, v, None) for k, v in MODULE_DOC.items()]:
         if a.rule and rid != a.rule: continue
-        h = hits[rid]; total += len(h)
+        h = hits[rid]
+        if rid not in OBSERVATION: total += len(h)
         st = [x for x in h if x[4]]
-        print(f"[{rid}] {len(h)} violation(s)   —   {len(st)} STATE-DEPENDENT, "
+        tag = "observation(s)" if rid in OBSERVATION else "violation(s)"
+        print(f"[{rid}] {len(h)} {tag}   —   {len(st)} STATE-DEPENDENT, "
               f"{len(h)-len(st)} argument-domain")
         print(f"    RULE: {doc}")
         for f, line, name, txt, sd in sorted(h, key=lambda x: not x[4])[:a.show]:
@@ -186,9 +273,11 @@ def main():
             print(f"           {txt}")
         if len(h) > a.show: print(f"    … and {len(h)-a.show} more")
         print()
-    allh = [x for r in hits.values() for x in r]
-    print(f"TOTAL: {total}   ({sum(1 for x in allh if x[4])} state-dependent, "
-          f"{sum(1 for x in allh if not x[4])} argument-domain)")
+    viol = [x for r, h in hits.items() if r not in OBSERVATION for x in h]
+    obs  = sum(len(h) for r, h in hits.items() if r in OBSERVATION)
+    print(f"VIOLATIONS: {len(viol)}   ({sum(1 for x in viol if x[4])} state-dependent, "
+          f"{sum(1 for x in viol if not x[4])} argument-domain)")
+    print(f"OBSERVATIONS: {obs}   (the doc is narrower than the code's correct practice)")
     return 0
 
 sys.exit(main())
