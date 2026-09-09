@@ -2329,12 +2329,22 @@
                 [
                     (ref-IGNIS::UDC_ConstructOutputCumulator (ref-DPTF::URCi_IssueGas 1) swp-sc trigger [])
                     (ref-TFT::URCi_MultiTransferCumulator pool-token-ids account swp-sc pool-token-amounts)
-                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisLeg "tier-biggest") swp-sc trigger [])
-                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisLeg "tier-smallest") swp-sc trigger [])
+                    ;;ico3 — the genesis LP mint. The LP id is a block-hash write product that does
+                    ;;not exist at preview time, so we cannot call URCi_Mint on it; we charge the
+                    ;;SAME PRICE it would return. This MUST track DPTF|C_Mint: it was a hardcoded
+                    ;;"tier-biggest" (5) and silently desynced when C_Mint was re-priced to its real
+                    ;;computation (87), leaving the preview 82 BELOW what the exec charges.
                     (ref-IGNIS::UDC_ConstructOutputCumulator
-                    ;;the six issue variants share this reader but NOT their component cost
-                    ;;(plain 35 vs pool 43), so the caller passes its Talos op key
-                    (ref-IGNIS::UC_IgnisPrice op-key "issue-swp-pair") swp-sc trigger [])
+                        (ref-IGNIS::UC_IgnisPrice "DPTF|C_Mint" "usage") swp-sc trigger [])
+                    ;;ico4 — the SWP->account LP transfer-out. A fresh LP is fee-toggle-off, so it
+                    ;;always transfers as class-1 Simple = smallest.
+                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisLeg "tier-smallest") swp-sc trigger [])
+                    ;;ico5 — MUST equal what C_Issue bills, which is the DETERRENCE ALONE. Using
+                    ;;UC_IgnisPrice here added the op's 35-point component cost to the preview only,
+                    ;;overstating it by 35. A preview's job is to equal the exec, not to be the
+                    ;;price we think the exec ought to charge.
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                        (ref-IGNIS::UC_IgnisDeter "issue-swp-pair") swp-sc trigger [])
                 ]
                 []
             )

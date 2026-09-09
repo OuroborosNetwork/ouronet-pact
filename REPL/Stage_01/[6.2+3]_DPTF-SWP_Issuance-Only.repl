@@ -653,7 +653,7 @@
                 (pt-ids:[string] (ref-SWP::UC_ExtractTokens pool-tokens))
                 (pt-amts:[decimal] (ref-SWP::UC_ExtractTokenSupplies pool-tokens))
                 (preview:object{IgnisCollectorV2.OutputCumulator}
-                    (ref-SWPI::URCi_Issue KST.ANHD pool-tokens))
+                    (ref-SWPI::URCi_Issue "SWP|C_IssueWeighted" KST.ANHD pool-tokens))
             )
             ;;<real> rebuilds the same 5-leg concat but sources ico3 (LP mint) and ico4 (LP
             ;;transfer-out) from the ACTUAL DPTF/TFT cost readers on the now-EXISTING <lp>
