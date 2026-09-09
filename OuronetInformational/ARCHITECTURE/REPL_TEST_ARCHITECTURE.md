@@ -134,6 +134,12 @@ difference is exactly why a module tester cannot currently be trusted on its own
 > removal makes the module smaller and the guarantee clearer. This turns the awkward tail of G2
 > into code cleanup instead of an excuse, and it is why the target is **100%, with no exemptions**.
 
+### G4 — Architectural conformance
+**Every rule the architecture STATES is proven to hold — statically where possible, dynamically
+where the rule is about runtime reachability.**
+`Measured 2026-09-09: 44 deviations across 4,919 defuns (0.9%)` — `UC_` reads a table 0,
+`UC_` enforces 19, `URC_` enforces 12, `UR_` enforces 5, `UC_` cross-module read 8.
+
 ### G3 — Determinism
 **Every test passes standalone AND inside the full run.** A test that only passes in one context is
 depending on fixture contamination and is not proving what it claims.
@@ -343,6 +349,40 @@ assembled. 175 files never ran, including **~32 audit-finding regression tests**
   each bound.
 * **Exit:** **B11 = 100%**, B8 = 0, every deletion justified.
 
+## P2.5 — G4: does the code obey its own architecture?
+*This is NOT red teaming, and it is NOT G2. Keep them separate — they have different sources.*
+
+| | derived from | asks |
+|---|---|---|
+| **G2 adversarial** | the `enforce` statements | is the guard we WROTE working? |
+| **G4 conformance** | the STATED design rules (CLAUDE.md, StoicSyntax, MODULE_ARCHITECTURE) | does the code obey the design? **The guard may not exist at all.** |
+| **P6 red team** | attack hypotheses | is there a rule nobody stated and no guard exists for? |
+
+G4 is **enumerable from documentation** the way G2 is enumerable from code, which is exactly why it
+is a phase and not part of the open-ended campaign. And a violated architectural rule is a whole
+CLASS of vulnerability, not one bug: if `URC_` may `enforce`, then validation lives outside the
+defcaps and the "all authorisation is in the defcap" guarantee is false everywhere at once.
+
+* **2.5.1 Static conformance linter** (`REPL/_conformance.py`, no REPL needed) — the prefix
+  contracts: `UC_` pure (no table read, no `enforce`, no cross-module read), `UR_` reads only,
+  `URC_` no `enforce`, `XI_` bodies end on a write with no trailing `true`, `XE_` starts with
+  `UEV_IMC`. **Line-based function boundaries only — a paren-depth scan of this codebase reported
+  932 violations of which the first three sampled were all false positives.**
+* **2.5.2 Reachability rules, dynamically (REPL)** — the architecture claims these are impossible;
+  each needs an `expect-failure` proving it:
+  - a core `C_` invoked from inside its own module
+  - `XI_` reached from another module; `XE_` reached from its own
+  - a client reaching a core op **without going through Talos**
+  - IGNIS collected anywhere except a Talos wrapper
+  - a citizen module invoking a protected `X*` on a sovereign module
+  - an admin `A_` executed without the admin key
+* **2.5.3 Structural claims** — `CC_`/`AA_` (doubled) must reach a heavy `URH_*`/`URHC_*`/`URD_*`
+  read somewhere in its tree, and single `C_`/`A_` must not. Statically checkable, and a
+  mis-marked op is a gas-model lie.
+* **2.5.4** Every deviation is either FIXED or the rule is amended with a written reason. A rule
+  the code does not follow is not a rule.
+* **Exit:** **G4 = 100%**; the linter runs in CI (P5).
+
 ## P4 — Assembly
 * **4.1** `entities/` testers per logical entity (SWP = SWP+SWPI+SWPL+SWPLC+SWPU+MTX-SWP; AQP =
   ANK+SCORE+POOL+FVT+RPS+VCT+DSA; DPDC = the DPDC family).
@@ -390,6 +430,8 @@ assembled. 175 files never ran, including **~32 audit-finding regression tests**
 ## Ordering constraints (what actually blocks what)
 
 * P0 blocks everything (fixtures).
+* **P2.5 should run EARLY — it is cheap, mostly static, and a conformance break is systemic.**
+  Finding it after writing 722 rejection tests means some of those tests encode the wrong shape.
 * **3.1 blocks every published adversarial number** — tighten the 137 before counting.
 * P3 blocks P7 (mutation only means something once the tests are real).
 * P6 re-opens P3 by design (the feedback loop) — that is not rework, it is the mechanism.
