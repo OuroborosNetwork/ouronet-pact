@@ -112,7 +112,25 @@ def main():
           f"({100*len(covered)//max(tot,1)}%)")
     print(f"  not pinned                             : {tot - len(covered)}")
     print(f"  message is all {{}} holes (unmatchable) : {len(unmatchable)}")
-    print(f"  distinct expected-messages in the suite: {len(set(pinned))}\n")
+    print(f"  distinct expected-messages in the suite: {len(set(pinned))}")
+
+    # PRECISION CAVEAT, measured rather than asserted. Attribution is by MESSAGE TEXT, and some
+    # messages are worded identically in several modules -- "must be set to" appears in 7,
+    # "cannot be wiped" in 4. Pinning one module's copy therefore credits every module's copy,
+    # so PINNED is an upper bound for those. Quoting the headline without this number is the
+    # same mistake as quoting coverage without its gated companion (RULE 11).
+    allsegs = collections.defaultdict(set)
+    for f in files:
+        s2 = strip_comments(open(f, encoding='utf8', errors='ignore').read())
+        for m in ENF.finditer(s2):
+            for seg in literal_segments(m.group(3)):
+                allsegs[seg.strip()].add(os.path.basename(f))
+    shared = sum(1 for v in allsegs.values() if len(v) > 1)
+    amb = sum(1 for r in covered
+              if any(len(allsegs.get(seg.strip(), ())) > 1
+                     for seg in literal_segments(r[3])))
+    print(f"  ...of which pinned only via wording SHARED across modules: {amb} "
+          f"({shared}/{len(allsegs)} segments are non-unique) -- PINNED is an upper bound\n")
 
     cov = {(f, l) for f, l, _, _ in covered}
     gaps = [r for r in sites if (r[0], r[1]) not in cov]

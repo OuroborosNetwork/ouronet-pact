@@ -254,3 +254,126 @@
 )
 (print "===^^^===")
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-G1 — the UEV_ guard family, probed DIRECTLY")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-G1 · 01 · property guards] ---")
+;;Same shape as DPTF-G1 (see that block for the reasoning). `UEV_*` is unprotected, so the whole
+;;family fits in one transaction at one line per guard, and every trip is derived from the LIVE
+;;state rather than a guessed constant -- an expect-failure that does not fail proves nothing and
+;;nothing flags it.
+;;
+;;MOCKO is issued with can-freeze and can-wipe OFF and everything else ON, so one fixture gives
+;;both sides of the property family without needing a second token.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (o:string "MOCKO-98c486052a51")
+    )
+    (map print
+        [
+            ;;preconditions -- the pairs below mean nothing if the flags are not what we think
+            (expect "<<DPOF-G1>> MOCKO cannot be frozen" false (ref-DPOF::UR_CanFreeze o))
+            (expect "<<DPOF-G1>> MOCKO cannot be wiped"  false (ref-DPOF::UR_CanWipe o))
+            (expect "<<DPOF-G1>> MOCKO can add special roles" true (ref-DPOF::UR_CanAddSpecialRole o))
+            ;;--- the OFF flags reject
+            (expect-failure "<<DPOF-G1>> UEV_CanFreezeON rejects when the flag is off"
+                "cannot be freezed" (ref-DPOF::UEV_CanFreezeON o))
+            (expect-failure "<<DPOF-G1>> UEV_CanWipeON rejects when the flag is off"
+                "cannot be wiped" (ref-DPOF::UEV_CanWipeON o))
+            ;;--- the ON flags pass. Asserting the PASSING side matters: a guard that always
+            ;;    fires would satisfy every rejection test above and still be broken.
+            (expect "<<DPOF-G1>> the ON flags all pass their guards"
+                true (!= "" (format "{}{}{}{}"
+                    [(ref-DPOF::UEV_CanUpgradeON o) (ref-DPOF::UEV_CanChangeOwnerON o)
+                     (ref-DPOF::UEV_CanAddSpecialRoleON o)
+                     (ref-DPOF::UEV_CanTransferOftCreateRoleON o)])))
+            ;;--- identity
+            (expect-failure "<<DPOF-G1>> UEV_id rejects an id that was never issued"
+                "does not exist" (ref-DPOF::UEV_id "NOPE-98c486052a51"))
+        ]
+    )
+    ""
+)
+(print "--- [DPOF-G1 · 02 · link guards: existence asserted BOTH ways] ---")
+;;UEV_Vesting/Sleeping/Hibernation each enforce (= has-link existance), so the live value passes
+;;and its negation rejects. MOCKO has none of the three links, which is what makes both
+;;directions assertable from one fixture.
+(let
+    (
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (o:string "MOCKO-98c486052a51")
+    )
+    (let
+        (
+            (v:bool (ref-DPOF::URC_HasVesting o))
+            (s:bool (ref-DPOF::URC_HasSleeping o))
+            (h:bool (ref-DPOF::URC_HasHibernation o))
+        )
+        (map print
+            [
+                (expect "<<DPOF-G1>> MOCKO carries none of the three special links"
+                    [false false false] [v s h])
+                (expect "<<DPOF-G1>> each link guard PASSES on the live value"
+                    true (!= "" (format "{}{}{}" [(ref-DPOF::UEV_Vesting o v)
+                                                  (ref-DPOF::UEV_Sleeping o s)
+                                                  (ref-DPOF::UEV_Hibernation o h)])))
+                (expect-failure "<<DPOF-G1>> UEV_Vesting rejects the negation"
+                    "is not satisfied with existance" (ref-DPOF::UEV_Vesting o (not v)))
+                (expect-failure "<<DPOF-G1>> UEV_Sleeping rejects the negation"
+                    "is not satisfied with existance" (ref-DPOF::UEV_Sleeping o (not s)))
+                (expect-failure "<<DPOF-G1>> UEV_Hibernation rejects the negation"
+                    "is not satisfied with existance" (ref-DPOF::UEV_Hibernation o (not h)))
+            ]
+        )
+    )
+    ""
+)
+(print "--- [DPOF-G1 · 03 · account-role and state guards, tripped from live values] ---")
+(let
+    (
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (o:string "MOCKO-98c486052a51")
+        (emma:string KST.EMMA)
+    )
+    (let
+        (
+            (frz:bool (ref-DPOF::UR_R-Frozen o emma))
+            (adq:bool (ref-DPOF::UR_R-AddQuantity o emma))
+            (brn:bool (ref-DPOF::UR_R-Burn o emma))
+            (crt:bool (ref-DPOF::UR_R-Create o emma))
+            (xfr:bool (ref-DPOF::UR_R-Transfer o emma))
+            (seg:bool (ref-DPOF::UR_Segmentation o))
+        )
+        (map print
+            [
+                (expect "<<DPOF-G1>> each account-role guard PASSES on its live value"
+                    true (!= "" (format "{}{}{}{}{}"
+                        [(ref-DPOF::UEV_AccountFreezeState o emma frz)
+                         (ref-DPOF::UEV_AccountAddQuantityState o emma adq)
+                         (ref-DPOF::UEV_AccountBurnState o emma brn)
+                         (ref-DPOF::UEV_AccountCreateState o emma crt)
+                         (ref-DPOF::UEV_AccountTransferState o emma xfr)])))
+                (expect-failure "<<DPOF-G1>> UEV_AccountFreezeState rejects the negation"
+                    "must be set to" (ref-DPOF::UEV_AccountFreezeState o emma (not frz)))
+                (expect-failure "<<DPOF-G1>> UEV_AccountAddQuantityState rejects the negation"
+                    "must be set to" (ref-DPOF::UEV_AccountAddQuantityState o emma (not adq)))
+                (expect-failure "<<DPOF-G1>> UEV_AccountBurnState rejects the negation"
+                    "must be set to" (ref-DPOF::UEV_AccountBurnState o emma (not brn)))
+                (expect-failure "<<DPOF-G1>> UEV_AccountCreateState rejects the negation"
+                    "must be set to" (ref-DPOF::UEV_AccountCreateState o emma (not crt)))
+                (expect-failure "<<DPOF-G1>> UEV_AccountTransferState rejects the negation"
+                    "must be set to" (ref-DPOF::UEV_AccountTransferState o emma (not xfr)))
+                (expect-failure "<<DPOF-G1>> UEV_SegmentationState rejects the negation"
+                    "Segmentation" (ref-DPOF::UEV_SegmentationState o (not seg)))
+            ]
+        )
+    )
+    ""
+)
+(print "===^^^===")
+(commit-tx)

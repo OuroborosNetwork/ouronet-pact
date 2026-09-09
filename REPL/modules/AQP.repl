@@ -5,3 +5,97 @@
 (load "../deploy-stage01.repl")
 (load "../deploy-stage02.repl")
 (load "../Stage_02/[6.2]_AQP.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "AQP-G1 — the FVT UEV_*Context validators, probed DIRECTLY")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [AQP-G1 · 01 · the vacate-freeze guard, asserted DIFFERENTIALLY] ---")
+;;The suite leaves TfStakeVault, NfDrainVault and OfDrainVault vacate-FROZEN and TfMosaicVault,
+;;OfStakeVault, SfStakeVault, NfSyncVault unfrozen -- discovered by probing, not assumed. That
+;;split is what makes the freeze guard assertable in both directions from the existing fixture,
+;;and it is why the rest of this block uses SfStakeVault: on a frozen FVT the freeze enforce
+;;fires FIRST and masks the other six, so every "rejection" below would have been rejecting for
+;;the wrong reason. The first draft of this block did exactly that.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+    )
+    (let
+        (
+            (frozen:string (ref-U|DALOS::UDC_Makeid "TfStakeVault"))
+            (live:string   (ref-U|DALOS::UDC_Makeid "SfStakeVault"))
+            (ouro:string   (ref-DALOS::UR_OuroborosID))
+        )
+        (map print
+            [
+                (expect "<<AQP-G1>> TfStakeVault is vacate-frozen"
+                    true (ref-FVT::UR_FVT|VacateFrozen frozen))
+                (expect "<<AQP-G1>> SfStakeVault is not"
+                    false (ref-FVT::UR_FVT|VacateFrozen live))
+                (expect-failure "<<AQP-G1>> UEV_InjectContext refuses a FROZEN fvt before anything else"
+                    "FVT is frozen: a pool it serves is mid-vacate"
+                    (ref-FVT::UEV_InjectContext patron frozen ouro 1.0))
+            ]
+        )
+    )
+    ""
+)
+(print "--- [AQP-G1 · 02 · inject + collect context, tripped by ARGUMENT] ---")
+;;FVT is the first module in this pass where the guards are COMPOSITE context validators rather
+;;than single-flag checks -- UEV_CollectContext alone carries 7 enforces. They are still `UEV_`
+;;and therefore unprotected, so they can be called directly; what changes is the lever. DPTF and
+;;DPOF flipped a flag on the token; here the cheap trip is a BAD ARGUMENT against a live fixture.
+(let
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+    )
+    (let
+        (
+            (fvt:string (ref-U|DALOS::UDC_Makeid "SfStakeVault"))
+            (scr:string (ref-U|DALOS::UDC_Makeid "SfStakeScore"))
+            (ouro:string (ref-DALOS::UR_OuroborosID))
+            (nope:string "NOPE-98c486052a51")
+        )
+        (map print
+            [
+                ;;the happy path FIRST: without it, every rejection below could be rejecting for
+                ;;the wrong reason and the block would still look green.
+                (expect "<<AQP-G1>> UEV_InjectContext passes on the live fixture"
+                    true (!= "" (format "{}" [(ref-FVT::UEV_InjectContext patron fvt ouro 1.0)])))
+                (expect-failure "<<AQP-G1>> UEV_InjectContext rejects a zero amount"
+                    "Inject amount must be positive"
+                    (ref-FVT::UEV_InjectContext patron fvt ouro 0.0))
+                (expect-failure "<<AQP-G1>> UEV_InjectContext rejects a negative amount"
+                    "Inject amount must be positive"
+                    (ref-FVT::UEV_InjectContext patron fvt ouro -1.0))
+                (expect-failure "<<AQP-G1>> UEV_InjectContext rejects a reward token with no link row"
+                    "Reward link row must exist"
+                    (ref-FVT::UEV_InjectContext patron fvt nope 1.0))
+                ;;--- collect
+                (expect "<<AQP-G1>> UEV_CollectContext passes on the live fixture"
+                    true (!= "" (format "{}"
+                        [(ref-FVT::UEV_CollectContext patron fvt 1 scr ouro)])))
+                (expect-failure "<<AQP-G1>> ...rejects a reward token with no link row"
+                    "Reward link row must exist"
+                    (ref-FVT::UEV_CollectContext patron fvt 1 scr nope))
+                ;;entity type 2 is a REAL type, just the wrong one for this link -- a sharper
+                ;;probe than an out-of-range integer, which any bounds check would also catch.
+                (expect-failure "<<AQP-G1>> ...rejects a VALID entity type that is the wrong one"
+                    "score-entity-type mismatch"
+                    (ref-FVT::UEV_CollectContext patron fvt 2 scr ouro))
+            ]
+        )
+    )
+    ""
+)
+(print "===^^^===")
+(commit-tx)
