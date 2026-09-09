@@ -209,7 +209,7 @@
                                 (ouro-mint-amount:decimal 
                                     (if (= lqboost-ignis-tax 0.0)
                                         0.0
-                                        (at 0 (ref-ORBR::URC_Compress lqboost-ignis-tax))
+                                        (at 0 (ref-ORBR::URCv_Compress lqboost-ignis-tax))
                                     )
                                 )    
                                 (dsid:object{UtilitySwpV2.DirectSwapInputData}
@@ -222,7 +222,7 @@
                                 (lkda-burn-amount:decimal 
                                     (if (= lqboost-ignis-tax 0.0)
                                         0.0
-                                        (ref-SWPI::URC_Swap primordial-swpair dsid false)
+                                        (ref-SWPI::URCv_Swap primordial-swpair dsid false)
                                     )
                                 )
                                 (bk-ids:[string] (at "bk-ids" (at "clad-op" clad)))

@@ -46,7 +46,7 @@
     ;;
     ;;
     (defun URC_ProjectedStoaLiquindex:[decimal] ())
-    (defun URC_Compress:[decimal] (ignis-amount:decimal))
+    (defun URCv_Compress:[decimal] (ignis-amount:decimal))
     (defun URC_Sublimate:decimal (ouro-amount:decimal))
     (defun URCi_Compress:object{IgnisCollectorV2.OutputCumulator} (client:string ignis-amount:decimal))
     (defun URCi_Fuel:object{IgnisCollectorV2.OutputCumulator} ())
@@ -370,7 +370,7 @@
             [present-index-value projected-index-value present-stoa-balance]
         )
     )
-    (defun URC_Compress:[decimal] (ignis-amount:decimal)
+    (defun URCv_Compress:[decimal] (ignis-amount:decimal)
         (let
             (
                 (ref-U|ATS:module{UtilityAtsV3} U|ATS)
@@ -437,7 +437,7 @@
                 ;;
                 (ouro-id:string (ref-DALOS::UR_OuroborosID))
                 (ignis-id:string (ref-DALOS::UR_IgnisID))
-                (ouro-remainder-amount:decimal (at 0 (URC_Compress ignis-amount)))
+                (ouro-remainder-amount:decimal (at 0 (URCv_Compress ignis-amount)))
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                 [
@@ -615,7 +615,7 @@
                 ;;
                 (ouro-id:string (ref-DALOS::UR_OuroborosID))
                 (ignis-id:string (ref-DALOS::UR_IgnisID))
-                (ignis-to-ouro:[decimal] (URC_Compress ignis-amount))
+                (ignis-to-ouro:[decimal] (URCv_Compress ignis-amount))
                 (ouro-remainder-amount:decimal (at 0 ignis-to-ouro))
             )
             (with-capability (IGNIS|XB>COMPRESS client)
@@ -644,7 +644,7 @@
                 ;;
                 (ouro-id:string (ref-DALOS::UR_OuroborosID))
                 (ignis-id:string (ref-DALOS::UR_IgnisID))
-                (ignis-to-ouro:[decimal] (URC_Compress ignis-amount))
+                (ignis-to-ouro:[decimal] (URCv_Compress ignis-amount))
                 (ouro-remainder-amount:decimal (at 0 ignis-to-ouro))
                 ;;#61L fix: removed the dead `total-ouro` binding (bound, never referenced
                 ;;anywhere in the function body - only `ouro-remainder-amount`, the first

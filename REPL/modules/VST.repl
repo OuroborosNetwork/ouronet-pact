@@ -126,7 +126,7 @@
                 (expect "<<VST-03>> the freezer holds the frozen balance"
                     300.0 (ref-DPTF::UR_AccountSupply frozen patron))
                 (expect "<<VST-03>> the frozen token is linked back to its parent"
-                    a (ref-DPTF::URC_Parent frozen))
+                    a (ref-DPTF::URCv_Parent frozen))
             ]
         )
     )

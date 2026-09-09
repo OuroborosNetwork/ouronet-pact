@@ -187,7 +187,7 @@
     (defun URCv_AreAmountsBalanced:bool (swpair:string input-amounts:[decimal]))
     (defun URC_BalancedLiquidity:[decimal] (swpair:string input-id:string input-amount:decimal with-validation:bool))
     (defun URC_LpBreakAmounts:[decimal] (swpair:string input-lp-amount:decimal))
-    (defun URC_CustomLpBreakAmounts:[decimal] (swpair:string swpair-pool-token-supplies:[decimal] swpair-lp-supply:decimal input-lp-amount:decimal))
+    (defun URCv_CustomLpBreakAmounts:[decimal] (swpair:string swpair-pool-token-supplies:[decimal] swpair-lp-supply:decimal input-lp-amount:decimal))
     ;;{5.4}  Validate [UEV/CAP]
     ;;
     ;;
@@ -1441,7 +1441,7 @@
                             ;;<aba> is the base for computing the AsymmetricTax
                         )
                         (aba:[decimal]
-                            (URC_CustomLpBreakAmounts swpair pool-token-supplies-for-aba lp-supply-for-aba asymmetric-lp-amount)
+                            (URCv_CustomLpBreakAmounts swpair pool-token-supplies-for-aba lp-supply-for-aba asymmetric-lp-amount)
                         )
                         ;;
                         ;;
@@ -1742,10 +1742,10 @@
                 (pool-token-supplies:[decimal] (ref-SWP::UR_PoolTokenSupplies swpair))
                 (lp-supply:decimal (ref-SWP::URC_LpCapacity swpair))
             )
-            (URC_CustomLpBreakAmounts swpair pool-token-supplies lp-supply input-lp-amount)
+            (URCv_CustomLpBreakAmounts swpair pool-token-supplies lp-supply input-lp-amount)
         )
     )
-    (defun URC_CustomLpBreakAmounts:[decimal]
+    (defun URCv_CustomLpBreakAmounts:[decimal]
         (swpair:string swpair-pool-token-supplies:[decimal] swpair-lp-supply:decimal input-lp-amount:decimal)
         @doc "Computes the Pool Token Amounts that result from removing <input-lp-amount> of LP Token \
         \ Using Custom values for PoolTokenSupplies and PoolLPSupply"
@@ -1921,7 +1921,7 @@
                                 (ouro-mint-amount:decimal 
                                     (if (= lqboost-ignis-tax 0.0)
                                         0.0
-                                        (at 0 (ref-ORBR::URC_Compress lqboost-ignis-tax))
+                                        (at 0 (ref-ORBR::URCv_Compress lqboost-ignis-tax))
                                     )
                                 )    
                                 (dsid:object{UtilitySwpV2.DirectSwapInputData}
@@ -1934,7 +1934,7 @@
                                 (sstoa-burn-amount:decimal 
                                     (if (= lqboost-ignis-tax 0.0)
                                         0.0
-                                        (ref-SWPI::URC_Swap primordial-swpair dsid false)
+                                        (ref-SWPI::URCv_Swap primordial-swpair dsid false)
                                     )
                                 )
                                 (bk-ids:[string] (at "bk-ids" (at "clad-op" clad)))

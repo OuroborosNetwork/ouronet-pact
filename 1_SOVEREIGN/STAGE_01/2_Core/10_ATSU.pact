@@ -302,7 +302,7 @@
         (let
             (
                 (ref-ATS:module{AutostakeV3} ATS)
-                (rt-position:integer (ref-ATS::URC_RewardTokenPosition ats reward-token))
+                (rt-position:integer (ref-ATS::URCv_RewardTokenPosition ats reward-token))
             )
             (enforce (> rt-position 0) "Primal RT cannot be removed")
             (ref-ATS::UEV_ParameterLockState ats false)
@@ -874,7 +874,7 @@
                 (rt-lst:[string] (ref-ATS::UR_RewardTokenList ats))
                 (c-rbt:string (ref-ATS::UR_ColdRewardBearingToken ats))
                 (c-rbt-precision:integer (ref-DPTF::UR_Decimals c-rbt))
-                (fee-promile:decimal (ref-ATS::URC_ColdRecoveryFee ats ra usable-cold-recovery-position))
+                (fee-promile:decimal (ref-ATS::URCv_ColdRecoveryFee ats ra usable-cold-recovery-position))
                 (c-rbt-fee-split:[decimal] (ref-U|ATS::UC_PromilleSplit fee-promile ra c-rbt-precision))
                 (c-rbt-fee:decimal (at 1 c-rbt-fee-split))
                 (c-fr:bool (ref-ATS::UR_ColdRecoveryFeeRedirection ats))
@@ -1715,7 +1715,7 @@
                             (rt-lst:[string] (ref-ATS::UR_RewardTokenList ats))
                             (c-rbt:string (ref-ATS::UR_ColdRewardBearingToken ats))
                             (c-rbt-precision:integer (ref-DPTF::UR_Decimals c-rbt))
-                            (fee-promile:decimal (ref-ATS::URC_ColdRecoveryFee ats ra usable-cold-recovery-position))
+                            (fee-promile:decimal (ref-ATS::URCv_ColdRecoveryFee ats ra usable-cold-recovery-position))
                             (c-rbt-fee-split:[decimal] (ref-U|ATS::UC_PromilleSplit fee-promile ra c-rbt-precision))
                             (c-rbt-remainder:decimal (at 0 c-rbt-fee-split))
                             (c-rbt-fee:decimal (at 1 c-rbt-fee-split))

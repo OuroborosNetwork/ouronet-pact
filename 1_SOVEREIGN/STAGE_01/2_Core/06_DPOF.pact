@@ -283,7 +283,7 @@
     (defun URC_HasVesting:bool (id:string))
     (defun URC_HasSleeping:bool (id:string))
     (defun URC_HasHibernation:bool (id:string))
-    (defun URC_Parent:string (dpof:string))
+    (defun URCv_Parent:string (dpof:string))
     ;;
     ;;  [URD]
     ;;
@@ -1689,7 +1689,7 @@
             true
         )
     )
-    (defun URC_Parent:string (dpof:string)
+    (defun URCv_Parent:string (dpof:string)
         ;;#31M fix: dropped the "Sleeping LP Tokens not allowed" enforce (moved to
         ;;UEV_ParentOwnership, the only caller that actually needs it - see its own @doc). A
         ;;URC_* must never enforce; the read-context caller (DPL-UR's wallet-listing helper)
@@ -1983,9 +1983,9 @@
             (
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (fourth:string (drop 3 (take 4 id)))
-                (parent:string (URC_Parent id))
+                (parent:string (URCv_Parent id))
             )
-            ;;#31M fix: moved here from URC_Parent, which must never enforce - this is the only
+            ;;#31M fix: moved here from URCv_Parent, which must never enforce - this is the only
             ;;caller that actually needs this rejection (per this function's own @doc).
             (enforce (!= fourth BAR) "Sleeping LP Tokens not allowed for this operation")
             (if (= parent id)
@@ -2794,7 +2794,7 @@
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-BRD:module{BrandingV2} BRD)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (parent:string (URC_Parent entity-id))
+                (parent:string (URCv_Parent entity-id))
                 (parent-owner:string
                     (if (= parent entity-id)
                         (UR_Konto entity-id)

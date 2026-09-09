@@ -990,7 +990,7 @@
                 (A:decimal (ref-SWP::UR_Amplifier swpair))
                 (X:[decimal] (ref-SWP::UR_PoolTokenSupplies swpair))
                 (X-prec:[integer] (ref-SWP::UR_PoolTokenPrecisions swpair))
-                (input-positions:[integer] (ref-SWPI::URC_PoolTokenPositions swpair input-ids))
+                (input-positions:[integer] (ref-SWPI::URCv_PoolTokenPositions swpair input-ids))
                 (output-position:integer (ref-SWP::UR_PoolTokenPosition swpair output-id))
                 (W:[decimal] (ref-SWP::UR_Weigths swpair))
                 ;;
@@ -1046,7 +1046,7 @@
                 ;;
                 (ignis-id:string (ref-DALOS::UR_IgnisID))
                 (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                (dptf-id:string (ref-DPTF::URC_Parent dptf))
+                (dptf-id:string (ref-DPTF::URCv_Parent dptf))
                 (wallet-supply:decimal (ref-DPTF::UR_AccountSupply dptf account))
                 (dptf-supply:decimal (ref-DPTF::UR_Supply dptf))
                 ;;
@@ -1100,7 +1100,7 @@
             )
         )
     )
-    (defun URC_0008b_TrueFungibleLPEntry (account:string swpair:string iz-native:bool)
+    (defun URCv_0008b_TrueFungibleLPEntry (account:string swpair:string iz-native:bool)
         @doc "Supports native and Frozen LPs \
             \ <iz-native=true> reffers to the native DPTF LP \
             \ <iz-native=true> reffers to the frozen DPTF LP"
@@ -1168,7 +1168,7 @@
             (map
                 (lambda
                     (swpair:string)
-                    (URC_0008b_TrueFungibleLPEntry account swpair true)
+                    (URCv_0008b_TrueFungibleLPEntry account swpair true)
                 )
                 swpairs
             )
@@ -1185,7 +1185,7 @@
             (map
                 (lambda
                     (swpair:string)
-                    (URC_0008b_TrueFungibleLPEntry account swpair false)
+                    (URCv_0008b_TrueFungibleLPEntry account swpair false)
                 )
                 swpairs
             )
@@ -1200,7 +1200,7 @@
                 ;;
                 (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                 ;;
-                (dptf-id:string (ref-DPOF::URC_Parent dpof-id))
+                (dptf-id:string (ref-DPOF::URCv_Parent dpof-id))
                 (wallet-supply:decimal (ref-DPOF::UR_AccountSupply dpof-id account))
                 (dpof-supply:decimal (ref-DPOF::UR_Supply dpof-id))
                 (dpof-total-nonces:integer (ref-DPOF::UR_NoncesUsed dpof-id))
@@ -1252,7 +1252,7 @@
             )
         )
     )
-    (defun URC_0009b_OrtoFungibleLPEntry (account:string swpair:string)
+    (defun URCv_0009b_OrtoFungibleLPEntry (account:string swpair:string)
         @doc "Supports sleeping LPs"
         (let
             (
@@ -1310,7 +1310,7 @@
             (map
                 (lambda
                     (swpair:string)
-                    (URC_0009b_OrtoFungibleLPEntry account swpair)
+                    (URCv_0009b_OrtoFungibleLPEntry account swpair)
                 )
                 swpairs
             )

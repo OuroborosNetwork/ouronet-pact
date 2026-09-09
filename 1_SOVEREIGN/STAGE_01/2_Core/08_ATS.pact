@@ -141,12 +141,12 @@
     (defun URC_RTSplitAmounts:[decimal] (atspair:string rbt-amount:decimal))
     (defun URC_MaxSyphon:[decimal] (atspair:string))
         ;;
-    (defun URC_RewardTokenPosition:integer (atspair:string reward-token:string))
+    (defun URCv_RewardTokenPosition:integer (atspair:string reward-token:string))
         ;;
     (defun URC_AccountUnbondingBalance:decimal (atspair:string account:string reward-token:string))
     (defun URC_CullValue:[decimal] (atspair:string input:object{UtilityAtsV3.Awo}))
     (defun URC_WhichPosition:integer (atspair:string c-rbt-amount:decimal account:string))
-    (defun URC_ColdRecoveryFee (atspair:string c-rbt-amount:decimal input-position:integer))
+    (defun URCv_ColdRecoveryFee (atspair:string c-rbt-amount:decimal input-position:integer))
     (defun URC_CullColdRecoveryTime:time (atspair:string account:string))
     (defun URC_IzPresentHotRBT:bool (atspair:string))
         ;;
@@ -1389,11 +1389,11 @@
     )
     (defun UR_SingleRewardTokenNFR:bool (atspair:string rt:string)
         @doc "Read NFR of a Reward Token, Fails if <rt> is not Reward Token for <atspair>"
-        (at (URC_RewardTokenPosition atspair rt) (UR_RewardTokenNFR atspair))
+        (at (URCv_RewardTokenPosition atspair rt) (UR_RewardTokenNFR atspair))
     )
     (defun UR_SingleRewardTokenRUR:decimal (atspair:string rt:string rur:integer)
         @doc "Read RUR of a Reward Token, Fails if <rt> is not Reward Token for <atspair>"
-        (at (URC_RewardTokenPosition atspair rt) (UR_RewardTokenRUR atspair rur))
+        (at (URCv_RewardTokenPosition atspair rt) (UR_RewardTokenRUR atspair rur))
     )
     ;;Cold Recovery
     (defun UR_ColdRewardBearingToken:string (atspair:string)
@@ -1651,7 +1651,7 @@
         )
     )
     ;;
-    (defun URC_RewardTokenPosition:integer (atspair:string reward-token:string)
+    (defun URCv_RewardTokenPosition:integer (atspair:string reward-token:string)
         @doc "Computes the position of a RT in the <atspair> definition"
         (let
             (
@@ -1688,7 +1688,7 @@
     (defun URCx_UnstakeObjectUnbondingValue (atspair:string reward-token:string io:object{UtilityAtsV3.Awo})
         (let
             (
-                (rtp:integer (URC_RewardTokenPosition atspair reward-token))
+                (rtp:integer (URCv_RewardTokenPosition atspair reward-token))
                 (rt:[decimal] (at "reward-tokens" io))
                 (rb:decimal (at rtp rt))
             )
@@ -1858,7 +1858,7 @@
             )
         )
     )
-    (defun URC_ColdRecoveryFee (atspair:string c-rbt-amount:decimal input-position:integer)
+    (defun URCv_ColdRecoveryFee (atspair:string c-rbt-amount:decimal input-position:integer)
         @doc "Computes the Cold Recovery Fee for a given <c-rbt-amount> of a given <atspair> on a given <input-position>"
         (enforce (!= input-position 0) "Cannot Compute Cold Recovery Fee as no more Cold Recovery Positions are available")
         (let
@@ -2705,7 +2705,7 @@
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
-                (rtp:integer (URC_RewardTokenPosition atspair reward-token))
+                (rtp:integer (URCv_RewardTokenPosition atspair reward-token))
             )
             (with-read ATS|Pairs atspair
                 { "reward-tokens" := rt }
@@ -2723,7 +2723,7 @@
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
                 ;;
-                (rtp:integer (URC_RewardTokenPosition atspair reward-token))
+                (rtp:integer (URCv_RewardTokenPosition atspair reward-token))
                 (nfr:bool (at rtp (UR_RewardTokenNFR atspair)))
                 (resident:decimal (at rtp (UR_RewardTokenRUR atspair 1)))
                 (unbonding:decimal (at rtp (UR_RewardTokenRUR atspair 2)))

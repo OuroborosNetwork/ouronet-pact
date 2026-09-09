@@ -466,8 +466,8 @@
     ;    months
     ;)
     [
-        (format "Z|VST-98c486052a51 parent is {}" [(ref-DPOF::URC_Parent "Z|VST-98c486052a51")])
-        (format "F|VST-98c486052a51 parent is {}" [(ref-DPTF::URC_Parent "F|VST-98c486052a51")])
+        (format "Z|VST-98c486052a51 parent is {}" [(ref-DPOF::URCv_Parent "Z|VST-98c486052a51")])
+        (format "F|VST-98c486052a51 parent is {}" [(ref-DPTF::URCv_Parent "F|VST-98c486052a51")])
     ]
 )
 

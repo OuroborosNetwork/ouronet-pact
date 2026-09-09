@@ -4549,7 +4549,7 @@
     (ref-TS01-A::SWP|A_UpdateLiquidBoost true)
 )
 ;;P0.6 direction 5: XI_SmartSwapCore now carries the Liquid Boost cut forward
-;;hop-by-hop (SWPI::URC_Swap over each hop's own already-selected edge, no
+;;hop-by-hop (SWPI::URCv_Swap over each hop's own already-selected edge, no
 ;;search) and only prices-and-burns once, on the LAST hop — this intentionally
 ;;produces a DIFFERENT total DLK burn than the old per-hop-independent-search
 ;;design (it follows the swap's own route, not each hop's individually-best
@@ -7602,7 +7602,7 @@
         ]
         [
             ;(format "Virtual Swap Engine is {}" [vse])
-            ;(format "Swapping Stable is {}" [(ref-SWPI::URC_Swap pool-s [k1] [7777.0] k2 false)])
+            ;(format "Swapping Stable is {}" [(ref-SWPI::URCv_Swap pool-s [k1] [7777.0] k2 false)])
             (format "Direct Stable Swap is {}" 
                 [
                     (ref-U|SWP::UC_ComputeY

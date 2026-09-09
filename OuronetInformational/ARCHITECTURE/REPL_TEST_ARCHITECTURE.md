@@ -644,7 +644,7 @@ All four open questions answered. Three closed on the spot; one produced a 126-r
 
 | question | ruling | state |
 |---|---|---|
-| `UC_` that `enforce`s | **not a rule change — it is a MIS-SPELLED `UCv_`.** StoicSyntax-Prefixes §1 already defines the lowercase `v` role: "enforce intrinsic to its own computation … not business validation", legitimate as `UCv_`/`URCv_`/`URDCv_`. | linter re-pointed; **21** `UC_`→`UCv_` and **13** `URC_`→`URCv_` rename candidates remain |
+| `UC_` that `enforce`s | **not a rule change — it is a MIS-SPELLED `UCv_`.** StoicSyntax-Prefixes §1 already defines the lowercase `v` role: "enforce intrinsic to its own computation … not business validation", legitimate as `UCv_`/`URCv_`/`URDCv_`. | **DONE** — 17 names / 95 replacements, and 10 `URC_`→`URCv_` / 94 replacements |
 | state-dependent `enforce` in readers | **ideally in the defcap; acceptable in place where relocating is harder than leaving it.** Which is exactly the `v`-role test — an intrinsic guard stays, a business check moves. | per-site call; `DEMIPAD::UR_Funds` is the one with a proven cost (dead `enforce` in `C>WITHDRAW`) |
 | `TS02-CPAD` role | **citizen module authored by the admin — deliberately in between.** It is the sole gas-funded launchpad path, so its wrappers must reach `TS01-A::XB_DynamicFuelSTOA`. | recorded as an ACCEPTED exception in the linter, with the bound: those four calls are expected, a fifth is not |
 | 14 mis-marked heavy ops | **rename to follow the doubling rule.** | **DONE** |
@@ -666,6 +666,33 @@ It reached further than "rename a function". These names are also **IGNIS price-
 `02_IGNIS.pact`, `INFO_` doc strings, interface declarations and REPL call sites — which is why a
 scoped, idempotent regex over every `.pact` and `.repl` was the right tool and a per-file edit was
 not. Each rule carries a lookbehind so a second pass cannot produce `CCC_`/`AAA_`.
+
+**The `v`-role renames — 189 replacements across 46 files, violations 77 → 45.**
+
+```
+UC_  -> UCv_    17 names, 95 replacements   [UC-should-be-UCv]  21 -> 0
+URC_ -> URCv_   10 names, 94 replacements   [URC-should-be-URCv] 13 -> 2
+```
+
+`URCv_` needed no canon work — StoicSyntax-Prefixes §2 already carries its registry row. **The
+gap was one level up:** CLAUDE.md's own prefix table, which the linter was built against, listed
+`UC_*`/`URC_*` as "no `enforce`" and did not mention the `v` variants at all. That is exactly why
+37 sites read as deviations and why the first proposal was to *loosen a rule* rather than spell
+the functions correctly. Both variants are now in CLAUDE.md with the distinguishing test written
+down: **intrinsic to the derivation → `v`; business rule → `UEV_`/defcap.**
+
+**Two `URC_` sites are deliberately left un-renamed** — business rules wearing a domain-guard
+shape, which by the owner's own test belong in a defcap rather than taking a `v`:
+
+```pact
+ATS::URC_RTSplitAmounts    (enforce (<= rbt-amount rbt-supply) …)   bounds a withdrawal
+                                                                   against LIVE SUPPLY
+OUROBOROS::URC_Sublimate   (enforce (>= ouro-amount 0.99) …)        an ECONOMIC MINIMUM
+```
+
+0.99 is a policy number, not an arithmetic precondition — the function computes fine at 0.5, and
+it calls `UEV_Amount` on the very next line, so a validation helper is already in play. Both sit
+on live economic paths, so they wait for a ruling instead of being relocated on a linter's say-so.
 
 **`DPNF|C_Break` was deliberately NOT renamed, and checking why is the interesting part.** Its SFT
 twin `DPSF|C_Break` reaches `URH_NonceListFromCSD` through `URC_SemiFungibleConstituents`; the NFT

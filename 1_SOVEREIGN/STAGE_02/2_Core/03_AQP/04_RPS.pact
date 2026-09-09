@@ -2810,7 +2810,7 @@
                 (royalty:decimal   (UR_FVT-RG|RoyaltyRewards fvt-id reward-dptf-id))
                 (is-ignis:bool     (= reward-dptf-id (ref-DALOS::UR_IgnisID)))
                 (token:string      (if is-ignis (ref-DALOS::UR_OuroborosID) reward-dptf-id))
-                (amount:decimal    (if is-ignis (at 0 (ref-ORBR::URC_Compress royalty)) royalty))
+                (amount:decimal    (if is-ignis (at 0 (ref-ORBR::URCv_Compress royalty)) royalty))
                 (xfer-type:integer (at "type" (ref-TFT::URC_TransferClasses token AQP|SC_NAME destination amount)))
             )
             (+ (if is-ignis (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ORBR::URCi_Compress AQP|SC_NAME royalty)) 0.0)
@@ -2851,7 +2851,7 @@
                 (royalty:decimal (UR_FVT-RG|RoyaltyRewards fvt-id reward-dptf-id))
                 (is-ignis:bool   (= reward-dptf-id (ref-DALOS::UR_IgnisID)))
                 (token:string    (if is-ignis (ref-DALOS::UR_OuroborosID) reward-dptf-id))
-                (amount:decimal  (if is-ignis (at 0 (ref-ORBR::URC_Compress royalty)) royalty))
+                (amount:decimal  (if is-ignis (at 0 (ref-ORBR::URCv_Compress royalty)) royalty))
                 (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
                 (input-amounts:[decimal] (map (lambda (t:string) (if (= t token) amount 0.0)) pool-tokens))
             )
@@ -5167,7 +5167,7 @@
                         (ref-ORBR:module{OuroborosV2} OUROBOROS)
                     )
                     {"token"  : (ref-DALOS::UR_OuroborosID)
-                    ,"amount" : (at 0 (ref-ORBR::URC_Compress amount))
+                    ,"amount" : (at 0 (ref-ORBR::URCv_Compress amount))
                     ,"oc"     : (ref-ORBR::XB_Compress AQP|SC_NAME amount)}
                 )
                 {"token" : reward-dptf-id, "amount" : amount, "oc" : (UC_EmptyOc)}

@@ -93,11 +93,11 @@
     ;;  [URC] Functions
     ;;
     (defun URC_EliteFeeReduction:object{UtilitySwpV2.SwapFeez} (account:string fees:object{UtilitySwpV2.SwapFeez}))
-    (defun URC_PoolTokenPositions:[integer] (swpair:string input-ids:[string]))
+    (defun URCv_PoolTokenPositions:[integer] (swpair:string input-ids:[string]))
     (defun URC_DirectRawSwapInput:object{UtilitySwpV2.DirectRawSwapInput} (swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData}))
     (defun URC_InverseRawSwapInput:object{UtilitySwpV2.InverseRawSwapInput} (swpair:string rsid:object{UtilitySwpV2.ReverseSwapInputData}))
         ;;
-    (defun URC_Swap:decimal (swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData} validation:bool))
+    (defun URCv_Swap:decimal (swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData} validation:bool))
     (defun URC_S-Swap:decimal (swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData}))
     (defun URC_W-Swap:decimal (swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData}))
     (defun URC_P-Swap:decimal (swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData}))
@@ -795,7 +795,7 @@
         )
     )
     (defun UCv_PoolTokenPositions:[integer] (swpair:string input-ids:[string])
-        @doc "Same result as <URC_PoolTokenPositions> but being done without reading <swpair> data \
+        @doc "Same result as <URCv_PoolTokenPositions> but being done without reading <swpair> data \
         \ Result is simply computed, through the <swpair> string"
         (let
             (
@@ -1078,7 +1078,7 @@
             )
         )
     )
-    (defun URC_PoolTokenPositions:[integer] (swpair:string input-ids:[string])
+    (defun URCv_PoolTokenPositions:[integer] (swpair:string input-ids:[string])
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
@@ -1119,7 +1119,7 @@
                 (ref-SWP::UR_Amplifier swpair)
                 (ref-SWP::UR_PoolTokenSupplies swpair)
                 input-amounts 
-                (URC_PoolTokenPositions swpair input-ids)
+                (URCv_PoolTokenPositions swpair input-ids)
                 (ref-SWP::UR_PoolTokenPosition swpair output-id)
                 (ref-DPTF::UR_Decimals output-id)
                 (ref-SWP::UR_Weigths swpair)
@@ -1152,7 +1152,7 @@
         )
     )
     ;;
-    (defun URC_Swap:decimal 
+    (defun URCv_Swap:decimal 
         (swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData} validation:bool)
         (let
             (
@@ -1342,7 +1342,7 @@
                                                 (dsid:object{UtilitySwpV2.DirectSwapInputData}
                                                     (ref-U|SWP::UDC_DirectSwapInputData [i-id] [input] o-id)
                                                 )
-                                                (output:decimal (URC_Swap best-edge dsid false))
+                                                (output:decimal (URCv_Swap best-edge dsid false))
                                             )
                                             (UDC_Hopper
                                                 nodes
@@ -1410,7 +1410,7 @@
                                                     (dsid:object{UtilitySwpV2.DirectSwapInputData}
                                                         (ref-U|SWP::UDC_DirectSwapInputData [i-id] [input] o-id)
                                                     )
-                                                    (output:decimal (URC_Swap swpair dsid false))
+                                                    (output:decimal (URCv_Swap swpair dsid false))
                                                 )
                                                 (UDC_Hopper
                                                     nodes
@@ -1627,7 +1627,7 @@
                             (acc:[decimal] idx:integer)
                             (ref-U|LST::UC_AppL
                                 acc
-                                (URC_Swap (at idx edges) (ref-U|SWP::UDC_DirectSwapInputData [i] [ia] o) false)
+                                (URCv_Swap (at idx edges) (ref-U|SWP::UDC_DirectSwapInputData [i] [ia] o) false)
                             )
                         )
                         []

@@ -2381,7 +2381,7 @@
                 ;;
                 (c-rbt-precision:integer (ref-DPTF::UR_Decimals c-rbt))
                 (usable-cold-recovery-position:integer (ref-ATS::URC_WhichPosition ats ra recoverer))
-                (fee-promile:decimal (ref-ATS::URC_ColdRecoveryFee ats ra usable-cold-recovery-position))
+                (fee-promile:decimal (ref-ATS::URCv_ColdRecoveryFee ats ra usable-cold-recovery-position))
                 (c-rbt-fee-split:[decimal] (ref-U|ATS::UC_PromilleSplit fee-promile ra c-rbt-precision))
                 (c-rbt-remainder:decimal (at 0 c-rbt-fee-split))
                 (c-rbt-fee:decimal (at 1 c-rbt-fee-split))
@@ -3046,7 +3046,7 @@
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 (ref-ORBR:module{OuroborosV2} OUROBOROS)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount client))
-                (ignis-to-ouro:[decimal] (ref-ORBR::URC_Compress ignis-amount))
+                (ignis-to-ouro:[decimal] (ref-ORBR::URCv_Compress ignis-amount))
                 (ouro-remainder-amount:decimal (at 0 ignis-to-ouro))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -3510,7 +3510,7 @@
                 (X:[decimal] (ref-SWP::UR_PoolTokenSupplies swpair))
                 (X-prec:[integer] (ref-SWP::UR_PoolTokenPrecisions swpair))
                 
-                (input-positions:[integer] (ref-SWPI::URC_PoolTokenPositions swpair input-ids))
+                (input-positions:[integer] (ref-SWPI::URCv_PoolTokenPositions swpair input-ids))
                 (output-position:integer (ref-SWP::UR_PoolTokenPosition swpair output-id))
                 (W:[decimal] (ref-SWP::UR_Weigths swpair))
                 (dtso:object{UtilitySwpV2.DirectTaxedSwapOutput}

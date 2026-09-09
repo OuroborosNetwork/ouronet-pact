@@ -166,7 +166,7 @@
     (defun URC_HasHibernation:bool (id:string))
     (defun URC_HasFrozen:bool (id:string))
     (defun URC_HasReserved:bool (id:string))
-    (defun URC_Parent:string (dptf:string))
+    (defun URCv_Parent:string (dptf:string))
     (defun URC_TreasuryLowestDispo:decimal ())
     ;;
     ;;  [URD]
@@ -1483,7 +1483,7 @@
             true
         )
     )
-    (defun URC_Parent:string (dptf:string)
+    (defun URCv_Parent:string (dptf:string)
         @doc "Computes <dptf> parent"
         (let
             (
@@ -1819,7 +1819,7 @@
             \ <(UR_Frozen dptf)>, if its a f|dptf \
             \ (UR_Reservation dptf), if its a r|dptf \
             \ While ensuring a Frozen LP cant be used for this operation."
-        (CAP_Owner (URC_Parent dptf))
+        (CAP_Owner (URCv_Parent dptf))
     )
     (defun UEV_id (id:string)
         (with-default-read DPTF|PropertiesTable id
@@ -2731,7 +2731,7 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-BRD:module{BrandingV2} BRD)
-                (parent:string (URC_Parent entity-id))
+                (parent:string (URCv_Parent entity-id))
                 (parent-owner:string (UR_Konto parent))
             )
             ;;Perform the branding upgrade (side effect); bill the STOA via the URCi (== XE_UpgradeBranding's price)

@@ -112,7 +112,7 @@
     (defun URC_AccountExist:bool (id:string account:string))
     (defun URC_HasVesting:bool (id:string))
     (defun URC_HasSleeping:bool (id:string))
-    (defun URC_Parent:string (dpmf:string))
+    (defun URCv_Parent:string (dpmf:string))
     (defun URC_IzIdEA:bool (id:string))
     ;;{5.4}  Validate [UEV/CAP]
     ;;
@@ -1072,7 +1072,7 @@
             true
         )
     )
-    (defun URC_Parent:string (dpmf:string)
+    (defun URCv_Parent:string (dpmf:string)
         @doc "Computes <dpmf> parent"
         (let
             (
@@ -1118,7 +1118,7 @@
         (let
             (
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (parent:string (URC_Parent dpmf))
+                (parent:string (URCv_Parent dpmf))
             )
             (if (= parent dpmf)
                 (CAP_Owner dpmf)
@@ -2003,7 +2003,7 @@
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-BRD:module{BrandingV2} BRD)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (parent:string (URC_Parent entity-id))
+                (parent:string (URCv_Parent entity-id))
                 (parent-owner:string
                     (if (= parent entity-id)
                         (UR_Konto entity-id)

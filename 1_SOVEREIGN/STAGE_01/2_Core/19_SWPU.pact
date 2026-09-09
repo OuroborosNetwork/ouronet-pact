@@ -646,7 +646,7 @@
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-SWPI:module{SwapperIssueV4} SWPI)
                 (o-prec:integer (ref-DPTF::UR_Decimals (at "output-id" dsid)))
-                (expected:decimal (ref-SWPI::URC_Swap swpair dsid false))
+                (expected:decimal (ref-SWPI::URCv_Swap swpair dsid false))
             )
             (enforce
                 (= (floor slippage-value 2) slippage-value)
@@ -942,7 +942,7 @@
                                 (A:decimal (ref-SWP::UR_Amplifier swpair))
                                 (X:[decimal] (ref-SWP::UR_PoolTokenSupplies swpair))
                                 (X-prec:[integer] (ref-SWP::UR_PoolTokenPrecisions swpair))
-                                (input-positions:[integer] (ref-SWPI::URC_PoolTokenPositions swpair [i-id]))
+                                (input-positions:[integer] (ref-SWPI::URCv_PoolTokenPositions swpair [i-id]))
                                 (output-position:integer (ref-SWP::UR_PoolTokenPosition swpair o-id))
                                 (W:[decimal] (ref-SWP::UR_Weigths swpair))
                                 (dtso:object{UtilitySwpV2.DirectTaxedSwapOutput}
@@ -960,7 +960,7 @@
                                     (+
                                         (if (= carried-boost-in 0.0)
                                             0.0
-                                            (ref-SWPI::URC_Swap swpair (ref-U|SWP::UDC_DirectSwapInputData [i-id] [carried-boost-in] o-id) false)
+                                            (ref-SWPI::URCv_Swap swpair (ref-U|SWP::UDC_DirectSwapInputData [i-id] [carried-boost-in] o-id) false)
                                         )
                                         o-id-liquid
                                     )
@@ -1168,7 +1168,7 @@
                 (A:decimal (ref-SWP::UR_Amplifier swpair))
                 (X:[decimal] (ref-SWP::UR_PoolTokenSupplies swpair))
                 (X-prec:[integer] (ref-SWP::UR_PoolTokenPrecisions swpair))
-                (input-positions:[integer] (ref-SWPI::URC_PoolTokenPositions swpair input-ids))
+                (input-positions:[integer] (ref-SWPI::URCv_PoolTokenPositions swpair input-ids))
                 (output-position:integer (ref-SWP::UR_PoolTokenPosition swpair output-id))
                 (W:[decimal] (ref-SWP::UR_Weigths swpair))
                 ;;
@@ -1217,7 +1217,7 @@
     (defun URCi_Swap:object{IgnisCollectorV2.OutputCumulator}
         (account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal slippage-bounds:object{SwapperUsageV3.Slippage})
         @doc "Exact cost preview for C_Swap (direct single/multi-pool swap; the STOA-pid OPU is a \
-            \ free write). When slippage != -1.0, the read-only URC_Swap actual output is checked \
+            \ free write). When slippage != -1.0, the read-only URCv_Swap actual output is checked \
             \ against the client-supplied (dirty-read) slippage-bounds min — exactly as the exec — \
             \ and a below-floor swap returns the zero-cost exceed cumulator without executing. The \
             \ direct swap self-searches its boost route, so NO_PATH is passed (URCi_SwapCore then \
@@ -1232,7 +1232,7 @@
             )
             (if (= slippage -1.0)
                 (URCi_SwapCore account swpair dsid NO_PATH)
-                (if (>= (ref-SWPI::URC_Swap swpair dsid true) (at 0 (UC_SlippageMinMax slippage-bounds)))
+                (if (>= (ref-SWPI::URCv_Swap swpair dsid true) (at 0 (UC_SlippageMinMax slippage-bounds)))
                     (URCi_SwapCore account swpair dsid NO_PATH)
                     (ref-IGNIS::UDC_ConstructOutputCumulator 0.0 BAR true [])
                 )
@@ -1560,7 +1560,7 @@
             \ P0.6 direction 5 (SWP exhaustive-path-search HANDOFF doc): the Liquid Boost cut is no \
             \ longer priced-and-burned on every hop (6 independent full-graph searches on a 6-hop \
             \ route). Instead each hop converts the running carried amount into its own output token \
-            \ via <SWPI::URC_Swap> over the SAME <swpair> edge the hop's real swap already used (raw, \
+            \ via <SWPI::URCv_Swap> over the SAME <swpair> edge the hop's real swap already used (raw, \
             \ fee-free curve math, no search), adds this hop's own boost cut, and passes the total \
             \ forward. Only the LAST hop actually prices-and-burns, via <XI_LiquidIndexPump>, against \
             \ the single accumulated total — one graph search per SmartSwap instead of one per hop. \
@@ -1611,7 +1611,7 @@
                             (A:decimal (ref-SWP::UR_Amplifier swpair))
                             (X:[decimal] (ref-SWP::UR_PoolTokenSupplies swpair))
                             (X-prec:[integer] (ref-SWP::UR_PoolTokenPrecisions swpair))
-                            (input-positions:[integer] (ref-SWPI::URC_PoolTokenPositions swpair [i-id]))
+                            (input-positions:[integer] (ref-SWPI::URCv_PoolTokenPositions swpair [i-id]))
                             (output-position:integer (ref-SWP::UR_PoolTokenPosition swpair o-id))
                             (W:[decimal] (ref-SWP::UR_Weigths swpair))
                             (dsid:object{UtilitySwpV2.DirectSwapInputData}
@@ -1641,7 +1641,7 @@
                             (converted-carry:decimal
                                 (if (= carried-boost-in 0.0)
                                     0.0
-                                    (ref-SWPI::URC_Swap
+                                    (ref-SWPI::URCv_Swap
                                         swpair
                                         (ref-U|SWP::UDC_DirectSwapInputData [i-id] [carried-boost-in] o-id)
                                         false
@@ -1782,7 +1782,7 @@
                                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                                 (max-toa:decimal
                                     ;; Actual output at execution time (pool may have changed since quote)
-                                    (ref-SWPI::URC_Swap swpair dsid true)
+                                    (ref-SWPI::URCv_Swap swpair dsid true)
                                 )
                                 (min-max:[decimal] 
                                     ;; Bounds from client-supplied slippage object (quote time)
@@ -1867,7 +1867,7 @@
                 (A:decimal (ref-SWP::UR_Amplifier swpair))
                 (X:[decimal] (ref-SWP::UR_PoolTokenSupplies swpair))
                 (X-prec:[integer] (ref-SWP::UR_PoolTokenPrecisions swpair))
-                (input-positions:[integer] (ref-SWPI::URC_PoolTokenPositions swpair input-ids))
+                (input-positions:[integer] (ref-SWPI::URCv_PoolTokenPositions swpair input-ids))
                 (output-position:integer (ref-SWP::UR_PoolTokenPosition swpair output-id))
                 (W:[decimal] (ref-SWP::UR_Weigths swpair))
                 ;;

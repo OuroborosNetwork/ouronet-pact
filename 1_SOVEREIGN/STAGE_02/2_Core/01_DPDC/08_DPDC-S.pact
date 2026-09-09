@@ -65,7 +65,7 @@
     (defun URC_PrimordialOrComposite:[bool] (id:string son:bool set-class:integer))
     (defun URC_NoncesSummedScore:decimal (id:string son:bool nonces:[integer]))
     (defun URC_SemiFungibleConstituents:[integer] (id:string set-class:integer))
-    (defun URC_NonFungibleConstituents:[integer] (id:string nonce:integer))
+    (defun URCv_NonFungibleConstituents:[integer] (id:string nonce:integer))
         ;;  [URCi] cost readers — single source per op
     (defun URCi_MakeSemiFungibleSet:object{IgnisCollectorV2.OutputCumulator} (account:string id:string nonces:[integer] how-many-sets:integer))
     (defun URCi_BreakSemiFungibleSet:object{IgnisCollectorV2.OutputCumulator} (account:string id:string nonce:integer how-many-sets:integer))
@@ -640,7 +640,7 @@
             )
         )
     )
-    (defun URC_NonFungibleConstituents:[integer] (id:string nonce:integer)
+    (defun URCv_NonFungibleConstituents:[integer] (id:string nonce:integer)
         (let
             (
                 (ref-DPDC:module{DpdcV2} DPDC)
@@ -720,7 +720,7 @@
                 (ref-DPDC:module{DpdcV2} DPDC)
                 (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
                 (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
-                (constituents:[integer] (URC_NonFungibleConstituents id nonce))
+                (constituents:[integer] (URCv_NonFungibleConstituents id nonce))
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                 [
@@ -1351,7 +1351,7 @@
                             (ref-DPDC-T::C_Transfer [id] [son] account dpdc [[nonce]] [[1]] true)
                         )
                         (constituents:[integer]
-                            (URC_NonFungibleConstituents id nonce)
+                            (URCv_NonFungibleConstituents id nonce)
                         )
                         (ico2:object{IgnisCollectorV2.OutputCumulator}
                             ;;2]Release the Set Elements from <dpdc> to <account>

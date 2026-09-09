@@ -742,9 +742,9 @@
     ;(format "PS has Cold Recovery Positions {}" [(ref-ATS::UR_ColdRecoveryPositions ps)])
     
     [
-        (format "Cold Recovery Fee for 200 is {}" [(ref-ATS::URC_ColdRecoveryFee ps 200.0 -1)])
-        (format "Cold Recovery Fee for 100 is {}" [(ref-ATS::URC_ColdRecoveryFee ps 100.0 -1)])
-        (format "Cold Recovery Fee for 50 is {}" [(ref-ATS::URC_ColdRecoveryFee ps 50.0 -1)])
+        (format "Cold Recovery Fee for 200 is {}" [(ref-ATS::URCv_ColdRecoveryFee ps 200.0 -1)])
+        (format "Cold Recovery Fee for 100 is {}" [(ref-ATS::URCv_ColdRecoveryFee ps 100.0 -1)])
+        (format "Cold Recovery Fee for 50 is {}" [(ref-ATS::URCv_ColdRecoveryFee ps 50.0 -1)])
     ]
     [
         (ref-TS01-C2::ATS|C_ColdRecovery aoz aoz ps 200.0)
