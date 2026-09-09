@@ -452,7 +452,7 @@ and the protection rows with `cd REPL && python3 _gate.py`.*
 | B5 | entrypoints with no adversarial assertion | 319 | **289** | **0** |
 | B6 | `enforce` sites | 1,015 | 1,015 | — |
 | B7 | `expect-failure` assertions | 234 | **306** | >= 1,015 |
-| B8 | **`expect-failure` that accept ANY error** | **137** | *re-measure* | **0** |
+| B8 | **`expect-failure` that accept ANY error** | ~~137~~ **210** | **210** | **0** |
 | B9 | module testers passing standalone | 26 / 26 | 24 / 24 | all, incl. new |
 | B9b | **module testers asserting NOTHING about their module** | **8 / 26** | **0** ✅ | **0** |
 | B10 | **G1 surface coverage (gated)** | ~65% | **100%** ✅ | 100% |
@@ -463,9 +463,23 @@ learned to strip comments — see RULE 10) → 96% → **100%**. Note B9 counts 
 `POPULATE*` files were reclassified as fixtures (they asserted nothing about anything) and
 `modules/LIQUID.repl` was added.
 
-B8's start figure was produced by a regex that also matches a 3-arg `expect-failure` whose message
-string sits on its own line, so it is not trustworthy as written; **3.1 must begin by re-counting
-it properly**, since every adversarial number downstream is scaled by it.
+**B8 re-counted 2026-09-09 (`REPL/_expectfail.py`): 210 weak, not 137 — a 53% undercount.**
+The old figure came from a regex, and a regex cannot tell the two forms apart because the doc
+string and the expected-message string are routinely on separate lines — and the doc is often a
+`(format …)` call rather than a literal:
+
+```pact
+(expect-failure
+    (format "<<TX-04>> <(UEV_EnforceGuardProtocol user-guard true)> must reject u:" [])
+    (ref-DALOS::UEV_EnforceGuardProtocol user-g true))     ;; <- 2-arg: ANY error passes
+```
+
+The replacement counts **top-level arguments with real paren matching** over comment- and
+string-stripped source, so the forms cannot be confused. Positive control:
+`modules/CONFORMANCE.repl`, written entirely in 3-arg form, reports 0 weak out of 7.
+
+**P3 is therefore ~53% larger than the plan budgeted**, and every adversarial percentage
+published before this correction was computed against the wrong denominator.
 
 ---
 
