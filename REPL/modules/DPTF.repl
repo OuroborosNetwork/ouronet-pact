@@ -299,3 +299,51 @@
     ""
 )
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-08 — C_MultiBulkTransfer: fans out across tokens AND receivers")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-08 · 01 · multi-bulk transfer] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;Until now this op appeared ONLY in an archived probe that calls it and checks nothing.
+;;Calling an op is not testing it (RULE 6).
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+    )
+    (let
+        (
+            (s0:decimal (ref-DPTF::UR_Supply a))
+            (p0:decimal (ref-DPTF::UR_AccountSupply a patron))
+            (e0:decimal (try 0.0 (ref-DPTF::UR_AccountSupply a emma)))
+            (l0:decimal (try 0.0 (ref-DPTF::UR_AccountSupply a lumy)))
+        )
+        ;;Both receivers need the transfer role: DPTF-06 granted it to EMMA only, and the
+        ;;multi-bulk path checks EVERY leg, so an ungranted receiver rejects the whole call
+        ;;("Incompatible Transfer Roles"). That is the op behaving correctly.
+        (ref-TS01-C1::DPTF|C_ToggleTransferRole patron a lumy true)
+        ;;one token, two receivers, in a single call
+        (ref-TS01-C1::DPTF|C_MultiBulkTransfer patron [a] patron [[emma lumy]] [[10.0 20.0]])
+        (map print
+            [
+                (expect "<<DPTF-08>> first receiver credited exactly its leg"
+                    (+ e0 10.0) (ref-DPTF::UR_AccountSupply a emma))
+                (expect "<<DPTF-08>> second receiver credited exactly its leg"
+                    (+ l0 20.0) (ref-DPTF::UR_AccountSupply a lumy))
+                (expect "<<DPTF-08>> the sender was debited the SUM of both legs"
+                    (- p0 30.0) (ref-DPTF::UR_AccountSupply a patron))
+                (expect "<<DPTF-08>> INVARIANT: a multi-bulk transfer conserves total supply"
+                    s0 (ref-DPTF::UR_Supply a))
+            ]
+        )
+    )
+    ""
+)
+(commit-tx)
