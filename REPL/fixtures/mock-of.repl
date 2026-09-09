@@ -1,0 +1,71 @@
+;; REPL/fixtures/mock-of.repl — MINIMAL ortofungible fixture.
+;; PROVIDES : 1 DPOF owned by KST.ANHD — "MockOrto"/MOCKO, id MOCKO-98c486052a51 (id = TICKER).
+;; REQUIRES : deploy-stage00 + deploy-stage01.   LOAD ONCE (RULE 5).
+;; ASSERTS  : its own postcondition only.
+;; NOTE     : the DPOF usage-price key is "dpmf" (historical: DPMF -> DPOF rename), NOT "dpof".
+
+(begin-tx "FIXTURE mock-of — issue MOCKO")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [FIXTURE mock-of · 01 · let / STOA split] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (split-stoa:[decimal]
+            (ref-DALOS::URC_SplitSTOAPrices patron (ref-DALOS::UR_UsagePrice "dpmf"))
+        )
+    )
+(print "--- [FIXTURE mock-of · 02 · env-sigs (caps)] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa))
+                ]
+            }
+        ]
+    )
+(print "--- [FIXTURE mock-of · 03 · issue] ---")
+    (let
+        ((ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1))
+        (print (format "<(FIXTURE mock-of)> issued => {}"
+            [(ref-TS01-C1::DPOF|C_Issue
+                patron patron ["MockOrto"] ["MOCKO"] [24]
+                [true]      ;;can-upgrade
+                [true]      ;;can-change-owner
+                [true]      ;;can-add-special-role
+                [true]      ;;can-transfer-oft-create-role
+                [false]     ;;can-freeze
+                [false]     ;;can-wipe
+                [true]      ;;can-pause
+            )]))
+    )
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "FIXTURE mock-of — postcondition")
+(namespace "ouronet-ns")
+(print "--- [FIXTURE mock-of · 04 · postcondition] ---")
+(let
+    (
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (o:string (ref-U|DALOS::UDC_Makeid "MOCKO"))
+    )
+    (map print [(expect (format "<<FIXTURE mock-of>> MOCKO {} exists and is owned by the patron" [o])
+                    KST.ANHD (ref-DPOF::UR_Konto o))])
+    ""
+)
+(commit-tx)

@@ -1,0 +1,121 @@
+;; REPL/fixtures/mock-collections.repl — MINIMAL collectable fixtures (SFT + NFT).
+;;
+;; PROVIDES : NFT collection "MockNonFungible"/MOCKN  -> id MOCKN-98c486052a51, 3 nonces
+;;            SFT collection "MockSemiFungible"/MOCKS -> id MOCKS-98c486052a51, 3 nonces x 10 supply
+;;            Both owned + created by KST.ANHD. Ids derive from the TICKER.
+;; REQUIRES : deploy-stage00 + deploy-stage01 + deploy-stage02.   LOAD ONCE (RULE 5).
+;; ASSERTS  : its own postcondition only.
+;;
+;; Replaces preloading the [6.1.3]/[6.1.4] DPDC chain purely to obtain a collection. Use the real
+;; suites when SET COMPOSITION, FRAGMENTS or make/break scale IS the subject (RULE 2) -- those
+;; genuinely need the live-shaped Bloodshed collection and its set definition.
+
+(begin-tx "FIXTURE mock-collections — issue MOCKN + MOCKS")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [FIXTURE mock-collections · 01 · let / STOA split] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (split-stoa:[decimal]
+            (ref-DALOS::URC_SplitSTOAPrices patron
+                (+ (ref-DALOS::UR_UsagePrice "dpnf") (ref-DALOS::UR_UsagePrice "dpsf")))
+        )
+    )
+(print "--- [FIXTURE mock-collections · 02 · env-sigs (caps)] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa))
+                ]
+            }
+        ]
+    )
+(print "--- [FIXTURE mock-collections · 03 · issue both collections] ---")
+    (let
+        (
+            (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+            (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        )
+        (print (ref-TS02-C2::DPNF|C_Issue patron patron patron "MockNonFungible" "MOCKN"
+                   true true true true true true true true))
+        (print (ref-TS02-C1::DPSF|C_Issue patron patron patron "MockSemiFungible" "MOCKS"
+                   true true true true true true true true))
+    )
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "FIXTURE mock-collections — 3 nonces each")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [FIXTURE mock-collections · 04 · create nonces] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (nf-id:string "MOCKN-98c486052a51")
+        (sf-id:string "MOCKS-98c486052a51")
+    )
+    (let
+        (
+            (type:object{DpdcUdcV2.URI|Type}
+                (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        )
+        (let
+            (
+                (nd:object{DpdcUdcV2.DPDC|NonceData}
+                    (ref-DPDC-UDC::UDC_NonceData 0.0 0.0 "M" "Mock nonce"
+                        (ref-DPDC-UDC::UDC_MetaData { "mock": "true" }) type
+                        (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
+                        (ref-DPDC-UDC::UDC_ZeroURI|Data))
+                )
+            )
+            (print (ref-TS02-C2::DPNF|C_Create patron nf-id (make-list 3 nd)))
+            (print (ref-TS02-C1::DPSF|C_Create patron sf-id (make-list 3 10) (make-list 3 nd)))
+        )
+    )
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "FIXTURE mock-collections — postcondition")
+(namespace "ouronet-ns")
+(print "--- [FIXTURE mock-collections · 05 · postcondition] ---")
+(let
+    (
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (nf-id:string "MOCKN-98c486052a51")
+        (sf-id:string "MOCKS-98c486052a51")
+    )
+    (map print
+        [
+            (expect (format "<<FIXTURE mock-collections>> NFT {} owned by the patron" [nf-id])
+                KST.ANHD (ref-DPDC::UR_OwnerKonto nf-id false))
+            (expect (format "<<FIXTURE mock-collections>> SFT {} owned by the patron" [sf-id])
+                KST.ANHD (ref-DPDC::UR_OwnerKonto sf-id true))
+            (expect (format "<<FIXTURE mock-collections>> NFT {} has 3 nonces" [nf-id])
+                3 (ref-DPDC::UR_NoncesUsed nf-id false))
+            (expect (format "<<FIXTURE mock-collections>> SFT {} has 3 nonces" [sf-id])
+                3 (ref-DPDC::UR_NoncesUsed sf-id true))
+        ]
+    )
+    ""
+)
+(commit-tx)
