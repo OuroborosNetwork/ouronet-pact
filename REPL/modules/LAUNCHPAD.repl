@@ -3,5 +3,12 @@
 ;; Run: cd REPL && pact modules/LAUNCHPAD.repl   (see ARCHITECTURE/REPL_TEST_ARCHITECTURE.md)
 (load "../deploy-stage00.repl")
 (load "../deploy-stage01.repl")
+;;PRICE-PATH DEPENDENCY: DEMIPAD|C_Deposit converts dollars to tokens through
+;;SWPI::URC_OuroPrimordialPrice, which reads the primordial OURO pool. Without pools the
+;;call dies on the BAR sentinel inside SWP|Pairs. [6.2]_DPTF + [6.3]_SWP build that pool,
+;;so this tester is only genuinely standalone with them loaded -- ZALL already loads both
+;;long before [5.3], which is why the gap was invisible from the full run.
+(load "../Stage_01/[6.2]_DPTF.repl")
+(load "../Stage_01/[6.3]_SWP.repl")
 (load "../deploy-stage02.repl")
 (load "../Stage_02/[5.3]_Launchpad.repl")

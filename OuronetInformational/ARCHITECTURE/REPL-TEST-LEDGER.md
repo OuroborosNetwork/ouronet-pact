@@ -11,10 +11,10 @@ This is the evidence base for the audit and documentation papers: every client e
 | metric | value |
 |---|---:|
 | client entrypoints (the auditable contract) | 448 |
-| exercised at least once | 440 (98%) |
-| **never exercised** | **8** |
-| exercised but with NO adversarial assertion in any of its blocks | **308** |
-| total invocations across the suite | 3119 |
+| exercised at least once | 442 (98%) |
+| **never exercised** | **6** |
+| exercised but with NO adversarial assertion in any of its blocks | **309** |
+| total invocations across the suite | 3127 |
 
 ## Never exercised — G1 gap
 
@@ -22,8 +22,6 @@ These entrypoints are reachable by a client and no test calls them.
 
 * `AQP-FVT&#124;CC_SweepRevokeAnchor`
 * `CUSTODIANS&#124;C_Acquire`
-* `DEMIPAD&#124;C_Deposit`
-* `DEMIPAD&#124;C_Withdraw`
 * `SNAKES&#124;C_Acquire`
 * `SPARK&#124;C_RedemAllSparks`
 * `SPARK&#124;C_RedemFewSparks`
@@ -103,6 +101,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>ATS&#124;C_SetColdRecoveryFees</code> | 3 | 0 |
 | <code>ATS&#124;C_SwitchDirectRecovery</code> | 3 | 2 |
 | <code>ATS&#124;C_ToggleParameterLock</code> | 3 | 0 |
+| <code>DEMIPAD&#124;C_Deposit</code> | 3 | 19 |
 | <code>DPNF&#124;C_ToggleBurnRole</code> | 3 | 1 |
 | <code>DPOF&#124;C_MoveCreateRole</code> | 3 | 6 |
 | <code>DPSF&#124;C_AddQuantity</code> | 3 | 0 |
@@ -501,7 +500,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DALOS&#124;C_RotateStoa</code> | 1 | 0 | 0 | `[6.4]_Admin.repl` |
 | <code>DALOS&#124;C_UpdateEliteAccount</code> | 1 | 11 | 0 | `[6.11]_INFO.repl` |
 | <code>DALOS&#124;C_UpdateEliteAccountSquared</code> | 1 | 11 | 0 | `[6.11]_INFO.repl` |
-| <code>DEMIPAD&#124;C_Deposit</code> | 0 | 0 | 0 | — |
+| <code>DEMIPAD&#124;C_Deposit</code> | 3 | 19 | 0 | `[5.3]_Launchpad.repl`, `_probe_dpad2.repl` |
 | <code>DEMIPAD&#124;C_FuelNonFungible</code> | 1 | 1 | 0 | `[6.1.5]_DEMIPAD.repl` |
 | <code>DEMIPAD&#124;C_FuelOrtoFungible</code> | 1 | 0 | 0 | `[6.1.5]_DEMIPAD.repl` |
 | <code>DEMIPAD&#124;C_FuelSemiFungible</code> | 1 | 0 | 0 | `[6.1.5]_DEMIPAD.repl` |
@@ -510,7 +509,7 @@ Called by at least one test, but no `expect-failure` appears in any block that c
 | <code>DEMIPAD&#124;C_RetrieveOrtoFungible</code> | 1 | 0 | 0 | `[6.1.5]_DEMIPAD.repl` |
 | <code>DEMIPAD&#124;C_RetrieveSemiFungible</code> | 1 | 0 | 0 | `[6.1.5]_DEMIPAD.repl` |
 | <code>DEMIPAD&#124;C_RetrieveTrueFungible</code> | 1 | 0 | 0 | `[6.1.5]_DEMIPAD.repl` |
-| <code>DEMIPAD&#124;C_Withdraw</code> | 0 | 0 | 0 | — |
+| <code>DEMIPAD&#124;C_Withdraw</code> | 5 | 7 | 4 | `[5.3]_Launchpad.repl` |
 | <code>DPDC&#124;C_BulkTransfer</code> | 1 | 4 | 0 | `DPDC.repl` |
 | <code>DPDC&#124;C_MultiTransfer</code> | 2 | 5 | 0 | `[6.1]_DPDC.repl`, `DPDC.repl` |
 | <code>DPNF&#124;C_Break</code> | 2 | 6 | 0 | `[6.1.3]_DPDC-S.repl` |

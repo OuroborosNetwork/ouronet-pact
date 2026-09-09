@@ -943,3 +943,285 @@
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "TX-DEP-01 - DEMIPAD|C_Deposit: the royalty split, measured")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(print "=== TX-DEP-01 — DEMIPAD|C_Deposit (type 0, native STOA) ==================")
+;;==== TX-DEP-01 · 01 · env-sigs (caps) ==== =======================================================
+(print "--- [TX-DEP-01 · 01 · env-sigs (caps)] ---")
+;; DEMIPAD|C_Deposit is the keystone of the whole launchpad: every citizen sale
+;; (Spark/Snakes/Custodians/StoicPay/StoicIco) moves the buyer's money through it, and
+;; NOTHING had ever called it. It is also where the launchpad's economics actually live --
+;; the 15% royalty and its 10/20/30/40 environment split are described in DEMIPAD's module
+;; @doc and were, until this test, described NOWHERE ELSE and checked by nothing.
+;;
+;; It was never called because of a PRICE-PATH DEPENDENCY, and that is worth recording as a
+;; property of the system rather than a quirk of the harness. URC_Prices converts dollars to
+;; tokens through SWPI::URC_OuroPrimordialPrice, which reads the primordial OURO pool. With
+;; no pool, UR_PoolTokenSupplies is handed the BAR sentinel "|" and the call dies with
+;;      No value found in table ouronet-ns.SWP_SWP|Pairs for key: |
+;; -- a raw table miss naming neither DEMIPAD nor the missing precondition. So a deposit is
+;; only reachable AFTER pools exist. ZALL already loads [6.3]_SWP long before this file, so
+;; the state is there; modules/LAUNCHPAD.repl had to be taught to load the same prerequisites
+;; to stay genuinely standalone.
+;;
+;; SIGNING SHAPE, which is itself the reason this is fiddly: TWO different signers are
+;; required. PK_Emma unscoped satisfies the OURONET account guard (CAP_EnforceAccountOwnership
+;; inside LIQUID|C>X_WRAPPER); the raw STOA pubkey, scoped, installs the managed coin.TRANSFER
+;; capabilities. Signing only one of them fails in a place that does not mention the other.
+(env-sigs
+    [ { "key": "PK_AncientHodler", "caps": [] }
+    , { "key": "PK_Emma", "caps": [] }
+    , { "key": "ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48", "caps":
+        ;;Granted at the EXACT split amounts, not a round ceiling. A managed cap caps the
+        ;;transfer, so exact grants make this signature block a second, independent statement
+        ;;of what the split must be: if the contract ever moves a different amount to any
+        ;;receiver, the capability itself refuses before any assertion below runs.
+        [ (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" "c:ZNfuj3iZI83n7MUSKGuoXoSxFg1cyMxCzB3szUHVvrI" 95.0)
+        , (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 0.5)
+        , (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1.0)
+        , (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1.5)
+        , (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 2.0)
+        ] }
+    ])
+;;==== TX-DEP-01 · 02 · let / invocation ==== ======================================================
+(print "--- [TX-DEP-01 · 02 · let / invocation] ---")
+(let*
+    (
+        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+        (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
+        (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+        (ref-coin:module{stoa-ns.fungible-v1} coin)
+        (asset:string "DHOC-98c486052a51")
+        (dollars:decimal 10.0)
+        (buyer:string KST.EMMA)
+        (buyer-stoa:string (ref-DALOS::UR_AccountStoa KST.EMMA))
+        (wstoa:string (ref-DALOS::UR_WrappedStoaID))
+        (lpad-sc:string (ref-DPAD::GOV|DEMIPAD|SC_NAME))
+        (stoa-price:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
+        ;;The split the contract will apply, read BEFORE the deposit so the assertions
+        ;;compare exec against the contract's own declared intent, not against my arithmetic.
+        (prices:object (ref-DPAD::URC_Prices asset dollars 0))
+        (env-amt:decimal (at "enviroment-amount" prices))
+        (cod-amt:decimal (at "coding-amount" prices))
+        (rem-amt:decimal (at "remainder-amount" prices))
+        (r1:string (at "receiver-one" prices))
+        (a1:decimal (at "amount-one" prices))
+        (a2:decimal (at "amount-two" prices))
+        (a3:decimal (at "amount-three" prices))
+        (a4:decimal (at "amount-four" prices))
+        ;;Gross in TOKENS is not a constant: it is dollars / the live STOA price. Deriving it
+        ;;keeps this test correct if the locked price ever moves, instead of pinning 100.0.
+        (gross:decimal (/ dollars stoa-price))
+        (buyer-before:decimal (ref-coin::get-balance buyer-stoa))
+        (gas-station-before:decimal (ref-coin::get-balance (ref-DALOS::GOV|DALOS|SC_STOA-NAME)))
+        (funds-before:decimal (ref-DPAD::UR_WSTOA|Funds asset))
+        (resident-before:decimal (ref-DPAD::UR_WSTOA))
+        (sc-before:decimal (ref-DPTF::UR_AccountSupply wstoa lpad-sc))
+    )
+    (map print
+        [
+            ;;THE SPLIT, against DEMIPAD's own module @doc. Until now these numbers existed
+            ;;only in prose.
+            (expect "<<TX-DEP-01>> royalty is 15% of gross (doc: 'starts at 15%')"
+                (* gross 0.15) (+ env-amt cod-amt))
+            (expect "<<TX-DEP-01>> the environment takes exactly ONE THIRD of the royalty"
+                (/ (+ env-amt cod-amt) 3.0) env-amt)
+            (expect "<<TX-DEP-01>> the coding-division pot takes the other TWO THIRDS"
+                (* (/ (+ env-amt cod-amt) 3.0) 2.0) cod-amt)
+            (expect "<<TX-DEP-01>> the seller's remainder is gross minus royalty"
+                (- gross (+ env-amt cod-amt)) rem-amt)
+            ;;The environment third splits 10/20/30/40 (doc: gas station / treasury /
+            ;;maintenance / liquid staking).
+            (expect "<<TX-DEP-01>> environment split is 10% to the gas station"
+                (* env-amt 0.10) a1)
+            (expect "<<TX-DEP-01>> environment split is 20% to the treasury"
+                (* env-amt 0.20) a2)
+            (expect "<<TX-DEP-01>> environment split is 30% to launchpad maintenance"
+                (* env-amt 0.30) a3)
+            (expect "<<TX-DEP-01>> environment split is 40% to liquid staking"
+                (* env-amt 0.40) a4)
+            (expect "<<TX-DEP-01>> the four environment legs sum back to the environment third"
+                env-amt (+ (+ a1 a2) (+ a3 a4)))
+            ;;STRUCTURAL: receiver-one is not an arbitrary address, it IS the Ouronet gas
+            ;;station. Pinning the identity means a future edit that repoints the 10% leg
+            ;;fails here rather than silently paying a stranger.
+            (expect "<<TX-DEP-01>> receiver-one IS the Ouronet gas station account"
+                (ref-DALOS::GOV|DALOS|SC_STOA-NAME) r1)
+        ]
+    )
+    (let
+        (
+            (msg:string (ref-TS02-DPAD::DEMIPAD|C_Deposit KST.ANHD buyer asset dollars 0 false -1.0))
+        )
+        (print (format "<(TS02-DPAD.DEMIPAD|C_Deposit)> => \"{}\"" [msg]))
+        (map print
+            [
+                (expect "<<TX-DEP-01>> the deposit reports the dollar amount and the asset"
+                    (format "Succesfuly deposited {} $ worth against {} into Demipad from {}."
+                        [dollars asset (ref-I|OURONET::OI|UC_ShortAccount buyer)]) msg)
+                ;;THE BUYER PAYS THE GROSS, not the remainder: royalty comes out of the
+                ;;deposit, it is not added on top.
+                (expect "<<TX-DEP-01>> the buyer is debited the full gross in native STOA"
+                    (- buyer-before gross) (ref-coin::get-balance buyer-stoa))
+                (expect "<<TX-DEP-01>> $10 at the live STOA price is the token amount actually moved"
+                    gross (- buyer-before (ref-coin::get-balance buyer-stoa)))
+                ;;The gas station's 10% leg really lands.
+                (expect "<<TX-DEP-01>> the gas station received its 10% environment leg"
+                    (+ gas-station-before a1)
+                    (ref-coin::get-balance (ref-DALOS::GOV|DALOS|SC_STOA-NAME)))
+                ;;Ledger: the seller can withdraw the remainder, and only the remainder.
+                (expect "<<TX-DEP-01>> the seller ledger is credited the remainder"
+                    (+ funds-before rem-amt) (ref-DPAD::UR_WSTOA|Funds asset))
+                ;;Resident: the coding-division two-thirds is retained in the pad (the doc's
+                ;;"until acquisition pools are live, retained as Resident WSTOA").
+                (expect "<<TX-DEP-01>> the coding two-thirds is retained as resident WSTOA"
+                    (+ resident-before cod-amt) (ref-DPAD::UR_WSTOA))
+                ;;CONSERVATION, and the one that would catch a phantom credit: everything the
+                ;;pad OWES (seller ledger + resident) must equal what it HOLDS.
+                (expect "<<TX-DEP-01>> the pad HOLDS exactly what it OWES (ledger + resident)"
+                    (+ sc-before (+ rem-amt cod-amt)) (ref-DPTF::UR_AccountSupply wstoa lpad-sc))
+                (expect "<<TX-DEP-01>> and that equals the non-environment 95% of the deposit"
+                    (- gross env-amt) (+ rem-amt cod-amt))
+                (expect "<<TX-DEP-01>> dollars raised is recorded in DOLLARS, not tokens"
+                    dollars (ref-DPAD::UR_TotalDollarzRaised asset))
+            ]
+        )
+        ""
+    )
+)
+(print "")
+(print "")
+;;==== TX-DEP-01 · 03 · gas echo ==== ==============================================================
+(print "--- [TX-DEP-01 · 03 · gas echo] ---")
+(format "<<<<<<<TX-DEP-01 DEMIPAD|C_Deposit ==> {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "TX-DEP-02 - DEMIPAD|C_Withdraw: the seller takes the remainder")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(print "=== TX-DEP-02 — DEMIPAD|C_Withdraw (type 1, WSTOA) ======================")
+;;==== TX-DEP-02 · 01 · the withdraw gate ==== =====================================================
+(print "--- [TX-DEP-02 · 01 · the withdraw gate] ---")
+;; The other half of the deposit: what TX-DEP-01 credited to the seller ledger, C_Withdraw
+;; pays out. Three guards on DEMIPAD|C>WITHDRAW, probed before the happy path so each one is
+;; isolated against a ledger that is known to be NON-empty.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+        (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+        (asset:string "DHOC-98c486052a51")
+    )
+    (map print
+        [
+            ;;TYPE. Deposits accept type 0 (native STOA); WITHDRAWALS do not -- funds are held
+            ;;wrapped, so there is no native-STOA balance to pay out.
+            ;;
+            ;;FINDING -- PROVABLY DEAD ENFORCE. The message you get is "Invalid Read Type",
+            ;;NOT the "Invalid Withdrawal type" that DEMIPAD|C>WITHDRAW raises. C_Withdraw
+            ;;binds (UR_Funds asset-id type) BEFORE entering with-capability, and UR_Funds
+            ;;opens with the IDENTICAL predicate:
+            ;;
+            ;;    UR_Funds            (enforce (contains type [1 2 3]) "Invalid Read Type")
+            ;;    DEMIPAD|C>WITHDRAW  (enforce iz-type                 "Invalid Withdrawal type")
+            ;;                        where iz-type = (contains type [1 2 3])
+            ;;
+            ;;Same predicate, and the reader runs first. So for EVERY input the cap's enforce
+            ;;is unreachable: type in [1 2 3] passes both, type outside it dies in UR_Funds.
+            ;;This is not "hard to test" -- it is untestable by construction, which is the
+            ;;definition in REPL_TEST_ARCHITECTURE.md Rule 3, and the duplicate-validation
+            ;;case CLAUDE.md warns about (do not repeat the same check in defcap and reader).
+            ;;Left in place pending the owner's call: removing it is a core-code change, and
+            ;;the argument for keeping it is defence-in-depth if C_Withdraw is ever refactored
+            ;;to stop reading first. Either way the message a caller actually sees today is
+            ;;the one asserted here, so this test tracks reality rather than intent.
+            (expect-failure "<<TX-DEP-02>> FINDING: type 0 dies in UR_Funds, so the cap's own type enforce is unreachable"
+                "Invalid Read Type"
+                (ref-TS02-DPAD::DEMIPAD|C_Withdraw KST.ANHD asset 0 KST.EMMA))
+            ;;The same shadowing for every other out-of-range type -- so the deadness is a
+            ;;property of the pair of functions, not an artefact of the value 0.
+            (expect-failure "<<TX-DEP-02>> ...and the same shadowing holds for any other out-of-range type"
+                "Invalid Read Type"
+                (ref-TS02-DPAD::DEMIPAD|C_Withdraw KST.ANHD asset 99 KST.EMMA))
+            ;;EMPTY LEDGER. Aimed at SSTOA, which this sale never took, so the ONLY reason it
+            ;;fails is the zero balance -- not the type, not the destination, not access.
+            (expect-failure "<<TX-DEP-02>> withdrawing a currency the sale never took is rejected"
+                "There is nothing to retrieve for Asset-Id DHOC-98c486052a51 and Token Type 2 (SSTOA)"
+                (ref-TS02-DPAD::DEMIPAD|C_Withdraw KST.ANHD asset 2 KST.EMMA))
+            ;;And the WSTOA ledger really is non-empty, so the rejection above was about SSTOA
+            ;;alone. Without this the test above would pass just as well on a dead launchpad.
+            (expect "<<TX-DEP-02>> ...while the WSTOA ledger IS funded"
+                true (> (ref-DPAD::UR_WSTOA|Funds asset) 0.0))
+        ]
+    )
+    ""
+)
+(print "")
+;;==== TX-DEP-02 · 02 · the payout ==== ============================================================
+(print "--- [TX-DEP-02 · 02 · the payout] ---")
+(let*
+    (
+        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+        (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (asset:string "DHOC-98c486052a51")
+        (dest:string KST.EMMA)
+        (wstoa:string (ref-DALOS::UR_WrappedStoaID))
+        (lpad-sc:string (ref-DPAD::GOV|DEMIPAD|SC_NAME))
+        (owed:decimal (ref-DPAD::UR_WSTOA|Funds asset))
+        (resident:decimal (ref-DPAD::UR_WSTOA))
+        (dest-before:decimal (ref-DPTF::UR_AccountSupply wstoa dest))
+        (sc-before:decimal (ref-DPTF::UR_AccountSupply wstoa lpad-sc))
+    )
+    (ref-TS02-DPAD::DEMIPAD|C_Withdraw KST.ANHD asset 1 dest)
+    (map print
+        [
+            (expect "<<TX-DEP-02>> the destination receives the whole seller ledger"
+                (+ dest-before owed) (ref-DPTF::UR_AccountSupply wstoa dest))
+            (expect "<<TX-DEP-02>> the pad pays out exactly what it owed"
+                (- sc-before owed) (ref-DPTF::UR_AccountSupply wstoa lpad-sc))
+            (expect "<<TX-DEP-02>> the seller ledger is zeroed, not decremented"
+                0.0 (ref-DPAD::UR_WSTOA|Funds asset))
+            ;;THE IMPORTANT ONE. The withdrawal must NOT touch the resident coding-division
+            ;;pot, which lives in the same account. A payout that swept the SC balance instead
+            ;;of the ledger amount would look identical on the destination side and silently
+            ;;drain the pot -- so this is asserted separately from the balance maths above.
+            (expect "<<TX-DEP-02>> the resident coding pot is untouched by the seller payout"
+                resident (ref-DPAD::UR_WSTOA))
+            (expect "<<TX-DEP-02>> ...and the pad still HOLDS what it still OWES"
+                (ref-DPAD::UR_WSTOA) (ref-DPTF::UR_AccountSupply wstoa lpad-sc))
+            ;;DOUBLE-WITHDRAW. Now that the ledger is zero, the same call that just succeeded
+            ;;is rejected -- the guard is a live balance check, not a one-shot flag.
+            (expect-failure "<<TX-DEP-02>> a second withdrawal finds nothing to retrieve"
+                "There is nothing to retrieve for Asset-Id DHOC-98c486052a51 and Token Type 1 (WSTOA)"
+                (ref-TS02-DPAD::DEMIPAD|C_Withdraw KST.ANHD asset 1 dest))
+            ;;Dollars raised is a CUMULATIVE sale record, not a balance: paying the seller out
+            ;;must not erase the history of what was raised.
+            (expect "<<TX-DEP-02>> dollars-raised survives the payout (it is history, not a balance)"
+                10.0 (ref-DPAD::UR_TotalDollarzRaised asset))
+        ]
+    )
+    ""
+)
+(print "")
+(print "")
+;;==== TX-DEP-02 · 03 · gas echo ==== ==============================================================
+(print "--- [TX-DEP-02 · 03 · gas echo] ---")
+(format "<<<<<<<TX-DEP-02 DEMIPAD|C_Withdraw ==> {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
