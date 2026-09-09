@@ -79,3 +79,88 @@
     ""
 )
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "ATS-BRD — ATS|C_UpgradeBranding, and an INFO reader that cannot run")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [ATS-BRD · 01 · branding upgrade on an ATS pair] ---")
+;;ATS|C_UpgradeBranding appeared in no live invocation anywhere in the suite.
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 100000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 100000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 100000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 100000.0)
+            ]
+        }
+    ]
+)
+(let
+    (
+        (ref-BRD:module{BrandingV2} BRD)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (patron:string KST.ANHD)
+        (auryndex:string "Auryndex-98c486052a51")
+    )
+    (let ((f0:integer (at "flag" (ref-BRD::UR_Branding auryndex false))))
+        (ref-TS01-C2::ATS|C_UpgradeBranding patron auryndex 3)
+        (let ((b:object{BrandingV2.Schema} (ref-BRD::UR_Branding auryndex false)))
+            (map print
+                [
+                    ;;Branding flag is a TIER that counts DOWN as branding improves; an upgraded
+                    ;;entity lands on 1. Reading it as "higher is better" is backwards.
+                    (expect "<<ATS-BRD>> the upgrade moved the tier to 1"
+                        1 (at "flag" b))
+                    (expect "<<ATS-BRD>> ...which is at least as good as where it started"
+                        true (<= (at "flag" b) f0))
+                    ;;<months> buys months measured from branding genesis, not from now.
+                    (expect "<<ATS-BRD>> three months of premium were bought"
+                        (add-time (at "genesis" b) (days 90)) (at "premium-until" b))
+                ]
+            )
+        )
+    )
+    ""
+)
+(print "--- [ATS-BRD · 02 · FINDING: INFO_ATS|Cull cannot execute] ---")
+;;INFO-ONE+.pact:2465 builds this preview's description with
+;;      (format "Operation: Culls the Cold Recovery Positions, recovering RTs")
+;;-- a ONE-ARGUMENT (format …). Pact's format takes a template AND an argument list, so the call
+;;is an arity error that resolves to a closure and dies with "Expected Pact Value, got closure or
+;;table reference". It is on the SUCCESS path, not a rejection path, so INFO_ATS|Cull is broken
+;;for EVERY input: no client can price a cull.
+;;
+;;Five sites in the codebase share this shape and every one sits on a branch tests do not reach:
+;;      LIQUID.pact:125       migration guard message   (rejection path)
+;;      ATS.pact:884          Hot-RBT enforce message   (rejection path)
+;;      INFO-ONE+.pact:2465   THIS one                  (success path -- always)
+;;      DSP+.pact:361         "nothing to distribute"   (normal empty case)
+;;      DPL-UR.pact:2460      "KPay Sale has concluded" (normal end state)
+;;The fix is `[]` as the second argument, exactly as DALOS.pact:489 already writes it for the
+;;same sentence.
+(let
+    (
+        (ref-INFO-ONE:module{InfoOneV2} INFO-ONE)
+        (patron:string KST.ANHD)
+    )
+    (map print
+        [
+            (expect-failure "<<ATS-BRD>> INFO_ATS|Cull dies on its own description string"
+                "Expected Pact Value, got closure or table reference"
+                (ref-INFO-ONE::INFO_ATS|Cull patron patron "Auryndex-98c486052a51"))
+        ]
+    )
+    ""
+)
+(print "===^^^===")
+(commit-tx)

@@ -1,0 +1,305 @@
+;; REPL/modules/LIQUID.repl — STANDALONE LIQUID / LQD tester (STOA wrapping + admin migration).
+;;
+;; New in P2. Two entrypoints here appeared in NO live invocation anywhere in the suite:
+;;   LQD|C_UnwrapStoa        -- commented out at [6.7]_VST.repl:356 ("INSUFICCINET when standalone")
+;;   LIQUID|A_MigrateLiquidFunds
+;; The second is the twin of DALOS|A_MigrateLiquidFunds. The DALOS one is covered; this one was
+;; counted as covered only because the ledger matched raw source text (Rule 10).
+;;
+;; Run: cd REPL && pact modules/LIQUID.repl
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "LQD-01 — C_WrapStoa mints wrapped STOA against native STOA")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [LQD-01 · 01 · wrap] ---")
+;; The LIQUID smart account "c:ZNfuj3iZI83n7MUSKGuoXoSxFg1cyMxCzB3szUHVvrI" is where native STOA
+;; is escrowed while its wrapped twin circulates. The wrapper signs a coin.TRANSFER into it.
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps": [ (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:ZNfuj3iZI83n7MUSKGuoXoSxFg1cyMxCzB3szUHVvrI" 5000.0) ]
+        }
+    ]
+)
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (patron:string KST.ANHD)
+        (lq-stoa:string "c:ZNfuj3iZI83n7MUSKGuoXoSxFg1cyMxCzB3szUHVvrI")
+    )
+    (let
+        (
+            (w:string (ref-DALOS::UR_WrappedStoaID))
+            (native0:decimal (coin.get-balance lq-stoa))
+            (held0:decimal (try 0.0 (ref-DPTF::UR_AccountSupply (ref-DALOS::UR_WrappedStoaID) patron)))
+            (supply0:decimal (ref-DPTF::UR_Supply (ref-DALOS::UR_WrappedStoaID)))
+        )
+        (ref-TS01-C2::LQD|C_WrapStoa patron patron 5000.0)
+        (map print
+            [
+                (expect "<<LQD-01>> the wrapper receives exactly the wrapped amount"
+                    (+ held0 5000.0) (ref-DPTF::UR_AccountSupply w patron))
+                ;; Wrapping MINTS -- the wrapped supply grows, it is not moved from a float.
+                (expect "<<LQD-01>> wrapped supply grew by the same amount"
+                    (+ supply0 5000.0) (ref-DPTF::UR_Supply w))
+                ;; INVARIANT: every wrapped token is backed 1:1 by native STOA escrowed in the
+                ;; LIQUID account. This is the property the whole module exists to maintain.
+                (expect "<<LQD-01>> INVARIANT: native STOA escrowed matches the wrapping"
+                    (+ native0 5000.0) (coin.get-balance lq-stoa))
+            ]
+        )
+    )
+    ""
+)
+(print "===^^^===")
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "LQD-02 — C_UnwrapStoa is the exact inverse (never exercised before)")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [LQD-02 · 01 · unwrap] ---")
+;; The unwrap direction moves native STOA OUT of the LIQUID escrow, so the transaction must carry
+;; a coin.TRANSFER managed capability whose SENDER is the escrow account -- an account the caller
+;; does not own and has no key for. LIQUID.pact:516 has the in-code install commented out with
+;; the note "Capability is added instead in the JavaCode", so this requirement lives entirely
+;; off-chain and is invisible in the entrypoint signature. The guard itself is satisfied inside
+;; the module (LIQUID|C>UNWRAP composes LIQUID|NATIVE-AUTOMATIC, which is what the escrow's
+;; capability guard wants); it is only the MANAGED-cap install that must come from outside.
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps": [ (coin.TRANSFER "c:ZNfuj3iZI83n7MUSKGuoXoSxFg1cyMxCzB3szUHVvrI"
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 2000.0) ]
+        }
+    ]
+)
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (patron:string KST.ANHD)
+        (lq-stoa:string "c:ZNfuj3iZI83n7MUSKGuoXoSxFg1cyMxCzB3szUHVvrI")
+    )
+    (let
+        (
+            (w:string (ref-DALOS::UR_WrappedStoaID))
+            (native0:decimal (coin.get-balance lq-stoa))
+            (held0:decimal (ref-DPTF::UR_AccountSupply (ref-DALOS::UR_WrappedStoaID) patron))
+            (supply0:decimal (ref-DPTF::UR_Supply (ref-DALOS::UR_WrappedStoaID)))
+        )
+        ;; METAMORPHIC: unwrap part of what LQD-01 wrapped. Wrap-then-unwrap must be the identity
+        ;; on every balance it touched -- which is a stronger statement than "unwrap ran".
+        (ref-TS01-C2::LQD|C_UnwrapStoa patron patron 2000.0)
+        (map print
+            [
+                (expect "<<LQD-02>> the unwrapper is debited the wrapped amount"
+                    (- held0 2000.0) (ref-DPTF::UR_AccountSupply w patron))
+                ;; Unwrapping BURNS -- the mirror of the mint in LQD-01.
+                (expect "<<LQD-02>> wrapped supply shrank by the same amount"
+                    (- supply0 2000.0) (ref-DPTF::UR_Supply w))
+                (expect "<<LQD-02>> INVARIANT: the escrow released exactly as much native STOA"
+                    (- native0 2000.0) (coin.get-balance lq-stoa))
+            ]
+        )
+    )
+    ""
+)
+(print "--- [LQD-02 · 02 · the signed escrow cap is a hard ceiling] ---")
+;; The cap signed above was for exactly 2000.0 and LQD-02 * 01 consumed all of it. A further
+;; unwrap of even 1.0 in the same transaction is refused by the MANAGED capability, not by any
+;; Ouronet guard. So the amount a client signs for is the real per-transaction unwrap limit --
+;; sign too little and the call fails with a coin-level message that names no Ouronet concept.
+;; (In a transaction that signs nothing at all, the same call dies on "Managed capability not
+;; installed" instead -- that is what LIQUID.pact:516's commented-out install would have avoided.)
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (patron:string KST.ANHD)
+    )
+    (map print
+        [
+            (expect-failure "<<LQD-02>> FINDING: unwrapping past the signed cap is refused by coin, not by Ouronet"
+                "STOA TRANSFER exceeded for balance"
+                (ref-TS01-C2::LQD|C_UnwrapStoa patron patron 1.0))
+        ]
+    )
+    ""
+)
+(print "--- [LQD-02 · 03 · you cannot unwrap what you do not hold] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (patron:string KST.ANHD)
+    )
+    (let ((held:decimal (ref-DPTF::UR_AccountSupply (ref-DALOS::UR_WrappedStoaID) patron)))
+        (map print
+            [
+                (expect-failure "<<LQD-02>> unwrapping more than held is refused"
+                    "into the negatives"
+                    (ref-TS01-C2::LQD|C_UnwrapStoa patron patron (+ held 1.0)))
+                (expect "<<LQD-02>> and the holding is untouched by the refusal"
+                    held (ref-DPTF::UR_AccountSupply (ref-DALOS::UR_WrappedStoaID) patron))
+            ]
+        )
+    )
+    ""
+)
+(print "===^^^===")
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "LQD-03pre — the pause really is a precondition, not decoration")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [LQD-03pre · 01 · refused, but with the WRONG error] ---")
+;;FINDING. The pause precondition works -- migration IS refused while GAP is off -- but the
+;;caller never learns why. LIQUID.pact:125 writes the guard as
+;;      (enforce gap (format "Migration can only be executed when Global Administrative Pause is offline"))
+;;a ONE-ARGUMENT (format …). Pact's format takes a template AND an argument list, so building the
+;;message is itself an arity error: it resolves to a closure and the transaction dies with
+;;"Expected Pact Value, got closure or table reference". The guard's own words never reach the
+;;operator. DALOS.pact:489 writes the identical sentence correctly, with `[]`.
+;;
+;;(The sentence is also backwards -- `enforce gap` passes when the pause is ON, which is the
+;;correct behaviour and the wrong wording. Two defects in one line, and only the second one is
+;;visible today because the first hides it.)
+(env-data { "LQD_PRE_KS": { "keys": ["PK_AncientHodler"], "pred": "keys-all" } })
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+        (ref-coin:module{stoa-ns.fungible-v1} coin)
+        (lq-stoa:string "c:ZNfuj3iZI83n7MUSKGuoXoSxFg1cyMxCzB3szUHVvrI")
+    )
+    (let ((tgt:string (create-principal (read-keyset "LQD_PRE_KS"))))
+        (ref-coin::create-account tgt (read-keyset "LQD_PRE_KS"))
+        (let ((e0:decimal (ref-coin::get-balance lq-stoa)))
+            (map print
+                [
+                    (expect "<<LQD-03pre>> GAP is OFF" false (ref-DALOS::UR_GAP))
+                    (expect-failure "<<LQD-03pre>> migration is refused while the pause is off"
+                        "Expected Pact Value, got closure or table reference"
+                        (ref-TS01-A::LIQUID|A_MigrateLiquidFunds tgt))
+                    (expect "<<LQD-03pre>> and the escrow is untouched by the refusal"
+                        e0 (ref-coin::get-balance lq-stoa))
+                ]
+            )
+        )
+    )
+    ""
+)
+(print "===^^^===")
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "LQD-03 — LIQUID|A_MigrateLiquidFunds sweeps the escrow (never exercised before)")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [LQD-03 · 01 · migrate the wrapping escrow] ---")
+;; The twin of DALOS|A_MigrateLiquidFunds, and the one the ledger only ever "covered" from raw
+;; source text. It sweeps the ENTIRE native-STOA balance of the LIQUID escrow to an arbitrary
+;; target so funds can follow a namespace migration.
+;;
+;; Deliberately the LAST test in this file: it breaks the module's central invariant on purpose.
+;; Unlike the DALOS gas station, this account BACKS circulating wrapped STOA 1:1 -- so a
+;; migration leaves wrapped tokens outstanding against an empty escrow until the operator
+;; re-funds the target. That is the property worth pinning, because it is the reason this op is
+;; admin-only and pause-gated rather than a routine treasury move.
+;;
+;; Precondition, and it is stated BACKWARDS in the code (same defect as the DALOS twin):
+;;   (enforce gap "Migration can only be executed when Global Administrative Pause is offline")
+;; `enforce gap` passes when gap is TRUE, i.e. when the pause is ONLINE. Only the message is
+;; wrong; requiring GAP ON is correct, since it freezes the chain for the window in which the
+;; escrow is empty.
+(env-data
+    { "LQD_MIGRATE_KS": { "keys": ["PK_AncientHodler"], "pred": "keys-all" } }
+)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+        (ref-coin:module{stoa-ns.fungible-v1} coin)
+        (lq-stoa:string "c:ZNfuj3iZI83n7MUSKGuoXoSxFg1cyMxCzB3szUHVvrI")
+    )
+    (let
+        (
+            (target:string (create-principal (read-keyset "LQD_MIGRATE_KS")))
+        )
+        (ref-coin::create-account target (read-keyset "LQD_MIGRATE_KS"))
+        (let
+            (
+                (escrow0:decimal (ref-coin::get-balance lq-stoa))
+                (wrapped0:decimal (ref-DPTF::UR_Supply (ref-DALOS::UR_WrappedStoaID)))
+            )
+            (map print
+                [
+                    (expect "<<LQD-03>> the escrow holds the STOA backing the wrapped supply"
+                        true (> escrow0 0.0))
+                    ;; The escrow is FULLY backing, and here slightly OVER-collateralised: it
+                    ;; holds exactly 1.0 native STOA more than the wrapped supply, a surplus
+                    ;; present from the boot chain and untouched by wrap/unwrap (both move the
+                    ;; two sides by the same amount). So the invariant that actually holds is
+                    ;; ">= ", not "= ". Asserting equality here would encode a model the chain
+                    ;; does not follow; asserting the surplus EXACTLY is what makes a future
+                    ;; leak -- in either direction -- fail this test.
+                    (expect "<<LQD-03>> INVARIANT: the escrow fully backs the wrapped supply"
+                        true (>= escrow0 wrapped0))
+                    (expect "<<LQD-03>> ...with a 1.0 surplus carried over from the boot chain"
+                        1.0 (- escrow0 wrapped0))
+                    (expect "<<LQD-03>> GAP is OFF before we arm the migration" false (ref-DALOS::UR_GAP))
+                ]
+            )
+            ;;PRECONDITION: arm the pause. GOV|MIGRATE enforces GAP is ON (its message says the
+            ;;opposite -- see the header note and DALOS-ADMIN-03b, which pins the same defect).
+            (ref-TS01-A::DALOS|A_ToggleGAP true)
+            (let ((moved:decimal (ref-TS01-A::LIQUID|A_MigrateLiquidFunds target)))
+                (map print
+                    [
+                        ;;The return value is the operator's receipt: it must be the PRE-balance,
+                        ;;not a post-read (always 0.0, and identical on a partial transfer).
+                        (expect "<<LQD-03>> the op returns the amount moved"
+                            escrow0 moved)
+                        (expect "<<LQD-03>> the escrow is swept to exactly zero"
+                            0.0 (ref-coin::get-balance lq-stoa))
+                        (expect "<<LQD-03>> the target received the full balance"
+                            escrow0 (ref-coin::get-balance target))
+                        ;;CONSERVATION of native STOA -- nothing minted or burned, only moved.
+                        (expect "<<LQD-03>> native STOA is conserved across the migration"
+                            escrow0 (+ (ref-coin::get-balance lq-stoa) (ref-coin::get-balance target)))
+                        ;;...and the invariant the module exists to hold is now BROKEN, by design.
+                        (expect "<<LQD-03>> wrapped STOA still circulates after the sweep"
+                            wrapped0 (ref-DPTF::UR_Supply (ref-DALOS::UR_WrappedStoaID)))
+                        (expect "<<LQD-03>> so the 1:1 backing is deliberately left broken"
+                            true (> (ref-DPTF::UR_Supply (ref-DALOS::UR_WrappedStoaID))
+                                    (ref-coin::get-balance lq-stoa)))
+                    ]
+                )
+                ""
+            )
+        )
+    )
+)
+(print "===^^^===")
+(commit-tx)
+(print "")
+(print "=== END modules/LIQUID.repl ===")

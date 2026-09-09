@@ -22,7 +22,15 @@ family, and moving them also broke their relative (load "Stage00_Sanboxes.repl")
 paths, so they could not have run even in place. ~125 assertions silently left the
 suite and the ledger never noticed, because the ledger counts files, not execution.
 """
-import argparse, collections, glob, os, re, subprocess, sys, time
+import argparse, collections, glob, os, re, shutil, subprocess, sys, time
+
+# The pact binary. Resolved once, with an env override, because a PATH that lacks ~/.local/bin
+# is a common way for the gate to "fail" for a reason that has nothing to do with the suite.
+PACT = (os.environ.get("PACT")
+        or shutil.which("pact")
+        or os.path.expanduser("~/.local/bin/pact"))
+if not os.path.exists(PACT) and not shutil.which(PACT):
+    sys.exit("gate: cannot find the `pact` binary. Set PACT=/path/to/pact.")
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -102,7 +110,7 @@ def excluded(p):
 
 def run_one(path):
     t0 = time.time()
-    r = subprocess.run(["pact", path], capture_output=True, text=True)
+    r = subprocess.run([PACT, path], capture_output=True, text=True)
     out = r.stdout + r.stderr
     return {"path": path, "secs": time.time() - t0,
             "pos": out.count("Expect: success"),
