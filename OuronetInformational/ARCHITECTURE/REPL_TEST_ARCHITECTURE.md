@@ -692,6 +692,45 @@ is a phase and not part of the open-ended campaign. And a violated architectural
 CLASS of vulnerability, not one bug: if `URC_` may `enforce`, then validation lives outside the
 defcaps and the "all authorisation is in the defcap" guarantee is false everywhere at once.
 
+### 2.5.2 the SHADOWED GUARD — a class G2 keeps finding and G4 should enumerate
+
+Found seven times during P2/P3 without ever being looked for, which is the signature of a class
+rather than a set of bugs. The shape:
+
+```pact
+(defun UEV_SetClass (id:string son:bool set-class:integer)
+    (let ((sc:integer (UR_SetClass id son set-class)))   ;; HARD read — eager, runs FIRST
+      (enforce (> set-class 0) "Invalid Set-Class Value")
+      (enforce (= set-class sc) "Invalid DPDC Set Data")))
+```
+
+A `let` binding is eager and `UR_Set` is a plain `read`, so **every input the two guards were
+written to reject has already aborted inside the table read.** When the row exists, both guards
+pass trivially. Neither can ever fire. What the caller gets is
+`No value found in table … for key: TSFS-98c486052a51|0` — naming the row key, not the rule.
+
+**Confirmed dead so far** (each has a test asserting the raw message, so a fix will flip it):
+
+| where | shadowed by |
+|---|---|
+| `DPDC-S::UEV_SetClass` — *both* enforces | `UR_Set` |
+| `DEMIPAD::DEMIPAD\|C>WITHDRAW` — the type enforce | `UR_Funds`, same predicate |
+
+**Confirmed degraded** — the guard is reachable, but an absent precondition surfaces as a table
+miss instead of a named rejection: `PYTHIA::A_RevokeDualLink`, `VST` Slumber/Merge,
+`DEMIPAD::URC_Prices` (the `"|"` BAR sentinel), `DPDC-MNG::C_WipeDirty`'s filter, and the whole
+`AQP-INFO` SCORE/FVT/DSA preview family (22 cost readers).
+
+**Upper bound, static:** 252 `UEV_`/defcap members bind a reader before their first `enforce`
+(`05_DPTF` 24, `06_DPOF` 21, `02_DPDC` 21, `15_SWP` 18, `02_SCORE` 14). That number is NOT 252
+dead guards — most of those reads are on keys the caller has already established, leaving the
+guard perfectly reachable. Deciding it statically is not possible; it needs the read's key domain
+compared against the guard's reject domain. But it IS the candidate list, and it is where the
+confirmed cases came from.
+
+**The fix is one line where it matters:** read through the `OrFalse`/`with-default-read` sibling
+that already exists in every one of these modules, and the guard fires with its own message.
+
 ### 2.5.1 measured 2026-09-09 — `REPL/_conformance.py` built, 93 modules / 7,615 members
 
 ```
