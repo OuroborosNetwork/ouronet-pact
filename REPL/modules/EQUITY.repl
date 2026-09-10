@@ -5,3 +5,103 @@
 (load "../deploy-stage01.repl")
 (load "../deploy-stage02.repl")
 (load "../Stage_02/[6.1.1]_EQUITY.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "EQUITY-G1 — the share-tier guard family")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [EQUITY-G1 · 01 · tiers, ids and nonces] ---")
+;;P3.3. All eight of EQUITY+'s unpinned guards are UEV_ -- unprotected, so a direct call is the
+;;whole test -- and [6.1.1] has already built E|TSEQ, so the two that read real share data have
+;;something true to read.
+(let
+    (
+        (ref-EQ:module{EquityV2} EQUITY)
+        (eq:string "E|TSEQ-98c486052a51")
+    )
+    (map print
+        [
+            ;;--- UEV_SharePackageTier: the valid set is 1..7, so BOTH edges are asserted
+            ;;accepted and both neighbours refused. A bounds guard tested on one side only
+            ;;cannot distinguish <= 7 from < 7.
+            (expect "<<EQUITY-G1>> tier 1 is valid (the floor)"
+                true (!= "" (format "{}" [(ref-EQ::UEV_SharePackageTier 1)])))
+            (expect "<<EQUITY-G1>> tier 7 is valid (the ceiling)"
+                true (!= "" (format "{}" [(ref-EQ::UEV_SharePackageTier 7)])))
+            (expect-failure "<<EQUITY-G1>> tier 0 is below the range"
+                "Invalid Package Share Tier" (ref-EQ::UEV_SharePackageTier 0))
+            (expect-failure "<<EQUITY-G1>> tier 8 is one past the ceiling"
+                "Invalid Package Share Tier" (ref-EQ::UEV_SharePackageTier 8))
+            ;;--- UEV_EquitySemiFungibleID: an equity collection is identified by its "E|"
+            ;;prefix alone. The interesting trip is a REAL collection that simply is not an
+            ;;equity one -- not a garbage string, which any check would reject.
+            (expect "<<EQUITY-G1>> the suite's equity collection is accepted"
+                true (!= "" (format "{}" [(ref-EQ::UEV_EquitySemiFungibleID eq)])))
+            (expect-failure "<<EQUITY-G1>> ...and a REAL but non-equity collection is refused"
+                "Only EQUITY SFT Collections allowed"
+                (ref-EQ::UEV_EquitySemiFungibleID "DHOC-98c486052a51"))
+            ;;--- UEV_Morph: two enforces, and they need different trips. The first rejects a
+            ;;nonce outside 1..8; the second rejects a self-morph, which is INSIDE the range and
+            ;;would sail past a range-only guard.
+            (expect "<<EQUITY-G1>> morphing between two distinct in-range nonces is accepted"
+                true (!= "" (format "{}" [(ref-EQ::UEV_Morph 1 2)])))
+            (expect-failure "<<EQUITY-G1>> an out-of-range nonce is refused"
+                "Invalid Input or Output Nonces for Morphing" (ref-EQ::UEV_Morph 1 9))
+            (expect-failure "<<EQUITY-G1>> ...and a SELF-morph is refused by the second guard, in range"
+                "Input and Output Nonces must be different for Morphing" (ref-EQ::UEV_Morph 3 3))
+        ]
+    )
+    ""
+)
+(print "--- [EQUITY-G1 · 02 · the two guards that read real share data] ---")
+;;UEV_ShareAmountsForMaking and UEV_Convert both DELEGATE to UEV_SharePackageTier first, so a
+;;bad tier reaches neither of their own enforces. Each trip below therefore carries a VALID
+;;tier and breaks only the thing under test -- otherwise every one of them would land on the
+;;delegated guard and prove nothing about these functions at all.
+(let
+    (
+        (ref-EQ:module{EquityV2} EQUITY)
+        (eq:string "E|TSEQ-98c486052a51")
+    )
+    (let
+        (
+            ;;derived from the live collection, never guessed: how many individual shares one
+            ;;tier-2 package is worth, and how much combining capacity is actually left.
+            (sspm:integer (ref-EQ::URC_SingleSharePerMillions eq 2))
+            (capacity:integer (ref-EQ::URC_CombineCapacity eq))
+        )
+        (map print
+            [
+                (expect "<<EQUITY-G1>> the collection reports a real per-package share value"
+                    true (> sspm 0))
+                ;;the delegated guard, reached through the wrapper -- so the delegation itself
+                ;;is pinned, not just the wrapper's own enforces.
+                (expect-failure "<<EQUITY-G1>> a bad TIER is caught by the delegated guard, before either local one"
+                    "Invalid Package Share Tier"
+                    (ref-EQ::UEV_ShareAmountsForMaking eq sspm 99))
+                ;;CAPACITY: valid tier, and an amount that is a clean multiple of the package
+                ;;size, so the modulo guard cannot fire -- only the capacity one can.
+                (expect-failure "<<EQUITY-G1>> an amount beyond the collection's remaining capacity"
+                    "Insufficient Capacity Left"
+                    (ref-EQ::UEV_ShareAmountsForMaking eq (* sspm (+ capacity 1000)) 2))
+                ;;MODULO: valid tier, and an amount well inside capacity, so only the divisibility
+                ;;guard can fire. sspm+1 is guaranteed not to divide evenly by sspm when sspm > 1.
+                (expect-failure "<<EQUITY-G1>> ...and an amount that is not a whole number of packages"
+                    "is an invalid amount for making a Tier 2 Share Packge"
+                    (ref-EQ::UEV_ShareAmountsForMaking eq (+ sspm 1) 2))
+                ;;--- UEV_Convert: same-tier conversion is the guard that a range check misses.
+                (expect-failure "<<EQUITY-G1>> converting a tier INTO ITSELF is refused"
+                    "Input Tier and Output Tier must be different for Conversion"
+                    (ref-EQ::UEV_Convert eq 2 1 2))
+                ;;...and a conversion that does not divide evenly into the output tier. Tier 1 is
+                ;;the smallest package, so one tier-1 share can never fill a tier-7 one.
+                (expect-failure "<<EQUITY-G1>> ...and one that cannot be completed without a remainder"
+                    "cannot be completly Converted to Tier 7 Shares"
+                    (ref-EQ::UEV_Convert eq 1 1 7))
+            ]
+        )
+        ""
+    )
+)
+(commit-tx)

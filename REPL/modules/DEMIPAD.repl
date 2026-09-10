@@ -6,3 +6,66 @@
 (load "../Stage_02/[6.1.3]_DPDC-S.repl")
 (load "../Stage_02/[6.1.4]_DPDC-NF.repl")
 (load "../Stage_02/[6.1.5]_DEMIPAD.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "DEMIPAD-G1 — the pure launchpad guards")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DEMIPAD-G1 · 01 · slippage, royalty inputs, fungibility] ---")
+;;P3.3. DEMIPAD's remaining cheap guards are pure -- no fixture, no capability.
+;;
+;;UEV_SlippageCost is worth pinning carefully because it is the launchpad's answer to the same
+;;problem SWP solves, and it makes the OPPOSITE choice about a negative argument. In SWP,
+;;UC_SlippageFactor accepts a negative slippage silently and SHRINKS the signed caps below cost
+;;-- a trap, recorded at TX-ACQ-02. Here a negative <max-cost> is a DOCUMENTED SENTINEL meaning
+;;"no bound", the Variant-2 slippage-off path. Same shape of argument, deliberate opposite
+;;meanings, and only one of the two is safe to pass -1.0 to. Both directions asserted.
+(let
+    (
+        (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+    )
+    (map print
+        [
+            ;;--- UEV_SlippageCost: bounded path
+            (expect "<<DEMIPAD-G1>> a cost UNDER the buyer's ceiling is accepted"
+                true (!= "" (format "{}" [(ref-DPAD::UEV_SlippageCost 9.0 10.0)])))
+            (expect "<<DEMIPAD-G1>> ...and a cost EXACTLY at the ceiling is accepted (the bound is inclusive)"
+                true (!= "" (format "{}" [(ref-DPAD::UEV_SlippageCost 10.0 10.0)])))
+            (expect-failure "<<DEMIPAD-G1>> ...while a cost over it is refused, naming both numbers"
+                "Slippage: live cost 10.5 exceeds the accepted maximum 10.0"
+                (ref-DPAD::UEV_SlippageCost 10.5 10.0))
+            ;;the SENTINEL: a negative ceiling disables the bound entirely. The same live cost
+            ;;that was refused above now passes -- which is the whole point of Variant 2, and is
+            ;;why this must be asserted with the SAME cost rather than a different one.
+            (expect "<<DEMIPAD-G1>> a NEGATIVE ceiling is the documented 'no bound' sentinel"
+                true (!= "" (format "{}" [(ref-DPAD::UEV_SlippageCost 10.5 -1.0)])))
+            (expect "<<DEMIPAD-G1>> ...and it admits ANY cost, however large"
+                true (!= "" (format "{}" [(ref-DPAD::UEV_SlippageCost 999999.0 -1.0)])))
+            ;;zero is NOT the sentinel -- only strictly-negative is. A ceiling of 0.0 is a real
+            ;;bound of zero, so any positive cost must fail. This is the boundary a
+            ;;(<= max-cost 0.0) sentinel test would get wrong.
+            (expect-failure "<<DEMIPAD-G1>> a ceiling of 0.0 is a REAL bound, not the sentinel"
+                "Slippage: live cost 0.01 exceeds the accepted maximum 0.0"
+                (ref-DPAD::UEV_SlippageCost 0.01 0.0))
+            ;;--- UCv_ComputeDepositRoyalty: two argument-domain guards with distinct messages
+            (expect "<<DEMIPAD-G1>> the royalty computer accepts a legitimate deposit"
+                true (> (ref-DPAD::UCv_ComputeDepositRoyalty 0.0 100.0) 0.0))
+            (expect-failure "<<DEMIPAD-G1>> a negative running balance is refused"
+                "Current balance must be non-negative"
+                (ref-DPAD::UCv_ComputeDepositRoyalty -1.0 100.0))
+            (expect-failure "<<DEMIPAD-G1>> ...and a negative deposit, by its own message"
+                "Deposit amount must be non-negative"
+                (ref-DPAD::UCv_ComputeDepositRoyalty 0.0 -1.0))
+            ;;--- UEV_Fungibility: the pair is [fungible? son?], so length 2 exactly.
+            (expect "<<DEMIPAD-G1>> a two-flag fungibility pair is accepted"
+                true (!= "" (format "{}" [(ref-DPAD::UEV_Fungibility [false true])])))
+            (expect-failure "<<DEMIPAD-G1>> a one-flag list is refused"
+                "Invalid Fungibility variable" (ref-DPAD::UEV_Fungibility [false]))
+            (expect-failure "<<DEMIPAD-G1>> ...and a three-flag list too"
+                "Invalid Fungibility variable" (ref-DPAD::UEV_Fungibility [false true false]))
+        ]
+    )
+    ""
+)
+(commit-tx)

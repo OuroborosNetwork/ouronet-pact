@@ -758,4 +758,71 @@
     ""
 )
 (commit-tx)
+;;|| NEXT >
+;;
+(begin-tx "UTIL-12 — the gas-station bounds: three STRICT/NON-STRICT pairs")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [UTIL-12 · 01 · exact equality separates each pair] ---")
+;;03_U_ST exposes its gas bounds as three PAIRS that differ by one character:
+;;
+;;    UEV_enforce-below-gas-price        (<  (UR_chain-gas-price) bound)
+;;    UEV_enforce-below-or-at-gas-price  (<= (UR_chain-gas-price) bound)
+;;      ...and the same for gas-limit and for the notional (price x limit).
+;;
+;;Six guards, and almost any input satisfies or fails all six together -- which is why testing
+;;them one at a time would prove nothing about the distinction they exist for. The ONE input
+;;that separates a pair is the chain value set EXACTLY equal to the bound: the strict form must
+;;refuse it and the non-strict form must accept it. Three such inputs pin all six.
+;;
+;;These read (chain-data) directly, so env-chain-data IS the fixture -- no accounts, no tables.
+(env-chain-data { "gas-limit": 1000, "gas-price": 0.001 })
+(let
+    (
+        (ref-U|ST:module{OuronetGasStationV2} U|ST)
+    )
+    (map print
+        [
+            ;;the readers really see what env-chain-data set -- asserted first, so every
+            ;;rejection below is about the comparison and not about the fixture.
+            (expect "<<UTIL-12>> the chain gas price is what the harness set"
+                0.001 (ref-U|ST::UR_chain-gas-price))
+            (expect "<<UTIL-12>> ...and the gas limit likewise"
+                1000 (ref-U|ST::UR_chain-gas-limit))
+            (expect "<<UTIL-12>> ...and the notional is their product"
+                1.0 (ref-U|ST::URC_chain-gas-notional))
+            ;;--- PAIR 1: gas price, at exact equality
+            (expect "<<UTIL-12>> price: the NON-STRICT bound accepts an exactly-equal price"
+                true (!= "" (format "{}" [(ref-U|ST::UEV_enforce-below-or-at-gas-price 0.001)])))
+            (expect-failure "<<UTIL-12>> price: the STRICT bound REFUSES the very same value"
+                "Gas Price must be smaller than 0.001"
+                (ref-U|ST::UEV_enforce-below-gas-price 0.001))
+            ;;and the strict one does accept a genuinely higher bound, so it is not simply broken
+            (expect "<<UTIL-12>> price: the strict bound accepts anything strictly above"
+                true (!= "" (format "{}" [(ref-U|ST::UEV_enforce-below-gas-price 0.002)])))
+            ;;--- PAIR 2: gas limit, at exact equality
+            (expect "<<UTIL-12>> limit: the NON-STRICT bound accepts an exactly-equal limit"
+                true (!= "" (format "{}" [(ref-U|ST::UEV_enforce-below-or-at-gas-limit 1000)])))
+            (expect-failure "<<UTIL-12>> limit: the STRICT bound REFUSES the very same value"
+                "Gas Limit must be smaller than 1000"
+                (ref-U|ST::UEV_enforce-below-gas-limit 1000))
+            (expect "<<UTIL-12>> limit: one unit higher is accepted by the strict bound"
+                true (!= "" (format "{}" [(ref-U|ST::UEV_enforce-below-gas-limit 1001)])))
+            ;;--- PAIR 3: the NOTIONAL, which is the product and therefore the one a caller is
+            ;;most likely to get wrong -- 0.001 x 1000 = 1.0 exactly.
+            (expect "<<UTIL-12>> notional: the NON-STRICT bound accepts price x limit exactly"
+                true (!= "" (format "{}" [(ref-U|ST::UEV_enforce-below-or-at-gas-notional 1.0)])))
+            (expect-failure "<<UTIL-12>> notional: the STRICT bound REFUSES it"
+                "Gas Limit * Gas Price must be smaller than 1.0"
+                (ref-U|ST::UEV_enforce-below-gas-notional 1.0))
+            ;;the non-strict notional bound must still refuse something genuinely over budget --
+            ;;otherwise "accepts exactly 1.0" would be satisfied by a guard that accepts anything.
+            (expect-failure "<<UTIL-12>> notional: and the NON-STRICT bound still refuses an over-budget tx"
+                "Gas Limit * Gas Price must be smaller than or equal to 0.5"
+                (ref-U|ST::UEV_enforce-below-or-at-gas-notional 0.5))
+        ]
+    )
+    ""
+)
+(commit-tx)
 (print "=== END modules/UTILITIES.repl ===")

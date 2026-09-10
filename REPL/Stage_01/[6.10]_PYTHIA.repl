@@ -639,5 +639,143 @@
 )
 (commit-tx)
 (print "")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX007e - the dual-link validators, as mirror images")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "=== TX007e - PYTHIA dual-link guard family ==============================")
+;;==== TX007e · 01 · composite key shape ==== ======================================================
+(print "--- [TX007e · 01 · composite key shape] ---")
+;; P3.3. PYTHIA's remaining unpinned guards are all UEV_ -- unprotected, so a direct call is the
+;; whole test -- and this file has already built everything they read: pair-1 LINKED (TX006
+;; re-activated it) and pair-2 linked-then-revoked (TX007d), with counterparts surviving the
+;; revoke.
+;;
+;; A dual-link key is standard(162) + BAR + smart(162) = 325. Both trips below keep every other
+;; property intact and break exactly one, so neither can pass for the wrong reason.
+(env-sigs [])
+(let
+    (
+        (ref-PYTHIA:module{PythiaV5} PYTHIA)
+        (apollo-std:string (read-string "PYTHIA|APOLLO-STANDARD"))
+        (apollo-smt:string (read-string "PYTHIA|APOLLO-SMART"))
+    )
+    (let
+        (
+            (dlk:string (ref-PYTHIA::UC_DualLinkKey apollo-std apollo-smt))
+        )
+        (map print
+            [
+                ;;HAPPY PATH: the key the module builds itself must validate. Without it a
+                ;;validator that rejected everything would satisfy both rejections below.
+                (expect "<<TX007e-01>> the key UC_DualLinkKey builds is valid"
+                    true (ref-PYTHIA::UEV_ValidateCompositeDualLinkKey dlk))
+                (expect "<<TX007e-01>> ...and it really is 325 characters"
+                    325 (length dlk))
+                ;;LENGTH: one character short, everything else untouched.
+                (expect-failure "<<TX007e-01>> a 324-character key is refused on length"
+                    "Dual link key length must be 325"
+                    (ref-PYTHIA::UEV_ValidateCompositeDualLinkKey (drop 1 dlk)))
+                ;;SEPARATOR: length preserved at 325, only the byte at the join replaced. This is
+                ;;the trip that a length-only guard would let through -- two valid apollo halves
+                ;;glued with the wrong character still measure 325.
+                (expect-failure "<<TX007e-01>> ...and a 325-character key with the WRONG separator"
+                    "Dual link key separator must be BAR"
+                    (ref-PYTHIA::UEV_ValidateCompositeDualLinkKey
+                        (+ (take 162 dlk) (+ "X" (drop 163 dlk)))))
+            ]
+        )
+        ""
+    )
+)
+(print "")
+;;==== TX007e · 02 · the two link-state validators are mirror images ==== ==========================
+(print "--- [TX007e · 02 · the two link-state validators are mirror images] ---")
+;;UEV_DualPairForLink and UEV_DualPairReadyForActivate read the SAME two counterparts and demand
+;;OPPOSITE things of them:
+;;
+;;    ForLink            counterpart == BAR            (both halves still free)
+;;    ReadyForActivate   counterpart == the other half (already linked to each other)
+;;
+;;So one linked pair exercises both, in both directions, with no new fixture: ReadyForActivate
+;;must accept it and ForLink must refuse it. That is strictly stronger than testing either
+;;alone -- it shows each is reading the link state and reacting to it, rather than passing or
+;;failing for some unrelated reason.
+(let
+    (
+        (ref-PYTHIA:module{PythiaV5} PYTHIA)
+        (apollo-std:string (read-string "PYTHIA|APOLLO-STANDARD"))
+        (apollo-smt:string (read-string "PYTHIA|APOLLO-SMART"))
+    )
+    (map print
+        [
+            ;;state precondition, asserted rather than assumed: pair-1 IS mutually linked.
+            (expect "<<TX007e-02>> pair-1's halves point at each other"
+                [apollo-smt apollo-std]
+                [(ref-PYTHIA::UR_Counterpart apollo-std) (ref-PYTHIA::UR_Counterpart apollo-smt)])
+            ;;the LINKED direction passes...
+            (expect "<<TX007e-02>> ReadyForActivate ACCEPTS a mutually-linked pair, returning its key"
+                (ref-PYTHIA::UC_DualLinkKey apollo-std apollo-smt)
+                (ref-PYTHIA::UEV_DualPairReadyForActivate apollo-std apollo-smt))
+            ;;...and the same pair fails the opposite validator, on its first counterpart check.
+            (expect-failure "<<TX007e-02>> ...while ForLink REFUSES it: the standard half is taken"
+                "Standard half is already linked"
+                (ref-PYTHIA::UEV_DualPairForLink apollo-std apollo-smt))
+        ]
+    )
+    ""
+)
+(print "")
+;;==== TX007e · 03 · the mirror, on the revoked pair ==== ==========================================
+(print "--- [TX007e · 03 · the mirror, on the revoked pair] ---")
+;;Pair-2 was revoked in TX007d, and the assertion there was that revoke is a DEACTIVATION, not an
+;;unlink -- the counterparts survive. This is the consequence, and it is worth pinning because it
+;;is not obvious: a revoked pair still satisfies ReadyForActivate (which is exactly what lets
+;;A_Link flip it back on) and still fails ForLink (its halves are not free).
+(let
+    (
+        (ref-PYTHIA:module{PythiaV5} PYTHIA)
+        (apollo-std:string (read-string "PYTHIA|APOLLO-STANDARD-2"))
+        (apollo-smt:string (read-string "PYTHIA|APOLLO-SMART-2"))
+    )
+    (map print
+        [
+            (expect "<<TX007e-03>> the revoked pair's link is OFF"
+                false (ref-PYTHIA::UR_DualLinkIzActive
+                        (ref-PYTHIA::UC_DualLinkKey apollo-std apollo-smt)))
+            (expect "<<TX007e-03>> ...yet ReadyForActivate still accepts it -- which is what lets A_Link re-arm it"
+                (ref-PYTHIA::UC_DualLinkKey apollo-std apollo-smt)
+                (ref-PYTHIA::UEV_DualPairReadyForActivate apollo-std apollo-smt))
+            (expect-failure "<<TX007e-03>> ...and ForLink still refuses it: revoked is not unlinked"
+                "Standard half is already linked"
+                (ref-PYTHIA::UEV_DualPairForLink apollo-std apollo-smt))
+            ;;FINDING -- ForLink DEGRADES on an undeployed half. Its first act is
+            ;;(UR_Counterpart standard-apollo), a HARD read of PYTHIA|T|ApiKeys, so a half that
+            ;;was never deployed aborts there with a raw table miss naming the 162-glyph row key
+            ;;-- not "this half does not exist". Reaching the guard at all requires the half to be
+            ;;deployed already, which is the same shape as the shadowed guards catalogued in
+            ;;ARCHITECTURE 2.5.2, in its DEGRADED form: the guard is live for its real case
+            ;;(deployed-but-taken) and unhelpful for the case a caller is most likely to hit.
+            (expect-failure "<<TX007e-03>> FINDING: an UNDEPLOYED half aborts in the table read, not a named guard"
+                "No value found in table"
+                (ref-PYTHIA::UEV_DualPairForLink
+                    (+ "₱" (drop 1 KST.ANHD)) (read-string "PYTHIA|APOLLO-SMART")))
+            ;;NOT PINNED, and worth recording why rather than leaving a silent gap: the
+            ;;"Smart half is already linked" enforce needs a standard half that is DEPLOYED AND
+            ;;FREE paired with a taken smart half. Every deployed half in this suite is linked
+            ;;(TX003 and TX007c link both pairs immediately), so that state does not exist here
+            ;;and cannot be reached without deploying a third standard half. Left for the P3.3
+            ;;pass that adds the fixture.
+        ]
+    )
+    ""
+)
+(print "")
+(print "===^^^===")
+(commit-tx)
 (load "[6.10b]_PYTHIA-ledger-v2.repl")
 (print "=== [6.10]_PYTHIA.repl complete ========================================")

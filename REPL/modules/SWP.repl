@@ -439,3 +439,105 @@
 )
 (print "===^^^===")
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "SWP-G1 — UEV_SwapData: five ways to describe a swap wrongly")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [SWP-G1 · 01 · swap-input validation] ---")
+;;P3.3. UEV_SwapData guards the shape of a swap request against the pool it names, and it has
+;;FIVE distinct rejections that a single "bad input" test would collapse into one. Every trip
+;;below is the SAME valid request with exactly one property broken, taken against pool2 -- a
+;;real 3-token stable pool the [6.3] suite built and swapped through.
+(let
+    (
+        (ref-SWPI:module{SwapperIssueV4} SWPI)
+        (ref-SWP:module{SwapperV4} SWP)
+        (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+        (pool:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
+    )
+    (let
+        (
+            (toks:[string] (ref-SWP::UR_PoolTokens pool))
+        )
+        (let
+            (
+                (a:string (at 0 toks))
+                (b:string (at 1 toks))
+                (c:string (at 2 toks))
+                (outsider:string "OURO-98c486052a51")
+            )
+            (map print
+                [
+                    ;;the pool really has three tokens -- stated, because two of the guards below
+                    ;;are about the RELATIONSHIP between the input count and that number.
+                    (expect "<<SWP-G1>> pool2 carries three tokens" 3 (length toks))
+                    ;;HAPPY PATH: one input from the pool, a different pool token as output.
+                    (expect "<<SWP-G1>> a well-formed single-input swap is accepted"
+                        true (!= "" (format "{}"
+                            [(ref-SWPI::UEV_SwapData pool (ref-U|SWP::UDC_DirectSwapInputData [a] [1.0] b))])))
+                    ;;1] an input token that is not in this pool at all.
+                    (expect-failure "<<SWP-G1>> an input token from outside the pool"
+                        "Input Tokens are not part of the pool"
+                        (ref-SWPI::UEV_SwapData pool
+                            (ref-U|SWP::UDC_DirectSwapInputData ["DPTF-nonexistent"] [1.0] b)))
+                    ;;2] output listed among the inputs -- swapping a token for itself. Both ends
+                    ;;are legitimate pool tokens, so only this guard can fire.
+                    (expect-failure "<<SWP-G1>> the output cannot also be an input"
+                        "Output-ID cannot be within the Input-IDs"
+                        (ref-SWPI::UEV_SwapData pool
+                            (ref-U|SWP::UDC_DirectSwapInputData [a b] [1.0 1.0] a)))
+                    ;;3] output not in the pool. Inputs are fine; only the destination is wrong.
+                    (expect-failure "<<SWP-G1>> ...and it must belong to the pool"
+                        "OutputID is not part of Swpair Tokens"
+                        (ref-SWPI::UEV_SwapData pool
+                            (ref-U|SWP::UDC_DirectSwapInputData [a] [1.0] "DPTF-nonexistent")))
+                    ;;4] COUNT: inputs must be at least 1 and STRICTLY FEWER than the pool's
+                    ;;token count -- something has to be left to swap INTO.
+                    ;;
+                    ;;FINDING, and my first attempt at this trip is what surfaced it. Filling the
+                    ;;inputs with all three DISTINCT pool tokens does NOT reach this guard: any
+                    ;;valid output is then necessarily one of the inputs, so guard 2 fires first.
+                    ;;With distinct inputs that is true in general -- l2 = l3 forces the output to
+                    ;;be an input -- so for well-formed requests the count guard is UNREACHABLE.
+                    ;;
+                    ;;What does reach it is a DUPLICATED input list, because nothing in this
+                    ;;validator rejects duplicates. [a a a] into a 3-token pool with a distinct
+                    ;;output passes the membership and output checks and lands here. So the count
+                    ;;guard's real job is not "too many tokens" -- it is the only thing standing
+                    ;;between the pool and a repeated-input swap request.
+                    (expect-failure "<<SWP-G1>> FINDING: only a DUPLICATED input list reaches the count guard"
+                        "Incorrect amount of swap Tokens"
+                        (ref-SWPI::UEV_SwapData pool
+                            (ref-U|SWP::UDC_DirectSwapInputData [a a a] [1.0 1.0 1.0] b)))
+                    ;;...and duplicates BELOW the count bound are accepted outright, which is the
+                    ;;other half of that finding: [a a] into a 3-token pool is a swap request
+                    ;;naming the same token twice, and nothing here objects.
+                    (expect "<<SWP-G1>> FINDING: a duplicated input UNDER the bound is accepted"
+                        true (!= "" (format "{}"
+                            [(ref-SWPI::UEV_SwapData pool
+                                (ref-U|SWP::UDC_DirectSwapInputData [a a] [1.0 1.0] b))])))
+                    ;;5] the DELEGATED guard: ids and amounts must be the same length. It lives in
+                    ;;U|INT::UEV_UniformList, reached through UEV_SwapData, so this pins the
+                    ;;delegation as well as the rule.
+                    (expect-failure "<<SWP-G1>> ids and amounts of different lengths are refused upstream"
+                        "List elements are not the same"
+                        (ref-SWPI::UEV_SwapData pool
+                            (ref-U|SWP::UDC_DirectSwapInputData [a b] [1.0] c)))
+                    ;;--- the INVERSE validator: same pool, different object, its own message.
+                    (expect "<<SWP-G1>> a well-formed inverse swap is accepted"
+                        true (!= "" (format "{}"
+                            [(ref-SWPI::UEV_InverseSwapData pool
+                                (ref-U|SWP::UDC_ReverseSwapInputData b 1.0 a))])))
+                    (expect-failure "<<SWP-G1>> ...and one naming a token outside the pool is not"
+                        "Invalid Pool Tokens"
+                        (ref-SWPI::UEV_InverseSwapData pool
+                            (ref-U|SWP::UDC_ReverseSwapInputData b 1.0 "DPTF-nonexistent")))
+                ]
+            )
+            ""
+        )
+    )
+)
+(commit-tx)
