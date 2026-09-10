@@ -40,8 +40,16 @@ def strip_comments(src):
     return ''.join(out)
 
 MEMBER  = re.compile(r'^\s{1,8}\((defun|defcap|defpact)\s+([^\s()]+)', re.M)
-# an enforce plus the first string literal that follows it, within a bounded window
-ENF = re.compile(r'\((enforce|enforce-one)\b(.{0,900}?)"((?:[^"\\]|\\.){4,})"', re.S)
+# An enforce plus the first string literal that follows it, within a bounded window.
+#
+# THE LOOKAHEAD IS LFAD-BEARING. `\b` after `enforce` matches inside `enforce-guard` too --
+# `-` is a non-word character, so the boundary is right there. That silently pulled all 136
+# `(enforce-guard g)` sites into the denominator and handed each one whatever string literal
+# happened to follow within 900 characters, which is a MIS-ATTRIBUTED message: enforce-guard
+# takes no message at all, Pact generates the keyset-failure text itself. Some of those
+# borrowed strings then matched a real test's expected-message and were counted as PINNED.
+# `(?![-\w])` keeps `enforce` and `enforce-one` and excludes every hyphenated relative.
+ENF = re.compile(r'\((enforce|enforce-one)(?![-\w])(.{0,900}?)"((?:[^"\\]|\\.){4,})"', re.S)
 
 def enforce_one_spans(src):
     """(start, end) of every (enforce-one …) form, balanced, string-aware."""

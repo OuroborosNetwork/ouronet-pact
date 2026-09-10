@@ -253,4 +253,509 @@
     )
 )
 (commit-tx)
+;;|| NEXT >
+;;
+(begin-tx "UTIL-06 — UEV_AutostakeIndex: four guards, and one that ONE input can reach")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [UTIL-06 · 01 · the atspair name guards, in order] ---")
+;;Four sequential enforces, so again each trip must pass the ones before it:
+;;
+;;   1  (is-charset 0 ats)                    "...does not conform to the required charset: {}"
+;;   2  (not (contains ats aipc))             "...contained a prohibited character: {}"
+;;   3  (UC_IzStringANC ats false false)      "Atspair does not conform character-wise ..."
+;;   4  (and (>= al min) (<= al max))         "...does not conform to the ATS-Pair Standards for Size!"
+;;
+;;FINDING on guard 2, and it is two separate problems stacked.
+;;
+;;(a) THE CHECK DOES NOT DO WHAT ITS MESSAGE SAYS. `(contains ats aipc)` asks whether the LIST
+;;    ["$" "¢" "£"] contains the atspair -- i.e. whether the whole name IS one of those three
+;;    characters. The message says "contained a prohibited character", which would be a SUBSTRING
+;;    test. "AB$CD" sails past this guard untouched.
+;;(b) SO ONLY ONE INPUT IN THE UNIVERSE CAN REACH IT. Of the three prohibited characters, "¢" and
+;;    "£" are non-ASCII, so guard 1 (charset 0 = ASCII) rejects them first. That leaves exactly
+;;    "$" -- a single string, out of every string there is, that can make guard 2 fire.
+;;
+;;Both are asserted below rather than described. The guard is not load-bearing: guard 3's
+;;alphanumeric check catches "AB$CD" anyway, which is why this has never surfaced as a bug. But
+;;a guard whose message describes a check it does not perform is a trap for the next reader.
+(let
+    (
+        (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+    )
+    (map print
+        [
+            ;;HAPPY PATH first: a plain alphanumeric name of legal length.
+            (expect "<<UTIL-06>> a plain alphanumeric atspair is accepted"
+                true (!= "" (format "{}" [(ref-U|ATS::UEV_AutostakeIndex "AtsPair01")])))
+            ;;1] non-ASCII trips the charset guard before anything else looks at the string.
+            (expect-failure "<<UTIL-06>> guard 1: a non-ASCII name fails the charset check"
+                "Account ID does not conform to the required charset: Ats€Pair"
+                (ref-U|ATS::UEV_AutostakeIndex "Ats€Pair"))
+            ;;2] the ONLY input that reaches guard 2.
+            (expect-failure "<<UTIL-06>> guard 2 is reachable by exactly one string: \"$\""
+                "Account ID contained a prohibited character: $"
+                (ref-U|ATS::UEV_AutostakeIndex "$"))
+            ;;(a) proven: a name that genuinely CONTAINS "$" does NOT trip guard 2 -- it falls
+            ;;through to guard 3, which is a different message entirely. If guard 2 did what its
+            ;;wording claims, this would say "contained a prohibited character".
+            (expect-failure "<<UTIL-06>> FINDING: a name CONTAINING $ falls through to guard 3, not guard 2"
+                "Atspair does not conform character-wise (Alphanumeric)"
+                (ref-U|ATS::UEV_AutostakeIndex "AB$CD"))
+            ;;(b) proven: the other two prohibited characters never reach guard 2 at all.
+            (expect-failure "<<UTIL-06>> FINDING: the other prohibited chars are eaten by the charset guard first"
+                "Account ID does not conform to the required charset"
+                (ref-U|ATS::UEV_AutostakeIndex "£"))
+            ;;4] length. Both sides of the boundary, derived from CT_MIN_DESIGNATION_LENGTH (2)
+            ;;rather than guessed -- my first draft asserted "AB" was too short and it PASSED,
+            ;;which is precisely the "an expect-failure that does not fail proves nothing" trap
+            ;;this phase exists to catch. The accepting half is what makes the rejecting half
+            ;;mean something: it shows the guard is at 2, not merely present.
+            (expect "<<UTIL-06>> a 2-character name IS accepted (the minimum is 2)"
+                true (!= "" (format "{}" [(ref-U|ATS::UEV_AutostakeIndex "AB")])))
+            (expect-failure "<<UTIL-06>> guard 4: one character below it is refused"
+                "Atspair does not conform to the ATS-Pair Standards for Size!"
+                (ref-U|ATS::UEV_AutostakeIndex "A"))
+            ;;UEV_StoicTagIndex is the same rules minus capitals -- so a name the ATS guard
+            ;;ACCEPTS must be refused here. Asserted as a pair, since that difference is the
+            ;;whole reason the second function exists.
+            (expect "<<UTIL-06>> a lowercase name is a valid StoicTag index"
+                true (!= "" (format "{}" [(ref-U|ATS::UEV_StoicTagIndex "atspair01")])))
+            (expect-failure "<<UTIL-06>> ...while the SAME name with capitals is refused (ATS accepts it)"
+                "StoicTag name AtsPair01 does not conform to index standards (Autostake rules, lowercase only)"
+                (ref-U|ATS::UEV_StoicTagIndex "AtsPair01"))
+        ]
+    )
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "UTIL-07 — the cold-recovery fee schedule: thresholds and array shape")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [UTIL-07 · 01 · fee thresholds] ---")
+;;UEV_CRF|FeeThresholds guards a fee LADDER: 1..100 entries, each at C-RBT precision, strictly
+;;increasing. Strictly increasing is the interesting one -- a ladder that is merely
+;;non-decreasing would let two rungs collide and make the fee lookup ambiguous, so EQUAL
+;;neighbours are asserted to be refused, not just descending ones.
+(let
+    (
+        (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+    )
+    (map print
+        [
+            (expect "<<UTIL-07>> a strictly increasing ladder at precision 2 is accepted"
+                true (!= "" (format "{}" [(ref-U|ATS::UEV_CRF|FeeThresholds [1.0 2.0 3.0] 2)])))
+            (expect "<<UTIL-07>> a single-rung ladder is accepted (the minimum size)"
+                true (!= "" (format "{}" [(ref-U|ATS::UEV_CRF|FeeThresholds [1.0] 2)])))
+            (expect-failure "<<UTIL-07>> an EMPTY ladder is refused by the size guard"
+                "Between 1 and 100 Cold Recovery Fee Threhsolds allowed"
+                (ref-U|ATS::UEV_CRF|FeeThresholds [] 2))
+            (expect-failure "<<UTIL-07>> a DESCENDING ladder breaks the chain"
+                "Invalid Fee Threhsolds Chain"
+                (ref-U|ATS::UEV_CRF|FeeThresholds [3.0 2.0 1.0] 2))
+            ;;EQUAL neighbours: the case that separates "strictly increasing" from
+            ;;"non-decreasing". A weaker guard would accept this and leave two rungs colliding.
+            (expect-failure "<<UTIL-07>> ...and so do EQUAL neighbours: the ladder is STRICTLY increasing"
+                "Invalid Fee Threhsolds Chain"
+                (ref-U|ATS::UEV_CRF|FeeThresholds [1.0 1.0 2.0] 2))
+            ;;precision: a rung finer than the declared C-RBT precision.
+            (expect-failure "<<UTIL-07>> a rung finer than the declared precision is refused"
+                "Invalid Fee Threshold Precision"
+                (ref-U|ATS::UEV_CRF|FeeThresholds [1.005] 2))
+        ]
+    )
+    ""
+)
+(print "--- [UTIL-07 · 02 · fee array shape] ---")
+;;UEV_CRF|FeeArray cross-checks TWO shapes at once: the array must have one row per fee POSITION,
+;;and each row one more entry than there are THRESHOLDS (the rung above the top threshold).
+;;Both are asserted, and separately, because a single "shape is wrong" test could not tell which
+;;dimension the caller got wrong.
+(let
+    (
+        (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+    )
+    (map print
+        [
+            (expect "<<UTIL-07>> 2 positions x 2 thresholds needs a 2x3 array"
+                true (!= "" (format "{}"
+                    [(ref-U|ATS::UEV_CRF|FeeArray 2 [10.0 20.0] [[1.0 2.0 3.0] [4.0 5.0 6.0]])])))
+            (expect-failure "<<UTIL-07>> too few ROWS for the declared positions"
+                "The input <fee-array> must be of length 2"
+                (ref-U|ATS::UEV_CRF|FeeArray 2 [10.0 20.0] [[1.0 2.0 3.0]]))
+            (expect-failure "<<UTIL-07>> rows of the wrong WIDTH for the threshold count"
+                "Inner Lists of the <fee-array> are incompatible with the <fee-thresholds> length"
+                (ref-U|ATS::UEV_CRF|FeeArray 2 [10.0 20.0] [[1.0 2.0] [3.0 4.0]]))
+            ;;the -1 sentinel takes its own branch with its own message.
+            (expect-failure "<<UTIL-07>> the -1 sentinel demands exactly ONE row, by a different message"
+                "The input <fee-array> must be of length 1"
+                (ref-U|ATS::UEV_CRF|FeeArray -1 [10.0] [[1.0 2.0] [3.0 4.0]]))
+        ]
+    )
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "UTIL-08 — UEV_HibernationFees: bounds, then a divisibility nobody would guess")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [UTIL-08 · 01 · peak/decay] ---")
+;;Two enforces. The first folds SIX bounds into one message; the second is a scaled-integer
+;;divisibility check that is easy to miss entirely -- peak and decay can both be perfectly valid
+;;and the pair still be refused because peak*10000 does not divide by decay*10000.
+;;
+;;This function carries an audit scar worth keeping visible: its @doc records finding #10M/M1,
+;;a stray malformed 7th predicate `(= () 0.0)` comparing Pact's unit value against 0.0 -- always
+;;false, so the enforce rejected EVERY input. It was deleted 2026-08-17. The happy-path
+;;assertion below is what would have caught it; there was no such assertion at the time.
+(let
+    (
+        (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+    )
+    (map print
+        [
+            ;;HAPPY PATH -- the assertion the #10M debris would have failed.
+            (expect "<<UTIL-08>> a valid (peak, decay) pair is accepted"
+                true (!= "" (format "{}" [(ref-U|ATS::UEV_HibernationFees 1.0 0.5)])))
+            ;;the six-way fold, one message, three different causes shown.
+            (expect-failure "<<UTIL-08>> a zero peak is refused"
+                "Invalid Hibernation Fees" (ref-U|ATS::UEV_HibernationFees 0.0 0.5))
+            (expect-failure "<<UTIL-08>> ...a peak over the 800.0 ceiling, same message"
+                "Invalid Hibernation Fees" (ref-U|ATS::UEV_HibernationFees 800.0001 0.5))
+            (expect-failure "<<UTIL-08>> ...and a decay of 1.0, which must be strictly below 1"
+                "Invalid Hibernation Fees" (ref-U|ATS::UEV_HibernationFees 1.0 1.0))
+            ;;THE SECOND GUARD. Both values are individually legal -- peak 1.0 is in range at 4dp,
+            ;;decay 0.3 is in (0,1) at 4dp -- and the pair is still refused, because
+            ;;10000 mod 3000 = 1000. A caller reading only the bounds would never predict this.
+            (expect-failure "<<UTIL-08>> two individually-legal values can still fail the scaled division"
+                "Invalid Hibernation Fees via Scaled Division"
+                (ref-U|ATS::UEV_HibernationFees 1.0 0.3))
+        ]
+    )
+    ""
+)
+(commit-tx)
+;;|| NEXT >
+;;
+(begin-tx "UTIL-09 — the glyph account shape guards, mutated from REAL accounts")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [UTIL-09 · 01 · DALOS account shape] ---")
+;;A 162-character glyph account has four independent shape rules, and each trip below is the
+;;LIVE account with exactly one of them broken -- never a string typed from scratch. That
+;;matters here more than usual: any hand-written 162-char glyph would fail several rules at once
+;;and every test would land on whichever fires first, proving only that one.
+;;
+;;   1  (= account-len 162)                "...does not conform to the DALOS Standard..."
+;;   2  enforce-one on the first character  "Address|Account format is invalid"
+;;   3  (= second ".")                      "...second Character must be a <.>"
+;;   4  GLYPH|UEV_MsDc on the body          "Characters do not conform to the DALOS|CHARSET"
+(let
+    (
+        (ref-U|DALOS:module{UtilityDalosGlyphsV3} U|DALOS)
+        (std:string KST.ANHD)
+        (smt:string KC.BJ)
+    )
+    (map print
+        [
+            ;;HAPPY PATH on BOTH identifiers. Rule 2 accepts Ѻ (standard) or Σ (smart), so a test
+            ;;on one alone would pass against a guard that only knew that one.
+            (expect "<<UTIL-09>> a real standard account (Ѻ.) is accepted"
+                true (!= "" (format "{}" [(ref-U|DALOS::GLYPH|UEV_DalosAccount std)])))
+            (expect "<<UTIL-09>> a real smart account (Σ.) is accepted too"
+                true (!= "" (format "{}" [(ref-U|DALOS::GLYPH|UEV_DalosAccount smt)])))
+            (expect "<<UTIL-09>> ...and both really are 162 characters"
+                [162 162] [(length std) (length smt)])
+            ;;1] one character short. Everything else about the string is still valid.
+            (expect-failure "<<UTIL-09>> guard 1: 161 characters is refused"
+                "Address|Account does not conform to the DALOS Standard for Addresses|Accounts"
+                (ref-U|DALOS::GLYPH|UEV_DalosAccount (drop 1 std)))
+            ;;2] length preserved, only the IDENTIFIER swapped. This is the enforce-one, and it
+            ;;demonstrates in live code what the tool now counts as unreachable: the two inner
+            ;;messages ("...checking for a Standard Account", "...for a Smart Account") can NEVER
+            ;;be observed, because Pact raises the enforce-one's own message once both branches
+            ;;fail. What a caller gets is the generic outer text, with no hint which identifier
+            ;;it should have used.
+            (expect-failure "<<UTIL-09>> guard 2: a wrong identifier gives the OUTER enforce-one message"
+                "Address|Account format is invalid"
+                (ref-U|DALOS::GLYPH|UEV_DalosAccount (+ "X" (drop 1 std))))
+            ;;3] identifier kept, separator broken.
+            (expect-failure "<<UTIL-09>> guard 3: the second character must be a dot"
+                "Account|Address Format is invalid, second Character must be a <.>"
+                (ref-U|DALOS::GLYPH|UEV_DalosAccount (+ (take 1 std) (+ "X" (drop 2 std)))))
+            ;;4] prefix intact, one BODY character outside the DALOS charset.
+            (expect-failure "<<UTIL-09>> guard 4: a body character outside DALOS|CHARSET"
+                "Characters do not conform to the DALOS|CHARSET"
+                (ref-U|DALOS::GLYPH|UEV_DalosAccount (+ (take 2 std) (+ " " (drop 3 std)))))
+        ]
+    )
+    ""
+)
+(print "--- [UTIL-09 · 02 · Apollo account shape: the same rules, different identifiers] ---")
+;;Apollo accounts reuse the body charset but take ₱ (standard) or Π (smart), and unlike the
+;;DALOS guard the identifier is chosen by an ARGUMENT rather than accepted either way. So this
+;;is a 2x2 like the DALOS account-kind pair: each flag must accept its own glyph and refuse the
+;;other's. Built by swapping the identifier of a real account, so only that byte differs.
+(let
+    (
+        (ref-U|DALOS:module{UtilityDalosGlyphsV3} U|DALOS)
+    )
+    (let
+        (
+            (apollo-std:string (+ "₱" (drop 1 KST.ANHD)))
+            (apollo-smt:string (+ "Π" (drop 1 KST.ANHD)))
+        )
+        (map print
+            [
+                (expect "<<UTIL-09>> ₱. is a valid STANDARD apollo account"
+                    true (!= "" (format "{}" [(ref-U|DALOS::GLYPH|UEV_ApolloAccount apollo-std false)])))
+                (expect "<<UTIL-09>> Π. is a valid SMART apollo account"
+                    true (!= "" (format "{}" [(ref-U|DALOS::GLYPH|UEV_ApolloAccount apollo-smt true)])))
+                ;;the off-diagonal -- each flag refuses the other's glyph, and by DISTINCT
+                ;;messages, unlike the DALOS enforce-one above. Same problem, better diagnostics.
+                (expect-failure "<<UTIL-09>> the SMART check refuses a ₱ account, and names what it wanted"
+                    "Apollo Smart account must begin with Π"
+                    (ref-U|DALOS::GLYPH|UEV_ApolloAccount apollo-std true))
+                (expect-failure "<<UTIL-09>> the STANDARD check refuses a Π account, likewise"
+                    "Apollo Standard account must begin with ₱"
+                    (ref-U|DALOS::GLYPH|UEV_ApolloAccount apollo-smt false))
+                (expect-failure "<<UTIL-09>> a short apollo account is refused on length"
+                    "Apollo account string does not conform to length 162"
+                    (ref-U|DALOS::GLYPH|UEV_ApolloAccount (drop 1 apollo-std) false))
+                (expect-failure "<<UTIL-09>> ...and a broken separator on its own rule"
+                    "Apollo account format is invalid, second character must be <.>"
+                    (ref-U|DALOS::GLYPH|UEV_ApolloAccount
+                        (+ (take 1 apollo-std) (+ "X" (drop 2 apollo-std))) false))
+                (expect-failure "<<UTIL-09>> ...and a bad body character on its own rule"
+                    "Apollo account characters do not conform to the DALOS|CHARSET"
+                    (ref-U|DALOS::GLYPH|UEV_ApolloAccount
+                        (+ (take 2 apollo-std) (+ " " (drop 3 apollo-std))) false))
+            ]
+        )
+        ""
+    )
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "UTIL-10 — UEV_Fee, twice: two functions, one name, different rules")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [UTIL-10 · 01 · the two fee validators] ---")
+;;There are TWO UEV_Fee functions in the utilities and they do not agree:
+;;
+;;   U|ATS::UEV_Fee    one enforce, one message:  0.0 <= fee <= 999.0, 4 dp
+;;   U|DALOS::UEV_Fee  two enforces, two messages: fee is -1.0, or 0.0, or in [1.0, 999.0]
+;;
+;;So the DALOS validator has a HOLE the ATS one does not: 0.5 is a perfectly good fee to the ATS
+;;rule and refused by the DALOS rule. Asserted directly against each other below, because a
+;;caller holding a fee and choosing between them has no way to know that from the names.
+(let
+    (
+        (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+    )
+    (map print
+        [
+            ;;the DALOS validator's three ACCEPTED shapes -- the sentinel, zero, and the band.
+            (expect "<<UTIL-10>> -1.0 is the DALOS 'no fee' sentinel and is accepted"
+                true (!= "" (format "{}" [(ref-U|DALOS::UEV_Fee -1.0)])))
+            (expect "<<UTIL-10>> 0.0 is accepted"
+                true (!= "" (format "{}" [(ref-U|DALOS::UEV_Fee 0.0)])))
+            (expect "<<UTIL-10>> 1.0 is accepted (the bottom of the band)"
+                true (!= "" (format "{}" [(ref-U|DALOS::UEV_Fee 1.0)])))
+            (expect "<<UTIL-10>> 999.0 is accepted (the top)"
+                true (!= "" (format "{}" [(ref-U|DALOS::UEV_Fee 999.0)])))
+            ;;THE HOLE. Between the 0.0 point and the band's 1.0 floor there is a gap, and a
+            ;;naive (and (>= fee 0.0) (<= fee 999.0)) would swallow it silently.
+            (expect-failure "<<UTIL-10>> FINDING: 0.5 falls in the HOLE between 0.0 and the 1.0 floor"
+                "The fee amount of 0.5 is not a valid fee amount value wise"
+                (ref-U|DALOS::UEV_Fee 0.5))
+            ;;...and the SAME value is perfectly valid to the ATS validator. This pair is the
+            ;;point of the block: one name, two rules, opposite verdicts on one input.
+            (expect "<<UTIL-10>> ...while U|ATS::UEV_Fee accepts that very same 0.5"
+                true (!= "" (format "{}" [(ref-U|ATS::UEV_Fee 0.5)])))
+            ;;the two DALOS enforces are separately reachable, by distinct messages.
+            (expect-failure "<<UTIL-10>> a fee finer than FEE_PRECISION fails the DECIMAL rule"
+                "is not a valid fee amount decimal wise"
+                (ref-U|DALOS::UEV_Fee 1.000001))
+            (expect-failure "<<UTIL-10>> ...and one past the ceiling fails the VALUE rule"
+                "The fee amount of 1000.0 is not a valid fee amount value wise"
+                (ref-U|DALOS::UEV_Fee 1000.0))
+            ;;-2.0 is neither the sentinel nor in the band.
+            (expect-failure "<<UTIL-10>> only -1.0 is a sentinel; -2.0 is just invalid"
+                "The fee amount of -2.0 is not a valid fee amount value wise"
+                (ref-U|DALOS::UEV_Fee -2.0))
+        ]
+    )
+    ""
+)
+(print "--- [UTIL-10 · 02 · decimals and designations] ---")
+(let
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+    )
+    (map print
+        [
+            ;;UEV_Decimals — both edges of 2..24 accepted, both neighbours refused.
+            (expect "<<UTIL-10>> 2 decimals is the minimum and is accepted"
+                true (!= "" (format "{}" [(ref-U|DALOS::UEV_Decimals 2)])))
+            (expect "<<UTIL-10>> 24 decimals is the maximum and is accepted"
+                true (!= "" (format "{}" [(ref-U|DALOS::UEV_Decimals 24)])))
+            (expect-failure "<<UTIL-10>> 1 decimal is below the standard"
+                "Decimal Size is not between 2 and 24 as per DALOS Standard!"
+                (ref-U|DALOS::UEV_Decimals 1))
+            (expect-failure "<<UTIL-10>> 25 decimals is above it"
+                "Decimal Size is not between 2 and 24 as per DALOS Standard!"
+                (ref-U|DALOS::UEV_Decimals 25))
+            ;;UEV_NameOrTicker — the two enforces are size then charset, and the SPECIAL flag
+            ;;widens the size ceiling (LP names concatenate up to 7 constituents). Asserted as a
+            ;;pair: a name too long for a standard token that the special form accepts.
+            (expect "<<UTIL-10>> a plain token name is accepted"
+                true (!= "" (format "{}" [(ref-U|DALOS::UEV_NameOrTicker "MyToken" true false)])))
+            (expect-failure "<<UTIL-10>> a 1-character designation is below the minimum"
+                "Designation does not conform to the DALOS Name Standard for Size!"
+                (ref-U|DALOS::UEV_NameOrTicker "M" true false))
+            ;;charset: passes the size rule, fails on content.
+            (expect-failure "<<UTIL-10>> a name with a space fails the CHARACTER rule, not the size one"
+                "Designation does not conform character-wise"
+                (ref-U|DALOS::UEV_NameOrTicker "My Token" true false))
+        ]
+    )
+    ""
+)
+(commit-tx)
+;;|| NEXT >
+;;
+(begin-tx "UTIL-11 — the small utility guards, swept")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [UTIL-11 · 01 · guard combinators, lists, integers, decimals] ---")
+;;The tail of the utility worklist: one or two guards each, across six modules. Cheap enough
+;;that leaving them unpinned would be pure neglect -- every one is a pure function reached by a
+;;direct call. Each still gets its accepting case, because a guard that always fires satisfies
+;;every rejection test ever written against it.
+(let
+    (
+        (ref-U|G:module{OuronetGuardsV2} U|G)
+        (ref-U|LST:module{StringProcessorV2} U|LST)
+        (ref-U|INT:module{OuronetIntegersV2} U|INT)
+        (ref-U|DEC:module{OuronetDecimalsV2} U|DEC)
+    )
+    (let
+        (
+            (g:guard (keyset-ref-guard "ouronet-ns.dh_master-keyset"))
+        )
+        (map print
+            [
+                ;;--- U_G: the combinators refuse an EMPTY guard list. That matters more than it
+                ;;looks: UEV_GuardOfAll over zero guards would vacuously succeed, handing back a
+                ;;guard that authorises everything. The empty case is the dangerous one, not an
+                ;;edge case.
+                (expect "<<UTIL-11>> GuardOfAll over a non-empty list returns a guard"
+                    true (!= "" (format "{}" [(ref-U|G::UEV_GuardOfAll [g])])))
+                (expect "<<UTIL-11>> GuardOfAny likewise"
+                    true (!= "" (format "{}" [(ref-U|G::UEV_GuardOfAny [g])])))
+                (expect-failure "<<UTIL-11>> GuardOfAll refuses an EMPTY list (which would authorise everything)"
+                    "Guard list cannot be empty" (ref-U|G::UEV_GuardOfAll []))
+                (expect-failure "<<UTIL-11>> GuardOfAny refuses an empty list too"
+                    "Guard list cannot be empty" (ref-U|G::UEV_GuardOfAny []))
+                ;;--- U_LST: two index guards and two emptiness guards.
+                (expect "<<UTIL-11>> RemoveItemAt drops the addressed element"
+                    [1 3] (ref-U|LST::UC_RemoveItemAt [1 2 3] 1))
+                (expect-failure "<<UTIL-11>> ...and refuses a position at the length (last valid is length-1)"
+                    "Position must be non-negative and within" (ref-U|LST::UC_RemoveItemAt [1 2 3] 3))
+                (expect-failure "<<UTIL-11>> ...and a negative position"
+                    "Position must be non-negative and within" (ref-U|LST::UC_RemoveItemAt [1 2 3] -1))
+                (expect "<<UTIL-11>> ReplaceAt substitutes in place"
+                    [1 9 3] (ref-U|LST::UC_ReplaceAt [1 2 3] 1 9))
+                (expect-failure "<<UTIL-11>> ...and refuses an out-of-range index"
+                    "Index out of bounds" (ref-U|LST::UC_ReplaceAt [1 2 3] 3 9))
+                (expect-failure "<<UTIL-11>> UEV_NotEmpty refuses the empty list"
+                    "List cannot be empty" (ref-U|LST::UEV_NotEmpty []))
+                (expect "<<UTIL-11>> UEV_StringPresence accepts a member"
+                    true (!= "" (format "{}" [(ref-U|LST::UEV_StringPresence "b" ["a" "b"])])))
+                (expect-failure "<<UTIL-11>> ...and reports the missing item AND the list it searched"
+                    "String c is not present in list [\"a\", \"b\"]."
+                    (ref-U|LST::UEV_StringPresence "c" ["a" "b"]))
+                ;;--- U_INT
+                (expect "<<UTIL-11>> MaxInteger picks the largest"
+                    9 (ref-U|INT::UEV_MaxInteger [3 9 1]))
+                (expect-failure "<<UTIL-11>> ...and refuses an empty list rather than returning a default"
+                    "UEV_MaxInteger: list cannot be empty" (ref-U|INT::UEV_MaxInteger []))
+                ;;--- U_DEC: percent and promille share a shape but NOT a ceiling, so they are
+                ;;asserted against each other at 100.0 -- valid for one, mid-range for the other.
+                (expect "<<UTIL-11>> Percent accepts its 100.0 ceiling"
+                    true (!= "" (format "{}" [(ref-U|DEC::UCv_Percent 10.0 100.0 2)])))
+                (expect-failure "<<UTIL-11>> ...and refuses anything past it"
+                    "Invalid percent amount" (ref-U|DEC::UCv_Percent 10.0 100.0001 2))
+                (expect "<<UTIL-11>> Promille accepts 100.0 as an ordinary mid-range value"
+                    true (!= "" (format "{}" [(ref-U|DEC::UCv_Promille 10.0 100.0 2)])))
+                (expect-failure "<<UTIL-11>> ...and has its own, higher ceiling at 1000.0"
+                    "Invalid permille amount" (ref-U|DEC::UCv_Promille 10.0 1000.0001 2))
+                ;;DecimalArray: every inner list must be the same length -- a ragged array would
+                ;;silently mis-index every consumer downstream.
+                (expect "<<UTIL-11>> a rectangular decimal array is accepted"
+                    true (!= "" (format "{}" [(ref-U|DEC::UEV_DecimalArray [[1.0 2.0] [3.0 4.0]])])))
+                (expect-failure "<<UTIL-11>> ...and a RAGGED one is refused"
+                    "All Fee-Array Lists must be of equal length !"
+                    (ref-U|DEC::UEV_DecimalArray [[1.0 2.0] [3.0]]))
+            ]
+        )
+        ""
+    )
+)
+(print "--- [UTIL-11 · 02 · vesting milestones and the inverse swap bound] ---")
+(let
+    (
+        (ref-U|VST:module{UtilityVstV2} U|VST)
+        (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+    )
+    (map print
+        [
+            ;;--- U_VST: milestone bounds, both edges.
+            (expect "<<UTIL-11>> 1 milestone is valid (the floor)"
+                true (!= "" (format "{}" [(ref-U|VST::UEV_Milestone 1)])))
+            (expect "<<UTIL-11>> 250 milestones is valid (the ceiling)"
+                true (!= "" (format "{}" [(ref-U|VST::UEV_Milestone 250)])))
+            (expect-failure "<<UTIL-11>> 0 milestones is refused"
+                "Milestone splitting number 0 is out of bounds" (ref-U|VST::UEV_Milestone 0))
+            (expect-failure "<<UTIL-11>> 251 is one past the ceiling"
+                "Milestone splitting number 251 is out of bounds" (ref-U|VST::UEV_Milestone 251))
+            ;;UEV_MilestoneWithTime delegates to UEV_Milestone and then adds two of its own, so
+            ;;each trip has to carry a VALID milestone count to reach them.
+            (expect "<<UTIL-11>> a schedule inside the upper lock limit is accepted"
+                true (!= "" (format "{}" [(ref-U|VST::UEV_MilestoneWithTime 0 86400 10 788400000)])))
+            (expect-failure "<<UTIL-11>> a negative offset is refused"
+                "Offset and Duration cannot be negative"
+                (ref-U|VST::UEV_MilestoneWithTime -1 86400 10 788400000))
+            (expect-failure "<<UTIL-11>> ...and a negative duration, by the same rule"
+                "Offset and Duration cannot be negative"
+                (ref-U|VST::UEV_MilestoneWithTime 0 -1 10 788400000))
+            ;;milestones x duration + offset must fit the limit. 250 x 788400000 blows past the
+            ;;25-year vesting ceiling while every individual argument stays legal -- the guard is
+            ;;on the PRODUCT, which no single-argument test would reach.
+            (expect-failure "<<UTIL-11>> individually-legal arguments whose PRODUCT exceeds the lock limit"
+                "Upper Lock Time Exceeded"
+                (ref-U|VST::UEV_MilestoneWithTime 0 788400000 250 788400000))
+            ;;--- U_SWP: the inverse swap cannot ask for at-or-more than the pool holds.
+            ;;Requesting exactly the reserve is the interesting case: it would drain the side to
+            ;;zero and make the constant-product term undefined, so the bound is STRICT.
+            (expect-failure "<<UTIL-11>> asking for the pool's ENTIRE output reserve is refused (strict bound)"
+                "output-amount must be strictly less than"
+                (ref-U|SWP::UCv_ComputeInverseY
+                    { "A" : 1.0, "X" : [1000.0 1000.0], "output-amount" : 1000.0
+                    , "output-position" : 1, "input-position" : 0, "input-precision" : 12
+                    , "weights" : [1.0 1.0] }))
+        ]
+    )
+    ""
+)
+(commit-tx)
 (print "=== END modules/UTILITIES.repl ===")
