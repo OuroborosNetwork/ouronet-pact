@@ -658,6 +658,33 @@ Live worklist after both: **619**, not 695. A number that includes work which ca
 the same failure as counting a commented-out test as coverage (RULE 10) — it just fails in the
 optimistic direction instead.
 
+### 3.3 cost model — measured 2026-09-10, at PINNED 303/822 (36%)
+
+The cheap work is nearly exhausted. Partitioning the **500 live sites** by what it actually costs
+to pin one:
+
+| | sites | what it takes |
+|---|---:|---|
+| **A** | **72** | cheap + clear — a direct call, no fixture |
+| **B** | **105** | cheap but **behind an eager read** — may be unpinnable as written |
+| **C** | **171** | defcap, clear — needs a real client operation |
+| **D** | **152** | defcap **and** behind a read — a client op, and it may be dead anyway |
+
+**Only 72 of 500 are cheap.** Everything done so far has come out of bucket A, which is why the
+rate has been high; it will not continue. The 11 modules finished in this phase consumed roughly
+two-thirds of that bucket.
+
+**FIX THE SHADOWED GUARDS BEFORE TRYING TO PIN BUCKET B.** Those 105 sites are where every
+confirmed-dead guard has come from. Writing tests against them now produces assertions that pin a
+raw `No value found in table` — documenting a defect rather than proving a rule — and each one
+has to be rewritten once the code is fixed. The fix is one line per site (read through the
+`with-default-read` sibling that already exists in the module), after which the guard fires with
+its own message and becomes pinnable normally. Doing it in the other order costs the work twice.
+
+**Bucket C is the honest bulk of P3.3** and its cost is set by fixture reuse, not by cleverness:
+a module whose suite already builds the state pins several guards per block (`08_DPDC-S`: 13 sites
+in one), a module without one pays for the fixture first (`05_FVT`: ~2x per site, measured).
+
 **TRIP EACH GUARD FROM THE LIVE STATE, never from a guessed constant.** Three assertions in the
 first draft PASSED — `UEV_Amount a 0.0000000000001` does not trip a 24-decimal token, and
 `UEV_AccountBurnState a emma false` matches a role that is already false. *An `expect-failure`

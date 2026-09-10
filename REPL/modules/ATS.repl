@@ -229,3 +229,126 @@
 )
 (print "===^^^===")
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "ATS-G1 — the existence guards, as 2x2s on their own boolean argument")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [ATS-G1 · 01 · RT / RBT existence] ---")
+;;P3.3. UEV_RewardTokenExistance and UEV_RewardBearingTokenExistance take the expected answer as
+;;an ARGUMENT -- (atspair token existance) -- so each is a 2x2 on one real pair: the token that
+;;IS registered must satisfy existance=true and be refused at existance=false, and a token that
+;;is NOT must do the opposite. Testing only one cell would pass against a guard that ignores its
+;;argument entirely, which is precisely what this shape of parameter invites.
+;;
+;;Every id below is DERIVED from the live pair, never typed: the suite's PlebeicStrength pair
+;;reports its own reward token and its own cold RBT.
+(let
+    (
+        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ps:string "PlebeicStrength-98c486052a51")
+    )
+    (let
+        (
+            (rts:[string] (ref-ATS::UR_RewardTokenList ps))
+            (cold-rbt:string (ref-ATS::UR_ColdRewardBearingToken ps))
+            (outsider:string "OURO-98c486052a51")
+        )
+        (let
+            (
+                (rt:string (at 0 rts))
+            )
+            (map print
+                [
+                    ;;preconditions, asserted: the pair really has a reward token and a cold RBT,
+                    ;;and the outsider really is neither. Without these the 2x2 below could be
+                    ;;passing for the wrong reason on either axis.
+                    (expect "<<ATS-G1>> the pair reports at least one reward token"
+                        true (> (length rts) 0))
+                    (expect "<<ATS-G1>> its reward token is registered as such"
+                        true (ref-DPTF::URC_IzRTg ps rt))
+                    (expect "<<ATS-G1>> ...and OURO is not a reward token of this pair"
+                        false (ref-DPTF::URC_IzRTg ps outsider))
+                    ;;--- RT 2x2: the two cells that must PASS
+                    (expect "<<ATS-G1>> a registered RT satisfies existance=true"
+                        true (!= "" (format "{}" [(ref-ATS::UEV_RewardTokenExistance ps rt true)])))
+                    (expect "<<ATS-G1>> an unregistered token satisfies existance=false"
+                        true (!= "" (format "{}" [(ref-ATS::UEV_RewardTokenExistance ps outsider false)])))
+                    ;;--- and the two that must FAIL. Same tokens, only the expectation flipped,
+                    ;;so nothing but the argument can account for the difference.
+                    (expect-failure "<<ATS-G1>> ...a registered RT asked to be absent is refused"
+                        "Existance isnt verified for Token"
+                        (ref-ATS::UEV_RewardTokenExistance ps rt false))
+                    (expect-failure "<<ATS-G1>> ...and an unregistered one asked to be present"
+                        "Existance isnt verified for Token"
+                        (ref-ATS::UEV_RewardTokenExistance ps outsider true))
+                    ;;--- RBT: the same 2x2, plus a THIRD axis. <cold-or-hot> selects which
+                    ;;registry is consulted (DPTF for cold, DPOF for hot), so the cold RBT must
+                    ;;be invisible to the hot lookup. That cross-check is what shows the flag is
+                    ;;routing rather than decorative.
+                    (expect "<<ATS-G1>> the cold RBT satisfies existance=true on the COLD registry"
+                        true (!= "" (format "{}"
+                            [(ref-ATS::UEV_RewardBearingTokenExistance ps cold-rbt true true)])))
+                    ;;FINDING -- the HOT branch cannot ANSWER for a non-DPOF token. <cold-or-hot>
+                    ;;routes to DPOF::URC_IzRBTg, which opens by asserting the id is a DPOF at
+                    ;;all; a cold RBT is a DPTF, so the lookup ABORTS with "DPOF ID ... does not
+                    ;;exist" instead of returning false. Both cells of the hot column are
+                    ;;therefore unreachable -- not just the one expecting a rejection, but the
+                    ;;one that should legitimately succeed with existance=false. The guard's own
+                    ;;message never appears on this axis. Same shape as the shadowed guards in
+                    ;;ARCHITECTURE 2.5.2: a reader's existence check running ahead of the rule.
+                    (expect-failure "<<ATS-G1>> FINDING: the HOT branch aborts in DPOF rather than answering false"
+                        "DPOF ID"
+                        (ref-ATS::UEV_RewardBearingTokenExistance ps cold-rbt false false))
+                    (expect-failure "<<ATS-G1>> FINDING: ...and identically when asked to confirm, so the guard is mute on this axis"
+                        "DPOF ID"
+                        (ref-ATS::UEV_RewardBearingTokenExistance ps cold-rbt true false))
+                ]
+            )
+            ""
+        )
+    )
+)
+(print "--- [ATS-G1 · 02 · the property flags, against their live state] ---")
+;;UEV_CanUpgradeON and UEV_CanChangeOwnerON each read one flag and enforce it is ON. The suite
+;;leaves those flags in whatever state its last operation set, so the assertion is written
+;;RELATIONALLY -- read the live flag, then require the guard to agree with it -- rather than
+;;pinning a constant that a reordering upstream would silently invalidate.
+(let
+    (
+        (ref-ATS:module{AutostakeV3} ATS)
+        (ps:string "PlebeicStrength-98c486052a51")
+    )
+    (let
+        (
+            (up:bool (ref-ATS::UR_CanUpgrade ps))
+            (cco:bool (ref-ATS::UR_CanChangeOwner ps))
+        )
+        (map print
+            [
+                ;;whichever way the flags sit, the guard must track them. Both branches are
+                ;;written out, so this block asserts something real in either state.
+                (if up
+                    (expect "<<ATS-G1>> can-upgrade is ON, so UEV_CanUpgradeON accepts"
+                        true (!= "" (format "{}" [(ref-ATS::UEV_CanUpgradeON ps)])))
+                    (expect-failure "<<ATS-G1>> can-upgrade is OFF, so UEV_CanUpgradeON refuses"
+                        "properties cannot be upgraded" (ref-ATS::UEV_CanUpgradeON ps)))
+                (if cco
+                    (expect "<<ATS-G1>> can-change-owner is ON, so its guard accepts"
+                        true (!= "" (format "{}" [(ref-ATS::UEV_CanChangeOwnerON ps)])))
+                    (expect-failure "<<ATS-G1>> can-change-owner is OFF, so its guard refuses"
+                        "ownership cannot be changed" (ref-ATS::UEV_CanChangeOwnerON ps)))
+                ;;UEV_CanChangeOwnerON opens with (UEV_id atspair), so an unknown pair is caught
+                ;;by the id guard before the flag is ever read -- a different message, and worth
+                ;;separating from the flag rejection above.
+                (expect-failure "<<ATS-G1>> an unknown pair is caught by the id guard, not the flag"
+                    "ATS-Pair nosuchpair does not exist"
+                    (ref-ATS::UEV_CanChangeOwnerON "nosuchpair"))
+            ]
+        )
+        ""
+    )
+)
+(commit-tx)
