@@ -692,7 +692,7 @@ is a phase and not part of the open-ended campaign. And a violated architectural
 CLASS of vulnerability, not one bug: if `URC_` may `enforce`, then validation lives outside the
 defcaps and the "all authorisation is in the defcap" guarantee is false everywhere at once.
 
-### 2.5.2 the SHADOWED GUARD — a class G2 keeps finding and G4 should enumerate
+### 2.5.2 the SHADOWED GUARD — `REPL/_shadowed.py`
 
 Found seven times during P2/P3 without ever being looked for, which is the signature of a class
 rather than a set of bugs. The shape:
@@ -704,29 +704,69 @@ rather than a set of bugs. The shape:
       (enforce (= set-class sc) "Invalid DPDC Set Data")))
 ```
 
-A `let` binding is eager and `UR_Set` is a plain `read`, so **every input the two guards were
-written to reject has already aborted inside the table read.** When the row exists, both guards
-pass trivially. Neither can ever fire. What the caller gets is
-`No value found in table … for key: TSFS-98c486052a51|0` — naming the row key, not the rule.
+A `let` binding is eager and `UR_Set` bottoms out in a plain `read`, so **every input the two
+guards were written to reject has already aborted inside the table read.** When the row exists,
+both pass trivially. Neither can ever fire. The caller gets
+`No value found in table … for key: TSFS-…|0` — the row key, not the rule.
 
-**Confirmed dead so far** (each has a test asserting the raw message, so a fix will flip it):
+**Two conditions, and the second is what makes it worth automating.**
+
+1. **The validated argument is also a read key.** Not merely "a read happens first": *252*
+   members read before their first `enforce` and almost all are benign. `UEV_CanChangeOwnerON`
+   reads the token's flag and enforces on the *result* — its reject domain (flag is off) is
+   disjoint from the read's failure domain (token absent). It is dangerous only when the
+   argument being **validated** is itself part of the key being **read**. That test alone:
+   **252 → 25**.
+2. **The reader must be hard.** A `with-default-read` returns a default and the guard fires
+   normally. `DPTF|S>SET_FEE-TARGET` reads `DALOS::UR_AccountType` on the very target it is about
+   to validate — condition 1 — but `UR_AccountProperties` underneath is a `with-default-read`, so
+   a non-existent target flows through to `UEV_EnforceAccountExists` and gets the right message.
+   A real false positive, correctly dropped. **25 → 22 candidates, 3 cleared, 0 unresolved.**
+
+Resolution is transitive (`UR_NonceValue → UR_NonceElement → (read …)` is hard;
+`UR_AccountType → UR_AccountProperties → (with-default-read …)` is soft).
+
+**Still a candidate list, not a defect count.** Two known false-positive shapes:
+
+* **Disjoint reject domain.** `UEV_StandardAccOwn` is flagged — it reads the account row and
+  validates `account` — but it rejects a *smart* account, which **exists**, so the read never
+  fails for the case the guard is for.
+* **Different table, same key.** The matcher works on argument *names*, not tables.
+  `FVT|C>TOGGLE-REWARD-LINK` reads `UR_FVT|OwnerKonto` on `fvt-id`, then guards *"Reward link row
+  must exist"* — a **different table** also keyed by `fvt-id`. The FVT existing and the link
+  existing are independent, so the guard is reachable. Every `FVT|`/`RPS` row in the output is
+  probably this shape.
+
+The rows that matter are where the read and the guard concern the **same row** — the guard
+asserts the existence or shape of the very entity the read just fetched. All three confirmed cases
+are that shape. The matcher now resolves each guard's own readers back to their **tables**, which
+drops the second class automatically: **22 → 14 candidates, 8 reclassified as reachable.**
+
+**Known blind spots — `14` is not "14 problems, found exhaustively".** The tool works per-member,
+and Ouronet's architecture deliberately puts the read and the guard in *different* members: a `C_`
+binds a reader, then opens a capability whose defcap holds all validation (CLAUDE.md, *Client flow
+shape*). A separate scan for that shape finds **6 more**. And guard predicates are usually
+let-bound booleans — `(enforce iz-type …)` where `iz-type = (contains type [1 2 3])` — so the
+argument match fails.
+
+**Those two together miss a confirmed case:** `DEMIPAD::C_Withdraw` reads `UR_Funds` on
+`(asset-id, type)` then opens `DEMIPAD|C>WITHDRAW`, whose type enforce is provably dead — and the
+tool does not report it. It was found by hand. **Of the three confirmed dead guards, the tool
+independently predicts two.** Treat the output as a lead list, not an inventory.
+
+**CONFIRMED DEAD** — each has a test asserting the raw message, so a fix will flip it:
 
 | where | shadowed by |
 |---|---|
 | `DPDC-S::UEV_SetClass` — *both* enforces | `UR_Set` |
+| `DPDC::UEV_Nonce` — all three predicates | `UR_NonceValue → UR_NonceElement` |
 | `DEMIPAD::DEMIPAD\|C>WITHDRAW` — the type enforce | `UR_Funds`, same predicate |
 
-**Confirmed degraded** — the guard is reachable, but an absent precondition surfaces as a table
-miss instead of a named rejection: `PYTHIA::A_RevokeDualLink`, `VST` Slumber/Merge,
+**CONFIRMED DEGRADED** — guard reachable, but an absent precondition surfaces as a table miss
+instead of a named rejection: `PYTHIA::A_RevokeDualLink`, `VST` Slumber/Merge,
 `DEMIPAD::URC_Prices` (the `"|"` BAR sentinel), `DPDC-MNG::C_WipeDirty`'s filter, and the whole
-`AQP-INFO` SCORE/FVT/DSA preview family (22 cost readers).
-
-**Upper bound, static:** 252 `UEV_`/defcap members bind a reader before their first `enforce`
-(`05_DPTF` 24, `06_DPOF` 21, `02_DPDC` 21, `15_SWP` 18, `02_SCORE` 14). That number is NOT 252
-dead guards — most of those reads are on keys the caller has already established, leaving the
-guard perfectly reachable. Deciding it statically is not possible; it needs the read's key domain
-compared against the guard's reject domain. But it IS the candidate list, and it is where the
-confirmed cases came from.
+`AQP-INFO` SCORE/FVT/DSA preview family (22 cost readers) — which `_shadowed.py` independently
+rediscovers as `SCR|…`/`FVT|…` rows, corroborating the hand analysis.
 
 **The fix is one line where it matters:** read through the `OrFalse`/`with-default-read` sibling
 that already exists in every one of these modules, and the guard fires with its own message.

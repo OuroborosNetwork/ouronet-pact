@@ -502,3 +502,51 @@
     ""
 )
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-09 — UEV_Nonce: a third guard shadowed by its own reader")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-09 · 01 · the nonce validator] ---")
+;;Flagged by REPL/_shadowed.py, which looks for a guard whose VALIDATED ARGUMENT is also part of
+;;the KEY of a hard read running before it. UEV_Nonce is the shape exactly:
+;;
+;;    (let ((an (abs nonce))
+;;          (nv (UR_NonceValue id son an))          ;; HARD: UR_NonceElement -> (read ...)
+;;          (nu (UR_NoncesUsed id son)))
+;;      (enforce (fold (and) true [(!= an 0) (<= an nu) (= an nv)]) "Invalid Nonce Value"))
+;;
+;;All three predicates exist to reject a nonce that is out of range or zero -- and for exactly
+;;those inputs UR_NonceValue has already aborted on the missing row. The guard can only be
+;;reached by a nonce that EXISTS, in which case all three pass. "Invalid Nonce Value" is
+;;unreachable text.
+;;
+;;This is the third confirmed instance, after DPDC-S::UEV_SetClass (both enforces) and
+;;DEMIPAD|C>WITHDRAW's type enforce. Asserted at both intended inputs -- zero and out-of-range --
+;;so the deadness is shown to be a property of the function rather than of one value.
+(let
+    (
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (sf:string "MOCKS-98c486052a51")
+    )
+    (map print
+        [
+            ;;the guard IS satisfied by a real nonce -- so the rejections below are about
+            ;;reachability, not about the fixture being wrong.
+            (expect "<<DPDC-09>> a real nonce passes UEV_Nonce"
+                true (!= "" (format "{}" [(ref-DPDC::UEV_Nonce sf true 1)])))
+            (expect-failure "<<DPDC-09>> FINDING: nonce 0 dies in the table read, not the (!= an 0) guard"
+                "No value found in table" (ref-DPDC::UEV_Nonce sf true 0))
+            (expect-failure "<<DPDC-09>> FINDING: ...and an out-of-range nonce likewise, not (<= an nu)"
+                "No value found in table" (ref-DPDC::UEV_Nonce sf true 9999))
+            ;;The reader that WOULD have made the guard reachable already exists next door:
+            ;;UR_NoncesUsed is a plain count and answers for any id without touching the nonce
+            ;;row. Reading the bound first and the row second is the one-line fix.
+            (expect "<<DPDC-09>> the reader that would fix it needs no nonce row at all"
+                3 (ref-DPDC::UR_NoncesUsed sf true))
+        ]
+    )
+    ""
+)
+(commit-tx)
