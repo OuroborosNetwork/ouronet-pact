@@ -205,6 +205,86 @@ def module_rules(path, mems):
 
 CUMULATOR = re.compile(r'OutputCumulator|URCi_|UDC_ConstructOutputCumulator')
 
+
+# --- [v-role-justified] : the owner's ruling, 2026-09-10 -------------------------------------
+# A `v` variant (UCv_/URv_/URCv_/URDCv_) exists because the enforce was judged OPTIMALLY placed
+# inline. StoicSyntax-Prefixes §1 makes that judgement mechanical:
+#
+#     relocating the check is "complicated" EXACTLY when it results in MORE CODE.
+#
+# The measurable proxy is the REAL CALLER COUNT. One call site: relocating adds one check and
+# removes one, so the v is unjustified. Many: relocating duplicates the identical check N times,
+# so it stays. Zero: the function is dead and the question is moot -- reported on its own line
+# rather than counted, because deleting dead code is not a prefix decision.
+#
+# This is an ACTIVE check by design. The owner's point is that the justification is not a
+# one-time blessing: a function that earned its `v` at 11 callers stops deserving it if the call
+# graph collapses to 1, and nothing else in the toolchain would notice.
+
+def member_body(src, line):
+    lines = src.split('\n')
+    a = line - 1
+    b = a + 1
+    while b < len(lines) and not re.match(r'^\s{1,8}\((defun|defcap)\s', lines[b]): b += 1
+    return '\n'.join(lines[a:b])
+
+def enforces_on_derived(body):
+    """True when any `enforce` reads a name bound by this function's own `let` — i.e. a value it
+    DERIVED. Relocating such a check duplicates the derivation, which is more code."""
+    bound = set(re.findall(r'\(([a-z][a-z0-9-]*)\s*:[^\s()]+\s', body))
+    args = set(re.findall(r'^\s{1,8}\(defun[^\n]*?\(([^)]*)\)', body, re.S))
+    argnames = set(re.findall(r'([a-z][a-z0-9-]*):', args.pop())) if args else set()
+    derived = bound - argnames
+    for m in re.finditer(r'\(enforce(?![-\w])(.{0,240}?)"', body, re.S):
+        if derived & set(re.findall(r'[a-z][a-z0-9-]*', m.group(1))): return True
+    return False
+
+V_PREFIXES = ("UCv_", "URv_", "URCv_", "URDCv_")
+
+def v_role_rules(files_src):
+    """Yield (rule, path, line, name, note) for every v-variant that cannot justify its v."""
+    defs = {}
+    for f, src in files_src.items():
+        for m in re.finditer(r'^\s{1,8}\(defun\s+([^\s():]+)', src, re.M):
+            n = m.group(1)
+            if not n.split('|')[-1].startswith(V_PREFIXES): continue
+            ln = src[:m.start()].count('\n') + 1
+            body = member_body(src, ln)
+            # Interfaces declare `(defun UCv_X:[decimal] (args))` with NO body and load FIRST, so
+            # a setdefault bound every v-variant to its own stub -- which has no `let`, so every
+            # derived-value check came back false and legitimate `v`s were flagged. Keep the
+            # LONGEST body: the implementation always beats the declaration. (Same trap that made
+            # _shadowed.py resolve nothing; second time, so it is worth the comment.)
+            if n not in defs or len(body) > len(defs[n][2]):
+                defs[n] = (f, ln, body)
+    for name, (f, line, body) in sorted(defs.items()):
+        short = name.split('|')[-1]
+        callers = 0
+        for g, src in files_src.items():
+            for m in re.finditer(r'\((?:ref-[A-Za-z0-9|_-]+::)?' + re.escape(short) + r'[\s)]', src):
+                ln = src[:m.start()].count('\n') + 1
+                if re.match(r'^\s{1,8}\(defun\s', src.split('\n')[ln - 1]): continue
+                callers += 1
+        # CALLER COUNT IS ONLY HALF THE TEST, and the first version of this rule shipped with
+        # only that half and mislabelled a legitimate `v`. U|ATS::UCv_SplitBalanceWithBooleans has
+        # ONE caller, so by count alone it looked unjustified -- but three of its four enforces
+        # read LET-BOUND INTERMEDIATES (`split`, `big-chunk`, `last-split`). Relocating those to a
+        # UEV_ means RECOMPUTING THE ENTIRE SPLIT inside the validator, which is unambiguously
+        # more code. The `v` is earned.
+        #
+        # So: an enforce over the function's own ARGUMENTS is relocatable at the cost of moving
+        # it. An enforce over a value the function DERIVED is not -- moving it duplicates the
+        # derivation. A `v` is unjustified only when EVERY enforce is argument-only AND there is
+        # at most one caller.
+        derived = enforces_on_derived(body)
+        if callers == 0:
+            yield ("v-role-dead", f, line, name, "0 callers — dead; delete rather than re-prefix")
+        elif callers == 1 and not derived:
+            yield ("v-role-justified", f, line, name,
+                   "1 caller and every enforce is over its own ARGUMENTS — relocating is not more "
+                   "code, so the `v` is unearned: move the enforce out")
+
+
 def cumulator_rules(path, mems):
     """A core `C_*` that never touches an OutputCumulator is not a client entrypoint.
 
@@ -222,9 +302,18 @@ def cumulator_rules(path, mems):
 # Rules whose hits are OBSERVATIONS, not violations: the measurement is sound, but what it
 # reveals is that the DOCUMENTED rule is narrower than the code's actual (correct) practice.
 # Reporting these in the violation count would make the report lie.
-OBSERVATION = {"C-without-cumulator", "self-C-call-citizen"}
+OBSERVATION = {"C-without-cumulator", "self-C-call-citizen", "v-role-dead"}
 
 MODULE_DOC = {
+    "v-role-justified":
+        "A `v` variant's `enforce` must be OPTIMALLY placed inline — relocating it is "
+        "\"complicated\" EXACTLY when it results in MORE CODE (StoicSyntax-Prefixes §1, owner "
+        "ruling 2026-09-10). One caller means relocating is not more code, so the `v` is not "
+        "earned. Re-checked every run: a `v` justified at 11 callers stops deserving it if the "
+        "call graph collapses to 1.",
+    "v-role-dead":
+        "A `v` variant with NO callers. The prefix question is moot — this is dead code, and "
+        "deleting it is not a prefix decision. Reported, not counted.",
     "self-C-call":
         "`C_*` — **Cannot be invoked from its own module**; clients reach it via Talos. "
         "(CLAUDE.md) — CROSS-CHECKED: every sovereign hit targets `C_DeployAccount` or "
@@ -330,6 +419,10 @@ def main():
                    + glob.glob(f"{ROOT}/2_CITIZEN/**/*.pact", recursive=True))
     files = [f for f in files if "/Audit/" not in f]
     hits = collections.defaultdict(list)
+    files_src = {f: open(f, encoding='utf8', errors='ignore').read() for f in files}
+    for rid, f, line, name, note in v_role_rules(files_src):
+        if a.rule and rid != a.rule: continue
+        hits[rid].append((f, line, name, note, False))
     scanned = 0
     for f in files:
         mems = list(members(f))

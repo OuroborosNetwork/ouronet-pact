@@ -20,13 +20,30 @@ A name is `PREFIX_Name` (or `PREFIX_Scope|Name`). The prefix is read left-to-rig
   - `v` → **validating** — the function's `enforce` is an intrinsic, unavoidable part of its own single
     job (a shape/domain guard on the computation itself — e.g. "these amounts must sum positive and none
     may be negative" as part of computing whether they're balanced), **not** business/client validation
-    that belongs in a separate `UEV_*`/defcap. Legitimate on `UC_`/`URC_`/`URDC_` — `UCv_`/`URCv_`/
-    `URDCv_` — where every other real caller does not already guarantee the property, so the check is
+    that belongs in a separate `UEV_*`/defcap. Legitimate on `UC_`/`UR_`/`URC_`/`URDC_` — `UCv_`/`URv_`/
+    `URCv_`/`URDCv_` — where every other real caller does not already guarantee the property, so the check is
     reachable and not tautological (deleting it would be wrong), but relocating it to a caller-side
     `UEV_*` would mean duplicating the identical check at every real call site instead of once, in the
     one place all real paths already share. Introduced 2026-08-24 (SWP audit L56) — retroactively also
     covers the `U|LST` bounds-guard exception from v1.9.0/§6.1 (L41), now a named category instead of an
     ad-hoc carve-out.
+  - **THE `v` MUST BE EARNED, AND RE-EARNED — check it, do not assume it.** A `v` variant exists
+    because the `enforce` was judged *optimally* placed inline. That judgement is mechanical and
+    must be applied to **every** `UCv_`/`URv_`/`URCv_`/`URDCv_` when written and whenever its call
+    graph changes:
+
+    > **Relocating the check to a `UEV_*`/defcap is "complicated" EXACTLY when it results in MORE
+    > CODE.** More code → the check stays inline and the `v` is justified. Same or less code → it
+    > moves, and the `v` is not warranted.
+
+    In practice the test is the **real caller count**: one call site means relocating costs one
+    check and removes one, so the `v` is unjustified; many call sites mean relocating duplicates
+    the identical check N times, so it stays. Two further disqualifiers, both from §1's own
+    wording: a check every caller **already guarantees** is tautological (delete it, do not
+    rename), and a check the defcap **also** performs is a duplicate — and the inline copy will
+    shadow the defcap's, killing it (measured: `DEMIPAD::UR_Funds` made `C>WITHDRAW`'s type
+    `enforce` provably dead). Enforced by `REPL/_conformance.py` `[v-role-justified]`.
+
   - ~~`cap`~~ → **RETIRED 2026-08-31.** A function that installs a capability now uses the **`CAP_`** prefix —
     a defcap-installing enforce is exactly what `CAP_` denotes — so it folds into the **ENFORCE / Validate**
     family and drops the former `URCcap_` specialization and its own colour. (History: introduced 2026-08-30,
@@ -69,6 +86,7 @@ because it does no reads. A conditionally-heavy function takes the heavy prefix 
 | `UCx_`  | compute·aux | Pure-compute **auxiliary** of the function above it | yes | **COMPUTE** (dim) |
 | `UCv_`  | compute·validating | `UC_` whose `enforce` is intrinsic to its own computation (§1 `v`) — not business validation | yes | **COMPUTE** |
 | `UR_`   | read | **Point** read (single row/field by key) | yes | **READ** |
+| `URv_`  | read·validating | `UR_` whose `enforce` is intrinsic to its own read (§1 `v`) — a domain guard on the key or the row it just fetched, not business validation | yes | **READ** |
 | `URC_`  | read+compute | Point read **+ derive** (no `enforce`) | yes | **READ** |
 | `URCx_` | read+compute·aux | `URC_` **auxiliary** | yes | **READ** (dim) |
 | `URCv_` | read+compute·validating | `URC_` whose `enforce` is intrinsic to its own computation (§1 `v`) | yes | **READ** |
@@ -316,7 +334,7 @@ The seven classes in build order; **within each class strongest → lightest** (
 |---|-------|--------------------|
 | 1 | **Construct**     | `UDC_` · `UDCx_` |
 | 2 | **Compute**       | `UC_` · `UCk_` · `UCv_` · `UCx_` · `UCkx_` |
-| 3 | **Read**          | `URH_` · `URHC_` · `URHx_` · `URHCx_` · `UR_` · `URC_` · `URU_` · `URCv_` · `URCx_` · `URCi_` |
+| 3 | **Read**          | `URH_` · `URHC_` · `URHx_` · `URHCx_` · `UR_` · `URv_` · `URC_` · `URU_` · `URCv_` · `URCx_` · `URCi_` |
 | 4 | **Validate**      | `UEV_` · `CAP_` |
 | 5 | **Write**         | `WW_` · `WU_` · `WU2_` · `WU3_` · `WU4_` · `WI_` |
 | 6 | **Aux/Protected** | `XI_` · `XE_` · `XB_` |
@@ -522,7 +540,7 @@ first** (e.g. `URHC_` before `URH_`, `URCi_` before `URC_` before `UR_`, `CC_` b
 | Family | Prefixes (match longest-first) |
 |--------|--------------------------------|
 | **COMPUTE**      | `UCkx_` `UCk_` `UCx_` `UCv_` `UC_` |
-| **READ**         | `URCx_` `URCv_` `URC_` `URU_` `UR_` |
+| **READ**         | `URCx_` `URCv_` `URC_` `URU_` `URv_` `UR_` |
 | ~~**CAP-INSTALL**~~  | *removed 2026-08-31 → `CAP_`* (folds into ENFORCE) |
 | **COST**         | `URCi_` |
 | **HEAVY-READ ⚠** | `URHCx_` `URHC_` `URHx_` `URH_` |
