@@ -18,7 +18,7 @@ is coarse, and it is honest: it never claims to know more than it does.
 
 Every rule below cites the sentence it enforces. A finding this tool cannot cite is not a finding.
 """
-import argparse, glob, os, re, sys, collections
+import argparse, os, glob, os, re, sys, collections
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 ROOT = ".."
@@ -253,6 +253,73 @@ MODULE_DOC = {
 }
 
 # --- run ----------------------------------------------------------------------------------------
+
+# --- DISPOSITIONS (P2.5.4) -------------------------------------------------------------------
+# P2.5 closes when every deviation is either FIXED or consciously ACCEPTED with a written reason.
+# These are the accepted ones. Each is BOUNDED: the tool re-checks the exception still matches
+# what was ruled on, so an accepted exception cannot quietly grow into a habit.
+
+DEAD_MODULES = {
+    "00_DPMF.pact": "superseded by DPOF; deployed by [2.2]_Core for migration provenance, but the "
+                    "only call anywhere in the tree is P|A_Define, the policy boilerplate every "
+                    "module carries. Owner's standing instruction: leave DPMF alone.",
+}
+
+# rule id -> a predicate over the hit, plus the ruling. Binding on a PREDICATE beats binding on
+# a count wherever the reason for accepting is itself checkable: a count only notices that
+# something changed, whereas a predicate notices WHAT changed and re-opens on the right grounds.
+ACCEPTED_BY_TARGET = {
+    "self-C-call": (
+        {"C_DeployAccount", "C_TransferDalosFuel"},
+        "cross-checked, not asserted: every sovereign hit targets one of these two, and BOTH are "
+        "cumulator-free (they appear in C-without-cumulator). So the sharper TRUE statement is "
+        "'no BILLING client C_ is ever invoked from inside its own module' -- the rule holds "
+        "where it matters, and these two carry the C_ prefix without the C_ contract. The "
+        "acceptance is bound to that CUMULATOR-FREE fact and is re-verified below every run: if "
+        "either function ever gains an OutputCumulator it becomes a real billing client, the "
+        "cross-check fails, and this re-opens on its own."),
+}
+
+# rule id -> (exact expected count, where it is allowed, the ruling)
+ACCEPTED = {
+    "citizen-calls-X": (
+        4, "2_CITIZEN/7_Launchpad/99_TS02-CPAD.pact",
+        "owner ruling 2026-09-09: TS02-CPAD is a CITIZEN module AUTHORED BY THE ADMIN and is the "
+        "sole gas-funded launchpad path, so its wrappers must reach TS01-A::XB_DynamicFuelSTOA. "
+        "The bound is the point: exactly these four, from this file only."),
+}
+
+CUMULATOR_FREE = set()      # filled by main() from the C-without-cumulator observations
+
+def disposition(rid, h):
+    """Split a rule's hits into (open, dead, accepted, broken-acceptance)."""
+    dead = [x for x in h if os.path.basename(x[0]) in DEAD_MODULES]
+    rest = [x for x in h if x not in dead]
+    if rid in ACCEPTED_BY_TARGET:
+        targets, _ = ACCEPTED_BY_TARGET[rid]
+        ok, bad = [], []
+        for x in rest:
+            tgt = x[2].split("->")[-1].strip()
+            # accepted only while the REASON still holds: the target is one of the ruled-on
+            # functions AND is still cumulator-free.
+            (ok if (tgt in targets and tgt in CUMULATOR_FREE) else bad).append(x)
+        return bad, dead, ok, [x for x in ok if False] if not bad else ok
+    if rid in ACCEPTED:
+        n, where, _ = ACCEPTED[rid]
+        inside = [x for x in rest if where in x[0]]
+        outside = [x for x in rest if where not in x[0]]
+        # the acceptance holds only if it is EXACTLY what was ruled on
+        if len(inside) == n and not outside:
+            return [], dead, inside, []
+        # The bound is the whole value of an accepted exception, so a break must COUNT, not just
+        # print. Returning `inside` as open too is deliberate: a 5th call means the ruling no
+        # longer describes the code, and every hit under it needs re-reading, not just the new
+        # one. (Caught by self-test: the first version reported the break and still said
+        # VIOLATIONS: 0, which would have let an accepted exception grow silently.)
+        return outside + inside, dead, [], inside
+    return rest, dead, [], []
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--show", type=int, default=4, help="examples to print per rule")
@@ -278,24 +345,38 @@ def main():
                     hits[rid].append((f, start + off, name, body[off].strip()[:96],
                                       state_dependent(body)))
 
+    # the cumulator-free set the self-C-call acceptance is bound to
+    CUMULATOR_FREE.update(x[2].split(':')[0] for x in hits["C-without-cumulator"])
+
     print(f"CONFORMANCE — {len(files)} modules, {scanned} members scanned\n")
     total = 0
     for rid, doc, _fn in RULES + [(k, v, None) for k, v in MODULE_DOC.items()]:
         if a.rule and rid != a.rule: continue
-        h = hits[rid]
+        h_all = hits[rid]
+        h, dead, accepted, broke = disposition(rid, h_all)
         if rid not in OBSERVATION: total += len(h)
         st = [x for x in h if x[4]]
         tag = "observation(s)" if rid in OBSERVATION else "violation(s)"
         print(f"[{rid}] {len(h)} {tag}   —   {len(st)} STATE-DEPENDENT, "
               f"{len(h)-len(st)} argument-domain")
         print(f"    RULE: {doc}")
+        if dead:
+            print(f"    DEAD-MODULE (not a worklist item): {len(dead)} in "
+                  f"{', '.join(sorted({os.path.basename(x[0]) for x in dead}))}")
+        if accepted:
+            why = (ACCEPTED_BY_TARGET[rid][1] if rid in ACCEPTED_BY_TARGET else ACCEPTED[rid][2])
+            print(f"    ACCEPTED x{len(accepted)} (bound holds): {why}")
+        if broke and rid in ACCEPTED:
+            print(f"    !! ACCEPTED BOUND BROKEN: ruled {ACCEPTED[rid][0]}, found {len(broke)} "
+                  f"— re-open and re-rule before this passes")
         for f, line, name, txt, sd in sorted(h, key=lambda x: not x[4])[:a.show]:
             print(f"    {'STATE' if sd else '  arg'}  "
                   f"{f.replace(ROOT + '/', ''):56s}:{line:<5d} {name}")
             print(f"           {txt}")
         if len(h) > a.show: print(f"    … and {len(h)-a.show} more")
         print()
-    viol = [x for r, h in hits.items() if r not in OBSERVATION for x in h]
+    viol = [x for r, h in hits.items() if r not in OBSERVATION
+            for x in disposition(r, h)[0]]
     obs  = sum(len(h) for r, h in hits.items() if r in OBSERVATION)
     print(f"VIOLATIONS: {len(viol)}   ({sum(1 for x in viol if x[4])} state-dependent, "
           f"{sum(1 for x in viol if not x[4])} argument-domain)")
