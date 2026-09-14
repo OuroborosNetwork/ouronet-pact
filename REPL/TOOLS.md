@@ -43,6 +43,7 @@ parser desyncs on them) at least four times.
 | `_orphanmatch.py` | Which ORPHAN assertions actually correspond to a real source guard? |
 | `_p33_classify.py` | P3.3 residue classifier — WHY each remaining guard is unpinned, not just that it is. |
 | `_pactlex.py` | Shared Pact lexing helpers for the analysis scripts. |
+| `_redteam.py` | ATTACK REGISTER — parses `RedTeam/` block headers into attempts-by-family-and-outcome. Gate-enforced, because an uncounted attack may as well not have been run. |
 | `_scale_report.py` | SCALE OF THE REPL TEST SUITE — size, reach, and per-function exercise counts. |
 | `_shadowed.py` | SHADOWED GUARDS — enforces that can never fire because a hard read runs first. |
 | `_stagez_variant.py` | Generate the REPL-only Stage-Z TESTING VARIANT from the canonical module (never edit canonical). |

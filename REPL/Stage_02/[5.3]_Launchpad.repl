@@ -1807,12 +1807,16 @@
                 (expect "<<TX-ACQ-03b>> an unstocked nonce reports the 'holds none' sentinel"
                     -1 (DEMIPAD-SNAKES.UR_NonceSaleAvailability 77))
                 ;;...so the supply cap rejects it. Safe, but the message is about SUPPLY, not
-                ;;about the nonce -- the Custodians twin would say "Invalid ... Acquisition
-                ;;Nonce" here. Pinning both makes the asymmetry visible instead of folklore.
-                (expect-failure "<<TX-ACQ-03b>> FINDING: a bad nonce is rejected by the SUPPLY cap, since Snakes has no nonce guard"
-                    "Insufficient Assets for Acquisiton"
+                ;;about the nonce -- the Custodians twin said "Invalid ... Acquisition Nonce" while
+                ;;Snakes reported a stock shortage. FIXED 2026-09-14: Snakes now carries the same
+                ;;UEV_AcquisitionNonce guard. The two assertions below deliberately demand DIFFERENT
+                ;;messages, which is what keeps the distinction alive -- while both said the same
+                ;;thing, a client could not tell an unsellable nonce from a temporary shortage, and
+                ;;the implied remedy (wait for restock) could never work for nonce 77.
+                (expect-failure "<<TX-ACQ-03b>> a bad nonce is now named as a bad NONCE, not as a stock shortage"
+                    "Invalid Snakes Acquisition Nonce"
                     (ref-CPAD::SNAKES|C_Acquire KST.EMMA KST.EMMA 77 1 true -1.0))
-                (expect-failure "<<TX-ACQ-03b>> over-buying real stock gives the SAME message, so the two are indistinguishable"
+                (expect-failure "<<TX-ACQ-03b>> ...while over-buying real stock still reports the SUPPLY cap"
                     "Insufficient Assets for Acquisiton"
                     (ref-CPAD::SNAKES|C_Acquire KST.EMMA KST.EMMA 1 (+ avail 1) true -1.0))
                 ;;RULE 9 discharge: both fire inside SNAKES|ACQUIRE before any write.

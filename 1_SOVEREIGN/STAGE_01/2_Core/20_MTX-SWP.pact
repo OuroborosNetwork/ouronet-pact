@@ -466,6 +466,17 @@
             (MTX|C_AddSleepingLiquidity patron account swpair sleeping-dpof nonce stoa-pid)
         )
     )
+    (defun UC_AddLiquidityChurnKey:string (asymmetric-collection:bool gaseous-collection:bool)
+        @doc "The IGNIS price key MTX|C_AddLiquidity must bill, chosen by the SAME two collection \
+            \ flags that decide which variant it is running -- (t,t) Standard, (f,t) Iced, \
+            \ (f,f) Glacial, matching the C_Add*Liquidity wrappers above and SWPLC's twins. \
+            \ ADDED 2026-09-14 with the lp-churn repair below; see the step-0 comment."
+        (cond
+            ((and asymmetric-collection gaseous-collection) "SWP|C_AddStandardLiquidity")
+            ((and (not asymmetric-collection) gaseous-collection) "SWP|C_AddIcedLiquidity")
+            "SWP|C_AddGlacialLiquidity"
+        )
+    )
     (defpact MTX|C_AddLiquidity 
         (
             patron:string account:string swpair:string input-amounts:[decimal] 
@@ -498,10 +509,27 @@
                     ,"ld"           : ld
                     ,"clad"         : clad}
                 )
+                ;;LP-CHURN REPAIR (2026-09-14). This charged a flat literal 100.0 while the
+                ;;single-tx twin for the SAME operation charged UC_IgnisPrice "..." "lp-churn"
+                ;;= 1051.0. Both are live P|UEV_IMC-gated Talos clients -- TS01-CP reaches here,
+                ;;TS01-C3 reaches SWPLC -- so a liquidity provider could DECLINE the churn
+                ;;deterrent simply by choosing the other door, at a tenth of the price, on the
+                ;;route the gas station subsidises. A deterrent that can be declined is not one.
+                ;;The earlier repair that put every add-liquidity op onto UC_IgnisPrice landed in
+                ;;18_SWPLC.pact only, and nothing compared the two modules afterwards: each route
+                ;;was measured against ITS OWN preview and both agreed with themselves.
+                ;;Measured, exploit-first, at RedTeam/[RT-A]_Economics.repl <<RT-A-001>>.
                 (ref-IGNIS::C_Collect patron 
-                    (ref-IGNIS::UDC_ConstructOutputCumulator 100.0 SWP|SC_NAME false [])
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                        (ref-IGNIS::UC_IgnisPrice
+                            (UC_AddLiquidityChurnKey asymmetric-collection gaseous-collection)
+                            "lp-churn")
+                        SWP|SC_NAME false [])
                 )
-                (format "MTX LqAdd. computed succesfully and collected {} IGNIS before discounts; 1|3" [100.0])
+                (format "MTX LqAdd. computed succesfully and collected {} IGNIS before discounts; 1|3"
+                    [(ref-IGNIS::UC_IgnisPrice
+                        (UC_AddLiquidityChurnKey asymmetric-collection gaseous-collection)
+                        "lp-churn")])
             )
         )
         ;;Step 1, Adding Liquidity and Minting LP
@@ -648,10 +676,16 @@
                     ,"ld"           : ld
                     ,"clad"         : clad}
                 )
+                ;;LP-CHURN REPAIR (2026-09-14) -- same defect as MTX|C_AddLiquidity's step 0
+                ;;above, in this variant. The single-tx twin bills UC_IgnisPrice
+                ;;"SWP|C_AddFrozenLiquidity" "lp-churn"; this billed a flat literal.
                 (ref-IGNIS::C_Collect patron 
-                    (ref-IGNIS::UDC_ConstructOutputCumulator 100.0 SWP|SC_NAME false [])
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                        (ref-IGNIS::UC_IgnisPrice "SWP|C_AddFrozenLiquidity" "lp-churn")
+                        SWP|SC_NAME false [])
                 )
-                (format "MTX Frozen LqAdd. computed succesfully and collected {} IGNIS before discounts; 1|3" [100.0])
+                (format "MTX Frozen LqAdd. computed succesfully and collected {} IGNIS before discounts; 1|3"
+                    [(ref-IGNIS::UC_IgnisPrice "SWP|C_AddFrozenLiquidity" "lp-churn")])
             )
         )
         ;;Step 1, Adding Liquidity and Minting LP
@@ -779,10 +813,16 @@
                     ,"clad"         : clad
                     ,"ba"           : batch-amount}
                 )
+                ;;LP-CHURN REPAIR (2026-09-14) -- same defect as MTX|C_AddLiquidity's step 0
+                ;;above, in this variant. The single-tx twin bills UC_IgnisPrice
+                ;;"SWP|C_AddSleepingLiquidity" "lp-churn"; this billed a flat literal.
                 (ref-IGNIS::C_Collect patron 
-                    (ref-IGNIS::UDC_ConstructOutputCumulator 100.0 SWP|SC_NAME false [])
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                        (ref-IGNIS::UC_IgnisPrice "SWP|C_AddSleepingLiquidity" "lp-churn")
+                        SWP|SC_NAME false [])
                 )
-                (format "MTX Sleeping LqAdd. computed succesfully and collected {} IGNIS before discounts; 1|3" [100.0])
+                (format "MTX Sleeping LqAdd. computed succesfully and collected {} IGNIS before discounts; 1|3"
+                    [(ref-IGNIS::UC_IgnisPrice "SWP|C_AddSleepingLiquidity" "lp-churn")])
             )
         )
         ;;Step 1, Adding Liquidity and Minting LP

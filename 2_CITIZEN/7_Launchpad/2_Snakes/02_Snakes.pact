@@ -58,6 +58,7 @@
     (defun URCi_Acquire:decimal (buyer:string nonce:integer amount:integer iz-native:bool))
     (defun INFO_Acquire:object{OuronetInfoV2.ClientInfo} (patron:string buyer:string nonce:integer amount:integer iz-native:bool))
     ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_AcquisitionNonce (nonce:integer))
     (defun CAP_Acquire (buyer:string nonce:integer amount:integer iz-native:bool))
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
@@ -223,6 +224,10 @@
             (
                 (available-supply-to-acquire:integer (UR_NonceSaleAvailability nonce))
             )
+            ;;nonce validity FIRST, so an unsellable nonce is named as such rather than reported as
+            ;;a stock shortage it can never recover from. Order matters: UR_NonceSaleAvailability
+            ;;answers 0 for an unknown nonce, so the supply check below would otherwise absorb it.
+            (UEV_AcquisitionNonce nonce)
             (enforce (<= amount available-supply-to-acquire) "Insufficient Assets for Acquisiton!")
             (compose-capability (P|SNAKES|CALLER))
             (compose-capability (P|SNAKES|REMOTE-GOV))
@@ -407,6 +412,23 @@
         )
     )
     ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_AcquisitionNonce (nonce:integer)
+        @doc "The nonces this pad actually sells: 1 = Pure Shares, 2-8 = Tier 1-7 PackageShares. \
+            \ ADDED 2026-09-14, mirroring the Custodians twin's UEV_AcquisitionNonce, which had it \
+            \ from the start. Without it a nonexistent nonce was refused by the SUPPLY cap instead \
+            \ -- UR_NonceSaleAvailability returns 0 for an unknown nonce, so any amount exceeds it \
+            \ -- and reported \"Insufficient Assets for Acquisiton!\". That is actively misleading, \
+            \ not merely terse: the implied remedy is to wait for restocking, which can NEVER work \
+            \ for a nonce the pad does not sell, and the text was identical to a genuine over-buy, \
+            \ so the two were indistinguishable to a client."
+        (let
+            (
+                (acquisition-nonces:[integer] (enumerate 1 8))
+                (iz-acquisition-nonce:bool (contains nonce acquisition-nonces))
+            )
+            (enforce iz-acquisition-nonce "Invalid Snakes Acquisition Nonce")
+        )
+    )
     (defun CAP_Acquire
         (buyer:string nonce:integer amount:integer iz-native:bool)
         @doc "Variant 2 (slippage off) — installs the coin.TRANSFER caps in-code at the live price."

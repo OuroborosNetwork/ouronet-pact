@@ -119,13 +119,22 @@
                 "Invalid Deposit type"
                 (ref-DPAD::DEMIPAD|C_Deposit KST.ANHD KST.ANHD sft 10.0 99 false -1.0))
             ;;--- the two alternative-currency branches. Type 2 = SSTOA, type 3 = OURO; both are
-            ;;    switched off for this asset, so each branch refuses. See the FINDING below: they
-            ;;    carry the SAME message even though they check different flags.
+            ;;    switched off for this asset, so each branch refuses.
+            ;;
+            ;;    MESSAGE DEFECT FOUND HERE, FIXED 2026-09-14. Both branches used to carry the
+            ;;    SAME text -- "SSTOA Deposits must be turned on" -- even though type 3 enforces
+            ;;    <iz-ouro>. That is actively misleading rather than merely terse, and the
+            ;;    distinction is what decides severity for this class: SSTOA deposits are a REAL,
+            ;;    separately-togglable admin flag, so an operator could perform the suggested
+            ;;    remedy, watch nothing change, and retry forever. The two assertions below now
+            ;;    demand DIFFERENT text, which is also what stops the branches being merged back
+            ;;    into one message: with identical wording, a test that swapped the two branches
+            ;;    would still pass.
             (expect-failure "<<DEMIPAD-G2>> a type-2 (SSTOA) deposit is refused while SSTOA is off"
                 "SSTOA Deposits must be turned on for exec"
                 (ref-DPAD::DEMIPAD|C_Deposit KST.ANHD KST.ANHD sft 10.0 2 false -1.0))
-            (expect-failure "<<DEMIPAD-G2>> ...and a type-3 (OURO) deposit while OURO is off"
-                "SSTOA Deposits must be turned on for exec"
+            (expect-failure "<<DEMIPAD-G2>> ...and a type-3 (OURO) deposit names OURO, not SSTOA"
+                "OURO Deposits must be turned on for exec"
                 (ref-DPAD::DEMIPAD|C_Deposit KST.ANHD KST.ANHD sft 10.0 3 false -1.0))
             ;;--- and the gate the whole launchpad turns on: a perfectly well-formed deposit is
             ;;    refused because the sale is not open. Type 0, positive amount, slippage off — every

@@ -533,10 +533,16 @@
             (UEV_SlippageCost amount-in-dollars max-cost)
             ;;Validate <type> to be either 0, 1, 2 or 3, and that the required Token Deposit is turned on
             (enforce iz-type "Invalid Deposit type")
+            ;;MESSAGE FIXED 2026-09-14. The type-3 branch enforces <iz-ouro> and used to report
+            ;;"SSTOA Deposits must be turned on" -- naming a DIFFERENT, separately-togglable admin
+            ;;flag. That is the actively-misleading shape, not merely a terse one: the operator CAN
+            ;;carry out the suggested remedy, turn SSTOA deposits on, observe nothing change, and
+            ;;retry forever. Same class as DALOS GOV|MIGRATE's inverted pause message, fixed the
+            ;;same day. Each branch now names the flag it actually reads.
             (if (not (or (= type 0) (= type 1)))
                 (if (= type 2)
                     (enforce iz-sstoa "SSTOA Deposits must be turned on for exec")
-                    (enforce iz-ouro "SSTOA Deposits must be turned on for exec")
+                    (enforce iz-ouro "OURO Deposits must be turned on for exec")
                 )
                 true
             )

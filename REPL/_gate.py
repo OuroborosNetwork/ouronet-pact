@@ -93,6 +93,13 @@ GATE = (["ZALL.repl", "AQP-FULL.repl", "AQP-core-vct.repl", "triplet-collect-gol
          "launchpad-groundtruth.repl", "Stage00b_Run.repl", "Stage00b_RunGas.repl"]
         + sorted(glob.glob("deb-staleness-*.repl"))
         + sorted(glob.glob("modules/*.repl"))
+        # RED TEAM. Globbed like modules/, so a new attack file is gated the moment it exists and
+        # cannot sit outside the suite unnoticed -- which for adversarial work matters more than
+        # for constructive work: an attack nobody runs is indistinguishable from an attack that
+        # was refused. Underscore-prefixed files here are scratch and are rejected by the same
+        # guard that policies modules/ (see the scratch check in main()).
+        + sorted(f for f in glob.glob("RedTeam/*.repl")
+                 if not os.path.basename(f).startswith("_"))
         + KURSAN + SCRATCH_PROOFS)
 
 # --- what is deliberately NOT gated, and why ------------------------------------------------
@@ -254,6 +261,7 @@ def main():
     # (The orphan check later would also catch an asserting leftover, but only AFTER the orphan scan
     # and with a message about reachability rather than "you forgot to delete this".)
     _scratch = (sorted(glob.glob("modules/_*.repl"))
+                + sorted(glob.glob("RedTeam/_*.repl"))
                 + sorted(f for f in glob.glob("Kursan/_*.repl")
                          if not os.path.basename(f).startswith("_verify_finding_")))
     if _scratch:
@@ -290,6 +298,15 @@ def main():
     if _cp.returncode != 0:
         print(_cp.stdout + _cp.stderr)
         sys.exit("GATE FAILED: a projecting read names a column its table does not have.")
+
+    # RED-TEAM HEADER INTEGRITY. Every block in RedTeam/ must carry a parsable FAMILY/STATUS
+    # header, because the attack register is built from those and an attack that is not counted
+    # may as well not have been run. This fails the gate rather than warning: a malformed header
+    # silently shrinks the register, and a shrinking register looks exactly like a clean one.
+    _rt = subprocess.run([sys.executable, "_redteam.py", "--check"], capture_output=True, text=True)
+    if _rt.returncode != 0:
+        print(_rt.stdout + _rt.stderr)
+        sys.exit("GATE FAILED: a RedTeam/ block has a malformed or duplicate attack header.")
 
     # TOOL INTEGRITY. Every analysis tool in this directory is a `_*.py`; none of them is imported
     # by the gate, so a syntax error in one is INVISIBLE here. That is not hypothetical -- on
