@@ -56,15 +56,15 @@ explanation*, because stating precisely what an assertion proved exposed that it
 
 | | |
 |---|---:|
-| **distinct assertions written** | **5,349** |
-| **assertions executed per full gate run** | **20,921** |
+| **distinct assertions written** | **5,399** |
+| **assertions executed per full gate run** | **21,580** |
 | &nbsp;&nbsp;positive (`expect`) | 17,048 |
 | &nbsp;&nbsp;negative (`expect-failure`) | 3,873 |
 | gate entrypoints | **77** |
 | `.repl` files reachable from the gate | 306 |
 | orphaned asserting files (written but never run) | **0** |
 
-**Quote 5,349 for "how many tests exist" and 20,921 for "how much ran".** They differ ~4x because
+**Quote 5,399 for "how many tests exist" and 21,580 for "how much ran".** They differ ~4x because
 shared suite files execute once per entrypoint that loads them, and conflating them overstates the
 suite. Both are reported here for exactly that reason.
 
@@ -134,8 +134,8 @@ and 1 *credits* IGNIS rather than charging it, so there is no charge to differen
 
 ## 4. Execution: why this was run in parallel
 
-A full gate run is **77 entrypoints totalling 5,526 seconds of work — 1 hour 32 minutes serial.**
-It completes in **~375 seconds wall on 16 workers**, a **14.7× speedup**.
+A full gate run is **85 entrypoints totalling 5,961 seconds of work — 1 hour 39 minutes serial.**
+It completes in **~399 seconds wall on 16 workers**, a **14.9× speedup**.
 
 That ratio is the difference between two development models, and the second one is what found most
 of what this round found:
@@ -327,7 +327,7 @@ artefacts that feed the Chapter-2 documentation.
 
 | | |
 |---|---|
-| gate | **GREEN** — 77 entrypoints, 20,921 assertions, 0 failures |
+| gate | **GREEN** — 85 entrypoints, 21,580 assertions, 0 failures |
 | live unpinned guards | **0** |
 | `INFO_` previews named but unmeasured | **0** |
 | conformance violations | **0** |
