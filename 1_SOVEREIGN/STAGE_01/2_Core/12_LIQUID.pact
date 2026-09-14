@@ -115,6 +115,7 @@
     )
     (defcap GOV|MIGRATE (migration-target-stoa-account:string)
         @event
+        (compose-capability (GOV|LIQUID_ADMIN))
         (let
             (
                 (ref-coin:module{stoa-ns.fungible-v1} coin)
@@ -130,7 +131,6 @@
             ;;a caller at all; that is fixed too, and pinned by modules/LIQUID.repl <<LQD-03pre>>.
             (enforce gap "Migration can only be executed when Global Administrative Pause is online")
             (enforce (= target-balance 0.0) "Migration can only be executed to an empty stoa account")
-            (compose-capability (GOV|LIQUID_ADMIN))
             (compose-capability (LIQUID|NATIVE-AUTOMATIC))
         )
     )

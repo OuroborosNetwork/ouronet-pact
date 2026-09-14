@@ -361,6 +361,7 @@
     )
     (defcap GOV|SET_TREASURY-DISPO (type:integer tdp:decimal tds:decimal)
         @event
+        (compose-capability (GOV|DPTF_ADMIN))
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -384,12 +385,12 @@
                     (<= lowest-dispo treasury-supply)
                     (format "A Type {} Treasury Dispo cannot be set at {} because it surpases the Current Treasury Value of {}" [type tdp treasury-supply])
                 )
-                (compose-capability (GOV|DPTF_ADMIN))
             )
         )
     )
     (defcap GOV|WIPE_ALL-TREASURY-DEBT ()
         @event
+        (compose-capability (GOV|DPTF_ADMIN))
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -400,12 +401,12 @@
                 (treasury-supply:decimal (UR_AccountSupply ouro treasury))
             )
             (enforce (< treasury-supply 0.0) "Cannot Wipe Positive Treasury Balance")
-            (compose-capability (GOV|DPTF_ADMIN))
             (compose-capability (SECURE))
         )
     )
     (defcap GOV|WIPE_PARTIAL-TREASURY-DEBT (debt-to-be-wiped:decimal)
         @event
+        (compose-capability (GOV|DPTF_ADMIN))
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -419,7 +420,6 @@
             (enforce (<= debt-to-be-wiped (abs treasury-supply))
                 "Debt to be wiped must be smaller than or equal to the absolute value of the current Treasury Debt"
             )
-            (compose-capability (GOV|DPTF_ADMIN))
             (compose-capability (SECURE))
         )
     )

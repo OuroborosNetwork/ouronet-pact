@@ -674,6 +674,7 @@
             \ never by this function. A 'minor' principal is unaffected. Gated by \
             \ the same GOV|SWP_ADMIN admin capability as SWP|C>ROTATE-PRINCIPAL."
         @event
+        (compose-capability (GOV|SWP_ADMIN))
         (let
             (
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
@@ -694,7 +695,6 @@
                     )
                 )
             )
-            (compose-capability (GOV|SWP_ADMIN))
         )
     )
     (defcap SWP|C>ROTATE-PRINCIPAL (old:string new:string)
@@ -710,6 +710,7 @@
             \ 7-principal cap. Gated by the same GOV|SWP_ADMIN admin capability as \
             \ SWP|C>PRINCIPAL."
         @event
+        (compose-capability (GOV|SWP_ADMIN))
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
@@ -721,18 +722,17 @@
             (enforce (not (URC_IsMajorPrincipal old)) (format "{} is a major (primordial-pool) principal — cannot be rotated" [old]))
             (enforce (!= old new) "Cannot rotate a principal into itself")
             (enforce (not (contains new current)) (format "{} is already a principal" [new]))
-            (compose-capability (GOV|SWP_ADMIN))
         )
     )
     (defcap SWP|C>LQBOOST (new-boost-variable:bool)
         @event
+        (compose-capability (GOV|SWP_ADMIN))
         (let
             (
                 (lqb:bool (UR_LiquidBoost))
             )
             (enforce (!= new-boost-variable lqb) (format "Liquid Boost already set to {}" [new-boost-variable]))
         )
-        (compose-capability (GOV|SWP_ADMIN))
     )
     (defcap SWP|C>LIMIT ()
         @event
@@ -764,6 +764,7 @@
         (compose-capability (P|GOVERNING-CALLER))
     )
     (defcap SWP|C>DEFINE-PRIMORDIAL-POOL (primordial-pool:string)
+        (compose-capability (GOV|SWP_ADMIN))
         (let
             (
                 (ref-U|SWP:module{UtilitySwpV2} U|SWP)
@@ -786,17 +787,16 @@
             ;;the issuance-time eligibility flag that's supposed to gate this (owner: also means exempt
             ;;from low-liquidity gates / never autonomously disabled) was read and silently unused.
             (enforce (fold (and) true [iz-weigthed has-ouro has-wstoa has-sstoa iz-three primality]) "Pool is not the primordial pool")
-            (compose-capability (GOV|SWP_ADMIN))
         )
     )
     (defcap SWP|C>TG-ASYMETRIC-LQ (toggle:bool)
+        (compose-capability (GOV|SWP_ADMIN))
         (let
             (
                 (pp:string (UR_PrimordialPool))
             )
             (enforce (!= pp BAR) "PrimordialPool must be set for this operation")
             (UEV_AsymetricState (not toggle))
-            (compose-capability (GOV|SWP_ADMIN))
             (compose-capability (P|SWP|CALLER))
         )
     )

@@ -251,6 +251,14 @@
     (defconst SWP|SC_NAME                               (GOV|SWP|SC_NAME))
     (defconst BAR                                       (CT_Bar))
     (defconst EOC                                       (CT_EmptyCumulator))
+    ;;
+    ;;The INITIATION slice of a multi-step add-liquidity. Owner design, restated 2026-09-14:
+    ;;step 0 takes this much for opening the pact, and the step that actually SUCCEEDS takes
+    ;;the remainder of the op's lp-churn deterrent. The TOTAL is unchanged and still equals
+    ;;the single-tx twin in 18_SWPLC.pact, so no door is cheaper than the other -- what
+    ;;changes is WHEN the money moves, so a pact killed by an altered pool state costs its
+    ;;owner this slice instead of the whole deterrent. See UC_AddLiquidityChurnRemainder.
+    (defconst LQ|INITIATION-FEE:decimal                  100.0)
     ;;{3.2}  schemas
     ;;{3.3}  tables
 
@@ -477,6 +485,38 @@
             "SWP|C_AddGlacialLiquidity"
         )
     )
+    (defun URCi_AddLiquidityInitiation:object{IgnisCollectorV2.OutputCumulator} ()
+        @doc "The INITIATION slice every multi-step add-liquidity pays in step 0, before \
+            \ anything is validated. Deliberately small: step 0 only QUOTES, and a quote \
+            \ that a stranger's ordinary trade can invalidate must not cost the quoter the \
+            \ whole deterrent. The remainder is taken by URCi_AddLiquidityChurnRemainder in \
+            \ the step that succeeds, so the TOTAL is unchanged."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                LQ|INITIATION-FEE SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []
+            )
+        )
+    )
+    (defun URCi_AddLiquidityChurnRemainder:object{IgnisCollectorV2.OutputCumulator}
+        (op-key:string)
+        @doc "The rest of OP-KEY's lp-churn deterrent, after the step-0 initiation slice. \
+            \ Charged in the EXECUTION step, i.e. only once the pool state has been checked \
+            \ and the liquidity is actually being added. LQ|INITIATION-FEE + this = the full \
+            \ UC_IgnisPrice the single-tx twin in 18_SWPLC.pact bills in one go; the split is \
+            \ a timing change, not a discount. Pinned by modules/SWP.repl <<SWPX-LQSPLIT>>."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (- (ref-IGNIS::UC_IgnisPrice op-key "lp-churn") LQ|INITIATION-FEE)
+                SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []
+            )
+        )
+    )
     (defpact MTX|C_AddLiquidity 
         (
             patron:string account:string swpair:string input-amounts:[decimal] 
@@ -519,17 +559,9 @@
                 ;;18_SWPLC.pact only, and nothing compared the two modules afterwards: each route
                 ;;was measured against ITS OWN preview and both agreed with themselves.
                 ;;Measured, exploit-first, at RedTeam/[RT-A]_Economics.repl <<RT-A-001>>.
-                (ref-IGNIS::C_Collect patron 
-                    (ref-IGNIS::UDC_ConstructOutputCumulator
-                        (ref-IGNIS::UC_IgnisPrice
-                            (UC_AddLiquidityChurnKey asymmetric-collection gaseous-collection)
-                            "lp-churn")
-                        SWP|SC_NAME false [])
-                )
+                (ref-IGNIS::C_Collect patron (URCi_AddLiquidityInitiation))
                 (format "MTX LqAdd. computed succesfully and collected {} IGNIS before discounts; 1|3"
-                    [(ref-IGNIS::UC_IgnisPrice
-                        (UC_AddLiquidityChurnKey asymmetric-collection gaseous-collection)
-                        "lp-churn")])
+                    [LQ|INITIATION-FEE])
             )
         )
         ;;Step 1, Adding Liquidity and Minting LP
@@ -553,8 +585,21 @@
                         (= prev-pool-state current-pool-state) 
                         "Execution Step of Adding Liquidity cannot execute on altered pool state!"
                     )
-                    (ref-IGNIS::C_Collect patron 
-                        (at "perfect-ignis-fee" (at "clad-op" clad))
+                    ;;The lp-churn deterrent's REMAINDER is taken HERE, not in step 0, and only
+                    ;;after the pool-state check above has passed. Step 0 takes the small
+                    ;;LQ|INITIATION-FEE; the two sum to exactly what 18_SWPLC.pact's single-tx
+                    ;;twin bills in one transaction. Before 2026-09-14 the whole deterrent was
+                    ;;taken in step 0 -- ahead of the very check that decides whether the
+                    ;;operation may happen at all -- so any stranger's ordinary swap moved the
+                    ;;pool, failed this enforce, and destroyed the quoter's entire fee with no
+                    ;;refund. Measured, exploit-first, at RedTeam/[RT-F]_Griefing.repl <<RT-F-001>>.
+                    (ref-IGNIS::C_Collect patron
+                        (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                            [(URCi_AddLiquidityChurnRemainder
+                                (UC_AddLiquidityChurnKey asymmetric-collection gaseous-collection))
+                             (at "perfect-ignis-fee" (at "clad-op" clad))]
+                            []
+                        )
                     )
                     (if (and asymmetric-collection gaseous-collection)
                         (with-capability (MTX-SWP|C>ADD-STANDARD-LQ swpair ld)
@@ -590,7 +635,9 @@
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 )
                 (ref-IGNIS::C_Collect patron 
-                    (ref-IGNIS::UDC_ConstructOutputCumulator 100.0 SWP|SC_NAME false [])
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                        100.0 SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []
+                    )
                 )
                 (format "Inconsistent Pool State detected: Adding Liquidity not allowed; Stepped rolled back; 2|3" [swpair])
             )
@@ -679,13 +726,9 @@
                 ;;LP-CHURN REPAIR (2026-09-14) -- same defect as MTX|C_AddLiquidity's step 0
                 ;;above, in this variant. The single-tx twin bills UC_IgnisPrice
                 ;;"SWP|C_AddFrozenLiquidity" "lp-churn"; this billed a flat literal.
-                (ref-IGNIS::C_Collect patron 
-                    (ref-IGNIS::UDC_ConstructOutputCumulator
-                        (ref-IGNIS::UC_IgnisPrice "SWP|C_AddFrozenLiquidity" "lp-churn")
-                        SWP|SC_NAME false [])
-                )
+                (ref-IGNIS::C_Collect patron (URCi_AddLiquidityInitiation))
                 (format "MTX Frozen LqAdd. computed succesfully and collected {} IGNIS before discounts; 1|3"
-                    [(ref-IGNIS::UC_IgnisPrice "SWP|C_AddFrozenLiquidity" "lp-churn")])
+                    [LQ|INITIATION-FEE])
             )
         )
         ;;Step 1, Adding Liquidity and Minting LP
@@ -726,9 +769,12 @@
                                     (at "perfect-ignis-fee" (at "clad-op" clad))
                                 )
                             )
+                            ;;lp-churn REMAINDER taken here, after validation -- see the twin
+                            ;;comment in MTX|C_AddLiquidity's execution step.
                             (ref-IGNIS::C_Collect patron 
                                 (ref-IGNIS::UDC_ConcatenateOutputCumulators 
-                                    [ico1 ico2 ico3] []
+                                    [(URCi_AddLiquidityChurnRemainder "SWP|C_AddFrozenLiquidity")
+                                     ico1 ico2 ico3] []
                                 )
                             )
                             (ref-SWPL::XE_STOA-PID|AddLiquidity vst-sc swpair false false stoa-pid ld clad)
@@ -745,7 +791,9 @@
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 )
                 (ref-IGNIS::C_Collect patron 
-                    (ref-IGNIS::UDC_ConstructOutputCumulator 100.0 SWP|SC_NAME false [])
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                        100.0 SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []
+                    )
                 )
                 (format "Inconsistent Pool State detected: Adding Liquidity not allowed; 2|3" [swpair])
             )
@@ -816,13 +864,9 @@
                 ;;LP-CHURN REPAIR (2026-09-14) -- same defect as MTX|C_AddLiquidity's step 0
                 ;;above, in this variant. The single-tx twin bills UC_IgnisPrice
                 ;;"SWP|C_AddSleepingLiquidity" "lp-churn"; this billed a flat literal.
-                (ref-IGNIS::C_Collect patron 
-                    (ref-IGNIS::UDC_ConstructOutputCumulator
-                        (ref-IGNIS::UC_IgnisPrice "SWP|C_AddSleepingLiquidity" "lp-churn")
-                        SWP|SC_NAME false [])
-                )
+                (ref-IGNIS::C_Collect patron (URCi_AddLiquidityInitiation))
                 (format "MTX Sleeping LqAdd. computed succesfully and collected {} IGNIS before discounts; 1|3"
-                    [(ref-IGNIS::UC_IgnisPrice "SWP|C_AddSleepingLiquidity" "lp-churn")])
+                    [LQ|INITIATION-FEE])
             )
         )
         ;;Step 1, Adding Liquidity and Minting LP
@@ -876,9 +920,12 @@
                                     (ref-TFT::C_Transfer ignis-id account vst-sc (at "total-ignis-tax-needed" clad) true)
                                 )
                             )
+                            ;;lp-churn REMAINDER taken here, after validation -- see the twin
+                            ;;comment in MTX|C_AddLiquidity's execution step.
                             (ref-IGNIS::C_Collect patron 
                                 (ref-IGNIS::UDC_ConcatenateOutputCumulators 
-                                    [ico1 ico2 ico3 ico4] []
+                                    [(URCi_AddLiquidityChurnRemainder "SWP|C_AddSleepingLiquidity")
+                                     ico1 ico2 ico3 ico4] []
                                 )
                             )
                             (ref-SWPL::XE_STOA-PID|AddLiquidity vst-sc swpair true true stoa-pid ld clad)
@@ -896,7 +943,9 @@
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 )
                 (ref-IGNIS::C_Collect patron 
-                    (ref-IGNIS::UDC_ConstructOutputCumulator 100.0 SWP|SC_NAME false [])
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                        100.0 SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []
+                    )
                 )
                 (format "Inconsistent Pool State detected: Adding Liquidity not allowed; Stepped rolled back; 2|3" [swpair])
             )
@@ -949,29 +998,14 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
-                    (ref-TFT:module{TrueFungibleTransferV2} TFT)
-                    (ref-SWP:module{SwapperV4} SWP)
-                    (pool-token-ids:[string] (ref-SWP::UC_ExtractTokens pool-tokens))
-                    (pool-token-amounts:[decimal] (ref-SWP::UC_ExtractTokenSupplies pool-tokens))
-                    ;;
-                    (sum-ignis:decimal 
-                        (fold (+) 0.0 
-                            [
-                                (ref-IGNIS::UC_IgnisDeter "issue-swp-pair")
-                                (ref-IGNIS::UC_IgnisLeg "tier-token-issue")
-                                (ref-IGNIS::UC_IgnisLeg "tier-biggest")
-                                (ref-IGNIS::UC_IgnisLeg "tier-smallest")
-                            ]
-                        )
-                    )
-                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                    ;;
-                    (ico0:object{IgnisCollectorV2.OutputCumulator}
-                        (ref-IGNIS::UDC_ConstructOutputCumulator sum-ignis SWP|SC_NAME trigger [])
-                    )
-                    (ico1:object{IgnisCollectorV2.OutputCumulator}
-                        (ref-TFT::URCi_MultiTransferCumulator pool-token-ids account SWP|SC_NAME pool-token-amounts)
-                    )
+                    (ref-SWPI:module{SwapperIssueV4} SWPI)
+                    ;;GS-04 REPAIR (2026-09-14). This step used to build its own cumulator inline
+                    ;;while INFO_SWP|Issue*Pool previewed it through SWPI::URCi_Issue -- a reader
+                    ;;tuned to the SINGLE-TX SWPI::C_Issue. Four preview legs totalling 6158 against
+                    ;;this step's ONE leg of 5506: an over-quote of 652, and a leg-count mismatch
+                    ;;that matters on its own because the cumulator discounts per leg. Both sides now
+                    ;;read SWPI::URCi_IssuePool, so there is one source and no second place to drift.
+                    (sum-ignis:decimal (ref-SWPI::URC_IssuePoolIgnis))
                     ;;
                     (stoa-costs:decimal 
                         (+ 
@@ -981,9 +1015,7 @@
                     )
                 )
                 ;;Collect IGNIS for Issuance
-                (ref-IGNIS::C_Collect patron
-                    (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico0 ico1] [])
-                )
+                (ref-IGNIS::C_Collect patron (ref-SWPI::URCi_IssuePool account pool-tokens))
                 ;;Collect STOA for Issuance
                 (ref-IGNIS::STOA|C_Collect patron stoa-costs)
                 (let
@@ -1007,7 +1039,9 @@
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 )
                 (ref-IGNIS::C_Collect patron 
-                    (ref-IGNIS::UDC_ConstructOutputCumulator 100.0 SWP|SC_NAME false [])
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                        100.0 SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []
+                    )
                 )
                 (format "Insufficient IGNIS and STOA for Collection; Stepped rolled back{} 2|3" [";"])
             )

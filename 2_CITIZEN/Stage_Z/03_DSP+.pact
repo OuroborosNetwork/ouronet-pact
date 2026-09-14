@@ -238,6 +238,7 @@
     )
     (defcap DSP|STOICISM-MINTER (stoicism-amounts:[decimal] stoicism-targets:[string])
         @event
+        (compose-capability (GOV|DSP_ADMIN))
         (let
             (
                 (l1:integer (length stoicism-amounts))
@@ -245,7 +246,6 @@
             )
             (enforce (= l1 l2) "Length of stoicism-amounts and stoicism-targets must be the same")
         )
-        (compose-capability (GOV|DSP_ADMIN))
         (compose-capability (P|DRG))
     )
     ;;{C4}  Ownership [gold]

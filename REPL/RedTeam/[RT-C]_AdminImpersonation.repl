@@ -86,12 +86,20 @@
             (expect-failure "<<RT-C-001>> ...nor set a branding flag: BRD answers with its keyset"
                 "Keyset failure"
                 (ref-TS01-A::BRD|A_SetFlag "OURO-98c486052a51" 1))
-            ;;--- and the SHADOWED one, recorded as what it actually is --------------------------
-            ;;NOT an admin refusal. The admin gate for this op is one line below a solvency check
-            ;;that fires first, so this fixture never reaches it. Asserted as the business guard so
-            ;;the block does not claim evidence it does not have.
-            (expect-failure "<<RT-C-001>> FOLLOW-UP: the treasury wipe refuses on SOLVENCY, shadowing its admin gate"
-                "Cannot Wipe Positive Treasury Balance"
+            ;;--- the one that WAS shadowed, and is not any more ---------------------------------
+            ;;WHEN THIS BLOCK WAS FIRST WRITTEN this assertion read "Cannot Wipe Positive Treasury
+            ;;Balance" -- a BUSINESS guard. GOV|DPTF_ADMIN sat one line BELOW a solvency check in
+            ;;GOV|WIPE_ALL-TREASURY-DEBT, so a stranger was turned away by the treasury being
+            ;;solvent (its normal state) and the admin gate was never reached. The suite could
+            ;;report "a non-admin was refused" while the admin check went untested: had
+            ;;GOV|DPTF_ADMIN been deleted from that capability, this test would still have passed.
+            ;;
+            ;;FIXED 2026-09-14 on the owner's ruling -- authorisation precedes business validation,
+            ;;swept across all 18 sites in the codebase that had the two in the wrong order. The
+            ;;refusal now comes from the admin gate, and the message says so. THE MESSAGE CHANGING
+            ;;IS THE PROOF: nothing else about this call changed.
+            (expect-failure "<<RT-C-001>> the treasury wipe now refuses on AUTHORISATION, not solvency"
+                "DPTF Ownership not verified"
                 (ref-TS01-A::DPTF|A_WipeTreasuryDebt))
         ]
     )

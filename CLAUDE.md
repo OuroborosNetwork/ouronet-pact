@@ -190,6 +190,35 @@ If one user operation spans multiple tables, use **multiple** `XI`/`XB` function
 
 `CAP_*`, `UEV_*`, `UEV_Fee` stay as separate calls **before** the combined boolean `enforce` (they are not plain booleans). Reference: `SCR|XI>ISSUE-SCORE` in `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/02_SCORE.pact`.
 
+### Authorisation precedes validation inside a `defcap`
+
+Owner ruling, 2026-09-14. When a `defcap` both **authorises** (`compose-capability` of a `GOV|*_ADMIN`
+or equivalent) and **validates** (business `enforce`s), the authorisation goes **first** — before any
+business rule, and before the `let` that derives the data those rules read.
+
+The reason is not tidiness, it is testability. `GOV|WIPE_ALL-TREASURY-DEBT` had the order reversed:
+
+```pact
+(enforce (< treasury-supply 0.0) "Cannot Wipe Positive Treasury Balance")   ;; business
+(compose-capability (GOV|DPTF_ADMIN))                                       ;; authorisation
+```
+
+A solvent treasury is the normal state, so **every** attempt — admin or stranger — was turned away
+by the business rule and the admin gate was never reached. A red-team test could report "a non-admin
+was refused" and be telling the truth while proving nothing: **had `GOV|DPTF_ADMIN` been deleted from
+that capability, the test would still have passed.** A shadowed gate is indistinguishable from an
+absent one from the outside.
+
+Swept across all 18 sites that had the two in the wrong order (`REPL/RedTeam/[RT-C]_AdminImpersonation.repl`
+`<<RT-C-001>>` pins the treasury case by its *message*, which is the only thing that can tell the two
+refusals apart).
+
+**When moving an authorisation form, check what it is nested inside.** If it sits in an `if`, `and`,
+`or` or `cond` branch, the authorisation is *conditional* (e.g. `SWPI|C>ISSUE` requires the admin key
+only for a primordial issuance) and hoisting the bare `compose-capability` out of the branch changes
+who may call the function. Hoist the **whole conditional form** instead. A scripted reorder that
+ignores this silently converted an unconditional gate into a conditional one during this very sweep.
+
 ### `UR_*` ordering
 
 - `UR_*` groups follow the **order schemas are declared** in the module (first schema → first UR block, …).

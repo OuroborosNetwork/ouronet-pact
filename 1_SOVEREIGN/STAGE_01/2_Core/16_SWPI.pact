@@ -186,7 +186,9 @@
     (defun URC_DirectRefillAmounts:[decimal] (swpair:string ids:[string] amounts:[decimal]))
     (defun URC_IndirectRefillAmounts:[decimal] (X:[decimal] positions:[integer] amounts:[decimal]))
     (defun URC_TrimIdsWithZeroAmounts:[string] (swpair:string input-amounts:[decimal]))
-    (defun URCi_Issue:object{IgnisCollectorV2.OutputCumulator} (op-key:string account:string pool-tokens:[object{SwapperV4.PoolTokens}]))
+    (defun URC_IssuePoolIgnis:decimal ())
+    (defun URCi_Issue:object{IgnisCollectorV2.OutputCumulator} (account:string pool-tokens:[object{SwapperV4.PoolTokens}]))
+    (defun URCi_IssuePool:object{IgnisCollectorV2.OutputCumulator} (account:string pool-tokens:[object{SwapperV4.PoolTokens}]))
     (defun URCi_IssueStoa:decimal ())
     ;;{5.4}  Validate [UEV/CAP]
     ;;
@@ -406,12 +408,16 @@
     ;;{C3}  Composed
     (defcap SWPI|C>ISSUE (account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
         @event
-        (UEV_Issue account pool-tokens fee-lp weights amp p)
-        (compose-capability (P|DT))
+        ;;CONDITIONAL authorisation, hoisted 2026-09-14: only a PRIMORDIAL issuance (p) needs the
+        ;;admin key, so this cannot become an unconditional gate -- but when it does apply it must
+        ;;apply BEFORE UEV_Issue, or a stranger's refusal comes from a shape rule and the admin
+        ;;check is never the thing that stopped them. The branch is preserved exactly.
         (if p
             (compose-capability (GOV|SWPI_ADMIN))
             true
         )
+        (UEV_Issue account pool-tokens fee-lp weights amp p)
+        (compose-capability (P|DT))
     )
     ;;{C4}  Ownership [gold]
 
@@ -2308,9 +2314,65 @@
             (ref-IGNIS::UC_StoaPrice "issue-swp-pair")
         )
     )
+    (defun URC_IssuePoolIgnis:decimal ()
+        @doc "The ONE-leg IGNIS total the MULTI-STEP (defpact) pool issuance bills in \
+            \ MTX-SWP::MTX|C_Issue step 2. Lives here, beside URCi_Issue, so the preview and the \
+            \ exec read the SAME number from the SAME place: MTX-SWP deploys after SWPI, so the \
+            \ exec can call down to this, and INFO_SWP|Issue*Pool previews through URCi_IssuePool. \
+            \ ADDED 2026-09-14 with the GS-04 repair -- see URCi_IssuePool."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (fold (+) 0.0
+                [
+                    (ref-IGNIS::UC_IgnisDeter "issue-swp-pair")
+                    (ref-IGNIS::UC_IgnisLeg "tier-token-issue")
+                    (ref-IGNIS::UC_IgnisLeg "tier-biggest")
+                    (ref-IGNIS::UC_IgnisLeg "tier-smallest")
+                ]
+            )
+        )
+    )
+    (defun URCi_IssuePool:object{IgnisCollectorV2.OutputCumulator}
+        (account:string pool-tokens:[object{SwapperV4.PoolTokens}])
+        @doc "Cost preview for the MULTI-STEP pool issuance -- MTX-SWP::MTX|C_Issue -- as opposed \
+            \ to URCi_Issue below, which previews the SINGLE-TX SWPI::C_Issue. TWO legs, matching \
+            \ that step's concat exactly: the folded one-leg total (URC_IssuePoolIgnis) and the \
+            \ account->SWP pool-token multi-transfer. \
+            \ GS-04 (2026-09-14): the three INFO_SWP|Issue*Pool previews used to route through \
+            \ URCi_Issue, which is tuned to the single-tx exec -- FOUR non-transfer legs totalling \
+            \ 6158 against the defpact's ONE leg of 5506, an over-quote of 652. The leg COUNT \
+            \ mattered independently: UDC_PrimeIgnisCumulator discounts and quarter-splits PER LEG, \
+            \ so even equal totals could round apart. The tell was a dead `op-key` parameter, still \
+            \ in URCi_Issue's signature and used nowhere in its body -- one reader serving two \
+            \ executions that bill differently, the same shape as the red team's RT-A-001. \
+            \ Measured, not reasoned about, at modules/DEFPACT-BILLING.repl <<DPB-02>>."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-SWP:module{SwapperV4} SWP)
+                ;;
+                (pool-token-ids:[string] (ref-SWP::UC_ExtractTokens pool-tokens))
+                (pool-token-amounts:[decimal] (ref-SWP::UC_ExtractTokenSupplies pool-tokens))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                        (URC_IssuePoolIgnis) SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []
+                    )
+                    (ref-TFT::URCi_MultiTransferCumulator
+                        pool-token-ids account SWP|SC_NAME pool-token-amounts
+                    )
+                ]
+                []
+            )
+        )
+    )
     (defun URCi_Issue:object{IgnisCollectorV2.OutputCumulator}
-        (op-key:string account:string pool-tokens:[object{SwapperV4.PoolTokens}])
-        @doc "Cost preview for C_Issue's IGNIS cumulator (the STOA dptf+swp usage prices are \
+        (account:string pool-tokens:[object{SwapperV4.PoolTokens}])
+        @doc "Cost preview for the SINGLE-TX C_Issue's IGNIS cumulator (the STOA dptf+swp usage prices are \
             \ billed separately). Five legs, matching C_Issue's concat: \
             \ ico1 = LP-token issue gas (URCi_IssueGas 1 on SWP); \
             \ ico2 = the account->SWP pool-token multi-transfer (EXISTING tokens, real reader); \

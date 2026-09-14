@@ -653,7 +653,13 @@
                 (pt-ids:[string] (ref-SWP::UC_ExtractTokens pool-tokens))
                 (pt-amts:[decimal] (ref-SWP::UC_ExtractTokenSupplies pool-tokens))
                 (preview:object{IgnisCollectorV2.OutputCumulator}
-                    (ref-SWPI::URCi_Issue "SWP|C_IssueWeighted" KST.ANHD pool-tokens))
+                    (ref-SWPI::URCi_Issue KST.ANHD pool-tokens))
+                    ;;GS-04 (2026-09-14): the dead `op-key` first argument was REMOVED from
+                    ;;URCi_Issue. It had been in the signature and the interface since commit
+                    ;;e735f6d and used nowhere in the body, so six previews passed six different
+                    ;;keys to a reader that ignored all of them -- and three of those previews
+                    ;;wanted the DEFPACT price, which is now SWPI::URCi_IssuePool. This reader
+                    ;;previews the SINGLE-TX SWPI::C_Issue only, which is what this block checks.
             )
             ;;<real> rebuilds the same 5-leg concat but sources ico3 (LP mint) and ico4 (LP
             ;;transfer-out) from the ACTUAL DPTF/TFT cost readers on the now-EXISTING <lp>

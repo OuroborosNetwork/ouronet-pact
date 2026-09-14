@@ -1,0 +1,249 @@
+;;
+;; REPL/modules/DEFPACT-BILLING.repl — the DEFPACT BILLING harness.
+;;
+;; WHY THIS FILE EXISTS, and why it did not exist before 2026-09-14.
+;;
+;; Every other cost proof in this suite brackets ONE transaction: read the payer's IGNIS balance,
+;; call the op, read it again, compare the delta to what the INFO_ preview quoted. That shape is
+;; the whole of the owner's spec -- "the INFO function must output the exact same cost as the real
+;; execution function" -- and 397 of 412 previews are pinned that way.
+;;
+;; A DEFPACT cannot be measured that way. Its billing is spread across steps, and each step is a
+;; separate transaction, while the preview quotes the WHOLE operation in one number. Every existing
+;; harness could therefore only ever see ONE STEP of a multi-step op, and comparing one step's
+;; charge to a whole-op quote is not a test, it is a mismatch waiting to be explained away.
+;;
+;; WHAT THE GAP COST. GS-04: three previews -- INFO_SWP|IssueStablePool, |IssueStandardPool,
+;; |IssueWeightedPool -- routed through SWPI::URCi_Issue, a reader tuned to the SINGLE-TX
+;; SWPI::C_Issue, while the op they preview is the DEFPACT MTX-SWP::MTX|C_Issue. FOUR preview legs
+;; totalling 6158 against the defpact's ONE leg of 5506: an over-quote of 652 raw IGNIS, plus a
+;; leg-COUNT mismatch that matters independently because UDC_PrimeIgnisCumulator discounts and
+;; quarter-splits PER LEG, so even equal totals could round apart. It survived every green gate
+;; this project has ever run, because nothing in the suite could bracket a defpact.
+;;
+;; THE IDIOM THIS FILE ESTABLISHES.
+;; `(continue-pact N)` resolves against the pact started in the SAME transaction, so a whole
+;; defpact can be driven -- and therefore bracketed -- inside one begin-tx/commit-tx:
+;;
+;;     (let ((before (DALOS.UR_TF_AccountSupply patron false))
+;;           (quoted (at "ignis-need" (at "ignis" (INFO-ONE.INFO_... )))))
+;;         (TS01-CP.SOME|C_Op patron ...)      ;; step 0
+;;         (continue-pact 1)                   ;; step 1
+;;         (continue-pact 2)                   ;; step 2
+;;         (expect "preview == charge"
+;;             quoted (- before (DALOS.UR_TF_AccountSupply patron false))))
+;;
+;; The existing suites drive defpacts across begin-tx boundaries instead, passing the REPL's
+;; constant pact id explicitly (see modules/SWP.repl SWPX-01b). That is the right shape when the
+;; point is to prove the STEPS are independent transactions -- which is a different claim, and one
+;; those files are making deliberately. It is the wrong shape for measuring a total, because the
+;; `let` binding holding `before` does not survive the commit.
+;;
+;; Run: cd REPL && pact modules/DEFPACT-BILLING.repl
+;;
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+(load "../Stage_01/[6.2]_DPTF.repl")
+(load "../Stage_01/[6.3]_SWP.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "DPB-01 - the MULTISTEP add-liquidity door, billed end to end")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== DPB-01 · 01 · one bracket around three steps ====
+(print "--- [DPB-01 · 01 · one bracket around three steps] ---")
+;;<<DPB-01>> The identity this harness exists to state, for a defpact:
+;;
+;;      measured total  ==  ignis-need (the preview)  +  declared principal
+;;
+;;modules/SWP.repl <<SWP-I14>> pins exactly this for the SINGLE-TX add-liquidity door. Until this
+;;file, the MULTISTEP door had no equivalent -- not because anyone decided it did not need one, but
+;;because no harness could bracket three transactions. The `continue-pact` calls below are the whole
+;;difference.
+;;
+;;The "declared principal" term is not a fudge. Adding liquidity charges the caller two ways: gas,
+;;which travels through the OutputCumulator into <ignis-need>, and the Asymmetric-Liquidity TAX,
+;;which is IGNIS moved as PRINCIPAL and therefore touches no cumulator. Z_Reads' preview DECLARES
+;;the tax in its pre-text (UC_LiquidityTaxDeclaration); this asserts the declaration is arithmetic,
+;;not decoration.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-CP:module{TalosStageOne_ClientPactsV4} TS01-CP)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+        (patron:string KST.ANHD)
+        (pool:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
+        (amounts:[decimal] [10.0 10.0 10.0])
+    )
+    (let
+        (
+            (stoa-pid:decimal (U|CT.UR_STOA-PID|Price))
+        )
+        (let
+            (
+                ;;both READ BEFORE the add: each is a function of pool state, and the add moves it.
+                (tax:decimal
+                    (at "total-ignis-tax-needed"
+                        (ref-SWPLC::URCi_AddStandardLiquidityClad patron pool amounts stoa-pid)))
+                (quoted:decimal
+                    (at "ignis-need" (at "ignis"
+                        (INFO-ONE.INFO_SWP|AddStandardLiquidity patron patron pool amounts stoa-pid))))
+                (b0:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            )
+            (ref-TS01-CP::SWP|C_AddStandardLiquidity patron patron pool amounts)
+            (let ((b1:decimal (ref-DALOS::UR_TF_AccountSupply patron false)))
+                (continue-pact 1)
+                (let ((b2:decimal (ref-DALOS::UR_TF_AccountSupply patron false)))
+                    (continue-pact 2)
+                    (let ((b3:decimal (ref-DALOS::UR_TF_AccountSupply patron false)))
+                        (map print
+                            [
+                                (format "<<DPB-01>> step0={} step1={} step2={} | TOTAL={} | quoted={} tax={}"
+                                    [(- b0 b1) (- b1 b2) (- b2 b3) (- b0 b3) quoted tax])
+                                ;;THE IDENTITY.
+                                (expect "<<DPB-01>> the multistep door bills its quote plus the declared tax, exactly"
+                                    (- b0 b3) (+ quoted tax))
+                                ;;and the three legs of the split are each real, so the equality above
+                                ;;is not being satisfied by one step doing all the work while another
+                                ;;silently bills nothing.
+                                (expect "<<DPB-01>> step 0 charges the INITIATION slice and nothing more"
+                                    (* (ref-DALOS::URC_IgnisGasDiscount patron) 100.0) (- b0 b1))
+                                ;;EXACT, deliberately, and the earlier draft of this line was not.
+                                ;;It read `(> step1 (discount * 951))`, which a run with the
+                                ;;remainder REMOVED would still have satisfied -- step 1 also carries
+                                ;;the perfect-ignis-fee, which alone clears that bar. An inequality
+                                ;;that the defect passes is not a test. Stated as an equality on
+                                ;;everything-after-step-0, it says precisely what the split claims:
+                                ;;the whole bill except the initiation slice is collected later.
+                                (expect "<<DPB-01>> everything except the initiation slice is billed AFTER step 0"
+                                    (- (+ quoted tax) (* (ref-DALOS::URC_IgnisGasDiscount patron) 100.0))
+                                    (- b1 b3))
+                                (expect "<<DPB-01>> step 2 charges the LP transfer-out, and it is not free"
+                                    true (> (- b2 b3) 0.0))
+                                ;;non-vacuity on the tax term: a symmetric add would make the identity
+                                ;;above hold trivially with tax = 0, testing nothing about principal.
+                                (expect "<<DPB-01>> ...and this add really is asymmetric, so the tax term is doing work"
+                                    true (> tax 0.0))
+                            ]
+                        )
+                    )
+                )
+            )
+        )
+    )
+    ""
+)
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPB-02 - the MULTISTEP pool issuance, billed end to end (the GS-04 proof)")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== DPB-02 · 01 · the preview and the defpact, bracketed together ====
+(print "--- [DPB-02 · 01 · the preview and the defpact, bracketed together] ---")
+;;<<DPB-02>> GS-04, stated as a measurement instead of a reading.
+;;
+;;INFO_SWP|IssueStandardPool previews the DEFPACT MTX-SWP::MTX|C_Issue. It used to derive its quote
+;;from SWPI::URCi_Issue -- a reader tuned to the SINGLE-TX SWPI::C_Issue:
+;;
+;;    exec  (MTX|C_Issue step 2)   ONE leg : deter 5000 + token-issue 500 + biggest 5 + smallest 1
+;;                                         = 5506, plus the pool-token multi-transfer
+;;    prev  (URCi_Issue)          FOUR legs: IssueGas 1070 + DPTF|C_Mint 87 + smallest 1 + deter 5000
+;;                                         = 6158, plus the same multi-transfer
+;;
+;;652 raw IGNIS apart, and the LEG COUNT differed too -- which matters on its own, because
+;;UDC_PrimeIgnisCumulator discounts and quarter-splits PER LEG, so even equal totals could round
+;;apart. The tell was a DEAD PARAMETER: `op-key` sat in URCi_Issue's signature and appeared nowhere
+;;in its body. Six previews passed six different op-keys to a reader that ignored all of them, so
+;;three of them silently got the wrong execution's price. That is the same shape as the red team's
+;;RT-A-001 -- one reader serving two executions that bill differently -- found in the preview layer
+;;instead of the exec layer.
+;;
+;;THE REPAIR: URCi_Issue drops the dead parameter and previews the single-tx exec only; the new
+;;URCi_IssuePool previews the defpact, and MTX|C_Issue step 2 COLLECTS THROUGH IT. One source, so
+;;there is no second place for the two to drift apart again.
+;;
+;;WHY THIS NEEDED A NEW HARNESS: the exec spans three transactions. No existing suite could bracket
+;;it, so nothing in 21,580 assertions could compare this preview to this charge.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+        (dlk:string "DLK-98c486052a51")
+    )
+    (let
+        (
+            (split-stoa:[decimal]
+                (ref-DALOS::URC_SplitSTOAPrices patron
+                    (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))))
+            (pool-tokens:[object{SwapperV4.PoolTokens}]
+                [
+                    { "token-id":  "DLK-98c486052a51",  "token-supply": 5000.0}
+                    { "token-id":  "BUSD-98c486052a51", "token-supply": 100000.0}
+                    { "token-id":  "TUSD-98c486052a51", "token-supply": 100000.0}
+                    { "token-id":  "USDT-98c486052a51", "token-supply": 100000.0}
+                ]
+            )
+        )
+        ;;the STOA leg of step 2 is a real coin transfer, so the whole pact's signatures must be in
+        ;;scope for the entire transaction -- not just step 0's.
+        (env-sigs
+            [
+                { "key": "PK_AncientHodler", "caps": [] }
+                { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+                  "caps":
+                    [
+                        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                            "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                            "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                            "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                            "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa))
+                    ]
+                }
+            ]
+        )
+        (let
+            (
+                (quoted:decimal
+                    (at "ignis-need" (at "ignis"
+                        (INFO-ONE.INFO_SWP|IssueStandardPool patron patron pool-tokens 10.0 false))))
+                (b0:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            )
+            (TS01-CP.SWP|C_IssueStandardPool patron patron pool-tokens 10.0 false)
+            (continue-pact 1)
+            (continue-pact 2)
+            (let
+                (
+                    (total:decimal (- b0 (ref-DALOS::UR_TF_AccountSupply patron false)))
+                )
+                (map print
+                    [
+                        (format "<<DPB-02>> quoted={} charged={} delta={}"
+                            [quoted total (- total quoted)])
+                        ;;THE GS-04 ASSERTION. Pool issuance moves no IGNIS as principal -- the pool
+                        ;;tokens are DLK/BUSD/TUSD/USDT -- so unlike DPB-01 there is no tax term and
+                        ;;the preview must equal the charge outright.
+                        (expect "<<DPB-02>> INFO_SWP|IssueStandardPool's quote equals what the DEFPACT charged"
+                            total quoted)
+                        ;;non-vacuity: a quote of zero against a charge of zero would satisfy the
+                        ;;line above while proving nothing about either.
+                        (expect "<<DPB-02>> ...and issuing a pool is a real, non-zero charge"
+                            true (> total 0.0))
+                    ]
+                )
+            )
+        )
+    )
+    ""
+)
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)

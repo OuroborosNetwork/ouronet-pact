@@ -22,47 +22,59 @@
 (namespace "ouronet-ns")
 ;;==== RT-H-001 · 01 · set properties the per-item validator cannot see ====
 (print "--- [RT-H-001 · 01 · set properties the per-item validator cannot see] ---")
-;;<<RT-H-001>> FAMILY: H | STATUS: REFUSED
-;;HYPOTHESIS: `SWPU|X>SWAP` — the capability guarding the NO-SLIPPAGE swap path, which is the one a
-;;            caller reaches by passing the `-1.0` sentinel — validates the output is on the pool,
+;;<<RT-H-001>> FAMILY: H | STATUS: FIXED
+;;HYPOTHESIS: `SWPU|X>SWAP` -- the capability guarding the NO-SLIPPAGE swap path, which is the one a
+;;            caller reaches by passing the `-1.0` sentinel -- validates the output is on the pool,
 ;;            that swapping is enabled, that input-ids and input-amounts are the same LENGTH, and
 ;;            then loops over the inputs checking each is on the pool with a valid amount. Every one
-;;            of those is a per-ITEM property. Nothing checks a property of the SET. So two things
+;;            of those is a per-ITEM property. Nothing checked a property of the SET. So two things
 ;;            should be constructible: `output-id` also appearing in `input-ids` (swap a token for
 ;;            itself), and the same id appearing twice (pay one token, be credited for two).
 ;;METHOD:     drive both through the live Talos client on a real pool, and record WHICH guard
 ;;            refuses. The identity of the refusing guard is the entire result here.
-;;RESULT:     both refused — and NEITHER by a guard that is about the set. Details below. The
-;;            defences are real but incidental, which is a materially weaker position than it looks
-;;            from a green test.
+;;RESULT:     both were constructible, and both were refused -- but by guards that were NOT about
+;;            the set. Fixed 2026-09-14 on the owner's ruling; this block now pins the real rules.
 ;;
-;;WHAT REFUSES THE SELF-SWAP, and it is not a validator. `output-id` in `input-ids` passes every
-;;check in `SWPU|X>SWAP`: it is on the pool, its amount is positive, the lengths match. The swap
-;;proceeds INTO the curve math, which computes an output of exactly ZERO — adding and removing the
-;;same token on a constant-function curve nets to nothing — and the transfer of that zero is then
-;;refused by `DPTF::UEV_Amount`'s `(> amount 0.0)`. So the transaction is rejected by a
+;;WHAT USED TO REFUSE THE SELF-SWAP, and it was not a validator. `output-id` in `input-ids` passed
+;;every check in `SWPU|X>SWAP`: it is on the pool, its amount is positive, the lengths match. The
+;;swap proceeded INTO the curve math, which computed an output of exactly ZERO -- adding and
+;;removing the same token on a constant-function curve nets to nothing -- and the transfer of that
+;;zero was then refused by `DPTF::UEV_Amount`'s `(> amount 0.0)`. The transaction was rejected by a
 ;;ZERO-AMOUNT TRANSFER RULE, three modules away from the mistake, and only because the arithmetic
 ;;happened to land on exactly 0.0.
 ;;
-;;    That is the finding. The system is not protected from self-swaps by a rule forbidding them;
-;;    it is protected by the curve returning zero. Any future change that makes a self-swap return
-;;    a non-zero positive amount — a different curve, an amplifier, a fee rebate, a rounding
-;;    direction — turns this into value creation with no guard in the way. There is no
-;;    `output-id NOT IN input-ids` check anywhere on this path.
+;;    That was the finding. The system was not protected from self-swaps by a rule forbidding them;
+;;    it was protected by the curve returning zero. Any future change that made a self-swap return
+;;    a non-zero positive amount -- a different curve, an amplifier, a fee rebate, a rounding
+;;    direction -- would have turned this into value creation with no guard in the way.
 ;;
-;;WHAT REFUSES THE DUPLICATE is also not a uniqueness rule: "Only a single Input can be used in
-;;Stable Swap" is a POOL-TYPE rule. It happens to make duplicates unconstructible on a STABLE pool
-;;because stable pools take one input at all. It says nothing about weighted pools, which accept
-;;several inputs by design. SCOPE STATED HONESTLY: this block does not reach a weighted pool, so
-;;the duplicate case is pinned only for the stable shape, and the weighted shape is an open
-;;follow-up rather than a result claimed here.
+;;WHAT USED TO REFUSE THE DUPLICATE was also not a uniqueness rule: "Only a single Input can be used
+;;in Stable Swap" is a POOL-TYPE rule. It happened to make duplicates unconstructible on a STABLE
+;;pool because stable pools take one input at all. It said nothing about weighted pools, which
+;;accept several inputs by design -- so the duplicate case was pinned only for the stable shape and
+;;the weighted shape was an open follow-up.
+;;
+;;THE FIX. `SWPU|X>SWAP` now states both rules directly, as properties of the SET:
+;;
+;;    (enforce (not (contains output-id input-ids)) "Output Token ... cannot also be an Input ...")
+;;    (ref-U|LST::UEV_IzUnique input-ids)
+;;
+;;Both now refuse IN THE CAPABILITY, before any debit and before the curve is evaluated. That is
+;;the difference this block measures: not merely that the attacks fail, but that they fail EARLY
+;;and for a reason that names them. The old defences remain in place behind these; they are simply
+;;no longer the thing standing between a malformed set and the pool.
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-SWP:module{SwapperV4} SWP)
+        (ref-SWPU:module{SwapperUsageV3} SWPU)
         (pool:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
+        ;;the WEIGHTED twin of the same three tokens, issued by [6.3] at SWP|TX 04. Same tokens,
+        ;;different pool type -- so the only thing that differs between attack 2 and attack 3 is
+        ;;the rule that gets to answer.
+        (wpool:string "W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
         (tok:string "OURO-98c486052a51")
         (other:string "DLK-98c486052a51")
         (me:string KST.ANHD)
@@ -75,35 +87,58 @@
         (map print
             [
                 (format "<<RT-H-001>> holding {} {} against pool {}" [mine-before tok pool-before])
-                ;;ATTACK 1 -- swap a token for ITSELF. Refused by the zero-amount transfer rule,
-                ;;which is what the message names. Asserting the real message rather than a hoped-for
-                ;;"self swap not allowed" is the whole point: the latter does not exist.
-                (expect-failure "<<RT-H-001>> a self-swap is stopped by the ZERO-AMOUNT rule, not by a set check"
-                    "is not a Valid Transaction amount"
+                ;;ATTACK 1 -- swap a token for ITSELF. Now refused by the SET rule that names it,
+                ;;in SWPU|X>SWAP, rather than by a zero-amount transfer rule three modules away.
+                (expect-failure "<<RT-H-001>> a self-swap is refused by the rule that forbids it"
+                    "cannot also be an Input Token"
                     (ref-TS01-C3::SWP|C_MultiSwapNoSlippage me me pool [tok] [100.0] tok))
-                ;;ATTACK 2 -- the same input id twice. Refused by a POOL-TYPE rule, not uniqueness.
-                (expect-failure "<<RT-H-001>> a duplicated input is stopped by the POOL-TYPE rule, not by uniqueness"
+                ;;ATTACK 2 -- the same input id twice, on the STABLE pool. Still refused by the
+                ;;POOL-TYPE rule, and the reason is worth more than the fix was: the new uniqueness
+                ;;check never gets to speak here, because the pool-type rule fires UPSTREAM OF THE
+                ;;CAPABILITY ENTIRELY. TS01-C3::SWP|C_MultiSwapNoSlippage binds
+                ;;
+                ;;    (slippage-bounds ... (ref-SWPU::UDC_SpawnSlippageBounds swpair ...))
+                ;;
+                ;;in a `let` BEFORE it calls SWPU::C_Swap, and a Pact `let` is EAGER -- so the
+                ;;curve runs, and the curve's own (= l1 1) stable-pool enforce aborts, before
+                ;;SWPU|X>SWAP is ever composed. The validator is downstream of the math it guards.
+                ;;The next assertion proves that claim rather than asserting it.
+                (expect-failure "<<RT-H-001>> on a STABLE pool the pool-type rule still answers first"
                     "Only a single Input can be used in Stable Swap"
                     (ref-TS01-C3::SWP|C_MultiSwapNoSlippage me me pool [other other] [50.0 50.0] tok))
-                ;;"AND NOTHING MOVED" CANNOT BE ASSERTED HERE, and the reason is worth recording
-                ;;because the first draft of this block got it wrong. Two assertions were written to
-                ;;show the refusals were total; both FAILED, showing the caller debited by exactly
-                ;;the 100.0 self-swap input and the pool's OURO reserve up 0.53:
+                ;;WHERE that refusal comes from, demonstrated: the same message falls out of the
+                ;;slippage-bounds constructor on its own, with no client call and no capability in
+                ;;scope. That is the eager `let` in Talos, not a guard in SWPU.
+                (expect-failure "<<RT-H-001>> ...and it comes from Talos's EAGER let, not from the swap capability"
+                    "Only a single Input can be used in Stable Swap"
+                    (ref-SWPU::UDC_SpawnSlippageBounds pool [other other] [50.0 50.0] tok -1.0))
+                ;;ATTACK 3 -- the same input twice on a WEIGHTED pool, which the original pass
+                ;;recorded as an OPEN FOLLOW-UP because this block could not reach one. A weighted
+                ;;pool accepts several inputs by design, so the pool-type rule has nothing to say
+                ;;and the curve does not object. This is the case that had NO guard at all before
+                ;;2026-09-14, and it is now refused by uniqueness -- by name.
+                (expect-failure "<<RT-H-001>> on a WEIGHTED pool, where nothing objected before, uniqueness answers"
+                    "Unique Items Required"
+                    (ref-TS01-C3::SWP|C_MultiSwapNoSlippage me me wpool [other other] [50.0 50.0] tok))
+                ;;AND NOW "NOTHING MOVED" CAN BE ASSERTED, which it could not be before, and the
+                ;;change is the point of the repair rather than a bonus.
+                ;;
+                ;;RULE 9 says `expect-failure` catches the abort MID-TRANSACTION and does NOT roll
+                ;;back writes that already happened. When this block pinned the OLD behaviour, two
+                ;;such assertions were written and both FAILED, showing the caller debited by
+                ;;exactly the 100.0 self-swap input and the pool's OURO reserve up 0.53:
                 ;;
                 ;;    caller  389170.206086... -> 389070.206086...
                 ;;    pool    [.., 901.591515.., ..] -> [.., 902.121515.., ..]
                 ;;
-                ;;That is RULE 9 -- `expect-failure` catches the abort MID-TRANSACTION and does NOT
-                ;;roll back the writes that preceded it (`memories/2026-09-11-expect-failure-does-
-                ;;not-roll-back-writes.md`). On chain the whole transaction reverts, so no value is
-                ;;lost; the partial state is a REPL artefact of catching the abort. "The refusal is
-                ;;total" is therefore guaranteed by Pact's transaction semantics and is not
-                ;;something this suite can demonstrate -- so it is not claimed.
-                ;;
-                ;;What the partial write DOES show is real and worth keeping: the self-swap is
-                ;;refused LATE, after the input has been debited and the curve evaluated. The guard
-                ;;is not a cheap up-front rejection; the caller pays for the whole computation of a
-                ;;swap that could never have succeeded.
+                ;;They were removed as unassertable. They are assertable NOW, and they pass, for a
+                ;;reason that is itself the result: the new guards live in the CAPABILITY, so the
+                ;;refusal happens before the first write instead of after the debit and the curve.
+                ;;RULE 9 has not changed -- there is simply nothing left for it to expose.
+                (expect "<<RT-H-001>> the refusal is now EARLY: the caller is not debited at all"
+                    mine-before (ref-DPTF::UR_AccountSupply tok me))
+                (expect "<<RT-H-001>> ...and the pool reserves are untouched by both attempts"
+                    pool-before (ref-SWP::UR_PoolTokenSupplies pool))
                 ;;NON-VACUITY: a well-formed swap on this same pool DOES work, so the refusals above
                 ;;are about the malformed input sets and not about the pool being unusable.
                 (expect "<<RT-H-001>> ...while a well-formed swap on the same pool succeeds"

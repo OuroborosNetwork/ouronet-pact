@@ -316,6 +316,7 @@
         ;;A length test needs nothing but the parameter, so it can run before anything is derived.
         ;;The fold below is unchanged and still answers for every other way to be invalid.
         ;;Pinned by REPL/modules/CODEX.repl <<CODEX-G3>>.
+        (compose-capability (CODEX|ADMIN))
         (enforce
             (= (length codex-id) CODEX|APOLLO-COMPOSITE-LEN)
             "Invalid codex identity: composite Apollo codex-id must be 325 characters"
@@ -342,7 +343,6 @@
                 (iz-nonempty-pub-std:bool (!= public-standard ""))
                 (iz-nonempty-pub-smt:bool (!= public-smart ""))
             )
-            (compose-capability (CODEX|ADMIN))
             (enforce
                 (fold (and) true
                     [

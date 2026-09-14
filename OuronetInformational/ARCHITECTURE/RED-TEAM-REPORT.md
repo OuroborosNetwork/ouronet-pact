@@ -160,8 +160,31 @@ rolled-back step did not perform the operation, so charging the full deterrent i
 not a defect. `MTX|C_Issue`'s flat 100 is a *different* operation with a different deterrent and was
 left for a ruling rather than guessed at.
 
-**Verification.** The block now measures 557.03 = 557.03, and the two assertions that encoded the
+**Verification.** The block measured 557.03 = 557.03, and the two assertions that encoded the
 exploit went red at the moment of repair — evidence a fix-first approach cannot produce.
+
+**Re-verified end to end, 2026-09-14, and the assertion is now exact.** The original pin compared
+**step 0 alone** against a whole-operation figure, which was the best available before a defpact
+could be bracketed. After the `RT-F-001` ruling split the fee across steps, that comparison stopped
+describing the op at all — step 0 is now small *by design*. Re-pointed at the TOTAL, where a bypass
+would now have to hide, and stated as an equality rather than an inequality:
+
+| | measured |
+|---|---:|
+| defpact door, all three steps (`TS01-CP → MTX-SWP`) | **1318.83** |
+| single-tx door, same pool, same inputs (`TS01-C3 → SWPLC`) | **1318.83** |
+| `ignis-need` quoted + declared asymmetry tax (1118.83 + 200.00) | **1318.83** |
+
+Two doors, one price — the cross-route invariant this finding is about, now measured rather than
+inferred from a single leg. The identity `total == quoted + declared principal` is the same one
+`modules/SWP.repl` `<<SWP-I14>>` pins for the single-tx door; `<<DPB-01>>` states it for the
+multistep door for the first time.
+
+*A caution recorded against myself: the 200.00 term initially looked like a fresh under-quote and was
+very nearly written up as one. It is the Asymmetric-Liquidity TAX — principal, not gas — and this
+codebase's own `UC_LiquidityTaxDeclaration` `@doc` already records the identical pair of figures,
+1118.83 quoted against 1318.83 leaving the account. Arithmetic that looks like a discovery should be
+checked against the source before it becomes a finding.*
 
 *Footnote worth keeping: the exploit assertion itself first failed on a three-argument `(* a b c)`.
 Pact's `*` is binary — the same arity trap this project's ledger already records for a
@@ -210,7 +233,7 @@ message-checking rule.
 
 ## Stage 2 — Family F, griefing and denial of service
 
-### RT-F-001 — one ordinary swap destroys a stranger's add-liquidity fee *(SUCCEEDED — open)*
+### RT-F-001 — one ordinary swap destroys a stranger's add-liquidity fee *(SUCCEEDED — FIXED)*
 
 **Hypothesis.** `MTX|C_AddLiquidity` collects its entire deterrent in **step 0**, then validates in
 **step 1** that the pool has not moved since it quoted. `PoolState` includes the pool's **token
@@ -237,6 +260,18 @@ trading activity the defpact add is not merely grief-able — it is **unreliable
 because `PoolState` equality is exact and includes supplies. The attacker's cost is a normal trade;
 they need no knowledge of the victim beyond the fact that adds are in flight, which on a public
 chain is visible.
+
+**RESOLVED 2026-09-14 (owner ruling).** Step 0 now takes only `LQ|INITIATION-FEE` (100.0 raw), and
+the lp-churn **remainder** is collected in the execution step, after the pool-state check has passed.
+The total across the pact is unchanged — so neither Talos door is cheaper than the other and
+`RT-A-001`'s repair still holds — but what one stranger's swap can destroy falls from **557.03 to
+53.00 net**, a factor of 10.5. Measured end to end at `modules/DEFPACT-BILLING.repl` `<<DPB-01>>` and
+re-pinned at `<<RT-A-001>>` as an exact identity: `total == quoted + declared tax`.
+
+The fee is still **not refunded** on the failed step, and this report does not claim otherwise. The
+ruling was to split the fee, not to refund it; the residual exposure is now one initiation slice, and
+the multi-step add-liquidity path is in any case retained only for historical continuity now that
+StoaChain's ~2M gas limit lets the single-tx door do the whole job in one transaction.
 
 **This finding is a direct consequence of `RT-A-001`'s repair, and that must be stated plainly.**
 Closing the churn-deterrent bypass raised this step-0 fee from a flat 100.0 to the real 1051.0
@@ -434,7 +469,7 @@ at 289/290. It is probably deliberate — the bootstrap must reach DALOS before 
 is exactly the argument for pinning it. **An intended exception that no document mentions is
 indistinguishable from an unintended one at review time.** Owner ruling pending.
 
-### RT-C-001 — eight admin wrappers driven as a stranger *(REFUSED, with one shadowed gate)*
+### RT-C-001 — eight admin wrappers driven as a stranger *(REFUSED, one shadowed gate — now FIXED)*
 
 `TS01-A`'s 30 admin wrappers do **not** gate uniformly:
 
@@ -510,7 +545,7 @@ expensive way to find what reading the guards gives for free. The attacks were t
 identified by reading `SWPU|X>SWAP`, the capability guarding the no-slippage swap path — the one a
 caller reaches by passing the `-1.0` sentinel.
 
-### RT-H-001 — the validator cannot see properties of the SET *(REFUSED, incidentally)*
+### RT-H-001 — the validator cannot see properties of the SET *(REFUSED incidentally — now FIXED)*
 
 `SWPU|X>SWAP` checks the output is on the pool, that swapping is enabled, that `input-ids` and
 `input-amounts` are the same LENGTH, and then loops over the inputs checking each is on the pool
@@ -566,8 +601,11 @@ computation of a swap that could never have succeeded.
 | H — Input domain | 1 | | | 1 |
 | **total** | **9** | **2** | **1** | **6** |
 
-Three attacks found a defect. One was fixed immediately (`RT-A-001`); two are open pending an owner
-ruling (`RT-B-001`, `RT-F-001`).
+Three attacks found a defect. One was fixed immediately (`RT-A-001`); the other two went to the owner
+as rulings and **both are now fixed and measured** (`RT-F-001` in full, `RT-B-001` narrowed to a
+harness artifact — see *Owner rulings* below). Two further defects were found while implementing
+those rulings, by reading the lines either side of the ones being changed: **GS-05** (the defpact
+door ignored the virtual-gas switch) and the confirmation of **GS-04** against a live measurement.
 
 ## Where the defects are, and where they are not
 
@@ -593,14 +631,24 @@ independently, from the opposite direction.
 **Three of the six refusals were by the wrong guard**, and each is a latent defect wearing a passing
 test:
 
-| attack | the guard that ought to refuse | the guard that actually did |
-|---|---|---|
-| `RT-E-001` dust sweep | a claimant-set check | a `last-collected-round` **stamp in a different function** |
-| `RT-H-001` self-swap | `output-id NOT IN input-ids` | the **curve returning exactly zero** |
-| `RT-H-001` duplicate input | a uniqueness check | a **stable-pool single-input rule** |
-| `RT-C-001` treasury wipe | `GOV|DPTF_ADMIN` | a **solvency check one line above it** |
+| attack | the guard that ought to refuse | the guard that actually did | status |
+|---|---|---|---|
+| `RT-E-001` dust sweep | a claimant-set check | a `last-collected-round` **stamp in a different function** | open |
+| `RT-H-001` self-swap | `output-id NOT IN input-ids` | the **curve returning exactly zero** | **FIXED** |
+| `RT-H-001` duplicate input | a uniqueness check | a **stable-pool single-input rule** | **FIXED** |
+| `RT-C-001` treasury wipe | `GOV|DPTF_ADMIN` | a **solvency check one line above it** | **FIXED** |
 
-Every one of those is green today and would stay green through the change that breaks it. This is the
+Every one of those was green and would have stayed green through the change that breaks it. Three
+were closed by the owner rulings below; `RT-E-001` remains open.
+
+**One of the three did not move where it was expected to**, and the reason is worth more than the
+fix. Adding `UEV_IzUnique` to `SWPU|X>SWAP` did **not** change what refuses a duplicated input on a
+stable pool: the pool-type rule still answers first, because `TS01-C3::SWP|C_MultiSwapNoSlippage`
+binds its slippage bounds in a `let` **before** calling `SWPU::C_Swap`, a Pact `let` is **eager**, and
+the curve inside it raises. *The validator is downstream of the math it guards.* The new rule is real
+and now demonstrated on a **weighted** pool — the case that previously had no guard at all — and
+`<<RT-H-001>>` pins the eager-`let` mechanism directly by raising the same message out of
+`UDC_SpawnSlippageBounds` with no client call and no capability in scope. This is the
 single most valuable output of the programme, and it is only visible because the method requires a
 red-team `expect-failure` to **name the message it expects**. An earlier pass over `RT-C-001` used
 `(try "REFUSED" ...)` and reported 8 of 8 refused — true, and useless.
@@ -621,11 +669,93 @@ separate scans produced misleading numbers — "78 unreached guards", "every `ST
 no-op", "31 of 42 `A_` with no admin guard" — and all three were refuted by measurement. Families B,
 C and D were consequently driven entirely by execution.
 
-## Open items for the owner
+## Owner rulings, 2026-09-14 — and what they changed
 
-| id | item | why it needs a ruling rather than a fix |
-|---|---|---|
-| `RT-B-001` / X-01 | the master keyset satisfies `P|UEV_IMC`, reaching DALOS core outside Talos, unbilled | probably deliberate (bootstrap precedes Talos). If intended it belongs beside the "only supported client path" sentence; if not, the registration is what to remove. |
-| `RT-F-001` | the add-liquidity deterrent is collected in step 0 and validated in step 1, so any swap destroys it | the fix — collect in the step that succeeds, or refund on rollback — changes **when money moves inside a defpact**, a design decision |
-| `RT-H-001` | no `output-id NOT IN input-ids` check on the swap path | adding one is cheap; whether self-swaps should be *forbidden* or merely *unprofitable* is a design call |
-| `RT-C-001` | `GOV|DPTF_ADMIN` on the treasury wipe is unreachable while the treasury is solvent | reordering the cap is trivial; whether the solvency check should precede authorisation is a convention question |
+All four items below were put to the owner as decisions rather than fixes, because each one trades
+off something the red team has no standing to choose. All four were ruled on the same day and are
+now implemented and measured. **Three of the four were "the wrong guard refused" findings from the
+table above — the ones a green test could never have surfaced.**
+
+| id | ruling | what shipped | how it is pinned |
+|---|---|---|---|
+| `RT-C-001` | authorisation precedes business validation | swept **18 defcaps** across 11 files; convention recorded in CLAUDE.md | the refusal **message** changed from `"Cannot Wipe Positive Treasury Balance"` to `"DPTF Ownership not verified"` — nothing else about the call changed |
+| `RT-F-001` | split the fee: initiation slice in step 0, remainder in the step that succeeds | `LQ|INITIATION-FEE` (100.0) + `URCi_AddLiquidityChurnRemainder` across all three add-liquidity defpacts | `<<RT-F-001>>` — griefing exposure 557.03 → **53.00 net**, total unchanged |
+| `RT-H-001` | state the set rules directly | `output-id NOT IN input-ids` + `UEV_IzUnique` in `SWPU|X>SWAP` | `<<RT-H-001>>`, including the **weighted-pool** arm that was previously an open follow-up |
+| `RT-B-001` / X-01 | the master key passing as a module is correct; `RotateStoa` must pass through Talos | **in progress** — see the correction below | — |
+
+### A correction to `RT-B-001`, and it narrows the finding
+
+This report originally presented X-01 as a live exception to *"Talos is the only supported client
+path"*. **That overstated it.** The registration that creates the exception —
+
+```pact
+(DALOS.P|A_AddIMP (keyset-ref-guard "ouronet-ns.dh_master-keyset"))
+```
+
+— appears in exactly one place in the repository: `REPL/Stage_01/[2.1]_Dalos.repl:221`. It is **not
+in the genesis payloads**. So on chain the master key does *not* satisfy `P|UEV_IMC`, and
+`DALOS::C_RotateStoa` is already Talos-only. What the red team measured was real, reproducible, and
+**a property of the test harness rather than of the deployed system.**
+
+The finding does not vanish, it changes category: the harness is *weaker than production*, and it
+was that weakness which let `[2.1]_Dalos.repl`'s rotation tests call core directly — under labels
+that name the **Talos** entrypoints (`<(DALOS|C_RotateGuard EMMA user-guard)>`) while the code
+beneath calls `ref-DALOS::C_RotateGuard`. The registration exists because that file runs **before
+Talos is deployed**, which is also why removing the line is not a one-line change.
+
+*An audit harness that grants itself a privilege the real system withholds will certify behaviour
+nobody can reach* — and will, as here, quietly turn a mislabelled test green.
+
+## What the fixes cost, and one that nearly cost more
+
+**The `RT-C-001` sweep was first attempted mechanically and introduced a real authorisation hole.**
+A script located each defcap's first `enforce` and the `compose-capability` of its admin cap, and
+moved the latter above the former. Two of the eighteen sites were not flat sequences:
+
+- `SWPI|C>ISSUE` — the admin compose sat inside `(if p ... true)`, because only a **primordial**
+  issuance needs the admin key. The script hoisted it out, turning a conditional gate unconditional.
+- `SWP|C>PRINCIPAL` — the admin compose sat unconditionally at the end of the `let`. The script moved
+  it **into** `(if add-or-remove (and ...))`. **Removing a principal would no longer have required
+  admin at all.**
+
+Both were caught by the Pact loader on argument arity — `if` takes three, `and` takes two — which is
+luck, not method. **The diff was reviewed and both were missed**: 5 of 18 hunks were read, and both
+bad sites were outside the 5. Sampling a mechanical edit confirms the mechanism ran; it cannot
+confirm the mechanism was right, because the failures are precisely in the sites that differ from the
+ones sampled.
+
+The whole sweep was reverted and redone as 18 hand-written `(old, new)` text pairs, each asserting
+`count == 1`, with the `SWPI` conditional hoisted as a **whole `if` form**.
+
+> **A refactor that moves security-relevant code is not verified by the code still loading. It is
+> verified by knowing, per site, what the code was nested inside.**
+
+
+## The instrument was the blind spot
+
+The programme's last finding is about the tools rather than the code, and it generalises past this
+project.
+
+`_info_measured.py` reports **397 of 412** INFO previews as MEASURED. Its rule: a preview counts when
+its name appears, uncommented, inside a `begin-tx` that also extracts `ignis-need` or `stoa-need`.
+The tool's own docstring is careful to call that a **proxy** and an upper bound, and lists the ways it
+is generous.
+
+It does not list the way it is **blind**. A defpact's billing is spread across transactions, so a
+`begin-tx` can only ever contain **one step** of it. A preview of a multi-step operation could satisfy
+every condition the tool checks while the number it was compared against was a single step's charge.
+Three previews sat in exactly that position — `INFO_SWP|Issue*Pool`, quoting a single-tx reader for a
+defpact exec, **652 raw IGNIS** apart — through every green gate this project has run.
+
+The fix was not "measure more". It was a harness that can bracket a defpact at all
+(`REPL/modules/DEFPACT-BILLING.repl`), and the blocking idiom turned out to be one line:
+`(continue-pact N)` resolves against the pact started in the **same** transaction.
+
+> **A coverage proxy inherits the shape of the thing it samples.** `_info_measured.py` samples
+> transactions, so it can only see operations that fit inside one. Asking it about defpacts was asking
+> a question it had no vocabulary for — and it answered "measured", because its vocabulary had no way
+> to say "not applicable".
+
+The same sentence covers the earlier one-level static scans. Both failures are the instrument
+reporting confidently about a region it cannot see, and in both cases the number it produced was
+**reassuring** rather than alarming. An audit should treat a tool's silence as unexamined, not clean.

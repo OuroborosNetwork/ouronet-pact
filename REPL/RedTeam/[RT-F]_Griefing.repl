@@ -76,9 +76,19 @@
                 [
                     (format "<<RT-F-001>> victim paid {} IGNIS at step 0; pool supplies {}"
                         [fee supplies-before])
-                    ;;the victim has paid, in full, for an operation that has not happened yet.
-                    (expect "<<RT-F-001>> the whole deterrent is taken at step 0, before any validation"
-                        true (> fee 500.0))
+                    ;;THE REPAIR, MEASURED. Step 0 used to take the WHOLE lp-churn deterrent --
+                    ;;1051.0 raw, 557.03 net at this patron's discount -- BEFORE the step-1 check
+                    ;;that decides whether the operation may happen at all. It now takes only the
+                    ;;small LQ|INITIATION-FEE (100.0 raw), and the remainder is collected in the
+                    ;;step that SUCCEEDS. The total across the pact is unchanged, so neither Talos
+                    ;;door is cheaper than the other and RT-A-001's repair still holds; what
+                    ;;changed is WHEN the money moves, which is the whole of this finding.
+                    (expect "<<RT-F-001>> step 0 now takes only the INITIATION slice, not the deterrent"
+                        (* (ref-DALOS::URC_IgnisGasDiscount victim) 100.0) fee)
+                    ;;and stated as the attack, so a regression restores a RED line that names it:
+                    ;;the victim's exposure must stay far below the deterrent it used to be.
+                    (expect "<<RT-F-001>> ...so what one stranger's swap can destroy is no longer the deterrent"
+                        false (> fee 500.0))
                     ;;...and step 0 moved nothing in the pool, so the fee bought only a quote.
                     (expect "<<RT-F-001>> ...and step 0 changed nothing in the pool: it only quoted"
                         supplies-before (ref-SWP::UR_PoolTokenSupplies pool))
@@ -130,10 +140,21 @@
                 (expect-failure "<<RT-F-001>> EXPLOIT: the victim's step 1 is now permanently refused"
                     "Execution Step of Adding Liquidity cannot execute on altered pool state!"
                     (continue-pact 1 false "2n12TVKIdyigszwESxXUSOkAtK48XfsKcVoUGxWYSSE"))
-                ;;3] ...and the fee is gone. This is the assertion that turns a known guard into a
-                ;;   finding: the refusal costs the victim everything they paid, and refunds nothing.
-                (expect "<<RT-F-001>> ...and not one IGNIS of the victim's step-0 fee comes back"
-                    true (<= (ref-DALOS::UR_TF_AccountSupply victim false) ignis-before))
+                ;;3] THE GUARD IS UNCHANGED AND MUST BE. Executing a quote against a moved pool
+                ;;   is how a liquidity provider silently gets a worse ratio than they agreed to;
+                ;;   modules/SWP.repl <<SWPX-10>> already pins that it fires. This block never
+                ;;   argued otherwise. What it found was the PRICE of the guard firing.
+                ;;4] ...and the fee is STILL not refunded -- the defect that remains after the
+                ;;   repair, stated plainly rather than quietly dropped. What changed is its size:
+                ;;   the victim now loses the initiation slice (53.0 net) instead of the whole
+                ;;   deterrent (557.03 net), because the deterrent is no longer taken until the
+                ;;   step that succeeds. A refund on rollback would close the rest; the owner's
+                ;;   2026-09-14 ruling was to split the fee, not to refund it, and the multi-step
+                ;;   add-liquidity path is in any case kept only for historical continuity now
+                ;;   that StoaChain's 2M gas limit lets the single-tx door do the whole job.
+                (expect "<<RT-F-001>> ...and what the victim loses is now bounded by the initiation slice"
+                    true (<= (- ignis-before (ref-DALOS::UR_TF_AccountSupply victim false))
+                             (* (ref-DALOS::URC_IgnisGasDiscount victim) 100.0)))
             ]
         )
     )

@@ -406,8 +406,8 @@
     ;;{C3}  Composed
     (defcap DEMIPAD|C>REGISTER (asset-id:string fungibility:[bool])
         @event
-        (UEV_Fungibility fungibility)
         (compose-capability (DEMIPAD|C>SECURE-ADMIN))
+        (UEV_Fungibility fungibility)
     )
     (defcap DEMIPAD|C>SECURE-ADMIN ()
         (compose-capability (GOV|DEMIPAD_ADMIN))
@@ -416,12 +416,12 @@
     ;;
     (defcap DEMIPAD|C>TOGGLE-SALE (asset-id:string toggle:bool)
         @event
+        (compose-capability (DEMIPAD|C>SECURE-ADMIN))
         (let
             (
                 (ofb:bool (UR_OpenForBusiness asset-id))
             )
             (enforce (!= toggle ofb) (format "Open for business is already {} for Asset {}" [toggle asset-id]))
-            (compose-capability (DEMIPAD|C>SECURE-ADMIN))
         )
     )
     (defcap DEMIPAD|C>DEFINE-PRICE (asset-id:string price:object)
@@ -430,12 +430,12 @@
     )
     (defcap DEMIPAD|C>TOGGLE-RETRIEVAL (asset-id:string toggle:bool)
         @event
+        (compose-capability (DEMIPAD|C>SECURE-ADMIN))
         (let
             (
                 (rtr:bool (UR_Retrieval asset-id))
             )
             (enforce (!= toggle rtr) (format "Retrieval is already {} for Asset {}" [toggle asset-id]))
-            (compose-capability (DEMIPAD|C>SECURE-ADMIN))
         )
     )
     ;;

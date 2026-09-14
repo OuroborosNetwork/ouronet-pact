@@ -422,6 +422,7 @@
                 (output-id:string (at "output-id" dsid))
                 ;;
                 (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-SWP:module{SwapperV4} SWP)
                 (l1:integer (length input-ids))
@@ -432,6 +433,25 @@
             (enforce izo (format "{} is not part of SwapPool {}" [output-id swpair]))
             (enforce can-swap (format "Pool {} swap functionality is inactive: cannot Swap Tokens" [swpair]))
             (enforce (= l1 l2) "Invalid input Values")
+            ;;SET-LEVEL GUARDS (2026-09-14). Every check around these is a per-ITEM property --
+            ;;"this id is on the pool", "this amount is valid" -- and a malformed SET satisfies
+            ;;all of them. Two such sets existed, and both were refused only INCIDENTALLY:
+            ;;  1] output-id also present in input-ids (swapping a token for itself) reached the
+            ;;     curve, which returned exactly 0.0 because adding and removing the same token
+            ;;     on a constant-function curve nets to nothing, and was then refused three
+            ;;     modules away by DPTF::UEV_Amount's zero-amount rule.
+            ;;  2] the same id twice in input-ids was refused by "Only a single Input can be used
+            ;;     in Stable Swap" -- a POOL-TYPE rule, which says nothing on a weighted or
+            ;;     standard pool where several inputs are legitimate.
+            ;;Neither is a statement about the set, so neither would survive a change to the
+            ;;curve or a new pool type. Owner ruling 2026-09-14: state the rule directly.
+            ;;Measured, exploit-first, at RedTeam/[RT-H]_InputDomain.repl <<RT-H-001>>.
+            (enforce
+                (not (contains output-id input-ids))
+                (format "Output Token {} cannot also be an Input Token on SwapPool {}"
+                    [output-id swpair])
+            )
+            (ref-U|LST::UEV_IzUnique input-ids)
             (map
                 (lambda
                     (idx:integer)

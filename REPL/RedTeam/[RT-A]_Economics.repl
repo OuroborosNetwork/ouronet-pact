@@ -59,10 +59,12 @@
         (ref-TS01-CP:module{TalosStageOne_ClientPactsV4} TS01-CP)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
         (patron:string KST.ANHD)
         ;;the same standard pool modules/SWP.repl measures the SINGLE-TX route on at <<SWP-I14>>,
         ;;so the two figures are directly comparable rather than merely similar.
         (pool:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
+        (amounts:[decimal] [10.0 10.0 10.0])
     )
     (let
         (
@@ -70,44 +72,81 @@
             ;;the deterrent the OTHER Talos route bills, read from the table it bills through
             (single-tx-flat:decimal
                 (ref-IGNIS::UC_IgnisPrice "SWP|C_AddStandardLiquidity" "lp-churn"))
-            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (stoa-pid:decimal (U|CT.UR_STOA-PID|Price))
         )
-        ;;START the defpact. Step 0 runs in THIS transaction and collects its flat fee.
-        (ref-TS01-CP::SWP|C_AddStandardLiquidity patron patron pool [10.0 10.0 10.0])
         (let
             (
-                (charged:decimal (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)))
+                ;;READ BEFORE THE ADD -- the CLAD is a function of pool state, and the add moves it.
+                (tax:decimal
+                    (at "total-ignis-tax-needed"
+                        (ref-SWPLC::URCi_AddStandardLiquidityClad patron pool amounts stoa-pid)))
+                (quoted:decimal
+                    (at "ignis-need" (at "ignis"
+                        (INFO-ONE.INFO_SWP|AddStandardLiquidity patron patron pool amounts stoa-pid))))
+                (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             )
-            (map print
-                [
-                    (format "<<RT-A-001>> defpact step-0 charged={} | deterrent={} raw = {} net at discount={} | PRE-FIX this was 53.0"
-                        [charged single-tx-flat (* discount single-tx-flat) discount])
-                    ;;1] THE REPAIR. The defpact's opening leg is now the SAME lp-churn price the
-                    ;;   single-tx route bills, so the two doors cost the same and the deterrent
-                    ;;   cannot be declined by choosing one. BEFORE THE FIX THIS READ 53.0 --
-                    ;;   a flat literal 100.0 at this patron's 0.53 discount.
-                    (expect "<<RT-A-001>> both Talos doors now bill the identical lp-churn deterrent"
-                        (* discount single-tx-flat) charged)
-                    ;;2] and it is the real TABLE price, not a second literal that happens to
-                    ;;   match -- a literal would drift the moment the price table moved, which is
-                    ;;   how the two doors came apart in the first place.
-                    (expect "<<RT-A-001>> ...and that price is the table's: deter 1000 + this op's component 51"
-                        1051.0 single-tx-flat)
-                    ;;3] THE EXPLOIT, INVERTED. This assertion was TRUE before the repair and must
-                    ;;   now be false: the defpact door no longer offers a discount on the churn
-                    ;;   deterrent. It is written as the attack rather than as its negation so the
-                    ;;   block still reads as an attack, and so a regression restores a RED line
-                    ;;   that names the exploit rather than a vague inequality failure.
-                    ;;   NOTE on the shape: Pact's `*` is BINARY -- a three-argument `(* a b c)`
-                    ;;   raises rather than multiplying, the same arity trap this project's defect
-                    ;;   ledger records for a 3-argument `or`. It bit this line on its first run.
-                    (expect "<<RT-A-001>> ...so the ~10x discount the defpact door used to offer is GONE"
-                        false (< charged (* 0.5 (* discount single-tx-flat))))
-                    ;;4] non-vacuity: the route really did DO something -- a pact is open, so this
-                    ;;   is a live add-liquidity in progress and not a call that failed early.
-                    (expect "<<RT-A-001>> ...and the route really is mid-operation, not a no-op"
-                        true (> charged 0.0))
-                ]
+            ;;DRIVE THE WHOLE DEFPACT INSIDE ONE TRANSACTION. `continue-pact` resolves against the
+            ;;pact started in this same transaction, so all three steps -- and therefore the TOTAL
+            ;;they bill -- can be bracketed by one pair of balance reads. Until 2026-09-14 this
+            ;;block measured STEP 0 ALONE and compared it to a whole-operation figure, which is why
+            ;;the assertions below used to be about the opening leg rather than the price of the op.
+            ;;The idiom and its justification live in modules/DEFPACT-BILLING.repl.
+            (ref-TS01-CP::SWP|C_AddStandardLiquidity patron patron pool amounts)
+            (let
+                (
+                    (charged0:decimal (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)))
+                )
+                (continue-pact 1)
+                (continue-pact 2)
+                (let
+                    (
+                        (total:decimal (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)))
+                    )
+                    (map print
+                        [
+                            (format "<<RT-A-001>> defpact step-0={} | TOTAL={} | quoted={} + tax={} | deterrent={} raw @ discount={}"
+                                [charged0 total quoted tax single-tx-flat discount])
+                            ;;1] THE REPAIR, stated where a bypass would now have to hide: the TOTAL.
+                            ;;   The multi-step door bills exactly what its preview quotes plus the
+                            ;;   declared asymmetry tax -- the same identity modules/SWP.repl pins
+                            ;;   for the SINGLE-TX door at <<SWP-I14>> (quoted + tax = real). Two
+                            ;;   doors, one price. Before the repair the defpact door billed a flat
+                            ;;   100.0 for the churn deterrent where the single-tx door billed
+                            ;;   1051.0, and a liquidity provider could simply choose the cheap one.
+                            ;;   This is an EQUALITY on a measured balance delta, so dropping any
+                            ;;   leg -- including the deterrent remainder now collected in step 1 --
+                            ;;   turns it red.
+                            (expect "<<RT-A-001>> the defpact door bills exactly its quote plus the declared tax"
+                                total (+ quoted tax))
+                            ;;2] and it is the real TABLE price, not a second literal that happens to
+                            ;;   match -- a literal would drift the moment the price table moved, which is
+                            ;;   how the two doors came apart in the first place.
+                            (expect "<<RT-A-001>> ...and that price is the table's: deter 1000 + this op's component 51"
+                                1051.0 single-tx-flat)
+                            ;;3] THE EXPLOIT, INVERTED, and MOVED TO THE TOTAL. This read TRUE before
+                            ;;   the repair and must now be false. It is deliberately asserted on the
+                            ;;   whole-pact total rather than on step 0, because step 0 is now SMALL
+                            ;;   BY DESIGN -- the owner's 2026-09-14 ruling splits the fee so a pact
+                            ;;   killed by an altered pool costs its owner only the initiation slice
+                            ;;   (see RedTeam/[RT-F]_Griefing.repl <<RT-F-001>>). Asserting the old
+                            ;;   "step 0 is not cheap" form would now fail on the FIX, and re-pointing
+                            ;;   it at the total is what keeps it a bypass test instead of a
+                            ;;   fee-schedule test.
+                            (expect "<<RT-A-001>> ...so the ~10x discount the defpact door used to offer is GONE"
+                                false (< total (* discount single-tx-flat)))
+                            ;;4] the fee SPLIT itself, pinned: step 0 takes the initiation slice only.
+                            ;;   This is the assertion that would catch the deterrent creeping back
+                            ;;   into step 0 -- which is what RT-F-001 measured the cost of.
+                            (expect "<<RT-A-001>> ...and step 0 takes only the initiation slice, not the deterrent"
+                                (* discount 100.0) charged0)
+                            ;;5] non-vacuity: the route really did DO something -- the pact ran to
+                            ;;   completion and money moved, so this is a live add and not a call
+                            ;;   that failed early.
+                            (expect "<<RT-A-001>> ...and the route really executed, rather than failing early"
+                                true (> total (* discount single-tx-flat)))
+                        ]
+                    )
+                )
             )
         )
     )

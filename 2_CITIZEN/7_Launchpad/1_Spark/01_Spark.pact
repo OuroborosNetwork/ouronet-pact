@@ -257,6 +257,7 @@
         (compose-capability (SPARK|C>X_REEDEM account-to-redeem redemption-quantity))
     )
     (defcap SPARK|C>X_REEDEM (account-to-redeem:string redemption-quantity:decimal)
+        (compose-capability (GOV|SPARK_ADMIN))
         (let
             (
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
@@ -273,7 +274,6 @@
             )
             (compose-capability (P|SECURE-CALLER))
             (compose-capability (P|PAD-SPARK|REMOTE-GOV))
-            (compose-capability (GOV|SPARK_ADMIN))
         )
     )
     ;;{C4}  Ownership [gold]

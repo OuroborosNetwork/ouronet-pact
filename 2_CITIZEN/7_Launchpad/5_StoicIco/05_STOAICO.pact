@@ -202,6 +202,7 @@
     )
     (defcap STOAICO|REMOVE-CONTRIBUTION (account:string v-usd-amount:decimal)
         @event
+        (compose-capability (STOAICO|ADMIN))
         (let
             (
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
@@ -213,7 +214,6 @@
                 (<= v-usd-amount user-score) 
                 (format "Removing {} from Account {} exceeds its existing balance" [v-usd-amount account])
             )
-            (compose-capability (STOAICO|ADMIN))
         )
     )
     (defcap STOAICO|REDEEM-CONTRIBUTION (account:string)

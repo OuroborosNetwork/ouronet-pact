@@ -29,7 +29,14 @@
     (print
         (expect-failure
             "unrelated signer (lumy, no DPTF module-def key, no patron account guard) must be rejected by the real GOV|DPTF_ADMIN check inside A_WipeTreasuryDebtPartial, despite the weak TS01-A P|TS Talos-layer gate"
-                "Cannot Wipe Positive Treasury Balance"
+                ;;THIS TEST NOW MEASURES WHAT ITS OWN NAME CLAIMS. It asserted the SOLVENCY message
+                ;;-- "Cannot Wipe Positive Treasury Balance" -- while its description said the
+                ;;signer "must be rejected by the real GOV|DPTF_ADMIN check". Those were different
+                ;;statements, and only the weaker one was being tested: GOV|DPTF_ADMIN sat below
+                ;;the solvency enforce and was unreachable while the treasury was solvent. The
+                ;;2026-09-14 authorise-first sweep put the admin gate first, and the message this
+                ;;call now returns is the one the description always promised.
+                "DPTF Ownership not verified"
             (ref-TS01-A::DPTF|A_WipeTreasuryDebtPartial 1.0)
         )
     )

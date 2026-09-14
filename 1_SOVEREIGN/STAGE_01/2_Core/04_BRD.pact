@@ -235,8 +235,8 @@
     ;;{C3}  Composed
     (defcap BRD|C>ADMIN_SET (flag:integer)
         @event
-        (enforce (contains flag (enumerate 0 4)) "Invalid Integer Flag")
         (compose-capability (GOV|BRD_ADMIN))
+        (enforce (contains flag (enumerate 0 4)) "Invalid Integer Flag")
         (compose-capability (SECURE))
     )
     (defcap BRD|C>LIVE ()

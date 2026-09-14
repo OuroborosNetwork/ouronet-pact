@@ -3606,7 +3606,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Issues a Stable SWP-Pair with {} pool-tokens on Account {}" [(length pool-tokens) sa])]
                 [(format "Stable SWP-Pair issued succesfully on Account {}" [sa])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPI::URCi_Issue "SWP|C_IssueStable" account pool-tokens)))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPI::URCi_Issue account pool-tokens)))
                 (ref-I|OURONET::OI|UDC_DynamicStoaCost patron
                     ;;OVER-QUOTE FIXED (2026-09-14). This quoted (+ UsagePrice "dptf" "swp") -- the
                     ;;figure the DEFPACT pool-issue path (MTX-SWP) charges -- while the SINGLE-TX path
@@ -3627,7 +3627,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Issues a Standard SWP-Pair with {} pool-tokens on Account {}" [(length pool-tokens) sa])]
                 [(format "Standard SWP-Pair issued succesfully on Account {}" [sa])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPI::URCi_Issue "SWP|C_IssueStandard" account pool-tokens)))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPI::URCi_Issue account pool-tokens)))
                 (ref-I|OURONET::OI|UDC_DynamicStoaCost patron
                     ;;OVER-QUOTE FIXED (2026-09-14). This quoted (+ UsagePrice "dptf" "swp") -- the
                     ;;figure the DEFPACT pool-issue path (MTX-SWP) charges -- while the SINGLE-TX path
@@ -3648,7 +3648,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Issues a Weighted SWP-Pair with {} pool-tokens on Account {}" [(length pool-tokens) sa])]
                 [(format "Weighted SWP-Pair issued succesfully on Account {}" [sa])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPI::URCi_Issue "SWP|C_IssueWeighted" account pool-tokens)))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPI::URCi_Issue account pool-tokens)))
                 (ref-I|OURONET::OI|UDC_DynamicStoaCost patron
                     ;;OVER-QUOTE FIXED (2026-09-14). This quoted (+ UsagePrice "dptf" "swp") -- the
                     ;;figure the DEFPACT pool-issue path (MTX-SWP) charges -- while the SINGLE-TX path
@@ -3670,7 +3670,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Issues a Stable SWP-Pair (multistep) with {} pool-tokens on Account {}" [(length pool-tokens) sa])]
                 [(format "Stable SWP-Pair issued succesfully on Account {}" [sa])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPI::URCi_Issue "SWP|C_IssueStablePool" account pool-tokens)))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPI::URCi_IssuePool account pool-tokens)))
                 (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))) [])
         ))
     (defun INFO_SWP|IssueStandardPool:object{OuronetInfoV2.ClientInfo}
@@ -3685,7 +3685,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Issues a Standard SWP-Pair (multistep) with {} pool-tokens on Account {}" [(length pool-tokens) sa])]
                 [(format "Standard SWP-Pair issued succesfully on Account {}" [sa])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPI::URCi_Issue "SWP|C_IssueStandardPool" account pool-tokens)))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPI::URCi_IssuePool account pool-tokens)))
                 (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))) [])
         ))
     (defun INFO_SWP|IssueWeightedPool:object{OuronetInfoV2.ClientInfo}
@@ -3700,7 +3700,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Issues a Weighted SWP-Pair (multistep) with {} pool-tokens on Account {}" [(length pool-tokens) sa])]
                 [(format "Weighted SWP-Pair issued succesfully on Account {}" [sa])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPI::URCi_Issue "SWP|C_IssueWeightedPool" account pool-tokens)))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPI::URCi_IssuePool account pool-tokens)))
                 (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))) [])
         ))
     ;; ---- SWP entity-completion: swaps (direct -> SWPU|URCi_Swap ; smart -> URCi_SmartSwap / URCi_SmartSwapWithBundle) ----

@@ -213,10 +213,58 @@ is exactly the structural gap `REPL-ROUND-REPORT.md` §3 lists as the reason 3 o
 previews are unmeasurable. The gap in the instrument and the location of the defect are the same
 place.
 
-*Status:* **open**, recorded rather than fixed. The repair is a separate `URCi_IssuePool` reader for
-the defpact path — the same shape as `UC_AddLiquidityChurnKey` in the `RT-A-001` fix — plus removing
-or re-honouring the dead `op-key`. Needs a measurement to land against, and the defpact measurement
-harness does not exist yet.
+*Status:* **FIXED 2026-09-14**, and measured. The repair is exactly the one predicted above: a
+separate `SWPI::URCi_IssuePool` reader for the defpact path, `URCi_Issue` reduced to the single-tx
+path with the dead `op-key` **removed** from both its signature and its interface declaration, and
+the three `INFO_SWP|Issue*Pool` previews re-pointed at the new reader. The part that stops it
+recurring is that **`MTX|C_Issue` step 2 now COLLECTS THROUGH `URCi_IssuePool`** rather than building
+its own cumulator inline — one source, so there is no second place for preview and exec to drift
+apart again.
+
+**Measured, both directions**, at `REPL/modules/DEFPACT-BILLING.repl` `<<DPB-02>>`:
+
+| | quoted | charged | delta |
+|---|---:|---:|---:|
+| after the repair | 2920.30 | 2920.30 | **0.00** |
+| negative control — one preview reverted to the old reader | 3265.86 | 2920.30 | **−345.56** |
+
+The negative control is the part that makes the pin worth having: **345.56 net = 652 raw × the
+patron's 0.53 discount**, reproducing this entry's own 652 figure to the decimal from a live balance
+delta rather than from arithmetic on a price table. A new assertion that passes is not evidence until
+you have seen it fail on the defect it was written for.
+
+**The harness this needed now exists** — `REPL/modules/DEFPACT-BILLING.repl`, a gate entrypoint. The
+blocking idiom turned out to be one line: `(continue-pact N)` resolves against the pact started in
+the *same* transaction, so a defpact's whole billing can be bracketed by one pair of balance reads.
+The existing suites drive defpacts across `commit-tx` boundaries with an explicit pact id — correct
+when the point is to prove the steps are independent transactions, and useless for measuring a total,
+because the `let` holding the opening balance does not survive the commit.
+
+### GS-05 — the defpact door ignores the virtual-gas switch *(FOUND + FIXED 2026-09-14)*
+
+Found while implementing the `RT-F-001` fee split, by reading the line either side of the one being
+changed. **All seven** `UDC_ConstructOutputCumulator` calls in `20_MTX-SWP.pact` passed a hardcoded
+`false` as the `trigger` argument:
+
+```pact
+(ref-IGNIS::UDC_ConstructOutputCumulator 100.0 SWP|SC_NAME false [])
+```
+
+`trigger` is the virtual-gas-zero switch: `UDC_MakeModularCumulator` returns `{"ignis": 0.0}` when it
+is true. **Every other cumulator in the codebase passes `(ref-IGNIS::URC_IsVirtualGasZero)`** — a
+codebase-wide grep for the literal form returned exactly these seven sites, all in this one file.
+
+The consequence is the `RT-A-001` shape again, triggered by an admin action instead of a client
+choice: with `DALOS::UR_VirtualToggle` turned **off**, every single-tx door goes free while the
+defpact door keeps charging full price. The two doors to the same operation would disagree the
+moment the network used a switch it is built to have.
+
+Invisible to the suite because the toggle is **on** in every fixture, so the hardcoded `false` and
+the real reader return the same value in every test that has ever run. *A constant that happens to
+equal the expression it replaced is not detectable by a test that never varies the expression.*
+
+*Status:* **fixed** — all seven now read `URC_IsVirtualGasZero`. Four were the add-liquidity /
+issuance step-0 and rollback collections; three were rewritten wholesale by the `RT-F-001` split.
 
 ## 1.2 Guard reachability — mute, shadowed and dead guards
 

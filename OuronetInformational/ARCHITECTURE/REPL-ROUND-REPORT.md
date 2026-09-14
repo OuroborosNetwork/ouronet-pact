@@ -56,15 +56,15 @@ explanation*, because stating precisely what an assertion proved exposed that it
 
 | | |
 |---|---:|
-| **distinct assertions written** | **5,399** |
-| **assertions executed per full gate run** | **21,580** |
+| **distinct assertions written** | **5,413** |
+| **assertions executed per full gate run** | **21,732** |
 | &nbsp;&nbsp;positive (`expect`) | 17,048 |
 | &nbsp;&nbsp;negative (`expect-failure`) | 3,873 |
 | gate entrypoints | **77** |
 | `.repl` files reachable from the gate | 306 |
 | orphaned asserting files (written but never run) | **0** |
 
-**Quote 5,399 for "how many tests exist" and 21,580 for "how much ran".** They differ ~4x because
+**Quote 5,413 for "how many tests exist" and 21,732 for "how much ran".** They differ ~4x because
 shared suite files execute once per entrypoint that loads them, and conflating them overstates the
 suite. Both are reported here for exactly that reason.
 
@@ -126,16 +126,38 @@ Total call sites across the suite, duplicates included: **15,911**.
 **The `INFO_` figure answers the owner's governing rule for this phase** — *"the INFO function must
 output the exact same cost as the real execution function."* Reader-versus-reader assertions were
 rejected outright; only a measured balance delta around a live execution counts. The 15 unmeasured
-are structural, not gaps: 9 are internal constructors taking a pre-built cumulator, 3 are 3-step
-defpacts (a `begin-tx` cannot contain `continue-pact`), 2 return a view object with no cost fields,
-and 1 *credits* IGNIS rather than charging it, so there is no charge to difference.
+were described as structural rather than gaps: 9 internal constructors taking a pre-built cumulator,
+**3 three-step defpacts**, 2 returning a view object with no cost fields, and 1 that *credits* IGNIS
+rather than charging it, so there is no charge to difference.
+
+> **CORRECTED 2026-09-14, and the correction is the point.** The defpact line above read *"a
+> `begin-tx` cannot contain `continue-pact`"*. **That is false.** `continue-pact` resolves against the
+> pact started in the same transaction, so a whole defpact can be driven — and therefore bracketed by
+> one pair of balance reads — inside a single `begin-tx`. The claim was never tested; it was inferred
+> from the existing suites, which drive defpacts across `commit-tx` boundaries with an explicit pact
+> id. They do that because they are proving the steps are *independent transactions*, which is a
+> different claim and the right shape for it.
+>
+> The cost of the false limit was **GS-04**: `INFO_SWP|Issue*Pool` over-quoting by 652 raw IGNIS,
+> unmeasurable-by-assumption, through every green gate this project has run. Those 3 previews are now
+> measured at `REPL/modules/DEFPACT-BILLING.repl`, so the unmeasured count is **12, all genuinely
+> structural**.
+>
+> *A limitation that is asserted rather than attempted becomes a permanent blind spot, and it looks
+> exactly like a considered exclusion.* This one had a plausible mechanism, a confident sentence, and
+> no experiment behind it — for as long as it stood, nothing downstream ever asked the question again.
 
 ---
 
 ## 4. Execution: why this was run in parallel
 
-A full gate run is **85 entrypoints totalling 5,961 seconds of work — 1 hour 39 minutes serial.**
-It completes in **~399 seconds wall on 16 workers**, a **14.9× speedup**.
+A full gate run is **86 entrypoints totalling 6,386 seconds of work — 1 hour 46 minutes serial.**
+It completes in **~427 seconds wall on 16 workers**, a **15.0× speedup**.
+
+<sub>Recomputed 2026-09-14 from the gate's own per-entrypoint table, not carried forward. Both sides
+of the ratio moved when `modules/DEFPACT-BILLING.repl` joined: it boots the full Stage-1 + DPTF + SWP
+fixture to bracket two defpacts, and lands at ~160 s — heavy enough to shift the serial total by
+seven minutes on its own.</sub>
 
 That ratio is the difference between two development models, and the second one is what found most
 of what this round found:
@@ -285,10 +307,29 @@ It also produced two results that change what the numbers above mean:
 repaired to equal the **single-tx** `C_Issue`; six previews share it and **three price the defpact
 instead**, which bills 5506 in one leg against the preview's 6158 in four. The tell is a **dead
 parameter** — `op-key` sits in the signature and is used nowhere, the term that consumed it having
-been removed by the repair. Nothing caught it because every pin measures a single-tx issue and **a
-defpact cannot be measured inside one `begin-tx`** — the same structural limit §3 gives as the reason
-three previews are unmeasurable. *The gap in the instrument and the location of the defect are the
-same place.*
+been removed by the repair. Nothing caught it because every pin measures a single-tx issue and
+**a defpact was believed unmeasurable inside one `begin-tx`** — the same claim §3 gave as the reason
+three previews were excluded. *The gap in the instrument and the location of the defect are the same
+place.*
+
+**FIXED and measured, 2026-09-14, and the instrument was the thing that had to change.** The belief
+was wrong: `continue-pact` resolves against the pact started in the same transaction (§3, corrected).
+`REPL/modules/DEFPACT-BILLING.repl` now brackets a whole defpact, `URCi_Issue` previews the single-tx
+exec with the dead `op-key` removed, the new `URCi_IssuePool` previews the defpact, and **`MTX|C_Issue`
+collects through that same reader** — one source, no second place to drift.
+
+| | quoted | charged | delta |
+|---|---:|---:|---:|
+| after the repair | 2920.30 | 2920.30 | **0.00** |
+| negative control, one preview reverted | 3265.86 | 2920.30 | **−345.56** |
+
+The negative control matters more than the pass: **345.56 net = 652 raw × 0.53**, reproducing this
+report's own 652 figure from a live balance delta rather than from arithmetic over a price table.
+
+> **A coverage proxy inherits the shape of the thing it samples.** `_info_measured.py` samples
+> transactions, so it could only ever see operations that fit inside one. It reported these previews
+> as "measured" — correctly, by its own rule — because its vocabulary had no way to say
+> "not applicable".
 
 **Two figures this report relied on were hand-measured, not gate-derived.** `_conformance.py`'s "0
 violations" and `_heavy.py`'s "single-reaches-heavy = 0" appear in §3 as coverage evidence. The gate
@@ -327,7 +368,7 @@ artefacts that feed the Chapter-2 documentation.
 
 | | |
 |---|---|
-| gate | **GREEN** — 85 entrypoints, 21,580 assertions, 0 failures |
+| gate | **GREEN** — 86 entrypoints, 21,732 assertions, 0 failures |
 | live unpinned guards | **0** |
 | `INFO_` previews named but unmeasured | **0** |
 | conformance violations | **0** |
@@ -386,7 +427,7 @@ not for the reason a reader would assume:
 | treasury-debt wipe | `GOV\|DPTF_ADMIN` | a **solvency check one line above it** |
 
 Each is green today and would **stay green through the change that breaks it**. This is the clearest
-limit on what §2's 21,580 executed assertions certify: they establish that the system behaves as
+limit on what §2's 21,732 executed assertions certify: they establish that the system behaves as
 documented, not that it is defended for the reasons the documentation implies.
 
 ### What it says about where the defects are
