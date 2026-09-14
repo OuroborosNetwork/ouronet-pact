@@ -215,10 +215,37 @@
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
-;;==== TX-04 [C3.2] - Guard-type policy · 02 · IMC for C_* rotation paths ==== ====================
-(print "--- [TX-04 [C3.2] - Guard-type policy · 02 · IMC for C_* rotation paths] ---")
-(acquire-module-admin DALOS)
-(DALOS.P|A_AddIMP (keyset-ref-guard "ouronet-ns.dh_master-keyset"))
+;;==== TX-04 [C3.2] - Guard-type policy · 02 · NO master-key IMC registration ==== ================
+(print "--- [TX-04 [C3.2] - Guard-type policy · 02 · NO master-key IMC registration] ---")
+;;REMOVED 2026-09-14 -- this is the X-01 / RT-B-001 fix, and what it removes is a privilege the
+;;HARNESS was granting itself. The line was:
+;;
+;;    (acquire-module-admin DALOS)
+;;    (DALOS.P|A_AddIMP (keyset-ref-guard "ouronet-ns.dh_master-keyset"))
+;;
+;;`P|UEV_IMC` is `UEV_Any` over the registered inter-module policy guards, so registering the
+;;MASTER KEYSET made any holder of that key satisfy a gate whose name says inter-MODULE. Every
+;;core `C_` on DALOS became reachable from a signature, outside Talos, and therefore UNBILLED --
+;;IGNIS is collected in Talos and that route never enters it.
+;;
+;;It appeared NOWHERE ELSE in the repository and is NOT part of genesis, so the deployed system
+;;never had this exception: on chain, `DALOS::C_RotateStoa` is already Talos-only. The red team
+;;reported it as a live hole in "Talos is the only supported client path"; that overstated it.
+;;What it actually was is worse in a quieter way -- the harness was WEAKER than production, and
+;;the weakness was load-bearing for five assertions that called core while being LABELLED with
+;;the Talos entrypoint names. They now run against the entrypoints they always claimed, in
+;;`[6.12]_DALOS-ADMIN.repl` `<<TX-DA-004>>`, where Talos exists and the billing leg is crossed.
+;;
+;;Owner ruling, 2026-09-14: "master key passes as module is correct. RotateStoa must pass through
+;;talos, if it doesn't it's a bug." The MECHANISM is untouched -- `P|A_AddIMP` still exists and
+;;every real module still registers through it at deploy. What is gone is the harness pretending
+;;to be one.
+;;
+;;WHY THE FILE CANNOT SIMPLY CALL TALOS INSTEAD: this file runs before `3_Talos/` is deployed.
+;;That is the whole reason the shortcut existed, and it is why the repair is a MOVE.
+;;
+;;`modules/CONFORMANCE.repl` <<CONF-01>> now asserts the REFUSAL, so the day this registration
+;;comes back, a test says so.
 ;;==== TX-04 [C3.2] - Guard-type policy · 03 · helper unit expects ==== =============================
 (print "--- [TX-04 [C3.2] - Guard-type policy · 03 · helper unit expects] ---")
 (let
@@ -299,58 +326,21 @@
         { "key": "PK_BM", "caps": [] }
     ]
 )
-(let
-    (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (cap-gov:guard (create-capability-guard (ref-DALOS::SECURE)))
-        (key-gov:guard (keyset-ref-guard "ouronet-ns.us-0008_bnjr-keyset"))
-    )
-    (map print
-        [
-            (expect
-                (format "<<TX-04 expect>> <(DALOS|C_RotateGovernor BJ capability-guard)> must succeed" [])
-                "Write succeeded"
-                (ref-DALOS::C_RotateGovernor KC.BJ cap-gov))
-            (expect-failure
-                (format "<<TX-04 expect-failure>> <(DALOS|C_RotateGovernor BJ keyset-ref)> must reject r:" [])
-                "Governor must be non-key-based (user/capability/module/pact); got 'r:"
-                (ref-DALOS::C_RotateGovernor KC.BJ key-gov))
-        ]
-    )
-    ""
-)
-;;==== TX-04 [C3.2] - Guard-type policy · 05 · C_RotateGuard e2e (standard EMMA) ==== =============
-(print "--- [TX-04 [C3.2] - Guard-type policy · 05 · C_RotateGuard e2e (standard EMMA)] ---")
-(env-sigs
-    [
-        { "key": "PK_AncientHodler", "caps": [] }
-        { "key": "PK_Emma", "caps": [] }
-    ]
-)
-(let
-    (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (key-guard:guard (keyset-ref-guard "ouronet-ns.us-0001_emma-keyset"))
-        (user-g:guard (create-user-guard (DALOS.P|UEV_IMC)))
-    )
-    (map print
-        [
-            (expect
-                (format "<<TX-04 expect>> <(DALOS|C_RotateGuard EMMA keyset-ref safe)> must succeed" [])
-                "Write succeeded"
-                (ref-DALOS::C_RotateGuard KC.EMMA key-guard true))
-            (expect-failure
-                (format "<<TX-04 expect-failure>> <(DALOS|C_RotateGuard EMMA user-guard)> must reject u:" [])
-                "Guard must be key-based (keyset/keyset-ref); got 'u:"
-                (ref-DALOS::C_RotateGuard KC.EMMA user-g false))
-            (expect-failure
-                (format "<<TX-04 expect-failure>> <(DALOS|C_RotateGuard EMMA capability-guard)> must reject c:" [])
-                "Guard must be key-based (keyset/keyset-ref); got 'c:"
-                (ref-DALOS::C_RotateGuard KC.EMMA (create-capability-guard (ref-DALOS::SECURE)) false))
-        ]
-    )
-    ""
-)
+;;THE FIVE ASSERTIONS THAT USED TO SIT HERE NOW LIVE IN `[6.12]_DALOS-ADMIN.repl` <<TX-DA-004>>.
+;;
+;;They called `ref-DALOS::C_RotateGovernor` and `ref-DALOS::C_RotateGuard` -- the CORE functions --
+;;while being labelled `<(DALOS|C_RotateGovernor ...)>` and `<(DALOS|C_RotateGuard ...)>`, which are
+;;the TALOS entrypoint names. The gap between the label and the call was invisible for as long as
+;;the master-key IMC registration above made the core path reachable from a signature.
+;;
+;;Removing that registration made all five fail with
+;;`No value found in table ouronet-ns.DALOS_P|MT for key: InterModulePolicies` -- and they were the
+;;ONLY five failures in the entire 86-entrypoint gate, which is what established that nothing
+;;downstream depended on the state they set. Measured before moving anything.
+;;
+;;They are better off where they went: [6.12] runs after `3_Talos/`, so they now exercise the
+;;entrypoints their names always claimed AND cross the IGNIS billing leg, which the core-direct
+;;form never touched.
 (env-sigs [])
 (env-gas)
 (commit-tx)

@@ -21,7 +21,7 @@
 (namespace "ouronet-ns")
 ;;==== RT-F-001 · 01 · the victim opens a pact and pays for it ====
 (print "--- [RT-F-001 · 01 · the victim opens a pact and pays for it] ---")
-;;<<RT-F-001>> FAMILY: F | STATUS: SUCCEEDED
+;;<<RT-F-001>> FAMILY: F | STATUS: FIXED
 ;;HYPOTHESIS: MTX|C_AddLiquidity collects its whole deterrent in STEP 0, then validates in STEP 1
 ;;            that the pool has not moved since it quoted. PoolState includes the pool's TOKEN
 ;;            SUPPLIES, which every swap changes. So any stranger's ordinary swap should
@@ -29,6 +29,11 @@
 ;;            refund -- a denial of service whose cost to the attacker is a normal trade.
 ;;METHOD:     the victim starts the pact and the fee is measured. An unrelated account then swaps
 ;;            in the same pool. The victim's step 1 is then attempted, and the fee is re-measured.
+;;ON THE STATUS FIELD: FIXED means the owner's 2026-09-14 ruling shipped and is measured -- step 0
+;;            now takes only the initiation slice, so what a stranger's swap can destroy fell from
+;;            557.03 to 53.00 net. It does NOT mean the fee is refunded on the failed step; it is
+;;            not, and the block below says so in the assertion that bounds the residual loss. The
+;;            ruling was to SPLIT the fee, not to refund it.
 ;;RESULT:     confirmed. Fee 557.03 taken at step 0; one swap by a stranger; step 1 refuses
 ;;            permanently against that quote; the fee is NOT returned.
 ;;

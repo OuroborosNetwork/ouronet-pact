@@ -22,41 +22,50 @@
 (namespace "ouronet-ns")
 ;;==== RT-B-001 · 01 · the master key satisfies the inter-module gate ====
 (print "--- [RT-B-001 · 01 · the master key satisfies the inter-module gate] ---")
-;;<<RT-B-001>> FAMILY: B | STATUS: SUCCEEDED
+;;<<RT-B-001>> FAMILY: B | STATUS: FIXED
 ;;HYPOTHESIS: `P|UEV_IMC` is described as an INTER-MODULE gate -- it should pass only for a caller
 ;;            that IS a registered module, which is what makes "Talos is the only supported client
 ;;            path" true. But the genesis sequence registers the MASTER KEYSET itself as a DALOS
-;;            policy (`Stage_01/[2.1]_Dalos.repl:220`). If that is live, a key holder satisfies the
-;;            gate without being a module at all, reaches DALOS core ops directly, and -- because
-;;            IGNIS is collected in Talos and this route never enters it -- pays NOTHING.
+;;            policy. If that is live, a key holder satisfies the gate without being a module at
+;;            all, reaches DALOS core ops directly, and -- because IGNIS is collected in Talos and
+;;            this route never enters it -- pays NOTHING.
 ;;METHOD:     call `DALOS::A_SetIgnisSourcePrice` straight at core, twice: once signed by an
 ;;            ordinary user, once by the master key. Measure the price AND the IGNIS charged.
-;;RESULT:     CONFIRMED. The ordinary user is refused at `P|UEV_IMC`. The master key executes the
-;;            op, moves the OURO source price, and is charged 0.0000 IGNIS.
+;;RESULT:     CONFIRMED as measured -- the master key executed the op and was charged 0.0000 -- and
+;;            then CORRECTED on review, which changed what the finding IS rather than whether it
+;;            was real.
 ;;
-;;WHAT THIS IS AND IS NOT. It is NOT theft, and the distinction is worth stating precisely because
-;;it bounds the severity: the same key cannot operate the collector against a third party --
-;;`IGNIS::C_Collect` enforces the payer's own account ownership. *Skipping your own toll needs
-;;nobody else's signature; charging someone else's does.* So the reachable damage is unbilled
-;;ADMIN activity, not drained users.
+;;ON THE STATUS FIELD: this reads FIXED, and it read SUCCEEDED when first measured. The field takes
+;;one value and the honest one is the CURRENT state; the history is kept in full below, including
+;;the part where this report described the finding more broadly than the evidence supported.
 ;;
-;;WHY IT STILL MATTERS ENOUGH TO PIN:
-;;  1] the op reached here is a PRICE INPUT. `A_SetIgnisSourcePrice` moves the OURO source price,
-;;     which feeds the gas economics — and it moves for free, outside the path every cost assertion
-;;     in the suite watches.
-;;  2] the exception is INVISIBLE AT THE CALL SITE. Nothing in `A_SetIgnisSourcePrice`, in
-;;     `P|UEV_IMC`, or in CLAUDE.md's "only supported client path" sentence hints that a keyset can
-;;     satisfy a gate whose name says inter-MODULE.
-;;  3] it is the single exception to an otherwise complete boundary: <<RT-G-001>> measured 289 of
-;;     290 core client entrypoints carrying `P|UEV_IMC`, and a deployed hostile module refused by
-;;     it. This is the one way through, and it is a key rather than a bug in the gate.
+;;THE CORRECTION, and it is the part worth publishing. The registration that produced this lives at
 ;;
-;;PROBABLY DELIBERATE, AND THAT IS THE POINT OF PINNING IT. The bootstrap must reach DALOS core ops
-;;before Talos exists, so the registration has an obvious reason to be there. An intended exception
-;;that no document mentions is indistinguishable from an unintended one at review time — and this
-;;block makes the choice explicit either way. If it is intended it belongs beside the "only
-;;supported client path" sentence; if it is not, the registration is what to remove. Owner ruling
-;;pending; the assertions pin CURRENT behaviour so the day it changes, they say so.
+;;    REPL/Stage_01/[2.1]_Dalos.repl        (a TEST FIXTURE)
+;;
+;;and NOWHERE else in the repository -- in particular, in no genesis payload. The DEPLOYED system
+;;never had this exception. This block was reporting a live hole in CLAUDE.md's "only supported
+;;client path" sentence; there was no hole. There was something else, and it is not obviously less
+;;serious:
+;;
+;;    An audit harness that grants itself a privilege the real system withholds will certify
+;;    behaviour nobody can reach.
+;;
+;;It was load-bearing, too. Five guard-type assertions in [2.1] called `ref-DALOS::C_Rotate*`
+;;directly while being LABELLED with the Talos entrypoint names. They passed only because of this
+;;registration, and removing it made them -- and only them, out of 21,732 assertions -- go red.
+;;They now run through Talos at `[6.12]_DALOS-ADMIN.repl` <<TX-DA-004>>.
+;;
+;;FIXED 2026-09-14 on the owner's ruling: "master key passes as module is correct. RotateStoa must
+;;pass through talos, if it doesn't it's a bug." The MECHANISM is correct and untouched -- a
+;;registered module guard should satisfy `P|UEV_IMC`, and every real module still registers through
+;;`P|A_AddIMP` at deploy. What is gone is the harness registering a KEY as though it were a module.
+;;
+;;WHAT THIS BLOCK ASSERTS NOW: the attack, re-run, and refused. The bound the original finding
+;;established still holds and is still worth stating -- the same key could never operate the
+;;collector against a third party, because `IGNIS::C_Collect` enforces the payer's own ownership.
+;;*Skipping your own toll needs nobody else's signature; charging someone else's does.* The reachable
+;;damage was unbilled ADMIN activity, never drained users. Now it is neither.
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (let
     (
@@ -73,21 +82,28 @@
     ""
 )
 (env-sigs [])
-(commit-tx)
+(rollback-tx)
 
 ;;|| NEXT >
 ;;
-(begin-tx "RT-B-001b - the master key walks through the same gate, for free")
+(begin-tx "RT-B-001b - the master key tries the same gate, and is now turned away")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
-;;==== RT-B-001 · 02 · same call, master key, no Talos, no charge ====
-(print "--- [RT-B-001 · 02 · same call, master key, no Talos, no charge] ---")
-;;Rolled back at the end: this moves a live price input, and leaving it moved would silently
-;;re-point every downstream gas figure in the suite.
+;;==== RT-B-001 · 02 · same call, master key, no Talos -- now REFUSED ====
+(print "--- [RT-B-001 · 02 · same call, master key, no Talos -- now REFUSED] ---")
+;;THE SAME ATTACK, RE-RUN AGAINST THE REPAIR. Before 2026-09-14 this block asserted three things
+;;and all three passed: the OURO source price moved to 0.5, it genuinely changed, and the caller was
+;;charged 0.0000 IGNIS. Those assertions are the reason this finding could be stated as a measured
+;;fact rather than a suspicion, and they are what a green suite looked like WITH the hole open.
+;;
+;;They are inverted now. The master key is the most privileged signer in the system; it holds the
+;;Demiurgoi keyset that governs every module. It still cannot reach a core `C_`/`A_` without being a
+;;module, because being a module is not something a signature can be.
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
         (admin:string KST.ANHD)
     )
     (let
@@ -95,30 +111,39 @@
             (price-before:decimal (ref-DALOS::UR_OuroborosPrice))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply admin false))
         )
-        (ref-DALOS::A_SetIgnisSourcePrice 0.5)
-        (let
-            (
-                (charged:decimal (- ignis-before (ref-DALOS::UR_TF_AccountSupply admin false)))
-            )
-            (map print
-                [
-                    (format "<<RT-B-001>> OURO source price {} -> {} | IGNIS charged = {}"
-                        [price-before (ref-DALOS::UR_OuroborosPrice) charged])
-                    ;;1] the op REALLY executed -- a live price input moved.
-                    (expect "<<RT-B-001>> EXPLOIT: the master key reaches DALOS core directly, no Talos"
-                        0.5 (ref-DALOS::UR_OuroborosPrice))
-                    ;;2] ...and it moved. Without this the equality above could hold on a no-op.
-                    (expect "<<RT-B-001>> ...and it genuinely CHANGED the price, so the call did work"
-                        false (= price-before 0.5))
-                    ;;3] THE FINDING. Not one IGNIS. Every one of the suite's 397 cost measurements
-                    ;;   watches a Talos call; this path is invisible to all of them by construction.
-                    (expect "<<RT-B-001>> ...and was charged NOTHING, because Talos was never entered"
-                        0.0 charged)
-                ]
-            )
+        (map print
+            [
+                (format "<<RT-B-001>> OURO source price before = {}" [price-before])
+                ;;1] THE REPAIR. Message-checked, so a refusal for an unrelated reason -- a missing
+                ;;   signature, a keyset failure -- fails this assertion rather than passing it. That
+                ;;   distinction has already changed a result twice in this programme.
+                (expect-failure "<<RT-B-001>> the MASTER KEY can no longer reach DALOS core directly"
+                    "None of the guards passed"
+                    (ref-DALOS::A_SetIgnisSourcePrice 0.5))
+                ;;2] RULE 9 discharge: refused before any write, so the price input is untouched.
+                ;;   This is the assertion that says the admin did not half-execute.
+                (expect "<<RT-B-001>> ...and the OURO source price was not moved"
+                    price-before (ref-DALOS::UR_OuroborosPrice))
+                ;;3] NON-VACUITY, and it is the half that makes the block mean something. A gate that
+                ;;   refuses EVERYONE is not a boundary, it is an outage. The same admin operation,
+                ;;   by the same signer, THROUGH TALOS, still works -- so what was removed is the
+                ;;   unbilled shortcut, not the capability.
+                (expect "<<RT-B-001>> ...while the admin's legitimate Talos route still works"
+                    "Succesfuly set IGNIS price to 0.5"
+                    (ref-TS01-A::DALOS|A_SetIgnisSourcePrice 0.5))
+                (expect "<<RT-B-001>> ...and THAT route really moved the price"
+                    0.5 (ref-DALOS::UR_OuroborosPrice))
+            ]
         )
+        ;;the IGNIS figure is printed rather than asserted: TS01-A admin wrappers are not IGNIS-billed
+        ;;client ops, so "it now costs something" would be a false claim about the admin lane. What
+        ;;the repair closed is the reach, not the price of admin work.
+        (print (format "<<RT-B-001>> admin IGNIS delta across the Talos route = {}"
+            [(- ignis-before (ref-DALOS::UR_TF_AccountSupply admin false))]))
     )
     ""
 )
 (env-sigs [])
+;;rolled back: this moves a live price input, and leaving it moved would silently re-point every
+;;downstream gas figure in the suite.
 (rollback-tx)

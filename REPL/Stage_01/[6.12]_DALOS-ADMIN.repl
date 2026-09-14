@@ -449,4 +449,92 @@
 (env-sigs [])
 (commit-tx)
 
+
+;;|| NEXT >
+;;
+(begin-tx "TX-DA-004 - the GUARD-TYPE protocol, enforced on the Talos rotation path")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "=== TX-DA-004 - guard-type protocol via Talos =========================")
+;;==== TX-DA-004 · 01 · what a governor and a guard are each allowed to be ==== ====================
+(print "--- [TX-DA-004 · 01 · what a governor and a guard are each allowed to be] ---")
+;;MOVED HERE FROM `Stage_01/[2.1]_Dalos.repl` ON 2026-09-14, and the move IS the fix for X-01.
+;;
+;;These five assertions pin DALOS's guard-type protocol: a GOVERNOR must be non-key-based
+;;(user/capability/module/pact) and a primary GUARD must be key-based (keyset/keyset-ref). They
+;;used to live in [2.1], where they were labelled with the TALOS entrypoint names --
+;;`<(DALOS|C_RotateGuard EMMA user-guard)>` -- while the code beneath them called
+;;`ref-DALOS::C_RotateGuard`, the CORE function, directly.
+;;
+;;They could only do that because [2.1] registered the master keyset as a DALOS inter-module
+;;policy, which made a key holder satisfy `P|UEV_IMC` -- a gate whose name says inter-MODULE. That
+;;registration exists nowhere else in the repository and is NOT part of genesis, so the harness was
+;;granting itself a privilege the deployed system does not grant. The red team measured the
+;;consequence as `RT-B-001` / `X-01` and reported it as a live exception to "Talos is the only
+;;supported client path"; it was not. It was a property of the test harness.
+;;
+;;    An audit harness that grants itself a privilege the real system withholds will certify
+;;    behaviour nobody can reach -- and, as here, quietly turn a mislabelled test green.
+;;
+;;[2.1] runs BEFORE `3_Talos/` is deployed, which is why the registration was there and why the
+;;fix is a MOVE rather than a deletion. Here Talos exists, so the assertions can run against the
+;;entrypoints their own names always claimed -- and they now cross the billing leg on the way,
+;;which the core-direct form never did.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_BM", "caps": [] }])
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (patron:string KST.ANHD)
+        (cap-gov:guard (create-capability-guard (ref-DALOS::SECURE)))
+        (key-gov:guard (keyset-ref-guard "ouronet-ns.us-0008_bnjr-keyset"))
+    )
+    (map print
+        [
+            ;;POSITIVE: a capability guard is a legal governor, and the Talos path performs it.
+            (expect "<<TX-DA-004>> a capability-guard governor is accepted on the Talos path"
+                (format "Ouronet Account {} Governor-Guard rotated succesfully!" [KC.BJ])
+                (ref-TS01-C1::DALOS|C_RotateGovernor patron KC.BJ cap-gov))
+            (expect "<<TX-DA-004>> ...and the governor really is the capability guard supplied"
+                cap-gov (ref-DALOS::UR_AccountGovernor KC.BJ))
+            ;;NEGATIVE: a keyset-ref is NOT. Message-checked, so a refusal for any other reason
+            ;;-- including the P|UEV_IMC refusal this call would now get if it were still aimed at
+            ;;core -- fails the assertion instead of passing it.
+            (expect-failure "<<TX-DA-004>> a keyset-ref governor is refused by the guard-type protocol"
+                "Governor must be non-key-based (user/capability/module/pact); got 'r:"
+                (ref-TS01-C1::DALOS|C_RotateGovernor patron KC.BJ key-gov))
+        ]
+    )
+    ""
+)
+;;==== TX-DA-004 · 02 · the primary guard must be key-based ==== ===================================
+(print "--- [TX-DA-004 · 02 · the primary guard must be key-based] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (patron:string KST.ANHD)
+        (user-g:guard (create-user-guard (DALOS.P|UEV_IMC)))
+    )
+    (map print
+        [
+            ;;the mirror image of the governor rule: a user guard and a capability guard are both
+            ;;refused where a KEY is required. Both messages are checked.
+            (expect-failure "<<TX-DA-004>> a user-guard primary guard is refused"
+                "Guard must be key-based (keyset/keyset-ref); got 'u:"
+                (ref-TS01-C1::DALOS|C_RotateGuard patron KC.EMMA user-g false))
+            (expect-failure "<<TX-DA-004>> a capability-guard primary guard is refused"
+                "Guard must be key-based (keyset/keyset-ref); got 'c:"
+                (ref-TS01-C1::DALOS|C_RotateGuard patron KC.EMMA
+                    (create-capability-guard (ref-DALOS::SECURE)) false))
+        ]
+    )
+    ""
+)
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+
 (print "=== END FILE [6.12]_DALOS-ADMIN.repl (4 admin toggles + P|A_Add named-policy lane) ===")

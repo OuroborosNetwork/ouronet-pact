@@ -53,50 +53,75 @@
     )
     ""
 )
-(print "--- [CONF-01 · 02 · FINDING: the MASTER KEYSET is an undocumented exception] ---")
-;;The same call, signed by the Demiurgoi master key, SUCCEEDS -- and it succeeds because
-;;Stage_01/[2.1]_Dalos.repl:220 registers the master keyset itself as a DALOS inter-module policy:
+(print "--- [CONF-01 · 02 · the master key is NOT a module, and cannot pretend to be] ---")
+;;THIS BLOCK USED TO RECORD A FINDING, AND THE FINDING HAS BEEN FIXED BY DELETING ONE LINE.
+;;
+;;Until 2026-09-14, `Stage_01/[2.1]_Dalos.repl` registered the Demiurgoi master keyset as a DALOS
+;;inter-module policy:
 ;;
 ;;    (DALOS.P|A_AddIMP (keyset-ref-guard "ouronet-ns.dh_master-keyset"))
 ;;
-;;P|UEV_IMC is UEV_Any over that list, so ANY holder of the master key satisfies the
-;;"came from a registered module" gate without being a module at all. Two consequences worth
-;;stating plainly, neither of which is written down anywhere:
+;;`P|UEV_IMC` is `UEV_Any` over that list, so ANY holder of the master key satisfied the "came from
+;;a registered module" gate without being a module at all -- and the same call that is refused for
+;;an ordinary signer above SUCCEEDED, outside Talos, charged NOTHING, because IGNIS is collected in
+;;Talos and that route never enters it.
 ;;
-;;  1] "Talos is the only supported client path" has an ADMIN EXCEPTION on DALOS. The exception is
-;;     presumably deliberate -- the bootstrap has to reach DALOS core ops before Talos exists --
-;;     but it is invisible at every call site, because P|UEV_IMC reads like a module-identity
-;;     check everywhere it appears.
-;;  2] Anything the admin does on this path is UNBILLED: IGNIS is collected in Talos, and this
-;;     route never enters Talos. Admin account operations therefore cost no virtual gas.
+;;WHAT THE RED TEAM GOT WRONG ABOUT IT, stated plainly because the correction is the useful part:
+;;`RT-B-001` presented this as a live exception to CLAUDE.md's "Talos is the only supported client
+;;path". It was not. That registration appeared in exactly ONE place in the repository -- a test
+;;fixture -- and in NO genesis payload. The deployed system never had the exception. What existed
+;;was an audit harness quietly weaker than the system it audits, which is its own defect class:
 ;;
-;;Pinned, not judged: if the exception is intended it belongs in CLAUDE.md next to the "only
-;;supported client path" sentence; if it is not, the registration is the thing to remove.
+;;    A harness that grants itself a privilege the real system withholds will certify behaviour
+;;    nobody can reach.
+;;
+;;It was load-bearing, too: five guard-type assertions in [2.1] called `ref-DALOS::C_Rotate*`
+;;directly while carrying the TALOS entrypoint names in their labels. They only passed because of
+;;this registration. They now run through Talos at `[6.12]_DALOS-ADMIN.repl` <<TX-DA-004>>.
+;;
+;;Owner ruling 2026-09-14: the mechanism is correct -- a registered module guard SHOULD satisfy
+;;`P|UEV_IMC`, and every real module still registers through `P|A_AddIMP` at deploy -- but
+;;RotateStoa must pass through Talos. It now does, on every path, for every signer.
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
         (patron:string KST.ANHD)
         (new-stoa:string "k:0000000000000000000000000000000000000000000000000000000000000000")
     )
     (let
         (
             (stoa0:string (ref-DALOS::UR_AccountStoa patron))
-            (gas0:decimal (ref-DPTF::UR_AccountSupply (ref-DALOS::UR_IgnisID) patron))
+            (gas0:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
         )
-        (ref-DALOS::C_RotateStoa patron new-stoa)
         (map print
             [
-                (expect "<<CONF-01>> FINDING: the master key reaches DALOS core WITHOUT Talos"
+                ;;1] THE FIX, ASSERTED AS A REFUSAL. The master key is the most privileged signer in
+                ;;   the system and it no longer reaches DALOS core. The message is checked: the
+                ;;   refusal must come from the IMC gate, not from something incidental.
+                (expect-failure "<<CONF-01>> the MASTER KEY is refused at P|UEV_IMC, exactly like any other signer"
+                    "None of the guards passed"
+                    (ref-DALOS::C_RotateStoa patron new-stoa))
+                ;;2] RULE 9 discharge: the refusal is total, nothing moved.
+                (expect "<<CONF-01>> ...and the STOA address is untouched by the attempt"
+                    stoa0 (ref-DALOS::UR_AccountStoa patron))
+                ;;3] NON-VACUITY, and it is the half that matters. A gate that refuses EVERYONE is
+                ;;   not a boundary, it is a broken function. The SAME operation, by the SAME signer,
+                ;;   through Talos, succeeds -- and is BILLED, which is the entire reason the Talos
+                ;;   layer exists and exactly what the old unbilled path bypassed.
+                (expect "<<CONF-01>> ...while the same rotation THROUGH TALOS succeeds"
+                    (format "Ouronet Account {} Attached Stoa-Address rotated succesfully!" [patron])
+                    (ref-TS01-C1::DALOS|C_RotateStoa patron patron new-stoa))
+                (expect "<<CONF-01>> ...and it really rotated"
                     new-stoa (ref-DALOS::UR_AccountStoa patron))
-                ;;...and the whole point: no Talos means no IGNIS.
-                (expect "<<CONF-01>> ...and pays NO ignis for it, because Talos was never entered"
-                    gas0 (ref-DPTF::UR_AccountSupply (ref-DALOS::UR_IgnisID) patron))
+                ;;4] and unlike the old core-direct route, it COST something.
+                (expect "<<CONF-01>> ...and unlike the removed core-direct route, it was BILLED"
+                    true (< (ref-DALOS::UR_TF_AccountSupply patron false) gas0))
             ]
         )
         ;;restore, so later blocks see the account as they expect
-        (ref-DALOS::C_RotateStoa patron stoa0)
+        (ref-TS01-C1::DALOS|C_RotateStoa patron patron stoa0)
         (map print
             [
                 (expect "<<CONF-01>> (restored)" stoa0 (ref-DALOS::UR_AccountStoa patron))

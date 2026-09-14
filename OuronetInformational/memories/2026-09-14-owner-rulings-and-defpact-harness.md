@@ -7,7 +7,7 @@ that needed a decision rather than a fix, plus two housekeeping questions. All s
 
 | # | ruling (owner's words, condensed) | outcome |
 |---|---|---|
-| 1 | master key passing as a module is correct; **RotateStoa must pass through Talos** | narrowed — see below |
+| 1 | master key passing as a module is correct; **RotateStoa must pass through Talos** | narrowed, then **fixed** |
 | 2 | step 0 bills **100**, the rest at the step that succeeds | done, measured |
 | 3 | add the self-swap check | done, plus the uniqueness check |
 | 4 | **authorise first, then sweep** | done, 18 sites |
@@ -30,10 +30,43 @@ that weakness hides a mislabelled test. `[2.1]_Dalos.repl`'s rotation assertions
 **Talos** entrypoint names — `<(DALOS|C_RotateGuard EMMA user-guard)>` — while the code beneath calls
 `ref-DALOS::C_RotateGuard`. They pass only because of this registration.
 
-Why the line is not simply deletable: `[2.1]_Dalos.repl` runs **before Talos is deployed**. Closing it
-properly means moving those rotation tests to a file that runs after `3_Talos/`, which is also where
-`[6.12]_DALOS-ADMIN.repl:177-182` already records the Talos rotation path as *"never run"*. One move
-closes both. **Left for a focused pass rather than bolted onto this one.**
+Why the line was not simply deletable: `[2.1]_Dalos.repl` runs **before Talos is deployed**. Closing
+it properly meant moving those rotation tests to a file that runs after `3_Talos/`.
+
+**DONE, in a focused pass, and the blast radius was measured before anything moved.** Deleting the
+registration and running the full gate produced **exactly 10 failures — those 5 assertions, counted
+twice — and not one other failure in 21,732.** That measurement is the whole licence for the move:
+it established that nothing downstream depended on the state those rotations set, which is the one
+fact that could not be established by reading the code.
+
+| | |
+|---|---|
+| `[2.1]_Dalos.repl` | registration removed, rationale written where the line was |
+| `[6.12]_DALOS-ADMIN.repl` `<<TX-DA-004>>` | the five guard-type assertions on the Talos path, now crossing the billing leg |
+| `<<CONF-01>>`, `<<RT-B-001>>` | inverted to assert the **refusal**, message-checked |
+
+**Both inverted blocks carry a non-vacuity arm on purpose.** "The master key is refused" would pass
+just as happily against a `P|UEV_IMC` that refuses *everyone* — that is an outage, not a boundary. So
+each also proves the same operation, same signer, **through Talos**, still succeeds; `CONF-01` proves
+it is now *billed*, which is exactly what the old core-direct route escaped.
+
+**One measurement was left as a `print` rather than an assertion.** The admin IGNIS delta across the
+`TS01-A` route is **0.0000** — admin wrappers are not IGNIS-billed client ops, so "it now costs
+something" would have been a false claim about the admin lane. The repair closed the **reach**, not
+the price of admin work.
+
+**A correction to something asserted earlier in this very note.** I cited
+`[6.12]_DALOS-ADMIN.repl:177-182`'s *"`<-- never run`"* comment as evidence of a live gap in Talos
+rotation coverage. It is **historical**: `TX-DA-003` in that same file already drives RotateStoa,
+RotateGuard and RotateSovereign through Talos and asserts charged-equals-quoted on each. The comment
+describes a gap that was closed when the block beneath it was written. What `[2.1]` uniquely held was
+the guard-type REJECTIONS, not the rotations.
+
+**A latent roughness surfaced, recorded not fixed.** With the registration gone the failures read
+`No value found in table ouronet-ns.DALOS_P|MT for key: InterModulePolicies`: `P|UR_IMP` does a bare
+`read` with no default, so before *any* module registers, `P|UEV_IMC` raises a table error instead of
+refusing cleanly. On chain the first module's deploy-time `P|A_AddIMP` creates the row, so the window
+is real but narrow.
 
 > An audit harness that grants itself a privilege the real system withholds will certify behaviour
 > nobody can reach.

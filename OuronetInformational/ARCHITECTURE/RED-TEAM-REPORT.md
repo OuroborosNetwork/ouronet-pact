@@ -681,9 +681,9 @@ table above — the ones a green test could never have surfaced.**
 | `RT-C-001` | authorisation precedes business validation | swept **18 defcaps** across 11 files; convention recorded in CLAUDE.md | the refusal **message** changed from `"Cannot Wipe Positive Treasury Balance"` to `"DPTF Ownership not verified"` — nothing else about the call changed |
 | `RT-F-001` | split the fee: initiation slice in step 0, remainder in the step that succeeds | `LQ|INITIATION-FEE` (100.0) + `URCi_AddLiquidityChurnRemainder` across all three add-liquidity defpacts | `<<RT-F-001>>` — griefing exposure 557.03 → **53.00 net**, total unchanged |
 | `RT-H-001` | state the set rules directly | `output-id NOT IN input-ids` + `UEV_IzUnique` in `SWPU|X>SWAP` | `<<RT-H-001>>`, including the **weighted-pool** arm that was previously an open follow-up |
-| `RT-B-001` / X-01 | the master key passing as a module is correct; `RotateStoa` must pass through Talos | **in progress** — see the correction below | — |
+| `RT-B-001` / X-01 | the master key passing as a module is correct; `RotateStoa` must pass through Talos | the harness registration deleted; the five assertions it propped up re-homed on the Talos path | `<<RT-B-001>>` and `<<CONF-01>>` now assert the **refusal**, each with a non-vacuity arm proving the Talos route still works |
 
-### A correction to `RT-B-001`, and it narrows the finding
+### A correction to `RT-B-001`, and it narrows the finding — now fixed
 
 This report originally presented X-01 as a live exception to *"Talos is the only supported client
 path"*. **That overstated it.** The registration that creates the exception —
@@ -705,6 +705,35 @@ Talos is deployed**, which is also why removing the line is not a one-line chang
 
 *An audit harness that grants itself a privilege the real system withholds will certify behaviour
 nobody can reach* — and will, as here, quietly turn a mislabelled test green.
+
+**FIXED 2026-09-14, and the blast radius was measured before anything moved.** Deleting the
+registration and re-running the full gate produced **exactly 10 failures — 5 assertions, counted
+twice — and not one other failure in 21,732.** That is what established that nothing downstream
+depended on the state those rotations set, which is the fact the move needed and the only one that
+could not be established by reading.
+
+| | |
+|---|---|
+| `[2.1]_Dalos.repl` | registration removed; the rationale written where the line was |
+| `[6.12]_DALOS-ADMIN.repl` `<<TX-DA-004>>` | the five guard-type assertions, re-homed on the Talos path — where they now cross the IGNIS billing leg the core-direct form never touched |
+| `<<CONF-01>>`, `<<RT-B-001>>` | inverted: both assert the **refusal**, both message-checked |
+
+**Both inverted blocks carry a non-vacuity arm, deliberately.** A gate that refuses *everyone* is an
+outage, not a boundary, and "the master key is refused" would pass just as happily against a broken
+`P|UEV_IMC`. So each block also proves the same operation, by the same signer, **through Talos**,
+still succeeds — and `<<CONF-01>>` additionally proves it is now *billed*, which is precisely what
+the old core-direct route escaped.
+
+*One assertion was deliberately left as a `print`.* The admin IGNIS delta across the `TS01-A` route
+measures **0.0000**: admin wrappers are not IGNIS-billed client ops, so "it now costs something"
+would have been a false claim about the admin lane. What the repair closed is the **reach**, not the
+price of admin work.
+
+**A latent roughness this surfaced, recorded not fixed.** With the registration gone, the pre-Talos
+failures read `No value found in table ouronet-ns.DALOS_P|MT for key: InterModulePolicies` —
+`P|UR_IMP` does a bare `read` with no default, so before *any* module has registered, `P|UEV_IMC`
+raises a table error rather than refusing cleanly. On chain the first module's deploy-time
+`P|A_AddIMP` creates the row, so the window is real but narrow.
 
 ## What the fixes cost, and one that nearly cost more
 
