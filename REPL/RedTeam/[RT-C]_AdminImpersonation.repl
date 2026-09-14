@@ -1,0 +1,101 @@
+;;
+;; REPL/RedTeam/[RT-C]_AdminImpersonation.repl — FAMILY C: admin impersonation.
+;;
+;; "Can a non-admin reach an admin entrypoint?"
+;;
+;; This family has a proven precedent in this codebase, which is why it is attacked by EXECUTION
+;; rather than by reading: `TS01-A::ORBR|A_Fuel` was written `(with-capability (SECURE) ...)` where
+;; that module's `SECURE` is `(defcap SECURE () true)` -- a self-granting cap -- while its own @doc
+;; said "can only be used by the Admin". It was verified exploitable by calling it with a non-admin
+;; key: it succeeded and billed her 87 IGNIS. Fixed since, but the shape is the point.
+;;
+;; Run: cd REPL && pact "RedTeam/[RT-C]_AdminImpersonation.repl"
+;;
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "RT-C-001 - drive eight admin wrappers as a non-admin")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== RT-C-001 · 01 · the P|TS-gated wrappers ====
+(print "--- [RT-C-001 · 01 · the P|TS-gated wrappers] ---")
+;;<<RT-C-001>> FAMILY: C | STATUS: REFUSED
+;;HYPOTHESIS: `TS01-A` carries 30 admin wrappers, and they do NOT gate uniformly. Eleven acquire
+;;            `P|ADMINISTRATIVE-SUMMONER`, which composes `GOV|TS01-A_ADMIN` and is a real gate.
+;;            FIFTEEN acquire only `P|TS` -- and `(defcap P|TS () true)` grants itself. For those
+;;            fifteen the Talos layer contributes NO authorisation at all; the only thing standing
+;;            between a stranger and the operation is whatever the CORE function enforces. That is
+;;            precisely the shape that made ORBR|A_Fuel exploitable, so it is worth driving rather
+;;            than reasoning about.
+;;METHOD:     call eight of the fifteen as an ordinary user, chosen for blast radius -- pausing the
+;;            chain, moving the OURO source price, flipping gas collection, repricing usage, wiping
+;;            treasury debt, setting a branding flag. Record WHICH message refuses each.
+;;RESULT:     all eight refused. Seven by an admin-shaped guard, named below. The eighth is
+;;            different and is the reason this block is worth more than a row of green ticks.
+;;
+;;THE RESULT THAT MATTERS IS THE ONE THAT ALMOST PASSED FOR SUCCESS. `DPTF|A_WipeTreasuryDebt` is
+;;refused by "Cannot Wipe Positive Treasury Balance" -- a BUSINESS guard, not an authorisation one.
+;;Reading `GOV|WIPE_ALL-TREASURY-DEBT` explains why:
+;;
+;;    (enforce (< treasury-supply 0.0) "Cannot Wipe Positive Treasury Balance")   ;; line 402
+;;    (compose-capability (GOV|DPTF_ADMIN))                                       ;; line 403
+;;
+;;The admin gate IS there, one line below -- but it is UNREACHABLE while the treasury is solvent,
+;;which is its normal state. So for this operation the suite can say "a non-admin was refused"
+;;without ever having exercised the admin check at all. Had `GOV|DPTF_ADMIN` been missing from that
+;;cap, this test would still be green.
+;;
+;;That is why the assertion below is deliberately worded as the business guard rather than as an
+;;admin refusal: writing it as "the admin gate refused" would state something this fixture has not
+;;shown. The honest score for this block is SEVEN admin refusals and one shadowed gate, and the
+;;shadowed one is logged as a follow-up rather than counted as a pass.
+;;
+;;A note on why `try` is banned here. An earlier pass ran these eight through `(try "REFUSED" ...)`
+;;and reported 8/8 refused -- which is TRUE and useless. The distinction above is invisible without
+;;the message, and the shadowed gate would have gone unnoticed.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+    )
+    (map print
+        [
+            ;;--- the six that name DALOS's own admin guard -------------------------------------
+            (expect-failure "<<RT-C-001>> a stranger cannot pause the chain"
+                "DALOS Admin not satisfed"
+                (ref-TS01-A::DALOS|A_ToggleGAP true))
+            (expect-failure "<<RT-C-001>> ...nor flip auto-fueling"
+                "DALOS Admin not satisfed"
+                (ref-TS01-A::DALOS|A_SetAutoFueling true))
+            (expect-failure "<<RT-C-001>> ...nor toggle account-creation STOA"
+                "DALOS Admin not satisfed"
+                (ref-TS01-A::DALOS|A_AccountCreationStoaToggle true))
+            (expect-failure "<<RT-C-001>> ...nor switch gas collection on or off"
+                "DALOS Admin not satisfed"
+                (ref-TS01-A::DALOS|A_IgnisToggle true true))
+            (expect-failure "<<RT-C-001>> ...nor reprice a usage action"
+                "DALOS Admin not satisfed"
+                (ref-TS01-A::DALOS|A_UpdateUsagePrice "dptf" 1.0))
+            ;;--- one with its own dedicated message ---------------------------------------------
+            (expect-failure "<<RT-C-001>> ...nor move the OURO source price that feeds gas economics"
+                "Permission not granted to Update OURO Price !"
+                (ref-TS01-A::DALOS|A_SetIgnisSourcePrice 0.5))
+            ;;--- one that refuses via a keyset rather than a named message ----------------------
+            (expect-failure "<<RT-C-001>> ...nor set a branding flag: BRD answers with its keyset"
+                "Keyset failure"
+                (ref-TS01-A::BRD|A_SetFlag "OURO-98c486052a51" 1))
+            ;;--- and the SHADOWED one, recorded as what it actually is --------------------------
+            ;;NOT an admin refusal. The admin gate for this op is one line below a solvency check
+            ;;that fires first, so this fixture never reaches it. Asserted as the business guard so
+            ;;the block does not claim evidence it does not have.
+            (expect-failure "<<RT-C-001>> FOLLOW-UP: the treasury wipe refuses on SOLVENCY, shadowing its admin gate"
+                "Cannot Wipe Positive Treasury Balance"
+                (ref-TS01-A::DPTF|A_WipeTreasuryDebt))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)

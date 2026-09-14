@@ -1,0 +1,252 @@
+;;
+;; REPL/RedTeam/[RT-G]_HostileCitizen.repl — FAMILY G: the hostile citizen module.
+;;
+;; This is the family the architecture invites. `2_CITIZEN/` is documented as "extension modules
+;; ANYONE can write", calling only into sovereign public APIs. That is a deliberate, valuable design
+;; choice and it is also the single largest attack surface in the system: every other family assumes
+;; an attacker with an account, this one assumes an attacker with CODE deployed beside yours.
+;;
+;; So this file does not simulate an adversary. It DEPLOYS one, in a namespace anyone can write to,
+;; and has it attack the sovereign core the way a real one would.
+;;
+;; Run: cd REPL && pact "RedTeam/[RT-G]_HostileCitizen.repl"
+;;
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "RT-G-001a - deploy a hostile module into the OPEN user namespace")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== RT-G-001 · 01 · the adversary is real, and deploying it costs nothing ====
+(print "--- [RT-G-001 · 01 · the adversary is real, and deploying it costs nothing] ---")
+;;THE ATTACKER'S POSITION, established honestly rather than assumed.
+;;
+;;`ouronet-ns` itself is NOT open: `init-phase-01-ns.repl:56` defines it with
+;;`(keyset-ref-guard "ns-operate-keyset")` for BOTH the user and admin guard, and an attempt to
+;;deploy into it fails at module load with `Keyset failure (keys-any)`. That was verified before
+;;writing this file, and it matters: a hostile module cannot sit INSIDE the sovereign namespace.
+;;
+;;But `user` is open by construction -- `(define-namespace "user" ns.GUARD_SUCCESS ns.GUARD_FAILURE)`
+;;-- exactly as the equivalent namespaces are on a live chain. So the real adversary deploys beside
+;;the system rather than inside it, and calls ACROSS. That is the position modelled here, and it
+;;requires no privilege at all.
+(namespace "user")
+(module HOSTILE GOV
+  @doc "A deliberately malicious citizen module. It does not exploit anything clever: it simply \
+      \ calls sovereign client entrypoints DIRECTLY, bypassing Talos, and THROWS THE CUMULATOR \
+      \ AWAY. If that worked it would be the whole game -- Talos is the only place IGNIS is \
+      \ collected, so an operation that reaches core without passing through Talos is an operation \
+      \ nobody paid for."
+  (defcap GOV () true)
+  (defun call-transfer (id:string sender:string receiver:string amount:decimal)
+    (let ((ico (ouronet-ns.TFT.C_Transfer id sender receiver amount true)))
+      "UNBILLED TRANSFER WENT THROUGH"))
+  (defun call-mint (id:string account:string)
+    (let ((ico (ouronet-ns.DPTF.C_Mint id account 1000.0 false)))
+      "UNBILLED MINT WENT THROUGH"))
+  (defun read-supply:decimal (id:string account:string)
+    (ouronet-ns.DPTF.UR_AccountSupply id account))
+  ;;the ONE sovereign client entrypoint that carries no P|UEV_IMC -- see <<RT-G-002>>
+  (defun call-fuel (sender:string receiver:string amount:decimal)
+    (ouronet-ns.IGNIS.C_TransferDalosFuel sender receiver amount))
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RT-G-001b - the adversary attacks the sovereign core")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== RT-G-001 · 02 · calling sovereign clients directly, cumulator discarded ====
+(print "--- [RT-G-001 · 02 · calling sovereign clients directly, cumulator discarded] ---")
+;;<<RT-G-001>> FAMILY: G | STATUS: REFUSED
+;;HYPOTHESIS: a module deployed in an open namespace can call a sovereign `C_` entrypoint directly,
+;;            discard the returned OutputCumulator, and so perform a real state change that nobody
+;;            was billed for -- because IGNIS is collected in Talos and this path never enters it.
+;;METHOD:     deploy a real module in `user`, call TFT::C_Transfer and DPTF::C_Mint from inside it,
+;;            and check WHICH guard refuses. A refusal from the wrong place would prove nothing.
+;;RESULT:     refused, by the intended guard, in both cases: `P|UEV_IMC` -> `U|G::UEV_Any` over the
+;;            registered inter-module policy guards -> "None of the guards passed".
+;;
+;;WHY THE BOUNDARY HOLDS, mechanically. `P|UEV_IMC` passes only if the caller holds one of the
+;;capability guards registered in DALOS's policy list, and those are `create-capability-guard`s over
+;;capabilities that only the owning module's own code can bring into scope. A foreign module cannot
+;;acquire another module's capability in Pact, so it cannot satisfy the gate no matter what it signs.
+;;Registration itself is closed too: `DALOS::P|A_AddIMP` requires `GOV|DALOS_ADMIN`, so an attacker
+;;cannot add their own guard to the list.
+;;
+;;A WHOLE-SURFACE SCAN BACKS THIS UP rather than leaving it at two samples. Of the 290 `C_`/`CC_`
+;;implementations across the sovereign core, 289 carry `P|UEV_IMC`. The single exception is
+;;`IGNIS::C_TransferDalosFuel`, and it is safe by DELEGATION rather than by a gate: its body is a
+;;`coin::transfer`, and Stoa's coin requires the SENDER's own managed TRANSFER capability. That is
+;;attacked separately at <<RT-G-002>> rather than taken on trust.
+(env-sigs [{ "key": "PK_Emma", "caps": [] } { "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ouro:string "OURO-98c486052a51")
+        (victim:string KST.ANHD)
+        (attacker:string KST.EMMA)
+    )
+    (let
+        (
+            (victim-before:decimal (ref-DPTF::UR_AccountSupply ouro victim))
+            (supply-before:decimal (ref-DPTF::UR_Supply ouro))
+        )
+        (map print
+            [
+                ;;NON-VACUITY FIRST, and this block is worthless without it. If the hostile module
+                ;;could not reach ouronet-ns AT ALL, the refusals below would prove nothing about
+                ;;the gate -- they would just prove that cross-namespace calls fail. So: the module
+                ;;IS deployed, and it CAN call the unprotected sovereign read surface, which is
+                ;;exactly what a citizen module is supposed to be able to do.
+                (expect "<<RT-G-001>> the adversary is deployed and CAN read the sovereign core"
+                    victim-before (user.HOSTILE.read-supply ouro victim))
+                ;;ATTACK 1 -- move someone else's tokens without Talos, and pay nothing.
+                (expect-failure "<<RT-G-001>> ATTACK REFUSED: a foreign module cannot call TFT::C_Transfer"
+                    "None of the guards passed"
+                    (user.HOSTILE.call-transfer ouro victim attacker 1.0))
+                ;;ATTACK 2 -- mint, the strongest primitive there is.
+                (expect-failure "<<RT-G-001>> ...nor DPTF::C_Mint, the strongest primitive on offer"
+                    "None of the guards passed"
+                    (user.HOSTILE.call-mint ouro attacker))
+                ;;...and the refusals are TOTAL. Without this, the two above would also pass against
+                ;;a guard that fired AFTER a partial write.
+                (expect "<<RT-G-001>> ...and neither attempt moved a balance or changed supply"
+                    [victim-before supply-before]
+                    [(ref-DPTF::UR_AccountSupply ouro victim) (ref-DPTF::UR_Supply ouro)])
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RT-G-002 - drain the gas station through the one ungated entrypoint")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== RT-G-002 · 01 · no capability installed ====
+(print "--- [RT-G-002 · 01 · no capability installed] ---")
+;;<<RT-G-002>> FAMILY: G | STATUS: REFUSED
+;;HYPOTHESIS: `IGNIS::C_TransferDalosFuel` is the ONE sovereign client entrypoint of 290 with no
+;;            `P|UEV_IMC`. Its body is a bare `coin::transfer sender receiver amount` with the
+;;            sender taken straight from the argument. If the coin layer can be satisfied, a
+;;            foreign module can move native STOA out of any account it names -- including the
+;;            Ouronet gas station, which would stop the chain paying for anything.
+;;METHOD:     three escalating attempts from the hostile module, each pushing one layer further:
+;;            (1) call it cold; (2) SIGN AND INSTALL the coin.TRANSFER capability for an account
+;;            the attacker does not own, and drain the gas station; (3) the same against an
+;;            ordinary user's account. Messages checked at every step.
+;;RESULT:     refused three times, and the second refusal is the one that matters -- see below.
+;;
+;;WHY THIS ENTRYPOINT HAS NO GATE, and why that is defensible. It is a PRIMITIVE: every
+;;`STOA|C_Collect*` path funnels through it, so gating it with `P|UEV_IMC` would gate the collector
+;;against itself. CLAUDE.md classes it with the `STOA|C_Collect*` family for exactly this reason.
+;;Its authorisation is DELEGATED one layer down to Stoa's coin contract instead of being restated.
+;;
+;;THE LAYER THAT ACTUALLY HOLDS, and it is not the one people assume. Attempt (1) fails on
+;;`Managed capability not installed`, which sounds like the defence but is not: an attacker simply
+;;installs it, and attempt (2) does. What stops (2) is that the gas station's STOA account is a
+;;`c:` PRINCIPAL whose guard is `(create-capability-guard (DALOS|NATIVE-AUTOMATIC))`, and
+;;`coin.pact:144`'s `(enforce-guard (UR_Guard sender))` therefore demands a CAPABILITY, not a
+;;signature. No key can satisfy it; only DALOS's own code bringing that capability into scope can.
+;;
+;;    Capability not acquired: CapabilityGuard {name: ouronet-ns.DALOS.DALOS|NATIVE-AUTOMATIC ...}
+;;
+;;That is the property worth publishing: the sovereign smart accounts are not protected by secrecy
+;;or by a signature that could leak, but by a guard that is unsatisfiable from outside the module.
+;;An attacker holding EVERY private key in the system still cannot move the gas station's funds.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (attacker:string KST.EMMA)
+    )
+    (let
+        (
+            (gas-stoa:string (ref-DALOS::UR_AccountStoa (ref-DALOS::GOV|DALOS|SC_NAME)))
+            (attacker-stoa:string (ref-DALOS::UR_AccountStoa attacker))
+        )
+        (map print
+            [
+                (format "<<RT-G-002>> gas-station stoa={} balance={}"
+                    [gas-stoa (coin.get-balance gas-stoa)])
+                ;;the literals signed in the next transaction are pinned against the DERIVED
+                ;;accounts here, so the attack cannot silently end up aimed at the wrong account if
+                ;;the fixture moves -- it would fail here instead, naming the drift.
+                (expect "<<RT-G-002>> the gas station's STOA account is the capability-guarded principal"
+                    "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" gas-stoa)
+                (expect "<<RT-G-002>> ...and the attacker's own STOA account is the one they control"
+                    "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" attacker-stoa)
+                (expect "<<RT-G-002>> ...and the station is holding real funds worth stealing"
+                    true (> (coin.get-balance gas-stoa) 0.0))
+                ;;ATTEMPT 1 -- cold. Refused, but NOT by the defence that matters.
+                (expect-failure "<<RT-G-002>> cold call refused: no managed capability installed"
+                    "Managed capability not installed"
+                    (user.HOSTILE.call-fuel gas-stoa attacker-stoa 1.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RT-G-002b - install the capability and drain anyway")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== RT-G-002 · 02 · the attacker signs a transfer for an account they do not own ====
+(print "--- [RT-G-002 · 02 · the attacker signs a transfer for an account they do not own] ---")
+;;Attempt (1)'s refusal is removed by the attacker themselves: they sign a `coin.TRANSFER` naming
+;;the gas station as sender. Signing a capability for an account you do not control is ALLOWED --
+;;the signature installs the managed cap. Whether it does anything is decided further down.
+(env-sigs
+    [
+        { "key": "PK_Emma"
+        , "caps": [(coin.TRANSFER "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                                  "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" 1.0)] }
+    ]
+)
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+    )
+    (let
+        (
+            (gas-stoa:string (ref-DALOS::UR_AccountStoa (ref-DALOS::GOV|DALOS|SC_NAME)))
+            (attacker-stoa:string (ref-DALOS::UR_AccountStoa KST.EMMA))
+        )
+        (let
+            (
+                (before:decimal (coin.get-balance gas-stoa))
+            )
+            (map print
+                [
+                    ;;ATTEMPT 2 -- THE REAL ONE. The managed capability is installed, so the failure
+                    ;;this time is the guard itself, and it is a CAPABILITY guard: unsatisfiable by
+                    ;;any signature, from any key, forever.
+                    (expect-failure "<<RT-G-002>> ATTACK REFUSED: the station's guard is a CAPABILITY, not a keyset"
+                        "Capability not acquired: CapabilityGuard"
+                        (user.HOSTILE.call-fuel gas-stoa attacker-stoa 1.0))
+                    ;;...and the refusal names DALOS's own capability, so it is the sovereign guard
+                    ;;that answered and not some unrelated one.
+                    (expect-failure "<<RT-G-002>> ...and it is DALOS|NATIVE-AUTOMATIC that refuses"
+                        "DALOS|NATIVE-AUTOMATIC"
+                        (user.HOSTILE.call-fuel gas-stoa attacker-stoa 1.0))
+                    ;;...and not one STOA left the station.
+                    (expect "<<RT-G-002>> ...and the gas station's balance is untouched"
+                        before (coin.get-balance gas-stoa))
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)

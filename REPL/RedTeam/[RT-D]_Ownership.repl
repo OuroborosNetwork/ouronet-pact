@@ -1,0 +1,131 @@
+;;
+;; REPL/RedTeam/[RT-D]_Ownership.repl — FAMILY D: ownership bypass.
+;;
+;; "Can I act on assets whose ownership I have not proven?"
+;;
+;; In most systems this family is a short file: either a function checks the caller owns the thing
+;; or it does not. Ouronet has a shape that makes it worth more attention — nearly every client
+;; entrypoint takes BOTH a `patron` and an account, and they are different roles. The patron PAYS
+;; (gas sponsorship is a first-class feature); the account OWNS. Wherever two identity-like
+;; arguments sit side by side, the interesting question is whether proving one is ever mistaken for
+;; proving the other.
+;;
+;; Run: cd REPL && pact "RedTeam/[RT-D]_Ownership.repl"
+;;
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "RT-D-001 - pay the gas, move someone else's tokens")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== RT-D-001 · 01 · patron is not owner ====
+(print "--- [RT-D-001 · 01 · patron is not owner] ---")
+;;<<RT-D-001>> FAMILY: D | STATUS: REFUSED
+;;HYPOTHESIS: `DPTF|C_Transfer (patron id sender receiver amount method)` takes the payer and the
+;;            asset owner as two separate arguments. If the path proves only the PATRON -- the one
+;;            role the caller definitely holds, since they are paying -- then naming someone else
+;;            as `sender` drains them while the attacker foots the (tiny) gas bill.
+;;METHOD:     the attacker is the patron AND the receiver, the victim is the sender, and ONLY the
+;;            attacker signs. Then the same call is repeated with the victim signing, to prove the
+;;            refusal is about ownership and not about the shape of the call.
+;;RESULT:     refused at `CAP_EnforceAccountOwnership` on the SENDER, naming the victim's key.
+;;            Sponsorship still works when the owner signs, so the two roles are genuinely
+;;            separate rather than collapsed into "whoever pays".
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ouro:string "OURO-98c486052a51")
+        (attacker:string KST.EMMA)
+        (victim:string KST.ANHD)
+    )
+    (let
+        (
+            (victim-before:decimal (ref-DPTF::UR_AccountSupply ouro victim))
+            (attacker-before:decimal (ref-DPTF::UR_AccountSupply ouro attacker))
+        )
+        (map print
+            [
+                (format "<<RT-D-001>> victim holds {} OURO; attacker holds {}"
+                    [victim-before attacker-before])
+                ;;the attack is only meaningful if there is something to take.
+                (expect "<<RT-D-001>> the victim is holding a balance worth stealing"
+                    true (> victim-before 1000.0))
+                ;;THE ATTACK. Attacker is patron (pays) and receiver (gains); victim is sender.
+                ;;Message checked: a bare refusal here could just as easily be the gas station, the
+                ;;token's transfer role, or a frozen account, none of which is the guard under test.
+                (expect-failure "<<RT-D-001>> ATTACK REFUSED: paying the gas does not prove you own the sender"
+                    "Keyset failure"
+                    (ref-TS01-C1::DPTF|C_Transfer attacker ouro victim attacker 100.0 true))
+                ;;...and the refusal is TOTAL, so nothing moved behind the abort.
+                (expect "<<RT-D-001>> ...and neither balance moved"
+                    [victim-before attacker-before]
+                    [(ref-DPTF::UR_AccountSupply ouro victim)
+                     (ref-DPTF::UR_AccountSupply ouro attacker)])
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RT-D-001b - the same call, with the owner signing, must WORK")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== RT-D-001 · 02 · sponsorship is real, so the refusal above is specific ====
+(print "--- [RT-D-001 · 02 · sponsorship is real, so the refusal above is specific] ---")
+;;THE NON-VACUITY HALF, and this file would be close to worthless without it. An `expect-failure`
+;;proves a call was refused; it does NOT prove the guard under test is what refused it, and it
+;;certainly does not prove the feature works when it should. If gas sponsorship were simply broken,
+;;or this token could not be transferred at all, <<RT-D-001>> above would pass for reasons that have
+;;nothing to do with ownership.
+;;
+;;So the identical call runs again with the VICTIM signing as owner while the ATTACKER remains the
+;;patron. It must now succeed -- and the measurement below shows the split doing exactly what it is
+;;designed to do: the owner's tokens move, and the PATRON pays the IGNIS.
+(env-sigs [{ "key": "PK_Emma", "caps": [] } { "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ouro:string "OURO-98c486052a51")
+        (sponsor:string KST.EMMA)
+        (owner:string KST.ANHD)
+    )
+    (let
+        (
+            (owner-before:decimal (ref-DPTF::UR_AccountSupply ouro owner))
+            (sponsor-ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply sponsor false))
+            (owner-ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply owner false))
+        )
+        (ref-TS01-C1::DPTF|C_Transfer sponsor ouro owner sponsor 100.0 true)
+        (map print
+            [
+                (format "<<RT-D-001>> sponsored: owner OURO {} -> {} | sponsor IGNIS spent {} | owner IGNIS spent {}"
+                    [owner-before (ref-DPTF::UR_AccountSupply ouro owner)
+                     (- sponsor-ignis-before (ref-DALOS::UR_TF_AccountSupply sponsor false))
+                     (- owner-ignis-before (ref-DALOS::UR_TF_AccountSupply owner false))])
+                ;;the transfer really happened once the OWNER authorised it.
+                (expect "<<RT-D-001>> with the owner signing, the identical call succeeds"
+                    (- owner-before 100.0) (ref-DPTF::UR_AccountSupply ouro owner))
+                ;;and the split is real in the other direction too: the SPONSOR paid the gas...
+                (expect "<<RT-D-001>> ...and the PATRON paid the IGNIS, not the owner"
+                    true (> (- sponsor-ignis-before (ref-DALOS::UR_TF_AccountSupply sponsor false)) 0.0))
+                ;;...while the owner paid none of it. Together these two say the roles are genuinely
+                ;;separate: one proves identity, the other pays, and neither substitutes for the other.
+                (expect "<<RT-D-001>> ...while the owner paid none of it"
+                    0.0 (- owner-ignis-before (ref-DALOS::UR_TF_AccountSupply owner false)))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)

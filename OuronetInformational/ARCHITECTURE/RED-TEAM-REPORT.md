@@ -290,3 +290,342 @@ only thing a client author consults before deciding whether they may submit conc
 fed-slice they may, for a pager the concurrency buys nothing and the mental model is wrong. The
 correction closes with the rule that caused the drift: *if a third shape appears, give it its own
 letter; overloading `p` to mean "multi-transaction" rather than "parallel" is how this happened.*
+
+
+---
+
+## Stage 3 — Family G, the hostile citizen module
+
+This is the family the architecture **invites**. `2_CITIZEN/` is documented as extension modules
+*"anyone can write"*, calling only into sovereign public APIs. That is a deliberate and valuable
+design choice, and it is also the largest attack surface in the system: every other family assumes
+an attacker with an account; this one assumes an attacker with **code deployed beside yours**.
+
+So this stage does not simulate an adversary. It **deploys one**, in a namespace anyone can write
+to, and attacks the sovereign core the way a real one would.
+
+### Establishing the attacker's position honestly
+
+- **`ouronet-ns` is closed.** A module load into it fails with `Keyset failure (keys-any)` —
+  verified, not assumed. `init-phase-01-ns.repl:56` defines it with `(keyset-ref-guard
+  "ns-operate-keyset")` for both the user and admin guard. A hostile module cannot sit *inside* the
+  sovereign namespace.
+- **`user` is open by construction** — `(define-namespace "user" ns.GUARD_SUCCESS ns.GUARD_FAILURE)`,
+  exactly as the equivalent namespaces are on a live chain. The real adversary deploys *beside* the
+  system and calls across, needing no privilege at all.
+
+### RT-G-001 — calling sovereign clients directly, cumulator discarded *(REFUSED)*
+
+**Hypothesis.** A module in an open namespace can call a sovereign `C_` directly, discard the
+returned `OutputCumulator`, and perform a real state change nobody was billed for — because IGNIS is
+collected in **Talos**, and this path never enters it.
+
+**Result.** `TFT::C_Transfer` and `DPTF::C_Mint` both refused by `P|UEV_IMC` →
+`"None of the guards passed"`, message-checked so the refusal is provably the intended guard.
+
+**The mechanism is sound, not lucky.** `P|UEV_IMC` passes only on capability guards over
+capabilities that **only the owning module's own code can bring into scope**, and a foreign module
+cannot acquire another module's capability in Pact. Registration is closed as well:
+`DALOS::P|A_AddIMP` requires `GOV|DALOS_ADMIN`.
+
+**Whole-surface scan, not two samples.** Of the **290** `C_`/`CC_` implementations across the
+sovereign core, **289 carry `P|UEV_IMC`**. The single exception is `IGNIS::C_TransferDalosFuel`,
+attacked separately below rather than taken on trust.
+
+The block carries a non-vacuity assertion that matters more than usual here: the hostile module
+**can** read the sovereign core. Without it the refusals would only prove that cross-namespace calls
+fail, not that the gate works.
+
+### RT-G-002 — draining the gas station through the one ungated entrypoint *(REFUSED)*
+
+**Hypothesis.** `C_TransferDalosFuel` has no `P|UEV_IMC` and its body is a bare `coin::transfer`
+with the sender taken straight from the argument. If the coin layer can be satisfied, a foreign
+module moves native STOA out of any account it names — including the **Ouronet gas station**, which
+would stop the chain paying for anything.
+
+**Three escalating attempts, each pushing one layer further:**
+
+| # | attempt | refusal |
+|---|---|---|
+| 1 | call it cold | `Managed capability not installed` |
+| 2 | **sign and install** `coin.TRANSFER` naming the station as sender | `Capability not acquired: CapabilityGuard {name: ouronet-ns.DALOS.DALOS\|NATIVE-AUTOMATIC}` |
+| 3 | confirm the refusal names DALOS's own capability | same, and the balance is untouched |
+
+**Attempt 1's refusal is not the defence, and saying so is the point.** It sounds like one, but an
+attacker removes it themselves — signing a capability for an account you do not control is *allowed*
+and installs the managed cap. Attempt 2 does exactly that.
+
+**What actually holds is attempt 2's failure.** The gas station's STOA account is a **`c:` principal**
+whose guard is `(create-capability-guard (DALOS|NATIVE-AUTOMATIC))`, so `coin.pact:144`'s
+`(enforce-guard (UR_Guard sender))` demands a **capability in scope, not a signature**.
+
+> **An attacker holding every private key in the system still cannot move the gas station's funds.**
+
+That is a stronger property than "the entrypoint is gated" — it is not gated. Its authorisation is
+*delegated* to a guard that is unsatisfiable from outside the owning module. Why the entrypoint has
+no gate is also defensible: it is a **primitive** through which every `STOA|C_Collect*` path funnels,
+so gating it with `P|UEV_IMC` would gate the collector against itself.
+
+The signed account literals are pinned against the derived accounts, so if the fixture ever moves,
+the attack fails loudly at the assertion rather than silently aiming somewhere harmless.
+
+### Family G assessment
+
+The inter-module boundary is the **best-defended surface tested so far**:
+
+| property | status |
+|---|---|
+| `ouronet-ns` closed to deployment | verified |
+| core client entrypoints gated | **289 / 290** |
+| the 290th | safe by delegation to an unsatisfiable guard |
+| policy registration | `GOV|DALOS_ADMIN` only |
+| a real deployed adversary | refused by the intended guard, message checked |
+
+**The one documented hole is `X-01`**, and it is not closed by anything above: the genesis sequence
+registers the **master keyset itself** as a DALOS inter-module policy, so a master-key holder
+satisfies `P|UEV_IMC` **without being a module**, and anything done on that path is **unbilled**
+because it never enters Talos. It is probably deliberate — the bootstrap must reach DALOS core ops
+before Talos exists — but it is the single exception to an otherwise complete boundary and it is
+undocumented at every call site. Pending an owner ruling.
+
+
+---
+
+## Stage 4 — Families B, C, D: the authorisation surfaces
+
+### A correction to method, made before any of these results
+
+Families B and C were first approached with two whole-surface scans, which reported
+*"102 `XI_`/`XB_` implementations without `require-capability`"* and *"31 of 42 `A_`/`AA_` with no
+admin guard"*. **Both numbers are wrong and neither was reported.** Authorisation in this codebase
+is **compositional** — `A_ToggleGAP` acquires `GOV|GAP`, which `compose-capability
+(GOV|DALOS_ADMIN)` — and the scans looked one level deep.
+
+That is the **third** time in this programme that a naive static scan produced a misleading safety
+number, after the "78 unreached guards" worklist and the "every `STOA|C_Collect` is a no-op" claim.
+The pattern is consistent enough to state as a finding in its own right:
+
+> **In a codebase with compositional authorisation, one-level static scans systematically
+> under-report safety.** The only instrument that cannot make this error is execution: the chain
+> either refuses you or it does not.
+
+Families B, C and D were therefore driven entirely by attack rather than by scan.
+
+### RT-B-001 — the master key reaches core without Talos, and pays nothing *(SUCCEEDED)*
+
+This settles **X-01**, which had been carried as an unresolved owner question.
+
+    ordinary key  ->  "None of the guards passed"        the gate holds for users
+    master key    ->  OURO source price  0.0 -> 0.5
+                      IGNIS charged      0.0000
+
+`P|UEV_IMC` is described as an **inter-module** gate. Genesis registers the **master keyset itself**
+as a DALOS policy, so a key holder satisfies it without being a module, reaches DALOS core directly,
+and pays nothing because Talos — the only place IGNIS is collected — is never entered.
+
+**Bounding the severity precisely:** this is not theft. The same key cannot operate the collector
+against a third party; `IGNIS::C_Collect` enforces the payer's own account ownership. *Skipping your
+own toll needs nobody else's signature; charging someone else's does.* The reachable damage is
+**unbilled admin activity**, not drained users.
+
+**Why it is pinned anyway:** the op reached is a **price input** feeding gas economics; the exception
+is invisible at every call site; and it is the single way through a boundary that `RT-G-001` measured
+at 289/290. It is probably deliberate — the bootstrap must reach DALOS before Talos exists — and that
+is exactly the argument for pinning it. **An intended exception that no document mentions is
+indistinguishable from an unintended one at review time.** Owner ruling pending.
+
+### RT-C-001 — eight admin wrappers driven as a stranger *(REFUSED, with one shadowed gate)*
+
+`TS01-A`'s 30 admin wrappers do **not** gate uniformly:
+
+| gate | count | is it authorisation? |
+|---|---:|---|
+| `P|ADMINISTRATIVE-SUMMONER` (composes `GOV|TS01-A_ADMIN`) | 11 | yes |
+| `P|TS` — and `(defcap P|TS () true)` | **15** | **no: it grants itself** |
+| `GOV|TS` | 2 | yes |
+
+For those fifteen the Talos layer contributes no authorisation at all; only the core function stands
+between a stranger and the operation. That is the shape that made `ORBR|A_Fuel` exploitable, so it
+was driven rather than reasoned about. Eight were attacked, chosen for blast radius. All refused.
+
+**Seven refused for the right reason; one did not, and that is the useful result.**
+`DPTF|A_WipeTreasuryDebt` answered `"Cannot Wipe Positive Treasury Balance"` — a business guard:
+
+    (enforce (< treasury-supply 0.0) "Cannot Wipe Positive Treasury Balance")   ;; 402
+    (compose-capability (GOV|DPTF_ADMIN))                                       ;; 403
+
+The admin gate exists one line below and is **unreachable while the treasury is solvent**, its normal
+state. So the suite can report "a non-admin was refused" without ever exercising the admin check —
+**had `GOV|DPTF_ADMIN` been missing from that cap, the test would still be green.** The assertion is
+therefore worded as the business guard, and the honest score is *seven admin refusals and one
+shadowed gate*, logged as a follow-up rather than counted as a pass.
+
+**The first pass used `(try "REFUSED" ...)` and reported 8/8 refused — true, and useless.** The
+distinction above is invisible without the message. That is the third time the message-checking rule
+has changed a result in this programme.
+
+### RT-D-001 — paying the gas does not prove ownership *(REFUSED)*
+
+Nearly every client entrypoint takes both a `patron` and an account: the patron **pays**, the account
+**owns**. Where two identity-like arguments sit side by side, the question is whether proving one is
+ever mistaken for proving the other.
+
+Attacker as patron *and* receiver, victim as sender, only the attacker signing, against a victim
+holding 1,567,573 OURO: refused at `CAP_EnforceAccountOwnership` on the **sender**, naming the
+victim's key, with neither balance moved.
+
+**The half that makes it evidence** is the second transaction. The identical call with the **owner**
+signing and the **attacker still the patron** must succeed — and does:
+
+    owner OURO    1567573.1176 -> 1567473.1176      the transfer happened
+    sponsor IGNIS spent 1.0                          the patron paid
+    owner   IGNIS spent 0.0000                       the owner paid nothing
+
+Gas sponsorship is a real, working feature, so the refusal above is specific to ownership rather than
+an artefact of a broken path. One role proves identity, the other pays, and neither substitutes for
+the other.
+
+### Where the defects are, and where they are not
+
+Eight attacks across seven families now show a consistent shape:
+
+| surface | families | result |
+|---|---|---|
+| **authorisation** | C, D, G | 5 refusals, every one message-checked against the intended guard |
+| **economics & sequencing** | A, F | 2 defects, one fixed and one open |
+| **architectural exception** | B | 1 confirmed bypass, owner ruling pending |
+
+This mirrors the constructive round exactly: of its 131 compiled defects, the two largest classes
+were pricing/billing (30) and guard *reachability* — not guard *absence*. **The guards in this
+system are present and they hold; what fails is the arithmetic around them and the order in which
+things happen.**
+
+
+---
+
+## Stage 5 — Family H, input domain
+
+Deliberately **not** a fuzzing campaign. A full gate run is ~7 minutes, so random search is an
+expensive way to find what reading the guards gives for free. The attacks were targeted at a gap
+identified by reading `SWPU|X>SWAP`, the capability guarding the no-slippage swap path — the one a
+caller reaches by passing the `-1.0` sentinel.
+
+### RT-H-001 — the validator cannot see properties of the SET *(REFUSED, incidentally)*
+
+`SWPU|X>SWAP` checks the output is on the pool, that swapping is enabled, that `input-ids` and
+`input-amounts` are the same LENGTH, and then loops over the inputs checking each is on the pool
+with a valid amount. **Every one of those is a per-ITEM property.** Nothing checks a property of the
+set — so two malformed sets should be constructible.
+
+Both were refused. **Neither by a guard that is about the set:**
+
+| attack | refused by | what that actually is |
+|---|---|---|
+| `output-id` also in `input-ids` (swap a token for itself) | `"is not a Valid Transaction amount"` | a **zero-amount transfer rule**, three modules away |
+| the same id twice in `input-ids` | `"Only a single Input can be used in Stable Swap"` | a **pool-type rule**, not uniqueness |
+
+**The self-swap is the result that matters.** `output-id` in `input-ids` passes every check in the
+capability, proceeds **into the curve math**, which computes an output of exactly **zero** — adding
+and removing the same token on a constant-function curve nets to nothing — and only then is the zero
+transfer refused by `DPTF::UEV_Amount`.
+
+> The system is not protected from self-swaps by a rule forbidding them. It is protected by the
+> curve returning zero. Any change that makes a self-swap return a non-zero positive amount — a
+> different curve, an amplifier, a fee rebate, a rounding direction — becomes value creation with
+> nothing in the way. There is no `output-id NOT IN input-ids` check anywhere on that path.
+
+**Scope stated honestly:** the duplicate result is pinned only for the **stable** shape. Weighted
+pools accept several inputs by design, so the pool-type rule does not apply to them; that case is an
+open follow-up, not a result claimed here.
+
+**A correction made during this block.** The first draft asserted "neither attempt moved anything".
+Both assertions failed: the caller was debited by exactly the 100.0 self-swap input and the pool's
+OURO reserve rose 0.53. That is **RULE 9** — `expect-failure` catches the abort mid-transaction and
+does **not** roll back preceding writes. On chain the transaction reverts entirely, so no value is
+lost. "The refusal is total" is therefore guaranteed by Pact's transaction semantics and is **not
+something this suite can demonstrate**, so the claim was removed rather than reworded into something
+weaker but still unearned. What the partial write does show was kept: the self-swap is refused
+**late**, after the input is debited and the curve evaluated — the caller pays for the full
+computation of a swap that could never have succeeded.
+
+---
+
+# Closing assessment
+
+## The register
+
+| family | attempted | succeeded | fixed | refused |
+|---|---:|---:|---:|---:|
+| A — Arithmetic & value | 1 | | 1 | |
+| B — Permissionless reach | 1 | 1 | | |
+| C — Admin impersonation | 1 | | | 1 |
+| D — Ownership bypass | 1 | | | 1 |
+| E — Sequencing & state | 1 | | | 1 |
+| F — Griefing / DoS | 1 | 1 | | |
+| G — Hostile citizen module | 2 | | | 2 |
+| H — Input domain | 1 | | | 1 |
+| **total** | **9** | **2** | **1** | **6** |
+
+Three attacks found a defect. One was fixed immediately (`RT-A-001`); two are open pending an owner
+ruling (`RT-B-001`, `RT-F-001`).
+
+## Where the defects are, and where they are not
+
+Nine attacks across all eight families produced a consistent shape, and it matches the constructive
+round exactly:
+
+| surface | families | outcome |
+|---|---|---|
+| **authorisation** | C, D, G | 5 refusals, every one message-checked against the intended guard |
+| **economics & sequencing** | A, F | 2 defects — one fixed, one open |
+| **architectural exception** | B | 1 confirmed bypass, owner ruling pending |
+| **input domain** | E, H | 2 refusals, both **by the wrong guard** |
+
+> **The guards in this system are present and they hold. What fails is the arithmetic around them,
+> and the order in which things happen.**
+
+Of the constructive round's 131 compiled defects, the two largest classes were pricing/billing (30)
+and guard *reachability* — not guard *absence*. Red teaming reproduced that distribution
+independently, from the opposite direction.
+
+## The finding that a green test cannot show
+
+**Three of the six refusals were by the wrong guard**, and each is a latent defect wearing a passing
+test:
+
+| attack | the guard that ought to refuse | the guard that actually did |
+|---|---|---|
+| `RT-E-001` dust sweep | a claimant-set check | a `last-collected-round` **stamp in a different function** |
+| `RT-H-001` self-swap | `output-id NOT IN input-ids` | the **curve returning exactly zero** |
+| `RT-H-001` duplicate input | a uniqueness check | a **stable-pool single-input rule** |
+| `RT-C-001` treasury wipe | `GOV|DPTF_ADMIN` | a **solvency check one line above it** |
+
+Every one of those is green today and would stay green through the change that breaks it. This is the
+single most valuable output of the programme, and it is only visible because the method requires a
+red-team `expect-failure` to **name the message it expects**. An earlier pass over `RT-C-001` used
+`(try "REFUSED" ...)` and reported 8 of 8 refused — true, and useless.
+
+## What the method cost, and what it caught
+
+The two rules in `RedTeam/README.md` each changed a result on first contact:
+
+- **Message-checking** caught a false defence in `RT-E-001` (the attack was "refused" by
+  `Keyset failure` because the attacker's key was not signed — the defence under test was never
+  reached), and the shadowed admin gate in `RT-C-001`.
+- **Probe-before-pinning** caught `RT-A-001`'s first draft aiming at a pool id absent from the
+  fixture; assertion-first, the attack would have "failed" for a reason unrelated to the defence.
+
+**A third rule earned its place during the programme and is now recorded:** in a codebase with
+**compositional** authorisation, one-level static scans systematically under-report safety. Three
+separate scans produced misleading numbers — "78 unreached guards", "every `STOA|C_Collect` is a
+no-op", "31 of 42 `A_` with no admin guard" — and all three were refuted by measurement. Families B,
+C and D were consequently driven entirely by execution.
+
+## Open items for the owner
+
+| id | item | why it needs a ruling rather than a fix |
+|---|---|---|
+| `RT-B-001` / X-01 | the master keyset satisfies `P|UEV_IMC`, reaching DALOS core outside Talos, unbilled | probably deliberate (bootstrap precedes Talos). If intended it belongs beside the "only supported client path" sentence; if not, the registration is what to remove. |
+| `RT-F-001` | the add-liquidity deterrent is collected in step 0 and validated in step 1, so any swap destroys it | the fix — collect in the step that succeeds, or refund on rollback — changes **when money moves inside a defpact**, a design decision |
+| `RT-H-001` | no `output-id NOT IN input-ids` check on the swap path | adding one is cheap; whether self-swaps should be *forbidden* or merely *unprofitable* is a design call |
+| `RT-C-001` | `GOV|DPTF_ADMIN` on the treasury wipe is unreachable while the treasury is solvent | reordering the cap is trivial; whether the solvency check should precede authorisation is a convention question |
