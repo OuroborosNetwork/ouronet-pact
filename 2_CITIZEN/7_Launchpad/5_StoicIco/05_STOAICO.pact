@@ -70,7 +70,22 @@
         (at "policy" (read P|T policy-name ["policy"]))
     )
     (defun P|UR_IMP:[guard] ()
-        (at "m-policies" (read P|MT P|I ["m-policies"]))
+        ;;DEFAULT ADDED 2026-09-14 (owner ruling). This was a bare `read`, which RAISES
+        ;;`No value found in table <M>_P|MT for key: InterModulePolicies` when the row does not
+        ;;exist -- i.e. before ANY module has registered. P|UEV_IMC is built on this, so in that
+        ;;window the inter-module gate answered with a raw table error naming a row key instead of
+        ;;refusing cleanly. Surfaced by the X-01 repair, which removed the harness registration
+        ;;that had been creating the row as a side effect.
+        ;;
+        ;;The default is the module's OWN SECURE capability guard, which is exactly what
+        ;;P|A_AddIMP already seeds the row with. So reader and writer now agree on what an
+        ;;unregistered policy list contains, and the gate's answer is the same before and after
+        ;;the first registration: satisfiable only from inside this module.
+        (with-default-read P|MT P|I
+            {"m-policies" : [(create-capability-guard (SECURE))]}
+            {"m-policies" := mp}
+            mp
+        )
     )
     (defun P|UEV_IMC ()
         (let
@@ -388,9 +403,50 @@
             (if (= (typeof trial) "bool") false true)
         )
     )
+    (defun URC_IzDustSweepClaimant:bool (account:string)
+        @doc "Is ACCOUNT the one remaining unclaimed claimant, and therefore the one the dust \
+            \ sweep should pay the whole vault to? Three conditions, all O(1): exactly one \
+            \ unclaimed position remains; this account is a real staker; and this account has \
+            \ not already collected in the current distribution-round. \
+            \ ADDED 2026-09-14. URC_ClaimableRewards used to test only the FIRST of the three, \
+            \ so it answered a question about the VAULT and used it as an answer about the \
+            \ ACCOUNT -- see the comment there."
+        (fold (and) true
+            [
+                (= (UR_Global7) 1)
+                (> (UR_User1 account) 0.0)
+                (< (UR_User5 account) (UR_Global11))
+            ]
+        )
+    )
     (defun URC_ClaimableRewards (account:string)
-        @doc "Computes Claimable Reward of Account"
-        (if (= (UR_Global7) 1)
+        @doc "Computes Claimable Reward of Account. When exactly one unclaimed position remains, \
+            \ that claimant is paid the WHOLE remaining vault -- a dust sweep, so rounding \
+            \ residue is never stranded."
+        ;;DEFECT FIXED 2026-09-14 (red team RT-E-001). This read:
+        ;;
+        ;;    (if (= (UR_Global7) 1) (UR_Global4) (URC_AvailableRewards account))
+        ;;
+        ;;<UR_Global7> is unclaimed-count -- a property of the VAULT. The branch asked "is exactly
+        ;;one claimant left?" and never "is THIS account that claimant?", so it offered the entire
+        ;;vault to ANY caller whenever the count happened to be 1. The guard tested a global and
+        ;;returned a per-account figure.
+        ;;
+        ;;It was reachable by a LEGITIMATE admin action, not an attack: unclaimed-count is set to
+        ;;nzs-count only at inject, so recording a late contribution moves nzs-count and leaves
+        ;;unclaimed-count behind. Measured at RedTeam/[RT-E]_Sequencing.repl <<RT-E-001>> --
+        ;;counters diverged to 1 vs 3, and an account owed 0.000000000000 was offered
+        ;;690.525983513596.
+        ;;
+        ;;NO THEFT WAS POSSIBLE, and the reason is worth keeping: A_Stake stamps a new contributor's
+        ;;<last-collected-round> to the CURRENT round, and the collect capability enforces
+        ;;(< last-collected-round distribution-round) -- a newcomer is born already-collected for
+        ;;the round they joined. So the money never moved. But this reader also feeds URCi_Collect
+        ;;and INFO_Collect, which told such an account it would receive the whole vault; and the
+        ;;theft was prevented by a stamp written in a DIFFERENT function, with nothing connecting
+        ;;the two. A number that is wrong everywhere except where one unrelated guard happens to
+        ;;stop it is a defect, not a defence.
+        (if (URC_IzDustSweepClaimant account)
             (UR_Global4)
             (URC_AvailableRewards account)
         )

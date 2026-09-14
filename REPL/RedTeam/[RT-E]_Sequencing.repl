@@ -116,13 +116,31 @@
                 (expect "<<RT-E-001>> the two counters DO diverge -- nzs rose, unclaimed did not"
                     [(+ nzs-before 1) unclaimed-before]
                     [(STOAICO.UR_Global5) (STOAICO.UR_Global7)])
-                ;;2] THE LATENT HAZARD, pinned as observed. The reader offers the whole vault to an
-                ;;   account owed nothing. This assertion is the one that matters long-term: it is
-                ;;   true today and harmless only because of the stamp checked at 3].
-                (expect "<<RT-E-001>> FINDING: the reader offers the ENTIRE vault to an account owed zero"
-                    [0.0 supply-before]
+                ;;2] THE DEFECT, NOW FIXED -- and this assertion is the inversion of the one that
+                ;;   found it. It used to read
+                ;;
+                ;;       [0.0 supply-before]      i.e. owed nothing, OFFERED the entire vault
+                ;;
+                ;;   because URC_ClaimableRewards branched on `(= (UR_Global7) 1)` alone --
+                ;;   unclaimed-count, a property of the VAULT -- and used it as an answer about the
+                ;;   ACCOUNT. Fixed 2026-09-14 (owner ruling) by URC_IzDustSweepClaimant, which
+                ;;   also requires that THIS account is a real staker and has not already collected
+                ;;   this round. The newcomer fails the second condition, so the two readers now
+                ;;   agree, which is what they should always have done.
+                (expect "<<RT-E-001>> the reader no longer offers the vault to an account owed zero"
+                    [0.0 0.0]
                     [(STOAICO.URC_AvailableRewards newcomer)
                      (STOAICO.URC_ClaimableRewards newcomer)])
+                ;;2b] NON-VACUITY, and it is essential here. Returning 0.0 to everyone would satisfy
+                ;;    2] while destroying the dust sweep -- the whole point of the branch is that
+                ;;    the LAST claimant is paid the remainder so rounding residue is never stranded.
+                ;;    The victim IS that claimant, and still gets the whole vault.
+                (expect "<<RT-E-001>> ...while the rightful last claimant is still paid the WHOLE vault"
+                    [true supply-before]
+                    [(STOAICO.URC_IzDustSweepClaimant victim)
+                     (STOAICO.URC_ClaimableRewards victim)])
+                (expect "<<RT-E-001>> ...and the newcomer is correctly NOT the sweep claimant"
+                    false (STOAICO.URC_IzDustSweepClaimant newcomer))
                 ;;3] ...and the single thing that stops it being theft: the newcomer is born
                 ;;   already-collected for the round they joined. Message checked, per the family
                 ;;   rule -- "refused" proves nothing if the refusal came from somewhere else.

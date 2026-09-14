@@ -191,7 +191,7 @@ Pact's `*` is binary — the same arity trap this project's ledger already recor
 three-argument `or`.*
 
 
-### RT-E-001 — the STOAICO dust sweep, and who counts as "last" *(REFUSED)*
+### RT-E-001 — the STOAICO dust sweep, and who counts as "last" *(REFUSED — the reader FIXED)*
 
 **Hypothesis.** STOAICO pays the last unclaimed staker the **whole remaining vault** rather than
 their computed share — a dust sweep, so nothing is stranded. "Last" is decided by
@@ -214,8 +214,33 @@ they joined. The source comment says so outright: *"a (mis-ordered) post-inject 
 eligible for the already-injected round."* Someone modelled this attack and closed it at the
 eligibility layer.
 
-**Why the block exists anyway.** The theft is prevented by a single stamp, written in a different
-function from the one computing the dangerous number, with no assertion previously connecting them.
+**FIXED 2026-09-14, on the owner's ruling that a wrong reader is an error whether or not it is
+exploitable.** The branch was
+
+```pact
+(if (= (UR_Global7) 1) (UR_Global4) (URC_AvailableRewards account))
+```
+
+`UR_Global7` is `unclaimed-count` — a property of the **vault**. The condition asks *"is exactly one
+claimant left?"* and never *"is **this** account that claimant?"*, so it **tested a global and
+returned a per-account answer**. `URC_IzDustSweepClaimant` now adds the two missing O(1) conditions:
+this account is a real staker, and it has not already collected this round.
+
+The measured line inverts, and the counters still diverge — the fix is to the reader, not to the
+accounting quirk that exposed it:
+
+    before   post-stake: unclaimed=1 nzs=3  newcomer-owed=0.000000  newcomer-OFFERED=690.525983
+    after    post-stake: unclaimed=1 nzs=3  newcomer-owed=0.000000  newcomer-OFFERED=0.000000
+
+**The non-vacuity arm is essential here and is now pinned.** Returning `0.0` to everyone would
+satisfy the repair while destroying the dust sweep, whose entire purpose is that the LAST claimant
+receives the remainder so rounding residue is never stranded. `<<RT-E-001>>` therefore also asserts
+that the rightful claimant still collects the whole vault, and that the newcomer is correctly *not*
+the sweep claimant.
+
+**Why the block existed even while the theft was impossible.** The theft is prevented by a single
+stamp, written in a different function from the one computing the dangerous number, with no
+assertion previously connecting them.
 `URC_ClaimableRewards` also feeds presentation paths, where it will state a figure the account
 cannot have. If that stamp ever changes — a newcomer starting at round 0 reads like harmless
 initialisation — this becomes a live theft primitive with nothing else in the way. The block pins
@@ -633,13 +658,14 @@ test:
 
 | attack | the guard that ought to refuse | the guard that actually did | status |
 |---|---|---|---|
-| `RT-E-001` dust sweep | a claimant-set check | a `last-collected-round` **stamp in a different function** | open |
+| `RT-E-001` dust sweep | a claimant-set check | a `last-collected-round` **stamp in a different function** | **FIXED** |
 | `RT-H-001` self-swap | `output-id NOT IN input-ids` | the **curve returning exactly zero** | **FIXED** |
 | `RT-H-001` duplicate input | a uniqueness check | a **stable-pool single-input rule** | **FIXED** |
 | `RT-C-001` treasury wipe | `GOV|DPTF_ADMIN` | a **solvency check one line above it** | **FIXED** |
 
 Every one of those was green and would have stayed green through the change that breaks it. Three
-were closed by the owner rulings below; `RT-E-001` remains open.
+were closed by the owner rulings below, and `RT-E-001` was closed on 2026-09-14 by a later
+ruling — *a wrong reader is an error whether or not it is exploitable*. **All four are now fixed.**
 
 **One of the three did not move where it was expected to**, and the reason is worth more than the
 fix. Adding `UEV_IzUnique` to `SWPU|X>SWAP` did **not** change what refuses a duplicated input on a

@@ -266,6 +266,71 @@ equal the expression it replaced is not detectable by a test that never varies t
 *Status:* **fixed** — all seven now read `URC_IsVirtualGasZero`. Four were the add-liquidity /
 issuance step-0 and rollback collections; three were rewritten wholesale by the `RT-F-001` split.
 
+### GS-06 — the dust sweep tested a global and returned a per-account answer *(FOUND + FIXED 2026-09-14)*
+
+`STOAICO::URC_ClaimableRewards` branched on one condition:
+
+```pact
+(if (= (UR_Global7) 1) (UR_Global4) (URC_AvailableRewards account))
+```
+
+`UR_Global7` is `unclaimed-count`, a property of the **vault**; `UR_Global4` is the whole remaining
+`wstoa-supply`. The branch asks *"is exactly one claimant left?"* and never *"is **this** account
+that claimant?"* — so whenever the count happened to be 1, **every** caller was told the entire vault
+was theirs. A guard on a global, producing a per-account figure.
+
+**Reached by a legitimate admin action, not an attack.** `unclaimed-count` is set to `nzs-count` only
+at inject, so recording a late contribution moves `nzs-count` and leaves `unclaimed-count` behind.
+Measured at `RedTeam/[RT-E]_Sequencing.repl` `<<RT-E-001>>`:
+
+    post-stake: unclaimed=1  nzs=3  newcomer-owed=0.000000  newcomer-OFFERED=690.525983
+
+**No theft was possible, and that is exactly why it survived.** `A_Stake` stamps a new contributor's
+`last-collected-round` to the *current* round and the collect capability enforces
+`(< last-collected-round distribution-round)` — a newcomer is born already-collected for the round
+they joined. The money never moved. But the reader also feeds `URCi_Collect` and `INFO_Collect`, so
+the preview *told* such an account it would receive the whole vault; and the thing preventing the
+theft was a stamp written in a **different function**, with nothing connecting the two.
+
+> **A number that is wrong everywhere except where one unrelated guard happens to stop it is a
+> defect, not a defence.** Owner ruling 2026-09-14: a wrong reader is an error whether or not it is
+> exploitable.
+
+*Status:* **fixed** — `URC_IzDustSweepClaimant` adds the two missing O(1) conditions (real staker;
+not already collected this round). `<<RT-E-001>>` inverts to `OFFERED=0.000000` **and** pins the
+non-vacuity half: the rightful last claimant still receives the whole vault, because returning `0.0`
+to everyone would satisfy the repair while destroying the dust sweep it exists to perform.
+
+### GS-07 — `P|UR_IMP` raised instead of refusing, in 61 modules *(FOUND + FIXED 2026-09-14)*
+
+`P|UR_IMP` was a bare `read`:
+
+```pact
+(at "m-policies" (read P|MT P|I ["m-policies"]))
+```
+
+so before **any** module had registered an inter-module policy, it raised
+`No value found in table <M>_P|MT for key: InterModulePolicies`. `P|UEV_IMC` is built on it, so in
+that window the inter-module gate answered with a raw table error naming a row key rather than
+refusing cleanly.
+
+Surfaced by the **X-01** repair: removing the harness registration removed the side effect that had
+been creating the row.
+
+**The reader disagreed with its own writer.** `P|A_AddIMP` already seeds the row with
+`[(create-capability-guard (SECURE))]` — the module's own capability guard, which no signature can
+satisfy and only the owning module's code can bring into scope. The fix makes `P|UR_IMP` default to
+the same thing, so the gate's answer is identical before and after the first registration.
+
+*Status:* **fixed in all 61 modules** that hold the function. Checked for uniformity before the
+sweep — 60 bodies byte-identical, one carrying an extra `@doc`; all 61 have a nullary `SECURE`; all
+61 already used that exact default in `P|A_AddIMP`. The owner's choice of default was not arbitrary:
+it is what the codebase already wrote.
+
+**Deliberately NOT defaulted to `[]`.** `UEV_Any` over an empty list is conventionally false, but
+that would make the safety of 61 modules rest on a utility's edge-case convention. Seeding the
+module's own guard is safe by construction.
+
 ## 1.2 Guard reachability — mute, shadowed and dead guards
 
 The single most repeated defect class in the codebase, resting on two Pact facts: **`let` binding
