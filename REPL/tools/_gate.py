@@ -312,6 +312,19 @@ def main():
         print(_rt.stdout + _rt.stderr)
         sys.exit("GATE FAILED: a RedTeam/ block has a malformed or duplicate attack header.")
 
+    # FIGURE SYNC. The narrative audit documents restate REPL_SUITE_STATS.md's headline numbers
+    # inline, because a published paper wants the figure on the page rather than a cross-reference.
+    # Those two copies drifted apart FOUR TIMES during 2026-09-14/15, and on the fourth the stale
+    # copy was `gate entrypoints | 77` sitting in the round report's HEADLINE TABLE -- a number from
+    # before the RedTeam suites existed, in a document that said 86 three other times. Each earlier
+    # reconciliation had grepped for the specific stale values already known about, which finds the
+    # drift you suspect and not the drift you do not. Fatal, because a stale figure reads exactly as
+    # authoritative as a fresh one, and this is the project's own rule about quoted numbers.
+    _fs = subprocess.run([sys.executable, "tools/_figuresync.py", "--check"], capture_output=True, text=True)
+    if _fs.returncode != 0:
+        print(_fs.stdout + _fs.stderr)
+        sys.exit("GATE FAILED: an audit document quotes a figure the generated stats do not support.")
+
     # CONFORMANCE and HEAVY-PREFIX, both fatal on VIOLATIONS only.
     # ADDED 2026-09-14, after a fix-verification pass found that both tools' "0" was a
     # HAND-MEASURED figure. The gate byte-compiled them and ran conformance's selftest, but never
