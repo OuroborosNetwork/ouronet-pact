@@ -32,6 +32,14 @@ def run(cmd, timeout=1800):
     return r.stdout
 
 
+# SIBLING TOOLS, resolved from __file__ (2026-09-14). These were bare names -- "_gate.py" --
+# which worked only while every tool sat in REPL/ and this script chdir'd there. After the move to
+# REPL/tools/ the cwd is still REPL/, so a bare name resolves to REPL/_gate.py and the subprocess
+# dies; `run()` swallows that into empty output, `grab()` returns None, and the first f-string
+# formatting a None is where it finally surfaces -- five steps from the cause.
+def TOOL(name):
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), name)
+
 def grab(text, pattern, cast=int, default=None):
     m = re.search(pattern, text)
     return cast(m.group(1).replace(",", "")) if m else default
@@ -40,18 +48,18 @@ def grab(text, pattern, cast=int, default=None):
 def main():
     t0 = time.time()
     print("running _scale_report.py --functions ...")
-    scale = run([sys.executable, "_scale_report.py", "--functions"])
+    scale = run([sys.executable, TOOL("_scale_report.py"), "--functions"])
     print("running _expectfail.py / _vacuous.py / _docclaims.py / _conformance.py ...")
-    expfail = run([sys.executable, "_expectfail.py"])
-    vac = run([sys.executable, "_vacuous.py"])
-    docs = run([sys.executable, "_docclaims.py", "--all"])
-    conf = run([sys.executable, "_conformance.py"])
+    expfail = run([sys.executable, TOOL("_expectfail.py")])
+    vac = run([sys.executable, TOOL("_vacuous.py")])
+    docs = run([sys.executable, TOOL("_docclaims.py"), "--all"])
+    conf = run([sys.executable, TOOL("_conformance.py")])
     print("running _enforce_coverage.py ...")
-    cov = run([sys.executable, "_enforce_coverage.py"])
+    cov = run([sys.executable, TOOL("_enforce_coverage.py")])
 
     if "--gate" in sys.argv:
         print("running _gate.py (full suite, ~3.5 min) ...")
-        gate = run([sys.executable, "_gate.py"], timeout=5400)
+        gate = run([sys.executable, TOOL("_gate.py")], timeout=5400)
         gate_src = "live run of `python3 _gate.py`"
     else:
         _c = _newest_gate()

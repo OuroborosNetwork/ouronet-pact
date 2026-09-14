@@ -56,15 +56,36 @@ explanation*, because stating precisely what an assertion proved exposed that it
 
 | | |
 |---|---:|
-| **distinct assertions written** | **5,413** |
-| **assertions executed per full gate run** | **21,732** |
+| **distinct assertions written** | **5,417** |
+| **assertions executed per full gate run** | **21,511** |
 | &nbsp;&nbsp;positive (`expect`) | 17,048 |
 | &nbsp;&nbsp;negative (`expect-failure`) | 3,873 |
 | gate entrypoints | **77** |
 | `.repl` files reachable from the gate | 306 |
 | orphaned asserting files (written but never run) | **0** |
 
-**Quote 5,413 for "how many tests exist" and 21,732 for "how much ran".** They differ ~4x because
+**Quote 5,417 for "how many tests exist" and 21,511 for "how much ran".** They differ ~4x because
+
+> **The executed figure fell from 21,732 to 21,511 in the X-01 repair, and that is not a coverage
+> regression.** Five guard-type assertions moved out of `Stage_01/[2.1]_Dalos.repl` — a genesis
+> fixture loaded by nearly all 86 entrypoints, so each assertion in it runs ~80 times — into
+> `Stage_01/[6.12]_DALOS-ADMIN.repl`, which few entrypoints load. **Distinct assertions rose by 4**
+> over the same change. The two figures moved in opposite directions because they measure different
+> things, exactly as this section's own rule says: *distinct* answers "how many tests exist",
+> *executed* answers "how much ran", and the difference between them is re-execution of shared
+> fixtures, not coverage.
+>
+> The moved assertions are also **stronger** where they landed: on the Talos path they cross the
+> IGNIS billing leg, which the core-direct form they replaced never touched.
+>
+> This is the first change in the project that separates the two figures visibly, and it is worth
+> keeping as the worked example. A reader shown only "21,732 → 21,511" would reasonably conclude
+> tests were lost. `_prerun.sh` concluded exactly that and refused the commit — correctly, on its
+> own terms, since `[2.1]` really did drop ten `expect`-containing lines. Conservation had to be
+> demonstrated (86 → 90 actual assertion forms across the changed files) before its snapshot was
+> rebaselined, because refreshing that snapshot is also precisely how a genuine loss would be
+> papered over.
+
 shared suite files execute once per entrypoint that loads them, and conflating them overstates the
 suite. Both are reported here for exactly that reason.
 
@@ -368,7 +389,7 @@ artefacts that feed the Chapter-2 documentation.
 
 | | |
 |---|---|
-| gate | **GREEN** — 86 entrypoints, 21,732 assertions, 0 failures |
+| gate | **GREEN** — 86 entrypoints, 21,511 assertions, 0 failures |
 | live unpinned guards | **0** |
 | `INFO_` previews named but unmeasured | **0** |
 | conformance violations | **0** |
@@ -427,7 +448,7 @@ not for the reason a reader would assume:
 | treasury-debt wipe | `GOV\|DPTF_ADMIN` | a **solvency check one line above it** |
 
 Each is green today and would **stay green through the change that breaks it**. This is the clearest
-limit on what §2's 21,732 executed assertions certify: they establish that the system behaves as
+limit on what §2's 21,511 executed assertions certify: they establish that the system behaves as
 documented, not that it is defended for the reasons the documentation implies.
 
 ### What it says about where the defects are

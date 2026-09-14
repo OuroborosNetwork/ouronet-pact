@@ -708,7 +708,7 @@ nobody can reach* — and will, as here, quietly turn a mislabelled test green.
 
 **FIXED 2026-09-14, and the blast radius was measured before anything moved.** Deleting the
 registration and re-running the full gate produced **exactly 10 failures — 5 assertions, counted
-twice — and not one other failure in 21,732.** That is what established that nothing downstream
+twice — and not one other failure in the 21,732 the suite executed at that moment.** That is what established that nothing downstream
 depended on the state those rotations set, which is the fact the move needed and the only one that
 could not be established by reading.
 

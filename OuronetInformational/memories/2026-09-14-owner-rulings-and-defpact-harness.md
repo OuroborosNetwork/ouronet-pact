@@ -194,3 +194,45 @@ iterating a **set difference of strings**, which Python varies between runs via 
 Fixed with an explicit `(-count, name)` sort key. This matters more here than it would elsewhere —
 the project's whole method is *regenerate and diff*, and a generator that changes its own output on
 an unchanged tree teaches the reader to ignore diffs.
+
+## A fourth tool the move broke — and the blind spot was one I chose
+
+`_suite_stats.py` crashed on the first regeneration after the tools move:
+
+    TypeError: unsupported format string passed to NoneType.__format__
+
+Same root cause as `_gate.py`'s: **sibling tools invoked by cwd-relative bare name**
+(`run([sys.executable, "_scale_report.py", ...])`). After the move the cwd is still `REPL/`, so a
+bare name resolves to `REPL/_scale_report.py`, which no longer exists.
+
+The failure chain is five steps long and only the last one is loud:
+
+    subprocess dies -> run() swallows it into empty output -> grab() returns None
+    -> rows silently omitted -> the first f-string formatting a None finally raises
+
+Had `files` been a field that tolerates `None`, this would have written a stats file with **quietly
+missing rows** and exited zero.
+
+**THE PART WORTH KEEPING IS WHY THE OUTPUT DIFF MISSED IT.** I excluded the two most expensive tools
+from the before/after snapshot — `_gate.py` and `_suite_stats.py` — and verified `_gate.py` by
+running the full gate instead. `_suite_stats.py` I never ran.
+
+In this toolset **expense correlates with being an ORCHESTRATOR** — a tool that shells out to
+siblings — and orchestrators are exactly what a directory move breaks. So the sampling method
+excluded the highest-risk population, and the exclusion was invisible in the result: *"38 of 42
+byte-identical"* reads as near-complete coverage, not as *"I skipped the two riskiest."*
+
+That is the third instrument-blindness of the same shape in one session:
+
+| instrument | reported | could not see |
+|---|---|---|
+| `_info_measured.py` | 397 of 412 previews MEASURED | defpacts — its unit is the transaction |
+| REPL-ROUND-REPORT §3 | 3 previews "structurally unmeasurable" | that the claim was never attempted |
+| the tools output diff | 38 of 42 identical | the 2 orchestrators I excluded for cost |
+
+> **A coverage figure inherits the shape of its sampling method, and the exclusions are rarely
+> visible in the figure.** Ask not "what did the check cover" but "what did I decide not to check,
+> and does that decision correlate with risk?" Here it did, and causally.
+
+The fix was three lines. One grep across all 44 tools for sibling invocation confirmed
+`_suite_stats.py` was the only other instance — the grep I should have run when I fixed `_gate.py`'s.
