@@ -41,7 +41,27 @@ if [ "${1:-}" = "--snapshot" ]; then
 fi
 if [ -f "$SNAP" ]; then
     while read -r cnt f; do
-        [ -f "$f" ] || { echo "FILE VANISHED since last green gate: $f"; fail=1; continue; }
+        if [ ! -f "$f" ]; then
+            # MOVED, not lost. A file that was relocated still carries its assertions, so calling
+            # that a regression is a false alarm -- and a ratchet that cries wolf is a ratchet
+            # people learn to ignore, which is worse than not having one. This fired for real on
+            # 2026-09-14 when 18 ungated probes were moved into archive/: eighteen "VANISHED"
+            # lines for eighteen files that had not lost a single assertion.
+            # So: look for the basename elsewhere in the tree first, and only call it a loss if
+            # the assertions are genuinely gone.
+            moved=$(find . -name "$(basename "$f")" -type f 2>/dev/null | head -1)
+            if [ -n "$moved" ]; then
+                oldc=$cnt; newc=$(grep -c 'expect' "$moved")
+                if [ "$newc" -lt "$oldc" ]; then
+                    echo "REGRESSION: $f moved to $moved and LOST assertions  $oldc -> $newc"; fail=1
+                else
+                    echo "note: moved $f -> $moved ($newc assertions intact)"
+                fi
+            else
+                echo "FILE VANISHED since last green gate: $f"; fail=1
+            fi
+            continue
+        fi
         now=$(grep -c 'expect' "$f")
         if [ "$now" -lt "$cnt" ]; then
             echo "REGRESSION vs last green gate: $f  $cnt -> $now"; fail=1
