@@ -121,9 +121,21 @@ EXCLUDED = [
     # aborts instead, in BRD|BrandingTable -- which is keyed on the bare id and SHARED across every
     # collection type, so per-type separation does not give cross-type id independence. Now pinned as
     # the behaviour it actually has.
+    # REASON CORRECTED 2026-09-14. It previously read "fails inside its own VCTGAS probe module --
+    # same known breakage as VCT-gas-sweep.repl", which is not what happens and was never checked.
+    # The file dies at its FIRST load, before any Ouronet code runs:
+    #     pact: Kursan/Stage00_Sanboxes.repl: openFile: does not exist
+    # Its loads are written relative to the REPL root (`(load "Stage00_Sanboxes.repl")`) while it
+    # lives in Kursan/, where every working sibling uses `../`. It was moved into Kursan/ and its
+    # paths were never fixed, so it has never run from here at all. A wrong exclusion reason is
+    # worse than no reason: it sends the next person to debug a probe module that is never reached.
+    # NOT repaired, because nothing is lost by leaving it: [6.2.6]_AQP-VCT-GAS.repl is loaded by
+    # three LIVE gate entrypoints (Kursan/AQP-scale-{inject,vacate,sweep}.repl), so its coverage is
+    # in the gate regardless. Repair it only if the comprehensive driver is wanted for its own sake.
     ("Kursan/VCT-comprehensive.repl",
-                       "driver for [6.2.6]_AQP-VCT-GAS, which fails inside its own VCTGAS probe "
-                       "module -- same known breakage as VCT-gas-sweep.repl below"),
+                       "load paths are relative to the REPL root but the file lives in Kursan/, so "
+                       "it aborts on its first (load) -- verified 2026-09-14; its [6.2.6] coverage "
+                       "is already in the gate via the three Kursan/AQP-scale-*.repl entrypoints"),
     ("Kursan/table-write-partial-test",
                        "Pact-semantics scratch probes about partial table writes; their expects "
                        "are deliberately unsatisfied experiments, not suite assertions"),
@@ -267,6 +279,17 @@ def main():
     if _ld.returncode != 0:
         print(_ld.stdout + _ld.stderr)
         sys.exit("GATE FAILED: a citizen minter batch ladder does not tile its collection.")
+
+    # WRONG-COLUMN PROJECTIONS. A projecting `read` naming a column its table's schema lacks is
+    # not an error in Pact -- it returns {} and fails one call later as `Key "x" not found in
+    # object: {}`, which reads like a missing ROW. Found exactly that in AOZ (UR_NonFungible
+    # projected the SemiFungible column), where it made a registry write-only through the public
+    # interface. Total failures delete their own evidence: a function that never works is never
+    # called, so no test is left to notice. Static shape, static check.
+    _cp = subprocess.run([sys.executable, "_colproj.py", "--check"], capture_output=True, text=True)
+    if _cp.returncode != 0:
+        print(_cp.stdout + _cp.stderr)
+        sys.exit("GATE FAILED: a projecting read names a column its table does not have.")
 
     # TOOL INTEGRITY. Every analysis tool in this directory is a `_*.py`; none of them is imported
     # by the gate, so a syntax error in one is INVISIBLE here. That is not hypothetical -- on

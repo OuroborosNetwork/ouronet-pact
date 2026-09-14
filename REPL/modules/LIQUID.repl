@@ -246,11 +246,12 @@
 ;; re-funds the target. That is the property worth pinning, because it is the reason this op is
 ;; admin-only and pause-gated rather than a routine treasury move.
 ;;
-;; Precondition, and it is stated BACKWARDS in the code (same defect as the DALOS twin):
+;; Precondition. Its message USED to be stated backwards (same defect as the DALOS twin):
 ;;   (enforce gap "Migration can only be executed when Global Administrative Pause is offline")
-;; `enforce gap` passes when gap is TRUE, i.e. when the pause is ONLINE. Only the message is
-;; wrong; requiring GAP ON is correct, since it freezes the chain for the window in which the
-;; escrow is empty.
+;; `enforce gap` passes when gap is TRUE, i.e. when the pause is ONLINE, so the text told an
+;; operator to do the opposite of what the guard wanted. Requiring GAP ON was always correct --
+;; it freezes the chain for the window in which the escrow is empty. FIXED 2026-09-14 (one word);
+;; the wording is pinned by modules/DALOS-ADMIN.repl <<DALOS-ADMIN-03b>>.
 (env-data
     ;;A DIFFERENT keyset from LQD-03pre's on purpose: create-principal is deterministic, so the
     ;;same keyset yields the same account and coin.create-account would abort on the second

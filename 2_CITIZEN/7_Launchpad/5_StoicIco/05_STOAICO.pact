@@ -494,13 +494,42 @@
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
             ;;1]Collect wSTOA and URSTOA Rewards — delivered to <account>, the rightful owner
-            (ref-TS01-C1::DPTF|C_Mint patron urSTOA-id DEMIPAD|SC_NAME urSTOA-supply false)
+            ;;
+            ;;VAULT-DEADLOCK FIX (2026-09-14). The urSTOA mint used to sit ABOVE this `if`,
+            ;;UNCONDITIONAL, while only the DELIVERY was guarded on (!= urSTOA-supply 0.0). But a
+            ;;zero-amount mint is refused: C_Mint -> DPTF|C>MINT -> DPTF|C>CREDIT -> UEV_Amount ->
+            ;;(enforce (> amount 0.0)). And step 6 below (XI_ResetUrstoaEarned) zeroes the account's
+            ;;urSTOA entitlement as part of its FIRST collect. So on the account's SECOND
+            ;;distribution-round -- when a fresh A_Inject has advanced <current-rps> and real wSTOA
+            ;;IS owed -- the whole transaction aborted on the mint.
+            ;;
+            ;;It was a DEADLOCK, not a nuisance, because all three exits share this core and shut
+            ;;together: C_Collect aborts; AA_FlushUncollected maps XI_CollectFor over the stragglers
+            ;;and fails identically; and A_Inject refuses to open a new round while
+            ;;(!= unclaimed-count 0). The vault stops paying and cannot be restarted from ANY
+            ;;entrypoint. IGNIS::C_TransferDalosFuel documents this exact lesson in its own @doc --
+            ;;it simply was not applied here.
+            ;;
+            ;;The fix is the guard the delivery already had, moved to cover the mint as well. The
+            ;;wSTOA leg is guarded on the same principle: a staker whose RPS delta is zero has
+            ;;nothing to transfer either, and a zero transfer is refused by the same UEV_Amount.
+            ;;Steps 2-6 still run in every branch, which is what actually clears the straggler out
+            ;;of <unclaimed-count> and lets the next round open.
             (if (!= urSTOA-supply 0.0)
-                (ref-TS01-C1::DPTF|C_MultiTransfer patron
-                    [wSTOA-id urSTOA-id] DEMIPAD|SC_NAME account
-                    [wSTOA-supply urSTOA-supply] true
+                (do
+                    (ref-TS01-C1::DPTF|C_Mint patron urSTOA-id DEMIPAD|SC_NAME urSTOA-supply false)
+                    (if (!= wSTOA-supply 0.0)
+                        (ref-TS01-C1::DPTF|C_MultiTransfer patron
+                            [wSTOA-id urSTOA-id] DEMIPAD|SC_NAME account
+                            [wSTOA-supply urSTOA-supply] true
+                        )
+                        (ref-TS01-C1::DPTF|C_Transfer patron urSTOA-id DEMIPAD|SC_NAME account urSTOA-supply true)
+                    )
                 )
-                (ref-TS01-C1::DPTF|C_Transfer patron wSTOA-id DEMIPAD|SC_NAME account wSTOA-supply true)
+                (if (!= wSTOA-supply 0.0)
+                    (ref-TS01-C1::DPTF|C_Transfer patron wSTOA-id DEMIPAD|SC_NAME account wSTOA-supply true)
+                    "STOAICO: nothing owed this round -- settle-only, no delivery"
+                )
             )
             ;;2]Reset <pending-rewards> to 0
             (XI_ResetPendingRewards account)

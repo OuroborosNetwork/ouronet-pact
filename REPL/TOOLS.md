@@ -14,6 +14,7 @@ parser desyncs on them) at least four times.
 |---|---|
 | `_audit_modref_calls.py` | (no docstring) |
 | `_cheapseam.py` | Remaining unpinned guards that sit in a PLAIN callable defun (UEV_/URCv_/UCv_/UC_/URC_). |
+| `_colproj.py` | WRONG-COLUMN PROJECTIONS — a projecting `read` asking for a column its own table's schema lacks. Pact returns `{}` and fails a call later as a missing ROW. Gate-enforced. |
 | `_conformance.py` | STATIC CONFORMANCE LINTER — does the code obey the prefix contracts it claims? |
 | `_deadbind.py` | DEAD LET-BINDINGS — a `let` binding that COMPUTES something and is then never read. |
 | `_deadguard.py` | DEAD-GUARD PRE-PASS (plan step 3.4, run BEFORE 3.3) — which `enforce`s can never fire? |

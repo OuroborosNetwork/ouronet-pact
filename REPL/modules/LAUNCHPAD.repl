@@ -142,3 +142,457 @@
 )
 (env-sigs [])
 (rollback-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "LPAD-N1 - restock the holder so the CUSTOM redemption entrypoints have something to redeem")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== LPAD-N1 · 01 · buy 20 Sparks for the holder ====
+(print "--- [LPAD-N1 · 01 · buy] ---")
+;;SETUP, not the coverage. `[5.3]` ends on TX-SPK-03, which redeems ANHD's ENTIRE liquid Spark
+;;balance -- so at this point the holder owns zero liquid Sparks and every redemption entrypoint
+;;is refused by `SPARK|C>X_REEDEM`'s `(> redemption-quantity 0.0)` bound before it reaches any
+;;code worth testing. This block re-stocks the holder.
+;;
+;;The env-sigs shape is TX-SPK-01's, and it is not decoration: DEMIPAD|C_Deposit splits the
+;;buyer's native STOA four ways plus an environment leg, and every leg needs its own
+;;coin.TRANSFER cap at the exact amount URC_Prices computes.
+(let
+    (
+        (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+        (ref-SPARK:module{SparksV2} DEMIPAD-SPARK)
+        (spark-id:string "SPARK-98c486052a51")
+        (amount:integer 20)
+    )
+    (let
+        (
+            (prices-obj:object{DemiourgosLaunchpadV2.DEMIPAD|Prices}
+                (ref-DPAD::URC_Prices spark-id (at "pid" (ref-SPARK::URC_SparkAmountCosts amount)) 0))
+        )
+        (let
+            (
+                (a1:decimal (at "amount-one" prices-obj))
+                (a2:decimal (at "amount-two" prices-obj))
+                (a3:decimal (at "amount-three" prices-obj))
+                (a4:decimal (at "amount-four" prices-obj))
+                (env-amount:decimal (at "enviroment-amount" prices-obj))
+                (non-enviroment:decimal
+                    (+ (at "coding-amount" prices-obj) (at "remainder-amount" prices-obj)))
+            )
+            (env-sigs
+                [ { "key": "PK_AncientHodler", "caps": [] }
+                  { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+                    "caps":
+                      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                            "c:ZNfuj3iZI83n7MUSKGuoXoSxFg1cyMxCzB3szUHVvrI" non-enviroment)
+                        (coin.TRANSFER "c:ZNfuj3iZI83n7MUSKGuoXoSxFg1cyMxCzB3szUHVvrI"
+                            "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" env-amount)
+                        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                            "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" a1)
+                        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                            "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" a2)
+                        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                            "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" a3)
+                        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                            "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" a4) ] } ])
+            (let
+                (
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-CPAD:module{CitizenLaunchpadTalosV2} TS02-CPAD)
+                )
+                (let
+                    (
+                        (buyer0:decimal (ref-DPTF::UR_AccountSupply spark-id KST.ANHD))
+                    )
+                    (ref-CPAD::SPARK|C_BuySparks KST.ANHD KST.ANHD amount true -1.0)
+                    (map print
+                        [
+                            ;;the precondition the next two blocks rest on: a NON-zero liquid balance
+                            (expect "<<LPAD-N1>> the holder's liquid Spark balance was restocked to 20"
+                                (+ buyer0 (dec amount)) (ref-DPTF::UR_AccountSupply spark-id KST.ANHD))
+                            (expect "<<LPAD-N1>> ...and [5.3] really had left it empty"
+                                0.0 buyer0)
+                        ]
+                    )
+                )
+            )
+        )
+    )
+    ""
+)
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "LPAD-N2 - SPARK C_CustomRedemFewSparks: the CALLER's STOA price is what pays, not the oracle's")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== LPAD-N2 · 01 · redeem a few at a caller-supplied STOA price ====
+(print "--- [LPAD-N2 · 01 · custom redeem few] ---")
+;;FUNCTION COVERAGE -- `DEMIPAD-SPARK::C_CustomRedemFewSparks` was reached by NO test anywhere.
+;;It has no TS02-CPAD wrapper either (the Talos exposes only SPARK|C_RedemAll/FewSparks), so the
+;;citizen entrypoint is called directly here, which is the only way it can be called at all.
+;;
+;;WHAT MAKES IT "CUSTOM", AND THE ONLY THING WORTH ASSERTING. The plain path prices a redemption
+;;through `URC_SparkRedemptionCost`, which divides the 1.4 boosted dollar value by the STOA/USD
+;;oracle (`U|CT::UR_STOA-PID|Price`, stubbed at 0.1 -> 14.0 wSTOA per Spark). The custom path
+;;calls `URC_CustomSparkRedemptionCost` with a pid the CALLER hands in, and divides by that
+;;instead. So the one observable difference is the size of the wSTOA leg, and the test has to be
+;;a value test against the custom pid -- "it ran" would pass just as well against the oracle.
+;;
+;;The custom pid is deliberately 0.2, DOUBLE the stub, so the custom rate is 7.0 and the oracle
+;;rate is 14.0. Assertion 1 pins that the two really do differ in this fixture: if the stub ever
+;;moves to 0.2 the discriminating assertion below would silently become a tautology, and this
+;;guard turns that into a red test instead.
+;;
+;;BOTH parties sign. The cap is scoped to the account being redeemed, but step 1 of
+;;XI_CustomRedeemSparks is a wSTOA transfer FROM the payer, and DPTF enforces the sender's
+;;ownership -- the payer's signature is not implied by the capability the entrypoint names.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-SPARK:module{SparksV2} DEMIPAD-SPARK)
+        (spark-id:string "SPARK-98c486052a51")
+        (frozen:string "F|SPARK-98c486052a51")
+        (pad:string DEMIPAD-SPARK.DEMIPAD|SC_NAME)
+        (qty:decimal 5.0)
+        (custom-pid:decimal 0.2)
+    )
+    (let
+        (
+            (w:string (ref-DALOS::UR_WrappedStoaID))
+            (oracle-cost:decimal (ref-SPARK::URC_SparkRedemptionCost))
+            (custom-cost:decimal (DEMIPAD-SPARK.URC_CustomSparkRedemptionCost custom-pid))
+        )
+        (let
+            (
+                (holder0:decimal (ref-DPTF::UR_AccountSupply spark-id KST.ANHD))
+                (frozen0:decimal (ref-DPTF::UR_AccountSupply frozen KST.ANHD))
+                (holder-w0:decimal (ref-DPTF::UR_AccountSupply w KST.ANHD))
+                (payer-w0:decimal (ref-DPTF::UR_AccountSupply w KST.EMMA))
+                (pad0:decimal (ref-DPTF::UR_AccountSupply spark-id pad))
+                (supply0:decimal (ref-DPTF::UR_Supply spark-id))
+                (ignis0:decimal (ref-DALOS::UR_TF_AccountSupply KST.ANHD false))
+            )
+            (ref-SPARK::C_CustomRedemFewSparks KST.ANHD KST.EMMA KST.ANHD qty custom-pid)
+            (map print
+                [
+                    (format "<<LPAD-N2>> oracle-rate={} custom-rate={}" [oracle-cost custom-cost])
+                    ;;the guard that keeps assertion 2 from degenerating into a tautology
+                    (expect "<<LPAD-N2>> the custom rate and the oracle rate really are different here"
+                        false (= custom-cost oracle-cost))
+                    ;;THE discriminator: the payout follows the pid the caller passed
+                    (expect "<<LPAD-N2>> the holder was paid at the CALLER's pid, not the oracle's"
+                        (+ holder-w0 (* qty custom-cost)) (ref-DPTF::UR_AccountSupply w KST.ANHD))
+                    (expect "<<LPAD-N2>> the PAYER funded exactly that, at the same custom rate"
+                        (- payer-w0 (* qty custom-cost)) (ref-DPTF::UR_AccountSupply w KST.EMMA))
+                    ;;the Spark leg of the trade is identical to the plain path: liquid out, frozen in
+                    (expect "<<LPAD-N2>> the redeemed Sparks left the holder's liquid balance"
+                        (- holder0 qty) (ref-DPTF::UR_AccountSupply spark-id KST.ANHD))
+                    (expect "<<LPAD-N2>> ...and the same count returned FROZEN"
+                        (+ frozen0 qty) (ref-DPTF::UR_AccountSupply frozen KST.ANHD))
+                    ;;the pad is a way station -- step 5 re-mints onto it, step 6 freeze-links out
+                    (expect "<<LPAD-N2>> the pad's liquid balance nets to NO change"
+                        pad0 (ref-DPTF::UR_AccountSupply spark-id pad))
+                    (expect "<<LPAD-N2>> INVARIANT: wipe-then-remint conserves Spark supply"
+                        supply0 (ref-DPTF::UR_Supply spark-id))
+                    ;;Sigma billing: six sovereign Talos ops, each self-collecting IGNIS on the
+                    ;;patron. A citizen cannot fold cumulators, so the patron pays six times -- and
+                    ;;the measurement that proves it happened is the patron's IGNIS balance falling.
+                    (expect "<<LPAD-N2>> the patron was Sigma-billed IGNIS for the six Talos ops"
+                        true (> (- ignis0 (ref-DALOS::UR_TF_AccountSupply KST.ANHD false)) 0.0))
+                ]
+            )
+        )
+    )
+    ""
+)
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "LPAD-N3 - SPARK C_CustomRedemAllSparks: ALL means the whole current balance")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== LPAD-N3 · 01 · redeem the remainder at the oracle's own pid ====
+(print "--- [LPAD-N3 · 01 · custom redeem all] ---")
+;;FUNCTION COVERAGE -- `DEMIPAD-SPARK::C_CustomRedemAllSparks`, also reached by nothing.
+;;
+;;ALL vs FEW is one line of difference: `C_CustomRedemFewSparks` forwards the caller's quantity,
+;;`C_CustomRedemAllSparks` reads `DPTF::UR_AccountSupply` for the account and forwards THAT. So
+;;the assertion that distinguishes them is "the liquid balance ends at exactly zero, whatever it
+;;was, and the payout scales with that whole balance" -- not "it ran". LPAD-N2 left 15 Sparks, an
+;;amount no constant in this block mentions.
+;;
+;;THE CUSTOM PID IS 0.1 HERE ON PURPOSE, i.e. exactly the oracle stub. That makes this call
+;;numerically identical to the plain `C_RedemAllSparks`, which is what licenses the billing
+;;assertion at the end: `INFO_RedeemSparks` is written against the ORACLE rate, so it is an exact
+;;quote for this call and a wrong one for LPAD-N2's doubled pid. Quoting the charge and then
+;;measuring the patron's IGNIS balance across the live call is the same shape as <<LPAD-I1>>.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-SPARK:module{SparksV2} DEMIPAD-SPARK)
+        (spark-id:string "SPARK-98c486052a51")
+        (frozen:string "F|SPARK-98c486052a51")
+        (custom-pid:decimal 0.1)
+    )
+    (let
+        (
+            (w:string (ref-DALOS::UR_WrappedStoaID))
+            (cost:decimal (DEMIPAD-SPARK.URC_CustomSparkRedemptionCost custom-pid))
+        )
+        (let
+            (
+                (holder0:decimal (ref-DPTF::UR_AccountSupply spark-id KST.ANHD))
+                (frozen0:decimal (ref-DPTF::UR_AccountSupply frozen KST.ANHD))
+                (holder-w0:decimal (ref-DPTF::UR_AccountSupply w KST.ANHD))
+                (supply0:decimal (ref-DPTF::UR_Supply spark-id))
+            )
+            (let
+                (
+                    (predicted:decimal
+                        (at "ignis-need" (at "ignis"
+                            (ref-SPARK::INFO_RedeemSparks KST.ANHD KST.EMMA KST.ANHD holder0))))
+                    (ignis0:decimal (ref-DALOS::UR_TF_AccountSupply KST.ANHD false))
+                )
+                (map print
+                    [
+                        (expect "<<LPAD-N3>> precondition: the holder still holds liquid Sparks"
+                            true (> holder0 0.0))
+                    ]
+                )
+                (ref-SPARK::C_CustomRedemAllSparks KST.ANHD KST.EMMA KST.ANHD custom-pid)
+                (map print
+                    [
+                        (format "<<LPAD-N3>> redeemed={} predicted-ignis={} real-ignis={}"
+                            [holder0 predicted
+                             (- ignis0 (ref-DALOS::UR_TF_AccountSupply KST.ANHD false))])
+                        ;;ALL, not a fixed quantity
+                        (expect "<<LPAD-N3>> RedemAll empties the liquid balance to exactly zero"
+                            0.0 (ref-DPTF::UR_AccountSupply spark-id KST.ANHD))
+                        (expect "<<LPAD-N3>> every one of them came back frozen"
+                            (+ frozen0 holder0) (ref-DPTF::UR_AccountSupply frozen KST.ANHD))
+                        (expect "<<LPAD-N3>> paid for the WHOLE remaining balance, not a fixed amount"
+                            (+ holder-w0 (* holder0 cost)) (ref-DPTF::UR_AccountSupply w KST.ANHD))
+                        (expect "<<LPAD-N3>> INVARIANT: Spark supply is still conserved"
+                            supply0 (ref-DPTF::UR_Supply spark-id))
+                        ;;billing, measured rather than assumed
+                        (expect "<<LPAD-N3>> INFO_RedeemSparks' quote equals what the redeem charged"
+                            (- ignis0 (ref-DALOS::UR_TF_AccountSupply KST.ANHD false)) predicted)
+                        (expect "<<LPAD-N3>> ...and it is a real, non-zero charge"
+                            true (> predicted 0.0))
+                    ]
+                )
+            )
+        )
+    )
+    ""
+)
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "LPAD-N4 - the bound underneath both CUSTOM redemption entrypoints")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== LPAD-N4 · 01 · both sides of SPARK|C>X_REEDEM's amount bound ====
+(print "--- [LPAD-N4 · 01 · the bound] ---")
+;;THE BOUNDARY BETWEEN "ALL" AND "FEW", stated as the two ways it can be crossed. Both custom
+;;entrypoints funnel into `SPARK|C>X_REEDEM`, whose enforce is
+;;`(and (> redemption-quantity 0.0) (<= redemption-quantity supply))`:
+;;  - ALL can only ever fail the LEFT half, because it passes the balance itself as the quantity,
+;;    so on the emptied account LPAD-N3 left behind the quantity is 0.0;
+;;  - FEW can only ever fail the RIGHT half, because the quantity comes from the caller and can be
+;;    driven above the balance. Neither entrypoint can reach the other's half.
+;;(The spelling "Redemmption" is the source's; matched verbatim on purpose.)
+;;
+;;Own transaction ending in (rollback-tx): Rule 9 of REPL_TEST_ARCHITECTURE.md -- an
+;;expect-failure on a state-mutating op never shares a committing transaction.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-SPARK:module{SparksV2} DEMIPAD-SPARK)
+        (spark-id:string "SPARK-98c486052a51")
+    )
+    (map print
+        [
+            (expect "<<LPAD-N4>> precondition: LPAD-N3 really did empty the liquid balance"
+                0.0 (ref-DPTF::UR_AccountSupply spark-id KST.ANHD))
+            (expect-failure "<<LPAD-N4>> CustomRedemAll on an already-empty balance hits the `> 0.0` half"
+                "Invalid Redemmption Amount"
+                (ref-SPARK::C_CustomRedemAllSparks KST.ANHD KST.EMMA KST.ANHD 0.1))
+            (expect-failure "<<LPAD-N4>> CustomRedemFew above the balance hits the `<= supply` half"
+                "Invalid Redemmption Amount"
+                (ref-SPARK::C_CustomRedemFewSparks KST.ANHD KST.EMMA KST.ANHD 1000000.0 0.1))
+        ]
+    )
+    ""
+)
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(rollback-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "LPAD-N5 - SNAKES A_UpdateSharePrice cannot reach DEMIPAD: the caller policy it needs is never held")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== LPAD-N5 · 01 · the share-price updater is refused before it writes ====
+(print "--- [LPAD-N5 · 01 · share price] ---")
+;;DEFECT FOUND BY THIS BLOCK, AND FIXED 2026-09-14. The diagnosis below is kept verbatim because
+;;the MECHANISM is the whole lesson; the assertions are now the positive test it predicted.
+;;
+;;`DEMIPAD-SNAKES::A_UpdateSharePrice` is reached by nothing in the suite, and the reason is that
+;;it cannot be reached by anything AT ALL -- not merely by this fixture:
+;;
+;;  - it forwards to the sovereign `DEMIPAD::A_DefinePrice`, whose first statement is `P|UEV_IMC`,
+;;    an inter-module-caller gate: `U|G::UEV_Any` over DEMIPAD's registered policy guards;
+;;  - the guard that would admit SNAKES is `(create-capability-guard (P|SNAKES|CALLER))`, which
+;;    SNAKES itself registers into that list in its own `P|A_Define`;
+;;  - a capability guard only passes while its capability is IN SCOPE, and `A_UpdateSharePrice`
+;;    has no `with-capability` at all. Its sibling `C_Acquire` does the opposite: it wraps
+;;    `SNAKES|ACQUIRE`, which composes `P|SNAKES|CALLER`, which is exactly why the deposit it
+;;    forwards to passes the same gate.
+;;  - and there is no wrapper anywhere else to supply that context: `TS02-CPAD` exposes
+;;    `SNAKES|C_Acquire` only, and no module calls `A_UpdateSharePrice`.
+;;
+;;So the admin guard `GOV|DEMIPAD_ADMIN` underneath is never even consulted, and the requested
+;;"non-admin signer is refused" test is not writable: an admin and a non-admin are refused
+;;identically, one gate earlier, with the same message. What is pinned instead is the true
+;;behaviour -- refused, and NOTHING written. The second assertion is the one that matters: it
+;;proves the refusal happens before the update lands, not after a partial write.
+;;
+;;THE FIX APPLIED: wrapping the body in
+;;`(with-capability (P|SECURE-CALLER) ...)` (or any cap composing `P|SNAKES|CALLER`) makes the
+;;call succeed, this expect-failure fail, and the block should then be rewritten as the positive
+;;test: new price stored, non-admin signer refused by `GOV|DEMIPAD_ADMIN`.
+;;
+;;Signed as the launchpad admin exactly as `[5.3]` signs its `A_DefinePrice` calls, so the refusal
+;;cannot be blamed on a missing signature.
+;;Own transaction ending in (rollback-tx): Rule 9 -- an expect-failure on a state-mutating op
+;;never shares a committing transaction.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_LPAD", "caps": [] }])
+(let
+    (
+        (ref-SNAKES:module{SaleSnakesV2} DEMIPAD-SNAKES)
+    )
+    (let
+        (
+            (before:decimal (ref-SNAKES::UR_DollarSharePrice))
+        )
+        (map print
+            [
+                (format "<<LPAD-N5>> share price on record = {}" [before])
+                ;;THE REGRESSION. Before the fix this call could not succeed for ANY signer.
+                (expect "<<LPAD-N5>> the admin's update is accepted now that P|UEV_IMC can pass"
+                    true (> (length (ref-SNAKES::A_UpdateSharePrice 17.5)) 0))
+                (expect "<<LPAD-N5>> ...and the new share price is what the reader returns"
+                    17.5 (ref-SNAKES::UR_DollarSharePrice))
+                ;;non-vacuity: 17.5 must not have been the price already, or the line above proves nothing
+                (expect "<<LPAD-N5>> ...which is a real change: 17.5 was not the price before"
+                    false (= before 17.5))
+            ]
+        )
+        ;;THE SECOND HALF, and it was NOT WRITABLE before the fix. While P|UEV_IMC refused every
+        ;;caller, an admin and a non-admin were rejected identically one gate earlier with the same
+        ;;message -- so "the admin gate works" could not be tested at all. Now that P|UEV_IMC passes,
+        ;;GOV|DEMIPAD_ADMIN is the gate that decides, and it can be shown to decide.
+        (env-sigs [{ "key": "PK_Emma", "caps": [] }])
+        (map print
+            [
+                (expect-failure "<<LPAD-N5>> a NON-admin is refused -- by the ADMIN gate, now reachable"
+                    "Keyset failure"
+                    (ref-SNAKES::A_UpdateSharePrice 99.0))
+                ;;total refusal, not a partial write: the admin's 17.5 still stands
+                (expect "<<LPAD-N5>> ...and the price the admin set is untouched by the attempt"
+                    17.5 (ref-SNAKES::UR_DollarSharePrice))
+            ]
+        )
+    )
+    ""
+)
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(rollback-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "LPAD-N6 - CUSTODIANS A_UpdateQuintessencePrice is the same defect in the twin module")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== LPAD-N6 · 01 · the quintessence-price updater is refused before it writes ====
+(print "--- [LPAD-N6 · 01 · quintessence price] ---")
+;;DEFECT FOUND AND FIXED -- the identical shape to <<LPAD-N5>>, in the twin module.
+;;`DEMIPAD-CUSTODIANS::A_UpdateQuintessencePrice` forwards to `DEMIPAD::A_DefinePrice` with no
+;;`with-capability`, so `P|SNAKES|CALLER`'s counterpart `P|CUSTODIANS|CALLER` is never in scope
+;;and DEMIPAD's `P|UEV_IMC` refuses it. Pinned separately rather than folded into N5 because the
+;;two are independent modules: fixing one leaves the other broken, and a single shared assertion
+;;would go quiet about the half that was not fixed.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_LPAD", "caps": [] }])
+(let
+    (
+        (ref-CUSTODIANS:module{SaleCustodiansV2} DEMIPAD-CUSTODIANS)
+    )
+    (let
+        (
+            (before:decimal (ref-CUSTODIANS::UR_QuitessencePrice))
+        )
+        (map print
+            [
+                (format "<<LPAD-N6>> quintessence price on record = {}" [before])
+                ;;THE REGRESSION, twin of <<LPAD-N5>>.
+                (expect "<<LPAD-N6>> the admin's update is accepted now that P|UEV_IMC can pass"
+                    true (> (length (ref-CUSTODIANS::A_UpdateQuintessencePrice 2.75)) 0))
+                (expect "<<LPAD-N6>> ...and the new quintessence price is what the reader returns"
+                    2.75 (ref-CUSTODIANS::UR_QuitessencePrice))
+                (expect "<<LPAD-N6>> ...which is a real change: 2.75 was not the price before"
+                    false (= before 2.75))
+            ]
+        )
+        (env-sigs [{ "key": "PK_Emma", "caps": [] }])
+        (map print
+            [
+                (expect-failure "<<LPAD-N6>> a NON-admin is refused -- by the ADMIN gate, now reachable"
+                    "Keyset failure"
+                    (ref-CUSTODIANS::A_UpdateQuintessencePrice 99.0))
+                (expect "<<LPAD-N6>> ...and the price the admin set is untouched by the attempt"
+                    2.75 (ref-CUSTODIANS::UR_QuitessencePrice))
+            ]
+        )
+    )
+    ""
+)
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(rollback-tx)

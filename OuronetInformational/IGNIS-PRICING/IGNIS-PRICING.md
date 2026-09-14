@@ -312,9 +312,19 @@ gas-station-subsidised hydra slices). A core op returning `UC_EmptyOc` charges n
 
 # 8. Verification rules — learned the hard way
 
-* **Gate on `ZALL.repl`, never `Z.repl`.** `Z.repl` skips `[6.1]_Cumulator.repl`, where the price
-  assertions live. A green `Z.repl` on a pricing change executes none of the assertions written to
-  protect it. A clean full run is **6279 lines** ending "Load successful".
+* **Gate on `python3 REPL/_gate.py` — or at minimum `ZALL.repl`, never `Z.repl`.**
+  CORRECTED 2026-09-14. This rule previously said a green `Z.repl` "executes none of the assertions
+  written to protect" pricing. That is **false**, and it was never checked: `Z.repl` →
+  `Stage02_Tester.repl` runs `[6.1.9]_PRICE-SWEEP.repl` (64 assertions) and, through
+  `[6.2]_AQP.repl`, `[6.2.16]_AQP-PRICE-SWEEP.repl` (42). **106 pricing assertions do run under
+  `Z.repl`.** What it skips is `[6.1]_Cumulator.repl`'s **75**, commented out at
+  `Stage01_Tester.repl:32`.
+  The rule itself survives, and the skipped 75 are the ones that matter most: they are the
+  **leg-level** assertions. On 2026-09-14 `[6.1]`'s `<<TX-IGC-008>>` was the only assertion in the
+  entire suite that caught a VST preview leg-split — every total-level assertion agreed, because
+  the total was unchanged. So: a quarter of the pricing assertions, including every leg-level one,
+  are outside the fast path. State it that way; an overstated rule is one people stop believing.
+  A clean full run is **6279 lines** ending "Load successful".
 * **A green pipeline is not evidence a price is right.** A half-migrated `(if son …)` branch kept
   charging the legacy NFT price through many green runs. Only an assertion catches that.
 * **Never use paren-depth scanning to define an edit region in Pact.** Use line-based boundaries

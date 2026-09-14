@@ -505,7 +505,13 @@
                 (target-balance:decimal (ref-coin::get-balance migration-target-stoa-account))
                 (gap:bool (UR_GAP))
             )
-            (enforce gap (format "Migration can only be executed when Global Administrative Pause is offline" []))
+            ;;WORDING FIXED 2026-09-14 (the LOGIC was always right). This read "...is offline" while
+            ;;`(enforce gap ...)` requires gap TRUE -- i.e. the pause ONLINE. An operator reading the
+            ;;refusal would disarm the pause and retry forever, doing the exact opposite of what the
+            ;;guard wants. The behaviour is deliberate: P|TS, behind nearly every Talos client op,
+            ;;enforces (not gap), so demanding GAP ON means the chain is frozen for the whole window
+            ;;in which the gas station is empty. Only the message was wrong.
+            (enforce gap (format "Migration can only be executed when Global Administrative Pause is online" []))
             (enforce (= target-balance 0.0) "Migration can only be executed to an empty stoa account")
             (compose-capability (GOV|DALOS_ADMIN))
             (compose-capability (DALOS|NATIVE-AUTOMATIC))

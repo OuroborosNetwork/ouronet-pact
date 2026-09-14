@@ -396,7 +396,7 @@
 (begin-tx "TX-TAL - STOAICO|C_Collect over the TALOS path, and a round-2 DEADLOCK")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
-(print "=== TX-TAL — the Talos wrapper, and the zero-amount mint that freezes the vault ===")
+(print "=== TX-TAL — the Talos wrapper, and the zero-amount mint that FROZE the vault (fixed) ===")
 ;; Two things at once.
 ;;
 ;; (a) Every collect above calls STOAICO.C_Collect DIRECTLY on the core module. That is not the
@@ -405,7 +405,9 @@
 ;;     TS02-CPAD::STOAICO|C_Collect -- the sole gas-funded entry -- had no live invocation
 ;;     anywhere in the suite.
 ;;
-;; (b) FINDING. Exercising it exposes a deadlock in the SECOND distribution round.
+;; (b) DEFECT FOUND HERE, AND FIXED 2026-09-14. Exercising it exposed a deadlock in the SECOND
+;;     distribution round. The diagnosis below is kept in full because the MECHANISM is the lesson;
+;;     the assertions are now the positive collect it asked for.
 ;;     XI_CollectFor (05_STOAICO.pact:496) mints the account's urSTOA UNCONDITIONALLY:
 ;;
 ;;         (ref-TS01-C1::DPTF|C_Mint patron urSTOA-id DEMIPAD|SC_NAME urSTOA-supply false)
@@ -424,14 +426,18 @@
 ;;       * A_Inject is barred while unclaimed-count != 0, so no new round can open.
 ;;     The vault stops paying and cannot be restarted from any entrypoint.
 ;;
-;;     The one-line fix is the same guard the delivery already has, and IGNIS's own
-;;     C_TransferDalosFuel documents exactly this lesson ("A ZERO amount is a NO-OP, not a
-;;     transfer ... passing 0.0 aborts the whole transaction") -- it just was not applied here.
+;;     THE FIX APPLIED: the mint moved INSIDE the guard the delivery already had, and the wSTOA
+;;     leg guarded on the same principle (a staker whose RPS delta is zero has nothing to transfer
+;;     either, and a zero transfer is refused by the same UEV_Amount). Steps 2-6 of XI_CollectFor
+;;     still run in every branch, which is what actually clears the straggler out of
+;;     <unclaimed-count> and lets the next round open. IGNIS's own C_TransferDalosFuel documents
+;;     exactly this lesson ("A ZERO amount is a NO-OP, not a transfer ... passing 0.0 aborts the
+;;     whole transaction") -- it simply had not been applied here.
 ;;
-;;     WHEN THE MINT IS GUARDED, this block must be rewritten as a POSITIVE collect: emma is paid
-;;     her wSTOA, the round closes, and -- the reason for routing through Talos at all -- the
-;;     patron is charged exactly what STOAICO.INFO_Collect quoted. That assertion is written and
-;;     waiting in the git history of this file; it cannot run until the deadlock is fixed.
+;;     WHAT THE ASSERTIONS NOW PROVE: emma collects, the wSTOA she was owed reaches her, she is
+;;     marked collected, and <unclaimed-count> falls -- that last one is the difference between
+;;     "the abort is gone" and "the DEADLOCK is gone", because it is the barrier that had frozen
+;;     A_Inject. She is paid with no urSTOA leg at all, which is the exact shape that used to abort.
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -456,6 +462,7 @@
             (gas-id:string (ref-DALOS::UR_IgnisID))
             (wstoa-id:string (STOAICO.UR_Global8))
             (dround:integer (STOAICO.UR_Global11))
+            (wstoa-before:decimal (ref-DPTF::UR_AccountSupply (STOAICO.UR_Global8) KST.EMMA))
         )
         (map print
             [
@@ -472,24 +479,24 @@
                 ;;bug, not the ICO running out of urSTOA.
                 (expect "<<TX-TAL>> the global urSTOA pool still has plenty left"
                     true (> (STOAICO.UR_Global2) 0))
-                ;;FINDING (a): the self-collect aborts on the unguarded zero-amount mint.
-                (expect-failure "<<TX-TAL>> FINDING: the Talos self-collect aborts on a ZERO-amount urSTOA mint"
-                    "0.0 is not a Valid Transaction amount"
-                    (ref-CPAD::STOAICO|C_Collect patron emma))
-                ;;FINDING (b): the admin escape hatch shares XI_CollectFor, so it fails identically.
-                (expect-failure "<<TX-TAL>> FINDING: the admin flush cannot rescue it -- same shared code path"
-                    "0.0 is not a Valid Transaction amount"
-                    (STOAICO.AA_FlushUncollected patron))
-                ;;FINDING (c): and the barrier means no new round can open either. Deadlock.
-                (expect-failure "<<TX-TAL>> FINDING: nor can a new round be opened past the barrier"
-                    "previous distribution-round not fully collected"
-                    (STOAICO.A_Inject patron patron 100.0))
-                ;;RULE 9 discharge: all three abort before any state change, so the round is left
-                ;;exactly as the inject created it.
-                (expect "<<TX-TAL>> the three refusals left the unclaimed count untouched"
-                    2 (STOAICO.UR_Global7))
-                (expect "<<TX-TAL>> ...and emma still uncollected for this round"
-                    true (< (STOAICO.UR_User5 emma) dround))
+                ;;THE FIX, VERIFIED. Each line below replaces an `expect-failure` that pinned one
+                ;;closed exit of the deadlock, and the first is the proof that matters: emma is PAID.
+                (expect "<<TX-TAL>> the Talos self-collect now succeeds on a zero urSTOA entitlement"
+                    true (> (length (ref-CPAD::STOAICO|C_Collect patron emma)) 0))
+                ;;...and it is a real payout, not a no-op that merely stopped aborting. This is the
+                ;;wSTOA that was STRANDED: owed, counted, and undeliverable through any entrypoint.
+                (expect "<<TX-TAL>> ...and the wSTOA she was owed actually reached her"
+                    true (> (ref-DPTF::UR_AccountSupply wstoa-id emma) wstoa-before))
+                (expect "<<TX-TAL>> ...she is now marked collected for this round"
+                    true (>= (STOAICO.UR_User5 emma) dround))
+                ;;the straggler left <unclaimed-count> -- the barrier that had frozen the whole
+                ;;vault. This is the assertion that says the DEADLOCK, not merely the abort, is gone.
+                (expect "<<TX-TAL>> ...and the unclaimed count fell, unblocking the inject barrier"
+                    1 (STOAICO.UR_Global7))
+                ;;non-vacuity for the payout: her urSTOA entitlement really was zero going in, so
+                ;;this is the exact shape that used to abort.
+                (expect "<<TX-TAL>> ...and she was paid with NO urSTOA leg at all"
+                    0 (STOAICO.UR_User2 emma))
             ]
         )
     )

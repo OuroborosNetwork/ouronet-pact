@@ -425,14 +425,28 @@
     ;;{5.7}  User [A/C]
     ;;
     (defun A_UpdateSharePrice (price:decimal)
-        @doc "Updates the Share Price"
-        (let
-            (
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                (asset:string (UR_AssetID))
-            )
-            (ref-DEMIPAD::A_DefinePrice asset
-                {"price-per-share-in-dollars" : price}
+        @doc "Updates the Share Price. \
+            \ FIXED 2026-09-14 -- this was DEAD ON ARRIVAL. DEMIPAD::A_DefinePrice opens with \
+            \ P|UEV_IMC, a UEV_Any over the caller-policy guards DEMIPAD has registered, and the \
+            \ one that admits this module is (create-capability-guard (P|SNAKES|CALLER)). A \
+            \ capability guard only passes while its capability is IN SCOPE, and this defun \
+            \ acquired nothing at all -- so every invocation died on P|UEV_IMC with \
+            \ \"None of the guards passed\", admin signature and all. Its sibling C_Acquire earns \
+            \ the same gate because its defcap composes P|SNAKES|CALLER; this now does the same \
+            \ through P|SECURE-CALLER. NOTE this grants no authority: P|SECURE-CALLER only \
+            \ proves the call originates inside this module. The ACTUAL authorization is \
+            \ DEMIPAD|C>DEFINE-PRICE -> DEMIPAD|C>SECURE-ADMIN -> GOV|DEMIPAD_ADMIN, which was \
+            \ previously UNREACHABLE and is now the gate that decides. Pinned by \
+            \ modules/LAUNCHPAD.repl."
+        (with-capability (P|SECURE-CALLER)
+            (let
+                (
+                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+                    (asset:string (UR_AssetID))
+                )
+                (ref-DEMIPAD::A_DefinePrice asset
+                    {"price-per-share-in-dollars" : price}
+                )
             )
         )
     )

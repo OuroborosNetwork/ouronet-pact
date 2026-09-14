@@ -251,7 +251,14 @@
         (at "sf-asset" (read AOZ|T|SemiFungibles (UC_Str position) ["sf-asset"]))
     )
     (defun UR_NonFungible:string (position:integer)
-        (at "sf-asset" (read AOZ|T|NonFungibles (UC_Str position) ["sf-asset"]))
+        @doc "FIXED 2026-09-14: this projected \"sf-asset\" -- the SemiFungible column, copy-pasted \
+            \ from the reader directly above -- out of AOZ|T|NonFungibles, whose schema field is \
+            \ <nf-asset> and whose writer XI_W|NonFungible writes <nf-asset>. A projecting `read` \
+            \ does not reject an unknown column, it returns {}, so this died with \
+            \ `Key \"sf-asset\" not found in object: {}` for EVERY position, always. The NonFungible \
+            \ registry was therefore write-only through the public interface. It survived because \
+            \ nothing in the suite called either half; pinned now by modules/AOZ.repl <<AOZ-06>>."
+        (at "nf-asset" (read AOZ|T|NonFungibles (UC_Str position) ["nf-asset"]))
     )
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]

@@ -1,0 +1,438 @@
+;; REPL/modules/AOZ.repl — STANDALONE AOZ registrar tester (blockchain-env-in-a-repl).
+;; Fresh boot: Stage 00 sandbox + the Stage 01 deploy core (which deploys AOZ and runs its
+;; primal-asset init). AOZ has no [6.x] scenario suite of its own, so there is nothing else to add.
+;; Run: cd REPL && pact modules/AOZ.repl   (see ARCHITECTURE/REPL_TEST_ARCHITECTURE.md)
+;;
+;; WHY THIS FILE EXISTS. AOZ carries seven A_Register* entrypoints. Three of them --
+;; A_RegisterPrimalTrueFungible, A_RegisterPrimalOrtoFungible, A_RegisterAutostakePair -- are
+;; driven hard by Stage_01/[5.1]_Aoz+.repl, which is part of the deploy core. The OTHER FOUR --
+;; A_RegisterTrueFungible, A_RegisterOrtoFungible, A_RegisterSemiFungible, A_RegisterNonFungible
+;; -- were reached by NO test anywhere in the suite. All seven are near-identical three-line
+;; copies of one another, which is precisely the shape that hides a copy-paste slip, and TWO real
+;; Two slips surfaced here. <<AOZ-06>> -- UR_NonFungible projecting the SemiFungible column, which
+;; made the NonFungible registry write-only through the public interface -- was an unambiguous
+;; transcription error and is FIXED in source; the block now pins the corrected read. <<AOZ-05>>
+;; -- no dedupe guard on any registrar -- is a DESIGN question, so it is pinned to CURRENT
+;; behaviour with the observed numbers and left for the owner to rule on.
+;;
+;; Legend: <<AOZ-nn>> tags every assertion. The seven-counter vector compared throughout is
+;;   [primal-tfs primal-ofs atspairs tfs ofs sfs nfs], in AOZ|AssetCounter field order.
+;; Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner inside each begin-tx.
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "AOZ-01 — the baseline the whole file's arithmetic rests on")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== AOZ-01 · 01 · counter baseline after the deploy core ====
+(print "--- [AOZ-01 · 01 · counter baseline after the deploy core] ---")
+;;Every later assertion compares an ABSOLUTE counter vector against a literal, so the starting
+;;point has to be pinned first -- otherwise a drift in [5.1]_Aoz+.repl would silently re-point
+;;every expectation below. Two halves, asserted separately because they say different things:
+;;the three primal registries are POPULATED (proof AOZ booted and its writers work at all), and
+;;the four registries under test are EMPTY (proof this file is the first thing to touch them).
+;;
+;;A zero counter on its own proves nothing -- it is also what a dead module returns. So the zero
+;;is witnessed twice over: by the non-zero primal counters next to it, by a primal id that
+;;actually reads back, and by the registry rows themselves being ABSENT rather than blank.
+(let
+    (
+        (ref-AOZ:module{AgeOfZalmoxis} AOZ)
+    )
+    (map print
+        [
+            (expect "<<AOZ-01>> the three primal registries were filled by [5.1]_Aoz+.repl"
+                [9 6 6]
+                [(ref-AOZ::UR_CountPrimalTrueFungibles) (ref-AOZ::UR_CountPrimalOrtoFungibles)
+                 (ref-AOZ::UR_CountATSPairs)])
+            ;;witness for the counters above: position 9 of the primal TF registry really holds an id.
+            (expect "<<AOZ-01>> ...and the last primal TF position holds a non-empty id"
+                true (< 0 (length (ref-AOZ::UR_PrimalTrueFungible 9))))
+            (expect "<<AOZ-01>> the four registries under test start at zero"
+                [0 0 0 0]
+                [(ref-AOZ::UR_CountTrueFungibles) (ref-AOZ::UR_CountOrtoFungibles)
+                 (ref-AOZ::UR_CountSemiFungibles) (ref-AOZ::UR_CountNonFungibles)])
+            ;;...and the zero is a real emptiness, not a counter that lost track of existing rows.
+            (expect-failure "<<AOZ-01>> ...with no row behind position 1 of the TF registry"
+                "No value found" (ref-AOZ::UR_TrueFungible 1))
+            (expect-failure "<<AOZ-01>> ...nor behind position 1 of the SF registry"
+                "No value found" (ref-AOZ::UR_SemiFungible 1))
+        ]
+    )
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "AOZ-02 — append semantics: the id lands at count+1 and the counter follows")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== AOZ-02 · 01 · three registrations per kind, then the position map ====
+(print "--- [AOZ-02 · 01 · three registrations per kind, then the position map] ---")
+;;THE CORE PROPERTY. Each registrar is (XI_W|<Kind> id (+ (UR_Count<Kind>s) 1)) followed by
+;;(XI_Increment<Kind>sCounter). Two separate table writes that must stay in lockstep: the write
+;;uses count+1 as the key, the increment moves count. If either half drifts the registry breaks
+;;in a way a single call cannot show, so each kind is registered THREE times.
+;;
+;;Three is the smallest number that separates the failure modes:
+;;  * off-by-one in the key (count instead of count+1) -> every id overwrites position 0/1
+;;  * a missing increment                              -> every id overwrites the same position
+;;  * an increment without a write                     -> holes, and count runs ahead of the rows
+;;One call cannot tell those apart; a three-long position map can, because it pins the ids at
+;;1/2/3 AND pins position 4 as absent.
+;;
+;;The ids are kind-tagged on purpose. All three kinds get a position 1, so reading three DIFFERENT
+;;ids back out of position 1 is what proves XI_W|TrueFungible / XI_W|OrtoFungible /
+;;XI_W|SemiFungible each write their OWN table -- a crosswire between two of the seven
+;;near-identical writers would otherwise pass every count-only check in this file.
+(env-sigs [{ "key": "PK_AOZ", "caps": [] }])
+(let
+    (
+        (ref-AOZ:module{AgeOfZalmoxis} AOZ)
+    )
+    (map (lambda (id:string) (ref-AOZ::A_RegisterTrueFungible id))
+        ["AOZ-TF-01" "AOZ-TF-02" "AOZ-TF-03"])
+    (map (lambda (id:string) (ref-AOZ::A_RegisterOrtoFungible id))
+        ["AOZ-OF-01" "AOZ-OF-02" "AOZ-OF-03"])
+    (map (lambda (id:string) (ref-AOZ::A_RegisterSemiFungible id))
+        ["AOZ-SF-01" "AOZ-SF-02" "AOZ-SF-03"])
+    (map print
+        [
+            ;;--- the counters moved by exactly three, and ONLY for the kinds registered.
+            (expect "<<AOZ-02>> three registrations per kind advance that kind's counter to 3"
+                [3 3 3] [(ref-AOZ::UR_CountTrueFungibles) (ref-AOZ::UR_CountOrtoFungibles)
+                         (ref-AOZ::UR_CountSemiFungibles)])
+            (expect "<<AOZ-02>> ...and the untouched NonFungible counter is still zero"
+                0 (ref-AOZ::UR_CountNonFungibles))
+            ;;--- the position map: ordered append, no overwrite, no hole.
+            (expect "<<AOZ-02>> TF positions 1..3 hold the three ids in registration order"
+                ["AOZ-TF-01" "AOZ-TF-02" "AOZ-TF-03"]
+                (map (lambda (p:integer) (ref-AOZ::UR_TrueFungible p)) [1 2 3]))
+            (expect "<<AOZ-02>> OF positions 1..3 hold the three ids in registration order"
+                ["AOZ-OF-01" "AOZ-OF-02" "AOZ-OF-03"]
+                (map (lambda (p:integer) (ref-AOZ::UR_OrtoFungible p)) [1 2 3]))
+            (expect "<<AOZ-02>> SF positions 1..3 hold the three ids in registration order"
+                ["AOZ-SF-01" "AOZ-SF-02" "AOZ-SF-03"]
+                (map (lambda (p:integer) (ref-AOZ::UR_SemiFungible p)) [1 2 3]))
+            ;;--- LOCKSTEP, stated as the invariant itself: reading AT the counter yields the id
+            ;;    that was registered last. This is the one expression that fails for EITHER half
+            ;;    of the pair drifting, which is why it is asserted separately from the map above.
+            (expect "<<AOZ-02>> UR_TrueFungible(UR_CountTrueFungibles) is the id registered last"
+                "AOZ-TF-03" (ref-AOZ::UR_TrueFungible (ref-AOZ::UR_CountTrueFungibles)))
+            (expect "<<AOZ-02>> UR_OrtoFungible(UR_CountOrtoFungibles) is the id registered last"
+                "AOZ-OF-03" (ref-AOZ::UR_OrtoFungible (ref-AOZ::UR_CountOrtoFungibles)))
+            (expect "<<AOZ-02>> UR_SemiFungible(UR_CountSemiFungibles) is the id registered last"
+                "AOZ-SF-03" (ref-AOZ::UR_SemiFungible (ref-AOZ::UR_CountSemiFungibles)))
+            ;;--- the counter is not AHEAD of the rows: count+1 has nothing behind it.
+            (expect-failure "<<AOZ-02>> nothing was written past the counter (TF position 4)"
+                "No value found" (ref-AOZ::UR_TrueFungible 4))
+            ;;--- CROSSWIRE: one position, three registries, three different kind-tagged ids.
+            (expect "<<AOZ-02>> position 1 of the three registries holds three DIFFERENT ids"
+                ["AOZ-TF-01" "AOZ-OF-01" "AOZ-SF-01"]
+                [(ref-AOZ::UR_TrueFungible 1) (ref-AOZ::UR_OrtoFungible 1)
+                 (ref-AOZ::UR_SemiFungible 1)])
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "AOZ-03 — the four counters are INDEPENDENT")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== AOZ-03 · 01 · one registration at a time, full seven-counter vector after each ====
+(print "--- [AOZ-03 · 01 · one registration at a time, full seven-counter vector after each] ---")
+;;THE REGRESSION CLASS THIS FILE WAS WRITTEN FOR. All seven counters live as seven FIELDS OF ONE
+;;ROW (AOZ|T|AssetCounter / "AOZ-AssetCount"), and each XI_Increment*Counter picks its field by a
+;;bare string literal -- "tfs", "ofs", "sfs", "nfs". Seven three-line functions differing only in
+;;that literal: paste one, forget to change the string, and a registrar silently bumps a sibling's
+;;counter. Nothing in the module cross-checks the fields, and the write half would still look
+;;perfect, so a per-kind test that only reads back its OWN counter would pass.
+;;
+;;The instrument is therefore the WHOLE vector after EVERY single registration, compared against a
+;;literal. Each step moves exactly one slot by exactly one; any leak into another slot -- or a
+;;failure to move the intended slot -- fails the step. The +1 in the changed slot is itself the
+;;witness that the registration did something, so no step can pass vacuously.
+(env-sigs [{ "key": "PK_AOZ", "caps": [] }])
+(let
+    (
+        (ref-AOZ:module{AgeOfZalmoxis} AOZ)
+    )
+    (ref-AOZ::A_RegisterTrueFungible "AOZ-TF-04")
+    (print (expect "<<AOZ-03>> registering a TrueFungible moves tfs and NOTHING else"
+        [9 6 6 4 3 3 0]
+        [(ref-AOZ::UR_CountPrimalTrueFungibles) (ref-AOZ::UR_CountPrimalOrtoFungibles)
+         (ref-AOZ::UR_CountATSPairs)            (ref-AOZ::UR_CountTrueFungibles)
+         (ref-AOZ::UR_CountOrtoFungibles)       (ref-AOZ::UR_CountSemiFungibles)
+         (ref-AOZ::UR_CountNonFungibles)]))
+    (ref-AOZ::A_RegisterOrtoFungible "AOZ-OF-04")
+    (print (expect "<<AOZ-03>> registering an OrtoFungible moves ofs and NOTHING else"
+        [9 6 6 4 4 3 0]
+        [(ref-AOZ::UR_CountPrimalTrueFungibles) (ref-AOZ::UR_CountPrimalOrtoFungibles)
+         (ref-AOZ::UR_CountATSPairs)            (ref-AOZ::UR_CountTrueFungibles)
+         (ref-AOZ::UR_CountOrtoFungibles)       (ref-AOZ::UR_CountSemiFungibles)
+         (ref-AOZ::UR_CountNonFungibles)]))
+    (ref-AOZ::A_RegisterSemiFungible "AOZ-SF-04")
+    (print (expect "<<AOZ-03>> registering a SemiFungible moves sfs and NOTHING else"
+        [9 6 6 4 4 4 0]
+        [(ref-AOZ::UR_CountPrimalTrueFungibles) (ref-AOZ::UR_CountPrimalOrtoFungibles)
+         (ref-AOZ::UR_CountATSPairs)            (ref-AOZ::UR_CountTrueFungibles)
+         (ref-AOZ::UR_CountOrtoFungibles)       (ref-AOZ::UR_CountSemiFungibles)
+         (ref-AOZ::UR_CountNonFungibles)]))
+    ;;NonFungible last, because it is the one kind whose reader cannot confirm the write (see
+    ;;<<AOZ-06>>). Its counter is still observable, and this is where nfs leaves zero for good.
+    (ref-AOZ::A_RegisterNonFungible "AOZ-NF-01")
+    (print (expect "<<AOZ-03>> registering a NonFungible moves nfs and NOTHING else"
+        [9 6 6 4 4 4 1]
+        [(ref-AOZ::UR_CountPrimalTrueFungibles) (ref-AOZ::UR_CountPrimalOrtoFungibles)
+         (ref-AOZ::UR_CountATSPairs)            (ref-AOZ::UR_CountTrueFungibles)
+         (ref-AOZ::UR_CountOrtoFungibles)       (ref-AOZ::UR_CountSemiFungibles)
+         (ref-AOZ::UR_CountNonFungibles)]))
+    ;;the TF registry kept its earlier rows through the other three kinds' writes -- the
+    ;;independence claim covers the ROW tables too, not just the counter row.
+    (print (expect "<<AOZ-03>> the TF registry is undisturbed by the other three registrars"
+        ["AOZ-TF-01" "AOZ-TF-02" "AOZ-TF-03" "AOZ-TF-04"]
+        (map (lambda (p:integer) (ref-AOZ::UR_TrueFungible p)) [1 2 3 4])))
+    ""
+)
+(env-sigs [])
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "AOZ-04 — SECURE-ADMIN is the only way in")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== AOZ-04 · 01 · a real non-admin signer is refused by all four registrars ====
+(print "--- [AOZ-04 · 01 · a real non-admin signer is refused by all four registrars] ---")
+;;SECURE-ADMIN composes SECURE (trivially true) with GOV|AOZ_ADMIN, which is an enforce-one over
+;;two guards: GOV|MD_AOZ (ouronet-ns.dh_master-keyset, the Demiurgoi) and GOV|SC_AOZ
+;;(ouronet-ns.us-0000_aozt-keyset, AOZ's own smart-account key). The registry is an append-only
+;;public asset index, so an unauthorised append is a real attack: it costs nothing and it poisons
+;;every consumer that walks positions 1..count (2_CITIZEN/Stage_Z/03_DSP+ reads AOZ).
+;;
+;;PK_Emma is used rather than an invented key on purpose -- she is a fully provisioned Ouronet
+;;user with her own keyset, so the refusal is "not an AOZ admin", not "not a known key". The
+;;message is the module's own, TYPO INCLUDED ("satisfed"), because that string is what a caller
+;;actually sees and a silent re-word should register as a change.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-AOZ:module{AgeOfZalmoxis} AOZ)
+    )
+    (map print
+        [
+            (expect-failure "<<AOZ-04>> a non-admin signer cannot register a TrueFungible"
+                "AOZ Admin not satisfed" (ref-AOZ::A_RegisterTrueFungible "AOZ-EVIL-TF"))
+            (expect-failure "<<AOZ-04>> ...nor an OrtoFungible"
+                "AOZ Admin not satisfed" (ref-AOZ::A_RegisterOrtoFungible "AOZ-EVIL-OF"))
+            (expect-failure "<<AOZ-04>> ...nor a SemiFungible"
+                "AOZ Admin not satisfed" (ref-AOZ::A_RegisterSemiFungible "AOZ-EVIL-SF"))
+            (expect-failure "<<AOZ-04>> ...nor a NonFungible"
+                "AOZ Admin not satisfed" (ref-AOZ::A_RegisterNonFungible "AOZ-EVIL-NF"))
+        ]
+    )
+    ""
+)
+;;==== AOZ-04 · 02 · an unsigned transaction is refused the same way ====
+(print "--- [AOZ-04 · 02 · an unsigned transaction is refused the same way] ---")
+;;The no-signature case is a different path through enforce-one (both branches fail on an EMPTY
+;;signer set rather than on a wrong key) and is the one an accidental public call would take.
+(env-sigs [])
+(let
+    (
+        (ref-AOZ:module{AgeOfZalmoxis} AOZ)
+    )
+    (map print
+        [
+            (expect-failure "<<AOZ-04>> an unsigned tx cannot register a TrueFungible"
+                "AOZ Admin not satisfed" (ref-AOZ::A_RegisterTrueFungible "AOZ-EVIL-TF"))
+            (expect-failure "<<AOZ-04>> an unsigned tx cannot register a NonFungible"
+                "AOZ Admin not satisfed" (ref-AOZ::A_RegisterNonFungible "AOZ-EVIL-NF"))
+        ]
+    )
+    ""
+)
+;;==== AOZ-04 · 03 · the refusals left no trace, and the Demiurgoi branch does open ====
+(print "--- [AOZ-04 · 03 · the refusals left no trace, and the Demiurgoi branch does open] ---")
+;;Two things the six expect-failures above cannot say on their own.
+;;
+;;FIRST: that they failed AT THE GATE. An expect-failure is satisfied by ANY error, including one
+;;raised after a partial write, so the unchanged counter vector is what turns "it errored" into
+;;"nothing happened" -- the guard sits on with-capability, ahead of both table writes.
+;;
+;;SECOND: that the gate is a gate and not a wall. Every registration so far signed PK_AOZ, which
+;;only exercises the GOV|SC_AOZ branch of the enforce-one; the GOV|MD_AOZ (Demiurgoi) branch was
+;;never taken by anything. PK_AncientHodler is a member of dh_master-keyset (keys-any), so this
+;;proves the OTHER branch admits -- and proves the six refusals above are about authority rather
+;;than about the registrars being broken in this transaction.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-AOZ:module{AgeOfZalmoxis} AOZ)
+    )
+    (print (expect "<<AOZ-04>> the six refusals wrote NOTHING -- the counters are untouched"
+        [9 6 6 4 4 4 1]
+        [(ref-AOZ::UR_CountPrimalTrueFungibles) (ref-AOZ::UR_CountPrimalOrtoFungibles)
+         (ref-AOZ::UR_CountATSPairs)            (ref-AOZ::UR_CountTrueFungibles)
+         (ref-AOZ::UR_CountOrtoFungibles)       (ref-AOZ::UR_CountSemiFungibles)
+         (ref-AOZ::UR_CountNonFungibles)]))
+    (print (expect-failure "<<AOZ-04>> ...and no evil id reached the TF registry"
+        "No value found" (ref-AOZ::UR_TrueFungible 5)))
+    (ref-AOZ::A_RegisterTrueFungible "AOZ-TF-05")
+    (map print
+        [
+            (expect "<<AOZ-04>> the Demiurgoi branch of the enforce-one admits: tfs 4 -> 5"
+                5 (ref-AOZ::UR_CountTrueFungibles))
+            (expect "<<AOZ-04>> ...and the id it let through landed at position 5"
+                "AOZ-TF-05" (ref-AOZ::UR_TrueFungible 5))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "AOZ-05 — FINDING: the registrars have NO dedupe guard")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== AOZ-05 · 01 · the same id registered three times occupies three positions ====
+(print "--- [AOZ-05 · 01 · the same id registered three times occupies three positions] ---")
+;;FINDING -- PINNED AS OBSERVED, NOT FIXED. A_Register<Kind> carries no uniqueness check of any
+;;kind: no UEV_, no read of the existing rows, nothing. Re-registering an id that is ALREADY in
+;;the registry appends it AGAIN at count+1 and increments the counter AGAIN.
+;;
+;;OBSERVED, on the state this file has built (tfs = 5, "AOZ-TF-01" already at position 1):
+;;    A_RegisterTrueFungible "AOZ-TF-01"  ->  tfs = 6, position 6 = "AOZ-TF-01"
+;;    A_RegisterTrueFungible "AOZ-TF-01"  ->  tfs = 7, position 7 = "AOZ-TF-01"
+;;  final: counter = 7, rows = 7, DISTINCT ids = 5. One id occupies positions 1, 6 and 7.
+;;
+;;Why this is a design question and not a transcription slip: the registry is append-only and
+;;position-keyed, and nothing in the module claims the ids are unique. A consumer walking
+;;1..count sees "AOZ-TF-01" three times, and the counter is an ENTRY count that no longer equals
+;;the ASSET count. Whether that is acceptable depends on what AOZ promises its readers -- it is
+;;the owner's call, so this block asserts exactly what happens today and no more. If dedupe is
+;;ever added, THIS BLOCK IS THE ONE THAT MUST CHANGE, deliberately.
+;;
+;;Note the failure mode is not merely cosmetic: the counter is the append cursor, so a duplicated
+;;entry permanently shifts every subsequent position. There is no way to remove the extra rows --
+;;the module has no delete path.
+(env-sigs [{ "key": "PK_AOZ", "caps": [] }])
+(let
+    (
+        (ref-AOZ:module{AgeOfZalmoxis} AOZ)
+    )
+    (print (expect "<<AOZ-05>> precondition: AOZ-TF-01 is already registered, at position 1"
+        ["AOZ-TF-01" 5] [(ref-AOZ::UR_TrueFungible 1) (ref-AOZ::UR_CountTrueFungibles)]))
+    (ref-AOZ::A_RegisterTrueFungible "AOZ-TF-01")
+    (print (expect "<<AOZ-05>> re-registering the SAME id is accepted: tfs 5 -> 6, id at 6 too"
+        [6 "AOZ-TF-01"] [(ref-AOZ::UR_CountTrueFungibles) (ref-AOZ::UR_TrueFungible 6)]))
+    (ref-AOZ::A_RegisterTrueFungible "AOZ-TF-01")
+    (print (expect "<<AOZ-05>> and a third time: tfs 6 -> 7, id at 7 as well"
+        [7 "AOZ-TF-01"] [(ref-AOZ::UR_CountTrueFungibles) (ref-AOZ::UR_TrueFungible 7)]))
+    (map print
+        [
+            ;;the duplicate did NOT replace the original -- all three positions survive.
+            (expect "<<AOZ-05>> one id now occupies three distinct positions: 1, 6 and 7"
+                ["AOZ-TF-01" "AOZ-TF-01" "AOZ-TF-01"]
+                (map (lambda (p:integer) (ref-AOZ::UR_TrueFungible p)) [1 6 7]))
+            ;;the sharp statement: the counter counts ENTRIES, not ASSETS, and they have diverged.
+            (expect "<<AOZ-05>> the counter reads 7 while only 5 DISTINCT ids are registered"
+                [7 5]
+                [(ref-AOZ::UR_CountTrueFungibles)
+                 (length (distinct
+                     (map (lambda (p:integer) (ref-AOZ::UR_TrueFungible p)) [1 2 3 4 5 6 7])))])
+            ;;the duplicates did not leak across kinds -- this is a per-registrar property.
+            (expect "<<AOZ-05>> the other three counters did not move while TF was duplicated"
+                [4 4 1] [(ref-AOZ::UR_CountOrtoFungibles) (ref-AOZ::UR_CountSemiFungibles)
+                         (ref-AOZ::UR_CountNonFungibles)])
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "AOZ-06 — DEFECT FIXED: UR_NonFungible read the SemiFungible column")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== AOZ-06 · 01 · the NonFungible registry reads back, as its siblings always did ====
+(print "--- [AOZ-06 · 01 · the NonFungible registry reads back, as its siblings always did] ---")
+;;DEFECT FOUND BY THIS BLOCK, AND FIXED. 2_CITIZEN/1_AOZ/01_AOZ+.pact:254 read
+;;
+;;    (at "sf-asset" (read AOZ|T|NonFungibles (UC_Str position) ["sf-asset"]))
+;;
+;;AOZ|NonFungibles declares "nf-asset" and XI_W|NonFungible writes "nf-asset". The reader asked
+;;for "sf-asset" -- the SemiFungible column, one copy-paste line up. Pact's projecting `read` does
+;;NOT reject an unknown column: it returns the EMPTY object, and the (at "sf-asset" ...) then died
+;;with `Key "sf-asset" not found in object: {}`. So A_RegisterNonFungible worked perfectly while
+;;UR_NonFungible could NEVER return a value, for any position, ever -- the kind was WRITE-ONLY
+;;through the public interface. Both halves are in the AgeOfZalmoxis interface, so this was a live
+;;API defect and not merely a test gap. It survived because nothing in the suite called either one.
+;;
+;;WHY THE FIX IS UNAMBIGUOUS: the schema, the writer and all three sibling readers agree on the
+;;<kind>-asset convention; only this line disagreed with the table it reads. Now "nf-asset".
+;;
+;;WORTH RECORDING -- how the write was witnessed BEFORE the fix, because the same trick generalises.
+;;A broken reader cannot confirm its own write, and an expect-failure on it would have been
+;;satisfied just as well by a registrar that never wrote anything. But the two failures are
+;;DIFFERENT ERRORS, and that difference was the witness:
+;;    row PRESENT -> read succeeds, projection empty -> Key "sf-asset" not found in object: {}
+;;    row ABSENT  -> the read itself fails           -> No value found in table ...
+;;Position 1 gave the first and position 2 the second, which proved the append had landed even
+;;though nothing could read it. The assertions below no longer need that trick -- they read the
+;;value directly, which is the point -- but the technique is the reason the defect was provable
+;;rather than merely suspected.
+(env-sigs [{ "key": "PK_AOZ", "caps": [] }])
+(let
+    (
+        (ref-AOZ:module{AgeOfZalmoxis} AOZ)
+    )
+    (map print
+        [
+            (expect "<<AOZ-06>> precondition: exactly one NonFungible is registered"
+                1 (ref-AOZ::UR_CountNonFungibles))
+            ;;THE REGRESSION. Before the fix this call could not return a value at ANY position;
+            ;;it is now the plain read its three siblings always were.
+            (expect "<<AOZ-06>> UR_NonFungible returns the id A_RegisterNonFungible wrote"
+                "AOZ-NF-01" (ref-AOZ::UR_NonFungible 1))
+            ;;...and it still refuses an absent row, so the line above is a real read and not a
+            ;;reader that answers something for every input.
+            (expect-failure "<<AOZ-06>> position 2 has no row yet"
+                "No value found" (ref-AOZ::UR_NonFungible 2))
+        ]
+    )
+    ;;the append keeps working while staying invisible: two more registrations move the frontier
+    ;;of "row exists" from 1 to 3, and the "no row" boundary from 2 to 4.
+    (map (lambda (id:string) (ref-AOZ::A_RegisterNonFungible id))
+        ["AOZ-NF-02" "AOZ-NF-03"])
+    (map print
+        [
+            (expect "<<AOZ-06>> two more NonFungibles: nfs 1 -> 3"
+                3 (ref-AOZ::UR_CountNonFungibles))
+            ;;the append lands at count+1 and each position holds ITS OWN id -- the NonFungible
+            ;;kind now has the same read-back proof <<AOZ-02>> gives the other three.
+            (expect "<<AOZ-06>> ...and positions 2 and 3 hold their own ids, in order"
+                ["AOZ-NF-02" "AOZ-NF-03"]
+                [(ref-AOZ::UR_NonFungible 2) (ref-AOZ::UR_NonFungible 3)])
+            (expect-failure "<<AOZ-06>> ...and the boundary moved: position 4 still has no row"
+                "No value found" (ref-AOZ::UR_NonFungible 4))
+            ;;the sibling reader is fine, which localises the defect to UR_NonFungible alone.
+            (expect "<<AOZ-06>> UR_SemiFungible -- the column the NF reader borrowed -- is correct"
+                "AOZ-SF-04" (ref-AOZ::UR_SemiFungible 4))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(commit-tx)

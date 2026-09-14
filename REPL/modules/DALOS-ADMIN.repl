@@ -100,15 +100,16 @@
 ;; gas station, and it lives in the module tester (not [6.12], which ZALL loads) precisely so
 ;; that drain can never leak into the full run.
 ;;
-;; Three preconditions, and the first one is stated BACKWARDS in the code:
+;; Three preconditions. The first one USED to be stated backwards in the code:
 ;;
 ;;   (enforce gap "Migration can only be executed when Global Administrative Pause is offline")
 ;;
-;; `enforce gap` passes when gap is TRUE -- i.e. when the pause is ONLINE. The message claims
-;; the opposite. See DALOS-ADMIN-03b, which pins the real behaviour against the wrong words.
-;; The behaviour itself is right and deliberate: P|TS (the cap behind nearly every other Talos
-;; client op) enforces (not gap), so requiring GAP ON means the chain is frozen for the whole
-;; window in which the gas station is empty. Only the message needs fixing.
+;; `enforce gap` passes when gap is TRUE -- i.e. when the pause is ONLINE -- and the message claimed
+;; the opposite, so an operator following it would disarm the pause and retry forever. The BEHAVIOUR
+;; was always right and deliberate: P|TS (the cap behind nearly every other Talos client op)
+;; enforces (not gap), so requiring GAP ON means the chain is frozen for the whole window in which
+;; the gas station is empty. FIXED 2026-09-14 -- one word, offline -> online. DALOS-ADMIN-03b below
+;; now pins the corrected wording, and still pins the real behaviour behind it.
 (env-data
     { "MIGRATE_TARGET_KS": { "keys": ["PK_AncientHodler"], "pred": "keys-all" } }
 )
@@ -221,14 +222,14 @@
                 (expect "<<DALOS-ADMIN-03b>> the fresh target is empty, so only GAP can be at fault"
                     0.0 (ref-coin::get-balance fresh))
                 ;;FINDING — INVERTED MESSAGE. The op is rejected because the pause is OFF, but
-                ;;the message it prints says migration "can only be executed when Global
-                ;;Administrative Pause is offline". An operator following that text would
-                ;;disarm the pause and retry forever. The assertion below is deliberately
-                ;;written to look self-contradictory, because the code is:
-                ;;    GAP is OFF  ->  "can only be executed when ... Pause is offline"
-                ;;Fix is one word in 01_DALOS.pact's GOV|MIGRATE: offline -> online.
-                (expect-failure "<<DALOS-ADMIN-03b>> FINDING: rejected with GAP OFF, by a message that says GAP must be off"
-                    "Migration can only be executed when Global Administrative Pause is offline"
+                ;;WORDING DEFECT FOUND HERE, FIXED 2026-09-14. The refusal used to say migration
+                ;;"can only be executed when Global Administrative Pause is offline" -- while being
+                ;;raised BECAUSE the pause was off. An operator following that text would disarm
+                ;;the pause and retry forever. This assertion used to read as self-contradictory on
+                ;;purpose, because the code was. It now pins the corrected wording against the same
+                ;;unchanged behaviour: GAP is OFF -> refused -> "...must be online".
+                (expect-failure "<<DALOS-ADMIN-03b>> migration with GAP OFF is refused, and the message now says so correctly"
+                    "Migration can only be executed when Global Administrative Pause is online"
                     (ref-TS01-A::DALOS|A_MigrateLiquidFunds fresh))
             ]
         )

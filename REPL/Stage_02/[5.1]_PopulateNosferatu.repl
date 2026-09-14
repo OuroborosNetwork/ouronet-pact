@@ -2621,3 +2621,247 @@
     ""
 )
 (commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "NSFR-F1 - the A_Fix ladder, actually executed")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== NSFR-F1 · 01 · env-sigs (caps) ==== ========================================================
+(print "--- [NSFR-F1 · 01 · env-sigs (caps)] ---")
+;;EMMA is the collection CREATOR (see [4.0]_Sovereign-Executor TX-07), so EMMA is the account
+;;holding `role-nft-recreate` and the account every A_Fix rung has to be handed -- `C_Fix` ends in
+;;DPDC-N's SET-DATA cap, which calls UEV_RoleNftRecreateON then CAP_EnforceAccountOwnership on it.
+;;ANHD pays the IGNIS, exactly as it does for the A_Step calls above.
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "PK_Emma", "caps": [] }
+    ]
+)
+;;==== NSFR-F1 · 02 · drive A_Fix05a, read before and after ==== ==================================
+(print "--- [NSFR-F1 · 02 · drive A_Fix05a, read before and after] ---")
+;;THE A_Fix LADDER, EXECUTED. Until this block `A_Fix*` was reachable by NOTHING:
+;;`grep -r "A_Fix" --include=*.repl REPL/` returned a single comment. `REPL/_ladder.py` checks the
+;;PLAN -- that the 24 `A_FixNN` rungs tile the same 800 positions as their `A_StepNN` twins, rung
+;;for rung -- but a static tiling check cannot say a rung DOES anything when called, nor that it
+;;stops where it says it stops. That is the defect class that actually bit: `A_Fix01` read
+;;<"Legendary" 1 100> against a twin reading <"Legendary" 1 70>, so it both double-covered
+;;A_Fix02a's Legendary 71-100 and demanded a 100-row mdm from a ladder whose rungs are 70 wide
+;;because of the per-transaction gas budget.
+;;
+;;WHICH RUNG, AND WHY THIS ONE. `A_Fix05a` = <"Epic" 181 20> is the NARROWEST rung in the family
+;;(the other 23 run 30, 40, 50 or 70), so the path is exercised end-to-end for the price of twenty
+;;nonce updates -- driving all 24 would re-do the 800-element mint this file already paid for.
+;;Its twin `A_Step05` minted exactly Epic 181-200 earlier in this file, so the positions the rung
+;;addresses already exist and already carry mint-time metadata to be overwritten.
+;;
+;;`UC_Nonces` maps Epic 181-200 onto NONCES 281-300 (Epic's starting-point is 100), which is why
+;;every read below is keyed on 281..300 and not on 181..200. The marker rows are indexed so row k
+;;is distinguishable from row k+1: that turns "the metadata changed" into the much stronger
+;;"row k landed on nonce 281+k", which is the alignment the rung's starting-position controls.
+;;
+;;ONE PROPERTY IS DELIBERATELY NOT ASSERTED HERE, and it is a real hazard worth writing down.
+;;`UC_Nonces` derives ABSOLUTE nonce numbers from fixed rarity starting-points (Legendary 0,
+;;Epic 100, Rare 300, Common 700), while `C_Spawn` mints SEQUENTIALLY from wherever the
+;;collection's nonce counter happens to be. The two agree only if DHN was EMPTY when the A_Step
+;;ladder ran. That holds on chain, and in every loader that takes this file early -- but NOT in
+;;ZALL.repl, which loads [6.2]_AQP (and with it [6.2.5]_AQP-VCT, which mints DHN probe nonces)
+;;BEFORE this file. There the ladder is shifted by the probe count and A_Fix05a rewrites the
+;;NEIGHBOURS of the tiles it means to rewrite -- silently, because `C_Fix` regenerates a perfectly
+;;plausible name and metadata for whatever nonce it lands on. Asserting the un-shifted mapping
+;;would make this shared suite red under ZALL for a reason that is not this file's to fix, so
+;;everything below is written to hold under EVERY loader.
+(let
+    (
+        (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+        (id:string "DHN-98c486052a51")
+        (patron:string KST.ANHD)
+        (creator:string KST.EMMA)
+        ;;the 13 trait slots of NOSFERATU.UDC_MetaData in schema order; slot 11 is Rarity and is
+        ;;kept truthful ("Epic") so the rewrite stays a legal Epic row rather than a nonsense one.
+        (mdm:[[string]]
+            (map
+                (lambda (i:integer)
+                    [(format "FIXED-Background-{}" [i]) "FIXED-Body" "FIXED-BodyAccesories"
+                     "FIXED-Clothes" "FIXED-Ear" "FIXED-Eyes" "FIXED-Glasses"
+                     "FIXED-HandAccessories" "FIXED-Hats" "FIXED-MouthAccessories"
+                     "FIXED-PhotoEffect" "Epic" "FIXED-Tooth"]
+                )
+                (enumerate 0 19)
+            )
+        )
+    )
+    (let
+        (
+            ;;nos = true (native, not fragment), nost = true (a Nonce, not a Set-Class) -- the same
+            ;;pair `C_Fix` hands to DPNF|C_UpdateNonces, so this reads what that write path writes.
+            (md281-before:object
+                (at "meta-data"
+                    (at "meta-data" (ref-DPDC-N::UR_Nonce id false 281 true true))))
+            (md280-before:object
+                (at "meta-data"
+                    (at "meta-data" (ref-DPDC-N::UR_Nonce id false 280 true true))))
+            (md301-before:object
+                (at "meta-data"
+                    (at "meta-data" (ref-DPDC-N::UR_Nonce id false 301 true true))))
+        )
+        ;;the rung itself -- one line, exactly as an operator would run it
+        (print
+            (format "<(NOSFERATU.A_Fix05a)> => \"{}\""
+                [(NOSFERATU.A_Fix05a patron id creator mdm)]))
+        (let
+            (
+                (md281-after:object
+                    (at "meta-data"
+                        (at "meta-data" (ref-DPDC-N::UR_Nonce id false 281 true true))))
+                (md290-after:object
+                    (at "meta-data"
+                        (at "meta-data" (ref-DPDC-N::UR_Nonce id false 290 true true))))
+                (md300-after:object
+                    (at "meta-data"
+                        (at "meta-data" (ref-DPDC-N::UR_Nonce id false 300 true true))))
+                (md280-after:object
+                    (at "meta-data"
+                        (at "meta-data" (ref-DPDC-N::UR_Nonce id false 280 true true))))
+                (md301-after:object
+                    (at "meta-data"
+                        (at "meta-data" (ref-DPDC-N::UR_Nonce id false 301 true true))))
+                ;;which nonces in a 20-wide margin on either side carry the marker THIS call wrote
+                (marked:[integer]
+                    (filter
+                        (lambda (n:integer)
+                            (= "FIXED-Body"
+                                (at "Body"
+                                    (at "meta-data"
+                                        (at "meta-data"
+                                            (ref-DPDC-N::UR_Nonce id false n true true))))))
+                        (enumerate 261 320)
+                    )
+                )
+            )
+            (map print
+                [
+                    ;;--- <<NSFR-F1>> the rung rewrote the metadata of the positions it names.
+                    ;;The pre-state is asserted first: if nonce 281 already carried the marker,
+                    ;;every "after" assertion below would be vacuously true.
+                    (expect "<<NSFR-F1>> nonce 281 does NOT carry the rung's marker beforehand"
+                        false (= "FIXED-Background-0" (at "Backgrounds" md281-before)))
+                    (expect "<<NSFR-F1>> A_Fix05a rewrote nonce 281 -- its FIRST position"
+                        "FIXED-Background-0" (at "Backgrounds" md281-after))
+                    (expect "<<NSFR-F1>> ...and nonce 300, its LAST position"
+                        "FIXED-Background-19" (at "Backgrounds" md300-after))
+                    ;;row k -> nonce 281+k is the alignment the rung's starting-position controls.
+                    ;;The interior is checked too: a rung that wrote the right SET of nonces in the
+                    ;;wrong ORDER would satisfy the two endpoints above and fail right here.
+                    (expect "<<NSFR-F1>> ...and the interior is in order -- row 9 on nonce 290"
+                        "FIXED-Background-9" (at "Backgrounds" md290-after))
+                    ;;`C_Fix` regenerates the NAME from the rung's own <rarity, starting-position>
+                    ;;-- the same pair `UC_Nonces` used to choose the nonces. Asserting nonce and
+                    ;;name together pins the two halves to the SAME literals: a rung whose rarity
+                    ;;or start slipped would either miss 281-300 (caught by <<NSFR-F2>>) or land
+                    ;;there under a different name, and this is the half that catches the latter.
+                    (expect "<<NSFR-F1>> nonce 281 is renamed from the rung's own literals: Epic #181"
+                        "Nosferatu Epic #181"
+                        (at "name" (ref-DPDC-N::UR_Nonce id false 281 true true)))
+                    (expect "<<NSFR-F1>> ...and nonce 300 closes the rung at Epic #200"
+                        "Nosferatu Epic #200"
+                        (at "name" (ref-DPDC-N::UR_Nonce id false 300 true true)))
+                    ;;--- <<NSFR-F2>> THE PROPERTY A_Fix01 VIOLATED, stated directly. A rung that
+                    ;;merely "did not error" proves nothing; a rung that wrote OUTSIDE its own
+                    ;;range is the failure that shipped. The sweep runs twenty nonces past each end
+                    ;;of the rung and asks which of them carry the marker this call wrote: the
+                    ;;answer must be the rung's own range EXACTLY -- not a prefix, not a superset.
+                    ;;Driving <"Epic" 181 30> through C_Fix (the A_Fix01 shape) returns 281-310
+                    ;;here, so this single line is what would have caught the original defect.
+                    (expect "<<NSFR-F2>> over nonces 261-320 the rung marked exactly its 281-300"
+                        (enumerate 281 300) marked)
+                    ;;the two immediate neighbours, compared as whole metadata objects rather than
+                    ;;one field, so an overlap of even a single position on either side fails here.
+                    (expect "<<NSFR-F2>> nonce 280, one below the rung, is byte-identical"
+                        md280-before md280-after)
+                    (expect "<<NSFR-F2>> nonce 301, one above the rung, is byte-identical"
+                        md301-before md301-after)
+                    ;;...and those two equalities are not vacuous: 281 DID move, under the same
+                    ;;reader, in the same transaction -- as a WHOLE object, not just the one field
+                    ;;the marker sits in. An inert reader would have passed both of them.
+                    (expect "<<NSFR-F2>> the untouched-neighbour reads are live: 281 moved"
+                        false (= md281-before md281-after))
+                ]
+            )
+            ""
+        )
+    )
+)
+(env-sigs [])
+(print "===^^^===")
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "NSFR-F3 - the length guard, enforced through the real rung")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== NSFR-F3 · 01 · env-sigs (caps) ==== ========================================================
+(print "--- [NSFR-F3 · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "PK_Emma", "caps": [] }
+    ]
+)
+;;==== NSFR-F3 · 02 · mdm length vs the rung's own literal ==== ===================================
+(print "--- [NSFR-F3 · 02 · mdm length vs the rung's own literal] ---")
+;;THE GUARD BETWEEN THE LADDER AND SILENT MIS-MINTING. `C_Fix` enforces
+;;(= (length mdm) number-of-positions). <<NSFR-G1>> above pins that enforce by calling `C_Fix`
+;;DIRECTLY with synthetic arguments; this block pins it THROUGH A RUNG, which is the only way the
+;;ladder is ever invoked. The distinction is the whole point of the A_Fix01 defect: the rung is
+;;where `number-of-positions` is a LITERAL, so what has to hold is that A_Fix05a's own `20` is the
+;;number the enforce compares against -- a rung whose literal disagreed with its twin would accept
+;;the wrong list length here and mis-mint on chain.
+;;
+;;Both directions (19 and 21), because a one-sided test cannot tell a parity check from a floor.
+(let
+    (
+        (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+        (id:string "DHN-98c486052a51")
+        (patron:string KST.ANHD)
+        (creator:string KST.EMMA)
+        (row:[string]
+            ["WRONG-Background" "WRONG-Body" "WRONG-BodyAccesories" "WRONG-Clothes" "WRONG-Ear"
+             "WRONG-Eyes" "WRONG-Glasses" "WRONG-HandAccessories" "WRONG-Hats"
+             "WRONG-MouthAccessories" "WRONG-PhotoEffect" "Epic" "WRONG-Tooth"]
+        )
+    )
+    (map print
+        [
+            (expect-failure "<<NSFR-F3>> A_Fix05a refuses 19 metadata rows against its 20 positions"
+                "Invalid Number of Positions"
+                (NOSFERATU.A_Fix05a patron id creator (make-list 19 row)))
+            (expect-failure "<<NSFR-F3>> ...and refuses 21 rows against the same 20 positions"
+                "Invalid Number of Positions"
+                (NOSFERATU.A_Fix05a patron id creator (make-list 21 row)))
+            ;;AND THE REFUSAL IS TOTAL. The enforce sits in `C_Fix` ahead of the Talos call, so a
+            ;;rejected rung must write NOTHING -- not a truncated prefix of the list it was handed.
+            ;;Nonce 281 still carries what <<NSFR-F1>> wrote, so neither attempt got a partial
+            ;;rewrite in; if either had, "WRONG-Background" would be sitting here instead.
+            (expect "<<NSFR-F3>> a refused rung wrote nothing -- nonce 281 is untouched by both"
+                "FIXED-Background-0"
+                (at "Backgrounds"
+                    (at "meta-data"
+                        (at "meta-data" (ref-DPDC-N::UR_Nonce id false 281 true true)))))
+            (expect "<<NSFR-F3>> ...and so is nonce 300, the far end of the rung"
+                "FIXED-Background-19"
+                (at "Backgrounds"
+                    (at "meta-data"
+                        (at "meta-data" (ref-DPDC-N::UR_Nonce id false 300 true true)))))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(print "===^^^===")
+(commit-tx)
