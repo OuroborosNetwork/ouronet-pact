@@ -637,7 +637,7 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [STAGEZ-18 . 01 . native vs frozen vs sleeping LP entries] ---")
-;;Two UNPINNED guards (`python3 REPL/_cheapseam.py`), both unreachable until this file had swpairs:
+;;Two UNPINNED guards (`python3 REPL/tools/_cheapseam.py`), both unreachable until this file had swpairs:
 ;;  URCv_0008b_TrueFungibleLPEntry -- "Frozen LP must be defined for this usage"
 ;;  URCv_0009b_OrtoFungibleLPEntry -- "Sleeping LP must be defined for this usage"
 ;;
@@ -706,7 +706,7 @@
 (env-sigs [{ "key": "PK_AOZ", "caps": [] }])
 (print "--- [STAGEZ-20 . 01 . full liquidity removal] ---")
 ;;SWPLC::UEV_AddLiquidity's "Liquidity Addition on an empty Pool must have a Balanced Part present!"
-;;was UNPINNED (`python3 REPL/_cheapseam.py`). It needs a pool with ZERO LP supply, and measurement
+;;was UNPINNED (`python3 REPL/tools/_cheapseam.py`). It needs a pool with ZERO LP supply, and measurement
 ;;showed none exists: all 21 pools on this chain carry liquidity, and the issuance defpact creates
 ;;them WITH it, so there is no gap between creation and first deposit.
 ;;

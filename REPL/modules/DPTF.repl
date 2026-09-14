@@ -2458,7 +2458,7 @@
 ;;
 ;;THIS PREVIEW WAS ALREADY "COVERED" AND HAD NEVER BEEN WEIGHED. It is named by a shape-check or an
 ;;abort-pin elsewhere in the suite, which satisfies `_scale_report.py --untested` — a tool that asks
-;;"was it reached", not "does the quote equal the charge". `REPL/_info_measured.py` separates the two.
+;;"was it reached", not "does the quote equal the charge". `REPL/tools/_info_measured.py` separates the two.
 ;;A FRESH TICKER is mandatory — ids derive from the ticker, so reusing MOCKA collides on insert
 ;;rather than on price, and that failure would read like a pricing problem.
 (env-sigs
@@ -2525,7 +2525,7 @@
 ;;
 ;;THIS PREVIEW WAS ALREADY "COVERED" AND HAD NEVER BEEN WEIGHED. It is named by a shape-check or an
 ;;abort-pin elsewhere in the suite, which satisfies `_scale_report.py --untested` — a tool that asks
-;;"was it reached", not "does the quote equal the charge". `REPL/_info_measured.py` separates the two.
+;;"was it reached", not "does the quote equal the charge". `REPL/tools/_info_measured.py` separates the two.
 ;;STOA-ONLY. THE CLOCK IS THE FIXTURE: `BRD|C>UPGRADE` refuses while >15 days of Blue Flag remain
 ;;(`04_BRD.pact:266`). `rollback-tx` does NOT undo `env-chain-data`, so the restore is mandatory.
 (env-sigs
@@ -2594,7 +2594,7 @@
 ;;
 ;;THIS PREVIEW WAS ALREADY "COVERED" AND HAD NEVER BEEN WEIGHED. It is named by a shape-check or an
 ;;abort-pin elsewhere in the suite, which satisfies `_scale_report.py --untested` — a tool that asks
-;;"was it reached", not "does the quote equal the charge". `REPL/_info_measured.py` separates the two.
+;;"was it reached", not "does the quote equal the charge". `REPL/tools/_info_measured.py` separates the two.
 ;;ARITY DIVERGENCE — the preview takes FOUR arguments, the exec three. The fourth, `fee-unlocks`,
 ;;is declared and never referenced in the preview body (`02_INFO-ONE+.pact:672-697`); the cost comes
 ;;from `URCi_ToggleFeeLock` / `URCi_ToggleFeeLockStoa` on `(id, toggle)` alone.

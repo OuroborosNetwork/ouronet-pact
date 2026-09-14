@@ -11,7 +11,7 @@ Three companion files carry the detail this one summarises:
 
 | file | what it holds | how it is produced |
 |---|---|---|
-| `REPL_SUITE_STATS.md` | every scale and coverage figure, plus all 5,438 per-function rows | **generated**: `cd REPL && python3 _suite_stats.py --gate` |
+| `REPL_SUITE_STATS.md` | every scale and coverage figure, plus all 5,438 per-function rows | **generated**: `cd REPL && python3 tools/_suite_stats.py --gate` |
 | `DEFECT-LEDGER.md` | the deduplicated defect register, with mechanism and provenance per entry | compiled from project records, **partially re-verified** — see its own header |
 | `REPL_TEST_ARCHITECTURE.md` | how the suite is laid out and why | hand-maintained |
 
@@ -23,7 +23,7 @@ the same count drifts from the first, and both then look authoritative.
 
 ## 1. Scale
 
-<sub>source: `python3 REPL/_scale_report.py`</sub>
+<sub>source: `python3 REPL/tools/_scale_report.py`</sub>
 
 | | |
 |---|---:|
@@ -52,7 +52,7 @@ explanation*, because stating precisely what an assertion proved exposed that it
 
 ## 2. How much runs, and what it asserts
 
-<sub>executed: live `python3 REPL/_gate.py` · distinct: counted from source</sub>
+<sub>executed: live `python3 REPL/tools/_gate.py` · distinct: counted from source</sub>
 
 | | |
 |---|---:|
@@ -93,7 +93,7 @@ they expect.
 
 ## 3. Coverage
 
-<sub>source: `python3 REPL/_scale_report.py --functions`</sub>
+<sub>source: `python3 REPL/tools/_scale_report.py --functions`</sub>
 
 Two denominators exist and mixing them is how coverage gets misreported. **All defined** includes
 the dead `DPMF` module (kept deployed for provenance, called by nothing) and the `XI_`/`XB_`/`XE_`/
@@ -391,7 +391,7 @@ question — *what can someone do that nobody documented?* It is reported in ful
 
 **Nine attacks across eight families: 2 succeeded, 1 succeeded-then-fixed, 6 refused.** Three found
 a defect. They are counted in `REPL/RedTeam/` and in the machine-read attack register
-(`python3 REPL/_redteam.py`), kept separate from the constructive suite precisely so the numbers in
+(`python3 REPL/tools/_redteam.py`), kept separate from the constructive suite precisely so the numbers in
 §2 cannot silently absorb them.
 
 ### Two defects the constructive round could not have found

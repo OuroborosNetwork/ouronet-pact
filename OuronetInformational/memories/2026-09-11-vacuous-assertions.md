@@ -1,6 +1,6 @@
 # The positive assertions had never been audited — one of 2,597 could not fail
 
-**Date:** 2026-09-11 · **Status:** closed · tool `REPL/_vacuous.py`
+**Date:** 2026-09-11 · **Status:** closed · tool `REPL/tools/_vacuous.py`
 
 ## The gap
 

@@ -1803,7 +1803,7 @@
 (namespace "ouronet-ns")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [SWP-G20 . 01 . above the cap and below the floor] ---")
-;;FOUND BY `python3 _docclaims.py` (BOUND tier). SWP|C_UpdateFee's @doc states a numeric limit --
+;;FOUND BY `python3 tools/_docclaims.py` (BOUND tier). SWP|C_UpdateFee's @doc states a numeric limit --
 ;;"The Fee must be between 0.0001 - 320.0 (promile, that would be 32%)" -- and gives the REASON:
 ;;when the liquid-boost parameter is on, an amount equal to the LP-fee is ALSO drawn to boost the
 ;;Liquid Stoa Index, "which is why the fee must be capped at close a third of 100%". So the cap is
@@ -1895,7 +1895,7 @@
 ;;`format` was MISSING, so Pact tried to APPLY the string literal to the argument list and raised
 ;;"Cannot apply value to non-closure" -- an internal evaluation error in place of the explanation
 ;;somebody wrote. It now reads `(format "..." [current-special-targets])` and the sentence arrives.
-;;Detector: `python3 _conformance.py --rule enforce-msg-not-format`, now clean codebase-wide.
+;;Detector: `python3 tools/_conformance.py --rule enforce-msg-not-format`, now clean codebase-wide.
 ;;
 ;;WHY IT SURVIVED SO LONG. `enforce` is LAZY in its message -- verified directly:
 ;;`(enforce (= 1 1) ("m {}" [1]))` returns true. The defect was invisible on every call where the
@@ -4982,7 +4982,7 @@
 (print "--- [SWP-I33 · 01 · add FROZEN liquidity] ---")
 ;;FUNCTION COVERAGE (G6) — `INFO_SWP|AddFrozenLiquidity`, per the owner's spec. Template:
 ;;`modules/ATS.repl <<ATS-I1>>`; the patron/interactor hazard is at <<SWP-I2>>.
-;;NAMED BY A COMMENTED LINE IN `[6.3]_SWP.repl`, NEVER WEIGHED — see `REPL/_info_measured.py`.
+;;NAMED BY A COMMENTED LINE IN `[6.3]_SWP.repl`, NEVER WEIGHED — see `REPL/tools/_info_measured.py`.
 ;;
 ;;THE `frozen-dptf` ARGUMENT IS THE FROZEN TWIN, NOT THE PARENT, and the direction is easy to get
 ;;backwards: `UEV_AddFrozenLiquidity` resolves `DPTF::UR_Frozen <arg>` and requires the RESULT to be a
@@ -5067,7 +5067,7 @@
 (print "--- [SWP-I34 · 01 · add SLEEPING liquidity] ---")
 ;;FUNCTION COVERAGE (G6) — `INFO_SWP|AddSleepingLiquidity`, per the owner's spec. Template:
 ;;`modules/ATS.repl <<ATS-I1>>`; the patron/interactor hazard is at <<SWP-I2>>.
-;;NAMED BY A COMMENTED LINE IN `[6.3]_SWP.repl`, NEVER WEIGHED — see `REPL/_info_measured.py`.
+;;NAMED BY A COMMENTED LINE IN `[6.3]_SWP.repl`, NEVER WEIGHED — see `REPL/tools/_info_measured.py`.
 ;;
 ;;THE SLEEPING SIBLING OF <<SWP-I33>>, and it takes a NONCE where the frozen one takes an amount: a
 ;;sleeping position is an ORTO-fungible nonce with a release date, not a divisible balance. Three

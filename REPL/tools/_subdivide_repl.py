@@ -141,7 +141,7 @@ def process(path: Path, root: Path) -> bool:
 
 
 def main() -> None:
-    root = Path(__file__).resolve().parent
+    root = Path(__file__).resolve().parent.parent
     n = 0
     for p in sorted(root.rglob("*.repl")):
         if p.name.startswith("_"):

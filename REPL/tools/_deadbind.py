@@ -29,7 +29,7 @@ import argparse, collections, glob, os, re, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _pactlex import strip_comments, balanced, split_top
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 CANARY = [("09_TFT.pact", "length-rt"), ("09_TFT.pact", "length-rbt")]
 
 

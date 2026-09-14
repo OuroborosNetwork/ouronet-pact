@@ -163,7 +163,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [SCALE-SWP-FREEZE . collect during an open sweep] ---")
 ;;FVT::UEV_CollectContext's first guard -- "Collect is frozen while a re-score sweep is in progress
-;;on this pool" -- was UNPINNED (`python3 REPL/_cheapseam.py`). It needs a pool with an OPEN sweep,
+;;on this pool" -- was UNPINNED (`python3 REPL/tools/_cheapseam.py`). It needs a pool with an OPEN sweep,
 ;;which exists for exactly the span between CC_SweepBegin above and the recompute chunks below, so
 ;;this is the only point in the suite where it can be reached. The block above already reads
 ;;UR_AQP|PoolSweepInProgress and asserts the pool is FROZEN; this asserts what that freeze is FOR.

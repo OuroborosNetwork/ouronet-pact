@@ -46,7 +46,7 @@ import argparse, glob, os, re, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _pactlex import strip_comments, balanced, split_top
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 LITERAL = re.compile(r'^(true|false|-?\d+(\.\d+)?|"[^"]*"|\[\s*\])$')
 # `true` asserted against a bound the value's own domain already guarantees.

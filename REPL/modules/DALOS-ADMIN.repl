@@ -923,7 +923,7 @@
 ;;those branches, or hand GAS_PAYER an EMPTY exec-lines, and case 1's own (at 0 exec-lines) faults
 ;;with a raw index error that enforce-one cannot absorb -- asserted below. Empty transaction code
 ;;is not reachable in practice, which is why this is pinned as a boundary rather than filed as a
-;;defect. The detector for the shape is `python3 _foldeager.py` ([index] section).
+;;defect. The detector for the shape is `python3 tools/_foldeager.py` ([index] section).
 (map print
     [
         ;;half one: a failed enforce inside a branch IS recovered -- the next branch is tried

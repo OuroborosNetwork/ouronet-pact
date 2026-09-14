@@ -16,7 +16,7 @@ tests that op specifically. Invocation counts are exact.
 """
 import re, glob, os, json, collections
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.chdir(ROOT)
 
 # ---- the auditable contract: every Talos client/admin entrypoint -----------------------------

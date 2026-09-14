@@ -125,7 +125,7 @@ paths (IGNIS collection) rather than however they're currently invoked as `A_`.
    buckets automatically from schemas — no per-op manual work.
 2. **Talos-hop exclusion + hop price: DECIDED.** Talos-originated hops are excluded from the
    xcall count; every remaining genuine inter-module hop is priced at **2 ignis** (was 1).
-   `REPL/_ignis_cost_classify.py` must be upgraded to (a) skip the Talos→core entry hop,
+   `REPL/tools/_ignis_cost_classify.py` must be upgraded to (a) skip the Talos→core entry hop,
    (b) weight xcalls ×2, (c) match qualified op names (`STOA-PID|C_*`, `C_2|*` — the regex gap
    that silently dropped 5 SWPLC ops from the worksheet). ALL worksheet X/components/FINAL
    numbers are stale until the recompute.
@@ -170,7 +170,7 @@ to be properly planned, substaged." Proposed substages (order matters — deps f
    RULE for future loops: never `(enumerate 0 (- (length xs) 1))` without guarding
    `xs` non-empty — enumerate descends when to < from.
 2. **Classifier upgrade — DONE 2026-09-05.** The number-producing script was
-   `REPL/_ignis_deter_worksheet.py` (not `_ignis_cost_classify.py`, which is only the KIND/role
+   `REPL/tools/_ignis_deter_worksheet.py` (not `_ignis_cost_classify.py`, which is only the KIND/role
    survey); it now implements the full decided model: Option-A buckets (auto-computed from
    every repo defschema → per-table write/read multipliers), per-update-call-site field
    counting (ceil(fields/2), min 1), xcall = 2, Talos-hop excluded by construction (3_Talos +
@@ -179,7 +179,7 @@ to be properly planned, substaged." Proposed substages (order matters — deps f
    **Crucially: the owner's whole 2026-09-05 pricing batch is now encoded IN-SCRIPT as the
    `OWNER_DECISIONS` dict** — the worksheet is fully regenerable (hand edits no longer live in
    the markdown) and that dict is the direct input for the substage-3 IGNIS defconst
-   generation. Regenerate: `python3 REPL/_ignis_deter_worksheet.py > OuronetInformational/IGNIS-PRICING/IGNIS-DETER-WORKSHEET.md`.
+   generation. Regenerate: `python3 REPL/tools/_ignis_deter_worksheet.py > OuronetInformational/IGNIS-PRICING/IGNIS-DETER-WORKSHEET.md`.
    Distribution after regen: 190 exempt · 70 @1x · 255 with deter>1 (tier table at worksheet foot).
 3. **IGNIS module defconsts — DONE 2026-09-05 (constants live; call-site swap deferred to 5).**
    `02_IGNIS.pact` now holds two object-map defconsts in `{3.1}`: `IG|WEIGHTS` (tx=1, ins=3,
@@ -293,9 +293,9 @@ still says "I green-light nothing myself" — nothing ships without owner green-
 
 ## Deliverables & follow-ups (2026-09-05, end of rehaul)
 
-**Two generated sheets, one pricing brain.** `REPL/_ignis_deter_worksheet.py` was refactored so
+**Two generated sheets, one pricing brain.** `REPL/tools/_ignis_deter_worksheet.py` was refactored so
 its printing lives in `main()` (guarded by `__main__`), making it importable; the new
-`REPL/_ignis_price_sheet.py` imports it and reuses `OWNER_DECISIONS` + `suggest_deter` + the
+`REPL/tools/_ignis_price_sheet.py` imports it and reuses `OWNER_DECISIONS` + `suggest_deter` + the
 component model, so the two documents can never disagree.
   - `OuronetInformational/IGNIS-PRICING/IGNIS-DETER-WORKSHEET.md` — every op WITH its modelled compute components.
   - `OuronetInformational/IGNIS-PRICING/IGNIS-PRICE-SHEET.md` — owner ask: "the expected price of every simple

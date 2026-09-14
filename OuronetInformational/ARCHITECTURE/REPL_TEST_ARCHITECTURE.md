@@ -151,7 +151,7 @@ depending on fixture contamination and is not proving what it claims.
 
 ### The ledger — the evidence base
 
-`REPL/_test_ledger.py` generates `ARCHITECTURE/REPL-TEST-LEDGER.md` (+ a `.json` twin): **every
+`REPL/tools/_test_ledger.py` generates `ARCHITECTURE/REPL-TEST-LEDGER.md` (+ a `.json` twin): **every
 client entrypoint, how many times it is invoked, how many positive and adversarial assertions
 surround it, and which test files touch it.** This is what a later audit or documentation agent
 reads to write the testing paper from evidence instead of recollection, and it doubles as the
@@ -248,10 +248,10 @@ REPL/
   _test_ledger.py  generates the per-entrypoint test ledger (md + json)
 ```
 
-> ## RULE 4 — ONE authoritative runner.  **→ `REPL/_gate.py` (built 2026-09-09)**
+> ## RULE 4 — ONE authoritative runner.  **→ `REPL/tools/_gate.py` (built 2026-09-09)**
 > ```
-> cd REPL && python3 _gate.py            # run the gate
-> cd REPL && python3 _gate.py --audit-only   # orphan check only, runs nothing
+> cd REPL && python3 tools/_gate.py            # run the gate
+> cd REPL && python3 tools/_gate.py --audit-only   # orphan check only, runs nothing
 > ```
 > There is no second gate with a different subset. Two gates that disagree is how a pricing
 > change once passed green while executing none of the assertions written to protect it.
@@ -545,8 +545,8 @@ assembled. 175 files never ran, including **~32 audit-finding regression tests**
 ### Baseline — measured 2026-09-09 (every phase moves one of these)
 
 *"start" is the measurement that opened this campaign; "now" is the current value. Regenerate the
-coverage rows with `python3 REPL/_test_ledger.py > OuronetInformational/ARCHITECTURE/REPL-TEST-LEDGER.md`
-and the protection rows with `cd REPL && python3 _gate.py`.*
+coverage rows with `python3 REPL/tools/_test_ledger.py > OuronetInformational/ARCHITECTURE/REPL-TEST-LEDGER.md`
+and the protection rows with `cd REPL && python3 tools/_gate.py`.*
 
 | # | metric | start | now | target |
 |---|---|---:|---:|---:|
@@ -571,7 +571,7 @@ learned to strip comments — see RULE 10) → 96% → **100%**. Note B9 counts 
 `POPULATE*` files were reclassified as fixtures (they asserted nothing about anything) and
 `modules/LIQUID.repl` was added.
 
-**B8 re-counted 2026-09-09 (`REPL/_expectfail.py`): 210 weak, not 137 — a 53% undercount.**
+**B8 re-counted 2026-09-09 (`REPL/tools/_expectfail.py`): 210 weak, not 137 — a 53% undercount.**
 The old figure came from a regex, and a regex cannot tell the two forms apart because the doc
 string and the expected-message string are routinely on separate lines — and the doc is often a
 `(format …)` call rather than a literal:
@@ -589,7 +589,7 @@ string-stripped source, so the forms cannot be confused. Positive control:
 **P3 is therefore ~53% larger than the plan budgeted**, and every adversarial percentage
 published before this correction was computed against the wrong denominator.
 
-**3.1 closed 2026-09-09: 210 -> 51 weak, 96 -> 255 strong.** `REPL/_tighten.py` harvests the real
+**3.1 closed 2026-09-09: 210 -> 51 weak, 96 -> 255 strong.** `REPL/tools/_tighten.py` harvests the real
 message rather than guessing it: insert a deliberately-wrong sentinel, run the file through the
 gate entrypoint that LOADS it (most suites are mid-chain and die standalone), read the truth out
 of `expected error message 'SENTINEL', got '<actual>'`, substitute. It never invents a message.
@@ -603,7 +603,7 @@ The 51 that remain are all in files the gate does not execute.
 > together; two bad lines in one file surfaced as 26 broken entrypoints. The rule this earns:
 > **a mechanical edit across 169 sites cannot be validated by inspection, only by execution.**
 
-### 3.2 — `REPL/_enforce_coverage.py`: which guards has a test actually PINNED?
+### 3.2 — `REPL/tools/_enforce_coverage.py`: which guards has a test actually PINNED?
 
 ```
 enforce sites with a matchable message : 889
@@ -620,7 +620,7 @@ assertions by transaction BLOCK and therefore measures a neighbourhood.
 rejections that are not `enforce` at all -- keyset failures, `require-capability`, table misses.
 The suite tests more mechanisms than G2 counts.
 
-### 3.4 pre-pass — `REPL/_deadguard.py`, run BEFORE writing 768 tests
+### 3.4 pre-pass — `REPL/tools/_deadguard.py`, run BEFORE writing 768 tests
 
 Finds the shape that produced the one known dead guard: a client evaluates a READER that enforces
 predicate P in a `let` binding, then opens a CAPABILITY that enforces P again -- so the
@@ -724,8 +724,8 @@ purposes only, no modifications and no testing.** That removes 33 sites from the
 > at the source, 40 unreachable inside an `enforce-one`, and 24 in the dead `00_DPMF`.
 > **The cheap seam is exhausted**: every guard callable directly is done, and all 59 remaining sit
 > inside a `defcap` reachable only through a Talos client — signers, pricing caps and fixture state
-> per test. Re-measure with `python3 REPL/_enforce_coverage.py`; rank the remainder with
-> `python3 REPL/_cheapseam.py` (run from the repo ROOT, not from `REPL/`).
+> per test. Re-measure with `python3 REPL/tools/_enforce_coverage.py`; rank the remainder with
+> `python3 REPL/tools/_cheapseam.py` (run from the repo ROOT, not from `REPL/`).
 >
 > **RULE 3 has been applied in a third way this campaign, and it is worth stating.** The rule says a
 > guard you cannot write a failing test for is dead code — delete it. In practice three outcomes
@@ -843,7 +843,7 @@ is a phase and not part of the open-ended campaign. And a violated architectural
 CLASS of vulnerability, not one bug: if `URC_` may `enforce`, then validation lives outside the
 defcaps and the "all authorisation is in the defcap" guarantee is false everywhere at once.
 
-### 2.5.2 the SHADOWED GUARD — `REPL/_shadowed.py`
+### 2.5.2 the SHADOWED GUARD — `REPL/tools/_shadowed.py`
 
 Found seven times during P2/P3 without ever being looked for, which is the signature of a class
 rather than a set of bugs. The shape:
@@ -922,7 +922,7 @@ rediscovers as `SCR|…`/`FVT|…` rows, corroborating the hand analysis.
 **The fix is one line where it matters:** read through the `OrFalse`/`with-default-read` sibling
 that already exists in every one of these modules, and the guard fires with its own message.
 
-### 2.5.1 measured 2026-09-09 — `REPL/_conformance.py` built, 93 modules / 7,615 members
+### 2.5.1 measured 2026-09-09 — `REPL/tools/_conformance.py` built, 93 modules / 7,615 members
 
 ```
 [UC-no-read]          0     —   the purity half of the UC_ contract is obeyed EXACTLY
@@ -1056,7 +1056,7 @@ real, not a hole in the call graph — verified in source before trusting it.
 
 
 
-* **2.5.1 Static conformance linter** (`REPL/_conformance.py`, no REPL needed) — the prefix
+* **2.5.1 Static conformance linter** (`REPL/tools/_conformance.py`, no REPL needed) — the prefix
   contracts: `UC_` pure (no table read, no `enforce`, no cross-module read), `UR_` reads only,
   `URC_` no `enforce`, `XI_` bodies end on a write with no trailing `true`, `XE_` starts with
   `UEV_IMC`. **Line-based function boundaries only — a paren-depth scan of this codebase reported
@@ -1109,7 +1109,7 @@ your own toll needs nobody else's signature; charging someone else's does.
   - IGNIS collected anywhere except a Talos wrapper
   - a citizen module invoking a protected `X*` on a sovereign module
   - an admin `A_` executed without the admin key
-### 2.5.3 measured 2026-09-09 — `REPL/_heavy.py`, whole-program call graph
+### 2.5.3 measured 2026-09-09 — `REPL/tools/_heavy.py`, whole-program call graph
 
 93 files, 6,426 members, **15,863 static call edges**. The doubled-prefix rule is a claim about a
 call TREE ("at any depth, transitive"), so it needs reachability, not a per-member scan.
@@ -1162,7 +1162,7 @@ A `@doc` that states a rule is a promise to an integrator. G2 proves the guards 
 proves the guards we PROMISED exist. The two can diverge silently, and when they do the doc is the
 thing people build against.
 
-`python3 REPL/_docclaims.py` enumerates them. **Measured 2026-09-12: 100 unverified.**
+`python3 REPL/tools/_docclaims.py` enumerates them. **Measured 2026-09-12: 100 unverified.**
 
 | kind | count | what it claims |
 |---|---:|---|
@@ -1184,7 +1184,7 @@ thing people build against.
 ## P3.7 — G6: every client-reachable function exercised  *(added 2026-09-12; order-of-work item 5)*
 
 **The largest remaining body of work in the campaign — scope it before starting it.**
-`python3 REPL/_scale_report.py --functions`. **Measured 2026-09-12: 3,230 / 4,498 = 72%; 1,268
+`python3 REPL/tools/_scale_report.py --functions`. **Measured 2026-09-12: 3,230 / 4,498 = 72%; 1,268
 never reached.**
 
 * **3.7.0 — DO THIS FIRST, as its own deliverable.** Break the 1,268 down **by prefix and by

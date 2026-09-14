@@ -17,7 +17,7 @@ output is reused and the report says so -- it never presents a stale number as f
 """
 import collections, os, re, subprocess, sys, time
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "..", "OuronetInformational", "ARCHITECTURE", "REPL_SUITE_STATS.md")
 def _newest_gate():
     """Most recent gate output. Hardcoding one path meant the report silently quoted a stale run

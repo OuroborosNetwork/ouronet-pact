@@ -9,7 +9,7 @@
 
 **These are GATE ENTRYPOINTS now.** `regressions/run.sh` has been deleted: a second runner that
 the primary runner excluded is exactly the situation RULE 4 exists to prevent, and it is how these
-proofs stayed orphaned while a manifest claimed they were runnable. `python3 _gate.py` runs every
+proofs stayed orphaned while a manifest claimed they were runnable. `python3 tools/_gate.py` runs every
 file listed under *Runnable* below, in parallel with the rest of the suite. Any one of them can
 still be run alone with `./_run1.sh <path>` — they self-boot.
 

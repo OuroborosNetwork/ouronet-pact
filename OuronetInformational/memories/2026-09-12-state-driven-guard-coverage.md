@@ -72,7 +72,7 @@ signer. Look up the smart account's sovereign guard before concluding anything.
 ## Candidates left
 
 Anything in the worklist whose blocker is phrased "no suite creates this state" rather than "needs a
-different argument". `python3 _enforce_coverage.py --list` and read the reasons.
+different argument". `python3 tools/_enforce_coverage.py --list` and read the reasons.
 
 ---
 

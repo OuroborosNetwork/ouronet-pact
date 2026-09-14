@@ -80,7 +80,7 @@ exhaustively". This tool finds a SUBSET.
 """
 import argparse, collections, glob, os, re, sys
 
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
+os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 ROOT = ".."
 
 def strip_comments(src):

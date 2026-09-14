@@ -56,7 +56,7 @@ A name is `PREFIX_Name` (or `PREFIX_Scope|Name`). The prefix is read left-to-rig
     wording: a check every caller **already guarantees** is tautological (delete it, do not
     rename), and a check the defcap **also** performs is a duplicate — and the inline copy will
     shadow the defcap's, killing it (measured: `DEMIPAD::UR_Funds` made `C>WITHDRAW`'s type
-    `enforce` provably dead). Enforced by `REPL/_conformance.py` `[v-role-justified]`.
+    `enforce` provably dead). Enforced by `REPL/tools/_conformance.py` `[v-role-justified]`.
 
   - ~~`cap`~~ → **RETIRED 2026-08-31.** A function that installs a capability now uses the **`CAP_`** prefix —
     a defcap-installing enforce is exactly what `CAP_` denotes — so it folds into the **ENFORCE / Validate**
@@ -945,15 +945,15 @@ stands, **not a rule**: a future Class 1 may write directly and still be correct
 
 #### Enforcement
 
-`REPL/_xprotect.py` derives the class from source and `REPL/_conformance.py` `[x-protection-declared]`
+`REPL/tools/_xprotect.py` derives the class from source and `REPL/tools/_conformance.py` `[x-protection-declared]`
 fails when a declared line is **missing**, or **disagrees** with what the source actually does. The
 annotation is generated, never hand-written — a hand-edited line that drifts from the code is worse
 than no line at all, because it reads as verified.
 
 ```bash
-cd REPL && python3 _xprotect.py            # class census
-cd REPL && python3 _xprotect.py --verify   # declared vs derived; non-zero on mismatch
-cd REPL && python3 _xprotect.py --write    # generate/refresh every annotation
+cd REPL && python3 tools/_xprotect.py            # class census
+cd REPL && python3 tools/_xprotect.py --verify   # declared vs derived; non-zero on mismatch
+cd REPL && python3 tools/_xprotect.py --write    # generate/refresh every annotation
 ```
 
 ### 7.19 `UM_` (Utility Migrate) — the ONLY reader allowed to write — amendment 2026-09-10

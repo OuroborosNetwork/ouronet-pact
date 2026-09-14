@@ -9,12 +9,12 @@ method is fixed in `REPL/RedTeam/README.md`.
 
 **The register is the honest summary.** An adversarial suite is uniquely bad at self-reporting: an
 attack that was never written and an attack that was refused both show up as a green gate. So every
-block carries a machine-read `FAMILY` / `STATUS` header, `REPL/_redteam.py` builds the register from
+block carries a machine-read `FAMILY` / `STATUS` header, `REPL/tools/_redteam.py` builds the register from
 those, and the gate **fails** on a malformed header — a shrinking register looks exactly like a
 clean one.
 
-    python3 REPL/_redteam.py          # attempts by family and outcome
-    python3 REPL/_redteam.py --md     # the table for this document
+    python3 REPL/tools/_redteam.py          # attempts by family and outcome
+    python3 REPL/tools/_redteam.py --md     # the table for this document
 
 ## Method, and why it is shaped this way
 

@@ -1,7 +1,7 @@
 ;; CLAIM UNDER TEST — TS01-C2's ORBR|C_WithdrawFees @doc: "Only the Token Owner can withdraw these
 ;; fees." A security claim that was structurally TRUE and entirely UNTESTED.
 ;;
-;; FOUND BY `python3 _docclaims.py`, which audits @doc text for RULES nothing pins. Of the seven
+;; FOUND BY `python3 tools/_docclaims.py`, which audits @doc text for RULES nothing pins. Of the seven
 ;; AUTHORITY-class claims in the codebase, only ORBR|A_Fuel had a negative test -- and that one
 ;; only because the claim turned out to be FALSE and was fixed (its @doc said admin-only while
 ;; `(with-capability (SECURE) …)` enforced nothing, that module's SECURE being `(defcap SECURE () true)`).

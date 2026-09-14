@@ -70,8 +70,8 @@ would be the convenient answer, not the true one.
 
 ## Standing checks
 
-Both detectors are now committed as `REPL/_leakaudit.py` (intra-function) and
-`REPL/_leakaudit_xmod.py` (cross-module). Run them after adding negative tests.
+Both detectors are now committed as `REPL/tools/_leakaudit.py` (intra-function) and
+`REPL/tools/_leakaudit_xmod.py` (cross-module). Run them after adding negative tests.
 
 `_leakaudit_xmod.py` **is expected to flag `AQP-G27`** — that is the one deliberate,
 contained instance described above, and the flag is the detector working rather than a
@@ -277,7 +277,7 @@ emit the removal message would have passed. Each now names its own verb.
 Generalised rule: an expected string must name a fragment that is unique to the guard under test,
 and must not contain an interpolated value.
 
-## `REPL/_orphanmatch.py`
+## `REPL/tools/_orphanmatch.py`
 
 Pairs each orphan with the guard it probably meant, by longest run of consecutive shared words.
 It took **four** bugs to get right, and three are recurring traps worth naming:
@@ -345,7 +345,7 @@ Usually harmless — the conjuncts are independent predicates. It is a **defect*
 conjunct hard-reads a table using the very value an earlier conjunct is checking for BAR or
 existence: the read raises first and the earlier conjunct can never protect anything.
 
-## `REPL/_foldeager.py`
+## `REPL/tools/_foldeager.py`
 
 Scans every `(fold (and) true [...])` site (121 of them) for that shape. Crucially it classifies
 each `UR_*` reader as **hard** (bottoms out in a bare `read`) or **soft** (`with-default-read`), and
@@ -406,7 +406,7 @@ Three scanners shipped with bugs in re-derived copies of the same logic:
    blind from the first continued `@doc` onward;
 3. a conformance rule that read `(deftable ...)` out of its own explanatory comment.
 
-`REPL/_pactlex.py` now holds `strip_comments`, `balanced`, `split_top`, `STRLIT`, `UR_CALL` and
+`REPL/tools/_pactlex.py` now holds `strip_comments`, `balanced`, `split_top`, `STRLIT`, `UR_CALL` and
 `reader_kinds`. `_foldeager.py` and `_eagerlet.py` both import it. **Import it; do not re-derive it.**
 
 `reader_kinds` is the part that makes these rules usable rather than noise: it classifies each `UR_*`
@@ -742,10 +742,10 @@ depth counter never returns to zero.
 they are unaffected only because neither relies on paren matching. `_conformance.py` uses a
 line-based `MEMBER` regex and members run to the next member line.
 
-**CORRECTION, added on discovering the existing tooling.** This was not a new lesson. `REPL/_pactlex.py`
+**CORRECTION, added on discovering the existing tooling.** This was not a new lesson. `REPL/tools/_pactlex.py`
 already exists and its own docstring says it was extracted *"after THREE separate scanners shipped
 with bugs in re-derived copies of this logic"* — including precisely the `\`-continuation bug hit
-here. The re-audit was also a re-derivation of `REPL/_leakaudit.py`, which already answers the same
+here. The re-audit was also a re-derivation of `REPL/tools/_leakaudit.py`, which already answers the same
 question and independently confirms the same result (0 pinned guards after a write).
 
 **The real rule is therefore blunter: `ls REPL/_*.py` BEFORE writing an analysis script.** There are

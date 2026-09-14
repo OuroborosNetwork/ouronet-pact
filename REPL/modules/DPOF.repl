@@ -611,7 +611,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [DPOF-G5 . 01 . activating the role set] ---")
 ;;DPOF::UEV_MoveRoleCheck's "Incompatible Transfer Roles from {} to {}" was UNPINNED
-;;(`python3 REPL/_cheapseam.py`). The check only runs when transfer roles are ACTIVE, and they are
+;;(`python3 REPL/tools/_cheapseam.py`). The check only runs when transfer roles are ACTIVE, and they are
 ;;active only once at least one account holds one -- an empty holder list reads as [BAR] and the
 ;;whole check is skipped. So the fixture is: grant the role to a THIRD party, then move between two
 ;;accounts that lack it.
@@ -1950,7 +1950,7 @@
 ;;
 ;;NAMED ELSEWHERE, NEVER WEIGHED. This preview is called by a shape-check or abort-pin somewhere in
 ;;the suite, which satisfies `_scale_report.py --untested` — a reachability tool, not a cost one.
-;;`REPL/_info_measured.py` is the tool that tells the two apart.
+;;`REPL/tools/_info_measured.py` is the tool that tells the two apart.
 ;;ARG ORDER DIFFERS FROM THE DPTF TWIN. `DPOF|C_Issue`'s flag list is
 ;;`can-upgrade can-change-owner can-add-special-role can-transfer-oft-create-role can-freeze
 ;;can-wipe can-pause` — SEVEN flags with `ctocr` inserted fourth — against DPTF's six. Copying
@@ -2019,7 +2019,7 @@
 ;;
 ;;NAMED ELSEWHERE, NEVER WEIGHED. This preview is called by a shape-check or abort-pin somewhere in
 ;;the suite, which satisfies `_scale_report.py --untested` — a reachability tool, not a cost one.
-;;`REPL/_info_measured.py` is the tool that tells the two apart.
+;;`REPL/tools/_info_measured.py` is the tool that tells the two apart.
 ;;STOA-ONLY, and the clock is the fixture: `BRD|C>UPGRADE` refuses while >15 days of Blue Flag
 ;;remain (`04_BRD.pact:266`). `rollback-tx` does not undo `env-chain-data`, so the restore matters.
 (env-sigs
@@ -2088,7 +2088,7 @@
 ;;
 ;;NAMED ELSEWHERE, NEVER WEIGHED. This preview is called by a shape-check or abort-pin somewhere in
 ;;the suite, which satisfies `_scale_report.py --untested` — a reachability tool, not a cost one.
-;;`REPL/_info_measured.py` is the tool that tells the two apart.
+;;`REPL/tools/_info_measured.py` is the tool that tells the two apart.
 ;;THE TARGET'S OWN KEY MUST SIGN. `02_TS01-C1.pact:1118` runs `CAP_EnforceAccountOwnership`
 ;;on the ACCOUNT being opened, not on the patron — so COCA signs alongside ANHD. COCA is untouched
 ;;by this harness, which is what makes her account genuinely new rather than a re-deploy no-op.

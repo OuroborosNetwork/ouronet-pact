@@ -191,7 +191,7 @@
 ;;     argument list, so building the message was itself an arity error: it resolved to a closure and
 ;;     the transaction died with "Expected Pact Value, got closure or table reference". The guard's
 ;;     own words never reached the operator. Four more sites shared the shape; all five are repaired
-;;     and `python3 _conformance.py --rule format-no-arglist` now keeps it at 0.
+;;     and `python3 tools/_conformance.py --rule format-no-arglist` now keeps it at 0.
 ;;
 ;;  2] The sentence was BACKWARDS. `enforce gap` requires the pause to be ON, and the message said
 ;;     "offline". Five sites elsewhere (TS01-C2:197, C3:158, C4:145, TS01-P:111, TS02-CPAD:110) all

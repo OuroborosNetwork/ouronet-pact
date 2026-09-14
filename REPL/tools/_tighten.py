@@ -18,7 +18,7 @@ account strings, which are unstable across runs and would make the assertion bri
 """
 import argparse, os, re, subprocess, sys
 
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
+os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 PACT = os.environ.get("PACT") or os.path.expanduser("~/.local/bin/pact")
 SENT = "@@TIGHTEN@@"
 

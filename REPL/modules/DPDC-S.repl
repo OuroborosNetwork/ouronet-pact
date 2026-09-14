@@ -396,7 +396,7 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [DPDC-S-G4 . 01 . taking a slice of the removable-nonces object] ---")
-;;An unpinned guard from `python3 REPL/_cheapseam.py`. Pure compute over a constructed object --
+;;An unpinned guard from `python3 REPL/tools/_cheapseam.py`. Pure compute over a constructed object --
 ;;no chain state, so it is one of only three candidates on that list needing no fixture.
 ;;
 ;;The bound is `(< size l)`, STRICT: taking the whole set is refused, not just taking more than

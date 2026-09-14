@@ -36,14 +36,14 @@ NAME_RE = re.compile(r'INFO_[A-Za-z0-9|_\-]+')
 def declared():
     out = {}
     for f in PREVIEW_SOURCES:
-        p = os.path.join(os.path.dirname(os.path.abspath(__file__)), f)
+        p = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), f)
         for m in re.finditer(r'^\s+\(defun (INFO_[^\s:]+)', open(p).read(), re.M):
             out[m.group(1)] = os.path.basename(f)
     return out
 
 def scan():
     named, measured = {}, {}
-    root = os.path.dirname(os.path.abspath(__file__))
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     for f in glob.glob(os.path.join(root, "**", "*.repl"), recursive=True):
         rel = os.path.relpath(f, root)
         if rel.startswith("archive" + os.sep):

@@ -40,5 +40,5 @@ size-cliff extrapolation `(5617/6635)^7 × 2M ≈ 624K` (RPS) / `~47K` (FVT). Bo
 
 ## Tooling
 Generators are scratch (`REPL/_fvt{gen,asm,flip,facade}.py`, driven by `REPL/_fvtrun.sh`,
-tokenizer `REPL/_letfix.py`) — NOT committed; the committed artifacts are the two `.pact` files +
+tokenizer `REPL/tools/_letfix.py`) — NOT committed; the committed artifacts are the two `.pact` files +
 sibling/executor edits. Reproduce from `/tmp/FVT_full.pact` via `bash REPL/_fvtrun.sh`.

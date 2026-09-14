@@ -36,7 +36,7 @@ Full write-up, with mechanism and reproduction, in
 ### Part II findings register — architectural conformance (P2.5, 2026-09-09)
 
 Derived from the STATED design rules rather than from the `enforce` statements, so the guard may
-not exist at all. `REPL/_conformance.py` (static) + `REPL/modules/CONFORMANCE.repl` (dynamic).
+not exist at all. `REPL/tools/_conformance.py` (static) + `REPL/modules/CONFORMANCE.repl` (dynamic).
 
 | # | where | defect | severity |
 |---|---|---|---|

@@ -1,6 +1,6 @@
 ;; REPL/modules/CONFORMANCE.repl — G4 DYNAMIC: the reachability claims, proven.
 ;;
-;; The static half lives in REPL/_conformance.py. This is the half a linter cannot do: the
+;; The static half lives in REPL/tools/_conformance.py. This is the half a linter cannot do: the
 ;; architecture claims certain calls are IMPOSSIBLE, and an impossibility is only established by
 ;; attempting it and being refused.
 ;;

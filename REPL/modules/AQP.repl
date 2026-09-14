@@ -1995,7 +1995,7 @@
 ;;`enforce`, so the consequence is not a mute message — a plan carrying a BAR fvt-id would abort the
 ;;WHOLE batch settle instead of being skipped, which is precisely what the (!= fvt-id BAR) conjunct
 ;;was written to prevent. Latent rather than live (the plan builder does not emit BAR today), so
-;;there is no input to drive it from here; flagged by REPL/_foldeager.py.
+;;there is no input to drive it from here; flagged by REPL/tools/_foldeager.py.
 
 ;;|| NEXT >
 ;;
@@ -2619,7 +2619,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [AQP-VAC-GAS . 01 . single-tx budget] ---")
 ;;CC_FullVacate's @doc calls it an "AGNOSTIC single-tx full vacate". That is a COST claim, and
-;;nothing was checking it. `python3 _heavy.py` [scan-budget] flags it because its static tree
+;;nothing was checking it. `python3 tools/_heavy.py` [scan-budget] flags it because its static tree
 ;;reaches TEN heavy readers -- which would be ~400,000 gas if they all ran, far over Kadena's
 ;;150,000 per-tx limit, and the reason the batched CCp_Batch* slices exist beside it.
 ;;

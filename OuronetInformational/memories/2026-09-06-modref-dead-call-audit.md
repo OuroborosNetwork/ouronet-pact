@@ -42,7 +42,7 @@ three were dead on call; fixed, and now exercised by `[6.11] TX-I05`.
 
 ## The audit is now a checked-in tool
 
-`python3 REPL/_audit_modref_calls.py` (from the repo root) reproduces this audit: it reports dead
+`python3 REPL/tools/_audit_modref_calls.py` (from the repo root) reproduces this audit: it reports dead
 calls and arity mismatches, and exits 1 when either is non-empty, so it can gate a pre-deploy
 check. Current baseline: **11 dead calls** (2 of them in dead `00_DPMF.pact`), **0 arity
 mismatches**. It is mutation-tested — planting a wrong-arity call makes it fire, so a clean run

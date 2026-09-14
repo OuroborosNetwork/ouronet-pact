@@ -1550,7 +1550,7 @@
         (swp:string (ref-DALOS::GOV|SWP|SC_NAME))
     )
     ;;SWPI::UEV_Issue's "Principals must be defined before a Swap Pair can be issued" was UNPINNED
-    ;;(`python3 REPL/_cheapseam.py`). It needs the pool-principal list still EMPTY -- a state that
+    ;;(`python3 REPL/tools/_cheapseam.py`). It needs the pool-principal list still EMPTY -- a state that
     ;;exists only in the two lines before this one, since every suite defines principals here during
     ;;boot and never clears them. Asserting inside that window costs nothing to set up; building the
     ;;state afterwards would mean standing up a chain with the executor half-run.

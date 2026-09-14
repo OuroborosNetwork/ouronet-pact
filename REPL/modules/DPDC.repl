@@ -510,7 +510,7 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [DPDC-09 · 01 · the nonce validator] ---")
-;;Flagged by REPL/_shadowed.py, which looks for a guard whose VALIDATED ARGUMENT is also part of
+;;Flagged by REPL/tools/_shadowed.py, which looks for a guard whose VALIDATED ARGUMENT is also part of
 ;;the KEY of a hard read running before it. UEV_Nonce is the shape exactly:
 ;;
 ;;    (let ((an (abs nonce))

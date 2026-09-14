@@ -23,7 +23,7 @@ Header shape (see RedTeam/README.md):
 """
 import glob, os, re, sys
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FAMILIES = {
     "A": "Arithmetic & value",
     "B": "Permissionless reach",

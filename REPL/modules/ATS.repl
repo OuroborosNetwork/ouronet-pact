@@ -174,7 +174,7 @@
 ;;literal is what every one of them wanted, and it removes the call rather than patching it.
 ;;
 ;;A REGRESSION DETECTOR now covers the shape codebase-wide:
-;;`python3 _conformance.py --rule format-no-arglist`, which must stay at 0. It found two MORE sites
+;;`python3 tools/_conformance.py --rule format-no-arglist`, which must stay at 0. It found two MORE sites
 ;;than the obvious grep -- in 00_DPMF -- because their templates wrap across lines with
 ;;`\`-continuation. Those two are a worse shape (a `{}` with no args at all) and are deliberately
 ;;left: DPMF is dead, and guessing the forgotten argument there is churn.
@@ -937,7 +937,7 @@
 (namespace "ouronet-ns")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (print "--- [ATS-G11 . 01 . a third party cannot coil someone else's tokens] ---")
-;;FOUND BY `python3 _docclaims.py`, auditing @doc text for AUTHORITY claims no test pins.
+;;FOUND BY `python3 tools/_docclaims.py`, auditing @doc text for AUTHORITY claims no test pins.
 ;;TS01-C2's ATS|C_VestedCoil says "Only the Owner of <coil-token> can execute this function".
 ;;
 ;;THE DOC'S WORDING IS MISLEADING, and that is worth recording rather than quietly testing around.
@@ -970,7 +970,7 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [ATS-G12 . 01 . position 0 vs a real position] ---")
-;;An unpinned guard from `python3 REPL/_cheapseam.py`, selected because its `enforce` is the FIRST
+;;An unpinned guard from `python3 REPL/tools/_cheapseam.py`, selected because its `enforce` is the FIRST
 ;;statement in the function -- before any table read -- so it needs no fixture at all. Most of that
 ;;list does: of 37 non-dead candidates only three are reachable without building state first.
 ;;
@@ -3976,7 +3976,7 @@
 ;;
 ;;NAMED BY A SHAPE-CHECK, NEVER WEIGHED. `Stage_01/[6.11]_INFO.repl` calls this preview only to assert
 ;;the returned object `contains "ignis"` — which satisfies `_scale_report.py --untested`, a tool that
-;;asks "was it reached", not "does the quote equal the charge". `REPL/_info_measured.py` tells them apart.
+;;asks "was it reached", not "does the quote equal the charge". `REPL/tools/_info_measured.py` tells them apart.
 ;;
 ;;THE LADDER IS THE PRICE'S ONLY INTERESTING INPUT, and it does NOT move the cost: the fee ladder is a
 ;;single table write regardless of how many positions it carries. That is the claim this block settles —
@@ -4038,7 +4038,7 @@
 ;;FUNCTION COVERAGE (G6) — `INFO_ATS|Curl`, per the owner's spec. Template: <<ATS-I1>>.
 ;;THE GAS METER READS AOZT, the op's own patron — see <<ATS-I25>>.
 ;;
-;;NAMED BY A COMMENTED-OUT LINE IN `[6.6]_ATS.repl`, NEVER WEIGHED — see `REPL/_info_measured.py`.
+;;NAMED BY A COMMENTED-OUT LINE IN `[6.6]_ATS.repl`, NEVER WEIGHED — see `REPL/tools/_info_measured.py`.
 ;;CURL IS THE CHAINED SIBLING OF COIL. `URCi_Curl` re-derives FOUR legs where the exec composes
 ;;five, which is precisely the hand-rebuilt-composer shape that produced six of tonight's defects.
 (env-sigs
@@ -4132,7 +4132,7 @@
 ;;FUNCTION COVERAGE (G6) — `INFO_ATS|Brumate`, per the owner's spec. Template: <<ATS-I1>>.
 ;;THE GAS METER READS AOZT, the op's own patron — see <<ATS-I25>>.
 ;;
-;;NAMED BY A COMMENTED-OUT LINE IN `[6.6]_ATS.repl`, NEVER WEIGHED — see `REPL/_info_measured.py`.
+;;NAMED BY A COMMENTED-OUT LINE IN `[6.6]_ATS.repl`, NEVER WEIGHED — see `REPL/tools/_info_measured.py`.
 ;;BRUMATE IS CURL WITH INVERTED POLARITY on the destination: `ats1` must be awake and `ats2`
 ;;HIBERNATING, where Curl wants both awake. So the same chain is reused and pair 2 is put to sleep
 ;;first — one `C_Control` call, which is a billed op measured at <<ATS-I13>> and closes before the
@@ -4234,7 +4234,7 @@
 ;;FUNCTION COVERAGE (G6) — `INFO_ATS|VestedCurl`, per the owner's spec. Template: <<ATS-I1>>.
 ;;THE GAS METER READS AOZT, the op's own patron — see <<ATS-I25>>.
 ;;
-;;NAMED BY A COMMENTED-OUT LINE IN `[6.6]_ATS.repl`, NEVER WEIGHED — see `REPL/_info_measured.py`.
+;;NAMED BY A COMMENTED-OUT LINE IN `[6.6]_ATS.repl`, NEVER WEIGHED — see `REPL/tools/_info_measured.py`.
 ;;A TWO-LEG COMPOSER: `URCi_Curl` + `URCi_Vest`. Its coil-side twin is <<ATS-I22>>; together they
 ;;say whether the vest leg costs the same bolted onto either base.
 (env-sigs

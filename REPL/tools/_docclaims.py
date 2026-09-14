@@ -37,7 +37,7 @@ import argparse, glob, os, re, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _pactlex import strip_comments
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REPO = os.path.dirname(ROOT)
 
 # The verb list is deliberately WIDE. The first version matched only "can only be used/called/

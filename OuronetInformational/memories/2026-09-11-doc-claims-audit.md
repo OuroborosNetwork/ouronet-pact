@@ -1,6 +1,6 @@
 # `@doc` claims nothing tests — the other half of the ORBR|A_Fuel lesson
 
-**Date:** 2026-09-11 · **Status:** tool `REPL/_docclaims.py`; one claim now pinned
+**Date:** 2026-09-11 · **Status:** tool `REPL/tools/_docclaims.py`; one claim now pinned
 
 ## Why
 

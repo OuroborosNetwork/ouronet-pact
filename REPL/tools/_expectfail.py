@@ -20,7 +20,7 @@ comment- and string-stripped source, so the two forms cannot be confused.
 """
 import argparse, glob, os, re, sys, collections
 
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
+os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 def lex(src):
     """Blank comments, keep strings as single-char tokens so arg counting sees them as atoms."""

@@ -2,7 +2,7 @@
 
 **Status: P2 complete.** All 448 Talos client entrypoints are invoked by an asserting test **AND
 every one of those tests is executed by the gate** (`B4 = 0`, `B4b = 0`, `B10 = 100%`). Regenerate
-with `python3 REPL/_test_ledger.py > OuronetInformational/ARCHITECTURE/REPL-TEST-LEDGER.md`.
+with `python3 REPL/tools/_test_ledger.py > OuronetInformational/ARCHITECTURE/REPL-TEST-LEDGER.md`.
 
 > **The first "100%" was wrong and is worth remembering.** It was published while NINE entrypoints
 > lived exclusively in files the gate does not run (`vst-harness.repl`, `_audit_ats_baseline.repl`,

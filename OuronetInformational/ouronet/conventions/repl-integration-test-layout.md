@@ -2,7 +2,7 @@
 
 Use this checklist when **adding or restructuring** any Ouronet **`REPL/**/*.repl`** that runs **`begin-tx` / `commit-tx`** integration steps. Reference implementation: **`REPL/Stage_02/[6.2.1]_AQP-ANK.repl`** and **`REPL/Stage_02/[6.2.2]_AQP-SCORE.repl`**.
 
-Mechanical pass (preamble, **`;;|| NEXT`**, one **`· 01 ·`** banner per **`begin-tx`**): **`REPL/_normalize_repl_layout.py`** from repo root (`python3 REPL/_normalize_repl_layout.py`).
+Mechanical pass (preamble, **`;;|| NEXT`**, one **`· 01 ·`** banner per **`begin-tx`**): **`REPL/tools/_normalize_repl_layout.py`** from repo root (`python3 REPL/tools/_normalize_repl_layout.py`).
 
 ## Inter-transaction (between `commit-tx` and the next `begin-tx`)
 

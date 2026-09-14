@@ -32,7 +32,7 @@ enforce above the fold, or use a with-default-read reader), and some hits are be
 """
 import re, glob, os, sys
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _pactlex import strip_comments, balanced, split_top, reader_kinds, UR_CALL as READER

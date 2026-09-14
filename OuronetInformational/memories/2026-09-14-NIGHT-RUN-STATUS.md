@@ -25,7 +25,7 @@ quote read before the op, the charge counted across it. Every fix is in SOURCE, 
 
 Three distinct failure modes, worth keeping separate in your head:
 - **a literal zero** for a currency the op really charges (1-8) — the loudest, and the one
-  `REPL/_infostoa.py` now detects automatically;
+  `REPL/tools/_infostoa.py` now detects automatically;
 - **a missing LEG** in a multi-part cost (9-12, 16-17) — the preview sums some of what the exec
   collects. Found by asking which sibling is not shaped like the others;
 - **the wrong SOURCE CONSTANT** (13-15) — two execution paths with two prices, one preview.
@@ -88,7 +88,7 @@ claims; both are now facts.
 
 ## NEW TOOL
 
-`REPL/_infostoa.py` — finds previews claiming a currency is free when the exec tree collects it.
+`REPL/tools/_infostoa.py` — finds previews claiming a currency is free when the exec tree collects it.
 **Mutation-tested**: it reports 0 today, and that 0 is trustworthy because reintroducing a known
 defect makes it name the defect. It reported "0 to review" twice while blind; see the handoff for
 both bugs. Report-only, not a gate: an escrow or a purchase price is not a protocol fee.
@@ -522,7 +522,7 @@ lp-denominator rule), `ATS|Issue` / `AddHotRBT` / `DirectRecovery`, `SWP|AddFroz
 
 ## CORRECTION TO EVERY COVERAGE NUMBER I HAVE QUOTED — read this before the ones above
 
-I have been reporting `python3 REPL/_scale_report.py --untested | grep -c INFO_` as though it meant
+I have been reporting `python3 REPL/tools/_scale_report.py --untested | grep -c INFO_` as though it meant
 "measured". **It does not.** That tool answers *"is this function reached at all"*, and a preview is
 "reached" by either of these, neither of which compares a quote to a charge:
 
@@ -531,7 +531,7 @@ I have been reporting `python3 REPL/_scale_report.py --untested | grep -c INFO_`
 (expect-failure "..." "No value found in table" (AQP-INFO.INFO_AQP-FVT|Inject p "FVT-x" ...))
 ```
 
-The honest split, from the new tool `REPL/_info_measured.py`:
+The honest split, from the new tool `REPL/tools/_info_measured.py`:
 
 ```
 declared previews      : 412
@@ -597,7 +597,7 @@ label is only honest when the op is structurally unreachable — a defpact that 
 
 ### THE 41 THAT REMAIN (21 named-but-unmeasured + 20 never-named)
 
-Run `python3 REPL/_info_measured.py --gaps` for the live list. Structurally out: 3 `AQP-DSA|*`,
+Run `python3 REPL/tools/_info_measured.py --gaps` for the live list. Structurally out: 3 `AQP-DSA|*`,
 3 `SWP|Issue*Pool` (3-step defpact), `SWP|Firestarter` (credits IGNIS; nothing to difference),
 `INFO_Collect` (STOAICO zero-mint deadlock), 2 `VST|Hibernated*Display` (not cost previews), and the
 ~9 `INFO_DPDC-*` internal helpers that take a pre-built cumulator. The rest are reachable and simply
@@ -815,7 +815,7 @@ never created rather than as a wrong key.
 | 1 | `SWP|Firestarter` | CREDITS IGNIS to the firestarter; there is no charge to difference |
 | 1 | `AQP-FVT|SweepRevokeAnchor` | **no positive exec anywhere in the tree** — superseded by the paginated `CC_SweepBegin`/`CCp_SweepRecomputeChunk` pair; only the MTX defpact variant is driven. **OWNER DECISION**: either the single-tx op is dead and its preview with it, or the paginated pair was not meant to be the only route. |
 
-**`python3 REPL/_info_measured.py --gaps` reproduces this list at any time.**
+**`python3 REPL/tools/_info_measured.py --gaps` reproduces this list at any time.**
 
 
 ## SESSION 2, PART 13 — the OWNER'S FOUR DECISIONS, implemented
@@ -830,7 +830,7 @@ measured, and green.
 
 > **CORRECTION, and it is the most important paragraph in this section.** The first version of this
 > write-up claimed "GREEN, 20,533 assertions" on the strength of a log that **the gate had never
-> written**. The run was launched as `cd REPL && ... python3 _gate.py > /tmp/gate11.log` from a shell
+> written**. The run was launched as `cd REPL && ... python3 tools/_gate.py > /tmp/gate11.log` from a shell
 > already inside `REPL/`. The `cd` failed, `&&` short-circuited, `_gate.py` never started — and a log
 > from an earlier session was still sitting at that path, ending in `GATE GREEN`. The trailing
 > `; echo "GATE rc=$?"` reported the *echo's* success, so the task looked like a clean completion.
@@ -1023,7 +1023,7 @@ on RENAMING an interface, not on adding to one.
 | 2 | `VST|Hibernated*Display` | return `HibernatedNoncesView` — not cost previews at all, no ignis/stoa fields |
 | 1 | `SWP|Firestarter` | CREDITS IGNIS to the firestarter; there is no charge to difference |
 
-`AQP-FVT|SweepRevokeAnchor` has left this table. **`python3 REPL/_info_measured.py --gaps` reproduces
+`AQP-FVT|SweepRevokeAnchor` has left this table. **`python3 REPL/tools/_info_measured.py --gaps` reproduces
 the list at any time.**
 
 
@@ -1080,7 +1080,7 @@ and nothing in the suite executes the `A_Fix` family at all (`grep -r A_Fix --in
 one comment). Even full execution coverage of `C_Fix` would not have found it, because `C_Fix` is
 correct; the defect is in the arithmetic of the plan handed to it.
 
-So the instrument matches the bug class: **`REPL/_ladder.py`**, a static check that every ladder tiles
+So the instrument matches the bug class: **`REPL/tools/_ladder.py`**, a static check that every ladder tiles
 its collection contiguously from 1 with no gap or overlap, that no rung exceeds the 70-position
 budget, and that each Fix ladder matches its Spawn twin rung-for-rung. Mutation-tested against the
 original bug (it reports all three symptoms) and against an independent over-budget mutation in
@@ -1123,7 +1123,7 @@ needs to pick it up.
 
     REPL/RedTeam/              the adversarial suite -- globbed into the gate like modules/
     REPL/RedTeam/README.md     the method: families, block header, the two rules
-    REPL/_redteam.py           the ATTACK REGISTER, gate-enforced on malformed headers
+    REPL/tools/_redteam.py           the ATTACK REGISTER, gate-enforced on malformed headers
     ARCHITECTURE/RED-TEAM-REPORT.md   five stages + closing assessment
 
 It is a SEPARATE folder on purpose. A suite that mixes constructive and adversarial assertions can

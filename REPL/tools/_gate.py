@@ -32,7 +32,7 @@ PACT = (os.environ.get("PACT")
 if not os.path.exists(PACT) and not shutil.which(PACT):
     sys.exit("gate: cannot find the `pact` binary. Set PACT=/path/to/pact.")
 
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
+os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # --- the gate ------------------------------------------------------------------------------
 # The Kursan/ suites and the _scratch_ audit proofs are HERE, not in EXCLUDED. They used to be
@@ -275,7 +275,7 @@ def main():
     # The Stage-Z testing variant is GENERATED from canonical (see _stagez_variant.py). If canonical
     # moved and the variant was not regenerated, the STAGE-Z assertions are testing a stale copy and
     # would still go green -- so this must fail the gate, not warn.
-    _sv = subprocess.run([sys.executable, "_stagez_variant.py", "--check"],
+    _sv = subprocess.run([sys.executable, "tools/_stagez_variant.py", "--check"],
                          capture_output=True, text=True)
     if _sv.returncode != 0:
         print(_sv.stdout + _sv.stderr)
@@ -287,7 +287,7 @@ def main():
     # is invisible to the suite no matter how green it is. Found exactly that on 2026-09-14:
     # NOSFERATU A_Fix01 read `Legendary 1 100` against its twin A_Step01's `1 70`, double-covering
     # thirty positions. Static property, static check, and it fails the gate rather than warning.
-    _ld = subprocess.run([sys.executable, "_ladder.py", "--check"], capture_output=True, text=True)
+    _ld = subprocess.run([sys.executable, "tools/_ladder.py", "--check"], capture_output=True, text=True)
     if _ld.returncode != 0:
         print(_ld.stdout + _ld.stderr)
         sys.exit("GATE FAILED: a citizen minter batch ladder does not tile its collection.")
@@ -298,7 +298,7 @@ def main():
     # projected the SemiFungible column), where it made a registry write-only through the public
     # interface. Total failures delete their own evidence: a function that never works is never
     # called, so no test is left to notice. Static shape, static check.
-    _cp = subprocess.run([sys.executable, "_colproj.py", "--check"], capture_output=True, text=True)
+    _cp = subprocess.run([sys.executable, "tools/_colproj.py", "--check"], capture_output=True, text=True)
     if _cp.returncode != 0:
         print(_cp.stdout + _cp.stderr)
         sys.exit("GATE FAILED: a projecting read names a column its table does not have.")
@@ -307,7 +307,7 @@ def main():
     # header, because the attack register is built from those and an attack that is not counted
     # may as well not have been run. This fails the gate rather than warning: a malformed header
     # silently shrinks the register, and a shrinking register looks exactly like a clean one.
-    _rt = subprocess.run([sys.executable, "_redteam.py", "--check"], capture_output=True, text=True)
+    _rt = subprocess.run([sys.executable, "tools/_redteam.py", "--check"], capture_output=True, text=True)
     if _rt.returncode != 0:
         print(_rt.stdout + _rt.stderr)
         sys.exit("GATE FAILED: a RedTeam/ block has a malformed or duplicate attack header.")
@@ -328,12 +328,13 @@ def main():
     # inventory; failing on those would make the check unusable and therefore ignored.
     for _tool, _why in (("_conformance.py", "conformance violation(s)"),
                         ("_heavy.py", "a single-prefixed C_/A_ reaching a heavy read")):
-        _r = subprocess.run([sys.executable, _tool, "--check"], capture_output=True, text=True)
+        _r = subprocess.run([sys.executable, "tools/" + _tool, "--check"],
+                            capture_output=True, text=True)
         if _r.returncode != 0:
             print(_r.stdout + _r.stderr)
             sys.exit(f"GATE FAILED: {_why} -- see {_tool}.")
 
-    # TOOL INTEGRITY. Every analysis tool in this directory is a `_*.py`; none of them is imported
+    # TOOL INTEGRITY. Every analysis tool lives in `tools/` as a `_*.py`; none of them is imported
     # by the gate, so a syntax error in one is INVISIBLE here. That is not hypothetical -- on
     # 2026-09-12 an edit to `_conformance.py`'s rule text left an unescaped quote inside a string,
     # and the gate went GREEN TWICE before anyone ran the tool. A green gate was reporting on a
@@ -343,7 +344,8 @@ def main():
     # part that catches the failure above; the selftests are the part that catches a rule quietly
     # matching nothing. Both are seconds. A tool that cannot run is worse than a missing tool,
     # because its silence reads as "clean".
-    _tools = sorted(t for t in glob.glob("_*.py") if t != os.path.basename(__file__))
+    _tools = sorted(t for t in glob.glob("tools/_*.py")
+               if os.path.basename(t) != os.path.basename(__file__))
     _broken = []
     for t in _tools:
         r = subprocess.run([sys.executable, "-m", "py_compile", t], capture_output=True, text=True)

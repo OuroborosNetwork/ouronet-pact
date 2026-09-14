@@ -121,3 +121,43 @@ Two things follow:
 2. **Identical assertion counts across many BROKEN entrypoints is a signature, not a coincidence.**
    It means one shared load failure, and the fastest diagnosis is to run the cheapest broken
    entrypoint directly and read its tail — the last `print` before the silence names the transaction.
+
+## 6 — the tools folder, and the two things the move silently broke
+
+44 `_*.py` moved from `REPL/` to `REPL/tools/`. **All of them, including `_gate.py`** — my stated
+default had been "all but `_gate.py`", and that default was wrong: `_test_ledger.py` and `_tighten.py`
+load `_gate.py` from *their own* directory via `importlib`, so leaving it behind would have broken
+them. Moving everything together reduces the problem to one uniform question per path expression:
+*does this mean "my own directory" (sibling — unchanged) or "the REPL dir / repo root" (one level
+further up)?* 25 edits under that rule, plus five in `_gate.py` itself.
+
+**The verification was a before/after diff of every tool's output**, and it earned its keep. 38 of 42
+were byte-identical. The other four:
+
+| tool | what the diff showed | verdict |
+|---|---|---|
+| `_toolindex.py` | `indexed 44 tools` → **`indexed 0 tools`** | **BROKEN.** cwd-relative `glob("_*.py")`. It did not error — it rewrote TOOLS.md with zero rows. |
+| `_conformance.py` | a new `[x-protection-declared] 1 violation` | **BROKEN.** cwd-relative sibling load of `_xprotect.py`. Loud, at least. |
+| `_scale_report.py` | line counts and an ordering change | **not the move** — see below |
+| `_normalize_repl_layout.py` | different file list | expected: it is a **mutator** |
+
+`_toolindex.py` is the one worth remembering. **A path that is right by coincidence of working
+directory is a latent break, and its failure mode is silence**: it scanned an empty directory, found
+nothing, reported success, and wrote an empty index. That is precisely what `_gate.py`'s own comment
+warns about — *"a tool that cannot run is worse than a missing tool, because its silence reads as
+clean"* — and nothing but the output diff would have caught it.
+
+### Two findings that fell out of the exercise
+
+**The tool set is not uniformly read-only, and nothing labels which are which.** I captured the
+"before" snapshot by running every tool with no arguments. Several are **mutators**:
+`_normalize_repl_layout.py` rewrote **205 files**. I reverted them against the commit, but the right
+lesson is that "run every tool and diff the output" is only safe for tools that are known reporters —
+and this repo has no such marking.
+
+**`_scale_report.py` was nondeterministic.** Two runs, same tool, same unchanged tree, different
+output: `Counter.most_common` breaks ties by insertion order, and the insertion order came from
+iterating a **set difference of strings**, which Python varies between runs via hash randomisation.
+Fixed with an explicit `(-count, name)` sort key. This matters more here than it would elsewhere —
+the project's whole method is *regenerate and diff*, and a generator that changes its own output on
+an unchanged tree teaches the reader to ignore diffs.

@@ -249,7 +249,7 @@
 ;;Its first act is a (fold (and) true [...]) that measures the lists via let-bound lengths and then
 ;;INDEXES them in later conjuncts -- (at 0 fee-thresholds), (at 0 (at 0 fee-array)). `fold` builds
 ;;the whole list before `and` runs, so those indexes are not guarded by the length conjuncts beside
-;;them. Detector: `python3 _foldeager.py`, [index] section.
+;;them. Detector: `python3 tools/_foldeager.py`, [index] section.
 ;;
 ;;The two assertions below are a pair and the CONTRAST is the finding:
 (map print

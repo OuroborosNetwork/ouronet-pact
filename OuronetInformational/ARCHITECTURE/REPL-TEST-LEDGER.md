@@ -1,6 +1,6 @@
 # REPL TEST LEDGER — what is tested, how often, and how
 
-**GENERATED — do not edit.** `python3 REPL/_test_ledger.py > OuronetInformational/ARCHITECTURE/REPL-TEST-LEDGER.md`
+**GENERATED — do not edit.** `python3 REPL/tools/_test_ledger.py > OuronetInformational/ARCHITECTURE/REPL-TEST-LEDGER.md`
 
 This is the evidence base for the audit and documentation papers: every client entrypoint Ouronet exposes, how many times each is exercised, how many positive and adversarial assertions surround it, and which test files touch it.
 

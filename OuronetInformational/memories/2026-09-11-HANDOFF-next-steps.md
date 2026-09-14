@@ -701,7 +701,7 @@ progress — always decompose a delta before publishing it.
 ## STATE  (numbers updated 2026-09-12)
 
 Gate **GREEN — 19,074 executed / 3,875 distinct**. Conformance **VIOLATIONS: 0**, OBSERVATIONS 117.
-Verify with: `cd REPL && python3 _gate.py` then `python3 _conformance.py`.
+Verify with: `cd REPL && python3 tools/_gate.py` then `python3 tools/_conformance.py`.
 
 - guard pinning: **632/784 unambiguous (80%)**, 686 pinned overall (87%)
   **THE REAL REMAINING WORKLIST IS 74 (was 159 at the start of 2026-09-12), NOT 25.** `_enforce_coverage.py` prints it directly as
@@ -714,9 +714,9 @@ Verify with: `cd REPL && python3 _gate.py` then `python3 _conformance.py`.
   UNREACHABLE (40 enforce-one-nested), annotated (19), untestable-externally (3) and unmatchable
   (2) categories are already EXCLUDED from the 784 denominator -- they never enter the worklist.
   (Verified: the annotated `OUROBOROS:603` is absent from `--list`'s gap output; the `:608` entry
-  nearby is a different, genuinely unpinned enforce in the same function.) — `python3 _enforce_coverage.py`
-- function reach: **3,216/4,497 (71%)** — `python3 _scale_report.py`
-- orphan check clean — `python3 _gate.py --audit-only`
+  nearby is a different, genuinely unpinned enforce in the same function.) — `python3 tools/_enforce_coverage.py`
+- function reach: **3,216/4,497 (71%)** — `python3 tools/_scale_report.py`
+- orphan check clean — `python3 tools/_gate.py --audit-only`
 
 ### Conformance: 1 violation, 117 observations (both cross-module-scan and the `format` bug closed)
 
@@ -748,7 +748,7 @@ test used — and check whether anything calls the function at all. Both checks 
 The ruling was *"We'd use a variant for testing with the testing IDs."* Done — but the interesting
 part is what it exposed.
 
-`REPL/_stagez_variant.py` **generates** a testing variant from canonical (it does not check in a
+`REPL/tools/_stagez_variant.py` **generates** a testing variant from canonical (it does not check in a
 copy — a copy rots; a generated file cannot, because `--check` is wired into `_gate.py` and fails
 the gate the moment canonical moves). Canonical was not touched.
 
@@ -801,18 +801,18 @@ Two facts established by execution in that investigation, both durable and both 
    `ATSU::URCi_WithdrawRoyalties` (internal empty list, preview unguarded),
    `DPDC-T` bulk transfer (client unguarded too),
    `U|ATS::UEV_CRF|FeeArray` (guards empty, not length-mismatch).
-   Detectors: `python3 _foldeager.py` `[index]` (4 sites) and grep for the enumerate idiom.
+   Detectors: `python3 tools/_foldeager.py` `[index]` (4 sites) and grep for the enumerate idiom.
    **Do not report the 92-site inventory as 92 defects.** If continuing: call a list-taking
    internal predicate with `[]`, then its client with `[]`, and compare — the PAIR is the finding.
    See `2026-09-11-enumerate-counts-down.md`. It remains a review list, NOT a bug list; do not
    report 92 defects.
 4. **Scan-gas budget — checked, clean.** `2026-09-11-scan-gas-budget.md`. A table scan costs
    ~40,000 gas FLAT (`keys`/`select`/`fold-db` alike); Kadena's per-tx limit is 150,000, so three
-   is the ceiling. `python3 _heavy.py` `[scan-budget]` lists entrypoints reaching 4+ heavy readers.
+   is the ceiling. `python3 tools/_heavy.py` `[scan-budget]` lists entrypoints reaching 4+ heavy readers.
    Its two current hits (`CC_FullVacate` + wrapper) were MEASURED at 43,187 gas and cleared — a
    static upper bound overstating by 10x. **Do not re-investigate those two; a THIRD entry is new.**
    Guarded by `AQP-VAC-GAS` in `modules/AQP.repl` and `STAGEZ-17` in `modules/STAGE-Z.repl`.
-5. **@doc AUTHORITY claims — CLOSED, all 15 verified** (was reported as 7; see the CORRECTION). `python3 _docclaims.py`, see
+5. **@doc AUTHORITY claims — CLOSED, all 15 verified** (was reported as 7; see the CORRECTION). `python3 tools/_docclaims.py`, see
    `2026-09-11-doc-claims-audit.md`. 7 authority claims exist; only 2 are now pinned. The pattern
    One was FALSE and already fixed (`ORBR|A_Fuel`), one was already tested (`FVT|C>UNSTALE-ALL` —
    a tool false positive: a DEFCAP is never named by a test, it is reached via its acquirer), and
@@ -831,12 +831,12 @@ Two facts established by execution in that investigation, both durable and both 
    expect a low hit rate and triage by reading before testing.
    **If adding a tier, check the pattern against a known example first.** Both of this tool's
    blind spots (narrow verbs, missing IMMUTABLE class) produced confident clean results.
-6. **P3.3 residue** — `python3 _p33_classify.py`. Rate is 0-4 pins/pass; defect hunting has paid
+6. **P3.3 residue** — `python3 tools/_p33_classify.py`. Rate is 0-4 pins/pass; defect hunting has paid
    better. Do not push the number unless asked.
 7. **Assertion strength — BOTH sides now audited, both closed.**
-   * NEGATIVE: `python3 _expectfail.py`. 46 -> 35 weak; all 35 remaining are in UNGATED
+   * NEGATIVE: `python3 tools/_expectfail.py`. 46 -> 35 weak; all 35 remaining are in UNGATED
      scratch/audit files. Every negative assertion the gate executes checks its message.
-   * POSITIVE: `python3 _vacuous.py` (new). 2,601 sites, **VACUOUS 0** — every positive assertion
+   * POSITIVE: `python3 tools/_vacuous.py` (new). 2,601 sites, **VACUOUS 0** — every positive assertion
      can be made to fail. One real hit found and fixed (a self-comparison in `[2.1]_Dalos.repl`);
      6 WEAK remain and are all legitimate (sentinel bounds, acceptance checks) — documented in the
      tool so they are not "fixed" later. See `2026-09-11-vacuous-assertions.md`.
@@ -844,8 +844,8 @@ Two facts established by execution in that investigation, both durable and both 
      that matters**: break the expectation, confirm red, restore.
 8. **(old) Weak `expect-failure`s — CLOSED for anything that runs.** 46 -> 35, and all 35 remaining sit in
    UNGATED scratch/audit files (`_audit_ats_baseline.repl` has 18 of them). **Every negative
-   assertion the gate actually executes now checks its message.** `python3 _expectfail.py` re-checks;
-   `python3 _tighten.py <file> --apply` harvests the real message, and only works where a gate
+   assertion the gate actually executes now checks its message.** `python3 tools/_expectfail.py` re-checks;
+   `python3 tools/_tighten.py <file> --apply` harvests the real message, and only works where a gate
    entrypoint loads the file. If those scratch files are ever gated, tighten them in the same pass.
 
 ## OPEN DEFECTS — the three that were here are closed; three new ones found since.
@@ -1008,10 +1008,10 @@ findings above.
 
 ## EVERY DETECTOR I WROTE NOW SELF-TESTS — run these before trusting a number
 
-    cd REPL && python3 _deadbind.py            # canary baked into every run
-                python3 _docclaims.py          # canary baked into every run
-                python3 _conformance.py --selftest
-                python3 _vacuous.py --selftest
+    cd REPL && python3 tools/_deadbind.py            # canary baked into every run
+                python3 tools/_docclaims.py          # canary baked into every run
+                python3 tools/_conformance.py --selftest
+                python3 tools/_vacuous.py --selftest
 
 Two canary designs, chosen per tool:
   * **live canary** (`_deadbind`, `_docclaims`) -- a hand-confirmed instance that must keep being
@@ -1044,7 +1044,7 @@ clean 0 over a class already reproduced by hand:
 Every one looked like a clean result. **A detector that cannot find a known instance is reporting
 its own bug, not the codebase's** -- so bake the canary in rather than remembering to check.
 
-`python3 _deadbind.py` currently: **150 dead bindings** (0 heavy, 95 point reads, 55 pure compute).
+`python3 tools/_deadbind.py` currently: **150 dead bindings** (0 heavy, 95 point reads, 55 pure compute).
 Waste on live paths, not a correctness bug -- 24 in `02_SCORE.pact`, 21 in `05_FVT.pact`. Spot-checked
 by hand: `05_DPTF.pact:393` (`GOV|WIPE_ALL-TREASURY-DEBT` reads OURO supply and decimals, uses
 neither) and `08_ATS.pact:3084` (`ATS|C_AddSecondary` reads price and trigger, uses neither).

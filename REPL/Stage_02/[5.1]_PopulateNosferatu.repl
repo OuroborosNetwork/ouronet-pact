@@ -2644,7 +2644,7 @@
 ;;==== NSFR-F1 · 02 · drive A_Fix05a, read before and after ==== ==================================
 (print "--- [NSFR-F1 · 02 · drive A_Fix05a, read before and after] ---")
 ;;THE A_Fix LADDER, EXECUTED. Until this block `A_Fix*` was reachable by NOTHING:
-;;`grep -r "A_Fix" --include=*.repl REPL/` returned a single comment. `REPL/_ladder.py` checks the
+;;`grep -r "A_Fix" --include=*.repl REPL/` returned a single comment. `REPL/tools/_ladder.py` checks the
 ;;PLAN -- that the 24 `A_FixNN` rungs tile the same 800 positions as their `A_StepNN` twins, rung
 ;;for rung -- but a static tiling check cannot say a rung DOES anything when called, nor that it
 ;;stops where it says it stops. That is the defect class that actually bit: `A_Fix01` read

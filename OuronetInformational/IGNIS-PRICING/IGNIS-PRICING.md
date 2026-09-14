@@ -15,8 +15,8 @@ There are only **three** files in this folder, and only one of them is written b
 Regenerate both after any price change:
 
 ```bash
-python3 REPL/_ignis_price_sheet.py     > OuronetInformational/IGNIS-PRICING/IGNIS-PRICE-SHEET.md
-python3 REPL/_ignis_deter_worksheet.py > OuronetInformational/IGNIS-PRICING/IGNIS-DETER-WORKSHEET.md
+python3 REPL/tools/_ignis_price_sheet.py     > OuronetInformational/IGNIS-PRICING/IGNIS-PRICE-SHEET.md
+python3 REPL/tools/_ignis_deter_worksheet.py > OuronetInformational/IGNIS-PRICING/IGNIS-DETER-WORKSHEET.md
 ```
 
 ---
@@ -274,7 +274,7 @@ Two small judgement calls remain, neither blocking:
 
 # 7. The sheet generator
 
-`REPL/_ignis_price_sheet.py` walks the Talos client surface and extracts the real cumulator legs.
+`REPL/tools/_ignis_price_sheet.py` walks the Talos client surface and extracts the real cumulator legs.
 **Every defect found in it made the published sheet disagree with a chain that was already
 correct.** When a price looks wrong, suspect the sheet first.
 
@@ -312,7 +312,7 @@ gas-station-subsidised hydra slices). A core op returning `UC_EmptyOc` charges n
 
 # 8. Verification rules — learned the hard way
 
-* **Gate on `python3 REPL/_gate.py` — or at minimum `ZALL.repl`, never `Z.repl`.**
+* **Gate on `python3 REPL/tools/_gate.py` — or at minimum `ZALL.repl`, never `Z.repl`.**
   CORRECTED 2026-09-14. This rule previously said a green `Z.repl` "executes none of the assertions
   written to protect" pricing. That is **false**, and it was never checked: `Z.repl` →
   `Stage02_Tester.repl` runs `[6.1.9]_PRICE-SWEEP.repl` (64 assertions) and, through

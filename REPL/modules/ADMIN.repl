@@ -14,7 +14,7 @@
 (namespace "ouronet-ns")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (print "--- [ADMIN-G9 . 01 . a non-admin cannot promote pending branding to live] ---")
-;;FOUND BY `python3 _docclaims.py`. TS01-A's BRD|A_Live says "Can only be done by Branding
+;;FOUND BY `python3 tools/_docclaims.py`. TS01-A's BRD|A_Live says "Can only be done by Branding
 ;;Administrator" and nothing asserted it. The Talos wrapper is gated only by `(with-capability
 ;;(P|TS))` -- the marker meaning "arrived through Talos", which enforces no authority at all -- so
 ;;the claim rests entirely on the core it delegates to. That is the SAME SHAPE as TS01-A's

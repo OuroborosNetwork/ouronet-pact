@@ -29,7 +29,7 @@ matched exactly, which is what made the single odd one invisible to review.
 """
 import os, re, sys
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 MAX_RUNG = 70
 
 # (file, ladder-name, callee) -- the wrapper families that encode a tiling as literals.

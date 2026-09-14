@@ -25,7 +25,7 @@ import re, glob, os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _pactlex import strip_comments, balanced, split_top, reader_kinds, UR_CALL
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 files = [f for f in sorted(glob.glob(f"{ROOT}/1_SOVEREIGN/**/*.pact", recursive=True)
                            + glob.glob(f"{ROOT}/2_CITIZEN/**/*.pact", recursive=True))
          if "/Audit/" not in f]

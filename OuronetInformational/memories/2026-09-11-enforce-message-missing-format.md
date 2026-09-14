@@ -52,7 +52,7 @@ Reproduced with the precondition asserted so the test cannot pass for the wrong 
 
 ## The detector, and a trap inside it
 
-`python3 _conformance.py --rule enforce-msg-not-format`. **One occurrence codebase-wide.**
+`python3 tools/_conformance.py --rule enforce-msg-not-format`. **One occurrence codebase-wide.**
 
 **The rule first shipped reporting a clean 0 against a defect I had already reproduced.** Cause:
 `_conformance.py`'s `strip()` blanks *string bodies* to preserve line numbers, so by the time the

@@ -1327,7 +1327,7 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [VST-G4 . 01 . a non-owner is refused on all three link types] ---")
-;;FOUND BY `python3 _docclaims.py`, which audits @doc text for RULES no test pins. All three
+;;FOUND BY `python3 tools/_docclaims.py`, which audits @doc text for RULES no test pins. All three
 ;;VST|C_Create*Link docs make an AUTHORITY claim about who may create a link:
 ;;  frozen      -- "Only the <dptf> owner can create Frozen Tokens to Target Accounts"
 ;;  reservation -- "As opposed to frozen tokens, where only the <dptf> owner can generate them…"
@@ -1401,7 +1401,7 @@
 (namespace "ouronet-ns")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [VST-G5 . 01 . re-creating an existing sleeping link] ---")
-;;FOUND BY `python3 _docclaims.py` (IMMUTABLE tier -- added after noticing that "immutable" matched
+;;FOUND BY `python3 tools/_docclaims.py` (IMMUTABLE tier -- added after noticing that "immutable" matched
 ;;none of the AUTHORITY/BOUND/INVARIANT patterns, and that a permanent property of stored state is
 ;;the strongest promise a contract makes and the most damaging to get wrong).
 ;;

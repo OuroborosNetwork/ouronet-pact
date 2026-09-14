@@ -13,7 +13,7 @@
 (namespace "ouronet-ns")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (print "--- [SICO-G9 . 01 . a non-admin cannot stake into the vault] ---")
-;;FOUND BY `python3 _docclaims.py` -- and only after its AUTHORITY pattern was WIDENED. The first
+;;FOUND BY `python3 tools/_docclaims.py` -- and only after its AUTHORITY pattern was WIDENED. The first
 ;;version matched "can only be used/called/invoked" and missed these two entirely, because their
 ;;docs say "Can only be DONE by the Admin". One unlisted verb hid two unverified admin claims on
 ;;functions that move real contribution balances. The regex now covers done/executed/performed/

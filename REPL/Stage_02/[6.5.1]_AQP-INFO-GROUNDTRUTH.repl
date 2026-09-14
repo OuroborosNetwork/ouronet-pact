@@ -3234,7 +3234,7 @@
 ;;
 ;;NAMED BY A SHAPE-CHECK, NEVER WEIGHED. `Kursan/aqp-info-tests.repl` calls this preview to pin that
 ;;it ABORTS on a probe id — which satisfies `_scale_report.py --untested`, a reachability tool. It
-;;says nothing about whether the quote equals the charge. See `REPL/_info_measured.py`.
+;;says nothing about whether the quote equals the charge. See `REPL/tools/_info_measured.py`.
 ;;A VIRGIN score, because rotation is refused on one whose owner is already the target and the
 ;;standing scores are all ANHD's.
 (let
@@ -3313,7 +3313,7 @@
 ;;
 ;;NAMED BY A SHAPE-CHECK, NEVER WEIGHED. `Kursan/aqp-info-tests.repl` calls this preview to pin that
 ;;it ABORTS on a probe id — which satisfies `_scale_report.py --untested`, a reachability tool. It
-;;says nothing about whether the quote equals the charge. See `REPL/_info_measured.py`.
+;;says nothing about whether the quote equals the charge. See `REPL/tools/_info_measured.py`.
 ;;IRREVERSIBLE — there is no disable, so this must run on an entity the file does not depend on,
 ;;and inside a rollback. A virgin score is both.
 (let
@@ -3392,7 +3392,7 @@
 ;;
 ;;NAMED BY A SHAPE-CHECK, NEVER WEIGHED. `Kursan/aqp-info-tests.repl` calls this preview to pin that
 ;;it ABORTS on a probe id — which satisfies `_scale_report.py --untested`, a reachability tool. It
-;;says nothing about whether the quote equals the charge. See `REPL/_info_measured.py`.
+;;says nothing about whether the quote equals the charge. See `REPL/tools/_info_measured.py`.
 ;;The score must be class 3 (semi-fungible) to accept an SF definition, so the virgin one is issued
 ;;through `C_IssueSemiFungibleScore` rather than the true-fungible constructor used above — AND with
 ;;`sft-equality = FALSE`. `02_SCORE.pact:790` refuses a per-nonce definition on an equality score:
@@ -3472,7 +3472,7 @@
 ;;
 ;;NAMED BY A SHAPE-CHECK, NEVER WEIGHED. `Kursan/aqp-info-tests.repl` calls this preview to pin that
 ;;it ABORTS on a probe id — which satisfies `_scale_report.py --untested`, a reachability tool. It
-;;says nothing about whether the quote equals the charge. See `REPL/_info_measured.py`.
+;;says nothing about whether the quote equals the charge. See `REPL/tools/_info_measured.py`.
 ;;A VIRGIN score again: `AQP-POOL|C_AddScore` refuses a score already linked to an FVT, and every
 ;;standing one is. The pool is the file's TF stake pool, which has free slots (the ceiling is 7).
 (let
@@ -3548,7 +3548,7 @@
 (namespace "ouronet-ns")
 (print "--- [TX-INFO-GT-POOLREV · 01 · remove a score from a pool] ---")
 ;;FUNCTION COVERAGE (G6) — `INFO_AQP-POOL|RevokeScore`, per the owner's spec. Template: `modules/ATS.repl <<ATS-I1>>`.
-;;NAMED BY A SHAPE-CHECK IN `Kursan/aqp-info-tests.repl`, NEVER WEIGHED — see `REPL/_info_measured.py`
+;;NAMED BY A SHAPE-CHECK IN `Kursan/aqp-info-tests.repl`, NEVER WEIGHED — see `REPL/tools/_info_measured.py`
 ;;for why a reachability count is not a cost proof.
 ;;ADD THEN REVOKE, in one transaction. Revocation is refused on a score carrying live stake, so
 ;;the only safely revokable score is one admitted moments earlier with nothing staked against it.
@@ -3628,7 +3628,7 @@
 (namespace "ouronet-ns")
 (print "--- [TX-INFO-GT-FVTSEADD · 01 · admit a score entity into a vault] ---")
 ;;FUNCTION COVERAGE (G6) — `INFO_AQP-FVT|AddScoreEntity`, per the owner's spec. Template: `modules/ATS.repl <<ATS-I1>>`.
-;;NAMED BY A SHAPE-CHECK IN `Kursan/aqp-info-tests.repl`, NEVER WEIGHED — see `REPL/_info_measured.py`
+;;NAMED BY A SHAPE-CHECK IN `Kursan/aqp-info-tests.repl`, NEVER WEIGHED — see `REPL/tools/_info_measured.py`
 ;;for why a reachability count is not a cost proof.
 ;;`score-entity-type` 1 is a SCORE (3 is a triplet). The entity must not already be linked to this
 ;;FVT, which is why it is virgin rather than borrowed from the file's standing set.
@@ -3710,7 +3710,7 @@
 (namespace "ouronet-ns")
 (print "--- [TX-INFO-GT-FVTRWDADD · 01 · add a reward lane to a vault] ---")
 ;;FUNCTION COVERAGE (G6) — `INFO_AQP-FVT|AddRewardLink`, per the owner's spec. Template: `modules/ATS.repl <<ATS-I1>>`.
-;;NAMED BY A SHAPE-CHECK IN `Kursan/aqp-info-tests.repl`, NEVER WEIGHED — see `REPL/_info_measured.py`
+;;NAMED BY A SHAPE-CHECK IN `Kursan/aqp-info-tests.repl`, NEVER WEIGHED — see `REPL/tools/_info_measured.py`
 ;;for why a reachability count is not a cost proof.
 ;;OURO rather than wrapped-STOA: `[6.4]_AQP-EXHAUSTIVE-FVT-ADMIN` already links WSTOA to this
 ;;treasury and a duplicate link is refused (`:191`). `multiplet-family-id` is the BAR sentinel —
@@ -3782,7 +3782,7 @@
 (namespace "ouronet-ns")
 (print "--- [TX-INFO-GT-FVTROT · 01 · hand a vault to a new owner] ---")
 ;;FUNCTION COVERAGE (G6) — `INFO_AQP-FVT|RotateOwnership`, per the owner's spec. Template: `modules/ATS.repl <<ATS-I1>>`.
-;;NAMED BY A SHAPE-CHECK IN `Kursan/aqp-info-tests.repl`, NEVER WEIGHED — see `REPL/_info_measured.py`
+;;NAMED BY A SHAPE-CHECK IN `Kursan/aqp-info-tests.repl`, NEVER WEIGHED — see `REPL/tools/_info_measured.py`
 ;;for why a reachability count is not a cost proof.
 ;;`CanChangeOwner` is asserted true on this treasury by `[6.4]_AQP-EXHAUSTIVE-FVT-ADMIN:69`, and
 ;;the exec refuses a rotation to the CURRENT owner — so the target is FLRN, not ANHD.
@@ -3853,7 +3853,7 @@
 (namespace "ouronet-ns")
 (print "--- [TX-INFO-GT-SCRNFDEF · 01 · define an NF TRAIT score band] ---")
 ;;FUNCTION COVERAGE (G6) — `INFO_AQP-SCR|IssueNonFungibleScoreDefinition`, per the owner's spec. Template: `modules/ATS.repl <<ATS-I1>>`.
-;;NAMED BY A SHAPE-CHECK IN `Kursan/aqp-info-tests.repl`, NEVER WEIGHED — see `REPL/_info_measured.py`.
+;;NAMED BY A SHAPE-CHECK IN `Kursan/aqp-info-tests.repl`, NEVER WEIGHED — see `REPL/tools/_info_measured.py`.
 ;;The TRAIT variant, as against the SET-CLASS one measured at <<TX-INFO-GT-NFSETDEF>>. Both attach
 ;;to a class-4 score, and `NfSyncScore` over DHB is the file's only one; they differ in which
 ;;branch of `UEV_NonFungibleScoreDefinition` they take — trait-keys non-empty versus
@@ -3922,7 +3922,7 @@
 (namespace "ouronet-ns")
 (print "--- [TX-INFO-GT-SCRTRIP · 01 · bundle three scores into a triplet] ---")
 ;;FUNCTION COVERAGE (G6) — `INFO_AQP-SCR|IssueTriplet`, per the owner's spec. Template: `modules/ATS.repl <<ATS-I1>>`.
-;;NAMED BY A SHAPE-CHECK IN `Kursan/aqp-info-tests.repl`, NEVER WEIGHED — see `REPL/_info_measured.py`.
+;;NAMED BY A SHAPE-CHECK IN `Kursan/aqp-info-tests.repl`, NEVER WEIGHED — see `REPL/tools/_info_measured.py`.
 ;;THREE VIRGIN SCORES, same class and same owner — the triplet guard (`02_SCORE.pact:925`) wants
 ;;three DISTINCT scores sharing both, and each score may belong to at most ONE triplet ever. Every
 ;;standing score in this file is either already bundled or employed, so all three are issued here.
@@ -3995,7 +3995,7 @@
 (namespace "ouronet-ns")
 (print "--- [TX-INFO-GT-SCRBCLINK · 01 · link a score to a boost CLASS] ---")
 ;;FUNCTION COVERAGE (G6) — `INFO_AQP-SCR|CreateScoreBoostClassLink`, per the owner's spec.
-;;NAMED BY AN ABORT-PIN IN `Kursan/aqp-info-tests.repl`, NEVER WEIGHED — see `REPL/_info_measured.py`.
+;;NAMED BY AN ABORT-PIN IN `Kursan/aqp-info-tests.repl`, NEVER WEIGHED — see `REPL/tools/_info_measured.py`.
 ;;
 ;;NOT TO BE CONFUSED WITH ITS NEIGHBOUR. `CreateScoreBoostLink` (measured at <<TX-INFO-GT-SCRBOOST>>)
 ;;links a score to ANOTHER SCORE; this one links a score to a boost CLASS — an anchor-group object

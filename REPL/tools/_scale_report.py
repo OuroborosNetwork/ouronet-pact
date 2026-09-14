@@ -197,7 +197,12 @@ print()
 print("  modules with the most UNCALLED client-reachable functions:")
 _un = collections.Counter(MODFILE.get(k[0],"?") for k in (ext_live - ext_live_t))
 _tot = collections.Counter(MODFILE.get(k[0],"?") for k in ext_live)
-for _m, _n in _un.most_common(10):
+# DETERMINISTIC ORDER (2026-09-14). Counter.most_common breaks ties by insertion order, and the
+# insertion order here comes from iterating a SET DIFFERENCE of strings -- which Python varies
+# between runs via hash randomisation. Two runs of this tool on an unchanged tree produced
+# different output. That is corrosive in a project whose method is "regenerate and diff": it makes
+# a spurious change appear in a generated audit artefact, and teaches the reader to ignore diffs.
+for _m, _n in sorted(_un.items(), key=lambda kv: (-kv[1], kv[0]))[:10]:
     print(f"    {_m:26} {_n:5} of {_tot[_m]:<5} uncalled")
 print()
 print("  .repl lines by area:")

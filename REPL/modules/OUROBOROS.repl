@@ -105,7 +105,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [ORBR-G2 . 01 . set up the dispo] ---")
 ;;TFT::UEV_DispoLocker -- "When Account has negative OURO, Elite-Auryn is dispo-locked and cannot be
-;;moved" -- was UNPINNED (`python3 REPL/_cheapseam.py`). It needs an account with NEGATIVE OURO,
+;;moved" -- was UNPINNED (`python3 REPL/tools/_cheapseam.py`). It needs an account with NEGATIVE OURO,
 ;;which is not a state any gated suite was leaving behind.
 ;;
 ;;The recipe was not invented here: archive/_scratch_tft_m4_cleardispo_unfreeze.repl worked it out
@@ -458,7 +458,7 @@
 ;;
 ;;NAMED BY A SHAPE-CHECK, NEVER WEIGHED. `Stage_01/[6.11]_INFO.repl` calls this preview only to assert
 ;;the returned object `contains "ignis"`, which satisfies the reachability report but says nothing
-;;about the price. `REPL/_info_measured.py` separates the two questions.
+;;about the price. `REPL/tools/_info_measured.py` separates the two questions.
 ;;
 ;;IT LIVES HERE BECAUSE ELITE-AURYN DOES. `modules/DPTF.repl` has no ELITEAURYN holder — its mock
 ;;tokens are MOCKA/MOCKB — while this file's ORBR-G2 moves 5000 of it to EMMA precisely to set up the

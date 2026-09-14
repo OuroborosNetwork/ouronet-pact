@@ -20,7 +20,7 @@ Every rule below cites the sentence it enforces. A finding this tool cannot cite
 """
 import argparse, itertools, os, glob, os, re, sys, collections
 
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
+os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 ROOT = ".."
 
 # --- lexing -------------------------------------------------------------------------------------
@@ -402,7 +402,12 @@ def x_protection_rules(files_src):
     """
     try:
         import importlib.util
-        spec = importlib.util.spec_from_file_location("_xprotect", "_xprotect.py")
+        # SIBLING, resolved from __file__ rather than from the cwd. This was "_xprotect.py",
+        # which worked only because the tools sat in REPL/ and _conformance chdir's to REPL/.
+        # After the move to REPL/tools/ it resolved to REPL/_xprotect.py and failed -- loudly,
+        # because the except below turns it into a reported violation, but still wrongly.
+        _xp = os.path.join(os.path.dirname(os.path.abspath(__file__)), "_xprotect.py")
+        spec = importlib.util.spec_from_file_location("_xprotect", _xp)
         xp = importlib.util.module_from_spec(spec); spec.loader.exec_module(xp)
     except Exception as e:
         yield ("x-protection-declared", __file__, 0, "<loader>", f"could not load _xprotect.py: {e}")

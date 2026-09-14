@@ -25,8 +25,8 @@ READ BEFORE EXTENDING
 """
 import sys, os, pathlib
 
-ROOT = pathlib.Path(__file__).resolve().parent.parent
-OUTDIR = pathlib.Path(__file__).resolve().parent / "_generated"
+ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
+OUTDIR = pathlib.Path(__file__).resolve().parent.parent / "_generated"
 
 # The sandbox's deployment hash. Verified live, not assumed: modules/_probe_stagez.repl showed
 # ATS.UR_IndexName "Auryndex-98c486052a51" -> "Auryndex" on a deploy-only chain, while the mainnet

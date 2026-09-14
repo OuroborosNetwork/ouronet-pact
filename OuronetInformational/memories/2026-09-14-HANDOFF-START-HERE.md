@@ -136,12 +136,12 @@ question. Pinned as behaviour with a `FINDING:` marker in `Kursan/dsa-grand-tour
 ## HOW TO RUN THINGS
 
     cd REPL
-    python3 _gate.py                  # full determinism gate (~215s) - the authority
-    python3 _enforce_coverage.py      # G2 guards
-    python3 _conformance.py           # G4
-    python3 _docclaims.py [--show N]  # G5
-    python3 _scale_report.py --untested   # G6; `reach` column: "-" = never reached, VIA = transitive
-    python3 _vacuous.py ; python3 _expectfail.py
+    python3 tools/_gate.py                  # full determinism gate (~215s) - the authority
+    python3 tools/_enforce_coverage.py      # G2 guards
+    python3 tools/_conformance.py           # G4
+    python3 tools/_docclaims.py [--show N]  # G5
+    python3 tools/_scale_report.py --untested   # G6; `reach` column: "-" = never reached, VIA = transitive
+    python3 tools/_vacuous.py ; python3 tools/_expectfail.py
 
 Individual harness: `pact modules/<NAME>.repl` (self-booting). Always run the module harness after
 an edit, then the full gate after a source change.
@@ -515,7 +515,7 @@ the search, not about the code.
 
 ---
 
-# `REPL/_infostoa.py` -- a detector, and why it was nearly worthless twice
+# `REPL/tools/_infostoa.py` -- a detector, and why it was nearly worthless twice
 
 Added a static sweep for the defect class above: an `INFO_` preview returning `OI|UDC_NoStoaCosts`
 with no real STOA constructor anywhere in it, whose exec tree reaches `STOA|C_Collect`.
