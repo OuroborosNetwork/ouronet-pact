@@ -411,6 +411,34 @@ stamp, and this:
 
 > **A test that asserts an outcome does not assert who caused it.**
 
+### The sweep audit, closed: every counter-triggered payout in the codebase
+
+A codebase-wide scan for the shape — a branch on `(= <counter> 1)` selecting a whole-balance
+reader — returns **10 sites, and every live one is now guarded**:
+
+| site | form | status |
+|---|---|---|
+| `00_StoaSandbox/coin.pact:1661` | `(and (= … 1) (> available 0.0))` | **correct** — the canonical model, and the deployed sandbox copy |
+| `genesis/stoa-genesis-4.pact:1521` | same | **correct** — with the pre-fix version commented out at `:1510` |
+| `04_RPS.pact:1891`, `:1894` | `(and (= gc 1) (> deb-user 0.0))` | **fixed** — GS-08 |
+| `05_STOAICO.pact` | `URC_IzDustSweepClaimant` | **fixed** — GS-06 |
+| `0_Stoa/coin-contract/` ×5 | `(= (UR_URV|VaultUnclaimedCount) 1)` alone | **stale snapshots**, not deployed — see below |
+
+**The coin module was audited and fixed, and the evidence is in genesis.** `stoa-genesis-4.pact`
+keeps the old unguarded `URC_URV|ClaimableRewards` commented out immediately above the guarded one.
+So the repair this family needed was made once, correctly, in the model — and then **not carried
+into either port**.
+
+**Five files under `0_Stoa/coin-contract/` still hold the pre-fix form**, including one named
+`coin-live.pact`. `IGNIS-PRICING.md` already warned that file is behind the sandbox copy on
+bulk transfers; it is also behind on this, which is worse than being behind on a feature.
+`MODULE-INDEX.md` lists it as the source for `coin`. They are historical snapshots and are
+deliberately NOT edited — rewriting them would falsify the record — but the hazard is now named in
+`IGNIS-PRICING.md`.
+
+*Whether STOAICO and AQP were copied from a stale snapshot is not established and is not claimed.*
+What is established: the correct form existed, in the model, before both ports carried the wrong one.
+
 ### VCT and FVT — checked, clean
 
 `06_VCT.pact` has **no sweep branch at all**; its nearest analogue (`:2550`) is account-scoped and

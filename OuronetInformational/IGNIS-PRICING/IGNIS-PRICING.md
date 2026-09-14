@@ -389,3 +389,27 @@ lacks all three `coin` functions Ouronet calls (`UC_MinimumGasPriceANU`, `URC_UR
 `UR_URV|UserSupply`), so on genesis Ouronet would not load. Beware
 `0_Stoa/coin-contract/coin-live.pact`: despite the name it is BEHIND the sandbox copy and lacks
 the whole bulk-transfer surface that `Stage00b_StoaBulkTests.repl` exercises 49 times.
+
+**And it is behind on a SECURITY fix, which is worse than being behind on a feature (2026-09-15).**
+`coin-live.pact:1491` — plus `coin-repl.pact`, `coin-stoa.pact`, `stoa-v1.pact`, `stoa-v2.pact` —
+still carry the **pre-fix** UrStoa dust sweep:
+
+```pact
+(if (= (UR_URV|VaultUnclaimedCount) 1) (UR_URV|VaultSupply) (URC_AvailableRewards account))
+```
+
+The deployed form, in `00_StoaSandbox/coin.pact:1661` and `genesis/stoa-genesis-4.pact:1521`, adds
+the conjunct that identifies the CALLER — `(and (= … 1) (> available 0.0))`. Genesis keeps the old
+version commented out immediately above the new one, so the repair is legible there and nowhere else.
+
+**What runs is correct; what is named "live" is not.** Treat every file in `0_Stoa/coin-contract/`
+as a historical snapshot. `MODULE-INDEX.md` currently lists `coin-live.pact` as the source for
+`coin`, which points a reader at the stale copy.
+
+**Why this is called out here rather than filed as a coin defect.** The unguarded shape is exactly
+what `STOAICO::URC_ClaimableRewards` and `AQP-RPS::URC_CollectClaimableRewards` both carried until
+2026-09-15 (ledger `GS-06`, `GS-08`) — in AQP it was a **measured, working theft**: an account that
+had fully exited took the whole vault while the rightful sole claimant received zero. Whether those
+two were copied from a stale snapshot is not established and is not claimed. What IS established is
+that a file named `coin-live.pact`, containing the pre-fix form of a function two modules went on to
+reproduce incorrectly, is a hazard regardless of how it was used.
