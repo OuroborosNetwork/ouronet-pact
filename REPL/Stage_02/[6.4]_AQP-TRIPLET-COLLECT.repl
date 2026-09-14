@@ -429,8 +429,80 @@
                         ;; two-tier sweep drains both vaults. Dust lanes fall back to token-0 (Ouro) so it never reverts.
                         (print "--- [TX-AQP-CL04 · 04 · two-tier sweep drain proof] ---")
                         (ref-TS02-C3::AQP-POOL|CC_UnstakeTrueFungible patron pool-id emma emma lp-id stake-e)
+                        ;;==== TX-AQP-CL04 · 03b · WHOSE sweep is it, and who may move the counter ====
+                        ;;REGRESSION PIN added 2026-09-14 with the AQP-RPS sweep repair. Two coupled
+                        ;;defects lived here, both absent from the Stoa `coin` UrStoa vault these
+                        ;;phases are a port of (the comments still name the steps "coin step 1..5"):
+                        ;;
+                        ;;  1] URC_CollectClaimableRewards branched on `(= gc 1)` ALONE -- a property
+                        ;;     of the VAULT -- and paid the whole pool to whoever asked. `coin` guards
+                        ;;     the same branch with `(and (= unclaimed-count 1) (> available 0.0))`;
+                        ;;     the second conjunct, the one that identifies the CALLER, was dropped.
+                        ;;     MEASURED: EMMA, fully exited, took the sweep; ANHD, the rightful sole
+                        ;;     claimant, received 0.
+                        ;;  2] XI_1|BookCollectUnclaimed decremented `gc` on `deb == 0` alone, so any
+                        ;;     zero-weight account could walk the counter down for the price of gas.
+                        ;;     In `coin` that path is unreachable: its step 1 is C_Transmit, which
+                        ;;     aborts on a zero amount via UEV_Amount. The port made step 1 SKIP
+                        ;;     instead of abort, and the decrement three steps later became reachable.
+                        ;;
+                        ;;WHY THE SUITE STAYED GREEN THROUGH BOTH. The assertions further down check
+                        ;;that the vault DRAINED (`ar-final`/`mv-final` -> 0). Conservation is
+                        ;;satisfied whether the money reaches the rightful claimant or someone who
+                        ;;just left. These assert OWNERSHIP and COUNTER INTEGRITY, which conservation
+                        ;;cannot see.
+                        (let
+                            (
+                                (ar-now:decimal (ref-FVT::UR_FVT-RG|AvailableRewards farm-id ouro-id))
+                                (emma-c:decimal (ref-FVT::URC_CollectClaimableRewards emma pool-id farm-id 3 triplet-id ouro-id))
+                                (anhd-c:decimal (ref-FVT::URC_CollectClaimableRewards anhd pool-id farm-id 3 triplet-id ouro-id))
+                            )
+                            (map print
+                                [
+                                    (format "<<TX-AQP-CL04>> gc={} ar={} emma-deb={} anhd-deb={} emma-claimable={} anhd-claimable={}"
+                                        [(ref-FVT::UR_FVT-RG|UnclaimedCount farm-id ouro-id) ar-now
+                                         (ref-FVT::URC_ScoreEntityUserWeight emma farm-id pool-id 3 triplet-id)
+                                         (ref-FVT::URC_ScoreEntityUserWeight anhd farm-id pool-id 3 triplet-id)
+                                         emma-c anhd-c])
+                                    (expect "<<TX-AQP-CL04>> an exited account (deb=0) is offered NOTHING at gc==1"
+                                        0.0 emma-c)
+                                    ;;non-vacuity: without this, the line above would pass against a
+                                    ;;reader that returns 0.0 to everyone -- satisfying the repair
+                                    ;;while destroying the dust sweep it exists to perform.
+                                    (expect "<<TX-AQP-CL04>> ...while the rightful sole claimant IS offered the whole vault"
+                                        ar-now anhd-c)
+                                    (expect "<<TX-AQP-CL04>> the reader DISTINGUISHES claimant from non-claimant"
+                                        false (= emma-c anhd-c))
+                                ]
+                            )
+                        )
+                        ;;DEFECT 2, pinned as the attack: three collects by a zero-weight account must
+                        ;;not move the counter. Before the repair each one decremented it, so an
+                        ;;attacker could drive gc to 1 while honest stakers were still staked and then
+                        ;;take the pool.
                         (ref-TS02-C3::AQP-FVT|CC_Collect emma farm-id 3 triplet-id ouro-id)
-                        (ref-TS02-C3::AQP-FVT|CC_Collect anhd farm-id 3 triplet-id ouro-id)
+                        (ref-TS02-C3::AQP-FVT|CC_Collect emma farm-id 3 triplet-id ouro-id)
+                        (ref-TS02-C3::AQP-FVT|CC_Collect emma farm-id 3 triplet-id ouro-id)
+                        (map print
+                            [
+                                (expect "<<TX-AQP-CL04>> a zero-weight account cannot walk the claimant counter"
+                                    1 (ref-FVT::UR_FVT-RG|UnclaimedCount farm-id ouro-id))
+                            ]
+                        )
+                        (let ((ab:decimal (ref-DPTF::UR_AccountSupply ouro-id anhd)))
+                            (ref-TS02-C3::AQP-FVT|CC_Collect anhd farm-id 3 triplet-id ouro-id)
+                            (map print
+                                [
+                                    ;;and the sweep still WORKS: the rightful claimant is paid the
+                                    ;;remainder and the vault reaches 0, so nothing is stranded.
+                                    ;;This is the half a naive "return 0 to everyone" fix would break.
+                                    (expect "<<TX-AQP-CL04>> ...so the rightful claimant still sweeps the remainder"
+                                        true (> (- (ref-DPTF::UR_AccountSupply ouro-id anhd) ab) 0.0))
+                                    (expect "<<TX-AQP-CL04>> ...and the vault is fully drained, nothing stranded"
+                                        0.0 (ref-FVT::UR_FVT-RG|AvailableRewards farm-id ouro-id))
+                                ]
+                            )
+                        )
                         (let
                             (
                                 (ar-final:decimal (ref-FVT::UR_FVT-RG|AvailableRewards farm-id ouro-id))

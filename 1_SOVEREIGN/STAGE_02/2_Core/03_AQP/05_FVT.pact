@@ -3317,15 +3317,24 @@
                             (UC_EmptyOc)
                         )
                         ;;
+                        ;;===>PHASE 3=== coin step 3 · XI_URV|UpdateUnclaimedCount false
+                        ;;SEQUENCED BEFORE PHASE 2 ON 2026-09-14, and the order is load-bearing.
+                        ;;XI_1|BookCollectUnclaimed now retires a caller from the claimant set only
+                        ;;when it is unstaked AND still holds unsettled pending -- which is the rule
+                        ;;the stake path uses to keep such a user counted in the first place. Read
+                        ;;after PHASE 2, `pending` is 0 for everyone and that test cannot
+                        ;;distinguish "retiring now" from "retired long ago", which is how an
+                        ;;already-exited account could decrement the counter a second time.
+                        ;;The two phases touch disjoint state -- counters here, pending-rewards
+                        ;;there -- so the swap changes nothing else.
+                        (ref-RPS::XE_XI_BookCollectUnclaimed patron pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
+                        ;;
                         ;;===>PHASE 2=== coin step 2 · XI_URV|ResetPendingRewards
                         (do
                             ;; SECURE: granted by WU_RpsUser|PendingRewards (underlying W_).
                             (ref-RPS::XE_WU_RpsUser|PendingRewards patron fvt-id score-entity-id reward-dptf-id 0.0)
                             (UC_EmptyOc)
                         )
-                        ;;
-                        ;;===>PHASE 3=== coin step 3 · XI_URV|UpdateUnclaimedCount false
-                        (ref-RPS::XE_XI_BookCollectUnclaimed patron pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
                         ;;
                         ;;===>PHASE 4=== coin step 4 · XI_URV|UpdateUserRPS (farm: L_i; vault/treasury: G)
                         (do

@@ -331,6 +331,93 @@ it is what the codebase already wrote.
 that would make the safety of 61 modules rest on a utility's edge-case convention. Seeding the
 module's own guard is safe by construction.
 
+### GS-08 — the AQP-RPS dust sweep paid whoever asked *(FOUND + FIXED 2026-09-14)*
+
+Found by the owner asking the right question: *"the audit of the STOA ICO allegedly fixed the dust
+sweep following the canonical model of the coin module — can we verify this? because if this is
+incorrect, the implementation in the AQP module also might be off."* It was, and worse.
+
+`AQP-RPS::URC_CollectClaimableRewards` (`04_RPS.pact:1867`) branched on counters alone:
+
+```pact
+(if (= gc 1) (UR_FVT-RG|AvailableRewards ...)          ;; the WHOLE global vault
+  (if (and (= (UR_FVT|FvtClass fvt-id) 0) (= mc 1))
+      (UR_FVT-MV|AvailableRewards ...)                  ;; the WHOLE member vault
+      (URC_UserTier1AvailableRewards ... deb-user)))
+```
+
+`gc`/`mc` are properties of the VAULT and the MEMBER. `deb-user` — the one value identifying the
+caller — is bound one line above and **used only in the else-branch**.
+
+**MEASURED, on the deployed stack** (`[6.4]_AQP-TRIPLET-COLLECT` wind-down, ANHD sole claimant
+deb=10.0, EMMA fully exited deb=0.0):
+
+    gc=1   emma-claimable == anhd-claimable      <- the reader could not tell them apart
+    EMMA (exited) collected the sweep, vault -> 0
+    ANHD (rightful sole claimant)  gained 0.0
+
+**Strictly worse than the STOAICO twin (GS-06).** There a `last-collected-round` stamp made the
+wrong number unreachable as theft, so only the preview lied. Here **no such stamp exists** —
+`UEV_CollectContext` checks pool/FVT/link/ownership and never that the caller is a staker, holds a
+claim, or has already collected — and `gc == 1` is a **normal end-of-life state**, not an attack
+precondition.
+
+### GS-09 — and the claimant counter could be walked by anyone *(FOUND + FIXED 2026-09-14)*
+
+Exposed by fixing GS-08: with the reader corrected, the same run showed ANHD receiving 0 and the
+dust **stranded**. `XI_1|BookCollectUnclaimed` (`04_RPS.pact:3685`) decremented on `deb == 0` alone,
+with no check that the caller was ever counted — so a zero-weight account decremented the counter
+for somebody else, once per call, for the price of gas. Enough calls and `gc` reaches 1 while honest
+stakers are still staked, re-arming GS-08 against them.
+
+*Fixing GS-08 alone converts theft into a fund-lock; the two must be fixed together.*
+
+### Both are losses from a port, and the model is correct
+
+These phases are a **line-by-line port of the Stoa `coin` UrStoa vault** — the comments still name
+the steps (*"coin step 1"*, *"coin step 2"*, *"coin step 3"*). The owner's assertion that `coin` is
+correct was verified and holds. Two guards were dropped in the copy:
+
+| | `coin` | AQP-RPS (before) |
+|---|---|---|
+| sweep branch | `(and (= unclaimed-count 1) (> available 0.0))` | `(= gc 1)` — the caller conjunct dropped |
+| step 1 on a zero amount | `C_Transmit` → **aborts** (`X_TRANSFER` → `UEV_Amount`) | `(if (<= payout 0.0) (UC_EmptyOc) ...)` → **skips** |
+
+The second is the subtle one and it caused GS-09. In `coin` the abort at step 1 is what makes the
+step-3 decrement unreachable for a caller with nothing to collect. Turning the abort into a skip
+reads like making a no-op graceful; it exposed a write three steps downstream.
+
+> **A guard can be load-bearing for code it does not mention.** Removing an abort relaxes everything
+> sequenced after it.
+
+*Status:* **both fixed.** The repairs follow `coin`'s intent but use each module's OWN counter
+semantics, because identical code would have been wrong — `coin` counts users *with unclaimed
+rewards* (guard `available > 0`), STOAICO counts *non-zero scores per round* (guard `score > 0 AND
+not already collected`), AQP counts *claimants retired when weight hits 0* (guard `deb > 0`). Each
+reader now agrees with the writer maintaining its counter — the GS-07 correction again.
+`XI_1|BookCollectUnclaimed` additionally requires unsettled `pending`, and PHASE 3 is resequenced
+before PHASE 2 so that value is still readable; the two phases touch disjoint state.
+
+**Pinned by `[6.4]_AQP-TRIPLET-COLLECT` `<<TX-AQP-CL04>>`, seven assertions**, including the two a
+careless repair would break: the rightful claimant must still sweep, and the vault must still drain
+to 0. Returning `0.0` to everyone satisfies "the non-claimant gets nothing" while destroying the
+dust sweep.
+
+**WHY THE SUITE WAS GREEN THROUGH BOTH.** The pre-existing assertions checked that the vault
+DRAINED (`ar-final`/`mv-final` → 0). **Conservation is satisfied whether the money reaches the
+rightful claimant or someone who just left.** This is the third instance this round of the same
+shape — `RT-C-001`'s admin gate behind a solvency check, `RT-E-001`'s theft blocked by an unrelated
+stamp, and this:
+
+> **A test that asserts an outcome does not assert who caused it.**
+
+### VCT and FVT — checked, clean
+
+`06_VCT.pact` has **no sweep branch at all**; its nearest analogue (`:2550`) is account-scoped and
+settles that beneficiary's own pending. `05_FVT.pact` is a facade — `URC_CollectClaimableRewards`
+(`:3728`) delegates to RPS — so the RPS repair covers it. All four RPS vaults now share one rule:
+**the sweep branch must test the caller, not only the counter.**
+
 ## 1.2 Guard reachability — mute, shadowed and dead guards
 
 The single most repeated defect class in the codebase, resting on two Pact facts: **`let` binding

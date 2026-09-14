@@ -1864,9 +1864,34 @@
                 (gc:integer (UR_FVT-RG|UnclaimedCount fvt-id reward-dptf-id))
                 (deb-user:decimal (URC_ScoreEntityUserWeight patron fvt-id pool-id score-entity-type score-entity-id))
             )
-            (if (= gc 1)
+            ;;DEFECT FIXED 2026-09-14 (owner ruling, after the STOAICO GS-06 twin was found).
+            ;;Both sweep branches used to test ONLY a counter -- `gc` (global unclaimed-count) and
+            ;;`mc` (member unclaimed-count) -- and return a WHOLE-VAULT figure. Those counters are
+            ;;properties of the VAULT and of the MEMBER; neither says anything about the CALLER.
+            ;;`deb-user` was bound directly above and used only in the else-branch, so the one value
+            ;;that identifies the caller was discarded on exactly the two branches that pay out most.
+            ;;
+            ;;MEASURED, not reasoned about. Driving [6.4]_AQP-TRIPLET-COLLECT to the wind-down where
+            ;;ANHD is the sole real claimant (deb 10.0) and EMMA has fully exited (deb 0.0):
+            ;;
+            ;;    gc=1   emma-claimable = anhd-claimable   <- the reader could not tell them apart
+            ;;    EMMA (exited, deb=0) collected the sweep and the vault went to 0
+            ;;    ANHD  (the rightful sole claimant)       gained 0.0
+            ;;
+            ;;WORSE THAN THE STOAICO TWIN. There, a `last-collected-round` stamp written in another
+            ;;function made the wrong number unreachable as theft, so only the preview was wrong.
+            ;;Here there is NO such stamp: `UEV_CollectContext` checks pool/FVT/link/ownership and
+            ;;never that the caller is a staker, holds a claim, or has already collected. And
+            ;;`gc == 1` is a NORMAL END-OF-LIFE STATE, not an attack precondition.
+            ;;
+            ;;THE GUARD IS `deb-user > 0`, and it is the predicate the COLLECT PATH ITSELF uses:
+            ;;XI_1|BookCollectUnclaimed removes a caller from the claimant set exactly when its deb
+            ;;reaches 0. So "still in the set" is "deb > 0", and reader and counter now agree --
+            ;;the same reader-vs-writer disagreement that GS-07 fixed in P|UR_IMP.
+            (if (and (= gc 1) (> deb-user 0.0))
                 (UR_FVT-RG|AvailableRewards fvt-id reward-dptf-id)
-                (if (and (= (UR_FVT|FvtClass fvt-id) 0) (= mc 1))
+                (if (fold (and) true
+                        [(= (UR_FVT|FvtClass fvt-id) 0) (= mc 1) (> deb-user 0.0)])
                     (UR_FVT-MV|AvailableRewards fvt-id score-entity-id reward-dptf-id)
                     (URC_UserTier1AvailableRewards patron fvt-id score-entity-id reward-dptf-id deb-user)
                 )
@@ -3662,12 +3687,37 @@
         @doc "PHASE 3.1 collect — coin step 3 · XI_URV|UpdateUnclaimedCount false when user-supply=0; \
             \ FVT adapt: deb-score=0 on this score."
         ;; SECURE: granted by XI_2|BumpRpsGlobalUnclaimed (underlying W_).
+        ;;IDEMPOTENCY FIX 2026-09-14. This decremented on `deb == 0` ALONE, with no check that the
+        ;;caller was ever IN the claimant set -- so any account whose weight is 0 could decrement
+        ;;the counter for somebody else, once per call, for the price of gas.
+        ;;
+        ;;WHY IT WAS REACHABLE HERE AND NOT IN THE MODEL. These phases are a port of the Stoa `coin`
+        ;;UrStoa vault -- the comments still name the steps ("coin step 3"). In `coin`, step 1 is
+        ;;`C_Transmit`, which routes through `X_TRANSFER` -> `UEV_Amount "Transfer requires a
+        ;;positive amount"`, so a caller with nothing to collect ABORTS before step 3 is reached.
+        ;;The port made its step 1 SKIP on a zero payout instead of aborting
+        ;;(`(if (<= payout 0.0) (UC_EmptyOc) ...)`), and with the abort gone the decrement became
+        ;;reachable by anyone. One divergence from the model, three steps away from its consequence.
+        ;;
+        ;;THE GUARD: a caller is in the claimant set iff it still has weight, OR it has unsettled
+        ;;pending. That is exactly the rule the STAKE path already uses to LEAVE the set --
+        ;;XI_1|BookUnclaimedForFvtRewardLine decrements on `was-claimant AND (not is-claimant) AND
+        ;;(not any-pending)`, deliberately keeping a fully-unstaked user counted while pending
+        ;;remains so that this collect can retire them. So:
+        ;;   deb == 0 AND pending  > 0  -> unstaked with a live claim; retire them now   (decrement)
+        ;;   deb == 0 AND pending == 0  -> already retired at unstake, or never counted   (no-op)
+        ;;Reader and writer now agree on who is counted, the same correction GS-07 made to P|UR_IMP.
+        ;;
+        ;;ORDERING: CC_Collect calls this in PHASE 3, which used to run AFTER the PHASE 2 pending
+        ;;reset -- by which point `pending` is 0 for everyone and the two cases above are
+        ;;indistinguishable. PHASE 3 is now sequenced BEFORE PHASE 2; the two touch disjoint state
+        ;;(counters vs pending-rewards) so the swap is observationally inert for every other caller.
         (let
             (
-                ;;
                 (deb:decimal (URC_ScoreEntityUserWeight patron fvt-id pool-id score-entity-type score-entity-id))
+                (pending:decimal (UR_FVT-RU|PendingRewards patron fvt-id score-entity-id reward-dptf-id))
             )
-            (if (= deb 0.0)
+            (if (and (= deb 0.0) (> pending 0.0))
                 (do
                     (XI_2|BumpRpsGlobalUnclaimed fvt-id reward-dptf-id false)
                     ;; #10 Tier-1: this user left the member's claimant set → decrement its mini-vault count
