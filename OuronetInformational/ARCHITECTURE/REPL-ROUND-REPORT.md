@@ -310,6 +310,77 @@ honest residue, concentrated in per-field readers and internal constructors; the
 `DEFECT-LEDGER.md`, pending the verification described in §6; and the contradictions in §5 of that
 file, three of which are live defects in published pricing artefacts.
 
-**Next phase: red teaming.** The suite to this point is *constructive* — it asserts that documented
-behaviour holds and that documented refusals fire. Red teaming asks the adversarial question
-instead, and its scope is a separate decision.
+---
+
+## 8. Red teaming — completed, and what it changed about this report
+
+The suite described above is **constructive**: it asserts that documented behaviour holds and that
+documented refusals fire. A separate adversarial programme followed it, asking the opposite
+question — *what can someone do that nobody documented?* It is reported in full in
+`RED-TEAM-REPORT.md`; only the parts that bear on the figures above are repeated here.
+
+**Nine attacks across eight families: 2 succeeded, 1 succeeded-then-fixed, 6 refused.** Three found
+a defect. They are counted in `REPL/RedTeam/` and in the machine-read attack register
+(`python3 REPL/_redteam.py`), kept separate from the constructive suite precisely so the numbers in
+§2 cannot silently absorb them.
+
+### Two defects the constructive round could not have found
+
+Both are worth naming here because they bound what §3's coverage figures actually mean.
+
+**A deterrent that could be declined.** Adding standard liquidity is reachable through two live
+Talos client paths. One charged the `lp-churn` deterrent (1,051 raw); the other a flat literal
+(100). Same operation, same pool, **10.5×**, and the cheap door is the one the gas station
+subsidises. This class is **invisible to preview-versus-charge testing** — and this project has 397
+such measurements, every one of them passing. Each route was measured against *its own* preview and
+each agreed with itself. The unasked question was *"do two routes to the same operation charge the
+same?"*: a **cross-route** invariant, not a per-route one. Fixed.
+
+**A fee taken before the validation that decides whether the operation can happen.**
+`MTX|C_AddLiquidity` collects its whole deterrent in step 0 and checks in step 1 that the pool has
+not moved. `PoolState` includes token supplies, so **any** stranger's ordinary swap permanently
+invalidates an in-flight add, after the fee is paid, with no refund. Open, pending a ruling on when
+money should move inside a defpact — and note it is a **second-order cost of the fix above**, which
+raised the destroyable fee from 53.0 to 557.03. A repair with a second-order cost must be recorded
+when it is made.
+
+### The finding that qualifies every green test in this report
+
+**Three of the red team's six refusals were by the wrong guard.** The system refused the attack, but
+not for the reason a reader would assume:
+
+| attack | the guard that ought to refuse | the guard that actually did |
+|---|---|---|
+| vault dust sweep | a claimant-set check | a `last-collected-round` stamp **in a different function** |
+| swap a token for itself | `output-id NOT IN input-ids` | the **curve returning exactly zero** |
+| duplicate swap input | a uniqueness check | a **stable-pool single-input rule** |
+| treasury-debt wipe | `GOV\|DPTF_ADMIN` | a **solvency check one line above it** |
+
+Each is green today and would **stay green through the change that breaks it**. This is the clearest
+limit on what §2's 21,580 executed assertions certify: they establish that the system behaves as
+documented, not that it is defended for the reasons the documentation implies.
+
+### What it says about where the defects are
+
+| surface | families | outcome |
+|---|---|---|
+| authorisation | admin impersonation, ownership bypass, hostile citizen module | 5 refusals, every one message-checked against the intended guard |
+| economics & sequencing | arithmetic/value, griefing | 2 defects |
+| architectural exception | permissionless reach | 1 confirmed bypass, owner ruling pending |
+
+> **The guards in this system are present and they hold. What fails is the arithmetic around them,
+> and the order in which things happen.**
+
+That reproduces §5's distribution from the opposite direction: of the constructive round's 131
+compiled defects, the two largest classes were pricing/billing and guard **reachability** — not
+guard **absence**.
+
+### One method rule the adversarial programme added
+
+**In a codebase with compositional authorisation, one-level static scans systematically under-report
+safety.** Three scans produced misleading numbers across the two programmes — "78 unreached
+guards", "every `STOA|C_Collect` is a no-op", "31 of 42 `A_` with no admin guard" — and all three
+were refuted by measurement, not by re-reading. Whole families of the red team were consequently
+driven entirely by execution. This belongs beside §6's existing caution, and strengthens it: the
+danger is not only that a count may be wrong, but that the *wrong tool* can be authoritative-looking
+about a question it does not answer.

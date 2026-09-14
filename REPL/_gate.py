@@ -150,7 +150,11 @@ EXCLUDED = [
     ("regressions/",   "MANIFEST.md only -- documentation; the proofs it lists are gate entrypoints"),
     ("_scratch_",      "single-question scratch probes"),
     ("_probe",         "single-question scratch probes"),
-    ("_audit_",        "one-off audit baselines; _audit_ats_baseline.repl does not currently run "
+    # 2026-09-14: the 18 UNGATED probes that used to sit at the REPL root were moved into
+    # archive/, which is excluded for the same reason ("retired probes, kept for provenance").
+    # The SIX gated ones in SCRATCH_PROOFS above stay at the root, because they ARE coverage and
+    # a reader should not have to know that one archive/ file is live and seventeen are not.
+    ("_audit_",        "one-off audit baselines; archive/_audit_ats_baseline.repl does not run "
                        "to completion, so its 32 assertions are NOT coverage"),
     ("_cov_draft",     "coverage tooling draft"),
     ("Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl",

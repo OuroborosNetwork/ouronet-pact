@@ -94,7 +94,8 @@ no_neg   = [o for o in tested if not neg[o]]
 # "Exercised" counts an invocation in ANY .repl in the tree. An op invoked only in a file the GATE
 # does not run is not protected by anything: nothing re-executes it when the code changes. This
 # distinction was missed once already -- 448/448 was published while nine ops lived exclusively in
-# vst-harness.repl, _audit_ats_baseline.repl and two _scratch_ probes, all ungated. Import the
+# vst-harness.repl, archive/_audit_ats_baseline.repl and two archive/_scratch_ probes, all
+# ungated (the probes moved to archive/ on 2026-09-14). Import the
 # gate's own GATE list and closure so the two can never drift apart.
 def _gated_files():
     import importlib.util, sys as _sys

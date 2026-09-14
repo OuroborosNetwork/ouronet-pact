@@ -1111,3 +1111,70 @@ validated and was unreachable for every input. The other two enforces are covere
 
 Three dead `ref-DALOS` modref bindings removed from `INFO_SWP|Issue{Stable,Standard,Weighted}`;
 `_conformance.py` back to 0 violations.
+
+
+## SESSION 2, PART 15 — the adversarial programme, and the folder tidy
+
+The constructive round closed at PART 13/14. What followed was a separate **red-team programme**,
+reported in full at `ARCHITECTURE/RED-TEAM-REPORT.md`. This entry records only what a future session
+needs to pick it up.
+
+### Where it lives
+
+    REPL/RedTeam/              the adversarial suite -- globbed into the gate like modules/
+    REPL/RedTeam/README.md     the method: families, block header, the two rules
+    REPL/_redteam.py           the ATTACK REGISTER, gate-enforced on malformed headers
+    ARCHITECTURE/RED-TEAM-REPORT.md   five stages + closing assessment
+
+It is a SEPARATE folder on purpose. A suite that mixes constructive and adversarial assertions can
+report "21,580 assertions" with nobody able to say how many were attacks.
+
+### Result
+
+**9 attacks, 8 families: 2 succeeded, 1 succeeded-then-fixed, 6 refused.**
+
+| id | family | outcome |
+|---|---|---|
+| RT-A-001 | arithmetic/value | **FIXED** — the lp-churn deterrent could be declined by routing through the defpact client (53.0 vs 557.03, same op, same pool) |
+| RT-B-001 | permissionless reach | **SUCCEEDED** — settles X-01: the master keyset satisfies `P\|UEV_IMC`, reaching DALOS core outside Talos, unbilled |
+| RT-C-001 | admin impersonation | refused ×7, **one shadowed gate** |
+| RT-D-001 | ownership bypass | refused — patron ≠ owner, with sponsorship proven to still work |
+| RT-E-001 | sequencing | refused — the dust sweep is stopped by a stamp in another function |
+| RT-F-001 | griefing | **SUCCEEDED** — one ordinary swap destroys a stranger's 557.03 add-liquidity fee |
+| RT-G-001/2 | hostile citizen module | refused ×2 — a real module deployed in `user` and refused by `P\|UEV_IMC`; the gas station unreachable even with the transfer cap installed |
+| RT-H-001 | input domain | refused — but the self-swap is stopped by the CURVE RETURNING ZERO, not by any rule |
+
+### The four items awaiting an owner ruling
+
+1. **X-01** — master keyset as a DALOS inter-module policy. Document it beside the "only supported
+   client path" sentence, or remove the registration.
+2. **RT-F-001** — collect the add-liquidity deterrent in the step that SUCCEEDS, or refund on
+   rollback. Changes when money moves inside a defpact.
+3. **RT-H-001** — add `output-id NOT IN input-ids` to the swap path, or accept that self-swaps are
+   merely unprofitable rather than forbidden.
+4. **RT-C-001** — `GOV|DPTF_ADMIN` on the treasury wipe sits below a solvency check and is
+   unreachable while the treasury is solvent.
+
+### The lesson worth carrying forward
+
+**Three of six refusals were by the WRONG guard.** Each is green today and would stay green through
+the change that breaks it. This is only visible because the family rules require a red-team
+`expect-failure` to NAME its message — an early pass over RT-C-001 used `(try "REFUSED" ...)` and
+reported 8/8 refused, which was true and useless.
+
+And, now recorded three times across both programmes: **in a codebase with compositional
+authorisation, one-level static scans systematically under-report safety.** "78 unreached guards",
+"every `STOA|C_Collect` is a no-op", "31 of 42 `A_` with no admin guard" — all three refuted by
+measurement. When a scan and an execution disagree, the execution is right.
+
+### Folder tidy (partial)
+
+The 18 **ungated** one-off probes at the REPL root moved to `archive/`, which is already
+gate-excluded as "retired probes, kept for provenance". Root went 111 -> 93 entries. The **6 gated**
+scratch proofs stayed at the root: they ARE coverage, and a reader should not have to know which one
+file in `archive/` is live.
+
+**Still open, deliberately not done:** the 43 `_*.py` tools remain at the REPL root. Moving them to
+`REPL/tools/` would take the root to ~50 but changes every documented invocation, the gate's own
+`glob("_*.py")` tool-integrity check, `TOOLS.md` and `CLAUDE.md`. Put to the owner as a choice
+(leave / move all / move all but `_gate.py`); no answer yet, so nothing was churned on a guess.
