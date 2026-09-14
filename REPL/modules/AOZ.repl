@@ -436,3 +436,68 @@
 )
 (env-sigs [])
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "AOZ-07 — POSITION IS IDENTITY: the contract Stage-Z's dispenser reads by literal index")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== AOZ-07 · 01 · the two registries that are actually consumed ====
+(print "--- [AOZ-07 · 01 · the two registries that are actually consumed] ---")
+;;THE FINDING THIS BLOCK EXISTS FOR, and it is not the one it looks like.
+;;
+;;<<AOZ-05>> above pins that no registrar has a dedupe guard. On its own that reads as untidiness.
+;;It is not, and the reason is which registries are READ. Across the entire contract source there
+;;are exactly TWO consumers of AOZ -- both in `2_CITIZEN/Stage_Z/03_DSP+.pact`, the dispenser:
+;;
+;;    (ref-AOZ::UR_PrimalTrueFungible 1)   -> PrimordialKosonID      (9 call sites)
+;;    (ref-AOZ::UR_AutostakePair 1..6)     -> PlebeicStrengthID ...  (18 call sites)
+;;
+;;Both read by LITERAL POSITION, and each position is bound to a semantically distinct role. The
+;;four registries <<AOZ-02>>/<<AOZ-03>> exercise -- TrueFungibles, OrtoFungibles, SemiFungibles,
+;;NonFungibles -- are read by NOTHING on chain; they are a write-only catalogue for off-chain
+;;enumeration, which is why a duplicate there costs nothing.
+;;
+;;So the real property is not "ids should be unique". It is: IN THESE TWO REGISTRIES THE POSITION
+;;IS THE IDENTITY. `A_Register*` appends at count+1, so ANY extra or out-of-order registration --
+;;a duplicate, a retry, a re-run of the populate step -- shifts every later position by one, and
+;;the dispenser then silently hands out Esotheric Koson where it means Primordial. Nothing reverses
+;;it: there is no delete path, and the counter IS the append cursor.
+;;
+;;AND IT WAS PINNED NOWHERE. `Stage_01/[5.1]_Aoz+.repl` registers by mapping over a literal list,
+;;the dispenser reads by index, and until this block no assertion connected the two. That is the
+;;actual gap -- not the missing guard, but the missing CHECK that the mapping the guard would
+;;protect is the mapping the consumer expects.
+;;
+;;Pinned rather than guarded, deliberately. These are admin-only, one-shot deployment steps that
+;;have already been run correctly; adding a dedupe scan would change the behaviour of deployed
+;;admin functions to prevent a failure this assertion detects for free. If the mapping ever stops
+;;holding, THIS goes red, and it goes red naming the role that moved.
+(let
+    (
+        (ref-AOZ:module{AgeOfZalmoxis} AOZ)
+    )
+    (map print
+        [
+            ;;03_DSP+.pact:311/314/318 — the three Koson tiers, by literal position.
+            (expect "<<AOZ-07>> primal TF 1/2/3 are the Primordial/Esotheric/Ancient Koson the dispenser expects"
+                ["PKOSON-98c486052a51" "EKOSON-98c486052a51" "AKOSON-98c486052a51"]
+                [(ref-AOZ::UR_PrimalTrueFungible 1) (ref-AOZ::UR_PrimalTrueFungible 2)
+                 (ref-AOZ::UR_PrimalTrueFungible 3)])
+            ;;03_DSP+.pact:458-462 — the five ATS pairs, likewise.
+            (expect "<<AOZ-07>> ATS pairs 1-5 are the Plebeic/Comati/Pileati/Tarabostes/Strategon pairs"
+                ["PlebeicStrength-98c486052a51" "ComatiCommand-98c486052a51"
+                 "PileatiPower-98c486052a51" "TarabostesTenacity-98c486052a51"
+                 "StrategonVigor-98c486052a51"]
+                (map (lambda (i:integer) (ref-AOZ::UR_AutostakePair i)) (enumerate 1 5)))
+            ;;...and the counters match the populate step exactly, so a SIXTH primal TF appearing
+            ;;at position 1 -- the shape that would silently re-point the dispenser -- cannot hide
+            ;;behind the two assertions above by pushing the expected ids further down the list.
+            (expect "<<AOZ-07>> the consumed registries hold exactly what [5.1]_Aoz+.repl registered"
+                [9 6]
+                [(ref-AOZ::UR_CountPrimalTrueFungibles) (ref-AOZ::UR_CountATSPairs)])
+        ]
+    )
+    ""
+)
+(commit-tx)

@@ -238,6 +238,31 @@
         )
     )
     (defun UC_Nonces:[integer] (rarity:string starting-position:integer number-of-positions:integer)
+        @doc "Maps a <rarity, position, count> rung to the ABSOLUTE collectable nonces it addresses, \
+            \ using fixed per-rarity bases: Legendary 0, Epic 100, Rare 300, Common 700. Those \
+            \ bases are the CUMULATIVE totals of the rarities before them (100/200/400/800), so the \
+            \ scheme is internally consistent and the two ladders tile 1..1500 exactly -- checked \
+            \ on every gate run by REPL/_ladder.py. \
+            \ \
+            \ UNCHECKED PRECONDITION, documented 2026-09-14 -- read this before reusing either \
+            \ ladder. Only C_Fix goes through this function. C_Spawn does NOT: it hands \
+            \ DPNF|C_Create a metadata list and the collectable is minted SEQUENTIALLY from the \
+            \ collection's own nonce counter. The two therefore agree only if the collection held \
+            \ ZERO nonces when the A_Step ladder began. Nothing enforces that. If any nonce was \
+            \ minted first, every A_Step rung lands shifted by that count while every A_Fix rung \
+            \ still addresses the fixed bases -- so A_Fix rewrites the NEIGHBOURS of the tiles it \
+            \ means to, and does it SILENTLY, because C_Fix regenerates a plausible name and \
+            \ metadata for whatever nonce it lands on. \
+            \ \
+            \ A bounds check would not catch it: a shifted ladder is still entirely in range. \
+            \ Detecting it needs identity, not arithmetic, which is why this is stated here rather \
+            \ than enforced -- the honest fix is to record the base nonce at first spawn and add \
+            \ it here, a schema change to an already-deployed module, and not worth making while \
+            \ the precondition holds. The DEPLOYED collection satisfies it: DHN is issued and \
+            \ immediately minted by the ladder with nothing in between. \
+            \ Pinned in the suite by Stage_02/[5.1]_PopulateNosferatu.repl <<NSFR-F2>>, which \
+            \ proves a rung marks exactly its own positions and leaves both neighbours \
+            \ byte-identical -- the assertion that goes red if the ladder ever shifts."
         (let
             (
                 (starting-point:integer
