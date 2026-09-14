@@ -1350,6 +1350,13 @@
             (UEV_ValidateCompositeDualLinkKey dlk)
             (enforce (= (UR_Counterpart standard-apollo) BAR) "Standard half is already linked")
             (enforce (= (UR_Counterpart smart-apollo) BAR) "Smart half is already linked")
+            ;;UNREACHABLE: the DLK row exists only if the pair was linked, and both link paths
+            ;;(A_LinkDualApiKey / C_LinkDualApiKey) call XI_ApplyDualCounterparts -- which sets
+            ;;BOTH counterparts -- immediately before WI_DualLink, in one transaction. So the
+            ;;row's existence implies the counterpart enforces above already fired. Counterparts
+            ;;are never cleared (C_RevokeDualLink deactivates only). Fail-closed backstop that
+            ;;would start earning its keep if a non-atomic write path were ever introduced.
+            ;;Demonstrated in REPL/Stage_01/[6.10]_PYTHIA.repl <<TX007g-02>>.
             (enforce
                 (= (try false (UR_DLK|Data dlk)) false)
                 "Dual link row already exists for this pair"
@@ -1367,6 +1374,11 @@
                 (dlk:string (UC_DualLinkKey standard-apollo smart-apollo))
             )
             (enforce (= (UR_Counterpart standard-apollo) smart-apollo) "Standard half not linked to Smart")
+            ;;UNREACHABLE for the same reason as the backstop in UEV_DualPairForLink above: the
+            ;;two counterparts are written as one atomic pair by XI_ApplyDualCounterparts, so
+            ;;they cannot disagree, and any genuine mismatch trips the STANDARD-side enforce on
+            ;;the line above. Pinned as unreachable, not as coverage, in
+            ;;REPL/Stage_01/[6.10]_PYTHIA.repl <<TX007g-02>>.
             (enforce (= (UR_Counterpart smart-apollo) standard-apollo) "Smart half not linked to Standard")
             dlk
         )
@@ -1514,6 +1526,7 @@
     )
     ;;{5.6}  Aux/X
     ;;
+    ;;Protection: Class 1 — Innate protection offered by WW_Revocation
     (defun XI_RecordRevocationAtHeight:integer ()
         @doc "Record executing block height at revoke (fast-lane poll via UR_RevocationAtHeight)."
         ;; SECURE: granted by WW_Revocation (underlying W_).
@@ -1525,6 +1538,7 @@
             bh
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by WU_ApiKey|Counterpart
     (defun XI_ApplyDualCounterparts:string
         (
             standard-apollo:string
@@ -1536,6 +1550,7 @@
         (WU_ApiKey|Counterpart smart-apollo standard-apollo)
         (format "Counterparts linked: {} <-> {}" [standard-apollo smart-apollo])
     )
+    ;;Protection: Class 1 — Innate protection offered by WW_PythTotal
     (defun XI_FlushPythLedger:string
         (entries:[object{PythiaLedgerV3.PYTHIA|S|PythFlushEntry}])
         @doc "Process batch entries; commit running total once (entries may land in any tx order)."
@@ -1568,6 +1583,8 @@
             (format "batch {} entries" [(length entries)])
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by WU_PythDaily|Metrics,
+    ;;Protection:          WU_PythDaily|FlushedAt, WU_PythDaily|IzSealed, WI_PythDaily
     (defun XI_1|ApplyOneFlushEntry:object{PythiaLedgerV3.PYTHIA|S|PythFlushAcc}
         (
             acc:object{PythiaLedgerV3.PYTHIA|S|PythFlushAcc}

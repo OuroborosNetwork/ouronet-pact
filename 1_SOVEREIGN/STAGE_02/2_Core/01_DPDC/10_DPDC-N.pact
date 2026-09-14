@@ -332,7 +332,6 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
             )
             (UEV_NonceDataUpdater id son account nosc nos nost)
             (UEV_NotSetInstance id son nosc nost)     ;; DPDC Audit #12Hc
@@ -386,7 +385,6 @@
             \ construct with empty output list)."
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (price:decimal (* (dec count) (ref-IGNIS::UC_IgnisLeg "tier-smallest")))
             )
@@ -517,6 +515,7 @@
     )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
+    ;;Protection: Class 2 — SECURE
     (defun XI_U|NoncesData
         (id:string son:bool account:string nosc:[integer] nos:bool nost:bool new-nonce-data:[object{DpdcUdcV2.DPDC|NonceData}])
         (require-capability (SECURE))
@@ -539,6 +538,7 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_U|NonceRoyalty
         (id:string son:bool account:string nosc:integer nos:bool nost:bool r-or-ir:bool royalty-value:decimal)
         (require-capability (SECURE))
@@ -561,6 +561,7 @@
             (XI_U|NoncesData id son account [nosc] nos nost [new-nonce-data])
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_U|NonceNoD 
         (id:string son:bool account:string nosc:integer nos:bool nost:bool name-or-description:bool name-description:string)
         (require-capability (SECURE))
@@ -583,6 +584,7 @@
             (XI_U|NoncesData id son account [nosc] nos nost [new-nonce-data])
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_U|NonceScore
         (id:string son:bool account:string nosc:integer nos:bool nost:bool score:decimal)
         (require-capability (SECURE))
@@ -607,6 +609,7 @@
             (XI_U|NoncesData id son account [nosc] nos nost [new-nonce-data])
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_NonceMetaData 
         (id:string son:bool account:string nosc:integer nos:bool nost:bool meta-data:object)
         (require-capability (SECURE))
@@ -631,6 +634,7 @@
             (XI_U|NoncesData id son account [nosc] nos nost [new-nonce-data])
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_U|NonceUri
         (
             id:string son:bool account:string nosc:integer nos:bool nost:bool
@@ -666,7 +670,6 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (smallest:decimal (ref-IGNIS::UC_IgnisLeg "tier-smallest"))
                 (how-many:decimal (dec (length nosc)))
@@ -686,84 +689,54 @@
             \ upcoming Escrow/NFT marketplace (not yet built) — no on-chain consumer reads it today; \
             \ confirmed intentional, not dead/unfinished code. See DPDC Audit #26M."
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-            )
-            (with-capability (DPDC-N|C>SET-ROYALTY id son account nosc nos nost royalty-value)
-                (XI_U|NonceRoyalty id son account nosc nos nost true royalty-value)
-                (URCi_UpdateNonceField account)
-            )
+        (with-capability (DPDC-N|C>SET-ROYALTY id son account nosc nos nost royalty-value)
+            (XI_U|NonceRoyalty id son account nosc nos nost true royalty-value)
+            (URCi_UpdateNonceField account)
         )
     )
     (defun C_UpdateNonceIgnisRoyalty
         (id:string son:bool account:string nosc:integer nos:bool nost:bool royalty-value:decimal)
         @doc "[2] Updates Nonce Ignis Royalty Value"
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-            )
-            (with-capability (DPDC-N|C>SET-IGNIS-ROYALTY id son account nosc nos nost royalty-value)
-                (XI_U|NonceRoyalty id son account nosc nos nost false royalty-value)
-                (URCi_UpdateNonceField account)
-            )
+        (with-capability (DPDC-N|C>SET-IGNIS-ROYALTY id son account nosc nos nost royalty-value)
+            (XI_U|NonceRoyalty id son account nosc nos nost false royalty-value)
+            (URCi_UpdateNonceField account)
         )
     )
     (defun C_UpdateNonceName
         (id:string son:bool account:string nosc:integer nos:bool nost:bool name:string)
         @doc "[3] Updates Nonce Name"
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-            )
-            (with-capability (DPDC-N|C>SET-NAME id son account nosc nos nost name)
-                (XI_U|NonceNoD id son account nosc nos nost true name)
-                (URCi_UpdateNonceField account)
-            )
+        (with-capability (DPDC-N|C>SET-NAME id son account nosc nos nost name)
+            (XI_U|NonceNoD id son account nosc nos nost true name)
+            (URCi_UpdateNonceField account)
         )
     )
     (defun C_UpdateNonceDescription
         (id:string son:bool account:string nosc:integer nos:bool nost:bool description:string)
         @doc "[4] Updates Nonce Description"
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-            )
-            (with-capability (DPDC-N|C>SET-DESCRIPTION id son account nosc nos nost description)
-                (XI_U|NonceNoD id son account nosc nos nost false description)
-                (URCi_UpdateNonceField account)
-            )
+        (with-capability (DPDC-N|C>SET-DESCRIPTION id son account nosc nos nost description)
+            (XI_U|NonceNoD id son account nosc nos nost false description)
+            (URCi_UpdateNonceField account)
         )
     )
     (defun C_UpdateNonceScore
         (id:string son:bool account:string nosc:integer nos:bool nost:bool score:decimal)
         @doc "[5] Updates Nonce Score"
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-            )
-            (with-capability (DPDC-N|C>SET-SCORE id son account nosc nos nost score)
-                (XI_U|NonceScore id son account nosc nos nost score)
-                (URCi_UpdateNonceField account)
-            )
+        (with-capability (DPDC-N|C>SET-SCORE id son account nosc nos nost score)
+            (XI_U|NonceScore id son account nosc nos nost score)
+            (URCi_UpdateNonceField account)
         )
     )
     (defun C_UpdateNonceMetaData
         (id:string son:bool account:string nosc:integer nos:bool nost:bool meta-data:object)
         @doc "[6] Updates Nonce Meta-Data"
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-            )
-            (with-capability (DPDC-N|C>SET-META-DATA id son account nosc nos nost meta-data)
-                (XI_NonceMetaData id son account nosc nos nost meta-data)
-                (URCi_UpdateNonceField account)
-            )
+        (with-capability (DPDC-N|C>SET-META-DATA id son account nosc nos nost meta-data)
+            (XI_NonceMetaData id son account nosc nos nost meta-data)
+            (URCi_UpdateNonceField account)
         )
     )
     (defun C_UpdateNonceURI
@@ -773,14 +746,9 @@
         )
         @doc "[7] Updates Nonce URIs"
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-            )
-            (with-capability (DPDC-N|C>SET-URI id son account nosc nos nost ay u1 u2 u3)
-                (XI_U|NonceUri id son account nosc nos nost ay u1 u2 u3)
-                (URCi_UpdateNonceField account)
-            )
+        (with-capability (DPDC-N|C>SET-URI id son account nosc nos nost ay u1 u2 u3)
+            (XI_U|NonceUri id son account nosc nos nost ay u1 u2 u3)
+            (URCi_UpdateNonceField account)
         )
     )
 

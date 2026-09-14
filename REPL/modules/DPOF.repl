@@ -178,7 +178,16 @@
     )
     (map print [(expect "<<DPOF-05>> token starts unpaused" false (ref-DPOF::UR_IsPaused o))])
     (ref-TS01-C1::DPOF|C_TogglePause patron o true)
-    (map print [(expect "<<DPOF-05>> C_TogglePause paused the token" true (ref-DPOF::UR_IsPaused o))])
+    (map print
+        [
+            (expect "<<DPOF-05>> C_TogglePause paused the token" true (ref-DPOF::UR_IsPaused o))
+            ;;The token is PAUSED for exactly these two lines -- the only window in this suite
+            ;;where UEV_PauseState's <state>=false arm is live. Read-only, so the unpause below
+            ;;still sees the state it expects.
+            (expect-failure "<<DPOF-05>> UEV_PauseState rejects <state> false while the token IS paused"
+                "is already paused" (ref-DPOF::UEV_PauseState o false))
+        ]
+    )
     (ref-TS01-C1::DPOF|C_TogglePause patron o false)
     (map print [(expect "<<DPOF-05>> C_TogglePause unpaused the token" false (ref-DPOF::UR_IsPaused o))])
     ;;C_Control (cu cco casr ctocr cf cw cp sg) — turn can-pause OFF, keep the rest
@@ -187,6 +196,38 @@
         [
             (expect "<<DPOF-05>> C_Control turned can-pause OFF"  false (ref-DPOF::UR_CanPause o))
             (expect "<<DPOF-05>> C_Control left can-upgrade ON"   true  (ref-DPOF::UR_CanUpgrade o))
+        ]
+    )
+    ;;--- reversible window. DPOF|S>CONTROL gates on can-upgrade, which stays ON above, so these
+    ;;flips can be undone. can-add-special-role and can-transfer-oft-create-role are ON for every
+    ;;fixture token in the suite, so their REJECTING side has no other live input anywhere --
+    ;;DPOF-G1 can only assert the passing side. Restored below so DPOF-MCR and DPOF-G1 are
+    ;;unaffected, and the restore is asserted rather than assumed.
+    ;;can-change-owner joins the flip: like casr/ctocr it is REVERSIBLE, because DPOF|S>CONTROL
+    ;;gates on can-upgrade -- which stays ON -- not on can-change-owner itself. (DPTF's
+    ;;can-upgrade is the one-way case, and needed a dedicated token in modules/ADVERSARIAL.repl.)
+    (ref-TS01-C1::DPOF|C_Control patron o true false false false false false false false)
+    (map print
+        [
+            (expect "<<DPOF-05>> can-add-special-role is now OFF" false (ref-DPOF::UR_CanAddSpecialRole o))
+            (expect "<<DPOF-05>> can-change-owner is now OFF" false (ref-DPOF::UR_CanChangeOwner o))
+            (expect-failure "<<DPOF-05>> UEV_CanChangeOwnerON rejects a token whose ownership is fixed"
+                "ownership cannot be changed" (ref-DPOF::UEV_CanChangeOwnerON o))
+            (expect-failure "<<DPOF-05>> UEV_CanAddSpecialRoleON rejects a token that forbids them"
+                "no special roles can be added" (ref-DPOF::UEV_CanAddSpecialRoleON o))
+            ;;This message carried a stray brace until 2026-09-10: the format string read
+            ;;"{}} Token {} ..." so it rendered as "DPOF} Token ...". DPMF words the same rule
+            ;;correctly, which is what flagged it. Pinned here on the CORRECTED text.
+            (expect-failure "<<DPOF-05>> UEV_CanTransferOftCreateRoleON rejects a token that forbids it"
+                "cannot have its create role transfered" (ref-DPOF::UEV_CanTransferOftCreateRoleON o))
+        ]
+    )
+    (ref-TS01-C1::DPOF|C_Control patron o true true true true false false false false)
+    (map print
+        [
+            (expect "<<DPOF-05>> can-add-special-role restored" true (ref-DPOF::UR_CanAddSpecialRole o))
+            (expect "<<DPOF-05>> can-transfer-oft-create-role restored" true (ref-DPOF::UR_CanTransferOftCreateRole o))
+            (expect "<<DPOF-05>> can-change-owner restored" true (ref-DPOF::UR_CanChangeOwner o))
         ]
     )
     ""
@@ -292,6 +333,20 @@
                     [(ref-DPOF::UEV_CanUpgradeON o) (ref-DPOF::UEV_CanChangeOwnerON o)
                      (ref-DPOF::UEV_CanAddSpecialRoleON o)
                      (ref-DPOF::UEV_CanTransferOftCreateRoleON o)])))
+            ;;--- can-pause was turned OFF for good in DPOF-05 (DPOF|S>CONTROL needs only
+            ;;    can-upgrade, which is still ON, but nothing in this suite turns pause back on),
+            ;;    so this guard's rejecting side is live from here to the end of the file.
+            (expect "<<DPOF-G1>> MOCKO can no longer be paused (set in DPOF-05)"
+                false (ref-DPOF::UR_CanPause o))
+            (expect-failure "<<DPOF-G1>> UEV_CanPauseON rejects when the flag is off"
+                "cannot be paused" (ref-DPOF::UEV_CanPauseON o))
+            ;;--- UEV_PauseState's OTHER arm. It takes the expected answer as an argument, so the
+            ;;    state=true branch (require paused) is reachable on any UNPAUSED token with no
+            ;;    state setup at all. The state=false branch is pinned in DPOF-05's pause window,
+            ;;    which is the only place the token is actually paused.
+            (expect "<<DPOF-G1>> MOCKO is not paused here" false (ref-DPOF::UR_IsPaused o))
+            (expect-failure "<<DPOF-G1>> UEV_PauseState rejects <state> true while the token is UNPAUSED"
+                "is already unpaused" (ref-DPOF::UEV_PauseState o true))
             ;;--- identity
             (expect-failure "<<DPOF-G1>> UEV_id rejects an id that was never issued"
                 "does not exist" (ref-DPOF::UEV_id "NOPE-98c486052a51"))
@@ -377,3 +432,1716 @@
 )
 (print "===^^^===")
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-G2 — UCv_TakePureWipe: the slice bound is STRICT, and that is load-bearing")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-G2 · 01 · wipe-slice arity] ---")
+;;UCv_TakePureWipe cuts the first <size> entries off a RemovableNonces object — it is the knife
+;;the wipe planner uses to break one oversized wipe into slices that each fit in a transaction.
+;;
+;;Its guard is (< size l), STRICTLY less, and the strictness is the whole point rather than an
+;;off-by-one: taking the ENTIRE set is not a slice, it is the un-sliced original, and a planner
+;;that accepted it would loop forever handing itself back the same work. So the bound is pinned
+;;on BOTH sides — one below the length succeeds, exactly the length is refused — because a test
+;;that only tried an obviously-too-large size would pass just as happily against (<= size l).
+(let
+    (
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (three:object{DpofUdcV2.RemovableNonces}
+            (ref-DPOF::UDC_RemovableNonces [1 2 3] [10.0 20.0 30.0]))
+    )
+    (map print
+        [
+            ;;happy path, and it must take from the FRONT and keep nonces aligned with amounts —
+            ;;a slicer that returned the right COUNT from the wrong end would wipe the wrong
+            ;;nonces, and a length-only assertion would never notice.
+            (expect "<<DPOF-G2>> a 2-of-3 slice keeps the first two nonces"
+                [1 2] (at "r-nonces" (ref-DPOF::UCv_TakePureWipe three 2)))
+            (expect "<<DPOF-G2>> ...with their amounts still aligned to them"
+                [10.0 20.0] (at "r-amounts" (ref-DPOF::UCv_TakePureWipe three 2)))
+            ;;an empty slice is legal — the planner may ask for zero on a boundary step
+            (expect "<<DPOF-G2>> a zero-size slice is legal and empty"
+                [] (at "r-nonces" (ref-DPOF::UCv_TakePureWipe three 0)))
+            ;;--- the bound. Exactly the length is refused, which is what makes it STRICT.
+            (expect-failure "<<DPOF-G2>> taking the WHOLE set is refused — a full take is not a slice"
+                "is larger than the Data set of the Removable Nonces Object"
+                (ref-DPOF::UCv_TakePureWipe three 3))
+            (expect-failure "<<DPOF-G2>> ...and past the end likewise"
+                "is larger than the Data set of the Removable Nonces Object"
+                (ref-DPOF::UCv_TakePureWipe three 9))
+        ]
+    )
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-G3a — DPOF|C>DEBIT: the list-arity gate that fronts every wipe and transmit")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-G3a · 01 · debit arity] ---")
+;;These are defcaps, so the obvious route in is a full Talos transfer. `test-capability` acquires
+;;a capability directly and runs its body, and these enforces sit above every read — so dummy ids
+;;reach them and the guards cost nothing.
+;;
+;;Each case takes its own transaction: a granted capability is cached for the rest of the tx, so
+;;re-acquiring the same one returns the grant WITHOUT re-running the body.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(map print
+    [
+        (expect-failure "<<DPOF-G3a>> one nonce against two amounts is refused before anything is read"
+            "Invalid Inputs for Debitation"
+            (test-capability (DPOF.DPOF|C>DEBIT "a" "b" [1] [1.0 2.0] false)))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-G3b — DPOF|C>CREDIT: a nonce chain that is neither singular nor consecutive")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-G3b · 01 · credit nonce chain] ---")
+;;Crediting admits exactly two shapes: a SINGULAR chain (one nonce that already exists) or a
+;;CONSECUTIVE one (a run starting immediately after the last used nonce). [1 5 9] on a live
+;;ortofungible is neither, so the enforce-one exhausts both branches and reports its own message.
+;;
+;;A real id is required here — unlike DPOF-G3a, both predicates READ (UR_IzNonce / UR_NoncesUsed),
+;;so a dummy id would abort in the read rather than reach the guard.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(map print
+    [
+        (expect-failure "<<DPOF-G3b>> a gapped nonce chain matches neither admitted shape"
+            "Invalid Nonce Chain for Creditation"
+            (test-capability (DPOF.DPOF|C>CREDIT "a" "MOCKO-98c486052a51"
+                [1 5 9] [1.0 1.0 1.0] [[{"a":1}] [{"a":1}] [{"a":1}]])))
+    ]
+)
+;;FINDING — the two enforces INSIDE those branches are unreachable, and this is a proof rather
+;;than an observation:
+;;
+;;    (if iz-singular    (do (enforce (not iz-consecutive) "…must compute false for Consecutive") …))
+;;    (if iz-consecutive (do (enforce (not iz-singular)    "…must compute false for Singular")    …))
+;;
+;;Each fires only if BOTH predicates are true at once. They cannot be:
+;;
+;;    UC_IzSingular    = (length = 1) AND the nonce EXISTS
+;;    UC_IzConsecutive = the run starts at nonces-used + 1, i.e. the nonces DO NOT exist yet
+;;
+;;For length 1, consecutive means the nonce is exactly nonces-used + 1 — by definition not yet
+;;used — so UR_IzNonce is false and singular is false. For length > 1 singular is false anyway.
+;;The two are mutually exclusive for every input, so both enforces are fail-closed backstops.
+;;Confirmed against this suite's live state (nonces-used = 1, nonce 1 exists): [1] is singular and
+;;not consecutive, [2] is consecutive and not singular. Annotated at the source.
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-G3c — DPOF|C>UPDATE-SPECIAL: the vesting/sleeping/hibernation tag")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-G3c · 01 · vzh tag domain] ---")
+;;The tag selects WHICH special linkage is being updated — 1 vesting, 2 sleeping, 3 hibernation —
+;;and it is the first line of the cap, above every read. An out-of-domain tag would otherwise fall
+;;through the cond to BAR and update the wrong linkage, so the guard is doing real work here even
+;;though every in-tree caller passes a literal.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(map print
+    [
+        (expect-failure "<<DPOF-G3c>> a tag outside 1..3 is refused"
+            "Invalid Vesting|Sleeping|Hibernation Tag"
+            (test-capability (DPOF.DPOF|C>UPDATE-SPECIAL "a" "b" 9)))
+        (expect-failure "<<DPOF-G3c>> ...and so is zero, one below the domain"
+            "Invalid Vesting|Sleeping|Hibernation Tag"
+            (test-capability (DPOF.DPOF|C>UPDATE-SPECIAL "a" "b" 0)))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-G4 — the ortofungible amount-precision rule")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-G4 · 01 · UEV_Amount precision] ---")
+;;P3.3. A plain callable UEV_. The amount must be representable at the token's OWN decimals --
+;;anything finer would be silently truncated somewhere downstream, so the token's balance
+;;arithmetic and the caller's intent would disagree by the lost digits.
+;;
+;;The bound is read from the token rather than written as a literal: MOCKO carries 24 decimals
+;;today, and hardcoding 25 zeros would make this test vacuous the moment a fixture changes
+;;precision. One digit past UR_Decimals is the smallest violation that exists.
+(let*
+    (
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (o:string "MOCKO-98c486052a51")
+        (d:integer (ref-DPOF::UR_Decimals o))
+        (ok:decimal (floor 1.5 d))
+        (too-fine:decimal (/ 1.0 (dec (^ 10 (+ d 1)))))
+    )
+    (map print
+        [
+            ;;precondition: an amount AT the token's precision is accepted, so the rejection below
+            ;;is about the extra digit and not about UEV_Amount refusing everything.
+            (expect "<<DPOF-G4>> an amount at the token's own precision is accepted"
+                true (!= "" (format "{}" [(ref-DPOF::UEV_Amount o ok)])))
+            (expect-failure "<<DPOF-G4>> ...and one digit finer than the token's precision is refused"
+                "is not conform with the"
+                (ref-DPOF::UEV_Amount o too-fine))
+        ]
+    )
+    ""
+)
+(commit-tx)
+;;NOT PINNED — UEV_UpdateRewardBearingToken ("{} as an RBT is immutable tied to an ATS-Pair")
+;;fires only for an id that IS an RBT. MOCKO's reward-bearing-token field is BAR, so the guard
+;;PASSES here; my first attempt asserted a failure and the suite correctly reported the call
+;;succeeding. Every ortofungible RBT belongs to an ATS pair and lives in the ATS suites, not
+;;this one, so driving it needs a cross-suite RBT rather than a new argument.
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-G5 -- transfer roles: inactive until somebody holds one")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [DPOF-G5 . 01 . activating the role set] ---")
+;;DPOF::UEV_MoveRoleCheck's "Incompatible Transfer Roles from {} to {}" was UNPINNED
+;;(`python3 REPL/_cheapseam.py`). The check only runs when transfer roles are ACTIVE, and they are
+;;active only once at least one account holds one -- an empty holder list reads as [BAR] and the
+;;whole check is skipped. So the fixture is: grant the role to a THIRD party, then move between two
+;;accounts that lack it.
+;;
+;;Worth pinning beyond the guard itself: archive/_verify_finding_DPDC-T_16H_transfer_role_receiver.repl
+;;records that this function is the CORRECT sibling of DPDC-T's UEV_TransferRoles, which had a
+;;copy-paste bug -- it computed the RECEIVER's membership from <sender> a second time, silently
+;;degrading sender-OR-receiver to sender-only. Nothing asserted that DPOF's version really is an OR.
+;;DPOF-G5c below does.
+(let ((mo:string "MOCKO-98c486052a51"))
+    (map print
+        [
+            ;;before: no holders, so the list is the BAR sentinel and the check is inert
+            (expect "<<DPOF-G5>> with no role holders the list is the BAR sentinel"
+                [(U|CT.CT_BAR)] (DPOF.UR_Verum5 mo))
+        ]
+    )
+    (TS01-C1.DPOF|C_ToggleTransferRole KST.ANHD mo KST.LUMY true)
+    (map print
+        [
+            (expect "<<DPOF-G5>> granting the role to one account activates the role set"
+                1 (length (DPOF.UR_Verum5 mo)))
+            (expect "<<DPOF-G5>> ...and it is the granted account that holds it"
+                true (DPOF.UR_R-Transfer mo KST.LUMY))
+            ;;the two parties used below hold nothing -- asserted so the rejection cannot be
+            ;;coming from somewhere else
+            (expect "<<DPOF-G5>> ...while neither party of the blocked move holds it"
+                [false false] [(DPOF.UR_R-Transfer mo KST.ANHD) (DPOF.UR_R-Transfer mo KST.EMMA)])
+        ]
+    )
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-G5b -- neither party holds the role: refused")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-G5b . 01 . the rejection] ---")
+;;Matched on the stable prefix: the full message interpolates two 162-glyph account strings.
+(map print
+    [
+        (expect-failure "<<DPOF-G5>> a move between two role-less accounts is refused"
+            "Incompatible Transfer Roles from"
+            (DPOF.UEV_MoveRoleCheck "MOCKO-98c486052a51" KST.ANHD KST.EMMA))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-G5c -- and the semantics are sender-OR-receiver, not sender-only")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-G5c . 01 . the OR, asserted from both sides] ---")
+;;This is the half that the DPDC twin got wrong (#16H) and that nothing here checked. EITHER party
+;;holding the role is enough. Asserting only the sender side would pass just as well against a
+;;sender-only implementation -- which is precisely the bug that shipped next door.
+(let ((mo:string "MOCKO-98c486052a51"))
+    (map print
+        [
+            ;;NOTE ON THE RETURN TYPE, because it is a trap. With roles ACTIVE this function
+            ;;returns the value of its `enforce-one` -- a BOOL. Only the roles-INACTIVE branch
+            ;;returns the "... is allowed" string. A first version of these two assertions used
+            ;;`(!= "" (…))`, which is VACUOUSLY TRUE here: a bool is never equal to a string, so it
+            ;;would have passed for any return whatsoever. Caught by a type error when tightening
+            ;;it. Asserting the bool directly is the honest form.
+            ;;SENDER holds it
+            (expect "<<DPOF-G5>> a move FROM the role holder is allowed"
+                true (DPOF.UEV_MoveRoleCheck mo KST.LUMY KST.EMMA))
+            ;;RECEIVER holds it -- the direction the sibling module silently lost
+            (expect "<<DPOF-G5>> a move TO the role holder is allowed too -- the check is an OR"
+                true (DPOF.UEV_MoveRoleCheck mo KST.ANHD KST.LUMY))
+        ]
+    )
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-G6 — a nonce taken out of circulation, which is a state production really writes")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-G6 · 01 · the -1.0 out-of-circulation sentinel] ---")
+;;UEV_NoncesCirculating enforces, per nonce, `(!= nonce-supply -1.0)`. Nothing in the suite had ever
+;;produced a -1.0 supply, so the guard sat unpinned.
+;;
+;;WHERE -1.0 COMES FROM. This is not an invented state. 06_DPOF.pact:2497 does exactly this: when a
+;;debit's amount EQUALS the nonce's whole supply, the nonce is "taken out of circulation" --
+;;    (XI_UpdateNonceSupply id nonce -1.0)
+;;    (XI_UpdateNonceHolder id nonce BAR)
+;;-- so a fully-debited nonce carries supply -1.0 and holder BAR forever. The fixture below writes
+;;BOTH fields, not just the one the guard reads, so it is the production state rather than a
+;;convenient half of it. (Reaching it through a real debit would need a holder with the exact full
+;;balance and the transfer path set up; writing the row is the same state for a fraction of the
+;;setup. See 2026-09-12-state-driven-guard-coverage.md.)
+;;
+;;The nonce row used here exists because of the earlier transactions in this file -- MOCKO nonce 1
+;;with supply 1250.0. That is also why this block is at the END: at load time the nonce table is
+;;empty and the guard's `read` would fail for a missing row instead of the reason being tested.
+(let ((t:string "MOCKO-98c486052a51"))
+    (map print
+        [
+            (expect "<<DPOF-G6>> the nonce starts in circulation, with a real supply"
+                [true 1250.0] [(!= -1.0 (DPOF.UR_NonceSupply t 1)) (DPOF.UR_NonceSupply t 1)])
+            (expect "<<DPOF-G6>> ...so the circulation guard passes, per nonce"
+                [true] (DPOF.UEV_NoncesCirculating t [1]))
+        ]
+    )
+    (env-module-admin DPOF)
+    ;;both fields, exactly as 06_DPOF.pact:2497-2499 writes them
+    (update DPOF.DPOF|T|Nonces (DPOF.UC_IdNonce t 1)
+        { "supply" : -1.0, "holder" : (U|CT.CT_BAR) })
+    (map print
+        [
+            (expect-failure "<<DPOF-G6>> a nonce out of circulation is refused, and named"
+                "Orto-Fungible MOCKO-98c486052a51 Nonce 1 must be in Circulation for exec"
+                (DPOF.UEV_NoncesCirculating t [1]))
+            ;;the guard maps over the list, so a GOOD nonce alongside a bad one must still fail --
+            ;;otherwise a batch operation could slip a dead nonce through on the strength of its
+            ;;neighbours. The list is [1 1] because nonce 1 is the only row on this chain; the point
+            ;;is that every element is checked, not that the two differ.
+            (expect-failure "<<DPOF-G6>> ...and it is checked per element, not just on the first"
+                "must be in Circulation for exec" (DPOF.UEV_NoncesCirculating t [1 1]))
+            ;;an EMPTY nonce list passes vacuously -- `map` over [] does nothing. Pinned because a
+            ;;caller that computes its nonce list and gets [] gets no protection from this guard,
+            ;;which is worth knowing at the call sites rather than rediscovering.
+            (expect "<<DPOF-G6>> an empty nonce list passes vacuously -- the guard never runs"
+                [] (DPOF.UEV_NoncesCirculating t []))
+        ]
+    )
+    ""
+)
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-G7 — an RBT tied to an ATS pair is immutable")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-G7 · 01 · the reward-bearing-token link] ---")
+;;UEV_UpdateRewardBearingToken enforces `(= rbt BAR)` -- the reward-bearing-token link may be set
+;;once and never changed, because an ATS pair on the other side depends on it. Unpinned because no
+;;DPOF on this chain is half of an ATS pair.
+;;
+;;Note what the message does NOT contain: the id. It formats only `OF`, the module's own "Orto-
+;;Fungible" literal, so the rejection cannot tell you WHICH token was already tied. Pinned as it
+;;reads -- if the id is ever added the expected string here needs updating, which is the point.
+(let ((t:string "MOCKO-98c486052a51"))
+    (map print
+        [
+            (expect "<<DPOF-G7>> the token starts untied, carrying the BAR sentinel"
+                (U|CT.CT_BAR) (DPOF.UR_RewardBearingToken t))
+            (expect "<<DPOF-G7>> ...so the immutability guard passes while it is free"
+                true (DPOF.UEV_UpdateRewardBearingToken t))
+        ]
+    )
+    (env-module-admin DPOF)
+    (update DPOF.DPOF|T|Properties t { "reward-bearing-token" : "AURYN-98c486052a51" })
+    (map print
+        [
+            (expect-failure "<<DPOF-G7>> once tied to a pair, the RBT link cannot be updated"
+                "Orto-Fungible as an RBT is immutable tied to an ATS-Pair"
+                (DPOF.UEV_UpdateRewardBearingToken t))
+            ;;...and the guard is a BAR test, not an existence test: any non-BAR value trips it,
+            ;;including a token id that does not exist. That matters because it means a corrupted
+            ;;row locks the link permanently rather than failing somewhere more diagnosable.
+            (expect-failure "<<DPOF-G7>> ...and any non-BAR value trips it, even a nonexistent id"
+                "immutable tied to an ATS-Pair"
+                (let ((ignore (update DPOF.DPOF|T|Properties t
+                                  { "reward-bearing-token" : "NOSUCHTOKEN-000000000000" })))
+                    (DPOF.UEV_UpdateRewardBearingToken t)))
+        ]
+    )
+    ""
+)
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-G8 — neither fixture leaked")
+(namespace "ouronet-ns")
+(print "--- [DPOF-G8 · 01 · no leakage] ---")
+;;DPOF-G6 marked a nonce dead; DPOF-G7 tied a token to a pair that does not exist. Both rolled back.
+;;If either had committed, MOCKO would be permanently unusable for every later assertion in any file
+;;that loads this fixture, and the failures would point anywhere but here.
+(let ((t:string "MOCKO-98c486052a51"))
+    (map print
+        [
+            (expect "<<DPOF-G8>> the nonce is back in circulation with its original supply"
+                1250.0 (DPOF.UR_NonceSupply t 1))
+            (expect "<<DPOF-G8>> ...and its holder is not the BAR sentinel"
+                true (!= (U|CT.CT_BAR) (DPOF.UR_NonceHolder t 1)))
+            (expect "<<DPOF-G8>> the reward-bearing-token link is untied again"
+                (U|CT.CT_BAR) (DPOF.UR_RewardBearingToken t))
+        ]
+    )
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-G12 — three client guards: bulk-transfer shape, the ATS-owner mint rule, the debit floor")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;PK_Emma is here for the SUCCEEDING debit in section 03 only: nonce 1 ended up in her account earlier
+;;in this file, and a transfer is signed by the holder. Every REFUSAL below needs only the admin key,
+;;because each of those guards sits in front of the ownership check.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }, { "key": "PK_Emma", "caps": [] }])
+(print "--- [DPOF-G12 · 01 · the bulk-transfer shape check, two ways to fail it] ---")
+;;DPOF|C>BULK-TRANSFER folds several shape conditions into ONE message, so the same sentence answers
+;;for different mistakes. Two of them are driven here because a single case would leave the `fold`
+;;half-tested: an EMPTY receiver list (`(> l 0)`) and receivers that outnumber the nonce legs
+;;(`(= l (length nonces-array))`). Pure argument-domain -- no fixture at all.
+(let
+    (
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (t:string "MOCKO-98c486052a51")
+    )
+    (map print
+        [
+            (expect-failure "<<DPOF-G12>> a bulk transfer with NO receivers is refused"
+                "Invalid DPOF bulk transfer: receiver/nonces legs or nonce list"
+                (ref-TS01-C1::DPOF|C_BulkTransfer KST.ANHD t [] KST.ANHD [] false))
+            (expect-failure "<<DPOF-G12>> ...and so is one nonce leg against two receivers"
+                "Invalid DPOF bulk transfer: receiver/nonces legs or nonce list"
+                (ref-TS01-C1::DPOF|C_BulkTransfer KST.ANHD t [[1]] KST.ANHD [KST.EMMA KST.LUMY] false))
+        ]
+    )
+    (print "--- [DPOF-G12 · 02 · when the ATS contract owns a token, only it may mint] ---")
+    ;;DPOF|C>MINT's rule: if the token's owner IS the ATS smart account, no other client may mint --
+    ;;ATS mints its own RBT nonces against staked value, and a third-party mint would create RBT
+    ;;supply with nothing behind it. Written as `(if (and (= owner ATS|SC_NAME) (!= client owner))
+    ;;(enforce false "…") …)`, i.e. an `enforce false` reached only by that exact combination.
+    ;;
+    ;;No ATS-owned DPOF exists on this chain, so the owner field is written to the ATS smart-account
+    ;;name -- which is precisely the production state being modelled, since ATS becomes the owner when
+    ;;it registers a Hot-RBT. Rolled back; DPOF-G12b is the leakage check.
+    (env-module-admin DPOF)
+    (let ((ats-sc:string (DALOS.GOV|ATS|SC_NAME)))
+        (map print
+            [
+                (expect "<<DPOF-G12>> the token starts owned by ANHD, not by the ATS contract"
+                    [true false]
+                    [(= KST.ANHD (ref-DPOF::UR_Konto t)) (= ats-sc (ref-DPOF::UR_Konto t))])
+                (expect "<<DPOF-G12>> ...and ANHD can mint it while that is true"
+                    true (!= "" (ref-TS01-C1::DPOF|C_Mint KST.ANHD t KST.ANHD 5.0 [])))
+            ]
+        )
+        (update DPOF.DPOF|T|Properties t { "owner-konto" : ats-sc })
+        (map print
+            [
+                (expect "<<DPOF-G12>> the ATS contract now owns the token"
+                    true (= ats-sc (ref-DPOF::UR_Konto t)))
+                (expect-failure "<<DPOF-G12>> ...so ANHD may no longer mint it"
+                    "Only the ATS owner can mint when the owner is ATS"
+                    (ref-TS01-C1::DPOF|C_Mint KST.ANHD t KST.ANHD 5.0 []))
+            ]
+        )
+        (update DPOF.DPOF|T|Properties t { "owner-konto" : KST.ANHD })
+    )
+    (print "--- [DPOF-G12 · 03 · the per-nonce debit floor] ---")
+    ;;DPOF|C>DEBIT enforces, PER NONCE, `(<= amount nonce-supply)` -- a nonce cannot be debited below
+    ;;zero. Its message names the token, the nonce AND the account, which is what makes it useful in a
+    ;;multi-nonce batch: the caller learns which leg was wrong.
+    ;;
+    ;;The amount-taking debit path (C_Transmit) sits behind the token's SEGMENTATION flag, and this
+    ;;token is issued with it off -- that refusal answers first. Segmentation is set at issuance
+    ;;(06_DPOF.pact:2417) with no client to toggle it, so the flag is written directly: a segmented
+    ;;token is an ordinary production configuration, not a contrived state.
+    (update DPOF.DPOF|T|Properties t { "segmentation" : true })
+    (map print
+        [
+            (expect "<<DPOF-G12>> segmentation is on, so the amount-taking debit path is open"
+                true (ref-DPOF::UR_Segmentation t))
+            (expect "<<DPOF-G12>> ...and nonce 1 holds far less than the amount about to be asked for"
+                true (< (ref-DPOF::UR_NonceSupply t 1) 999999.0))
+            (expect-failure "<<DPOF-G12>> debiting more than a nonce holds is refused, naming the nonce"
+                "Cannot Debit into the Negatives for Orto-Fungible MOCKO-98c486052a51 Nonce 1 on Account"
+                (ref-TS01-C1::DPOF|C_Transmit KST.ANHD t [1] [999999.0] KST.ANHD KST.EMMA false))
+            ;;THE CONTRAST, and it is NOT a successful transfer. Driving one here would mean clearing
+            ;;the holder check and then DPOF's transfer-role matrix (pinned separately by DPOF-G5..G5c)
+            ;;-- three fixtures deep for one assertion. What actually needs proving is narrower: that
+            ;;the amount guard is a THRESHOLD rather than a blanket refusal of the segmented path.
+            ;;
+            ;;So the same call is made with an amount WITHIN the supply, and the assertion is that the
+            ;;debit-floor message STOPS ANSWERING -- a different guard further down replies instead.
+            ;;That is the whole claim, and it costs nothing.
+            ;;
+            ;;Two ordering facts fell out of getting here, both worth keeping: the over-debit above
+            ;;used ANHD as sender and still reached the amount guard, so the amount check runs BEFORE
+            ;;the holder check; and with a legal amount the next refusal is about ROLES, not ownership,
+            ;;so the role matrix sits in front of the holder test too.
+            ;;(Written with expect-failure, not `try`: `(try default expr)` returns the DEFAULT when
+            ;;expr fails, so it hands back the fallback and never the message. expect-failure is the
+            ;;only thing in this suite that can assert WHICH error came out.)
+            (expect-failure "<<DPOF-G12>> ...while a legal amount gets past it, and a LATER guard answers"
+                "Incompatible Transfer Roles"
+                (ref-TS01-C1::DPOF|C_Transmit KST.ANHD t [1] [1.0]
+                    (ref-DPOF::UR_NonceHolder t 1) KST.ANHD false))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+;;this tx minted, reassigned ownership, turned segmentation on and moved a nonce balance
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-G12b — the ownership and segmentation writes were rolled back")
+(namespace "ouronet-ns")
+(print "--- [DPOF-G12b · 01 · no leakage] ---")
+;;DPOF-G12 handed the token to the ATS contract, switched segmentation on and minted twice. An owner
+;;that leaked would make every later owner-gated assertion in this file fail with a message about ATS;
+;;a segmentation flag that leaked would open a transfer path the rest of the file assumes is shut.
+(let ((t:string "MOCKO-98c486052a51"))
+    (map print
+        [
+            (expect "<<DPOF-G12b>> the token is owned by ANHD again, not by the ATS contract"
+                true (= KST.ANHD (DPOF.UR_Konto t)))
+            (expect "<<DPOF-G12b>> ...segmentation is off again"
+                false (DPOF.UR_Segmentation t))
+            (expect "<<DPOF-G12b>> ...and nonce 1's supply is untouched by the mints and the transfer"
+                1250.0 (DPOF.UR_NonceSupply t 1))
+        ]
+    )
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-I1 — INFO_DPOF|Mint quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-I1 · 01 · mint a fresh nonce] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPOF|Mint`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+;;NOTE the arity difference: the preview takes 4 arguments, the exec 5 — the exec's trailing
+;;`meta-data-chain` does not affect price, so the preview omits it.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (o:string "MOCKO-98c486052a51")
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        (emma:string KST.EMMA)
+        (coca:string KST.COCA)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|Mint patron o patron 5.0))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPOF|C_Mint patron o patron 5.0 []))
+        )
+        (map print
+            [
+                (expect "<<DPOF-I1>> INFO_DPOF|Mint's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPOF-I1>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+                (expect "<<DPOF-I1>> ...and a new nonce really exists, so the quote is not for a no-op"
+                    true (> (ref-DPOF::UR_NoncesUsed o) 1))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-I2 — INFO_DPOF|ToggleAddQuantityRole quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-I2 · 01 · grant the add-quantity role] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPOF|ToggleAddQuantityRole`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (o:string "MOCKO-98c486052a51")
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        (emma:string KST.EMMA)
+        (coca:string KST.COCA)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|ToggleAddQuantityRole patron o lumy true))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPOF|C_ToggleAddQuantityRole patron o lumy true))
+        )
+        (map print
+            [
+                (expect "<<DPOF-I2>> INFO_DPOF|ToggleAddQuantityRole's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPOF-I2>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-I3 — INFO_DPOF|ToggleBurnRole quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-I3 · 01 · grant the burn role] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPOF|ToggleBurnRole`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (o:string "MOCKO-98c486052a51")
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        (emma:string KST.EMMA)
+        (coca:string KST.COCA)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|ToggleBurnRole patron o emma true))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPOF|C_ToggleBurnRole patron o emma true))
+        )
+        (map print
+            [
+                (expect "<<DPOF-I3>> INFO_DPOF|ToggleBurnRole's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPOF-I3>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-I4 — INFO_DPOF|ToggleTransferRole quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-I4 · 01 · grant the transfer role] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPOF|ToggleTransferRole`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (o:string "MOCKO-98c486052a51")
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        (emma:string KST.EMMA)
+        (coca:string KST.COCA)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|ToggleTransferRole patron o coca true))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPOF|C_ToggleTransferRole patron o coca true))
+        )
+        (map print
+            [
+                (expect "<<DPOF-I4>> INFO_DPOF|ToggleTransferRole's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPOF-I4>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-I5 — INFO_DPOF|RotateOwnership quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-I5 · 01 · hand the collection to a new owner] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPOF|RotateOwnership`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (o:string "MOCKO-98c486052a51")
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        (emma:string KST.EMMA)
+        (coca:string KST.COCA)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|RotateOwnership patron o emma))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPOF|C_RotateOwnership patron o emma))
+        )
+        (map print
+            [
+                (expect "<<DPOF-I5>> INFO_DPOF|RotateOwnership's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPOF-I5>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+                (expect "<<DPOF-I5>> ...and ownership really moved" emma (ref-DPOF::UR_Konto o))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-I6 — INFO_DPOF|MoveCreateRole quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-I6 · 01 · move the create role] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPOF|MoveCreateRole`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (o:string "MOCKO-98c486052a51")
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        (emma:string KST.EMMA)
+        (coca:string KST.COCA)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|MoveCreateRole patron o coca))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPOF|C_MoveCreateRole patron o coca))
+        )
+        (map print
+            [
+                (expect "<<DPOF-I6>> INFO_DPOF|MoveCreateRole's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPOF-I6>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-I7 — INFO_DPOF|UpdatePendingBranding quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-I7 · 01 · queue a branding update] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPOF|UpdatePendingBranding`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+;;NOTE the arity difference: the preview takes 2 arguments, the exec 6 — the four branding strings
+;;are free-form content and do not move the price, so the preview does not ask for them.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (o:string "MOCKO-98c486052a51")
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        (emma:string KST.EMMA)
+        (coca:string KST.COCA)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|UpdatePendingBranding patron o))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPOF|C_UpdatePendingBranding patron o "logo" "desc" "site.example" []))
+        )
+        (map print
+            [
+                (expect "<<DPOF-I7>> INFO_DPOF|UpdatePendingBranding's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPOF-I7>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-I8 — INFO_DPOF|AddQuantity quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-I8 · 01 · top up an existing nonce] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPOF|AddQuantity`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+;;TRAP, worth the annotation: the preview and the exec SWAP two arguments.
+;;    INFO_DPOF|AddQuantity  (patron id NONCE ACCOUNT amount)
+;;    DPOF|C_AddQuantity     (patron id ACCOUNT NONCE amount)
+;;Here that is caught by the type checker (integer vs string), so it costs a run rather than a wrong
+;;answer — but any future pair that swaps two arguments of the SAME type would silently price the
+;;wrong thing. Do not assume a preview takes its exec's argument list, even when the names match.
+;;
+;;EMMA must sign as well: she holds nonce 1, and the cap enforces ownership of the target account.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (o:string "MOCKO-98c486052a51")
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        (emma:string KST.EMMA)
+        (coca:string KST.COCA)
+    )
+    ;;PRECONDITION — `DPOF|C>ADD-QTY` demands the add-quantity role on the TARGET account, and EMMA
+    ;;has never held it (ANHD took it at DPOF-02 and nothing ever granted it onward). Granting it here
+    ;;is setup, not the thing being measured: the grant is a separate op with its own price, and the
+    ;;measurement below opens strictly after it.
+    (ref-TS01-C1::DPOF|C_ToggleAddQuantityRole patron o emma true)
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|AddQuantity patron o 1 emma 10.0))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPOF|C_AddQuantity patron o emma 1 10.0))
+        )
+        (map print
+            [
+                (expect "<<DPOF-I8>> INFO_DPOF|AddQuantity's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPOF-I8>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+                (expect "<<DPOF-I8>> ...and the nonce really grew" 1260.0 (ref-DPOF::UR_NonceSupply o 1))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-I9 — INFO_DPOF|Burn quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-I9 · 01 · burn a whole nonce] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPOF|Burn`, per the owner's spec.
+;;TRAP, the same one <<DPOF-I8>> carries: the preview and the exec SWAP two arguments.
+;;    INFO_DPOF|Burn  (patron id NONCE ACCOUNT amount)
+;;    DPOF|C_Burn     (patron id ACCOUNT NONCE amount)
+;;
+;;The FULL 1250.0 is burned, not a part of it: a PARTIAL burn additionally requires
+;;`UEV_SegmentationState id true`, and segmentation is off on MOCKO. Burning the whole nonce is the
+;;only arm reachable here, and it is the arm the fixture supports.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (o:string "MOCKO-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+    )
+    ;;PRECONDITION — the burn role lives on the TARGET account, and EMMA has never held it.
+    (ref-TS01-C1::DPOF|C_ToggleBurnRole patron o emma true)
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|Burn patron o 1 emma 1250.0))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPOF|C_Burn patron o emma 1 1250.0))
+        )
+        (map print
+            [
+                (expect "<<DPOF-I9>> INFO_DPOF|Burn's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPOF-I9>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-I10 — INFO_DPOF|Transfer quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-I10 · 01 · move a nonce between holders] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPOF|Transfer`, per the owner's spec.
+;;EMMA must sign: she holds nonce 1 and the cap enforces ownership of the SENDER, not the patron.
+;;LUMY is the receiver because LUMY holds the transfer role and the role set is ACTIVE on MOCKO —
+;;with an active role set, a move where neither party holds the role is refused.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (o:string "MOCKO-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|Transfer patron o [1] emma lumy false))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPOF|C_Transfer patron o [1] emma lumy false))
+        )
+        (map print
+            [
+                (expect "<<DPOF-I10>> INFO_DPOF|Transfer's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPOF-I10>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-I11 — INFO_DPOF|Control quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-I11 · 01 · rewrite the collection control flags] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPOF|Control`, per the owner's spec.
+;;NOTE the arity difference: the preview takes 2 arguments and the exec 10 — the eight flags are
+;;written by the op but do not move its price. The values below are MOCKO's current flags, so the
+;;write is a no-op in effect while still exercising the whole path.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (o:string "MOCKO-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|Control patron o))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPOF|C_Control patron o true true true true false false false false))
+        )
+        (map print
+            [
+                (expect "<<DPOF-I11>> INFO_DPOF|Control's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPOF-I11>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-I12 — INFO_DPOF|TogglePause quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-I12 · 01 · pause the token] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPOF|TogglePause`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (o:string "MOCKO-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+    )
+    ;;SETUP, outside the measurement window. MOCKO is left with can-freeze / can-wipe / can-pause all
+    ;;OFF by DPOF-05, so the ops below are unreachable until they are turned back on. `C_Control` is
+    ;;the supported way; it is itself a billed op, so it closes before `ignis-before` is read.
+    (ref-TS01-C1::DPOF|C_Control patron o true true true true true true true false)
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|TogglePause patron o true))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPOF|C_TogglePause patron o true))
+        )
+        (map print
+            [
+                (expect "<<DPOF-I12>> INFO_DPOF|TogglePause's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPOF-I12>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-I13 — INFO_DPOF|ToggleFreezeAccount quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-I13 · 01 · freeze a holder] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPOF|ToggleFreezeAccount`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (o:string "MOCKO-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+    )
+    ;;SETUP, outside the measurement window. MOCKO is left with can-freeze / can-wipe / can-pause all
+    ;;OFF by DPOF-05, so the ops below are unreachable until they are turned back on. `C_Control` is
+    ;;the supported way; it is itself a billed op, so it closes before `ignis-before` is read.
+    (ref-TS01-C1::DPOF|C_Control patron o true true true true true true true false)
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|ToggleFreezeAccount patron o emma true))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron o emma true))
+        )
+        (map print
+            [
+                (expect "<<DPOF-I13>> INFO_DPOF|ToggleFreezeAccount's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPOF-I13>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-I14 — INFO_DPOF|BulkTransfer quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-I14 · 01 · fan a nonce out to a receiver list] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPOF|BulkTransfer`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+;;EMMA holds nonce 1, so she is the sender and must sign — `DPOF|C>TRANSFER` enforces ownership of
+;;the SENDER, not of the patron. LUMY holds the transfer role (DPOF-G5), and `UEV_MoveRoleCheck` is
+;;sender-OR-receiver, so the pair is legal.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (o:string "MOCKO-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|BulkTransfer patron o [[1]] emma [lumy] false))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPOF|C_BulkTransfer patron o [[1]] emma [lumy] false))
+        )
+        (map print
+            [
+                (expect "<<DPOF-I14>> INFO_DPOF|BulkTransfer's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPOF-I14>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-I15 — INFO_DPOF|Transmit quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-I15 · 01 · move part of a nonce, segmented] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPOF|Transmit`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+;;`Transmit` is the AMOUNT-taking sibling of `Transfer`, and prices on a different tier —
+;;`URCi_MoveCumulator id nonces TRUE` against Transfer's `false`. That single boolean is the only
+;;difference between the two previews, which is why both are worth measuring separately.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (o:string "MOCKO-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+    )
+    ;;SETUP — segmentation gates the amount-taking paths and there is NO client toggle for it
+    ;;(`06_DPOF.pact:2417` sets it at issuance). DPOF-G12 established the direct write as the
+    ;;supported fixture: a segmented token is an ordinary production configuration, not a contrived
+    ;;state. `rollback-tx` undoes both this and the module-admin grant.
+    (env-module-admin DPOF)
+    (update DPOF.DPOF|T|Properties o { "segmentation" : true })
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|Transmit patron o [1] [10.0] emma lumy false))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPOF|C_Transmit patron o [1] [10.0] emma lumy false))
+        )
+        (map print
+            [
+                (expect "<<DPOF-I15>> INFO_DPOF|Transmit's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPOF-I15>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-I16 — INFO_DPOF|WipeSlim quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-I16 · 01 · wipe part of a frozen holder's nonce] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPOF|WipeSlim`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+;;WipeSlim needs BOTH the wipe flags and segmentation — it takes an amount.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (o:string "MOCKO-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+    )
+    ;;SETUP, outside the measurement window. MOCKO is left with can-freeze / can-wipe / can-pause all
+    ;;OFF by DPOF-05, so the ops below are unreachable until they are turned back on. `C_Control` is
+    ;;the supported way; it is itself a billed op, so it closes before `ignis-before` is read.
+    (ref-TS01-C1::DPOF|C_Control patron o true true true true true true true false)
+    ;;...and every wipe path additionally needs the target FROZEN. EMMA holds nonce 1 (1250.0).
+    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron o emma true)
+    ;;SETUP — segmentation gates the amount-taking paths and there is NO client toggle for it
+    ;;(`06_DPOF.pact:2417` sets it at issuance). DPOF-G12 established the direct write as the
+    ;;supported fixture: a segmented token is an ordinary production configuration, not a contrived
+    ;;state. `rollback-tx` undoes both this and the module-admin grant.
+    (env-module-admin DPOF)
+    (update DPOF.DPOF|T|Properties o { "segmentation" : true })
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|WipeSlim patron o emma 1 10.0))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPOF|C_WipeSlim patron o emma 1 10.0))
+        )
+        (map print
+            [
+                (expect "<<DPOF-I16>> INFO_DPOF|WipeSlim's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPOF-I16>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-I17 — INFO_DPOF|WipeClean quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-I17 · 01 · wipe a named nonce list clean] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPOF|WipeClean`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (o:string "MOCKO-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+    )
+    ;;SETUP, outside the measurement window. MOCKO is left with can-freeze / can-wipe / can-pause all
+    ;;OFF by DPOF-05, so the ops below are unreachable until they are turned back on. `C_Control` is
+    ;;the supported way; it is itself a billed op, so it closes before `ignis-before` is read.
+    (ref-TS01-C1::DPOF|C_Control patron o true true true true true true true false)
+    ;;...and every wipe path additionally needs the target FROZEN. EMMA holds nonce 1 (1250.0).
+    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron o emma true)
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|WipeClean patron o emma [1]))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPOF|C_WipeClean patron o emma [1]))
+        )
+        (map print
+            [
+                (expect "<<DPOF-I17>> INFO_DPOF|WipeClean's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPOF-I17>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-I18 — INFO_DPOF|WipePure quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-I18 · 01 · wipe every nonce the heavy scan finds] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPOF|WipePure`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+;;`URHC_WipePure` takes (ACCOUNT, id) — account first, the reverse of the wipe clients themselves,
+;;which are (patron, id, account). Both sides are fed the same object so the scan cannot drift.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (o:string "MOCKO-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+    )
+    ;;SETUP, outside the measurement window. MOCKO is left with can-freeze / can-wipe / can-pause all
+    ;;OFF by DPOF-05, so the ops below are unreachable until they are turned back on. `C_Control` is
+    ;;the supported way; it is itself a billed op, so it closes before `ignis-before` is read.
+    (ref-TS01-C1::DPOF|C_Control patron o true true true true true true true false)
+    ;;...and every wipe path additionally needs the target FROZEN. EMMA holds nonce 1 (1250.0).
+    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron o emma true)
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|WipePure patron o emma (ref-DPOF::URHC_WipePure emma o)))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPOF|C_WipePure patron o emma (ref-DPOF::URHC_WipePure emma o)))
+        )
+        (map print
+            [
+                (expect "<<DPOF-I18>> INFO_DPOF|WipePure's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPOF-I18>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-I19 — INFO_DPOF|WipeHeavy quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-I19 · 01 · the heavy-scan wipe] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPOF|WipeHeavy`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+;;EXEC PREFIX IS `CC_`, not `C_` — the doubled letter marks a heavy scan somewhere in the tree.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (o:string "MOCKO-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+    )
+    ;;SETUP, outside the measurement window. MOCKO is left with can-freeze / can-wipe / can-pause all
+    ;;OFF by DPOF-05, so the ops below are unreachable until they are turned back on. `C_Control` is
+    ;;the supported way; it is itself a billed op, so it closes before `ignis-before` is read.
+    (ref-TS01-C1::DPOF|C_Control patron o true true true true true true true false)
+    ;;...and every wipe path additionally needs the target FROZEN. EMMA holds nonce 1 (1250.0).
+    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron o emma true)
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|WipeHeavy patron o emma))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPOF|CC_WipeHeavy patron o emma))
+        )
+        (map print
+            [
+                (expect "<<DPOF-I19>> INFO_DPOF|WipeHeavy's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPOF-I19>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-I20 — INFO_DPOF|WipeSlice quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-I20 · 01 · one Hydra slice of a wipe plan] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPOF|WipeSlice`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+;;EXEC PREFIX IS `Cp_` — a Hydra parallel-slice recipe. With a single nonce on this chain a real
+;;slice split is impossible (`UCv_TakePureWipe`'s bound is STRICT, pinned at DPOF-G2), so the slice
+;;object is built by hand from the one nonce EMMA holds.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (o:string "MOCKO-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+    )
+    ;;SETUP, outside the measurement window. MOCKO is left with can-freeze / can-wipe / can-pause all
+    ;;OFF by DPOF-05, so the ops below are unreachable until they are turned back on. `C_Control` is
+    ;;the supported way; it is itself a billed op, so it closes before `ignis-before` is read.
+    (ref-TS01-C1::DPOF|C_Control patron o true true true true true true true false)
+    ;;...and every wipe path additionally needs the target FROZEN. EMMA holds nonce 1 (1250.0).
+    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron o emma true)
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|WipeSlice patron o emma (ref-DPOF::UDC_RemovableNonces [1] [1250.0])))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPOF|Cp_WipeSlice patron o emma (ref-DPOF::UDC_RemovableNonces [1] [1250.0])))
+        )
+        (map print
+            [
+                (expect "<<DPOF-I20>> INFO_DPOF|WipeSlice's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPOF-I20>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-I21 — INFO_DPOF|WipeFull: a CAMPAIGN total, measured across every slice")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-I21 · 01 · the whole Hydra wipe campaign, weighed] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPOF|WipeFull`, per the owner's spec. Template:
+;;`modules/ATS.repl <<ATS-I1>>`.
+;;
+;;THIS PREVIEW HAS NO SINGLE EXEC, which is why it sat unmeasured. `WipeFull` quotes the GRAND TOTAL
+;;of a Hydra campaign: `URHC_BuildWipeSlicePlan` partitions the wipeable set into N slices and the
+;;client fires one `Cp_WipeSlice` transaction per slice, in parallel. There is no `C_WipeFull` to
+;;point a meter at. The measurement is therefore a SUM: open the window once, run every slice, close
+;;it once, and compare the accumulated charge to the single quoted total.
+;;
+;;THE PLAN IS DELIBERATELY MULTI-SLICE. With one nonce the campaign degenerates to a single slice and
+;;the test would prove only that `WipeFull` equals `WipeSlice` — leaving the SUMMING, which is the one
+;;thing `WipeFull` adds over `WipeSlice`, entirely unexercised. So two extra nonces are minted first
+;;and the plan is built with a slice count matching the holding.
+;;
+;;SETUP, all outside the measurement window: MOCKO is left with can-freeze and can-wipe OFF by
+;;DPOF-05, and every wipe path additionally requires the target FROZEN.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (o:string "MOCKO-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+    )
+    (ref-TS01-C1::DPOF|C_Control patron o true true true true true true true false)
+    ;;...and the mint target needs the ADD-QUANTITY role: `DPOF|C>MINT` enforces it on the ACCOUNT
+    ;;being credited, not on the caller (`06_DPOF.pact:851`). ANHD holds it from DPOF-02; EMMA does not.
+    (ref-TS01-C1::DPOF|C_ToggleAddQuantityRole patron o emma true)
+    ;;...and the CREATE role too, which unlike add-quantity is single-holder: `C_MoveCreateRole`
+    ;;hands it over rather than granting a copy. That is destructive to LUMY's holding, which is
+    ;;why the whole block rolls back — DPOF-G5 onward assumes LUMY keeps it.
+    (ref-TS01-C1::DPOF|C_MoveCreateRole patron o emma)
+    (ref-TS01-C1::DPOF|C_Mint patron o emma 10.0 [])
+    (ref-TS01-C1::DPOF|C_Mint patron o emma 20.0 [])
+    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron o emma true)
+    (let
+        (
+            (held:[integer] (ref-DPOF::URH_AccountNonces emma o))
+        )
+        (let
+            (
+                (plan:object{DpofUdcV2.DPOF|WipeSlicePlan}
+                    (ref-DPOF::URHC_BuildWipeSlicePlan emma o (length held)))
+            )
+            (let
+                (
+                    (predicted:decimal
+                        (at "ignis-need" (at "ignis" (INFO-ONE.INFO_DPOF|WipeFull patron o emma plan))))
+                    (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+                )
+                ;;THE CAMPAIGN — one Cp_WipeSlice per slice, accumulated inside a single window.
+                (map
+                    (lambda (slice:object{DpofUdcV2.RemovableNonces})
+                        (ref-TS01-C1::DPOF|Cp_WipeSlice patron o emma slice))
+                    (at "slices" plan))
+                (let
+                    (
+                        (real:decimal (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)))
+                    )
+                    (map print
+                        [
+                            (format "<<DPOF-I21>> held={} slices={} predicted={} real={} delta={}"
+                                [(length held) (at "slice-count" plan) predicted real (- real predicted)])
+                            ;;the fixture really is multi-slice, so the SUM is under test and not just one leg
+                            (expect "<<DPOF-I21>> the campaign really spans more than one slice"
+                                true (> (at "slice-count" plan) 1))
+                            (expect "<<DPOF-I21>> the grand-total quote equals the whole campaign's charge"
+                                real predicted)
+                            (expect "<<DPOF-I21>> ...and it is a real, non-zero charge" true (> real 0.0))
+                            ;;witness — the campaign really emptied the holder
+                            (expect "<<DPOF-I21>> ...witness: nothing wipeable remains"
+                                0 (length (at "r-nonces" (ref-DPOF::URHC_WipePure emma o))))
+                        ]
+                    )
+                )
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-I22 — INFO_DPOF|Issue: both currencies measured")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-I22 · 01 · issue a fresh orto fungible] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPOF|Issue`, per the owner's spec. Template: `modules/ATS.repl <<ATS-I1>>`.
+;;
+;;NAMED ELSEWHERE, NEVER WEIGHED. This preview is called by a shape-check or abort-pin somewhere in
+;;the suite, which satisfies `_scale_report.py --untested` — a reachability tool, not a cost one.
+;;`REPL/_info_measured.py` is the tool that tells the two apart.
+;;ARG ORDER DIFFERS FROM THE DPTF TWIN. `DPOF|C_Issue`'s flag list is
+;;`can-upgrade can-change-owner can-add-special-role can-transfer-oft-create-role can-freeze
+;;can-wipe can-pause` — SEVEN flags with `ctocr` inserted fourth — against DPTF's six. Copying
+;;the DPTF call across silently shifts every flag by one position.
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "PK_Coca", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+            ]
+        }
+    ]
+)
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (o:string "MOCKO-98c486052a51")
+        (patron:string KST.ANHD)
+        (coca:string KST.COCA)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|Issue patron patron ["CostProbeOf"]))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
+            (m (ref-TS01-C1::DPOF|C_Issue patron patron ["CostProbeOf"] ["CPOF"] [24] [true] [true] [true] [true] [true] [true] [true]))
+        )
+        (map print
+            [
+                (format "<<DPOF-I22>> IGNIS predicted={} real={} | STOA predicted={} real={}"
+                    [(at "ignis-need" (at "ignis" predicted))
+                     (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                     (at "stoa-need" (at "stoa" predicted))
+                     (- stoa-before (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))])
+                (expect "<<DPOF-I22>> the IGNIS quote equals the IGNIS charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPOF-I22>> the STOA quote equals the STOA charged"
+                    (- stoa-before (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
+                    (at "stoa-need" (at "stoa" predicted)))
+                (expect "<<DPOF-I22>> ...and the operation is NOT free"
+                    true (> (+ (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                               (- stoa-before (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-I23 — INFO_DPOF|UpgradeBranding: both currencies measured")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-I23 · 01 · buy branding months for an orto fungible] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPOF|UpgradeBranding`, per the owner's spec. Template: `modules/ATS.repl <<ATS-I1>>`.
+;;
+;;NAMED ELSEWHERE, NEVER WEIGHED. This preview is called by a shape-check or abort-pin somewhere in
+;;the suite, which satisfies `_scale_report.py --untested` — a reachability tool, not a cost one.
+;;`REPL/_info_measured.py` is the tool that tells the two apart.
+;;STOA-ONLY, and the clock is the fixture: `BRD|C>UPGRADE` refuses while >15 days of Blue Flag
+;;remain (`04_BRD.pact:266`). `rollback-tx` does not undo `env-chain-data`, so the restore matters.
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "PK_Coca", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+            ]
+        }
+    ]
+)
+(env-chain-data { "block-time": (time "2030-11-22T00:00:00Z") })
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (o:string "MOCKO-98c486052a51")
+        (patron:string KST.ANHD)
+        (coca:string KST.COCA)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|UpgradeBranding patron o 1))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
+            (m (ref-TS01-C1::DPOF|C_UpgradeBranding patron o 1))
+        )
+        (map print
+            [
+                (format "<<DPOF-I23>> IGNIS predicted={} real={} | STOA predicted={} real={}"
+                    [(at "ignis-need" (at "ignis" predicted))
+                     (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                     (at "stoa-need" (at "stoa" predicted))
+                     (- stoa-before (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))])
+                (expect "<<DPOF-I23>> the IGNIS quote equals the IGNIS charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPOF-I23>> the STOA quote equals the STOA charged"
+                    (- stoa-before (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
+                    (at "stoa-need" (at "stoa" predicted)))
+                (expect "<<DPOF-I23>> ...and the operation is NOT free"
+                    true (> (+ (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                               (- stoa-before (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-chain-data { "block-time": (time "2025-11-22T00:00:00Z") })
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-I24 — INFO_DPOF|DeployAccount: both currencies measured")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPOF-I24 · 01 · open an orto-fungible account for a third party] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPOF|DeployAccount`, per the owner's spec. Template: `modules/ATS.repl <<ATS-I1>>`.
+;;
+;;NAMED ELSEWHERE, NEVER WEIGHED. This preview is called by a shape-check or abort-pin somewhere in
+;;the suite, which satisfies `_scale_report.py --untested` — a reachability tool, not a cost one.
+;;`REPL/_info_measured.py` is the tool that tells the two apart.
+;;THE TARGET'S OWN KEY MUST SIGN. `02_TS01-C1.pact:1118` runs `CAP_EnforceAccountOwnership`
+;;on the ACCOUNT being opened, not on the patron — so COCA signs alongside ANHD. COCA is untouched
+;;by this harness, which is what makes her account genuinely new rather than a re-deploy no-op.
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "PK_Coca", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+            ]
+        }
+    ]
+)
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (o:string "MOCKO-98c486052a51")
+        (patron:string KST.ANHD)
+        (coca:string KST.COCA)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|DeployAccount patron o coca))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
+            (m (ref-TS01-C1::DPOF|C_DeployAccount patron o coca))
+        )
+        (map print
+            [
+                (format "<<DPOF-I24>> IGNIS predicted={} real={} | STOA predicted={} real={}"
+                    [(at "ignis-need" (at "ignis" predicted))
+                     (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                     (at "stoa-need" (at "stoa" predicted))
+                     (- stoa-before (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))])
+                (expect "<<DPOF-I24>> the IGNIS quote equals the IGNIS charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPOF-I24>> the STOA quote equals the STOA charged"
+                    (- stoa-before (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
+                    (at "stoa-need" (at "stoa" predicted)))
+                (expect "<<DPOF-I24>> ...and the operation is NOT free"
+                    true (> (+ (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                               (- stoa-before (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)

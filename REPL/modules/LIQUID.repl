@@ -42,6 +42,14 @@
             (native0:decimal (coin.get-balance lq-stoa))
             (held0:decimal (try 0.0 (ref-DPTF::UR_AccountSupply (ref-DALOS::UR_WrappedStoaID) patron)))
             (supply0:decimal (ref-DPTF::UR_Supply (ref-DALOS::UR_WrappedStoaID)))
+            ;;FUNCTION COVERAGE (G6) — `INFO_LIQUID|WrapStoa`, per the owner's spec: an INFO_ must
+            ;;report the same cost the op actually charges. Template: `modules/ATS.repl <<ATS-I1>>`.
+            ;;NOTE the name skew — the preview is `INFO_LIQUID|*` while the Talos op is `LQD|C_*`, so
+            ;;the usual `INFO_<MOD>|<Op>` -> `<MOD>|C_<Op>` pairing does NOT hold here. Anything that
+            ;;matches previews to ops by name alone will report this family as having no counterpart.
+            (predicted:object{OuronetInfoV2.ClientInfo}
+                (INFO-ONE.INFO_LIQUID|WrapStoa patron patron 5000.0))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
         )
         (ref-TS01-C2::LQD|C_WrapStoa patron patron 5000.0)
         (map print
@@ -55,6 +63,14 @@
                 ;; LIQUID account. This is the property the whole module exists to maintain.
                 (expect "<<LQD-01>> INVARIANT: native STOA escrowed matches the wrapping"
                     (+ native0 5000.0) (coin.get-balance lq-stoa))
+                ;;...and the quote the client was shown for this wrap is the price they paid. The
+                ;;5000.0 native STOA above is the ESCROW, not a fee — it comes back on unwrap — so the
+                ;;only thing the preview has to price is the IGNIS, and that is what is checked.
+                (expect "<<LQD-01>> the preview's IGNIS quote equals what the wrap actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<LQD-01>> ...and wrapping is NOT free"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
             ]
         )
     )
@@ -167,18 +183,24 @@
 (begin-tx "LQD-03pre — the pause really is a precondition, not decoration")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
-(print "--- [LQD-03pre · 01 · refused, but with the WRONG error] ---")
-;;FINDING. The pause precondition works -- migration IS refused while GAP is off -- but the
-;;caller never learns why. LIQUID.pact:125 writes the guard as
-;;      (enforce gap (format "Migration can only be executed when Global Administrative Pause is offline"))
-;;a ONE-ARGUMENT (format …). Pact's format takes a template AND an argument list, so building the
-;;message is itself an arity error: it resolves to a closure and the transaction dies with
-;;"Expected Pact Value, got closure or table reference". The guard's own words never reach the
-;;operator. DALOS.pact:489 writes the identical sentence correctly, with `[]`.
+(print "--- [LQD-03pre · 01 · refused, and now it says why] ---")
+;;TWO DEFECTS IN ONE LINE, BOTH FIXED 2026-09-12 (owner-authorised). The pause precondition always
+;;worked -- migration IS refused while GAP is off -- but the caller learned nothing from it.
 ;;
-;;(The sentence is also backwards -- `enforce gap` passes when the pause is ON, which is the
-;;correct behaviour and the wrong wording. Two defects in one line, and only the second one is
-;;visible today because the first hides it.)
+;;  1] The message was wrapped in a ONE-ARGUMENT `(format …)`. Pact's format takes a template AND an
+;;     argument list, so building the message was itself an arity error: it resolved to a closure and
+;;     the transaction died with "Expected Pact Value, got closure or table reference". The guard's
+;;     own words never reached the operator. Four more sites shared the shape; all five are repaired
+;;     and `python3 _conformance.py --rule format-no-arglist` now keeps it at 0.
+;;
+;;  2] The sentence was BACKWARDS. `enforce gap` requires the pause to be ON, and the message said
+;;     "offline". Five sites elsewhere (TS01-C2:197, C3:158, C4:145, TS01-P:111, TS02-CPAD:110) all
+;;     use "online" to mean the pause is on, so the convention was unambiguous and this line was the
+;;     odd one out. Now "online".
+;;
+;;Defect 1 HID defect 2: a message that never renders cannot be noticed to be wrong. That is the
+;;general hazard with message-construction bugs, and the reason this assertion now pins the exact
+;;sentence rather than just "it was refused".
 (env-data { "LQD_PRE_KS": { "keys": ["PK_AncientHodler"], "pred": "keys-all" } })
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
@@ -194,8 +216,8 @@
             (map print
                 [
                     (expect "<<LQD-03pre>> GAP is OFF" false (ref-DALOS::UR_GAP))
-                    (expect-failure "<<LQD-03pre>> migration is refused while the pause is off"
-                        "Expected Pact Value, got closure or table reference"
+                    (expect-failure "<<LQD-03pre>> migration is refused while the pause is off, and says so"
+                        "Migration can only be executed when Global Administrative Pause is online"
                         (ref-TS01-A::LIQUID|A_MigrateLiquidFunds tgt))
                     (expect "<<LQD-03pre>> and the escrow is untouched by the refusal"
                         e0 (ref-coin::get-balance lq-stoa))
@@ -304,5 +326,297 @@
 )
 (print "===^^^===")
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "LQD-G1 — UEV_IzLiquidStakingLive: its three deep guards, all four states")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [LQD-G1 · 01 · the liveness guard on a CONFIGURED chain] ---")
+;;CORRECTION TO AN EARLIER FINDING, and the reason this test exists.
+;;
+;;I previously filed `UEV_IzLiquidStakingLive` as "reports LIVE when liquid staking is not live",
+;;pinned at `[4.0] <<TX4.0-CONFIG>>`, and told the owner its three deep guards were UNPINNABLE.
+;;Owner ruling: "liquid staking is live on mainnet, i dont know what you mean by saying it without
+;;an ATS pair?" -- correct on both counts, and the second half is the useful half.
+;;
+;;What I had measured was one transaction inside the BOOT SEQUENCE of `[4.0]`, at the moment both
+;;STOA ids are set and the Autostake pair does not exist yet. That window is real but it is a boot
+;;artifact: by the end of the same file the pair exists. On THIS chain -- a fully deployed one, the
+;;same shape as mainnet -- the pair is `StoaLiquindex-98c486052a51`, and the guard returns true
+;;because it is genuinely live. So the function is NOT wrong on a configured chain, and calling it a
+;;defect was an overstatement of a narrow robustness gap.
+;;
+;;And the "unpinnable" claim was simply a failure of imagination on my part. `env-module-admin`
+;;grants DPTF admin in a REPL, so the two role fields can be driven to any state directly, and
+;;`rollback-tx` discards the whole thing -- so all three deep guards are reachable after all, and
+;;the tests below pin them. That is the actual value here: three guards that the coverage ledger
+;;had written off as unreachable are now covered, state-driven rather than argument-driven.
+;;
+;;Everything below runs in ONE transaction that ends in `rollback-tx`, never `commit-tx`. LQD-G2
+;;is the proof that nothing leaked.
+(env-module-admin DPTF)
+(let
+    (
+        (w:string (DALOS.UR_WrappedStoaID))
+        (l:string (DALOS.UR_SilverStoaID))
+        (pair:string "StoaLiquindex-98c486052a51")
+    )
+    (map print
+        [
+            ;;STATE 1 -- as deployed. The pair exists, so the guard is true for the RIGHT reason:
+            ;;wrapped STOA is the reward token of exactly one pair, liquid STOA is the
+            ;;reward-bearing token of exactly one pair, and it is the SAME pair.
+            (expect "<<LQD-G1>> on a configured chain the pair exists and liveness is genuine"
+                [[pair] [pair]] [(DPTF.UR_RewardToken w) (DPTF.UR_RewardBearingToken l)])
+            (expect "<<LQD-G1>> ...so the guard passes, and passes because it is actually live"
+                true (LIQUID.UEV_IzLiquidStakingLive))
+        ]
+    )
+    ;;STATE 2 -- both tokens in a pair, but NOT the same pair. This is the third guard's case, and
+    ;;the one I had called unreachable. Pointing liquid STOA at a different pair id reaches it.
+    (update DPTF.DPTF|PropertiesTable l { "reward-bearing-token" : ["StoaLiquindex-OTHER"] })
+    (print
+        (expect-failure "<<LQD-G1>> wrapped and liquid in DIFFERENT pairs is refused (3rd guard)"
+            "Wrapped and Liquid Stoa are not part of the same ASTS Pair"
+            (LIQUID.UEV_IzLiquidStakingLive)))
+    ;;STATE 3 -- wrapped STOA in TWO pairs. First guard. A length-1 test CAN catch this; what it
+    ;;cannot catch is length 1 that happens to be the sentinel, which is STATE 4.
+    (update DPTF.DPTF|PropertiesTable l { "reward-bearing-token" : [pair] })
+    (update DPTF.DPTF|PropertiesTable w { "reward-token" : [pair "StoaLiquindex-SECOND"] })
+    (print
+        (expect-failure "<<LQD-G1>> wrapped STOA in two pairs is refused (1st guard)"
+            "Wrapped-Stoa cannot ever be part of another ATS-Pair"
+            (LIQUID.UEV_IzLiquidStakingLive)))
+    ;;STATE 4 -- liquid STOA in TWO pairs. Second guard, the twin of the first. Both are asserted
+    ;;because the two reads are different functions on different fields: a copy-paste slip that
+    ;;read `w` twice would pass STATE 3 and fail only here.
+    (update DPTF.DPTF|PropertiesTable w { "reward-token" : [pair] })
+    (update DPTF.DPTF|PropertiesTable l { "reward-bearing-token" : [pair "StoaLiquindex-SECOND"] })
+    (print
+        (expect-failure "<<LQD-G1>> liquid STOA in two pairs is refused (2nd guard)"
+            "Liquid-Stoa cannot ever be part of another ATS-Pair"
+            (LIQUID.UEV_IzLiquidStakingLive)))
+    ;;STATE 5 -- the robustness gap, stated at its true size. Drive both fields back to the [BAR]
+    ;;sentinel, i.e. "not part of any pair": the ids are set but no pair exists. The guard returns
+    ;;TRUE. `UR_RewardToken` returns a ONE-element `[BAR]` for "none", so `(= (length …) 1)` cannot
+    ;;tell "exactly one pair" from "no pair", and the third guard then compares BAR to BAR and
+    ;;agrees. All three pass vacuously.
+    ;;
+    ;;SCOPE, honestly: this is reachable only between the transaction that sets the two STOA ids and
+    ;;the transaction that creates the pair. Mainnet is past that window and cannot re-enter it --
+    ;;pairs are not deleted. It is a misconfiguration/boot-robustness gap, NOT a live defect, and
+    ;;the worst outcome in that window is a downstream abort with a less clear message instead of
+    ;;this guard's own. Recorded, not escalated.
+    ;;
+    ;;The in-repo fix, if it is ever wanted, is one expression: DPOF::UEV_MoveRoleCheck meets the
+    ;;identical sentinel on UR_Verum5 and normalises it before testing length --
+    ;;`(if (and (= lvf 1) (= verum-five [BAR])) 0 lvf)`.
+    (update DPTF.DPTF|PropertiesTable w { "reward-token" : [(U|CT.CT_BAR)] })
+    (update DPTF.DPTF|PropertiesTable l { "reward-bearing-token" : [(U|CT.CT_BAR)] })
+    (map print
+        [
+            (expect "<<LQD-G1>> with both fields at the BAR sentinel, the guard still says LIVE"
+                true (LIQUID.UEV_IzLiquidStakingLive))
+            (expect "<<LQD-G1>> ...because the sentinel is a ONE-element list, so length-1 passes"
+                [1 1]
+                [(length (DPTF.UR_RewardToken w)) (length (DPTF.UR_RewardBearingToken l))])
+        ]
+    )
+)
+;;ROLLBACK, not commit. Every write above is discarded.
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "LQD-G2 — the rollback really discarded the role surgery")
+(namespace "ouronet-ns")
+(print "--- [LQD-G2 · 01 · no leakage] ---")
+;;LQD-G1 rewrote two fields of a sovereign table five times. This asserts that none of it survived,
+;;so a later suite cannot inherit a fabricated pair. Worth its own transaction: a `commit-tx` typo
+;;in LQD-G1 would leave the chain claiming liquid STOA belongs to a pair that does not exist, and
+;;every downstream liveness check would silently agree.
+(map print
+    [
+        (expect "<<LQD-G2>> the real pair is back in both role fields"
+            [["StoaLiquindex-98c486052a51"] ["StoaLiquindex-98c486052a51"]]
+            [(DPTF.UR_RewardToken (DALOS.UR_WrappedStoaID))
+             (DPTF.UR_RewardBearingToken (DALOS.UR_SilverStoaID))])
+        (expect "<<LQD-G2>> ...and liveness is genuine again, not sentinel-vacuous"
+            true (LIQUID.UEV_IzLiquidStakingLive))
+    ]
+)
+(commit-tx)
 (print "")
 (print "=== END modules/LIQUID.repl ===")
+
+;;|| NEXT >
+;;
+(begin-tx "LQD-I2 — INFO_LIQUID|UnwrapStoa quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [LQD-I2 · 01 · release native STOA from the escrow] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_LIQUID|UnwrapStoa`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+;;NAME SKEW, worth restating at every member of this family: the preview is `INFO_LIQUID|*` while the
+;;Talos op is `LQD|C_*`, so the usual `INFO_<MOD>|<Op>` -> `<MOD>|C_<Op>` pairing does NOT hold and any
+;;tool that matches previews to ops by name alone reports these as having no counterpart.
+;;The unwrap direction moves native STOA OUT of an escrow the caller has no key for, so the managed
+;;cap's SENDER is the escrow account. LIQUID.pact:516 has the in-code install commented out with the
+;;note that it is added \"in the JavaCode\" — i.e. the requirement lives off-chain and is invisible in
+;;the entrypoint signature. LQD-02 established this shape.
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps":
+          [ ;;the wrap leg in setup: patron -> escrow
+            (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                "c:ZNfuj3iZI83n7MUSKGuoXoSxFg1cyMxCzB3szUHVvrI" 100.0)
+            ;;the unwrap leg being measured: escrow -> patron
+            (coin.TRANSFER "c:ZNfuj3iZI83n7MUSKGuoXoSxFg1cyMxCzB3szUHVvrI"
+                "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 100.0) ] }
+    ]
+)
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+    )
+    ;;SETUP — LQD-03 leaves the Global Administrative Pause ON and COMMITTED (the migration it tests
+    ;;requires it), so every Talos client op after that point is refused by `P|TS` before any cost is
+    ;;reached. GAP is lifted here and the whole block rolls back, leaving the file as LQD-03 left it.
+    (ref-TS01-A::DALOS|A_ToggleGAP false)
+    ;;...and re-fund the escrow. LQD-03 MIGRATED every native STOA out of it, so an unwrap at this
+    ;;point in the file has nothing to release ("The amount of 100.0 is to great to debit"). The wrap
+    ;;is a billed op and closes before `ignis-before` is read.
+    (ref-TS01-C2::LQD|C_WrapStoa patron patron 100.0)
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_LIQUID|UnwrapStoa patron patron 100.0))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C2::LQD|C_UnwrapStoa patron patron 100.0))
+        )
+        (map print
+            [
+                (expect "<<LQD-I2>> INFO_LIQUID|UnwrapStoa's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<LQD-I2>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "LQD-I3 — INFO_LIQUID|WrapUrStoa quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [LQD-I3 · 01 · wrap UrStoa into its DPTF twin] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_LIQUID|WrapUrStoa`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+;;NAME SKEW, worth restating at every member of this family: the preview is `INFO_LIQUID|*` while the
+;;Talos op is `LQD|C_*`, so the usual `INFO_<MOD>|<Op>` -> `<MOD>|C_<Op>` pairing does NOT hold and any
+;;tool that matches previews to ops by name alone reports these as having no counterpart.
+;;UrStoa is a SEPARATE native fungible (`stoa-ns.ur-stoic-fungible-v1`), so the managed cap is
+;;`coin.UR|TRANSFER`, not `coin.TRANSFER`. [4.0] TX-11a funds the patron's UrStoa balance.
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps": [ (coin.UR|TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:ZNfuj3iZI83n7MUSKGuoXoSxFg1cyMxCzB3szUHVvrI" 1.0) ] }
+    ]
+)
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+    )
+    ;;SETUP — LQD-03 leaves the Global Administrative Pause ON and COMMITTED (the migration it tests
+    ;;requires it), so every Talos client op after that point is refused by `P|TS` before any cost is
+    ;;reached. GAP is lifted here and the whole block rolls back, leaving the file as LQD-03 left it.
+    (ref-TS01-A::DALOS|A_ToggleGAP false)
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_LIQUID|WrapUrStoa patron patron 1.0))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C2::LQD|C_WrapUrStoa patron patron 1.0))
+        )
+        (map print
+            [
+                (expect "<<LQD-I3>> INFO_LIQUID|WrapUrStoa's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<LQD-I3>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "LQD-I4 — INFO_LIQUID|UnwrapUrStoa quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [LQD-I4 · 01 · burn the DPTF twin and return UrStoa] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_LIQUID|UnwrapUrStoa`, per the owner's spec.
+;;
+;;NO MANAGED CAP OF ITS OWN, unlike `UnwrapStoa` at <<LQD-I2>>. That asymmetry is real and is visible
+;;in `[4.0]` TX-11b, which performs a wrap and an unwrap inside ONE transaction carrying only the
+;;WRAP's `coin.UR|TRANSFER`: the return leg is authorised by the escrow's own capability guard.
+;;The wrap in setup exists purely so there is a DPTF twin to burn; it is a billed op, so it closes
+;;before `ignis-before` is read.
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps": [ (coin.UR|TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:ZNfuj3iZI83n7MUSKGuoXoSxFg1cyMxCzB3szUHVvrI" 1.0) ] }
+    ]
+)
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+    )
+    ;;SETUP — LQD-03 leaves the Global Administrative Pause ON and COMMITTED (the migration it tests
+    ;;requires it), so every Talos client op after that point is refused by `P|TS` before any cost is
+    ;;reached. GAP is lifted here and the whole block rolls back, leaving the file as LQD-03 left it.
+    (ref-TS01-A::DALOS|A_ToggleGAP false)
+    (ref-TS01-C2::LQD|C_WrapUrStoa patron patron 1.0)
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_LIQUID|UnwrapUrStoa patron patron 1.0))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C2::LQD|C_UnwrapUrStoa patron patron 1.0))
+        )
+        (map print
+            [
+                (expect "<<LQD-I4>> INFO_LIQUID|UnwrapUrStoa's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<LQD-I4>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)

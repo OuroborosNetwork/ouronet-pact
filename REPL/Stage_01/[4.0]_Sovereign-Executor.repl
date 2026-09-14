@@ -575,6 +575,140 @@
         ;;MAIN-NET VARIANT
         ;;(acquire-module-admin n_7d40ccda457e374d8eb07b658fd38c282c545038.DALOS)
 
+        ;;==== TX4.0 · CONFIG-GUARDS · six "not set" validators, pinned in the only window
+        ;;     where they can fire ==================================================
+        (print "--- [TX4.0 · CONFIG-GUARDS · pre-configuration validators] ---")
+        ;;P3.3. LIQUID, OUROBOROS and DALOS each carry guards that refuse to operate until the
+        ;;canonical token ids are configured. In EVERY test suite those ids are already set, so
+        ;;the guards always pass and no suite could reach them -- they were the largest remaining
+        ;;"unreachable by argument" cluster on the worklist.
+        ;;
+        ;;THIS is the window: DALOS|INFO was inserted ~290 lines above with every id = BAR, and
+        ;;the `update` immediately below is what fills them in. Between those two points the
+        ;;modules are all deployed and the configuration is empty, which is exactly the state the
+        ;;guards describe. Everything here is READ-ONLY except the three staged `update`s, each of
+        ;;which is overwritten by the real update below, in this same transaction, before any
+        ;;other code can observe it.
+        ;;
+        ;;The stages exist because these are CONJUNCTIONS checked one id at a time: with
+        ;;everything BAR only the first enforce of each function can speak. Setting one id at a
+        ;;time walks the chain forward so each guard answers in turn.
+        ;;
+        ;;--- stage 0: nothing configured.
+        (print
+            (expect-failure "<<TX4.0-CONFIG>> liquid staking refuses to run before Wrapped-Stoa is set"
+                "Wrapped-Stoa is not set" (LIQUID.UEV_IzLiquidStakingLive)))
+        ;;    FIXED 2026-09-12. OUROBOROS.UEV_Exchange carries "Ouroboros is not set" and "Ignis is
+        ;;    not set", and NEITHER could fire: its let bound (UR_AccountRoleMint ouro-id orb-sc) in
+        ;;    the SAME binding group as ouro-id, and Pact evaluates eagerly -- so a BAR id aborted in
+        ;;    the DPTF properties read before any enforce was consulted. A caller on an unconfigured
+        ;;    chain saw "DPTF ID | does not exist" instead of either sentence.
+        ;;    The fix splits the group in two: the id reads depend on nothing, the ROLE reads depend
+        ;;    on the ids, so the enforces go between them. No test needed reordering -- only these
+        ;;    expectations, because the guards now say what they were written to say.
+        (print
+            (expect-failure "<<TX4.0-CONFIG>> the exchange names the missing OURO id"
+                "Ouroboros is not set" (OUROBOROS.UEV_Exchange)))
+        (print
+            (expect-failure "<<TX4.0-CONFIG>> IGNIS collection cannot be turned on before OURO is set"
+                "OURO Id must be set for IGNIS Collection to turn ON!" (DALOS.UEV_IgnisCollectionRequirements)))
+        ;;--- stage 1: OURO set, IGNIS still BAR. Both modules now fall through to their SECOND
+        ;;    guard, which is the one naming IGNIS.
+        (update ref-DALOS::DALOS|PropertiesTable info { "gas-source-id" : OuroID })
+        ;;    ...and the same abort with OURO set, because gas-id is still BAR and its roles are
+        ;;    read in that same binding group. Both of its guards are dead, not merely unreached.
+        (print
+            ;;...and with OURO set it falls through to the SECOND guard, naming IGNIS. That is the
+            ;;staged walk this block exists for, and it only became observable once both guards
+            ;;could speak: before the fix BOTH stages produced the same raw DPTF error.
+            (expect-failure "<<TX4.0-CONFIG>> ...and once OURO is set, it names the missing IGNIS id"
+                "Ignis is not set" (OUROBOROS.UEV_Exchange)))
+        (print
+            (expect-failure "<<TX4.0-CONFIG>> ...likewise IGNIS collection"
+                "IGNIS Id must be set for IGNIS Collection to turn ON!" (DALOS.UEV_IgnisCollectionRequirements)))
+            ;;...and the CONTRAST that makes the FINDING above precise. Same window, same missing
+            ;;gas-id: ORBR::URCv_Sublimate's "Gas Token isnt properly set" DOES speak. Its subject is
+            ;;bound in a let that reads only the OURO id -- which is set by now -- so the gas check is
+            ;;still reachable. UEV_Exchange's is not, because ITS binding group reads the gas-id's
+            ;;ROLES. So the defect above is not "BAR ids abort everything"; it is specifically that
+            ;;UEV_Exchange binds its own guard's subject. Pinning the working twin is what stops the
+            ;;finding from being read as a general property of unconfigured chains.
+            (print
+                (expect-failure "<<TX4.0-CONFIG>> ...while sublimate's twin guard DOES speak in the same window"
+                    "Gas Token isnt properly set" (OUROBOROS.URCv_Sublimate 1.0)))
+        ;;--- stage 2: both set, but to the SAME token. This is the misconfiguration the third
+        ;;    guard exists for: OURO and IGNIS are economically opposite (one is burnt to mint the
+        ;;    other), so pointing both ids at one token would let the exchange mint and burn the
+        ;;    same supply against itself.
+        (update ref-DALOS::DALOS|PropertiesTable info { "gas-id" : OuroID })
+        (print
+            (expect-failure "<<TX4.0-CONFIG>> ...and OURO and IGNIS may not be the SAME token"
+                "OURO and IGNIS id must be different for the IGNIS Collection to turn ON!"
+                (DALOS.UEV_IgnisCollectionRequirements)))
+        ;;--- stage 3: Wrapped-Stoa set, Liquid-Stoa still BAR, so liquid staking falls through to
+        ;;    its second guard.
+        (update ref-DALOS::DALOS|PropertiesTable info { "wrapped-stoa-id" : WrappedStoaID })
+        (print
+            (expect-failure "<<TX4.0-CONFIG>> ...and with Wrapped set but Liquid not, it names Liquid-Stoa"
+                "Liquid-Stoa is not set" (LIQUID.UEV_IzLiquidStakingLive)))
+        ;;--- stage 4: BOTH ids set to their REAL values (the same ones the update below assigns,
+        ;;    so this changes nothing that follows), and the ATS pair still does NOT exist.
+        (update ref-DALOS::DALOS|PropertiesTable info
+            { "wrapped-stoa-id" : WrappedStoaID, "silver-stoa-id" : StakedStoaID })
+        ;;This is a BOOT-WINDOW OBSERVATION. It was filed as a FINDING; that was an overstatement,
+        ;;corrected here.
+        ;;
+        ;;LIQUID::UEV_IzLiquidStakingLive's @doc: "Enforces Liquid Staking is live with an existing
+        ;;Autostake Pair". At THIS POINT IN THE BOOT no such pair exists -- measured, all four role
+        ;;reads below return the BAR sentinel -- and the function nonetheless returns TRUE.
+        ;;
+        ;;WHAT THAT DOES AND DOES NOT MEAN. Owner ruling: "liquid staking is live on mainnet, i dont
+        ;;know what you mean by saying it without an ATS pair?" -- right, and the question is the
+        ;;useful part. By the end of this same file the pair exists (StoaLiquindex-98c486052a51), and
+        ;;`modules/LIQUID.repl <<LQD-G1>>` shows that on the fully deployed chain the guard returns
+        ;;true because liquid staking IS live, and correctly REFUSES all three misconfigurations.
+        ;;So this is not "the function is wrong"; it is "the function cannot distinguish one state it
+        ;;will never see again". The window is between the tx that sets the two STOA ids and the tx
+        ;;that creates the pair; pairs are not deleted, so mainnet is past it and cannot re-enter.
+        ;;Worst outcome inside the window is a downstream abort with a less clear message than this
+        ;;guard's own. Recorded at that size, not escalated.
+        ;;
+        ;;CAUSE: the sentinel. DPTF::UR_RewardToken returns [BAR] -- a ONE-element list -- for "not
+        ;;part of any pair". Its three deep guards are:
+        ;;    (= (length w-stoa-as-rt) 1)   "Wrapped-Stoa cannot ever be part of another ATS-Pair"
+        ;;    (= (length l-stoa-as-rbt) 1)  "Liquid-Stoa cannot ever be part of another ATS-Pair"
+        ;;    (= (at 0 w-stoa-as-rt) (at 0 l-stoa-as-rbt))  "...not part of the same ASTS Pair"
+        ;;A length-1 test cannot tell "exactly one pair" from "no pair at all", and the third then
+        ;;compares BAR to BAR and agrees. All three pass vacuously.
+        ;;
+        ;;THE CODEBASE ALREADY KNOWS THE FIX. DPOF::UEV_MoveRoleCheck faces the identical sentinel
+        ;;on UR_Verum5 and normalises it first:
+        ;;    (if (and (= lvf 1) (= verum-five [BAR])) 0 lvf)
+        ;;-- collapsing the sentinel to zero BEFORE testing the length. The same normalisation here
+        ;;makes all three guards mean what they say.
+        ;;
+        ;;Pinned AS IT BEHAVES. When the sentinel is handled, this assertion flips to an
+        ;;expect-failure naming whichever guard then fires.
+        ;;
+        ;;I also claimed the three deep guards were UNPINNABLE because a non-pair token does not trip
+        ;;them. Wrong -- that was a failure of imagination, not a property of the code.
+        ;;`env-module-admin` grants DPTF admin inside a REPL, so the two role fields can be driven to
+        ;;any state and `rollback-tx` discards the lot; `<<LQD-G1>>` pins all three that way. Three
+        ;;guards came off the unreachable list. When something looks unpinnable, the question to ask
+        ;;is "can I write the state directly and roll it back?" before writing it off.
+        (print
+            (expect "<<TX4.0-CONFIG>> in the boot window, before the pair exists, it reports LIVE"
+                true (LIQUID.UEV_IzLiquidStakingLive)))
+        (print
+            (expect "<<TX4.0-CONFIG>> ...because every role read is the BAR sentinel, a 1-element list"
+                [true true true true]
+                [(= (DPTF.UR_RewardToken WrappedStoaID) [(U|CT.CT_BAR)])
+                 (= (DPTF.UR_RewardBearingToken StakedStoaID) [(U|CT.CT_BAR)])
+                 (= 1 (length (DPTF.UR_RewardToken WrappedStoaID)))
+                 (= 1 (length (DPTF.UR_RewardBearingToken StakedStoaID)))]))
+        ;;--- every staged id above is now replaced with the real value by the update below, which
+        ;;    is the line that was always here. Nothing observes the intermediate state.
+
         (update ref-DALOS::DALOS|PropertiesTable info
             { "gas-source-id"           : OuroID
             , "gas-id"                  : GasID
@@ -1415,8 +1549,38 @@
         (p2:string (ref-DALOS::UR_OuroborosID))
         (swp:string (ref-DALOS::GOV|SWP|SC_NAME))
     )
+    ;;SWPI::UEV_Issue's "Principals must be defined before a Swap Pair can be issued" was UNPINNED
+    ;;(`python3 REPL/_cheapseam.py`). It needs the pool-principal list still EMPTY -- a state that
+    ;;exists only in the two lines before this one, since every suite defines principals here during
+    ;;boot and never clears them. Asserting inside that window costs nothing to set up; building the
+    ;;state afterwards would mean standing up a chain with the executor half-run.
+    ;;
+    ;;NOTE ON COUNTING: this file is loaded by deploy-stage01, so these assertions execute in ~68
+    ;;gate entrypoints. Three assertions here move the gate's EXECUTED total by ~200 while adding
+    ;;three distinct tests. Quote the distinct figure.
+    (map print
+        [
+            ;;the precondition: undefined principals read as the BAR sentinel, not an empty list
+            (expect "<<TX-18>> principals are still undefined at this point in the boot"
+                [(U|CT.CT_BAR)] (SWP.UR_Principals))
+            ;;...and a pool cannot be issued while that is true
+            (expect-failure "<<TX-18>> a Swap Pair cannot be issued before principals exist"
+                "Principals must be defined before a Swap Pair can be issued"
+                (SWPI.UEV_Issue patron
+                    [ {"token-id": p2, "token-supply": 100.0} {"token-id": p1, "token-supply": 100.0} ]
+                    10.0 [0.5 0.5] -1.0 false))
+        ]
+    )
     (ref-TS01-A::SWP|A_UpdatePrincipal p1 true)
     (ref-TS01-A::SWP|A_UpdatePrincipal p2 true)
+    ;;the other side of the window: defining them clears the sentinel, so the guard above is
+    ;;genuinely state-driven and not a permanent refusal
+    (map print
+        [
+            (expect "<<TX-18>> ...and defining them replaces the sentinel with the real principals"
+                [p1 p2] (SWP.UR_Principals))
+        ]
+    )
 
     ;;#N2 fix: swp is a system smart account (not self-owned) - admin variant
     (ref-TS01-A::DPTF|A_DeployAccount patron p1 swp)

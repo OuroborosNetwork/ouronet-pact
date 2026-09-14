@@ -472,7 +472,6 @@
             \ YNext = Numerator / Denominator"
         (let
             (
-                (ref-U|LST:module{StringProcessorV2} U|LST)
                 (prec:integer 24)
                 (n1:decimal (+ 1.0 n))
                 ;;C3 fix: <n>/<n1>/<Y^2> are always whole-number powers — use exact UC_IntPow / plain
@@ -786,7 +785,6 @@
             \ own write-up, not a live path today."
         (let
             (
-                (ref-U|CT:module{OuronetConstantsV2} U|CT)
                 (ref-U|LST:module{StringProcessorV2} U|LST)
                 (prefix:string (UC_Prefix weights amp))
                 (l1:integer (length token-names))
@@ -880,7 +878,6 @@
         @doc "Creates a Swap Pool Id from input sources"
         (let
             (
-                (ref-U|CT:module{OuronetConstantsV2} U|CT)
                 (ref-U|LST:module{StringProcessorV2} U|LST)
                 (prefix:string (UC_Prefix weights amp))
                 (swpair-elements:[string]

@@ -1,0 +1,508 @@
+;; REPL/modules/OUROBOROS.repl — STANDALONE OUROBOROS (gas compression / sublimation) tester.
+;;
+;; P3.3. OUROBOROS had NO module tester at all: it is exercised incidentally by the Stage-01
+;; scenarios (which run its C_ paths on the happy side) but nothing ever asked it to say no.
+;;
+;; The module converts between the two sovereign tokens — IGNIS (virtual-chain gas) and OURO —
+;; in both directions:
+;;
+;;   URCv_Compress    IGNIS -> OURO   ("compressing" gas back into the reserve token)
+;;   URCv_Sublimate   OURO  -> IGNIS  ("sublimating" the reserve token into gas)
+;;
+;; Both are URCv_: the enforce is INTRINSIC to the conversion (CLAUDE.md § prefixes, the `v`
+;; role), not a business rule sitting on top of it. So the rejecting input is just an argument,
+;; and these are among the cheapest guards left in the P3.3 worklist.
+;;
+;; Run: cd REPL && pact modules/OUROBOROS.repl
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "ORBR-G1 — the conversion domain: gas is INTEGRAL, and neither direction runs on dust")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [ORBR-G1 · 01 · compress and sublimate input domains] ---")
+;;Compress carries two guards IN SEQUENCE, and the order matters for how they must be tested:
+;;
+;;   1  (= (floor ignis-amount 0) ignis-amount)  "Only whole Units of GAS(Ignis) can be compressed"
+;;   2  (>= ignis-amount 1.00)                   "Only amounts greater than or equal to 1.0 …"
+;;
+;;A single "reject 0.5" test would hit guard 1 and prove nothing at all about guard 2 — 0.5 is
+;;both fractional AND below one, and the first enforce to run is the one that answers. So the
+;;below-one case is tested with 0.0, which is a whole number and therefore passes guard 1 to
+;;reach guard 2. That is the whole technique: construct the input to SATISFY every guard before
+;;the one under test.
+;;
+;;Why gas must be integral is worth stating: IGNIS is priced and metered in whole units, so a
+;;fractional compress would have to round somewhere, and rounding a value that is about to be
+;;burned means either minting or destroying gas that nobody paid for.
+(let
+    (
+        (ref-ORBR:module{OuroborosV2} OUROBOROS)
+    )
+    (map print
+        [
+            ;;HAPPY PATH FIRST. Without it every rejection below is equally satisfied by a
+            ;;function that refuses everything. 1.0 is the smallest input the domain admits, so
+            ;;this doubles as the INCLUSIVE-bound proof for guard 2.
+            (expect "<<ORBR-G1>> compress accepts exactly 1.0 — the bound is inclusive"
+                2 (length (ref-ORBR::URCv_Compress 1.0)))
+            (expect "<<ORBR-G1>> ...and returns a [remainder, fee] pair that sums to the conversion"
+                true (> (fold (+) 0.0 (ref-ORBR::URCv_Compress 100.0)) 0.0))
+            ;;--- guard 1: fractional gas
+            (expect-failure "<<ORBR-G1>> a fractional gas amount is refused"
+                "Only whole Units of GAS(Ignis) can be compressed"
+                (ref-ORBR::URCv_Compress 1.5))
+            ;;--- guard 2: reached only by a WHOLE number below the bound
+            (expect-failure "<<ORBR-G1>> zero is whole, so it passes guard 1 and trips the BOUND"
+                "Only amounts greater than or equal to 1.0 can be used to compress gas"
+                (ref-ORBR::URCv_Compress 0.0))
+            ;;--- the other direction. Sublimate has ONE input guard, and its constant is not the
+            ;;one the message advertises: the code admits >= 0.99 while the text says 1.0. That
+            ;;is pinned deliberately at 0.98 rather than at 0.99, so the test states what the
+            ;;function DOES rather than what its message claims.
+            (expect "<<ORBR-G1>> sublimate accepts 1.0"
+                true (> (ref-ORBR::URCv_Sublimate 1.0) 0.0))
+            (expect "<<ORBR-G1>> sublimate also accepts 0.99 — the real bound, not the stated one"
+                true (>= (ref-ORBR::URCv_Sublimate 0.99) 0.0))
+            (expect-failure "<<ORBR-G1>> ...and refuses 0.98, one hundredth below it"
+                "can be used to make gas"
+                (ref-ORBR::URCv_Sublimate 0.98))
+            ;;unlike compress, sublimate does NOT require a whole number — OURO is a precision
+            ;;token and fractional amounts of it are ordinary. Asserted so that a future "make it
+            ;;symmetrical" edit has to break a test rather than silently narrowing the domain.
+            (expect "<<ORBR-G1>> sublimate accepts a FRACTIONAL amount (OURO is not integral)"
+                true (> (ref-ORBR::URCv_Sublimate 1.5) 0.0))
+        ]
+    )
+    ""
+)
+(commit-tx)
+(print "=== END modules/OUROBOROS.repl ===")
+
+;;|| NEXT >
+;;
+;;NOT PINNED — UEV_Exchange's third guard, "Permission invalid for Ignis Exchange", requires any
+;;one of four roles (mint+burn on OURO and on GAS, all held by the ORBR smart contract) to be
+;;absent. All four are granted by the deploy chain, so the guard passes everywhere.
+;;
+;;Revoking one is NOT available through the client path: DPTF|C_ToggleMintRole runs
+;;DALOS::UEV_NotSmartOuronetAccount on its target and refuses with "Non Smart Ouronet Accounts
+;;required for exec", which is correct — a smart contract's roles are not user-revocable. The
+;;grant therefore comes from an admin path, and driving this guard needs that admin path plus a
+;;restore, not a client toggle.
+;;
+;;Its two siblings in the same function ARE settled: both "Ouroboros is not set" and "Ignis is
+;;not set" are proven DEAD (eager let bindings read the token before the enforce) and annotated at
+;;source, with the behaviour pinned in Stage_01/[4.0]_Sovereign-Executor.repl <<TX4.0-CONFIG>>.
+
+;;|| NEXT >
+;;
+(begin-tx "ORBR-G2 -- drive an account's OURO negative by sublimating against a zero balance")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [ORBR-G2 . 01 . set up the dispo] ---")
+;;TFT::UEV_DispoLocker -- "When Account has negative OURO, Elite-Auryn is dispo-locked and cannot be
+;;moved" -- was UNPINNED (`python3 REPL/_cheapseam.py`). It needs an account with NEGATIVE OURO,
+;;which is not a state any gated suite was leaving behind.
+;;
+;;The recipe was not invented here: archive/_scratch_tft_m4_cleardispo_unfreeze.repl worked it out
+;;while investigating audit #28M, and records that it mirrors [6.2]_DPTF's own "DISPO 1|3" fixture.
+;;Give an account Elite-Auryn, then have it SUBLIMATE OURO against a zero balance -- sublimation
+;;spends OURO it does not have, and the overdraft is exactly the Dispo the Elite-Auryn backs.
+;;Reusing that recipe is the whole reason this pin cost one pass instead of several.
+(TS01-C1.DPTF|C_Transfer KST.ANHD "ELITEAURYN-98c486052a51" KST.ANHD KST.EMMA 5000.0 false)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "ORBR-G2b -- sublimate against nothing, and confirm the balance really went negative")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(print "--- [ORBR-G2b . 01 . the overdraft] ---")
+(TS01-C2.ORBR|C_Sublimate KST.EMMA KST.EMMA 10.0)
+(map print
+    [
+        ;;the PRECONDITION, asserted rather than assumed: if this is not negative, the rejection
+        ;;below would have to come from some other guard and the test would pin the wrong thing.
+        (expect "<<ORBR-G2>> sublimating against a zero balance drives OURO NEGATIVE"
+            true (< (DPTF.UR_AccountSupply "OURO-98c486052a51" KST.EMMA) 0.0))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "ORBR-G2c -- Elite-Auryn is dispo-locked while the OURO balance is negative")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(print "--- [ORBR-G2c . 01 . the lock, and that it is targeted] ---")
+;;Elite-Auryn is what BACKS the overdraft, so moving it out while the account is negative would
+;;walk away from the debt. The lock is specific to Elite-Auryn and to the negative state -- both
+;;halves are asserted, because a blanket freeze would satisfy the rejection alone.
+(map print
+    [
+        (expect-failure "<<ORBR-G2>> a negative-OURO account cannot move its Elite-Auryn"
+            "When Account has negative OURO, Elite-Auryn is dispo-locked and cannot be moved"
+            (TS01-C1.DPTF|C_Transfer KST.EMMA "ELITEAURYN-98c486052a51" KST.EMMA KST.LUMY 10.0 false))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "ORBR-G2d -- ...while a SOLVENT account moves the same token freely")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [ORBR-G2d . 01 . the contrast] ---")
+;;Without this, ORBR-G2c would pass equally against a token that simply cannot be transferred at
+;;all. Same token, same operation, an account whose OURO is not negative: it goes through.
+(let ((before:decimal (DPTF.UR_AccountSupply "ELITEAURYN-98c486052a51" KST.LUMY)))
+    (TS01-C1.DPTF|C_Transfer KST.ANHD "ELITEAURYN-98c486052a51" KST.ANHD KST.LUMY 10.0 false)
+    (map print
+        [
+            ;;9.0 of 10.0, not 10.0: Elite-Auryn carries a transfer fee, so the receiver nets the
+            ;;amount minus it. The first version of this assertion expected 10.0 and failed --
+            ;;usefully, because "the transfer went through" and "the receiver got what was sent"
+            ;;are different claims and only the first one is true here.
+            (expect "<<ORBR-G2>> a solvent account moves the SAME token -- receiver nets it after fee"
+                (+ before 9.0) (DPTF.UR_AccountSupply "ELITEAURYN-98c486052a51" KST.LUMY))
+            ;;and stated as the claim that actually matters for the contrast: it MOVED at all
+            (expect "<<ORBR-G2>> ...i.e. the transfer was not blocked, unlike the negative account's"
+                true (> (DPTF.UR_AccountSupply "ELITEAURYN-98c486052a51" KST.LUMY) before))
+            ;;and the payer really is solvent, so the contrast is about the dispo and nothing else
+            (expect "<<ORBR-G2>> ...and that account's OURO is not negative"
+                true (>= (DPTF.UR_AccountSupply "OURO-98c486052a51" KST.ANHD) 0.0))
+        ]
+    )
+)
+(commit-tx)
+
+;;|| NEXT >
+;;|| ORB-G1 — the two facts that make UEV_Exchange's permission guard unreachable.
+;;
+(begin-tx "ORB-G1 - the autonomic-roles short-circuit, asserted so the annotation cannot rot")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [ORB-G1 · 01 · why 'Permission invalid for Ignis Exchange' can never fire] ---")
+;;`13_OUROBOROS.pact:612` is annotated `;;UNREACHABLE BY CONSTRUCTION`. This block is what stops that
+;;annotation from becoming a lie without anyone noticing.
+;;
+;;THE GUARD: (enforce t3 "Permission invalid for Ignis Exchange"), where t3 is four reads of
+;;    (DPTF::UR_AccountRoleMint/Burn <ouro-or-gas-id> ORBR|SC_NAME)
+;;each of which ends in
+;;    (or <the account's own role flag> (DALOS::UR_AutonomicRoles account))
+;;
+;;THE TWO FACTS. `UR_AutonomicRoles` is a PURE fold over a hardcoded list of SC account names -- it
+;;reads no table -- and the OUROBOROS smart-contract account is one of its entries. So the right-hand
+;;side of every one of those `or`s is a constant `true`, t3 is true for every possible chain state,
+;;and no amount of `env-module-admin` role-writing can reach the enforce: the flags are ORed away.
+;;
+;;WHY ASSERT IT RATHER THAN JUST ANNOTATE: an `;;UNREACHABLE` note is a claim about today's code. If
+;;the autonomic list ever drops OUROBOROS, this guard silently becomes LIVE and unpinned. These two
+;;assertions go red on that day, which is the only cheap way to be told.
+;;
+;;Contrast with the two BAR guards in the same function (`:603`/`:606`): those WERE mute -- displaced
+;;by an eager read -- and were repaired 2026-09-12 by splitting the binding group. This one is a
+;;different thing entirely: it never receives a failing input at all.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+    )
+    (let
+        (
+            (orb:string (OUROBOROS.GOV|ORBR|SC_NAME))
+        )
+        (map print
+            [
+                (expect "<<ORB-G1>> the OUROBOROS SC account is the one the autonomic list names"
+                    (ref-DALOS::GOV|OUROBOROS|SC_NAME) orb)
+                (expect "<<ORB-G1>> ...and it therefore holds autonomic roles unconditionally"
+                    true (ref-DALOS::UR_AutonomicRoles orb))
+                ;;the consequence, read through the very function the guard uses -- so this is not an
+                ;;argument about the source, it is the value the guard sees.
+                (expect "<<ORB-G1>> ...so all four role reads the guard folds are TRUE"
+                    [true true true true]
+                    [(ref-DPTF::UR_AccountRoleMint (ref-DALOS::UR_OuroborosID) orb)
+                     (ref-DPTF::UR_AccountRoleBurn (ref-DALOS::UR_OuroborosID) orb)
+                     (ref-DPTF::UR_AccountRoleMint (ref-DALOS::UR_IgnisID) orb)
+                     (ref-DPTF::UR_AccountRoleBurn (ref-DALOS::UR_IgnisID) orb)])
+                ;;...and the function passes, which is the observable form of "the guard never fires".
+                (expect "<<ORB-G1>> ...and UEV_Exchange passes on a configured chain"
+                    true (!= "" (format "{}" [(OUROBOROS.UEV_Exchange)])))
+            ]
+        )
+        ""
+    )
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "ORBR-I1 — the three ZERO-quoted conversion ops, measured against what they really take")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [ORBR-I1 · 01 · compress / sublimate / sublimateV2: quoted free, charged?] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_ORBR|Compress`, `INFO_ORBR|Sublimate`, `INFO_ORBR|SublimateV2`, per
+;;the owner's spec: an INFO_ must report the same cost the op actually charges.
+;;
+;;THESE THREE ARE THE ONLY PREVIEWS IN STAGE 1 THAT QUOTE ZERO OF BOTH CURRENCIES, and a zero quote
+;;is exactly the shape that turned out to be a defect three times tonight (`INFO_SWP|ToggleFeeLock`,
+;;`INFO_ATS|ToggleParameterLock`, `INFO_EQUITY|IssueCompany` all claimed a currency was free while
+;;their op collected it). So "the source says zero" is not evidence; a scale is.
+;;
+;;A ZERO-VS-ZERO EQUALITY IS VACUOUS ON ITS OWN — it passes just as happily if the op silently did
+;;nothing. Each leg below therefore pairs the equality with a WITNESS that the conversion really
+;;happened, so the zero is a statement about the FEE and not about the op.
+;;
+;;THE MEASUREMENT TRAP THIS BLOCK IS BUILT AROUND. `UR_TF_AccountSupply <acct> false` reads the IGNIS
+;;token balance, and these ops move IGNIS as their PRINCIPAL:
+;;    Compress   burns the client's IGNIS and credits OURO  -> the IGNIS balance falls by the amount
+;;    Sublimate  burns OURO and mints IGNIS to a TARGET     -> a same-account target would RISE
+;;So sublimate is directed at EMMA, keeping the payer's IGNIS untouched and making `real == 0.0` a
+;;true statement about gas. Compress cannot be redirected, so its assertion is the stricter one: the
+;;debit must equal the declared amount EXACTLY, with nothing added on top.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+    )
+    (let
+        (
+            (ouro-id:string (ref-DALOS::UR_OuroborosID))
+            (q-compress:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ORBR|Compress patron 100.0))
+            (ignis0:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+        )
+        (let
+            (
+                (ouro0:decimal (ref-DPTF::UR_AccountSupply ouro-id patron))
+                (m1 (ref-TS01-C2::ORBR|C_Compress patron 100.0))
+            )
+            (map print
+                [
+                    (format "<<ORBR-I1>> compress: quoted={} ignis-delta={} ouro-gain={}"
+                        [(at "ignis-need" (at "ignis" q-compress))
+                         (- ignis0 (ref-DALOS::UR_TF_AccountSupply patron false))
+                         (- (ref-DPTF::UR_AccountSupply ouro-id patron) ouro0)])
+                    (expect "<<ORBR-I1>> INFO_ORBR|Compress quotes zero IGNIS"
+                        0.0 (at "ignis-need" (at "ignis" q-compress)))
+                    (expect "<<ORBR-I1>> ...and zero STOA"
+                        0.0 (at "stoa-need" (at "stoa" q-compress)))
+                    ;;the strict form: the ONLY IGNIS that moved is the declared conversion principal
+                    (expect "<<ORBR-I1>> ...and the debit is EXACTLY the compressed amount, no fee on top"
+                        100.0 (- ignis0 (ref-DALOS::UR_TF_AccountSupply patron false)))
+                    ;;witness — the conversion really ran, so the zero is about the fee, not a no-op
+                    (expect "<<ORBR-I1>> ...witness: OURO really was credited"
+                        true (> (ref-DPTF::UR_AccountSupply ouro-id patron) ouro0))
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "ORBR-I2 — INFO_ORBR|Sublimate and its V2 twin, both quoted free")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [ORBR-I2 · 01 · sublimate to a THIRD account, so the payer's IGNIS is untouched] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_ORBR|Sublimate` / `INFO_ORBR|SublimateV2`. Rationale, and the reason
+;;the target is EMMA rather than the payer, are written out at <<ORBR-I1>>.
+;;
+;;V1 AND V2 IN ONE BLOCK, DELIBERATELY. They are the same conversion by two routes — V1 does
+;;transfer + burn, V2 does freeze + wipe-slim + unfreeze (`13_OUROBOROS.pact:490` / `:520`) — and
+;;their previews must BOTH be zero for the same reason. Measuring them side by side in one fixture
+;;state is what makes the comparison meaningful: any divergence is the route, not the setup.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+    )
+    (let
+        (
+            (ouro-id:string (ref-DALOS::UR_OuroborosID))
+            (q1:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ORBR|Sublimate patron emma 1.0))
+            (q2:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ORBR|SublimateV2 patron emma 1.0))
+        )
+        (let
+            (
+                (ignis0:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+                (ouro0:decimal (ref-DPTF::UR_AccountSupply ouro-id patron))
+                (m1 (ref-TS01-C2::ORBR|C_Sublimate patron emma 1.0))
+            )
+            (let
+                (
+                    (real1:decimal (- ignis0 (ref-DALOS::UR_TF_AccountSupply patron false)))
+                    (ouro1:decimal (ref-DPTF::UR_AccountSupply ouro-id patron))
+                )
+                (let
+                    (
+                        (m2 (ref-TS01-C2::ORBR|C_SublimateV2 patron emma 1.0))
+                    )
+                    (map print
+                        [
+                            (format "<<ORBR-I2>> V1 quoted={} real={} | V2 quoted={} real={}"
+                                [(at "ignis-need" (at "ignis" q1)) real1
+                                 (at "ignis-need" (at "ignis" q2))
+                                 (- ignis0 (ref-DALOS::UR_TF_AccountSupply patron false))])
+                            (expect "<<ORBR-I2>> INFO_ORBR|Sublimate quotes zero IGNIS"
+                                0.0 (at "ignis-need" (at "ignis" q1)))
+                            (expect "<<ORBR-I2>> ...and zero STOA"
+                                0.0 (at "stoa-need" (at "stoa" q1)))
+                            (expect "<<ORBR-I2>> ...and the payer's IGNIS really did not move"
+                                0.0 real1)
+                            ;;witness — the payer's OURO was burned, so the zero is about the fee
+                            (expect "<<ORBR-I2>> ...witness: the payer's OURO really was burned"
+                                true (< ouro1 ouro0))
+                            (expect "<<ORBR-I2>> INFO_ORBR|SublimateV2 quotes zero IGNIS too"
+                                0.0 (at "ignis-need" (at "ignis" q2)))
+                            (expect "<<ORBR-I2>> ...and zero STOA"
+                                0.0 (at "stoa-need" (at "stoa" q2)))
+                            (expect "<<ORBR-I2>> ...and V2's different route (freeze/wipe-slim) still costs the payer no IGNIS"
+                                0.0 (- ignis0 (ref-DALOS::UR_TF_AccountSupply patron false)))
+                        ]
+                    )
+                )
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "ORBR-I3 — INFO_DPTF|ClearDispo, the one preview that ENFORCES on state")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [ORBR-I3 · 01 · clear a dispo lock] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPTF|ClearDispo`, per the owner's spec.
+;;
+;;WHY THIS PREVIEW LIVES HERE AND NOT IN `modules/DPTF.repl`. It is the only `INFO_` in either Stage-1
+;;family that CAN THROW: `02_INFO-ONE+.pact:1032` runs
+;;    (enforce (< ouro-a 0.0) "Dispo Clear requires Negative OURO")
+;;inside the preview itself, before any cost is computed. Every other preview is a pure read that
+;;returns a number whatever the state. So this one needs an account genuinely in OURO debt, and the
+;;only place in the suite that manufactures one is ORBR-G2 right here — `C_Sublimate` against a zero
+;;balance drives EMMA negative, and ORBR-G2b asserts it. `modules/DPTF.repl` has no such account (its
+;;own G10 fixture built one by direct table surgery and then rolled it back).
+;;
+;;The clear is PAID IN ELITE-AURYN, which is why ORBR-G2 moved 5000 of it to EMMA before sublimating:
+;;without the funding the op would fail on the payment rather than reach the price.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+    )
+    (let
+        (
+            ;;the precondition the preview itself enforces, asserted rather than assumed
+            (ouro-before:decimal (ref-DPTF::UR_AccountSupply "OURO-98c486052a51" emma))
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|ClearDispo patron emma))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPTF|C_ClearDispo patron emma))
+        )
+        (map print
+            [
+                (expect "<<ORBR-I3>> the fixture really is in OURO debt, so the preview could run at all"
+                    true (< ouro-before 0.0))
+                (format "<<ORBR-I3>> predicted={} real={}"
+                    [(at "ignis-need" (at "ignis" predicted))
+                     (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))])
+                (expect "<<ORBR-I3>> INFO_DPTF|ClearDispo's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<ORBR-I3>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+                ;;witness — the debt really was cleared, so the quote is not for a no-op
+                (expect "<<ORBR-I3>> ...witness: the OURO debt is gone"
+                    true (>= (ref-DPTF::UR_AccountSupply "OURO-98c486052a51" emma) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "ORBR-I4 — INFO_DPTF|Transmute quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [ORBR-I4 · 01 · transmute Elite-Auryn] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPTF|Transmute`, per the owner's spec. Template:
+;;`modules/ATS.repl <<ATS-I1>>`.
+;;
+;;NAMED BY A SHAPE-CHECK, NEVER WEIGHED. `Stage_01/[6.11]_INFO.repl` calls this preview only to assert
+;;the returned object `contains "ignis"`, which satisfies the reachability report but says nothing
+;;about the price. `REPL/_info_measured.py` separates the two questions.
+;;
+;;IT LIVES HERE BECAUSE ELITE-AURYN DOES. `modules/DPTF.repl` has no ELITEAURYN holder — its mock
+;;tokens are MOCKA/MOCKB — while this file's ORBR-G2 moves 5000 of it to EMMA precisely to set up the
+;;dispo-lock tests, leaving ANHD with a balance too. Measuring a transmute anywhere else would mean
+;;funding the token first for no reason.
+;;
+;;ANHD, NOT EMMA. The elite branch of `DPTF|C>X-TRANSMUTE` composes `TFT::UEV_DispoLocker`, and EMMA is
+;;deliberately in OURO debt at this point in the file (ORBR-G2b asserts it), so she is dispo-locked and
+;;the op would be refused by an unrelated guard. The preview would still quote a price.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (patron:string KST.ANHD)
+        (auryn:string "ELITEAURYN-98c486052a51")
+    )
+    (let
+        (
+            (held:decimal (ref-DPTF::UR_AccountSupply auryn patron))
+            (predicted:object{OuronetInfoV2.ClientInfo}
+                (INFO-ONE.INFO_DPTF|Transmute patron auryn patron 1.0))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPTF|C_Transmute patron auryn patron 1.0))
+        )
+        (map print
+            [
+                ;;the precondition, asserted rather than assumed: transmuting from an empty balance
+                ;;would fail on the debit rather than price anything
+                (expect "<<ORBR-I4>> the patron really holds Elite-Auryn to transmute"
+                    true (> held 1.0))
+                (format "<<ORBR-I4>> held={} predicted={} real={}"
+                    [held (at "ignis-need" (at "ignis" predicted))
+                     (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))])
+                (expect "<<ORBR-I4>> INFO_DPTF|Transmute's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<ORBR-I4>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)

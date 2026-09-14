@@ -41,7 +41,6 @@
     (defun UC_Max (x y))
     (defun UCv_Percent:decimal (x:decimal percent:decimal precision:integer)) ;;3
     (defun UCv_Promille:decimal (x:decimal promille:decimal precision:integer)) ;;1
-    (defun UC_UnlockPrice:[decimal] (unlocks:integer dptf-or-ats:bool)) ;;2
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;{5.4}  Validate [UEV/CAP]
     ;;
@@ -54,8 +53,7 @@
 
 (module U|DEC GOV
     @doc "Decimal math helpers (implements OuronetDecimalsV2). Column-wise adds decimal \
-        \ arrays (equal-length and ragged rows), plus UC_Max, UCv_Percent, UCv_Promille, and \
-        \ UC_UnlockPrice (computes ATS/DPTF unlock gas costs as [IGNIS STOA]). \
+        \ arrays (equal-length and ragged rows), plus UC_Max, UCv_Percent and UCv_Promille. \
         \ UEV_DecimalArray enforces that all inner fee-array lists share one length."
 
     ;;<=========================================================================>
@@ -180,23 +178,6 @@
     (defun UCv_Promille:decimal (x:decimal promille:decimal precision:integer)
         (enforce (and (>= promille 0.0)(<= promille 1000.0)) "Invalid permille amount")
         (floor (* (/ promille 1000.0) x) precision)
-    )
-    (defun UC_UnlockPrice:[decimal] (unlocks:integer dptf-or-ats:bool)
-        @doc "Computes  ATS or DPTF unlock price \
-        \ Outputs [virtual-gas-costs native-gas-cost] \
-        \ Virtual Gas Token = IGNIS; Native Gas Token = STOA"
-        (let*
-            (
-                (ref-U|CT:module{OuronetConstantsV2} U|CT)
-                (dptf:decimal (ref-U|CT::CT_DPTF-FeeLock))
-                (ats:decimal (ref-U|CT::CT_ATS-FeeLock))
-                (multiplier:decimal (dec (+ unlocks 1)))
-                (base:decimal (if dptf-or-ats dptf ats))
-                (gas-cost:decimal (* base multiplier))
-                (gaz-cost:decimal (/ gas-cost 100.0))
-            )
-            [gas-cost gaz-cost]
-        )
     )
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;{5.4}  Validate [UEV/CAP]

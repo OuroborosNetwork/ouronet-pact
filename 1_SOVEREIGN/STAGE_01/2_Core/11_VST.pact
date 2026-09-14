@@ -68,6 +68,8 @@
     (defun URC_SecondsToUnlock:[decimal] (id:string nonces:[integer]))
     (defun URCi_CreateSpecialTrueFungibleLink:object{IgnisCollectorV2.OutputCumulator} (dptf:string))
     (defun URCi_CreateSpecialOrtoFungibleLink:object{IgnisCollectorV2.OutputCumulator} (dptf:string vzh-tag:integer))
+    (defun URCi_CreateSpecialTrueFungibleLinkStoa:decimal ())
+    (defun URCi_CreateSpecialOrtoFungibleLinkStoa:decimal ())
     (defun URCi_RepurposeTrueFungible:object{IgnisCollectorV2.OutputCumulator} (dptf-to-repurpose:string repurpose-from:string repurpose-to:string))
     (defun URCi_RepurposeOrtoFungible:object{IgnisCollectorV2.OutputCumulator} (dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
     (defun URCi_MergeNonces:object{IgnisCollectorV2.OutputCumulator} (dpof:string target:string nonces:[integer] vzh-tag:integer))
@@ -444,13 +446,37 @@
             (compose-capability (P|TT))
         )
     )
+    ;;THE DPOF-KIND GUARDS BELOW, added 2026-09-12, close a defect that minted an unreadable nonce.
+    ;;
+    ;;Both of these clients funnel into XIv_MergeNonces, which picks the metadata shape from its
+    ;;<vzh-tag>: tag 2 writes SLEEPING metadata ({release-amount, release-date}), tag 3 writes
+    ;;HIBERNATING metadata ({mint-time, release-date}). C_Merge passes 2; C_Slumber passes 3. That
+    ;;branching is correct and is NOT what was wrong.
+    ;;
+    ;;What was wrong: neither cap checked WHAT KIND OF TOKEN <dpof> is -- they compose VST|X>MERGE,
+    ;;which only validates the merger's account. So the metadata shape was decided by WHICH CLIENT
+    ;;the caller picked rather than by what the token IS. Point C_Slumber at a SLEEPING (Z|) token
+    ;;and it stamps hibernation metadata onto it; VST|MetaDataSchema is the sleeping shape, so
+    ;;C_Unsleep then dies on a RUNTIME TYPECHECK before reaching any enforce, and the nonce is
+    ;;permanently un-unsleepable while still in circulation. That is how Z|MOCKA nonce 3 was created
+    ;;(modules/VST.repl <<VST-G7>>).
+    ;;
+    ;;Prefix discrimination is the established idiom for this -- 02_SCORE.pact:2522/:2526 already
+    ;;test (take 2 dpof-id) against ["Z|" "H|"].
+    ;;
+    ;;DELIBERATELY NOT ADDED to VST|C>REPURPOSE-MERGE / VST|C>REPURPOSE-SLUMBER, and the reason
+    ;;matters: RepurposeSlumber is the ONLY remaining exit for a nonce that was already minted wrong.
+    ;;Guarding it on kind would strand exactly the holders this fix exists to protect. These two caps
+    ;;stop NEW bad rows; the repurpose path stays open for the ones that exist.
     (defcap VST|C>MERGE (merger:string dpof:string nonces:[integer])
         @event
+        (enforce (= (take 2 dpof) "Z|") "Merge requires a Sleeping DPOF")
         (UEV_NoncesForMerging nonces)
         (compose-capability (VST|X>MERGE merger dpof))
     )
     (defcap VST|C>SLUMBER (merger:string dpof:string nonces:[integer])
         @event
+        (enforce (= (take 2 dpof) "H|") "Slumber requires a Hibernating DPOF")
         (UEV_NoncesForMerging nonces)
         (compose-capability (VST|X>MERGE merger dpof))
     )
@@ -468,7 +494,6 @@
         @event
         (let
             (
-                (ref-U|VST:module{UtilityVstV2} U|VST)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
             )
@@ -526,6 +551,10 @@
     )
     ;;
     (defcap VST|C>REPURPOSE-TRUE-FUNGIBLE (dptf-to-repurpose:string repurpose-from:string repurpose-to:string fr-tag:integer)
+        ;;UNREACHABLE BY CONSTRUCTION: both compose sites pass a LITERAL (1 and 2) and no Talos
+        ;;wrapper exposes <fr-tag> to a client, so no input can trip this. Fail-closed backstop,
+        ;;not a live guard - it cannot be pinned by a negative test. DPTF|C>UPDATE-SPECIAL carries
+        ;;the IDENTICAL check and message downstream, unreachable for the same reason.
         (enforce (contains fr-tag [1 2]) "Invalid Frozen|Reserve Tag")
         (let
             (
@@ -640,7 +669,8 @@
                 (h:bool (ref-ATS::UR_Hibernate ats))
             )
             (ref-ATS::UEV_RewardTokenExistance ats coil-token true)
-            (enforce h (format "Cannot Constrict when {} has Hibernation turned of" [ats]))
+            ;;"turned of" -> "turned off": a misspelling, corrected alongside its Brumate sibling above.
+            (enforce h (format "Cannot Constrict when {} has Hibernation turned off" [ats]))
             (compose-capability (P|TT))
         )
     )
@@ -653,7 +683,14 @@
                 (h2:bool (ref-ATS::UR_Hibernate ats2))
             )
             (ref-ATS::UEV_RewardTokenExistance ats1 curl-token true)
-            (enforce (and (not h1) h2) "Brumate requires hibernation for {} set to off andfor {} set to ON")
+            ;;MESSAGE CONSTRUCTION FIXED 2026-09-12 (owner-authorised class): this was a BARE string
+            ;;containing two `{}` placeholders and no `format`, so a caller saw the braces verbatim
+            ;;instead of the two pair ids. Only variant of that shape in the codebase; the detector
+            ;;`_conformance.py --rule enforce-msg-bare-template` now keeps it at 0. The "andfor"
+            ;;run-together is corrected with it.
+            (enforce (and (not h1) h2)
+                (format "Brumate requires hibernation for {} set to off and for {} set to ON"
+                    [ats1 ats2]))
             (compose-capability (P|TT))
         )
     )
@@ -835,20 +872,104 @@
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                 [
-                    ;;1]Issue the special DPTF wrapper (gas rail only; STOA collected separately)
+                    ;;1]The link's own DETERRENCE, its own leg. Read from the single source the exec
+                    ;;  also reads, and kept SEPARATE from the issue leg below so the preview has the
+                    ;;  same leg COUNT as the exec -- UDC_PrimeIgnisCumulator discounts and
+                    ;;  quarter-splits per leg, so folding two charges into one leg can round differently.
                     (ref-IGNIS::UDC_ConstructOutputCumulator
-                        ;;the link's OWN deterrence ($2.50) + its component cost + the DPTF it issues.
-                        ;;One component key is exact: every VST|C_Create*Link entry is 29.0
-                        (+ (ref-IGNIS::UC_IgnisPrice "VST|C_CreateFrozenLink" "vst-link")
-                           (ref-DPTF::URCi_IssueGas 1))
+                        (URCi_CreateSpecialTrueFungibleLinkDeterrence)
                         VST|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
-                    ;;2]Link <dptf> <-> special wrapper
+                    ;;2]Issue the special DPTF wrapper IN FULL (gas rail only; STOA collected separately).
+                    ;;  Mirrors XB_IssueFree's own cumulator, which is exactly URCi_IssueGas over 1 token.
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                        (ref-DPTF::URCi_IssueGas 1)
+                        VST|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
+                    ;;3]Link <dptf> <-> special wrapper
                     (ref-DPTF::URCi_UpdateSpecialTrueFungible dptf)
-                    ;;3]Toggle transfer-role on the VST-owned special wrapper
-                    (ref-IGNIS::UDC_LegCumulator "vst-link-role-toggle-tf" VST|SC_NAME)
+                    ;;4]Toggle transfer-role on the VST-owned special wrapper.
+                    ;;  FIXED 2026-09-14: this modelled a hand-made 4.0 "leg cumulator" while the exec
+                    ;;  pays the real DPTF|C_ToggleTransferRole, which is 59.0 -- the single largest
+                    ;;  term in the old 55.0 under-quote.
+                    (URCi_CreateSpecialTrueFungibleLinkToggle)
                 ]
                 []
             )
+        )
+    )
+    (defun URCi_CreateSpecialTrueFungibleLinkStoa:decimal ()
+        @doc "STOA leg of C_CreateFrozenLink / C_CreateReservationLink. Read-only twin of the \
+            \ <stoa-costs> that XI_CreateSpecialTrueFungibleLink hands to STOA|C_Collect, so the \
+            \ INFO_ preview and the charge are sourced from one place and cannot drift."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::UR_UsagePrice "dptf")
+        )
+    )
+    (defun URCi_CreateSpecialOrtoFungibleLinkStoa:decimal ()
+        @doc "STOA leg of C_CreateVestingLink / C_CreateSleepingLink / C_CreateHibernatingLink. \
+            \ Read-only twin of the <stoa-costs> that XI_CreateSpecialOrtoFungibleLink hands to \
+            \ STOA|C_Collect. Note the key is \"dpmf\", not \"dpof\" -- the usage-price table \
+            \ still carries the pre-rename name."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::UR_UsagePrice "dpmf")
+        )
+    )
+    (defun URCi_CreateSpecialTrueFungibleLinkDeterrence:decimal ()
+        @doc "The link's own DETERRENCE leg for C_CreateFrozenLink / C_CreateReservationLink. \
+            \ SINGLE SOURCE (2026-09-14): read by BOTH URCi_CreateSpecialTrueFungibleLink and \
+            \ XI_CreateSpecialTrueFungibleLink, so the quote and the charge cannot drift. Creating a \
+            \ special link is priced as a small deterrence PLUS the full cost of the token it issues; \
+            \ the exec used to charge only the issue, which is the half this reader restores."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UC_IgnisPrice "VST|C_CreateFrozenLink" "vst-link")
+        )
+    )
+    (defun URCi_CreateSpecialOrtoFungibleLinkDeterrence:decimal ()
+        @doc "The link's own DETERRENCE leg for C_CreateVestingLink / C_CreateSleepingLink / \
+            \ C_CreateHibernatingLink. Single source for the preview and the exec, as its \
+            \ true-fungible twin above."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UC_IgnisPrice "VST|C_CreateVestingLink" "vst-link")
+        )
+    )
+    (defun URCi_CreateSpecialTrueFungibleLinkToggle:object{IgnisCollectorV2.OutputCumulator} ()
+        @doc "The transfer-role toggle leg that XI_CreateSpecialTrueFungibleLink pays on the \
+            \ wrapper it just issued. The wrapper id is derived from the block hash, so the preview \
+            \ cannot name it and cannot call DPTF::URCi_ToggleTransferRole (which reads the token's \
+            \ konto row). Both halves are known without the id: the price is flat per op, and the \
+            \ konto is VST|SC_NAME because VST is the issuer. Same IGNIS price row DPTF reads, so \
+            \ this is a restatement of the exec leg, not a second price."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "DPTF|C_ToggleTransferRole" "usage")
+                VST|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    (defun URCi_CreateSpecialOrtoFungibleLinkToggle:object{IgnisCollectorV2.OutputCumulator} ()
+        @doc "The transfer-role toggle leg that XI_CreateSpecialOrtoFungibleLink pays on the \
+            \ Vesting/Sleeping wrapper it just issued (Hibernating wrappers are transfer-free and \
+            \ skip this leg). Ortofungible twin of the reader above -- same reasoning, DPOF price row."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "DPOF|C_ToggleTransferRole" "usage")
+                VST|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     (defun URCi_CreateSpecialOrtoFungibleLink:object{IgnisCollectorV2.OutputCumulator}
@@ -857,8 +978,7 @@
             \ C_CreateHibernatingLink(3) (shared XI_CreateSpecialOrtoFungibleLink): issue the \
             \ special DPOF wrapper (gas rail, empty write-product output) + update-special on \
             \ <dptf> + the transfer-role toggle (only for Vesting/Sleeping; Hibernating is \
-            \ transfer-free -> EOC). the vst-link-role-toggle-of leg on VST|SC_NAME mirrors \
-            \ DPOF::URCi_ToggleTransferRole of the fresh id."
+            \ transfer-free -> EOC)."
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
@@ -866,18 +986,22 @@
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                 [
-                    ;;1]Issue the special DPOF wrapper (gas rail only; STOA collected separately)
+                    ;;1]The link's own DETERRENCE, its own leg -- see the true-fungible twin above for
+                    ;;  why it is not folded into the issue leg.
                     (ref-IGNIS::UDC_ConstructOutputCumulator
-                        ;;the link's OWN deterrence ($2.50) + its component cost + the DPOF it issues.
-                        ;;One component key is exact: every VST|C_Create*Link entry is 29.0
-                        (+ (ref-IGNIS::UC_IgnisPrice "VST|C_CreateVestingLink" "vst-link")
-                           (ref-DPOF::URCi_IssueGas 1))
+                        (URCi_CreateSpecialOrtoFungibleLinkDeterrence)
                         VST|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
-                    ;;2]Link <dptf> <-> special wrapper
+                    ;;2]Issue the special DPOF wrapper IN FULL (gas rail only; STOA collected separately)
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                        (ref-DPOF::URCi_IssueGas 1)
+                        VST|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
+                    ;;3]Link <dptf> <-> special wrapper
                     (ref-DPOF::URCi_UpdateSpecialOrtoFungible dptf)
-                    ;;3]Toggle transfer-role only for Vesting/Sleeping wrappers
+                    ;;4]Toggle transfer-role only for Vesting/Sleeping wrappers; Hibernating is
+                    ;;  transfer-free -> EOC. FIXED 2026-09-14 for the same reason as the TF twin: this
+                    ;;  modelled a hand-made 5.0 leg where the exec pays the real 54.0 toggle.
                     (if (or (= vzh-tag 1) (= vzh-tag 2))
-                        (ref-IGNIS::UDC_LegCumulator "vst-link-role-toggle-of" VST|SC_NAME)
+                        (URCi_CreateSpecialOrtoFungibleLinkToggle)
                         EOC
                     )
                 ]
@@ -1039,7 +1163,6 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 ;;
@@ -1165,15 +1288,13 @@
     (defun URCi_MergeNonces:object{IgnisCollectorV2.OutputCumulator}
         (dpof:string target:string nonces:[integer] vzh-tag:integer)
         @doc "Cost preview for C_Merge/C_RepurposeMerge (vzh-tag 2) and C_Slumber/ \
-            \ C_RepurposeSlumber (vzh-tag 3), shared XI_MergeNonces: the per-nonce IGNIS merge \
+            \ C_RepurposeSlumber (vzh-tag 3), shared XIv_MergeNonces: the per-nonce IGNIS merge \
             \ price (count * biggest) + destroy the input nonces (freeze/wipe/unfreeze) + \
             \ (conditional) release the free DPTF amount + (conditional) re-mint the still-locked \
             \ remainder as a new nonce and transfer it. Output == compute-merge-all, purely."
         (let
             (
-                (ref-U|VST:module{UtilityVstV2} U|VST)
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 ;;
@@ -1408,6 +1529,7 @@
     )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
+    ;;Protection: Class 2 — SECURE
     (defun XI_CreateSpecialTrueFungibleLink:object{IgnisCollectorV2.OutputCumulator}
         (patron:string dptf:string fr-tag:integer)
         (require-capability (SECURE))
@@ -1456,6 +1578,15 @@
             (ref-IGNIS::STOA|C_Collect patron stoa-costs)
             (ref-IGNIS::UDC_ConcatenateOutputCumulators 
                 [
+                    ;;MISSING DETERRENCE FIXED (2026-09-14). Creating a special link is priced as a
+                    ;;small DETERRENCE plus paying IN FULL for the token it issues. This concat carried
+                    ;;only the issue, so the deterrence half was designed in and never collected -- a
+                    ;;revenue bug, not a quoting one, and the reason the preview read 118.72 HIGHER
+                    ;;than the charge. Read from the same single source the preview reads.
+                    ;;Measured by modules/VST.repl <<VST-I1>> and modules/SWP.repl <<SWP-I8>>/<<SWP-I9>>.
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                        (URCi_CreateSpecialTrueFungibleLinkDeterrence)
+                        VST|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
                     ico0 
                     (ref-DPTF::XE_UpdateSpecialTrueFungible dptf special-dptf fr-tag)
                     ;;Required Roles are on by default for VST|SC_NAME and dont need to be set except for the active transfer role
@@ -1467,6 +1598,7 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_CreateSpecialOrtoFungibleLink:object{IgnisCollectorV2.OutputCumulator}
         (patron:string dptf:string vzh-tag:integer)
         (require-capability (SECURE))
@@ -1519,6 +1651,10 @@
             (ref-IGNIS::STOA|C_Collect patron stoa-costs)
             (ref-IGNIS::UDC_ConcatenateOutputCumulators 
                 [
+                    ;;MISSING DETERRENCE FIXED (2026-09-14) -- see the true-fungible twin above.
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                        (URCi_CreateSpecialOrtoFungibleLinkDeterrence)
+                        VST|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
                     ico0 
                     (ref-DPOF::XE_UpdateSpecialOrtoFungible dptf special-dpof vzh-tag)
                     ;;Required Roles are on by default for VST|SC_NAME and dont need to be set except for the active transfer role
@@ -1533,6 +1669,7 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_RepurposeTrueFungible:object{IgnisCollectorV2.OutputCumulator}
         (dptf-to-repurpose:string repurpose-from:string repurpose-to:string)
         (require-capability (SECURE))
@@ -1561,6 +1698,7 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_RepurposeOrtoFungible:object{IgnisCollectorV2.OutputCumulator}
         (dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string)
         (require-capability (SECURE))
@@ -1590,7 +1728,15 @@
             )
         )
     )
-    (defun XI_MergeNonces:object{IgnisCollectorV2.OutputCumulator}
+    ;;Enforce: 4 call sites (C_Merge, C_Slumber, C_RepurposeMerge, C_RepurposeSlumber) -- relocating the
+    ;;          <vzh-tag> domain check duplicates it 4x, which is strictly more code.
+    ;;          UNREACHABLE TODAY: all four sites pass a LITERAL (2 or 3) and no Talos wrapper
+    ;;          exposes <vzh-tag> to a client, so no input can currently trip this. It is
+    ;;          defence-in-depth for a future caller passing a variable -- NOT a live guard, and
+    ;;          it cannot be pinned by a negative test. Read the `v` as "an enforcement lives
+    ;;          here", not as "validation runs here".
+    ;;Protection: Class 2 — SECURE
+    (defun XIv_MergeNonces:object{IgnisCollectorV2.OutputCumulator}
         (dpof:string merger:string target:string nonces:[integer] vzh-tag:integer)
         @doc "<vzh-tag> = 2; Sleeping Tokens \
             \ <vzh-tag> = 3: Hibernating Tokens "
@@ -1600,7 +1746,6 @@
             (
                 (ref-U|VST:module{UtilityVstV2} U|VST)
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 ;;
@@ -1879,7 +2024,6 @@
                 (let
                     (
                         (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                        (ref-DALOS:module{OuronetDalosV2} DALOS)
                         (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                         (ref-TFT:module{TrueFungibleTransferV2} TFT)
                         ;;
@@ -2009,14 +2153,14 @@
         (merger:string dpof:string nonces:[integer])
         (P|UEV_IMC)
         (with-capability (VST|C>MERGE merger dpof nonces)
-            (XI_MergeNonces dpof merger merger nonces 2)
+            (XIv_MergeNonces dpof merger merger nonces 2)
         )
     )
     (defun C_RepurposeMerge:object{IgnisCollectorV2.OutputCumulator}
         (dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string)
         (P|UEV_IMC)
         (with-capability (VST|C>REPURPOSE-MERGE dpof-to-repurpose nonces repurpose-from repurpose-to)
-            (XI_MergeNonces dpof-to-repurpose repurpose-from repurpose-to nonces 2)
+            (XIv_MergeNonces dpof-to-repurpose repurpose-from repurpose-to nonces 2)
         )
     )
     (defun C_RepurposeSleeping:object{IgnisCollectorV2.OutputCumulator}
@@ -2141,14 +2285,14 @@
         (merger:string dpof:string nonces:[integer])
         (P|UEV_IMC)
         (with-capability (VST|C>SLUMBER merger dpof nonces)
-            (XI_MergeNonces dpof merger merger nonces 3)
+            (XIv_MergeNonces dpof merger merger nonces 3)
         )
     )
     (defun C_RepurposeSlumber:object{IgnisCollectorV2.OutputCumulator}
         (dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string)
         (P|UEV_IMC)
         (with-capability (VST|C>REPURPOSE-SLUMBER dpof-to-repurpose nonces repurpose-from repurpose-to)
-            (XI_MergeNonces dpof-to-repurpose repurpose-from repurpose-to nonces 3)
+            (XIv_MergeNonces dpof-to-repurpose repurpose-from repurpose-to nonces 3)
         )
     )
     (defun C_RepurposeHibernating:object{IgnisCollectorV2.OutputCumulator}
@@ -2178,7 +2322,6 @@
         (with-capability (ATSU|C>CONSTRICT ats rt)
             (let
                 (
-                    (ref-U|ATS:module{UtilityAtsV3} U|ATS)
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (ref-ATS:module{AutostakeV3} ATS)
                     (ref-TFT:module{TrueFungibleTransferV2} TFT)
@@ -2221,7 +2364,6 @@
         (with-capability (ATSU|C>BRUMATE ats1 ats2 rt)
             (let
                 (
-                    (ref-U|ATS:module{UtilityAtsV3} U|ATS)
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (ref-ATS:module{AutostakeV3} ATS)
                     (ref-TFT:module{TrueFungibleTransferV2} TFT)

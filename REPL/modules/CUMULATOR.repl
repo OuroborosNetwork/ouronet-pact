@@ -4,3 +4,66 @@
 (load "../deploy-stage00.repl")
 (load "../deploy-stage01.repl")
 (load "../Stage_01/[6.1]_Cumulator.repl")
+
+;;|| NEXT >
+;;|| CUM-G1 — the interactor shape rule on IGNIS collection.
+;;
+(begin-tx "CUM-G1 - why IGNIS|C>COLLECT's interactor rule cannot fire")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [CUM-G1 · 01 · the constructor normalises the interactor] ---")
+;;`02_IGNIS.pact:1007` is annotated `;;UNREACHABLE`. This block is what stops that annotation from
+;;quietly becoming false.
+;;
+;;THE GUARD is an `enforce-one`: an interactor must be either the BAR sentinel or a SMART account
+;;("Σ"). A standard user account ("Ѻ") is neither, and allowing one would let a module route protocol
+;;fees to a personal account -- so it reads like a rule worth driving.
+;;
+;;IT CANNOT FIRE, because `interactor` is not a client argument and the ONLY thing that builds one
+;;normalises it first. `UDC_MakeModularCumulator` does:
+;;    (interactor (if (DALOS::UR_AccountType active-account) active-account BAR))
+;;`UR_AccountType` is true for SMART accounts -- so a smart account passes through as itself, and
+;;EVERYTHING ELSE becomes BAR. The two outcomes are exactly the two branches the enforce-one accepts.
+;;
+;;MEASURED, NOT ARGUED, and cheaply: the constructor is a public `UDC_`, so the normalisation is
+;;pure compute with no fixture. The first attempt here tried to DRIVE the guard by handing
+;;`C_Collect` a cumulator naming a standard account; it succeeded instead of failing, which is what
+;;exposed the normalisation. Worth keeping as a lesson: a hand-built input does not bypass a
+;;constructor that sanitises.
+(let
+    (
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+    )
+    (let
+        (
+            (smart:string (ref-DALOS::GOV|DALOS|SC_NAME))
+        )
+        (map print
+            [
+                ;;the premise, read from the glyphs rather than asserted about them
+                (expect "<<CUM-G1>> a standard account is Ouronet-glyphed, a smart one is Sigma"
+                    ["Ѻ" "Σ"] [(take 1 KST.ANHD) (take 1 smart)])
+                (expect "<<CUM-G1>> ...and UR_AccountType tells them apart"
+                    [false true]
+                    [(ref-DALOS::UR_AccountType KST.ANHD) (ref-DALOS::UR_AccountType smart)])
+                ;;THE NORMALISATION the annotation rests on, both directions.
+                (expect "<<CUM-G1>> a STANDARD account is normalised to BAR by the constructor"
+                    (U|CT.CT_BAR)
+                    (at "interactor" (ref-IGNIS::UDC_MakeModularCumulator 100.0 KST.ANHD false)))
+                (expect "<<CUM-G1>> ...while a SMART account passes through as itself"
+                    smart
+                    (at "interactor" (ref-IGNIS::UDC_MakeModularCumulator 100.0 smart false)))
+                ;;...and the trigger branch is BAR regardless, which is the third way the guard is
+                ;;fed a legal value.
+                (expect "<<CUM-G1>> ...and a triggered (free) leg is BAR whatever the account"
+                    (U|CT.CT_BAR)
+                    (at "interactor" (ref-IGNIS::UDC_MakeModularCumulator 100.0 KST.ANHD true)))
+            ]
+        )
+        ""
+    )
+)
+(env-sigs [])
+(commit-tx)

@@ -138,7 +138,7 @@
     (defun URC_ResidentSum:decimal (atspair:string))
     (defun URC_PairRBTSupply:decimal (atspair:string))
     (defun URC_RBT:decimal (atspair:string rt:string rt-amount:decimal))
-    (defun URC_RTSplitAmounts:[decimal] (atspair:string rbt-amount:decimal))
+    (defun URCv_RTSplitAmounts:[decimal] (atspair:string rbt-amount:decimal))
     (defun URC_MaxSyphon:[decimal] (atspair:string))
         ;;
     (defun URCv_RewardTokenPosition:integer (atspair:string reward-token:string))
@@ -179,6 +179,7 @@
     (defun URCi_AddHotRBT:object{IgnisCollectorV2.OutputCumulator} (atspair:string hot-rbt:string))
     (defun URCi_SetColdRecoveryFees:object{IgnisCollectorV2.OutputCumulator} ())
     (defun URCi_ToggleParameterLock:object{IgnisCollectorV2.OutputCumulator} (atspair:string toggle:bool))
+    (defun URCi_ToggleParameterLockStoa:decimal (atspair:string toggle:bool))
     (defun URCi_IssueGas:decimal (token-count:integer))
     (defun URCi_IssueStoa:decimal (token-count:integer))
     (defun URCi_UpgradeBranding:decimal (months:integer))
@@ -741,7 +742,6 @@
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
                 (ref-U|INT:module{OuronetIntegersV2} U|INT)
-                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (l1:integer (length atspair))
                 (l2:integer (length index-decimals))
@@ -757,7 +757,7 @@
             (map
                 (lambda
                     (index:integer)
-                    (UEV_IssueData (ref-U|DALOS::UDC_Makeid (at index atspair)) (at index index-decimals) (at index reward-token) (at index reward-bearing-token))
+                    (UEV_IssueData (at index atspair) (at index index-decimals) (at index reward-token) (at index reward-bearing-token))
                 )
                 (enumerate 0 (- l1 1))
             )
@@ -879,9 +879,14 @@
             (ref-DPOF::CAP_Owner hot-rbt)
             (CAP_Owner atspair)
             ;;2]Hot-RBT cannot be V|, Z| or H| -Tokens
+            ;;FIXED 2026-09-12: the third entry was "H" (one character) while <hot-rbt-ftc> is
+            ;;ALWAYS (take 2 hot-rbt) -- two characters -- so it could never match and HIBERNATION
+            ;;tokens were not excluded at all. The comment above stated the intent correctly and
+            ;;every other prefix test in the tree writes the pipe (02_SCORE.pact:2522/:2526 use
+            ;;["Z|" "H|"]); this was the only site missing it. Pinned by modules/ATS.repl <<ATS-G15>>.
             (enforce 
-                (not (contains hot-rbt-ftc ["V|" "Z|" "H"]))
-                (format "Special Orto-Fungibles cannot be registered as Hot-RBTs")
+                (not (contains hot-rbt-ftc ["V|" "Z|" "H|"]))
+                "Special Orto-Fungibles cannot be registered as Hot-RBTs"
             )
             ;;3]ATS Pair must not have a Hot-RBT, when registering a Hot-RBT to it
             (UEV_RewardBearingTokenExistance atspair hot-rbt false false)
@@ -921,9 +926,28 @@
                 (ref-U|ATS:module{UtilityAtsV3} U|ATS)
             )
             (ref-U|ATS::UEV_Fee promile)
+            ;;Deliberately NOT ATS|S>CONTROL-DIRECT-RECOVERY -- see the note on that cap below.
+            ;;The direct-recovery fee is adjustable while direct recovery is LIVE, unlike the hot
+            ;;twin. Tested 2026-09-10: composing the state-checking cap here breaks the sovereign
+            ;;init, which enables direct recovery and then sets the fee.
             (compose-capability (ATS|S>CONTROL-RECOVERY atspair))
         )
     )
+    ;;NEVER COMPOSED, and the asymmetry it would close is INTENTIONAL. Investigated 2026-09-10.
+    ;;
+    ;;It is the direct-recovery twin of ATS|C>CONTROL-HOT-RECOVERY (just above), which IS composed
+    ;;by ATS|C>CONTROL-HOT-FEE / ATS|C>SET_HOT_FEES and so forbids changing the hot fee while hot
+    ;;recovery is live. The direct side has no such link, which looked like a missing wiring --
+    ;;especially next to ATS|C>ADD-TOKEN, which requires all four recovery states off.
+    ;;
+    ;;TESTED, AND THE HYPOTHESIS WAS WRONG. Composing this cap from ATS|C>SET_DIRECT_FEE breaks
+    ;;the sovereign init: REPL/Stage_01/[4.0]_Sovereign-Executor.repl enables direct recovery on
+    ;;KORIndex (line 1592) and THEN sets its fee to 100.0 (line 1595). The direct-recovery fee is
+    ;;therefore adjustable while direct recovery is live BY DESIGN -- a real behavioural
+    ;;difference from hot recovery, not an oversight. The change was reverted.
+    ;;
+    ;;Left in place as the record of that investigation: it is unreachable, it guards nothing
+    ;;today, and re-wiring it would break the deploy chain.
     (defcap ATS|S>CONTROL-DIRECT-RECOVERY (atspair:string)
         (UEV_DirectRecoveryState atspair false)
         (compose-capability (ATS|S>CONTROL-RECOVERY atspair))
@@ -1190,20 +1214,21 @@
         (at "owner-konto" (read ATS|Pairs atspair ["owner-konto"]))
     )
     (defun UR_CanUpgrade:bool (atspair:string)
+        ;;#ATSm fix: this used to backfill a missing <can-upgrade> with a live table <update> --
+        ;;an ungated write as a side effect of a nominal UR_* read, at the caller's gas expense,
+        ;;and a read/write-separation violation of the UR_* prefix contract (same defect class as
+        ;;DPTF's #30M <UR_Hibernation> and SWP's #50L <UR_StoaValue>, both already fixed).
+        ;;Confirmed dead via a live StoaChain dirty-read (2026-09-10): all 4 deployed ATS pairs
+        ;;already carry every one of these 8 fields, so the backfill branch never fires. The
+        ;;write is dropped; the in-memory default fallback is kept, so the return value is
+        ;;unchanged for every caller.
         (let 
             (
                 (default-value:bool true)
                 (temp (read ATS|Pairs atspair ["can-upgrade"]))
                 (needs-populate:bool (= temp {}))
-                (link:bool (if needs-populate default-value (at "can-upgrade" temp)))
             )
-            (if needs-populate
-                (update ATS|Pairs atspair
-                    {"can-upgrade": default-value}
-                )
-                true  ; No-op if already populated
-            )
-            link
+            (if needs-populate default-value (at "can-upgrade" temp))
         )
     )
     (defun UR_CanChangeOwner:bool (atspair:string)
@@ -1213,20 +1238,14 @@
         (at "syphoning" (read ATS|Pairs atspair ["syphoning"]))
     )
     (defun UR_Hibernate:bool (atspair:string)
+        ;;#ATSm fix: ungated migration backfill <update> dropped -- see <UR_CanUpgrade>.
         (let 
             (
                 (default-value:bool false)
                 (temp (read ATS|Pairs atspair ["hibernate"]))
                 (needs-populate:bool (= temp {}))
-                (link:bool (if needs-populate default-value (at "hibernate" temp)))
             )
-            (if needs-populate
-                (update ATS|Pairs atspair
-                    {"hibernate": default-value}
-                )
-                true  ; No-op if already populated
-            )
-            link
+            (if needs-populate default-value (at "hibernate" temp))
         )
     )
     (defun UR_IndexName:string (atspair:string)
@@ -1236,18 +1255,13 @@
         (at "index-decimals" (read ATS|Pairs atspair ["index-decimals"]))
     )
     (defun UR_Royalty:decimal (atspair:string)
+        ;;#ATSm fix: ungated migration backfill <update> dropped -- see <UR_CanUpgrade>.
         (let 
             (
                 (default-value:decimal 0.0)
                 (temp (read ATS|Pairs atspair ["royalty-promile"]))
                 (needs-populate:bool (= temp {}))
                 (link:decimal (if needs-populate default-value (at "royalty-promile" temp)))
-            )
-            (if needs-populate
-                (update ATS|Pairs atspair
-                    {"royalty-promile": default-value}
-                )
-                true  ; No-op if already populated
             )
             (if (= link -1.0)
                 0.0
@@ -1260,37 +1274,25 @@
     )
     ;;
     (defun UR_PeakHibernatePromile:decimal (atspair:string)
+        ;;#ATSm fix: ungated migration backfill <update> dropped -- see <UR_CanUpgrade>.
         (let 
             (
                 (default-value:decimal 120.0)
                 (temp (read ATS|Pairs atspair ["peak-hibernate-promile"]))
                 (needs-populate:bool (= temp {}))
-                (link:decimal (if needs-populate default-value (at "peak-hibernate-promile" temp)))
             )
-            (if needs-populate
-                (update ATS|Pairs atspair
-                    {"peak-hibernate-promile": default-value}
-                )
-                true  ; No-op if already populated
-            )
-            link
+            (if needs-populate default-value (at "peak-hibernate-promile" temp))
         )
     )
     (defun UR_HibernateDecay:decimal (atspair:string)
+        ;;#ATSm fix: ungated migration backfill <update> dropped -- see <UR_CanUpgrade>.
         (let 
             (
                 (default-value:decimal 0.008 )
                 (temp (read ATS|Pairs atspair ["hibernate-decay"]))
                 (needs-populate:bool (= temp {}))
-                (link:decimal (if needs-populate default-value (at "hibernate-decay" temp)))
             )
-            (if needs-populate
-                (update ATS|Pairs atspair
-                    {"hibernate-decay": default-value}
-                )
-                true  ; No-op if already populated
-            )
-            link
+            (if needs-populate default-value (at "hibernate-decay" temp))
         )
     )
     ;;
@@ -1302,6 +1304,9 @@
     )
     ;;
     (defun UR_RewardTokens:[object{AutostakeV3.ATS|RewardTokenSchemaV2}] (atspair:string)
+        ;;#ATSm fix: migration backfill <update> dropped -- see <UR_CanUpgrade>. The write WAS
+        ;;load-bearing here (the old body re-read the row afterwards), so the populate branch now
+        ;;yields the royalty-augmented list directly instead of persisting then re-reading.
         (let
             (
                 (temp:list (at "reward-tokens" (read ATS|Pairs atspair ["reward-tokens"])))
@@ -1314,29 +1319,23 @@
                     (
                         (default-royalty:decimal 0.0)
                         (ref-U|LST:module{StringProcessorV2} U|LST)
-                        (new-obj:[object{AutostakeV3.ATS|RewardTokenSchemaV2}]
-                            (fold
-                                (lambda
-                                    (acc:[object{AutostakeV3.ATS|RewardTokenSchemaV2}] idx:integer)
-                                    (ref-U|LST::UC_AppL acc
-                                        (+
-                                            (at idx temp)
-                                            {"royalty" : default-royalty}
-                                        )
-                                    )
+                    )
+                    (fold
+                        (lambda
+                            (acc:[object{AutostakeV3.ATS|RewardTokenSchemaV2}] idx:integer)
+                            (ref-U|LST::UC_AppL acc
+                                (+
+                                    (at idx temp)
+                                    {"royalty" : default-royalty}
                                 )
-                                []
-                                (enumerate 0 (- (length temp) 1))
                             )
                         )
-                    )
-                    (update ATS|Pairs atspair
-                        {"reward-tokens" : new-obj}
+                        []
+                        (enumerate 0 (- (length temp) 1))
                     )
                 )
-                true
+                temp
             )
-            (at "reward-tokens" (read ATS|Pairs atspair ["reward-tokens"]))
         )
     )
     (defun UR_RewardTokenList:[string] (atspair:string)
@@ -1435,20 +1434,14 @@
     )
     ;;Direct Recovery
     (defun UR_DirectRecoveryFee:decimal (atspair:string)
+        ;;#ATSm fix: ungated migration backfill <update> dropped -- see <UR_CanUpgrade>.
         (let 
             (
                 (default-value:decimal 0.0)
                 (temp (read ATS|Pairs atspair ["d-promile"]))
                 (needs-populate:bool (= temp {}))
-                (link:decimal (if needs-populate default-value (at "d-promile" temp)))
             )
-            (if needs-populate
-                (update ATS|Pairs atspair 
-                    {"d-promile": default-value}
-                )
-                true  ; No-op if already populated
-            )
-            link
+            (if needs-populate default-value (at "d-promile" temp))
         )
     )
     ;;Toggle Recoveries
@@ -1459,20 +1452,14 @@
         (at "hot-recovery" (read ATS|Pairs atspair ["hot-recovery"]))
     )
     (defun UR_ToggleDirectRecovery:bool (atspair:string)
+        ;;#ATSm fix: ungated migration backfill <update> dropped -- see <UR_CanUpgrade>.
         (let 
             (
                 (default-value:bool false)
                 (temp (read ATS|Pairs atspair ["direct-recovery"]))
                 (needs-populate:bool (= temp {}))
-                (link:bool (if needs-populate default-value (at "direct-recovery" temp)))
             )
-            (if needs-populate
-                (update ATS|Pairs atspair
-                    {"direct-recovery": default-value}
-                )
-                true  ; No-op if already populated
-            )
-            link
+            (if needs-populate default-value (at "direct-recovery" temp))
         )
     )
     ;;
@@ -1590,7 +1577,7 @@
             (floor (/ rt-amount index) p-rbt)
         )
     )
-    (defun URC_RTSplitAmounts:[decimal] (atspair:string rbt-amount:decimal)
+    (defun URCv_RTSplitAmounts:[decimal] (atspair:string rbt-amount:decimal)
         @doc "Computes the amount of RT Tokens an <rbt-amount> of RBT would yield for an <atspair>"
         (let
             (
@@ -1948,7 +1935,6 @@
         (let
             (
                 (ref-U|ATS:module{UtilityAtsV3} U|ATS)
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-ATS:module{AutostakeV3} ATS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 ;;
@@ -2197,7 +2183,6 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisPrice "ATS|C_AddSecondary" "ats-secondary") ATS|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
@@ -2226,7 +2211,6 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator (* (ref-IGNIS::UC_IgnisLeg "tier-biggest") 20.0) ATS|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
@@ -2236,13 +2220,23 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
                 (unlock-costs:[decimal] (if toggle [0.0 0.0] (ref-IGNIS::UC_FeeUnlockPrice)))
                 (gas-costs:decimal (+ (ref-IGNIS::UC_IgnisLeg "tier-small") (at 0 unlock-costs)))
                 (output:bool (> (at 1 unlock-costs) 0.0))
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator gas-costs ATS|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [output])
+        )
+    )
+    (defun URCi_ToggleParameterLockStoa:decimal (atspair:string toggle:bool)
+        @doc "STOA leg of a parameter-lock toggle: locking is free, unlocking costs the \
+            \ fee-unlock price. Read-only twin of the <XI_ToggleParameterLock> return that \
+            \ <C_ToggleParameterLock> hands to <STOA|C_Collect>, so the INFO_ preview and the \
+            \ charge move as one. Mirrors DPTF's <URCi_ToggleFeeLockStoa>."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (if toggle 0.0 (at 1 (ref-IGNIS::UC_FeeUnlockPrice)))
         )
     )
     ;;  Issue/UpgradeBranding: :decimal price rails (cumulator output / write side-effect stays in the C_/XI).
@@ -2386,10 +2380,16 @@
         (let
             (
                 (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (rt-ftc:string (take 2 reward-token))
                 (rbt-ftc:string (take 2 reward-bearing-token))
             )
+            ;;0]Index name shape - relocated here from XI_Issue (StoicSyntax §7.20 step 1: an
+            ;;  enforcement does not belong in an X_). Runs per element inside ATS|C>ISSUE, the
+            ;;  single place it belongs. <atspair> was a DEAD parameter until now, and the caller
+            ;;  no longer burns a UDC_Makeid per element to build a value nothing read.
+            (ref-U|ATS::UEV_AutostakeIndex atspair)
             (ref-U|DALOS::UEV_Decimals index-decimals)
             ;;1]Token Ownership
             (ref-DPTF::CAP_Owner reward-token)
@@ -2417,6 +2417,8 @@
     )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
+    ;;Protection: Class 1 — Innate protection offered by XI_Issue, XE_Issue,
+    ;;Protection:          XE_UpdateRewardToken, XE_UpdateRewardBearingToken
     (defun XI_FoldedIssue:[string]
         (
             account:string
@@ -2461,6 +2463,7 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_Issue:string
         (
             account:string
@@ -2480,8 +2483,6 @@
                 (ats-sc:string ATS|SC_NAME)
                 (id:string (ref-U|DALOS::UDC_Makeid atspair))
             )
-            (ref-U|DALOS::UEV_Decimals index-decimals)
-            (ref-U|ATS::UEV_AutostakeIndex atspair)
             (insert ATS|Pairs id
                 {"id"                       : id
                 ,"owner-konto"              : account
@@ -2534,12 +2535,14 @@
             id
         )
     )
+    ;;Protection: Class 3 — Custom: ATS|S>ROTATE_OWNERSHIP
     (defun XI_ChangeOwnership (atspair:string new-owner:string)
         (require-capability (ATS|S>ROTATE_OWNERSHIP atspair new-owner))
         (update ATS|Pairs atspair
             {"owner-konto" : new-owner}
         )
     )
+    ;;Protection: Class 3 — Custom: ATS|S>CONTROL
     (defun XI_Control (atspair:string can-change-owner:bool syphoning:bool hibernate:bool)
         (require-capability (ATS|S>CONTROL atspair hibernate))
         (update ATS|Pairs atspair
@@ -2548,18 +2551,21 @@
             ,"hibernate"        : hibernate}
         )
     )
+    ;;Protection: Class 3 — Custom: ATS|S>ROYALTY
     (defun XI_UpdateRoyalty (atspair:string royalty:decimal)
         (require-capability (ATS|S>ROYALTY atspair royalty))
         (update ATS|Pairs atspair
             {"royalty-promile" : royalty}
         )
     )
+    ;;Protection: Class 3 — Custom: ATS|S>SYPHON
     (defun XI_UpdateSyphon (atspair:string syphon:decimal)
         (require-capability (ATS|S>SYPHON atspair syphon))
         (update ATS|Pairs atspair
             {"syphon" : syphon}
         )
     )
+    ;;Protection: Class 3 — Custom: ATS|S>SET-HIBERNATION-FEES
     (defun XI_SetHibernationFees (atspair:string peak:decimal decay:decimal)
         (require-capability (ATS|S>SET-HIBERNATION-FEES atspair peak decay))
         (update ATS|Pairs atspair
@@ -2568,6 +2574,7 @@
         )
     )
     ;;
+    ;;Protection: Class 2 — SECURE
     (defun XI_ToggleParameterLock:[decimal] (atspair:string toggle:bool)
         (require-capability (SECURE))
         (update ATS|Pairs atspair
@@ -2578,12 +2585,12 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
                 )
                 (ref-IGNIS::UC_FeeUnlockPrice)
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_IncrementParameterUnlocks (atspair:string)
         (require-capability (SECURE))
         (with-read ATS|Pairs atspair
@@ -2594,6 +2601,7 @@
         )
     )
     ;;
+    ;;Protection: Class 3 — Custom: ATS|C>ADD-REWARD-TOKEN
     (defun XI_AddSecondary (atspair:string reward-token:string rt-nfr:bool)
         (require-capability (ATS|C>ADD-REWARD-TOKEN atspair reward-token))
         (let
@@ -2609,6 +2617,7 @@
         )
     )
     ;;
+    ;;Protection: Class 3 — Custom: ATS|C>CONTROL-COLD-FEES
     (defun XI_ControlColdFees (atspair:string c-nfr:bool c-fr:bool)
         (require-capability (ATS|C>CONTROL-COLD-FEES atspair))
         (update ATS|Pairs atspair
@@ -2616,6 +2625,7 @@
             ,"c-fr"     : c-fr}
         )
     )
+    ;;Protection: Class 3 — Custom: ATS|C>SET_COLD_FEES
     (defun XI_SetColdFee (atspair:string fee-positions:integer fee-thresholds:[decimal] fee-array:[[decimal]])
         (require-capability (ATS|C>SET_COLD_FEES atspair fee-positions fee-thresholds fee-array))
         (update ATS|Pairs atspair
@@ -2624,6 +2634,7 @@
             ,"c-array"      : fee-array}
         )
     )
+    ;;Protection: Class 3 — Custom: ATS|C>SET_COLD-DURATION
     (defun XI_SetCRD (atspair:string soft-or-hard:bool base:integer growth:integer)
         (require-capability (ATS|C>SET_COLD-DURATION atspair soft-or-hard base growth))
         (let
@@ -2640,18 +2651,21 @@
             )
         )
     )
+    ;;Protection: Class 3 — Custom: ATS|C>TOGGLE_ELITE
     (defun XI_ToggleElite (atspair:string toggle:bool)
         (require-capability (ATS|C>TOGGLE_ELITE atspair toggle))
         (update ATS|Pairs atspair
             { "c-elite-mode" : toggle}
         )
     )
+    ;;Protection: Class 3 — Custom: ATS|C>TOGGLE_UPGRADE
     (defun XI_ToggleUpgrade (atspair:string toggle:bool)
         (require-capability (ATS|C>TOGGLE_UPGRADE atspair toggle))
         (update ATS|Pairs atspair
             { "can-upgrade" : toggle}
         )
     )
+    ;;Protection: Class 3 — Custom: ATS|S>SWITCH-COLD-RECOVERY
     (defun XI_SwitchColdRecovery (atspair:string toggle:bool)
         (require-capability (ATS|S>SWITCH-COLD-RECOVERY atspair toggle))
         (update ATS|Pairs atspair
@@ -2659,18 +2673,21 @@
         )
     )
     ;;
+    ;;Protection: Class 3 — Custom: ATS|C>ADD-HOT-RBT
     (defun XI_AddHotRBT (atspair:string hot-rbt:string)
         (require-capability (ATS|C>ADD-HOT-RBT atspair hot-rbt))
         (update ATS|Pairs atspair
             {"h-rbt" : hot-rbt}
         )
     )
+    ;;Protection: Class 3 — Custom: ATS|C>CONTROL-HOT-FEE
     (defun XI_ControlHotFee (atspair:string h-fr:bool)
         (require-capability (ATS|C>CONTROL-HOT-FEE atspair))
         (update ATS|Pairs atspair
             {"h-fr"    : h-fr}
         )
     )
+    ;;Protection: Class 3 — Custom: ATS|C>SET_HOT_FEES
     (defun XI_SetHotFees (atspair:string promile:decimal decay:integer)
         (require-capability (ATS|C>SET_HOT_FEES atspair promile decay))
         (update ATS|Pairs atspair
@@ -2678,6 +2695,7 @@
             ,"h-decay"      : decay}
         )
     )
+    ;;Protection: Class 3 — Custom: ATS|S>SWITCH-HOT-RECOVERY
     (defun XI_SwitchHotRecovery (atspair:string toggle:bool)
         (require-capability (ATS|S>SWITCH-HOT-RECOVERY atspair toggle))
         (update ATS|Pairs atspair
@@ -2685,12 +2703,14 @@
         )
     )
     ;;
+    ;;Protection: Class 3 — Custom: ATS|C>SET_DIRECT_FEE
     (defun XI_SetDirectFee (atspair:string promile:decimal)
         (require-capability (ATS|C>SET_DIRECT_FEE atspair promile))
         (update ATS|Pairs atspair
             {"d-promile"    : promile}
         )
     )
+    ;;Protection: Class 3 — Custom: ATS|S>SWITCH-DIRECT-RECOVERY
     (defun XI_SwitchDirectRecovery (atspair:string toggle:bool)
         (require-capability (ATS|S>SWITCH-DIRECT-RECOVERY atspair toggle))
         (update ATS|Pairs atspair
@@ -2700,6 +2720,7 @@
     ;;
     ;;
     ;;
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_RemoveSecondary (atspair:string reward-token:string)
         (P|UEV_IMC)
         (let
@@ -2717,6 +2738,7 @@
             )
         )
     )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_UpdateRUR (atspair:string reward-token:string rur:integer direction:bool amount:decimal)
         (P|UEV_IMC)
         (let
@@ -2754,6 +2776,7 @@
             )
         )
     )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_SpawnAutostakeAccount (atspair:string account:string)
         (P|UEV_IMC)
         (let
@@ -2779,6 +2802,7 @@
             )
         )
     )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_ReshapeUnstakeAccount (atspair:string account:string rp:integer)
         (P|UEV_IMC)
         (let
@@ -2804,48 +2828,56 @@
             )
         )
     )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_UpP0 (atspair:string account:string obj:[object{UtilityAtsV3.Awo}])
         (P|UEV_IMC)
         (update ATS|Ledger (UC_AtspairAccount atspair account)
             { "P0" : obj}
         )
     )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_UpP1 (atspair:string account:string obj:object{UtilityAtsV3.Awo})
         (P|UEV_IMC)
         (update ATS|Ledger (UC_AtspairAccount atspair account)
             { "P1"  : obj}
         )
     )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_UpP2 (atspair:string account:string obj:object{UtilityAtsV3.Awo})
         (P|UEV_IMC)
         (update ATS|Ledger (UC_AtspairAccount atspair account)
             { "P2"  : obj}
         )
     )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_UpP3 (atspair:string account:string obj:object{UtilityAtsV3.Awo})
         (P|UEV_IMC)
         (update ATS|Ledger (UC_AtspairAccount atspair account)
             { "P3"  : obj}
         )
     )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_UpP4 (atspair:string account:string obj:object{UtilityAtsV3.Awo})
         (P|UEV_IMC)
         (update ATS|Ledger (UC_AtspairAccount atspair account)
             { "P4"  : obj}
         )
     )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_UpP5 (atspair:string account:string obj:object{UtilityAtsV3.Awo})
         (P|UEV_IMC)
         (update ATS|Ledger (UC_AtspairAccount atspair account)
             { "P5"  : obj}
         )
     )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_UpP6 (atspair:string account:string obj:object{UtilityAtsV3.Awo})
         (P|UEV_IMC)
         (update ATS|Ledger (UC_AtspairAccount atspair account)
             { "P6"  : obj}
         )
     )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_UpP7 (atspair:string account:string obj:object{UtilityAtsV3.Awo})
         (P|UEV_IMC)
         (update ATS|Ledger (UC_AtspairAccount atspair account)
@@ -2883,7 +2915,6 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-BRD:module{BrandingV2} BRD)
             )
             (with-capability (ATS|C>UPDATE-BRD entity-id)
@@ -2986,7 +3017,6 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
                     (l1:integer (length atspair))
                     (gas-costs:decimal (URCi_IssueGas l1))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -3004,67 +3034,42 @@
     (defun C_RotateOwnership:object{IgnisCollectorV2.OutputCumulator}
         (atspair:string new-owner:string)
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-            )
-            (with-capability (ATS|S>ROTATE_OWNERSHIP atspair new-owner)
-                (XI_ChangeOwnership atspair new-owner)
-                (URCi_RotateOwnership atspair)
-            )
+        (with-capability (ATS|S>ROTATE_OWNERSHIP atspair new-owner)
+            (XI_ChangeOwnership atspair new-owner)
+            (URCi_RotateOwnership atspair)
         )
     )
     (defun C_Control:object{IgnisCollectorV2.OutputCumulator}
         (atspair:string can-change-owner:bool syphoning:bool hibernate:bool)
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-            )
-            (with-capability (ATS|S>CONTROL atspair hibernate)
-                (XI_Control atspair can-change-owner syphoning hibernate)
-                (URCi_Control atspair)
-            )
+        (with-capability (ATS|S>CONTROL atspair hibernate)
+            (XI_Control atspair can-change-owner syphoning hibernate)
+            (URCi_Control atspair)
         )
     )
     (defun C_UpdateRoyalty:object{IgnisCollectorV2.OutputCumulator}
         (atspair:string royalty:decimal)
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-            )
-            (with-capability (ATS|S>ROYALTY atspair royalty)
-                (XI_UpdateRoyalty atspair royalty)
-                (URCi_UpdateRoyalty atspair)
-            )
+        (with-capability (ATS|S>ROYALTY atspair royalty)
+            (XI_UpdateRoyalty atspair royalty)
+            (URCi_UpdateRoyalty atspair)
         )
     )
     (defun C_UpdateSyphon:object{IgnisCollectorV2.OutputCumulator}
         (atspair:string syphon:decimal)
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-            )
-            (with-capability (ATS|S>SYPHON atspair syphon)
-                (XI_UpdateSyphon atspair syphon)
-                (URCi_UpdateSyphon atspair)
-            )
+        (with-capability (ATS|S>SYPHON atspair syphon)
+            (XI_UpdateSyphon atspair syphon)
+            (URCi_UpdateSyphon atspair)
         )
     )
     ;;
     (defun C_SetHibernationFees:object{IgnisCollectorV2.OutputCumulator}
         (atspair:string peak:decimal decay:decimal)
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-            )
-            (with-capability (ATS|S>SET-HIBERNATION-FEES atspair peak decay)
-                (XI_SetHibernationFees atspair peak decay)
-                (URCi_SetHibernationFees atspair)
-            )
+        (with-capability (ATS|S>SET-HIBERNATION-FEES atspair peak decay)
+            (XI_SetHibernationFees atspair peak decay)
+            (URCi_SetHibernationFees atspair)
         )
     )
     ;;
@@ -3097,7 +3102,6 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 ;;
                 (price:decimal (ref-IGNIS::UC_IgnisPrice "ATS|C_AddSecondary" "ats-secondary"))
@@ -3115,14 +3119,9 @@
     (defun C_ControlColdRecoveryFees:object{IgnisCollectorV2.OutputCumulator} 
         (atspair:string c-nfr:bool c-fr:bool)
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-            )
-            (with-capability (ATS|C>CONTROL-COLD-FEES atspair)
-                (XI_ControlColdFees atspair c-nfr c-fr)
-                (URCi_ControlColdRecoveryFees atspair)
-            )
+        (with-capability (ATS|C>CONTROL-COLD-FEES atspair)
+            (XI_ControlColdFees atspair c-nfr c-fr)
+            (URCi_ControlColdRecoveryFees atspair)
         )
     )
     (defun C_SetColdRecoveryFees:object{IgnisCollectorV2.OutputCumulator}
@@ -3131,7 +3130,6 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (gas-costs:decimal (* (ref-IGNIS::UC_IgnisLeg "tier-biggest") 20.0))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
             )
@@ -3144,27 +3142,17 @@
     (defun C_SetColdRecoveryDuration:object{IgnisCollectorV2.OutputCumulator}
         (atspair:string soft-or-hard:bool base:integer growth:integer)
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-            )
-            (with-capability (ATS|C>SET_COLD-DURATION atspair soft-or-hard base growth)
-                (XI_SetCRD atspair soft-or-hard base growth)
-                (URCi_SetColdRecoveryDuration atspair)
-            )
+        (with-capability (ATS|C>SET_COLD-DURATION atspair soft-or-hard base growth)
+            (XI_SetCRD atspair soft-or-hard base growth)
+            (URCi_SetColdRecoveryDuration atspair)
         )
     )
     (defun C_ToggleElite:object{IgnisCollectorV2.OutputCumulator}
         (atspair:string toggle:bool)
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-            )
-            (with-capability (ATS|C>TOGGLE_ELITE atspair toggle)
-                (XI_ToggleElite atspair toggle)
-                (URCi_ToggleElite atspair)
-            )
+        (with-capability (ATS|C>TOGGLE_ELITE atspair toggle)
+            (XI_ToggleElite atspair toggle)
+            (URCi_ToggleElite atspair)
         )
     )
     (defun C_ToggleUpgrade:object{IgnisCollectorV2.OutputCumulator}
@@ -3173,27 +3161,17 @@
             \ permanently true with no setter. Gates C_Control (can-change-owner/ \
             \ syphoning/hibernate) - false blocks C_Control entirely until true again."
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-            )
-            (with-capability (ATS|C>TOGGLE_UPGRADE atspair toggle)
-                (XI_ToggleUpgrade atspair toggle)
-                (URCi_ToggleUpgrade atspair)
-            )
+        (with-capability (ATS|C>TOGGLE_UPGRADE atspair toggle)
+            (XI_ToggleUpgrade atspair toggle)
+            (URCi_ToggleUpgrade atspair)
         )
     )
     (defun C_SwitchColdRecovery:object{IgnisCollectorV2.OutputCumulator}
         (atspair:string toggle:bool)
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-            )
-            (with-capability (ATS|S>SWITCH-COLD-RECOVERY atspair toggle)
-                (XI_SwitchColdRecovery atspair toggle)
-                (URCi_SwitchColdRecovery atspair)
-            )
+        (with-capability (ATS|S>SWITCH-COLD-RECOVERY atspair toggle)
+            (XI_SwitchColdRecovery atspair toggle)
+            (URCi_SwitchColdRecovery atspair)
         )
     )
     ;;Hot Recovery Management
@@ -3205,7 +3183,6 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                     ;;
                     (price:decimal (ref-IGNIS::UC_IgnisPrice "ATS|C_AddHotRBT" "ats-secondary"))
@@ -3238,67 +3215,42 @@
     (defun C_ControlHotRecoveryFee:object{IgnisCollectorV2.OutputCumulator} 
         (atspair:string h-fr:bool)
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-            )
-            (with-capability (ATS|C>CONTROL-HOT-FEE atspair)
-                (XI_ControlHotFee atspair h-fr)
-                (URCi_ControlHotRecoveryFee atspair)
-            )
+        (with-capability (ATS|C>CONTROL-HOT-FEE atspair)
+            (XI_ControlHotFee atspair h-fr)
+            (URCi_ControlHotRecoveryFee atspair)
         )
     )
     (defun C_SetHotRecoveryFees:object{IgnisCollectorV2.OutputCumulator}
         (atspair:string promile:decimal decay:integer)
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-            )
-            (with-capability (ATS|C>SET_HOT_FEES atspair promile decay)
-                (XI_SetHotFees atspair promile decay)
-                (URCi_SetHotRecoveryFees atspair)
-            )
+        (with-capability (ATS|C>SET_HOT_FEES atspair promile decay)
+            (XI_SetHotFees atspair promile decay)
+            (URCi_SetHotRecoveryFees atspair)
         )
     )
     (defun C_SwitchHotRecovery:object{IgnisCollectorV2.OutputCumulator}
         (atspair:string toggle:bool)
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-            )
-            (with-capability (ATS|S>SWITCH-HOT-RECOVERY atspair toggle)
-                (XI_SwitchHotRecovery atspair toggle)
-                (URCi_SwitchHotRecovery atspair)
-            )
+        (with-capability (ATS|S>SWITCH-HOT-RECOVERY atspair toggle)
+            (XI_SwitchHotRecovery atspair toggle)
+            (URCi_SwitchHotRecovery atspair)
         )
     )
     ;;Direct Recovery Management
     (defun C_SetDirectRecoveryFee:object{IgnisCollectorV2.OutputCumulator}
         (atspair:string promile:decimal)
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-            )
-            (with-capability (ATS|C>SET_DIRECT_FEE atspair promile)
-                (XI_SetDirectFee atspair promile)
-                (URCi_SetDirectRecoveryFee atspair)
-            )
+        (with-capability (ATS|C>SET_DIRECT_FEE atspair promile)
+            (XI_SetDirectFee atspair promile)
+            (URCi_SetDirectRecoveryFee atspair)
         )
     )
     (defun C_SwitchDirectRecovery:object{IgnisCollectorV2.OutputCumulator}
         (atspair:string toggle:bool)
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-            )
-            (with-capability (ATS|S>SWITCH-DIRECT-RECOVERY atspair toggle)
-                (XI_SwitchDirectRecovery atspair toggle)
-                (URCi_SwitchDirectRecovery atspair)
-            )
+        (with-capability (ATS|S>SWITCH-DIRECT-RECOVERY atspair toggle)
+            (XI_SwitchDirectRecovery atspair toggle)
+            (URCi_SwitchDirectRecovery atspair)
         )
     )
 

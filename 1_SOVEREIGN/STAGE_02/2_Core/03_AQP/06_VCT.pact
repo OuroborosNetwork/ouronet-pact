@@ -987,11 +987,21 @@
         )
     )
     (defun UC_VacateDecimalAmountsToIntegers:[integer] (amounts:[decimal])
-        @doc "Collectable vacate: tracker decimal balances → integer amounts for DPDC-T bulk."
-        (map
-            (lambda (idx:integer) (floor (at idx amounts)))
-            (enumerate 0 (- (length amounts) 1))
-        )
+        @doc "Collectable vacate: tracker decimal balances → integer amounts for DPDC-T bulk. \
+            \ Delegates to UC_DecimalAmountsRowToInt: same operation, one implementation."
+        ;;MADE TOTAL 2026-09-13. This used to index its own argument through
+        ;;`(enumerate 0 (- (length amounts) 1))`, which is the descending-pair trap: on an EMPTY list
+        ;;that is `(enumerate 0 -1)`, and Pact evaluates that to `[0, -1]` -- NOT the empty list -- so
+        ;;the map then ran `(at 0 [])` and died on a native "Array index out of bounds" fault.
+        ;;Its twin `UC_DecimalAmountsRowToInt` (above) does the identical job with a plain `map` and
+        ;;is total; the two were verified to return identical results on every non-empty input.
+        ;;
+        ;;NOT A LIVE BUG, which is why this is a delegation rather than a behaviour change: every
+        ;;leg reaching here is built by `UC_MergeVacateNonceRowIntoLegs`, which always constructs
+        ;;with at least one element (`[nonce]` / `[amount]`) and only ever APPENDS -- so an empty
+        ;;amounts row is unreachable today. It was a footgun armed for whoever next changes the leg
+        ;;builder, and collapsing the duplicate removes it. Pinned by REPL/modules/AQP.repl <<AQP-F3>>.
+        (UC_DecimalAmountsRowToInt amounts)
     )
     (defun UC_VacateOfLegsToVacateArrays:object (legs:[object{VCT|VacateNonceLeg}])
         @doc "Build parallel OF vacate batch arrays from VacateOfInventory legs (object{VCT|VacateNonceLeg}). Module: AQP-VCT."
@@ -1025,26 +1035,42 @@
         (beneficiary-id:string beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[decimal]])
         @doc "Concatenate the nonces/amounts (decimal) of every row whose beneficiary equals <beneficiary-id> \
             \ into a single {nonces, amounts} object — per-beneficiary merge for the OF/SF/NF vacate rollup."
-        (fold
-            (lambda (acc:object idx:integer)
-                (if (= beneficiary-id (at idx beneficiary-ids))
-                    {"nonces": (+ (at "nonces" acc) (at idx nonces-array)), "amounts": (+ (at "amounts" acc) (at idx amounts-array))}
-                    acc))
+        ;;EMPTY-INPUT GUARD (2026-09-13). `(enumerate 0 (- (length xs) 1))` on an EMPTY list is
+        ;;`(enumerate 0 -1)`, which Pact evaluates to the DESCENDING PAIR `[0, -1]` -- NOT the empty
+        ;;list -- so the body then indexes `(at 0 [])` and dies on a native "Array index out of
+        ;;bounds". The index is genuinely needed here (it zips parallel arrays), so the repair is a
+        ;;guard rather than a `map` over one list.
+        (if (= (length beneficiary-ids) 0)
             {"nonces": [], "amounts": []}
-            (enumerate 0 (- (length beneficiary-ids) 1))
+            (fold
+                (lambda (acc:object idx:integer)
+                    (if (= beneficiary-id (at idx beneficiary-ids))
+                        {"nonces": (+ (at "nonces" acc) (at idx nonces-array)), "amounts": (+ (at "amounts" acc) (at idx amounts-array))}
+                        acc))
+                {"nonces": [], "amounts": []}
+                (enumerate 0 (- (length beneficiary-ids) 1))
+            )
         )
     )
     (defun UC_VacateMergeIntNonceRowsForBeneficiary:object
         (beneficiary-id:string beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]])
         @doc "Concatenate the nonces/amounts (integer) of every row whose beneficiary equals <beneficiary-id> \
             \ into a single {nonces, amounts} object — per-beneficiary merge for the collectable vacate rollup."
-        (fold
-            (lambda (acc:object idx:integer)
-                (if (= beneficiary-id (at idx beneficiary-ids))
-                    {"nonces": (+ (at "nonces" acc) (at idx nonces-array)), "amounts": (+ (at "amounts" acc) (at idx amounts-array))}
-                    acc))
+        ;;EMPTY-INPUT GUARD (2026-09-13). `(enumerate 0 (- (length xs) 1))` on an EMPTY list is
+        ;;`(enumerate 0 -1)`, which Pact evaluates to the DESCENDING PAIR `[0, -1]` -- NOT the empty
+        ;;list -- so the body then indexes `(at 0 [])` and dies on a native "Array index out of
+        ;;bounds". The index is genuinely needed here (it zips parallel arrays), so the repair is a
+        ;;guard rather than a `map` over one list.
+        (if (= (length beneficiary-ids) 0)
             {"nonces": [], "amounts": []}
-            (enumerate 0 (- (length beneficiary-ids) 1))
+            (fold
+                (lambda (acc:object idx:integer)
+                    (if (= beneficiary-id (at idx beneficiary-ids))
+                        {"nonces": (+ (at "nonces" acc) (at idx nonces-array)), "amounts": (+ (at "amounts" acc) (at idx amounts-array))}
+                        acc))
+                {"nonces": [], "amounts": []}
+                (enumerate 0 (- (length beneficiary-ids) 1))
+            )
         )
     )
     (defun UC_VacateUniqueBeneficiariesFromLegs:[string]
@@ -1082,16 +1108,27 @@
     )
     (defun UC_TfLegsFromParallelArrays:[object{VCT|VacateTfLeg}]
         (owner-ids:[string] beneficiary-ids:[string] amounts:[decimal])
-        @doc "Build leg objects from parallel Legs batch arrays."
-        (map
-            (lambda (idx:integer)
-                (UDC_VacateTfLeg
-                    (at idx owner-ids)
-                    (at idx beneficiary-ids)
-                    (at idx amounts)
+        @doc "Build leg objects from parallel Legs batch arrays. Empty in, empty out."
+        ;;SHADOWED-GUARD FIX (2026-09-13). `VCT|C>TRUE-FUNGIBLE-VACATE-BATCH` binds
+        ;;`gas-ok := (URC_TfOwnerArraysGasOk …)`, which DOES test `(> l 0)` -- and then binds `legs`
+        ;;to THIS function in the same `let`. Pact evaluates let bindings eagerly, so on an empty
+        ;;batch this faulted BEFORE the enforce could read `gas-ok`, and the caller saw a native
+        ;;"Array index out of bounds" instead of "Invalid TF vacate cap input". Verified live: the
+        ;;guard computed `false` correctly while this function faulted first.
+        ;;Making it total restores the guard's voice -- `legs` becomes `[]`, `gas-ok` stays false,
+        ;;and the enforce fires with its own message. Pinned by REPL/modules/AQP.repl <<AQP-F6>>.
+        (if (= (length owner-ids) 0)
+            []
+            (map
+                (lambda (idx:integer)
+                    (UDC_VacateTfLeg
+                        (at idx owner-ids)
+                        (at idx beneficiary-ids)
+                        (at idx amounts)
+                    )
                 )
+                (enumerate 0 (- (length owner-ids) 1))
             )
-            (enumerate 0 (- (length owner-ids) 1))
         )
     )
     (defun UC_VacateTfLegsToTftBulkArrays:object
@@ -1556,23 +1593,31 @@
             beneficiary-ids:[string]
             nonces-array:[[integer]]
         )
-        @doc "Derive whole-nonce decimal amounts from pool tracker for FVT vacate owner-row unwind."
+        @doc "Derive whole-nonce decimal amounts from pool tracker for FVT vacate owner-row unwind. \
+            \ Empty in, empty out."
+        ;;EMPTY-INPUT GUARD (2026-09-13). Same descending-pair trap as its three siblings above:
+        ;;`(enumerate 0 -1)` is `[0, -1]`, not the empty list, so an empty owner batch faulted on
+        ;;`(at 0 [])` instead of returning no rows. The index zips three parallel arrays here, so a
+        ;;guard is the repair rather than mapping over one of them.
         (let
             (
                 (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
             )
-            (map
-                (lambda (idx:integer)
-                    (map
-                        (lambda (n:integer)
-                            (ref-AQP::UR_AQP|DPOFTrackerBalance
-                                pool-id dpof-id (at idx owner-ids) (at idx beneficiary-ids) n
+            (if (= (length owner-ids) 0)
+                []
+                (map
+                    (lambda (idx:integer)
+                        (map
+                            (lambda (n:integer)
+                                (ref-AQP::UR_AQP|DPOFTrackerBalance
+                                    pool-id dpof-id (at idx owner-ids) (at idx beneficiary-ids) n
+                                )
                             )
+                            (at idx nonces-array)
                         )
-                        (at idx nonces-array)
                     )
+                    (enumerate 0 (- (length owner-ids) 1))
                 )
-                (enumerate 0 (- (length owner-ids) 1))
             )
         )
     )
@@ -1590,7 +1635,18 @@
     )
     (defun URC_VacateOrtoLegBeneficiaryOk:bool
         (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonces:[integer])
-        @doc "Vacate: each DPOF nonce tracker row beneficiary-id must equal the supplied beneficiary-id."
+        @doc "Vacate: each DPOF nonce tracker row beneficiary-id must equal the supplied beneficiary-id. \
+            \ TAUTOLOGY -- the ortofungible twin of URC_VacateCollectableLegBeneficiaryOk; see its note."
+        ;;TAUTOLOGY, for exactly the reason given on `URC_VacateCollectableLegBeneficiaryOk` below:
+        ;;<beneficiary-id> is a COMPONENT OF THE LOOKUP KEY passed to
+        ;;`UR_AQP|DPOFTrackerBeneficiaryId`, so the value compared against it is always itself -- the
+        ;;stored column on a live row, the echoed key on an absent one (`with-default-read` whose
+        ;;default object is built from the key). `(= row-ben beneficiary-id)` cannot be false.
+        ;;
+        ;;The binding it describes is enforced one conjunct over, by
+        ;;`URC_VacateOrtoNoncesSufficient` / `URC_VacateOrtoRollupSufficient`: a wrong beneficiary
+        ;;addresses a different, absent tracker row whose balance is zero, so the amount check rejects
+        ;;it. Pinned in REPL/modules/AQP.repl <<AQP-F15>>.
         (let
             (
                 (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
@@ -1677,7 +1733,26 @@
     )
     (defun URC_VacateCollectableLegBeneficiaryOk:bool
         (pool-id:string collectable-id:string son:bool owner-id:string beneficiary-id:string nonces:[integer])
-        @doc "Vacate: each nonce tracker row beneficiary-id must equal the supplied beneficiary-id."
+        @doc "Vacate: each nonce tracker row beneficiary-id must equal the supplied beneficiary-id. \
+            \ TAUTOLOGY -- see the note below; the real binding is enforced by the balance checks."
+        ;;TAUTOLOGY, NOT A LIVE CHECK (established by execution 2026-09-13). <beneficiary-id> is a
+        ;;COMPONENT OF THE LOOKUP KEY: `UR_AQP|DPSFTrackerBeneficiaryId pool collectable owner
+        ;;BENEFICIARY nonce`. So the value compared against it can only ever be itself --
+        ;;  * row present -> the stored column IS the key component it was looked up by;
+        ;;  * row ABSENT  -> the reader is a `with-default-read` whose default object is built FROM
+        ;;                   the key, so it echoes <beneficiary-id> straight back.
+        ;;Either way `(= row-ben beneficiary-id)` holds, and this function cannot return false.
+        ;;Confirmed live: passing a beneficiary the row was never written under still returns true.
+        ;;
+        ;;THE BINDING IT DESCRIBES IS STILL ENFORCED, just not here. A leg naming the wrong
+        ;;beneficiary addresses a DIFFERENT (and absent) tracker row, whose balance defaults to zero
+        ;;-- so `URC_VacateCollectableNoncesSufficient` and `URC_VacateCollectableRollupSufficient`
+        ;;reject it on amount. Those two are the real protection and are pinned alongside this one in
+        ;;REPL/modules/AQP.repl <<AQP-F15>>.
+        ;;
+        ;;Left in place rather than deleted: it is a harmless conjunct in a `fold (and)` and it
+        ;;documents the intended invariant. It is recorded here so no future reader mistakes it for
+        ;;the thing standing between a caller and someone else's rollup.
         (let
             (
                 (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
@@ -2015,7 +2090,6 @@
         @doc "Owner-row count from live vacate inventory — UI preflight before Full/Legs."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
                 ;;
                 (son:bool (UC_VacateKindSon vacate-kind))
             )
@@ -2151,6 +2225,7 @@
     ;; Table persistence: W_ layer only. XI_* call W_ directly with ;; SECURE: comments; no raw insert/update/write on VCT|T|*.
     ;; SECURE composed by master VCT|C>* cap or P|VCT|RECIPE (atomic vacate batch). No UEV_* in XI bodies.
     ;;
+    ;;Protection: Class 1 — Innate protection offered by XE_SetFvtVacateFrozen
     (defun XI_SetPoolFvtsVacateFrozen:string (pool-id:string frozen:bool)
         @doc "Freeze (frozen=true at begin) / unfreeze (false at finalize) collect + inject on every FVT the \
             \ vacating pool's employed scores link to: walk URC_PoolActiveScoreIds → UR_SCR|ScoreFvtLink (BAR \
@@ -2183,6 +2258,8 @@
             )
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by XE_SetVacateJobState,
+    ;;Protection:          XB_SetPoolStakeEnabled
     (defun XI_EnsureVacateBegun:string (pool-id:string)
         @doc "If vacate not in progress: set vacate-in-progress, disable pool stake (stake+unstake are then blocked \
             \ pool-side), AND freeze collect + inject on the pool's employed-score FVTs (XI_SetPoolFvtsVacateFrozen)."
@@ -2205,6 +2282,7 @@
             )
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by XE_SetVacateJobState
     (defun XI_ClearVacateInProgress:string (pool-id:string)
         @doc "Abort/clear: clear vacate-in-progress AND unfreeze the pool's FVTs (collect+inject). Stake stays \
             \ disabled (ops re-enable via C_EnablePoolStake) — matches C_AbortVacate semantics."
@@ -2217,6 +2295,8 @@
             (XI_SetPoolFvtsVacateFrozen pool-id false)
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by XE_SetVacateJobState,
+    ;;Protection:          XB_SetPoolStakeEnabled
     (defun XI_MaybeFinalizeVacate:string
         (
             pool-id:string
@@ -2244,13 +2324,13 @@
         )
     )
     ;; Legs orchestration: XI_EnsureVacateBegun / XI_MaybeFinalizeVacate / XI_ClearVacateInProgress.
+    ;;Protection: Class 1 — Innate protection offered by XE_BankScorePendingRewards
     (defun XI_3|RpsVacatePreZero:object{IgnisCollectorV2.OutputCumulator}
         (beneficiary-id:string pool-id:string settle-bundle:object)
         @doc "TF vacate RPS prelude: bank pending at OLD deb per score plan. Skips ghost-TVL sync and row ensure."
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                 ;;
                 (settle-plans:[object] (at "settle-plans" settle-bundle))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -2269,6 +2349,8 @@
             )
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by XE_BookStakeUnclaimedCounts,
+    ;;Protection:          XE_CheckpointStakeRps
     (defun XI_2|SettleBeneficiaryRewardsOnly:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string beneficiary-id:string)
         @doc "Vacate-v2 §4 settle-on-last-drain: preserve ONE beneficiary's pending rewards into unclaimed \
@@ -2282,7 +2364,6 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                 ;;
                 (settle-bundle:object (RPS.URHC_BuildStakeSettleBundle pool-id beneficiary-id))
             )
@@ -2296,6 +2377,10 @@
             )
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by XE_TrueFungibleBeneficiaryRollup,
+    ;;Protection:          XE_RefreshTrueFungibleStakeAnchors,
+    ;;Protection:          XE_ApplyTrueFungibleStakeDelta, XE_BookStakeUnclaimedCounts,
+    ;;Protection:          XE_CheckpointStakeRps
     (defun XI_2|VacateTrueFungibleBeneficiaryUnwind:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string beneficiary-id:string dptf-id:string amount:decimal)
         @doc "TF vacate per beneficiary: rollup → RPS bank → ANK → SCORE unstake → RPS book+checkpoint."
@@ -2329,6 +2414,7 @@
             )
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by XE_ZeroDptfTrackerSlot
     (defun XI_1|VacateTrueFungibleUnwindFromLegs:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string dptf-id:string legs:[object{VCT|VacateTfLeg}])
         @doc "TF vacate phases 2–4: write-only tracker zero per leg; beneficiary unwind deduped by unique beneficiary."
@@ -2368,6 +2454,7 @@
             (ref-IGNIS::UDC_ConcatenateOutputCumulators (+ tracker-ocs score-ocs) [])
         )
     )
+    ;;Protection: Class 3 — Custom: P|VCT|RECIPE
     (defun XI_VacateTrueFungibleFromLegs:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string dptf-id:string legs:[object{VCT|VacateTfLeg}])
         @doc "TF vacate CONSUMER (per DPTF asset) — no scan. Phases 2–4 unwind from the pre-built leg list, then \
@@ -2398,6 +2485,9 @@
             )
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by XE_ZeroDptfTrackerSlot,
+    ;;Protection:          XE_TrueFungibleBeneficiaryRollup,
+    ;;Protection:          XE_RefreshTrueFungibleStakeAnchors
     (defun XI_1|DrainTrueFungibleFromLegs:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string dptf-id:string legs:[object{VCT|VacateTfLeg}])
         @doc "Vacate-v2 TF DRAIN phases 2-4 (no score delta). Per leg: zero the tracker row (nns--/unn--) AND \
@@ -2464,6 +2554,7 @@
             )
         )
     )
+    ;;Protection: Class 3 — Custom: P|VCT|RECIPE
     (defun XI_DrainTrueFungibleFromLegs:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string dptf-id:string legs:[object{VCT|VacateTfLeg}])
         @doc "Vacate-v2 TF DRAIN CONSUMER (per DPTF asset) — no scan. Phases 2-4 drain-unwind from the pre-built \
@@ -2494,6 +2585,7 @@
             )
         )
     )
+    ;;Protection: Class 3 — Custom: P|VCT|RECIPE
     (defun XI_VacateOrtoFungibleFromLegs:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string dpof-id:string legs:[object{VCT|VacateNonceLeg}])
         @doc "OF vacate CONSUMER (per DPOF asset) — no scan. Unpack the pre-built nonce legs (owner/beneficiary/ \
@@ -2512,6 +2604,7 @@
             )
         )
     )
+    ;;Protection: Class 3 — Custom: P|VCT|RECIPE
     (defun XI_VacateCollectablesFromLegs:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string collectable-id:string son:bool legs:[object{VCT|VacateNonceLeg}])
         @doc "DPSF/DPNF vacate CONSUMER (per collection, son=DPSF/DPNF) — no scan. Unpack the pre-built nonce legs \
@@ -2529,6 +2622,7 @@
         )
     )
     ;; ── PHASE-2 POOL consumers: walk the PHASE-1 lanes → per-asset FromLegs consumer. No reads, no scans. ──
+    ;;Protection: Class 3 — Custom: P|VCT|RECIPE
     (defun XI_VacateTrueFungiblePoolLegs:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string lanes:[object{VCT|VacateTfLane}])
         @doc "TF-lane POOL consumer — no scan. Run XI_VacateTrueFungibleFromLegs on every pre-scanned DPTF lane \
@@ -2549,6 +2643,7 @@
             )
         )
     )
+    ;;Protection: Class 3 — Custom: P|VCT|RECIPE
     (defun XI_VacateOrtoFungiblePoolLegs:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string lanes:[object{VCT|VacateNonceLane}])
         @doc "OF-lane POOL consumer — no scan. Run XI_VacateOrtoFungibleFromLegs on every pre-scanned DPOF lane \
@@ -2569,6 +2664,7 @@
             )
         )
     )
+    ;;Protection: Class 3 — Custom: P|VCT|RECIPE
     (defun XI_VacateCollectablesPoolLegs:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string son:bool lanes:[object{VCT|VacateNonceLane}])
         @doc "Collectable-lane POOL consumer — no scan. Run XI_VacateCollectablesFromLegs (son) on every \
@@ -2589,6 +2685,8 @@
             )
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by XE_ApplyOrtoFungibleStakeDelta,
+    ;;Protection:          XE_BookStakeUnclaimedCounts, XE_CheckpointStakeRps
     (defun XI_2|VacateOrtoFungibleScoreUnwind:object{IgnisCollectorV2.OutputCumulator}
         (
             pool-id:string
@@ -2604,7 +2702,6 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                 (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 ;;
                 (settle-bundle:object
@@ -2625,6 +2722,9 @@
             )
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by XE_RefreshCollectableStakeAnchors,
+    ;;Protection:          XE_ApplyCollectableStakeDelta, XE_BookStakeUnclaimedCounts,
+    ;;Protection:          XE_CheckpointStakeRps
     (defun XI_2|VacateCollectableScoreUnwind:object{IgnisCollectorV2.OutputCumulator}
         (
             pool-id:string
@@ -2663,6 +2763,7 @@
             )
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by XE_OrtoFungiblePoolTracker
     (defun XI_1|VacateOrtoFungibleUnwindBatch:object{IgnisCollectorV2.OutputCumulator}
         (
             pool-id:string
@@ -2724,6 +2825,8 @@
             (ref-IGNIS::UDC_ConcatenateOutputCumulators (+ tracker-ocs score-ocs) [])
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by XE_CollectablePoolTracker,
+    ;;Protection:          XE_CollectableBeneficiaryRollup
     (defun XI_1|VacateCollectableUnwindBatch:object{IgnisCollectorV2.OutputCumulator}
         (
             pool-id:string
@@ -2810,6 +2913,7 @@
             (ref-IGNIS::UDC_ConcatenateOutputCumulators (+ tracker-ocs score-ocs) [])
         )
     )
+    ;;Protection: Class 3 — Custom: P|VCT|RECIPE
     (defun XI_VacateOrtoFungibleBatch:object{IgnisCollectorV2.OutputCumulator}
         (
             pool-id:string
@@ -2827,7 +2931,6 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                 ;;
                 (bulk-oc:object{IgnisCollectorV2.OutputCumulator}
                     (ref-DPOF::C_BulkTransfer dpof-id nonces-array AQP|SC_NAME owner-ids true)
@@ -2841,6 +2944,7 @@
             (ref-IGNIS::UDC_ConcatenateOutputCumulators [bulk-oc unwind-oc] [])
         )
     )
+    ;;Protection: Class 3 — Custom: P|VCT|RECIPE
     (defun XI_VacateCollectableBatch:object{IgnisCollectorV2.OutputCumulator}
         (
             pool-id:string
@@ -2859,7 +2963,6 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                 ;;
                 (bulk-oc:object{IgnisCollectorV2.OutputCumulator}
                     (ref-DPDC-T::C_BulkTransfer
@@ -2876,6 +2979,7 @@
         )
     )
     ;; ══ Vacate-v2 FAST-DRAIN batch internals (OF + collectable) — score-free mirrors of the vacate batches ══
+    ;;Protection: Class 1 — Innate protection offered by XE_OrtoFungiblePoolTracker
     (defun XI_1|DrainOrtoFungibleUnwindBatch:object{IgnisCollectorV2.OutputCumulator}
         (
             pool-id:string
@@ -2929,6 +3033,7 @@
             )
         )
     )
+    ;;Protection: Class 3 — Custom: P|VCT|RECIPE
     (defun XI_DrainOrtoFungibleBatch:object{IgnisCollectorV2.OutputCumulator}
         (
             pool-id:string
@@ -2957,6 +3062,9 @@
             (ref-IGNIS::UDC_ConcatenateOutputCumulators [bulk-oc unwind-oc] [])
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by XE_CollectablePoolTracker,
+    ;;Protection:          XE_CollectableBeneficiaryRollup,
+    ;;Protection:          XE_RefreshCollectableStakeAnchors
     (defun XI_1|DrainCollectableUnwindBatch:object{IgnisCollectorV2.OutputCumulator}
         (
             pool-id:string
@@ -3029,6 +3137,7 @@
             )
         )
     )
+    ;;Protection: Class 3 — Custom: P|VCT|RECIPE
     (defun XI_DrainCollectableBatch:object{IgnisCollectorV2.OutputCumulator}
         (
             pool-id:string
@@ -3071,6 +3180,7 @@
     ;;   XB_Vacate{TF,OF,SF,NF}  — external per-kind wrappers over the same XI cores.
     ;;   (multistep defpact + OF/SF/NF dispatch land in later steps of this phase.)
     ;; ═══════════════════════════════════════════════════════════════════════════
+    ;;Protection: Class 5 — IMC + Custom: VCT|C>VACATE
     (defun XB_VacateTrueFungible:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string)
         @doc "Vacate rehaul — external per-kind TF vacate for a whole pool (both internal + external, hence XB). \
@@ -3082,6 +3192,7 @@
             (XI_VacateTrueFungiblePoolLegs pool-id (URH_VacateTrueFungiblePoolLegs pool-id))
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: VCT|C>VACATE
     (defun XB_VacateOrtoFungible:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string dpof-id:string)
         @doc "Vacate rehaul — external per-kind OF vacate for ONE OF asset of a pool (both internal + external). \
@@ -3093,6 +3204,7 @@
                 (URHC_VacateNonceOwnerRowsRaw pool-id dpof-id VACATE-KIND-OF))
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: VCT|C>VACATE
     (defun XB_VacateSemiFungible:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string dpsf-id:string)
         @doc "Vacate rehaul — external per-kind DPSF (semi-fungible collection) vacate for ONE collectable of a \
@@ -3104,6 +3216,7 @@
                 (URHC_VacateNonceOwnerRowsRaw pool-id dpsf-id VACATE-KIND-DPSF))
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: VCT|C>VACATE
     (defun XB_VacateNonFungible:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string dpnf-id:string)
         @doc "Vacate rehaul — external per-kind DPNF (non-fungible collection) vacate for ONE collectable of a \
@@ -3358,7 +3471,6 @@
         (with-capability (VCT|C>FINALIZE-VACATE pool-id)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
                     (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
                 )

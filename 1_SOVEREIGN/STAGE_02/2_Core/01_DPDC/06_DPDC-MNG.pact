@@ -283,6 +283,13 @@
     ;;{C3}  Composed
     (defcap DPDC-MNG|C>ADD-QUANTITY (account:string id:string nonce:integer amount:integer)
         @event
+        ;;PARTIALLY-SHADOWED GUARD FIX: <nonce> used to be validated INSIDE the let, below the
+        ;;UR_NonceClass binding. That reader hard-reads keyed by the nonce, so nonce 0 aborted on
+        ;;'row not found' and never reached the guard. (A NEGATIVE nonce did reach it, because
+        ;;UR_NonceClass keys on (abs nonce) and so reads a row that exists - which is why only the
+        ;;zero case was shadowed, not the whole predicate.) Hoisted; message unchanged on every
+        ;;path, so only its reachability at nonce=0 changed.
+        (enforce (> nonce 0) "Invalid Data for Adding Quantity for an SFT Nonce")
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -290,12 +297,9 @@
                 (nonce-class:integer (ref-DPDC::UR_NonceClass id true nonce))
             )
             (enforce
-                (fold (and) true
-                    [
-                        (> nonce 0)
-                        (> amount 0)
-                        (= nonce-class 0)
-                    ]
+                (and
+                    (> amount 0)
+                    (= nonce-class 0)
                 )
                 "Invalid Data for Adding Quantity for an SFT Nonce"
             )
@@ -792,6 +796,7 @@
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
+    ;;Protection: Class 3 — Custom: DPDC-MNG|S>CTRL
     (defun XI_Control (id:string son:bool cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool)
         (require-capability (DPDC-MNG|S>CTRL id son))
         (let
@@ -803,6 +808,7 @@
             )
         )
     )
+    ;;Protection: Class 3 — Custom: DPDC-MNG|S>TG_PAUSE
     (defun XI_TogglePause (id:string son:bool toggle:bool)
         (require-capability (DPDC-MNG|S>TG_PAUSE id son toggle))
         (let
@@ -813,6 +819,7 @@
         )
     )
     ;;
+    ;;Protection: Class 3 — Custom: DPDC-MNG|C>ADD-QUANTITY
     (defun XI_IncreaseClassZeroSemiFungible (account:string id:string nonce:integer amount:integer)
         (require-capability (DPDC-MNG|C>ADD-QUANTITY account id nonce amount))
         (let
@@ -827,6 +834,7 @@
             (ref-DPDC::XE_U|NonceSupply id nonce (+ amount nonce-supply))
         )
     )
+    ;;Protection: Class 3 — Custom: DPDC-MNG|C>IZ-CLASS-ZERO
     (defun XI_DecreaseClassZeroSemiFungibles
         (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool)
         @doc "Only Positive, Class 0 Nonces can be burned directly with this function \
@@ -863,12 +871,12 @@
         )
     )
     ;;
+    ;;Protection: Class 3 — Custom: DPDC-MNG|C>IZ-CLASS-ZERO
     (defun XI_DecreaseClassZeroNonFungibles
         (account:string id:string nonces:[integer] wipe-mode:bool)
         (require-capability (DPDC-MNG|C>IZ-CLASS-ZERO id false nonces))
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
                 (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
                 ;;
                 (l1:integer (length nonces))
@@ -886,7 +894,6 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
                 (owner:string (ref-DPDC::UR_OwnerKonto id son))
             )
@@ -899,15 +906,9 @@
     (defun C_TogglePause:object{IgnisCollectorV2.OutputCumulator}
         (id:string son:bool toggle:bool)
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (with-capability (DPDC-MNG|S>TG_PAUSE id son toggle)
-                (XI_TogglePause id son toggle)
-                (URCi_TogglePause id son)
-            )
+        (with-capability (DPDC-MNG|S>TG_PAUSE id son toggle)
+            (XI_TogglePause id son toggle)
+            (URCi_TogglePause id son)
         )
     )
     ;;
@@ -917,15 +918,9 @@
         (account:string id:string nonce:integer amount:integer)
         @doc "Add Quantity for an SFT"
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (with-capability (DPDC-MNG|C>ADD-QUANTITY account id nonce amount)
-                (XI_IncreaseClassZeroSemiFungible account id nonce amount)
-                (URCi_AddQuantity id)
-            )
+        (with-capability (DPDC-MNG|C>ADD-QUANTITY account id nonce amount)
+            (XI_IncreaseClassZeroSemiFungible account id nonce amount)
+            (URCi_AddQuantity id)
         )
     )
     ;;  [NFT]
@@ -934,8 +929,6 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
                 (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
             )
             (with-capability (DPDC-MNG|C>RESPAWN-NFT account id nonce)
@@ -950,54 +943,35 @@
     (defun C_BurnSFT:object{IgnisCollectorV2.OutputCumulator}
         (account:string id:string nonce:integer amount:integer)
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (with-capability (DPDC-MNG|C>BURN-SFT account id nonce amount)
-                ;;Burn Semifungible and Update Supplies
-                (XI_DecreaseClassZeroSemiFungibles account id [nonce] [amount] false)
-                ;;Costs 2 IGNIS per Burn Event
-                (URCi_BurnSFT id)
-            )
+        (with-capability (DPDC-MNG|C>BURN-SFT account id nonce amount)
+            ;;Burn Semifungible and Update Supplies
+            (XI_DecreaseClassZeroSemiFungibles account id [nonce] [amount] false)
+            ;;Costs 2 IGNIS per Burn Event
+            (URCi_BurnSFT id)
         )
     )
     (defun C_WipeSlim:object{IgnisCollectorV2.OutputCumulator}
         (account:string id:string nonce:integer amount:integer)
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (with-capability (DPDC-MNG|C>WIPE-SFT-NONCE-PARTIALLY account id nonce amount)
-                ;;Burn Semifungible and Update Supplies
-                (XI_DecreaseClassZeroSemiFungibles account id [nonce] [amount] true)
-                ;;Costs 1 IGNIS for Partial Nonce Wipe Event
-                (URCi_WipeSlim id)
-            )
+        (with-capability (DPDC-MNG|C>WIPE-SFT-NONCE-PARTIALLY account id nonce amount)
+            ;;Burn Semifungible and Update Supplies
+            (XI_DecreaseClassZeroSemiFungibles account id [nonce] [amount] true)
+            ;;Costs 1 IGNIS for Partial Nonce Wipe Event
+            (URCi_WipeSlim id)
         )
     )
     ;;  [NFT]
     (defun C_BurnNFT:object{IgnisCollectorV2.OutputCumulator} (account:string id:string nonce:integer)
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
-            )
-            (with-capability (DPDC-MNG|C>BURN-NFT account id nonce)
-                ;; #79: TWO latent bugs here, never triggered because DPNF|C_Burn had no test coverage:
-                ;;  (1) called via ref-DPDC-C:: but XI_DecreaseClassZeroNonFungibles is a LOCAL XI_ of
-                ;;      DPDC-MNG (defined above) — must be a local call;
-                ;;  (2) args were (id account …) but the signature is (account id nonces wipe-mode), so
-                ;;      account/id were swapped → the composed IZ-CLASS-ZERO cap check used the account
-                ;;      as the collection id and failed. Correct order is account first, then id.
-                (XI_DecreaseClassZeroNonFungibles account id [nonce] false)
-                (URCi_BurnNFT id)
-            )
+        (with-capability (DPDC-MNG|C>BURN-NFT account id nonce)
+            ;; #79: TWO latent bugs here, never triggered because DPNF|C_Burn had no test coverage:
+            ;;  (1) called via ref-DPDC-C:: but XI_DecreaseClassZeroNonFungibles is a LOCAL XI_ of
+            ;;      DPDC-MNG (defined above) — must be a local call;
+            ;;  (2) args were (id account …) but the signature is (account id nonces wipe-mode), so
+            ;;      account/id were swapped → the composed IZ-CLASS-ZERO cap check used the account
+            ;;      as the collection id and failed. Correct order is account first, then id.
+            (XI_DecreaseClassZeroNonFungibles account id [nonce] false)
+            (URCi_BurnNFT id)
         )
     )
     ;;  [SFT+NFT]
@@ -1007,7 +981,6 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
                 (owner:string (ref-DPDC::UR_OwnerKonto id son))
             )

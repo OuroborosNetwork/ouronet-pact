@@ -97,6 +97,11 @@
     (defun URCi_UpgradeBrandingLPs:decimal (months:integer))
     (defun URCi_ToggleAddLiquidity:object{IgnisCollectorV2.OutputCumulator} (swpair:string toggle:bool))
     (defun URCi_Fuel:object{IgnisCollectorV2.OutputCumulator} (account:string swpair:string input-amounts:[decimal] direct-or-indirect:bool))
+    (defun URCi_AddStandardLiquidityClad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun URCi_AddIcedLiquidityClad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun URCi_AddGlacialLiquidityClad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun URCi_AddFrozenLiquidityClad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData} (account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal))
+    (defun URCi_AddSleepingLiquidityClad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData} (account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal))
     (defun URCi_AddStandardLiquidity:object{IgnisCollectorV2.OutputCumulator} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
     (defun URCi_AddIcedLiquidity:object{IgnisCollectorV2.OutputCumulator} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
     (defun URCi_AddGlacialLiquidity:object{IgnisCollectorV2.OutputCumulator} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
@@ -521,6 +526,96 @@
             )
         )
     )
+    ;;  [URCi] — CLAD readers. SINGLE SOURCE (2026-09-14) for the five add-liquidity shapes.
+    ;;  Adding liquidity takes TWO different things from the caller: gas, which travels through the
+    ;;  OutputCumulator and lands in <ignis-need>, and an Asymmetric-Liquidity TAX, which is IGNIS
+    ;;  moved as PRINCIPAL and never enters a cumulator at all. The CLAD computes both, plus the
+    ;;  human wording for each tax leg. These readers exist so the INFO_ layer can DECLARE the tax
+    ;;  half without rebuilding the CLAD from scratch -- rebuilding it means restating the two
+    ;;  collection flags per variant, and a preview that guesses those flags describes a different
+    ;;  operation than the one it prices. Each URCi_Add*Liquidity below now reads its own twin.
+    (defun URCi_AddStandardLiquidityClad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
+        (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
+        @doc "The CLAD behind STOA-PID|C_AddStandardLiquidity: asymmetric-collection ON, \
+            \ gaseous-collection ON -- the one add shape that takes an IGNIS tax as PRINCIPAL."
+        (let
+            (
+                (ref-SWPL:module{SwapperLiquidityV2} SWPL)
+            )
+            (ref-SWPL::URC_STOA-PID|CLAD account swpair
+                (ref-SWPL::URC_LD swpair input-amounts) true true stoa-pid)
+        )
+    )
+    (defun URCi_AddIcedLiquidityClad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
+        (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
+        @doc "The CLAD behind STOA-PID|C_AddIcedLiquidity: asymmetric-collection OFF, \
+            \ gaseous-collection ON. No asymmetric collection means no IGNIS in <mt-ids> at all."
+        (let
+            (
+                (ref-SWPL:module{SwapperLiquidityV2} SWPL)
+            )
+            (ref-SWPL::URC_STOA-PID|CLAD account swpair
+                (ref-SWPL::URC_LD swpair input-amounts) false true stoa-pid)
+        )
+    )
+    (defun URCi_AddGlacialLiquidityClad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
+        (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
+        @doc "The CLAD behind STOA-PID|C_AddGlacialLiquidity: asymmetric-collection OFF, \
+            \ gaseous-collection OFF -- no IGNIS tax and no gaseous LP fee."
+        (let
+            (
+                (ref-SWPL:module{SwapperLiquidityV2} SWPL)
+            )
+            (ref-SWPL::URC_STOA-PID|CLAD account swpair
+                (ref-SWPL::URC_LD swpair input-amounts) false false stoa-pid)
+        )
+    )
+    (defun URCi_AddFrozenLiquidityClad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
+        (account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal)
+        @doc "The CLAD behind STOA-PID|C_AddFrozenLiquidity. The liquidity vector is built from \
+            \ the UNDERLYING token's pool position, and the adder of record is the VST smart \
+            \ account (it holds the position while the frozen wrapper is burnt), not <account>. \
+            \ Both collection flags OFF."
+        (let
+            (
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-SWP:module{SwapperV4} SWP)
+                (ref-SWPL:module{SwapperLiquidityV2} SWPL)
+                ;;
+                (dptf:string (ref-DPTF::UR_Frozen frozen-dptf))
+            )
+            (ref-SWPL::URC_STOA-PID|CLAD (ref-DALOS::GOV|VST|SC_NAME) swpair
+                (ref-SWPL::URC_LD swpair
+                    (ref-U|SWP::UC_MakeLiquidityList swpair
+                        (ref-SWP::URv_PoolTokenPosition swpair dptf) input-amount))
+                false false stoa-pid)
+        )
+    )
+    (defun URCi_AddSleepingLiquidityClad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
+        (account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal)
+        @doc "The CLAD behind STOA-PID|C_AddSleepingLiquidity. As the frozen twin, but the amount \
+            \ is the whole nonce supply rather than a caller-chosen figure. Both collection \
+            \ flags ON, so this shape DOES carry the IGNIS asymmetry tax."
+        (let
+            (
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-SWP:module{SwapperV4} SWP)
+                (ref-SWPL:module{SwapperLiquidityV2} SWPL)
+                ;;
+                (dptf:string (ref-DPOF::UR_Sleeping sleeping-dpof))
+            )
+            (ref-SWPL::URC_STOA-PID|CLAD (ref-DALOS::GOV|VST|SC_NAME) swpair
+                (ref-SWPL::URC_LD swpair
+                    (ref-U|SWP::UC_MakeLiquidityList swpair
+                        (ref-SWP::URv_PoolTokenPosition swpair dptf)
+                        (ref-DPOF::UR_NonceSupply sleeping-dpof nonce)))
+                true true stoa-pid)
+        )
+    )
     (defun URCi_AddStandardLiquidity:object{IgnisCollectorV2.OutputCumulator}
         (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
         @doc "Cost preview for STOA-PID|C_AddStandardLiquidity: the CLAD perfect-ignis-fee + the \
@@ -531,12 +626,10 @@
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 (ref-SWP:module{SwapperV4} SWP)
-                (ref-SWPL:module{SwapperLiquidityV2} SWPL)
                 ;;
                 (lp-id:string (ref-SWP::UR_TokenLP swpair))
-                (ld:object{SwapperLiquidityV2.LiquidityData} (ref-SWPL::URC_LD swpair input-amounts))
                 (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
-                    (ref-SWPL::URC_STOA-PID|CLAD account swpair ld true true stoa-pid))
+                    (URCi_AddStandardLiquidityClad account swpair input-amounts stoa-pid))
                 (native-lp:decimal (at "primary-lp" clad))
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators
@@ -562,12 +655,10 @@
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 (ref-VST:module{VestingV2} VST)
                 (ref-SWP:module{SwapperV4} SWP)
-                (ref-SWPL:module{SwapperLiquidityV2} SWPL)
                 ;;
                 (lp-id:string (ref-SWP::UR_TokenLP swpair))
-                (ld:object{SwapperLiquidityV2.LiquidityData} (ref-SWPL::URC_LD swpair input-amounts))
                 (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
-                    (ref-SWPL::URC_STOA-PID|CLAD account swpair ld false true stoa-pid))
+                    (URCi_AddIcedLiquidityClad account swpair input-amounts stoa-pid))
                 (native-lp:decimal (at "primary-lp" clad))
                 (frozen-lp:decimal (at "secondary-lp" clad))
             )
@@ -595,12 +686,10 @@
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 (ref-VST:module{VestingV2} VST)
                 (ref-SWP:module{SwapperV4} SWP)
-                (ref-SWPL:module{SwapperLiquidityV2} SWPL)
                 ;;
                 (lp-id:string (ref-SWP::UR_TokenLP swpair))
-                (ld:object{SwapperLiquidityV2.LiquidityData} (ref-SWPL::URC_LD swpair input-amounts))
                 (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
-                    (ref-SWPL::URC_STOA-PID|CLAD account swpair ld false false stoa-pid))
+                    (URCi_AddGlacialLiquidityClad account swpair input-amounts stoa-pid))
                 (native-lp:decimal (at "primary-lp" clad))
                 (frozen-lp:decimal (at "secondary-lp" clad))
             )
@@ -627,23 +716,17 @@
             \ CLAD fee + re-freeze the resulting LP. Uses the frozen-token's underlying position."
         (let
             (
-                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 (ref-VST:module{VestingV2} VST)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-SWP:module{SwapperV4} SWP)
-                (ref-SWPL:module{SwapperLiquidityV2} SWPL)
                 ;;
                 (vst-sc:string (ref-DALOS::GOV|VST|SC_NAME))
                 (lp-id:string (ref-SWP::UR_TokenLP swpair))
-                (dptf:string (ref-DPTF::UR_Frozen frozen-dptf))
-                (ptp:integer (ref-SWP::UR_PoolTokenPosition swpair dptf))
-                (ld:object{SwapperLiquidityV2.LiquidityData}
-                    (ref-SWPL::URC_LD swpair (ref-U|SWP::UC_MakeLiquidityList swpair ptp input-amount)))
                 (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
-                    (ref-SWPL::URC_STOA-PID|CLAD vst-sc swpair ld false false stoa-pid))
+                    (URCi_AddFrozenLiquidityClad account swpair frozen-dptf input-amount stoa-pid))
                 (frozen-lp:decimal (at "secondary-lp" clad))
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators
@@ -668,25 +751,18 @@
             \ lock. Uses the sleeping-token's underlying position."
         (let
             (
-                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 (ref-VST:module{VestingV2} VST)
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 (ref-SWP:module{SwapperV4} SWP)
-                (ref-SWPL:module{SwapperLiquidityV2} SWPL)
                 ;;
                 (vst-sc:string (ref-DALOS::GOV|VST|SC_NAME))
                 (ignis-id:string (ref-DALOS::UR_IgnisID))
                 (lp-id:string (ref-SWP::UR_TokenLP swpair))
-                (dptf:string (ref-DPOF::UR_Sleeping sleeping-dpof))
-                (ptp:integer (ref-SWP::UR_PoolTokenPosition swpair dptf))
-                (batch-amount:decimal (ref-DPOF::UR_NonceSupply sleeping-dpof nonce))
-                (ld:object{SwapperLiquidityV2.LiquidityData}
-                    (ref-SWPL::URC_LD swpair (ref-U|SWP::UC_MakeLiquidityList swpair ptp batch-amount)))
                 (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
-                    (ref-SWPL::URC_STOA-PID|CLAD vst-sc swpair ld true true stoa-pid))
+                    (URCi_AddSleepingLiquidityClad account swpair sleeping-dpof nonce stoa-pid))
                 (sleeping-lp:decimal (at "primary-lp" clad))
                 ;;
                 (release-date:time (at "release-date" (at 0 (ref-DPOF::UR_NonceMetaData sleeping-dpof nonce))))
@@ -730,9 +806,21 @@
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                 [
+                    ;;LP add/remove churn deterrent. PRICE-SOURCE FIX (2026-09-14, owner ruling
+                    ;;"make them consistent"): preview and exec disagreed here -- the preview read
+                    ;;UC_IgnisPrice "SWP|C_RemoveLiquidity" "lp-churn" (1029.0 = the 1000.0 central
+                    ;;deterrent PLUS this op's own 29.0 component) while C_RemoveLiquidity's ico-flat
+                    ;;read the BARE UC_IgnisDeter "lp-churn" (1000.0), so every removal was over-quoted
+                    ;;by 29.0 raw IGNIS. The disagreement was SIDE-WIDE, not just preview-vs-exec: the
+                    ;;five ADD ops bill UC_IgnisPrice on BOTH sides (:546 / :1029 and siblings), so an
+                    ;;add paid deter+component while a remove paid deter alone and the 29.0 row sat in
+                    ;;the price table billed by nothing. Resolved toward the ADD side and toward
+                    ;;UC_IgnisPrice's own contract ("every URCi_* reader should bill through this"):
+                    ;;BOTH sides of remove now read UC_IgnisPrice, and the exec at :1333 reads it too.
+                    ;;Measured by modules/SWP.repl <<SWP-I25>>.
                     (ref-IGNIS::UDC_ConstructOutputCumulator
-                (ref-IGNIS::UC_IgnisPrice "SWP|C_RemoveLiquidity" "lp-churn")
-                SWP|SC_NAME trigger [])
+                        (ref-IGNIS::UC_IgnisPrice "SWP|C_RemoveLiquidity" "lp-churn")
+                        SWP|SC_NAME trigger [])
                     (ref-TFT::URCi_Transfer lp-id account SWP|SC_NAME lp-amount)
                     (ref-DPTF::URCi_Burn lp-id SWP|SC_NAME)
                     (ref-TFT::URCi_MultiTransferCumulator pool-token-ids SWP|SC_NAME account pt-output-amounts)
@@ -1153,7 +1241,7 @@
                 (ref-SWPL:module{SwapperLiquidityV2} SWPL)
                 ;;
                 (dptf:string (ref-DPTF::UR_Frozen frozen-dptf))
-                (ptp:integer (ref-SWP::UR_PoolTokenPosition swpair dptf))
+                (ptp:integer (ref-SWP::URv_PoolTokenPosition swpair dptf))
                 (lq-lst:[decimal] (ref-U|SWP::UC_MakeLiquidityList swpair ptp input-amount))
                 (ld:object{SwapperLiquidityV2.LiquidityData}
                     (ref-SWPL::URC_LD swpair lq-lst)
@@ -1224,7 +1312,7 @@
                 (ref-SWPL:module{SwapperLiquidityV2} SWPL)
                 ;;
                 (dptf:string (ref-DPOF::UR_Sleeping sleeping-dpof))
-                (ptp:integer (ref-SWP::UR_PoolTokenPosition swpair dptf))
+                (ptp:integer (ref-SWP::URv_PoolTokenPosition swpair dptf))
                 (batch-amount:decimal (ref-DPOF::UR_NonceSupply sleeping-dpof nonce))
                 (lq-lst:[decimal] (ref-U|SWP::UC_MakeLiquidityList swpair ptp batch-amount))
                 (ld:object{SwapperLiquidityV2.LiquidityData}
@@ -1318,8 +1406,12 @@
                     ;;Removing Liquidity requires a flat fee of 10$ in Ignis
                     ;;This deincentivizes frequent Liquidity removals
                     ;;
-                    ;;LP add/remove churn deterrent — central IG|DETER lp-churn (owner 2026-09-05)
-                    (flat-ignis-lq-rm-fee:decimal (ref-IGNIS::UC_IgnisDeter "lp-churn"))
+                    ;;LP add/remove churn deterrent — central IG|DETER lp-churn (owner 2026-09-05).
+                    ;;2026-09-14: was the BARE UC_IgnisDeter, which made removal the one liquidity op
+                    ;;that skipped its own component while its 29.0 row sat unbilled in the price
+                    ;;table. Now UC_IgnisPrice, matching the five ADD ops. See URCi_RemoveLiquidity.
+                    (flat-ignis-lq-rm-fee:decimal
+                        (ref-IGNIS::UC_IgnisPrice "SWP|C_RemoveLiquidity" "lp-churn"))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                     (ico-flat:object{IgnisCollectorV2.OutputCumulator}
                         (ref-IGNIS::UDC_ConstructOutputCumulator flat-ignis-lq-rm-fee SWP|SC_NAME trigger [])

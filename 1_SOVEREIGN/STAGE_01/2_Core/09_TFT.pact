@@ -595,7 +595,6 @@
         (id:string sender:string size:integer price:decimal)
         (let
             (
-                (ref-U|LST:module{StringProcessorV2} U|LST)
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (l-dec:decimal (dec size))
             )
@@ -737,7 +736,6 @@
     (defun URC_IzSimpleTransfer:bool (id:string sender:string receiver:string amount:decimal)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 ;;
                 (fee-toggle:bool (ref-DPTF::UR_FeeToggle id))
@@ -791,7 +789,6 @@
     (defun URC_IzSimpleTransferForBulk:bool (id:string sender:string transfer-amount-lst:[decimal])
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 ;;
                 (fee-toggle:bool (ref-DPTF::UR_FeeToggle id))
@@ -823,7 +820,6 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ea-id:string (ref-DALOS::UR_EliteAurynID))
             )
             (if (= id ea-id) true false)
@@ -833,7 +829,6 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (u-id:string (ref-DALOS::UR_UnityID))
             )
             (if (= id u-id) true false)
@@ -995,7 +990,6 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisLeg "tier-small") transmuter
@@ -1008,7 +1002,6 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisLeg "tier-medium") transmuter
@@ -1064,7 +1057,6 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (price:decimal
                     (if (< amount 10.0)
                         (ref-IGNIS::UC_IgnisLeg "tier-smallest")
@@ -1104,7 +1096,6 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisLeg "tier-smallest")  sender
@@ -1117,7 +1108,6 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisLeg "tier-small") sender
@@ -1130,7 +1120,6 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisLeg "tier-medium") sender
@@ -1335,7 +1324,6 @@
             (if are-transfer-roles-active
                 (let
                     (
-                        (ref-DALOS:module{OuronetDalosV2} DALOS)
                         (ouroboros:string OUROBOROS|SC_NAME)
                         (dalos:string DALOS|SC_NAME)
                         ;;
@@ -1356,6 +1344,7 @@
     )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
+    ;;Protection: Class 3 — Custom: DPTF|C>X-TRANSMUTE
     (defun XI_Transmute (id:string transmuter:string transmute-amount:decimal)
         (require-capability (DPTF|C>X-TRANSMUTE id transmuter transmute-amount))
         (let
@@ -1368,6 +1357,7 @@
         )
     )
     ;;
+    ;;Protection: Class 3 — Custom: DPTF|C>X-TRANSFER
     (defun XI_SimpleTransfer (id:string sender:string receiver:string transfer-amount:decimal method:bool)
         (require-capability (DPTF|C>X-TRANSFER id sender receiver method))
         (let
@@ -1379,6 +1369,7 @@
             (ref-DPTF::XB_CreditTrueFungible id receiver transfer-amount)
         )
     )
+    ;;Protection: Class 3 — Custom: DPTF|C>X-TRANSFER
     (defun XI_ComplexTransfer (id:string sender:string receiver:string transfer-amount:decimal method:bool)
         (require-capability (DPTF|C>X-TRANSFER id sender receiver method))
         (let
@@ -1390,10 +1381,11 @@
             (XI_ComplexCredit id receiver transfer-amount)
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by XB_CreditTrueFungible,
+    ;;Protection:          XE_UpdateFeeVolume
     (defun XI_ComplexCredit (id:string receiver:string transfer-amount:decimal)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (dalos:string DALOS|SC_NAME)
                 (fees:[decimal] (ref-DPTF::URC_Fee id transfer-amount))
@@ -1415,6 +1407,7 @@
             (ref-DPTF::XB_CreditTrueFungible id receiver remainder)
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by XI_DirectUpdateEliteAccount
     (defun XI_DynamicUpdateEliteAccount (account:string)
         (let
             (
@@ -1427,6 +1420,7 @@
             )
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by XE_UpdateElite
     (defun XI_DirectUpdateEliteAccount (account:string)
         (let
             (
@@ -1438,6 +1432,7 @@
         )
     )
     ;;
+    ;;Protection: Class 2 — SECURE
     (defun XI_BulkCredit
         (id:string receiver-lst:[string] transfer-amount-lst:[decimal] complexity:bool elite:bool)
         (require-capability (SECURE))
@@ -1452,7 +1447,6 @@
                 )
                 (let
                     (
-                        (ref-DALOS:module{OuronetDalosV2} DALOS)
                         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                         (dalos:string DALOS|SC_NAME)
                         (fees:[decimal] (UC_BulkFees id transfer-amount-lst))
@@ -1477,6 +1471,7 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_BulkCreditAmounts (id:string receiver-lst:[string] amounts:[decimal])
         (require-capability (SECURE))
         (let
@@ -1492,6 +1487,7 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_BulkUpdateElite (receiver-lst:[string])
         (require-capability (SECURE))
         (map
@@ -1503,6 +1499,8 @@
         )
     )
     ;;  [Aux Credit-Primary-Fee]
+    ;;Protection: Class 1 — Innate protection offered by XI_CPF_StillFee, XI_CPF_CreditFee,
+    ;;Protection:          XI_CPF_BurnFee, XB_CreditTrueFungible, XE_UpdateFeeVolume
     (defun XI_CreditPrimaryFee (id:string pf:decimal native:bool)
         (let
             (
@@ -1551,6 +1549,7 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_CPF_StillFee (id:string target:string still-fee:decimal)
         (require-capability (SECURE))
         (let
@@ -1563,6 +1562,7 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_CPF_BurnFee (id:string target:string burn-fee:decimal)
         (require-capability (SECURE))
         (let
@@ -1570,11 +1570,12 @@
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
             )
             (if (!= burn-fee 0.0)
-                (ref-DPTF::XB_UpdateSupply id burn-fee false)
+                (ref-DPTF::XBv_UpdateSupply id burn-fee false)
                 true
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_CPF_CreditFee (id:string target:string credit-fee:decimal)
         (require-capability (SECURE))
         (let

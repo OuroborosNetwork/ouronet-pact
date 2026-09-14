@@ -838,8 +838,29 @@
             }
         ]
     )
+    ;;FUNCTION COVERAGE (G6) — `INFO_SWP|IssueStandard`, per the owner's spec: an INFO_ must report the
+    ;;same cost the op actually charges. Template: `modules/ATS.repl <<ATS-I1>>`.
+    ;;
+    ;;THE SPECIFIC DISAGREEMENT THIS SETTLES. There are TWO swap-pair issuance paths and they price
+    ;;their STOA leg from DIFFERENT constants:
+    ;;    single-tx  SWP|C_IssueStandard  -> SWPI::C_Issue      -> UC_StoaPrice "issue-swp-pair"
+    ;;    defpact    SWP|C_IssueStandardPool -> MTX-SWP         -> (+ UsagePrice "dptf" "swp")
+    ;;All SIX previews quote the SECOND. Live on this chain those are 500.0 and 600.0 respectively,
+    ;;so the three single-tx previews over-quote by 100 STOA — a client is shown 600 and charged 500.
+    ;;
+    ;;An over-quote is the quieter half of this defect class: nothing fails, no transaction is
+    ;;rejected, and the managed coin.TRANSFER caps in this very block are sized on the LARGER figure,
+    ;;so they comfortably cover the smaller charge. That is exactly why it survived — the suite could
+    ;;not have noticed. Only asking the preview what it says, and then counting the coins, does.
     (let
         (
+            (predicted-stoa:decimal
+                (at "stoa-need" (at "stoa"
+                    (INFO-ONE.INFO_SWP|IssueStandard KST.AOZT KST.AOZT
+                        [ { "token-id":  "OURO-98c486052a51", "token-supply": 2500.0}
+                          { "token-id":  "PKOSON-98c486052a51", "token-supply": 10000.0} ]
+                        25.0 false))))
+            (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa KST.AOZT)))
             (pool
                 (ref-TS01-C3::SWP|C_IssueStandard
                     KST.AOZT
@@ -852,6 +873,17 @@
                     false
                 )
             )
+        )
+        (map print
+            [
+                (format "<<SWP-ISSUE-INFO>> STOA predicted={} real={}"
+                    [predicted-stoa (- stoa-before (coin.get-balance (ref-DALOS::UR_AccountStoa KST.AOZT)))])
+                (expect "<<SWP-ISSUE-INFO>> INFO_SWP|IssueStandard's STOA quote equals what issuance charged"
+                    (- stoa-before (coin.get-balance (ref-DALOS::UR_AccountStoa KST.AOZT)))
+                    predicted-stoa)
+                (expect "<<SWP-ISSUE-INFO>> ...and issuing a pair is NOT free"
+                    true (> (- stoa-before (coin.get-balance (ref-DALOS::UR_AccountStoa KST.AOZT))) 0.0))
+            ]
         )
         (print "")
         (print "")
@@ -1701,8 +1733,8 @@
         (A:decimal (ref-SWP::UR_Amplifier pool7))
         (X:[decimal] (ref-SWP::UR_PoolTokenSupplies pool7))
         (w:[decimal] (ref-SWP::UR_Weigths pool7))
-        (ip:integer (ref-SWP::UR_PoolTokenPosition pool7 busd))
-        (op:integer (ref-SWP::UR_PoolTokenPosition pool7 tusd))
+        (ip:integer (ref-SWP::URv_PoolTokenPosition pool7 busd))
+        (op:integer (ref-SWP::URv_PoolTokenPosition pool7 tusd))
         (o-prec:integer (at op (ref-SWP::UR_PoolTokenPrecisions pool7)))
         (xo:decimal (at op X))
         ;;input sizes relative to the live output reserve <xo>, not hardcoded absolutes:
@@ -1772,8 +1804,8 @@
         (A:decimal (ref-SWP::UR_Amplifier pool7))
         (X:[decimal] (ref-SWP::UR_PoolTokenSupplies pool7))
         (w:[decimal] (ref-SWP::UR_Weigths pool7))
-        (ip:integer (ref-SWP::UR_PoolTokenPosition pool7 busd))
-        (op:integer (ref-SWP::UR_PoolTokenPosition pool7 tusd))
+        (ip:integer (ref-SWP::URv_PoolTokenPosition pool7 busd))
+        (op:integer (ref-SWP::URv_PoolTokenPosition pool7 tusd))
         (i-prec:integer (at ip (ref-SWP::UR_PoolTokenPrecisions pool7)))
         (xo:decimal (at op X))
         ;;request sizes relative to the live output reserve <xo>, not hardcoded absolutes:
@@ -1911,8 +1943,8 @@
         (As:decimal (ref-SWP::UR_Amplifier pool-s))
         (Xs:[decimal] (ref-SWP::UR_PoolTokenSupplies pool-s))
         (Ws:[decimal] (ref-SWP::UR_Weigths pool-s))
-        (ip-s:integer (ref-SWP::UR_PoolTokenPosition pool-s dlk))
-        (op-s:integer (ref-SWP::UR_PoolTokenPosition pool-s ouro))
+        (ip-s:integer (ref-SWP::URv_PoolTokenPosition pool-s dlk))
+        (op-s:integer (ref-SWP::URv_PoolTokenPosition pool-s ouro))
         (o-prec-s:integer (at op-s (ref-SWP::UR_PoolTokenPrecisions pool-s)))
         (i-prec-s:integer (at ip-s (ref-SWP::UR_PoolTokenPrecisions pool-s)))
         (leg1-input-s:decimal 100.0)
@@ -1946,8 +1978,8 @@
         (Aw:decimal (ref-SWP::UR_Amplifier pool-w))
         (Xw:[decimal] (ref-SWP::UR_PoolTokenSupplies pool-w))
         (Ww:[decimal] (ref-SWP::UR_Weigths pool-w))
-        (ip-w:integer (ref-SWP::UR_PoolTokenPosition pool-w dlk))
-        (op-w:integer (ref-SWP::UR_PoolTokenPosition pool-w ouro))
+        (ip-w:integer (ref-SWP::URv_PoolTokenPosition pool-w dlk))
+        (op-w:integer (ref-SWP::URv_PoolTokenPosition pool-w ouro))
         (o-prec-w:integer (at op-w (ref-SWP::UR_PoolTokenPrecisions pool-w)))
         (i-prec-w:integer (at ip-w (ref-SWP::UR_PoolTokenPrecisions pool-w)))
         (leg1-input-w:decimal 9999.0)
@@ -3306,10 +3338,16 @@
             (expect "#65eL — DWK is major by primordial-pool membership, even though not currently a registered principal" true (ref-SWP::URC_IsMajorPrincipal dwk))
             (expect "#65eL — a genuine minor principal is NOT major" false (ref-SWP::URC_IsMajorPrincipal minor))
             (expect "#65eL — principal count is well above the floor (7), so the next 2 checks genuinely test the NEW major-principal guard, not the pre-existing floor guard" true (> before-count 2))
+            ;;Both expectations used to stop at "…principal — cannot be", with the token id spliced
+            ;;in front. Two problems with that: the id straddles a {} hole so the coverage tool
+            ;;could not attribute either test, and — worse — removal and rotation have DIFFERENT
+            ;;messages ("cannot be removed" at 15_SWP.pact:691, "cannot be rotated" at :719). A
+            ;;shared prefix matches both, so neither assertion could tell them apart: a bug that
+            ;;made rotation emit the removal message would have passed. Each now names its own verb.
             (expect-failure "#65eL — removing a major principal (OURO) is rejected outright, even with headroom above the floor"
-                "OURO-98c486052a51 is a major (primordial-pool) principal — cannot be" (ref-TS01-A::SWP|A_UpdatePrincipal ouro false))
+                "principal — cannot be removed" (ref-TS01-A::SWP|A_UpdatePrincipal ouro false))
             (expect-failure "#65eL — rotating a major principal (OURO) away is rejected outright"
-                "OURO-98c486052a51 is a major (primordial-pool) principal — cannot be" (ref-TS01-A::SWP|A_RotatePrincipal ouro real-non-principal))
+                "principal — cannot be rotated" (ref-TS01-A::SWP|A_RotatePrincipal ouro real-non-principal))
         ]
     )
     (ref-TS01-A::SWP|A_UpdatePrincipal minor false)

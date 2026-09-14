@@ -984,7 +984,7 @@
                 (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 (lpad:string (ref-DEMIPAD::GOV|DEMIPAD|SC_NAME))
-                (amount:decimal (ref-DEMIPAD::UR_Funds asset-id type))
+                (amount:decimal (ref-DEMIPAD::URv_Funds asset-id type))
                 (working-id:string (if (= type 1) (ref-DALOS::UR_WrappedStoaID) (if (= type 2) (ref-DALOS::UR_SilverStoaID) (ref-DALOS::UR_OuroborosID))))
                 (sd:string (ref-I|OURONET::OI|UC_ShortAccount destination))
             )
@@ -1105,9 +1105,33 @@
     ;;
     ;;  [EQUITY] — shareholder/company SFT collection (exposed via DPSF Talos)
     (defun INFO_EQUITY|IssueCompany:object{OuronetInfoV2.ClientInfo} (patron:string creator-account:string collection-name:string)
+        ;;MISSING STOA LEG FIXED (2026-09-14). This reported `OI|UDC_NoStoaCosts` -- a LITERAL ZERO,
+        ;;rendered to the client as "Operation is free of native Stoa (STOA)". It is not free. The
+        ;;exec charges TWO currencies (`01_TS02-C1.pact:1556-1560`):
+        ;;    (ref-IGNIS::C_Collect patron ico)
+        ;;    (ref-IGNIS::STOA|C_Collect patron (ref-IGNIS::UC_StoaPrice "issue-shareholder"))
+        ;;with the source comment "Issuing a COMPANY is $100 in IGNIS deter and $100 in STOA (spec)".
+        ;;
+        ;;MEASURED, not inferred: a live `DPSF|C_IssueCompany` charged **918.0 STOA** while this
+        ;;preview reported **0.0**. The IGNIS leg was already correct (6965.26 predicted == charged),
+        ;;which is why the gap survived -- half the quote was right.
+        ;;
+        ;;A UI showing this preview told the user an Equity issue cost no STOA at all.
+        ;;
+        ;;THE CHARGE HAS TWO LEGS, which is why a first repair reporting only the premium still came
+        ;;up short (765 quoted vs 918 charged). `DPDC-I::C_IssueDigitalCollection` runs its OWN
+        ;;`STOA|C_Collect patron (URCi_IssueCollectionStoa son)` at `04_DPDC-I.pact:502`, nested
+        ;;inside `C_IssueShareholderCollection`, and the Talos wrapper then adds the equity premium
+        ;;on top. `11_EQUITY+.pact:385` already said so -- "the collection-issue STOA price previews
+        ;;SEPARATELY via DPDC-I::URCi_IssueCollectionStoa" -- but nothing ever added the two together
+        ;;for the client. Both legs are summed here, raw, before the patron discount is applied.
+        ;;Pinned by REPL/modules/EQUITY.repl <<EQ-I1>>, which asserts BOTH currencies against a
+        ;;measured charge.
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DPDC-I:module{DpdcIssueV2} DPDC-I)
                 (ref-EQUITY:module{EquityV2} EQUITY)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount creator-account))
             )
@@ -1115,7 +1139,9 @@
                 [(format "Operation: Issues the 8-element Shareholder (Equity) SFT Collection '{}' on Account {}" [collection-name sa])]
                 [(format "Shareholder Collection '{}' issued succesfully on Account {}" [collection-name sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-EQUITY::URCi_IssueShareholderCollection)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron
+                    (+ (ref-DPDC-I::URCi_IssueCollectionStoa true)
+                       (ref-IGNIS::UC_StoaPrice "issue-shareholder"))) [])
         ))
     (defun INFO_EQUITY|MorphEquity:object{OuronetInfoV2.ClientInfo} (patron:string account:string id:string input-nonce:integer input-amount:integer output-nonce:integer)
         (let

@@ -1,0 +1,146 @@
+;; REPL/fixtures/adversarial-tf.repl — ADVERSARIAL true-fungible fixture.
+;;
+;; PROVIDES : 3 DPTFs owned by KST.ANHD, precision 24 —
+;;              ADVO / "AdversarialOrigin"  : HAS ALREADY BEEN ORIGIN-MINTED (rejecting)
+;;              ADVF / "AdversarialFresh"   : never minted, all properties ON (accepting)
+;;              ADVL / "AdversarialLocked"  : can-upgrade AND can-change-owner turned OFF,
+;;                                            PERMANENTLY -- DPTF|S>CONTROL gates on
+;;                                            UEV_CanUpgradeON, so once can-upgrade is false the
+;;                                            token can never be controlled again. This is a
+;;                                            one-way state and therefore cannot be produced by a
+;;                                            reversible window on a shared fixture; it needs a
+;;                                            token of its own, which is what this provides.
+;;            A guard needs BOTH sides to be proven: one that always fired would satisfy the
+;;            rejection on its own and still be broken. The pair is supplied here so the tester
+;;            never has to borrow a token from another fixture.
+;; REQUIRES : deploy-stage00 + deploy-stage01.
+;; ASSERTS  : only its OWN postcondition (the token exists and its origin mint is spent).
+;; LOAD ONCE per process (RULE 5).
+;;
+;; WHY THIS EXISTS. Guard-family pinning (P3.3) stalled at ~1 pin/pass because the reachable
+;; guards are only those whose rejecting state some existing fixture happens to be in. Every
+;; suite mints with origin=false, so no token anywhere has a SPENT origin mint -- and
+;; DPTF|C>MINT's <UEV_Virgin> guard, which exists precisely to make origin-minting once-only,
+;; has no live input in the entire test corpus.
+;;
+;; This is the first fixture built to occupy a REJECTING state on purpose rather than to be a
+;; convenient happy-path subject. It carries no tests of its own (see mock-tf's note): the
+;; assertions that use it live in REPL/modules/ADVERSARIAL.repl.
+
+(begin-tx "FIXTURE adversarial-tf — issue ADVO")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [FIXTURE adversarial-tf · 01 · let / STOA split] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        ;;DERIVED, never hardcoded — one token, so one <dptf> usage price (mock-tf doubles it for two).
+        (split-stoa:[decimal]
+            (ref-DALOS::URC_SplitSTOAPrices patron (* (ref-DALOS::UR_UsagePrice "dptf") 3.0))
+        )
+    )
+(print "--- [FIXTURE adversarial-tf · 02 · env-sigs (caps)] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa))
+                ]
+            }
+        ]
+    )
+(print "--- [FIXTURE adversarial-tf · 03 · issue] ---")
+    (let
+        (
+            (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+            (issued-ids:[string]
+                (ref-TS01-C1::DPTF|C_Issue
+                    patron patron
+                    ["AdversarialOrigin" "AdversarialFresh" "AdversarialLocked"]
+                    ["ADVO" "ADVF" "ADVL"]
+                    (make-list 3 24)        ;;precision
+                    (make-list 3 true)      ;;can-change-owner
+                    (make-list 3 true)      ;;can-upgrade
+                    (make-list 3 true)      ;;can-add-special-role
+                    (make-list 3 false)     ;;can-freeze
+                    (make-list 3 false)     ;;can-wipe
+                    (make-list 3 true)      ;;can-pause
+                )
+            )
+        )
+        (print (format "<(FIXTURE adversarial-tf)> issued => {}" [issued-ids]))
+    )
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "FIXTURE adversarial-tf — SPEND the origin mint")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [FIXTURE adversarial-tf · 04 · spend the origin mint] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+    )
+    ;;origin=true is the once-only mint. Spending it here is the WHOLE POINT of this fixture:
+    ;;it moves ADVO into the state DPTF|C>MINT's <UEV_Virgin> guard exists to reject. ADVF is
+    ;;deliberately left untouched so the tester has the accepting side of the same guard.
+    (ref-TS01-C1::DPTF|C_Mint patron (ref-U|DALOS::UDC_Makeid "ADVO") patron 1000.0 true)
+    ;;LOCK ADVL. DPTF|S>CONTROL acquires UEV_CanUpgradeON, which still passes here because
+    ;;can-upgrade is true AT ACQUISITION -- the write that turns it false lands afterwards. That
+    ;;makes this call the last Control this token can ever accept, which is exactly the state the
+    ;;UEV_CanUpgradeON / UEV_CanChangeOwnerON guards exist to reject.
+    ;;                                                cu    cco   casr  cf     cw     cp
+    (ref-TS01-C1::DPTF|C_Control patron (ref-U|DALOS::UDC_Makeid "ADVL") false false true false false true)
+    ""
+)
+(env-sigs [])
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "FIXTURE adversarial-tf — postcondition")
+(namespace "ouronet-ns")
+(print "--- [FIXTURE adversarial-tf · 05 · postcondition] ---")
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (o:string (ref-U|DALOS::UDC_Makeid "ADVO"))
+    )
+    (map print
+        [
+            (expect (format "<<FIXTURE adversarial-tf>> ADVO {} exists and is owned by the patron" [o])
+                KST.ANHD (ref-DPTF::UR_Konto o))
+            ;;THE fixture postcondition: the origin mint is spent. UEV_Virgin enforces
+            ;;(and (= origin-mint false) (= origin-mint-amount 0.0)); the mint above set the
+            ;;amount, so the guard is now live against this token and nothing else in the corpus.
+            (expect "<<FIXTURE adversarial-tf>> the origin mint is SPENT (amount is non-zero)"
+                1000.0 (ref-DPTF::UR_OriginAmount o))
+            (expect (format "<<FIXTURE adversarial-tf>> ADVF {} exists" [(ref-U|DALOS::UDC_Makeid "ADVF")])
+                KST.ANHD (ref-DPTF::UR_Konto (ref-U|DALOS::UDC_Makeid "ADVF")))
+            (expect "<<FIXTURE adversarial-tf>> ...and its origin mint is UNSPENT"
+                0.0 (ref-DPTF::UR_OriginAmount (ref-U|DALOS::UDC_Makeid "ADVF")))
+            (expect "<<FIXTURE adversarial-tf>> ADVL has can-upgrade OFF (permanently)"
+                false (ref-DPTF::UR_CanUpgrade (ref-U|DALOS::UDC_Makeid "ADVL")))
+            (expect "<<FIXTURE adversarial-tf>> ADVL has can-change-owner OFF"
+                false (ref-DPTF::UR_CanChangeOwner (ref-U|DALOS::UDC_Makeid "ADVL")))
+        ]
+    )
+    ""
+)
+(commit-tx)

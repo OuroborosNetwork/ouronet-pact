@@ -28,23 +28,27 @@
             ;;guard rather than about the fixture being absent.
             (expect "<<DPDC-S-G1>> SC1 is a real set-class on the SFT"
                 true (!= "" (format "{}" [(ref-DPDC-S::UEV_SetClass sft true 1)])))
-            ;;FINDING -- BOTH of UEV_SetClass's guards are DEAD:
+            ;;WAS: both of UEV_SetClass's guards were DEAD --
             ;;
             ;;    (let ((sc:integer (UR_SetClass id son set-class)))     <- HARD read, runs FIRST
             ;;      (enforce (> set-class 0) "Invalid Set-Class Value")
             ;;      (enforce (= set-class sc) "Invalid DPDC Set Data"))
             ;;
-            ;;The let binding is eager, and UR_SetClass -> UR_Set is a plain `read`. So for every
-            ;;input the two enforces were written to reject -- 0, or any set-class that does not
-            ;;exist -- the function has already aborted inside the table read. When the set-class
-            ;;DOES exist, both guards pass trivially. There is no input that can make either one
-            ;;fire, and what a caller actually gets is a raw "No value found in table" naming the
-            ;;composite row key. Same shape as DEMIPAD|C>WITHDRAW's type enforce: shadowed by a
-            ;;reader that runs before the guard. Asserted at both intended inputs, so the deadness
-            ;;is shown to be a property of the function rather than of one value.
-            (expect-failure "<<DPDC-S-G1>> FINDING: set-class 0 dies in the table read, not the >0 guard"
-                "No value found in table" (ref-DPDC-S::UEV_SetClass sft true 0))
-            (expect-failure "<<DPDC-S-G1>> FINDING: ...and so does a non-existent set-class"
+            ;;The let binding is eager and UR_SetClass -> UR_Set is a plain `read`, so every input
+            ;;the enforces were written to reject had already aborted inside the table read.
+            ;;
+            ;;FIXED 2026-09-10: the DOMAIN guard is hoisted above the let, matching the shape
+            ;;UEV_IzSetClassFragmented already used directly below it. The two cases now separate
+            ;;cleanly, and that separation is the point of asserting both:
+            ;;
+            ;;  * set-class 0 is OUT OF DOMAIN  -> the guard fires, with its own message.
+            ;;  * set-class 99 is IN DOMAIN but has no row -> there is no existence guard here,
+            ;;    only a domain guard, so the read error is the honest answer. Left as-is
+            ;;    deliberately: inventing an existence guard would duplicate what the read
+            ;;    already says. This assertion pins that distinction, not a defect.
+            (expect-failure "<<DPDC-S-G1>> FIXED: set-class 0 now dies on the >0 guard, not in the table read"
+                "Invalid Set-Class Value" (ref-DPDC-S::UEV_SetClass sft true 0))
+            (expect-failure "<<DPDC-S-G1>> in-domain but absent set-class still reports the missing row (no existence guard by design)"
                 "No value found in table" (ref-DPDC-S::UEV_SetClass sft true 99))
             ;;The fragmentation pair, against the suite's real state: [6.1.3] fragments SC1 and
             ;;leaves SC2/SC3 alone, so both directions are available without touching anything.
@@ -208,3 +212,2037 @@
 )
 (commit-tx)
 (print "=== END modules/DPDC-S.repl guard blocks ===")
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-G2 — set composition, renaming, and the inactive-class gate")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-G2 · 01 · DPDC-S|C>MAKE and C>RENAME, via the Talos client path] ---")
+;;P3.3. These are @event defcaps, so test-capability cannot acquire them — they are reached through
+;;the real TS02-C1 client functions.
+;;
+;;A NOTE ON WHICH WRAPPER: the SFT path is DPSF|C_Make in TS02-C1 and it passes <how-many-sets>
+;;through; the NFT twin DPNF|C_Make lives in TS02-C2 and DERIVES it. My first attempt used the DPNF
+;;names against TS02-C2 and got unbound-variable errors for all three.
+;;
+;;THE INACTIVE-CLASS CASE NEEDS A TOGGLE, NOT A BAD ARGUMENT. UR_IzSetActive HARD-READS
+;;DPSF|SetsTable, so a set-class that does not exist aborts with "No value found in table ... for
+;;key: TSFS-...|99" before the guard is consulted — the same eager-read shape catalogued elsewhere.
+;;The only way to see the written message is an EXISTING class that is switched off, so SC1 is
+;;toggled off, driven, and toggled back on with the restoration asserted.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (sft:string "TSFS-98c486052a51")
+    )
+    (map print
+        [
+            ;;--- how-many-sets must be positive. SC1 is ACTIVE here, so the activity guard one line
+            ;;    above provably cannot be what answers: zero sets is the only thing wrong.
+            (expect "<<DPDC-S-G2>> SC1 is active, so the activity guard cannot be what answers below"
+                true (ref-DPDC-S::UR_IzSetActive sft true 1))
+            (expect-failure "<<DPDC-S-G2>> composing ZERO sets is refused"
+                "How-Many-Sets must be a positive, non-zero integer"
+                (ref-TS02-C1::DPSF|C_Make KST.ANHD KST.ANHD sft [1] 1 0))
+            ;;--- renaming a set-class to the name it already has. It emits an event and bills IGNIS,
+            ;;    so a silent no-op would leave an audit record of a rename that never happened.
+            (expect-failure "<<DPDC-S-G2>> renaming a set-class to its CURRENT name is refused"
+                "must be different from the current name"
+                (ref-TS02-C1::DPSF|C_RenameSet KST.ANHD sft 1 (ref-DPDC-S::UR_SetName sft true 1)))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-G3 — composition into a DEACTIVATED set-class")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-G3 · 01 · MAKE against an inactive set-class] ---")
+;;Toggle SC1 off, drive, restore. A deactivated set-class is the issuer saying "stop minting these":
+;;composition must stop while BREAK keeps working, so holders are never trapped in a retired set.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (sft:string "TSFS-98c486052a51")
+    )
+    (ref-TS02-C1::DPSF|C_ToggleSet KST.ANHD sft 1 false)
+    (map print
+        [
+            (expect "<<DPDC-S-G3>> SC1 is now inactive" false (ref-DPDC-S::UR_IzSetActive sft true 1))
+            ;;how-many-sets is 1 (valid), so the positivity guard below it cannot be what answers.
+            (expect-failure "<<DPDC-S-G3>> composing into an INACTIVE set-class is refused"
+                "is not active for Set Composition"
+                (ref-TS02-C1::DPSF|C_Make KST.ANHD KST.ANHD sft [1] 1 1))
+        ]
+    )
+    (ref-TS02-C1::DPSF|C_ToggleSet KST.ANHD sft 1 true)
+    (map print
+        [
+            (expect "<<DPDC-S-G3>> ...and SC1 is active again, as the rest of the suite expects"
+                true (ref-DPDC-S::UR_IzSetActive sft true 1))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-F-G1 — the fragment repurpose, merge and enable-fragmentation rules")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-F-G1 · 01 · DPDC-F repurpose / merge / enable-fragmentation] ---")
+;;P3.3. Four @event defcap guards, all reached through the real TS02-C1 client path (the SFT
+;;fragment wrappers live there, not in TS02-C2 — see the note in DPDC-S-G2).
+;;
+;;FRAGMENTS are sub-units of a class-0 nonce, addressed by NEGATIVE nonce numbers: nonce 1 is the
+;;whole item, nonce -1 is its fragment lane. That convention is what the two merge guards police.
+;;
+;;The nonce classes used below are read out of the live collection rather than assumed: n1..n10 are
+;;class 0, n11 is class 1 (and already fragmented), n12 class 2, n13 class 3. n12 is therefore a
+;;genuine non-zero class, which is what the fragmentation guard needs.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (sft:string "TSFS-98c486052a51")
+    )
+    (map print
+        [
+            ;;preconditions for the two cases that depend on nonce class.
+            (expect "<<DPDC-F-G1>> nonce 12 is a NON-zero set class, nonce 1 is class 0"
+                [2 0] [(ref-DPDC::UR_NonceClass sft true 12) (ref-DPDC::UR_NonceClass sft true 1)])
+            ;;--- REPURPOSE: audit #47L. An empty repurpose used to fall through to an
+            ;;    out-of-bounds error several call-hops downstream; it is now rejected here with a
+            ;;    message that says what is wrong.
+            (expect-failure "<<DPDC-F-G1>> an EMPTY fragment repurpose is refused"
+                "Invalid Repurpose data"
+                (ref-TS02-C1::DPSF|C_RepurposeFragments KST.ANHD sft KST.ANHD KST.EMMA [] []))
+            ;;--- MERGE, guard 1: merging is the inverse of fragmenting, so it only makes sense on a
+            ;;    fragment lane — a NEGATIVE nonce. The amount passed is a clean multiple of 1000,
+            ;;    so the guard below it provably cannot be what answers.
+            (expect-failure "<<DPDC-F-G1>> merging a POSITIVE (whole-item) nonce is refused"
+                "Only negative nonces can be used for merging"
+                (ref-TS02-C1::DPSF|C_MergeFragments KST.ANHD KST.ANHD sft 1 1000))
+            ;;--- MERGE, guard 2: fragments exist in thousandths, so only whole multiples of 1000 can
+            ;;    reassemble into items. The nonce is negative here, so guard 1 provably passes and
+            ;;    only the amount is wrong. 1500 would merge one item plus half of another.
+            (expect-failure "<<DPDC-F-G1>> ...and merging an amount that is not a multiple of 1000 is refused"
+                "Only multiple of 1000 can be used for Merging"
+                (ref-TS02-C1::DPSF|C_MergeFragments KST.ANHD KST.ANHD sft -1 1500))
+            ;;--- ENABLE-FRAGMENTATION: only a class-0 (whole, un-setted) nonce may be fragmented. A
+            ;;    set nonce already represents a composition of others; fragmenting it would create
+            ;;    two independent claims on the same underlying items.
+            (expect-failure "<<DPDC-F-G1>> enabling fragmentation on a SET (class 2) nonce is refused"
+                "Only Class 0 Nonces can be fragmented"
+                (ref-TS02-C1::DPSF|C_EnableNonceFragmentation KST.ANHD sft 12 (ref-UDC::UDC_ZeroNonceData)))
+            ;;--- THE BLOCKER FOR `06_DPDC-MNG.pact:280` (DPDC-MNG|C>IZ-CLASS-ZERO), asserted rather
+            ;;    than described, because it is a FIXTURE limit and fixtures change.
+            ;;
+            ;;    That guard sits on the REMOVAL family (burn, wipe compose it): nonces leaving
+            ;;    circulation must ALL be class 0, since a set nonce stands for a composition of
+            ;;    others and removing it would strand them. Reaching it needs a non-class-0 nonce
+            ;;    that an account actually HOLDS.
+            ;;
+            ;;    This collection has none. Every non-zero class here is defined but unissued, so the
+            ;;    debit-amount check answers first with "Amount 1 is invalid for Debiting Nonce 12 …"
+            ;;    -- measured, not assumed. The class guard is fine; there is simply nothing to burn.
+            ;;
+            ;;    ROUTE FOR THE NEXT PASS: `C_MakeSemiFungibleSet` credits a set nonce, which would
+            ;;    give a held class-2 nonce and reach the guard through the ordinary burn client.
+            ;;    (Note the related finding recorded at 03_DPDC-C:279 — the SFT-set DEFINITION path
+            ;;    does not route through C_CreateNewNonce, so the two are different operations.)
+            (expect "<<DPDC-F-G1>> every non-class-0 nonce here is DEFINED but unissued -- nothing to burn"
+                [0 0 0]
+                [(ref-DPDC::UR_NonceSupply sft true 11)
+                 (ref-DPDC::UR_NonceSupply sft true 12)
+                 (ref-DPDC::UR_NonceSupply sft true 13)])
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(commit-tx)
+;;PINNED ELSEWHERE (note corrected 2026-09-13) — the second ENABLE-FRAGMENTATION guard ("Nonce must
+;;not be fragmented in order to enable fragmentation for it !") needs a nonce that is BOTH class 0
+;;AND already fragmented. THIS COLLECTION has neither combination: n1..n10 are class-0 and
+;;unfragmented, and the one fragmented nonce (n11) is class 1, so the class guard one line above
+;;answers first.
+;;
+;;The note that stood here concluded from that the guard was unreachable. It was a statement about
+;;TSFS, not about the rule. `Stage_02/[6.1.2]_DPDC-FRAGMENTS.repl` TX-FRAG-002 creates TFRG nonce 1
+;;as a plain class-0 nonce and then enables fragmentation on it, and there is no disable operation,
+;;so that state persists — which is exactly the combination required. Pinned by
+;;`modules/DPDC-FRAGMENTS.repl <<DPDC-F-G2>>`.
+;;
+;;WORTH GENERALISING: "no fixture in THIS harness" is not "unreachable". Check the other harnesses
+;;before recording a guard as impossible.
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-G4 -- UCv_TakePureWipe's size bound is STRICT")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-G4 . 01 . taking a slice of the removable-nonces object] ---")
+;;An unpinned guard from `python3 REPL/_cheapseam.py`. Pure compute over a constructed object --
+;;no chain state, so it is one of only three candidates on that list needing no fixture.
+;;
+;;The bound is `(< size l)`, STRICT: taking the whole set is refused, not just taking more than
+;;exists. That matches the @doc ("returns a SMALLER object") and is the kind of off-by-one a reader
+;;would guess wrong in either direction, so both sides are asserted.
+(let ((obj:object{DpdcManagementV2.RemovableNonces} (DPDC-MNG.UDC_RemovableNonces [1 2] [10 20])))
+    (map print
+        [
+            ;;a genuinely smaller slice works, and carries BOTH parallel lists down together --
+            ;;a truncation that dropped one list out of step would still "work" without this
+            (expect "<<DPDC-S-G4>> a smaller size truncates nonces and amounts in step"
+                {"r-nonces": [1], "r-amounts": [10]}
+                (DPDC-MNG.UCv_TakePureWipe obj 1))
+            ;;taking the FULL set is refused -- the bound is strict, not "larger than"
+            (expect-failure "<<DPDC-S-G4>> taking the whole set is refused: the bound is strict"
+                "Size of 2 is larger than the Data set of the Removable Nonces Object"
+                (DPDC-MNG.UCv_TakePureWipe obj 2))
+        ]
+    )
+)
+(commit-tx)
+
+;;|| NEXT >
+;;|| DPDC-S-G5 — fragmentation cannot be enabled twice on the same SET CLASS.
+;;
+(begin-tx "DPDC-S-G5 - DPDC-S|C>ENABLE-FRAGMENTATION is not idempotent")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [DPDC-S-G5 · 01 · a re-entry check on set-class fragmentation] ---")
+;;`08_DPDC-S.pact:379`. Enabling fragmentation writes split-data onto the set class; doing it twice
+;;would overwrite a live fragmentation scheme under holders who already own fragments of it. The
+;;guard is a RE-ENTRY check -- it reads persisted state, not an argument -- so the way to reach it is
+;;simply to call the entrypoint a second time.
+;;
+;;NO NEW FIXTURE: `[6.1.3]_DPDC-S.repl` TX-SET-007 already enabled fragmentation on TSFS set-class 1
+;;and asserts `UEV_IzSetClassFragmented ... 1` is true at the end of that block. This file loads it,
+;;so the terminal state is exactly the precondition.
+;;
+;;IT IS THE FIRST STATEMENT IN THE CAP -- ahead of UEV_SetClass, the active-state gate, CAP_Owner and
+;;the NonceData validator -- so nothing owner- or shape-related can answer first, and the assertion
+;;below is unambiguous about which rule fired.
+(let
+    (
+        (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+        (ref-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (sft:string "TSFS-98c486052a51")
+    )
+    (map print
+        [
+            ;;the premise, read live
+            (expect "<<DPDC-S-G5>> TSFS set-class 1 is already fragmented"
+                true (ref-DPDC-S::UEV_IzSetClassFragmented sft true 1))
+            (expect-failure "<<DPDC-S-G5>> so enabling fragmentation on it AGAIN is refused"
+                "Set Class must not be fragmented in order to enable fragmentation for it !"
+                (ref-TS02-C1::DPSF|C_EnableSetClassFragmentation KST.ANHD sft 1
+                    (ref-UDC::UDC_ZeroNonceData)))
+            ;;CONTRAST -- an UNfragmented set class gets past this rule and is answered by a later
+            ;;one, which is what shows the refusal above is the re-entry check and not a blanket
+            ;;refusal of the entrypoint. (Set class 2 exists on this collection and is not fragmented.)
+            (expect "<<DPDC-S-G5>> ...while set-class 2 is not fragmented, so this rule does not apply to it"
+                false (ref-DPDC-S::UEV_IzSetClassFragmented sft true 2))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(commit-tx)
+
+;;|| NEXT >
+;;|| DPDC-S-G6 — the class-zero filter that fronts every burn/wipe of a collectable nonce.
+;;
+(begin-tx "DPDC-S-G6 - DPDC-MNG|C>IZ-CLASS-ZERO refuses a nonce that carries a set class")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [DPDC-S-G6 · 01 · offering a class-1 nonce to a class-zero-only path] ---")
+;;`06_DPDC-MNG.pact:280`. The cap does not test the nonces one at a time; it runs them through
+;;`URC_FilterClassZeroNonces` and demands the filtered list come back IDENTICAL to what went in:
+;;`(enforce (= nonces class-zero-nonces) "Invalid Class Zero Nonces")`. So a single non-class-0
+;;entry anywhere in the list — silently dropped by the filter — changes the length and the equality
+;;fails. That is the shape the test has to exercise, and a one-element list is the cleanest form of it.
+;;
+;;THIS IS THE GATE THAT MAKES DPDC-MNG's BURN/WIPE PATHS SAFE TO REASON ABOUT. Everything composed
+;;behind it — including the fragment-collateral rule pinned in `modules/DPDC-FRAGMENTS.repl`
+;;<<DPDC-F-G3>> — is written assuming class 0, and that assumption is only true because of this
+;;enforce. Worth a pin of its own rather than leaving it to a downstream test's preconditions.
+;;
+;;TSFS is the collection that can drive it: this suite leaves nonce 11 carrying set class 1 while
+;;n1..n10 stay class 0, so the SAME collection supplies both the rejected input and the control.
+(let
+    (
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (sft:string "TSFS-98c486052a51")
+    )
+    (map print
+        [
+            ;;the premise, read live: one nonce of each kind on the same collection
+            (expect "<<DPDC-S-G6>> TSFS nonce 11 carries a set class; nonce 1 does not"
+                [1 0]
+                [(ref-DPDC::UR_NonceClass sft true 11)
+                 (ref-DPDC::UR_NonceClass sft true 1)])
+            (expect-failure "<<DPDC-S-G6>> a class-1 nonce is refused by the class-zero-only path"
+                "Invalid Class Zero Nonces"
+                (test-capability (DPDC-MNG.DPDC-MNG|C>IZ-CLASS-ZERO sft true [11])))
+            ;;...and a MIXED list is refused too, which is the case the filter idiom actually exists
+            ;;for: a caller cannot smuggle a classed nonce through by burying it among valid ones.
+            (expect-failure "<<DPDC-S-G6>> ...and so is a list that merely CONTAINS one"
+                "Invalid Class Zero Nonces"
+                (test-capability (DPDC-MNG.DPDC-MNG|C>IZ-CLASS-ZERO sft true [1 11 2])))
+            ;;CONTROL: the all-class-0 list passes the filter unchanged and the cap grants. Without
+            ;;this the two refusals above would be equally consistent with the cap refusing everything.
+            (expect "<<DPDC-S-G6>> ...while an all-class-zero list is admitted"
+                "granted"
+                (let ((probe (test-capability (DPDC-MNG.DPDC-MNG|C>IZ-CLASS-ZERO sft true [1 2]))))
+                    "granted"))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-I1 — INFO_DPSF|Make quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-I1 · 01 · assemble a set from its member nonces] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPSF|Make`, per the owner's spec: an INFO_ must report the same cost the
+;;op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+;;SC1 on TSFS is ACTIVE at this point (DPDC-S-G3 toggled it back on) and its positions are nonces 1
+;;and 2, both sitting at 1000 — the same call shape `[6.1.3]:406` already runs.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (sf:string "TSFS-98c486052a51")
+        (patron:string KST.ANHD)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|Make patron patron sf [1 2] 1 5))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C1::DPSF|C_Make patron patron sf [1 2] 1 5))
+        )
+        (map print
+            [
+                (expect "<<DPDC-S-I1>> the preview's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-S-I1>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-I2 — INFO_DPSF|Break quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-I2 · 01 · break an assembled set back apart] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPSF|Break`, per the owner's spec: an INFO_ must report the same cost the
+;;op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (sf:string "TSFS-98c486052a51")
+        (patron:string KST.ANHD)
+    )
+    ;;SETUP — a set must exist before it can be broken. Assembling here (rather than relying on one
+    ;;left behind) keeps the block self-contained: the file's own set-nonce supplies are all 0 at this
+    ;;point, so there is nothing standing to break.
+    (ref-TS02-C1::DPSF|C_Make patron patron sf [1 2] 1 5)
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|Break patron patron sf 11 5))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C1::DPSF|CC_Break patron patron sf 11 5))
+        )
+        (map print
+            [
+                (expect "<<DPDC-S-I2>> the preview's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-S-I2>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-I3 — INFO_DPSF|ToggleSet quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-I3 · 01 · disable a set class] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPSF|ToggleSet`, per the owner's spec: an INFO_ must report the same cost the
+;;op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+;;SC1 is active here, so `false` is the reachable arm — toggling to its current value is refused.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (sf:string "TSFS-98c486052a51")
+        (patron:string KST.ANHD)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|ToggleSet patron sf 1 false))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C1::DPSF|C_ToggleSet patron sf 1 false))
+        )
+        (map print
+            [
+                (expect "<<DPDC-S-I3>> the preview's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-S-I3>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-I4 — INFO_DPSF|RenameSet quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-I4 · 01 · rename a set class] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPSF|RenameSet`, per the owner's spec: an INFO_ must report the same cost the
+;;op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+;;The current name is "SC1-Renamed" (set at `[6.1.3]:657`), so the new name must differ — renaming a
+;;set to the name it already has is refused, and DPDC-S-G2 pins that.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (sf:string "TSFS-98c486052a51")
+        (patron:string KST.ANHD)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|RenameSet patron sf 1 "SC1-CostProbe"))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C1::DPSF|C_RenameSet patron sf 1 "SC1-CostProbe"))
+        )
+        (map print
+            [
+                (expect "<<DPDC-S-I4>> the preview's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-S-I4>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-I5 — INFO_DPSF|UpdateSetNonceName quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-I5 · 01 · set-nonce field: UpdateSetNonceName] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPSF|UpdateSetNonceName`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+;;`nos=false` selects the SET-NONCE side rather than the ordinary-nonce side. That single boolean
+;;is what separates these ten previews from the ten measured against MOCKS in `modules/DPDC.repl`,
+;;and it routes them through the same `INFO_DPDC-N|Field` / `|Bulk` hubs by a different path.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (sft:string "TSFS-98c486052a51")
+        (nft:string "TSFN-98c486052a51")
+        (patron:string KST.ANHD)
+        (type:object{DpdcUdcV2.URI|Type}
+            (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 5.0 "CostProbe" "cost probe nonce" (ref-DPDC-UDC::UDC_NoMetaData) type
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateSetNonceName patron sft patron 1 false "ProbeName"))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C1::DPSF|C_UpdateSetNonceName patron sft patron 1 false "ProbeName"))
+        )
+        (map print
+            [
+                (expect "<<DPDC-S-I5>> INFO_DPSF|UpdateSetNonceName's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-S-I5>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-I6 — INFO_DPSF|UpdateSetNonceDescription quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-I6 · 01 · set-nonce field: UpdateSetNonceDescription] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPSF|UpdateSetNonceDescription`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (sft:string "TSFS-98c486052a51")
+        (nft:string "TSFN-98c486052a51")
+        (patron:string KST.ANHD)
+        (type:object{DpdcUdcV2.URI|Type}
+            (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 5.0 "CostProbe" "cost probe nonce" (ref-DPDC-UDC::UDC_NoMetaData) type
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateSetNonceDescription patron sft patron 1 false "probe description"))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C1::DPSF|C_UpdateSetNonceDescription patron sft patron 1 false "probe description"))
+        )
+        (map print
+            [
+                (expect "<<DPDC-S-I6>> INFO_DPSF|UpdateSetNonceDescription's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-S-I6>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-I7 — INFO_DPSF|UpdateSetNonceRoyalty quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-I7 · 01 · set-nonce field: UpdateSetNonceRoyalty] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPSF|UpdateSetNonceRoyalty`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (sft:string "TSFS-98c486052a51")
+        (nft:string "TSFN-98c486052a51")
+        (patron:string KST.ANHD)
+        (type:object{DpdcUdcV2.URI|Type}
+            (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 5.0 "CostProbe" "cost probe nonce" (ref-DPDC-UDC::UDC_NoMetaData) type
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateSetNonceRoyalty patron sft patron 1 false 3.0))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C1::DPSF|C_UpdateSetNonceRoyalty patron sft patron 1 false 3.0))
+        )
+        (map print
+            [
+                (expect "<<DPDC-S-I7>> INFO_DPSF|UpdateSetNonceRoyalty's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-S-I7>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-I8 — INFO_DPSF|UpdateSetNonceIgnisRoyalty quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-I8 · 01 · set-nonce field: UpdateSetNonceIgnisRoyalty] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPSF|UpdateSetNonceIgnisRoyalty`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (sft:string "TSFS-98c486052a51")
+        (nft:string "TSFN-98c486052a51")
+        (patron:string KST.ANHD)
+        (type:object{DpdcUdcV2.URI|Type}
+            (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 5.0 "CostProbe" "cost probe nonce" (ref-DPDC-UDC::UDC_NoMetaData) type
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateSetNonceIgnisRoyalty patron sft patron 1 false 2.0))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C1::DPSF|C_UpdateSetNonceIgnisRoyalty patron sft patron 1 false 2.0))
+        )
+        (map print
+            [
+                (expect "<<DPDC-S-I8>> INFO_DPSF|UpdateSetNonceIgnisRoyalty's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-S-I8>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-I9 — INFO_DPSF|UpdateSetNonceScore quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-I9 · 01 · set-nonce field: UpdateSetNonceScore] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPSF|UpdateSetNonceScore`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (sft:string "TSFS-98c486052a51")
+        (nft:string "TSFN-98c486052a51")
+        (patron:string KST.ANHD)
+        (type:object{DpdcUdcV2.URI|Type}
+            (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 5.0 "CostProbe" "cost probe nonce" (ref-DPDC-UDC::UDC_NoMetaData) type
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateSetNonceScore patron sft patron 1 false 7.0))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C1::DPSF|C_UpdateSetNonceScore patron sft patron 1 false 7.0))
+        )
+        (map print
+            [
+                (expect "<<DPDC-S-I9>> INFO_DPSF|UpdateSetNonceScore's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-S-I9>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-I10 — INFO_DPSF|RemoveSetNonceScore quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-I10 · 01 · set-nonce field: RemoveSetNonceScore] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPSF|RemoveSetNonceScore`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (sft:string "TSFS-98c486052a51")
+        (nft:string "TSFN-98c486052a51")
+        (patron:string KST.ANHD)
+        (type:object{DpdcUdcV2.URI|Type}
+            (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 5.0 "CostProbe" "cost probe nonce" (ref-DPDC-UDC::UDC_NoMetaData) type
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|RemoveSetNonceScore patron sft patron 1 false))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C1::DPSF|C_RemoveSetNonceScore patron sft patron 1 false))
+        )
+        (map print
+            [
+                (expect "<<DPDC-S-I10>> INFO_DPSF|RemoveSetNonceScore's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-S-I10>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-I11 — INFO_DPSF|UpdateSetNonceMetaData quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-I11 · 01 · set-nonce field: UpdateSetNonceMetaData] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPSF|UpdateSetNonceMetaData`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (sft:string "TSFS-98c486052a51")
+        (nft:string "TSFN-98c486052a51")
+        (patron:string KST.ANHD)
+        (type:object{DpdcUdcV2.URI|Type}
+            (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 5.0 "CostProbe" "cost probe nonce" (ref-DPDC-UDC::UDC_NoMetaData) type
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateSetNonceMetaData patron sft patron 1 false (ref-DPDC-UDC::UDC_NoMetaData)))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C1::DPSF|C_UpdateSetNonceMetaData patron sft patron 1 false (ref-DPDC-UDC::UDC_NoMetaData)))
+        )
+        (map print
+            [
+                (expect "<<DPDC-S-I11>> INFO_DPSF|UpdateSetNonceMetaData's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-S-I11>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-I12 — INFO_DPSF|UpdateSetNonceURI quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-I12 · 01 · set-nonce field: UpdateSetNonceURI] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPSF|UpdateSetNonceURI`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (sft:string "TSFS-98c486052a51")
+        (nft:string "TSFN-98c486052a51")
+        (patron:string KST.ANHD)
+        (type:object{DpdcUdcV2.URI|Type}
+            (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 5.0 "CostProbe" "cost probe nonce" (ref-DPDC-UDC::UDC_NoMetaData) type
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateSetNonceURI patron sft patron 1 false type (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C1::DPSF|C_UpdateSetNonceURI patron sft patron 1 false type (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+        )
+        (map print
+            [
+                (expect "<<DPDC-S-I12>> INFO_DPSF|UpdateSetNonceURI's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-S-I12>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-I13 — INFO_DPSF|UpdateSetNonce quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-I13 · 01 · set-nonce field: UpdateSetNonce] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPSF|UpdateSetNonce`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (sft:string "TSFS-98c486052a51")
+        (nft:string "TSFN-98c486052a51")
+        (patron:string KST.ANHD)
+        (type:object{DpdcUdcV2.URI|Type}
+            (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 5.0 "CostProbe" "cost probe nonce" (ref-DPDC-UDC::UDC_NoMetaData) type
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateSetNonce patron sft patron 1 false nd))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C1::DPSF|C_UpdateSetNonce patron sft patron 1 false nd))
+        )
+        (map print
+            [
+                (expect "<<DPDC-S-I13>> INFO_DPSF|UpdateSetNonce's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-S-I13>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-I14 — INFO_DPSF|UpdateSetNonces quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-I14 · 01 · set-nonce field: UpdateSetNonces] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPSF|UpdateSetNonces`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+;;TWO set-classes, so `INFO_DPDC-N|Bulk`'s `count` argument is actually exercised — a one-element
+;;list cannot tell a per-item price from a flat one.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (sft:string "TSFS-98c486052a51")
+        (nft:string "TSFN-98c486052a51")
+        (patron:string KST.ANHD)
+        (type:object{DpdcUdcV2.URI|Type}
+            (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 5.0 "CostProbe" "cost probe nonce" (ref-DPDC-UDC::UDC_NoMetaData) type
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    )
+    ;;SETUP — the SET-NONCE side of the update path additionally enforces `UEV_Fragmentation id true
+    ;;<set-class>` (`08_DPDC-S.pact:946`). Only SC1 is fragmented at this point in the file (DPDC-S-G5
+    ;;did it), so a two-class bulk needs SC2 opened as well. That op is itself measured at
+    ;;<<DPDC-S-I28>>; here it is setup and closes before `ignis-before` is read.
+    (ref-TS02-C1::DPSF|C_EnableSetClassFragmentation patron sft 2 nd)
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateSetNonces patron sft patron [1 2] false [nd nd]))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C1::DPSF|C_UpdateSetNonces patron sft patron [1 2] false [nd nd]))
+        )
+        (map print
+            [
+                (expect "<<DPDC-S-I14>> INFO_DPSF|UpdateSetNonces's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-S-I14>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-I15 — INFO_DPNF|UpdateSetNonceName quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-I15 · 01 · NFT set-nonce field: UpdateSetNonceName] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPNF|UpdateSetNonceName`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+;;TSFN carries exactly ONE NFT set-class (`NFT-SC1-Primordial`), so every NFT set-nonce block below
+;;works on class 1; the SFT side has three and can vary it.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (sft:string "TSFS-98c486052a51")
+        (nft:string "TSFN-98c486052a51")
+        (patron:string KST.ANHD)
+        (type:object{DpdcUdcV2.URI|Type}
+            (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 5.0 "CostProbe" "cost probe nonce" (ref-DPDC-UDC::UDC_NoMetaData) type
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    )
+    ;;SETUP — the NFT SET-NONCE update path enforces `UEV_Fragmentation id false <set-class>`
+    ;;(`08_DPDC-S.pact:946`), and TSFN's only set class is NOT fragmented at this point in the file
+    ;;(DPDC-S-G5 fragmented the SFT side only). Opening it is itself measured at <<DPDC-S-I31>>;
+    ;;here it is setup and closes before `ignis-before` is read.
+    (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron nft 1 nd)
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateSetNonceName patron nft patron 1 false "ProbeName"))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C2::DPNF|C_UpdateSetNonceName patron nft patron 1 false "ProbeName"))
+        )
+        (map print
+            [
+                (expect "<<DPDC-S-I15>> INFO_DPNF|UpdateSetNonceName's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-S-I15>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-I16 — INFO_DPNF|UpdateSetNonceDescription quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-I16 · 01 · NFT set-nonce field: UpdateSetNonceDescription] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPNF|UpdateSetNonceDescription`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (sft:string "TSFS-98c486052a51")
+        (nft:string "TSFN-98c486052a51")
+        (patron:string KST.ANHD)
+        (type:object{DpdcUdcV2.URI|Type}
+            (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 5.0 "CostProbe" "cost probe nonce" (ref-DPDC-UDC::UDC_NoMetaData) type
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    )
+    ;;SETUP — the NFT SET-NONCE update path enforces `UEV_Fragmentation id false <set-class>`
+    ;;(`08_DPDC-S.pact:946`), and TSFN's only set class is NOT fragmented at this point in the file
+    ;;(DPDC-S-G5 fragmented the SFT side only). Opening it is itself measured at <<DPDC-S-I31>>;
+    ;;here it is setup and closes before `ignis-before` is read.
+    (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron nft 1 nd)
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateSetNonceDescription patron nft patron 1 false "probe description"))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C2::DPNF|C_UpdateSetNonceDescription patron nft patron 1 false "probe description"))
+        )
+        (map print
+            [
+                (expect "<<DPDC-S-I16>> INFO_DPNF|UpdateSetNonceDescription's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-S-I16>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-I17 — INFO_DPNF|UpdateSetNonceRoyalty quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-I17 · 01 · NFT set-nonce field: UpdateSetNonceRoyalty] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPNF|UpdateSetNonceRoyalty`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (sft:string "TSFS-98c486052a51")
+        (nft:string "TSFN-98c486052a51")
+        (patron:string KST.ANHD)
+        (type:object{DpdcUdcV2.URI|Type}
+            (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 5.0 "CostProbe" "cost probe nonce" (ref-DPDC-UDC::UDC_NoMetaData) type
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    )
+    ;;SETUP — the NFT SET-NONCE update path enforces `UEV_Fragmentation id false <set-class>`
+    ;;(`08_DPDC-S.pact:946`), and TSFN's only set class is NOT fragmented at this point in the file
+    ;;(DPDC-S-G5 fragmented the SFT side only). Opening it is itself measured at <<DPDC-S-I31>>;
+    ;;here it is setup and closes before `ignis-before` is read.
+    (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron nft 1 nd)
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateSetNonceRoyalty patron nft patron 1 false 3.0))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C2::DPNF|C_UpdateSetNonceRoyalty patron nft patron 1 false 3.0))
+        )
+        (map print
+            [
+                (expect "<<DPDC-S-I17>> INFO_DPNF|UpdateSetNonceRoyalty's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-S-I17>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-I18 — INFO_DPNF|UpdateSetNonceIgnisRoyalty quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-I18 · 01 · NFT set-nonce field: UpdateSetNonceIgnisRoyalty] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPNF|UpdateSetNonceIgnisRoyalty`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (sft:string "TSFS-98c486052a51")
+        (nft:string "TSFN-98c486052a51")
+        (patron:string KST.ANHD)
+        (type:object{DpdcUdcV2.URI|Type}
+            (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 5.0 "CostProbe" "cost probe nonce" (ref-DPDC-UDC::UDC_NoMetaData) type
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    )
+    ;;SETUP — the NFT SET-NONCE update path enforces `UEV_Fragmentation id false <set-class>`
+    ;;(`08_DPDC-S.pact:946`), and TSFN's only set class is NOT fragmented at this point in the file
+    ;;(DPDC-S-G5 fragmented the SFT side only). Opening it is itself measured at <<DPDC-S-I31>>;
+    ;;here it is setup and closes before `ignis-before` is read.
+    (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron nft 1 nd)
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateSetNonceIgnisRoyalty patron nft patron 1 false 2.0))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C2::DPNF|C_UpdateSetNonceIgnisRoyalty patron nft patron 1 false 2.0))
+        )
+        (map print
+            [
+                (expect "<<DPDC-S-I18>> INFO_DPNF|UpdateSetNonceIgnisRoyalty's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-S-I18>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-I19 — INFO_DPNF|UpdateSetNonceScore quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-I19 · 01 · NFT set-nonce field: UpdateSetNonceScore] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPNF|UpdateSetNonceScore`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (sft:string "TSFS-98c486052a51")
+        (nft:string "TSFN-98c486052a51")
+        (patron:string KST.ANHD)
+        (type:object{DpdcUdcV2.URI|Type}
+            (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 5.0 "CostProbe" "cost probe nonce" (ref-DPDC-UDC::UDC_NoMetaData) type
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    )
+    ;;SETUP — the NFT SET-NONCE update path enforces `UEV_Fragmentation id false <set-class>`
+    ;;(`08_DPDC-S.pact:946`), and TSFN's only set class is NOT fragmented at this point in the file
+    ;;(DPDC-S-G5 fragmented the SFT side only). Opening it is itself measured at <<DPDC-S-I31>>;
+    ;;here it is setup and closes before `ignis-before` is read.
+    (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron nft 1 nd)
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateSetNonceScore patron nft patron 1 false 7.0))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C2::DPNF|C_UpdateSetNonceScore patron nft patron 1 false 7.0))
+        )
+        (map print
+            [
+                (expect "<<DPDC-S-I19>> INFO_DPNF|UpdateSetNonceScore's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-S-I19>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-I20 — INFO_DPNF|RemoveSetNonceScore quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-I20 · 01 · NFT set-nonce field: RemoveSetNonceScore] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPNF|RemoveSetNonceScore`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (sft:string "TSFS-98c486052a51")
+        (nft:string "TSFN-98c486052a51")
+        (patron:string KST.ANHD)
+        (type:object{DpdcUdcV2.URI|Type}
+            (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 5.0 "CostProbe" "cost probe nonce" (ref-DPDC-UDC::UDC_NoMetaData) type
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    )
+    ;;SETUP — the NFT SET-NONCE update path enforces `UEV_Fragmentation id false <set-class>`
+    ;;(`08_DPDC-S.pact:946`), and TSFN's only set class is NOT fragmented at this point in the file
+    ;;(DPDC-S-G5 fragmented the SFT side only). Opening it is itself measured at <<DPDC-S-I31>>;
+    ;;here it is setup and closes before `ignis-before` is read.
+    (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron nft 1 nd)
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|RemoveSetNonceScore patron nft patron 1 false))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C2::DPNF|C_RemoveSetNonceScore patron nft patron 1 false))
+        )
+        (map print
+            [
+                (expect "<<DPDC-S-I20>> INFO_DPNF|RemoveSetNonceScore's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-S-I20>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-I21 — INFO_DPNF|UpdateSetNonceMetaData quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-I21 · 01 · NFT set-nonce field: UpdateSetNonceMetaData] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPNF|UpdateSetNonceMetaData`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (sft:string "TSFS-98c486052a51")
+        (nft:string "TSFN-98c486052a51")
+        (patron:string KST.ANHD)
+        (type:object{DpdcUdcV2.URI|Type}
+            (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 5.0 "CostProbe" "cost probe nonce" (ref-DPDC-UDC::UDC_NoMetaData) type
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    )
+    ;;SETUP — the NFT SET-NONCE update path enforces `UEV_Fragmentation id false <set-class>`
+    ;;(`08_DPDC-S.pact:946`), and TSFN's only set class is NOT fragmented at this point in the file
+    ;;(DPDC-S-G5 fragmented the SFT side only). Opening it is itself measured at <<DPDC-S-I31>>;
+    ;;here it is setup and closes before `ignis-before` is read.
+    (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron nft 1 nd)
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateSetNonceMetaData patron nft patron 1 false (ref-DPDC-UDC::UDC_NoMetaData)))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C2::DPNF|C_UpdateSetNonceMetaData patron nft patron 1 false (ref-DPDC-UDC::UDC_NoMetaData)))
+        )
+        (map print
+            [
+                (expect "<<DPDC-S-I21>> INFO_DPNF|UpdateSetNonceMetaData's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-S-I21>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-I22 — INFO_DPNF|UpdateSetNonceURI quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-I22 · 01 · NFT set-nonce field: UpdateSetNonceURI] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPNF|UpdateSetNonceURI`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (sft:string "TSFS-98c486052a51")
+        (nft:string "TSFN-98c486052a51")
+        (patron:string KST.ANHD)
+        (type:object{DpdcUdcV2.URI|Type}
+            (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 5.0 "CostProbe" "cost probe nonce" (ref-DPDC-UDC::UDC_NoMetaData) type
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    )
+    ;;SETUP — the NFT SET-NONCE update path enforces `UEV_Fragmentation id false <set-class>`
+    ;;(`08_DPDC-S.pact:946`), and TSFN's only set class is NOT fragmented at this point in the file
+    ;;(DPDC-S-G5 fragmented the SFT side only). Opening it is itself measured at <<DPDC-S-I31>>;
+    ;;here it is setup and closes before `ignis-before` is read.
+    (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron nft 1 nd)
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateSetNonceURI patron nft patron 1 false type (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C2::DPNF|C_UpdateSetNonceURI patron nft patron 1 false type (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+        )
+        (map print
+            [
+                (expect "<<DPDC-S-I22>> INFO_DPNF|UpdateSetNonceURI's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-S-I22>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-I23 — INFO_DPNF|UpdateSetNonce quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-I23 · 01 · NFT set-nonce field: UpdateSetNonce] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPNF|UpdateSetNonce`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (sft:string "TSFS-98c486052a51")
+        (nft:string "TSFN-98c486052a51")
+        (patron:string KST.ANHD)
+        (type:object{DpdcUdcV2.URI|Type}
+            (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 5.0 "CostProbe" "cost probe nonce" (ref-DPDC-UDC::UDC_NoMetaData) type
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    )
+    ;;SETUP — the NFT SET-NONCE update path enforces `UEV_Fragmentation id false <set-class>`
+    ;;(`08_DPDC-S.pact:946`), and TSFN's only set class is NOT fragmented at this point in the file
+    ;;(DPDC-S-G5 fragmented the SFT side only). Opening it is itself measured at <<DPDC-S-I31>>;
+    ;;here it is setup and closes before `ignis-before` is read.
+    (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron nft 1 nd)
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateSetNonce patron nft patron 1 false nd))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C2::DPNF|C_UpdateSetNonce patron nft patron 1 false nd))
+        )
+        (map print
+            [
+                (expect "<<DPDC-S-I23>> INFO_DPNF|UpdateSetNonce's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-S-I23>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-I24 — INFO_DPNF|UpdateSetNonces quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-I24 · 01 · NFT set-nonce field: UpdateSetNonces] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPNF|UpdateSetNonces`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (sft:string "TSFS-98c486052a51")
+        (nft:string "TSFN-98c486052a51")
+        (patron:string KST.ANHD)
+        (type:object{DpdcUdcV2.URI|Type}
+            (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 5.0 "CostProbe" "cost probe nonce" (ref-DPDC-UDC::UDC_NoMetaData) type
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    )
+    ;;SETUP — the NFT SET-NONCE update path enforces `UEV_Fragmentation id false <set-class>`
+    ;;(`08_DPDC-S.pact:946`), and TSFN's only set class is NOT fragmented at this point in the file
+    ;;(DPDC-S-G5 fragmented the SFT side only). Opening it is itself measured at <<DPDC-S-I31>>;
+    ;;here it is setup and closes before `ignis-before` is read.
+    (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron nft 1 nd)
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateSetNonces patron nft patron [1] false [nd]))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C2::DPNF|C_UpdateSetNonces patron nft patron [1] false [nd]))
+        )
+        (map print
+            [
+                (expect "<<DPDC-S-I24>> INFO_DPNF|UpdateSetNonces's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-S-I24>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-I25 — INFO_DPSF|DefinePrimordialSet quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-I25 · 01 · define a new primordial set class] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPSF|DefinePrimordialSet`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+;;This CREATES set-class 4 and its set-nonce, so the block rolls back. The three Define* previews
+;;below are claimed by `08_DPDC-S.pact` to have an IDENTICAL cost shape — measuring all three against
+;;real charges is what turns that claim from a comment into a fact.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (sft:string "TSFS-98c486052a51")
+        (nft:string "TSFN-98c486052a51")
+        (patron:string KST.ANHD)
+        (type:object{DpdcUdcV2.URI|Type}
+            (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 5.0 "CostProbe" "cost probe nonce" (ref-DPDC-UDC::UDC_NoMetaData) type
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|DefinePrimordialSet patron sft "SC4-Probe" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [4]) (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [5])] nd))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C1::DPSF|C_DefinePrimordialSet patron sft "SC4-Probe" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [4]) (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [5])] nd))
+        )
+        (map print
+            [
+                (expect "<<DPDC-S-I25>> INFO_DPSF|DefinePrimordialSet's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-S-I25>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-I26 — INFO_DPSF|DefineCompositeSet quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-I26 · 01 · define a composite set class] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPSF|DefineCompositeSet`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (sft:string "TSFS-98c486052a51")
+        (nft:string "TSFN-98c486052a51")
+        (patron:string KST.ANHD)
+        (type:object{DpdcUdcV2.URI|Type}
+            (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 5.0 "CostProbe" "cost probe nonce" (ref-DPDC-UDC::UDC_NoMetaData) type
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|DefineCompositeSet patron sft "SC4-Comp" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)] nd))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C1::DPSF|C_DefineCompositeSet patron sft "SC4-Comp" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)] nd))
+        )
+        (map print
+            [
+                (expect "<<DPDC-S-I26>> INFO_DPSF|DefineCompositeSet's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-S-I26>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-I27 — INFO_DPSF|DefineHybridSet quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-I27 · 01 · define a hybrid set class] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPSF|DefineHybridSet`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+;;THIS BLOCK FOUND A DEFECT (fixed 2026-09-14). `URCi_DefineHybridSet` DELEGATED to
+;;`URCi_DefinePrimordialSet`, whose @doc asserted an "identical cost shape". The shape is indeed
+;;identical; the PRICE is not. `02_IGNIS.pact` charges 43.0 for primordial and composite but
+;;45.0 for hybrid (lines 682/683 and 764/765), so the preview under-quoted every hybrid set-class
+;;definition by 2.0 raw IGNIS — 1.06 after the patron's discount — on BOTH fungibility sides.
+;;
+;;WHY IT SURVIVED: composite really IS 43.0, so ITS delegation is correct, and the two siblings
+;;measured immediately above match to the decimal. A reader checking one of them would have
+;;confirmed the doc's claim. Only asking all three and counting the coins separates them.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (sft:string "TSFS-98c486052a51")
+        (nft:string "TSFN-98c486052a51")
+        (patron:string KST.ANHD)
+        (type:object{DpdcUdcV2.URI|Type}
+            (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 5.0 "CostProbe" "cost probe nonce" (ref-DPDC-UDC::UDC_NoMetaData) type
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|DefineHybridSet patron sft "SC4-Hyb" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [4]) (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [5])] [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)] nd))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C1::DPSF|C_DefineHybridSet patron sft "SC4-Hyb" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [4]) (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [5])] [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)] nd))
+        )
+        (map print
+            [
+                (expect "<<DPDC-S-I27>> INFO_DPSF|DefineHybridSet's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-S-I27>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-I28 — INFO_DPSF|EnableSetClassFragmentation quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-I28 · 01 · open fragmentation on a set class] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPSF|EnableSetClassFragmentation`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+;;SET-CLASS 2, not 1: DPDC-S-G5 pins that this op is NOT idempotent and SC1 is already fragmented,
+;;so re-entering it is refused before any price is reached.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (sft:string "TSFS-98c486052a51")
+        (nft:string "TSFN-98c486052a51")
+        (patron:string KST.ANHD)
+        (type:object{DpdcUdcV2.URI|Type}
+            (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 5.0 "CostProbe" "cost probe nonce" (ref-DPDC-UDC::UDC_NoMetaData) type
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|EnableSetClassFragmentation patron sft 2 nd))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C1::DPSF|C_EnableSetClassFragmentation patron sft 2 nd))
+        )
+        (map print
+            [
+                (expect "<<DPDC-S-I28>> INFO_DPSF|EnableSetClassFragmentation's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-S-I28>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-I29 — INFO_DPNF|Make quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-I29 · 01 · assemble an NFT set] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPNF|Make`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (sft:string "TSFS-98c486052a51")
+        (nft:string "TSFN-98c486052a51")
+        (patron:string KST.ANHD)
+        (type:object{DpdcUdcV2.URI|Type}
+            (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 5.0 "CostProbe" "cost probe nonce" (ref-DPDC-UDC::UDC_NoMetaData) type
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|Make patron patron nft [1 3] 1))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C2::DPNF|C_Make patron patron nft [1 3] 1))
+        )
+        (map print
+            [
+                (expect "<<DPDC-S-I29>> INFO_DPNF|Make's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-S-I29>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-I30 — INFO_DPNF|Break quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-I30 · 01 · break an NFT set apart] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPNF|Break`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+;;SETUP assembles a set first — there is no standing NFT set-nonce to break at this point in the
+;;file, and `Make` is measured on its own one block up.
+;;THE SET-NONCE NUMBER IS DERIVED, NOT WRITTEN. `[6.1.3]` spawned its instance at nonce 5 and then
+;;broke it, so where a fresh Make lands depends on everything that ran in between. Hardcoding 5
+;;produces "doesnt hold NFT ... Nonce 5" — a holder error that reads like a broken fixture rather
+;;than a stale constant. Reading `UR_NoncesUsed` back after the Make is the only stable form.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (sft:string "TSFS-98c486052a51")
+        (nft:string "TSFN-98c486052a51")
+        (patron:string KST.ANHD)
+        (type:object{DpdcUdcV2.URI|Type}
+            (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 5.0 "CostProbe" "cost probe nonce" (ref-DPDC-UDC::UDC_NoMetaData) type
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    )
+    (ref-TS02-C2::DPNF|C_Make patron patron nft [1 3] 1)
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|Break patron patron nft (ref-DPDC::UR_NoncesUsed nft false)))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C2::DPNF|C_Break patron patron nft (ref-DPDC::UR_NoncesUsed nft false)))
+        )
+        (map print
+            [
+                (expect "<<DPDC-S-I30>> INFO_DPNF|Break's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-S-I30>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-I31 — INFO_DPNF|DefinePrimordialSet quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-I31 · 01 · define an NFT primordial set class] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPNF|DefinePrimordialSet`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+;;NFT SET POSITIONS NEED MORE THAN ONE ALLOWED NONCE. `UEV_PrimordialSetElement` enforces
+;;`(> size 1)` for the NFT side only (`08_DPDC-S.pact:873`) — an NFT set position is a CHOICE among
+;;candidates, so a single-element list is a contradiction. The SFT twin accepts one, which is why
+;;the two families' fixtures cannot be copied across.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (sft:string "TSFS-98c486052a51")
+        (nft:string "TSFN-98c486052a51")
+        (patron:string KST.ANHD)
+        (type:object{DpdcUdcV2.URI|Type}
+            (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 5.0 "CostProbe" "cost probe nonce" (ref-DPDC-UDC::UDC_NoMetaData) type
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|DefinePrimordialSet patron nft "NFT-SC2-Probe" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1 2]) (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [3 4])] nd))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C2::DPNF|C_DefinePrimordialSet patron nft "NFT-SC2-Probe" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1 2]) (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [3 4])] nd))
+        )
+        (map print
+            [
+                (expect "<<DPDC-S-I31>> INFO_DPNF|DefinePrimordialSet's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-S-I31>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-I32 — INFO_DPNF|DefineCompositeSet quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-I32 · 01 · define an NFT composite set class] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPNF|DefineCompositeSet`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (sft:string "TSFS-98c486052a51")
+        (nft:string "TSFN-98c486052a51")
+        (patron:string KST.ANHD)
+        (type:object{DpdcUdcV2.URI|Type}
+            (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 5.0 "CostProbe" "cost probe nonce" (ref-DPDC-UDC::UDC_NoMetaData) type
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|DefineCompositeSet patron nft "NFT-SC2-Comp" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)] nd))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C2::DPNF|C_DefineCompositeSet patron nft "NFT-SC2-Comp" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)] nd))
+        )
+        (map print
+            [
+                (expect "<<DPDC-S-I32>> INFO_DPNF|DefineCompositeSet's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-S-I32>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-I33 — INFO_DPNF|DefineHybridSet quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-I33 · 01 · define an NFT hybrid set class] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPNF|DefineHybridSet`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+;;THIS BLOCK FOUND A DEFECT (fixed 2026-09-14). `URCi_DefineHybridSet` DELEGATED to
+;;`URCi_DefinePrimordialSet`, whose @doc asserted an "identical cost shape". The shape is indeed
+;;identical; the PRICE is not. `02_IGNIS.pact` charges 43.0 for primordial and composite but
+;;45.0 for hybrid (lines 682/683 and 764/765), so the preview under-quoted every hybrid set-class
+;;definition by 2.0 raw IGNIS — 1.06 after the patron's discount — on BOTH fungibility sides.
+;;
+;;WHY IT SURVIVED: composite really IS 43.0, so ITS delegation is correct, and the two siblings
+;;measured immediately above match to the decimal. A reader checking one of them would have
+;;confirmed the doc's claim. Only asking all three and counting the coins separates them.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (sft:string "TSFS-98c486052a51")
+        (nft:string "TSFN-98c486052a51")
+        (patron:string KST.ANHD)
+        (type:object{DpdcUdcV2.URI|Type}
+            (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 5.0 "CostProbe" "cost probe nonce" (ref-DPDC-UDC::UDC_NoMetaData) type
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|DefineHybridSet patron nft "NFT-SC2-Hyb" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1 2])] [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)] nd))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C2::DPNF|C_DefineHybridSet patron nft "NFT-SC2-Hyb" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1 2])] [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)] nd))
+        )
+        (map print
+            [
+                (expect "<<DPDC-S-I33>> INFO_DPNF|DefineHybridSet's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-S-I33>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-I34 — INFO_DPNF|RenameSet quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-I34 · 01 · rename an NFT set class] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPNF|RenameSet`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (sft:string "TSFS-98c486052a51")
+        (nft:string "TSFN-98c486052a51")
+        (patron:string KST.ANHD)
+        (type:object{DpdcUdcV2.URI|Type}
+            (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 5.0 "CostProbe" "cost probe nonce" (ref-DPDC-UDC::UDC_NoMetaData) type
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|RenameSet patron nft 1 "NFT-SC1-Probe"))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C2::DPNF|C_RenameSet patron nft 1 "NFT-SC1-Probe"))
+        )
+        (map print
+            [
+                (expect "<<DPDC-S-I34>> INFO_DPNF|RenameSet's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-S-I34>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-I35 — INFO_DPNF|ToggleSet quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-I35 · 01 · flip an NFT set class active flag] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPNF|ToggleSet`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (sft:string "TSFS-98c486052a51")
+        (nft:string "TSFN-98c486052a51")
+        (patron:string KST.ANHD)
+        (type:object{DpdcUdcV2.URI|Type}
+            (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 5.0 "CostProbe" "cost probe nonce" (ref-DPDC-UDC::UDC_NoMetaData) type
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|ToggleSet patron nft 1 false))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C2::DPNF|C_ToggleSet patron nft 1 false))
+        )
+        (map print
+            [
+                (expect "<<DPDC-S-I35>> INFO_DPNF|ToggleSet's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-S-I35>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-S-I36 — INFO_DPNF|EnableSetClassFragmentation quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-S-I36 · 01 · open fragmentation on an NFT set class] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPNF|EnableSetClassFragmentation`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (sft:string "TSFS-98c486052a51")
+        (nft:string "TSFN-98c486052a51")
+        (patron:string KST.ANHD)
+        (type:object{DpdcUdcV2.URI|Type}
+            (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV2.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 5.0 "CostProbe" "cost probe nonce" (ref-DPDC-UDC::UDC_NoMetaData) type
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|EnableSetClassFragmentation patron nft 1 nd))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron nft 1 nd))
+        )
+        (map print
+            [
+                (expect "<<DPDC-S-I36>> INFO_DPNF|EnableSetClassFragmentation's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-S-I36>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)

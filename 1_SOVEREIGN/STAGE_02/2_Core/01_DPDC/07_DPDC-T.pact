@@ -344,6 +344,16 @@
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
             (enforce (!= sender receiver) "Sender and Receiver must be different")
+            ;;`ta` is not a client argument. The ONLY acquirer is C_IgnisRoyaltyCollector, which
+            ;;reaches this cap through two filters that together make a non-positive `ta` impossible:
+            ;;  1. `(if (or ivgz (= sum 0.0)) <NO-ROYALTY branch> ...)` -- a zero TOTAL never gets here;
+            ;;  2. `UC_CleanseAggregatedRoyalties` drops every entry whose royalty is 0.0, so the
+            ;;     per-creator amounts this cap is handed are all non-zero by construction.
+            ;;Royalties are summed from unsigned per-nonce prices, so non-zero means positive.
+            ;;Kept as defence-in-depth for a future acquirer that does not cleanse first.
+            ;;Pinned by REPL/modules/DPDC.repl <<DPDC-G16>>, which drives the cleanse directly -- pure
+            ;;compute, no fixture -- so this annotation cannot rot if the filter is ever weakened.
+            ;;UNREACHABLE via its only caller.
             (enforce (> ta 0.0) "Cannot debit|credit 0.0 or negative IGNIS amounts")
             (ref-IGNIS::UEV_TwentyFourPrecision ta)
             (compose-capability (IGNIS|C>DEBIT sender ta))
@@ -399,7 +409,6 @@
     (defun UC_CleanseAggregatedRoyalties:object{DpdcTransferV2.AggregatedRoyalties} (agg:object{DpdcTransferV2.AggregatedRoyalties})
         (let
             (
-                (ref-U|LST:module{StringProcessorV2} U|LST)
                 (agg-creators:[string] (at "creators" agg))
                 (agg-royalties:[decimal] (at "ignis-royalties" agg))
                 (non-zero-indices:[integer]
@@ -584,31 +593,48 @@
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 ;;
                 (l:integer (length receiver-lst))
+                ;;FIXED 2026-09-12: the fold is guarded on l=0.
+                ;;`(enumerate 0 (- l 1))` for l=0 is `[0, -1]` -- a DESCENDING PAIR, not an empty
+                ;;list -- so an empty receiver list indexed `(at 0 nonces-array)` on empty arrays and
+                ;;raised `Array index out of bounds. Length (0), Index (0)` out of a COST PREVIEW.
+                ;;This is a `URCi_` reader, so it must stay a pure derivation and cannot `enforce`
+                ;;(StoicSyntax: validation belongs in the defcap). Making it TOTAL is the correct
+                ;;shape: an empty bulk transfer has no legs, so it has no cost. The CLIENT still
+                ;;refuses the input -- DPDC-T|C>BULK-TRANSFER's shape guard now answers, since
+                ;;TS02-C1 calls the core before deriving anything (both fixed in the same pass).
                 (total:decimal
-                    (fold
-                        (lambda (acc:decimal idx:integer)
-                            (+ acc
-                                (URC_TotalTransferPrice
-                                    id
-                                    son
-                                    (at idx nonces-array)
-                                    (at idx amounts-array)
+                    (if (= l 0)
+                        0.0
+                        (fold
+                            (lambda (acc:decimal idx:integer)
+                                (+ acc
+                                    (URC_TotalTransferPrice
+                                        id
+                                        son
+                                        (at idx nonces-array)
+                                        (at idx amounts-array)
+                                    )
                                 )
                             )
+                            0.0
+                            (enumerate 0 (- l 1))
                         )
-                        0.0
-                        (enumerate 0 (- l 1))
                     )
                 )
+                ;;FIXED 2026-09-12, same cause as `total` above: this mapped over
+                ;;`(enumerate 0 (- l 1))` purely to index back into `receiver-lst`, so an empty list
+                ;;became `[0, -1]` and `(at 0 receiver-lst)` faulted. There is nothing to zip here --
+                ;;only one list is read -- so mapping over `receiver-lst` ITSELF is both simpler and
+                ;;total. `(fold (or) false [])` is correctly `false`: no receivers, no zero-elite leg.
                 (zero-elite:bool
                     (fold
                         (or)
                         false
                         (map
-                            (lambda (idx:integer)
-                                (ref-IGNIS::URC_ZeroEliteGAZ sender (at idx receiver-lst))
+                            (lambda (rcv:string)
+                                (ref-IGNIS::URC_ZeroEliteGAZ sender rcv)
                             )
-                            (enumerate 0 (- l 1))
+                            receiver-lst
                         )
                     )
                 )
@@ -625,7 +651,6 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPDC:module{DpdcV2} DPDC)
                 (owner:string (ref-DPDC::UR_OwnerKonto id son))
                 (p:decimal (if son (ref-IGNIS::UC_IgnisLeg "tier-small") (ref-IGNIS::UC_IgnisLeg "tier-medium")))
@@ -692,6 +717,16 @@
     )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
+    ;;Protection: Class 1 — Innate protection offered by XE_DebitSFT-Nonce,
+    ;;Protection:          XB_CreditSFT-Nonce, XE_DebitNFT-Nonce, XB_CreditNFT-Nonce,
+    ;;Protection:          XE_DebitSFT-FragmentNonce, XE_CreditSFT-FragmentNonce,
+    ;;Protection:          XE_DebitNFT-FragmentNonce, XE_CreditNFT-FragmentNonce,
+    ;;Protection:          XE_DebitSFT-Nonces, XB_CreditSFT-Nonces, XE_DebitNFT-Nonces,
+    ;;Protection:          XB_CreditNFT-Nonces, XE_DebitSFT-FragmentNonces,
+    ;;Protection:          XE_CreditSFT-FragmentNonces, XE_DebitNFT-FragmentNonces,
+    ;;Protection:          XE_CreditNFT-FragmentNonces, XE_DebitSFT-HybridNonces,
+    ;;Protection:          XE_CreditSFT-HybridNonces, XE_DebitNFT-HybridNonces,
+    ;;Protection:          XE_CreditNFT-HybridNonces
     (defun XI_TransferNonces (id:string son:bool sender:string receiver:string nonces:[integer] amounts:[integer])
         (let
             (
@@ -789,11 +824,13 @@
         )
     )
     ;;
+    ;;Protection: Class 3 — Custom: IGNIS|C>ROYALTY
     (defun XI_IgnisTransfer (sender:string receiver:string ta:decimal)
         (require-capability (IGNIS|C>ROYALTY sender receiver ta))
         (XI_IgnisDebit sender ta)
         (XI_IgnisCredit receiver ta)
     )
+    ;;Protection: Class 3 — Custom: IGNIS|C>CREDIT
     (defun XI_IgnisCredit (receiver:string ta:decimal)
         (require-capability (IGNIS|C>CREDIT receiver))
         (let
@@ -803,6 +840,7 @@
             (ref-DALOS::XB_UpdateBalance receiver false (+ (ref-DALOS::UR_TF_AccountSupply receiver false) ta))
         )
     )
+    ;;Protection: Class 3 — Custom: IGNIS|C>DEBIT
     (defun XI_IgnisDebit (sender:string ta:decimal)
         (require-capability (IGNIS|C>DEBIT sender ta))
         (let
@@ -820,7 +858,6 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
                     (ref-DPDC:module{DpdcV2} DPDC)
                     (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
                     ;;

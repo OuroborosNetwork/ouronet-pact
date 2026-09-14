@@ -808,6 +808,12 @@
                 (ref-U|ST::UEV_enforce-below-gas-limit 1000))
             (expect "<<UTIL-12>> limit: one unit higher is accepted by the strict bound"
                 true (!= "" (format "{}" [(ref-U|ST::UEV_enforce-below-gas-limit 1001)])))
+            ;;...and the NON-STRICT limit bound must still refuse a limit genuinely below the
+            ;;chain value. Without this, "accepts exactly 1000" is satisfied by a guard that
+            ;;accepts everything -- the same trap the notional pair below already closes.
+            (expect-failure "<<UTIL-12>> limit: and the NON-STRICT bound refuses one unit BELOW the chain limit"
+                "Gas Limit must be smaller than or equal to 999"
+                (ref-U|ST::UEV_enforce-below-or-at-gas-limit 999))
             ;;--- PAIR 3: the NOTIONAL, which is the product and therefore the one a caller is
             ;;most likely to get wrong -- 0.001 x 1000 = 1.0 exactly.
             (expect "<<UTIL-12>> notional: the NON-STRICT bound accepts price x limit exactly"
@@ -820,6 +826,140 @@
             (expect-failure "<<UTIL-12>> notional: and the NON-STRICT bound still refuses an over-budget tx"
                 "Gas Limit * Gas Price must be smaller than or equal to 0.5"
                 (ref-U|ST::UEV_enforce-below-or-at-gas-notional 0.5))
+        ]
+    )
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "UTIL-13 — UCv_SplitBalanceForVesting: two live guards, and one that CANNOT fire")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [UTIL-13 · 01 · the vesting splitter] ---")
+;;The sibling of UTIL-01's UCv_SplitBalanceWithBooleans, and it carries the same three-guard
+;;shape -- with one difference worth writing down, because it is a finding, not a test:
+;;
+;;   line 159  (UEV_Milestone milestones)                    "Milestone splitting number {} is out of bounds"
+;;   line 160  (enforce (!= milestones 0) …)                 "Cannot split with zero milestones"
+;;   line 168  (enforce (> split 0.0) …)                     "Amount {} too small to split into {} milestones"
+;;   line 174  (enforce (= (+ big-chunk last-split) amount))  "Amount of {} could not be split …"
+;;
+;;Line 160 is UNREACHABLE. UEV_Milestone on the line above restricts milestones to [1,250], and
+;;0 is outside that range, so the zero case is rejected one line before its own guard is asked
+;;about it. Verified, not assumed -- the assertion below calls the function with 0 and pins the
+;;message that ACTUALLY comes back, which is UEV_Milestone's. Line 160 is a fail-closed backstop
+;;behind a stricter check, and no input can pin it. It is annotated as such in source.
+;;
+;;The third guard is the one nobody would think to write. It is not a bounds check: it asserts
+;;the split RECONSTRUCTS the input exactly. Any amount carrying more precision than the split
+;;precision loses the remainder to floor, and the pieces then sum to less than what was handed
+;;in -- 1.005 over 2 milestones at precision 2 gives 0.50 + 0.50 = 1.00, and 0.005 of someone's
+;;balance would have evaporated. That is the guard that makes this function safe to hold funds.
+(let
+    (
+        (ref-U|VST:module{UtilityVstV2} U|VST)
+    )
+    (map print
+        [
+            ;;HAPPY PATH FIRST, or every rejection below is also satisfied by a function that
+            ;;always throws. 9.0 over 3 at precision 2 divides exactly.
+            (expect "<<UTIL-13>> an exact split returns one amount per milestone"
+                [3.0 3.0 3.0] (ref-U|VST::UCv_SplitBalanceForVesting 2 9.0 3))
+            ;;...and the pieces must add back up to the input, which is the whole point.
+            (expect "<<UTIL-13>> the pieces sum back to the input amount"
+                9.0 (fold (+) 0.0 (ref-U|VST::UCv_SplitBalanceForVesting 2 9.0 3)))
+            ;;an INEXACT division still reconstructs — the remainder lands on the last milestone
+            ;;rather than being dropped. 10.0 over 3 at precision 0 is 3 + 3 + 4.
+            (expect "<<UTIL-13>> an inexact division puts the remainder on the LAST milestone"
+                [3.0 3.0 4.0] (ref-U|VST::UCv_SplitBalanceForVesting 0 10.0 3))
+            ;;--- guard 1 is masked: asking for zero milestones trips UEV_Milestone, not line 160
+            (expect-failure "<<UTIL-13>> zero milestones is rejected by the BOUNDS check one line earlier"
+                "Milestone splitting number 0 is out of bounds"
+                (ref-U|VST::UCv_SplitBalanceForVesting 2 9.0 0))
+            ;;--- guard 2: a dust amount cannot be divided at the requested precision at all
+            (expect-failure "<<UTIL-13>> an amount too small to survive the precision is refused"
+                "too small to split into"
+                (ref-U|VST::UCv_SplitBalanceForVesting 2 0.001 3))
+            ;;--- guard 3: it divides, but the pieces would NOT add back up to the input
+            (expect-failure "<<UTIL-13>> a split that would silently lose the remainder is refused"
+                "could not be split into"
+                (ref-U|VST::UCv_SplitBalanceForVesting 2 1.005 2))
+            ;;and the very same amount IS accepted at a precision that can represent it — proving
+            ;;the guard tracks reconstruction, not merely "amount looks awkward".
+            (expect "<<UTIL-13>> ...and the SAME amount splits fine at a precision that can hold it"
+                2.01 (fold (+) 0.0 (ref-U|VST::UCv_SplitBalanceForVesting 3 2.01 2)))
+        ]
+    )
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "UTIL-14 — the last three utility guards: reserved names, tag shape, role removal")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-data {"probe-ks":["abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcd"]})
+(print "--- [UTIL-14 · 01 · U|RS reserved-name protocol] ---")
+;;UEV_EnforceReserved is the guard that stops an Ouronet account from IMPERSONATING a Kadena
+;;principal. Kadena reserves the `x:` prefix family — `k:` for single-key accounts, `w:` for
+;;keyset accounts, and so on — and those names are only legitimate when the guard actually
+;;hashes to the name. The function therefore has three outcomes, not two:
+;;
+;;   the guard DOES validate as that principal      -> accepted, no further questions
+;;   the name carries NO reserved prefix            -> accepted, nothing to impersonate
+;;   the name carries a reserved prefix and the guard does NOT match -> REFUSED
+;;
+;;and the refusal splits by prefix, `k:` getting its own message. Both refusals are pinned, and
+;;both acceptances too — because a guard that refused everything would satisfy the rejections
+;;while making every legitimate account unusable, which is the more expensive failure.
+(let
+    (
+        (ref-U|RS:module{ReservedAccountsV2} U|RS)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (g:guard (read-keyset "probe-ks"))
+    )
+    (map print
+        [
+            ;;the classifier first, so the rejections below are attributable to the ENFORCE and
+            ;;not to a prefix detector that sees reserved names everywhere.
+            (expect "<<UTIL-14>> the classifier reads the k: prefix" "k" (ref-U|RS::UEV_CheckReserved "k:deadbeef"))
+            (expect "<<UTIL-14>> ...and the w: prefix"                "w" (ref-U|RS::UEV_CheckReserved "w:deadbeef"))
+            (expect "<<UTIL-14>> ...and reports NOTHING reserved for an ordinary name"
+                "" (ref-U|RS::UEV_CheckReserved "plainname"))
+            ;;ACCEPTANCE: an unreserved name passes with any guard at all
+            (expect "<<UTIL-14>> an ordinary name is accepted with an unrelated guard"
+                true (ref-U|RS::UEV_EnforceReserved "plainname" g))
+            ;;--- refusal 1: the single-key protocol has its own message
+            (expect-failure "<<UTIL-14>> a k: name whose guard does NOT hash to it is refused"
+                "Single-key account protocol violation"
+                (ref-U|RS::UEV_EnforceReserved "k:deadbeef" g))
+            ;;--- refusal 2: every other reserved prefix reports WHICH one it was
+            (expect-failure "<<UTIL-14>> a w: name likewise — and the message names the prefix"
+                "Reserved protocol guard violation: w"
+                (ref-U|RS::UEV_EnforceReserved "w:deadbeef" g))
+            ;;--- UEV_StoicTagName: a length-and-charset rule on a CODEX tag. Both ends of the
+            ;;length window are pinned; 2 glyphs is one short of the minimum.
+            (expect "<<UTIL-14>> a 3-glyph tag is accepted (the minimum)"
+                true (!= "" (format "{}" [(ref-U|DALOS::UEV_StoicTagName "AbC")])))
+            (expect-failure "<<UTIL-14>> ...and 2 glyphs is one short"
+                "must be 3"
+                (ref-U|DALOS::UEV_StoicTagName "ab"))
+            (expect-failure "<<UTIL-14>> a tag with a glyph outside DALOS|CHARSET is refused"
+                "must be 3"
+                (ref-U|DALOS::UEV_StoicTagName "A B"))
+            ;;--- UCv_NewRoleList: ADD is total, REMOVE is not. Adding an account that is already
+            ;;present is somebody elses problem; removing one that was never there is a caller
+            ;;bug that would otherwise silently no-op, so only the remove direction enforces.
+            (expect "<<UTIL-14>> removing a present account yields the shorter list"
+                ["A"] (ref-U|DALOS::UCv_NewRoleList ["A" "B"] "B" false))
+            (expect "<<UTIL-14>> adding is unguarded — the ADD direction accepts a new name"
+                ["A" "B" "C"] (ref-U|DALOS::UCv_NewRoleList ["A" "B"] "C" true))
+            (expect-failure "<<UTIL-14>> ...but REMOVING an account that isnt in the list is refused"
+                "When removing an Account, it must exist within"
+                (ref-U|DALOS::UCv_NewRoleList ["A" "B"] "ZED" false))
         ]
     )
     ""

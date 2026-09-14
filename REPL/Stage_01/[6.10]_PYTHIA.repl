@@ -34,6 +34,7 @@
         "PYTHIA|APOLLO-STANDARD-2": "₱.ŹΘHYSç7þУJΛpøЩфμбÄИЫŒП9ó7æйȘΣßлΔσ3äЬyrfжπйôleBĄиĄLtźș∇îИyKβńĎDûuÁCȘñЯÒźâŒíßRζäĞΩěѺtşlęHБMŸíWlãąŹÔИЖÊzHțćœŽζýżχδšωχUΨNńúńñУnИкjубâ£ßMKηжлý9κιЦвSαцууěÖщьΩùцn₳Бεůa",
         "PYTHIA|APOLLO-SMART-2": "Π.ЙÛœ5ŒOóцιbÌȘŚÚůVÀΠьδЬÃςиbIñжÄoTЬŮşÄrhûεżęF5h₳ΞžGËWXÇûKÖLÙNÂ₱ůθŚяZ₳tœ¥ÅÂΓŹË4uĂбoÚAвOUζÂwΩэí₳ÜŻŁqΣкΣΨΨþѺBkĞõeѺńξTŠB0èΦeπδóýwÑeщIäΣMNøθΔîý₿ŹďρŁȘρτYEúNвÓûĐØúkŹýşθÞb",
         "PYTHIA|PUBLIC-STANDARD-2": "6g.5M1kdotfaBG0lMFFMduJqByz01p885CsxrdqcDL3vkc4xhBLts49KEHpHx6jdEo57Bpno6npMbmvoeF1uAG7JwulEHGHKsk1EHqakGkGIzk6ayw712HLKp9r1Ho1G0xn7rntwFcwkpysoL0JqnrvpDC6FGs4IBlbaiJ46mM4GGfbnsdaGGEmj25iFk6cM1rEIvMEEkkHbajfp1F9J2F0c6teInrrt3pgGzd35sE8y9sJgG0jzK08w3EmwmxoJ3vp0eGoBDp82yq9s17fLJhIlfsjrqyMaudJx8H27jlwpKsHuHIjJ0vv6LFdbL4hz23eqjowHmDG90bJtlK38vr5kKheacsx20ixy81zDgaAxwMBdl8",
+        "PYTHIA|APOLLO-STANDARD-3": "₱.ŹΘHYSç7þУJΛpøЩфμбÄИЫŒП9ó7æйȘΣßлΔσ3äЬyrfжπйôleBĄиĄLtźș∇îИyKβńĎDûuÁCȘñЯÒźâŒíßRζäĞΩěѺtşlęHБMŸíWlãąŹÔИЖÊzHțćœŽζýżχδšωχUΨNńúńñУnИкjубâ£ßMKηжлý9κιЦвSαцууěÖщьΩùцn₳Бεůc",
         "PYTHIA|PUBLIC-SMART-2": "6g.5H3r3LFv5ipxkHvw3C9dMpjJvji6LL48485dIhCcHm3dADLtcGK2CqhpM33DHgeiM8l7e8HG7LdB3zc5566G6qny6bmqBfha5el25kx5bEkkEbJyHdmJzvlwqxvccCmHqJ7ewC3KMbK9I2ybGam9sjbEMJjmDDMLlp8h9x5ltpAdhujeequoAI4xlJrm8FtBb3AH7cEreHAcfIk80dLp7vgMufg4Mzec00C9z43jpqg4kJs2854L6o320ByJCLp6ar69df44FtpHmqnmEMabkopkcJFvFd3g0dkmCd7Luddvx2wotzcdhkD9jMgzl2xHq1BAvvHyM61yel1ik7gt0u6uaxadbfAhy1pxkIzaK7xB5Fz"
     }
 )
@@ -72,10 +73,46 @@
             }
         ]
     )
-    (let ((dep-msg:string (ref-TS01-C4::PYTHIA|C_DeployApiKey patron owner-acct apollo-std public-std)))
+    ;;FUNCTION COVERAGE (G6) — `INFO_PYTHIA|DeployApiKey`, per the owner's spec: an INFO_ must report
+    ;;the same cost the op actually charges. Template: `modules/ATS.repl <<ATS-I1>>`.
+    ;;
+    ;;The preview and the exec take IDENTICAL arguments, so the quote below is read with exactly what
+    ;;the op is then handed — the strongest form of this test, with no translation step between the
+    ;;two call sites where a mistake could hide.
+    ;;
+    ;;This op is the interesting case in the family: PYTHIA fees are NON-discountable by spec, so the
+    ;;exec calls `STOA|C_CollectFull patron deploy-fee false` (not the discounted `STOA|C_Collect`),
+    ;;and the preview correspondingly anchors to `UC_FeeDiscountAnchor` rather than to the patron. If
+    ;;either side ever moves to the ordinary discounted path alone, the two figures separate and this
+    ;;fails — which is the only thing that would catch it, since a discount is silent by nature.
+    ;;
+    ;;The four bindings below rely on `let` being EAGER and ORDERED in Pact: `predicted` and the two
+    ;;"before" balances are evaluated, in order, BEFORE `dep-msg` runs the operation. That eagerness
+    ;;is the same property that causes the mute-guard bug class elsewhere in this codebase; here it is
+    ;;exactly what the measurement needs.
+    (let (
+            (predicted:object{OuronetInfoV2.ClientInfo}
+                (PYTHIA.INFO_PYTHIA|DeployApiKey patron owner-acct apollo-std public-std))
+            (stoa-before:decimal (coin.get-balance patron-stoa))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (dep-msg:string (ref-TS01-C4::PYTHIA|C_DeployApiKey patron owner-acct apollo-std public-std))
+         )
         (print (format "<(TS01-C4.PYTHIA|C_DeployApiKey)> => \"{}\"" [dep-msg]))
         (map print
             [
+                (format "<<TX001-INFO>> STOA predicted={} real={}"
+                    [(at "stoa-need" (at "stoa" predicted)) (- stoa-before (coin.get-balance patron-stoa))])
+                (expect "<<TX001-INFO>> the preview's STOA quote equals the STOA the deploy charged"
+                    (- stoa-before (coin.get-balance patron-stoa)) (at "stoa-need" (at "stoa" predicted)))
+                ;;...and it is a real charge, so the equality is not two zeros agreeing
+                (expect "<<TX001-INFO>> ...and deploying an Apollo half is NOT free"
+                    true (> (- stoa-before (coin.get-balance patron-stoa)) 0.0))
+                ;;the preview also claims the op costs no IGNIS — asserted, not assumed, because a
+                ;;literal zero for a currency the op really charges is exactly the defect found in
+                ;;INFO_EQUITY|IssueCompany, INFO_SWP|ToggleFeeLock and INFO_ATS|ToggleParameterLock.
+                (expect "<<TX001-INFO>> the preview quotes zero IGNIS, and zero IGNIS is what it takes"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
                 (expect "<<TX001>> UR_ApiKeyRowOrNull is-registered true" true (at "is-registered" (ref-PYTHIA::UR_ApiKeyRowOrNull apollo-std)))
                 (expect "<<TX001>> registered-at block-time" TV.TIME00 (ref-PYTHIA::UR_RegisteredAt apollo-std))
                 (expect "<<TX001>> updated-at block-time" TV.TIME00 (ref-PYTHIA::UR_UpdatedAt apollo-std))
@@ -148,7 +185,32 @@
         (dlk:string (ref-PYTHIA::UC_DualLinkKey apollo-std apollo-smt))
     )
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (let ((link-msg:string (ref-TS01-C4::PYTHIA|C_Link apollo-std apollo-smt lane-dual)))
+    ;;FUNCTION COVERAGE (G6) — `INFO_PYTHIA|Link`, per the owner's spec. Template: `<<ATS-I1>>`.
+    ;;This is the FREE op of the family, and a preview claiming "free" is precisely the shape that was
+    ;;wrong in INFO_EQUITY|IssueCompany / INFO_SWP|ToggleFeeLock / INFO_ATS|ToggleParameterLock — so
+    ;;the zero is measured, not taken on trust. Note the preview takes no patron (linking is not
+    ;;billed to anyone), so "free" is checked against the account that would pay if it ever were.
+    (let (
+            (predicted:object{OuronetInfoV2.ClientInfo}
+                (PYTHIA.INFO_PYTHIA|Link apollo-std apollo-smt lane-dual))
+            (stoa-before:decimal (coin.get-balance (DALOS.UR_AccountStoa KST.ANHD)))
+            (ignis-before:decimal (DALOS.UR_TF_AccountSupply KST.ANHD false))
+            (link-msg:string (ref-TS01-C4::PYTHIA|C_Link apollo-std apollo-smt lane-dual))
+         )
+        (map print
+            [
+                (expect "<<TX003-INFO>> INFO_PYTHIA|Link quotes zero STOA, and the link really takes none"
+                    (- stoa-before (coin.get-balance (DALOS.UR_AccountStoa KST.ANHD)))
+                    (at "stoa-need" (at "stoa" predicted)))
+                (expect "<<TX003-INFO>> ...and zero IGNIS likewise"
+                    (- ignis-before (DALOS.UR_TF_AccountSupply KST.ANHD false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                ;;what stops this being vacuous is that the op is independently proven below to have
+                ;;DONE something — it creates the dual row. A free no-op would fail those, not these.
+                (expect "<<TX003-INFO>> ...and the quote really is zero, not merely equal to the charge"
+                    0.0 (at "stoa-need" (at "stoa" predicted)))
+            ]
+        )
         (print (format "<(TS01-C4.PYTHIA|C_Link)> => \"{}\"" [link-msg]))
         (map print
             [
@@ -186,6 +248,23 @@
                 (expect "<<TX004>> UR_DualLinkIzActiveOrFalse true" true (ref-PYTHIA::UR_DualLinkIzActiveOrFalse dlk))
                 (expect "<<TX004>> URH_ActiveDualLinkSet contains dlk" true (contains dlk (ref-PYTHIA::URH_ActiveDualLinkSet)))
                 (expect "<<TX004>> URH_ApiKeyByConsumer iz-active true" true (at "iz-active" (ref-PYTHIA::URH_ApiKeyByConsumer apollo-smt)))
+                ;;`22_PYTHIA.pact:454`. A_Link is CREATE-OR-ACTIVATE: if the dual row is missing it
+                ;;creates one, and if the row exists it flips inactive -> active. The guard covers the
+                ;;second path and demands the row be (a) currently INACTIVE and (b) carrying matching
+                ;;counterparts both ways.
+                ;;
+                ;;The activation two lines up satisfied it and flipped the row to ACTIVE, so the
+                ;;IDENTICAL call is now refused -- activating something already active is not
+                ;;idempotent here, it is an error. Reached with no new fixture: the only thing that
+                ;;changed between the accepted call and the refused one is the row's own state.
+                ;;
+                ;;The OTHER two conjuncts (counterpart agreement) are a different matter and are
+                ;;annotated UNREACHABLE at :1353/:1377 -- XI_ApplyDualCounterparts writes both
+                ;;counterparts atomically before WI_DualLink, so they cannot disagree. This is the
+                ;;one conjunct of the three that a caller can actually trip.
+                (expect-failure "<<TX004>> ...so re-activating an ALREADY-ACTIVE dual link is refused"
+                    "Dual link not ready for Cronoton activate"
+                    (ref-TS01-C4::PYTHIA|A_Link apollo-std apollo-smt))
             ]
         )
         ""
@@ -210,7 +289,23 @@
         (height-before:integer (ref-PYTHIA::UR_RevocationAtHeight))
     )
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (let ((rev-msg:string (ref-TS01-C4::PYTHIA|C_RevokeLink patron dlk)))
+    ;;FUNCTION COVERAGE (G6) — `INFO_PYTHIA|RevokeLink`, per the owner's spec. Template: `<<ATS-I1>>`.
+    ;;Revoke is the IGNIS-charging member of this family (deploy and rename charge STOA, link is free),
+    ;;so all three billing shapes in PYTHIA now have a measured preview.
+    (let (
+            (predicted:object{OuronetInfoV2.ClientInfo} (PYTHIA.INFO_PYTHIA|RevokeLink patron dlk))
+            (ignis-before:decimal (DALOS.UR_TF_AccountSupply patron false))
+            (rev-msg:string (ref-TS01-C4::PYTHIA|C_RevokeLink patron dlk))
+         )
+        (map print
+            [
+                (expect "<<TX005-INFO>> the preview's IGNIS quote equals what the revoke charged"
+                    (- ignis-before (DALOS.UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<TX005-INFO>> ...and revoking is NOT free"
+                    true (> (- ignis-before (DALOS.UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
         (print (format "<(PYTHIA|UC_RevokeIgnisFee)> => \"{}\" IGNIS" [revoke-fee]))
         (print (format "<(TS01-C4.PYTHIA|C_RevokeLink)> => \"{}\"" [rev-msg]))
         (map print
@@ -266,7 +361,27 @@
             }
         ]
     )
-    (let ((ren-msg:string (ref-TS01-C4::PYTHIA|C_UpdateDualConsumerLane patron dlk lane-renamed)))
+    ;;FUNCTION COVERAGE (G6) — `INFO_PYTHIA|UpdateDualConsumerLane`, per the owner's spec.
+    ;;Template: `<<ATS-I1>>`. This completes the family: deploy (STOA) at <<TX001-INFO>>, link (free)
+    ;;at <<TX003-INFO>>, revoke (IGNIS) at <<TX005-INFO>>, rename (STOA) here — so every one of
+    ;;PYTHIA's four client ops now has its quote measured against the charge, and all three billing
+    ;;shapes the module uses are covered.
+    (let (
+            (predicted:object{OuronetInfoV2.ClientInfo}
+                (PYTHIA.INFO_PYTHIA|UpdateDualConsumerLane patron dlk lane-renamed))
+            (stoa-before:decimal (coin.get-balance patron-stoa))
+            (ren-msg:string (ref-TS01-C4::PYTHIA|C_UpdateDualConsumerLane patron dlk lane-renamed))
+         )
+        (map print
+            [
+                (format "<<TX006-INFO>> STOA predicted={} real={}"
+                    [(at "stoa-need" (at "stoa" predicted)) (- stoa-before (coin.get-balance patron-stoa))])
+                (expect "<<TX006-INFO>> the preview's STOA quote equals what the rename charged"
+                    (- stoa-before (coin.get-balance patron-stoa)) (at "stoa-need" (at "stoa" predicted)))
+                (expect "<<TX006-INFO>> ...and renaming a consumer lane is NOT free"
+                    true (> (- stoa-before (coin.get-balance patron-stoa)) 0.0))
+            ]
+        )
         (print (format "<(TS01-C4.PYTHIA|C_UpdateDualConsumerLane)> => \"{}\"" [ren-msg]))
         (map print
             [
@@ -764,12 +879,141 @@
                 "No value found in table"
                 (ref-PYTHIA::UEV_DualPairForLink
                     (+ "₱" (drop 1 KST.ANHD)) (read-string "PYTHIA|APOLLO-SMART")))
-            ;;NOT PINNED, and worth recording why rather than leaving a silent gap: the
-            ;;"Smart half is already linked" enforce needs a standard half that is DEPLOYED AND
-            ;;FREE paired with a taken smart half. Every deployed half in this suite is linked
-            ;;(TX003 and TX007c link both pairs immediately), so that state does not exist here
-            ;;and cannot be reached without deploying a third standard half. Left for the P3.3
-            ;;pass that adds the fixture.
+            ;;The "Smart half is already linked" enforce needed a standard half that is DEPLOYED
+            ;;AND FREE paired with a taken smart half -- a state this suite did not have, because
+            ;;TX003 and TX007c link both pairs immediately. TX007f below deploys that third
+            ;;standard half and pins it.
+        ]
+    )
+    ""
+)
+(print "")
+(print "===^^^===")
+(commit-tx)
+(print "")
+(begin-tx "TX007f - deploy a THIRD standard half, free, to reach the smart-half guard")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "=== TX007f — C_DeployApiKey (Standard ₱. #3, deliberately left UNLINKED) ===")
+;;P3.3. The fixture TX007e-03 recorded as missing. UEV_DualPairForLink checks its two halves in
+;;order -- standard first, then smart -- so the SMART-half guard is unreachable while every
+;;standard half in the suite is already linked: the first enforce answers before the second is
+;;asked. Reaching it needs one standard half that is deployed and FREE, which is all this
+;;transaction creates. It is never linked, on purpose.
+(let
+    (
+        (apollo-std3:string (read-string "PYTHIA|APOLLO-STANDARD-3"))
+        (public-std:string (read-string "PYTHIA|PUBLIC-STANDARD"))
+        (patron:string KST.ANHD)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
+        (ref-PYTHIA:module{PythiaV5} PYTHIA)
+        (deploy-fee:decimal (ref-PYTHIA::UC_DeployPrice))
+        (patron-stoa:string (DALOS.UR_AccountStoa KST.ANHD))
+        (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))
+        (split-stoa:[decimal] (ref-DALOS::URC_SplitSTOAPrices (ref-PYTHIA::UC_FeeDiscountAnchor) (ref-PYTHIA::UC_DeployPrice)))
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER patron-stoa (ref-DALOS::UR_AccountStoa (at 1 demiurgoi)) (at 2 split-stoa))
+                    (coin.TRANSFER patron-stoa (ref-DALOS::UR_AccountStoa (at 2 demiurgoi)) (at 0 split-stoa))
+                    (coin.TRANSFER patron-stoa (ref-DALOS::UR_AccountStoa (ref-DALOS::GOV|OUROBOROS|SC_NAME)) (at 3 split-stoa))
+                    (coin.TRANSFER patron-stoa (ref-DALOS::UR_AccountStoa (ref-DALOS::GOV|DALOS|SC_NAME)) (at 1 split-stoa))
+                ]
+            }
+        ]
+    )
+    (let ((dep-msg:string (ref-TS01-C4::PYTHIA|C_DeployApiKey patron KST.ANHD apollo-std3 public-std)))
+        (print (format "<(TS01-C4.PYTHIA|C_DeployApiKey)> => \"{}\"" [dep-msg]))
+        ""
+    )
+)
+(commit-tx)
+(print "")
+(begin-tx "TX007g - the smart-half guard, and three siblings that CANNOT be reached")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX007g · 01 · UEV_DualPairForLink, second enforce ==== =====================================
+(print "--- [TX007g · 01 · UEV_DualPairForLink, second enforce] ---")
+;;With a free standard half in hand, pairing it against pair-1's ALREADY-LINKED smart half walks
+;;past the first enforce and lands on the second. Both preconditions are asserted rather than
+;;assumed -- the third half free, the smart half taken -- because if either were wrong this test
+;;would still fail, just for the wrong reason, and would read as a pass.
+(let
+    (
+        (ref-PYTHIA:module{PythiaV5} PYTHIA)
+        (apollo-std3:string (read-string "PYTHIA|APOLLO-STANDARD-3"))
+        (apollo-smt:string (read-string "PYTHIA|APOLLO-SMART"))
+    )
+    (map print
+        [
+            (expect "<<TX007g>> the third standard half is deployed"
+                true (at "is-registered" (ref-PYTHIA::UR_ApiKeyRowOrNull apollo-std3)))
+            (expect "<<TX007g>> ...and FREE, so the first enforce will not answer for us"
+                "|" (ref-PYTHIA::UR_Counterpart apollo-std3))
+            (expect "<<TX007g>> ...while pair-1's smart half is taken"
+                (read-string "PYTHIA|APOLLO-STANDARD") (ref-PYTHIA::UR_Counterpart apollo-smt))
+            ;;the guard itself
+            (expect-failure "<<TX007g>> a FREE standard half against a TAKEN smart half trips the smart guard"
+                "Smart half is already linked"
+                (ref-PYTHIA::UEV_DualPairForLink apollo-std3 apollo-smt))
+            ;;and the third half is not simply broken -- paired with a free smart half it would
+            ;;pass, except no free smart half exists, so the closest available check is that its
+            ;;own row reads back as a standard apollo.
+            (expect "<<TX007g>> the third half is a well-formed standard apollo"
+                true (ref-PYTHIA::UC_IsStandardApollo apollo-std3))
+        ]
+    )
+    ""
+)
+(print "")
+;;==== TX007g · 02 · the three that cannot be reached, and why ==== ===============================
+(print "--- [TX007g · 02 · three UNREACHABLE siblings] ---")
+;;FINDING, recorded instead of tested. Three enforces in this family cannot be tripped by any
+;;input, and the reason is one design decision rather than three accidents:
+;;
+;;    XI_ApplyDualCounterparts writes BOTH counterparts, and every caller (A_LinkDualApiKey and
+;;    C_LinkDualApiKey) follows it with WI_DualLink in the SAME transaction. Counterparts are
+;;    then never cleared -- C_RevokeDualLink deactivates the link and says so in its own client
+;;    info: "Counterpart fields remain immutable; deploy fresh halves to re-pair."
+;;
+;;From which:
+;;
+;;  UEV_DualPairForLink       "Dual link row already exists for this pair"
+;;      The row exists only if the pair was linked, and linking set both counterparts. So the
+;;      row's existence IMPLIES the first enforce already fired. Fail-closed backstop.
+;;
+;;  UEV_DualPairReadyForActivate  "Smart half not linked to Standard"
+;;      Requires std->smt while smt-/->std. The two writes are one atomic pair, so the halves
+;;      cannot disagree. Any genuine mismatch trips the STANDARD-side enforce one line earlier.
+;;
+;;  ...and the same reasoning covers the DPMF-side twin of this pattern.
+;;
+;;These are annotated at their definitions. They are correct code -- a backstop that survives a
+;;future non-atomic write path -- but they are not coverage, and counting them as unpinned work
+;;would misreport the worklist. Below is the positive half of the argument: the pair really is
+;;symmetric, which is what makes the mismatch unconstructible.
+(let
+    (
+        (ref-PYTHIA:module{PythiaV5} PYTHIA)
+        (apollo-std:string (read-string "PYTHIA|APOLLO-STANDARD"))
+        (apollo-smt:string (read-string "PYTHIA|APOLLO-SMART"))
+    )
+    (map print
+        [
+            (expect "<<TX007g>> the linked pair is SYMMETRIC — each half names the other"
+                [apollo-smt apollo-std]
+                [(ref-PYTHIA::UR_Counterpart apollo-std) (ref-PYTHIA::UR_Counterpart apollo-smt)])
+            ;;and a half-and-stranger pairing fails on the STANDARD side, never the smart side —
+            ;;which is the concrete demonstration that the smart-side enforce is unreachable.
+            (expect-failure "<<TX007g>> ...so a mismatched pair always trips the STANDARD enforce first"
+                "Standard half not linked to Smart"
+                (ref-PYTHIA::UEV_DualPairReadyForActivate
+                    (read-string "PYTHIA|APOLLO-STANDARD-3") apollo-smt))
         ]
     )
     ""

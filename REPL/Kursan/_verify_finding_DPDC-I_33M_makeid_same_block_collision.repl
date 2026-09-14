@@ -63,12 +63,35 @@
     (print
         (expect-failure
             "second SFT issuance with the identical ticker in the same tx collides (DPDC Audit #33M)"
+                "Error during database operation: Value already found while in Insert"
             (ref-TS02-C1::DPSF|C_Issue owner owner owner "DupProbeTwo" "DUP33M" true true true true true true true true)
         )
     )
-    ;;3] NFT issuance, SAME ticker, SAME tx -- expect this to SUCCEED, since DPNF and DPSF collections
-    ;;   live in separate tables (DPNF|T|Properties vs DPSF|T|Properties), so an identical <id> string
-    ;;   doesn't collide across the two.
-    (print (ref-TS02-C2::DPNF|C_Issue owner owner owner "DupProbeThree" "DUP33M" true true true true true true true true))
+    ;;3] NFT issuance, SAME ticker, SAME tx.
+    ;;
+    ;;   CORRECTED 2026-09-11. This step used to assert it would SUCCEED, on the reasoning that DPNF
+    ;;   and DPSF collections live in separate tables (DPNF|T|Properties vs DPSF|T|Properties) so an
+    ;;   identical <id> cannot collide across the two. The premise is right and the conclusion is
+    ;;   wrong: it aborts, and the abort is NOT in either DPDC table --
+    ;;
+    ;;     Value already found while in Insert mode in table ouronet-ns.BRD_BRD|BrandingTable
+    ;;     at key "DUP33M-98c486052a51"
+    ;;
+    ;;   BRD|BrandingTable is keyed on the BARE id and is shared by every collection type. So DPDC's
+    ;;   per-type table separation does not buy cross-type id independence: the first collection to
+    ;;   take a ticker takes its branding row, and any other type issuing the same ticker in the same
+    ;;   block aborts on that row rather than on its own properties table.
+    ;;
+    ;;   That is the behaviour, pinned as such. Whether the SEPARATION is meant to extend to branding
+    ;;   is a design question this harness cannot answer -- but the step no longer claims an outcome
+    ;;   the code does not produce, and it no longer aborts the file (which is what kept this and six
+    ;;   sibling harnesses out of the gate).
+    (print
+        (expect-failure
+            "NFT with the same ticker collides in BRD's SHARED branding table, not in DPDC (audit #33M)"
+            "Value already found while in Insert mode in table ouronet-ns.BRD_BRD|BrandingTable"
+            (ref-TS02-C2::DPNF|C_Issue owner owner owner "DupProbeThree" "DUP33M" true true true true true true true true)
+        )
+    )
 )
 (commit-tx)

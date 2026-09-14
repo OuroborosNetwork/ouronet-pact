@@ -178,6 +178,155 @@
 )
 (env-sigs [])
 (commit-tx)
+
+;;|| NEXT >
+;;|| GT-02b — a triplet model cannot be built out of triplet models.
+;;
+(begin-tx "GT-02b - COMBINE-TRIPLET-SCORE-MODEL requires three SINGLE sub-models")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [GT-02b - 01 - the three sub-models must all be single] ---")
+;;`02_SCORE.pact:1326`. GT-02 has just built the exact pair of fixtures this needs and nothing else
+;;in the suite has: three SINGLE models and one TRIPLET model combined from them. So the guard costs
+;;nothing here -- **check what the chain already has before building anything**.
+;;
+;;The rule stops a triplet being nested inside a triplet. A triplet model's score resolves through
+;;its three sub-models' nonces; if a sub-model were itself a triplet the resolution would need to
+;;recurse, and nothing downstream is written to recurse.
+;;
+;;ALL THREE SLOTS ARE DRIVEN. One would pin the message, but the `fold (and)` lists the three
+;;positions separately, and a copy-paste slip in any one of them (a repeated `bronze-model-id`, say)
+;;would leave a slot unchecked and still pass a single-slot test. Three assertions is the cheapest
+;;way to make that class of typo visible.
+(let
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (anhd:string KST.ANHD)
+    )
+    (let
+        (
+            (bmid:string (ref-U|DALOS::UDC_Makeid "GtBronzeModel"))
+            (smid:string (ref-U|DALOS::UDC_Makeid "GtSilverModel"))
+            (gmid:string (ref-U|DALOS::UDC_Makeid "GtGoldModel"))
+            (tmid:string (ref-U|DALOS::UDC_Makeid "GtTripletModel"))
+        )
+        (map print
+            [
+                ;;the premise: three are single (1), the fourth is a triplet (3)
+                (expect "<<GT-02b>> three single models and one triplet model exist"
+                    [1 1 1 3]
+                    [(ref-SCR::UR_SCR|ModelEntityType bmid) (ref-SCR::UR_SCR|ModelEntityType smid)
+                     (ref-SCR::UR_SCR|ModelEntityType gmid) (ref-SCR::UR_SCR|ModelEntityType tmid)])
+                ;;THE ITEM, in each of the three slots
+                (expect-failure "<<GT-02b>> a TRIPLET model in the bronze slot is refused"
+                    "The three sub-models must all be single"
+                    (ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel anhd "GtNestB" tmid smid gmid))
+                (expect-failure "<<GT-02b>> ...in the silver slot"
+                    "The three sub-models must all be single"
+                    (ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel anhd "GtNestS" bmid tmid gmid))
+                (expect-failure "<<GT-02b>> ...and in the golden slot"
+                    "The three sub-models must all be single"
+                    (ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel anhd "GtNestG" bmid smid tmid))
+                ;;THE CONTRAST: the same call with the same three singles GT-02 used, under a fresh
+                ;;name. Without it the three refusals are also consistent with the combine being
+                ;;broken outright -- and the name has to be fresh, because "Model id already exists"
+                ;;sits one enforce ABOVE the rule under test and would answer for it.
+                (expect "<<GT-02b>> ...while three SINGLE models combine under a fresh name"
+                    true (!= "" (format "{}"
+                        [(ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel anhd "GtNestOk" bmid smid gmid)])))
+                (expect "<<GT-02b>> ...and the result is itself a TRIPLET model"
+                    3 (ref-SCR::UR_SCR|ModelEntityType (ref-U|DALOS::UDC_Makeid "GtNestOk")))
+            ]
+        )
+        ""
+    )
+)
+(env-sigs [])
+;;the extra model is discarded -- GT-02c checks it
+(rollback-tx)
+
+;;|| NEXT >
+;;|| GT-02c — the probe model left no trace.
+;;
+(begin-tx "GT-02c - no leakage")
+(namespace "ouronet-ns")
+(print "--- [GT-02c - 01 - no leakage] ---")
+;;A leaked GtNestOk would be harmless to this file but would make the model table's contents depend
+;;on whether a guard test ran, which is exactly the kind of drift that makes a later count wrong.
+(print
+    (expect "<<GT-02c>> the probe model does not exist"
+        false (AQP-SCORE.URC_ScoreEntityModelExists (U|DALOS.UDC_Makeid "GtNestOk"))))
+(commit-tx)
+
+;;|| NEXT >
+;;|| GT-02d — the FVT twin of the score one-way door.
+;;
+(begin-tx "GT-02d - FVT control requires can-upgrade, which control itself can revoke")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [GT-02d - 01 - FVT|C>CONTROL-FVT requires can-upgrade true] ---")
+;;`05_FVT.pact:772`, and it is the EXACT TWIN of `02_SCORE.pact:744`, pinned by
+;;`modules/AQP.repl <<AQP-G39>>`. Same shape, same one-way door, different module: `C_Control` takes
+;;the new can-upgrade as an argument, so it can write the flag that disables itself, and nothing can
+;;write it back.
+;;
+;;PINNED SEPARATELY ON PURPOSE. The two messages differ ("Score control…" vs "FVT control update…"),
+;;so one test cannot cover both -- and more to the point, "the score guard works" is not evidence
+;;about the vault guard. A duplicated rule is exactly where a copy-paste slip survives review: the
+;;code reads right in both places and only one of them was ever exercised.
+(let
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (anhd:string KST.ANHD)
+    )
+    (let
+        (
+            (fvt:string (ref-U|DALOS::UDC_Makeid "GtVault"))
+        )
+        (map print
+            [
+                (expect "<<GT-02d>> the vault starts controllable"
+                    true (ref-FVT::UR_FVT|CanUpgrade fvt))
+                (expect "<<GT-02d>> a control call that sets can-upgrade FALSE is admitted"
+                    true (!= "" (format "{}" [(ref-TS02-C3::AQP-FVT|C_Control anhd fvt false true)])))
+                (expect "<<GT-02d>> ...and the flag is now false"
+                    false (ref-FVT::UR_FVT|CanUpgrade fvt))
+                ;;THE ITEM
+                (expect-failure "<<GT-02d>> ...so any further control call is refused"
+                    "FVT control update requires can-upgrade true"
+                    (ref-TS02-C3::AQP-FVT|C_Control anhd fvt false false))
+                ;;the one-way property: the owner cannot buy the capability back
+                (expect-failure "<<GT-02d>> ...INCLUDING the call that would set it back to true"
+                    "FVT control update requires can-upgrade true"
+                    (ref-TS02-C3::AQP-FVT|C_Control anhd fvt true true))
+            ]
+        )
+        ""
+    )
+)
+(env-sigs [])
+;;IRREVERSIBLE by construction, so it must not be committed -- GT-02e checks it
+(rollback-tx)
+
+;;|| NEXT >
+;;|| GT-02e — the renunciation left no trace.
+;;
+(begin-tx "GT-02e - no leakage")
+(namespace "ouronet-ns")
+(print "--- [GT-02e - 01 - no leakage] ---")
+;;GtVault carries the whole rest of this file -- rewards, agency, collect, sweep. A leaked
+;;can-upgrade=false could not be repaired by any later test, because the operation that repairs it
+;;is the one the flag disables.
+(print
+    (expect "<<GT-02e>> GtVault is controllable again"
+        true (AQP-FVT.UR_FVT|CanUpgrade (U|DALOS.UDC_Makeid "GtVault"))))
+(commit-tx)
 (print "")
 ;;
 ;;|| NEXT >
@@ -217,7 +366,22 @@
             (ref-TS02-C3::AQP-DSA|CC_OpenAgency anhd fvt-id pool-id triplet-id 100 dhoc [-2])
             (map print
               [ (expect "<<GT-03>> agency Q = 1000 (operator own)" 1000.0 (AQP-DSA.URC_AgencyQuintessence triplet-id))
-                (expect "<<GT-03>> operator recorded on the agency" anhd (AQP-DSA.UR_DSA-AGN|Operator fvt-id triplet-id)) ]))
+                (expect "<<GT-03>> operator recorded on the agency" anhd (AQP-DSA.UR_DSA-AGN|Operator fvt-id triplet-id))
+                ;;`04_RPS.pact:587`, FVT|XE>ADMIT-DELEGATION's existence check -- and it is a guard
+                ;;that was REPAIRED rather than written correctly the first time. Its own comment
+                ;;records the history: the enforce used to sit BELOW a `let` whose bindings hard-read
+                ;;SCR|T|Triplet keyed by <triplet-id>, so a triplet that did not exist aborted on
+                ;;"row not found" and this message was unreachable for every input. It was hoisted
+                ;;above the let, and `URC_TripletExists` is deliberately a with-default-read so it can
+                ;;answer for a missing row -- it simply never got the chance.
+                ;;
+                ;;NOTHING PINNED IT AFTER THE REPAIR, which is the gap this closes. A hoist that is
+                ;;never driven is indistinguishable from the bug it fixed.
+                ;;Same transaction, same caller, same vault -- only the triplet id is wrong.
+                (expect-failure "<<GT-03>> opening an agency on a triplet that was never issued is refused"
+                    "Triplet must be issued in AQP-SCORE"
+                    (ref-TS02-C3::AQP-DSA|CC_OpenAgency anhd fvt-id pool-id
+                        "NOSUCHTRIPLET-98c486052a51" 100 dhoc [-2])) ]))
     )
 )
 (env-sigs [])
@@ -272,6 +436,76 @@
     )
 )
 (env-sigs [])
+(commit-tx)
+(print "")
+
+;;|| NEXT >
+;;|| GT-04b — the COLLECTABLE half of the anchor-repair admission guard.
+;;
+(begin-tx "GT-04b - AQP|C>SYNC-COLLECTABLE-ANCHORS needs collectable stake to repair")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [GT-04b - 01 - the collectable sync guard, both directions] ---")
+;;`03_AQP.pact:832`, the collectable twin of `03_AQP:820` (pinned by
+;;`Kursan/AQP-scale-vacate.repl <<SCALE-VAC-SYNC>>`, on the TRUE-FUNGIBLE side). Both are
+;;pool-agnostic ANK repair; one walks a beneficiary's DPTF stake, this one their collectable stake.
+;;
+;;PINNED HERE because GT-04 has just staked DHOC semi-fungible for EMMA and LUMY, and nothing else
+;;in the suite gives a beneficiary collectable stake alongside an unstaked account to contrast with.
+;;
+;;THE TALOS WRAPPER DOES NOT SHADOW IT — checked rather than assumed. `AQP|C>SYNC-SEMI-FUNGIBLE-
+;;ANCHORS` in `04_TS02-C3.pact:540` composes `P|TS` and nothing else, so the core cap's own enforce
+;;is the first thing that can refuse. Two caps of nearly the same name, and only one carries the
+;;rule; had the outer one duplicated it, this assertion would have pinned the wrong module.
+(let
+    (
+        ;;BYTA, not ANHD. The first draft used the patron as the unstaked contrast and the precondition
+        ;;assertion below caught it: ANHD is the AGENCY OPERATOR and stakes DHOC frags of its own, so
+        ;;`URC_BenCollectableHasStake anhd dhoc true` is TRUE and the "refusal" quietly succeeded.
+        ;;This is exactly the failure the architecture doc warns about -- trip the guard from the LIVE
+        ;;state, never from a guessed constant -- and the only reason it was visible is that the
+        ;;premise is asserted rather than assumed. An `expect-failure` that does not fail proves
+        ;;nothing and nothing else flags it.
+        (anhd:string KST.ANHD) (emma:string KST.EMMA) (byta:string KST.BYTA)
+        (dhoc:string "DHOC-98c486052a51")
+        (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+    )
+    (map print
+        [
+            ;;the premise, read live
+            (expect "<<GT-04b>> EMMA holds DHOC collectable stake and BYTA does not"
+                [true false]
+                [(ref-AQP::URC_BenCollectableHasStake emma dhoc true)
+                 (ref-AQP::URC_BenCollectableHasStake byta dhoc true)])
+            ;;THE ITEM
+            (expect-failure "<<GT-04b>> syncing a beneficiary with no collectable stake is refused"
+                "No cross-pool collectable stake to sync"
+                (ref-TS02-C3::AQP-POOL|C_SyncSemiFungibleAnchors anhd byta dhoc))
+            ;;CONTRAST — same call, staked beneficiary
+            (expect "<<GT-04b>> ...while a staked one is admitted"
+                true (!= "" (format "{}"
+                    [(ref-TS02-C3::AQP-POOL|C_SyncSemiFungibleAnchors anhd emma dhoc)])))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+;;the admitted repair rewrites EMMA's anchors -- GT-04c checks it did not survive
+(rollback-tx)
+
+;;|| NEXT >
+;;|| GT-04c — the anchor repair left no trace.
+;;
+(begin-tx "GT-04c - no leakage")
+(namespace "ouronet-ns")
+(print "--- [GT-04c - 01 - no leakage] ---")
+;;GT-05 collects on exactly these delegator positions and asserts the payouts to the decimal. An
+;;anchor rewrite that survived would move those numbers without failing anything that names it.
+(print
+    (expect "<<GT-04c>> EMMA still holds her DHOC collectable stake, unrepaired"
+        true (AQP-POOL.URC_BenCollectableHasStake KST.EMMA "DHOC-98c486052a51" true)))
 (commit-tx)
 (print "")
 ;;
@@ -488,7 +722,958 @@
 (env-sigs [])
 (commit-tx)
 (print "")
+;;
+;;|| NEXT >
+;;|| GT-09 — THE REFUSALS. Everything above is the happy path; these are the seven guards that stand
+;;|| in front of it. All seven were on the unpinned worklist, and every one of them is reachable from
+;;|| the state this file has already built — which is the whole reason they belong here rather than in
+;;|| a new fixture. Four are "wrong caller", two are argument-domain, one is a threshold.
+;;
+(begin-tx "GT-09 - the DSA refusals: wrong owner, bad oracle values, non-member, short gate")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+(env-chain-data { "block-time": (time "2027-12-01T06:00:00Z") })
+(env-data { "dsa-oracle": { "keys": ["gt-oracle-key"], "pred": "keys-all" } })
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "PK_Emma", "caps": [] }
+    { "key": "gt-oracle-key", "caps": [] } ])
+(print "--- [GT-09 - 01 - four 'only the FVT owner' gates] ---")
+(let*
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (anhd:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (ouro:string (DALOS.UR_OuroborosID))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "GtVault"))
+        (bsid:string (ref-U|DALOS::UDC_Makeid (concat ["GtAgency" "Bronze"])))
+        (ssid:string (ref-U|DALOS::UDC_Makeid (concat ["GtAgency" "Silver"])))
+        (gsid:string (ref-U|DALOS::UDC_Makeid (concat ["GtAgency" "Golden"])))
+        (tid:string (ref-SCR::UC_ComputeTripletId bsid ssid gsid))
+        (swp:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
+    )
+    ;;ANHD owns the vault and ran every call above. EMMA is a real, funded account that STAKED into
+    ;;this very agency in GT-04 -- so these four refusals are not "a stranger is refused", they are
+    ;;"a legitimate participant is still not the owner", which is the case that actually matters.
+    (map print
+        [
+            (expect "<<GT-09>> ANHD owns the vault and EMMA does not"
+                [true false]
+                [(= anhd (RPS.UR_FVT|OwnerKonto fvt-id)) (= emma (RPS.UR_FVT|OwnerKonto fvt-id))])
+            (expect-failure "<<GT-09>> only the owner may set the oracle authority"
+                "Only the FVT owner may set the oracle authority"
+                (ref-TS02-C3::AQP-DSA|C_SetOracleAuth emma fvt-id (read-keyset "dsa-oracle")))
+            (expect-failure "<<GT-09>> only the owner may change the agency fee"
+                "Only the FVT owner may change the agency fee"
+                (ref-TS02-C3::AQP-DSA|C_SetAgencyFee emma fvt-id tid 100))
+            (expect-failure "<<GT-09>> only the owner may burn the royalty pool"
+                "Only the FVT owner may burn royalty"
+                (ref-TS02-C3::AQP-DSA|C_BurnRoyalty emma fvt-id ouro))
+            (expect-failure "<<GT-09>> only the owner may fuel a swap pair with royalty"
+                "Only the FVT owner may fuel with royalty"
+                (ref-TS02-C3::AQP-DSA|C_FuelRoyalty emma fvt-id ouro swp))
+            ;;...and the owner's own call is accepted in the same transaction, so the four above are
+            ;;about the CALLER and not about the arguments being wrong in some other way.
+            (expect "<<GT-09>> ...while the owner's identical fee call is accepted"
+                true (!= "" (ref-TS02-C3::AQP-DSA|C_SetAgencyFee anhd fvt-id tid 100)))
+        ]
+    )
+    (print "--- [GT-09 - 02 - the oracle's two argument gates] ---")
+    ;;DSA|A>ORACLE-WRITE bounds both values it accepts: nodes >= 0, uptime in [0, 1000]. GT-04 writes
+    ;;(10, 1000) successfully, so the oracle guard itself is satisfied here and these two refusals are
+    ;;attributable to the values alone.
+    (map print
+        [
+            (expect-failure "<<GT-09>> a negative node count is refused"
+                "Oracle values out of range (nodes >= 0, uptime 0..1000)"
+                (ref-TS02-C3::AQP-DSA|C_OracleWrite anhd fvt-id tid -1 1000))
+            (expect-failure "<<GT-09>> ...and an uptime above 1000 per-mille is refused"
+                "Oracle values out of range (nodes >= 0, uptime 0..1000)"
+                (ref-TS02-C3::AQP-DSA|C_OracleWrite anhd fvt-id tid 10 1001))
+            ;;both bounds are INCLUSIVE at their edges -- 0 nodes and 0 uptime are legal writes (an
+            ;;agency that ran nothing all day), and 1000 is full uptime. Driven so the rejections
+            ;;above cannot be read as "anything unusual is refused".
+            (expect "<<GT-09>> ...while the extreme-but-legal (0, 0) write is accepted"
+                true (!= "" (ref-TS02-C3::AQP-DSA|C_OracleWrite anhd fvt-id tid 0 0)))
+            ;;The delegation-membership gate, shared word-for-word with DSA|C>RECOMPUTE-CAPTURE, so
+            ;;`_enforce_coverage.py` credits both from this one pin -- the "shared WITHIN one module"
+            ;;case. Note the argument is a NON-MEMBER id, not `tid`: `tid` IS a delegation member, so
+            ;;the write would SUCCEED. (It did, on the first attempt -- the expect-failure caught a
+            ;;copy of the wrong variable, which is the argument for driving the positive case too.)
+            (expect-failure "<<GT-09>> an oracle write for a non-member score entity is refused"
+                "Score entity is not a delegation member"
+                (ref-TS02-C3::AQP-DSA|C_OracleWrite anhd fvt-id "NOPE" 10 1000))
+        ]
+    )
+    (print "--- [GT-09 - 03 - disposal needs a non-empty royalty pool] ---")
+    ;;`04_RPS.pact:621`, the admission gate on FVT|XE>DISPOSE-ROYALTY. Section 01 above pins WHO may
+    ;;dispose; this pins WHETHER THERE IS ANYTHING TO DISPOSE OF. Burn and withdraw compose the same
+    ;;cap, so one gate covers every route out.
+    ;;
+    ;;THE ROYALTY POOL IS EMPTY THROUGHOUT THIS FILE, and that is worth stating rather than working
+    ;;around silently: royalty is the UPTIME-SHORTFALL custody, and GT-04's oracle writes a full
+    ;;1000/1000 uptime, so nothing is ever withheld. The first draft assumed GT-05's two-track fee
+    ;;filled it and asserted `> 0.0`; the premise assertion said otherwise. Fee and royalty are
+    ;;different pools.
+    ;;
+    ;;SO THE CONTRAST IS DRIVEN, not collected. Writing `royalty-rewards` reproduces the state a
+    ;;shortfall would produce. The positive case is NOT asserted to succeed -- disposal also has to
+    ;;move real tokens out of AQP custody, which this vault has not funded -- it is asserted to get
+    ;;a DIFFERENT error. That is the honest claim and it is the one that matters: with a non-empty
+    ;;pool THIS guard stops answering, so the refusal below is attributable to the field and not to
+    ;;the call being broken outright.
+    (map print
+        [
+            (expect "<<GT-09>> the royalty pool is empty (full uptime, nothing withheld)"
+                0.0 (RPS.UR_FVT-RG|RoyaltyRewards fvt-id ouro))
+            ;;THE ITEM, on both disposal routes
+            (expect-failure "<<GT-09>> burning an empty royalty pool is refused"
+                "No royalty to dispose"
+                (ref-TS02-C3::AQP-DSA|C_BurnRoyalty anhd fvt-id ouro))
+            (expect-failure "<<GT-09>> ...and so is withdrawing it, which shares the cap"
+                "No royalty to dispose"
+                (ref-TS02-C3::AQP-DSA|C_WithdrawRoyalty anhd fvt-id ouro))
+        ]
+    )
+    ;;drive the one field the guard reads
+    (env-module-admin RPS)
+    (update RPS.FVT|T|RPS|Global (concat [fvt-id "|" ouro]) { "royalty-rewards" : 100.0 })
+    (map print
+        [
+            (expect "<<GT-09>> the royalty pool is now non-empty"
+                100.0 (RPS.UR_FVT-RG|RoyaltyRewards fvt-id ouro))
+            ;;the same call, and the admission guard has stopped answering: the failure has moved
+            ;;PAST it, into the custody debit (which this vault never funded). Stating it as a
+            ;;different named error rather than as a success is the honest form -- the guard under
+            ;;test is proven to pass without claiming the whole disposal works.
+            (expect-failure "<<GT-09>> ...and the guard stops answering -- the failure moves downstream"
+                "dispo capabilities exceeded!"
+                (ref-TS02-C3::AQP-DSA|C_BurnRoyalty anhd fvt-id ouro))
+            ;;`04_RPS.pact:5225`, the FUEL route's own rule -- reachable only from here, because it
+            ;;sits BELOW the same FVT|XE>DISPOSE-ROYALTY cap whose emptiness check answers first.
+            ;;With the pool forced non-empty two lines up, it is the next thing that can refuse.
+            ;;
+            ;;THE RULE: fuelling adds liquidity WITHOUT minting LP, so the royalty has to go into one
+            ;;of the pair's own token slots. `XI_NormalizeRoyalty` normalizes to OURO, so a pair that
+            ;;does not TRADE OURO has no slot to receive it.
+            ;;The pair below is a real stable pool on this chain (AL/AU) chosen because it genuinely
+            ;;lacks OURO -- read off the live pair table rather than invented, so the test cannot
+            ;;pass for the wrong reason if the fixture changes.
+            ;;RE-ARMED FIRST, and this is the trap worth naming: **`expect-failure` does NOT roll
+            ;;back writes the failed expression already made.** Both disposal routes zero the royalty
+            ;;pool INSIDE the capability, before the custody debit that actually fails -- so the burn
+            ;;attempt above left the pool at 0.0 and every later call here answered "No royalty to
+            ;;dispose" instead of the rule under test. Re-setting the field before each attempt is the
+            ;;fix; the first draft did not and pinned the wrong message twice.
+            ;;(2026-09-11-expect-failure-does-not-roll-back-writes.md)
+            (expect-failure "<<GT-09>> fuelling a swap pair that does not trade the royalty token is refused"
+                "Normalized royalty token is not a token of the swpair"
+                (let ((rearm (update RPS.FVT|T|RPS|Global (concat [fvt-id "|" ouro])
+                                 { "royalty-rewards" : 100.0 })))
+                    (ref-TS02-C3::AQP-DSA|C_FuelRoyalty anhd fvt-id ouro
+                        "S|AL-98c486052a51|AU-98c486052a51")))
+            ;;...and the contrast: the OURO-bearing pair GT-09 already names gets PAST this rule and
+            ;;fails further down, in the custody debit. Same call, same royalty, different pair --
+            ;;so the refusal above is attributable to the pair's token set and nothing else.
+            (expect-failure "<<GT-09>> ...while an OURO-bearing pair clears it and fails further down"
+                "dispo capabilities exceeded!"
+                (let ((rearm (update RPS.FVT|T|RPS|Global (concat [fvt-id "|" ouro])
+                                 { "royalty-rewards" : 100.0 })))
+                    (ref-TS02-C3::AQP-DSA|C_FuelRoyalty anhd fvt-id ouro swp)))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;|| GT-10 — UEV_OpenGate, the terminal stake threshold. Driven from BOTH sides by moving the three
+;;|| triplet scores that feed agency quintessence.
+;;
+(begin-tx "GT-10 - the open gate threshold, and what it does NOT protect against")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+(print "--- [GT-10 - 01 - quintessence vs unit-score/2] ---")
+;;UEV_OpenGate is the LAST step of the atomic open (admit -> stake -> this), and it enforces
+;;    (>= (URC_AgencyQuintessence score-entity-id) (/ (dec (UR_DSA-TMP|UnitScore fvt-id)) 2.0))
+;;so a short operator stake rolls the whole open back. Unpinned because every agency this suite opens
+;;is comfortably over the line: Q = 5000 against a unit-score of 2000, i.e. a threshold of 1000.
+;;
+;;Q is not stored -- URC_AgencyQuintessence SUMS the triplet's three scores' total-base-score. So the
+;;threshold is driven by writing those three fields, which is the state a short stake would produce.
+;;Pattern and boundary: 2026-09-12-state-driven-guard-coverage.md. GT-11 is the leakage check.
+(let*
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "GtVault"))
+        (bsid:string (ref-U|DALOS::UDC_Makeid (concat ["GtAgency" "Bronze"])))
+        (ssid:string (ref-U|DALOS::UDC_Makeid (concat ["GtAgency" "Silver"])))
+        (gsid:string (ref-U|DALOS::UDC_Makeid (concat ["GtAgency" "Golden"])))
+        (tid:string (ref-SCR::UC_ComputeTripletId bsid ssid gsid))
+        (b:string (ref-SCR::UR_SCR|TripletBronzeScoreId tid))
+        (sv:string (ref-SCR::UR_SCR|TripletSilverScoreId tid))
+        (g:string (ref-SCR::UR_SCR|TripletGoldenScoreId tid))
+    )
+    (map print
+        [
+            (expect "<<GT-10>> the gate's threshold here is 1000 -- unit-score 2000, halved"
+                [2000 1000.0]
+                [(AQP-DSA.UR_DSA-TMP|UnitScore fvt-id)
+                 (/ (dec (AQP-DSA.UR_DSA-TMP|UnitScore fvt-id)) 2.0)])
+            (expect "<<GT-10>> ...and the live agency is at 5000, so the gate is open"
+                [5000.0 true]
+                [(AQP-DSA.URC_AgencyQuintessence tid) (AQP-DSA.UEV_OpenGate fvt-id tid)])
+        ]
+    )
+    (env-module-admin AQP-SCORE)
+    ;;zero all three scores: the shape of an agency whose operator never staked
+    (update AQP-SCORE.SCR|T|Score b  { "total-base-score" : 0.0 })
+    (update AQP-SCORE.SCR|T|Score sv { "total-base-score" : 0.0 })
+    (update AQP-SCORE.SCR|T|Score g  { "total-base-score" : 0.0 })
+    (map print
+        [
+            (expect "<<GT-10>> with every score zeroed, quintessence is 0"
+                0.0 (AQP-DSA.URC_AgencyQuintessence tid))
+            (expect-failure "<<GT-10>> ...so the open gate refuses the agency"
+                "Open gate: operator must stake quintessence >= unit-score/2 to open"
+                (AQP-DSA.UEV_OpenGate fvt-id tid))
+            ;;THE EXACT BOUNDARY. The comparison is `>=`, so 1000 is enough and 999.9 is not. Both
+            ;;are asserted, because "0 fails / 5000 passes" would also hold for a threshold anywhere
+            ;;in between -- and the half-of-unit-score rule is the thing being protected.
+            (expect-failure "<<GT-10>> one thousandth under the threshold still refuses"
+                "Open gate: operator must stake quintessence >= unit-score/2 to open"
+                (let ((ignore (update AQP-SCORE.SCR|T|Score b { "total-base-score" : 999.9 })))
+                    (AQP-DSA.UEV_OpenGate fvt-id tid)))
+            (expect "<<GT-10>> ...and exactly at the threshold it opens, so the bound is inclusive"
+                true
+                (let ((ignore (update AQP-SCORE.SCR|T|Score b { "total-base-score" : 1000.0 })))
+                    (AQP-DSA.UEV_OpenGate fvt-id tid)))
+            ;;WHAT THE GATE DOES NOT DO. Handed a score entity that does not exist, it gives no
+            ;;answer at all: URC_AgencyQuintessence reads the triplet row first and dies there with a
+            ;;raw table error. So this guard protects against a SHORT stake, never against a BOGUS
+            ;;entity -- the same division of labour as VST::UEV_StillHasSleeping with a bad nonce.
+            ;;Callers taking a score-entity-id from outside need their own existence check.
+            (expect-failure "<<GT-10>> a nonexistent score entity dies in the read, not in the gate"
+                "No value found in table ouronet-ns.AQP-SCORE_SCR|T|Triplet for key: NOPE-000000000000"
+                (AQP-DSA.UEV_OpenGate fvt-id "NOPE-000000000000"))
+        ]
+    )
+    ""
+)
+(rollback-tx)
+
+;;|| NEXT >
+;;|| GT-11 — the score surgery left no trace.
+;;
+(begin-tx "GT-11 - no leakage from the quintessence fixture")
+(namespace "ouronet-ns")
+(print "--- [GT-11 - 01 - no leakage] ---")
+;;GT-10 zeroed and re-wrote the three scores that every capture, split and fee computation in this
+;;file reads. A commit there would not fail loudly -- it would quietly change the arithmetic of the
+;;whole vault, which is the worst kind of leak.
+(let*
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (bsid:string (ref-U|DALOS::UDC_Makeid (concat ["GtAgency" "Bronze"])))
+        (ssid:string (ref-U|DALOS::UDC_Makeid (concat ["GtAgency" "Silver"])))
+        (gsid:string (ref-U|DALOS::UDC_Makeid (concat ["GtAgency" "Golden"])))
+        (tid:string (ref-SCR::UC_ComputeTripletId bsid ssid gsid))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "GtVault"))
+    )
+    (map print
+        [
+            (expect "<<GT-11>> agency quintessence is back at 5000"
+                5000.0 (AQP-DSA.URC_AgencyQuintessence tid))
+            (expect "<<GT-11>> ...so the open gate is open again"
+                true (AQP-DSA.UEV_OpenGate fvt-id tid))
+        ]
+    )
+    ""
+)
+(commit-tx)
+(print "")
+;;
+;;|| NEXT >
+;;|| GT-12 — the two MULTIPLET admission contexts, and a guard that cannot describe its own first case.
+;;
+(begin-tx "GT-12 - multiplet reward-link and quality-split admission")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [GT-12 - 01 - the reward-link and quality-split contexts] ---")
+;;Two `UEV_` admission checks in 04_RPS.pact. Both are unprotected and directly callable, so they need
+;;no client and no signer -- only the vault this file has already built, whose OURO reward link IS a
+;;MULTIPLET_BASE ladder with an active family. That is what makes both the accepting and the refusing
+;;cases available here rather than needing a fixture of their own.
+(let*
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (fvt:string (ref-U|DALOS::UDC_Makeid "GtVault"))
+        (ouro:string (DALOS.UR_OuroborosID))
+        (auryn:string (DALOS.UR_AurynID))
+        (fam:string "F|OURO-98c486052a51|AURYN-98c486052a51|ELITEAURYN-98c486052a51")
+        ;;the vault's linked TRIPLET, rebuilt from the same three agency scores GT-05 collected on.
+        ;;UEV_CollectContext (05_FVT) needs it: its MULTIPLET branch is gated on score-entity-type 3.
+        (anhd:string KST.ANHD)
+        (bsid:string (ref-U|DALOS::UDC_Makeid (concat ["GtAgency" "Bronze"])))
+        (ssid:string (ref-U|DALOS::UDC_Makeid (concat ["GtAgency" "Silver"])))
+        (gsid:string (ref-U|DALOS::UDC_Makeid (concat ["GtAgency" "Golden"])))
+        (tid:string (AQP-SCORE.UC_ComputeTripletId bsid ssid gsid))
+    )
+    (map print
+        [
+            ;;the premise: one family exists, it is active, and its token-0 is OURO
+            (expect "<<GT-12>> the vault's multiplet family is active and anchored on OURO"
+                [ouro true] [(RPS.UR_FVT-MF|Token0Id fam) (RPS.UR_FVT-MF|Active fam)])
+            (expect "<<GT-12>> ...and OURO already carries a MULTIPLET_BASE reward link on this vault"
+                ["MULTIPLET_BASE" true]
+                [(RPS.UR_FVT-RG|RewardKind fvt ouro) (RPS.URC_FvtRpsGlobalRowExists fvt ouro)])
+            ;;GUARD 1 -- a MULTIPLET_BASE link must name the family whose TOKEN-0 it is. AURYN is a
+            ;;member of that family but not its token-0, so the ladder would be anchored on the wrong
+            ;;rung. Reached with a real, active family and a mismatched reward token.
+            (expect-failure "<<GT-12>> a MULTIPLET link on a token that is not the family's token-0 is refused"
+                "MULTIPLET_BASE reward requires active MultipletFamily with reward-dptf-id = token-0-id"
+                (RPS.UEV_AddRewardLinkContext fvt auryn "MULTIPLET_BASE" fam))
+            ;;...and the quality-split context is SATISFIED while the family is active, which is the
+            ;;contrast for guard 2 below.
+            (expect "<<GT-12>> ...while a quality split on the live ladder is admitted"
+                true (RPS.UEV_QualitySplitContext fvt ouro "HETEROGENEOUS"
+                        [1000 0 0] [1000 0 0] [1000 0 0]))
+            ;;...and so is the COLLECT context, on the same live ladder. This is the contrast for the
+            ;;third guard, in section 03: the only thing that changes between here and there is the
+            ;;family's `active` flag, so a refusal there is attributable to that flag alone.
+            (expect "<<GT-12>> ...and a MULTIPLET triplet collect on the live ladder is admitted"
+                true (AQP-FVT.UEV_CollectContext anhd fvt 3 tid ouro))
+        ]
+    )
+    (print "--- [GT-12 - 02 - FIXED: the guard can now describe its own first case] ---")
+    ;;`UEV_AddRewardLinkContext`'s fold USED to read:
+    ;;    [(!= multiplet-family-id BAR)
+    ;;     (URC_MultipletFamilyExists multiplet-family-id)
+    ;;     (UR_FVT-MF|Active multiplet-family-id)          <-- bare read
+    ;;     (= reward-dptf-id (UR_FVT-MF|Token0Id multiplet-family-id))]
+    ;;
+    ;;Pass BAR -- the case the FIRST conjunct exists to catch -- and the caller got
+    ;;    No value found in table ouronet-ns.RPS_FVT|T|MultipletFamily for key: |
+    ;;because `fold (and)` DOES NOT SHORT-CIRCUIT: the third element hard-read a row keyed `|`
+    ;;regardless of the conjunct above it already being false. **Being wrong early saved nothing.**
+    ;;
+    ;;That was a SUB-SHAPE of the mute-guard class worth separating: the other instances are eager
+    ;;`let` bindings above the enforce; this one was inside the enforce, in the fold itself. Same
+    ;;cause -- Pact evaluates what you wrote, in full -- and the same symptom.
+    ;;
+    ;;FIXED 2026-09-12, owner-ruled: the BAR test is hoisted into its own enforce above the fold.
+    ;;The assertion below now pins the SENTENCE. The bounding fact still holds and is still pinned by
+    ;;section 01 above: every OTHER way to fail the fold reaches the original message, so the hoist
+    ;;narrowed nothing -- it only made the first case speak.
+    (print
+        (expect-failure "<<GT-12>> a BAR family id is now named, not answered with a table key"
+            "MULTIPLET_BASE reward requires a MultipletFamily id, not BAR"
+            (RPS.UEV_AddRewardLinkContext fvt auryn "MULTIPLET_BASE" "|")))
+    (print "--- [GT-12 - 03 - quality split needs the family ACTIVE] ---")
+    ;;GUARD 2 -- deactivating the family makes the quality-split context invalid, which is the whole
+    ;;point of the check: a split describes a ladder, and an inactive ladder has nothing to split.
+    ;;`active` is a real operational flag, so writing it is the state a GOV deactivation would produce.
+    (env-module-admin RPS)
+    (update RPS.FVT|T|MultipletFamily fam { "active" : false })
+    (map print
+        [
+            (expect "<<GT-12>> the family is now inactive"
+                false (RPS.UR_FVT-MF|Active fam))
+            (expect-failure "<<GT-12>> ...so a quality split on it is refused"
+                "Quality split requires a MULTIPLET_BASE reward with an active MultipletFamily"
+                (RPS.UEV_QualitySplitContext fvt ouro "HETEROGENEOUS"
+                    [1000 0 0] [1000 0 0] [1000 0 0]))
+            ;;GUARD 3 -- and so is the COLLECT, which is the one that costs money. A split is
+            ;;configuration; a collect MOVES TOKENS down a ladder whose rungs are the family's
+            ;;members. Deactivating the family must stop it, and this is the guard that does.
+            ;;Same one flag, both directions, admitted three lines up in section 01.
+            (expect-failure "<<GT-12>> ...and so is a MULTIPLET triplet COLLECT on it"
+                "MULTIPLET_BASE collect requires active MultipletFamily on global row"
+                (AQP-FVT.UEV_CollectContext anhd fvt 3 tid ouro))
+            ;;BOUNDED, and this is the part worth writing down, because it is what separates this fold
+            ;;from its mute twin in `04_RPS:2956`. That one is reachable with a BAR family id and dies
+            ;;on a raw table read (section 02 above). THIS one cannot be: the `if` guarding it requires
+            ;;reward-kind MULTIPLET_BASE, and `UEV_AddRewardLinkContext` refuses to create such a link
+            ;;with a BAR family at all. So the `(!= … BAR)` conjunct here can never be the failing one,
+            ;;the eager `UR_FVT-MF|Active` read is always given a real key, and the guard is NOT mute.
+            ;;Same fold shape, same eager evaluation, opposite verdict -- decided entirely by what the
+            ;;admission path upstream permits to exist. Pinning the reachable case is therefore all of
+            ;;it, and the assertion below shows the earlier gate that makes the BAR case unbuildable:
+            ;;a token with no link on this vault never reaches the branch.
+            (expect-failure "<<GT-12>> ...and an unlinked reward token is refused before the branch"
+                "Reward link row must exist"
+                (AQP-FVT.UEV_CollectContext anhd fvt 3 tid auryn))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+;;the family deactivation is discarded -- GT-13 checks it
+(rollback-tx)
+
+;;|| NEXT >
+;;|| GT-13 — the family deactivation left no trace.
+;;
+(begin-tx "GT-13 - no leakage")
+(namespace "ouronet-ns")
+(print "--- [GT-13 - 01 - no leakage] ---")
+;;GT-12 deactivated the multiplet family. Every collect, split and capture assertion in this file reads
+;;that flag, so a leak would not fail loudly -- it would quietly change what the ladder pays.
+(print
+    (expect "<<GT-13>> the multiplet family is active again"
+        true (RPS.UR_FVT-MF|Active
+                "F|OURO-98c486052a51|AURYN-98c486052a51|ELITEAURYN-98c486052a51")))
+(commit-tx)
+(print "")
+;;
+;;|| NEXT >
+;;|| GT-14 — the FVT score-entity context: the farm rule, and the membership-mode gate.
+;;
+(begin-tx "GT-14 - FVT AddScoreEntity context: farm rule and membership mode")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+;;issuing a score is STOA-priced; the managed caps must be in scope or the call dies in coin.TRANSFER
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+    , "caps":
+      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                       "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                       "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                       "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                       "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000.0) ] } ])
+(print "--- [GT-14 - 01 - a score the vault has not claimed yet] ---")
+;;`UEV_AddScoreEntityScoreContext` is unprotected and directly callable, so the whole cost of these guards
+;;is reaching them past four preceding enforces. This chain satisfies three of them already -- one owner
+;;for the vault and every score, a class-0 vault, class-0 scores. What it did NOT have is a class-0 score
+;;that is POOL-linked but not yet FVT-linked: both existing ones (BronzeSnakePower, GoldenSnakePower)
+;;already carry `fvt-link = OuroLpFarm`, and the fifth conjunct `(= fvt-link BAR)` answers for them, so the
+;;THIRD message fires and the farm rule is never consulted.
+;;
+;;Two client calls close that: issue a liquidity score, then attach it to the class-0 pool. Neither needs
+;;table surgery. (Precision 6 / multipliers 2.0 are the issuer's accepted values -- it bounds precision to
+;;[3,24] and requires both multipliers strictly positive, under one message covering eight conjuncts.)
+(let*
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (fvt:string (ref-U|DALOS::UDC_Makeid "GtVault"))
+        (ouro:string (DALOS.UR_OuroborosID))
+        (pool:string "DHOuroLp-98c486052a51")
+    )
+    (ref-TS02-C3::AQP-SCR|C_IssueLiquidityScore KST.ANHD KST.ANHD "FvtProbeScore" 6 ouro 2.0 2.0)
+    (let*
+        (
+            (sc:string (ref-U|DALOS::UDC_Makeid "FvtProbeScore"))
+            (ignore:string (ref-TS02-C3::AQP-POOL|C_AddScore KST.ANHD pool sc))
+            ;;the fifth conjunct compares against this. Note the FIRST argument is the integer
+            ;;CT_SCORE_ENTITY_SCORE (1), not a string -- passing "SCORE" fails with a runtime typecheck.
+            (swpair:string (AQP-FVT.URC_ResolveScoreEntitySwpair 1 sc 0))
+        )
+        (map print
+            [
+                (expect "<<GT-14>> the pool is class 0 and the vault is class 0"
+                    [0 0] [(AQP-POOL.UR_AQP|PoolAqpClass pool) (RPS.UR_FVT|FvtClass fvt)])
+                ;;the fixture, asserted term by term -- these are exactly the conjuncts that had to hold
+                ;;before the farm rule could answer
+                (expect "<<GT-14>> the new score is class 0, pool-linked, and NOT yet FVT-linked"
+                    [0 pool (U|CT.CT_BAR)]
+                    [(ref-SCR::UR_SCR|ScoreClass sc) (ref-SCR::UR_SCR|ScoreAqpoolLink sc)
+                     (ref-SCR::UR_SCR|ScoreFvtLink sc)])
+                (expect "<<GT-14>> ...and its lp-denominator already matches the vault's common denominator"
+                    (AQP-FVT.UR_FVT|CommonDenominator fvt) (ref-SCR::UR_SCR|ScoreLpDenominator sc))
+                ;;THE FARM RULE: `[(= lp-denom common-denom) (> ghost-weight 0.0)]`. The denominator term
+                ;;is satisfied above, so a zero ghost weight is the ONLY failing term -- which is what makes
+                ;;this refusal attributable rather than merely red.
+                (expect-failure "<<GT-14>> a class-0 score admitted with ZERO ghost weight is refused"
+                    "Farm score: lp-denominator and ghost weight required"
+                    (AQP-FVT.UEV_AddScoreEntityScoreContext fvt sc swpair 0.0))
+                ;;...and a positive ghost weight is admitted, so the guard is a threshold on that term and
+                ;;not a blanket refusal of the whole context.
+                (expect "<<GT-14>> ...while a positive ghost weight is admitted"
+                    true (AQP-FVT.UEV_AddScoreEntityScoreContext fvt sc swpair 1.0))
+            ]
+        )
+        (print "--- [GT-14 - 02 - the non-mosaic membership gate] ---")
+        ;;The SECOND enforce: `(or mosaic (or mode=BAR mode=SCORE))`. GtVault is MOSAIC, so the `or` is
+        ;;satisfied and this guard cannot fire on it as built -- a mosaic vault admits any entity kind.
+        ;;Both fields are real operational settings, so driving them is modelling a non-mosaic vault in a
+        ;;triplet-only membership mode, which is a configuration the system supports.
+        (env-module-admin RPS)
+        (update RPS.FVT|T|RewardAggregate fvt
+            { "mosaic" : false, "membership-mode" : "TRUE-TRIPLET" })
+        (map print
+            [
+                (expect "<<GT-14>> the vault is now non-mosaic and triplet-only"
+                    [false "TRUE-TRIPLET"]
+                    [(RPS.UR_FVT|Mosaic fvt) (RPS.UR_FVT|MembershipMode fvt)])
+                (expect-failure "<<GT-14>> ...so it refuses a SCORE entity entirely"
+                    "Non-mosaic FVT locked to score membership only"
+                    (AQP-FVT.UEV_AddScoreEntityScoreContext fvt sc swpair 1.0))
+                ;;...and putting the membership mode back to SCORE re-admits it, which shows the guard
+                ;;reads the MODE and not the mosaic flag alone.
+                (expect "<<GT-14>> ...while a non-mosaic vault in SCORE mode admits it again"
+                    true
+                    (let ((ignore2 (update RPS.FVT|T|RewardAggregate fvt { "membership-mode" : "SCORE" })))
+                        (AQP-FVT.UEV_AddScoreEntityScoreContext fvt sc swpair 1.0)))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+;;everything here is a PROBE, not a fixture: the issued score, the pool link and the two vault fields are
+;;all discarded. Nothing later in this file depends on them, unlike modules/AQP-LP.repl where the score and
+;;pool are deliberately committed.
+(rollback-tx)
+
+;;|| NEXT >
+;;|| GT-15 — the vault fields and the probe score left no trace.
+;;
+(begin-tx "GT-15 - no leakage")
+(namespace "ouronet-ns")
+(print "--- [GT-15 - 01 - no leakage] ---")
+;;GT-14 flipped the vault out of mosaic mode and issued a score into a live pool. A mosaic flag that leaked
+;;would change which entity kinds every later admission accepts, and would do it silently.
+(let
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (fvt:string (ref-U|DALOS::UDC_Makeid "GtVault"))
+    )
+    (map print
+        [
+            (expect "<<GT-15>> the vault is mosaic again, in its original membership mode"
+                [true "BAR"] [(RPS.UR_FVT|Mosaic fvt) (RPS.UR_FVT|MembershipMode fvt)])
+            (expect "<<GT-15>> ...and the probe score is gone"
+                false (contains (ref-U|DALOS::UDC_Makeid "FvtProbeScore")
+                        (AQP-POOL.URC_PoolActiveScoreIds "DHOuroLp-98c486052a51")))
+        ]
+    )
+    ""
+)
+(commit-tx)
+(print "")
+;;
+;;|| NEXT >
+;;|| GT-16 — the TRIPLET admission context, and the triplet's own denominator rule.
+;;
+(begin-tx "GT-16 - class-0 triplet: issue rule, membership mode, farm weight")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+    , "caps":
+      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                       "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 5000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                       "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 5000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                       "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 5000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                       "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 5000.0) ] } ])
+(print "--- [GT-16 - 01 - a class-0 triplet must share one denominator] ---")
+;;This chain's only triplet (GtAgencyBronze/Silver/Golden) is class 3, so every class-0 triplet rule was
+;;unreachable. Four liquidity scores are issued here: three sharing OURO as their lp-denominator, and one
+;;deliberate ODD ONE OUT on AURYN, which is what makes the issue-time rule testable.
+(let*
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (fvt:string (ref-U|DALOS::UDC_Makeid "GtVault"))
+        (ouro:string (DALOS.UR_OuroborosID))
+        (auryn:string (DALOS.UR_AurynID))
+        (pool:string "DHOuroLp-98c486052a51")
+    )
+    (ref-TS02-C3::AQP-SCR|C_IssueLiquidityScore KST.ANHD KST.ANHD "TripBronze" 6 ouro 2.0 2.0)
+    (ref-TS02-C3::AQP-SCR|C_IssueLiquidityScore KST.ANHD KST.ANHD "TripSilver" 6 ouro 2.0 2.0)
+    (ref-TS02-C3::AQP-SCR|C_IssueLiquidityScore KST.ANHD KST.ANHD "TripGolden" 6 ouro 2.0 2.0)
+    (ref-TS02-C3::AQP-SCR|C_IssueLiquidityScore KST.ANHD KST.ANHD "TripOddOne" 6 auryn 2.0 2.0)
+    (let*
+        (
+            (b:string (ref-U|DALOS::UDC_Makeid "TripBronze"))
+            (sv:string (ref-U|DALOS::UDC_Makeid "TripSilver"))
+            (g:string (ref-U|DALOS::UDC_Makeid "TripGolden"))
+            (odd:string (ref-U|DALOS::UDC_Makeid "TripOddOne"))
+        )
+        (map print
+            [
+                (expect "<<GT-16>> three scores share OURO and the fourth does not"
+                    [ouro ouro ouro auryn]
+                    [(ref-SCR::UR_SCR|ScoreLpDenominator b) (ref-SCR::UR_SCR|ScoreLpDenominator sv)
+                     (ref-SCR::UR_SCR|ScoreLpDenominator g) (ref-SCR::UR_SCR|ScoreLpDenominator odd)])
+                ;;GUARD 1 -- an LP triplet prices three rungs of ONE ladder, so all three must denominate
+                ;;in the same token. Using the odd one out is the only difference from the call below.
+                (expect-failure "<<GT-16>> a class-0 triplet with a mismatched denominator is refused"
+                    "LP triplet requires identical lp-denominator on all three scores"
+                    (ref-TS02-C3::AQP-SCR|C_IssueTriplet KST.ANHD b sv odd))
+            ]
+        )
+        ;;the silver score carries the pool link the admission context reads; bronze and golden stay
+        ;;unlinked, which the third enforce also requires (all three fvt-links BAR).
+        (ref-TS02-C3::AQP-POOL|C_AddScore KST.ANHD pool sv)
+        (ref-TS02-C3::AQP-SCR|C_IssueTriplet KST.ANHD b sv g)
+        (let*
+            (
+                (tid:string (ref-SCR::UC_ComputeTripletId b sv g))
+                ;;CT_SCORE_ENTITY_TRIPLET is the INTEGER 3 -- the score form is 1 (see GT-14).
+                (swpair:string (AQP-FVT.URC_ResolveScoreEntitySwpair 3 tid 0))
+            )
+            (print "--- [GT-16 - 02 - the farm weight rule for a triplet] ---")
+            (map print
+                [
+                    (expect "<<GT-16>> the triplet is issued, silver is pool-linked, none is FVT-linked"
+                        [pool (U|CT.CT_BAR) (U|CT.CT_BAR) (U|CT.CT_BAR)]
+                        [(ref-SCR::UR_SCR|ScoreAqpoolLink sv) (ref-SCR::UR_SCR|ScoreFvtLink b)
+                         (ref-SCR::UR_SCR|ScoreFvtLink sv) (ref-SCR::UR_SCR|ScoreFvtLink g)])
+                    ;;GUARD 2 -- the triplet twin of GT-14's farm rule. Silver's denominator already
+                    ;;matches the vault's common denominator, so ghost-weight is the only failing term.
+                    (expect-failure "<<GT-16>> a class-0 triplet admitted with ZERO ghost weight is refused"
+                        "Farm triplet: lp-denominator and ghost weight required"
+                        (AQP-FVT.UEV_AddScoreEntityTripletContext fvt tid swpair 0.0))
+                    (expect "<<GT-16>> ...while a positive ghost weight is admitted"
+                        true (AQP-FVT.UEV_AddScoreEntityTripletContext fvt tid swpair 1.0))
+                ]
+            )
+            (print "--- [GT-16 - 03 - the membership mode gate, on a NON-MOSAIC vault] ---")
+            ;;`05_FVT.pact:1948`. This section previously pinned a DEFECT as-behaves: the condition was
+            ;;written as a THREE-argument `or`, and Pact's `or` is BINARY, so it raised
+            ;;"Attempted to apply a closure to too many arguments" instead of evaluating. Because the
+            ;;enclosing `(or (UR_FVT|Mosaic fvt-id) <this>)` SHORT-CIRCUITS and every FVT this suite
+            ;;builds is mosaic, the broken branch had never been reached -- the ADMITTING modes failed
+            ;;exactly like the refusing one, so no non-mosaic FVT could admit a triplet in any mode.
+            ;;
+            ;;FIXED 2026-09-12, owner-ruled: "triple or or multiple or is not allowed. instead use fold
+            ;;construction using or over false." Two `(fold (or) false ...)` sites already existed in
+            ;;this same module, so the ruling matched established practice rather than introducing a
+            ;;new idiom. These assertions now pin the CORRECT behaviour and would go red if the arity
+            ;;bug were reintroduced.
+            ;;
+            ;;ALL FOUR CELLS ARE DRIVEN. The rule is a three-way disjunction over the membership mode,
+            ;;and only driving every mode shows the fold routes each one independently -- a single
+            ;;refusal plus a single acceptance would be satisfied by a fold that ignored two of its
+            ;;three elements, which is precisely the failure the previous code had.
+            (env-module-admin RPS)
+            (update RPS.FVT|T|RewardAggregate fvt
+                { "mosaic" : false, "membership-mode" : "SCORE" })
+            (map print
+                [
+                    (expect "<<GT-16>> the vault is now non-mosaic and score-only"
+                        [false "SCORE"]
+                        [(RPS.UR_FVT|Mosaic fvt) (RPS.UR_FVT|MembershipMode fvt)])
+                    ;;the premise the two triplet-specific modes are read against
+                    (expect "<<GT-16>> the probe triplet is a STANDARD (not true) triplet"
+                        false (AQP-SCORE.UR_SCR|TripletTrueTriplet tid))
+                    ;;CELL 1 -- a score-only mode refuses a triplet, WITH ITS WRITTEN MESSAGE. This is
+                    ;;the assertion the arity bug made impossible.
+                    (expect-failure "<<GT-16>> a score-only membership mode refuses a triplet"
+                        "Non-mosaic FVT membership mode mismatch for triplet admission"
+                        (AQP-FVT.UEV_AddScoreEntityTripletContext fvt tid swpair 1.0))
+                    ;;CELL 2 -- BAR admits unconditionally, which is what the first disjunct is for.
+                    (expect "<<GT-16>> ...while BAR admits it unconditionally"
+                        true
+                        (let ((ignore (update RPS.FVT|T|RewardAggregate fvt { "membership-mode" : "BAR" })))
+                            (AQP-FVT.UEV_AddScoreEntityTripletContext fvt tid swpair 1.0)))
+                    ;;CELL 3 -- TRUE-TRIPLET demands a TRUE triplet, and this one is standard, so the
+                    ;;second disjunct is false and the mode refuses. Same message, different disjunct.
+                    ;;THE CONSTANTS ARE HYPHENATED ("TRUE-TRIPLET"), not underscored. The first draft
+                    ;;wrote "TRUE_TRIPLET" and this cell PASSED -- for the wrong reason: an unknown
+                    ;;mode string matches no disjunct, so it refuses too. Only cell 4 failing exposed
+                    ;;it. That is the argument for driving all four cells rather than one of each.
+                    (expect-failure "<<GT-16>> ...TRUE-TRIPLET mode refuses a STANDARD triplet"
+                        "Non-mosaic FVT membership mode mismatch for triplet admission"
+                        (let ((ignore (update RPS.FVT|T|RewardAggregate fvt
+                                          { "membership-mode" : "TRUE-TRIPLET" })))
+                            (AQP-FVT.UEV_AddScoreEntityTripletContext fvt tid swpair 1.0)))
+                    ;;CELL 4 -- and STANDARD_TRIPLET, the third disjunct, admits it.
+                    (expect "<<GT-16>> ...and STANDARD-TRIPLET admits it"
+                        true
+                        (let ((ignore (update RPS.FVT|T|RewardAggregate fvt
+                                          { "membership-mode" : "STANDARD-TRIPLET" })))
+                            (AQP-FVT.UEV_AddScoreEntityTripletContext fvt tid swpair 1.0)))
+                    ;;...and a MOSAIC vault still short-circuits past the whole rule, unchanged by the
+                    ;;fix -- so the repair did not alter the mosaic path that production actually uses.
+                    (expect "<<GT-16>> ...while a MOSAIC vault skips the mode rule entirely"
+                        true
+                        (let ((ignore (update RPS.FVT|T|RewardAggregate fvt
+                                          { "mosaic" : true, "membership-mode" : "SCORE" })))
+                            (AQP-FVT.UEV_AddScoreEntityTripletContext fvt tid swpair 1.0)))
+                ]
+            )        )
+    )
+    ""
+)
+(env-sigs [])
+;;all probe state -- four scores, a pool link, a triplet and two vault fields. GT-17 checks it is gone.
+(rollback-tx)
+
+;;|| NEXT >
+;;|| GT-17 — the triplet probe left no trace.
+;;
+(begin-tx "GT-17 - no leakage")
+(namespace "ouronet-ns")
+(print "--- [GT-17 - 01 - no leakage] ---")
+;;GT-16 issued four scores, linked one into a live pool, formed a triplet and took the vault out of mosaic
+;;mode. A leaked score in DHOuroLp would change that pool's slot occupancy for every later admission.
+(let
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (fvt:string (ref-U|DALOS::UDC_Makeid "GtVault"))
+    )
+    (map print
+        [
+            (expect "<<GT-17>> the vault is mosaic again, in its original membership mode"
+                [true "BAR"] [(RPS.UR_FVT|Mosaic fvt) (RPS.UR_FVT|MembershipMode fvt)])
+            (expect "<<GT-17>> ...and no probe score is left in the pool"
+                false (contains (ref-U|DALOS::UDC_Makeid "TripSilver")
+                        (AQP-POOL.URC_PoolActiveScoreIds "DHOuroLp-98c486052a51")))
+        ]
+    )
+    ""
+)
+(commit-tx)
+(print "")
+;;
+;;NOT PINNED YET — the TRIPLET twins of the two guards GT-14 just closed.
+;;
+;;`05_FVT.pact:1948` "Non-mosaic FVT membership mode mismatch for triplet admission"
+;;`05_FVT.pact:1957` "Farm triplet: lp-denominator and ghost weight required"
+;;
+;;These are `UEV_AddScoreEntityTripletContext`'s versions of the two GT-14 pins, and the recipe should
+;;transfer almost unchanged -- the differences are known:
+;;
+;;  * the entity is a TRIPLET, so `URC_ResolveScoreEntitySwpair` takes CT_SCORE_ENTITY_TRIPLET (**3**,
+;;    not 1) and resolves the pair through the triplet's SILVER score's pool rather than the score's own;
+;;  * the membership mode that REFUSES a triplet is the mirror of GT-14's -- there, TRUE-TRIPLET refused a
+;;    SCORE; here a score-only mode should refuse a TRIPLET;
+;;  * the farm rule is the same shape, so `ghost-weight 0.0` should isolate it the same way once the
+;;    triplet's silver score is class 0, pool-linked and not FVT-linked.
+;;
+;;WHAT TO REUSE FROM GT-14, because it is what cost the time:
+;;    - `AQP-SCR|C_IssueLiquidityScore` needs precision 6 and BOTH multipliers > 0.0, and it is
+;;      STOA-priced, so the four managed `coin.TRANSFER` caps must be in scope;
+;;    - `mosaic` and `membership-mode` live in `RPS.FVT|T|RewardAggregate`, NOT `FVT|T|RPS|Global`
+;;      (that one is the per-reward row; writing to it fails with a schema mismatch that helpfully
+;;      prints the expected schema);
+;;    - a deliberately WRONG write is a fast way to read a table's schema.
+;;
+;;The existing triplet on this chain (GtAgencyBronze/Silver/Golden) is class 3, so a class-0 triplet has to
+;;be built the same way GT-14 built its score -- three liquidity scores plus `UC_ComputeTripletId`.
+
+(print "")
 (print "================================================================")
+(begin-tx "GT-DOC1 - the fee reprices FUTURE injects ONLY, never a pending one")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+(env-chain-data { "block-time": (time "2027-12-01T05:00:00Z") })
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "PK_Emma", "caps": [] }
+    { "key": "PK_Lumy", "caps": [] }
+    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+    , "caps":
+      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+(print "--- [GT-DOC1 - 01 - change the fee AFTER an inject, before the collect] ---")
+;;DOC-CLAIM VERIFICATION (`_docclaims.py` G5). `08_DSA.pact` DSA|C>SET-AGENCY-FEE:
+;;
+;;   "A fee change is O(1) — IT REPRICES ONLY FUTURE INJECTS (the fee is never baked into a
+;;    stored weight)."
+;;
+;;GT-07 above already drives the forward half: set the fee, THEN inject, and the new rate applies.
+;;What nothing tested is the half the sentence actually promises -- that a fee change does NOT
+;;reach backwards into an inject that has already happened and is sitting uncollected. That is the
+;;difference between a fee schedule and a retroactive one, and a delegator who injected under a 20%
+;;operator cut would be silently charged 40% if it were wrong.
+;;
+;;THE ORDER IS THE TEST: inject at 20%, change the fee to 40% WITHOUT injecting, then collect. The
+;;payouts must still be the 20% figures. If the fee were read at collect time -- or baked into the
+;;stored weights by the setter -- the operator would take 2000 and the delegators 1200 each.
+(let
+    (
+        (anhd:string KST.ANHD) (emma:string KST.EMMA) (lumy:string KST.LUMY)
+        (ouro:string "OURO-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-DSA:module{DsaV2} AQP-DSA)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+    )
+    (let
+        (
+            (fvt-id:string  (ref-U|DALOS::UDC_Makeid "GtVault"))
+            (bsid:string (ref-U|DALOS::UDC_Makeid (concat ["GtAgency" "Bronze"])))
+            (ssid:string (ref-U|DALOS::UDC_Makeid (concat ["GtAgency" "Silver"])))
+            (gsid:string (ref-U|DALOS::UDC_Makeid (concat ["GtAgency" "Golden"])))
+        )
+        (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bsid ssid gsid)))
+            ;;precondition: the fee is the 20% GT-07 left behind
+            (print (format "<(fee before)> => {}" [(ref-DSA::UR_DSA-AGN|FeePerMille fvt-id triplet-id)]))
+            ;;1] inject 5000 while the fee is 20%
+            (ref-TS02-C3::AQP-FVT|CC_Inject anhd fvt-id ouro 5000.0)
+            ;;2] NOW raise the fee to 40%, with the 5000 already injected and uncollected
+            (ref-TS02-C3::AQP-DSA|C_SetAgencyFee anhd fvt-id triplet-id 400)
+            (map print
+                [
+                    (expect "<<GT-DOC1>> the fee really did change to 40% before anyone collected"
+                        400 (ref-DSA::UR_DSA-AGN|FeePerMille fvt-id triplet-id))
+                ]
+            )
+            ;;3] collect: the payouts must reflect the fee AT INJECT TIME (20%), not the new one
+            (let ((op0:decimal (ref-DPTF::UR_AccountSupply ouro anhd)))
+                (ref-TS02-C3::AQP-FVT|CC_Collect anhd fvt-id 3 triplet-id ouro)
+                (let ((op-got:decimal (- (ref-DPTF::UR_AccountSupply ouro anhd) op0)) (em0:decimal (ref-DPTF::UR_AccountSupply ouro emma)))
+                    (ref-TS02-C3::AQP-FVT|CC_Collect emma fvt-id 3 triplet-id ouro)
+                    (let ((em-got:decimal (- (ref-DPTF::UR_AccountSupply ouro emma) em0)) (lu0:decimal (ref-DPTF::UR_AccountSupply ouro lumy)))
+                        (ref-TS02-C3::AQP-FVT|CC_Collect lumy fvt-id 3 triplet-id ouro)
+                        (let ((lu-got:decimal (- (ref-DPTF::UR_AccountSupply ouro lumy) lu0)))
+                            (print (format "<(op / emma / lumy after a POST-inject fee change)> => {} / {} / {}" [op-got em-got lu-got]))
+                            (map print
+                              [ ;;THE CLAIM. 1800 is the 20% split; 2000 would be the 40% one.
+                                (expect "<<GT-DOC1>> operator is paid at the fee that applied WHEN THE INJECT HAPPENED (20%), not 40%"
+                                    1800.0 op-got)
+                                (expect "<<GT-DOC1>> EMMA keeps her 20%-net share, not a retroactive 40% cut"
+                                    1600.0 em-got)
+                                (expect "<<GT-DOC1>> LUMY likewise"
+                                    1600.0 lu-got)
+                                ;;and the retroactive figures are genuinely different, so the three
+                                ;;assertions above are discriminating and not a coincidence
+                                (expect "<<GT-DOC1>> ...and 40% WOULD have paid the operator 2000, so those numbers do discriminate"
+                                    true (!= 1800.0 2000.0))
+                                (expect "<<GT-DOC1>> conservation still holds across the fee change"
+                                    5000.0 (+ op-got (+ em-got lu-got))) ]))))))
+    )
+)
+;;restore the fee GT-07 established, so anything appended after this sees the state it expects
+(let
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+    )
+    (let
+        (
+            (fvt-id:string (ref-U|DALOS::UDC_Makeid "GtVault"))
+            (bsid:string (ref-U|DALOS::UDC_Makeid (concat ["GtAgency" "Bronze"])))
+            (ssid:string (ref-U|DALOS::UDC_Makeid (concat ["GtAgency" "Silver"])))
+            (gsid:string (ref-U|DALOS::UDC_Makeid (concat ["GtAgency" "Golden"])))
+        )
+        (ref-TS02-C3::AQP-DSA|C_SetAgencyFee KST.ANHD fvt-id
+            (ref-SCR::UC_ComputeTripletId bsid ssid gsid) 200)
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+
+(begin-tx "GT-DOC2 - the triplet readers and the royalty-FUEL preview, which need this fixture")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+(print "--- [GT-DOC2 - 01 - the triplet bundle, and a cost preview that needs a swap pair] ---")
+;;FUNCTION COVERAGE (G6, Tier 1). Three functions that `modules/AQP.repl` cannot reach and this
+;;harness can, so they are covered here rather than left as gaps:
+;;
+;;  `UR_SCR|Triplet` / `UR_SCR|TripletId` -- need a TRIPLET score. The AQP suite builds none; this
+;;      tour combines GtAgency Bronze/Silver/Gold into one.
+;;  `URCi_FuelRoyaltyCustody`             -- reads `SWP|Pairs`. The AQP harness has NO swap pairs at
+;;      all (`URC_Swpairs` is empty there), so it can only abort; here there are real ones.
+(let
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+        (ref-SWP:module{SwapperV4} SWP)
+        (ouro:string "OURO-98c486052a51")
+    )
+    (let
+        (
+            (bsid:string (ref-U|DALOS::UDC_Makeid (concat ["GtAgency" "Bronze"])))
+            (ssid:string (ref-U|DALOS::UDC_Makeid (concat ["GtAgency" "Silver"])))
+            (gsid:string (ref-U|DALOS::UDC_Makeid (concat ["GtAgency" "Golden"])))
+            (fvt-id:string (ref-U|DALOS::UDC_Makeid "GtVault"))
+        )
+        (let
+            (
+                (triplet-id:string (ref-SCR::UC_ComputeTripletId bsid ssid gsid))
+            )
+            (map print
+                [
+                    ;;the triplet row names its three member scores, in rank order. The id is COMPUTED
+                    ;;from those three, so the row must agree with the id it is stored under -- and
+                    ;;the ORDER is the part worth pinning, since bronze/silver/gold are three
+                    ;;same-typed strings and a transposition would still be a valid-looking triplet.
+                    (expect "<<GT-DOC2>> the triplet row holds bronze / silver / gold in rank order"
+                        [bsid ssid gsid]
+                        (let ((r (ref-SCR::UR_SCR|Triplet triplet-id)))
+                            [(at "bronze-score-id" r) (at "silver-score-id" r) (at "golden-score-id" r)]))
+                    ;;the id round-trips: the row's own id field equals the key it was read by
+                    (expect "<<GT-DOC2>> ...and the row's id field round-trips to the computed key"
+                        triplet-id (ref-SCR::UR_SCR|TripletId triplet-id))
+                    ;;...and the computed id really is a function of all three members: swapping two
+                    ;;of them yields a DIFFERENT id, so the ordering above is load-bearing
+                    (expect "<<GT-DOC2>> ...and swapping two members computes a DIFFERENT triplet id"
+                        false (= triplet-id (ref-SCR::UC_ComputeTripletId ssid bsid gsid)))
+
+                    ;;the royalty-FUEL preview, on a real swap pair from this chain
+                    (expect "<<GT-DOC2>> this harness really does have swap pairs, unlike the AQP one"
+                        true (> (length (ref-SWP::URC_Swpairs)) 0))
+                    (format "PROBE-PAIR0={}" [(at 0 (ref-SWP::URC_Swpairs))])
+                    ;;=== FINDING: the ZERO-ROYALTY fuel path fails with a NATIVE error ===
+                    ;;`URCi_FuelRoyaltyCustody` builds its input vector as
+                    ;;`(map (lambda (t) (if (= t token) amount 0.0)) pool-tokens)`, so when the
+                    ;;vault's royalty is 0.0 EVERY slot is 0.0. `SWPLC::URCi_Fuel` then does
+                    ;;    has-zeros -> (UC_RemoveItem input-amounts 0.0)      ;; = (filter (!= 0.0) …)
+                    ;;which on an all-zero vector filters to `[]`, and the empty list is handed
+                    ;;straight to `TFT::URCi_MultiTransferCumulator`, which indexes it. Confirmed by
+                    ;;calling `URCi_Fuel` directly with `[0.0 0.0]` on a real swpair: "Array index out
+                    ;;of bounds. Length (0), Index (0)".
+                    ;;
+                    ;;`DSA|C>FUEL-ROYALTY` carries three enforces -- vault live, patron is the FVT
+                    ;;owner, ownership signed -- and NO `royalty > 0` check, so nothing stops the
+                    ;;zero case reaching this. The exec entrypoint also fails here (with a different
+                    ;;native error, cause not yet isolated).
+                    ;;
+                    ;;RECORDED AS BEHAVIOUR, NOT FIXED: the repair belongs in the cap, but the cap
+                    ;;takes (patron, fvt-id, swpair) and does not name a reward token, so which
+                    ;;royalty to test is a design question rather than a mechanical one. Flagged for
+                    ;;a focused pass rather than guessed at. This assertion is the trip-wire: the day
+                    ;;it starts failing, the path has been given a real guard and should be re-pinned
+                    ;;to that guard's message.
+                    (expect "<<GT-DOC2>> FINDING: this vault's royalty really is zero, the precondition"
+                        0.0 (ref-RPS::UR_FVT-RG|RoyaltyRewards fvt-id ouro))
+                    (expect-failure "<<GT-DOC2>> FINDING: fuelling ZERO royalty dies in a native fault, not a guard"
+                        "Expected Pact Value, got closure or table reference"
+                        (TS02-C3.AQP-DSA|C_FuelRoyalty KST.ANHD fvt-id (at 0 (ref-SWP::URC_Swpairs))))
+                    ;;...and the preview a UI would call first dies too, so the client cannot even
+                    ;;quote the operation before attempting it
+                    (expect-failure "<<GT-DOC2>> FINDING: ...and so does the cost PREVIEW, on the filter-to-empty path"
+                        "Array index out of bounds"
+                        (SWPLC.URCi_Fuel AQP-POOL.AQP|SC_NAME (at 0 (ref-SWP::URC_Swpairs)) [0.0 0.0] true))
+                    ;;...and it is priced differently from BURNING the same royalty, which is the
+                    ;;check that stops the three custody previews collapsing into one constant
+
+                ]
+            )
+        )
+    )
+    ""
+)
+(commit-tx)
+(print "")
+
 (print "DSA GRAND TOUR — full lifecycle GREEN: vault + triplet + MULTIPLET reward")
 (print "+ open + delegator stake + oracle + HETEROGENEOUS split + fee two-track")
 (print "+ inject + independent collect + matrix reprice + O(1) fee reprice + GOV switches")

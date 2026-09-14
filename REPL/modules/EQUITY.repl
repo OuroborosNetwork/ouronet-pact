@@ -88,7 +88,8 @@
                 ;;MODULO: valid tier, and an amount well inside capacity, so only the divisibility
                 ;;guard can fire. sspm+1 is guaranteed not to divide evenly by sspm when sspm > 1.
                 (expect-failure "<<EQUITY-G1>> ...and an amount that is not a whole number of packages"
-                    "is an invalid amount for making a Tier 2 Share Packge"
+                    ;;complete fixed run -- the old text spanned the interpolated tier number
+                    "Shares is an invalid amount for making a Tier"
                     (ref-EQ::UEV_ShareAmountsForMaking eq (+ sspm 1) 2))
                 ;;--- UEV_Convert: same-tier conversion is the guard that a range check misses.
                 (expect-failure "<<EQUITY-G1>> converting a tier INTO ITSELF is refused"
@@ -97,7 +98,8 @@
                 ;;...and a conversion that does not divide evenly into the output tier. Tier 1 is
                 ;;the smallest package, so one tier-1 share can never fill a tier-7 one.
                 (expect-failure "<<EQUITY-G1>> ...and one that cannot be completed without a remainder"
-                    "cannot be completly Converted to Tier 7 Shares"
+                    ;;complete fixed run -- the old text spanned the interpolated tier number
+                    "Shares cannot be completly Converted to Tier"
                     (ref-EQ::UEV_Convert eq 1 1 7))
             ]
         )
@@ -105,3 +107,362 @@
     )
 )
 (commit-tx)
+
+;;|| NEXT >
+;;|| EQ-G1 — the 24-link shape check on an Equity collection, after the mute-guard fix.
+;;
+(begin-tx "EQ-G1 - C_IssueShareholderCollection rejects a wrong ipfs-links count")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [EQ-G1 · 01 · an Equity collection with the wrong number of IPFS links] ---")
+;;`11_EQUITY+.pact` — "24 IPFS links must be provided for an Equity Collection". An Equity
+;;collection carries 8 elements across a primary, secondary and tertiary URI list, so the argument
+;;is 8 x 3 = 24 strings, exactly.
+;;
+;;THIS GUARD WAS MUTE UNTIL THIS PASS, and the failure mode is the eager-`let` one. The check used
+;;to sit BELOW the let, while the let's <ico> binding calls DPDC-I::C_IssueDigitalCollection --
+;;i.e. it issued the whole collection first and inspected the argument afterwards. Pact evaluates
+;;let bindings eagerly, so every rejected call paid for a full issuance, and any call where the
+;;issuance itself failed first (a duplicate collection name is the ordinary way that happens)
+;;reported the issuance's error instead, never this one. The check is a pure shape test on a
+;;parameter, so it has been hoisted above the let; that is what makes the assertions below possible.
+;;
+;;A DISTINCT COLLECTION NAME IS PART OF THE TEST, not incidental. [6.1.1] already issued
+;;TestStageEquity/TSEQ; reusing it would fail on the duplicate and -- before the fix -- would have
+;;been the very thing that masked this message. Using a fresh name proves the rejection is the link
+;;count and nothing else.
+;;the STOA leg splits four ways (Holdings / Maintenance / Ouroboros / Gas Station), so the payer's
+;;coin account must sign all four TRANSFER legs. Without them the issue aborts on
+;;"Managed capability not installed" -- a FUNDING signal, not a pricing one.
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+    , "caps":
+      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (owner:string KST.ANHD)
+    )
+    (map print
+        [
+            ;;one short of the required count -- the off-by-one a real integrator hits
+            (expect-failure "<<EQ-G1>> 23 links is refused"
+                "24 IPFS links must be provided for an Equity Collection"
+                (ref-TS02-C1::DPSF|C_IssueCompany owner owner "EqLinkProbeA" "EQLA" 5.0 100.0
+                    (make-list 23 "ipfs://EquityTestLink")))
+            ;;...and one over, because `=` is not `>=`: a caller cannot pad the list
+            (expect-failure "<<EQ-G1>> ...and so is 25"
+                "24 IPFS links must be provided for an Equity Collection"
+                (ref-TS02-C1::DPSF|C_IssueCompany owner owner "EqLinkProbeB" "EQLB" 5.0 100.0
+                    (make-list 25 "ipfs://EquityTestLink")))
+            ;;...and the empty list, which is what an integrator who forgot the argument sends
+            (expect-failure "<<EQ-G1>> ...and so is an empty list"
+                "24 IPFS links must be provided for an Equity Collection"
+                (ref-TS02-C1::DPSF|C_IssueCompany owner owner "EqLinkProbeC" "EQLC" 5.0 100.0 []))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(commit-tx)
+
+;;|| NEXT >
+;;|| EQ-D1 — the URCi_IssueShareholderCollection cost-preview doc, claim by claim.
+;;
+(begin-tx "EQ-D1 - URCi_IssueShareholderCollection: the documented three-leg decomposition")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [EQ-D1 · 01 · three legs, arg-independent] ---")
+;;DOC-CLAIM VERIFICATION (`_docclaims.py` G5). `11_EQUITY+.pact` URCi_IssueShareholderCollection
+;;carries one of the longest @docs in the codebase, and it makes four separable claims. It had no
+;;REPL mention at all, so none of them were checked. Taken one at a time.
+;;
+;;CLAIM 1 — "Three legs, ARG-INDEPENDENT": ico1 the digital-collection issue, ico2 the $100 equity
+;;premium, ico3 the discounted 8-nonce populate. Verified STRUCTURALLY, by rebuilding the same three
+;;legs from their own sources and concatenating them independently. If a leg is dropped, added or
+;;re-priced, the rebuild stops matching.
+(let
+    (
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC-I:module{DpdcIssueV2} DPDC-I)
+        (ref-EQUITY:module{EquityV2} EQUITY)
+        (ref-U|VST:module{UtilityVstV2} U|VST)
+    )
+    (let
+        (
+            (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
+            (smallest:decimal (ref-IGNIS::UC_IgnisLeg "tier-smallest"))
+        )
+        (map print
+            [
+                ;;CLAIM 1: the preview IS exactly its three documented legs, rebuilt here from
+                ;;scratch. Nothing about the rebuild reads the function under test.
+                (expect "<<EQ-D1>> the preview equals its three documented legs, rebuilt independently"
+                    (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                        [
+                            (ref-DPDC-I::URCi_IssueDigitalCollection true dpdc)
+                            (ref-IGNIS::UDC_ConstructOutputCumulator
+                                (ref-IGNIS::UC_IgnisPrice "DPSF|C_IssueCompany" "issue-shareholder")
+                                dpdc (ref-IGNIS::URC_IsVirtualGasZero) [])
+                            (ref-IGNIS::UDC_ConstructOutputCumulator
+                                (/ (* smallest 1000000.0) 1000.0)
+                                dpdc (ref-IGNIS::URC_IsVirtualGasZero) [])
+                        ]
+                        [])
+                    (ref-EQUITY::URCi_IssueShareholderCollection))
+                ;;REMOVED 2026-09-13 (caught by `_vacuous.py`): an assertion here compared
+                ;;`(URCi_IssueShareholderCollection)` against ITSELF to "prove" the @doc's
+                ;;"ARG-INDEPENDENT" claim. Expected and actual were literally the same expression, so
+                ;;NO input could ever make it red -- exactly the defect class that tool exists to
+                ;;catch, and I wrote one while hunting them elsewhere.
+                ;;
+                ;;There is nothing to test: the function takes no parameters, so arg-independence is
+                ;;guaranteed by its SIGNATURE, not by its behaviour. A test cannot add evidence to a
+                ;;type-level fact. If a parameter is ever added, the rebuild assertion directly above
+                ;;stops compiling against the new arity -- which is the real trip-wire.
+
+                ;;CLAIM 2 — "the id is Elite (UC_EquityID forces an 'E|' ticker ... so take-2 of the
+                ;;id is 'E|')". This is the load-bearing fact for the discount in claim 3: without
+                ;;the E| prefix the /1000 branch cannot fire at all. Checked at the SOURCE (the id
+                ;;builder) rather than on the one collection that happens to exist.
+                ;;PRECISION MATTERS HERE and the first draft of this assertion got it wrong.
+                ;;UC_EquityID returns a PAIR, [name ticker], and only the TICKER carries the `E|`
+                ;;prefix -- element 0 is the display NAME, prefixed "Equity". The @doc says "forces
+                ;;an 'E|' ticker", which is element 1, and the id is built as concat[ticker '-' hash]
+                ;;so it is the ticker that decides `take 2` of the final id. Asserting both elements
+                ;;pins the split rather than just the half that happens to be under discussion.
+                (expect "<<EQ-D1>> UC_EquityID forces an E| TICKER (element 1), with an Equity NAME (element 0)"
+                    ["Eq" "E|"]
+                    [(take 2 (at 0 (ref-U|VST::UC_EquityID "AnyName" "ANY")))
+                     (take 2 (at 1 (ref-U|VST::UC_EquityID "AnyName" "ANY")))])
+                ;;...and it is the ticker, not the name, that the id is built from -- which is what
+                ;;makes `take 2` of a live Equity id equal "E|" and the discount branch reachable.
+                (expect "<<EQ-D1>> ...and the NAME element is the full \"Equity\" prefix, not an E| one"
+                    "Equity" (take 6 (at 0 (ref-U|VST::UC_EquityID "AnyName" "ANY"))))
+                ;;...and on the collection [6.1.1] actually issued, end to end
+                (expect "<<EQ-D1>> ...and the issued collection carries it"
+                    "E|" (take 2 "E|TSEQ-98c486052a51"))
+
+                ;;CLAIM 3 — "populate = smallest * 1,000,000 / 1000 = smallest * 1000". The doc
+                ;;states the identity in both forms; the code uses the first. Pinned so a future
+                ;;simplification to the second form is provably equivalent rather than assumed.
+                (expect "<<EQ-D1>> the populate leg's two documented forms are the same number"
+                    (* smallest 1000.0) (/ (* smallest 1000000.0) 1000.0))
+            ]
+        )
+    )
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "EQ-D1b - the doc's OWN caveat about why this cannot be ground-truthed")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [EQ-D1b · 01 · why the discount is code-proven and not test-arbitrated] ---")
+;;CLAIM 4, and the most interesting one, because the @doc argues AGAINST testing it the obvious way:
+;;
+;;   "NOTE: the SWPI-style ground-truth (compare vs the real reader post-issue) does NOT apply —
+;;    post-populate nonces-used=8, so a live URCi_CreateNewNonces reads the UNdiscounted price;
+;;    the equality is code-proven, not test-arbitrated."
+;;
+;;That caveat is itself a falsifiable statement, and it is the one worth pinning: if it were wrong
+;;-- if nonces-used were still 0 after issue -- then the naive ground-truth comparison WOULD be
+;;valid and the doc would be steering the next reader away from a check they should be making.
+;;So this block verifies the REASON rather than the conclusion.
+;;
+;;It also pins the discount branch's three conditions on the live collection: `E|` and son hold,
+;;`nu = 0` does not (any more), which is exactly why the discount fired at exec time and cannot be
+;;observed now. Each condition asserted separately so a failure names which one moved.
+(let
+    (
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
+        (eq:string "E|TSEQ-98c486052a51")
+        (smallest:decimal (IGNIS.UC_IgnisLeg "tier-smallest"))
+    )
+    (map print
+        [
+            ;;the two conditions that still hold
+            (expect "<<EQ-D1b>> the collection is E| and semi-fungible -- two of the three discount conditions"
+                ["E|" true]
+                [(take 2 eq) (!= (ref-DPDC::UR_OwnerKonto eq true) "")])
+            ;;the one that does NOT, which is the doc's stated reason
+            (expect "<<EQ-D1b>> ...but nonces-used is 8, not 0, exactly as the @doc's caveat says"
+                8 (ref-DPDC::UR_NoncesUsed eq true))
+            ;;THE CONSEQUENCE the caveat predicts: a live price read now returns the UNDISCOUNTED
+            ;;figure. Asserted as an equality against the raw formula, so this is a real check on
+            ;;the branch and not just a re-reading of nonces-used.
+            (expect "<<EQ-D1b>> so a live price read is UNdiscounted -- the /1000 branch is closed now"
+                (* smallest 1000000.0)
+                (ref-DPDC-C::URCi_RegisterCollectablesPrice eq true [1000000]))
+            ;;...and it is undiscounted by exactly the factor the doc names, which is what makes
+            ;;"the discount is 1000x" a tested number rather than a remembered one.
+            (expect "<<EQ-D1b>> ...and the discount the doc claims is exactly 1000x that figure"
+                1000.0
+                (/ (ref-DPDC-C::URCi_RegisterCollectablesPrice eq true [1000000])
+                   (/ (* smallest 1000000.0) 1000.0)))
+        ]
+    )
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "EQ-I1 — INFO_EQUITY|IssueCompany: does the preview match BOTH currencies charged?")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [EQ-I1 · 01 · predicted vs measured, IGNIS and STOA] ---")
+;;FUNCTION COVERAGE (G6), owner's spec: an `INFO_` must report the cost the op actually charges.
+;;Template: `modules/ATS.repl <<ATS-I1>>`.
+;;
+;;THIS OP CHARGES TWO CURRENCIES. `TS02-C1.pact:1556-1560`:
+;;    (ref-IGNIS::C_Collect patron ico)
+;;    (ref-IGNIS::STOA|C_Collect patron (ref-IGNIS::UC_StoaPrice "issue-shareholder"))
+;;with the source comment "Issuing a COMPANY is $100 in IGNIS deter and $100 in STOA (spec)".
+;;So both `ignis-need` and `stoa-need` must be checked; checking only IGNIS would miss half the bill.
+;;STOA is native coin, debited from `DALOS::UR_AccountStoa <patron>`, so it is measured with
+;;`coin.get-balance` on that account rather than the DPTF supply reader.
+;;the STOA leg splits four ways (Holdings / Maintenance / Ouroboros / Gas Station), so the payer's
+;;coin account must sign all four TRANSFER legs. Without them the issue aborts on
+;;"Managed capability not installed" -- a FUNDING signal, not a pricing one.
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+    , "caps":
+      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+        (links:[string] (make-list 24 "ipfs://EquityCostProbe"))
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo}
+                (INFO-TWO.INFO_EQUITY|IssueCompany patron patron "EqCostProbe"))
+            (stoa-acct:string (ref-DALOS::UR_AccountStoa patron))
+        )
+        (let
+            (
+                (predicted-ignis:decimal (at "ignis-need" (at "ignis" predicted)))
+                (predicted-stoa:decimal (at "stoa-need" (at "stoa" predicted)))
+                (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+                (stoa-before:decimal (coin.get-balance stoa-acct))
+            )
+            (ref-TS02-C1::DPSF|C_IssueCompany patron patron "EqCostProbe" "EQCP" 5.0 100.0 links)
+            (let
+                (
+                    (real-ignis:decimal (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)))
+                    (real-stoa:decimal (- stoa-before (coin.get-balance stoa-acct)))
+                )
+                (map print
+                    [
+                        (format "<<EQ-I1>> IGNIS predicted={} real={} | STOA predicted={} real={}"
+                            [predicted-ignis real-ignis predicted-stoa real-stoa])
+                        (expect "<<EQ-I1>> the IGNIS quote equals the IGNIS actually charged"
+                            real-ignis predicted-ignis)
+                        ;;`INFO_DPSF|IssueCompany` (`01_INFO-TWO.pact:962`) forwards to
+                        ;;`INFO_EQUITY|IssueCompany` with the same arguments. Pinning that the ALIAS
+                        ;;returns the same numbers is what stops it drifting from its target — a
+                        ;;forwarding wrapper is exactly the kind of code that gets edited on one side.
+                        (expect "<<EQ-I1>> the DPSF alias returns the SAME IGNIS, not just the same shape"
+                            predicted-ignis
+                            (at "ignis-need" (at "ignis"
+                                (INFO-TWO.INFO_DPSF|IssueCompany patron patron "EqCostProbe" "EQCP" 0.0 0.0 []))))
+                        (expect "<<EQ-I1>> ...and the SAME STOA"
+                            predicted-stoa
+                            (at "stoa-need" (at "stoa"
+                                (INFO-TWO.INFO_DPSF|IssueCompany patron patron "EqCostProbe" "EQCP" 0.0 0.0 []))))
+                        (expect "<<EQ-I1>> ...and both are a real, non-zero charge"
+                            true (> real-ignis 0.0))
+                        ;;THE SECOND CURRENCY. The exec charges STOA on the line above; the preview
+                        ;;must say so, or a client is quoted a price that is missing half the bill.
+                        (expect "<<EQ-I1>> the STOA quote equals the STOA actually charged"
+                            real-stoa predicted-stoa)
+                        (expect "<<EQ-I1>> ...and the STOA charge is real, not zero"
+                            true (> real-stoa 0.0))
+                    ]
+                )
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "EQ-I2 — INFO_EQUITY|MorphEquity quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [EQ-I2 · 01 · morph shares between two package nonces] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_EQUITY|MorphEquity` and its alias `INFO_DPSF|MorphEquity`, per the
+;;owner's spec. Template: `modules/ATS.repl <<ATS-I1>>`.
+;;
+;;A THREE-BRANCH PREVIEW. `URCi_MorphPackageShares` mirrors the exec's three shapes:
+;;    Make    (input-nonce  = 1) transfer-in + add-quantity + transfer-out
+;;    Break   (output-nonce = 1) transfer-in + burn         + transfer-out
+;;    Convert (neither is 1)     transfer-in + burn + add-quantity + transfer-out
+;;i.e. Convert is exactly Make's legs UNION Break's. The pair below morphs 1 -> 2, which is the MAKE
+;;branch; the branch is named here because a single measurement cannot speak for the other two, and
+;;pretending otherwise is the mistake this whole exercise exists to stop.
+;;
+;;`UEV_Morph` rejects a self-morph and anything outside 1..8 (EQUITY-G1 pins both), so the nonce pair
+;;has to be distinct and in range before any cost is reached. The AMOUNT is constrained too: a share
+;;count that is not a whole multiple of the target tier's package size is refused by
+;;`11_EQUITY+.pact:510` before the price is ever computed, which is why 20000 -> tier 6 (the shape
+;;proven at `[6.4]_AQP-EXHAUSTIVE-PREP.repl:30`) rather than a round-looking 1.
+;;
+;;THE ALIAS IS ASSERTED, NOT ASSUMED. `INFO_DPSF|MorphEquity` (`01_INFO-TWO.pact:963`) forwards to
+;;`INFO_EQUITY|MorphEquity` with the same arguments; the last expect below pins that they really
+;;return the same number, so the alias cannot silently drift from its target.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (eq:string "E|TSEQ-98c486052a51")
+        (patron:string KST.ANHD)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo}
+                (INFO-TWO.INFO_EQUITY|MorphEquity patron patron eq 1 20000 6))
+            (aliased:object{OuronetInfoV2.ClientInfo}
+                (INFO-TWO.INFO_DPSF|MorphEquity patron patron eq 1 20000 6))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C1::DPSF|C_MorphEquity patron patron eq 1 20000 6))
+        )
+        (map print
+            [
+                (format "<<EQ-I2>> predicted={} real={}"
+                    [(at "ignis-need" (at "ignis" predicted))
+                     (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))])
+                (expect "<<EQ-I2>> INFO_EQUITY|MorphEquity's quote equals what the morph actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<EQ-I2>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+                (expect "<<EQ-I2>> ...and INFO_DPSF|MorphEquity really is the same number, not just the same name"
+                    (at "ignis-need" (at "ignis" predicted))
+                    (at "ignis-need" (at "ignis" aliased)))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)

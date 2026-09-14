@@ -349,7 +349,6 @@
             (let
                 (
                     (stoicism-id:string "STOICISM-hCNmIIxczuBs")
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
                     (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
                     (dispenser:string DSP1|SC_NAME)
                     (total-stoicism-amount:decimal (fold (+) 0.0 stoicism-amounts))
@@ -358,7 +357,7 @@
                     (iz-empty:bool (and (= l1 0) (= l2 0)))
                 )
                 (if iz-empty
-                    (format "No stoicism to mint or distribute")
+                    "No stoicism to mint or distribute"
                     [
                       ;;Mints Stoicism
                       (ref-TS01-C1::DPTF|C_Mint GASLESS-PATRON stoicism-id dispenser total-stoicism-amount false)
@@ -528,7 +527,6 @@
         (with-capability (DSP|STAGE-ONE-MINTER)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                     (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
                     (ref-AOZ:module{AgeOfZalmoxis} AOZ)
@@ -562,7 +560,6 @@
         (with-capability (DSP|STAGE-ONE-MINTER)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                     (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
                     (ref-AOZ:module{AgeOfZalmoxis} AOZ)

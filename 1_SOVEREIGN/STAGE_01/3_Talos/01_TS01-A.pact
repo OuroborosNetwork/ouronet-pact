@@ -276,6 +276,7 @@
     ;;{5.6}  Aux/X
     ;;
     ;;  [Fueling Functions]
+    ;;Protection: Class 5 — IMC + Custom: SECURE
     (defun XB_DynamicFuelSTOA ()
         (P|UEV_IMC)
         (let
@@ -291,6 +292,7 @@
         )
     )
     ;;
+    ;;Protection: Class 5 — IMC + Custom: SECURE
     (defun XE_ConditionalFuelSTOA (condition:bool)
         (P|UEV_IMC)
         (if condition
@@ -301,6 +303,7 @@
         )
     )
     ;;
+    ;;Protection: Class 2 — SECURE
     (defun XI_DirectFuelSTOA ()
         (require-capability (SECURE))
         (let
@@ -661,8 +664,27 @@
             \ In normal condition, there is no need for using it on itself, as all collected STOA is automatically used up \
             \ by implementing this function at the end of those funtions that collect the STOA. \
             \ Dalos-Patron is the only gass"
-        (with-capability (SECURE)
-            (XI_DirectFuelSTOA)
+        ;;GATE FIX (P3.3 sweep): this was (with-capability (SECURE)), and SECURE in this module
+        ;;is (defcap SECURE () true) -- a C1 trivial cap. So the function's own @doc above ("As
+        ;;Stand-Alone Function, can only be used by the Admin") was not enforced by anything:
+        ;;ANY signer could call it and force the STOA fuelling at a moment of their choosing.
+        ;;Every other |A_ entrypoint in this module already gates on P|ADMINISTRATIVE-SUMMONER
+        ;;(P|TS + GOV|TS01-A_ADMIN); this one was the single outlier. The only live caller,
+        ;;REPL/Stage_01/[6.3]_SWP.repl:2443, already signs with a Demiurgoi key, so no legitimate
+        ;;caller loses access.
+        ;;
+        ;;SECURE is still ACQUIRED rather than replaced: XI_DirectFuelSTOA require-capability's it,
+        ;;so swapping the two caps outright breaks the call (it did -- the suite caught it). The
+        ;;admin cap gates, SECURE grants. Same shape as XB_DynamicFuelSTOA, the automatic path,
+        ;;which gates on P|UEV_IMC and then grants SECURE inside it.
+        ;;
+        ;;Pinned by REPL/modules/CONFORMANCE.repl <<CONF-05>>; the class is linted by
+        ;;_conformance.py [admin-gate-terminal], which was written FROM this defect and verified
+        ;;against it by reverting the fix and watching the rule fire.
+        (with-capability (P|ADMINISTRATIVE-SUMMONER)
+            (with-capability (SECURE)
+                (XI_DirectFuelSTOA)
+            )
         )
     )
     ;;  [SWP_Administrator]

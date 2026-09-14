@@ -46,7 +46,7 @@
             )
             ;; THE FIX: an all-zero (never-touched) Awo must ALSO shrink from length 3 to length 2.
             ;; Before the fix, UC_ReshapeUnstakeObject returned `zero-awo` completely unchanged here
-            ;; (still length 3), which is exactly what made URCX_PosObjSt / XI_StoreUnstakeObject's
+            ;; (still length 3), which is exactly what made URCX_PosObjSt / XIv_StoreUnstakeObject's
             ;; structural-equality checks against a freshly-length-2 sentinel fail forever after
             ;; (a still-length-3 stored object can never `=` a freshly length-2 zero object) —
             ;; permanently misclassifying an empty slot as "occupied" (C2c).

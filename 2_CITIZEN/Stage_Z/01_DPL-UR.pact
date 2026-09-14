@@ -211,34 +211,6 @@
             )
         )
     )
-    (defun UCv_LpFuelToLpStrings:[string] (input-ids:[string] lp-fuel:[decimal])
-        (let
-            (
-                (ref-U|LST:module{StringProcessorV2} U|LST)
-                (l1:integer (length input-ids))
-                (l2:integer (length lp-fuel))
-            )
-            (enforce (= l1 l2) "Invalid Input Data for making LP Strings")
-            (fold
-                (lambda
-                    (acc:[string] idx:integer)
-                    (if (!= (at idx lp-fuel) 0.0) 
-                        (ref-U|LST::UC_AppL acc 
-                            (format "{} from Input to Liquidity Providers: {}" 
-                                [
-                                    (at idx input-ids) 
-                                    (UC_TrimDecimalTrailingZeros (at idx lp-fuel))
-                                ]
-                            )
-                        )
-                        acc
-                    )
-                )
-                []
-                (enumerate 0 (- (length input-ids) 1))
-            )
-        )
-    )
     (defun UC_FormatDecimals:[string] (input:[decimal])
         (let
             (
@@ -350,14 +322,16 @@
                 (ref-SWPI:module{SwapperIssueV4} SWPI)
                 ;;
                 (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                (p-ids:[string] (URC_PrimordialIDs))
-                (ouro:string (at 0 p-ids))
-                (ignis:string (at 1 p-ids))
-                (auryn:string (at 2 p-ids))
-                (elite-auryn:string (at 3 p-ids))
-                (wstoa:string (at 4 p-ids))
-                (sstoa:string (at 5 p-ids))
-                ;;
+                ;;DEAD BLOCK REMOVED 2026-09-13. This used to bind p-ids := (URC_PrimordialIDs) and
+                ;;destructure all six ids out of it positionally, immediately above the five named
+                ;;reads below. Every one of the six was then dead: five were shadowed by the named
+                ;;binding that follows, and <ignis> was never read at all (dollar-ignis is a literal).
+                ;;URC_PrimordialIDs performs the SAME six DALOS reads internally, so the block cost a
+                ;;helper call plus six table reads per invocation and its result was discarded.
+                ;;Behaviour is unchanged -- the named bindings already won the shadowing.
+                ;;The equivalence of the positional and named forms is pinned independently by
+                ;;REPL/modules/STAGE-Z.repl <<STAGEZ-10>>, which asserts against URC_PrimordialIDs
+                ;;directly and so still guards that function's element ORDER for its other consumers.
                 (wstoa:string (ref-DALOS::UR_WrappedStoaID))
                 (sstoa:string (ref-DALOS::UR_SilverStoaID))
                 (ouro:string (ref-DALOS::UR_OuroborosID))
@@ -638,7 +612,6 @@
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ignis-id:string (ref-DALOS::UR_IgnisID))
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (codex-supplies:[decimal]
                     (map
                         (lambda
@@ -991,7 +964,7 @@
                 (X:[decimal] (ref-SWP::UR_PoolTokenSupplies swpair))
                 (X-prec:[integer] (ref-SWP::UR_PoolTokenPrecisions swpair))
                 (input-positions:[integer] (ref-SWPI::URCv_PoolTokenPositions swpair input-ids))
-                (output-position:integer (ref-SWP::UR_PoolTokenPosition swpair output-id))
+                (output-position:integer (ref-SWP::URv_PoolTokenPosition swpair output-id))
                 (W:[decimal] (ref-SWP::UR_Weigths swpair))
                 ;;
                 (dtso:object{UtilitySwpV2.DirectTaxedSwapOutput}
@@ -1022,8 +995,8 @@
                 (A:decimal (ref-SWP::UR_Amplifier swpair))
                 (X:[decimal] (ref-SWP::UR_PoolTokenSupplies swpair))
                 (X-prec:[integer] (ref-SWP::UR_PoolTokenPrecisions swpair))
-                (input-position:integer (ref-SWP::UR_PoolTokenPosition swpair input-id))
-                (output-position:integer (ref-SWP::UR_PoolTokenPosition swpair output-id))
+                (input-position:integer (ref-SWP::URv_PoolTokenPosition swpair input-id))
+                (output-position:integer (ref-SWP::URv_PoolTokenPosition swpair output-id))
                 (W:[decimal] (ref-SWP::UR_Weigths swpair))
                 ;;Do Inverse Swap Computation and Unwrap Object Data
                 (itso:object{UtilitySwpV2.InverseTaxedSwapOutput}
@@ -1823,7 +1796,6 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 (ref-VST:module{VestingV2} VST)
                 ;;
@@ -2251,12 +2223,13 @@
                     )
                 )
                 ;;
-                (public-key
-                    (if iz-activated
-                        (ref-DALOS::UR_AccountPublicKey account)
-                        BAR
-                    )
-                )
+                ;;REDUNDANT RE-READ REMOVED 2026-09-13. This rebound <public-key> to
+                ;;(if iz-activated (UR_AccountPublicKey account) BAR) -- which is exactly what the
+                ;;binding at the top of this let already holds. That one is
+                ;;(try BAR (UR_AccountPublicKey account)), and <iz-activated> is defined as
+                ;;(!= public-key BAR), so the two agree in both directions: activated => the try
+                ;;succeeded and both are the same key; not activated => both are BAR. The rebind
+                ;;therefore only bought a second table read on the activated path.
                 (sovereign
                     (if iz-activated
                         (ref-DALOS::UR_AccountSovereign account)
@@ -2440,7 +2413,7 @@
                 (left-for-sale:decimal (* 0.4 resident-amount))
                 (sold:decimal (- 100000000.0 left-for-sale))
                 (period:integer (ref-SP::UR_GetPeriod))
-                (period-ceiling:decimal (ref-SP::UR_PeriodAllocation period))
+                (period-ceiling:decimal (ref-SP::URv_PeriodAllocation period))
                 (remaining:decimal (ref-SP::UR_KpayLeft))
                 (bought:decimal
                     (if (or (= period -1)(= period 0))
@@ -2457,7 +2430,7 @@
                     (if (= period -1)
                         "Stage 1 Starts in:"
                         (if (= period 0)
-                            (format "KPay Sale has concluded")
+                            "KPay Sale has concluded"
                             (format "Stage {}/25" [period])
                         )
 
@@ -2465,11 +2438,11 @@
                 )
                 (next-stage-text:string
                     (if (= period -1)
-                        (format "Genesis Period Ceiling: {} KPAY" [(ref-SP::UR_PeriodAllocation 1)])
+                        (format "Genesis Period Ceiling: {} KPAY" [(ref-SP::URv_PeriodAllocation 1)])
                         (if (= period 0)
                             (format "KPAY Circulating supply is {}" [circulating])
                             (if (!= period 25)
-                                (format "Next  Stage Ceiling: {} KPAY" [(ref-SP::UR_PeriodAllocation (+ 1 period))])
+                                (format "Next  Stage Ceiling: {} KPAY" [(ref-SP::URv_PeriodAllocation (+ 1 period))])
                                 (format "Final Stage Ceiling: {} KPAY" [period-ceiling])
                             )
                         )

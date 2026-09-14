@@ -761,6 +761,11 @@
             (compose-capability (SECURE))
         )
     )
+    ;;UNUSED here. DALOS defines the same cap and DOES use it (with-capability (SECURE-ADMIN));
+    ;;DPOF's admin paths acquire GOV|DPOF_ADMIN directly instead, so this composite is never
+    ;;reached. It sits beside AHU, the migration-era admin cap the owner explicitly retained for
+    ;;historical reference (#33M), which is why it is documented rather than deleted: the same
+    ;;retention rationale may apply. Flagged 2026-09-10.
     (defcap SECURE-ADMIN ()
         (compose-capability (SECURE))
         (compose-capability (GOV|DPOF_ADMIN))
@@ -937,6 +942,13 @@
                     (enforce iz-consecutive "Nonce Chain is not Consecutive")
                 ]
             )
+            ;;UNREACHABLE (both this enforce and its mirror in the iz-consecutive branch below):
+            ;;each fires only if BOTH predicates hold at once, and they are mutually exclusive.
+            ;;UC_IzSingular = length 1 AND the nonce EXISTS; UC_IzConsecutive = the run starts at
+            ;;nonces-used + 1, i.e. the nonces DO NOT exist yet. At length 1 "consecutive" means
+            ;;exactly nonces-used + 1, which is by definition unused, so UR_IzNonce is false and
+            ;;singular is false; at length > 1 singular is false anyway. Fail-closed backstops.
+            ;;Demonstrated in REPL/modules/DPOF.repl <<DPOF-G3b>>.
             (if iz-singular
                 (do
                     (enforce (not iz-consecutive) "Nonce Chain must compute false for Consecutive")
@@ -946,6 +958,10 @@
             )
             (if iz-consecutive
                 (do
+                    ;;UNREACHABLE: the mirror of the backstop above -- iz-singular and
+                    ;;iz-consecutive are mutually exclusive for every input, so this enforce can
+                    ;;never see both true. See the note on the iz-singular branch for the proof,
+                    ;;and REPL/modules/DPOF.repl <<DPOF-G3b>> for the demonstration.
                     (enforce (not iz-singular) "Nonce Chain must compute false for Singular")
                     (compose-capability (DPOF|S>CREDIT-CONSECUTIVE account id nonces amounts))
                 )
@@ -1083,6 +1099,15 @@
                 (and (= main-special-id BAR) (= secondary-special-id BAR) )
                 "Special Orto Fungible Links (Vesting, Sleeping or Hibernation) are immutable !"
             )
+            ;;UNREACHABLE -- `secondary-dpof` is ALWAYS a DPOF issued moments earlier, and a
+            ;;just-issued ortofungible cannot be a Hot-RBT (that requires registration on an ATS
+            ;;pair, which cannot have happened yet). The single caller,
+            ;;VST::XI_CreateSpecialOrtoFungibleLink, takes the id straight out of its own
+            ;;XB_IssueFree cumulator and passes it into XE_UpdateSpecialOrtoFungible in the same
+            ;;expression -- no client ever names the secondary.
+            ;;EXACT TWIN of 05_DPTF.pact:1004 ("Special True Fungible cannot be RTs or Cold-RBTs"),
+            ;;same caller shape, same proof. Fail-closed backstop for a future caller that does
+            ;;supply its own secondary.
             (enforce
                 (not iz-secondary-rbt)
                 "Special Orto Fungible cannot be a Hot-RBT"
@@ -1698,7 +1723,6 @@
         @doc "Computes <dpof> parent"
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (first-two:string (take 2 dpof))
             )
             (cond
@@ -1987,6 +2011,15 @@
             )
             ;;#31M fix: moved here from URCv_Parent, which must never enforce - this is the only
             ;;caller that actually needs this rejection (per this function's own @doc).
+            ;;UNPINNED, and the reason is worth stating because it partly defeats the #31M fix
+            ;;above: <parent> is bound EAGERLY in the same let, by calling URCv_Parent, which
+            ;;READS the properties table. So a sleeping-LP id that does not exist aborts in that
+            ;;read before this enforce runs -- the check was moved here to be reachable, and is
+            ;;now shielded by the very function it was extracted from. Reaching it needs a REAL
+            ;;issued sleeping-LP token, which no suite creates. The DPTF twin (URCv_Parent, same
+            ;;4th-character test) enforces BEFORE its read and IS pinned -- REPL/modules/DPTF.repl
+            ;;<<DPTF-G5>>. Binding <parent> lazily inside the (if …) below would make this one
+            ;;reachable with a bare id, matching its twin.
             (enforce (!= fourth BAR) "Sleeping LP Tokens not allowed for this operation")
             (if (= parent id)
                 (CAP_Owner id)
@@ -2064,7 +2097,7 @@
             (
                 (x:bool (UR_CanTransferOftCreateRole id))
             )
-            (enforce (= x true) (format "{}} Token {} cannot have its create role transfered" [OF id]))
+            (enforce (= x true) (format "{} Token {} cannot have its create role transfered" [OF id]))
         )
     )
     (defun UEV_CanFreezeON (id:string)
@@ -2231,6 +2264,7 @@
     )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
+    ;;Protection: Class 2 — SECURE
     (defun XI_TransferWholeNonces
         (id:string sender:string receiver:string nonces:[integer])
         @doc "Move whole <nonces> from <sender> to <receiver> — shared by C_Transfer and C_BulkTransfer."
@@ -2254,6 +2288,7 @@
             )
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: DPOF|C>ISSUE
     (defun XB_IssueFree:object{IgnisCollectorV2.OutputCumulator}
         (
             account:string
@@ -2283,7 +2318,6 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
                     (ref-BRD:module{BrandingV2} BRD)
                     (ref-U|LST:module{StringProcessorV2} U|LST)
                     (l1:integer (length name))
@@ -2296,7 +2330,7 @@
                                 (let
                                     (
                                         (id:string
-                                            (XI_Issue
+                                            (XIv_Issue
                                                 account
                                                 (at index name)
                                                 (at index ticker)
@@ -2328,6 +2362,7 @@
             )
         )
     )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XB_DeployAccountWNE (account:string id:string)
         (P|UEV_IMC)
         (let
@@ -2341,7 +2376,11 @@
         )
     )
     ;;
-    (defun XI_Issue:string
+    ;;Enforce: per-element-in-map -- XB_IssueFree maps this over LISTS, so UEV_Decimals validates one
+    ;;          element. DPOF|C>ISSUE validates only UniformList/IzUnique/account-ownership and has no
+    ;;          per-element loop; adding one purely for decimals is more code.
+    ;;Protection: Class 2 — SECURE
+    (defun XIv_Issue:string
         (
             account:string
             name:string
@@ -2410,6 +2449,7 @@
             id
         )
     )
+    ;;Protection: Class 3 — Custom: DPOF|S>CONTROL
     (defun XI_Control
         (
             id:string
@@ -2435,6 +2475,7 @@
         )
     )
     ;;
+    ;;Protection: Class 3 — Custom: DPOF|C>DEBIT
     (defun XI_DebitNonces (account:string id:string nonces:[integer] amounts:[decimal] wipe-mode:bool)
         @doc "Debit DPOF <id> <nonces> on <account> with <amounts> \
             \ Will Take Nonce out of circulation if all <nonce> supply is debited. \
@@ -2481,6 +2522,7 @@
             )
         )
     )
+    ;;Protection: Class 3 — Custom: DPOF|C>CREDIT
     (defun XI_CreditNonces (account:string id:string nonces:[integer] amounts:[decimal] meta-data-array:[[object]])
         @doc "Credit a DPOF <id> <nonces> on <account> with <amounts> and <meta-datas> \
             \ Only Performs creditation, does not update supply\
@@ -2517,34 +2559,40 @@
     ;;
     ;;Pure Write/Update Functions
     ;;1]DPOF|T|Properties
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XI_InsertNewId (id:string id-data:object{DpofUdcV2.DPOF|Properties})
         (P|UEV_IMC)
         (insert DPOF|T|Properties id id-data)
     )
+    ;;Protection: Class 3 — Custom: DPOF|S>ROTATE-OWNERSHIP
     (defun XI_ChangeOwnership (id:string new-owner:string)
         (require-capability (DPOF|S>ROTATE-OWNERSHIP id new-owner))
         (update DPOF|T|Properties id
             {"owner-konto" : new-owner}
         )
     )
+    ;;Protection: Class 3 — Custom: DPOF|S>PAUSE
     (defun XI_TogglePause (id:string toggle:bool)
         (require-capability (DPOF|S>PAUSE id toggle))
         (update DPOF|T|Properties id
             { "is-paused" : toggle}
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdateSupply (id:string new-supply:decimal)
         (require-capability (SECURE))
         (update DPOF|T|Properties id
             {"supply" : new-supply}
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdateNoncesUsed (id:string new-value:integer)
         (require-capability (SECURE))
         (update DPOF|T|Properties id
             {"nonces-used" : new-value}
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_IncrementNoncesExcludedBy (id:string count:integer)
         @doc "Bumps the <id> excluded-nonce counter by <count> in ONE write (batched per debit \
             \ call instead of once per fully-wiped nonce); no-op when <count> is zero."
@@ -2561,46 +2609,64 @@
             "no-excluded-nonces"
         )
     )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_UpdateRewardBearingToken (atspair:string hot-rbt:string)
         (P|UEV_IMC)
-        (let
-            (
-                (ref-U|LST:module{StringProcessorV2} U|LST)
-            )
-            (with-read DPOF|T|Properties hot-rbt
-                {"reward-bearing-token" := rbt}
-                (enforce (= rbt BAR) (format "RBT-Data for DPOF {} is already set as ATS-Pair {}" [hot-rbt rbt]))
-                (update DPOF|T|Properties hot-rbt
-                    {"reward-bearing-token" : atspair}
-                )
+        (with-read DPOF|T|Properties hot-rbt
+            {"reward-bearing-token" := rbt}
+            ;;SHADOWED BY A ONE-WAY LATCH IN THE ONLY CALLER. This function has exactly one caller in
+            ;;the whole codebase: ATS::C_AddHotRBT (08_ATS.pact:3196). That caller's `let` binds
+            ;;<ico2> to (DPOF::C_Control hot-rbt false false false false true true false false) --
+            ;;whose FIRST argument is <can-upgrade>, set to false. Pact evaluates let bindings
+            ;;eagerly, so on the first successful registration can-upgrade is latched off BEFORE this
+            ;;line runs, and it can never be turned back on: C_Control itself requires can-upgrade to
+            ;;be true (06_DPOF.pact:2076, "{} {} properties cannot be upgraded").
+            ;;
+            ;;So a second registration of the same DPOF is refused -- but by C_Control, one binding
+            ;;earlier, with the can-upgrade message rather than this one. The state this enforce
+            ;;tests for (rbt != BAR) is therefore unreachable here: the only way a DPOF's
+            ;;reward-bearing-token becomes non-BAR is through this very function, and the same
+            ;;transaction latches the door behind it.
+            ;;
+            ;;NOT REMOVED, and deliberately so: it is the invariant the latch happens to enforce, and
+            ;;it would become live again the moment C_AddHotRBT's ico2 stopped clearing can-upgrade.
+            ;;Demonstrated, not assumed, by REPL/modules/ATS.repl <<ATS-G23>>, which drives the full
+            ;;re-registration route to the wall and reads the message that actually comes back.
+            ;;UNREACHABLE
+            (enforce (= rbt BAR) (format "RBT-Data for DPOF {} is already set as ATS-Pair {}" [hot-rbt rbt]))
+            (update DPOF|T|Properties hot-rbt
+                {"reward-bearing-token" : atspair}
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdateVesting (dptf:string dpof:string)
         (require-capability (SECURE))
         (update DPOF|T|Properties dpof
             {"vesting-link" : dptf}
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdateSleeping (dptf:string dpof:string)
         (require-capability (SECURE))
         (update DPOF|T|Properties dpof
             {"sleeping-link" : dptf}
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdateHibernation (dptf:string dpof:string)
         (require-capability (SECURE))
         (update DPOF|T|Properties dpof
             {"hibernation-link" : dptf}
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: DPOF|C>UPDATE-SPECIAL
     (defun XE_UpdateSpecialOrtoFungible:object{IgnisCollectorV2.OutputCumulator}
         (main-dptf:string secondary-dpof:string vzh-tag:integer)
         (P|UEV_IMC)
         (with-capability (DPOF|C>UPDATE-SPECIAL main-dptf secondary-dpof vzh-tag)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 )
                 (cond
@@ -2629,6 +2695,7 @@
         )
     )
     ;;2]DPOF|T|Nonces
+    ;;Protection: Class 2 — SECURE
     (defun XI_InsertNewNonces (nonce-owner:string id:string nonces:[integer] amounts:[decimal] meta-data-array:[[object]])
         (require-capability (SECURE))
         (with-capability (SECURE)
@@ -2648,18 +2715,21 @@
             )
         )
     )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XB_InsertNewNonce (nonce-owner:string id:string nonce:integer amount:decimal meta-data-chain:[object])
         (P|UEV_IMC)
         (insert DPOF|T|Nonces (UC_IdNonce id nonce)
             (UDC_NonceElement nonce-owner id nonce amount meta-data-chain)
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdateNonceSupply (id:string nonce:integer new-nonce-supply:decimal)
         (require-capability (SECURE))
         (update DPOF|T|Nonces (UC_IdNonce id nonce)
             {"supply" : new-nonce-supply}
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdateNonceHolder (id:string nonce:integer new-nonce-holder:string)
         (require-capability (SECURE))
         (update DPOF|T|Nonces (UC_IdNonce id nonce)
@@ -2667,34 +2737,40 @@
         )
     )
     ;;3]DPOF|T|VerumRoles
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XI_WriteRoles (id:string verum-roles:object{DpofUdcV2.DPOF|VerumRoles})
         (P|UEV_IMC)
         (write DPOF|T|VerumRoles id verum-roles)
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdateVerum1 (id:string new-verum1:[string])
         (require-capability (SECURE))  
         (update DPOF|T|VerumRoles id
             {"a-frozen" : new-verum1}
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdateVerum2 (id:string new-verum2:[string])
         (require-capability (SECURE))  
         (update DPOF|T|VerumRoles id
             {"r-oft-add-quantity" : new-verum2}
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdateVerum3 (id:string new-verum3:[string])
         (require-capability (SECURE))  
         (update DPOF|T|VerumRoles id
             {"r-oft-burn" : new-verum3}
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdateVerum4 (id:string new-r-oft-create-account:string)
         (require-capability (SECURE))  
         (update DPOF|T|VerumRoles id
             {"r-oft-create" : new-r-oft-create-account}
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdateVerum5 (id:string new-verum5:[string])
         (require-capability (SECURE))  
         (update DPOF|T|VerumRoles id
@@ -2702,30 +2778,35 @@
         )
     )
     ;;4]DPOF|T|AccountRoles
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XB_W|AccountRoles (id:string account:string account-data:object{DpofUdcV2.DPOF|AccountRoles})
         (P|UEV_IMC)
         (write DPOF|T|AccountRoles (UC_IdAccount id account)
             account-data
         )
     )
+    ;;Protection: Class 3 — Custom: DPOF|S>X_FREEZE
     (defun XI_ToggleFreezeAccount (id:string account:string toggle:bool)
         (require-capability (DPOF|S>X_FREEZE id account toggle))
         (update DPOF|T|AccountRoles (UC_IdAccount id account)
             { "frozen" : toggle}
         )
     )
+    ;;Protection: Class 3 — Custom: DPOF|S>X_TOGGLE-ADD-QUANTITY-ROLE
     (defun XI_ToggleAddQuantityRole (id:string account:string toggle:bool)
         (require-capability (DPOF|S>X_TOGGLE-ADD-QUANTITY-ROLE id account toggle))
         (update DPOF|T|AccountRoles (UC_IdAccount id account)
             { "role-oft-add-quantity" : toggle}
         )
     )
+    ;;Protection: Class 3 — Custom: DPOF|S>X_TOGGLE-BURN-ROLE
     (defun XI_ToggleBurnRole (id:string account:string toggle:bool)
         (require-capability (DPOF|S>X_TOGGLE-BURN-ROLE id account toggle))
         (update DPOF|T|AccountRoles (UC_IdAccount id account)
             { "role-oft-burn" : toggle}
         )
     )
+    ;;Protection: Class 3 — Custom: DPOF|S>X_SWITCH-CREATE-ROLE
     (defun XI_SwitchCreateRole (id:string receiver:string)
         (require-capability (DPOF|S>X_SWITCH-CREATE-ROLE id receiver))
         (update DPOF|T|AccountRoles (UC_IdAccount id (UR_Verum4 id))
@@ -2735,12 +2816,14 @@
             { "role-oft-create" : true}
         )
     )
+    ;;Protection: Class 3 — Custom: DPOF|S>X_TOGGLE-TRANSFER-ROLE
     (defun XI_ToggleTransferRole (id:string account:string toggle:bool)
         (require-capability (DPOF|S>X_TOGGLE-TRANSFER-ROLE id account toggle))
         (update DPOF|T|AccountRoles (UC_IdAccount id account)
             { "role-transfer" : toggle}
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdateAccountSupply (id:string account:string new-tas:decimal)
         (require-capability (SECURE))
         (update  DPOF|T|AccountRoles (UC_IdAccount id account)
@@ -2778,7 +2861,6 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-BRD:module{BrandingV2} BRD)
             )
             (with-capability (DPOF|C>UPDATE-BRD entity-id)
@@ -2820,7 +2902,6 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (l1:integer (length name))
                 (stoa-costs:decimal (URCi_IssueStoa l1))
@@ -2842,42 +2923,27 @@
     (defun C_RotateOwnership:object{IgnisCollectorV2.OutputCumulator}
         (id:string new-owner:string)
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-            )
-            (with-capability (DPOF|S>ROTATE-OWNERSHIP id new-owner)
-                (XI_ChangeOwnership id new-owner)
-                (URCi_RotateOwnership id)
-            )
+        (with-capability (DPOF|S>ROTATE-OWNERSHIP id new-owner)
+            (XI_ChangeOwnership id new-owner)
+            (URCi_RotateOwnership id)
         )
     )
     (defun C_Control:object{IgnisCollectorV2.OutputCumulator}
         (id:string cu:bool cco:bool casr:bool ctocr:bool cf:bool cw:bool cp:bool sg:bool)
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-            )
-            (with-capability (DPOF|S>CONTROL id)
-                (XI_Control id cu cco casr ctocr cf cw cp sg)
-                (URCi_Control id)
-            )
+        (with-capability (DPOF|S>CONTROL id)
+            (XI_Control id cu cco casr ctocr cf cw cp sg)
+            (URCi_Control id)
         )
     )
     (defun C_TogglePause:object{IgnisCollectorV2.OutputCumulator}
         (id:string toggle:bool)
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-            )
-            (with-capability (DPOF|S>PAUSE id toggle)
-                ;;Pause|Unpause <id>
-                (XI_TogglePause id toggle)
-                ;;Output
-                (URCi_TogglePause id)
-            )
+        (with-capability (DPOF|S>PAUSE id toggle)
+            ;;Pause|Unpause <id>
+            (XI_TogglePause id toggle)
+            ;;Output
+            (URCi_TogglePause id)
         )
     )
     ;;
@@ -2918,7 +2984,6 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (verum-one:[string] (UR_Verum1 id))
                     (updated-verum-one:[string] (ref-U|DALOS::UCv_NewRoleList verum-one account toggle))
                 )
@@ -2941,7 +3006,6 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (verum-two:[string] (UR_Verum2 id))
                     (updated-verum-two:[string] (ref-U|DALOS::UCv_NewRoleList verum-two account toggle))
                 )
@@ -2964,7 +3028,6 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (verum-three:[string] (UR_Verum3 id))
                     (updated-verum-three:[string] (ref-U|DALOS::UCv_NewRoleList verum-three account toggle))
                 )
@@ -2984,23 +3047,18 @@
         @doc "Switch Verum 4"
         (P|UEV_IMC)
         (with-capability (DPOF|C>SWITCH-CREATE-ROLE id receiver)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                )
-                ;;Deploy WNE
-                (XB_DeployAccountWNE receiver id)
-                ;;Update Account Roles — MUST run before Verum Roles below: XI_SwitchCreateRole
-                ;;reads the CURRENT (pre-write) Verum4 internally to find the account to revoke.
-                ;;Running XI_UpdateVerum4 first would overwrite that value to <receiver> before
-                ;;XI_SwitchCreateRole ever reads it, so the real previous holder would never be
-                ;;revoked (DALOS audit #2C).
-                (XI_SwitchCreateRole id receiver)
-                ;;Update Verum Roles
-                (XI_UpdateVerum4 id receiver)
-                ;;Output
-                (URCi_MoveCreateRole id)
-            )
+            ;;Deploy WNE
+            (XB_DeployAccountWNE receiver id)
+            ;;Update Account Roles — MUST run before Verum Roles below: XI_SwitchCreateRole
+            ;;reads the CURRENT (pre-write) Verum4 internally to find the account to revoke.
+            ;;Running XI_UpdateVerum4 first would overwrite that value to <receiver> before
+            ;;XI_SwitchCreateRole ever reads it, so the real previous holder would never be
+            ;;revoked (DALOS audit #2C).
+            (XI_SwitchCreateRole id receiver)
+            ;;Update Verum Roles
+            (XI_UpdateVerum4 id receiver)
+            ;;Output
+            (URCi_MoveCreateRole id)
         )
     )
     (defun C_ToggleTransferRole:object{IgnisCollectorV2.OutputCumulator}
@@ -3011,7 +3069,6 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (verum-five:[string] (UR_Verum5 id))
                     (updated-verum-five:[string] (ref-U|DALOS::UCv_NewRoleList verum-five account toggle))
                 )
@@ -3033,7 +3090,6 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (supply:decimal (UR_Supply id))
             )
             (with-capability (DPOF|C>ADD-QTY account id nonce amount)
@@ -3051,7 +3107,6 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (supply:decimal (UR_Supply id))
             )
             (with-capability (DPOF|C>BURN account id nonce amount)
@@ -3069,7 +3124,6 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (supply:decimal (UR_Supply id))
                 (nonces-used:integer (UR_NoncesUsed id))
@@ -3096,7 +3150,6 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (supply:decimal (UR_Supply id))
             )
             (with-capability (DPOF|C>WIPE-SLIM account id nonce amount)

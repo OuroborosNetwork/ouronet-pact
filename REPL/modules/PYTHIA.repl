@@ -63,3 +63,99 @@
 )
 (print "===^^^===")
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "PYTHIA-G1 — an API key needs key material")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [PYTHIA-G1 · 01 · the empty-pubkey guard] ---")
+;;`PYTHIA|C>DEPLOY-API-KEY`'s first statement is `(enforce (!= public "") …)`, ahead of the Apollo-account
+;;check and the owner capability -- so it answers for any caller and any account, and needed no fixture.
+;;Deploying a key with no key material would register an oracle identity nothing could ever authenticate.
+(map print
+    [
+        (expect-failure "<<PYTHIA-G1>> an API key with empty public material is refused"
+            "Public key material must be non-empty"
+            (TS01-C4.PYTHIA|C_DeployApiKey KST.ANHD KST.ANHD KST.ANHD ""))
+        ;;...and a non-empty key gets PAST this guard -- shown by the NEXT guard answering instead, which
+        ;;is the cheap way to prove the first one stopped without building an Apollo account fixture.
+        (expect-failure "<<PYTHIA-G1>> ...while non-empty material gets past it and the Apollo check answers"
+            "Apollo"
+            (TS01-C4.PYTHIA|C_DeployApiKey KST.ANHD KST.ANHD KST.ANHD "some-public-key-material"))
+    ]
+)
+(env-sigs [])
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "PYTHIA-LINK-ECON — why the FREE link is not a free-work vector")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [PYTHIA-LINK-ECON · 01 · the one-shot bound on the unbilled operation] ---")
+;;CONFORMANCE OBSERVATION `C-without-cumulator`, settled by execution.
+;;
+;;`TS01-C4::PYTHIA|C_Link` is the ONLY `C_` wrapper in that Talos file with no `patron` parameter
+;;and no collect of any kind -- no `IGNIS::C_Collect`, no `STOA|C_Collect*`, no `URCi_`. Its three
+;;siblings all charge: `C_DeployApiKey` takes 500 native STOA, `C_UpdateDualConsumerLane` a rename
+;;fee, `C_RevokeLink` an IGNIS fee. So it is an operation that performs two writes
+;;(`XI_ApplyDualCounterparts` + `WI_DualLink`) and bills nothing, reachable through the gas station.
+;;
+;;THAT IS DELIBERATE -- both @docs say "(no fee)" -- but "deliberate" is not the same as "safe", and
+;;what makes it safe is an economic bound that lives in a DIFFERENT function and was untested. This
+;;block tests it, because the justification collapses if the bound ever weakens:
+;;
+;;  1] Linking requires TWO already-deployed Apollo halves. Each cost 500 native STOA.
+;;  2] `UEV_DualPairForLink` refuses a half whose counterpart is already set.
+;;  3] Counterparts are NEVER cleared -- revoke only flips the row inactive.
+;;
+;;Together those make the free call ONE-SHOT PER PAIR, FOREVER: ~1000 STOA buys exactly one free
+;;link, and no amount of revoking buys another. [6.10] TX005 pins (3) directly ("counterparts
+;;immutable"). What was missing is its CONSEQUENCE -- the part the economics actually rest on.
+;;
+;;THE FIXTURE MAKES THIS STRONGER THAN PLANNED. [6.10] does not merely revoke the pair: TX005
+;;revokes it and TX006 RE-ACTIVATES it through the Cronoton `A_Link` path and renames the lane. So
+;;by the time this block runs the pair has been round the full revoke/re-activate cycle -- the
+;;richest state an attacker could try to recycle -- and the free entry point is still closed.
+(let
+    (
+        (ref-PYTHIA:module{PythiaV5} PYTHIA)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
+        (apollo-std:string (read-string "PYTHIA|APOLLO-STANDARD"))
+        (apollo-smt:string (read-string "PYTHIA|APOLLO-SMART"))
+    )
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (map print
+        [
+            ;;the state [6.10] actually leaves: linked, revoked, then re-activated again
+            (expect "<<PYTHIA-LINK-ECON>> the pair has been revoked AND re-activated, and is live"
+                true (ref-PYTHIA::UR_DualLinkIzActive
+                          (ref-PYTHIA::UC_DualLinkKey apollo-std apollo-smt)))
+            ;;...and the counterparts held through the whole cycle, both ways round
+            (expect "<<PYTHIA-LINK-ECON>> ...with BOTH counterparts intact through it"
+                [apollo-smt apollo-std]
+                [(ref-PYTHIA::UR_Counterpart apollo-std)
+                 (ref-PYTHIA::UR_Counterpart apollo-smt)])
+            ;;THE CONSEQUENCE, and the assertion that makes "(no fee)" defensible: the free
+            ;;operation cannot be repeated on this pair, in any state the pair can be put into.
+            ;;(The lane must be DALOS|CHARSET glyphs -- `UEV_StoicTagName` runs FIRST in the cap, so
+            ;;a hyphenated test name is rejected by the lane rule and never reaches the link rule.
+            ;;Learned the hard way; "relinkattempt" is a valid tag.)
+            (expect-failure "<<PYTHIA-LINK-ECON>> so the FREE link cannot be run again on the same pair"
+                "Standard half is already linked"
+                (ref-TS01-C4::PYTHIA|C_Link apollo-std apollo-smt "relinkattempt"))
+            ;;and the bound is per-HALF, not per-pair-key: a linked standard half cannot be paired
+            ;;with some third smart half either. Without this, one paid deployment could fund an
+            ;;unbounded number of free links against fresh partners.
+            (expect-failure "<<PYTHIA-LINK-ECON>> ...nor can a linked half be re-used against a DIFFERENT partner"
+                "already linked"
+                (ref-TS01-C4::PYTHIA|C_Link apollo-std
+                    (read-string "PYTHIA|APOLLO-SMART-2") "crossattempt"))
+        ]
+    )
+    (env-sigs [])
+    ""
+)
+(commit-tx)

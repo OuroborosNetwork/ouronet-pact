@@ -64,7 +64,7 @@
     ;;
     ;; DPSF|C_DeployAccount removed — DPDC Audit #35M: standalone deployment let any signer force any
     ;; existing account to associate with any collection, with no ownership check. Real auto-association
-    ;; (on transfer, role-toggle, Issue, set-fragmentation) always calls DPDC::XB_DeployAccountSFT
+    ;; (on transfer, role-toggle, Issue, set-fragmentation) always calls DPDC::XBv_DeployAccountSFT
     ;; directly, module-to-module, bypassing this public entrypoint entirely.
     (defun DPSF|C_Issue:string 
         (
@@ -954,27 +954,48 @@
                     ;;
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount sender))
                     (l:integer (length receiver-lst))
-                    (ids:[string]
-                        (map
-                            (lambda (idx:integer) id)
-                            (enumerate 0 (- l 1))
+                    ;;FIXED 2026-09-12: these two used to map over `(enumerate 0 (- l 1))`.
+                    ;;**In Pact `(enumerate 0 -1)` is `[0, -1]` -- a DESCENDING pair, not an empty
+                    ;;list.** So an EMPTY receiver list produced TWO ids, `C_IgnisRoyaltyCollector`
+                    ;;below indexed past the one-element arrays, and the caller got
+                    ;;`Array index out of bounds` instead of DPDC-T|C>BULK-TRANSFER's own shape
+                    ;;message -- which is bound in that cap and never got the chance to speak.
+                    ;;Mapping over `receiver-lst` ITSELF yields exactly `l` elements and is genuinely
+                    ;;empty when the list is, so the hazard is removed rather than worked around.
+                    ;;Chosen over reordering the call: the royalty collector must still run BEFORE the
+                    ;;transfer, and moving it would change what is charged, not just what is said.
+                    (ids:[string]  (map (lambda (rcv:string) id)  receiver-lst))
+                    (sons:[bool]   (map (lambda (rcv:string) son) receiver-lst))
+                )
+                ;;THE CORE TRANSFER RUNS FIRST, and the ordering is the fix.
+                ;;FIXED 2026-09-12: the royalty collector used to be bound in the `let` ABOVE this
+                ;;call. It iterates `(enumerate 0 (- (length ids) 1))` and indexes
+                ;;`(at idx nonces-array)` -- so for an EMPTY receiver list, or for MORE receivers than
+                ;;nonce legs, it ran off the end and raised `Array index out of bounds` before
+                ;;DPDC-T|C>BULK-TRANSFER's shape guard could say what was actually wrong. Only the
+                ;;opposite mismatch (more legs than receivers) stayed in bounds and reached the
+                ;;message, which is what made it a defect rather than a dead guard.
+                ;;Calling the core first lets its capability validate the shapes, after which every
+                ;;downstream `enumerate` is operating on lists already proven to agree.
+                ;;`TS01-C1::DPOF|C_BulkTransfer` has always been in this order and is not mute
+                ;;(pinned by DPOF-G12) -- so this follows an in-repo precedent rather than inventing
+                ;;an order. Royalties are computed from the collectable's creator settings and the
+                ;;amounts, not from balances, so moving the call does not change what is charged.
+                (let
+                    (
+                        (core-ico:object{IgnisCollectorV2.OutputCumulator}
+                            (ref-DPDC-T::C_BulkTransfer id son nonces-array amounts-array sender receiver-lst method)
                         )
                     )
-                    (sons:[bool]
-                        (map
-                            (lambda (idx:integer) son)
-                            (enumerate 0 (- l 1))
-                        )
-                    )
+                (let
+                    (
                     (irs:object{DpdcTransferV2.AggregatedRoyalties}
                         (ref-DPDC-T::C_IgnisRoyaltyCollector patron sender ids sons nonces-array amounts-array)
                     )
                     (r:[decimal] (at "ignis-royalties" irs))
                     (s:decimal (fold (+) 0.0 r))
                 )
-                (ref-IGNIS::C_Collect patron
-                    (ref-DPDC-T::C_BulkTransfer id son nonces-array amounts-array sender receiver-lst method)
-                )
+                (ref-IGNIS::C_Collect patron core-ico)
                 [
                     (format "Successfully bulk-transferred collectable {} from {} to {} receivers" [id sa l])
                     (if (= s 0.0)
@@ -982,7 +1003,7 @@
                         (format "Bulk transfer executed while collecting {} IGNIS Royalty to the Collectable {} Creator" [s id])
                     )
                 ]
-            )
+            )))
         )
     )
     (defun DPSF|C_BulkTransfer

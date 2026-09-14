@@ -261,7 +261,6 @@
         (let
             (
                 (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
             )
             (fold (+) 0
                 (map
@@ -272,6 +271,7 @@
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
+    ;;Protection: Class 1 — Innate protection offered by XE_FvtSweepRecomputeChunk
     (defun XI_SweepRecomputeWindow:integer
         (score-ids:[string] boost-class-id:string win-lo:integer win-hi:integer)
         @doc "Recompute holders whose GLOBAL flattened index — present users concatenated across score-ids in order \
@@ -285,7 +285,6 @@
                     (let
                         (
                             (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-                            (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                             (seen-before:integer (at "seen" acc))
                             (fvt:string (ref-SCR::UR_SCR|ScoreFvtLink sid))
                             (member:string

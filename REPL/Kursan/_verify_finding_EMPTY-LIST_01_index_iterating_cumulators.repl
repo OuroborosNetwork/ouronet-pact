@@ -1,0 +1,291 @@
+;; FINDING (open, unfixed) — the COST PREVIEW for royalty withdrawal crashes where the CLIENT it
+;; previews refuses cleanly. A UI asking "what will this cost?" gets an unhandled internal error.
+;;
+;; PRIOR ART -- read this before treating any of it as new. The `enumerate` fact was already known
+;; and already fixed twice in this repo: DALOS audit #20H (U_DEC::UC_AddHybridArray, written up in
+;; _scratch_udec_h15_hybridarray_emptyinput.repl) and findings #47L/#51L (DPSF set-definitions, in
+;; Kursan/_verify_finding_DPDC-F-S_47L-51L_empty_definition_guards.repl). What this file adds is the
+;; sweep for the instances those two passes did not reach, and the three places where the
+;; convention that normally protects them breaks down.
+;;
+;; THE IDIOM. TFT::URCi_MultiTransferCumulator (and C_MultiTransfer) drive their fold with
+;;     (enumerate 0 (- (length id-lst) 1))
+;; On an empty list that is (enumerate 0 -1), and Pact's `enumerate` COUNTS DOWN when from > to --
+;; it yields [0, -1], not []. So the fold runs twice instead of zero times and the first step does
+;; (at 0 []) -> "Array index out of bounds. Length (0), Index (0)".
+;;
+;; HOW AN EMPTY LIST ARISES. ATSU::C_WithdrawRoyalties carries a @doc describing audit finding
+;; #33N: C_MultiTransfer used to debit every leg unconditionally, so a reward-token with zero
+;; accrued royalty hit DPTF's (amount > 0.0) enforce and killed the whole withdrawal. The fix
+;; filters the legs down to those with a nonzero balance -- which yields an EMPTY list when ALL of
+;; them are zero, the state of every pool that has not yet accrued anything.
+;;
+;; WHAT IS AND IS NOT BROKEN -- established by execution, not by reading:
+;;   * the CLIENT path is SAFE. ATS|C_WithdrawRoyalties refuses with a clear, deliberate
+;;     "No Royalties to withdraw for ATS-Pair <id>". Someone guarded it. Funds are not at risk.
+;;   * the PREVIEW path is NOT guarded. INFO_ATS|WithdrawRoyalties -> ATSU::URCi_WithdrawRoyalties
+;;     -> TFT::URCi_MultiTransferCumulator [] dies on the index. Same inputs, same question, and
+;;     the two halves of the pair disagree about whether it is an error.
+;;
+;; THE DEFECT IS THAT ASYMMETRY. A preview exists to answer a question the client will be asked.
+;; Here it throws an internal fault for a state the client handles as ordinary. The fix is to give
+;; URCi_WithdrawRoyalties the guard C_WithdrawRoyalties already has, or to make the empty-list case
+;; well-defined in TFT (a zero-leg transfer costs nothing) -- the latter also covers the other
+;; callers of the same idiom.
+;;
+;; NOT CLAIMED: that the 92 other uses of this idiom are broken. Most are fed lists that cannot be
+;; empty. 47 take the list straight from a caller parameter and would repay a look; that is a
+;; review list, not a bug list. See memories/2026-09-11-enumerate-counts-down.md.
+;;
+;; NOTE FOR WHOEVER FIXES IT: `try` does NOT catch an out-of-bounds index, so a caller cannot
+;; defend itself -- the guard has to be in the callee. `expect-failure` does catch it.
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+(load "../deploy-stage02.repl")
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+
+(begin-tx "TFT-MT1 - the empty leg list, at the root")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TFT-MT1 · 01 · empty list, directly] ---")
+(map print
+    [
+        (expect-failure "<<TFT-MT1>> URCi_MultiTransferCumulator dies on an empty leg list"
+            "Array index out of bounds. Length (0), Index (0)"
+            (TFT.URCi_MultiTransferCumulator [] KST.ANHD KST.ANHD []))
+        ;;controls: the function is not broken outright, and the fold really is per-leg -- which is
+        ;;what makes the empty case "should be zero entries" rather than "undefined"
+        (expect "<<TFT-MT1>> a one-leg list is fine -- it is the empty case that fails"
+            1
+            (length (at "cumulator-chain"
+                        (TFT.URCi_MultiTransferCumulator
+                            ["OURO-98c486052a51"] KST.ANHD KST.EMMA [1.0]))))
+        (expect "<<TFT-MT1>> two legs produce two cumulator entries -- the fold is per-leg"
+            2
+            (length (at "cumulator-chain"
+                        (TFT.URCi_MultiTransferCumulator
+                            ["OURO-98c486052a51" "AURYN-98c486052a51"] KST.ANHD KST.EMMA [1.0 1.0]))))
+    ]
+)
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+
+(begin-tx "TFT-MT2 - preview and client disagree about the same state")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [TFT-MT2 · 01 · the asymmetry, asserted as a pair] ---")
+;;These two assertions are the finding, and they only mean something TOGETHER. Auryndex has accrued
+;;no royalties. Asked about that one state, the client answers properly and the preview faults.
+;;When the preview is fixed, the first assertion starts failing -- convert it to a success then,
+;;and the second should keep passing untouched.
+(map print
+    [
+        (expect-failure "<<TFT-MT2>> the PREVIEW faults on a pool with nothing accrued"
+            "Array index out of bounds. Length (0), Index (0)"
+            (INFO-ONE.INFO_ATS|WithdrawRoyalties
+                KST.ANHD
+                (at 0 (DPTF.UR_RewardBearingToken (DALOS.UR_AurynID)))
+                KST.ANHD))
+        ;;...while the CLIENT, given the identical pool, refuses on purpose and says why.
+        ;;This is also the pin that the client stays guarded: if this message ever changes to an
+        ;;index error, a funds path has regressed into the preview's behaviour.
+        (expect-failure "<<TFT-MT2>> ...while the CLIENT refuses deliberately, and says why"
+            "No Royalties to withdraw for ATS-Pair Auryndex-98c486052a51"
+            (TS01-C2.ATS|C_WithdrawRoyalties
+                KST.ANHD
+                (at 0 (DPTF.UR_RewardBearingToken (DALOS.UR_AurynID)))
+                KST.ANHD))
+    ]
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+
+(begin-tx "TFT-MT3 - the module ALREADY contains the correct behaviour, twice")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TFT-MT3 . 01 . index-iterating vs size-arithmetic cumulators] ---")
+;;This block is what turns the finding from "a function crashes" into "a function disagrees with its
+;;own neighbours". TFT's cost previews split into two styles, and the empty case separates them:
+;;
+;;  INDEX-ITERATING  -- drive a fold with (enumerate 0 (- (length xs) 1)).
+;;                      Empty input -> [0, -1] -> (at 0 []) -> faults.
+;;                      MultiTransfer, MultiBulkTransfer, UnityBulkTransfer.
+;;
+;;  SIZE-ARITHMETIC  -- take a size:integer and price it through UDCx_BulkTransferCumulator.
+;;                      Size 0 costs nothing, with no special case needed. Correct by construction.
+;;                      SimpleBulk, ComplexBulk, EliteBulk.
+;;
+;;So "a zero-leg transfer costs zero" is ALREADY this module's answer -- it is just not the answer
+;;the index-iterating three give. The fix is to make those three agree with the two below, not to
+;;decide a new policy.
+(map print
+    [
+        (expect-failure "<<TFT-MT3>> MultiBulk (index-iterating) faults on empty"
+            "Array index out of bounds. Length (0), Index (0)"
+            (TFT.URCi_MultiBulkTransferCumulator [] KST.ANHD [] []))
+    ]
+)
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+
+(begin-tx "TFT-MT3b - the second index-iterating one")
+(namespace "ouronet-ns")
+(print "--- [TFT-MT3b . 01 . UnityBulk] ---")
+(map print
+    [
+        (expect-failure "<<TFT-MT3>> UnityBulk (index-iterating) faults on empty"
+            "Array index out of bounds. Length (0), Index (0)"
+            (TFT.URCi_UnityBulkTransferCumulator KST.ANHD [] []))
+    ]
+)
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+
+(begin-tx "TFT-MT3c - and the size-arithmetic ones, which are already right")
+(namespace "ouronet-ns")
+(print "--- [TFT-MT3c . 01 . the correct behaviour, in the same module] ---")
+(map print
+    [
+        ;;zero legs, zero cost -- no guard, no special case, it just falls out of the arithmetic
+        (expect "<<TFT-MT3>> SimpleBulk at size 0 costs nothing, and does not fault"
+            0.0
+            (at "ignis" (at 0 (at "cumulator-chain"
+                (TFT.URCi_SimpleBulkTransferCumulator "OURO-98c486052a51" KST.ANHD 0)))))
+        ;;the dispatcher is safe HERE only because this input routes to a size-arithmetic branch.
+        ;;It is not independently guarded: its what-type 2 branch delegates to UnityBulk, asserted
+        ;;faulting above. So this assertion pins reachable behaviour, NOT a general guarantee --
+        ;;do not read it as "BulkTransferCumulator handles empty".
+        (expect "<<TFT-MT3>> BulkTransfer on empty costs nothing on THIS dispatch path"
+            0.0
+            (at "ignis" (at 0 (at "cumulator-chain"
+                (TFT.URCi_BulkTransferCumulator "OURO-98c486052a51" KST.ANHD [] [])))))
+    ]
+)
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+
+(begin-tx "TFT-MT4 - the same idiom in Stage 2, where the CLIENT is NOT guarded either")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [TFT-MT4 . 01 . DPDC bulk transfer, preview AND client] ---")
+;;Stage 2 has the same idiom, and it behaves WORSE than the Stage-1 royalty case. There the client
+;;was guarded and only the preview faulted (TFT-MT2). Here BOTH halves fault with the raw index
+;;error, so a caller passing an empty receiver list gets an internal fault rather than a refusal
+;;naming what was wrong with the request.
+;;
+;;Scope, stated precisely so this is not over-read: nothing is transferred and nothing is lost --
+;;the transaction aborts and Pact rolls back. This is a robustness/diagnosability defect on a
+;;degenerate input, NOT a funds defect. It is reported because an unhandled index fault out of a
+;;transfer entrypoint is indistinguishable, from the caller's side, from a real internal error.
+(map print
+    [
+        ;;FIXED 2026-09-12. The preview used to fault here: `(enumerate 0 -1)` is `[0, -1]`, so an
+        ;;empty receiver list indexed `(at 0 nonces-array)` on empty arrays. A `URCi_` is a pure cost
+        ;;derivation and must not `enforce`, so the fix is to make it TOTAL rather than to add a
+        ;;guard: an empty bulk transfer has no legs, so it has no cost. The refusal belongs to the
+        ;;client, and the client now gives it (see TFT-MT4b below).
+        (expect "<<TFT-MT4>> the DPDC bulk PREVIEW is TOTAL on an empty receiver list -- zero cost"
+            0.0 (at "ignis" (at 0 (at "cumulator-chain"
+                (DPDC-T.URCi_BulkTransferCumulator "DHCD-98c486052a51" true KST.ANHD [] [] [])))))
+    ]
+)
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+
+(begin-tx "TFT-MT4b - and its client, through Talos")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [TFT-MT4b . 01 . the client half] ---")
+;;Contrast with TFT-MT2: there the client answered "No Royalties to withdraw for ATS-Pair <id>".
+;;Here the client gives the caller an array-bounds fault. When this is fixed, the expected message
+;;becomes whatever deliberate refusal replaces it -- update the string, keep the assertion.
+(map print
+    [
+        ;;...and the CLIENT now gives the deliberate refusal this test was waiting for. The comment
+        ;;above anticipated exactly this ("update the string, keep the assertion"), which is the
+        ;;right way to leave an as-behaves pin: the assertion survived the fix and changed meaning.
+        (expect-failure "<<TFT-MT4>> ...and the CLIENT gives a deliberate refusal, like TFT-MT2"
+            "Invalid DPDC bulk transfer: receiver/nonces/amounts legs"
+            (TS02-C1.DPDC|C_BulkTransfer KST.ANHD "DHCD-98c486052a51" true [] [] KST.ANHD [] false))
+    ]
+)
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+
+(begin-tx "EL-5 - a VALIDATOR that index-faults instead of rejecting")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [EL-5 . 01 . fee-array length mismatch] ---")
+;;A different route to the same fault, and the worst-placed instance of it: U|ATS::UEV_CRF|FeeArray
+;;is a VALIDATOR. Rejecting malformed input with a clear message is its entire job.
+;;
+;;Its first act is a (fold (and) true [...]) that measures the lists via let-bound lengths and then
+;;INDEXES them in later conjuncts -- (at 0 fee-thresholds), (at 0 (at 0 fee-array)). `fold` builds
+;;the whole list before `and` runs, so those indexes are not guarded by the length conjuncts beside
+;;them. Detector: `python3 _foldeager.py`, [index] section.
+;;
+;;The two assertions below are a pair and the CONTRAST is the finding:
+(map print
+    [
+        ;;fully empty input IS handled -- a separate fee-positions check catches it first and the
+        ;;caller gets a real sentence. So the function is not simply unguarded.
+        (expect-failure "<<EL-5>> fully-empty input gets a deliberate, readable refusal"
+            "Fee Position 0 is invalid"
+            (TS01-C2.ATS|C_SetColdRecoveryFees KST.ANHD "Auryndex-98c486052a51" 0 [] []))
+    ]
+)
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+
+(begin-tx "EL-5b - ...but a length MISMATCH gets a raw index fault")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [EL-5b . 01 . the unguarded case] ---")
+;;Thresholds supplied, fee-array left short: a thoroughly ordinary way to get a config call wrong,
+;;and much likelier than passing nothing at all. The function HAS a message for exactly this --
+;;"Inner Lists of the <fee-array> are incompatible with the <fee-thresholds> length" -- and the
+;;eager fold faults before that enforce is ever reached, so the caller never sees it.
+;;
+;;When fixed, the expected message below becomes that sentence. That is the whole fix: let the
+;;enforce the author already wrote actually run.
+(map print
+    [
+        (expect-failure "<<EL-5b>> FINDING: a length mismatch faults on the index, not on the message written for it"
+            "Array index out of bounds. Length (0), Index (0)"
+            (TS01-C2.ATS|C_SetColdRecoveryFees KST.ANHD "Auryndex-98c486052a51" 1 [10.0] []))
+    ]
+)
+(commit-tx)
+
+(print "=== END Kursan/_verify_finding_EMPTY-LIST_01_index_iterating_cumulators.repl ===")

@@ -50,6 +50,9 @@ CALL_Q  = re.compile(r'\(([A-Za-z][A-Za-z0-9|_-]*)\.([A-Za-z][^\s()]*)')
 CALL_B  = re.compile(r'\(([A-Za-z][A-Za-z0-9|_-]*)[\s)]')
 
 HEAVY = re.compile(r'^(URH_|URHC_|URD_)')
+# One table scan measured at ~40,000 gas flat (STAGEZ-17); Kadena's per-tx limit is
+# 150,000. Three scans fit, four do not.
+SCAN_BUDGET = 4
 def local(n): return n.split('|')[-1].split(':')[0]
 
 def bare(n):
@@ -119,7 +122,21 @@ def main():
                 if t in bodies and t not in seen: stack.append(t)
         return None
 
-    doubled_no_heavy, single_has_heavy = [], []
+    def all_heavy(start, limit=40000):
+        """Every distinct heavy reader reachable from <start>. UPPER BOUND, not a prediction:
+        branches mean one call need not execute them all, and a heavy read inside a `map`/`fold`
+        executes MORE times than it appears here. Use it to rank what to read, not to cost."""
+        seen, stack, steps, found = set(), [start], 0, set()
+        while stack and steps < limit:
+            n = stack.pop(); steps += 1
+            if n in seen: continue
+            seen.add(n)
+            if HEAVY.match(local(n[1])) and n != start: found.add(n)
+            for t in graph.get(n, ()):
+                if t in bodies and t not in seen: stack.append(t)
+        return found
+
+    doubled_no_heavy, single_has_heavy, over_budget = [], [], []
     for (mod, name) in sorted(bodies):
         l = local(name)
         if not (l.startswith(("CC_", "AA_", "CCp_", "AAp_")) or
@@ -130,6 +147,10 @@ def main():
             if not heavy: doubled_no_heavy.append((mod, name, where[(mod, name)]))
         else:
             if heavy: single_has_heavy.append((mod, name, where[(mod, name)], heavy))
+        if heavy:
+            hs = all_heavy((mod, name))
+            if len(hs) >= SCAN_BUDGET:
+                over_budget.append((mod, name, where[(mod, name)], sorted(hs)))
 
     print(f"HEAVY-PREFIX — {len(files)} files, {len(bodies)} members, "
           f"{sum(len(v) for v in graph.values())} static call edges\n")
@@ -141,6 +162,25 @@ def main():
     for mod, name, f in doubled_no_heavy[:a.show]:
         print(f"    {f.replace(ROOT+'/',''):56s} {mod}.{name}")
     if len(doubled_no_heavy) > a.show: print(f"    … and {len(doubled_no_heavy)-a.show} more")
+
+    print(f"\n[scan-budget] {len(over_budget)}")
+    print(f"    An entrypoint whose tree reaches {SCAN_BUDGET}+ DISTINCT heavy readers. Measured cost of one")
+    print( "    table scan: ~40,000 gas, FLAT -- `keys`, `select` and `fold-db` all charge the same")
+    print( "    ~40,000 base with only a trivial per-row term (40,001 at 50 rows, 40,000 at 500 for")
+    print( "    `keys`), against 7 gas for a point read. Kadena's per-tx limit is 150,000, so THREE")
+    print( "    scans is the practical ceiling and a fourth cannot fit. Pinned by STAGEZ-17.")
+    print( "    UPPER BOUND, so a REVIEW LIST not a defect list: branches mean one call need not hit")
+    print( "    them all -- and a heavy read inside a map/fold runs MORE often than it appears here.")
+    print( "    MEASURED AND CLEARED 2026-09-11: both current hits are CC_FullVacate and its Talos")
+    print( "    wrapper. Static reach says 10 heavy readers; the function dispatches on aqp-class so")
+    print( "    one call takes ONE branch. Executed on a real class-1 pool it cost 43,187 gas -- about")
+    print( "    ONE scan, well inside 150,000. Pinned as a standing regression guard by AQP-VAC-GAS in")
+    print( "    modules/AQP.repl. Do not re-investigate these two; a THIRD entry here would be new.")
+    for mod, name, f, hs in over_budget[:a.show]:
+        print(f"    {f.replace(ROOT+'/',''):56s} {mod}.{name}")
+        print(f"        reaches {len(hs)} heavy readers: {', '.join(h[1] for h in hs[:5])}"
+              + (" …" if len(hs) > 5 else ""))
+    if len(over_budget) > a.show: print(f"    … and {len(over_budget)-a.show} more")
 
     print(f"\n[single-reaches-heavy] {len(single_has_heavy)}")
     print("    A single `C_`/`A_` that DOES reach a heavy read. This is the dangerous direction:")

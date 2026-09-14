@@ -45,7 +45,7 @@
     (defun UR_KpayLeft:decimal ())
     (defun UR_KpayPID:decimal (offset:decimal))
     (defun UR_GetPeriod:integer ())
-    (defun UR_PeriodAllocation:decimal (period:integer))
+    (defun URv_PeriodAllocation:decimal (period:integer))
     (defun UR_PAD_LEDGER_ACCOUNT:string ())
     ;;
     ;;  [URC]
@@ -225,7 +225,6 @@
         @event
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (KpayID:string (UR_KpayID))
                 (remaining-supply:decimal (UR_KpayLeft))
                 (amount:decimal (dec kpay-amount))
@@ -238,6 +237,18 @@
                 )
             )
             (enforce (<= amount remaining-supply) "Remaining Amount surpassed!")
+            ;;VESTIGIAL SENTINEL. Both the -1.0 branch above and this enforce are dead, and they are
+            ;;dead for the same reason: UR_KpayPID is TOTAL and strictly positive. It returns 0.01
+            ;;before the sale opens, 1.0 after three years, and floor(0.01 + 0.99*elapsed/3y, 24) in
+            ;;between — a value in (0.01, 1.0). It has no failure mode and never yields -1.0, so
+            ;;<future-ten-minute-price> can never equal the sentinel, the `if` always takes its else
+            ;;branch, and <kpay-price> is always > 0.0. "Kpay Sale has Concluded!" can never be the
+            ;;reason a buyer is refused; the sale's real terminator is the supply check on the line
+            ;;above. Left in place rather than deleted because removing it changes a live sale
+            ;;contract for no functional gain — but it is documented here so nobody reads it as an
+            ;;active gate. Backed by REPL/modules/LAUNCHPAD.repl <<TX-SPK-KPAY-PRICE>>, which pins
+            ;;the price function's bounds across the whole domain instead.
+            ;;UNREACHABLE
             (enforce (> kpay-price 0.0) "Kpay Sale has Concluded!")
             (compose-capability (P|PAD-KPAY|REMOTE-GOV))
             (compose-capability (P|KPAY|CALLER))
@@ -295,7 +306,7 @@
             )
         )
     )
-    (defun UR_PeriodAllocation:decimal (period:integer)
+    (defun URv_PeriodAllocation:decimal (period:integer)
         (enforce (and (>= period -1) (<= period 25)) "Invalid Period")
         (if (or (= period -1) (= period 0))
             0.0
@@ -321,7 +332,7 @@
                 (sold:decimal (- 100000000.0 left-for-sale))
                 ;;
                 (period:integer (UR_GetPeriod))
-                (period-allocation:decimal (UR_PeriodAllocation period))
+                (period-allocation:decimal (URv_PeriodAllocation period))
             )
             (if (or (= period -1)(= period 0))
                 0.0
@@ -400,7 +411,6 @@
                 (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                 ;;
                 ;;
                 (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))

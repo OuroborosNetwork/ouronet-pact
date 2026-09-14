@@ -253,22 +253,27 @@
         [
             (expect-failure
                 "<<TX-EQUITY-003>> Make beyond the 500,000-share combine capacity (50% cap) rejected"
+                "Insufficient Capacity Left (500000) to combine 600000 Individual"
                 (ref-TS02-C1::DPSF|C_MorphEquity owner owner id 1 600000 2)
             )
             (expect-failure
                 "<<TX-EQUITY-003>> Make with an amount not evenly divisible by the tier's shares-per-unit rejected"
+                "150 Shares is an invalid amount for making a Tier 1 Share Packge for"
                 (ref-TS02-C1::DPSF|C_MorphEquity owner owner id 1 150 2)
             )
             (expect-failure
                 "<<TX-EQUITY-003>> Morph with input nonce == output nonce rejected"
+                "Input and Output Nonces must be different for Morphing"
                 (ref-TS02-C1::DPSF|C_MorphEquity owner owner id 1 1000 1)
             )
             (expect-failure
                 "<<TX-EQUITY-003>> Morph with an out-of-range nonce (9, only 1-8 valid) rejected"
+                "Invalid Input or Output Nonces for Morphing"
                 (ref-TS02-C1::DPSF|C_MorphEquity owner owner id 1 1000 9)
             )
             (expect-failure
                 "<<TX-EQUITY-003>> Morph with an out-of-range nonce (0, only 1-8 valid) rejected"
+                "Invalid Input or Output Nonces for Morphing"
                 (ref-TS02-C1::DPSF|C_MorphEquity owner owner id 1 1000 0)
             )
         ]

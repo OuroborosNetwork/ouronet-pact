@@ -475,6 +475,7 @@
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
+    ;;Protection: Class 2 — SECURE
     (defun XI_CollectFor:string (patron:string account:string)
         @doc "#1C shared settle+deliver core: pays <account> its OWN wSTOA (its RPS delta, or the whole \
             \ remaining wstoa-supply when it is the round's last unclaimed staker — the dust sweep) plus its \
@@ -525,12 +526,14 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_ResetPendingRewards (account:string)
         (require-capability (SECURE))
         (update STOAICO|T|User account
             {"pending-rewards" : 0.0}
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdateUnclaimedCount (direction:bool)
         (require-capability (SECURE))
         (let
@@ -549,6 +552,7 @@
         )
     )
     ;;Admin
+    ;;Protection: Class 2 — SECURE
     (defun XI_InitialiseDistributionVault (dptf-ids:[string])
         (require-capability (SECURE))
         (insert STOAICO|T|General STOAICO|INFO
@@ -568,6 +572,7 @@
         )
     )
     ;;User
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdateUserScore (account:string amount:decimal direction:bool)
         (require-capability (SECURE))
         (let
@@ -585,12 +590,14 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdateUserRPS (account:string new-rps:decimal)
         (require-capability (SECURE))
         (update STOAICO|T|User account
             {"last-rps" : new-rps}
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_MarkCollected (account:string)
         @doc "#1C: stamp the account as having collected the CURRENT distribution-round."
         (require-capability (SECURE))
@@ -598,6 +605,7 @@
             {"last-collected-round" : (UR_Global11)}
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdatePendingRewards (account:string)
         (require-capability (SECURE))
         (update STOAICO|T|User account
@@ -605,6 +613,7 @@
         )
     )
     ;;D-Vault
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdateVaultScore (amount:decimal direction:bool)
         (require-capability (SECURE))
         (let
@@ -622,6 +631,7 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdateVaultSupply (amount:decimal direction:bool)
         (require-capability (SECURE))
         (let
@@ -639,6 +649,7 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdateNZS (direction:bool)
         (require-capability (SECURE))
         (let
@@ -656,18 +667,21 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdateVaultRPS (new-rps:decimal)
         (require-capability (SECURE))
         (update STOAICO|T|General STOAICO|INFO
             {"current-rps" : new-rps}
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_ResetUnclaimedCount ()
         (require-capability (SECURE))
         (update STOAICO|T|General STOAICO|INFO
             {"unclaimed-count" : (UR_Global5)}
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_IncrementDistributionRound ()
         @doc "#1C: advance the vault to the next distribution-round (called by A_Inject)."
         (require-capability (SECURE))
@@ -675,6 +689,7 @@
             {"distribution-round" : (+ 1 (UR_Global11))}
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_SetZombieRewards (amount:decimal)
         @doc "#5M: set the escrowed zombie-rewards (escrow adds to it; a flush zeroes it)."
         (require-capability (SECURE))
@@ -683,12 +698,14 @@
         )
     )
     ;;
+    ;;Protection: Class 2 — SECURE
     (defun XI_ResetUrstoaEarned (account:string)
         (require-capability (SECURE))
         (update STOAICO|T|User account
             {"urstoa-earned"    : 0}
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdateUrstoaEarned (account:string v-usd-amount:decimal direction:bool)
         (require-capability (SECURE))
         (let
@@ -751,7 +768,6 @@
                 (
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                     (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-                    (ref-P|DPAD:module{OuronetPolicyV2} DEMIPAD)
                     (dptf-ids:list 
                         (ref-TS01-C1::DPTF|C_Issue account account
                             ["WrappedUrStoa" "VirtualIcoDollars"]

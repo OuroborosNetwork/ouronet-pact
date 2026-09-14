@@ -291,7 +291,6 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPDC:module{DpdcV2} DPDC)
                 (owner:string (ref-DPDC::UR_OwnerKonto id son))
                 (s:decimal (ref-IGNIS::UC_IgnisLeg "tier-small"))
@@ -394,6 +393,7 @@
     )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
+    ;;Protection: Class 3 — Custom: DPDC-F|C>ENABLE-FRAGMENTATION
     (defun XI_EnableNonceFragmentation 
         (
             id:string son:bool nonce:integer
@@ -415,7 +415,6 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
                     (ref-DPDC:module{DpdcV2} DPDC)
                     (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
                     ;;
@@ -471,7 +470,6 @@
         (with-capability (DPDC-F|C>NONCE id son nonce)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (ref-DPDC:module{DpdcV2} DPDC)
                     (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
                     (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
@@ -499,7 +497,6 @@
         (with-capability (DPDC-F|C>MERGE id son nonce amount)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (ref-DPDC:module{DpdcV2} DPDC)
                     (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
                     (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
@@ -530,7 +527,6 @@
         (with-capability (DPDC-F|C>ENABLE-FRAGMENTATION id son nonce fragmentation-ind)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (ref-DPDC:module{DpdcV2} DPDC)
                     (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
                 )

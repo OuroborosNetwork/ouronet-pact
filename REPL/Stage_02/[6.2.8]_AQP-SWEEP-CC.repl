@@ -38,6 +38,7 @@
         (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (anchor-id:string (ref-U|DALOS::UDC_Makeid "AurynRain"))
         (silver-class:string (ref-U|DALOS::UDC_Makeid "SilverSnakePower"))
         (silver-score:string (ref-U|DALOS::UDC_Makeid "SilverSnakePower"))
@@ -60,7 +61,41 @@
             ]
         )
         ;; THE BEGIN — the anchor owner (LUMY = KBN asset owner) opens the paginated sweep: freeze + swept-revoke.
+        ;;
+        ;;FUNCTION COVERAGE (G6) — `INFO_AQP-FVT|SweepBegin`, per the owner's spec. Template:
+        ;;`modules/ATS.repl <<ATS-I1>>`. `AQP-INFO` is loaded by `deb-staleness-sweep-cc.repl`, the one
+        ;;live loader of this file; the reasoning is written out there.
+        ;;
+        ;;THIS PREVIEW QUOTES ZERO OF BOTH CURRENCIES, and a zero quote is the exact shape that turned out
+        ;;to be a defect three times (`INFO_SWP|ToggleFeeLock`, `INFO_ATS|ToggleParameterLock`,
+        ;;`INFO_EQUITY|IssueCompany` each claimed a currency was free while their op collected it). Here it
+        ;;is believed CORRECT — `AQP-FVT|CC_SweepBegin` (`04_TS02-C3.pact:2301`) carries no
+        ;;`IGNIS::C_Collect patron` at all, so the op is gas-station subsidised. Believed is not measured.
+        ;;
+        ;;A ZERO-VS-ZERO EQUALITY IS VACUOUS ON ITS OWN — it passes just as well against an op that did
+        ;;nothing. The surrounding assertions are the non-vacuity guard: this same transaction already
+        ;;pins that the sweep froze the pool, revoked the anchor and opened the cursor, so the zero below
+        ;;is a statement about the FEE and not about whether the sweep ran.
+        (let
+            (
+                (sweep-quote:object{OuronetInfoV2.ClientInfo} (AQP-INFO.INFO_AQP-FVT|SweepBegin lumy anchor-id))
+                (gas-pre:decimal (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" lumy))
+            )
         (print (format "<(CC01 AQP-FVT|CC_SweepBegin)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|CC_SweepBegin lumy anchor-id)]))
+        (map print
+            [
+                (format "<<TX-SWEEP-CC01>> SweepBegin quoted ignis={} stoa={} ; real gas delta={}"
+                    [(at "ignis-need" (at "ignis" sweep-quote))
+                     (at "stoa-need" (at "stoa" sweep-quote))
+                     (- gas-pre (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" lumy))])
+                (expect "<<TX-SWEEP-CC01>> INFO_AQP-FVT|SweepBegin quotes ZERO IGNIS"
+                    0.0 (at "ignis-need" (at "ignis" sweep-quote)))
+                (expect "<<TX-SWEEP-CC01>> ...and ZERO STOA"
+                    0.0 (at "stoa-need" (at "stoa" sweep-quote)))
+                (expect "<<TX-SWEEP-CC01>> ...and the caller really was charged nothing: the op is subsidised"
+                    0.0 (- gas-pre (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" lumy)))
+            ]
+        )
         (let
             (
                 (agg-mid:decimal (ref-ANK::UR_UB|AggregatePromile anhd silver-class))
@@ -80,6 +115,7 @@
                     (expect (format "<<TX-SWEEP-CC01>> aggregate UNCHANGED at begin (recompute deferred) {}=={}" [agg-pre agg-mid]) agg-pre agg-mid)
                 ]
             )
+        )
         )
     )
 )
@@ -106,6 +142,7 @@
         (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (anchor-id:string (ref-U|DALOS::UDC_Makeid "AurynRain"))
         (silver-class:string (ref-U|DALOS::UDC_Makeid "SilverSnakePower"))
         (silver-score:string (ref-U|DALOS::UDC_Makeid "SilverSnakePower"))
@@ -131,7 +168,34 @@
             ]
         )
         ;; THE CHUNK — chunk=10 covers the single present holder ⇒ terminal: recompute + unfreeze + close cursor.
+        ;;FUNCTION COVERAGE (G6) — `INFO_AQP-FVT|SweepRecomputeChunk`, per the owner's spec. The
+        ;;companion of <<TX-SWEEP-CC01>>'s SweepBegin proof, and the same argument: a zero quote is the
+        ;;shape that was a defect three times elsewhere, and a zero-vs-zero equality means nothing on its
+        ;;own. The non-vacuity guard here is stronger than at begin — this transaction already pins that
+        ;;the chunk RECOMPUTED the aggregate, UNFROZE the pool and CLOSED the cursor, so the op provably
+        ;;did the most work of any step in the sweep while charging the caller nothing.
+        ;;`CCp_` marks it a Hydra parallel-slice recipe: the gas station pays, which is why it is free.
+        (let
+            (
+                (chunk-quote:object{OuronetInfoV2.ClientInfo}
+                    (AQP-INFO.INFO_AQP-FVT|SweepRecomputeChunk lumy anchor-id 10))
+                (gas-pre:decimal (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" lumy))
+            )
         (print (format "<(CC02 AQP-FVT|CCp_SweepRecomputeChunk chunk=10)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|CCp_SweepRecomputeChunk lumy anchor-id 10)]))
+        (map print
+            [
+                (format "<<TX-SWEEP-CC02>> SweepRecomputeChunk quoted ignis={} stoa={} ; real gas delta={}"
+                    [(at "ignis-need" (at "ignis" chunk-quote))
+                     (at "stoa-need" (at "stoa" chunk-quote))
+                     (- gas-pre (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" lumy))])
+                (expect "<<TX-SWEEP-CC02>> INFO_AQP-FVT|SweepRecomputeChunk quotes ZERO IGNIS"
+                    0.0 (at "ignis-need" (at "ignis" chunk-quote)))
+                (expect "<<TX-SWEEP-CC02>> ...and ZERO STOA"
+                    0.0 (at "stoa-need" (at "stoa" chunk-quote)))
+                (expect "<<TX-SWEEP-CC02>> ...and the caller really was charged nothing for the heaviest step"
+                    0.0 (- gas-pre (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" lumy)))
+            ]
+        )
         (let
             (
                 (agg-post:decimal (ref-ANK::UR_UB|AggregatePromile anhd silver-class))
@@ -158,6 +222,7 @@
                     (expect "<<TX-SWEEP-CC02>> anchor STAYS retired" false state-post)
                 ]
             )
+        )
         )
     )
 )

@@ -41,6 +41,22 @@
     )
     (print (format "<(INFO_StakeTrueFungible)> predicted ignis-need = {} ; patron pre-gas = {}"
         [predicted pre-gas]))
+    ;;TEXT AGREEMENT. This suite proves the NUMBER against reality -- predicted ignis-need vs the
+    ;;patron's real GAS balance delta -- which is the strongest cost check in the codebase. It
+    ;;never looks at ignis-text, the line a UI actually renders. A wallet charges the number; a
+    ;;user reads the text. Asserting here costs nothing (the preview object is already in hand)
+    ;;and closes the loop: the figure proven correct below is the figure the user is shown.
+    (map print
+        [
+            (expect
+                (format "<<TX-INFO-GT-TEXT>> the rendered cost line quotes the verified figure ({})"
+                    [predicted])
+                true
+                (if (> predicted 0.0)
+                    (contains (format "{}" [predicted]) (at "ignis-text" (at "ignis" info)))
+                    (contains "free of Ouronet GAS" (at "ignis-text" (at "ignis" info)))))
+        ]
+    )
     ;; 2) EXECUTE the real stake (bills the patron the exact flow cost)
     (print (format "<(TS02-C3.AQP-POOL|CC_StakeTrueFungible)> => \"{}\""
         [(ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id amount)]))
@@ -80,6 +96,22 @@
     )
     (print (format "<(INFO_UnstakeTrueFungible)> predicted ignis-need = {} ; patron pre-gas = {}"
         [predicted pre-gas]))
+    ;;TEXT AGREEMENT. This suite proves the NUMBER against reality -- predicted ignis-need vs the
+    ;;patron's real GAS balance delta -- which is the strongest cost check in the codebase. It
+    ;;never looks at ignis-text, the line a UI actually renders. A wallet charges the number; a
+    ;;user reads the text. Asserting here costs nothing (the preview object is already in hand)
+    ;;and closes the loop: the figure proven correct below is the figure the user is shown.
+    (map print
+        [
+            (expect
+                (format "<<TX-INFO-GT-TEXT>> the rendered cost line quotes the verified figure ({})"
+                    [predicted])
+                true
+                (if (> predicted 0.0)
+                    (contains (format "{}" [predicted]) (at "ignis-text" (at "ignis" info)))
+                    (contains "free of Ouronet GAS" (at "ignis-text" (at "ignis" info)))))
+        ]
+    )
     (print (format "<(TS02-C3.AQP-POOL|CC_UnstakeTrueFungible)> => \"{}\""
         [(ref-TS02-C3::AQP-POOL|CC_UnstakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id amount)]))
     (let ((post-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron)))
@@ -177,6 +209,37 @@
     )
     (print (format "<(INFO_StakeOrtoFungible)> predicted ignis-need = {} ; nonce = {} ; pre-gas = {}"
         [predicted stake-nonce pre-gas]))
+    ;;TEXT AGREEMENT. This suite proves the NUMBER against reality -- predicted ignis-need vs the
+    ;;patron's real GAS balance delta -- which is the strongest cost check in the codebase. It
+    ;;never looks at ignis-text, the line a UI actually renders. A wallet charges the number; a
+    ;;user reads the text. Asserting here costs nothing (the preview object is already in hand)
+    ;;and closes the loop: the figure proven correct below is the figure the user is shown.
+    (map print
+        [
+            (expect
+                (format "<<TX-INFO-GT-TEXT>> the rendered cost line quotes the verified figure ({})"
+                    [predicted])
+                true
+                (if (> predicted 0.0)
+                    (contains (format "{}" [predicted]) (at "ignis-text" (at "ignis" info)))
+                    (contains "free of Ouronet GAS" (at "ignis-text" (at "ignis" info)))))
+        ]
+    )
+    ;;WHY `02_SCORE.pact:1110` ("orto LP stake requires whole nonce supply") IS A TAUTOLOGY here.
+    ;;The client below does not take nonce-amounts -- it derives them with
+    ;;`DPOF::UR_NoncesSupplies dpof-id nonces`, which folds `UR_NonceSupply id element`. That is the
+    ;;SAME reader SCORE's enforce compares each amount against, so through this path the guard reads
+    ;;`(= (UR_NonceSupply dpof n) (UR_NonceSupply dpof n))`.
+    ;;Asserted rather than argued, so the `;;UNREACHABLE` annotation at the site cannot rot: if the
+    ;;client is ever changed to derive from a per-account reader (as the DPNF twin does), these two
+    ;;stop being equal and this goes red.
+    (map print
+        [
+            (expect "<<TX-INFO-GT>> the client derives amounts from the SAME reader the guard checks"
+                (map (lambda (n:integer) (DPOF.UR_NonceSupply dpof-id n)) nonces)
+                (DPOF.UR_NoncesSupplies dpof-id nonces))
+        ]
+    )
     (print (format "<(TS02-C3.AQP-POOL|CC_StakeOrtoFungible)> => \"{}\""
         [(ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron pool-id owner-id beneficiary-id dpof-id nonces)]))
     (let ((post-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron)))
@@ -270,6 +333,22 @@
     (enforce (> (length owned) 0) "TX906: ANHD needs a DHCD nonce")
     (print (format "<(INFO_StakeSemiFungibleCollectable)> predicted ignis-need = {} ; nonce = {} ; pre-gas = {}"
         [predicted stake-nonce pre-gas]))
+    ;;TEXT AGREEMENT. This suite proves the NUMBER against reality -- predicted ignis-need vs the
+    ;;patron's real GAS balance delta -- which is the strongest cost check in the codebase. It
+    ;;never looks at ignis-text, the line a UI actually renders. A wallet charges the number; a
+    ;;user reads the text. Asserting here costs nothing (the preview object is already in hand)
+    ;;and closes the loop: the figure proven correct below is the figure the user is shown.
+    (map print
+        [
+            (expect
+                (format "<<TX-INFO-GT-TEXT>> the rendered cost line quotes the verified figure ({})"
+                    [predicted])
+                true
+                (if (> predicted 0.0)
+                    (contains (format "{}" [predicted]) (at "ignis-text" (at "ignis" info)))
+                    (contains "free of Ouronet GAS" (at "ignis-text" (at "ignis" info)))))
+        ]
+    )
     (print (format "<(TS02-C3.AQP-POOL|CC_StakeSemiFungibleCollectable)> => \"{}\""
         [(ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id owner-id beneficiary-id dpsf-id nonces)]))
     (let ((post-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron)))
@@ -885,3 +964,3299 @@
 (commit-tx)
 (print "")
 (print "=== [6.5.1] AQP-INFO GROUND TRUTH — TF/OF/SF stake+unstake + TF/OF/SF vacate + TF/OF/SF drain + FullVacate cost-equality complete ===")
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-INJECT — does INFO_AQP-FVT|Inject quote the custody-transfer leg?")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-INJECT · 01 · inject: quoted vs charged] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-FVT|Inject`, per the owner's spec: an INFO_ must report the same
+;;cost the op actually charges.
+;;
+;;THE SPECIFIC SUSPICION THIS BLOCK EXISTS TO SETTLE. The preview quotes ONE leg:
+;;    (OI|UC_IfpFromOutputCumulator (RPS.URCi_Inject "AQP-FVT|CC_Inject" fvt-id []))
+;;but the exec collects `XB_FvtInject` -> `XI_FvtInjectCore`, whose cumulator concatenates a CUSTODY
+;;TRANSFER ahead of that gas leg (`04_RPS.pact:4548-4561`):
+;;    (ref-TFT::C_Transfer reward-dptf-id patron AQP|SC_NAME amount true)   ;;PHASE 1
+;;    ... (URCi_Inject op-key fvt-id [...])                                 ;;the leg the preview quotes
+;;
+;;Every OTHER transfer-bearing AQP op has a `*Full` reader that counts its transfer leg explicitly —
+;;`URCi_TrueFungibleStakeFlow` counts `TFT.URCi_TransferCumulator`, `URCi_CollectFull` counts
+;;`URC_CollectTransferLegIgnis`, `URCi_Sync*Full` counts `ico-ank`. The inject family is the only one
+;;with no `*Full` reader at all. If that asymmetry is an oversight, the quote is short by exactly the
+;;transfer cumulator and this assertion fails; if the transfer is genuinely free, it passes.
+;;
+;;Either way the answer is worth having written down, which is why this asserts equality rather than
+;;hedging: a test that cannot fail tells you nothing about which of the two it is.
+;;
+;;REWARD CHOICE MATTERS. The reward is WSTOA, deliberately NOT "GAS-98c486052a51": PHASE 1 moves the
+;;reward PRINCIPAL out of the patron, so injecting GAS would move the very balance being differenced
+;;and the measurement would read principal + fee as though it were all fee.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+        (fvt-id:string "CodingDivisionTreasury-98c486052a51")
+        (gas-id:string "GAS-98c486052a51")
+    )
+    (let
+        (
+            (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
+        )
+        (let
+            (
+                (predicted:decimal
+                    (at "ignis-need" (at "ignis"
+                        (AQP-INFO.INFO_AQP-FVT|Inject patron fvt-id wstoa-id 25.0))))
+                (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+            )
+            (print (format "<(TS02-C3.AQP-FVT|CC_Inject)> => \"{}\""
+                [(ref-TS02-C3::AQP-FVT|CC_Inject patron fvt-id wstoa-id 25.0)]))
+            (let
+                (
+                    (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+                )
+                (map print
+                    [
+                        (format "<<TX-INFO-GT-INJECT>> predicted={} real={} delta={}"
+                            [predicted real (- real predicted)])
+                        (expect "<<TX-INFO-GT-INJECT>> INFO_AQP-FVT|Inject's quote equals what the inject charged"
+                            real predicted)
+                        (expect "<<TX-INFO-GT-INJECT>> ...and it is a real, non-zero charge"
+                            true (> real 0.0))
+                    ]
+                )
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+;;discarded — the vault's reward ledger is left as the earlier blocks built it
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-SYNC — the hand-rebuilt anchor-sync reconstruction vs the real charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-SYNC · 01 · a reconstruction, not a shared reader] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-POOL|SyncTrueFungibleAnchors`, per the owner's spec.
+;;
+;;WHY THIS ONE IS WORTH A BLOCK OF ITS OWN. Most previews in this codebase call the SAME `URCi_` the
+;;exec bills, so they cannot drift by construction. `URCi_SyncTrueFungibleAnchorsFull` is different:
+;;it is a HAND-WRITTEN reconstruction of the exec's three legs —
+;;    ico-ank   re-derives n-live from UR_ANK|AnchorsForAsset
+;;    ico-meta  re-derives UDC_LegCumulator "ank-sync-count-tf"
+;;    ico-gas   the shared gas reader
+;;Two independent expressions that must evaluate equal. Nothing but arithmetic keeps them in step, so
+;;this is where a reconstruction drifts first — and the cost SCALES with the live anchor count, so a
+;;single-anchor fixture would not notice a per-anchor error at all.
+;;
+;;OURO deliberately: it carries TWO live anchors at this point (TfStakeAnchor + TfStakeAnchor2), so a
+;;per-anchor mistake shows up as a doubled gap rather than cancelling out.
+;;
+;;This is also the highest per-leg ROUNDING exposure in the family: `UDC_PrimeIgnisCumulator`
+;;discounts and quarter-splits EACH leg separately, while the preview applies one discount to the
+;;summed ifp. Three legs is enough for that difference to surface if it exists.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)
+        (patron:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (gas-id:string "GAS-98c486052a51")
+    )
+    ;;SETUP — the cap enforces `(> (UR_AQP|BenDptfTotalBalance beneficiary dptf) 0.0)`: there must be a
+    ;;live cross-pool TF stake to repair. Every TF position in this file has been drained or vacated by
+    ;;the blocks above, so one is re-staked here. `TfStakePool` is restakeable (the file re-stakes it
+    ;;the same way at TX907's setup), and the whole tx rolls back.
+    ;;...and the pool's stake flag has to be back ON first: a vacate DISABLES staking and deliberately
+    ;;leaves it disabled, so the re-stake would be refused with "pool stake disabled or has no
+    ;;employed scores". Enable is itself measured separately at <<TX-INFO-GT-ENABLE>> below; here it is
+    ;;only setup, and it opens before the measurement window.
+    ;;...and the enable is itself blocked while a vacate is open ("finish or abort the vacate first"),
+    ;;so the full setup chain is ABORT -> ENABLE -> STAKE -> the sync being measured. Three ops of
+    ;;setup for one measurement is the price of reaching a repair path in a file whose earlier blocks
+    ;;deliberately leave every pool drained and frozen.
+    (print (format "<(setup abort-vacate)> => \"{}\""
+        [(ref-TS02-C3::AQP-POOL|C_AbortVacate patron "TfStakePool-98c486052a51")]))
+    (print (format "<(setup enable-stake)> => \"{}\""
+        [(ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron "TfStakePool-98c486052a51")]))
+    (print (format "<(setup re-stake)> => \"{}\""
+        [(ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron "TfStakePool-98c486052a51" patron patron ouro-id 100.0)]))
+    (let
+        (
+            (n-live:integer (length (ref-ANK::UR_ANK|AnchorsForAsset ouro-id)))
+        )
+        (let
+            (
+                (predicted:decimal
+                    (at "ignis-need" (at "ignis"
+                        (AQP-INFO.INFO_AQP-POOL|SyncTrueFungibleAnchors patron patron ouro-id))))
+                (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+            )
+            (print (format "<(TS02-C3.AQP-POOL|C_SyncTrueFungibleAnchors)> => \"{}\""
+                [(ref-TS02-C3::AQP-POOL|C_SyncTrueFungibleAnchors patron patron ouro-id)]))
+            (let
+                (
+                    (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+                )
+                (map print
+                    [
+                        (format "<<TX-INFO-GT-SYNC>> anchors={} predicted={} real={} delta={}"
+                            [n-live predicted real (- real predicted)])
+                        (expect "<<TX-INFO-GT-SYNC>> the reconstruction equals what the sync actually charged"
+                            real predicted)
+                        (expect "<<TX-INFO-GT-SYNC>> ...and it is a real, non-zero charge"
+                            true (> real 0.0))
+                        ;;the fixture has to be MULTI-anchor for this to test the scaling term at all
+                        (expect "<<TX-INFO-GT-SYNC>> ...against a multi-anchor asset, so the per-anchor term is exercised"
+                            true (> n-live 1))
+                    ]
+                )
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-ENABLE — INFO_AQP-POOL|EnablePoolStake quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-ENABLE · 01 · re-open a drained pool to staking] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-POOL|EnablePoolStake`, per the owner's spec.
+;;
+;;The fixture is a by-product of the drain blocks above: `CCp_BatchDrain*` runs `XI_EnsureVacateBegun`
+;;and explicitly does NOT finalize, so the drained pools are left vacate-in-progress with staking
+;;DISABLED. That makes `true` the reachable direction for exactly these three pools and nowhere else
+;;in the file — enable/disable both refuse a no-op change.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+        (patron:string KST.ANHD)
+        (pool-id:string "InfoGtOfDrPool-98c486052a51")
+        (gas-id:string "GAS-98c486052a51")
+    )
+    ;;SETUP — a drained pool is left vacate-in-progress, and enabling stake is refused while a vacate
+    ;;is open. Aborting first is what makes the enable reachable. The abort costs nothing (it collects
+    ;;an EMPTY cumulator), which is measured in its own right at <<TX-INFO-GT-ABORT>> below — so it
+    ;;cannot contribute to the figure measured here either.
+    (print (format "<(setup abort-vacate)> => \"{}\""
+        [(ref-TS02-C3::AQP-POOL|C_AbortVacate patron pool-id)]))
+    (let
+        (
+            (predicted:decimal
+                (at "ignis-need" (at "ignis"
+                    (AQP-INFO.INFO_AQP-POOL|EnablePoolStake patron pool-id))))
+            (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+        )
+        (print (format "<(TS02-C3.AQP-POOL|C_EnablePoolStake)> => \"{}\""
+            [(ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)]))
+        (let
+            (
+                (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+            )
+            (map print
+                [
+                    (format "<<TX-INFO-GT-ENABLE>> predicted={} real={}" [predicted real])
+                    (expect "<<TX-INFO-GT-ENABLE>> the quote equals what enabling stake charged"
+                        real predicted)
+                    (expect "<<TX-INFO-GT-ENABLE>> ...and it is a real, non-zero charge"
+                        true (> real 0.0))
+                    ;;and it really flipped, so neither figure is for a no-op
+                    (expect "<<TX-INFO-GT-ENABLE>> ...and the pool is genuinely open to staking again"
+                        true (ref-AQP::UR_AQP|PoolStakeEnabled pool-id))
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-ABORT — closing the AbortVacate proof that was split across two files")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-ABORT · 01 · preview and charge, finally in the same file] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-POOL|AbortVacate`, per the owner's spec.
+;;
+;;THIS CLOSES A PROOF THE CODEBASE SAID COULD NOT BE CLOSED. `Stage_02/[6.5]_AQP-INFO.repl` states:
+;;    "The other half of the proof -- that the op really charges nothing when it runs -- is measured
+;;     in Stage_02/[6.2.5]_AQP-VCT.repl <<TX-VCT-L03>>, against a live abort. It cannot live here
+;;     (no vacate-in-progress pool), and this cannot live there (AQP-INFO is not loaded in every
+;;     chain that runs that file)."
+;;Both halves of that were true when written. The second still is. The FIRST is no longer: the drain
+;;blocks added to this file leave `InfoGt*DrPool` vacate-in-progress by design, because
+;;`CCp_BatchDrain*` runs `XI_EnsureVacateBegun` and explicitly does not finalize. So a live abort is
+;;now available in a chain that DOES load `AQP-INFO`, and the quote and the charge can finally be
+;;compared in one place.
+;;
+;;THE ASSERTION IS A ZERO, AND THAT NEEDS CARE. `INFO_AQP-POOL|AbortVacate` quotes "Costs you
+;;nothing" for an op that visibly calls `IGNIS::C_Collect` — the exact shape that WAS a defect in
+;;INFO_EQUITY|IssueCompany, INFO_SWP|ToggleFeeLock and INFO_ATS|ToggleParameterLock. It is correct
+;;here only because `C_AbortVacate` returns `UC_EmptyOc`, and collecting an empty cumulator collects
+;;nothing. The `(> real 0.0)` guard every other block in this family carries cannot apply, so what
+;;keeps this honest instead is the third assertion: the op is proven to have DONE something. A free
+;;op that is also a no-op fails that, not the equality.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-VCT:module{AcquisitionVacateV2} AQP-VCT)
+        (patron:string KST.ANHD)
+        (pool-id:string "InfoGtSfDrPool-98c486052a51")
+        (gas-id:string "GAS-98c486052a51")
+    )
+    (map print
+        [
+            (expect "<<TX-INFO-GT-ABORT>> precondition: the drain really did leave a vacate open"
+                true (ref-VCT::UR_VacateInProgress pool-id))
+        ]
+    )
+    (let
+        (
+            (predicted:decimal
+                (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-POOL|AbortVacate patron pool-id))))
+            (predicted-stoa:decimal
+                (at "stoa-need" (at "stoa" (AQP-INFO.INFO_AQP-POOL|AbortVacate patron pool-id))))
+            (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+        )
+        (print (format "<(TS02-C3.AQP-POOL|C_AbortVacate)> => \"{}\""
+            [(ref-TS02-C3::AQP-POOL|C_AbortVacate patron pool-id)]))
+        (let
+            (
+                (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+            )
+            (map print
+                [
+                    (format "<<TX-INFO-GT-ABORT>> IGNIS predicted={} real={} | STOA predicted={}"
+                        [predicted real predicted-stoa])
+                    (expect "<<TX-INFO-GT-ABORT>> the quote equals what the abort charged"
+                        real predicted)
+                    (expect "<<TX-INFO-GT-ABORT>> ...and the quote really is zero: an empty cumulator collects nothing"
+                        0.0 real)
+                    ;;NON-VACUITY, standing in for the (> real 0.0) guard this op cannot have:
+                    ;;the abort demonstrably did work, so zero is the price of something, not of nothing.
+                    (expect "<<TX-INFO-GT-ABORT>> ...and the vacate really was cleared, so zero is not the price of a no-op"
+                        false (ref-VCT::UR_VacateInProgress pool-id))
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-FINALIZE — INFO_AQP-POOL|FinalizeVacate: a FLAT quote over O(scores) work")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-FINALIZE · 01 · flat price, variable work] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-POOL|FinalizeVacate`, per the owner's spec.
+;;
+;;WHY IT IS WORTH MEASURING RATHER THAN ASSUMING. `URCi_FinalizeVacate` is a FLAT
+;;`UC_IgnisPrice "AQP-POOL|C_FinalizeVacate" "usage"` — one constant, no arguments — while the exec
+;;bulk-zeroes every employed score's aggregates and bumps each one's vacate-generation. A flat quote
+;;over work that scales with the score count is a deliberate pricing decision, not an oversight; the
+;;single-source claim holds because `(URCi_FinalizeVacate)` is literally the cumulator the exec
+;;returns. This block is the cheapest way to PROVE that rather than take the @doc's word for it.
+;;
+;;Fixture: the drain blocks above leave `InfoGtTfDrPool` vacate-in-progress and unfinalized, so
+;;finalize is reachable here and nowhere else in the file. Abort and finalize are mutually exclusive,
+;;so this deliberately uses a DIFFERENT pool from <<TX-INFO-GT-ABORT>>.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-VCT:module{AcquisitionVacateV2} AQP-VCT)
+        (patron:string KST.ANHD)
+        (pool-id:string "InfoGtTfDrPool-98c486052a51")
+        (gas-id:string "GAS-98c486052a51")
+    )
+    (map print
+        [
+            (expect "<<TX-INFO-GT-FINALIZE>> precondition: the drain left a vacate open to finalize"
+                true (ref-VCT::UR_VacateInProgress pool-id))
+        ]
+    )
+    (let
+        (
+            (predicted:decimal
+                (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-POOL|FinalizeVacate patron pool-id))))
+            (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+        )
+        (print (format "<(TS02-C3.AQP-POOL|C_FinalizeVacate)> => \"{}\""
+            [(ref-TS02-C3::AQP-POOL|C_FinalizeVacate patron pool-id)]))
+        (let
+            (
+                (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+            )
+            (map print
+                [
+                    (format "<<TX-INFO-GT-FINALIZE>> predicted={} real={}" [predicted real])
+                    (expect "<<TX-INFO-GT-FINALIZE>> the flat quote equals what finalizing actually charged"
+                        real predicted)
+                    (expect "<<TX-INFO-GT-FINALIZE>> ...and it is a real, non-zero charge"
+                        true (> real 0.0))
+                    (expect "<<TX-INFO-GT-FINALIZE>> ...and the vacate really closed, so the price is for work done"
+                        false (ref-VCT::UR_VacateInProgress pool-id))
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-POOLISSUE — INFO_AQP-POOL|Issue: both currencies measured")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-POOLISSUE · 01 · issue an acquisition pool] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-POOL|Issue`, per the owner's spec: an INFO_ must report the same cost the
+;;op actually charges. BOTH currencies are checked — checking only IGNIS is what let
+;;`INFO_EQUITY|IssueCompany` quote a 918-STOA operation as free.
+;;The preview is state-independent (`URCi_Issue []`, konto `AQP|SC_NAME`), so a fresh name is all
+;;this needs — no existing fixture to disturb, and the whole tx rolls back.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+    )
+    ;;The STOA fee is a real coin.transfer split 10/20/30/40 across the four fee targets, so it needs
+    ;;one managed `coin.TRANSFER` per leg, sized from the same split the collector uses.
+    (let ((split-stoa:[decimal]
+              (ref-DALOS::URC_SplitSTOAPrices KST.ANHD (ref-IGNIS::UC_StoaPrice "issue-pool"))))
+        (env-sigs
+            [ { "key": "PK_AncientHodler", "caps": [] }
+              { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+              , "caps":
+                [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                      "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                      "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                      "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                      "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa)) ] } ]
+        )
+    )
+)
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+        (gas-id:string "GAS-98c486052a51")
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (AQP-INFO.INFO_AQP-POOL|Issue patron "GtCostProbePool" "OURO-98c486052a51" 1))
+            (stoa-acct:string (ref-DALOS::UR_AccountStoa patron))
+        )
+        (let
+            (
+                (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+                (pre-stoa:decimal (coin.get-balance stoa-acct))
+                (m (ref-TS02-C3::AQP-POOL|C_Issue patron "GtCostProbePool" "OURO-98c486052a51" 1))
+            )
+            (map print
+                [
+                    (format "<<TX-INFO-GT-POOLISSUE>> IGNIS predicted={} real={} | STOA predicted={} real={}"
+                        [(at "ignis-need" (at "ignis" predicted))
+                         (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron))
+                         (at "stoa-need" (at "stoa" predicted))
+                         (- pre-stoa (coin.get-balance stoa-acct))])
+                    (expect "<<TX-INFO-GT-POOLISSUE>> the IGNIS quote equals the IGNIS charged"
+                        (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron))
+                        (at "ignis-need" (at "ignis" predicted)))
+                    (expect "<<TX-INFO-GT-POOLISSUE>> the STOA quote equals the STOA charged"
+                        (- pre-stoa (coin.get-balance stoa-acct))
+                        (at "stoa-need" (at "stoa" predicted)))
+                    (expect "<<TX-INFO-GT-POOLISSUE>> ...and issuance is NOT free in STOA"
+                        true (> (- pre-stoa (coin.get-balance stoa-acct)) 0.0))
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-FVTISSUE — INFO_AQP-FVT|Issue: both currencies measured")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-FVTISSUE · 01 · issue a farm/vault/treasury] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-FVT|Issue`, per the owner's spec: an INFO_ must report the same cost the
+;;op actually charges. BOTH currencies are checked — checking only IGNIS is what let
+;;`INFO_EQUITY|IssueCompany` quote a 918-STOA operation as free.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+    )
+    ;;The STOA fee is a real coin.transfer split 10/20/30/40 across the four fee targets, so it needs
+    ;;one managed `coin.TRANSFER` per leg, sized from the same split the collector uses.
+    (let ((split-stoa:[decimal]
+              (ref-DALOS::URC_SplitSTOAPrices KST.ANHD (ref-IGNIS::UC_StoaPrice "issue-fvt"))))
+        (env-sigs
+            [ { "key": "PK_AncientHodler", "caps": [] }
+              { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+              , "caps":
+                [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                      "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                      "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                      "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                      "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa)) ] } ]
+        )
+    )
+)
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+        (gas-id:string "GAS-98c486052a51")
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (AQP-INFO.INFO_AQP-FVT|Issue patron "GtCostProbeVault" patron 1 "|"))
+            (stoa-acct:string (ref-DALOS::UR_AccountStoa patron))
+        )
+        (let
+            (
+                (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+                (pre-stoa:decimal (coin.get-balance stoa-acct))
+                (m (ref-TS02-C3::AQP-FVT|C_Issue patron "GtCostProbeVault" patron 1 "|"))
+            )
+            (map print
+                [
+                    (format "<<TX-INFO-GT-FVTISSUE>> IGNIS predicted={} real={} | STOA predicted={} real={}"
+                        [(at "ignis-need" (at "ignis" predicted))
+                         (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron))
+                         (at "stoa-need" (at "stoa" predicted))
+                         (- pre-stoa (coin.get-balance stoa-acct))])
+                    (expect "<<TX-INFO-GT-FVTISSUE>> the IGNIS quote equals the IGNIS charged"
+                        (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron))
+                        (at "ignis-need" (at "ignis" predicted)))
+                    (expect "<<TX-INFO-GT-FVTISSUE>> the STOA quote equals the STOA charged"
+                        (- pre-stoa (coin.get-balance stoa-acct))
+                        (at "stoa-need" (at "stoa" predicted)))
+                    (expect "<<TX-INFO-GT-FVTISSUE>> ...and issuance is NOT free in STOA"
+                        true (> (- pre-stoa (coin.get-balance stoa-acct)) 0.0))
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-SCOREISSUE — INFO_AQP-SCR|IssueTrueFungibleScore: both currencies measured")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-SCOREISSUE · 01 · issue a true-fungible score] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-SCR|IssueTrueFungibleScore`, per the owner's spec: an INFO_ must report the same cost the
+;;op actually charges. BOTH currencies are checked — checking only IGNIS is what let
+;;`INFO_EQUITY|IssueCompany` quote a 918-STOA operation as free.
+;;Chosen as the cleanest member of the score family: its preview reads nothing but its arguments
+;;(`URCi_IssueScore owner-konto []` + `URCi_IssueScoreStoa`), so there is no state it could disagree
+;;with — which isolates the pricing itself as the only thing under test.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+    )
+    ;;The STOA fee is a real coin.transfer split 10/20/30/40 across the four fee targets, so it needs
+    ;;one managed `coin.TRANSFER` per leg, sized from the same split the collector uses.
+    (let ((split-stoa:[decimal]
+              (ref-DALOS::URC_SplitSTOAPrices KST.ANHD (ref-IGNIS::UC_StoaPrice "issue-score"))))
+        (env-sigs
+            [ { "key": "PK_AncientHodler", "caps": [] }
+              { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+              , "caps":
+                [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                      "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                      "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                      "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                      "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa)) ] } ]
+        )
+    )
+)
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+        (gas-id:string "GAS-98c486052a51")
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (AQP-INFO.INFO_AQP-SCR|IssueTrueFungibleScore patron patron "GtCostProbeScore" 12 1.0))
+            (stoa-acct:string (ref-DALOS::UR_AccountStoa patron))
+        )
+        (let
+            (
+                (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+                (pre-stoa:decimal (coin.get-balance stoa-acct))
+                (m (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron "GtCostProbeScore" 12 1.0))
+            )
+            (map print
+                [
+                    (format "<<TX-INFO-GT-SCOREISSUE>> IGNIS predicted={} real={} | STOA predicted={} real={}"
+                        [(at "ignis-need" (at "ignis" predicted))
+                         (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron))
+                         (at "stoa-need" (at "stoa" predicted))
+                         (- pre-stoa (coin.get-balance stoa-acct))])
+                    (expect "<<TX-INFO-GT-SCOREISSUE>> the IGNIS quote equals the IGNIS charged"
+                        (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron))
+                        (at "ignis-need" (at "ignis" predicted)))
+                    (expect "<<TX-INFO-GT-SCOREISSUE>> the STOA quote equals the STOA charged"
+                        (- pre-stoa (coin.get-balance stoa-acct))
+                        (at "stoa-need" (at "stoa" predicted)))
+                    (expect "<<TX-INFO-GT-SCOREISSUE>> ...and issuance is NOT free in STOA"
+                        true (> (- pre-stoa (coin.get-balance stoa-acct)) 0.0))
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+
+;;NOTE — `INFO_AQP-POOL|AddScore` is NOT measured here, deliberately. Its exec needs a score that is
+;;not already linked to a pool (`UEV_AddScorePoolAndScore` refuses "aqpool-link set"), and every
+;;score in this chain is already attached. Reaching it would mean issuing a fresh score first, which
+;;is a STOA-charging op with its own caps — so the block would be mostly setup, and the setup would
+;;be the interesting part rather than the thing under test. Left for a harness that already has an
+;;unattached score rather than manufactured here. The preview itself is state-independent
+;;(`URCi_AddScore []`), so it is the exec, not the quote, that is unreachable.
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-UNSTALEMINE — INFO_AQP-FVT|UnstaleMyScores quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-UNSTALEMINE · 01 · refresh my own stale scores] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-FVT|UnstaleMyScores`, per the owner's spec.
+;;State-independent preview (`URCi_UnstaleMyScores patron []`) against a heavy exec — the caller-side
+;;half of the deb-staleness machinery, priced flat.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (patron:string KST.ANHD)
+        (gas-id:string "GAS-98c486052a51")
+    )
+    (let
+        (
+            (predicted:decimal (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-FVT|UnstaleMyScores patron ["CodingDivisionTreasury-98c486052a51"]))))
+            (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+        )
+        (print (format "<(AQP-FVT|CC_UnstaleMyScores)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|CC_UnstaleMyScores patron ["CodingDivisionTreasury-98c486052a51"])]))
+        (let
+            (
+                (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+            )
+            (map print
+                [
+                    (format "<<TX-INFO-GT-UNSTALEMINE>> predicted={} real={}" [predicted real])
+                    (expect "<<TX-INFO-GT-UNSTALEMINE>> the quote equals what the op actually charged"
+                        real predicted)
+                    (expect "<<TX-INFO-GT-UNSTALEMINE>> ...and it is a real, non-zero charge"
+                        true (> real 0.0))
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-DISABLE — INFO_AQP-POOL|DisablePoolStake quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-DISABLE · 01 · close a live pool to staking] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-POOL|DisablePoolStake`, per the owner's spec.
+;;The mirror of <<TX-INFO-GT-ENABLE>>. Both are priced from the SAME key
+;;("AQP-POOL|C_EnablePoolStake"), so measuring only one of the pair would leave the shared constant
+;;half-checked — and a shared constant is exactly the kind of thing that gets changed for one caller.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (patron:string KST.ANHD)
+        (gas-id:string "GAS-98c486052a51")
+    )
+    (let
+        (
+            (predicted:decimal (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-POOL|DisablePoolStake patron "DHCodingDivision-98c486052a51"))))
+            (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+        )
+        (print (format "<(AQP-POOL|C_DisablePoolStake)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_DisablePoolStake patron "DHCodingDivision-98c486052a51")]))
+        (let
+            (
+                (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+            )
+            (map print
+                [
+                    (format "<<TX-INFO-GT-DISABLE>> predicted={} real={}" [predicted real])
+                    (expect "<<TX-INFO-GT-DISABLE>> the quote equals what the op actually charged"
+                        real predicted)
+                    (expect "<<TX-INFO-GT-DISABLE>> ...and it is a real, non-zero charge"
+                        true (> real 0.0))
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-COLLECT — the most complex reconstruction in the family")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-COLLECT · 01 · transfer leg + forced-fix penalty + gas leg] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-FVT|Collect`, per the owner's spec.
+;;
+;;THE HARDEST PREVIEW IN THIS FAMILY, and the reason it is worth the setup. `URCi_CollectFull` sums
+;;THREE independently-derived sources:
+;;    URC_CollectTransferLegIgnis   the payout transfer, tiered by amount
+;;    URC_CollectForcedFixIgnis     the stale-member penalty, ffc x CT_FORCED_FIX_RATE
+;;    URCi_Collect                  the flat GAS|COLLECT leg
+;;Three sources means three chances to drift, and this is the only preview in the tree that ships
+;;with a WRITTEN-DOWN residual (`04_RPS.pact`): the payout is read pre-drip, so a lane carrying a LIVE
+;;stream can shift the transfer tier between quote and charge.
+;;
+;;The fixture is chosen to take that residual off the table rather than to hide behind it:
+;;  - the WSTOA lane, NOT an OURO lane. `[6.2.4]` injects a 240-OURO/86400s STREAM, and on a streamed
+;;    lane the documented residual applies and a mismatch would be ambiguous. On the plain lane it is
+;;    not, so a failure here means a real defect and nothing else.
+;;  - the reward is WSTOA, never GAS: a GAS reward would move the PRINCIPAL through the very balance
+;;    being differenced, and the measurement would read principal + fee as though it were all fee.
+;;  - score-entity-type 1 (a score), never 3: a multiplet reward fans the transfer leg out through the
+;;    ATS ladder, which is a different computation again.
+;;
+;;ONE SHOT PER FIXTURE: the forced-fix counter is ZEROED on collect, so a second measurement in the
+;;same run would read a different `ffc` and legitimately disagree. Hence the rollback.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+        (fvt-id:string "CodingDivisionTreasury-98c486052a51")
+        (score-id:string "TheCodingDivision-98c486052a51")
+        (gas-id:string "GAS-98c486052a51")
+    )
+    (let
+        (
+            (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
+        )
+        ;;SETUP — there must be something to collect. The inject is a separate op with its own price
+        ;;(measured in its own right at <<TX-INFO-GT-INJECT>>), and it completes before the
+        ;;measurement window below opens.
+        (print (format "<(setup inject)> => \"{}\""
+            [(ref-TS02-C3::AQP-FVT|CC_Inject patron fvt-id wstoa-id 25.0)]))
+        (let
+            (
+                (predicted:decimal
+                    (at "ignis-need" (at "ignis"
+                        (AQP-INFO.INFO_AQP-FVT|Collect patron fvt-id 1 score-id wstoa-id))))
+                (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+            )
+            (print (format "<(TS02-C3.AQP-FVT|CC_Collect)> => \"{}\""
+                [(ref-TS02-C3::AQP-FVT|CC_Collect patron fvt-id 1 score-id wstoa-id)]))
+            (let
+                (
+                    (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+                )
+                (map print
+                    [
+                        (format "<<TX-INFO-GT-COLLECT>> predicted={} real={} delta={}"
+                            [predicted real (- real predicted)])
+                        (expect "<<TX-INFO-GT-COLLECT>> the three-source reconstruction equals what collect charged"
+                            real predicted)
+                        (expect "<<TX-INFO-GT-COLLECT>> ...and it is a real, non-zero charge"
+                            true (> real 0.0))
+                    ]
+                )
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-MODEL — INFO_AQP-SCR|IssueSingleScoreModel quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-MODEL · 01 · issue a score model] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-SCR|IssueSingleScoreModel`, per the owner's spec.
+;;The preview is state-independent (`URCi_IssueScoreModel op-key patron []`), so nothing about the
+;;chain's shape can influence it — which isolates the pricing itself as the only thing under test.
+;;IGNIS-only: the model is a definition, not an issued entity, so it carries no STOA leg.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (patron:string KST.ANHD)
+        (dpsf-id:string "DHCD-98c486052a51")
+        (gas-id:string "GAS-98c486052a51")
+    )
+    (let
+        (
+            (predicted:decimal
+                (at "ignis-need" (at "ignis"
+                    (AQP-INFO.INFO_AQP-SCR|IssueSingleScoreModel patron "GtCostProbeModel" 3 dpsf-id 12 [-2] [10.0]))))
+            (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+        )
+        (print (format "<(TS02-C3.AQP-SCR|C_IssueSingleScoreModel)> => \"{}\""
+            [(ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel patron "GtCostProbeModel" 3 dpsf-id 12 [-2] [10.0])]))
+        (let
+            (
+                (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+            )
+            (map print
+                [
+                    (format "<<TX-INFO-GT-MODEL>> predicted={} real={}" [predicted real])
+                    (expect "<<TX-INFO-GT-MODEL>> the quote equals what issuing the model charged"
+                        real predicted)
+                    (expect "<<TX-INFO-GT-MODEL>> ...and it is a real, non-zero charge"
+                        true (> real 0.0))
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-STREAM — INFO_AQP-FVT|InjectStream, the STREAMED twin of the fixed defect")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-STREAM · 01 · streamed inject: quoted vs charged] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-FVT|InjectStream`, per the owner's spec.
+;;
+;;WHY THIS BLOCK EXISTS SEPARATELY FROM <<TX-INFO-GT-INJECT>>. The custody-transfer leg that block
+;;found missing was missing from FOUR previews, not one: `Inject`, `InjectStream`, `InjectFinalize`
+;;and `MTX|2Inject` all quoted the gas leg alone while their execs concatenated a `TFT::C_Transfer`
+;;ahead of it (`XI_FvtInjectCore` / `XIv_FvtAddStream`, `04_RPS.pact`). All four were repaired the
+;;same way, but only `Inject` was ever put on a scale. A fix that is verified on one member of a
+;;family and assumed on the other three is exactly the kind of claim this whole exercise exists to
+;;stop making, so the streamed path gets its own measurement.
+;;
+;;`InjectStream` is not merely `Inject` with an extra argument: it routes through `XIv_FvtAddStream`
+;;rather than `XI_FvtInjectCore`, so the two share a shape but not a code path. Duration is payload —
+;;the 86400 below buys a day-long drip and must not touch the price.
+;;
+;;WSTOA, deliberately, NOT the GAS token: `XI_FvtInjectCore`'s PHASE 1 moves the reward PRINCIPAL out
+;;of the patron's account, and if that principal were IGNIS it would land in the very balance this
+;;block differences. Hazard, not defect — but it silently turns a passing test into a wrong one.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+        (gas-id:string "GAS-98c486052a51")
+        (fvt-id:string "CodingDivisionTreasury-98c486052a51")
+        (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
+    )
+    (let
+        (
+            (predicted:decimal
+                (at "ignis-need" (at "ignis"
+                    (AQP-INFO.INFO_AQP-FVT|InjectStream patron fvt-id wstoa-id 24.0 86400))))
+            (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+        )
+        (print (format "<(TS02-C3.AQP-FVT|CC_InjectStream)> => \"{}\""
+            [(ref-TS02-C3::AQP-FVT|CC_InjectStream patron fvt-id wstoa-id 24.0 86400)]))
+        (let
+            (
+                (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+            )
+            (map print
+                [
+                    (format "<<TX-INFO-GT-STREAM>> predicted={} real={} delta={}"
+                        [predicted real (- real predicted)])
+                    (expect "<<TX-INFO-GT-STREAM>> the quote equals what the streamed inject charged"
+                        real predicted)
+                    (expect "<<TX-INFO-GT-STREAM>> ...and it is a real, non-zero charge"
+                        true (> real 0.0))
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-SFSYNC — the COLLECTABLE anchor-sync reconstruction, a different reader")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-SFSYNC · 01 · the collectable reconstruction] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-POOL|SyncSemiFungibleAnchors`, per the owner's spec.
+;;
+;;WHY THE TRUE-FUNGIBLE PROOF AT <<TX-INFO-GT-SYNC>> DOES NOT COVER THIS. That block measured
+;;`URCi_SyncTrueFungibleAnchorsFull`. The SF and NF previews route through a DIFFERENT hand-written
+;;reconstruction, `URCi_SyncCollectableAnchorsFull` (`03_AQP.pact:2186`), with its own three legs:
+;;    ico-ank   n-live from UR_ANK|AnchorsForAsset, priced by URC_TrueFungibleStakeAnchorRefreshIgnis
+;;    ico-meta  the "ank-sync-count-tf" stamp
+;;    ico-gas   URCi_SyncCollectableAnchors
+;;Two reconstructions that happen to share a shape are still two expressions. A green TF measurement
+;;says nothing at all about whether this one is in step, which is precisely the assumption worth
+;;refusing to make.
+;;
+;;The op is son-INDEPENDENT by design (its own @doc says so), so the SF measurement also stands for
+;;`SyncNonFungibleAnchors` — but only because the source says the cost cannot differ, not because
+;;one number was taken and generalised.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (patron:string KST.ANHD)
+        (gas-id:string "GAS-98c486052a51")
+        (dpsf-id:string "DHCD-98c486052a51")
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "InfoGtSfDrPool"))
+    )
+    ;;SETUP — the cap enforces that there IS a live cross-pool collectable stake to repair
+    ;;("No cross-pool collectable stake to sync", `03_AQP.pact:832`). Every SF position in this file
+    ;;has been drained by the blocks above, so the same ABORT -> ENABLE -> STAKE chain the TF twin
+    ;;needs is replayed here, and for the same reason: a vacate freezes the pool AND disables staking.
+    (print (format "<(setup abort-vacate)> => \"{}\""
+        [(ref-TS02-C3::AQP-POOL|C_AbortVacate patron pool-id)]))
+    (print (format "<(setup enable-stake)> => \"{}\""
+        [(ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)]))
+    (let
+        (
+            (owned:[integer] (ref-DPDC::URH_AccountNonces patron dpsf-id true))
+        )
+        (enforce (> (length owned) 0) "TX-INFO-GT-SFSYNC: ANHD needs a DHCD nonce to re-stake")
+        (print (format "<(setup re-stake nonce {})> => \"{}\""
+            [(at 0 owned)
+             (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable
+                patron pool-id patron patron dpsf-id [(at 0 owned)])])))
+    (let
+        (
+            (n-live:integer (length (ref-ANK::UR_ANK|AnchorsForAsset dpsf-id)))
+        )
+        (let
+            (
+                (predicted:decimal
+                    (at "ignis-need" (at "ignis"
+                        (AQP-INFO.INFO_AQP-POOL|SyncSemiFungibleAnchors patron patron dpsf-id))))
+                (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+            )
+            (print (format "<(TS02-C3.AQP-POOL|C_SyncSemiFungibleAnchors)> => \"{}\""
+                [(ref-TS02-C3::AQP-POOL|C_SyncSemiFungibleAnchors patron patron dpsf-id)]))
+            (let
+                (
+                    (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+                )
+                (map print
+                    [
+                        (format "<<TX-INFO-GT-SFSYNC>> anchors={} predicted={} real={} delta={}"
+                            [n-live predicted real (- real predicted)])
+                        (expect "<<TX-INFO-GT-SFSYNC>> the collectable reconstruction equals what the sync charged"
+                            real predicted)
+                        (expect "<<TX-INFO-GT-SFSYNC>> ...and it is a real, non-zero charge"
+                            true (> real 0.0))
+                        ;;the per-anchor term is only exercised if the asset actually carries anchors
+                        (expect "<<TX-INFO-GT-SFSYNC>> ...against an asset that really has live anchors"
+                            true (> n-live 0))
+                    ]
+                )
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-FVTCTRL — INFO_AQP-FVT|Control quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-FVTCTRL · 01 · rewrite an FVT's control flags] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-FVT|Control`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template: `modules/ATS.repl <<ATS-I1>>`.
+;;`CodingDivisionTreasury`, NOT `SnakesTreasury`. `[6.4]_AQP-EXHAUSTIVE-FVT-ADMIN` sets the latter's
+;;`can-upgrade` to false IRREVERSIBLY and prints "cannot C_Control restore once can-upgrade=false";
+;;the preview would happily quote a price for an op that can no longer run on it.
+;;The flags are written back UNCHANGED so this alters exactly one thing: nothing.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+        (gas-id:string "GAS-98c486052a51")
+        (fvt:string "CodingDivisionTreasury-98c486052a51")
+        (farm:string "OuroLpFarm-98c486052a51")
+        (score:string "TheCodingDivision-98c486052a51")
+        (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
+    )
+    (let
+        (
+            (predicted:decimal (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-FVT|Control patron fvt true true))))
+            (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+        )
+        (print (format "<(TS02-C3.AQP-FVT|C_Control)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_Control patron fvt true true)]))
+        (let
+            (
+                (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+            )
+            (map print
+                [
+                    (format "<<TX-INFO-GT-FVTCTRL>> predicted={} real={} delta={}" [predicted real (- real predicted)])
+                    (expect "<<TX-INFO-GT-FVTCTRL>> the quote equals what the op actually charged" real predicted)
+                    (expect "<<TX-INFO-GT-FVTCTRL>> ...and it is a real, non-zero charge" true (> real 0.0))
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-FVTMOSAIC — INFO_AQP-FVT|SetMosaic quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-FVTMOSAIC · 01 · flip a FRESH FVT's mosaic flag] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-FVT|SetMosaic`, per the owner's spec.
+;;
+;;THE FVT HAS TO BE BRAND NEW, and that is the whole difficulty. `UEV_SetMosaicContext` enforces
+;;    (= (RPS::UR_FVT|MemberLinkCount fvt-id) 0)   "Cannot change mosaic while ScoreEntityLink rows exist"
+;;(`05_FVT.pact:1829`), and EVERY standing FVT in this chain already carries a link — `REPL_BootstrapVault`
+;;writes a ScoreEntityLink at creation (`05_FVT.pact:3648`). So the op is unreachable on
+;;`CodingDivisionTreasury`, `OuroLpFarm` and the rest, no matter which one is picked. Issuing a fresh
+;;FVT in setup is the only way to reach it, and `C_Issue` produces one with no links yet.
+;;
+;;The issue is a billed, STOA-charging op (measured on its own at <<TX-INFO-GT-FVTISSUE>>), so it needs
+;;its managed caps AND must close before `pre-gas` is read — otherwise its cost lands in this figure.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+    )
+    (let ((split-stoa:[decimal]
+              (ref-DALOS::URC_SplitSTOAPrices KST.ANHD (ref-IGNIS::UC_StoaPrice "issue-fvt"))))
+        (env-sigs
+            [ { "key": "PK_AncientHodler", "caps": [] }
+              { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+              , "caps":
+                [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                      "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                      "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                      "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                      "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa)) ] } ]
+        )
+    )
+)
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (patron:string KST.ANHD)
+        (gas-id:string "GAS-98c486052a51")
+    )
+    ;;SETUP — a link-free FVT, outside the measurement window.
+    (print (format "<(setup issue fresh FVT)> => \"{}\""
+        [(ref-TS02-C3::AQP-FVT|C_Issue patron "GtMosaicProbeVault" patron 1 "|")]))
+    (let
+        (
+            (fresh:string (ref-U|DALOS::UDC_Makeid "GtMosaicProbeVault"))
+        )
+        (let
+            (
+                (predicted:decimal
+                    (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-FVT|SetMosaic patron fresh true))))
+                (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+            )
+            (print (format "<(TS02-C3.AQP-FVT|C_SetMosaic)> => \"{}\""
+                [(ref-TS02-C3::AQP-FVT|C_SetMosaic patron fresh true)]))
+            (let
+                (
+                    (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+                )
+                (map print
+                    [
+                        ;;the precondition the guard actually reads, asserted rather than assumed
+                        (expect "<<TX-INFO-GT-FVTMOSAIC>> the fresh FVT really has no score-entity links yet"
+                            0 (ref-RPS::UR_FVT|MemberLinkCount fresh))
+                        (format "<<TX-INFO-GT-FVTMOSAIC>> predicted={} real={} delta={}"
+                            [predicted real (- real predicted)])
+                        (expect "<<TX-INFO-GT-FVTMOSAIC>> the quote equals what the op actually charged"
+                            real predicted)
+                        (expect "<<TX-INFO-GT-FVTMOSAIC>> ...and it is a real, non-zero charge"
+                            true (> real 0.0))
+                    ]
+                )
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-FVTSPLIT — INFO_AQP-FVT|SetSplitMode quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-FVTSPLIT · 01 · set a farm's reward split mode] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-FVT|SetSplitMode`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template: `modules/ATS.repl <<ATS-I1>>`.
+;;`OuroLpFarm` because split modes are a class-0 FARM concept (asserted class 0 at
+;;`[6.4]_AQP-EXHAUSTIVE-FVT-ADMIN:155`); the treasury used by the neighbouring blocks is class 1.
+;;Modes are the two constants `CT_SPLIT_MODE_STAKED` / `CT_SPLIT_MODE_TVL` (`05_FVT.pact:470-471`).
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+        (gas-id:string "GAS-98c486052a51")
+        (fvt:string "CodingDivisionTreasury-98c486052a51")
+        (farm:string "OuroLpFarm-98c486052a51")
+        (score:string "TheCodingDivision-98c486052a51")
+        (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
+    )
+    (let
+        (
+            (predicted:decimal (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-FVT|SetSplitMode patron farm "SPLIT|TVL"))))
+            (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+        )
+        (print (format "<(TS02-C3.AQP-FVT|C_SetSplitMode)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_SetSplitMode patron farm "SPLIT|TVL")]))
+        (let
+            (
+                (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+            )
+            (map print
+                [
+                    (format "<<TX-INFO-GT-FVTSPLIT>> predicted={} real={} delta={}" [predicted real (- real predicted)])
+                    (expect "<<TX-INFO-GT-FVTSPLIT>> the quote equals what the op actually charged" real predicted)
+                    (expect "<<TX-INFO-GT-FVTSPLIT>> ...and it is a real, non-zero charge" true (> real 0.0))
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-FVTSEL — INFO_AQP-FVT|ToggleScoreEntityLink quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-FVTSEL · 01 · flip a score-entity link] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-FVT|ToggleScoreEntityLink`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template: `modules/ATS.repl <<ATS-I1>>`.
+;;The link is ENABLED at this point (`[6.4]_AQP-EXHAUSTIVE-FVT-ADMIN:74`), so `false` is the legal
+;;direction — these toggles refuse a no-op and would fail on the state guard before the price.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+        (gas-id:string "GAS-98c486052a51")
+        (fvt:string "CodingDivisionTreasury-98c486052a51")
+        (farm:string "OuroLpFarm-98c486052a51")
+        (score:string "TheCodingDivision-98c486052a51")
+        (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
+    )
+    (let
+        (
+            (predicted:decimal (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-FVT|ToggleScoreEntityLink patron fvt 1 score false))))
+            (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+        )
+        (print (format "<(TS02-C3.AQP-FVT|C_ToggleScoreEntityLink)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_ToggleScoreEntityLink patron fvt 1 score false)]))
+        (let
+            (
+                (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+            )
+            (map print
+                [
+                    (format "<<TX-INFO-GT-FVTSEL>> predicted={} real={} delta={}" [predicted real (- real predicted)])
+                    (expect "<<TX-INFO-GT-FVTSEL>> the quote equals what the op actually charged" real predicted)
+                    (expect "<<TX-INFO-GT-FVTSEL>> ...and it is a real, non-zero charge" true (> real 0.0))
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-FVTRWD — INFO_AQP-FVT|ToggleRewardLink quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-FVTRWD · 01 · flip a reward link] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-FVT|ToggleRewardLink`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template: `modules/ATS.repl <<ATS-I1>>`.
+;;Same reasoning as the block above: the WSTOA reward link is enabled (`:61`), so `false` is legal.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+        (gas-id:string "GAS-98c486052a51")
+        (fvt:string "CodingDivisionTreasury-98c486052a51")
+        (farm:string "OuroLpFarm-98c486052a51")
+        (score:string "TheCodingDivision-98c486052a51")
+        (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
+    )
+    (let
+        (
+            (predicted:decimal (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-FVT|ToggleRewardLink patron fvt wstoa-id false))))
+            (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+        )
+        (print (format "<(TS02-C3.AQP-FVT|C_ToggleRewardLink)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_ToggleRewardLink patron fvt wstoa-id false)]))
+        (let
+            (
+                (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+            )
+            (map print
+                [
+                    (format "<<TX-INFO-GT-FVTRWD>> predicted={} real={} delta={}" [predicted real (- real predicted)])
+                    (expect "<<TX-INFO-GT-FVTRWD>> the quote equals what the op actually charged" real predicted)
+                    (expect "<<TX-INFO-GT-FVTRWD>> ...and it is a real, non-zero charge" true (> real 0.0))
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-SCROF — INFO_AQP-SCR|IssueOrtoFungibleScore: both currencies measured")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-SCROF · 01 · issue an orto-fungible score] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-SCR|IssueOrtoFungibleScore`, per the owner's spec. BOTH currencies are checked; checking
+;;only IGNIS is what let `INFO_EQUITY|IssueCompany` quote a 918-STOA operation as free.
+;;The remaining `Issue*Score` variants all read the SAME two price sources as the true-fungible one
+;;measured at <<TX-INFO-GT-SCOREISSUE>> (`URCi_IssueScore` + `URCi_IssueScoreStoa`). Measuring them
+;;anyway is the point: "they share a reader" is a claim about the source, and a shared source is
+;;exactly what was wrong in `URCi_DefineHybridSet`, whose siblings also "shared a reader".
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+    )
+    ;;The STOA fee is a real coin.transfer split 10/20/30/40 across the four fee targets, so it needs
+    ;;one managed `coin.TRANSFER` per leg, sized from the same split the collector uses.
+    (let ((split-stoa:[decimal]
+              (ref-DALOS::URC_SplitSTOAPrices KST.ANHD (ref-IGNIS::UC_StoaPrice "issue-score"))))
+        (env-sigs
+            [ { "key": "PK_AncientHodler", "caps": [] }
+              { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+              , "caps":
+                [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa)) ] } ]
+        )
+    )
+)
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+        (gas-id:string "GAS-98c486052a51")
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (AQP-INFO.INFO_AQP-SCR|IssueOrtoFungibleScore patron patron "GtOfScoreProbe" 12 1.0 1.0))
+            (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+            (pre-stoa:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
+        )
+        (print (format "<(TS02-C3.AQP-SCR|C_IssueOrtoFungibleScore)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueOrtoFungibleScore patron patron "GtOfScoreProbe" 12 1.0 1.0)]))
+        (let
+            (
+                (real-gas:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+                (real-stoa:decimal (- pre-stoa (coin.get-balance (ref-DALOS::UR_AccountStoa patron))))
+            )
+            (map print
+                [
+                    (format "<<TX-INFO-GT-SCROF>> IGNIS predicted={} real={} | STOA predicted={} real={}"
+                        [(at "ignis-need" (at "ignis" predicted)) real-gas
+                         (at "stoa-need" (at "stoa" predicted)) real-stoa])
+                    (expect "<<TX-INFO-GT-SCROF>> the IGNIS quote equals the IGNIS charged"
+                        real-gas (at "ignis-need" (at "ignis" predicted)))
+                    (expect "<<TX-INFO-GT-SCROF>> the STOA quote equals the STOA charged"
+                        real-stoa (at "stoa-need" (at "stoa" predicted)))
+                    (expect "<<TX-INFO-GT-SCROF>> ...and issuance is NOT free in STOA" true (> real-stoa 0.0))
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-SCRSF — INFO_AQP-SCR|IssueSemiFungibleScore: both currencies measured")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-SCRSF · 01 · issue a semi-fungible score] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-SCR|IssueSemiFungibleScore`, per the owner's spec. BOTH currencies are checked; checking
+;;only IGNIS is what let `INFO_EQUITY|IssueCompany` quote a 918-STOA operation as free.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+    )
+    ;;The STOA fee is a real coin.transfer split 10/20/30/40 across the four fee targets, so it needs
+    ;;one managed `coin.TRANSFER` per leg, sized from the same split the collector uses.
+    (let ((split-stoa:[decimal]
+              (ref-DALOS::URC_SplitSTOAPrices KST.ANHD (ref-IGNIS::UC_StoaPrice "issue-score"))))
+        (env-sigs
+            [ { "key": "PK_AncientHodler", "caps": [] }
+              { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+              , "caps":
+                [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa)) ] } ]
+        )
+    )
+)
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+        (gas-id:string "GAS-98c486052a51")
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (AQP-INFO.INFO_AQP-SCR|IssueSemiFungibleScore patron patron "GtSfScoreProbe" 3 true))
+            (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+            (pre-stoa:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
+        )
+        (print (format "<(TS02-C3.AQP-SCR|C_IssueSemiFungibleScore)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron patron "GtSfScoreProbe" 3 true)]))
+        (let
+            (
+                (real-gas:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+                (real-stoa:decimal (- pre-stoa (coin.get-balance (ref-DALOS::UR_AccountStoa patron))))
+            )
+            (map print
+                [
+                    (format "<<TX-INFO-GT-SCRSF>> IGNIS predicted={} real={} | STOA predicted={} real={}"
+                        [(at "ignis-need" (at "ignis" predicted)) real-gas
+                         (at "stoa-need" (at "stoa" predicted)) real-stoa])
+                    (expect "<<TX-INFO-GT-SCRSF>> the IGNIS quote equals the IGNIS charged"
+                        real-gas (at "ignis-need" (at "ignis" predicted)))
+                    (expect "<<TX-INFO-GT-SCRSF>> the STOA quote equals the STOA charged"
+                        real-stoa (at "stoa-need" (at "stoa" predicted)))
+                    (expect "<<TX-INFO-GT-SCRSF>> ...and issuance is NOT free in STOA" true (> real-stoa 0.0))
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-SCRNF — INFO_AQP-SCR|IssueNonFungibleScore: both currencies measured")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-SCRNF · 01 · issue a non-fungible score] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-SCR|IssueNonFungibleScore`, per the owner's spec. BOTH currencies are checked; checking
+;;only IGNIS is what let `INFO_EQUITY|IssueCompany` quote a 918-STOA operation as free.
+;;PRECISION MUST BE >= 3 (`02_SCORE.pact:634`) — a precision of 0 is refused by the same combined
+;;`enforce` that validates `nft-score-model`, so the error message names five unrelated parameters and
+;;says nothing about which one was wrong. The model value itself is restricted to -1, 0 or 1.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+    )
+    ;;The STOA fee is a real coin.transfer split 10/20/30/40 across the four fee targets, so it needs
+    ;;one managed `coin.TRANSFER` per leg, sized from the same split the collector uses.
+    (let ((split-stoa:[decimal]
+              (ref-DALOS::URC_SplitSTOAPrices KST.ANHD (ref-IGNIS::UC_StoaPrice "issue-score"))))
+        (env-sigs
+            [ { "key": "PK_AncientHodler", "caps": [] }
+              { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+              , "caps":
+                [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa)) ] } ]
+        )
+    )
+)
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+        (gas-id:string "GAS-98c486052a51")
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (AQP-INFO.INFO_AQP-SCR|IssueNonFungibleScore patron patron "GtNfScoreProbe" 3 1))
+            (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+            (pre-stoa:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
+        )
+        (print (format "<(TS02-C3.AQP-SCR|C_IssueNonFungibleScore)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron patron "GtNfScoreProbe" 3 1)]))
+        (let
+            (
+                (real-gas:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+                (real-stoa:decimal (- pre-stoa (coin.get-balance (ref-DALOS::UR_AccountStoa patron))))
+            )
+            (map print
+                [
+                    (format "<<TX-INFO-GT-SCRNF>> IGNIS predicted={} real={} | STOA predicted={} real={}"
+                        [(at "ignis-need" (at "ignis" predicted)) real-gas
+                         (at "stoa-need" (at "stoa" predicted)) real-stoa])
+                    (expect "<<TX-INFO-GT-SCRNF>> the IGNIS quote equals the IGNIS charged"
+                        real-gas (at "ignis-need" (at "ignis" predicted)))
+                    (expect "<<TX-INFO-GT-SCRNF>> the STOA quote equals the STOA charged"
+                        real-stoa (at "stoa-need" (at "stoa" predicted)))
+                    (expect "<<TX-INFO-GT-SCRNF>> ...and issuance is NOT free in STOA" true (> real-stoa 0.0))
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-SCRCTRL — INFO_AQP-SCR|ControlScore quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-SCRCTRL · 01 · rewrite a score's control flags] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-SCR|ControlScore`, per the owner's spec. Template: `modules/ATS.repl <<ATS-I1>>`.
+;;This preview is one of EIGHT in the AQP family that ABORT on a probe id — it reads
+;;`UR_SCR|ScoreOwnerKonto` eagerly (`02_SCORE.pact:2611`), so an unknown score dies inside the
+;;PREVIEW rather than the exec. Six of its siblings are already pinned as findings in
+;;`[6.5]_AQP-INFO.repl`; this one was not, and a real id is what makes it measurable at all.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (patron:string KST.ANHD)
+        (gas-id:string "GAS-98c486052a51")
+        (score:string "TheCodingDivision-98c486052a51")
+        (dpsf-id:string "DHCD-98c486052a51")
+    )
+    (let
+        (
+            (predicted:decimal (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-SCR|ControlScore patron score true true))))
+            (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+        )
+        (print (format "<(TS02-C3.AQP-SCR|C_ControlScore)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_ControlScore patron score true true)]))
+        (let
+            (
+                (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+            )
+            (map print
+                [
+                    (format "<<TX-INFO-GT-SCRCTRL>> predicted={} real={} delta={}" [predicted real (- real predicted)])
+                    (expect "<<TX-INFO-GT-SCRCTRL>> the quote equals what the op actually charged" real predicted)
+                    (expect "<<TX-INFO-GT-SCRCTRL>> ...and it is a real, non-zero charge" true (> real 0.0))
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-SCRBOOST — INFO_AQP-SCR|CreateScoreBoostLink quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-SCRBOOST · 01 · link one score's boost to another] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-SCR|CreateScoreBoostLink`, per the owner's spec.
+;;
+;;THE LINKED-FROM SCORE MUST HAVE NO STAKERS. `SCR|C>CREATE-BOOST-LINK-SCORE` (`02_SCORE.pact:910`)
+;;enforces `nzs-count = 0` — "vacate to reconfigure" — so every score this file actually uses is
+;;disqualified: they are the ones carrying stake. A FRESH score is the only reachable subject, and it
+;;must be issued inside this transaction because every issue block in this file rolls back.
+;;
+;;That issue is itself a STOA-charging op (measured on its own at <<TX-INFO-GT-SCOREISSUE>>), so it
+;;carries the managed caps AND closes before `pre-gas` is read — otherwise its cost would land in the
+;;figure attributed to the link.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+    )
+    (let ((split-stoa:[decimal]
+              (ref-DALOS::URC_SplitSTOAPrices KST.ANHD (ref-IGNIS::UC_StoaPrice "issue-score"))))
+        (env-sigs
+            [ { "key": "PK_AncientHodler", "caps": [] }
+              { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+              , "caps":
+                [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa)) ] } ]
+        )
+    )
+)
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (patron:string KST.ANHD)
+        (gas-id:string "GAS-98c486052a51")
+    )
+    ;;SETUP — a staker-free score to link FROM.
+    (print (format "<(setup issue fresh score)> => \"{}\""
+        [(ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron "GtBoostProbeScore" 12 1.0)]))
+    (let
+        (
+            (fresh:string (ref-U|DALOS::UDC_Makeid "GtBoostProbeScore"))
+            (boost:string (ref-U|DALOS::UDC_Makeid "TfStakeScore"))
+        )
+        (let
+            (
+                (predicted:decimal
+                    (at "ignis-need" (at "ignis"
+                        (AQP-INFO.INFO_AQP-SCR|CreateScoreBoostLink patron fresh boost))))
+                (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+            )
+            (print (format "<(TS02-C3.AQP-SCR|C_CreateScoreBoostLink)> => \"{}\""
+                [(ref-TS02-C3::AQP-SCR|C_CreateScoreBoostLink patron fresh boost)]))
+            (let
+                (
+                    (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+                )
+                (map print
+                    [
+                        (format "<<TX-INFO-GT-SCRBOOST>> predicted={} real={} delta={}"
+                            [predicted real (- real predicted)])
+                        (expect "<<TX-INFO-GT-SCRBOOST>> the quote equals what the op actually charged"
+                            real predicted)
+                        (expect "<<TX-INFO-GT-SCRBOOST>> ...and it is a real, non-zero charge"
+                            true (> real 0.0))
+                    ]
+                )
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-SCRCOMB — INFO_AQP-SCR|CombineTripletScoreModel quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-SCRCOMB · 01 · combine three models into a triplet] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-SCR|CombineTripletScoreModel`, per the owner's spec. Template: `modules/ATS.repl <<ATS-I1>>`.
+;;Three models are issued in setup. `[6.5.1]`'s own model block (<<TX-INFO-GT-MODEL>>) rolls back,
+;;so nothing it created survives to here — a triplet cannot borrow them.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (patron:string KST.ANHD)
+        (gas-id:string "GAS-98c486052a51")
+        (score:string "TheCodingDivision-98c486052a51")
+        (dpsf-id:string "DHCD-98c486052a51")
+    )
+    (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel patron "GtProbeModelA" 3 dpsf-id 12 [-2] [10.0])
+    (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel patron "GtProbeModelB" 3 dpsf-id 12 [-2] [20.0])
+    (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel patron "GtProbeModelC" 3 dpsf-id 12 [-2] [30.0])
+    (let
+        (
+            (predicted:decimal (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-SCR|CombineTripletScoreModel patron "GtProbeTriplet" (ref-U|DALOS::UDC_Makeid "GtProbeModelA") (ref-U|DALOS::UDC_Makeid "GtProbeModelB") (ref-U|DALOS::UDC_Makeid "GtProbeModelC")))))
+            (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+        )
+        (print (format "<(TS02-C3.AQP-SCR|C_CombineTripletScoreModel)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel patron "GtProbeTriplet" (ref-U|DALOS::UDC_Makeid "GtProbeModelA") (ref-U|DALOS::UDC_Makeid "GtProbeModelB") (ref-U|DALOS::UDC_Makeid "GtProbeModelC"))]))
+        (let
+            (
+                (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+            )
+            (map print
+                [
+                    (format "<<TX-INFO-GT-SCRCOMB>> predicted={} real={} delta={}" [predicted real (- real predicted)])
+                    (expect "<<TX-INFO-GT-SCRCOMB>> the quote equals what the op actually charged" real predicted)
+                    (expect "<<TX-INFO-GT-SCRCOMB>> ...and it is a real, non-zero charge" true (> real 0.0))
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-SCRFROM — INFO_AQP-SCR|IssueScoreFromModel quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-SCRFROM · 01 · issue a score from a model] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-SCR|IssueScoreFromModel`, per the owner's spec. Template: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (patron:string KST.ANHD)
+        (gas-id:string "GAS-98c486052a51")
+        (score:string "TheCodingDivision-98c486052a51")
+        (dpsf-id:string "DHCD-98c486052a51")
+    )
+    (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel patron "GtProbeModelA" 3 dpsf-id 12 [-2] [10.0])
+    (let
+        (
+            (predicted:decimal (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-SCR|IssueScoreFromModel patron patron (ref-U|DALOS::UDC_Makeid "GtProbeModelA") "GtAgencyProbe"))))
+            (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+        )
+        (print (format "<(TS02-C3.AQP-SCR|C_IssueScoreFromModel)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueScoreFromModel patron patron (ref-U|DALOS::UDC_Makeid "GtProbeModelA") "GtAgencyProbe")]))
+        (let
+            (
+                (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+            )
+            (map print
+                [
+                    (format "<<TX-INFO-GT-SCRFROM>> predicted={} real={} delta={}" [predicted real (- real predicted)])
+                    (expect "<<TX-INFO-GT-SCRFROM>> the quote equals what the op actually charged" real predicted)
+                    (expect "<<TX-INFO-GT-SCRFROM>> ...and it is a real, non-zero charge" true (> real 0.0))
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-UNSTAKE-OF — INFO_AQP-POOL|UnstakeOrtoFungible quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-UNSTAKE-OF · 01 · unstake an orto-fungible position] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-POOL|UnstakeOrtoFungible`, per the owner's spec. Template: `modules/ATS.repl <<ATS-I1>>`.
+;;
+;;A MULTI-LEG PREVIEW. The unstake side reads `URCi_*StakeFlow`-family aggregates rather than the
+;;single reader its exec bills, so preview and exec name different functions BY DESIGN and only a
+;;scale can say whether they agree — the same class as the inject family, where exactly that gap hid
+;;a missing custody-transfer leg.
+;;
+;;THE SETUP CHAIN IS ABORT -> ENABLE -> STAKE, and all three are forced by the file itself: the
+;;blocks above deliberately DRAIN every position and a drain leaves the pool vacate-FROZEN with
+;;staking DISABLED (`06_VCT.pact:3350`). Each setup op is billed and measured elsewhere
+;;(<<TX-INFO-GT-ABORT>>, <<TX-INFO-GT-ENABLE>>), so they all close before `pre-gas` is read.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (patron:string KST.ANHD)
+        (gas-id:string "GAS-98c486052a51")
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "InfoGtOfDrPool"))
+        (asset:string "MVST-98c486052a51")
+    )
+    (print (format "<(setup abort-vacate)> => \"{}\""
+        [(ref-TS02-C3::AQP-POOL|C_AbortVacate patron pool-id)]))
+    (print (format "<(setup enable-stake)> => \"{}\""
+        [(ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)]))
+    (let
+        (
+            (owned:[integer] (ref-DPOF::URH_AccountNonces patron asset))
+        )
+        (enforce (> (length owned) 0) "TX-INFO-GT-UNSTAKE-OF: ANHD needs a nonce of MVST-98c486052a51 to stake")
+        (let
+            (
+                (n:integer (at 0 owned))
+            )
+            (print (format "<(setup stake nonce {})> => \"{}\""
+                [n (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron pool-id patron patron asset [n])]))
+            (let
+                (
+                    (predicted:decimal
+                        (at "ignis-need" (at "ignis"
+                            (AQP-INFO.INFO_AQP-POOL|UnstakeOrtoFungible patron pool-id patron patron asset [n]))))
+                    (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+                )
+                (print (format "<(TS02-C3.AQP-POOL|CC_UnstakeOrtoFungible)> => \"{}\""
+                    [(ref-TS02-C3::AQP-POOL|CC_UnstakeOrtoFungible patron pool-id patron patron asset [n])]))
+                (let
+                    (
+                        (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+                    )
+                    (map print
+                        [
+                            (format "<<TX-INFO-GT-UNSTAKE-OF>> nonce={} predicted={} real={} delta={}"
+                                [n predicted real (- real predicted)])
+                            (expect "<<TX-INFO-GT-UNSTAKE-OF>> the quote equals what the unstake actually charged"
+                                real predicted)
+                            (expect "<<TX-INFO-GT-UNSTAKE-OF>> ...and it is a real, non-zero charge" true (> real 0.0))
+                        ]
+                    )
+                )
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-UNSTAKE-SF — INFO_AQP-POOL|UnstakeSemiFungibleCollectable quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-UNSTAKE-SF · 01 · unstake a semi-fungible collectable position] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-POOL|UnstakeSemiFungibleCollectable`, per the owner's spec. Template: `modules/ATS.repl <<ATS-I1>>`.
+;;
+;;A MULTI-LEG PREVIEW. The unstake side reads `URCi_*StakeFlow`-family aggregates rather than the
+;;single reader its exec bills, so preview and exec name different functions BY DESIGN and only a
+;;scale can say whether they agree — the same class as the inject family, where exactly that gap hid
+;;a missing custody-transfer leg.
+;;
+;;THE SETUP CHAIN IS ABORT -> ENABLE -> STAKE, and all three are forced by the file itself: the
+;;blocks above deliberately DRAIN every position and a drain leaves the pool vacate-FROZEN with
+;;staking DISABLED (`06_VCT.pact:3350`). Each setup op is billed and measured elsewhere
+;;(<<TX-INFO-GT-ABORT>>, <<TX-INFO-GT-ENABLE>>), so they all close before `pre-gas` is read.
+;;The SF variant takes an extra `nonce-amounts` list the OF one does not — a collectable position
+;;carries a quantity, an orto-fungible nonce does not.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (patron:string KST.ANHD)
+        (gas-id:string "GAS-98c486052a51")
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "InfoGtSfDrPool"))
+        (asset:string "DHCD-98c486052a51")
+    )
+    (print (format "<(setup abort-vacate)> => \"{}\""
+        [(ref-TS02-C3::AQP-POOL|C_AbortVacate patron pool-id)]))
+    (print (format "<(setup enable-stake)> => \"{}\""
+        [(ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)]))
+    (let
+        (
+            (owned:[integer] (ref-DPDC::URH_AccountNonces patron asset true))
+        )
+        (enforce (> (length owned) 0) "TX-INFO-GT-UNSTAKE-SF: ANHD needs a nonce of DHCD-98c486052a51 to stake")
+        (let
+            (
+                (n:integer (at 0 owned))
+            )
+            (print (format "<(setup stake nonce {})> => \"{}\""
+                [n (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id patron patron asset [n])]))
+            (let
+                (
+                    (predicted:decimal
+                        (at "ignis-need" (at "ignis"
+                            (AQP-INFO.INFO_AQP-POOL|UnstakeSemiFungibleCollectable patron pool-id patron patron asset [n] [1]))))
+                    (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+                )
+                (print (format "<(TS02-C3.AQP-POOL|CC_UnstakeSemiFungibleCollectable)> => \"{}\""
+                    [(ref-TS02-C3::AQP-POOL|CC_UnstakeSemiFungibleCollectable patron pool-id patron patron asset [n] [1])]))
+                (let
+                    (
+                        (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+                    )
+                    (map print
+                        [
+                            (format "<<TX-INFO-GT-UNSTAKE-SF>> nonce={} predicted={} real={} delta={}"
+                                [n predicted real (- real predicted)])
+                            (expect "<<TX-INFO-GT-UNSTAKE-SF>> the quote equals what the unstake actually charged"
+                                real predicted)
+                            (expect "<<TX-INFO-GT-UNSTAKE-SF>> ...and it is a real, non-zero charge" true (> real 0.0))
+                        ]
+                    )
+                )
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-STAKE-NF — INFO_AQP-POOL|StakeNonFungibleCollectable quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-STAKE-NF · 01 · stake a non-fungible collectable] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-POOL|StakeNonFungibleCollectable`, per the owner's spec. Template: `modules/ATS.repl <<ATS-I1>>`.
+;;
+;;THE NF POOL IS BORROWED, NOT BUILT. `[6.2.4]_AQP-FVT-NF.repl` already provisions `NfSyncPool` /
+;;`NfSyncScore` / `NfSyncVault` over `DHB-98c486052a51` (class 4) and issues `NfSyncAnchor` against it,
+;;and AQP-FULL loads that suite through `[6.2.4]_AQP-FVT`'s tail. Rebuilding an equivalent fixture here
+;;would mean re-paying two STOA issues for state that already exists three files up.
+;;
+;;THE NONCE IS READ BACK, and that read is also the precondition: `URH_AccountNonces` returns what the
+;;ACCOUNT holds, and a staked nonce is held by the pool — so anything it returns is provably unstaked
+;;and therefore stakeable.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (patron:string KST.ANHD)
+        (gas-id:string "GAS-98c486052a51")
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "NfSyncPool"))
+        (dpnf-id:string "DHB-98c486052a51")
+    )
+    (let
+        (
+            (owned:[integer] (ref-DPDC::URH_AccountNonces patron dpnf-id false))
+        )
+        (enforce (> (length owned) 0) "TX-INFO-GT-STAKE-NF: ANHD needs an unstaked DHB nonce")
+        (let
+            (
+                (n:integer (at 0 owned))
+            )
+            (let
+                (
+                    (predicted:decimal
+                        (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-POOL|StakeNonFungibleCollectable patron pool-id patron patron dpnf-id [n]))))
+                    (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+                )
+                (print (format "<(TS02-C3.AQP-POOL|CC_StakeNonFungibleCollectable)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id patron patron dpnf-id [n])]))
+                (let
+                    (
+                        (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+                    )
+                    (map print
+                        [
+                            (format "<<TX-INFO-GT-STAKE-NF>> nonce={} predicted={} real={} delta={}"
+                                [n predicted real (- real predicted)])
+                            (expect "<<TX-INFO-GT-STAKE-NF>> the quote equals what the op actually charged" real predicted)
+                            (expect "<<TX-INFO-GT-STAKE-NF>> ...and it is a real, non-zero charge" true (> real 0.0))
+                        ]
+                    )
+                )
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-UNSTAKE-NF — INFO_AQP-POOL|UnstakeNonFungibleCollectable quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-UNSTAKE-NF · 01 · unstake a non-fungible collectable] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-POOL|UnstakeNonFungibleCollectable`, per the owner's spec. Template: `modules/ATS.repl <<ATS-I1>>`.
+;;
+;;THE NF POOL IS BORROWED, NOT BUILT. `[6.2.4]_AQP-FVT-NF.repl` already provisions `NfSyncPool` /
+;;`NfSyncScore` / `NfSyncVault` over `DHB-98c486052a51` (class 4) and issues `NfSyncAnchor` against it,
+;;and AQP-FULL loads that suite through `[6.2.4]_AQP-FVT`'s tail. Rebuilding an equivalent fixture here
+;;would mean re-paying two STOA issues for state that already exists three files up.
+;;
+;;THE NONCE IS READ BACK, and that read is also the precondition: `URH_AccountNonces` returns what the
+;;ACCOUNT holds, and a staked nonce is held by the pool — so anything it returns is provably unstaked
+;;and therefore stakeable.
+;;The unstake side takes an extra `nonce-amounts` list; for an NFT every entry is 1.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (patron:string KST.ANHD)
+        (gas-id:string "GAS-98c486052a51")
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "NfSyncPool"))
+        (dpnf-id:string "DHB-98c486052a51")
+    )
+    (let
+        (
+            (owned:[integer] (ref-DPDC::URH_AccountNonces patron dpnf-id false))
+        )
+        (enforce (> (length owned) 0) "TX-INFO-GT-UNSTAKE-NF: ANHD needs an unstaked DHB nonce")
+        (let
+            (
+                (n:integer (at 0 owned))
+            )
+                ;;SETUP — stake first, so there is a position to operate on. The stake is itself a
+                ;;billed op (measured at <<TX-INFO-GT-STAKE-NF>>) and closes before `pre-gas` is read.
+                (print (format "<(setup stake nonce {})> => \"{}\""
+                    [n (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id patron patron dpnf-id [n])]))
+            (let
+                (
+                    (predicted:decimal
+                        (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-POOL|UnstakeNonFungibleCollectable patron pool-id patron patron dpnf-id [n] [1]))))
+                    (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+                )
+                (print (format "<(TS02-C3.AQP-POOL|CC_UnstakeNonFungibleCollectable)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|CC_UnstakeNonFungibleCollectable patron pool-id patron patron dpnf-id [n] [1])]))
+                (let
+                    (
+                        (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+                    )
+                    (map print
+                        [
+                            (format "<<TX-INFO-GT-UNSTAKE-NF>> nonce={} predicted={} real={} delta={}"
+                                [n predicted real (- real predicted)])
+                            (expect "<<TX-INFO-GT-UNSTAKE-NF>> the quote equals what the op actually charged" real predicted)
+                            (expect "<<TX-INFO-GT-UNSTAKE-NF>> ...and it is a real, non-zero charge" true (> real 0.0))
+                        ]
+                    )
+                )
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-NFSYNC — INFO_AQP-POOL|SyncNonFungibleAnchors quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-NFSYNC · 01 · repair NF anchors for a beneficiary] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-POOL|SyncNonFungibleAnchors`, per the owner's spec. Template: `modules/ATS.repl <<ATS-I1>>`.
+;;
+;;THE NF POOL IS BORROWED, NOT BUILT. `[6.2.4]_AQP-FVT-NF.repl` already provisions `NfSyncPool` /
+;;`NfSyncScore` / `NfSyncVault` over `DHB-98c486052a51` (class 4) and issues `NfSyncAnchor` against it,
+;;and AQP-FULL loads that suite through `[6.2.4]_AQP-FVT`'s tail. Rebuilding an equivalent fixture here
+;;would mean re-paying two STOA issues for state that already exists three files up.
+;;
+;;THE NONCE IS READ BACK, and that read is also the precondition: `URH_AccountNonces` returns what the
+;;ACCOUNT holds, and a staked nonce is held by the pool — so anything it returns is provably unstaked
+;;and therefore stakeable.
+;;THE THIRD ANCHOR-SYNC RECONSTRUCTION. The TF one (<<TX-INFO-GT-SYNC>>) reads
+;;`URCi_SyncTrueFungibleAnchorsFull`; the SF one (<<TX-INFO-GT-SFSYNC>>) reads
+;;`URCi_SyncCollectableAnchorsFull`. This NF variant shares the COLLECTABLE reader with SF and its
+;;@doc says the cost is son-INDEPENDENT — so this block is what turns that claim into a measurement
+;;rather than leaving the NF side asserted by inheritance from a SF number.
+;;The cap enforces there IS a live cross-pool collectable stake to repair, hence the stake in setup.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (patron:string KST.ANHD)
+        (gas-id:string "GAS-98c486052a51")
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "NfSyncPool"))
+        (dpnf-id:string "DHB-98c486052a51")
+    )
+    (let
+        (
+            (owned:[integer] (ref-DPDC::URH_AccountNonces patron dpnf-id false))
+        )
+        (enforce (> (length owned) 0) "TX-INFO-GT-NFSYNC: ANHD needs an unstaked DHB nonce")
+        (let
+            (
+                (n:integer (at 0 owned))
+            )
+                ;;SETUP — stake first, so there is a position to operate on. The stake is itself a
+                ;;billed op (measured at <<TX-INFO-GT-STAKE-NF>>) and closes before `pre-gas` is read.
+                (print (format "<(setup stake nonce {})> => \"{}\""
+                    [n (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id patron patron dpnf-id [n])]))
+            (let
+                (
+                    (predicted:decimal
+                        (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-POOL|SyncNonFungibleAnchors patron patron dpnf-id))))
+                    (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+                )
+                (print (format "<(TS02-C3.AQP-POOL|C_SyncNonFungibleAnchors)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_SyncNonFungibleAnchors patron patron dpnf-id)]))
+                (let
+                    (
+                        (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+                    )
+                    (map print
+                        [
+                            (format "<<TX-INFO-GT-NFSYNC>> nonce={} predicted={} real={} delta={}"
+                                [n predicted real (- real predicted)])
+                            (expect "<<TX-INFO-GT-NFSYNC>> the quote equals what the op actually charged" real predicted)
+                            (expect "<<TX-INFO-GT-NFSYNC>> ...and it is a real, non-zero charge" true (> real 0.0))
+                        ]
+                    )
+                )
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-NFSETDEF — INFO_AQP-SCR|IssueNonFungibleSetScoreDefinition quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-NFSETDEF · 01 · define an NF set-class score band] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-SCR|IssueNonFungibleSetScoreDefinition`, per the owner's spec. Template: `modules/ATS.repl <<ATS-I1>>`.
+;;`NfSyncScore` over `DHB-98c486052a51` is the file's one NON-FUNGIBLE score (class 4) — the
+;;definition path refuses any other class. The nonce-class must satisfy
+;;`(<= nc (UR_SetClassesUsed dpnf false))` and DHB has no set classes beyond the implicit 0, so
+;;class 0 is not an arbitrary pick but the only admissible one — the same boundary
+;;`modules/AQP.repl <<AQP-F11>>` documents on its own collection.
+;;The preview is one of the EIGHT that abort on a probe id (`02_SCORE.pact:2683` reads the score
+;;owner eagerly), which is why a real score id is what makes it measurable at all.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (patron:string KST.ANHD)
+        (gas-id:string "GAS-98c486052a51")
+        (nf-score:string (ref-U|DALOS::UDC_Makeid "NfSyncScore"))
+        (dpnf-id:string "DHB-98c486052a51")
+    )
+    (let
+        (
+            (predicted:decimal (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-SCR|IssueNonFungibleSetScoreDefinition patron nf-score dpnf-id [0] [7.0]))))
+            (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+        )
+        (print (format "<(TS02-C3.AQP-SCR|C_IssueNonFungibleSetScoreDefinition)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueNonFungibleSetScoreDefinition patron nf-score dpnf-id [0] [7.0])]))
+        (let
+            (
+                (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+            )
+            (map print
+                [
+                    (format "<<TX-INFO-GT-NFSETDEF>> predicted={} real={} delta={}" [predicted real (- real predicted)])
+                    (expect "<<TX-INFO-GT-NFSETDEF>> the quote equals what the op actually charged" real predicted)
+                    (expect "<<TX-INFO-GT-NFSETDEF>> ...and it is a real, non-zero charge" true (> real 0.0))
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-FVTCOMDEN — INFO_AQP-FVT|SetCommonDenominator quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-FVTCOMDEN · 01 · repoint a fresh farm's common denominator] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-FVT|SetCommonDenominator`, per the owner's spec.
+;;
+;;THIS WAS FILED AS "NO FIXTURE" AND THE LABEL WAS WRONG. `UEV_SetCommonDenominatorContext`
+;;(`05_FVT.pact:2119`) demands THREE things at once — farm (class 0), `can-upgrade` true, and ZERO
+;;ScoreEntityLink rows — and no standing FVT in this chain satisfies all three, because
+;;`REPL_BootstrapVault` writes a link at creation (`05_FVT.pact:3648`). The conclusion drawn from that
+;;was "unreachable"; the correct conclusion is "issue a virgin one". That is now the third fixture
+;;this pattern has decided, after <<TX-INFO-GT-FVTMOSAIC>> and <<TX-INFO-GT-SCRBOOST>>.
+;;
+;;A CLASS-0 FARM, not the class-1 vault the mosaic block issues: `05_FVT.pact:711` requires a farm to
+;;carry a REAL native DPTF common-denominator while vaults and treasuries must pass the BAR sentinel.
+;;So the fresh FVT is issued against OURO and then repointed at wrapped-STOA — a different DPTF, since
+;;repointing to the same id would be a no-op the guard has no reason to price.
+;;The issue is a billed STOA op (measured at <<TX-INFO-GT-FVTISSUE>>) and closes before the window.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+    )
+    (let ((split-stoa:[decimal]
+              (ref-DALOS::URC_SplitSTOAPrices KST.ANHD (ref-IGNIS::UC_StoaPrice "issue-fvt"))))
+        (env-sigs
+            [ { "key": "PK_AncientHodler", "caps": [] }
+              { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+              , "caps":
+                [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa)) ] } ]
+        )
+    )
+)
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (patron:string KST.ANHD)
+        (gas-id:string "GAS-98c486052a51")
+        (ouro-id:string "OURO-98c486052a51")
+    )
+    (print (format "<(setup issue fresh CLASS-0 farm)> => \"{}\""
+        [(ref-TS02-C3::AQP-FVT|C_Issue patron "GtComDenProbeFarm" patron 0 ouro-id)]))
+    (let
+        (
+            (fresh:string (ref-U|DALOS::UDC_Makeid "GtComDenProbeFarm"))
+            (new-cd:string (ref-DALOS::UR_WrappedStoaID))
+        )
+        (let
+            (
+                (predicted:decimal
+                    (at "ignis-need" (at "ignis"
+                        (AQP-INFO.INFO_AQP-FVT|SetCommonDenominator patron fresh new-cd))))
+                (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+            )
+            (print (format "<(TS02-C3.AQP-FVT|C_SetCommonDenominator)> => \"{}\""
+                [(ref-TS02-C3::AQP-FVT|C_SetCommonDenominator patron fresh new-cd)]))
+            (let
+                (
+                    (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+                )
+                (map print
+                    [
+                        ;;the precondition the guard reads, asserted rather than assumed
+                        (expect "<<TX-INFO-GT-FVTCOMDEN>> the fresh farm really has no score-entity links yet"
+                            0 (ref-RPS::UR_FVT|MemberLinkCount fresh))
+                        (format "<<TX-INFO-GT-FVTCOMDEN>> predicted={} real={} delta={}"
+                            [predicted real (- real predicted)])
+                        (expect "<<TX-INFO-GT-FVTCOMDEN>> the quote equals what the op actually charged"
+                            real predicted)
+                        (expect "<<TX-INFO-GT-FVTCOMDEN>> ...and it is a real, non-zero charge"
+                            true (> real 0.0))
+                    ]
+                )
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-SCRLQ — INFO_AQP-SCR|IssueLiquidityScore: both currencies measured")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-SCRLQ · 01 · issue a liquidity score] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-SCR|IssueLiquidityScore`, per the owner's spec. BOTH currencies
+;;are checked; checking only IGNIS is what let `INFO_EQUITY|IssueCompany` quote a 918-STOA op as free.
+;;
+;;THE LAST OF THE FIVE `Issue*Score` VARIANTS, and the only one that needs a real `lp-denominator`.
+;;`02_SCORE.pact:644` splits on class: class 0 (liquidity) requires a NON-BAR native DPTF id while
+;;classes 1-4 require BAR — which is why the other four issue blocks pass nothing here and this one
+;;cannot. The subject is the LP token of the chain's weighted OURO pool, read rather than written:
+;;an LP id is derived from its pool's token list and hardcoding one couples the block to pool ordering.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+    )
+    (let ((split-stoa:[decimal]
+              (ref-DALOS::URC_SplitSTOAPrices KST.ANHD (ref-IGNIS::UC_StoaPrice "issue-score"))))
+        (env-sigs
+            [ { "key": "PK_AncientHodler", "caps": [] }
+              { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+              , "caps":
+                [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa)) ] } ]
+        )
+    )
+)
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-SWP:module{SwapperV4} SWP)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+        (gas-id:string "GAS-98c486052a51")
+        (swpair:string "W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
+    )
+    (let
+        (
+            (lp-id:string (ref-SWP::UR_TokenLP swpair))
+        )
+        (let
+            (
+                (predicted:object{OuronetInfoV2.ClientInfo}
+                    (AQP-INFO.INFO_AQP-SCR|IssueLiquidityScore patron patron "GtLqScoreProbe" 12 lp-id 1.0 1.0))
+                (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+                (pre-stoa:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
+            )
+            (print (format "<(TS02-C3.AQP-SCR|C_IssueLiquidityScore)> => \"{}\""
+                [(ref-TS02-C3::AQP-SCR|C_IssueLiquidityScore patron patron "GtLqScoreProbe" 12 lp-id 1.0 1.0)]))
+            (let
+                (
+                    (real-gas:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+                    (real-stoa:decimal (- pre-stoa (coin.get-balance (ref-DALOS::UR_AccountStoa patron))))
+                )
+                (map print
+                    [
+                        (format "<<TX-INFO-GT-SCRLQ>> IGNIS predicted={} real={} | STOA predicted={} real={}"
+                            [(at "ignis-need" (at "ignis" predicted)) real-gas
+                             (at "stoa-need" (at "stoa" predicted)) real-stoa])
+                        (expect "<<TX-INFO-GT-SCRLQ>> the IGNIS quote equals the IGNIS charged"
+                            real-gas (at "ignis-need" (at "ignis" predicted)))
+                        (expect "<<TX-INFO-GT-SCRLQ>> the STOA quote equals the STOA charged"
+                            real-stoa (at "stoa-need" (at "stoa" predicted)))
+                        (expect "<<TX-INFO-GT-SCRLQ>> ...and issuance is NOT free in STOA" true (> real-stoa 0.0))
+                    ]
+                )
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-SCRROT — INFO_AQP-SCR|RotateScoreOwnership quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-SCRROT · 01 · hand a score to a new owner] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-SCR|RotateScoreOwnership`, per the owner's spec. Template: `modules/ATS.repl <<ATS-I1>>`.
+;;
+;;NAMED BY A SHAPE-CHECK, NEVER WEIGHED. `Kursan/aqp-info-tests.repl` calls this preview to pin that
+;;it ABORTS on a probe id — which satisfies `_scale_report.py --untested`, a reachability tool. It
+;;says nothing about whether the quote equals the charge. See `REPL/_info_measured.py`.
+;;A VIRGIN score, because rotation is refused on one whose owner is already the target and the
+;;standing scores are all ANHD's.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+    )
+    (let ((split-stoa:[decimal]
+              (ref-DALOS::URC_SplitSTOAPrices KST.ANHD (ref-IGNIS::UC_StoaPrice "issue-score"))))
+        (env-sigs
+            [ { "key": "PK_AncientHodler", "caps": [] }
+              { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+              , "caps":
+                [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa)) ] } ]
+        )
+    )
+)
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (patron:string KST.ANHD)
+        (flrn:string KST.FLRN)
+        (gas-id:string "GAS-98c486052a51")
+        (fvt:string "CodingDivisionTreasury-98c486052a51")
+        (score:string "TheCodingDivision-98c486052a51")
+        (dpsf-id:string "DHCD-98c486052a51")
+        (ouro-id:string "OURO-98c486052a51")
+    )
+    ;;SETUP — a VIRGIN score. Every standing score in this file is already employed by a pool or
+    ;;linked to an FVT, and each of the ops below refuses an entity that is. Issuing one is a
+    ;;billed STOA op (measured at <<TX-INFO-GT-SCOREISSUE>>) and closes before `pre-gas`.
+    (print (format "<(setup issue virgin score)> => \"{}\""
+        [(ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron "GtRotScoreProbe" 12 1.0)]))
+    (let
+        (
+            (fresh:string (ref-U|DALOS::UDC_Makeid "GtRotScoreProbe"))
+        )
+        (let
+            (
+                (predicted:decimal (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-SCR|RotateScoreOwnership patron fresh flrn))))
+                (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+            )
+            (print (format "<(TS02-C3.AQP-SCR|C_RotateScoreOwnership)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_RotateScoreOwnership patron fresh flrn)]))
+            (let
+                (
+                    (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+                )
+                (map print
+                    [
+                        (format "<<TX-INFO-GT-SCRROT>> predicted={} real={} delta={}" [predicted real (- real predicted)])
+                        (expect "<<TX-INFO-GT-SCRROT>> the quote equals what the op actually charged" real predicted)
+                        (expect "<<TX-INFO-GT-SCRROT>> ...and it is a real, non-zero charge" true (> real 0.0))
+                    ]
+                )
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-SCRDEB — INFO_AQP-SCR|EnableDebBoost quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-SCRDEB · 01 · switch on a score's deb boost] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-SCR|EnableDebBoost`, per the owner's spec. Template: `modules/ATS.repl <<ATS-I1>>`.
+;;
+;;NAMED BY A SHAPE-CHECK, NEVER WEIGHED. `Kursan/aqp-info-tests.repl` calls this preview to pin that
+;;it ABORTS on a probe id — which satisfies `_scale_report.py --untested`, a reachability tool. It
+;;says nothing about whether the quote equals the charge. See `REPL/_info_measured.py`.
+;;IRREVERSIBLE — there is no disable, so this must run on an entity the file does not depend on,
+;;and inside a rollback. A virgin score is both.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+    )
+    (let ((split-stoa:[decimal]
+              (ref-DALOS::URC_SplitSTOAPrices KST.ANHD (ref-IGNIS::UC_StoaPrice "issue-score"))))
+        (env-sigs
+            [ { "key": "PK_AncientHodler", "caps": [] }
+              { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+              , "caps":
+                [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa)) ] } ]
+        )
+    )
+)
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (patron:string KST.ANHD)
+        (flrn:string KST.FLRN)
+        (gas-id:string "GAS-98c486052a51")
+        (fvt:string "CodingDivisionTreasury-98c486052a51")
+        (score:string "TheCodingDivision-98c486052a51")
+        (dpsf-id:string "DHCD-98c486052a51")
+        (ouro-id:string "OURO-98c486052a51")
+    )
+    ;;SETUP — a VIRGIN score. Every standing score in this file is already employed by a pool or
+    ;;linked to an FVT, and each of the ops below refuses an entity that is. Issuing one is a
+    ;;billed STOA op (measured at <<TX-INFO-GT-SCOREISSUE>>) and closes before `pre-gas`.
+    (print (format "<(setup issue virgin score)> => \"{}\""
+        [(ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron "GtDebScoreProbe" 12 1.0)]))
+    (let
+        (
+            (fresh:string (ref-U|DALOS::UDC_Makeid "GtDebScoreProbe"))
+        )
+        (let
+            (
+                (predicted:decimal (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-SCR|EnableDebBoost patron fresh))))
+                (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+            )
+            (print (format "<(TS02-C3.AQP-SCR|C_EnableDebBoost)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_EnableDebBoost patron fresh)]))
+            (let
+                (
+                    (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+                )
+                (map print
+                    [
+                        (format "<<TX-INFO-GT-SCRDEB>> predicted={} real={} delta={}" [predicted real (- real predicted)])
+                        (expect "<<TX-INFO-GT-SCRDEB>> the quote equals what the op actually charged" real predicted)
+                        (expect "<<TX-INFO-GT-SCRDEB>> ...and it is a real, non-zero charge" true (> real 0.0))
+                    ]
+                )
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-SCRSFDEF — INFO_AQP-SCR|IssueSemiFungibleScoreDefinition quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-SCRSFDEF · 01 · define an SF nonce score band] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-SCR|IssueSemiFungibleScoreDefinition`, per the owner's spec. Template: `modules/ATS.repl <<ATS-I1>>`.
+;;
+;;NAMED BY A SHAPE-CHECK, NEVER WEIGHED. `Kursan/aqp-info-tests.repl` calls this preview to pin that
+;;it ABORTS on a probe id — which satisfies `_scale_report.py --untested`, a reachability tool. It
+;;says nothing about whether the quote equals the charge. See `REPL/_info_measured.py`.
+;;The score must be class 3 (semi-fungible) to accept an SF definition, so the virgin one is issued
+;;through `C_IssueSemiFungibleScore` rather than the true-fungible constructor used above — AND with
+;;`sft-equality = FALSE`. `02_SCORE.pact:790` refuses a per-nonce definition on an equality score:
+;;equality means every nonce scores the same, so a per-nonce value table would contradict it. The
+;;error names five conditions at once, so the failing one has to be read out of the source.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+    )
+    (let ((split-stoa:[decimal]
+              (ref-DALOS::URC_SplitSTOAPrices KST.ANHD (ref-IGNIS::UC_StoaPrice "issue-score"))))
+        (env-sigs
+            [ { "key": "PK_AncientHodler", "caps": [] }
+              { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+              , "caps":
+                [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa)) ] } ]
+        )
+    )
+)
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (patron:string KST.ANHD)
+        (flrn:string KST.FLRN)
+        (gas-id:string "GAS-98c486052a51")
+        (fvt:string "CodingDivisionTreasury-98c486052a51")
+        (score:string "TheCodingDivision-98c486052a51")
+        (dpsf-id:string "DHCD-98c486052a51")
+        (ouro-id:string "OURO-98c486052a51")
+    )
+    ;;SETUP — a VIRGIN class-3 score; a definition may only be attached to a matching class.
+    (print (format "<(setup issue virgin SF score)> => \"{}\""
+        [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron patron "GtSfDefScoreProbe" 3 false)]))
+    (let
+        (
+            (fresh:string (ref-U|DALOS::UDC_Makeid "GtSfDefScoreProbe"))
+        )
+        (let
+            (
+                (predicted:decimal (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-SCR|IssueSemiFungibleScoreDefinition patron fresh dpsf-id [1 2] [10.0 20.0]))))
+                (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+            )
+            (print (format "<(TS02-C3.AQP-SCR|C_IssueSemiFungibleScoreDefinition)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition patron fresh dpsf-id [1 2] [10.0 20.0])]))
+            (let
+                (
+                    (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+                )
+                (map print
+                    [
+                        (format "<<TX-INFO-GT-SCRSFDEF>> predicted={} real={} delta={}" [predicted real (- real predicted)])
+                        (expect "<<TX-INFO-GT-SCRSFDEF>> the quote equals what the op actually charged" real predicted)
+                        (expect "<<TX-INFO-GT-SCRSFDEF>> ...and it is a real, non-zero charge" true (> real 0.0))
+                    ]
+                )
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-POOLADD — INFO_AQP-POOL|AddScore quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-POOLADD · 01 · admit a score into a pool] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-POOL|AddScore`, per the owner's spec. Template: `modules/ATS.repl <<ATS-I1>>`.
+;;
+;;NAMED BY A SHAPE-CHECK, NEVER WEIGHED. `Kursan/aqp-info-tests.repl` calls this preview to pin that
+;;it ABORTS on a probe id — which satisfies `_scale_report.py --untested`, a reachability tool. It
+;;says nothing about whether the quote equals the charge. See `REPL/_info_measured.py`.
+;;A VIRGIN score again: `AQP-POOL|C_AddScore` refuses a score already linked to an FVT, and every
+;;standing one is. The pool is the file's TF stake pool, which has free slots (the ceiling is 7).
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+    )
+    (let ((split-stoa:[decimal]
+              (ref-DALOS::URC_SplitSTOAPrices KST.ANHD (ref-IGNIS::UC_StoaPrice "issue-score"))))
+        (env-sigs
+            [ { "key": "PK_AncientHodler", "caps": [] }
+              { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+              , "caps":
+                [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa)) ] } ]
+        )
+    )
+)
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (patron:string KST.ANHD)
+        (flrn:string KST.FLRN)
+        (gas-id:string "GAS-98c486052a51")
+        (fvt:string "CodingDivisionTreasury-98c486052a51")
+        (score:string "TheCodingDivision-98c486052a51")
+        (dpsf-id:string "DHCD-98c486052a51")
+        (ouro-id:string "OURO-98c486052a51")
+    )
+    ;;SETUP — a VIRGIN score. Every standing score in this file is already employed by a pool or
+    ;;linked to an FVT, and each of the ops below refuses an entity that is. Issuing one is a
+    ;;billed STOA op (measured at <<TX-INFO-GT-SCOREISSUE>>) and closes before `pre-gas`.
+    (print (format "<(setup issue virgin score)> => \"{}\""
+        [(ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron "GtPoolAddScoreProbe" 12 1.0)]))
+    (let
+        (
+            (fresh:string (ref-U|DALOS::UDC_Makeid "GtPoolAddScoreProbe"))
+        )
+        (let
+            (
+                (predicted:decimal (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-POOL|AddScore patron (ref-U|DALOS::UDC_Makeid "TfStakePool") fresh))))
+                (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+            )
+            (print (format "<(TS02-C3.AQP-POOL|C_AddScore)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_AddScore patron (ref-U|DALOS::UDC_Makeid "TfStakePool") fresh)]))
+            (let
+                (
+                    (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+                )
+                (map print
+                    [
+                        (format "<<TX-INFO-GT-POOLADD>> predicted={} real={} delta={}" [predicted real (- real predicted)])
+                        (expect "<<TX-INFO-GT-POOLADD>> the quote equals what the op actually charged" real predicted)
+                        (expect "<<TX-INFO-GT-POOLADD>> ...and it is a real, non-zero charge" true (> real 0.0))
+                    ]
+                )
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-POOLREV — INFO_AQP-POOL|RevokeScore quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-POOLREV · 01 · remove a score from a pool] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-POOL|RevokeScore`, per the owner's spec. Template: `modules/ATS.repl <<ATS-I1>>`.
+;;NAMED BY A SHAPE-CHECK IN `Kursan/aqp-info-tests.repl`, NEVER WEIGHED — see `REPL/_info_measured.py`
+;;for why a reachability count is not a cost proof.
+;;ADD THEN REVOKE, in one transaction. Revocation is refused on a score carrying live stake, so
+;;the only safely revokable score is one admitted moments earlier with nothing staked against it.
+;;The add is measured on its own at <<TX-INFO-GT-POOLADD>>.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+    )
+    (let ((split-stoa:[decimal]
+              (ref-DALOS::URC_SplitSTOAPrices KST.ANHD (ref-IGNIS::UC_StoaPrice "issue-score"))))
+        (env-sigs
+            [ { "key": "PK_AncientHodler", "caps": [] }
+              { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+              , "caps":
+                [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa)) ] } ]
+        )
+    )
+)
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-U|CT:module{OuronetConstantsV2} U|CT)
+        (patron:string KST.ANHD)
+        (flrn:string KST.FLRN)
+        (gas-id:string "GAS-98c486052a51")
+        (fvt:string "CodingDivisionTreasury-98c486052a51")
+        (ouro-id:string "OURO-98c486052a51")
+    )
+    ;;SETUP — a VIRGIN score. Every standing score here is already employed by a pool or linked
+    ;;to an FVT, and the ops below refuse an entity that is. The issue is a billed STOA op
+    ;;(measured at <<TX-INFO-GT-SCOREISSUE>>) and closes before `pre-gas` is read.
+    (print (format "<(setup issue virgin score)> => \"{}\""
+        [(ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron "GtPoolRevScoreProbe" 12 1.0)]))
+    (print (format "<(setup add to pool)> => \"{}\""
+        [(ref-TS02-C3::AQP-POOL|C_AddScore patron (ref-U|DALOS::UDC_Makeid "TfStakePool")
+            (ref-U|DALOS::UDC_Makeid "GtPoolRevScoreProbe"))]))
+    (let
+        (
+            (fresh:string (ref-U|DALOS::UDC_Makeid "GtPoolRevScoreProbe"))
+        )
+        (let
+            (
+                (predicted:decimal (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-POOL|RevokeScore patron (ref-U|DALOS::UDC_Makeid "TfStakePool") fresh))))
+                (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+            )
+            (print (format "<(TS02-C3.AQP-POOL|C_RevokeScore)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_RevokeScore patron (ref-U|DALOS::UDC_Makeid "TfStakePool") fresh)]))
+            (let
+                (
+                    (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+                )
+                (map print
+                    [
+                        (format "<<TX-INFO-GT-POOLREV>> predicted={} real={} delta={}" [predicted real (- real predicted)])
+                        (expect "<<TX-INFO-GT-POOLREV>> the quote equals what the op actually charged" real predicted)
+                        (expect "<<TX-INFO-GT-POOLREV>> ...and it is a real, non-zero charge" true (> real 0.0))
+                    ]
+                )
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-FVTSEADD — INFO_AQP-FVT|AddScoreEntity quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-FVTSEADD · 01 · admit a score entity into a vault] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-FVT|AddScoreEntity`, per the owner's spec. Template: `modules/ATS.repl <<ATS-I1>>`.
+;;NAMED BY A SHAPE-CHECK IN `Kursan/aqp-info-tests.repl`, NEVER WEIGHED — see `REPL/_info_measured.py`
+;;for why a reachability count is not a cost proof.
+;;`score-entity-type` 1 is a SCORE (3 is a triplet). The entity must not already be linked to this
+;;FVT, which is why it is virgin rather than borrowed from the file's standing set.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+    )
+    (let ((split-stoa:[decimal]
+              (ref-DALOS::URC_SplitSTOAPrices KST.ANHD (ref-IGNIS::UC_StoaPrice "issue-score"))))
+        (env-sigs
+            [ { "key": "PK_AncientHodler", "caps": [] }
+              { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+              , "caps":
+                [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa)) ] } ]
+        )
+    )
+)
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-U|CT:module{OuronetConstantsV2} U|CT)
+        (patron:string KST.ANHD)
+        (flrn:string KST.FLRN)
+        (gas-id:string "GAS-98c486052a51")
+        (fvt:string "CodingDivisionTreasury-98c486052a51")
+        (ouro-id:string "OURO-98c486052a51")
+    )
+    ;;SETUP — a VIRGIN score. Every standing score here is already employed by a pool or linked
+    ;;to an FVT, and the ops below refuse an entity that is. The issue is a billed STOA op
+    ;;(measured at <<TX-INFO-GT-SCOREISSUE>>) and closes before `pre-gas` is read.
+    (print (format "<(setup issue virgin score)> => \"{}\""
+        [(ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron "GtSeAddScoreProbe" 12 1.0)]))
+    ;;...and the score must be EMPLOYED BY A POOL before a vault will admit it: `05_FVT.pact:1574`
+    ;;reads `UR_AQP|PoolAssetId` on the score's pool, and an unemployed score carries the BAR sentinel
+    ;;there — so the failure is a raw table miss on key "|" that names neither the score nor the rule.
+    (print (format "<(setup employ it in a pool)> => \"{}\""
+        [(ref-TS02-C3::AQP-POOL|C_AddScore patron (ref-U|DALOS::UDC_Makeid "TfStakePool")
+            (ref-U|DALOS::UDC_Makeid "GtSeAddScoreProbe"))]))
+    (let
+        (
+            (fresh:string (ref-U|DALOS::UDC_Makeid "GtSeAddScoreProbe"))
+        )
+        (let
+            (
+                (predicted:decimal (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-FVT|AddScoreEntity patron fvt 1 fresh))))
+                (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+            )
+            (print (format "<(TS02-C3.AQP-FVT|C_AddScoreEntity)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron fvt 1 fresh)]))
+            (let
+                (
+                    (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+                )
+                (map print
+                    [
+                        (format "<<TX-INFO-GT-FVTSEADD>> predicted={} real={} delta={}" [predicted real (- real predicted)])
+                        (expect "<<TX-INFO-GT-FVTSEADD>> the quote equals what the op actually charged" real predicted)
+                        (expect "<<TX-INFO-GT-FVTSEADD>> ...and it is a real, non-zero charge" true (> real 0.0))
+                    ]
+                )
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-FVTRWDADD — INFO_AQP-FVT|AddRewardLink quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-FVTRWDADD · 01 · add a reward lane to a vault] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-FVT|AddRewardLink`, per the owner's spec. Template: `modules/ATS.repl <<ATS-I1>>`.
+;;NAMED BY A SHAPE-CHECK IN `Kursan/aqp-info-tests.repl`, NEVER WEIGHED — see `REPL/_info_measured.py`
+;;for why a reachability count is not a cost proof.
+;;OURO rather than wrapped-STOA: `[6.4]_AQP-EXHAUSTIVE-FVT-ADMIN` already links WSTOA to this
+;;treasury and a duplicate link is refused (`:191`). `multiplet-family-id` is the BAR sentinel —
+;;a plain reward lane, not a multiplet base.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+    )
+    (let ((split-stoa:[decimal]
+              (ref-DALOS::URC_SplitSTOAPrices KST.ANHD (ref-IGNIS::UC_StoaPrice "issue-score"))))
+        (env-sigs
+            [ { "key": "PK_AncientHodler", "caps": [] }
+              { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+              , "caps":
+                [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa)) ] } ]
+        )
+    )
+)
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-U|CT:module{OuronetConstantsV2} U|CT)
+        (patron:string KST.ANHD)
+        (flrn:string KST.FLRN)
+        (gas-id:string "GAS-98c486052a51")
+        (fvt:string "CodingDivisionTreasury-98c486052a51")
+        (ouro-id:string "OURO-98c486052a51")
+    )
+    (let
+        (
+            (fresh:string (ref-U|DALOS::UDC_Makeid "GtUnusedProbe"))
+        )
+        (let
+            (
+                (predicted:decimal (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-FVT|AddRewardLink patron fvt ouro-id false (ref-U|CT::CT_BAR)))))
+                (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+            )
+            (print (format "<(TS02-C3.AQP-FVT|C_AddRewardLink)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_AddRewardLink patron fvt ouro-id false (ref-U|CT::CT_BAR))]))
+            (let
+                (
+                    (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+                )
+                (map print
+                    [
+                        (format "<<TX-INFO-GT-FVTRWDADD>> predicted={} real={} delta={}" [predicted real (- real predicted)])
+                        (expect "<<TX-INFO-GT-FVTRWDADD>> the quote equals what the op actually charged" real predicted)
+                        (expect "<<TX-INFO-GT-FVTRWDADD>> ...and it is a real, non-zero charge" true (> real 0.0))
+                    ]
+                )
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-FVTROT — INFO_AQP-FVT|RotateOwnership quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-FVTROT · 01 · hand a vault to a new owner] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-FVT|RotateOwnership`, per the owner's spec. Template: `modules/ATS.repl <<ATS-I1>>`.
+;;NAMED BY A SHAPE-CHECK IN `Kursan/aqp-info-tests.repl`, NEVER WEIGHED — see `REPL/_info_measured.py`
+;;for why a reachability count is not a cost proof.
+;;`CanChangeOwner` is asserted true on this treasury by `[6.4]_AQP-EXHAUSTIVE-FVT-ADMIN:69`, and
+;;the exec refuses a rotation to the CURRENT owner — so the target is FLRN, not ANHD.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+    )
+    (let ((split-stoa:[decimal]
+              (ref-DALOS::URC_SplitSTOAPrices KST.ANHD (ref-IGNIS::UC_StoaPrice "issue-score"))))
+        (env-sigs
+            [ { "key": "PK_AncientHodler", "caps": [] }
+              { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+              , "caps":
+                [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa)) ] } ]
+        )
+    )
+)
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-U|CT:module{OuronetConstantsV2} U|CT)
+        (patron:string KST.ANHD)
+        (flrn:string KST.FLRN)
+        (gas-id:string "GAS-98c486052a51")
+        (fvt:string "CodingDivisionTreasury-98c486052a51")
+        (ouro-id:string "OURO-98c486052a51")
+    )
+    (let
+        (
+            (fresh:string (ref-U|DALOS::UDC_Makeid "GtUnusedProbe"))
+        )
+        (let
+            (
+                (predicted:decimal (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-FVT|RotateOwnership patron fvt flrn))))
+                (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+            )
+            (print (format "<(TS02-C3.AQP-FVT|C_RotateOwnership)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_RotateOwnership patron fvt flrn)]))
+            (let
+                (
+                    (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+                )
+                (map print
+                    [
+                        (format "<<TX-INFO-GT-FVTROT>> predicted={} real={} delta={}" [predicted real (- real predicted)])
+                        (expect "<<TX-INFO-GT-FVTROT>> the quote equals what the op actually charged" real predicted)
+                        (expect "<<TX-INFO-GT-FVTROT>> ...and it is a real, non-zero charge" true (> real 0.0))
+                    ]
+                )
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-SCRNFDEF — INFO_AQP-SCR|IssueNonFungibleScoreDefinition quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-SCRNFDEF · 01 · define an NF TRAIT score band] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-SCR|IssueNonFungibleScoreDefinition`, per the owner's spec. Template: `modules/ATS.repl <<ATS-I1>>`.
+;;NAMED BY A SHAPE-CHECK IN `Kursan/aqp-info-tests.repl`, NEVER WEIGHED — see `REPL/_info_measured.py`.
+;;The TRAIT variant, as against the SET-CLASS one measured at <<TX-INFO-GT-NFSETDEF>>. Both attach
+;;to a class-4 score, and `NfSyncScore` over DHB is the file's only one; they differ in which
+;;branch of `UEV_NonFungibleScoreDefinition` they take — trait-keys non-empty versus
+;;nonce-classes non-empty, with an exactly-one-branch guard between them.
+;;
+;;THE TRAIT KEY MUST ALREADY EXIST ON THE COLLECTION. `02_SCORE.pact:2908` reads DHB nonce 1's raw
+;;metadata and requires `(contains trait-key meta-data)` — so the key is `"Rarity"`, capital R, as
+;;the Bloodshed minter writes it (`01_BSD-L.pact:297`). A lower-case "rarity" fails with a message
+;;listing key, value, score AND precision, none of which is the thing that was wrong.
+;;The VALUE is free (2..256 chars) because a definition declares a band rather than matching a nonce.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+    )
+    (let ((split-stoa:[decimal]
+              (ref-DALOS::URC_SplitSTOAPrices KST.ANHD (ref-IGNIS::UC_StoaPrice "issue-score"))))
+        (env-sigs
+            [ { "key": "PK_AncientHodler", "caps": [] }
+              { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+              , "caps":
+                [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa)) ] } ]
+        )
+    )
+)
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (patron:string KST.ANHD)
+        (gas-id:string "GAS-98c486052a51")
+        (dpnf-id:string "DHB-98c486052a51")
+    )
+    (let
+        (
+            (predicted:decimal (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-SCR|IssueNonFungibleScoreDefinition patron (ref-U|DALOS::UDC_Makeid "NfSyncScore") dpnf-id ["Rarity"] ["Common"] [25.0]))))
+            (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+        )
+        (print (format "<(TS02-C3.AQP-SCR|C_IssueNonFungibleScoreDefinition)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScoreDefinition patron (ref-U|DALOS::UDC_Makeid "NfSyncScore") dpnf-id ["Rarity"] ["Common"] [25.0])]))
+        (let
+            (
+                (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+            )
+            (map print
+                [
+                    (format "<<TX-INFO-GT-SCRNFDEF>> predicted={} real={} delta={}" [predicted real (- real predicted)])
+                    (expect "<<TX-INFO-GT-SCRNFDEF>> the quote equals what the op actually charged" real predicted)
+                    (expect "<<TX-INFO-GT-SCRNFDEF>> ...and it is a real, non-zero charge" true (> real 0.0))
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-SCRTRIP — INFO_AQP-SCR|IssueTriplet quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-SCRTRIP · 01 · bundle three scores into a triplet] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-SCR|IssueTriplet`, per the owner's spec. Template: `modules/ATS.repl <<ATS-I1>>`.
+;;NAMED BY A SHAPE-CHECK IN `Kursan/aqp-info-tests.repl`, NEVER WEIGHED — see `REPL/_info_measured.py`.
+;;THREE VIRGIN SCORES, same class and same owner — the triplet guard (`02_SCORE.pact:925`) wants
+;;three DISTINCT scores sharing both, and each score may belong to at most ONE triplet ever. Every
+;;standing score in this file is either already bundled or employed, so all three are issued here.
+;;That is three STOA-charging setup ops (each measured at <<TX-INFO-GT-SCOREISSUE>>), closing before
+;;the window opens — and the managed `coin.TRANSFER` caps are sized for THREE of them. A managed cap
+;;caps the CUMULATIVE transfer, so the one-issue split every other block uses is exhausted by the
+;;third setup call and fails as "STOA TRANSFER exceeded for balance 0.0" — a funding message that
+;;names neither the cap nor the op that ran out of it.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+    )
+    (let ((split-stoa:[decimal]
+              (ref-DALOS::URC_SplitSTOAPrices KST.ANHD (* 3.0 (ref-IGNIS::UC_StoaPrice "issue-score")))))
+        (env-sigs
+            [ { "key": "PK_AncientHodler", "caps": [] }
+              { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+              , "caps":
+                [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa)) ] } ]
+        )
+    )
+)
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (patron:string KST.ANHD)
+        (gas-id:string "GAS-98c486052a51")
+        (dpnf-id:string "DHB-98c486052a51")
+    )
+    (print (format "<(setup issue GtTripBronze)> => \"{}\""
+        [(ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron "GtTripBronze" 12 1.0)]))
+    (print (format "<(setup issue GtTripSilver)> => \"{}\""
+        [(ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron "GtTripSilver" 12 1.0)]))
+    (print (format "<(setup issue GtTripGolden)> => \"{}\""
+        [(ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron "GtTripGolden" 12 1.0)]))
+    (let
+        (
+            (predicted:decimal (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-SCR|IssueTriplet patron (ref-U|DALOS::UDC_Makeid "GtTripBronze") (ref-U|DALOS::UDC_Makeid "GtTripSilver") (ref-U|DALOS::UDC_Makeid "GtTripGolden")))))
+            (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+        )
+        (print (format "<(TS02-C3.AQP-SCR|C_IssueTriplet)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueTriplet patron (ref-U|DALOS::UDC_Makeid "GtTripBronze") (ref-U|DALOS::UDC_Makeid "GtTripSilver") (ref-U|DALOS::UDC_Makeid "GtTripGolden"))]))
+        (let
+            (
+                (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+            )
+            (map print
+                [
+                    (format "<<TX-INFO-GT-SCRTRIP>> predicted={} real={} delta={}" [predicted real (- real predicted)])
+                    (expect "<<TX-INFO-GT-SCRTRIP>> the quote equals what the op actually charged" real predicted)
+                    (expect "<<TX-INFO-GT-SCRTRIP>> ...and it is a real, non-zero charge" true (> real 0.0))
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-SCRBCLINK — INFO_AQP-SCR|CreateScoreBoostClassLink quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-SCRBCLINK · 01 · link a score to a boost CLASS] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-SCR|CreateScoreBoostClassLink`, per the owner's spec.
+;;NAMED BY AN ABORT-PIN IN `Kursan/aqp-info-tests.repl`, NEVER WEIGHED — see `REPL/_info_measured.py`.
+;;
+;;NOT TO BE CONFUSED WITH ITS NEIGHBOUR. `CreateScoreBoostLink` (measured at <<TX-INFO-GT-SCRBOOST>>)
+;;links a score to ANOTHER SCORE; this one links a score to a boost CLASS — an anchor-group object
+;;that has no constructor of its own. A class is minted as a SIDE EFFECT of issuing an anchor with
+;;`acnoi = true`, which is why there is no `C_IssueBoostClass` to call — and why the setup below has
+;;to issue an ANCHOR just to obtain one. `[6.2.1]` creates `CoreBoostTFa` the same way, but it is
+;;INACTIVE by this point in the chain, and the link guard demands an active class.
+;;
+;;The score is VIRGIN: the link is one-shot per score, and every standing score here is spoken for.
+;;Its issue is a billed STOA op (measured at <<TX-INFO-GT-SCOREISSUE>>) and closes before the window.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+    )
+    (let ((split-stoa:[decimal]
+              (ref-DALOS::URC_SplitSTOAPrices KST.ANHD
+                  (+ (ref-IGNIS::UC_StoaPrice "issue-score") (* 2.0 (ref-IGNIS::UC_StoaPrice "anchor"))))))
+        (env-sigs
+            [ { "key": "PK_AncientHodler", "caps": [] }
+              { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+              , "caps":
+                [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa)) ] } ]
+        )
+    )
+)
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (patron:string KST.ANHD)
+        (gas-id:string "GAS-98c486052a51")
+        (boost-class:string "GtBcProbeClass-98c486052a51")
+        (ouro-id:string "OURO-98c486052a51")
+    )
+    ;;SETUP — a FRESH boost class. `CoreBoostTFa` from `[6.2.1]` exists but is INACTIVE by this point
+    ;;("BoostClass must be active", `02_SCORE.pact:894`), and a class has no constructor of its own: it
+    ;;is minted as a side effect of issuing an anchor with `acnoi = true`, which is why the setup below
+    ;;issues an ANCHOR to obtain one. That anchor issue costs 2x the STOA anchor price precisely
+    ;;BECAUSE `acnoi` is true, which is what the cap split above is sized for.
+    (print (format "<(setup issue anchor + mint boost class)> => \"{}\""
+        [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "GtBcProbeAnchor" ouro-id true
+            "GtBcProbeClass" 3 100.0 1000.0)]))
+    (print (format "<(setup issue virgin score)> => \"{}\""
+        [(ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron "GtBcLinkScoreProbe" 12 1.0)]))
+    (let
+        (
+            (fresh:string (ref-U|DALOS::UDC_Makeid "GtBcLinkScoreProbe"))
+        )
+        (let
+            (
+                (predicted:decimal
+                    (at "ignis-need" (at "ignis"
+                        (AQP-INFO.INFO_AQP-SCR|CreateScoreBoostClassLink patron fresh boost-class))))
+                (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+            )
+            (print (format "<(TS02-C3.AQP-SCR|C_CreateScoreBoostClassLink)> => \"{}\""
+                [(ref-TS02-C3::AQP-SCR|C_CreateScoreBoostClassLink patron fresh boost-class)]))
+            (let
+                (
+                    (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+                )
+                (map print
+                    [
+                        (format "<<TX-INFO-GT-SCRBCLINK>> predicted={} real={} delta={}"
+                            [predicted real (- real predicted)])
+                        (expect "<<TX-INFO-GT-SCRBCLINK>> the quote equals what the op actually charged"
+                            real predicted)
+                        (expect "<<TX-INFO-GT-SCRBCLINK>> ...and it is a real, non-zero charge"
+                            true (> real 0.0))
+                    ]
+                )
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-INFO-GT-MULTIPLET — INFO_AQP-FVT|IssueMultipletFamily quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 200000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-MULTIPLET · 01 · issue a multiplet family over a fresh ATS ladder] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-FVT|IssueMultipletFamily`, per the owner's spec. Template:
+;;`modules/ATS.repl <<ATS-I1>>`. Never named anywhere before this block.
+;;
+;;THE LADDER IS THE FIXTURE, and it is the same shape `modules/ATS.repl <<ATS-I36>>` builds for Curl.
+;;`UEV_IssueMultipletFamilyContext` (`05_FVT.pact:1979`) wants a two-rung chain:
+;;    ats-0-1 : reward token = token-0, cold-RBT = token-1   (the Coil output)
+;;    ats-1-2 : reward token = token-1, cold-RBT = token-2   (the Curl output)
+;;plus all three tokens and both pairs distinct. Nothing on this chain forms it — AQP-FULL does not
+;;even load `[6.6]_ATS.repl` — so all five entities are issued here. Five STOA-charging setup ops, each
+;;measured elsewhere (`modules/DPTF.repl <<DPTF-I24>>`, `modules/ATS.repl <<ATS-I32>>`), and all of them
+;;close before `pre-gas` is read.
+;;
+;;This is the last preview in the surface that needed a fixture built rather than found; the remainder
+;;are structural (internal helpers, defpacts, and ops that credit rather than charge).
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+            ]
+        }
+    ]
+)
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (patron:string KST.ANHD)
+        (t0:string "GTM0-98c486052a51")
+        (t1:string "GTM1-98c486052a51")
+        (t2:string "GTM2-98c486052a51")
+        (p01:string "GtMultPair01-98c486052a51")
+        (p12:string "GtMultPair12-98c486052a51")
+        (gas-id:string "GAS-98c486052a51")
+    )
+    ;;SETUP — three virgin DPTFs and the two-rung ATS ladder that chains them.
+    (ref-TS01-C1::DPTF|C_Issue patron patron ["GtMultTok0"] ["GTM0"] [24] [true] [true] [true] [true] [true] [true])
+    (ref-TS01-C1::DPTF|C_Issue patron patron ["GtMultTok1"] ["GTM1"] [24] [true] [true] [true] [true] [true] [true])
+    (ref-TS01-C1::DPTF|C_Issue patron patron ["GtMultTok2"] ["GTM2"] [24] [true] [true] [true] [true] [true] [true])
+    (ref-TS01-C2::ATS|C_Issue patron patron ["GtMultPair01"] [24] [t0] [false] [t1] [true])
+    (ref-TS01-C2::ATS|C_Issue patron patron ["GtMultPair12"] [24] [t1] [false] [t2] [true])
+    (let
+        (
+            (predicted:decimal
+                (at "ignis-need" (at "ignis"
+                    (AQP-INFO.INFO_AQP-FVT|IssueMultipletFamily patron t0 t1 t2 p01 p12))))
+            (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+        )
+        (print (format "<(TS02-C3.AQP-FVT|C_IssueMultipletFamily)> => \"{}\""
+            [(ref-TS02-C3::AQP-FVT|C_IssueMultipletFamily patron t0 t1 t2 p01 p12)]))
+        (let
+            (
+                (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+            )
+            (map print
+                [
+                    (format "<<TX-INFO-GT-MULTIPLET>> predicted={} real={} delta={}"
+                        [predicted real (- real predicted)])
+                    (expect "<<TX-INFO-GT-MULTIPLET>> the quote equals what the op actually charged"
+                        real predicted)
+                    (expect "<<TX-INFO-GT-MULTIPLET>> ...and it is a real, non-zero charge"
+                        true (> real 0.0))
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+(begin-tx "TX-INFO-GT-QSPLIT — INFO_AQP-FVT|SetQualitySplit quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 200000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-QSPLIT · 01 · set a multiplet reward quality split] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_AQP-FVT|SetQualitySplit`, per the owner's spec. Template:
+;;`modules/ATS.repl <<ATS-I1>>`. Named by an abort-pin in `Kursan/aqp-info-tests.repl`, never weighed.
+;;
+;;THE DEEPEST FIXTURE IN THE SURFACE, and it stacks on the previous block's. `UEV_QualitySplitContext`
+;;(`04_RPS.pact:3033`) requires the reward link to be of kind MULTIPLET_BASE, which `AddRewardLink`
+;;only sets when handed a live multiplet family — and a family needs the two-rung ATS ladder built at
+;;<<TX-INFO-GT-MULTIPLET>>. So the chain is: three virgin DPTFs -> two virgin ATS pairs -> the family
+;;-> a virgin FVT -> a MULTIPLET_BASE reward link -> and only then the op under test.
+;;Eight setup ops, every one of them measured elsewhere, all closing before `pre-gas` is read.
+;;This is why the op read as "no fixture" for so long: nothing was missing, the prerequisites were
+;;simply five deep.
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+            ]
+        }
+    ]
+)
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+        (patron:string KST.ANHD)
+        (t0:string "GTM0-98c486052a51")
+        (t1:string "GTM1-98c486052a51")
+        (t2:string "GTM2-98c486052a51")
+        (p01:string "GtMultPair01-98c486052a51")
+        (p12:string "GtMultPair12-98c486052a51")
+        (gas-id:string "GAS-98c486052a51")
+    )
+    ;;SETUP — three virgin DPTFs and the two-rung ATS ladder that chains them.
+    (ref-TS01-C1::DPTF|C_Issue patron patron ["GtMultTok0"] ["GTM0"] [24] [true] [true] [true] [true] [true] [true])
+    (ref-TS01-C1::DPTF|C_Issue patron patron ["GtMultTok1"] ["GTM1"] [24] [true] [true] [true] [true] [true] [true])
+    (ref-TS01-C1::DPTF|C_Issue patron patron ["GtMultTok2"] ["GTM2"] [24] [true] [true] [true] [true] [true] [true])
+    (ref-TS01-C2::ATS|C_Issue patron patron ["GtMultPair01"] [24] [t0] [false] [t1] [true])
+    (ref-TS01-C2::ATS|C_Issue patron patron ["GtMultPair12"] [24] [t1] [false] [t2] [true])
+    (print (format "<(setup issue family)> => \"{}\""
+        [(ref-TS02-C3::AQP-FVT|C_IssueMultipletFamily patron t0 t1 t2 p01 p12)]))
+    (print (format "<(setup issue virgin FVT)> => \"{}\""
+        [(ref-TS02-C3::AQP-FVT|C_Issue patron "GtQSplitProbeVault" patron 1 "|")]))
+    ;;THE FAMILY ID IS DERIVED, NOT THE BASE TOKEN. `XI_IssueMultipletFamily` keys the row on
+    ;;`UCk_MultipletFamily token-0 token-1 token-2` (`04_RPS.pact:3506`), a composite of all three — not
+    ;;on token-0, which is the intuitive guess and fails as a raw table miss on `FVT|T|MultipletFamily`
+    ;;naming the TOKEN id, so the message reads like the family was never created.
+    (let
+        (
+            (fvt:string "GtQSplitProbeVault-98c486052a51")
+            (family:string (ref-RPS::UCk_MultipletFamily t0 t1 t2))
+        )
+    (print (format "<(setup add MULTIPLET_BASE reward link)> => \"{}\""
+        [(ref-TS02-C3::AQP-FVT|C_AddRewardLink patron fvt t0 false family)]))
+    (let
+        (
+            (predicted:decimal
+                (at "ignis-need" (at "ignis"
+                    (AQP-INFO.INFO_AQP-FVT|SetQualitySplit patron fvt t0 "HOMOGENEOUS"
+                        [1000 0 0] [1000 0 0] [1000 0 0]))))
+            (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+        )
+        (print (format "<(TS02-C3.AQP-FVT|C_SetQualitySplit)> => \"{}\""
+            [(ref-TS02-C3::AQP-FVT|C_SetQualitySplit patron fvt t0 "HOMOGENEOUS"
+                [1000 0 0] [1000 0 0] [1000 0 0])]))
+        (let
+            (
+                (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+            )
+            (map print
+                [
+                    (format "<<TX-INFO-GT-QSPLIT>> predicted={} real={} delta={}"
+                        [predicted real (- real predicted)])
+                    (expect "<<TX-INFO-GT-QSPLIT>> the quote equals what the op actually charged"
+                        real predicted)
+                    (expect "<<TX-INFO-GT-QSPLIT>> ...and it is a real, non-zero charge"
+                        true (> real 0.0))
+                ]
+            )
+        )
+    )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)

@@ -1,0 +1,803 @@
+;; REPL/modules/STAGE-Z.repl — STANDALONE tester for the Stage-Z read layer (DPL-UR + EXPLORER).
+;;
+;; These two modules had ZERO reached functions (7 of 7 and 71 of 72 never touched by any test),
+;; surfaced by _scale_report.py. They ARE deployed in the gate — ZALL loads deploy-stagezz — but
+;; deploying is not calling.
+;;
+;; WHY THEY WERE UNREACHED, established by probing rather than assumed: their aggregate readers
+;; hardcode LIVE-CHAIN ids (Auryndex-O136CBn22ncY and friends, the mainnet deployment hash). A REPL
+;; sandbox derives its own hash, so those rows cannot exist and the reader aborts. EXPLORER's
+;; URC_0001_LandingPage fails exactly that way. Full write-up, with the two remedies and why this
+;; file does not apply either: memories/2026-09-11-stage-z-reads-are-mainnet-only.md.
+;;
+;; WHAT THIS FILE DOES INSTEAD. The hardcoding affects the AGGREGATE readers, not the display
+;; helpers underneath them — and those helpers are pure functions whose exact output a UI renders.
+;; A silent format change there is a broken interface with no compile error and, until now, no test.
+;; So this pins the FORMATS, character for character.
+;;
+;; Run: cd REPL && pact modules/STAGE-Z.repl
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+;;SWP POOLS. Added deliberately: 13 of DPL-UR's unreached readers take a <swpair>, and the
+;;deploy-only chain has none -- which is why this file could only ever test formatters. The
+;;ISSUANCE-ONLY variant is used rather than the full [6.3]_SWP suite because it is the cheap path
+;;(measured: the whole load below runs in ~8s) and pools are all these readers need.
+(load "../Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl")
+(load "../deploy-stage02.repl")
+(load "../deploy-stagezz.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "STAGEZ-01 — DPL-UR display formatters, pinned character for character")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [STAGEZ-01 · 01 · number and account formatting] ---")
+;;Every assertion below is an EXACT string. That is deliberate: these values are rendered directly
+;;in a deployer UI, so "returns a string" would pass while the display silently changed. The point
+;;of the test is the exact shape.
+(map print
+    [
+        ;;trailing zeros are trimmed, but a genuine decimal is kept
+        (expect "<<STAGEZ-01>> trailing zeros are trimmed"
+            "1.23" (DPL-UR.UC_TrimDecimalTrailingZeros 1.2300))
+        ;;prices render with two decimals and a currency mark
+        (expect "<<STAGEZ-01>> a price renders with 2 decimals and a $ suffix"
+            "1.50$" (DPL-UR.UC_ConvertPrice 1.5))
+        ;;the index format is unusual and entirely convention -- exactly why it needs pinning
+        (expect "<<STAGEZ-01>> the ATS index renders in its grouped [] form"
+            "1,[500.000.000.000]" (DPL-UR.UC_FormatIndex 1.5))
+        ;;token amounts keep 4 decimals, zeros INCLUDED (the opposite rule to the trimmer above --
+        ;;two helpers, two conventions, and nothing but this test says which is which)
+        (expect "<<STAGEZ-01>> a token amount keeps 4 decimals including trailing zeros"
+            "1234.5000" (DPL-UR.UC_FormatTokenAmount 1234.5))
+        (expect "<<STAGEZ-01>> ...and the list form applies the same rule element-wise"
+            ["1.1000" "2.2000"] (DPL-UR.UC_FormatDecimals [1.10 2.20]))
+        ;;account elision: a 162-glyph account is shortened for display. The ellipsis form is what
+        ;;a user reads to recognise their own account, so its shape matters.
+        (expect "<<STAGEZ-01>> a glyph account is elided to head...tail"
+            ["Ѻ.éXø...Ìàî"] (DPL-UR.UC_FormatAccountsShort [KST.ANHD]))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "STAGEZ-02 — the chain-agnostic readers, and the one that is not")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [STAGEZ-02 · 01 · readers that work on any chain] ---")
+;;URC_PrimordialIDs derives every id from DALOS rather than hardcoding, so it works on any chain.
+;;It is asserted against the sandbox's own hash to show the derivation really is dynamic — on a
+;;chain with a different deployment hash this same call returns that hash instead.
+(map print
+    [
+        (expect "<<STAGEZ-02>> the primordial id list is DERIVED, so it carries this chain's hash"
+            ["OURO-98c486052a51" "GAS-98c486052a51" "AURYN-98c486052a51"
+             "ELITEAURYN-98c486052a51" "DWK-98c486052a51" "DLK-98c486052a51"]
+            (DPL-UR.URC_PrimordialIDs))
+        ;;A price computation over a real token. These two were written as >= 0.0 / >= 0 smoke
+        ;;checks -- which a price and a nonce satisfy by construction, so they asserted only "the
+        ;;call returned". _vacuous.py flagged them; replaced with the actual relationships.
+        (expect "<<STAGEZ-02>> unit amount at unit price is the unit value"
+            1.0 (DPL-UR.URC_TrueFungibleAmountPrice "OURO-98c486052a51" 1.0 1.0))
+        ;;linear in BOTH arguments, and zero at zero amount -- a price function that clamped,
+        ;;rounded to precision, or silently used a stale quote would break one of these three
+        ;;while still returning a plausible non-negative number
+        (expect "<<STAGEZ-02>> ...doubling the AMOUNT doubles the value"
+            2.0 (DPL-UR.URC_TrueFungibleAmountPrice "OURO-98c486052a51" 2.0 1.0))
+        (expect "<<STAGEZ-02>> ...doubling the PRICE doubles the value"
+            2.0 (DPL-UR.URC_TrueFungibleAmountPrice "OURO-98c486052a51" 1.0 2.0))
+        (expect "<<STAGEZ-02>> ...and zero amount is worth zero"
+            0.0 (DPL-UR.URC_TrueFungibleAmountPrice "OURO-98c486052a51" 0.0 1.0))
+        ;;EXPLORER's per-account reader is chain-agnostic -- and must AGREE with the sovereign
+        ;;source it wraps. Asserted against DALOS rather than against a literal, so it keeps
+        ;;holding as the account transacts; what is pinned is that the explorer does not drift
+        ;;from the ledger it reports on.
+        (expect "<<STAGEZ-02>> the explorer's account nonce agrees with DALOS's"
+            (DALOS.UR_AccountNonce KST.ANHD) (EXPLORER.UR_0001_AccountNonce KST.ANHD))
+        ;;--- AND THE ONE THAT IS NOT. This is pinned as a FINDING, not as desired behaviour: the
+        ;;explorer's landing page hardcodes Auryndex-O136CBn22ncY, the mainnet id, so it aborts on
+        ;;any test chain. If that is ever made chain-agnostic this assertion will start failing —
+        ;;which is the intent. Change it to a success assertion at that point.
+        (expect-failure "<<STAGEZ-02>> FINDING: the landing page is mainnet-only (hardcoded ATS pair id)"
+            "No value found in table"
+            (EXPLORER.URC_0001_LandingPage))
+    ]
+)
+(commit-tx)
+;;NOT COVERED: URC_PrimordialPrices needs live SWP pools (this chain is deploy-only, no [6.3]_SWP);
+;;it is reachable from a suite that builds pools first.
+;;
+;;CORRECTION: this note used to claim URC_0035_EliteAccountRichList "is a heavy account scan that
+;;aborts here", i.e. a missing-fixture problem. That was wrong: it aborts on a module-admin gate
+;;BEFORE scanning anything, so building the fixture would not have helped and would have looked
+;;like the fix failing for some other reason. It is pinned in STAGEZ-06d.
+;;
+;;SECOND CORRECTION (2026-09-12): I then over-corrected, and filed that abort as a MAINNET DEFECT --
+;;"six UI readers uncallable on every chain". Owner ruling: "keys can be called freely, there is no
+;;admin gating on this." The abort is real but it is TRANSACTIONAL-MODE-ONLY, and a REPL only has
+;;transactional mode. Nodes run with `--allowReadsInLocal` (verified on this project's own nodes),
+;;so `/local` reads -- which is how a UI reader is invoked -- are unrestricted. STAGEZ-04/05/06 now
+;;read as what they actually measure: these readers are LOCAL-ONLY.
+;;|| NEXT >
+;;
+(begin-tx "STAGEZ-03 -- the TESTING VARIANT, and which blocker is which")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs
+  [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== STAGEZ-03 . 01 . deploy the generated testing variant ====
+(print "--- [STAGEZ-03 . 01 . deploy the generated testing variant] ---")
+;;_generated/02_EXPLORER-TESTING.pact is GENERATED from canonical by _stagez_variant.py and differs
+;;from it in exactly two string constants (the ATS pair ids) plus the module name. `--check` fails
+;;the gate if canonical moves and the variant is not regenerated, so this cannot silently rot.
+(load "../_generated/02_EXPLORER-TESTING.pact")
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "STAGEZ-04 -- URC_0001_LandingPage has TWO blockers, not one")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [STAGEZ-04 . 01 . isolating blocker 1 from blocker 2] ---")
+;;This pair of assertions is the whole point of the variant. It SEPARATES two independent reasons
+;;this function cannot run in a REPL, by construction rather than by argument:
+;;
+;;  blocker 1 -- hardcoded mainnet ids, and a REAL portability defect. Canonical binds
+;;               (ATS::URC_Index "Auryndex-O136CBn22ncY") in its `let`. Pact `let` is EAGER, so
+;;               canonical dies there and never reaches its own body -- on any chain that is not
+;;               mainnet. Substituting the sandbox ids removes this; that is all the variant does.
+;;
+;;  blocker 2 -- NOT a defect. Visible only once blocker 1 is gone. The body calls
+;;               (keys DALOS.DALOS|AccountTable): a scan of ANOTHER module's table, which Pact
+;;               admin-gates in TRANSACTIONAL mode. A REPL is always transactional, so it aborts
+;;               here. Chainweb nodes run `--allowReadsInLocal`, so the same call in a `/local`
+;;               query -- the only way a UI reader is ever invoked -- is unrestricted. The REPL
+;;               cannot model this: `FlagAllowReadInLocal` is a node exec flag, not a repl flag.
+;;
+;;So the variant does not "make the landing page work" in a REPL; it clears the portability blocker
+;;and leaves the local-only property exposed, which is what the second assertion pins. The honest
+;;reading of that assertion is "this function is LOCAL-ONLY", not "this function is broken".
+;;If it is ever routed through an in-module reader (STAGEZ-05's legal form) it becomes callable
+;;inside a transaction and the assertion flips to a success case.
+;;
+;;I had this filed as "six UI readers dead on mainnet" for several passes. It was wrong, and the
+;;lesson is worth more than the finding was: an error reproduced in a REPL is an error in a REPL.
+;;Before calling it a production defect, establish that production runs in the same execution mode
+;;the test used. Here it does not. Checked before withdrawing: all six readers have ZERO callers in
+;;Pact code, so nothing transactional reaches them either.
+(map print
+    [
+        (expect-failure "<<STAGEZ-04>> canonical dies on BLOCKER 1 (mainnet ids), in its eager let"
+            "No value found in table"
+            (EXPLORER.URC_0001_LandingPage))
+        (expect-failure "<<STAGEZ-04>> the variant clears blocker 1, leaving it LOCAL-ONLY (cross-module scan)"
+            "Module admin necessary for operation but has not been acquired:ouronet-ns.DALOS"
+            (EXPLORER-TESTING.URC_0001_LandingPage))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "STAGEZ-05 -- blocker 2 is a real defect: the legal form of the same read works")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [STAGEZ-05 . 01 . cross-module scan vs in-module scan] ---")
+;;The two forms, side by side, so the rule is pinned independently of EXPLORER: a cross-module scan
+;;is admin-gated in transactional mode, while the identical read performed INSIDE the module that
+;;owns the table is legal and returns a value. DALOS already ships that reader.
+;;
+;;This is the shape to use IF a transactional caller is ever needed -- route through the owning
+;;module's ref. It is NOT a defect to be fixed everywhere: for a `/local` UI reader the direct scan
+;;is fine, because nodes run `--allowReadsInLocal`. `_conformance.py --rule cross-module-scan`
+;;keeps the list (10 sites) as an OBSERVATION / watch list: the day one of those functions is called
+;;from a `C_` or `A_` path, it becomes a real defect at that moment, and the rule is how that gets
+;;noticed. See memories/2026-09-11-stage-z-cross-module-keys.md.
+(map print
+    [
+        ;;the ILLEGAL form, asserted directly so the rule is pinned independently of EXPLORER
+        (expect-failure "<<STAGEZ-05>> scanning another module's table is admin-gated"
+            "Module admin necessary for operation but has not been acquired:ouronet-ns.DALOS"
+            (length (keys DALOS.DALOS|AccountTable)))
+        ;;the LEGAL form -- same data, read from inside the owning module
+        (expect "<<STAGEZ-05>> the in-module reader DALOS ships for it works"
+            true (contains "real Accounts!" (DALOS.URH_AccountCounter)))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "STAGEZ-06 -- the same defect in DPL-UR, with no id problem anywhere near it")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [STAGEZ-06 . 01 . four more UI entry points, dead for the same reason] ---")
+;;STAGEZ-04/05 could be read as "an EXPLORER quirk tangled up with the mainnet ids". These four are
+;;the control. NONE of them hardcodes an id -- they take an account and read the current chain --
+;;and every one shows the same local-only property. Note the module named in each message differs
+;;(DPTF / DPOF / DPDC / DALOS): that is the table each one reaches into, which is what makes this a
+;;PATTERN in the codebase rather than a single slip.
+;;
+;;These four plus STAGEZ-04's landing page are the five (with URC_0035 below, six) Stage-Z readers
+;;that cannot execute inside a transaction. That is a fact about them, NOT a defect: they are UI
+;;readers served over `/local`, where `--allowReadsInLocal` applies, and none of them has a single
+;;caller in Pact code. What these assertions buy is the boundary: if any of them ever acquires a
+;;transactional caller, these tests are the record of what will happen.
+(map print
+    [
+        (expect-failure "<<STAGEZ-06>> URC_0016_TruefungibleHeader scans DPTF's table"
+            "Module admin necessary for operation but has not been acquired:ouronet-ns.DPTF"
+            (DPL-UR.URC_0016_TruefungibleHeader KST.ANHD))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "STAGEZ-06b -- ortofungible header")
+(namespace "ouronet-ns")
+(print "--- [STAGEZ-06b . 01 . ortofungible header] ---")
+(map print
+    [
+        (expect-failure "<<STAGEZ-06>> URC_0018_OrtofungibleHeader scans DPOF's tables"
+            "Module admin necessary for operation but has not been acquired:ouronet-ns.DPOF"
+            (DPL-UR.URC_0018_OrtofungibleHeader KST.ANHD))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "STAGEZ-06c -- collectables header")
+(namespace "ouronet-ns")
+(print "--- [STAGEZ-06c . 01 . collectables header] ---")
+(map print
+    [
+        (expect-failure "<<STAGEZ-06>> URC_0021_CollectablesHeader scans DPDC's tables"
+            "Module admin necessary for operation but has not been acquired:ouronet-ns.DPDC"
+            (DPL-UR.URC_0021_CollectablesHeader KST.ANHD))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "STAGEZ-06d -- elite rich list")
+(namespace "ouronet-ns")
+(print "--- [STAGEZ-06d . 01 . elite rich list] ---")
+;;NOTE: the file previously recorded this one as "a heavy account scan that aborts here", implying a
+;;fixture problem. That was wrong: it aborts on the admin gate, before any scanning happens, and it
+;;would do so on a fully populated chain too -- in a transaction. Over `/local` it runs.
+(map print
+    [
+        (expect-failure "<<STAGEZ-06>> URC_0035_EliteAccountRichList scans DALOS's table"
+            "Module admin necessary for operation but has not been acquired:ouronet-ns.DALOS"
+            (DPL-UR.URC_0035_EliteAccountRichList))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "STAGEZ-07 -- the readers that DO work, pinned on their invariants")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [STAGEZ-07 . 01 . constants and branch words] ---")
+;;Most of DPL-UR's 63 unreached functions are not blocked by anything -- no ids, no admin gate, no
+;;missing fixture. Nothing had simply ever called them. These are those, and they are asserted on
+;;INVARIANTS rather than on "it returned something", because a UI reads the exact values.
+(map print
+    [
+        ;;these two feed key construction across the whole module; a change breaks every derived key
+        (expect "<<STAGEZ-07>> the namespace constant DPL-UR builds keys from"
+            "ouronet-ns" (DPL-UR.CT_Namespace))
+        (expect "<<STAGEZ-07>> ...and the field separator, likewise"
+            "|" (DPL-UR.CT_Bar))
+        ;;all three branches of the pool-type word, so the mapping cannot be silently re-lettered
+        (expect "<<STAGEZ-07>> S pools read as Stable"    ["S" "Stable"]   (DPL-UR.UC_PoolTypeWord "S|A|B"))
+        (expect "<<STAGEZ-07>> P pools read as Product"   ["P" "Product"]  (DPL-UR.UC_PoolTypeWord "P|A|B"))
+        ;;NOTE the spelling. "Weigthed" is a TYPO in the source, and it is user-visible. It is pinned
+        ;;as-is deliberately: this test records the current UI string, it does not bless it. Fixing
+        ;;the typo SHOULD fail here, at which point update the expectation in the same commit.
+        (expect "<<STAGEZ-07>> W pools read as Weigthed [sic -- typo pinned as-behaves]"
+            ["W" "Weigthed"] (DPL-UR.UC_PoolTypeWord "W|A|B|C"))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "STAGEZ-08 -- the STOA collection split, pinned on CONSERVATION")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [STAGEZ-08 . 01 . four receivers, and no dust] ---")
+;;URC_SplitStoaPriceForReceivers divides a STOA payment 10/20/30/40 between four protocol accounts.
+;;The failure that matters for a money-splitter is not "wrong shape", it is VALUE LEAKING: parts
+;;that no longer sum to the input because each was rounded down independently. So that is what is
+;;asserted, across a spread of prices chosen to break it -- a round number, a price that does not
+;;divide evenly, and two BELOW the 12-dp STOA precision where naive truncation would round a share
+;;to zero and silently keep the remainder.
+(map print
+    [
+        (expect "<<STAGEZ-08>> the split conserves value exactly at every price, sub-precision included"
+            [true true true true true true]
+            (map (lambda (p:decimal)
+                     (let ((s (DPL-UR.URC_SplitStoaPriceForReceivers p)))
+                         (= p (fold (+) 0.0
+                                  [(at "10%-p" s) (at "20%-p" s) (at "30%-p" s) (at "40%-p" s)]))))
+                 [100.0 33.33 0.07 1.0 0.000000000001 0.123456789012345]))
+        ;;and the proportions really are 10/20/30/40, not merely a partition that happens to sum
+        (expect "<<STAGEZ-08>> ...in exactly 10/20/30/40 proportion"
+            [10.0 20.0 30.0 40.0]
+            (let ((s (DPL-UR.URC_SplitStoaPriceForReceivers 100.0)))
+                [(at "10%-p" s) (at "20%-p" s) (at "30%-p" s) (at "40%-p" s)]))
+        ;;the four receivers must be DISTINCT: a collision would silently pay one account twice
+        ;;and another nothing, while every sum-based check above still passed.
+        (expect "<<STAGEZ-08>> the four receivers are distinct -- a collision double-pays one account"
+            4 (length (distinct (DPL-UR.URC_StoaCollectionReceivers))))
+        ;;...and the split hands each share to the receiver in the SAME ORDER the receiver list
+        ;;gives, which is the pairing the whole function exists to establish
+        (expect "<<STAGEZ-08>> each share goes to its receiver, in receiver-list order"
+            (DPL-UR.URC_StoaCollectionReceivers)
+            (let ((s (DPL-UR.URC_SplitStoaPriceForReceivers 100.0)))
+                [(at "10%-r" s) (at "20%-r" s) (at "30%-r" s) (at "40%-r" s)]))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "STAGEZ-09 -- recovery amount for an account with nothing to recover")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [STAGEZ-09 . 01 . the zero case, asserted as zero] ---")
+;;A recovery reader that returns a non-zero amount to someone with no recoverable position is the
+;;dangerous direction of this function, so the empty case is worth a pin of its own.
+(map print
+    [
+        (expect "<<STAGEZ-09>> an account with no recoverable position can recover exactly 0"
+            0.0 (DPL-UR.URC_MaxRecoveryAmount "Auryndex-98c486052a51" KST.ANHD))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "STAGEZ-10 -- the duplicated binding block in URC_PrimordialPrices is EQUIVALENT")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [STAGEZ-10 . 01 . positional ids vs named ids] ---")
+;;URC_PrimordialPrices binds ouro/auryn/elite-auryn/wstoa/sstoa TWICE in one `let`: first
+;;POSITIONALLY out of URC_PrimordialIDs ((at 4 p-ids) -> wstoa), then by NAME from DALOS. The
+;;second wins, so the first block is dead code. `_conformance.py --rule shadowed-let-binding`
+;;reports it.
+;;
+;;It reads as though one of the two must be wrong, and the positional one looks like the suspect --
+;;which is presumably why nobody has deleted either. It was checked by execution instead of by
+;;eye, and they AGREE. This pins that, so the dead half can be removed safely rather than left
+;;alone forever because no one could tell which was authoritative.
+;;
+;;It also pins the ORDER of URC_PrimordialIDs from the consumer side: reorder that list and this
+;;fails, which is the early warning the positional binding itself would not give.
+(map print
+    [
+        (expect "<<STAGEZ-10>> positional id 0 == DALOS's named OuroborosID"
+            (DALOS.UR_OuroborosID)   (at 0 (DPL-UR.URC_PrimordialIDs)))
+        (expect "<<STAGEZ-10>> positional id 2 == named AurynID"
+            (DALOS.UR_AurynID)       (at 2 (DPL-UR.URC_PrimordialIDs)))
+        (expect "<<STAGEZ-10>> positional id 3 == named EliteAurynID"
+            (DALOS.UR_EliteAurynID)  (at 3 (DPL-UR.URC_PrimordialIDs)))
+        ;;these two are the ones that look wrong and are not: the wrapped/silver STOA ids really
+        ;;are the DWK/DLK entries at index 4 and 5
+        (expect "<<STAGEZ-10>> positional id 4 == named WrappedStoaID (the DWK entry)"
+            (DALOS.UR_WrappedStoaID) (at 4 (DPL-UR.URC_PrimordialIDs)))
+        (expect "<<STAGEZ-10>> positional id 5 == named SilverStoaID (the DLK entry)"
+            (DALOS.UR_SilverStoaID)  (at 5 (DPL-UR.URC_PrimordialIDs)))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "STAGEZ-11 -- a mapper must equal map of its single, and empty must stay empty")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [STAGEZ-11 . 01 . mapper/single agreement] ---")
+;;DPL-UR ships several <X>Mapper / <X>Single pairs. The mapper is meant to be the single applied
+;;element-wise, but the two are written out separately, so they can drift with no compile error and
+;;no visible symptom -- a UI list view quietly disagreeing with the detail view of the same row.
+;;Asserting the RELATIONSHIP catches that, and keeps catching it as both sides change.
+(map print
+    [
+        (expect "<<STAGEZ-11>> the account-selector mapper equals its single, element-wise"
+            [(DPL-UR.URC_0027a_AccountSelectorSingle KST.ANHD)]
+            (DPL-UR.URC_0027_AccountSelectorMapper [KST.ANHD]))
+        (expect "<<STAGEZ-11>> the true-fungible entry mapper equals its single, element-wise"
+            [(DPL-UR.URC_0008a_TrueFungibleEntry KST.ANHD "OURO-98c486052a51")]
+            (DPL-UR.URC_0008a_TrueFungibleEntryMapper KST.ANHD ["OURO-98c486052a51"]))
+        ;;the empty case is where mappers usually break (a fold seeded with a dummy row)
+        (expect "<<STAGEZ-11>> an empty account list maps to an empty result"
+            [] (DPL-UR.URC_0027_AccountSelectorMapper []))
+        (expect "<<STAGEZ-11>> ...and so does an empty api-key list"
+            [] (DPL-UR.URC_0033_DualApiKeyMapper []))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "STAGEZ-12 -- reader self-consistency: counts, balances, quoted prices")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [STAGEZ-12 . 01 . internal agreement within one returned object] ---")
+;;Each of these asserts that an object AGREES WITH ITSELF. That is worth more than pinning literals
+;;here, because the values are chain-state dependent but the relationships are not -- so these keep
+;;working on a populated chain, where a literal would have to be rewritten.
+(map print
+    [
+        ;;a count field beside the list it counts
+        (expect "<<STAGEZ-12>> the swpair overview's pool count matches the list it reports"
+            true (let ((r (DPL-UR.URC_0003_SWPairGeneralInfo)))
+                     (= (at "number-of-pools" r) (length (at "pools" r)))))
+        ;;one wallet cannot hold more of a token than exists
+        (expect "<<STAGEZ-12>> a wallet's balance never exceeds the token's total supply"
+            true (let ((r (DPL-UR.URC_0008a_TrueFungibleEntry KST.ANHD "OURO-98c486052a51")))
+                     (<= (at "wallet-supply" r) (at "dptf-supply" r))))
+        ;;the entry names the token it was asked about, rather than whatever it looked up last
+        (expect "<<STAGEZ-12>> the entry reports the id it was asked for"
+            "OURO-98c486052a51"
+            (at "t2" (DPL-UR.URC_0008a_TrueFungibleEntry KST.ANHD "OURO-98c486052a51")))
+        ;;price/text agreement -- the same invariant the INFO cost previews carry: a UI shows the
+        ;;TEXT, so a price that stops matching its own sentence is invisible until a user is charged
+        (expect "<<STAGEZ-12>> each Pythia price appears inside its own display sentence"
+            [true true]
+            (let ((r (DPL-UR.URC_0034_PythiaPrices)))
+                [(contains (format "{}" [(at "deploy-price" r)]) (at "deploy-price-text" r))
+                 (contains (format "{}" [(at "rename-price" r)]) (at "rename-price-text" r))]))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "STAGEZ-13 -- the button flags follow TWO different conventions")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [STAGEZ-13 . 01 . can-X vs where-X, and where they disagree] ---")
+;;URC_0017_TruefungibleButton returns four can-X booleans each paired with a where-X target list.
+;;They look like one uniform family. They are not, and the split is invisible from the call site:
+;;
+;;  curl / brumate   -- ATS derives the flag FROM the list: can-curl = (< 0 (length chains)).
+;;                      Flag true <=> list non-empty, always.
+;;  coil / constrict -- ATS sets the flag from "is this a reward token", INDEPENDENTLY of the list.
+;;                      So the flag can be TRUE while the target list is EMPTY.
+;;
+;;OURO on this chain demonstrates the divergence directly: constrict is true with no targets. A UI
+;;that enables its button from the FLAG offers an action with nowhere to send it; one that uses the
+;;LIST is correct for all four. Nothing else in the tree records this, and the @doc does not say it.
+(map print
+    [
+        ;;the derived convention, asserted as an equivalence so it stays derived
+        (expect "<<STAGEZ-13>> curl and brumate flags are equivalent to a non-empty target list"
+            [true true]
+            (let ((r (DPL-UR.URC_0017_TruefungibleButton KST.ANHD "OURO-98c486052a51")))
+                [(= (at "curl" r)    (< 0 (length (at "where-curl" r))))
+                 (= (at "brumate" r) (< 0 (length (at "where-brumate" r))))]))
+        ;;...and the eligibility convention, pinned by the case that breaks the other reading
+        (expect "<<STAGEZ-13>> constrict is TRUE while its target list is EMPTY -- flag != availability"
+            true
+            (let ((r (DPL-UR.URC_0017_TruefungibleButton KST.ANHD "OURO-98c486052a51")))
+                (and (at "constrict" r) (= 0 (length (at "where-constrict" r))))))
+        ;;coil shares constrict's convention; here it happens to have a target, which is exactly why
+        ;;the divergence is easy to miss -- three of the four agree on any given chain state
+        (expect "<<STAGEZ-13>> coil reports its one target pair on this chain"
+            ["Auryndex-98c486052a51"]
+            (at "where-coil" (DPL-UR.URC_0017_TruefungibleButton KST.ANHD "OURO-98c486052a51")))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "STAGEZ-14 -- every Stage-Z module's governance resolves to the SOVEREIGN's")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [STAGEZ-14 . 01 . citizen governance delegates to DALOS] ---")
+;;All three Stage-Z modules are CITIZEN modules that define their own GOV cap, each gated on a
+;;GOV|Demiurgoi that delegates to DALOS. That delegation is the whole reason a citizen module cannot
+;;award itself governance -- and it is one modref line per module, so a typo, a stale copy, or a
+;;module that quietly answers with its own keyset would compile, deploy and never be noticed.
+;;
+;;Asserted against DALOS rather than against a literal keyset name, so it keeps holding when the
+;;sovereign keyset is rotated -- what is being pinned is the DELEGATION, not today's answer.
+(map print
+    [
+        (expect "<<STAGEZ-14>> DPL-UR's governance is DALOS's governance"
+            (DALOS.GOV|Demiurgoi) (DPL-UR.GOV|Demiurgoi))
+        (expect "<<STAGEZ-14>> EXPLORER's governance is DALOS's governance"
+            (DALOS.GOV|Demiurgoi) (EXPLORER.GOV|Demiurgoi))
+        (expect "<<STAGEZ-14>> the DSP+ dispenser's governance is DALOS's governance"
+            (DALOS.GOV|Demiurgoi) (DSP.GOV|Demiurgoi))
+        ;;and the generated testing variant inherits it too -- confirming the variant did not
+        ;;acquire a governance difference along with its id substitution
+        (expect "<<STAGEZ-14>> the testing variant did NOT drift in governance"
+            (DALOS.GOV|Demiurgoi) (EXPLORER-TESTING.GOV|Demiurgoi))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "STAGEZ-15 -- the empty case across the whole selector/mapper family")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [STAGEZ-15 . 01 . empty in, empty out] ---")
+;;Five more list readers, all asserted on the EMPTY input. That is deliberate and not filler: the
+;;empty case is where list code in this codebase actually breaks -- a fold seeded with a dummy row,
+;;or an index range built as (enumerate 0 (- (length xs) 1)), which yields [0 -1] rather than []
+;;and faults on (at 0 []). That exact fault is pinned in
+;;Kursan/_verify_finding_EMPTY-LIST_01_index_iterating_cumulators.repl. These five are the control showing the
+;;DPL-UR readers do NOT have it.
+(map print
+    [
+        (expect "<<STAGEZ-15>> an empty stoic-tag list maps to an empty result"
+            [] (DPL-UR.URC_0027b_StoicTagSelectorMapper []))
+        (expect "<<STAGEZ-15>> an empty stoa-account list maps to an empty result"
+            [] (DPL-UR.URC_0028_StoaAccountSelectorMapper []))
+        (expect "<<STAGEZ-15>> an empty apollo-account list maps to an empty result"
+            [] (DPL-UR.URC_0031 []))
+        (expect "<<STAGEZ-15>> filtering an empty nonce list by class yields nothing"
+            [] (DPL-UR.URC_0025_FilterNoncesByClass "DHCD-98c486052a51" true [] 1))
+        (expect "<<STAGEZ-15>> reading nonce data for no nonces yields nothing"
+            [] (DPL-UR.URC_0023_CollectablesNonceData "DHCD-98c486052a51" true []))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "STAGEZ-16 -- the set reader returns real definitions, not an empty shell")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [STAGEZ-16 . 01 . a populated read, so the empties above mean something] ---")
+;;Every assertion in STAGEZ-15 passes trivially if a reader returns [] for EVERYTHING. This is the
+;;counterweight: a reader over a collection that really exists must come back non-empty and
+;;well-formed. Without it, that block would be five ways of proving nothing.
+(map print
+    [
+        (expect "<<STAGEZ-16>> a real collection's set definitions come back non-empty"
+            true (< 0 (length (DPL-UR.URC_0024_SetReader "DHCD-98c486052a51" true))))
+        (expect "<<STAGEZ-16>> ...and the first set carries the active flag the UI switches on"
+            true (at "iz-active" (at 0 (DPL-UR.URC_0024_SetReader "DHCD-98c486052a51" true))))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "STAGEZ-17 -- what a whole-table scan actually costs")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [STAGEZ-17 . 01 . point read] ---")
+;;STAGEZ-04/05/06 pin that the cross-module scans are local-only. This pins the constraint that
+;;applies to scans EVERYWHERE, gate or no gate: what one costs. It is the reason those readers are
+;;local-only by design rather than by accident -- a reader doing several scans could not fit in a
+;;transaction even if no admin were involved. Asserted here rather than left in a document.
+;;
+;;Measured separately at 10 / 100 / 400 / 1000 rows: a `keys` scan costs a FLAT ~40,000 gas,
+;;independent of table size. (I had assumed it scaled with row count. It does not -- which matters,
+;;because the linear story would have made this a future problem instead of a present one.)
+;;
+;;Thresholds, not exact figures: exact numbers are Pact-version-specific and would turn a real
+;;signal into version churn. What must stay true is the ORDER OF MAGNITUDE -- a scan costs orders
+;;more than a point read, so a reader doing several of them cannot fit in a transaction.
+(let ((g0:integer (env-gas)))
+    (DALOS.UR_AccountNonce KST.ANHD)
+    (let ((point:integer (- (env-gas) g0)))
+        (print (format "point read: {} gas" [point]))
+        (map print
+            [
+                (expect "<<STAGEZ-17>> a point read is cheap (< 1,000 gas)"
+                    true (< point 1000))
+            ]
+        )
+    )
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "STAGEZ-17b -- and the scan, for comparison")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [STAGEZ-17b . 01 . whole-table scan] ---")
+(let ((g0:integer (env-gas)))
+    (DALOS.URH_AccountCounter)
+    (let ((scan:integer (- (env-gas) g0)))
+        (print (format "whole-table scan: {} gas" [scan]))
+        (map print
+            [
+                ;;the headline: one scan eats a large fraction of Kadena's 150,000 per-tx limit
+                (expect "<<STAGEZ-17>> a whole-table scan costs over 10,000 gas"
+                    true (> scan 10000))
+                ;;...and therefore four of them -- which DPL-UR::URC_0021_CollectablesHeader does --
+                ;;cannot fit in one transaction. This is the assertion the fix proposal rests on.
+                (expect "<<STAGEZ-17>> ...so FOUR scans exceed the 150,000 per-tx gas limit"
+                    true (> (* 4 scan) 150000))
+            ]
+        )
+    )
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "STAGEZ-18 -- the LP-entry readers, now that pools exist")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [STAGEZ-18 . 01 . native vs frozen vs sleeping LP entries] ---")
+;;Two UNPINNED guards (`python3 REPL/_cheapseam.py`), both unreachable until this file had swpairs:
+;;  URCv_0008b_TrueFungibleLPEntry -- "Frozen LP must be defined for this usage"
+;;  URCv_0009b_OrtoFungibleLPEntry -- "Sleeping LP must be defined for this usage"
+;;
+;;A pool's LP token gets a frozen counterpart only via SWP|C_EnableFrozenLP, and a sleeping one
+;;only via VST|C_CreateSleepingLink. A freshly issued pool has neither, so both guards fire -- and
+;;the NATIVE path through the same function still works, which is what shows the guards are about
+;;the missing counterpart rather than the reader being broken.
+(let ((sp:string (at 0 (SWP.URC_ActiveSwpairs))))
+    (map print
+        [
+            ;;the native path works: same function, same pool, iz-native = true
+            (expect "<<STAGEZ-18>> the NATIVE LP entry reads fine on a fresh pool"
+                "P|OURO-PKOSON|LP-98c486052a51"
+                (at "t2" (DPL-UR.URCv_0008b_TrueFungibleLPEntry KST.ANHD sp true)))
+            ;;...while asking for the FROZEN counterpart of a pool that has none is refused
+            (expect-failure "<<STAGEZ-18>> ...but the FROZEN LP entry needs a frozen counterpart to exist"
+                "Frozen LP must be defined for this usage"
+                (DPL-UR.URCv_0008b_TrueFungibleLPEntry KST.ANHD sp false))
+            ;;and the sleeping twin, which has no native escape hatch -- it enforces unconditionally
+            (expect-failure "<<STAGEZ-18>> ...and the SLEEPING LP entry likewise"
+                "Sleeping LP must be defined for this usage"
+                (DPL-UR.URCv_0009b_OrtoFungibleLPEntry KST.ANHD sp))
+        ]
+    )
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "STAGEZ-19 -- swpair readers that were unreachable without pools")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [STAGEZ-19 . 01 . the pool-dependent readers] ---")
+;;These were in the "never reached" column purely because the chain had no pools. Asserted on
+;;INTERNAL AGREEMENT rather than literals, so they keep holding as the pool set changes.
+(let* ((sp:string (at 0 (SWP.URC_ActiveSwpairs)))
+       (gi (DPL-UR.URC_0003_SWPairGeneralInfo))
+       (core (DPL-UR.URC_SWPairCoreRead sp)))
+    (map print
+        [
+            ;;ALL pools, not active ones. The first version of this assertion equated
+            ;;number-of-pools with URC_ActiveSwpairs and failed 21 vs 10 -- usefully, because the
+            ;;reader sources from URC_Swpairs (every pair ever issued) while the active list
+            ;;excludes disabled ones. Both are correct answers to different questions, and a UI
+            ;;rendering "number-of-pools" is showing the TOTAL, including pools nobody can trade.
+            ;;Pinned as the real relationship so the distinction cannot quietly invert.
+            (expect "<<STAGEZ-19>> the overview counts ALL pools, from URC_Swpairs"
+                (length (SWP.URC_Swpairs)) (at "number-of-pools" gi))
+            (expect "<<STAGEZ-19>> ...which is a superset of the ACTIVE pools, not the same list"
+                true (>= (at "number-of-pools" gi) (length (SWP.URC_ActiveSwpairs))))
+            (expect "<<STAGEZ-19>> ...and matches the list it carries itself"
+                (at "number-of-pools" gi) (length (at "pools" gi)))
+            ;;the core read reports the pool's own LP supply, not a stale or global figure
+            (expect "<<STAGEZ-19>> the core read's LP supply agrees with SWP's capacity reader"
+                (SWP.URC_LpCapacity sp) (at "lp-supply" core))
+        ]
+    )
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "STAGEZ-20 -- drain a pool to empty (LAST block: this is destructive)")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AOZ", "caps": [] }])
+(print "--- [STAGEZ-20 . 01 . full liquidity removal] ---")
+;;SWPLC::UEV_AddLiquidity's "Liquidity Addition on an empty Pool must have a Balanced Part present!"
+;;was UNPINNED (`python3 REPL/_cheapseam.py`). It needs a pool with ZERO LP supply, and measurement
+;;showed none exists: all 21 pools on this chain carry liquidity, and the issuance defpact creates
+;;them WITH it, so there is no gap between creation and first deposit.
+;;
+;;A pool can however be drained. UEV_RemoveLiquidity permits `lp-amount <= pool-lp-amount` with no
+;;retained minimum -- deliberately, per its own @doc: gating removal on the owner's add-switch
+;;"isn't a safety mechanism, it's a trust violation". So full removal is a supported operation and
+;;the empty state is reachable.
+;;
+;;The LP holder is KST.AOZT, not the usual patron: the issuance-only suite issues this pool under
+;;AOZT, and its LP went there. Worth stating because the obvious guesses (ANHD, the SWP smart
+;;account) all hold zero and make the drain look impossible.
+;;
+;;THIS BLOCK IS DESTRUCTIVE and is deliberately LAST in the file -- it empties a pool the earlier
+;;blocks read.
+(let* ((sp:string (at 0 (SWP.URC_ActiveSwpairs)))
+       (lp:string (SWP.UR_TokenLP sp))
+       (held:decimal (DPTF.UR_AccountSupply lp KST.AOZT)))
+    (TS01-C3.SWP|C_RemoveLiquidity KST.AOZT KST.AOZT sp held)
+    (map print
+        [
+            (expect "<<STAGEZ-20>> the holder really held the whole LP supply"
+                true (> held 0.0))
+            (expect "<<STAGEZ-20>> a full removal drains the pool to zero capacity"
+                0.0 (SWP.URC_LpCapacity sp))
+        ]
+    )
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "STAGEZ-20b -- an empty pool refuses an unbalanced first deposit")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [STAGEZ-20b . 01 . the empty-pool balance rule] ---")
+;;With no LP outstanding there is no ratio to price an unbalanced deposit against -- the first
+;;deposit back into an empty pool defines the ratio, so it must carry a balanced part. Both sides
+;;are asserted: an UNbalanced deposit is refused and a balanced one clears this guard.
+(let ((sp:string (at 0 (SWP.URC_ActiveSwpairs))))
+    (map print
+        [
+            (expect-failure "<<STAGEZ-20>> an UNBALANCED add to an empty pool is refused"
+                "Liquidity Addition on an empty Pool must have a Balanced Part present!"
+                (SWPLC.UEV_AddLiquidity sp
+                    (SWPL.UDC_LiquidityData
+                        (SWPL.UDC_LiquiditySplit [1.0 1.0] [0.0 0.0])
+                        (SWPL.UDC_LiquiditySplitType false false) 0.0 0.0 0.0)))
+            ;;...and a BALANCED one gets past it. Without this the assertion above would pass just
+            ;;as well against a pool that refuses every deposit once empty.
+            ;;
+            ;;ARGUMENT ORDER TRAP: UDC_LiquiditySplitType is (iz-balanced, iz-asymmetric). Printing
+            ;;the object shows "iz-asymmetric" FIRST because Pact renders object keys
+            ;;ALPHABETICALLY, not in constructor order -- so reading the printed shape to infer the
+            ;;argument order gets it backwards. (true false) is balanced-and-symmetric; (false true)
+            ;;is the opposite and fires this very guard, which is how the mistake was caught.
+            (expect "<<STAGEZ-20>> ...while a BALANCED add clears the same guard"
+                true (!= 0 (length (format "{}"
+                    [(SWPLC.UEV_AddLiquidity sp
+                        (SWPL.UDC_LiquidityData
+                            (SWPL.UDC_LiquiditySplit [1.0 1.0] [0.0 0.0])
+                            (SWPL.UDC_LiquiditySplitType true false) 0.0 0.0 0.0))]))))
+        ]
+    )
+)
+(commit-tx)
+
+(print "=== END modules/STAGE-Z.repl ===")
+
+;;|| NEXT >
+;;
+(begin-tx "STAGEZ-21 -- the dispenser's stoicism-minting parity check")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [STAGEZ-21 . 01 . amounts and targets must agree in length] ---")
+;;`DSP|STOICISM-MINTER` takes two parallel lists -- amounts and the accounts to mint them to -- and
+;;refuses when they disagree. Argument-domain; the only reason it was unpinned is that nothing had called
+;;the minter with a mismatched pair.
+;;
+;;DSP is a CITIZEN automaton with no harness of its own, and this file is the cheapest one that deploys
+;;it. Both directions are driven, because the check is parity and a one-sided test would pass for a
+;;guard written as a floor on either list.
+(map print
+    [
+        (expect-failure "<<STAGEZ-21>> two amounts against one target is refused"
+            "Length of stoicism-amounts and stoicism-targets must be the same"
+            (DSP.A_StoicismMinter [1.0 2.0] [KST.EMMA]))
+        (expect-failure "<<STAGEZ-21>> ...and so is one amount against two targets"
+            "Length of stoicism-amounts and stoicism-targets must be the same"
+            (DSP.A_StoicismMinter [1.0] [KST.EMMA KST.LUMY]))
+    ]
+)
+(env-sigs [])
+(commit-tx)

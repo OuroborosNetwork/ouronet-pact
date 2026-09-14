@@ -276,9 +276,19 @@
                         ;;Amount enforcement
                         (if son
                             (if sft-set-mode
+                                ;;UNREACHABLE -- needs son=TRUE *and* sft-set-mode=TRUE, a combination
+                                ;;no caller passes: the only sft-set-mode=TRUE site is the NFT set path
+                                ;;(08_DPDC-S.pact:1345), where son is FALSE. And the SFT set path does
+                                ;;not come through here at all -- C_MakeSemiFungibleSet credits an
+                                ;;already-existing set nonce via XB_CreditSFT-Nonce rather than creating
+                                ;;one, so the case this guard names is handled by another function.
+                                ;;Proof in REPL/modules/DPDC.repl, the note after <<DPDC-G15>>.
                                 (enforce (= amount 0) (format "When Defining an SFT Set, {} must be equal to 0" [amount]))
                                 (enforce (>= amount 0) (format "For an SFT Collectable the {} must be greater or equal to 0" [amount]))
                             )
+                            ;;UNREACHABLE -- needs son=FALSE with amount != 1, and both son=FALSE
+                            ;;callers pass the LITERAL 1 (TS02-C2.pact:397 and 08_DPDC-S.pact:1345).
+                            ;;Proof in REPL/modules/DPDC.repl, the note after <<DPDC-G15>>.
                             (enforce (= amount 1) (format "For an NFT Collectable the {} must be equal to 1" [amount]))
                         )
                     )
@@ -308,13 +318,8 @@
         (compose-capability (DPDC-C|C>SINGLE-CREDIT id false nonce false))
     )
     (defcap DPDC-C|C>SINGLE-CREDIT (id:string son:bool nonce:integer fragments-or-native:bool)
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (UEV_NonceType nonce fragments-or-native)
-            (compose-capability (P|DPDC-C|CALLER))
-        )
+        (UEV_NonceType nonce fragments-or-native)
+        (compose-capability (P|DPDC-C|CALLER))
     )
     ;;
     ;;Multi-Credit
@@ -365,7 +370,6 @@
     (defcap DPDC-C|CX>MULTI-CREDIT (id:string son:bool nonces:[integer] amounts:[integer])
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
                 (l1:integer (length nonces))
                 (l2:integer (length amounts))
             )
@@ -422,13 +426,8 @@
     )
     (defcap DPDC|C>MULTI-DEBIT 
         (account:string id:string son:bool nonces:[integer] amounts:[integer] fragments-or-native:bool wipe-mode:bool)
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (UEV_NonceTypeMapper nonces fragments-or-native)
-            (compose-capability (DPDC|CX>MULTI-DEBIT account id son nonces amounts wipe-mode))
-        )
+        (UEV_NonceTypeMapper nonces fragments-or-native)
+        (compose-capability (DPDC|CX>MULTI-DEBIT account id son nonces amounts wipe-mode))
         
     )
     ;;Hybrid Multi Debit
@@ -580,7 +579,7 @@
     (defun UEV_Amount (amount:integer)
         @doc "Floor for every SFT/fragment credit or debit quantity. Zero is legal (nonce-creation \
             \ genesis supply, e.g. EQUITY's zero-initial-supply tier nonces) — negative is never legal, \
-            \ it inverts the credit/debit direction in XI_CreditOrDebitDPDC. See DPDC Audit #1C."
+            \ it inverts the credit/debit direction in XIv_CreditOrDebitDPDC. See DPDC Audit #1C."
         (enforce (>= amount 0) "Amount cannot be negative")
     )
     (defun UEV_FragmentCreditAmount (amount:integer)
@@ -597,24 +596,28 @@
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     ;;T3x20
+    ;;Protection: Class 5 — IMC + Custom: DPSF|C>CREDIT-FRAGMENT-NONCE
     (defun XE_CreditSFT-FragmentNonce (account:string id:string nonce:integer amount:integer)
         (P|UEV_IMC)
         (with-capability (DPSF|C>CREDIT-FRAGMENT-NONCE id nonce)
             (XI_CreditSFT account id [nonce] [amount])
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: DPNF|C>CREDIT-FRAGMENT-NONCE
     (defun XE_CreditNFT-FragmentNonce (account:string id:string nonce:integer amount:integer)
         (P|UEV_IMC)
         (with-capability (DPNF|C>CREDIT-FRAGMENT-NONCE id nonce amount)
             (XI_CreditNFT account id [nonce] [amount])
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: DPSF|C>DEBIT-FRAGMENT-NONCE
     (defun XE_DebitSFT-FragmentNonce (account:string id:string nonce:integer amount:integer wipe-mode:bool)
         (P|UEV_IMC)
         (with-capability (DPSF|C>DEBIT-FRAGMENT-NONCE account id nonce amount wipe-mode)
             (XI_DebitSFT account id [nonce] [amount] wipe-mode)
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: DPNF|C>DEBIT-FRAGMENT-NONCE
     (defun XE_DebitNFT-FragmentNonce (account:string id:string nonce:integer amount:integer wipe-mode:bool)
         (P|UEV_IMC)
         (with-capability (DPNF|C>DEBIT-FRAGMENT-NONCE account id nonce amount wipe-mode)
@@ -622,24 +625,28 @@
         )
     )
     ;;
+    ;;Protection: Class 5 — IMC + Custom: DPSF|C>CREDIT-NONCE
     (defun XB_CreditSFT-Nonce (account:string id:string nonce:integer amount:integer)
         (P|UEV_IMC)
         (with-capability (DPSF|C>CREDIT-NONCE id nonce)
             (XI_CreditSFT account id [nonce] [amount])
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: DPNF|C>CREDIT-NONCE
     (defun XB_CreditNFT-Nonce (account:string id:string nonce:integer amount:integer)
         (P|UEV_IMC)
         (with-capability (DPNF|C>CREDIT-NONCE id nonce amount)
             (XI_CreditNFT account id [nonce] [amount])
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: DPSF|C>DEBIT-NONCE
     (defun XE_DebitSFT-Nonce (account:string id:string nonce:integer amount:integer wipe-mode:bool)
         (P|UEV_IMC)
         (with-capability (DPSF|C>DEBIT-NONCE account id nonce amount wipe-mode)
             (XI_DebitSFT account id [nonce] [amount] wipe-mode)
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: DPNF|C>DEBIT-NONCE
     (defun XE_DebitNFT-Nonce (account:string id:string nonce:integer amount:integer wipe-mode:bool)
         (P|UEV_IMC)
         (with-capability (DPNF|C>DEBIT-NONCE account id nonce amount wipe-mode)
@@ -647,24 +654,28 @@
         )
     )
     ;;
+    ;;Protection: Class 5 — IMC + Custom: DPSF|C>CREDIT-FRAGMENT-NONCES
     (defun XE_CreditSFT-FragmentNonces (account:string id:string nonces:[integer] amounts:[integer])
         (P|UEV_IMC)
         (with-capability (DPSF|C>CREDIT-FRAGMENT-NONCES id nonces amounts)
             (XI_CreditSFT account id nonces amounts)
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: DPNF|C>CREDIT-FRAGMENT-NONCES
     (defun XE_CreditNFT-FragmentNonces (account:string id:string nonces:[integer] amounts:[integer])
         (P|UEV_IMC)
         (with-capability (DPNF|C>CREDIT-FRAGMENT-NONCES id nonces amounts)
             (XI_CreditNFT account id nonces amounts)
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: DPSF|C>DEBIT-FRAGMENT-NONCES
     (defun XE_DebitSFT-FragmentNonces (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool)
         (P|UEV_IMC)
         (with-capability (DPSF|C>DEBIT-FRAGMENT-NONCES account id nonces amounts wipe-mode)
             (XI_DebitSFT account id nonces amounts wipe-mode)
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: DPNF|C>DEBIT-FRAGMENT-NONCES
     (defun XE_DebitNFT-FragmentNonces (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool)
         (P|UEV_IMC)
         (with-capability (DPNF|C>DEBIT-FRAGMENT-NONCES account id nonces amounts wipe-mode)
@@ -672,24 +683,28 @@
         )
     )
     ;;
+    ;;Protection: Class 5 — IMC + Custom: DPSF|C>CREDIT-NONCES
     (defun XB_CreditSFT-Nonces (account:string id:string nonces:[integer] amounts:[integer])
         (P|UEV_IMC)
         (with-capability (DPSF|C>CREDIT-NONCES id nonces amounts)
             (XI_CreditSFT account id nonces amounts)
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: DPNF|C>CREDIT-NONCES
     (defun XB_CreditNFT-Nonces (account:string id:string nonces:[integer] amounts:[integer])
         (P|UEV_IMC)
         (with-capability (DPNF|C>CREDIT-NONCES id nonces amounts)
             (XI_CreditNFT account id nonces amounts)
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: DPSF|C>DEBIT-NONCES
     (defun XE_DebitSFT-Nonces (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool)
         (P|UEV_IMC)
         (with-capability (DPSF|C>DEBIT-NONCES account id nonces amounts wipe-mode)
             (XI_DebitSFT account id nonces amounts wipe-mode)
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: DPNF|C>DEBIT-NONCES
     (defun XE_DebitNFT-Nonces (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool)
         (P|UEV_IMC)
         (with-capability (DPNF|C>DEBIT-NONCES account id nonces amounts wipe-mode)
@@ -697,24 +712,28 @@
         )
     )
     ;;
+    ;;Protection: Class 5 — IMC + Custom: DPSF|C>CREDIT-HYBRID-NONCES
     (defun XE_CreditSFT-HybridNonces (account:string id:string nonces:[integer] amounts:[integer])
         (P|UEV_IMC)
         (with-capability (DPSF|C>CREDIT-HYBRID-NONCES id nonces amounts)
             (XI_CreditSFT account id nonces amounts)
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: DPNF|C>CREDIT-HYBRID-NONCES
     (defun XE_CreditNFT-HybridNonces (account:string id:string nonces:[integer] amounts:[integer])
         (P|UEV_IMC)
         (with-capability (DPNF|C>CREDIT-HYBRID-NONCES id nonces amounts)
             (XI_CreditNFT account id nonces amounts)
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: DPSF|C>DEBIT-HYBRID-NONCES
     (defun XE_DebitSFT-HybridNonces (account:string id:string nonces:[integer] amounts:[integer])
         (P|UEV_IMC)
         (with-capability (DPSF|C>DEBIT-HYBRID-NONCES account id nonces amounts)
             (XI_DebitSFT account id nonces amounts false)
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: DPNF|C>DEBIT-HYBRID-NONCES
     (defun XE_DebitNFT-HybridNonces (account:string id:string nonces:[integer] amounts:[integer])
         (P|UEV_IMC)
         (with-capability (DPNF|C>DEBIT-HYBRID-NONCES account id nonces amounts)
@@ -723,27 +742,44 @@
     )
     ;;
     ;;T2x4
+    ;;Protection: Class 1 — Innate protection offered by XI_CreditCollectables
     (defun XI_CreditSFT (account:string id:string nonces:[integer] amounts:[integer])
         (XI_CreditCollectables account id true nonces amounts)
     )
+    ;;Protection: Class 1 — Innate protection offered by XI_CreditCollectables
     (defun XI_CreditNFT (account:string id:string nonces:[integer] amounts:[integer])
         (XI_CreditCollectables account id false nonces amounts)
     )
     ;;
+    ;;Protection: Class 1 — Innate protection offered by XI_DebitCollectables
     (defun XI_DebitSFT (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool)
         (XI_DebitCollectables account id true nonces amounts wipe-mode)
     )
+    ;;Protection: Class 1 — Innate protection offered by XI_DebitCollectables
     (defun XI_DebitNFT (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool)
         (XI_DebitCollectables account id false nonces amounts wipe-mode)
     )
     ;;T1x2
+    ;;Protection: Class 1 — Innate protection offered by XI_CreditOrDebitCollectables
     (defun XI_CreditCollectables (account:string id:string son:bool nonces:[integer] amounts:[integer])
         (XI_CreditOrDebitCollectables account id son nonces amounts true false)
     )
+    ;;Protection: Class 1 — Innate protection offered by XI_CreditOrDebitCollectables
     (defun XI_DebitCollectables (account:string id:string son:bool nonces:[integer] amounts:[integer] wipe-mode:bool)
         (XI_CreditOrDebitCollectables account id son nonces amounts false wipe-mode)
     )
     ;;T0x1
+    ;;Protection: Class 3 — Custom: DPNF|C>CREDIT-FRAGMENT-NONCE,
+    ;;Protection:          DPNF|C>CREDIT-FRAGMENT-NONCES, DPNF|C>CREDIT-HYBRID-NONCES,
+    ;;Protection:          DPNF|C>CREDIT-NONCE, DPNF|C>CREDIT-NONCES,
+    ;;Protection:          DPNF|C>DEBIT-FRAGMENT-NONCE, DPNF|C>DEBIT-FRAGMENT-NONCES,
+    ;;Protection:          DPNF|C>DEBIT-HYBRID-NONCES, DPNF|C>DEBIT-NONCE,
+    ;;Protection:          DPNF|C>DEBIT-NONCES, DPSF|C>CREDIT-FRAGMENT-NONCE,
+    ;;Protection:          DPSF|C>CREDIT-FRAGMENT-NONCES, DPSF|C>CREDIT-HYBRID-NONCES,
+    ;;Protection:          DPSF|C>CREDIT-NONCE, DPSF|C>CREDIT-NONCES,
+    ;;Protection:          DPSF|C>DEBIT-FRAGMENT-NONCE, DPSF|C>DEBIT-FRAGMENT-NONCES,
+    ;;Protection:          DPSF|C>DEBIT-HYBRID-NONCES, DPSF|C>DEBIT-NONCE,
+    ;;Protection:          DPSF|C>DEBIT-NONCES
     (defun XI_CreditOrDebitCollectables (account:string id:string son:bool nonces:[integer] amounts:[integer] cod:bool wipe-mode:bool)
         (let
             (
@@ -801,6 +837,10 @@
                 ;; today's upstream invariants (UEV_NonceType/UEV_NonceTypeMapper) — this default only
                 ;; fires if a future change weakens that guarantee, and it must hard-abort rather than
                 ;; silently skip every require-capability check above and fall through to the write.
+                ;;UNREACHABLE: an (enforce false) fail-closed DEFAULT. The 16 branches above are
+                ;;exhaustive under UEV_NonceType / UEV_NonceTypeMapper, so no input reaches it --
+                ;;which is the sanctioned failsafe shape (owner ruling, 2026-09-10: a default that
+                ;;fires only if a branch is ever missed). Correct as written and not coverage.
                 (enforce false (format "Unreachable nonce/amount shape for {} {}" [nonces amounts]))
             )
             (if cod
@@ -809,12 +849,12 @@
             )
             (if (and (> negatives 0) (= positives 0))
                 ;; only negative nonces
-                (XI_MappedCreditOrDebitDPDC account id son negative-nonces negative-counterparts cod)
+                (XIv_MappedCreditOrDebitDPDC account id son negative-nonces negative-counterparts cod)
                 (if (and (> positives 0) (= negatives 0))
                     ;;only positive nonces
                     (if son
                         ;;If SFT
-                        (XI_MappedCreditOrDebitDPDC account id son positive-nonces positive-counterparts cod)
+                        (XIv_MappedCreditOrDebitDPDC account id son positive-nonces positive-counterparts cod)
                         ;;If NFT
                         (if cod
                             ;;If Credit
@@ -825,9 +865,9 @@
                     )
                     ;;positive and negative nonces
                     (do
-                        (XI_MappedCreditOrDebitDPDC account id son negative-nonces negative-counterparts cod)
+                        (XIv_MappedCreditOrDebitDPDC account id son negative-nonces negative-counterparts cod)
                         (if son
-                            (XI_MappedCreditOrDebitDPDC account id son positive-nonces positive-counterparts cod)
+                            (XIv_MappedCreditOrDebitDPDC account id son positive-nonces positive-counterparts cod)
                             (if cod
                                 (XI_MappedUpdateOwnerNFT id positive-nonces account false)
                                 (XI_MappedUpdateOwnerNFT id positive-nonces account true)
@@ -839,6 +879,9 @@
         )
     )
     ;;
+    ;;Protection: Class 1 — Innate protection offered by XI_RegisterSingleNonce,
+    ;;Protection:          XI_RegisterMultipleNonces, XB_CreditSFT-Nonce,
+    ;;Protection:          XB_CreditNFT-Nonce, XB_CreditSFT-Nonces, XB_CreditNFT-Nonces
     (defun XI_RegisterCollectables:object{IgnisCollectorV2.OutputCumulator}
         (
             id:string son:bool nonce-classes:[integer] amounts:[integer]
@@ -847,7 +890,6 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPDC:module{DpdcV2} DPDC)
                 (owner:string (ref-DPDC::UR_OwnerKonto id son))
                 ;;
@@ -892,6 +934,7 @@
             (ref-IGNIS::UDC_ConstructOutputCumulator price owner trigger collectable-names)
         )
     )
+    ;;Protection: Class 3 — Custom: DPDC-C|C>REGISTER-MULTIPLE-NONCES
     (defun XI_RegisterMultipleNonces:[string]
         (
             id:string son:bool nonce-classes:[integer] amounts:[integer]
@@ -923,6 +966,7 @@
             )
         )
     )
+    ;;Protection: Class 3 — Custom: DPDC-C|C>REGISTER-SINGLE-NONCE
     (defun XI_RegisterSingleNonce:string
         (
             id:string son:bool nonce-class:integer amount:integer
@@ -933,6 +977,7 @@
             (XI_RegisterCollectionElement id son nonce-class amount input-nonce-data)
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_RegisterCollectionElement:string
         (
             id:string son:bool nonce-class:integer amount:integer
@@ -970,6 +1015,7 @@
     )
     ;;===========================================
     ;;
+    ;;Protection: Class 1 — Innate protection offered by XE_U|NonceHolder, XE_W|Supply
     (defun XI_MappedUpdateOwnerNFT (id:string nonces:[integer] account:string iz-bar:bool)
         (let
             (
@@ -1000,7 +1046,11 @@
         )
     )
     ;;Must account for exist/not-exist
-    (defun XI_CreditOrDebitDPDC (account:string id:string son:bool nonce:integer amount:integer cod:bool)
+    ;;Enforce: per-element-in-map -- XIv_MappedCreditOrDebitDPDC maps this over (at idx amounts), so
+    ;;          UEV_Amount validates one element. Upstream, XI_CreditOrDebitCollectables dispatches to 16
+    ;;          different require-capability branches; relocating would duplicate the check 16x.
+    ;;Protection: Class 1 — Innate protection offered by XE_W|Supply
+    (defun XIv_CreditOrDebitDPDC (account:string id:string son:bool nonce:integer amount:integer cod:bool)
         (let
             (
                 (ref-DPDC:module{DpdcV2} DPDC)
@@ -1026,7 +1076,10 @@
             (ref-DPDC::XE_W|Supply account id son nonce new-supply)
         )
     )
-    (defun XI_MappedCreditOrDebitDPDC (account:string id:string son:bool nonces:[integer] amounts:[integer] cod:bool)
+    ;;Enforce: 4 call sites inside XI_CreditOrDebitCollectables -- relocating the (= l1 l2) length check
+    ;;          duplicates it 4x, which is strictly more code.
+    ;;Protection: Class 1 — Innate protection offered by XIv_CreditOrDebitDPDC
+    (defun XIv_MappedCreditOrDebitDPDC (account:string id:string son:bool nonces:[integer] amounts:[integer] cod:bool)
         (let
             (
                 (l1:integer (length nonces))
@@ -1036,7 +1089,7 @@
             (map
                 (lambda
                     (idx:integer)
-                    (XI_CreditOrDebitDPDC account id son (at idx nonces) (at idx amounts) cod)
+                    (XIv_CreditOrDebitDPDC account id son (at idx nonces) (at idx amounts) cod)
                 )
                 (enumerate 0 (- l1 1))
             )

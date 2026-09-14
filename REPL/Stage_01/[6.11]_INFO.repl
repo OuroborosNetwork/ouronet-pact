@@ -170,3 +170,119 @@
 (commit-tx)
 (print "")
 (print "=== [6.11]_INFO — DALOS + DPTF + DPOF + VST + ATS blocks complete ===")
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;
+;;==== TX-I-COST · 01 · the cost figures must agree with each other AND with their own text ====
+(begin-tx "TX-I-COST - INFO cost integrity: numbers agree with numbers, and with the text")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-I-COST · 01 · cost integrity across INFO previews] ---")
+;;WHY THIS BLOCK EXISTS. The INFO assertions above are SHAPE checks -- (contains "ignis" ...) --
+;;which pass for any object carrying the right keys, including one whose numbers are wrong. That
+;;is worth having as a smoke test and proves nothing about correctness.
+;;
+;;A ClientInfo carries the cost THREE times over: as ignis-full, as ignis-need, and again in
+;;ignis-text, the human-readable line a UI renders. A wallet charges the NUMBER; a user reads the
+;;TEXT. If those disagree the user is quoted one price and billed another, and nothing in the
+;;suite would have noticed.
+;;
+;;Two invariants, and neither needs per-function knowledge -- they hold for EVERY preview in every
+;;INFO module, which is what makes them worth encoding once over a batch:
+;;
+;;   1  ignis-need == ignis-full x ignis-discount   (at token precision)
+;;   2  ignis-text quotes the ignis-need figure verbatim
+;;
+;;The batch deliberately spans four different full costs (9, 14, 25, 29) rather than repeating one
+;;operation: a discount applied as a constant instead of a multiplier would still satisfy a
+;;single-value check.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let*
+    (
+        (p:string KST.ANHD)
+        (a:string KST.ANHD)
+        (ouro:string "OURO-98c486052a51")
+        (atspair:string (at 0 (DPTF.UR_RewardBearingToken (DALOS.UR_AurynID))))
+        ;;EVERY call shape the smoke block above already proves reachable, re-used here for the
+        ;;INVARIANT rather than for shape. Widening this list is the whole extension mechanism:
+        ;;one line per preview, no new assertion to write.
+        (cis:[object{OuronetInfoV2.ClientInfo}]
+            [ (INFO-ONE.INFO_DALOS|ControlSmartAccount p a)
+              (INFO-ONE.INFO_DALOS|DeploySmartAccount a)
+              (INFO-ONE.INFO_DALOS|DeployStandardAccount a)
+              (INFO-ONE.INFO_DALOS|RotateGovernor p a)
+              (INFO-ONE.INFO_DALOS|RotateGuard p a)
+              (INFO-ONE.INFO_DALOS|RotateSovereign p a)
+              (INFO-ONE.INFO_DALOS|RotateStoa p a)
+              (INFO-ONE.INFO_DALOS|UpdateEliteAccount p a)
+              (INFO-ONE.INFO_DALOS|UpdateEliteAccountSquared p a a)
+              (INFO-ONE.INFO_DPTF|Burn p ouro a 1.0)
+              (INFO-ONE.INFO_DPTF|Control p ouro)
+              (INFO-ONE.INFO_DPTF|DeployAccount p ouro a)
+              (INFO-ONE.INFO_DPTF|Mint p ouro a 1.0 false)
+              (INFO-ONE.INFO_DPTF|RotateOwnership p ouro a)
+              (INFO-ONE.INFO_DPTF|SetFee p ouro 5.0)
+              (INFO-ONE.INFO_DPTF|SetMinMove p ouro 1.0)
+              (INFO-ONE.INFO_DPTF|ToggleBurnRole p ouro a true)
+              (INFO-ONE.INFO_DPTF|ToggleFeeExemptionRole p ouro a true)
+              (INFO-ONE.INFO_DPTF|ToggleFreezeAccount p ouro a true)
+              (INFO-ONE.INFO_DPTF|ToggleMintRole p ouro a true)
+              (INFO-ONE.INFO_DPTF|TogglePause p ouro true)
+              (INFO-ONE.INFO_ATS|AddSecondary p atspair KST.ANHD false)
+              (INFO-ONE.INFO_ATS|SetHotRecoveryFee p atspair 1.0 1)
+              (INFO-ONE.INFO_ATS|ToggleParameterLock p atspair true)
+              ;;--- widened 2026-09-11. Chosen to stretch the FULL-cost spread the invariant runs
+              ;;over: the original batch topped out at 29, so a discount implemented as a constant
+              ;;subtraction rather than a multiplier stayed plausible. These reach 53, 265 and the
+              ;;719-722 VST band, where a constant would be off by an order of magnitude.
+              (INFO-ONE.INFO_DPTF|DonateFees p ouro)
+              (INFO-ONE.INFO_DPTF|ResetFeeTarget p ouro)
+              (INFO-ONE.INFO_DPTF|UpdatePendingBranding p ouro)
+              (INFO-ONE.INFO_ATS|UpdatePendingBranding p atspair)
+              ;;the VST link family -- five previews whose costs differ by only a few IGNIS
+              ;;(719.21 / 719.74 / 721.86), so a copy-paste of the wrong URCi_ between them would
+              ;;produce a wrong-but-plausible number that no shape check could catch
+              (INFO-ONE.INFO_VST|CreateFrozenLink p ouro)
+              (INFO-ONE.INFO_VST|CreateHibernatingLink p ouro)
+              (INFO-ONE.INFO_VST|CreateReservationLink p ouro)
+              (INFO-ONE.INFO_VST|CreateSleepingLink p ouro)
+              (INFO-ONE.INFO_VST|CreateVestingLink p ouro) ])
+    )
+    (map print
+        (map
+            (lambda (ci:object{OuronetInfoV2.ClientInfo})
+                (let*
+                    (
+                        (ig:object{OuronetInfoV2.ClientIgnisCosts} (at "ignis" ci))
+                        (full:decimal (at "ignis-full" ig))
+                        (need:decimal (at "ignis-need" ig))
+                        (disc:decimal (at "ignis-discount" ig))
+                        (txt:string (at "ignis-text" ig))
+                    )
+                    ;;TWO CASES, and the second was a genuine discovery: a zero-cost preview does
+                    ;;not render "0.0 IGNIS" -- it says "Operation is free of Ouronet GAS (IGNIS)".
+                    ;;That is correct and worth asserting in its own right: a free operation must
+                    ;;SAY it is free. Displaying a 0.0 price reads as a bug to a user, and quoting
+                    ;;a non-zero figure on a free op would be the reverse of the defect this block
+                    ;;exists to catch.
+                    (expect
+                        (format "<<TX-I-COST>> need = full x discount, and the text agrees ({} x {} = {})"
+                            [full disc need])
+                        true
+                        (and (= need (round (* full disc) 2))
+                             (if (> full 0.0)
+                                 (contains (format "{}" [need]) txt)
+                                 (contains "free of Ouronet GAS" txt))))
+                )
+            )
+            cis
+        )
+    )
+    ""
+)
+(env-sigs [])
+(print "")
+(print "===^^^===")
+(commit-tx)

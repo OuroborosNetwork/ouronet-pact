@@ -5,3 +5,287 @@
 (load "../deploy-stage01.repl")
 (load "../deploy-stage02.repl")
 (load "../Stage_02/[6.1.2]_DPDC-FRAGMENTS.repl")
+
+;;|| NEXT >
+;;|| DPDC-F-G2 — fragmentation cannot be enabled twice on the same NONCE.
+;;
+(begin-tx "DPDC-F-G2 - DPDC-F|C>ENABLE-FRAGMENTATION is not idempotent")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [DPDC-F-G2 · 01 · a re-entry check on nonce fragmentation] ---")
+;;`09_DPDC-F.pact:239`, the NONCE-level twin of the set-class rule pinned by
+;;`modules/DPDC-S.repl <<DPDC-S-G5>>`. Different module, different table, different message
+;;("Nonce must not be fragmented..." vs "Set Class must not be..."), so neither credits the other.
+;;
+;;THIS HARNESS IS THE RIGHT HOME AND modules/DPDC-S.repl WAS NOT. A note there recorded this guard
+;;as unreachable because its collection (TSFS) has no nonce that is BOTH class 0 AND already
+;;fragmented -- n1..n10 are class-0-unfragmented and the fragmented n11 is class 1, where the
+;;class check one line above answers first. That note was right about TSFS and wrong about the
+;;guard: `[6.1.2]_DPDC-FRAGMENTS.repl` TX-FRAG-002 creates TFRG nonce 1 as a plain class-0 nonce
+;;and then enables fragmentation on it, and there is no disable operation, so the state persists.
+;;**The blocker was the harness, not the rule.** The note has been corrected.
+;;
+;;ORDERING MATTERS HERE and is worth stating: `:238` ("Only Class 0 Nonces can be fragmented") sits
+;;immediately above, and `UEV_IzNonceFragmented`'s second disjunct only becomes true for a NON-zero
+;;nonce class -- which :238 has already rejected. So the ONLY path to this message is the
+;;split-data-is-non-zero disjunct on a class-0 nonce, which is exactly what TFRG nonce 1 is.
+(let
+    (
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
+        (ref-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (frg:string "TFRG-98c486052a51")
+    )
+    (map print
+        [
+            ;;the premise, both halves: class 0 AND already fragmented -- the combination the
+            ;;DPDC-S note said did not exist anywhere
+            (expect "<<DPDC-F-G2>> TFRG nonce 1 is class 0 AND already fragmented"
+                [0 true]
+                [(ref-DPDC::UR_NonceClass frg true 1)
+                 (ref-DPDC-F::UEV_IzNonceFragmented frg true 1)])
+            (expect-failure "<<DPDC-F-G2>> so enabling fragmentation on it AGAIN is refused"
+                "Nonce must not be fragmented in order to enable fragmentation for it !"
+                (ref-TS02-C1::DPSF|C_EnableNonceFragmentation KST.ANHD frg 1
+                    (ref-UDC::UDC_ZeroNonceData)))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(commit-tx)
+
+;;|| NEXT >
+;;|| DPDC-F-G3 — the DPDC system account cannot be burned out from under fragment holders.
+;;
+(begin-tx "DPDC-F-G3 - DPDC-MNG|C>REMOVE-CLASS-ZERO-NONCES protects fragment collateral")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [DPDC-F-G3 · 01 · removing a nonce that is backing outstanding fragments] ---")
+;;`06_DPDC-MNG.pact:440` — the DPDC Audit #5C follow-up. The DPDC smart account doubles as a
+;;same-transaction escrow (EQUITY's Convert/Break package-share flows transfer in, burn the old
+;;tier, credit the new one and transfer out), so it cannot simply be made un-burnable. The guard is
+;;narrower than that: burn/wipe is refused only when the nonce being removed currently carries
+;;non-zero split-data — i.e. it is collateral behind fragments somebody else holds.
+;;
+;;THIS HARNESS IS THE ONLY ONE THAT CAN DRIVE IT, and the reason is the same one that put
+;;`09_DPDC-F:239` here. The guard needs a nonce that is simultaneously (a) class 0 — anything else
+;;is rejected by the composed IZ-CLASS-ZERO — and (b) fragmented. TFRG nonce 1 is built exactly that
+;;way by `[6.1.2]` TX-FRAG-002, and fragmentation has no disable operation, so the state persists to
+;;here. Both halves are asserted below rather than assumed.
+;;
+;;The account argument is the DPDC system account itself, read from `GOV|DPDC|SC_NAME` rather than
+;;written out: it is a 200-odd character principal and hardcoding it would rot the moment governance
+;;rotated it. Reading it is also what makes the CONTROL below meaningful.
+(let
+    (
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
+        (frg:string "TFRG-98c486052a51")
+    )
+    (let
+        (
+            (sc:string (ref-DPDC::GOV|DPDC|SC_NAME))
+        )
+        (map print
+            [
+                ;;the premise: class 0 (so IZ-CLASS-ZERO would admit it) AND fragmented (so it is
+                ;;collateral). Neither half alone reaches this enforce.
+                (expect "<<DPDC-F-G3>> TFRG nonce 1 is class 0 AND carries outstanding fragments"
+                    [0 true]
+                    [(ref-DPDC::UR_NonceClass frg true 1)
+                     (ref-DPDC-F::UEV_IzNonceFragmented frg true 1)])
+                (expect-failure "<<DPDC-F-G3>> removing it from the DPDC system account is refused"
+                    "Not allowed for the DPDC system account when backing outstanding fragments"
+                    (test-capability (DPDC-MNG.DPDC-MNG|C>REMOVE-CLASS-ZERO-NONCES
+                        sc frg true [1] [1])))
+                ;;CONTROL, and it is what proves the guard is account-scoped rather than a blanket
+                ;;"fragmented nonces are frozen" rule: the IDENTICAL call against an ordinary account
+                ;;clears this enforce entirely and is stopped further down, by the per-nonce holding
+                ;;check, with a different message. EQUITY's escrow use of the system account is the
+                ;;reason that distinction has to exist, so it is worth asserting and not just noting.
+                (expect-failure "<<DPDC-F-G3>> ...while the same nonce on an ORDINARY account gets past it"
+                    "is invalid for Debiting Nonce"
+                    (test-capability (DPDC-MNG.DPDC-MNG|C>REMOVE-CLASS-ZERO-NONCES
+                        KST.ANHD frg true [1] [999999999])))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-F-I1 — INFO_DPSF|MakeFragments quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-F-I1 · 01 · fragment a whole nonce into pieces] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPSF|MakeFragments`, per the owner's spec: an INFO_ must report the same cost the
+;;op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+;;TFRG nonce 1 is class 0 AND already fragmentation-enabled, and ANHD holds 900 of it — the one
+;;ready-made fragment fixture in the tree. Note the preview's price is amount-INDEPENDENT (it reads
+;;`URCi_MakeFragments id true`), so the amount only has to be valid, not meaningful.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (fr:string "TFRG-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|MakeFragments patron patron fr 1 100))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C1::DPSF|C_MakeFragments patron patron fr 1 100))
+        )
+        (map print
+            [
+                (expect "<<DPDC-F-I1>> the preview's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-F-I1>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-F-I2 — INFO_DPSF|MergeFragments quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-F-I2 · 01 · reassemble fragments into whole units] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPSF|MergeFragments`, per the owner's spec: an INFO_ must report the same cost the
+;;op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+;;The fragment nonce is NEGATIVE (-1) by convention, and the merge amount must be a whole multiple
+;;of the 1000-piece ratio — a partial multiple is refused.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (fr:string "TFRG-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+    )
+    ;;SETUP — fragments must exist and belong to the merger. ANHD holds none at this point (the
+    ;;file's fragment stock sits with EMMA), so they are minted here from ANHD's own 900 units.
+    ;;1 unit fragments into 1000 pieces, so 100 units give 100000 fragments to merge back.
+    (ref-TS02-C1::DPSF|C_MakeFragments patron patron fr 1 100)
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|MergeFragments patron patron fr -1 100000))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C1::DPSF|C_MergeFragments patron patron fr -1 100000))
+        )
+        (map print
+            [
+                (expect "<<DPDC-F-I2>> the preview's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-F-I2>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-F-I3 — INFO_DPSF|RepurposeFragments quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-F-I3 · 01 · move fragments between accounts] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPSF|RepurposeFragments`, per the owner's spec: an INFO_ must report the same cost the
+;;op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+;;EMMA holds 100000 fragments at nonce -1 (`[6.1.2]:330`). The gate is `CAP_Owner` on the tx SIGNER,
+;;not on the `patron` argument — `[6.1.2]:283-292` proves that signing as EMMA fails even when the
+;;patron argument names the owner. So this is signed by ANHD while moving EMMA's fragments.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (fr:string "TFRG-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|RepurposeFragments patron fr emma lumy [-1] [100000]))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C1::DPSF|C_RepurposeFragments patron fr emma lumy [-1] [100000]))
+        )
+        (map print
+            [
+                (expect "<<DPDC-F-I3>> the preview's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-F-I3>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPDC-F-I4 — INFO_DPSF|TransferNonce quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPDC-F-I4 · 01 · move a whole nonce] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPSF|TransferNonce`, per the owner's spec: an INFO_ must report the same cost the
+;;op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+;;TFRG carries a 0.0 ignis-royalty, so the transfer's only patron debit is the gas leg the preview
+;;quotes. On a royalty-bearing nonce the patron is charged a SECOND time inside
+;;`DPDC-T::C_IgnisRoyaltyCollector`, which the preview does not cover — see <<DPDC-I1>>.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (fr:string "TFRG-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|TransferNonce patron fr patron lumy 1 100 false))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-C1::DPSF|C_TransferNonce patron fr patron lumy 1 100 false))
+        )
+        (map print
+            [
+                (expect "<<DPDC-F-I4>> the preview's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPDC-F-I4>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)

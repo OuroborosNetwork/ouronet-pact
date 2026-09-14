@@ -2485,3 +2485,139 @@
 (print "")
 (print "===^^^===")
 (commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "NSFR-G1 — the three NOSFERATU argument guards")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [NSFR-G1 · 01 · rarity, and the mdm/positions agreement] ---")
+;;THE FIRST ASSERTIONS ON THIS PATH. Everything above mints; nothing above checks anything, so this
+;;suite has been reporting a pass for booting a chain. Three guards in `01_NOSFERATU.pact`, all
+;;argument-domain and all needing no state beyond the collection the file has already built.
+;;
+;;`:171` sits in `UDC_NonceData`, which is a `UDC_` -- UNPROTECTED and directly callable, so it
+;;needs no client, no capability and no signature. That is the cheapest shape in the codebase and
+;;the reason to check the prefix before assuming a fixture is required.
+;;
+;;`:437` and `:450` are the `C_Spawn` / `C_Fix` pair, and they are the citizen twin of the KBN guard
+;;pinned by `modules/DPDC.repl <<DPDC-G15>>` -- same wording, same rule, different module. Pinned
+;;separately because a shared message proves only one site, and a duplicated rule is exactly where a
+;;copy-paste slip survives review.
+(let
+    (
+        ;;NOSFERATU declares no interface (it is a plain citizen module), so there is no
+        ;;`module{...}` type to bind -- direct dot-calls, exactly as the A_Step calls above do.
+        (dhn-id:string "DHN-98c486052a51")
+        (patron:string KST.ANHD)
+    )
+    (map print
+        [
+            ;;--- the rarity domain is a closed set of four. The ACCEPTING case is driven first so
+            ;;the refusal below cannot be confused with the constructor being broken outright.
+            ;;a metadata row is THIRTEEN strings (see the A_Step01 rows above) -- the constructor
+            ;;indexes every trait slot, so a short row dies on an index fault before any rule is
+            ;;consulted. Only the ACCEPTING case needs a well-formed row: the refusals below are
+            ;;reached before the row is ever read.
+            (expect "<<NSFR-G1>> a known rarity builds one nonce-data row"
+                1 (length (NOSFERATU.UDC_NonceData "Legendary" 1 [(make-list 13 "x")])))
+            (expect-failure "<<NSFR-G1>> an unknown rarity string is refused"
+                "Rarity string is invalid"
+                (NOSFERATU.UDC_NonceData "Mythic" 1 [["a"]]))
+            ;;case matters -- the check is `contains` over exact strings, not a normalised compare
+            (expect-failure "<<NSFR-G1>> ...and so is a known rarity in the wrong case"
+                "Rarity string is invalid"
+                (NOSFERATU.UDC_NonceData "legendary" 1 [["a"]]))
+            ;;--- C_Spawn: the metadata row count must equal the declared position count. Both
+            ;;directions, because a one-sided test cannot tell a parity check from a floor.
+            (expect-failure "<<NSFR-G1>> C_Spawn refuses two metadata rows against three positions"
+                "Invalid Number of Positions"
+                (NOSFERATU.C_Spawn patron dhn-id "Common" 900 3 [["a"] ["b"]]))
+            (expect-failure "<<NSFR-G1>> ...and three rows against two positions"
+                "Invalid Number of Positions"
+                (NOSFERATU.C_Spawn patron dhn-id "Common" 900 2 [["a"] ["b"] ["c"]]))
+            ;;--- C_Fix carries its own copy of the same enforce, on the UPDATE path
+            (expect-failure "<<NSFR-G1>> C_Fix carries the same rule on the update path"
+                "Invalid Number of Positions"
+                (NOSFERATU.C_Fix patron dhn-id patron "Common" 900 3 [["a"] ["b"]]))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(print "===^^^===")
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "NSFR-G2 - the split-call minting shape is price-neutral, and WHY")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [NSFR-G2 · 01 · one 70-element call vs a 30 + 40 pair] ---")
+;;CONFORMANCE OBSERVATION `self-C-call-citizen`, settled by execution.
+;;
+;;`_conformance.py` reports 64 sites where a CITIZEN module calls its own `C_`, against CLAUDE.md's
+;;"`C_` is blocked from being invoked inside its own module by design". They collapse to three
+;;families in two files -- NOSFERATU's `A_FixNN -> C_Fix` and `A_StepNN -> C_Spawn`, and KBunnies'
+;;`A_StepNN -> C_Spawn` -- and the rule does not apply to them, because the DIRECTION IS INVERTED.
+;;The sovereign rule exists because a sovereign `C_` builds an IGNIS OutputCumulator that only Talos
+;;may collect; a self-call could drop or double it. These citizen `C_`s return a **string** -- the
+;;`format` output of the Talos wrapper, which already collected -- so there is no cumulator at this
+;;level to mishandle. They sit UPSTREAM of billing, not downstream.
+;;
+;;WHAT ACTUALLY NEEDED CHECKING is the one place that reasoning could still go wrong. Two of the
+;;steps split a 70-element mint across TWO `C_Spawn` calls in a single transaction:
+;;    A_Step01  = 70 Legendary                     -> ONE  Talos call, ONE collect
+;;    A_Step02  = 30 Legendary + 40 Epic           -> TWO  Talos calls, TWO collects
+;;That is only safe if the price carries NO FIXED PER-CALL COMPONENT. It does not:
+;;`DPDC-C::URCi_RegisterCollectablesPrice` is `(* smallest (dec (fold (+) 0 amounts)))` -- strictly
+;;proportional to the element count. Asserted below over the real DHN collection rather than argued.
+;;
+;;AND THE EXCEPTION IS ASSERTED TOO, because it is the thing that would break this if the minter
+;;ever changed asset kind. The same function has a first-nonce discount branch,
+;;`(and (= ft "E|") son (= nu 0)) -> (/ raw-price 1000.0)`, which is NOT linear: splitting a call on
+;;an E| semi-fungible would put only the first half on the discount. DHN is a DPNF (son=false), so
+;;the branch cannot apply here -- pinned below, so that a future collection that IS E|+son fails
+;;this test instead of silently mispricing.
+(let
+    (
+        (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
+        (dhn-id:string "DHN-98c486052a51")
+    )
+    (let
+        (
+            (p70:decimal (ref-DPDC-C::URCi_RegisterCollectablesPrice dhn-id false [70]))
+            (p30:decimal (ref-DPDC-C::URCi_RegisterCollectablesPrice dhn-id false [30]))
+            (p40:decimal (ref-DPDC-C::URCi_RegisterCollectablesPrice dhn-id false [40]))
+            (p20:decimal (ref-DPDC-C::URCi_RegisterCollectablesPrice dhn-id false [20]))
+            (p50:decimal (ref-DPDC-C::URCi_RegisterCollectablesPrice dhn-id false [50]))
+        )
+        (map print
+            [
+                ;;A_Step02's shape: 30 + 40 must cost exactly what A_Step01's single 70 costs
+                (expect "<<NSFR-G2>> A_Step02's 30+40 split costs exactly the same as one 70-element call"
+                    p70 (+ p30 p40))
+                ;;A_Step05's shape: 20 + 50, the other split in the file
+                (expect "<<NSFR-G2>> ...and so does A_Step05's 20+50 split"
+                    p70 (+ p20 p50))
+                ;;the property underneath both, stated directly: no fixed per-call component, so the
+                ;;price of one element times N is the price of N elements
+                (expect "<<NSFR-G2>> the price is strictly proportional -- no fixed per-call component"
+                    p70 (* 70.0 (ref-DPDC-C::URCi_RegisterCollectablesPrice dhn-id false [1])))
+                ;;and it is not trivially zero, which would make every equality above vacuous
+                (expect "<<NSFR-G2>> ...and the price is not zero, so the equalities above mean something"
+                    true (> p70 0.0))
+                ;;THE EXCEPTION. The non-linear discount needs ft="E|" AND son AND nu=0. DHN is a
+                ;;DPNF: son is false, so the branch is out of reach and linearity holds. If this
+                ;;collection ever became an E| semi-fungible, THIS is the assertion that would fail.
+                (expect "<<NSFR-G2>> the non-linear first-nonce discount cannot apply: DHN is not an E| token"
+                    false (= (take 2 dhn-id) "E|"))
+            ]
+        )
+    )
+    ""
+)
+(commit-tx)

@@ -63,7 +63,7 @@
     ;;
     ;; DPNF|C_DeployAccount removed — DPDC Audit #35M: standalone deployment let any signer force any
     ;; existing account to associate with any collection, with no ownership check. Real auto-association
-    ;; (on transfer, role-toggle, Issue, set-fragmentation) always calls DPDC::XB_DeployAccountNFT
+    ;; (on transfer, role-toggle, Issue, set-fragmentation) always calls DPDC::XBv_DeployAccountNFT
     ;; directly, module-to-module, bypassing this public entrypoint entirely.
     (defun DPNF|C_Issue:string
         (

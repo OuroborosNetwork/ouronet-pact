@@ -363,7 +363,6 @@
             (let
                 (
                     (ref-CODEX:module{CodexV2} CODEX)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (ref-IGNIS|V2:module{IgnisCollectorV2} IGNIS)
                     (stoa-fee:decimal (ref-CODEX::URCi_RegisterStoicTag tag-name))
                     (msg:string
@@ -407,7 +406,6 @@
             (let
                 (
                     (ref-PYTHIA:module{PythiaV5} PYTHIA)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (ref-IGNIS|V2:module{IgnisCollectorV2} IGNIS)
                     (deploy-fee:decimal (ref-PYTHIA::URCi_DeployApiKey))
                     (fee-anchor:string (ref-PYTHIA::UC_FeeDiscountAnchor))
@@ -431,7 +429,6 @@
             (let
                 (
                     (ref-PYTHIA:module{PythiaV5} PYTHIA)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (ref-IGNIS|V2:module{IgnisCollectorV2} IGNIS)
                     (rename-fee:decimal (ref-PYTHIA::URCi_UpdateDualConsumerLane))
                     (fee-anchor:string (ref-PYTHIA::UC_FeeDiscountAnchor))

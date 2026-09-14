@@ -575,10 +575,19 @@
 ;;==== TX-IGC-001 · 08 · P7: composed op — VST special-link floor ==== ============================
 (print "--- [TX-IGC-001 · 08 · VST link: deterrence leg is exact, total is a floor] ---")
 ;;A COMPOSED op cannot be asserted as one number: URCi_CreateSpecialTrueFungibleLink concatenates
-;;three legs (issue-the-wrapper, update-special on the underlying, transfer-role toggle). What IS
-;;exactly knowable is leg 0 — the link's own $2.50 deterrence PLUS the DPTF issuance it carries —
-;;so that leg is pinned exactly and the total only floor-checked. This is the shape the price
-;;sheet prints for composed ops ("COMPLEX — at least N"), asserted against the live cumulator.
+;;FOUR legs — the link's own deterrence, the wrapper issuance, update-special on the underlying,
+;;and the transfer-role toggle. The first TWO are exactly knowable, so both are pinned exactly and
+;;the total is floor-checked. This is the shape the price sheet prints for composed ops
+;;("COMPLEX — at least N"), asserted against the live cumulator.
+;;
+;;UPDATED 2026-09-14 — and the update is the point, not a chore. This block used to pin leg 0 as
+;;`deterrence + issuance` in ONE leg, which is what the preview built at the time. The preview now
+;;SPLITS them, deliberately: `UDC_PrimeIgnisCumulator` discounts and quarter-splits PER LEG, so a
+;;preview whose leg COUNT differs from its exec's can round differently even when the totals are
+;;algebraically equal. Matching the exec leg-for-leg is what makes the measured equality at
+;;`modules/VST.repl <<VST-I1>>` (748.89 = 748.89) hold exactly rather than approximately.
+;;The SUM of legs 0 and 1 is asserted below too, so the old invariant is not lost — it is just no
+;;longer allowed to be satisfied by a single fused leg.
 (let
     (
         (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
@@ -589,12 +598,24 @@
     )
     (map (print)
         [
-            (expect "<<TX-IGC-008>> VST link leg 0 == price(vst-link) + the DPTF issuance it carries"
-                (+ (ref-IGNIS::UC_IgnisPrice "VST|C_CreateFrozenLink" "vst-link")
-                   (ref-DPTF::URCi_IssueGas 1))
+            (expect "<<TX-IGC-008>> VST link leg 0 == the link's own vst-link deterrence, alone"
+                (ref-IGNIS::UC_IgnisPrice "VST|C_CreateFrozenLink" "vst-link")
                 (at "ignis" (at 0 (at "cumulator-chain"
                     (ref-VST::URCi_CreateSpecialTrueFungibleLink ouro)))))
-            ;;floor: the op charges MORE than its deterrence leg (update-special + role toggle)
+            (expect "<<TX-IGC-008>> ...and leg 1 == the DPTF issuance the link carries, alone"
+                (ref-DPTF::URCi_IssueGas 1)
+                (at "ignis" (at 1 (at "cumulator-chain"
+                    (ref-VST::URCi_CreateSpecialTrueFungibleLink ouro)))))
+            ;;the invariant this block ORIGINALLY pinned, preserved across the split: the two legs
+            ;;together are still exactly deterrence + issuance. What is no longer permitted is one
+            ;;fused leg carrying both, because the exec charges them as two.
+            (expect "<<TX-IGC-008>> ...and legs 0+1 still sum to deterrence + issuance"
+                (+ (ref-IGNIS::UC_IgnisPrice "VST|C_CreateFrozenLink" "vst-link")
+                   (ref-DPTF::URCi_IssueGas 1))
+                (fold (+) 0.0 (map (at "ignis")
+                    (take 2 (at "cumulator-chain"
+                        (ref-VST::URCi_CreateSpecialTrueFungibleLink ouro))))))
+            ;;floor: the op charges MORE than its first two legs (update-special + role toggle)
             (expect "<<TX-IGC-008>> VST link total exceeds leg 0 (it has update + toggle legs too)"
                 true
                 (> (fold (+) 0.0 (map (at "ignis")

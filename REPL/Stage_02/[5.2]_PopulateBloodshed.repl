@@ -1288,3 +1288,74 @@
 (print "")
 (print "===^^^===")
 (commit-tx)
+(print "")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
+(begin-tx "TX 013 -- BSD-G1: the rarity-curve bound, in all FOUR tier modules")
+(namespace "ouronet-ns")
+;;==== TX 013 -- BSD-G1 · 01 · UCv_OrderMultiplier position bound ==== ============================
+(print "--- [TX 013 -- BSD-G1 · 01 · UCv_OrderMultiplier position bound] ---")
+;;P3.3. The Bloodshed minter carries FOUR copies of UCv_OrderMultiplier -- one per rarity tier --
+;;and all four raise the IDENTICAL message. That is exactly the case where a single test would
+;;have credited all four by wording alone, so each module is called by NAME here: attribution is
+;;by module reference, and four calls are what makes four pins honest rather than nominal.
+;;
+;;The function maps a mint POSITION onto a multiplier that decays linearly across the tier, from
+;;the full rarity-range at position 1 down to 0 at the last element. Its one guard is
+;;(<= position rarity-elements): a position past the tier's supply has no place on the curve at
+;;all, and without the guard the formula would happily return a NEGATIVE multiplier -- an item
+;;rarer than the rarest, minted out of an index that does not exist.
+;;
+;;So the bound is pinned at the tier supply itself (accepted, and asserted to be the ZERO end of
+;;the curve) and one past it (refused). The tiers differ in both range and supply, which is why
+;;the same position is legal in one tier and not in another -- asserted below.
+(let
+    (
+        (leg:integer 160)      ;;LEGENDARY-S
+        (epi:integer 1536)     ;;EPIC-S
+        (rar:integer 3168)     ;;RARE-S
+        (com:integer 8064)     ;;COMMON-S
+    )
+    (map print
+        [
+            ;;--- the curve itself, on the legendary tier: position 1 is the FULL range, and the
+            ;;last position is 0. Without these two the bound tests below would pass against a
+            ;;function that returned a constant.
+            (expect "<<BSD-G1>> legendary position 1 carries the full rarity range (100)"
+                100.0 (BLOODSHED-L.UCv_OrderMultiplier 100 1 leg))
+            (expect "<<BSD-G1>> ...and the LAST legendary position carries none of it"
+                0.0 (BLOODSHED-L.UCv_OrderMultiplier 100 leg leg))
+            ;;--- the bound, tier by tier. Accepted AT the supply, refused one past it.
+            (expect-failure "<<BSD-G1>> LEGENDARY refuses a position past its 160-item supply"
+                "Invalid Position To Rarity Elements Value"
+                (BLOODSHED-L.UCv_OrderMultiplier 100 (+ leg 1) leg))
+            (expect-failure "<<BSD-G1>> EPIC refuses a position past its 1536-item supply"
+                "Invalid Position To Rarity Elements Value"
+                (BLOODSHED-E.UCv_OrderMultiplier 200 (+ epi 1) epi))
+            (expect-failure "<<BSD-G1>> RARE refuses a position past its 3168-item supply"
+                "Invalid Position To Rarity Elements Value"
+                (BLOODSHED-R.UCv_OrderMultiplier 300 (+ rar 1) rar))
+            (expect-failure "<<BSD-G1>> COMMON refuses a position past its 8064-item supply"
+                "Invalid Position To Rarity Elements Value"
+                (BLOODSHED-C.UCv_OrderMultiplier 400 (+ com 1) com))
+            ;;--- and the bound is per-TIER, not a shared constant. Position 200 is past the
+            ;;legendary supply but comfortably inside the epic one, so the SAME number is refused
+            ;;by one module and accepted by the next. A shared-constant regression would break
+            ;;this line and nothing else.
+            (expect-failure "<<BSD-G1>> position 200 is past the LEGENDARY tier..."
+                "Invalid Position To Rarity Elements Value"
+                (BLOODSHED-L.UCv_OrderMultiplier 100 200 leg))
+            (expect "<<BSD-G1>> ...and the very same position is valid in the EPIC tier"
+                true (> (BLOODSHED-E.UCv_OrderMultiplier 200 200 epi) 0.0))
+        ]
+    )
+    ""
+)
+(print "")
+(print "")
+(print "===^^^===")
+(commit-tx)

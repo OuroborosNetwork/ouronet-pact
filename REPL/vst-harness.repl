@@ -425,10 +425,11 @@
         (
             (sleeping-ouro:string (ref-DPTF::UR_Sleeping ouro-id))
         )
-        (ref-TS01-C2::VST|C_Slumber patron patron sleeping-ouro
+        ;;C_Merge, not C_Slumber: tag 2 = SLEEPING, tag 3 = HIBERNATION (see modules/VST.repl VST-08).
+        (ref-TS01-C2::VST|C_Merge patron patron sleeping-ouro
             (ref-DPOF::URH_AccountNonces patron sleeping-ouro))
     )
-    (print "<<TX-VSTH-010>> VST|C_Sleep x2 + VST|C_Slumber (merge sleeping nonces) OK")
+    (print "<<TX-VSTH-010>> VST|C_Sleep x2 + VST|C_Merge (merge sleeping nonces) OK")
 )
 (print "===^^^===")
 (commit-tx)

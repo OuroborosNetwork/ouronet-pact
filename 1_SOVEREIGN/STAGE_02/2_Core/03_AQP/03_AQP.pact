@@ -998,15 +998,31 @@
             score-senary:string
             score-septenary:string
         )
-        @doc "Returns pool row with all seven score slots replaced (+ merge on existing row)."
-        (+ pool
-            {"score-primary"    : score-primary
+        @doc "Returns pool row with all seven score slots replaced (merge over the existing row)."
+        ;;MERGE ORDER FIX (2026-09-13). This was `(+ pool {…seven slots…})` and was therefore a
+        ;;COMPLETE NO-OP: Pact's object `+` gives precedence to the LEFT operand on key collisions
+        ;;-- verified live, `(+ {"a": 1, "b": 9} {"a": 2, "c": 3})` is `{"a": 1, "b": 9, "c": 3}`.
+        ;;The pool row already carries all seven slot keys, so every supplied value was discarded and
+        ;;the function returned its input unchanged, flatly contradicting its own @doc ("all seven
+        ;;score slots replaced").
+        ;;
+        ;;Caught by writing the first test this function has ever had: addressing slot N and reading
+        ;;back slot N returned the row's ORIGINAL score, not the one just written.
+        ;;
+        ;;NO BLAST RADIUS, which is why this is a repair rather than a deletion: its only caller is
+        ;;`UDC_AQP|SchemaWithScoreAtSlot` directly below, and THAT has no callers anywhere in the
+        ;;codebase. Neither is on the AcquisitionPoolsV2 interface, so no cascade. The live slot
+        ;;writer is a different mechanism entirely -- `UC_PoolScoreSlotPatch` builds a PARTIAL update
+        ;;map consumed by `WU_Pool|ScoreSlot`, which is correct and unaffected.
+        ;;Pinned slot-by-slot by REPL/modules/AQP.repl <<AQP-F10>>.
+        (+  {"score-primary"    : score-primary
             ,"score-secondary"  : score-secondary
             ,"score-tertiary"   : score-tertiary
             ,"score-quaternary" : score-quaternary
             ,"score-quinary"    : score-quinary
             ,"score-senary"     : score-senary
             ,"score-septenary"  : score-septenary}
+            pool
         )
     )
     (defun UDC_AQP|SchemaWithScoreAtSlot:object{AQP|Schema}
@@ -2663,6 +2679,7 @@
     )
     ;;{5.6}  Aux/X
     ;; [XI]
+    ;;Protection: Class 1 — Innate protection offered by WI_Pool
     (defun XI_IssuePool:string
         (pool-id:string aqp-class:integer asset-id:string)
         @doc "Insert AQP|T|Pool under SECURE (from AQP|C>ISSUE-POOL). Write only; C_Issue builds IGNIS."
@@ -2670,6 +2687,7 @@
         (WI_Pool pool-id (UDC_AQP|Schema aqp-class asset-id pool-id))
         pool-id
     )
+    ;;Protection: Class 1 — Innate protection offered by WU_Pool|ScoreSlot
     (defun XI_AddScoreToPool:string
         (pool-id:string score-id:string slot-index:integer)
         @doc "Write score-id into the first free slot (0=primary .. 6=septenary). Under SECURE from AQP|C>ADD-SCORE."
@@ -2677,6 +2695,7 @@
         (WU_Pool|ScoreSlot pool-id slot-index score-id)
         score-id
     )
+    ;;Protection: Class 1 — Innate protection offered by WU7_Pool|ScoreSlots
     (defun XI_RevokeScoreFromPool:string
         (pool-id:string slot-index:integer)
         @doc "Remove score at slot-index and compact higher slots down (0=primary .. 6=septenary). Under SECURE from AQP|C>REVOKE-SCORE."
@@ -2710,6 +2729,8 @@
             )
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by WW_DPSFTracker, WU_Pool|Occupancy,
+    ;;Protection:          WW_DPNFTracker
     (defun XI_1|WriteCollectableTrackerSlot:object{IgnisCollectorV2.OutputCumulator}
         (
             pool-id:string
@@ -2758,6 +2779,8 @@
             (ref-IGNIS::UDC_LegCumulator "tracker-write-collectable" AQP|SC_NAME)
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by XI_2|BumpBenDpsfNonceTotal,
+    ;;Protection:          XI_2|BumpBenDpnfNonceTotal
     (defun XI_1|BumpBenCollectableNonceTotalSlot:object{IgnisCollectorV2.OutputCumulator}
         (beneficiary-id:string collectable-id:string son:bool nonce:integer amount:integer direction:bool)
         @doc "One BenDpsfNonceTotal or BenDpnfNonceTotal row — son dispatch to XI_2 leaf."
@@ -2767,6 +2790,8 @@
             (XI_2|BumpBenDpnfNonceTotal beneficiary-id collectable-id nonce amount direction)
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by WW_BenDpsfNonceTotal,
+    ;;Protection:          WW_BenDpsfAnkMeta
     (defun XI_2|BumpBenDpsfNonceTotal:object{IgnisCollectorV2.OutputCumulator}
         (beneficiary-id:string dpsf-id:string nonce:integer amount:integer direction:bool)
         @doc "AQP|T|BenDpsfNonceTotal: bump amount ±supply for (beneficiary, dpsf-id, nonce) across pools. \
@@ -2804,6 +2829,8 @@
             (ref-IGNIS::UDC_LegCumulator "ben-nonce-total-sf" AQP|SC_NAME)
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by WW_BenDpnfNonceTotal,
+    ;;Protection:          WW_BenDpnfAnkMeta
     (defun XI_2|BumpBenDpnfNonceTotal:object{IgnisCollectorV2.OutputCumulator}
         (beneficiary-id:string dpnf-id:string nonce:integer amount:integer direction:bool)
         @doc "AQP|T|BenDpnfNonceTotal: bump amount ±supply for (beneficiary, dpnf-id, nonce) across pools. \
@@ -2841,6 +2868,7 @@
             (ref-IGNIS::UDC_LegCumulator "ben-nonce-total-nf" AQP|SC_NAME)
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by WW_DPTFTracker, WU_Pool|Occupancy
     (defun XI_1|WriteDptfTrackerSlot:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
         @doc "One AQP|T|DPTFTracker row — read balance, write ±amount (cap validates unstake sufficiency)."
@@ -2863,6 +2891,7 @@
             (ref-IGNIS::UDC_LegCumulator "tracker-write-tf" AQP|SC_NAME)
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by WW_DPTFTracker, WU_Pool|Occupancy
     (defun XI_1|ZeroDptfTrackerSlot:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string)
         @doc "Vacate: write AQP|T|DPTFTracker balance=0. #FP1: reads the pre-balance so the pool nns occupancy \
@@ -2881,6 +2910,7 @@
             (ref-IGNIS::UDC_LegCumulator "tracker-zero-tf" AQP|SC_NAME)
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by WW_BenDptfTotal
     (defun XI_1|BumpBenDptfTotalSlot:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
         @doc "One AQP|T|BenDptfTotal row — bump total-balance ±amount; preserve last-ank-sync-count."
@@ -2900,6 +2930,7 @@
             (ref-IGNIS::UDC_LegCumulator "ben-total-tf" AQP|SC_NAME)
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by WW_DPOFTracker, WU_Pool|Occupancy
     (defun XI_1|WriteDpofTrackerSlot:object{IgnisCollectorV2.OutputCumulator}
         (
             pool-id:string
@@ -2930,6 +2961,7 @@
         )
     )
     ;; [XE]
+    ;;Protection: Class 5 — IMC + Custom: P|SECURE-CALLER
     (defun XE_SetVacateJobState:string
         (pool-id:string vacate-in-progress:bool)
         @doc "Write vacate-in-progress on AQP|T|Pool. P|UEV_IMC gates AQP-VCT caller."
@@ -2940,6 +2972,7 @@
         )
         pool-id
     )
+    ;;Protection: Class 5 — IMC + Custom: P|SECURE-CALLER
     (defun XE_SetSweepInProgress:string
         (pool-id:string flag:bool)
         @doc "Forward (re-score sweep · MTX-AQP): freeze/unfreeze a pool for a sweep — blocks new stakes AND collect \
@@ -2958,6 +2991,7 @@
     ;;   1.2 Pool tracker      UrStoa ≡ (implicit in vault accounting)
     ;;   1.3 Beneficiary rollup UrStoa ≡ N/A (TF cross-pool O(1) for ANK)
     ;;
+    ;;Protection: Class 5 — IMC + Custom: AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY
     (defun XE_TrueFungibleTransfer:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
         @doc "Phase 1.1 — UrStoa ≡ X_UR|Transfer. TFT::C_Transfer owner↔AQP|SC_NAME. Composes custody cap (validation once per tx)."
@@ -2976,6 +3010,7 @@
             )
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: P|SECURE-CALLER
     (defun XE_TrueFungiblePoolTracker:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
         @doc "Phase 1.2 — per-pool AQP|T|DPTFTracker row. UrStoa: N/A. P|SECURE-CALLER (no custody re-validation)."
@@ -2984,6 +3019,7 @@
             (XI_1|WriteDptfTrackerSlot pool-id owner-id beneficiary-id dptf-id amount direction)
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: P|SECURE-CALLER
     (defun XE_ZeroDptfTrackerSlot:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string)
         @doc "IMC: zero one AQP|T|DPTFTracker row (write-only). Called from AQP-VCT vacate."
@@ -2992,6 +3028,7 @@
             (XI_1|ZeroDptfTrackerSlot pool-id owner-id beneficiary-id dptf-id)
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: P|SECURE-CALLER
     (defun XE_TrueFungibleBeneficiaryRollup:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
         @doc "Phase 1.3 — cross-pool AQP|T|BenDptfTotal. UrStoa ≡ N/A. P|SECURE-CALLER."
@@ -3000,6 +3037,7 @@
             (XI_1|BumpBenDptfTotalSlot pool-id owner-id beneficiary-id dptf-id amount direction)
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY
     (defun XE_OrtoFungibleTransfer:object{IgnisCollectorV2.OutputCumulator}
         (
             pool-id:string
@@ -3025,6 +3063,7 @@
             )
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: P|SECURE-CALLER
     (defun XE_OrtoFungiblePoolTracker:object{IgnisCollectorV2.OutputCumulator}
         (
             pool-id:string
@@ -3060,6 +3099,7 @@
             )
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: AQP|XE>COLLECTABLE-POOL-CUSTODY
     (defun XE_CollectableTransfer:object{IgnisCollectorV2.OutputCumulator}
         (
             pool-id:string
@@ -3089,6 +3129,7 @@
             )
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: P|SECURE-CALLER
     (defun XE_CollectablePoolTracker:object{IgnisCollectorV2.OutputCumulator}
         (
             pool-id:string
@@ -3125,6 +3166,7 @@
             )
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: P|SECURE-CALLER
     (defun XE_CollectableBeneficiaryRollup:object{IgnisCollectorV2.OutputCumulator}
         (
             pool-id:string
@@ -3171,6 +3213,7 @@
     ;;   C_RevokeScore → XI_RevokeScoreFromPool
     ;;   C_DisablePoolStake / C_EnablePoolStake → XB_SetPoolStakeEnabled (also AQP-VCT vacate via IMC)
     ;;
+    ;;Protection: Class 5 — IMC + Custom: P|SECURE-CALLER
     (defun XB_SetPoolStakeEnabled:string
         (pool-id:string enabled:bool)
         @doc "Write stake-enabled on AQP|T|Pool. P|UEV_IMC gates cross-module callers (e.g. AQP-VCT vacate). \
@@ -3186,6 +3229,7 @@
     ;; --- Block C · TF stake phase 2.2 (FVT::XI_RefreshTrueFungibleStakeAnchors backward) ---
     ;;   XB_SetBenDptfAnkSyncCount
     ;;
+    ;;Protection: Class 5 — IMC + Custom: AQP|XE>SET-BENEFICIARY-DPTF-ANK-SYNC
     (defun XB_SetBenDptfAnkSyncCount:object{IgnisCollectorV2.OutputCumulator}
         (beneficiary-id:string dptf-id:string)
         @doc "Backward (FVT::CC_TrueFungibleStakeFlow phase 2.2]): set last-ank-sync-count on BenDptfTotal \
@@ -3207,6 +3251,7 @@
             )
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: AQP|XE>SET-BEN-COLLECTABLE-ANK-SYNC
     (defun XB_SetBenCollectableAnkSyncCount:object{IgnisCollectorV2.OutputCumulator}
         (beneficiary-id:string collectable-id:string son:bool)
         @doc "Backward (FVT collectable stake phase 3 / C_SyncCollectableAnchors): stamp last-ank-sync-count \
@@ -3253,7 +3298,6 @@
         (with-capability (AQP|C>ISSUE-POOL pool-name asset-id aqp-class)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     ;;

@@ -111,6 +111,13 @@
 ;; ============================================================================
 ;; SWP1-EXEC — the whole sweep in ONE transaction.
 ;; ============================================================================
+(begin-tx "SWP1-INFO - load AQP-INFO for the cost block below")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": [] }])
+(load "../../1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact")
+(commit-tx)
+
 (begin-tx "SWP1-EXEC - AQP-FVT|CC_SweepRevokeAnchor (single tx, 50 holders)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
@@ -135,6 +142,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)
         (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (anchor-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpAnchor"))
         (pool-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpPool"))
@@ -160,8 +168,60 @@
                     true (> (ref-ANK::UR_UB|AggregatePromile u50 boost-id) 0.0))
             ]
         )
+        ;;FUNCTION COVERAGE (G6) — `INFO_AQP-FVT|SweepRevokeAnchor`, per the owner's spec: an INFO_
+        ;;must report the same cost the op actually charges. Template: `Stage_02/[6.2.8]_AQP-SWEEP-CC.repl
+        ;;<<TX-SWEEP-CC01>>`, which does the same for this op's paginated twin.
+        ;;
+        ;;THIS WAS THE LAST NAMED-BUT-UNMEASURED PREVIEW IN THE CODEBASE (`REPL/_info_measured.py`).
+        ;;It was named only by `Kursan/aqp-info-tests.repl`, and only for its SHAPE — "does the object
+        ;;have an `ignis` key" — which cannot fail whatever the op charges. The single-tx sweep had no
+        ;;live invocation at all until this file, so there was nothing to measure the quote against;
+        ;;now there is, in the same transaction, on the same anchor.
+        ;;
+        ;;THE PREVIEW QUOTES ZERO OF BOTH CURRENCIES, and a zero quote is the exact shape that turned
+        ;;out to be a defect several times tonight (`INFO_SWP|ToggleFeeLock`, `INFO_ATS|ToggleParameterLock`,
+        ;;`INFO_EQUITY|IssueCompany`, `INFO_VST|Create*Link` each claimed a currency was free while
+        ;;their op collected it). Here it is believed CORRECT — `AQP-FVT|CC_SweepRevokeAnchor`
+        ;;(`04_TS02-C3.pact:2265`) carries no `IGNIS::C_Collect patron` and no `STOA|C_Collect`, so the
+        ;;op is gas-station subsidised. Believed is not measured, which is the whole point of the block.
+        ;;
+        ;;A ZERO-VS-ZERO EQUALITY IS VACUOUS ON ITS OWN — it passes just as well against an op that did
+        ;;nothing at all. The non-vacuity guard is the surrounding transaction: the POST assertions
+        ;;below pin that this very call revoked the anchor, unfroze the pool and recomputed all fifty
+        ;;holders to zero. So the zeros here are a statement about the FEE, not about whether the sweep
+        ;;ran. Both currencies are read, because a subsidised op that quietly starts charging is far
+        ;;more likely to do it in STOA (a native-coin transfer) than in IGNIS.
+        (let
+            (
+                (sweep-quote:object{OuronetInfoV2.ClientInfo}
+                    (AQP-INFO.INFO_AQP-FVT|SweepRevokeAnchor patron anchor-id))
+                (ignis-pre:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+                (stoa-pre:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
+            )
         (env-gas 0)
         (ref-TS02-C3::AQP-FVT|CC_SweepRevokeAnchor patron anchor-id)
+        (map print
+            [
+                (format "<<SWP1-INFO>> quoted ignis={} stoa={} | real ignis={} stoa={}"
+                    [(at "ignis-need" (at "ignis" sweep-quote))
+                     (at "stoa-need" (at "stoa" sweep-quote))
+                     (- ignis-pre (ref-DALOS::UR_TF_AccountSupply patron false))
+                     (- stoa-pre (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))])
+                (expect "<<SWP1-INFO>> INFO_AQP-FVT|SweepRevokeAnchor's IGNIS quote equals what the sweep charged"
+                    (- ignis-pre (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" sweep-quote)))
+                (expect "<<SWP1-INFO>> ...and its STOA quote equals what the sweep charged"
+                    (- stoa-pre (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
+                    (at "stoa-need" (at "stoa" sweep-quote)))
+                ;;and the quote really is the subsidised zero it claims to be, not some other
+                ;;number that happens to agree -- this is what makes the two equalities above
+                ;;a statement rather than a coincidence
+                (expect "<<SWP1-INFO>> ...and that agreed figure is ZERO: the op is gas-station subsidised"
+                    [0.0 0.0]
+                    [(at "ignis-need" (at "ignis" sweep-quote))
+                     (at "stoa-need" (at "stoa" sweep-quote))])
+            ]
+        )
         (let ((g:integer (env-gas)))
             (print (format "<<SWP1-EXEC>> single-tx sweep gas over 50 holders = {}" [g]))
             (map print
@@ -183,6 +243,7 @@
                         0.0 (ref-ANK::UR_UB|AggregatePromile u50 boost-id))
                 ]
             )
+        )
         )
         ;;A revoked anchor cannot be swept twice -- and the ORDER in which it refuses matters.
         (map print

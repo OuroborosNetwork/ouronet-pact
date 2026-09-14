@@ -428,6 +428,32 @@
                     "No value found in table"
                     (AQP-INFO.INFO_AQP-MTX|2Inject anhd "FVT-x" "OURO-x" 100.0))
                 (expect "<<MTX>> 2-sweep subsidised (ignis 0)" 0.0 (at "ignis-full" (at "ignis" i-mtxsweep)))
+                ;;FUNCTION COVERAGE (G6) — the ZERO half of `INFO_AQP-POOL|AbortVacate`.
+                ;;This preview quotes "Costs you nothing" for an op that visibly calls
+                ;;`IGNIS::C_Collect patron (VCT::C_AbortVacate pool-id)`. That is correct, because
+                ;;`C_AbortVacate` returns `UC_EmptyOc` and collecting an empty cumulator collects
+                ;;nothing — but it is exactly the shape that WAS a defect in three other previews
+                ;;(`INFO_EQUITY|IssueCompany`, `INFO_SWP|ToggleFeeLock`, `INFO_ATS|ToggleParameterLock`,
+                ;;all of which quoted a literal zero for a currency their op really charged). So the
+                ;;zero is asserted rather than assumed.
+                ;;
+                ;;The other half of the proof — that the op really charges nothing when it runs — is
+                ;;measured in `Stage_02/[6.2.5]_AQP-VCT.repl <<TX-VCT-L03>>`, against a live abort.
+                ;;It cannot live here: this file has no vacate-in-progress pool.
+                ;;
+                ;;UPDATE — the proof is no longer split. `Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl
+                ;;<<TX-INFO-GT-ABORT>>` now does BOTH halves in one place, because the drain blocks in
+                ;;that file leave `InfoGt*DrPool` vacate-in-progress BY DESIGN (`CCp_BatchDrain*`
+                ;;begins a vacate and deliberately does not finalize). That supplies a live abort
+                ;;inside a chain that DOES load `AQP-INFO` — exactly what was missing when this note
+                ;;was written. A stated impossibility is only ever true of the fixtures that existed
+                ;;at the time; re-check it when the fixtures move.
+                ;;The assertion below is kept: it is cheap, and it is the only check of this preview
+                ;;that runs in chains which never reach the groundtruth file.
+                (expect "<<POOL>> INFO_AQP-POOL|AbortVacate quotes zero IGNIS — measured against a live abort in [6.2.5] <<TX-VCT-L03>>"
+                    0.0 (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-POOL|AbortVacate anhd "SfStakePool-98c486052a51"))))
+                (expect "<<POOL>> ...and zero STOA too"
+                    0.0 (at "stoa-need" (at "stoa" (AQP-INFO.INFO_AQP-POOL|AbortVacate anhd "SfStakePool-98c486052a51"))))
             ]
         )
     )

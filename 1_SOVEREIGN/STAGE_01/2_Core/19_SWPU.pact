@@ -279,7 +279,6 @@
     (defun P|A_Define ()
         (let
             (
-                (ref-U|G:module{OuronetGuardsV2} U|G)
                 (ref-P|DALOS:module{OuronetPolicyV2} DALOS)
                 (ref-P|BRD:module{OuronetPolicyV2} BRD)
                 (ref-P|DPTF:module{OuronetPolicyV2} DPTF)
@@ -943,7 +942,7 @@
                                 (X:[decimal] (ref-SWP::UR_PoolTokenSupplies swpair))
                                 (X-prec:[integer] (ref-SWP::UR_PoolTokenPrecisions swpair))
                                 (input-positions:[integer] (ref-SWPI::URCv_PoolTokenPositions swpair [i-id]))
-                                (output-position:integer (ref-SWP::UR_PoolTokenPosition swpair o-id))
+                                (output-position:integer (ref-SWP::URv_PoolTokenPosition swpair o-id))
                                 (W:[decimal] (ref-SWP::UR_Weigths swpair))
                                 (dtso:object{UtilitySwpV2.DirectTaxedSwapOutput}
                                     (ref-SWPI::UC_BareboneSwapWithFeez account pool-type
@@ -1104,7 +1103,6 @@
             \ path => URC_HopperForKnownRoute; empty output-values => EOC."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (sstoa:string (ref-DALOS::UR_SilverStoaID))
@@ -1169,7 +1167,7 @@
                 (X:[decimal] (ref-SWP::UR_PoolTokenSupplies swpair))
                 (X-prec:[integer] (ref-SWP::UR_PoolTokenPrecisions swpair))
                 (input-positions:[integer] (ref-SWPI::URCv_PoolTokenPositions swpair input-ids))
-                (output-position:integer (ref-SWP::UR_PoolTokenPosition swpair output-id))
+                (output-position:integer (ref-SWP::URv_PoolTokenPosition swpair output-id))
                 (W:[decimal] (ref-SWP::UR_Weigths swpair))
                 ;;
                 (dtso:object{UtilitySwpV2.DirectTaxedSwapOutput}
@@ -1242,6 +1240,7 @@
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
+    ;;Protection: Class 2 — SECURE
     (defun XI_SmartSwapAndRegister:list
         (
             account:string input-id:string input-amount:decimal output-id:string slippage:decimal
@@ -1277,6 +1276,7 @@
             [ico stoa-results]
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_SmartSwapRouter:object{IgnisCollectorV2.OutputCumulator}
         (
             account:string input-id:string input-amount:decimal output-id:string slippage:decimal
@@ -1329,6 +1329,7 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_SmartSwapExplicitRoute:object{IgnisCollectorV2.OutputCumulator}
         (
             account:string input-id:string input-amount:decimal output-id:string slippage:decimal
@@ -1378,6 +1379,7 @@
             )
         )
     )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XI_RegisterBundlePaths (input-id:string output-id:string distinct-edges:[string] bundle:object{SwapperUsageV3.SmartSwapPathBundle})
         @doc "#34 Phase 8: cache self-warming — registers a bundle's <boost-path> and \
             \ each <stoa-paths> entry into SWPT|PathCache, ONLY when (a) the bundle \
@@ -1489,6 +1491,7 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_SmartSwap:object{IgnisCollectorV2.OutputCumulator}
         (
             account:string input-id:string input-amount:decimal output-id:string
@@ -1544,6 +1547,7 @@
             final-ico
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_SmartSwapCore:list
         (
             account:string input-amount:decimal ico-input:object{IgnisCollectorV2.OutputCumulator}
@@ -1612,7 +1616,7 @@
                             (X:[decimal] (ref-SWP::UR_PoolTokenSupplies swpair))
                             (X-prec:[integer] (ref-SWP::UR_PoolTokenPrecisions swpair))
                             (input-positions:[integer] (ref-SWPI::URCv_PoolTokenPositions swpair [i-id]))
-                            (output-position:integer (ref-SWP::UR_PoolTokenPosition swpair o-id))
+                            (output-position:integer (ref-SWP::URv_PoolTokenPosition swpair o-id))
                             (W:[decimal] (ref-SWP::UR_Weigths swpair))
                             (dsid:object{UtilitySwpV2.DirectSwapInputData}
                                 (ref-U|SWP::UDC_DirectSwapInputData [i-id] [current-input] o-id)
@@ -1765,6 +1769,7 @@
             )
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by XI_Swap
     (defun XI_STOA-PID|Swap:object{IgnisCollectorV2.OutputCumulator}
         (
             account:string swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData}
@@ -1843,6 +1848,7 @@
             ico
         )
     )
+    ;;Protection: Class 3 — Custom: SWPU|X>SWAP
     (defun XI_Swap:object{IgnisCollectorV2.OutputCumulator}
         (account:string swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData})
         (require-capability (SWPU|X>SWAP swpair dsid))
@@ -1868,7 +1874,7 @@
                 (X:[decimal] (ref-SWP::UR_PoolTokenSupplies swpair))
                 (X-prec:[integer] (ref-SWP::UR_PoolTokenPrecisions swpair))
                 (input-positions:[integer] (ref-SWPI::URCv_PoolTokenPositions swpair input-ids))
-                (output-position:integer (ref-SWP::UR_PoolTokenPosition swpair output-id))
+                (output-position:integer (ref-SWP::URv_PoolTokenPosition swpair output-id))
                 (W:[decimal] (ref-SWP::UR_Weigths swpair))
                 ;;
                 ;;Do Swap Computation and Unwrap Object Data
@@ -1944,6 +1950,7 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_LiquidIndexPump:object{IgnisCollectorV2.OutputCumulator}
         (id:string amount:decimal boost-path:object{SwapperUsageV3.CachedPathOrMiss})
         @doc "#34 Phase 8: <boost-path> passthrough — NO_PATH sentinel from the \
@@ -1978,6 +1985,7 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_RawLiquidPump:object{IgnisCollectorV2.OutputCumulator}
         (id:string amount:decimal boost-path:object{SwapperUsageV3.CachedPathOrMiss})
         @doc "Operation that pumps LiquidIndex, returns the Pump Increment in the output object \
@@ -2086,6 +2094,7 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_Pumpdate (raw-liquid-pump-data:list)
         (require-capability (SECURE))
         (if (= (length raw-liquid-pump-data) 5)
@@ -2126,6 +2135,7 @@
             true
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by XB_UpdateOuroPrice
     (defun XI_STOA-PID|OPU (swpair:string stoa-pid:decimal)
         @doc "If <swpair> is primordial, <ouro-auto-price-via-swaps> is true, and \
             \ Ouro price moves more that 1 promile, update price"

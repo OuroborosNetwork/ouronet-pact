@@ -48,6 +48,32 @@
         (print (format "<(SubsidiaryBloodshed deb)> => \"{}\"" [deb-sub]))
         (print "<<TX-AQP-NF01>> stake ok; deb scoring may need ANK sync on DPNF class")
     )
+    ;;WHY `02_SCORE.pact:1282` ("DPNF stake nonce amount must be positive") IS SHADOWED, measured.
+    ;;
+    ;;The Talos client takes only `nonces`; it derives `nonce-amounts` from
+    ;;`DPDC::UR_AccountNoncesSupplies owner collectable false nonces` -- the owner's REAL holdings.
+    ;;For an NFT that is 1 when held and 0 when not, so a zero derived amount looked like the input
+    ;;SCORE's guard exists for. It is not reachable: the only way to derive 0 is for the owner not to
+    ;;hold the nonce, and `DPDC::UEV_NonceQuantityInclusion` (02_DPDC.pact:1253) checks the NFT's
+    ;;HOLDER IDENTITY upstream -- which for an NFT is the same fact. Same condition, earlier gate.
+    ;;
+    ;;Measured rather than argued, and the nonce is chosen LIVE: `stake-nonce` was just staked, so
+    ;;EMMA no longer holds it and its derived amount is now exactly 0. Re-staking it is the cheapest
+    ;;possible reach, and what comes back is DPDC's message, never SCORE's.
+    ;;
+    ;;SCORE's guard is kept as cross-module defence-in-depth -- SCORE must not trust a forward module
+    ;;-- and is annotated `;;UNREACHABLE` at the site. This block is what stops that annotation from
+    ;;rotting: if the upstream holder check is ever relaxed, the message below changes and this goes red.
+    (map print
+        [
+            (expect "<<TX-AQP-NF01>> EMMA no longer holds the nonce she just staked, so its derived amount is 0"
+                0 (ref-DPDC::UR_AccountNonceSupply owner dhb-id false stake-nonce))
+            (expect-failure "<<TX-AQP-NF01>> ...and DPDC's HOLDER check answers first, not SCORE's amount check"
+                (format "doesnt hold NFT {} Nonce {}" [dhb-id stake-nonce])
+                (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable
+                    patron pool-id owner beneficiary dhb-id [stake-nonce]))
+        ]
+    )
 )
 (env-sigs [])
 (commit-tx)

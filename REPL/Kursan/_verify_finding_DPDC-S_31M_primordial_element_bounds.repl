@@ -18,7 +18,12 @@
 (begin-tx "PROBE-31M - AFTER fix: garbage out-of-range value rejected; legit definition still works")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
-(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;SIGNS AS BOTH. DPSF|C_DefinePrimordialSet enforces ownership of the collection's NFT CREATE-ROLE
+;;account (DPDC-C.pact:289, CAP_EnforceAccountOwnership on UR_Verum5), which is NOT the collection
+;;owner. DHCD is owned by ANHD but its create role sits with EMMA, moved there by an earlier suite
+;;-- so signing only as the patron fails an ownership gate that has nothing to do with the patron.
+;;This harness signed only as ANHD and aborted there; the second G3 blocker was this, not branding.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
 (let
     (
         (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
@@ -50,6 +55,7 @@
     (print
         (expect-failure
             "garbage out-of-range primordial element (-100000) is rejected (DPDC Audit #31M fix)"
+                "Invalid Set-Definition for a Primordial Set: every allowed-nonce must"
             (ref-TS02-C1::DPSF|C_DefinePrimordialSet
                 owner id "GarbageProbeSet" 1.0
                 [
@@ -65,6 +71,7 @@
     (print
         (expect-failure
             "zero as a primordial allowed-nonce is rejected (DPDC Audit #31M fix)"
+                "Invalid Set-Definition for a Primordial Set: every allowed-nonce must"
             (ref-TS02-C1::DPSF|C_DefinePrimordialSet
                 owner id "ZeroProbeSet" 1.0
                 [

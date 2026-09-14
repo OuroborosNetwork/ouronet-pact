@@ -262,7 +262,7 @@
         )
     )
     (defun XB_DeployAccountWNE (account:string id:string))
-    (defun XB_UpdateSupply (id:string amount:decimal direction:bool))
+    (defun XBv_UpdateSupply (id:string amount:decimal direction:bool))
     (defun XE_UpdateFeeVolume (id:string amount:decimal primary:bool))
     (defun XE_UpdateRewardToken (atspair:string id:string direction:bool))
     (defun XE_UpdateRewardBearingToken (atspair:string id:string))
@@ -948,6 +948,15 @@
                 (ref-DALOS::CAP_EnforceAccountOwnership account)
             )
             (if (and (= id ouro-id) wipe-mode)
+                ;;UNREACHABLE -- a fail-closed backstop that no input can trip. Proven in
+                ;;REPL/modules/DPTF.repl <<DPTF-G7>> section 02, four facts: (a) wipe-mode TRUE
+                ;;implies the wipe path (all five external callers in 09_TFT pass FALSE);
+                ;;(b) the wipe path always passes UDC_EmptyDispo, so the floor is 0.0;
+                ;;(c) the treasury -- the only account with a non-zero floor -- is a SMART account
+                ;;and can never be frozen, hence never wiped; (d) UEV_Amount forces amount > 0.0.
+                ;;Compose (b)+(d): reaching this line at all requires current-supply > 0, which is
+                ;;exactly what it tests. NOTE: the condition tests current-supply while the message
+                ;;names the amount; if `(> amount 0.0)` was intended, (d) already enforces it.
                 (enforce (> current-supply 0.0) "Can only Debit positive OURO Amounts")
                 true
             )
@@ -959,6 +968,12 @@
         (compose-capability (SECURE))
     )
     (defcap DPTF|C>UPDATE-SPECIAL (main-dptf:string secondary-dptf:string fr-tag:integer)
+        ;;UNREACHABLE BY CONSTRUCTION, and a DUPLICATE. The only path in is
+        ;;VST::XI_CreateSpecialTrueFungibleLink -> XE_UpdateSpecialTrueFungible, and VST already
+        ;;runs the identical check under the identical message in VST|C>REPURPOSE-TRUE-FUNGIBLE.
+        ;;Every caller passes a literal 1 or 2 and no client supplies <fr-tag>. Kept as this
+        ;;module's own fail-closed backstop for a future external caller; because the wording is
+        ;;shared with VST it also cannot be pinned distinctly by message.
         (enforce (contains fr-tag [1 2]) "Invalid Frozen|Reserve Tag")
         (let
             (
@@ -986,6 +1001,14 @@
                 (and (= main-special-id BAR) (= secondary-special-id BAR) )
                 "Special True Fungible Links (Frozen or Reserved) are immutable !"
             )
+            ;;UNREACHABLE -- <secondary-dptf> is ALWAYS a token issued moments earlier, and a
+            ;;just-issued token can be neither an RT nor a Cold-RBT (both require registration on
+            ;;an ATS pair, which cannot have happened yet). The single caller,
+            ;;VST::XI_CreateSpecialTrueFungibleLink, calls DPTF::XB_IssueFree and passes THAT id
+            ;;straight into XE_UpdateSpecialTrueFungible in the same expression -- there is no input
+            ;;by which a client names the secondary. Fail-closed backstop for a future caller that
+            ;;does. Its sibling one `cond` below (the Special/LP prefix rule on the MAIN token) IS
+            ;;reachable and is pinned by REPL/modules/VST.repl <<VST-G9>>.
             (enforce
                 (and (not iz-secondary-rt) (not iz-secondary-rbt))
                 "Special True Fungible cannot be RTs or Cold-RBTs"
@@ -1741,8 +1764,6 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-U|DPTF:module{UtilityDptfV2} U|DPTF)
                 (unlock-costs:[decimal] (if toggle [0.0 0.0] (ref-IGNIS::UC_FeeUnlockPrice)))
                 (gas-costs:decimal (+ (ref-IGNIS::UC_IgnisLeg "tier-small") (at 0 unlock-costs)))
                 (output:bool (> (at 1 unlock-costs) 0.0))
@@ -1802,12 +1823,12 @@
         )
     )
     ;;  ToggleFeeLock STOA leg: the unlock price rail (0.0 when locking); mirrors the STOA amount
-    ;;  C_ToggleFeeLock collects (= (at 1 (UC_UnlockPrice (UR_FeeUnlocks id)))). Pure — no mutation.
+    ;;  C_ToggleFeeLock collects (at 1 (IGNIS::UC_FeeUnlockPrice)) — FLAT since 2026-09-06; the
+    ;;  <fee-unlocks> count no longer scales it (this line described the retired ladder). Pure.
     (defun URCi_ToggleFeeLockStoa:decimal (id:string toggle:bool)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-U|DPTF:module{UtilityDptfV2} U|DPTF)
             )
             (if toggle 0.0 (at 1 (ref-IGNIS::UC_FeeUnlockPrice)))
         )
@@ -1924,8 +1945,12 @@
             (
                 (x:bool (UR_Paused id))
             )
+            ;;Arm 1 fires when the token is NOT paused (it enforces x = is-paused), so the old
+            ;;wording "must not be paused for action" said the opposite of the condition that
+            ;;produced it. Aligned with DPOF/DPDC/DPMF, which all word this arm "is already
+            ;;unpaused". Arm 2 was already correct and is left as-is.
             (if state
-                (enforce x (format "{} must not be paused for action" [id]))
+                (enforce x (format "{} is already unpaused" [id]))
                 (enforce (not x) (format "{} is paused; transfers are paused" [id]))
             )
         )
@@ -1935,9 +1960,14 @@
             (
                 (x:bool (UR_IzReservationOpen id))
             )
+            ;;Both messages were INVERTED: arm 1 enforces x (= is-open) so it fires when
+            ;;reservations are CLOSED, yet reported "already open"; arm 2 fires when they are
+            ;;OPEN and reported "already closed". Swapped, so each names the state that actually
+            ;;tripped it -- the same "is already <current state>" shape the sibling
+            ;;UEV_PauseState guards use across DPOF/DPDC/DPMF.
             (if state
-                (enforce x (format "{} is already open for reservations" [id]))
-                (enforce (not x) (format "{} is already closed for reservations" [id]))
+                (enforce x (format "{} is already closed for reservations" [id]))
+                (enforce (not x) (format "{} is already open for reservations" [id]))
             )
         )
     )
@@ -2082,6 +2112,7 @@
         )
     )
     ;;{5.6}  Aux/X
+    ;;Protection: Class 5 — IMC + Custom: SECURE
     (defun XE_IssueLP:object{IgnisCollectorV2.OutputCumulator}
         (name:string ticker:string)
         @doc "Issues a DPTF Token as a Liquidity Pool Token. A LP DPTF follows specific rules in naming."
@@ -2096,6 +2127,7 @@
             )
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: DPTF|C>ISSUE
     (defun XB_IssueFree:object{IgnisCollectorV2.OutputCumulator}
         (
             account:string
@@ -2118,7 +2150,6 @@
             (let
                 (
                     (ref-U|LST:module{StringProcessorV2} U|LST)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (ref-BRD:module{BrandingV2} BRD)
                     (l1:integer (length name))
@@ -2131,7 +2162,7 @@
                                 (let
                                     (
                                         (id:string
-                                            (XI_Issue
+                                            (XIv_Issue
                                                 account
                                                 (at index name)
                                                 (at index ticker)
@@ -2159,7 +2190,12 @@
             )
         )
     )
-    (defun XI_Issue:string
+    ;;Enforce: per-element-in-map -- XB_IssueFree maps this over LISTS (name/ticker/decimals), so
+    ;;          UEV_Decimals validates one element. DPTF|C>ISSUE receives the whole [integer] list and has
+    ;;          no per-element loop; adding one purely for decimals is more code. (ATS does have such a
+    ;;          loop, so ATS's copy was a true duplicate and was deleted.)
+    ;;Protection: Class 2 — SECURE
+    (defun XIv_Issue:string
         (
             account:string
             name:string
@@ -2234,6 +2270,7 @@
             id
         )
     )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XB_DeployAccountWNE (account:string id:string)
         (P|UEV_IMC)
         (let
@@ -2247,12 +2284,14 @@
         )
     )
     ;;1]DPTF|PropertiesTable
+    ;;Protection: Class 3 — Custom: DPTF|S>ROTATE-OWNERSHIP
     (defun XI_ChangeOwnership (id:string new-owner:string)
         (require-capability (DPTF|S>ROTATE-OWNERSHIP id new-owner))
         (update DPTF|PropertiesTable id
             {"owner-konto"                      : new-owner}
         )
     )
+    ;;Protection: Class 3 — Custom: DPTF|S>CONTROL
     (defun XI_Control (id:string can-upgrade:bool can-change-owner:bool can-add-special-role:bool can-freeze:bool can-wipe:bool can-pause:bool)
         (require-capability (DPTF|S>CONTROL id))
         (update DPTF|PropertiesTable id
@@ -2264,18 +2303,31 @@
             ,"can-pause"                        : can-pause}
         )
     )
+    ;;Protection: Class 3 — Custom: DPTF|S>TOGGLE_PAUSE
     (defun XI_TogglePause (id:string toggle:bool)
         (require-capability (DPTF|S>TOGGLE_PAUSE id toggle))
         (update DPTF|PropertiesTable id
             { "is-paused" : toggle}
         )
     )
-    (defun XB_UpdateSupply (id:string amount:decimal direction:bool)
+    ;;Enforce: 5 call sites (C_Burn, C_Mint, C_Wipe, C_WipeSlim, XI_CPF_BurnFee) -- relocating UEV_Amount
+    ;;          duplicates it 5x. AND read-and-write-in-one: the supply-underflow guard reads <supply> and
+    ;;          writes it back, so a defcap would have to re-read the same row.
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    (defun XBv_UpdateSupply (id:string amount:decimal direction:bool)
         (P|UEV_IMC)
         (UEV_Amount id amount)
         (if (= direction true)
             (with-read DPTF|PropertiesTable id
                 { "supply" := s }
+                ;;UNREACHABLE BY ARITHMETIC -- unlike its twin on the debit branch below, which is a
+                ;;live backstop. `UEV_Amount` runs FIRST (two lines up) and enforces `amount > 0.0`,
+                ;;and a supply is never negative (this very pair of guards is what keeps it so). So
+                ;;`(+ s amount)` is a positive added to a non-negative and cannot be < 0.0.
+                ;;The DEBIT branch IS reachable -- `(- s amount)` goes negative when an account holds
+                ;;more than the token's total supply -- and is driven by
+                ;;REPL/modules/DPTF.repl <<DPTF-G12>>, which forces that corruption and watches this
+                ;;message stop the burn. Both sites share the wording, so only that test proves one.
                 (enforce (>= (+ s amount) 0.0) "DPTF Token Supply cannot be updated to negative values!")
                 (update DPTF|PropertiesTable id { "supply" : (+ s amount)})
             )
@@ -2287,36 +2339,40 @@
         )
     )
     ;;
+    ;;Protection: Class 3 — Custom: DPTF|S>TOGGLE_FEE
     (defun XI_ToggleFee(id:string toggle:bool)
         (require-capability (DPTF|S>TOGGLE_FEE id toggle))
         (update DPTF|PropertiesTable id
             { "fee-toggle" : toggle}
         )
     )
+    ;;Protection: Class 3 — Custom: DPTF|S>SET_MIN-MOVE
     (defun XI_SetMinMove (id:string min-move-value:decimal)
         (require-capability (DPTF|S>SET_MIN-MOVE id min-move-value))
         (update DPTF|PropertiesTable id
             { "min-move" : min-move-value}
         )
     )
+    ;;Protection: Class 3 — Custom: DPTF|S>SET_FEE
     (defun XI_SetFee (id:string fee:decimal)
         (require-capability (DPTF|S>SET_FEE id fee))
         (update DPTF|PropertiesTable id
             { "fee-promile" : fee}
         )
     )
+    ;;Protection: Class 3 — Custom: DPTF|S>SET_FEE-TARGET
     (defun XI_SetFeeTarget (id:string target:string)
         (require-capability (DPTF|S>SET_FEE-TARGET id target))
         (update DPTF|PropertiesTable id
             { "fee-target" : target}
         )
     )
+    ;;Protection: Class 3 — Custom: DPTF|S>X_TG_FEE-LOCK
     (defun XI_ToggleFeeLock:[decimal] (id:string toggle:bool)
         (require-capability (DPTF|S>X_TG_FEE-LOCK id toggle))
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-U|DPTF:module{UtilityDptfV2} U|DPTF)
             )
             (update DPTF|PropertiesTable id
                 { "fee-lock" : toggle}
@@ -2327,16 +2383,25 @@
             )
         )
     )
-    (defun XI_IncrementFeeUnlocks (id:string)
+    ;;Enforce: read-and-write-in-one -- <fee-unlocks> is read here and written back incremented, so a
+    ;;          defcap would have to re-read the same row. The cap is economic, not cosmetic: URC_Fee
+    ;;          prices every transfer's secondary fee at (fee-unlocks - 1) x volumetric-fee.
+    ;;Protection: Class 2 — SECURE
+    (defun XIv_IncrementFeeUnlocks (id:string)
         (require-capability (SECURE))
         (with-read DPTF|PropertiesTable id
             { "fee-unlocks" := fu }
+            ;;UNTESTABLE-EXTERNALLY: XIv_IncrementFeeUnlocks sits behind (require-capability (SECURE)), and SECURE cannot be acquired from outside
+            ;;this module -- so no REPL negative test can reach this line. The guard is LIVE and
+            ;;does real work on the in-module path; it is NOT dead code. Distinguished from
+            ;;the UNREACHABLE marker deliberately: that marker means no input can trip the guard at all.
             (enforce (< fu 7) (format "Cannot increment Fee Unlocks for Token {}" [id]))
             (update DPTF|PropertiesTable id
                 {"fee-unlocks" : (+ fu 1)}
             )
         )
     )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_UpdateFeeVolume (id:string amount:decimal primary:bool)
         (P|UEV_IMC)
         (UEV_Amount id amount)
@@ -2356,6 +2421,7 @@
         )
     )
     ;;
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_UpdateRewardToken (atspair:string id:string direction:bool)
         (P|UEV_IMC)
         (let
@@ -2373,13 +2439,45 @@
                             {"reward-token" : (ref-U|LST::UC_AppL rt atspair)}
                         )
                     )
+                    ;;SENTINEL RESTORED ON REMOVE (2026-09-13). `UC_RemoveItem` is
+                    ;;`(filter (!= item) in)`, so removing the LAST remaining atspair yields the bare
+                    ;;empty list -- breaking the `[BAR]`-sentinel invariant that the ADD branch
+                    ;;directly above this one is careful to maintain. The two branches were
+                    ;;asymmetric: ADD understood the sentinel, REMOVE did not.
+                    ;;
+                    ;;WHY IT MATTERED. `URC_IzRT` decides "is this token a reward token anywhere?" by
+                    ;;`(if (= (UR_RewardToken id) [BAR]) false true)`. An empty list is not `[BAR]`,
+                    ;;so the token would answer TRUE -- claiming to be a reward token while holding
+                    ;;no pairs -- and every transfer of it routes into `TFT::URCx_CPF_RT`, which does
+                    ;;`(enumerate 0 (- (length ats-pairs) 1))`. On an empty list that is
+                    ;;`(enumerate 0 -1)` = the DESCENDING PAIR `[0, -1]`, so `(at 0 [])` faults.
+                    ;;The token becomes permanently untransferable -- and un-repairable, because the
+                    ;;ADD branch opens with `(at 0 rt)`, which faults on `[]` too.
+                    ;;
+                    ;;The `(> rt-position 0)` guard in `ATSU|C>X_REMOVE-SECONDARY` does NOT prevent
+                    ;;this: it protects position 0 of the ATS PAIR's reward-token list, a different
+                    ;;list from the DPTF's list of pairs. A token that is the sole SECONDARY RT of
+                    ;;one pair passes that guard; the precondition is reachable through the ordinary
+                    ;;`ATS|C_AddSecondary` client path (verified live).
+                    ;;
+                    ;;Restoring the sentinel is the minimal repair and is symmetric with ADD: lists
+                    ;;of length >= 1 after the filter are untouched, so this changes behaviour ONLY
+                    ;;in the case that was broken. Invariant swept by REPL/modules/ATS.repl <<ATS-F1>>.
                     (update DPTF|PropertiesTable id
-                        {"reward-token" : (ref-U|LST::UC_RemoveItem rt atspair)}
+                        {"reward-token" :
+                            (let
+                                (
+                                    (remaining:[string] (ref-U|LST::UC_RemoveItem rt atspair))
+                                )
+                                (if (= (length remaining) 0) [BAR] remaining)
+                            )
+                        }
                     )
                 )
             )
         )
     )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_UpdateRewardBearingToken (atspair:string id:string)
         (P|UEV_IMC)
         (let
@@ -2400,98 +2498,106 @@
         )
     )
     ;;
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_UpdateVesting (dptf:string dpof:string)
         (P|UEV_IMC)
         (update DPTF|PropertiesTable dptf
             {"vesting-link" : dpof}
         )
     )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_UpdateSleeping (dptf:string dpof:string)
         (P|UEV_IMC)
         (update DPTF|PropertiesTable dptf
             {"sleeping-link" : dpof}
         )
     )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_UpdateHibernation (dptf:string dpof:string)
         (P|UEV_IMC)
         (update DPTF|PropertiesTable dptf
             {"hibernation-link" : dpof}
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdateFrozen (core-dptf:string frozen-dptf:string)
         (require-capability (SECURE))
         (update DPTF|PropertiesTable core-dptf
             {"frozen-link" : frozen-dptf}
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdateReserved (core-dptf:string reserved-dptf:string)
         (require-capability (SECURE))
         (update DPTF|PropertiesTable core-dptf
             {"reservation-link" : reserved-dptf}
         )
     )
+    ;;Protection: Class 3 — Custom: DPTF|S>TOGGLE_RESERVATION
     (defun XI_ToggleReservation (id:string toggle:bool)
         (require-capability (DPTF|S>TOGGLE_RESERVATION id toggle))
         (update DPTF|PropertiesTable id
             { "reservation" : toggle}
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: DPTF|C>UPDATE-SPECIAL
     (defun XE_UpdateSpecialTrueFungible:object{IgnisCollectorV2.OutputCumulator}
         (main-dptf:string secondary-dptf:string fr-tag:integer)
         (P|UEV_IMC)
         (with-capability (DPTF|C>UPDATE-SPECIAL main-dptf secondary-dptf fr-tag)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                )
-                (cond
-                    ((= fr-tag 1)
-                        (do
-                            (XI_UpdateFrozen main-dptf secondary-dptf)
-                            (XI_UpdateFrozen secondary-dptf main-dptf)
-                        )
+            (cond
+                ((= fr-tag 1)
+                    (do
+                        (XI_UpdateFrozen main-dptf secondary-dptf)
+                        (XI_UpdateFrozen secondary-dptf main-dptf)
                     )
-                    ((= fr-tag 2)
-                        (do
-                            (XI_UpdateReserved main-dptf secondary-dptf)
-                            (XI_UpdateReserved secondary-dptf main-dptf)
-                        )
-                    )
-                    true
                 )
-                (URCi_UpdateSpecialTrueFungible main-dptf)
+                ((= fr-tag 2)
+                    (do
+                        (XI_UpdateReserved main-dptf secondary-dptf)
+                        (XI_UpdateReserved secondary-dptf main-dptf)
+                    )
+                )
+                true
             )
+            (URCi_UpdateSpecialTrueFungible main-dptf)
         )
     )
     ;;2]DPTF|RoleTable
+    ;;Protection: Class 2 — SECURE
     (defun XI_WriteRoles (id:string verum-roles:object{DPTF|RoleSchema})
         (require-capability (SECURE))
         (write DPTF|RoleTable id verum-roles)
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdateVerum1 (id:string new-verum1:[string])
         (require-capability (SECURE))  
         (update DPTF|RoleTable id
             {"a-frozen" : new-verum1}
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdateVerum2 (id:string new-verum2:[string])
         (require-capability (SECURE))  
         (update DPTF|RoleTable id
             {"r-burn" : new-verum2}
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdateVerum3 (id:string new-verum3:[string])
         (require-capability (SECURE))  
         (update DPTF|RoleTable id
             {"r-mint" : new-verum3}
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdateVerum4 (id:string new-verum4:[string])
         (require-capability (SECURE))  
         (update DPTF|RoleTable id
             {"r-fee-exemption" : new-verum4}
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdateVerum5 (id:string new-verum5:[string])
         (require-capability (SECURE))  
         (update DPTF|RoleTable id
@@ -2499,6 +2605,7 @@
         )
     )
     ;;3]DPTF|BalanceTable
+    ;;Protection: Class 3 — Custom: DPTF|C>X_FREEZE
     (defun XI_ToggleFreezeAccount (id:string account:string toggle:bool)
         @doc "Toggle Verum 1"
         (require-capability (DPTF|C>X_FREEZE id account toggle))
@@ -2514,6 +2621,7 @@
             )
         )
     )
+    ;;Protection: Class 3 — Custom: DPTF|C>X_TOGGLE-BURN-ROLE
     (defun XI_ToggleBurnRole (id:string account:string toggle:bool)
         @doc "Toggle Verum 2"
         (require-capability (DPTF|C>X_TOGGLE-BURN-ROLE id account toggle))
@@ -2529,6 +2637,7 @@
             )
         )
     )
+    ;;Protection: Class 3 — Custom: DPTF|C>X_TOGGLE-MINT-ROLE
     (defun XI_ToggleMintRole (id:string account:string toggle:bool)
         @doc "Toggle Verum 3"
         (require-capability (DPTF|C>X_TOGGLE-MINT-ROLE id account toggle))
@@ -2544,6 +2653,7 @@
             )
         )
     )
+    ;;Protection: Class 3 — Custom: DPTF|C>X_TOGGLE-FEE-EXEMPTION-ROLE
     (defun XI_ToggleFeeExemptionRole (id:string account:string toggle:bool)
         @doc "Toggle Verum 4"
         (require-capability (DPTF|C>X_TOGGLE-FEE-EXEMPTION-ROLE id account toggle))
@@ -2559,6 +2669,7 @@
             )
         )
     )
+    ;;Protection: Class 3 — Custom: DPTF|C>X_TOGGLE-TRANSFER-ROLE
     (defun XI_ToggleTransferRole (id:string account:string toggle:bool)
         @doc "Toggle Verum 5"                
         (require-capability (DPTF|C>X_TOGGLE-TRANSFER-ROLE id account toggle))
@@ -2576,6 +2687,7 @@
     )
     ;;
     ;;
+    ;;Protection: Class 5 — IMC + Custom: DPTF|C>DEBIT
     (defun XB_DebitTrueFungible (id:string account:string amount:decimal dispo-data:object{UtilityDptfV2.DispoData} wipe-mode:bool)
         @doc "Debit DPTF <id> on <account> with <amount> \
             \ Ouronet Account <account> must exist \
@@ -2591,6 +2703,7 @@
             )
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: DPTF|C>CREDIT
     (defun XB_CreditTrueFungible (id:string account:string amount:decimal)
         @doc "Debit DPTF <id> on <account> with <amount> \
             \ Ouronet Account <account> must exist \
@@ -2607,6 +2720,7 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdateBalance (id:string account:string new-balance:decimal)
         (require-capability (SECURE))
         (let
@@ -2716,7 +2830,6 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-BRD:module{BrandingV2} BRD)
             )
             (with-capability (DPTF|C>UPDATE-BRD entity-id)
@@ -2748,7 +2861,6 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (l1:integer (length name))
                 (tl:[bool] (make-list l1 false))
                 (stoa-costs:decimal (URCi_IssueStoa l1))
@@ -2765,106 +2877,66 @@
     (defun C_RotateOwnership:object{IgnisCollectorV2.OutputCumulator}
         (id:string new-owner:string)
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-            )
-            (with-capability (DPTF|S>ROTATE-OWNERSHIP id new-owner)
-                (XI_ChangeOwnership id new-owner)
-                (URCi_RotateOwnership id)
-            )
+        (with-capability (DPTF|S>ROTATE-OWNERSHIP id new-owner)
+            (XI_ChangeOwnership id new-owner)
+            (URCi_RotateOwnership id)
         )
     )
     (defun C_Control:object{IgnisCollectorV2.OutputCumulator}
         (id:string cu:bool cco:bool casr:bool cf:bool cw:bool cp:bool)
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-            )
-            (with-capability (DPTF|S>CONTROL id)
-                (XI_Control id cu cco casr cf cw cp)
-                (URCi_Control id)
-            )
+        (with-capability (DPTF|S>CONTROL id)
+            (XI_Control id cu cco casr cf cw cp)
+            (URCi_Control id)
         )
     )
     (defun C_TogglePause:object{IgnisCollectorV2.OutputCumulator}
         (id:string toggle:bool)
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-            )
-            (with-capability (DPTF|S>TOGGLE_PAUSE id toggle)
-                (XI_TogglePause id toggle)
-                (URCi_TogglePause id)
-            )
+        (with-capability (DPTF|S>TOGGLE_PAUSE id toggle)
+            (XI_TogglePause id toggle)
+            (URCi_TogglePause id)
         )
     )
     (defun C_ToggleReservation:object{IgnisCollectorV2.OutputCumulator}
         (id:string toggle:bool)
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-            )
-            (with-capability (DPTF|S>TOGGLE_RESERVATION id toggle)
-                (XI_ToggleReservation id toggle)
-                (URCi_ToggleReservation id)
-            )
+        (with-capability (DPTF|S>TOGGLE_RESERVATION id toggle)
+            (XI_ToggleReservation id toggle)
+            (URCi_ToggleReservation id)
         )
     )
     ;;
     (defun C_ToggleFee:object{IgnisCollectorV2.OutputCumulator}
         (id:string toggle:bool)
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-            )
-            (with-capability (DPTF|S>TOGGLE_FEE id toggle)
-                (XI_ToggleFee id toggle)
-                (URCi_ToggleFee id)
-            )
+        (with-capability (DPTF|S>TOGGLE_FEE id toggle)
+            (XI_ToggleFee id toggle)
+            (URCi_ToggleFee id)
         )
     )
     (defun C_SetMinMove:object{IgnisCollectorV2.OutputCumulator}
         (id:string min-move-value:decimal)
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-            )
-            (with-capability (DPTF|S>SET_MIN-MOVE id min-move-value)
-                (XI_SetMinMove id min-move-value)
-                (URCi_SetMinMove id)
-            )
+        (with-capability (DPTF|S>SET_MIN-MOVE id min-move-value)
+            (XI_SetMinMove id min-move-value)
+            (URCi_SetMinMove id)
         )
     )
     (defun C_SetFee:object{IgnisCollectorV2.OutputCumulator}
         (id:string fee:decimal)
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-            )
-            (with-capability (DPTF|S>SET_FEE id fee)
-                (XI_SetFee id fee)
-                (URCi_SetFee id)
-            )
+        (with-capability (DPTF|S>SET_FEE id fee)
+            (XI_SetFee id fee)
+            (URCi_SetFee id)
         )
     )
     (defun C_SetFeeTarget:object{IgnisCollectorV2.OutputCumulator}
         (id:string target:string)
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-            )
-            (with-capability (DPTF|S>SET_FEE-TARGET id target)
-                (XI_SetFeeTarget id target)
-                (URCi_SetFeeTarget id)
-            )
+        (with-capability (DPTF|S>SET_FEE-TARGET id target)
+            (XI_SetFeeTarget id target)
+            (URCi_SetFeeTarget id)
         )
     )
     (defun C_ToggleFeeLock:object{IgnisCollectorV2.OutputCumulator}
@@ -2876,12 +2948,12 @@
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (toggle-costs:[decimal] (XI_ToggleFeeLock id toggle))
                     (stoa-costs:decimal (at 1 toggle-costs))
-                    ;;URCi computed HERE — reads fee-unlocks BEFORE XI_IncrementFeeUnlocks below mutates it
+                    ;;URCi computed HERE — reads fee-unlocks BEFORE XIv_IncrementFeeUnlocks below mutates it
                     (cumulator:object{IgnisCollectorV2.OutputCumulator} (URCi_ToggleFeeLock id toggle))
                 )
                 (if (> stoa-costs 0.0)
                     (do
-                        (XI_IncrementFeeUnlocks id)
+                        (XIv_IncrementFeeUnlocks id)
                         (ref-IGNIS::STOA|C_Collect patron stoa-costs)
                     )
                     true
@@ -2926,7 +2998,6 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (verum-one:[string] (UR_Verum1 id))
                     (updated-verum-one:[string] (ref-U|DALOS::UCv_NewRoleList verum-one account toggle))
                 )
@@ -2949,7 +3020,6 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (verum-two:[string] (UR_Verum2 id))
                     (updated-verum-two:[string] (ref-U|DALOS::UCv_NewRoleList verum-two account toggle))
                 )
@@ -2972,7 +3042,6 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (verum-three:[string] (UR_Verum3 id))
                     (updated-verum-three:[string] (ref-U|DALOS::UCv_NewRoleList verum-three account toggle))
                 )
@@ -2996,7 +3065,6 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (verum-four:[string] (UR_Verum4 id))
                     (updated-verum-four:[string] (ref-U|DALOS::UCv_NewRoleList verum-four account toggle))
                 )
@@ -3020,7 +3088,6 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (verum-five:[string] (UR_Verum5 id))
                     (updated-verum-five:[string] (ref-U|DALOS::UCv_NewRoleList verum-five account toggle))
                 )
@@ -3042,12 +3109,10 @@
         (let
             (
                 (ref-U|DPTF:module{UtilityDptfV2} U|DPTF)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
             (with-capability (DPTF|C>BURN id account amount)
                 (XB_DebitTrueFungible id account amount (ref-U|DPTF::UDC_EmptyDispo) false)
-                (XB_UpdateSupply id amount false)
+                (XBv_UpdateSupply id amount false)
                 (URCi_Burn id account)
             )
         )
@@ -3055,23 +3120,17 @@
     (defun C_Mint:object{IgnisCollectorV2.OutputCumulator}
         (id:string account:string amount:decimal origin:bool)
         (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-            )
-            (with-capability (DPTF|C>MINT id account amount origin)
-                (XB_CreditTrueFungible id account amount)
-                (XB_UpdateSupply id amount true)
-                (if origin
-                    (update DPTF|PropertiesTable id
-                        {"origin-mint"          : false
-                        ,"origin-mint-amount"   : amount}
-                    )
-                    true
+        (with-capability (DPTF|C>MINT id account amount origin)
+            (XB_CreditTrueFungible id account amount)
+            (XBv_UpdateSupply id amount true)
+            (if origin
+                (update DPTF|PropertiesTable id
+                    {"origin-mint"          : false
+                    ,"origin-mint-amount"   : amount}
                 )
-                (URCi_Mint id account origin)
+                true
             )
+            (URCi_Mint id account origin)
         )
     )
     ;;
@@ -3081,11 +3140,10 @@
         (let
             (
                 (ref-U|DPTF:module{UtilityDptfV2} U|DPTF)
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
             )
             (with-capability (DPTF|C>WIPE-SLIM id account-to-be-wiped amount-to-be-wiped)
                 (XB_DebitTrueFungible id account-to-be-wiped amount-to-be-wiped (ref-U|DPTF::UDC_EmptyDispo) true)
-                (XB_UpdateSupply id amount-to-be-wiped false)
+                (XBv_UpdateSupply id amount-to-be-wiped false)
                 (URCi_WipeSlim id)
             )
         )
@@ -3096,12 +3154,11 @@
         (let
             (
                 (ref-U|DPTF:module{UtilityDptfV2} U|DPTF)
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (amount-to-be-wiped:decimal (UR_AccountSupply id account-to-be-wiped))
             )
             (with-capability (DPTF|C>WIPE id account-to-be-wiped)
                 (XB_DebitTrueFungible id account-to-be-wiped amount-to-be-wiped (ref-U|DPTF::UDC_EmptyDispo) true)
-                (XB_UpdateSupply id amount-to-be-wiped false)
+                (XBv_UpdateSupply id amount-to-be-wiped false)
                 (URCi_Wipe id)
             )
         )

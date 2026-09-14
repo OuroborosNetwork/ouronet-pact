@@ -15,3 +15,130 @@
 ;;sale fixture in [5.3] fragments and fuels from them.
 (load "../Stage_02/[6.1]_DPDC.repl")
 (load "../Stage_02/[5.3]_Launchpad.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "TX-SPK-KPAY-PRICE - the StoicPay price curve is total and strictly positive")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-SPK-KPAY-PRICE · 01 · the bounds that make the sale-concluded guard dead] ---")
+;;BACKING FOR AN ANNOTATION, not a guard pin. `4_StoicPay` `KPAY|C>BUY` carries
+;;`(enforce (> kpay-price 0.0) "Kpay Sale has Concluded!")` and, above it, a branch that swaps to
+;;the spot price when the ten-minute-forward price reads -1.0. Both are annotated `;;UNREACHABLE`,
+;;and this block is the evidence.
+;;
+;;`UR_KpayPID` is TOTAL: three branches, no read that can abort, no error return. It yields 0.01
+;;before the sale's starting time, 1.0 once three years have elapsed, and
+;;`floor(0.01 + 0.99 * elapsed/3y, 24)` in between -- a value inside (0.01, 1.0). There is no input
+;;in the decimal domain for which it returns -1.0 or anything <= 0. So the sentinel branch is never
+;;taken, <kpay-price> is always positive, and "Kpay Sale has Concluded!" can never be the reason a
+;;buyer is refused. The sale's real terminator is the supply check on the line above it, which is
+;;separately covered.
+;;
+;;Probed across the whole shape of the curve rather than at one offset: a negative offset (before
+;;the start), zero, the ten minutes the module itself uses, and an offset past the three-year cap.
+(let
+    (
+        (ref-KPAY:module{StoicPayV3} DEMIPAD-STOICPAY)
+    )
+    (let
+        (
+            (samples:[decimal]
+                [(ref-KPAY::UR_KpayPID -31536000.0)
+                 (ref-KPAY::UR_KpayPID 0.0)
+                 (ref-KPAY::UR_KpayPID 600.0)
+                 (ref-KPAY::UR_KpayPID 94608000.0)
+                 (ref-KPAY::UR_KpayPID 999999999.0)])
+        )
+        (map print
+            [
+                ;;the property the annotation rests on: never at or below zero, anywhere
+                (expect "<<TX-SPK-KPAY-PRICE>> the price is strictly positive across the whole curve"
+                    true (fold (and) true (map (lambda (x:decimal) (> x 0.0)) samples)))
+                ;;...and never the -1.0 sentinel the dead branch looks for
+                (expect "<<TX-SPK-KPAY-PRICE>> ...and never returns the -1.0 sentinel"
+                    true (fold (and) true (map (lambda (x:decimal) (!= x -1.0)) samples)))
+                ;;...and is bounded above by 1.0, which is what fixes the floor at 0.01 rather than
+                ;;leaving "positive" to mean "arbitrarily small"
+                (expect "<<TX-SPK-KPAY-PRICE>> ...staying inside [0.01, 1.0] at every offset"
+                    true (fold (and) true
+                            (map (lambda (x:decimal) (and (>= x 0.01) (<= x 1.0))) samples)))
+                ;;the two endpoints, pinned by value: an offset before the sale opens is the floor,
+                ;;and one past three years is the cap. These are the branches, not just the bounds.
+                (expect "<<TX-SPK-KPAY-PRICE>> before the start it is exactly the 0.01 floor"
+                    0.01 (ref-KPAY::UR_KpayPID -31536000.0))
+                (expect "<<TX-SPK-KPAY-PRICE>> past three years it is exactly the 1.0 cap"
+                    1.0 (ref-KPAY::UR_KpayPID 999999999.0))
+            ]
+        )
+    )
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "LPAD-I1 — INFO_DEMIPAD|Deposit quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [LPAD-I1 · 01 · deposit: quoted vs charged] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DEMIPAD|Deposit`, per the owner's spec: an INFO_ must report the same
+;;cost the op actually charges. Template: `modules/ATS.repl <<ATS-I1>>`.
+;;
+;;WHY THIS BLOCK IS HERE AND NOT WRAPPED AROUND `[5.3]`'s OWN DEPOSIT AT TX-DEP-01.
+;;`[5.3]_Launchpad.repl` is loaded by TWO entrypoints with DIFFERENT Stage-02 chains:
+;;    modules/LAUNCHPAD.repl   -> deploy-stage02 -> Stage_02/[Z]_Reads.repl -> INFO-TWO deployed
+;;    launchpad-groundtruth.repl -> builds Stage 02 by hand and never loads [Z]_Reads
+;;so naming `INFO-TWO` inside `[5.3]` compiles in one chain and dies with "Module INFO-TWO has no such
+;;member" in the other. A shared suite file can only use what its NARROWEST loader provides; the
+;;measurement therefore lives in the entrypoint that has the reader.
+;;
+;;THE DEPOSIT'S OWN PRECONDITION is recorded at TX-DEP-01: `URC_Prices` converts dollars through the
+;;primordial OURO pool, so a deposit — and equally its preview — is unreachable until pools exist.
+;;That is exactly why this file loads `[6.2]_DPTF` and `[6.3]_SWP`.
+;;
+;;PATRON IS ANHD, BUYER IS EMMA. The gas meter follows the patron, so the buyer's native-coin spend
+;;(the 100$ gross and its 10/20/30/40 environment split) stays out of the IGNIS figure by construction.
+(env-sigs
+    [ { "key": "PK_AncientHodler", "caps": [] }
+    , { "key": "PK_Emma", "caps": [] }
+    , { "key": "ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48", "caps":
+        [ (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" "c:ZNfuj3iZI83n7MUSKGuoXoSxFg1cyMxCzB3szUHVvrI" 95.0)
+        , (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 0.5)
+        , (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1.0)
+        , (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1.5)
+        , (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 2.0)
+        ] }
+    ])
+(let
+    (
+        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+        (buyer:string KST.EMMA)
+        (asset:string "DHOC-98c486052a51")
+        (dollars:decimal 10.0)
+    )
+    (let
+        (
+            (predicted:decimal
+                (at "ignis-need" (at "ignis"
+                    (INFO-TWO.INFO_DEMIPAD|Deposit patron buyer asset dollars 0 false -1.0))))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS02-DPAD::DEMIPAD|C_Deposit patron buyer asset dollars 0 false -1.0))
+        )
+        (map print
+            [
+                (format "<<LPAD-I1>> predicted={} real={}"
+                    [predicted (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))])
+                (expect "<<LPAD-I1>> INFO_DEMIPAD|Deposit's quote equals what the deposit charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) predicted)
+                (expect "<<LPAD-I1>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)

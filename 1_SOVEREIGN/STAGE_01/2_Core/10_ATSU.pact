@@ -280,13 +280,8 @@
     ;;{C3}  Composed
     (defcap ATSU|C>ADMINISTRATIVE-REMOVE-SECONDARY (ats:string reward-token:string)
         @event
-        (let
-            (
-                (ref-ATS:module{AutostakeV3} ATS)
-            )
-            (compose-capability (GOV|ATSU_ADMIN))
-            (compose-capability (ATSU|C>X_REMOVE-SECONDARY ats reward-token))
-        )
+        (compose-capability (GOV|ATSU_ADMIN))
+        (compose-capability (ATSU|C>X_REMOVE-SECONDARY ats reward-token))
     )
     (defcap ATSU|C>REMOVE-SECONDARY (ats:string reward-token:string)
         @event
@@ -391,7 +386,16 @@
                 (index:decimal (ref-ATS::URC_Index ats))
             )
             (ref-ATS::UEV_RewardTokenExistance ats reward-token true)
-            (enforce (>= index 0.1) "Fueling cannot take place on a negative Index")
+            ;;WORDING FIX (owner-authorised 2026-09-13). This read "Fueling cannot take place on a
+            ;;negative Index", which described only part of its own condition: the bound is 0.1, so
+            ;;an index of 0.05 is POSITIVE and still rejected, and that caller was told something
+            ;;untrue about their own pair. The BOUND is correct and stays -- 0.1 is a deliberate
+            ;;system floor, the same one ATSU|C>KICKSTART applies to <would-be-index> twelve lines
+            ;;above, where it is already worded honestly as "KickStart index must be at least 0.1".
+            ;;The two states this rejects are the -1.0 sentinel (URC_Index's "no RBT supply at all")
+            ;;and a live pair whose index has fallen under the floor; the new message covers both.
+            ;;Pinned in BOTH states by REPL/modules/ATS.repl <<ATS-G17>>.
+            (enforce (>= index 0.1) "Fueling requires an ATS-Pair Index of at least 0.1")
             (compose-capability (P|TT))
         )
     )
@@ -696,7 +700,6 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-ATS:module{AutostakeV3} ATS)
                 ;;
                 (p0:[object{UtilityAtsV3.Awo}] (ref-ATS::UR_P0 ats account))
@@ -865,7 +868,6 @@
             (
                 (ref-U|ATS:module{UtilityAtsV3} U|ATS)
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-ATS:module{AutostakeV3} ATS)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
@@ -926,7 +928,6 @@
             (
                 (ref-U|DEC:module{OuronetDecimalsV2} U|DEC)
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-ATS:module{AutostakeV3} ATS)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 ;;
@@ -973,7 +974,6 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 (ref-ATS:module{AutostakeV3} ATS)
@@ -1073,8 +1073,8 @@
                         (floor (* nonce-supply (/ (- 1000.0 (* h-promile (- 1.0 (/ elapsed-time total-time)))) 1000.0)) precision)
                     )
                 )
-                (earned-rts:[decimal] (ref-ATS::URC_RTSplitAmounts ats earned-rbt))
-                (total-rts:[decimal] (ref-ATS::URC_RTSplitAmounts ats nonce-supply))
+                (earned-rts:[decimal] (ref-ATS::URCv_RTSplitAmounts ats earned-rbt))
+                (total-rts:[decimal] (ref-ATS::URCv_RTSplitAmounts ats nonce-supply))
                 (fee-rts:[decimal] (zip (lambda (x:decimal y:decimal) (- x y)) total-rts earned-rts))
                 (have-fee-rts:bool (!= (fold (+) 0.0 fee-rts) 0.0))
                 ;;
@@ -1131,7 +1131,7 @@
                     )
                 )
                 (reward-tokens:[string] (ref-ATS::UR_RewardTokenList ats))
-                (release-amounts:[decimal] (ref-ATS::URC_RTSplitAmounts ats c-rbt-remainder))
+                (release-amounts:[decimal] (ref-ATS::URCv_RTSplitAmounts ats c-rbt-remainder))
                 ;;
                 (ico1:object{IgnisCollectorV2.OutputCumulator}
                     (ref-TFT::URCi_Transfer c-rbt recoverer ATS|SC_NAME ra)
@@ -1183,7 +1183,6 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-ATS:module{AutostakeV3} ATS)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 (ref-U|LST:module{StringProcessorV2} U|LST)
@@ -1209,6 +1208,7 @@
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
+    ;;Protection: Class 2 — SECURE
     (defun XI_KickStart:object{IgnisCollectorV2.OutputCumulator}
         (kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
         @doc "Shared write path for both the owner (C_KickStart) and administrative \
@@ -1256,6 +1256,7 @@
             (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3] [index])
         )
     )
+    ;;Protection: Class 3 — Custom: ATSU|C>DEPLOY
     (defun XI_DeployAccount (ats:string acc:string)
         (require-capability (ATSU|C>DEPLOY ats acc))
         (let
@@ -1266,6 +1267,7 @@
             (XI_Normalize ats acc)
         )
     )
+    ;;Protection: Class 3 — Custom: ATSU|C>NORMALIZE_LEDGER
     (defun XI_Normalize (ats:string acc:string)
         (require-capability (ATSU|C>NORMALIZE_LEDGER ats acc))
         (let
@@ -1334,6 +1336,8 @@
             )
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by XE_UpP0, XE_UpP1, XE_UpP2, XE_UpP3,
+    ;;Protection:          XE_UpP4, XE_UpP5, XE_UpP6, XE_UpP7
     (defun XI_UUP (ats:string acc:string data:[object{UtilityAtsV3.Awo}])
         (let
             (
@@ -1349,7 +1353,10 @@
             (ref-ATS::XE_UpP7 ats acc (at 0 (take -1 data)))
         )
     )
-    (defun XI_StoreUnstakeObject (ats:string acc:string position:integer obj:object{UtilityAtsV3.Awo})
+    ;;Enforce: read-and-write-in-one -- <size> is (length p0), and p0 is the list the write is built
+    ;;          from. Relocating the bound means re-reading and re-measuring the same list.
+    ;;Protection: Class 2 — SECURE
+    (defun XIv_StoreUnstakeObject (ats:string acc:string position:integer obj:object{UtilityAtsV3.Awo})
         (require-capability (SECURE))
         (let
             (
@@ -1361,6 +1368,10 @@
             
             (if (= position -1)
                 (do
+                    ;;UNTESTABLE-EXTERNALLY: XIv_StoreUnstakeObject sits behind (require-capability (SECURE)), and SECURE cannot be acquired from outside
+                    ;;this module -- so no REPL negative test can reach this line. The guard is LIVE and
+                    ;;does real work on the in-module path; it is NOT dead code. Distinguished from
+                    ;;the UNREACHABLE marker deliberately: that marker means no input can trip the guard at all.
                     (enforce (< size 250) "Unstake Storage limited to 250 Elements. Cull your list to add more !")
                     (if (and
                             (= size 1)
@@ -1387,6 +1398,7 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_MultiCull:[decimal] (ats:string acc:string)
         (require-capability (SECURE))
         (let
@@ -1401,6 +1413,7 @@
             summed-culled-values
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by XIv_StoreUnstakeObject
     (defun XI_SingleCull:[decimal] (ats:string acc:string position:integer)
         (let
             (
@@ -1413,12 +1426,13 @@
                 (zr:object{UtilityAtsV3.Awo} (ref-ATS::UDC_MakeZeroUnstakeObject ats))
             )
             (if (!= cull-output empty)
-                (XI_StoreUnstakeObject ats acc position zr)
+                (XIv_StoreUnstakeObject ats acc position zr)
                 true
             )
             cull-output
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_RemoveSecondary:object{IgnisCollectorV2.OutputCumulator}
         (remover:string ats:string reward-token:string)
         @doc "Fix (audit finding #1C / C2): (1) the account list to reshape is ALWAYS derived on-chain \
@@ -1434,7 +1448,6 @@
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-ATS:module{AutostakeV3} ATS)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
@@ -1708,7 +1721,6 @@
                             (ref-U|LST:module{StringProcessorV2} U|LST)
                             (ref-U|ATS:module{UtilityAtsV3} U|ATS)
                             (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                            (ref-DALOS:module{OuronetDalosV2} DALOS)
                             (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                             (ref-TFT:module{TrueFungibleTransferV2} TFT)
                             ;;
@@ -1723,12 +1735,12 @@
                             (positive-c-fr:[decimal]
                                 ;;For true <c-fr>
                                 ;:Remainder
-                                (ref-ATS::URC_RTSplitAmounts ats c-rbt-remainder)
+                                (ref-ATS::URCv_RTSplitAmounts ats c-rbt-remainder)
                             )
                             (ng-c-fr:[decimal]
                                 ;For false <c-fre>
                                 ;Fee-Part
-                                (ref-ATS::URC_RTSplitAmounts ats c-rbt-fee)
+                                (ref-ATS::URCv_RTSplitAmounts ats c-rbt-fee)
                             )
                             ;;
                             (price:decimal (ref-IGNIS::UC_IgnisPrice "ATS|C_ColdRecovery" "usage"))
@@ -1790,7 +1802,7 @@
                             )
                             (enumerate 0 (- (length rt-lst) 1))
                         )
-                        (XI_StoreUnstakeObject ats recoverer usable-cold-recovery-position
+                        (XIv_StoreUnstakeObject ats recoverer usable-cold-recovery-position
                             { "reward-tokens"   : positive-c-fr
                             , "cull-time"       : cull-time}
                         )
@@ -1810,7 +1822,6 @@
                     (ref-U|LST:module{StringProcessorV2} U|LST)
                     (ref-U|DEC:module{OuronetDecimalsV2} U|DEC)
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
                     (ref-ATS:module{AutostakeV3} ATS)
                     (ref-TFT:module{TrueFungibleTransferV2} TFT)
                     ;;
@@ -1865,7 +1876,6 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 (ref-ATS:module{AutostakeV3} ATS)
@@ -1910,6 +1920,15 @@
     (defun C_Recover:object{IgnisCollectorV2.OutputCumulator}
         (recoverer:string id:string nonce:integer)
         (P|UEV_IMC)
+        ;;THE CAPABILITY IS ACQUIRED BEFORE THE `let`, and that ordering is load-bearing.
+        ;;FIXED 2026-09-12: it used to sit INSIDE the let body, so the eager binding group ran first
+        ;;-- and for a token that is not reward-bearing `UR_RewardBearingToken` returns the BAR
+        ;;sentinel, so the next binding looked up ATS pair `|` and died with
+        ;;`No value found in table ouronet-ns.ATS_ATS|Pairs for key: |`. The cap's own
+        ;;`(enforce iz-rbt "Invalid Hot-RBT")` -- written for exactly that input -- was never reached.
+        ;;Both cap arguments are plain defun parameters, so hoisting costs nothing, and it is also the
+        ;;shape StoicSyntax asks for: validation in the defcap, work in the body.
+        (with-capability (ATS|C>RECOVER recoverer id nonce)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
@@ -1922,7 +1941,6 @@
                 (c-rbt:string (ref-ATS::UR_ColdRewardBearingToken ats))
                 (nonce-supply:decimal (ref-DPOF::UR_NonceSupply id nonce))
             )
-            (with-capability (ATS|C>RECOVER recoverer id nonce)
                 (let
                     (
                         (ico1:object{IgnisCollectorV2.OutputCumulator}
@@ -1946,6 +1964,13 @@
     (defun C_Redeem:object{IgnisCollectorV2.OutputCumulator}
         (redeemer:string id:string nonce:integer)
         (P|UEV_IMC)
+        ;;CAPABILITY BEFORE THE `let` -- same fix as C_Recover above, same cause.
+        ;;FIXED 2026-09-12: it used to sit inside the let body, and the eager binding group reads
+        ;;`(ats (UR_RewardBearingToken id))` then immediately `(rt-lst (UR_RewardTokenList ats))`.
+        ;;For a token that is not reward-bearing `ats` is the BAR sentinel, so that second read looks
+        ;;up ATS pair `|` and aborts before the cap can raise its own "Invalid Hot-RBT". Both cap
+        ;;arguments are plain defun parameters, so the hoist is free.
+        (with-capability (ATSU|C>REDEEM redeemer id)
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
@@ -1977,8 +2002,8 @@
                         (floor (* nonce-supply (/ (- 1000.0 (* h-promile (- 1.0 (/ elapsed-time total-time)))) 1000.0)) precision)
                     )
                 )
-                (total-rts:[decimal] (ref-ATS::URC_RTSplitAmounts ats nonce-supply))
-                (earned-rts:[decimal] (ref-ATS::URC_RTSplitAmounts ats earned-rbt))
+                (total-rts:[decimal] (ref-ATS::URCv_RTSplitAmounts ats nonce-supply))
+                (earned-rts:[decimal] (ref-ATS::URCv_RTSplitAmounts ats earned-rbt))
                 (fee-rts:[decimal] (zip (lambda (x:decimal y:decimal) (- x y)) total-rts earned-rts))
                 (are-fee-rts:decimal (fold (+) 0.0 fee-rts))
                 ;; Fix (audit finding #3C / C3): `are-fee-rts` is a summed :decimal fee amount, not a
@@ -1988,7 +2013,6 @@
                 ;; true only when the decay fee actually took a nonzero slice off the redemption.
                 (have-fee-rts:bool (!= are-fee-rts 0.0))
             )
-            (with-capability (ATSU|C>REDEEM redeemer id)
                 (let
                     (
                         (ico1:object{IgnisCollectorV2.OutputCumulator}
@@ -2059,7 +2083,7 @@
                         )
                     )
                     (reward-tokens:[string] (ref-ATS::UR_RewardTokenList ats))
-                    (release-amounts:[decimal] (ref-ATS::URC_RTSplitAmounts ats c-rbt-remainder))
+                    (release-amounts:[decimal] (ref-ATS::URCv_RTSplitAmounts ats c-rbt-remainder))
                 )
                 ;;0]Update ATS Data
                 (map

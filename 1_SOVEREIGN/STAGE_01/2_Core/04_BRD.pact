@@ -194,6 +194,14 @@
     ;;{3}  CST
     ;;{3.1}  constants
     (defconst BAR                                       (CT_Bar))
+    ;;"this entity has never held premium", as a deliberate sentinel rather than an accident.
+    ;;<premium-until> used to be `(at "block-time" (chain-data))` inside this `defconst`, which Pact
+    ;;evaluates ONCE at module load -- so it was BRD's own deploy timestamp, shared by every entity
+    ;;and drifting with each redeploy. A fresh entity has no premium at all, and the honest encoding
+    ;;of that is a fixed point in the past that no clock can overtake.
+    (defconst BRD|NO_PREMIUM:time (time "1970-01-01T00:00:00Z"))
+    ;;<genesis> here is a PLACEHOLDER ONLY -- same defconst problem, and a birth date must be the
+    ;;entity's own. <XE_Issue> overwrites it with the issuance time; see the note there.
     (defconst BRD|DEFAULT
         {"logo"                 : BAR
         ,"description"          : BAR
@@ -201,7 +209,7 @@
         ,"social"               : [SOCIAL|EMPTY]
         ,"flag"                 : 3
         ,"genesis"              : (at "block-time" (chain-data))
-        ,"premium-until"        : (at "block-time" (chain-data))}
+        ,"premium-until"        : BRD|NO_PREMIUM}
     )
     (defconst SOCIAL|EMPTY
         {"social-media-name"    : BAR
@@ -311,6 +319,17 @@
             (remove "premium-until" input)
         )
     )
+    ;;MODULE-ONLY, unlike its six siblings above, and deliberately so: declaring it in
+    ;;the BrandingV2 interface would bump the interface and pull every consumer along
+    ;;under the cascade rule, for a constructor only <XE_Issue> needs. The siblings are
+    ;;interface-declared because external modules build branding objects with them;
+    ;;nothing outside BRD sets a genesis.
+    (defun UDC_BrandingGenesis:object{BrandingV2.Schema} (input:object{BrandingV2.Schema} genesis:time)
+        (+
+            {"genesis" : genesis}
+            (remove "genesis" input)
+        )
+    )
     ;;{5.2}  Compute [UC]
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     (defun UR_Branding:object{BrandingV2.Schema} (id:string pending:bool)
@@ -377,13 +396,33 @@
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_Issue (entity-id:string)
+        @doc "Creates the branding row for <entity-id>, stamping <genesis> and \
+            \ <premium-until> with the issuance time."
         (P|UEV_IMC)
-        (insert BRD|BrandingTable entity-id
-            {"branding"                 : BRD|DEFAULT
-            ,"branding-pending"         : BRD|DEFAULT}
+        ;;<genesis> IS STAMPED HERE, PER ISSUANCE. It used to come straight from the
+        ;;BRD|DEFAULT defconst, and Pact evaluates a defconst ONCE at module load -- so
+        ;;every entity ever issued inherited BRD's OWN DEPLOY TIME as its birth date,
+        ;;identical for all of them and different after every redeploy.
+        ;;
+        ;;<premium-until> is NOT stamped with the issuance time: a fresh entity has never
+        ;;held premium, and BRD|NO_PREMIUM says exactly that at a fixed point no clock can
+        ;;overtake. Stamping it with "now" would read as "premium expired this instant",
+        ;;which is a different claim and one that depends on when the row was written.
+        ;;Fixed 2026-09-12, owner-authorised.
+        (let
+            (
+                (fresh:object{BrandingV2.Schema}
+                    (UDC_BrandingGenesis BRD|DEFAULT (at "block-time" (chain-data))))
+            )
+            (insert BRD|BrandingTable entity-id
+                {"branding"                 : fresh
+                ,"branding-pending"         : fresh}
+            )
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: SECURE
     (defun XE_UpdatePendingBranding (entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
         @doc "Updates <pending-branding> with new branding data. \
             \ This is done by <entity-id> owners to brand their <entity-id> \
@@ -403,6 +442,7 @@
             )
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: BRD|C>UPGRADE
     (defun XE_UpgradeBranding:decimal (entity-id:string entity-owner-account:string months:integer)
         @doc "Upgrades Branding for <entity-id> to Blue Flag; Initial Cost set at 25 STOA per Month \
             \ STOA Cost may be adjusted in the future reflecting STOA Value \
@@ -430,14 +470,26 @@
         (with-capability (BRD|C>UPGRADE entity-id entity-owner-account months)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
                     (branding:object{BrandingV2.Schema} (UR_Branding entity-id false))
                     (branding-pending:object{BrandingV2.Schema} (UR_Branding entity-id true))
                     (flag:integer (UR_Flag entity-id false))
                     (premium:time (UR_PremiumUntil entity-id false))
+                    (current:time (at "block-time" (chain-data)))
                     (seconds:decimal (fold (*) 1.0 [86400.0 30.0 (dec months)]))
                     (payment:decimal (URCi_UpgradeBranding months))
-                    (premium-until:time (add-time premium seconds))
+                    ;;THE EXTENSION BASE IS CLAMPED TO NOW WHEN THE PREMIUM HAS
+                    ;;LAPSED. This used to be (add-time premium seconds) flat: correct
+                    ;;for a LIVE subscription, where extending from the stored date
+                    ;;loses no time between renewals, and wrong for a lapsed one -- the
+                    ;;buyer paid for 30 days measured from a date already gone and got a
+                    ;;BLUE flag with ZERO usable premium. Fixed 2026-09-12,
+                    ;;owner-authorised; pinned by modules/SWP.repl <<SWP-G24>>.
+                    (premium-until:time
+                        (add-time
+                            (if (> (diff-time premium current) 0.0) premium current)
+                            seconds
+                        )
+                    )
 
                     (as-is1:object{BrandingV2.Schema} (UDC_BrandingFlag branding 1))
                     (as-is2:object{BrandingV2.Schema} (UDC_BrandingPremium as-is1 premium-until))
@@ -462,6 +514,7 @@
         )
     )
     ;;
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdateBrandingData (entity-id:string pending:bool branding:object{BrandingV2.Schema})
         (require-capability (SECURE))
         (if pending

@@ -404,7 +404,6 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPDC:module{DpdcV2} DPDC)
                 (ref-DPDC-I:module{DpdcIssueV2} DPDC-I)
                 ;;
@@ -554,6 +553,7 @@
     )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
+    ;;Protection: Class 2 — SECURE
     (defun XI_ConvertPackageShares:object{IgnisCollectorV2.OutputCumulator}
         (account:string id:string input-package-share-tier:integer input-package-share-tier-amount:integer output-package-share-tier:integer)
         @doc "Converts any Nonce to [2 3 4 5 6 7 8] to any Nonce [2 3 4 5 6 7 8]"
@@ -595,6 +595,7 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_MakePackageShares:object{IgnisCollectorV2.OutputCumulator}
         (account:string id:string shares-amount:integer package-share-tier:integer)
         @doc "Combines Nonce 1 to Nonce 2,3,4,5,6,7,8. \
@@ -636,6 +637,7 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_BreakPackageShares:object{IgnisCollectorV2.OutputCumulator}
         (account:string id:string package-share-tier:integer amount:integer)
         @doc "Brakes Nonce 2,3,4,5,6,7,8 to Nonce 1. \
@@ -684,6 +686,15 @@
         @doc "Royalty is the standard Royalty for the Whole Collection \
             \ While <ignis-royalty> is the ignis Royalty for 1% of Company Shares"
         (P|UEV_IMC)
+        ;;MUTE-GUARD FIX: this check used to live BELOW the let, and the let's <ico> binding ISSUES
+        ;;the collection (DPDC-I::C_IssueDigitalCollection). Pact evaluates let bindings eagerly, so a
+        ;;caller who passed the wrong number of links paid for a full collection issuance before the
+        ;;link count was ever looked at -- and whenever that issuance failed first for its own reasons
+        ;;(a duplicate collection name being the common one) this message could never be the one the
+        ;;caller saw. It is a pure argument-shape check on a parameter, so it belongs here, ahead of
+        ;;every read and every write. Pinned by REPL/modules/DPDC.repl <<DPDC-G20>>.
+        (enforce (= (length ipfs-links) 24)
+            "24 IPFS links must be provided for an Equity Collection")
         (let
             (
                 (ref-U|VST:module{UtilityVstV2} U|VST)
@@ -716,9 +727,7 @@
                     )
                 )
                 (equity-id:string (at 0 (at "output" ico)))
-                (l:integer (length ipfs-links))
             )
-            (enforce (= l 24) "24 IPFS links must be provided for an Equity Collection")
             (ref-IGNIS::UDC_ConcatenateOutputCumulators 
                 [
                     ico

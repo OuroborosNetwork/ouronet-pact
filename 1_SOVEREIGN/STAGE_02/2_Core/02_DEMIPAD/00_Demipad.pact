@@ -510,6 +510,15 @@
             ;;Validate <donor> to be Standard Ouronet Account
             (ref-DALOS::UEV_EnforceAccountType donor false)
             ;;Validate <asset-id> to be a Launchpad registered Asset
+            ;;FIXED 2026-09-12, owner-ruled. This message used to be UNREACHABLE: the `let` above
+            ;;binds FOUR reads of this same Ledger row and a `let` is EAGER, so `ofb`, `iz-sstoa` and
+            ;;`iz-ouro` -- then bare `read`s -- ran BEFORE this enforce and aborted the transaction
+            ;;with `No value found in table ... DEMIPAD|T|Ledger for key: <asset>`. The deposit was
+            ;;still refused (never a funds hole), but the sentence written for exactly that case
+            ;;never arrived. Owner ruling: make every reader SUCCEED to true/false rather than abort.
+            ;;All three are now `with-default-read`, matching what UR_CheckRegistration already did
+            ;;with its `(try false ...)`. Pinned by REPL/Stage_02/[5.3]_Launchpad.repl <<TX-DEP-02>>
+            ;;01b. See memories/2026-09-12-eager-let-mute-guards.md
             (enforce iz-registered (format "Asset {} is not registered to the Demiourgos Lauchpad. Deposit unallowed" [asset-id]))
             ;;Validate the <amount-in-dollars> to be greater than zero with 3 decimals
             (enforce
@@ -549,7 +558,24 @@
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (iz-type:bool (contains type [1 2 3]))
             )
-            ;;Validate <type> to be either 0, 1, 2 or 3, and that the required Token Deposit is turned on
+            ;;Validate <type> to be either 1, 2 or 3, and that the required Token Deposit is on.
+            ;;
+            ;;SHADOWED AT TODAY'S ONLY CALL SITE - kept deliberately. C_Withdraw binds
+            ;;(URv_Funds asset-id type) BEFORE acquiring this capability, and URv_Funds opens with
+            ;;the IDENTICAL predicate under a different message, so an out-of-range <type> always
+            ;;aborts there with "Invalid Read Type" and this line never fires. It is NOT a hole:
+            ;;the input is still rejected, only the message is less specific.
+            ;;
+            ;;Not removed, and not "fixed" by restructuring: <retrieval-amount> is a parameter of
+            ;;this @event capability and the body needs it for the transfer, so the read must
+            ;;happen first - and moving it inside would change an EVENT SIGNATURE that indexers
+            ;;consume. This enforce is the defence-in-depth that makes the capability correct on
+            ;;its own terms for any FUTURE caller that does not read first. Pinned as-is in
+            ;;REPL/Stage_02/[5.3]_Launchpad.repl <<TX-DEP-02>>.
+            ;;UNREACHABLE (shadowed) -- the analysis above is the proof; this marker is what keeps
+            ;;it out of the pinning worklist. Same category as 05_DPTF:1004: not dead, not a hole,
+            ;;simply answered earlier by an identical predicate on every path that exists today.
+            ;;Revisit if a call site is ever added that does NOT read URv_Funds first.
             (enforce iz-type "Invalid Withdrawal type")
             ;;Validate <retrieval-amount> to be non-zero
             (enforce 
@@ -809,7 +835,7 @@
     (defun UR_TotalDollarzRaised:decimal (asset-id:string)
         (at "total-dollarz-raised" (read DEMIPAD|T|Ledger asset-id ["total-dollarz-raised"]))
     )
-    (defun UR_TotalRaised:decimal (asset-id:string type:integer)
+    (defun URv_TotalRaised:decimal (asset-id:string type:integer)
         (enforce (contains type [1 2 3]) "Invalid Read Type")
         (cond
             ((= type 1) (UR_TotalWSTOARaised asset-id))
@@ -818,7 +844,7 @@
             0.0
         )
     )
-    (defun UR_Funds:decimal (asset-id:string type:integer)
+    (defun URv_Funds:decimal (asset-id:string type:integer)
         (enforce (contains type [1 2 3]) "Invalid Read Type")
         (cond
             ((= type 1) (UR_WSTOA|Funds asset-id))
@@ -847,16 +873,27 @@
     )
     ;;
     (defun UR_IzSSTOA:bool (asset-id:string)
-        (at "iz-sstoa" (read DEMIPAD|T|Ledger asset-id ["iz-sstoa"]))
+        ;;with-default-read, not read: an UNREGISTERED asset has no row, and a bare read would abort
+        ;;the transaction before any caller's `enforce` could speak. See the note on UR_CheckRegistration.
+        (with-default-read DEMIPAD|T|Ledger asset-id
+            { "iz-sstoa" : false } { "iz-sstoa" := x } x)
     )
     (defun UR_IzOURO:bool (asset-id:string)
-        (at "iz-ouro" (read DEMIPAD|T|Ledger asset-id ["iz-ouro"]))
+        ;;with-default-read, not read -- same reason as UR_IzSSTOA above.
+        (with-default-read DEMIPAD|T|Ledger asset-id
+            { "iz-ouro" : false } { "iz-ouro" := x } x)
     )
     (defun UR_Fungibility:[bool] (asset-id:string)
         (at "fungibility" (read DEMIPAD|T|Ledger asset-id ["fungibility"]))
     )
     (defun UR_OpenForBusiness:bool (asset-id:string)
-        (at "open-for-business" (read DEMIPAD|T|Ledger asset-id ["open-for-business"]))
+        ;;with-default-read, not read. FALSE is the semantically correct answer for an asset with no
+        ;;Ledger row -- a thing that is not registered is certainly not open for business -- and it
+        ;;lets DEMIPAD|C>DEPOSIT's registration enforce actually be reached. All four call sites were
+        ;;checked: the two in this module, 2_CITIZEN/.../01_Spark.pact and Stage_Z/01_DPL-UR.pact;
+        ;;every one of them is better served by `false` than by an aborted transaction.
+        (with-default-read DEMIPAD|T|Ledger asset-id
+            { "open-for-business" : false } { "open-for-business" := x } x)
     )
     (defun UR_Price:object (asset-id:string)
         (at "price" (read DEMIPAD|T|Ledger asset-id ["price"]))
@@ -1178,6 +1215,7 @@
     ;;{5.6}  Aux/X
     ;;
     ;;
+    ;;Protection: Class 2 — SECURE
     (defun XI_RegisterAsset (asset-id:string fungibility:[bool])
         (require-capability (SECURE))
         (insert DEMIPAD|T|Ledger asset-id 
@@ -1189,10 +1227,13 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_U|TotalDollarzRaised (asset-id:string value:decimal)
         (require-capability (SECURE))
         (update DEMIPAD|T|Ledger asset-id {"total-dollarz-raised" : value})
     )
+    ;;Protection: Class 1 — Innate protection offered by XI_U|TotalWSTOARaised,
+    ;;Protection:          XI_U|TotalSSTOARaised, XI_U|TotalOURORaised
     (defun XI_U|TotalRaised (asset-id:string value:decimal type:integer)
         (cond
             ((= type 1) (XI_U|TotalWSTOARaised asset-id value))
@@ -1201,6 +1242,8 @@
             true
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by XI_U|FundsWSTOA, XI_U|FundsSSTOA,
+    ;;Protection:          XI_U|FundsOURO
     (defun XI_U|Funds (asset-id:string value:decimal type:integer)
         (cond
             ((= type 1) (XI_U|FundsWSTOA asset-id value))
@@ -1209,61 +1252,75 @@
             true
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_U|TotalWSTOARaised (asset-id:string value:decimal)
         (require-capability (SECURE))
         (update DEMIPAD|T|Ledger asset-id {"total-wstoa-raised" : value})
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_U|TotalSSTOARaised (asset-id:string value:decimal)
         (require-capability (SECURE))
         (update DEMIPAD|T|Ledger asset-id {"total-sstoa-raised" : value})
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_U|TotalOURORaised (asset-id:string value:decimal)
         (require-capability (SECURE))
         (update DEMIPAD|T|Ledger asset-id {"total-ouro-raised" : value})
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_U|FundsWSTOA (asset-id:string value:decimal)
         (require-capability (SECURE))
         (update DEMIPAD|T|Ledger asset-id {"funds-wstoa" : value})
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_U|FundsSSTOA (asset-id:string value:decimal)
         (require-capability (SECURE))
         (update DEMIPAD|T|Ledger asset-id {"funds-sstoa" : value})
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_U|FundsOURO (asset-id:string value:decimal)
         (require-capability (SECURE))
         (update DEMIPAD|T|Ledger asset-id {"funds-ouro" : value})
     )
     ;;
+    ;;Protection: Class 2 — SECURE
     (defun XI_U|OpenForBusiness (asset-id:string toggle:bool)
         (require-capability (SECURE))
         (update DEMIPAD|T|Ledger asset-id {"open-for-business" : toggle})
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_U|Price (asset-id:string price:object)
         (require-capability (SECURE))
         (update DEMIPAD|T|Ledger asset-id {"price" : price})
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_U|Retrieval (asset-id:string retrieval:bool)
         (require-capability (SECURE))
         (update DEMIPAD|T|Ledger asset-id {"retrieval" : retrieval})
     )
     ;;
+    ;;Protection: Class 2 — SECURE
     (defun XI_W|DirectInjection (value:decimal)
         (require-capability (SECURE))
         (update DEMIPAD|T|Properties PP {"direct-injection" : value})
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_U|WSTOA (value:decimal)
         (require-capability (SECURE))
         (update DEMIPAD|T|Properties PP {"resident-wstoa" : value})
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_U|SSTOA (value:decimal)
         (require-capability (SECURE))
         (update DEMIPAD|T|Properties PP {"resident-sstoa" : value})
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_U|OURO (value:decimal)
         (require-capability (SECURE))
         (update DEMIPAD|T|Properties PP {"resident-ouro" : value})
     )
     ;;
+    ;;Protection: Class 2 — SECURE
     (defun XI_SatisfyEnviroment (donor:string prices:object{DemiourgosLaunchpadV2.DEMIPAD|Prices})
         (require-capability (SECURE))
         (let
@@ -1279,6 +1336,7 @@
             (ref-coin::transfer donor-stoa (at "receiver-four" prices)   (at "amount-four" prices))      ;;for LQ-St
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_DepositResidents (prices:object{DemiourgosLaunchpadV2.DEMIPAD|Prices} type:integer)
         (require-capability (SECURE))
         (with-capability (SECURE)
@@ -1299,6 +1357,7 @@
             )
         ) 
     )
+    ;;Protection: Class 1 — Innate protection offered by XI_U|TotalDollarzRaised
     (defun XI_DepositForAsset 
         (asset-id:string amount-in-dollars:decimal remainder:decimal type:integer)
         (let
@@ -1306,11 +1365,12 @@
                 (used-type:integer (if (= type 0) 1 type))
             )
             (XI_U|TotalDollarzRaised asset-id (+ (UR_TotalDollarzRaised asset-id) amount-in-dollars))
-            (XI_U|TotalRaised asset-id (+ remainder (UR_TotalRaised asset-id used-type)) used-type)
-            (XI_U|Funds asset-id (+ remainder (UR_Funds asset-id used-type)) used-type)
+            (XI_U|TotalRaised asset-id (+ remainder (URv_TotalRaised asset-id used-type)) used-type)
+            (XI_U|Funds asset-id (+ remainder (URv_Funds asset-id used-type)) used-type)
         )
     )
     ;;
+    ;;Protection: Class 2 — SECURE
     (defun XI_TransmitCollectables:object{IgnisCollectorV2.OutputCumulator}
         (client:string asset-id:string son:bool nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
         (require-capability (SECURE))
@@ -1476,7 +1536,7 @@
         (P|UEV_IMC)
         (let
             (
-                (retrieval-amount:decimal (UR_Funds asset-id type))
+                (retrieval-amount:decimal (URv_Funds asset-id type))
             )
             (with-capability (DEMIPAD|C>WITHDRAW asset-id type retrieval-amount destination)
                 (let

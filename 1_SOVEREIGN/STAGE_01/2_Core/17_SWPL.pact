@@ -329,7 +329,6 @@
                 (ref-P|DPTF:module{OuronetPolicyV2} DPTF)
                 ;(ref-P|DPOF:module{OuronetPolicyV2} DPOF)
                 (ref-P|TFT:module{OuronetPolicyV2} TFT)
-                (ref-P|VST:module{OuronetPolicyV2} VST)
                 (ref-P|SWP:module{OuronetPolicyV2} SWP)
                 (mg:guard (create-capability-guard (P|SWPL|CALLER)))
             )
@@ -914,7 +913,12 @@
                                 )
                                 ;;Construc ICOz
                                 (ignis-swp:decimal (fold (+) 0.0 [deficit-ignis-tax special-ignis-tax lqboost-ignis-tax]))
-                                (ignis-id:string (ref-DALOS::UR_IgnisID))
+                                ;;DUPLICATE READ REMOVED 2026-09-13: <ignis-id> is already bound at
+                                ;;the top of this same let group, from the identical
+                                ;;(ref-DALOS::UR_IgnisID) call, and is consumed there by <ignis-prec>.
+                                ;;Rebinding it here shadowed that one for the rest of the group with
+                                ;;the same value, at the cost of a second table read on every
+                                ;;asymmetric-collection swap -- a transactional path, so real user gas.
                                 (ouro-id:string (ref-DALOS::UR_OuroborosID))
                                 (secondary-ids-for-transfer:[string] (ref-U|LST::UC_InsertFirst input-ids-for-transfer ignis-id))
                                 (secondary-amounts-for-transfer:[decimal] (ref-U|LST::UC_InsertFirst input-amounts-for-transfer ignis-swp))
@@ -1242,7 +1246,6 @@
                 (ref-U|LST:module{StringProcessorV2} U|LST)
                 (ref-U|VST:module{UtilityVstV2} U|VST)
                 (ref-U|SWP:module{UtilitySwpV2} U|SWP)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-SWP:module{SwapperV4} SWP)
                 ;;
                 (li:integer (at "li" lcd))
@@ -1718,7 +1721,7 @@
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-SWP:module{SwapperV4} SWP)
                 ;;
-                (input-position:integer (ref-SWP::UR_PoolTokenPosition swpair input-id))
+                (input-position:integer (ref-SWP::URv_PoolTokenPosition swpair input-id))
                 (input-precision:integer (ref-DPTF::UR_Decimals input-id))
                 (X:[decimal]
                     (if (= (ref-SWP::URC_LpCapacity swpair) 0.0)
@@ -1847,6 +1850,12 @@
     ;;{5.6}  Aux/X
     ;;
     ;;
+    ;;Protection: Class 5 — IMC + Custom: SECURE, SWPL|S>ADD_ASYMMETRIC-LQ,
+    ;;Protection:          SWPL|S>ADD_BALANCED-LQ, SWPL|S>ASYMMETRIC-LQ-DEFICIT-TAX,
+    ;;Protection:          SWPL|S>ASYMMETRIC-LQ-FUELING-TAX,
+    ;;Protection:          SWPL|S>ASYMMETRIC-LQ-GASEOUS-TAX,
+    ;;Protection:          SWPL|S>ASYMMETRIC-LQ-LQBOOST-TAX,
+    ;;Protection:          SWPL|S>ASYMMETRIC-LQ-SPECIAL-TAX
     (defun XE_STOA-PID|AddLiquidity
         (
             account:string swpair:string asymmetric-collection:bool gaseous-collection:bool stoa-pid:decimal
@@ -1983,6 +1992,7 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_AddLiqSendAndMint 
         (
             account:string lp-id:string lp-amount:decimal 
@@ -2003,6 +2013,7 @@
             (ref-DPTF::C_Mint lp-id SWP|SC_NAME lp-amount false)
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: P|SWPL|CALLER
     (defun XE_AutonomousSwapManagement (swpair:string)
         (P|UEV_IMC)
         (let

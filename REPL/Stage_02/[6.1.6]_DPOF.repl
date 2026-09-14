@@ -71,7 +71,25 @@
     (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron id emma true)
     (ref-TS01-C1::DPOF|C_WipePure patron id emma (ref-DPOF::URHC_WipePure emma id))
     ;; premium branding upgrade (STOA fee)
-    (ref-TS01-C1::DPOF|C_UpgradeBranding patron id 1)
+    ;;ORDER-DEPENDENCE FIX (G3), second site. BRD permits an upgrade only when under 15 days of
+    ;;premium remain (04_BRD.pact:258). Whether that holds depends on how much chain time the
+    ;;enclosing run has consumed, so an unconditional call aborts this file in any chain where the
+    ;;flag is still fresh -- which is what the eight EXCLUDED Kursan harnesses hit.
+    ;;
+    ;;_gate.py's note attributes G3 to [6.1.4]_DPDC-NF.repl:333 alone. That site is real and fixed
+    ;;the same way, but it is NOT the only one: with it conditional, the harnesses then failed HERE.
+    ;;Same guard, same cause, two call sites.
+    (let
+        (
+            (remaining:decimal
+                (diff-time (BRD.UR_PremiumUntil id false) (at "block-time" (chain-data))))
+        )
+        (if (< remaining 1296000.0)
+            (ref-TS01-C1::DPOF|C_UpgradeBranding patron id 1)
+            (print (format "<<TX-OF-001>> UpgradeBranding SKIPPED — {} s premium remain (BRD allows under 1296000 s)"
+                [remaining]))
+        )
+    )
     (print "<<TX-OF-001>> DPOF DeployAccount/Transmit/WipeSlim/Clean/Heavy/Pure/UpgradeBranding OK")
 )
 (print "===^^^===")

@@ -1004,6 +1004,16 @@
                 (sigma:string "Σ")
                 (tanker:string (ref-DALOS::UR_Tanker))
             )
+            ;;UNREACHABLE -- `interactor` is not a client argument, and the only thing that builds
+            ;;one normalises it first. `UDC_MakeModularCumulator` sets
+            ;;    (interactor (if (DALOS::UR_AccountType active-account) active-account BAR))
+            ;;so a SMART account passes through as itself and everything else becomes BAR -- exactly
+            ;;the two branches this enforce-one accepts. A triggered (free) leg is BAR regardless.
+            ;;Measured: handing C_Collect a hand-built cumulator naming a STANDARD account succeeds,
+            ;;because the constructor sanitised it on the way in.
+            ;;Kept as a fail-closed backstop for a future builder that does not normalise.
+            ;;Pinned by REPL/modules/CUMULATOR.repl <<CUM-G1>>, which drives the normalisation itself
+            ;;-- pure compute, no fixture -- so this annotation cannot rot if it is ever weakened.
             (enforce-one
                 "Invalid Interactor"
                 [
@@ -1074,16 +1084,11 @@
     )
     (defun UDC_BrandingCumulator:object{IgnisCollectorV2.OutputCumulator}
         (active-account:string multiplier:decimal)
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-            )
-            (UDC_ConstructOutputCumulator
-                (* multiplier (UC_IgnisLeg "tier-branding"))
-                active-account
-                (URC_IsVirtualGasZero)
-                []
-            )
+        (UDC_ConstructOutputCumulator
+            (* multiplier (UC_IgnisLeg "tier-branding"))
+            active-account
+            (URC_IsVirtualGasZero)
+            []
         )
     )
     (defun UDC_LegCumulator:object{IgnisCollectorV2.OutputCumulator}
@@ -1481,8 +1486,9 @@
     (defun UC_FeeUnlockPrice:[decimal] ()
         @doc "Cost of unlocking fee parameters: [IGNIS STOA] = a FLAT $50 + $50, every unlock \
             \ (owner 2026-09-06). Returns the same 2-element shape the retired escalating \
-            \ ladder (U|DEC::UC_UnlockPrice) returned, so call sites keep their structure — \
-            \ but the <unlocks> count no longer changes the price. Used by DPTF|C_ToggleFeeLock, \
+            \ ladder returned, so call sites kept their structure; the <unlocks> count no longer \
+            \ changes the price. That ladder (U|DEC/U|ATS/U|DPTF UC_UnlockPrice) had been dead \
+            \ code since the flattening and was DELETED 2026-09-10. Used by DPTF|C_ToggleFeeLock, \
             \ ATS|C_ToggleParameterLock and SWP|C_ToggleFeeLock."
         [(UC_IgnisDeter "fee-unlock") (UC_StoaPrice "fee-unlock")]
     )
@@ -1739,6 +1745,7 @@
     )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
+    ;;Protection: Class 3 — Custom: IGNIS|C>COLLECT
     (defun XI_IgnisCollector (patron:string interactor:string amount:decimal)
         (require-capability (IGNIS|C>COLLECT patron interactor amount))
         (let
@@ -1755,11 +1762,13 @@
             (XI_IgnisTransfer patron collector amount)
         )
     )
+    ;;Protection: Class 3 — Custom: IGNIS|C>TRANSFER
     (defun XI_IgnisTransfer (sender:string receiver:string ta:decimal)
         (require-capability (IGNIS|C>TRANSFER sender receiver ta))
         (XI_IgnisDebit sender ta)
         (XI_IgnisCredit receiver ta)
     )
+    ;;Protection: Class 3 — Custom: IGNIS|C>DEBIT
     (defun XI_IgnisDebit (sender:string ta:decimal)
         (require-capability (IGNIS|C>DEBIT sender ta))
         (let
@@ -1771,6 +1780,7 @@
             )
         )
     )
+    ;;Protection: Class 3 — Custom: IGNIS|C>CREDIT
     (defun XI_IgnisCredit (receiver:string ta:decimal)
         (require-capability (IGNIS|C>CREDIT receiver))
         (let

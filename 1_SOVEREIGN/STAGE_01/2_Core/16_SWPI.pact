@@ -187,6 +187,7 @@
     (defun URC_IndirectRefillAmounts:[decimal] (X:[decimal] positions:[integer] amounts:[decimal]))
     (defun URC_TrimIdsWithZeroAmounts:[string] (swpair:string input-amounts:[decimal]))
     (defun URCi_Issue:object{IgnisCollectorV2.OutputCumulator} (op-key:string account:string pool-tokens:[object{SwapperV4.PoolTokens}]))
+    (defun URCi_IssueStoa:decimal ())
     ;;{5.4}  Validate [UEV/CAP]
     ;;
     ;;
@@ -601,8 +602,6 @@
                 ;;
                 (ref-U|LST:module{StringProcessorV2} U|LST)
                 (ref-U|SWP:module{UtilitySwpV2} U|SWP)
-                (ref-SWP:module{SwapperV4} SWP)
-                (ref-SWPI:module{SwapperIssueV4} SWPI)
                 ;;
                 (pool-type:string (ref-U|SWP::UC_PoolType swpair))
                 (input-positions:[integer] (UCv_PoolTokenPositions swpair input-ids))
@@ -1092,7 +1091,7 @@
                     (acc:[integer] idx:integer)
                     (ref-U|LST::UC_AppL
                         acc
-                        (ref-SWP::UR_PoolTokenPosition swpair (at idx input-ids))
+                        (ref-SWP::URv_PoolTokenPosition swpair (at idx input-ids))
                     )
                 )
                 []
@@ -1110,7 +1109,6 @@
                 (input-amounts:[decimal] (at "input-amounts" dsid))
                 (output-id:string (at "output-id" dsid))
                 ;;
-                (ref-U|LST:module{StringProcessorV2} U|LST)
                 (ref-U|SWP:module{UtilitySwpV2} U|SWP)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-SWP:module{SwapperV4} SWP)
@@ -1120,7 +1118,7 @@
                 (ref-SWP::UR_PoolTokenSupplies swpair)
                 input-amounts 
                 (URCv_PoolTokenPositions swpair input-ids)
-                (ref-SWP::UR_PoolTokenPosition swpair output-id)
+                (ref-SWP::URv_PoolTokenPosition swpair output-id)
                 (ref-DPTF::UR_Decimals output-id)
                 (ref-SWP::UR_Weigths swpair)
             )
@@ -1135,7 +1133,6 @@
                 (output-amount:decimal (at "output-amount" rsid))
                 (input-id:string (at "input-id" rsid))
                 ;;
-                (ref-U|LST:module{StringProcessorV2} U|LST)
                 (ref-U|SWP:module{UtilitySwpV2} U|SWP)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-SWP:module{SwapperV4} SWP)
@@ -1144,8 +1141,8 @@
                 (ref-SWP::UR_Amplifier swpair)
                 (ref-SWP::UR_PoolTokenSupplies swpair)
                 output-amount
-                (ref-SWP::UR_PoolTokenPosition swpair output-id)
-                (ref-SWP::UR_PoolTokenPosition swpair input-id)
+                (ref-SWP::URv_PoolTokenPosition swpair output-id)
+                (ref-SWP::URv_PoolTokenPosition swpair input-id)
                 (ref-DPTF::UR_Decimals input-id)
                 (ref-SWP::UR_Weigths swpair)
             )
@@ -1804,7 +1801,6 @@
         ;;This function is structured like this, to allow price retrieval from any source.
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (id-in-stoa:decimal (URC_SingleWorthWSTOA id))
                 (id-precision:integer (ref-DPTF::UR_Decimals id))
@@ -2295,6 +2291,23 @@
             )
         )
     )
+    (defun URCi_IssueStoa:decimal ()
+        @doc "STOA leg of a SINGLE-TX swap-pair issue. Read-only twin of the <stoa-costs> that \
+            \ C_Issue hands to STOA|C_Collect, so the exec and its INFO_ previews are sourced from \
+            \ one place and cannot drift. \
+            \ NOTE this is deliberately NOT the same figure as the DEFPACT pool-issue path: \
+            \ MTX-SWP charges (+ UsagePrice \"dptf\" \"swp\") while this charges \
+            \ UC_StoaPrice \"issue-swp-pair\". The two paths really do cost different amounts, and \
+            \ all six INFO_SWP|Issue* previews used to quote the MTX figure for both -- over-quoting \
+            \ the single-tx path. Mirrors ATS::URCi_IssueStoa. \
+            \ Pinned by `Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl <<SWP-ISSUE-INFO>>`."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+            )
+            (ref-IGNIS::UC_StoaPrice "issue-swp-pair")
+        )
+    )
     (defun URCi_Issue:object{IgnisCollectorV2.OutputCumulator}
         (op-key:string account:string pool-tokens:[object{SwapperV4.PoolTokens}])
         @doc "Cost preview for C_Issue's IGNIS cumulator (the STOA dptf+swp usage prices are \
@@ -2315,7 +2328,6 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 (ref-SWP:module{SwapperV4} SWP)
@@ -2387,7 +2399,6 @@
                 (output-amount:decimal (at "output-amount" rsid))
                 (input-id:string (at "input-id" rsid))
                 ;;
-                (ref-U|INT:module{OuronetIntegersV2} U|INT)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-SWP:module{SwapperV4} SWP)
                 (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
@@ -2551,6 +2562,7 @@
     )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
+    ;;Protection: Class 5 — IMC + Custom: SWPI|XE>ISSUE-WRITE
     (defun XE_IssueWrite:list
         (account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
         @doc "#36M/M5 fix: forward-module entrypoint holding the ONE shared pool-issuance \
@@ -2654,7 +2666,6 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
                     ;;STOA leg of a swap-pair issue: the SAME DOLLAR VALUE as its IGNIS deter
                     ;;($50 => 500 STOA at the $0.10 peg), via UC_StoaPrice. Replaces the two
                     ;;legacy sub-cent UsagePrice legs ("dptf" + "swp").

@@ -120,16 +120,47 @@
         (auryn-id:string "AURYN-98c486052a51")
         (bunnies-score:string (ref-U|DALOS::UDC_Makeid "SubsidiaryBunnies"))
         (bunnies-pool:string (ref-SCR::UR_SCR|ScoreAqpoolLink bunnies-score))
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
     )
+    ;;FUNCTION COVERAGE (G6) — `INFO_AQP-FVT|InjectFixChunk`, per the owner's spec. `AQP-INFO` is
+    ;;loaded by this file's one live runner, `deb-staleness-inject-cc.repl`; the reasoning is there.
+    ;;
+    ;;THE LAST OF THE SUBSIDISED ZERO-QUOTE OPS. Its three siblings are weighed at `[6.2.8]`
+    ;;(`SweepBegin`, `SweepRecomputeChunk`) and `[6.2.8d]` (`UnstaleAll`); the argument is the same, and
+    ;;bears repeating because it is the one shape that keeps turning out to be a defect: a literal-zero
+    ;;preview is what `INFO_SWP|ToggleFeeLock`, `INFO_ATS|ToggleParameterLock` and
+    ;;`INFO_EQUITY|IssueCompany` all looked like while their ops collected real money.
+    ;;
+    ;;AND ZERO-VS-ZERO IS VACUOUS ALONE — it passes just as well against an op that did nothing. The
+    ;;guard is the two assertions already below: this same call provably emptied the stale set and left
+    ;;ANHD's Bunnies score FRESH. So the zero is a statement about the FEE, not about whether it ran.
+    ;;`CCp_` marks a Hydra parallel-slice recipe: the gas station pays, which is why the caller does not.
     ;; chunk=100 covers the (single-staker) set; the stale set shrinks to empty
+    (let
+        (
+            (quote-obj:object{OuronetInfoV2.ClientInfo}
+                (AQP-INFO.INFO_AQP-FVT|InjectFixChunk anhd fvt-id auryn-id 100))
+            (gas-pre:decimal (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" anhd))
+        )
     (print (format "<(INJECT-CC03 AQP-FVT|CCp_InjectFixChunk chunk=100)> => \"{}\""
         [(ref-TS02-C3::AQP-FVT|CCp_InjectFixChunk anhd fvt-id auryn-id 100)]))
     (map print
         [
+            (format "<<TX-INJECT-CC03>> InjectFixChunk quoted ignis={} stoa={} ; real gas delta={}"
+                [(at "ignis-need" (at "ignis" quote-obj))
+                 (at "stoa-need" (at "stoa" quote-obj))
+                 (- gas-pre (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" anhd))])
+            (expect "<<TX-INJECT-CC03>> INFO_AQP-FVT|InjectFixChunk quotes ZERO IGNIS"
+                0.0 (at "ignis-need" (at "ignis" quote-obj)))
+            (expect "<<TX-INJECT-CC03>> ...and ZERO STOA"
+                0.0 (at "stoa-need" (at "stoa" quote-obj)))
+            (expect "<<TX-INJECT-CC03>> ...and the caller really was charged nothing: gas-station subsidised"
+                0.0 (- gas-pre (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" anhd)))
             (format "<(INJECT-CC03 post-fix: stale-count)> => {}" [(length (ref-FVT::URH_FvtStalePresentUsers fvt-id))])
             (expect "<<TX-INJECT-CC03>> post-fix: NO stale present users remain" 0 (length (ref-FVT::URH_FvtStalePresentUsers fvt-id)))
             (expect "<<TX-INJECT-CC03>> post-fix: ANHD Bunnies score FRESH" false (ref-SCR::URC_U-SCR|UserScoreDebStale anhd bunnies-pool bunnies-score))
         ]
+    )
     )
 )
 (commit-tx)
@@ -149,14 +180,46 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
         (auryn-id:string "AURYN-98c486052a51")
         (inject-amt:decimal 10.0)
         (g-pre:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id auryn-id))
     )
     (expect "<<TX-INJECT-CC04>> pre: zero stale (finalize may proceed)" 0 (length (ref-FVT::URH_FvtStalePresentUsers fvt-id)))
+    ;;FUNCTION COVERAGE (G6) — `INFO_AQP-FVT|InjectFinalize`, per the owner's spec. `AQP-INFO` is
+    ;;loaded by this file's one live runner, `deb-staleness-inject-cc.repl`; the reasoning is there.
+    ;;
+    ;;THE FOURTH AND LAST MEMBER OF THE INJECT FIX. `INFO_AQP-FVT|Inject` was found quoting only its
+    ;;gas leg while the exec concatenated a CUSTODY TRANSFER ahead of it (`XI_FvtInjectCore`,
+    ;;`04_RPS.pact:4548`); the repair was applied to all FOUR inject previews — `Inject`,
+    ;;`InjectStream`, `InjectFinalize` and `MTX|2Inject`. Two have since been weighed
+    ;;(`[6.5.1]` <<TX-INFO-GT-INJECT>> and <<TX-INFO-GT-STREAM>>); this is the third, and it is the one
+    ;;whose fixture lives nowhere else — finalize is only reachable at the end of a paginated
+    ;;enforced-fresh inject, which is precisely what this suite builds.
+    ;;
+    ;;AURYN IS THE REWARD, NOT GAS. `XI_FvtInjectCore`'s PHASE 1 moves the reward PRINCIPAL out of the
+    ;;patron's account; were that principal the IGNIS token it would land in the very balance this
+    ;;block differences and counterfeit a defect (the trap documented at `modules/SWP.repl <<SWP-I14>>`).
+    (let
+        (
+            (predicted:decimal
+                (at "ignis-need" (at "ignis"
+                    (AQP-INFO.INFO_AQP-FVT|InjectFinalize anhd fvt-id auryn-id inject-amt))))
+            (gas-pre:decimal (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" anhd))
+        )
     (print (format "<(INJECT-CC04 AQP-FVT|CC_InjectFinalize)> => \"{}\""
         [(ref-TS02-C3::AQP-FVT|CC_InjectFinalize anhd fvt-id auryn-id inject-amt)]))
+    (map print
+        [
+            (format "<<TX-INJECT-CC04>> InjectFinalize predicted={} real={}"
+                [predicted (- gas-pre (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" anhd))])
+            (expect "<<TX-INJECT-CC04>> INFO_AQP-FVT|InjectFinalize's quote equals what finalize charged"
+                (- gas-pre (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" anhd)) predicted)
+            (expect "<<TX-INJECT-CC04>> ...and it is a real, non-zero charge"
+                true (> (- gas-pre (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" anhd)) 0.0))
+        ]
+    )
     (let
         (
             (g-post:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id auryn-id))
@@ -168,6 +231,7 @@
                 (expect (format "<<TX-INJECT-CC04>> finalize advanced G on the fresh divisor {}->{}" [g-pre g-post]) true (> g-post g-pre))
             ]
         )
+    )
     )
 )
 (commit-tx)

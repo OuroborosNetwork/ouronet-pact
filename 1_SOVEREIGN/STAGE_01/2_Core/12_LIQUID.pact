@@ -122,7 +122,13 @@
                 (target-balance:decimal (ref-coin::get-balance migration-target-stoa-account))
                 (gap:bool (ref-DALOS::UR_GAP))
             )
-            (enforce gap (format "Migration can only be executed when Global Administrative Pause is offline"))
+            ;;WORDING CORRECTED 2026-09-12 (owner-authorised message-repair class): this said
+            ;;"offline" while enforcing `gap`, i.e. the exact opposite of its own condition. Five
+            ;;sites elsewhere -- TS01-C2:197, C3:158, C4:145, TS01-P:111, TS02-CPAD:110 -- use
+            ;;"online" to mean the pause is ON, which is the convention followed here. The same line
+            ;;also wrapped its message in a one-argument `(format …)`, so the sentence never reached
+            ;;a caller at all; that is fixed too, and pinned by modules/LIQUID.repl <<LQD-03pre>>.
+            (enforce gap "Migration can only be executed when Global Administrative Pause is online")
             (enforce (= target-balance 0.0) "Migration can only be executed to an empty stoa account")
             (compose-capability (GOV|LIQUID_ADMIN))
             (compose-capability (LIQUID|NATIVE-AUTOMATIC))

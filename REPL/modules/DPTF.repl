@@ -203,6 +203,12 @@
             (expect "<<DPTF-05>> C_SetFee stored the fee promile"     25.0 (ref-DPTF::UR_FeePromile a))
             (expect "<<DPTF-05>> C_ToggleFee turned the fee ON"       true (ref-DPTF::UR_FeeToggle a))
             (expect "<<DPTF-05>> C_SetFeeTarget stored the target"    emma (ref-DPTF::UR_FeeTarget a))
+            ;;GUARD: DPTF|S>SET_FEE-TARGET rejects a no-op change. Reachable only in a window
+            ;;where the CURRENT target is known, which is exactly here -- the line above just
+            ;;proved it is <emma>, so passing <emma> again is the guard's one live input.
+            (expect-failure "<<DPTF-05>> C_SetFeeTarget rejects re-setting the target it already has"
+                "New Fee Target must be different than the current"
+                (ref-TS01-C1::DPTF|C_SetFeeTarget patron a emma))
         ]
     )
     (ref-TS01-C1::DPTF|C_ResetFeeTarget patron a)
@@ -246,6 +252,19 @@
     (map print
         [
             (expect "<<DPTF-06>> C_SetMinMove stored the minimum move"  7.0  (ref-DPTF::UR_MinMove a))
+            ;;GUARD 1 of DPTF|S>SET_MIN-MOVE: the value must fit the token's decimal count.
+            ;;MOCKA carries 24, so 25 decimals is one too many -- the same boundary UEV_Amount
+            ;;is pinned at in DPTF-G1, asserted here against the MIN-MOVE path instead.
+            (expect-failure "<<DPTF-06>> C_SetMinMove rejects one more decimal than the token has"
+                "does not conform with the"
+                (ref-TS01-C1::DPTF|C_SetMinMove patron a 0.0000000000000000000000001))
+            ;;GUARD 2: -1.0 (disabled) or strictly positive. 0.0 clears guard 1 -- (floor 0.0 24)
+            ;;is 0.0 -- so it reaches guard 2 and is the input that isolates it.
+            (expect-failure "<<DPTF-06>> C_SetMinMove rejects a zero minimum move"
+                "Min-Move Value does not compute"
+                (ref-TS01-C1::DPTF|C_SetMinMove patron a 0.0))
+            (expect "<<DPTF-06>> ...and the rejected calls left the stored value untouched"
+                7.0 (ref-DPTF::UR_MinMove a))
             (expect "<<DPTF-06>> C_ToggleTransferRole granted transfer" true (ref-DPTF::UR_AccountRoleTransfer a emma))
             ;;GATE: the fee-exemption role targets a SMART account only.
             (expect-failure "<<DPTF-06>> C_ToggleFeeExemptionRole on a STANDARD account is rejected"
@@ -255,7 +274,20 @@
         ]
     )
     (ref-TS01-C1::DPTF|C_TogglePause patron a true)
-    (map print [(expect "<<DPTF-06>> C_TogglePause paused the token" true (ref-DPTF::UR_Paused a))])
+    (map print
+        [
+            (expect "<<DPTF-06>> C_TogglePause paused the token" true (ref-DPTF::UR_Paused a))
+            ;;The token is PAUSED for exactly these two lines, and this is the ONLY window in the
+            ;;suite where UEV_PauseState's <state>=false arm can be tripped -- the guard-family
+            ;;block in DPTF-G1 runs after the unpause below, so it can only ever reach the
+            ;;<state>=true arm. Both arms are therefore pinned, in the two places each is live.
+            ;;Read-only calls, so nothing here disturbs the state the unpause below expects.
+            (expect-failure "<<DPTF-06>> UEV_PauseState rejects <state> false while the token IS paused"
+                "is paused; transfers are paused" (ref-DPTF::UEV_PauseState a false))
+            (expect "<<DPTF-06>> ...and accepts <state> true, which is the live value"
+                true (!= "" (format "{}" [(ref-DPTF::UEV_PauseState a true)])))
+        ]
+    )
     (ref-TS01-C1::DPTF|C_TogglePause patron a false)
     (map print [(expect "<<DPTF-06>> C_TogglePause unpaused the token" false (ref-DPTF::UR_Paused a))])
     ""
@@ -284,6 +316,40 @@
             (expect "<<DPTF-07>> C_Control turned can-pause OFF"   false (ref-DPTF::UR_CanPause b))
             (expect "<<DPTF-07>> C_Control left can-upgrade ON"    true  (ref-DPTF::UR_CanUpgrade b))
             (expect "<<DPTF-07>> C_Control left can-change-owner ON" true (ref-DPTF::UR_CanChangeOwner b))
+        ]
+    )
+    ;;--- adversarial window: put MOCKB into two guard-tripping states, assert, then restore.
+    ;;DPTF|S>CONTROL and DPTF|S>TOGGLE_RESERVATION both gate on owner + can-upgrade only, so
+    ;;these flips are REVERSIBLE -- which is what makes them usable here. UEV_CanAddSpecialRoleON
+    ;;and UEV_ReservationState's <state>=false arm have no other live input anywhere in the
+    ;;suite: every token is issued with special roles allowed and reservations closed.
+    (ref-TS01-C1::DPTF|C_Control patron b true true false false false false)
+    (map print
+        [
+            (expect "<<DPTF-07>> can-add-special-role is now OFF on MOCKB"
+                false (ref-DPTF::UR_CanAddSpecialRole b))
+            (expect-failure "<<DPTF-07>> UEV_CanAddSpecialRoleON rejects a token that forbids them"
+                "no special roles can be added" (ref-DPTF::UEV_CanAddSpecialRoleON b))
+        ]
+    )
+    (ref-TS01-C1::DPTF|C_ToggleReservation patron b true)
+    (map print
+        [
+            (expect "<<DPTF-07>> reservations are now OPEN on MOCKB"
+                true (ref-DPTF::UR_IzReservationOpen b))
+            ;;The <state>=false arm: it fires when reservations ARE open, and must SAY so. This is
+            ;;the arm that was inverted before 2026-09-10 -- it used to report "already closed".
+            (expect-failure "<<DPTF-07>> UEV_ReservationState names the OPEN state that tripped it"
+                "is already open for reservations" (ref-DPTF::UEV_ReservationState b false))
+        ]
+    )
+    ;;RESTORE, so DPTF-G1 further down still sees the state it asserts.
+    (ref-TS01-C1::DPTF|C_ToggleReservation patron b false)
+    (ref-TS01-C1::DPTF|C_Control patron b true true true false false false)
+    (map print
+        [
+            (expect "<<DPTF-07>> reservations restored to CLOSED" false (ref-DPTF::UR_IzReservationOpen b))
+            (expect "<<DPTF-07>> can-add-special-role restored to ON" true (ref-DPTF::UR_CanAddSpecialRole b))
         ]
     )
     ;;NOTE: the smart-account requirement belongs to the FEE-EXEMPTION role (DPTF-06), NOT to
@@ -385,7 +451,8 @@
     (map print
         [
             (expect-failure "<<DPTF-09>> can-wipe ON is NOT sufficient -- the account must be frozen"
-                "Frozen for MOCKA-98c486052a51"
+                ;;a complete fixed run; the old text spliced the token id across a {} hole
+                "on Account"
                 (ref-TS01-C1::DPTF|C_Wipe patron a emma))
         ]
     )
@@ -525,24 +592,31 @@
                 ;;--- state guards: assert the live value, then trip on its negation
                 (expect "<<DPTF-G1>> the guard agrees with the live pause state"
                     true (!= "" (format "{}" [(ref-DPTF::UEV_PauseState a pau)])))
-                (expect-failure "<<DPTF-G1>> UEV_PauseState rejects the state the token is NOT in"
-                    "paused" (ref-DPTF::UEV_PauseState a (not pau)))
-                ;;FINDING: UEV_ReservationState's two messages are INVERTED.
+                ;;Pin the live value FIRST, so the assertion below names one specific arm rather
+                ;;than whichever happens to fire. The old pin matched the substring "paused",
+                ;;which is contained in BOTH messages ("...is paused..." and "...unpaused") -- it
+                ;;could not have detected the inversion fixed below, and did not.
+                (expect "<<DPTF-G1>> MOCKA is not paused, so the guard below takes the state=true arm"
+                    false pau)
+                (expect-failure "<<DPTF-G1>> FIXED: UEV_PauseState names the state that tripped it"
+                    "is already unpaused" (ref-DPTF::UEV_PauseState a (not pau)))
+                ;;WAS a finding: UEV_ReservationState's two messages were INVERTED --
                 ;;    (if state
-                ;;        (enforce x       "{} is already open for reservations")
-                ;;        (enforce (not x) "{} is already closed for reservations"))
-                ;;The first arm fires when x is FALSE -- reservations are CLOSED -- and reports
-                ;;"already open". The second fires when they are OPEN and reports "already
-                ;;closed". The GUARD is right (state must match the live value); both MESSAGES
-                ;;say the opposite of the condition that produced them. Same class as
-                ;;GOV|MIGRATE's "offline" wording (Part II finding #4), and the first defect this
-                ;;guard-family pass turned up.
+                ;;        (enforce x       "{} is already open for reservations")   <- fires when CLOSED
+                ;;        (enforce (not x) "{} is already closed for reservations")) <- fires when OPEN
+                ;;The GUARD was right (state must match the live value); both MESSAGES said the
+                ;;opposite of the condition that produced them.
+                ;;
+                ;;FIXED 2026-09-10 by swapping them, so each names the state that actually tripped
+                ;;it. UEV_PauseState's first arm had the SAME defect and is fixed above -- DPOF,
+                ;;DPDC and DPMF all word that arm "is already unpaused", so DPTF was the only one
+                ;;of the four inverted. These assertions are now the regression pin for the fix.
                 (expect "<<DPTF-G1>> the guard passes when <state> matches the live value"
                     true (!= "" (format "{}" [(ref-DPTF::UEV_ReservationState a rez)])))
-                (expect-failure "<<DPTF-G1>> ...and rejects when it does not -- with the WRONG message"
-                    "is already open for reservations" (ref-DPTF::UEV_ReservationState a (not rez)))
-                (expect "<<DPTF-G1>> (reservations are in fact CLOSED, so that message is inverted)"
+                (expect "<<DPTF-G1>> reservations are CLOSED on MOCKA, so the message must say so"
                     false rez)
+                (expect-failure "<<DPTF-G1>> FIXED: UEV_ReservationState names the state that tripped it"
+                    "is already closed for reservations" (ref-DPTF::UEV_ReservationState a (not rez)))
                 (expect-failure "<<DPTF-G1>> UEV_AccountBurnState rejects the negation of the live role"
                     "must be set to" (ref-DPTF::UEV_AccountBurnState a emma (not brn)))
                 (expect-failure "<<DPTF-G1>> UEV_AccountTransferState rejects the negation of the live role"
@@ -554,3 +628,2030 @@
 )
 (print "===^^^===")
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-G2 — the special-link existence family, as 2x2s on their own boolean argument")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-G2 · 01 · vesting / sleeping / hibernation / frozen / reserved] ---")
+;;P3.3. Five guards with one shape: (enforce (= has-X existance) ...). Each takes the EXPECTED
+;;answer as an argument, so one token gives both cells -- the live value must be accepted and its
+;;negation refused. Testing a single cell would pass against a guard that ignores its argument
+;;entirely, which is exactly what this parameter shape invites (same reasoning as ATS-G1).
+;;
+;;Every expectation is DERIVED from the live token, never a constant: these five links are set by
+;;VST operations that this tester does not run, so hardcoding "false" would silently stop testing
+;;the rule the day a fixture gains a vesting or sleeping link.
+;;
+;;The messages share the tail "is not satisfied with existance" with DPOF and DPMF, so each
+;;expectation is anchored on its own leading noun and the calls go through ref-DPTF:: -- the
+;;module reference is what makes the attribution exact (see _enforce_coverage.py --ambiguous).
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (a:string "MOCKA-98c486052a51")
+    )
+    (let
+        (
+            (ves:bool (ref-DPTF::URC_HasVesting a))
+            (slp:bool (ref-DPTF::URC_HasSleeping a))
+            (hib:bool (ref-DPTF::URC_HasHibernation a))
+            (frz:bool (ref-DPTF::URC_HasFrozen a))
+            (rsv:bool (ref-DPTF::URC_HasReserved a))
+        )
+        (map print
+            [
+                ;;--- the accepting cell: the guard agrees with the live value
+                (expect "<<DPTF-G2>> all five guards accept the token's LIVE link state"
+                    true (!= "" (format "{}{}{}{}{}"
+                        [(ref-DPTF::UEV_Vesting a ves)     (ref-DPTF::UEV_Sleeping a slp)
+                         (ref-DPTF::UEV_Hibernation a hib) (ref-DPTF::UEV_Frozen a frz)
+                         (ref-DPTF::UEV_Reserved a rsv)])))
+                ;;--- the rejecting cell: one per guard, each on the negation of its own flag
+                (expect-failure "<<DPTF-G2>> UEV_Vesting rejects the state the token is NOT in"
+                    "Vesting for the Token" (ref-DPTF::UEV_Vesting a (not ves)))
+                (expect-failure "<<DPTF-G2>> UEV_Sleeping rejects the state the token is NOT in"
+                    "Sleeping for the Token" (ref-DPTF::UEV_Sleeping a (not slp)))
+                (expect-failure "<<DPTF-G2>> UEV_Hibernation rejects the state the token is NOT in"
+                    "Hibernation for the Token" (ref-DPTF::UEV_Hibernation a (not hib)))
+                (expect-failure "<<DPTF-G2>> UEV_Frozen rejects the state the token is NOT in"
+                    "Frozen for the Token" (ref-DPTF::UEV_Frozen a (not frz)))
+                (expect-failure "<<DPTF-G2>> UEV_Reserved rejects the state the token is NOT in"
+                    "Reserved for the Token" (ref-DPTF::UEV_Reserved a (not rsv)))
+            ]
+        )
+        ""
+    )
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-G3 — DPTF|C>X-BULK-TRANSFER: receivers and amounts must pair up")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-G3 · 01 · bulk transfer arity] ---")
+;;A bulk transfer takes a receiver list and an amount list positionally. If they differ in length
+;;the pairing is meaningless — someone is paid the wrong amount or not at all — so the cap checks
+;;the arity before reading anything about the token.
+;;
+;;Two DISTINCT receivers are used deliberately: UEV_IzUnique runs on the receiver list one line
+;;ABOVE this guard, so a repeated receiver would trip the uniqueness check instead and this
+;;assertion would be passing for the wrong reason.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(map print
+    [
+        (expect-failure "<<DPTF-G3>> two receivers against one amount is refused"
+            "Invalid Bulk Transfer Lists"
+            (test-capability (TFT.DPTF|C>X-BULK-TRANSFER "a" "b" ["x" "y"] [1.0])))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-G4 — module governance, the treasury-dispo domain, and the smart fee-target rule")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-G4 · 01 · governance, dispo type, fee target] ---")
+;;Three guards from three different bands, grouped because each needed its own route in.
+;;
+;;  GOV|DPTF_ADMIN          acquired DIRECTLY with test-capability — it is not an @event cap, so
+;;                          no Talos call is needed. This is the gate governing DPTF upgrades.
+;;  GOV|SET_TREASURY-DISPO  an @event cap, reached through the Talos ADMIN path with a bad type.
+;;  DPTF|S>SET_FEE-TARGET   an @event cap, reached through the Talos CLIENT path.
+;;
+;;The fee-target case took three attempts and the message check caught each one. A STOA address was
+;;rejected as a non-existent DALOS account; a standard Ouronet account goes down the OTHER branch
+;;of the `if` entirely (it is checked for existence, not against the whitelist). The guard only
+;;speaks for a SMART account, so the input is the VST smart-contract account — a real Σ. account
+;;that is neither DALOS nor OUROBOROS.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(map print
+    [
+        ;;governance: EMMA is a real funded account, so this is "a legitimate user cannot upgrade
+        ;;the module", not "an unknown key is refused".
+        (expect-failure "<<DPTF-G4>> DPTF governance is refused for a legitimate but unprivileged signer"
+            "DPTF Ownership not verified"
+            (test-capability (DPTF.GOV|DPTF_ADMIN)))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-G4b — treasury dispo type, and the smart-account fee-target whitelist")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-G4b · 01 · dispo type and fee target] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+    )
+    (map print
+        [
+            ;;--- the dispo type is a four-value enum; 9 is outside it
+            (expect-failure "<<DPTF-G4b>> a treasury dispo type outside 0..3 is refused"
+                "Treasury Dispo Type can only be 0, 1, 2 or 3!"
+                (ref-TS01-A::DPTF|A_UpdateTreasuryDispoParameters 9 1.0 1.0))
+            ;;--- a SMART account may be a fee target only if it is DALOS or OUROBOROS. Fees accrue
+            ;;to the target, and an arbitrary smart contract has no mechanism to disburse them —
+            ;;so the whitelist is what stops fees being routed somewhere they can never leave.
+            (expect-failure "<<DPTF-G4b>> an arbitrary SMART account cannot be made a fee target"
+                "As Smart OURONET Accounts, only DALOS and OUROBOROS can be set as as fee Target"
+                (ref-TS01-C1::DPTF|C_SetFeeTarget KST.ANHD "MOCKA-98c486052a51"
+                    (ref-DALOS::GOV|VST|SC_NAME)))
+        ]
+    )
+    ""
+)
+;;BOTH OF THIS TX'S "NOT PINNED" ITEMS ARE NOW PINNED -- see DPTF-G6 below, which builds the
+;;treasury-in-debt fixture they both needed. The analysis that said what the fixture had to be is
+;;kept here because it is what made DPTF-G6 possible:
+;;
+;;  "A Type {} Treasury Dispo cannot be set at {} because it surpases the Current Treasury Value"
+;;      CORRECTED 2026-09-11. An earlier note here said the 99999999.0 probe succeeded "because
+;;      the treasury is larger than that", and that reaching the guard needs a value DERIVED from
+;;      the live treasury. Both are wrong, and following that advice is a dead end: NO value of
+;;      tdp/tds can trip this guard while the treasury is in credit.
+;;
+;;      Measured: the treasury's OURO supply here is 0.0, not something large. And
+;;      UC_TreasuryLowestDispo returns (- 0.0 max-dispo) -- NEGATIVE by construction, for every
+;;      type. The guard is (<= lowest-dispo treasury-supply), so a negative left side against a
+;;      non-negative treasury is ALWAYS true; a tds of 1e9 gives lowest-dispo = -1e12, which
+;;      passes comfortably.
+;;
+;;      What the guard actually means: a dispo ceiling may not be set so low that it fails to
+;;      cover the treasury's EXISTING DEBT. It can only fire when treasury-supply is NEGATIVE --
+;;      the same fixture the sibling guard below needs.
+;;
+;;  "Debt to be wiped must be smaller than or equal to the absolute value of the current Treasury
+;;      Debt" sits behind "Cannot Wipe Positive Treasury Balance", which is what answers while the
+;;      treasury is in credit. It needs a treasury in DEBT.
+(env-sigs [])
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-G6 — the treasury-in-debt fixture, and the four guards behind it")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-G6 · 01 · credit state: the guards that answer first] ---")
+;;The tx above closes with two guards recorded as unreachable: both need the treasury's OURO balance
+;;to be NEGATIVE, and no call in the suite puts it there. I had written them off. That was wrong --
+;;not about the fixture, about my options for building it.
+;;
+;;`env-module-admin` grants another module's admin INSIDE A REPL, so the balance can be written
+;;directly; `rollback-tx` discards every write; and DPTF-G6b proves nothing leaked. The treasury's
+;;OURO balance lives in DALOS, at DALOS|AccountTable[treasury]."ouroboros"."balance" -- so the admin
+;;needed is DALOS's, not DPTF's.
+;;
+;;READ THIS BEFORE REUSING THE PATTERN: it grants in a REPL what no signer could grant on chain. It
+;;is valid for pinning a guard's REACTION to a state, and says NOTHING about whether the state is
+;;reachable in production. Keep those two claims apart -- conflating them is what produced two
+;;withdrawn findings in this suite.
+(env-sigs
+    [ { "key": "PK_AncientHodler", "caps": [] }
+      ;;the treasury is a SMART account; UEV_SmartAccOwn's enforce-one accepts its SOVEREIGN's
+      ;;guard, which is `ouronet-ns.dh_sc_dhvault-keyset` = PK_DHV. Without this signer the wipe
+      ;;aborts in the mint with "Ownership could not be verified!" long before its own guards.
+      { "key": "PK_DHV", "caps": [] }
+    ]
+)
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+    )
+    (let
+        (
+            (ouro:string (ref-DALOS::UR_OuroborosID))
+            (treasury:string (at 0 (ref-DALOS::UR_DemiurgoiID)))
+        )
+        ;;--- the credit state first, because it is what makes the debt guards invisible. While the
+        ;;    treasury is at 0.0 both wipe entrypoints answer with the SAME message, and the
+        ;;    debt-size guard behind the partial one never gets a turn.
+        (map print
+            [
+                (expect "<<DPTF-G6>> the treasury starts in credit, at exactly zero"
+                    0.0 (ref-DPTF::UR_AccountSupply ouro treasury))
+                (expect-failure "<<DPTF-G6>> wiping ALL debt is refused while the treasury is in credit"
+                    "Cannot Wipe Positive Treasury Balance" (ref-TS01-A::DPTF|A_WipeTreasuryDebt))
+                (expect-failure "<<DPTF-G6>> ...and so is wiping PART of it, with the same message"
+                    "Cannot Wipe Positive Treasury Balance"
+                    (ref-TS01-A::DPTF|A_WipeTreasuryDebtPartial 1.0))
+            ]
+        )
+        (print "--- [DPTF-G6 · 02 · put the treasury 1,000,000 OURO into debt] ---")
+        (env-module-admin DALOS)
+        (update ref-DALOS::DALOS|AccountTable treasury
+            { "ouroboros" :
+                (+ { "balance" : -1000000.0 } (ref-DALOS::UR_TrueFungible treasury true)) })
+        (map print
+            [
+                (expect "<<DPTF-G6>> the fixture took: the treasury is now in debt"
+                    -1000000.0 (ref-DPTF::UR_AccountSupply ouro treasury))
+                ;;--- GUARD 1, previously unreachable. "A dispo ceiling may not be set so low that
+                ;;    it fails to cover existing debt." A type-3 dispo of tds=1.0 is a ceiling of
+                ;;    1,000 OURO; the debt is 1,000,000. lowest-dispo is -1,000.0, which is NOT
+                ;;    <= -1,000,000.0, so it fires.
+                (expect-failure "<<DPTF-G6>> a dispo ceiling too small to cover the debt is refused"
+                    "A Type 3 Treasury Dispo cannot be set at 1.0 because it surpases the Current Treasury Value of -1000000.0"
+                    (ref-TS01-A::DPTF|A_UpdateTreasuryDispoParameters 3 1.0 1.0))
+                ;;...and the CONTRAST that makes it a threshold rather than "type 3 is broken". A
+                ;;type-1 dispo is the whole OURO supply (1,986,000), which does cover the debt, so
+                ;;the identical call shape is ACCEPTED in the identical state. Without this the
+                ;;assertion above would also pass if the guard rejected everything.
+                (expect "<<DPTF-G6>> ...while a ceiling that DOES cover it is accepted in the same state"
+                    "Write succeeded" (ref-TS01-A::DPTF|A_UpdateTreasuryDispoParameters 1 0.0 0.0))
+                ;;--- GUARD 2, previously unreachable. Now that the treasury is in debt the
+                ;;    positive-balance guard passes and the debt-SIZE guard finally answers. 0.1
+                ;;    over the debt is enough: this is a boundary, not a magnitude test.
+                (expect-failure "<<DPTF-G6>> wiping more than the actual debt is refused"
+                    "Debt to be wiped must be smaller than or equal to the absolute value of the current Treasury Debt"
+                    (ref-TS01-A::DPTF|A_WipeTreasuryDebtPartial 1000000.1))
+            ]
+        )
+        (print "--- [DPTF-G6 · 03 · the wipe paths actually execute] ---")
+        ;;Both wipe entrypoints had never run anywhere in the suite -- only their refusals had. A
+        ;;guard proven to refuse is half a test; these two assertions are the other half.
+        (map print
+            [
+                ;;a PARTIAL wipe mints exactly the requested amount back to the treasury, so the
+                ;;debt shrinks by that much and no more. Asserted on the arithmetic, not on
+                ;;"it returned something".
+                (expect "<<DPTF-G6>> a partial wipe reduces the debt by exactly the amount wiped"
+                    -600000.0
+                    (let ((ignore (ref-TS01-A::DPTF|A_WipeTreasuryDebtPartial 400000.0)))
+                        (ref-DPTF::UR_AccountSupply ouro treasury)))
+                ;;...and a full wipe clears whatever remains, to exactly zero. It mints
+                ;;(abs treasury-supply), so the result is 0.0 for any starting debt.
+                (expect "<<DPTF-G6>> a full wipe clears the remaining debt to exactly zero"
+                    0.0
+                    (let ((ignore (ref-TS01-A::DPTF|A_WipeTreasuryDebt)))
+                        (ref-DPTF::UR_AccountSupply ouro treasury)))
+                ;;A_WipeTreasuryDebt also resets the dispo parameters via XE_UpdateTreasury 0 0.0
+                ;;0.0 -- which is the whole reason this transaction must not commit. DPTF-G6b is
+                ;;the check that it did not.
+                (expect "<<DPTF-G6>> ...and a full wipe also resets the dispo parameters to type 0"
+                    [0 0.0 0.0]
+                    [(ref-DALOS::UR_DispoType) (ref-DALOS::UR_DispoTDP) (ref-DALOS::UR_DispoTDS)])
+            ]
+        )
+    )
+    ""
+)
+;;ROLLBACK, never commit: this transaction fabricated a debt, changed the dispo type twice and
+;;minted 1,000,000 OURO.
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-G6b — the debt fixture left no trace")
+(namespace "ouronet-ns")
+(print "--- [DPTF-G6b · 01 · no leakage] ---")
+;;DPTF-G6 wrote a sovereign balance directly, minted against it and reset the dispo parameters. A
+;;`commit-tx` typo there would hand every later suite a treasury with 1,000,000 OURO of phantom
+;;supply and a type-0 dispo, and nothing downstream would question it. Cheap to assert, so asserted.
+(map print
+    [
+        (expect "<<DPTF-G6b>> the treasury is back in credit at zero"
+            0.0 (DPTF.UR_AccountSupply (DALOS.UR_OuroborosID) (at 0 (DALOS.UR_DemiurgoiID))))
+        (expect "<<DPTF-G6b>> ...and the dispo parameters are the originals, not the wiped ones"
+            [3 320.0 250.0]
+            [(DALOS.UR_DispoType) (DALOS.UR_DispoTDP) (DALOS.UR_DispoTDS)])
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-G5 — URCv_Parent: the frozen-LP exclusion, which is a 4th-character test")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-G5 · 01 · parent resolution] ---")
+;;URCv_Parent resolves a special token back to the token it was derived from. Its guard is easy to
+;;miss on a read: it inspects the FOURTH CHARACTER of the id, not a prefix.
+;;
+;;    (fourth:string (drop 3 (take 4 dptf)))
+;;    (enforce (!= fourth BAR) "Frozen LP Tokens not allowed for this operation")
+;;
+;;A special token is "F|<id>", so its 4th character is part of the underlying id. A frozen LP is
+;;"F|S|<pair>" — special-of-an-LP — and there the 4th character is the SECOND bar. So the test is
+;;really "is this a special wrapping another prefixed token", and LP tokens are the only things
+;;that carry a prefix of their own. Parent resolution has no answer for a two-level wrap, which is
+;;why it refuses rather than returning a wrong parent.
+;;
+;;Both sides are driven, because a guard that rejected every "F|" token would satisfy the
+;;rejection identically while breaking ordinary parent lookups.
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+    )
+    (map print
+        [
+            (expect-failure "<<DPTF-G5>> a frozen LP (F|S|…) has no resolvable parent"
+                "Frozen LP Tokens not allowed for this operation"
+                (ref-DPTF::URCv_Parent "F|S|DLK-98c486052a51|OURO-98c486052a51"))
+            ;;the same guard must NOT fire for an ordinary special token, whose 4th character is
+            ;;an ordinary id character rather than a bar
+            (expect "<<DPTF-G5>> ...while an ordinary special token passes the 4th-character test"
+                true (!= "|" (drop 3 (take 4 "F|MOCKA-98c486052a51"))))
+        ]
+    )
+    ""
+)
+;;STILL NOT PINNED, with reasons (the other three items that were here are now DPTF-G7/G8):
+;;  XBv_UpdateSupply (x2) and XIv_IncrementFeeUnlocks are protected bodies requiring SECURE; they
+;;      are reachable only from inside their own module's capability scope.
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-G7 — the OURO dispo floor, and why its sibling guard cannot fire")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-G7 · 01 · the dispo floor on an OURO wipe] ---")
+;;DPTF|C>DEBIT carries two OURO-only guards, both previously recorded here as needing "OURO
+;;treasury/dispo state this suite does not reach". One of them does not need any such state; the
+;;other cannot fire at all. Both conclusions come from execution, below.
+;;
+;;WHAT MAKES THE DEBIT PATH OURO-SPECIFIC. For OURO alone, DPTF|C>DEBIT computes a `lowest-dispo`
+;;floor and allows the balance to go BELOW ZERO down to it -- OURO is the one token whose balances
+;;may be negative (the dispo is a credit line). The floor depends on the account:
+;;    * the TREASURY            -> URC_TreasuryLowestDispo (negative; a real credit line)
+;;    * any other smart account -> 0.0
+;;    * a standard account      -> (- (UC_OuroDispo dispo-data))
+;;
+;;GUARD 1 -- "Cannot Debit OURO from {}, dispo capabilities exceeded!" -- IS reachable, and cheaply:
+;;freeze a standard account's OURO and wipe more than it holds. Every wipe path passes
+;;UDC_EmptyDispo, whose UC_OuroDispo is 0.0, so the floor is 0.0 and any over-wipe breaches it.
+;;The freeze is required first by DPTF|C>X_WIPE (UEV_AccountFreezeState … true).
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-U|DPTF:module{UtilityDptfV2} U|DPTF)
+    )
+    (let
+        (
+            (ouro:string (ref-DALOS::UR_OuroborosID))
+            (treasury:string (at 0 (ref-DALOS::UR_DemiurgoiID)))
+        )
+        (map print
+            [
+                ;;the floor every wipe actually uses. Asserted because the whole argument below
+                ;;turns on it being ZERO and not negative.
+                (expect "<<DPTF-G7>> a wipe's dispo-data is empty, so its OURO floor is 0.0"
+                    0.0 (ref-U|DPTF::UC_OuroDispo (ref-U|DPTF::UDC_EmptyDispo)))
+                (expect "<<DPTF-G7>> the target is a STANDARD account, which is the 0.0-floor branch"
+                    false (ref-DALOS::UR_AccountType KST.ANHD))
+                (expect "<<DPTF-G7>> ...and it holds OURO to wipe"
+                    true (> (ref-DPTF::UR_AccountSupply ouro KST.ANHD) 0.0))
+            ]
+        )
+        ;;the wipe refuses outright on an unfrozen account, so freeze first. That refusal is pinned
+        ;;elsewhere; here it is just a precondition.
+        (ref-TS01-C1::DPTF|C_ToggleFreezeAccount KST.ANHD ouro KST.ANHD true)
+        (map print
+            [
+                (expect "<<DPTF-G7>> the account is now frozen, which is what the wipe requires"
+                    true (ref-DPTF::UR_AccountFrozenState ouro KST.ANHD))
+                ;;GUARD 1, previously unpinned. 9,000,000 against a balance of ~1,567,573 drives
+                ;;debit-result to roughly -7.4M, far under the 0.0 floor.
+                (expect-failure "<<DPTF-G7>> wiping more OURO than the dispo floor allows is refused"
+                    "dispo capabilities exceeded!"
+                    (ref-TS01-C1::DPTF|C_WipeSlim KST.ANHD ouro KST.ANHD 9000000.0))
+                ;;...and the contrast, so the assertion is a threshold and not "wipes never work".
+                ;;Wiping exactly 1.0 keeps debit-result positive, so the floor is not reached.
+                (expect "<<DPTF-G7>> ...while a wipe that stays above the floor succeeds"
+                    true
+                    (let ((before:decimal (ref-DPTF::UR_AccountSupply ouro KST.ANHD)))
+                        (ref-TS01-C1::DPTF|C_WipeSlim KST.ANHD ouro KST.ANHD 1.0)
+                        (= (- before 1.0) (ref-DPTF::UR_AccountSupply ouro KST.ANHD))))
+            ]
+        )
+        (print "--- [DPTF-G7 · 02 · guard 2 is UNREACHABLE, and here is the proof] ---")
+        ;;GUARD 2 -- "Can only Debit positive OURO Amounts", at 05_DPTF.pact:951 --
+        ;;    (if (and (= id ouro-id) wipe-mode) (enforce (> current-supply 0.0) …) true)
+        ;;cannot be tripped by any input. Four facts, each asserted below or verified by grep, close
+        ;;every way in. This is NOT "we lack a fixture" -- it is dead by construction.
+        ;;
+        ;;  (a) It needs wipe-mode TRUE. wipe-mode is a parameter of XB_DebitTrueFungible, and every
+        ;;      caller is known: the two in-module wipe paths (DPTF|C>X_WIPE, via C_Wipe and
+        ;;      C_WipeSlim) pass TRUE, and all five external call sites -- all in 09_TFT.pact, lines
+        ;;      1355/1368/1380/1779/1846 -- pass FALSE. So wipe-mode TRUE implies the wipe path.
+        ;;  (b) The wipe path always passes UDC_EmptyDispo, so the floor is 0.0 for every account
+        ;;      EXCEPT the treasury (asserted above).
+        ;;  (c) The treasury is excluded anyway: a wipe requires the account FROZEN, freezing runs
+        ;;      DALOS::UEV_NotSmartOuronetAccount, and the treasury is a SMART account. It can never
+        ;;      be frozen, so it can never be wiped. Asserted below.
+        ;;  (d) UEV_Amount -- the first thing DPTF|C>DEBIT calls -- forces amount > 0.0.
+        ;;
+        ;;Compose them: guard 1 (floor 0.0) demands current-supply - amount >= 0, and (d) gives
+        ;;amount > 0, so reaching guard 2 at all requires current-supply > 0 -- which is exactly the
+        ;;condition guard 2 tests. Whenever it is consulted it passes. A fail-closed backstop.
+        ;;
+        ;;NOTE for whoever revisits it: the guard's CONDITION tests current-supply while its MESSAGE
+        ;;names the amount -- a message/code mismatch of the kind already annotated on
+        ;;OUROBOROS::URCv_Sublimate. If the intent was `(> amount 0.0)`, (d) already enforces that,
+        ;;so the guard would still be redundant. PROPOSED, not applied: annotate 951 `;;UNREACHABLE`.
+        (map print
+            [
+                (expect "<<DPTF-G7>> (c) the treasury is a SMART account"
+                    true (ref-DALOS::UR_AccountType treasury))
+                (expect-failure "<<DPTF-G7>> (c) ...so it can never be frozen, hence never wiped"
+                    "Non Smart Ouronet Accounts required for exec"
+                    (ref-TS01-C1::DPTF|C_ToggleFreezeAccount KST.ANHD ouro treasury true))
+                ;;(d) the amount gate that closes the last door, asserted on both a zero and a
+                ;;negative amount since the guard would need one of them.
+                (expect-failure "<<DPTF-G7>> (d) a zero-amount wipe is refused before any dispo math"
+                    "is not a Valid Transaction amount"
+                    (ref-TS01-C1::DPTF|C_WipeSlim KST.ANHD ouro KST.ANHD 0.0))
+                (expect-failure "<<DPTF-G7>> (d) ...and so is a negative one"
+                    "is not a Valid Transaction amount"
+                    (ref-TS01-C1::DPTF|C_WipeSlim KST.ANHD ouro KST.ANHD -5.0))
+            ]
+        )
+    )
+    ""
+)
+;;this tx froze an account and wiped 1.0 OURO out of existence; DPTF-G9 checks it all came back.
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-G8 — the fee-promile backstop, reached by writing the state directly")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-G8 · 01 · a promile no setter would accept] ---")
+;;This guard was recorded here as unreachable, with a reason that was correct but incomplete:
+;;
+;;    (or (= promile -1.0) (and (>= promile 0.0) (<= promile 1000.0)))
+;;    -- "every value C_SetFee will accept already satisfies it, so no supported path can produce
+;;       a violating promile."
+;;
+;;True, and that makes it a fail-closed BACKSTOP rather than a live rule -- but "no supported path
+;;produces the state" is not the same as "the guard cannot be tested". `env-module-admin DPTF`
+;;writes the promile directly, which is what a corrupted row or a future careless setter would look
+;;like, and the guard answers. See 2026-09-12-state-driven-guard-coverage.md for the pattern and
+;;its boundary: this pins the guard's REACTION and claims nothing about reachability in production.
+(env-sigs
+    [ { "key": "PK_AncientHodler", "caps": [] }
+      ;;AKOSON is an AOZ-owned token; CAP_Owner runs after the promile enforce, so the owner signer
+      ;;is needed only for the PASSING contrast below.
+      { "key": "PK_AOZ", "caps": [] }
+    ]
+)
+(let ((tok:string "AKOSON-98c486052a51"))
+    (map print
+        [
+            (expect "<<DPTF-G8>> the token starts with a legal promile and fee collection off"
+                [0.0 false] [(DPTF.UR_FeePromile tok) (DPTF.UR_FeeToggle tok)])
+        ]
+    )
+    (env-module-admin DPTF)
+    ;;1500 promile = 150%, outside the [0,1000] band and not the -1.0 sentinel.
+    (update DPTF.DPTF|PropertiesTable tok { "fee-promile" : 1500.0 })
+    (map print
+        [
+            (expect-failure "<<DPTF-G8>> fee collection cannot be turned on with an out-of-band promile"
+                "Please Set up Fee Promile before Turning Fee Collection on !"
+                (TS01-C1.DPTF|C_ToggleFee KST.ANHD tok true))
+            ;;the -1.0 SENTINEL is explicitly allowed by the same condition -- it means "fee not
+            ;;configured", and the guard's own message reads as if it should reject that. It does
+            ;;not. Pinned because the message is misleading about what it enforces.
+            (expect "<<DPTF-G8>> ...and the -1.0 sentinel IS accepted, despite what the message says"
+                true
+                (let ((ignore (update DPTF.DPTF|PropertiesTable tok { "fee-promile" : -1.0 })))
+                    (!= "" (TS01-C1.DPTF|C_ToggleFee KST.ANHD tok true))))
+        ]
+    )
+    ""
+)
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-G9 — DPTF-G7 and DPTF-G8 left no trace")
+(namespace "ouronet-ns")
+(print "--- [DPTF-G9 · 01 · no leakage from either fixture] ---")
+;;G7 froze an account, wiped 1.0 OURO and destroyed supply; G8 wrote an illegal fee promile twice
+;;and turned fee collection on. Both ended in rollback-tx. If either had committed, later suites
+;;would inherit a frozen ANHD or a token charging 150% fees, and nothing downstream would question
+;;it. Two lines to assert, so asserted.
+(map print
+    [
+        (expect "<<DPTF-G9>> ANHD is unfrozen for OURO again"
+            false (DPTF.UR_AccountFrozenState (DALOS.UR_OuroborosID) KST.ANHD))
+        (expect "<<DPTF-G9>> ...and its OURO balance is whole, so the 1.0 wipe was rolled back"
+            true (> (DPTF.UR_AccountSupply (DALOS.UR_OuroborosID) KST.ANHD) 1567573.0))
+        (expect "<<DPTF-G9>> the AKOSON fee promile and toggle are the originals"
+            [0.0 false]
+            [(DPTF.UR_FeePromile "AKOSON-98c486052a51") (DPTF.UR_FeeToggle "AKOSON-98c486052a51")])
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-G10 — clearing a dispo: the two preconditions, and the smart-account exclusion")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-G10 · 01 · a dispo clear needs a DEBT to clear] ---")
+;;TFT's DPTF|C>CLEAR-DISPO (09_TFT.pact:310-311) carries two guards, in this order:
+;;    (enforce (< ouro-amount 0.0) "Dispo Clear requires Negative OURO")
+;;    (enforce (not account-type)  "Standard Dispo can only be cleared on Standard Ouronet Accounts")
+;;Both were unpinned. The FIRST needs no fixture whatsoever -- every funded account in this suite holds
+;;positive OURO, so the guard fires on the first account you try. It had simply never been called.
+;;
+;;"Dispo" is the OURO credit line: an account may go NEGATIVE in OURO down to a floor, and clearing the
+;;dispo settles that debt. So "requires Negative OURO" is not a sanity check, it is the operation's
+;;whole premise -- there is nothing to clear on an account in credit.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+    )
+    (let
+        (
+            (ouro:string (ref-DALOS::UR_OuroborosID))
+            (treasury:string (at 0 (ref-DALOS::UR_DemiurgoiID)))
+        )
+        (map print
+            [
+                (expect "<<DPTF-G10>> ANHD is a STANDARD account holding POSITIVE OURO"
+                    [false true]
+                    [(ref-DALOS::UR_AccountType KST.ANHD)
+                     (> (ref-DPTF::UR_AccountSupply ouro KST.ANHD) 0.0)])
+                ;;GUARD 1, zero-fixture: nothing to clear.
+                (expect-failure "<<DPTF-G10>> clearing a dispo on an account in credit is refused"
+                    "Dispo Clear requires Negative OURO"
+                    (ref-TS01-C1::DPTF|C_ClearDispo KST.ANHD KST.ANHD))
+            ]
+        )
+        (print "--- [DPTF-G10 · 02 · ...and then only on a STANDARD account] ---")
+        ;;GUARD 2 sits BEHIND guard 1, so reaching it needs an account that is SMART *and* in debt.
+        ;;The treasury is the one smart account whose OURO balance is meaningful, and DPTF-G6 already
+        ;;established how to put it in debt: its balance lives at
+        ;;DALOS|AccountTable[treasury]."ouroboros"."balance". Same pattern, same rollback discipline
+        ;;(2026-09-12-state-driven-guard-coverage.md); DPTF-G10b is the leakage check.
+        ;;
+        ;;Why the exclusion exists: a smart account's debt is settled by its owning contract's own
+        ;;logic (A_WipeTreasuryDebt for the treasury, pinned by DPTF-G6), not by the generic
+        ;;standard-account dispo path -- so the generic path refuses rather than half-settling it.
+        (env-module-admin DALOS)
+        (update ref-DALOS::DALOS|AccountTable treasury
+            { "ouroboros" :
+                (+ { "balance" : -500.0 } (ref-DALOS::UR_TrueFungible treasury true)) })
+        (map print
+            [
+                (expect "<<DPTF-G10>> the treasury is SMART and now in debt -- past guard 1"
+                    [true -500.0]
+                    [(ref-DALOS::UR_AccountType treasury)
+                     (ref-DPTF::UR_AccountSupply ouro treasury)])
+                (expect-failure "<<DPTF-G10>> ...so guard 2 answers: a SMART account's dispo is not clearable here"
+                    "Standard Dispo can only be cleared on Standard Ouronet Accounts"
+                    (ref-TS01-C1::DPTF|C_ClearDispo KST.ANHD treasury))
+                ;;...and the SAME debt on a STANDARD account CLEARS. Without this the assertion above
+                ;;would also pass if clear-dispo were broken for every account, and the pair is what
+                ;;shows guard 2 is about the account TYPE rather than about the debt. The clear mints
+                ;;the owed OURO back, so the balance lands on exactly 0.0.
+                (expect "<<DPTF-G10>> ...while the identical debt on a STANDARD account clears to zero"
+                    0.0
+                    (let ((ignore0 (update ref-DALOS::DALOS|AccountTable KST.ANHD
+                                       { "ouroboros" :
+                                           (+ { "balance" : -500.0 }
+                                              (ref-DALOS::UR_TrueFungible KST.ANHD true)) })))
+                        (let ((ignore1 (ref-TS01-C1::DPTF|C_ClearDispo KST.ANHD KST.ANHD)))
+                            (ref-DPTF::UR_AccountSupply ouro KST.ANHD))))
+                ;;WHAT THE CLEAR COSTS, found by trying EMMA first and reading the failure: clearing a
+                ;;dispo is PAID FOR IN ELITEAURYN, so an account with a debt it cannot afford to settle
+                ;;is refused -- not by either guard above, but by the EliteAuryn debit underneath
+                ;;("Cannot Debit DPTF ELITEAURYN-… into the negatives", pinned elsewhere in this file).
+                ;;EMMA holds none. Recorded because "standard account + negative OURO" is NOT sufficient
+                ;;for a clear to succeed, and the two guards above say nothing about the third condition.
+                (expect "<<DPTF-G10>> EMMA holds no ELITEAURYN, which is what a clear is paid in"
+                    0.0 (ref-DPTF::UR_AccountSupply (ref-DALOS::UR_EliteAurynID) KST.EMMA))
+                (expect-failure "<<DPTF-G10>> ...so her debt cannot be cleared, on cost rather than on type"
+                    "Cannot Debit DPTF"
+                    (let ((ignore0 (update ref-DALOS::DALOS|AccountTable KST.EMMA
+                                       { "ouroboros" :
+                                           (+ { "balance" : -500.0 }
+                                              (ref-DALOS::UR_TrueFungible KST.EMMA true)) })))
+                        (ref-TS01-C1::DPTF|C_ClearDispo KST.ANHD KST.EMMA)))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+;;this tx fabricated debt on two accounts and settled one of them
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-G10b — the dispo fixture left no trace")
+(namespace "ouronet-ns")
+(print "--- [DPTF-G10b · 01 · no leakage] ---")
+;;EMMA's balance was driven negative and then CLEARED, which mints OURO. If that committed, the OURO
+;;supply would carry 500 units that no mint path accounts for, and every supply assertion downstream
+;;would be off by exactly that -- with nothing pointing back here.
+(map print
+    [
+        (expect "<<DPTF-G10b>> the treasury is back in credit at zero"
+            0.0 (DPTF.UR_AccountSupply (DALOS.UR_OuroborosID) (at 0 (DALOS.UR_DemiurgoiID))))
+        (expect "<<DPTF-G10b>> ...and EMMA's OURO is non-negative again"
+            true (>= (DPTF.UR_AccountSupply (DALOS.UR_OuroborosID) KST.EMMA) 0.0))
+        (expect "<<DPTF-G10b>> ...and ANHD's OURO is whole, so the mint from the clear was rolled back"
+            true (> (DPTF.UR_AccountSupply (DALOS.UR_OuroborosID) KST.ANHD) 1000000.0))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-G11 — the multi-transfer list parity check")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [DPTF-G11 · 01 · one amount per token, and the tokens must be distinct] ---")
+;;`DPTF|C>MULTI-TRANSFER` (09_TFT.pact:432) takes parallel token and amount lists and requires them to
+;;agree in length -- otherwise tokens would move amounts the caller never named for them.
+;;
+;;It sits behind `UEV_IzUnique id-lst`, which is the interesting ordering detail: the uniqueness check
+;;comes FIRST, so a duplicated token id answers with its own message and never reaches the parity test.
+;;Both are driven, because one message would otherwise stand in for two different mistakes.
+;;
+;;Neither needs the tokens to exist: both checks are list-shape and run ahead of every id lookup. That is
+;;why this test can name MOCKA/MOCKB without caring whether this chain has issued them.
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (a:string "MOCKA-98c486052a51")
+        (b:string "MOCKB-98c486052a51")
+    )
+    (map print
+        [
+            (expect-failure "<<DPTF-G11>> two tokens against one amount is refused"
+                "Invalid Multi Transfer Lists"
+                (ref-TS01-C1::DPTF|C_MultiTransfer KST.ANHD [a b] KST.ANHD KST.EMMA [1.0] false))
+            (expect-failure "<<DPTF-G11>> ...and so is one token against two amounts"
+                "Invalid Multi Transfer Lists"
+                (ref-TS01-C1::DPTF|C_MultiTransfer KST.ANHD [a] KST.ANHD KST.EMMA [1.0 2.0] false))
+            ;;...and a DUPLICATE id is caught earlier, by the uniqueness check, even though the lists
+            ;;are the same length. This is what shows the parity guard is not doing the uniqueness work.
+            (expect-failure "<<DPTF-G11>> ...while a duplicated token is caught by uniqueness first"
+                "Unique"
+                (ref-TS01-C1::DPTF|C_MultiTransfer KST.ANHD [a a] KST.ANHD KST.EMMA [1.0 2.0] false))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(commit-tx)
+
+;;|| NEXT >
+;;|| DPTF-G12 — the supply-underflow backstop, driven; and its arithmetically-dead twin.
+;;
+(begin-tx "DPTF-G12 - XBv_UpdateSupply: supply cannot go negative")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [DPTF-G12 · 01 · the DEBIT branch, on a broken invariant] ---")
+;;`05_DPTF.pact:2328`. `XBv_UpdateSupply` carries the SAME message on both branches:
+;;    direction TRUE   (enforce (>= (+ s amount) 0.0) "DPTF Token Supply cannot be updated ...")
+;;    direction FALSE  (enforce (>= (- s amount) 0.0) "DPTF Token Supply cannot be updated ...")
+;;and only one of them can ever fire. `UEV_Amount` runs FIRST and enforces `amount > 0.0`, and a
+;;supply is never negative -- so on the CREDIT branch `(+ s amount)` is a positive added to a
+;;non-negative and cannot be < 0. That site is annotated `;;UNREACHABLE` with this arithmetic.
+;;
+;;THE DEBIT BRANCH IS A REAL BACKSTOP, and it guards an INVARIANT rather than an argument: no account
+;;may hold more than the token's total supply. Every credit path maintains that, so no ordinary
+;;sequence reaches it. Per the rule this campaign settled on (2026-09-11-HANDOFF, item 2): when a
+;;guard is unreachable because an INVARIANT holds, drive the invariant false and EXECUTE it --
+;;annotate only when no state could ever reach it. So the balance is forced above the supply and the
+;;burn is attempted, which is precisely the corruption this enforce exists to stop.
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (a:string "MOCKA-98c486052a51")
+    )
+    (map print
+        [
+            ;;the premise the invariant normally holds: the holder has no more than exists
+            (expect "<<DPTF-G12>> ANHD's balance does not exceed the total supply"
+                true (<= (ref-DPTF::UR_AccountSupply a KST.ANHD) (ref-DPTF::UR_Supply a)))
+        ]
+    )
+    ;;break it -- give the holder more than exists. Nothing in DPTF writes this combination; it is
+    ;;what a partial or mis-ordered credit would leave behind.
+    (env-module-admin DPTF)
+    (update DPTF.DPTF|BalanceTable (ref-DPTF::UC_IdAccount a KST.ANHD)
+        { "balance" : (+ (ref-DPTF::UR_Supply a) 1000.0) })
+    (map print
+        [
+            (expect "<<DPTF-G12>> the invariant is now broken -- the holder has more than exists"
+                true (> (ref-DPTF::UR_AccountSupply a KST.ANHD) (ref-DPTF::UR_Supply a)))
+            ;;THE ITEM. The account-side debit succeeds (the holder really does "have" it), so the
+            ;;only thing standing between a corrupted balance and a NEGATIVE token supply is this
+            ;;enforce. That is what makes it worth executing rather than annotating away.
+            (expect-failure "<<DPTF-G12>> burning more than exists is stopped by the supply backstop"
+                "DPTF Token Supply cannot be updated to negative values!"
+                (ref-TS01-C1::DPTF|C_Burn KST.ANHD a KST.ANHD (+ (ref-DPTF::UR_Supply a) 500.0)))
+            ;;...and a burn WITHIN the real supply still works, so the backstop is a bound and not a
+            ;;blanket refusal introduced by the forced state.
+            (expect "<<DPTF-G12>> ...while a burn within the real supply still succeeds"
+                true (!= "" (format "{}" [(ref-TS01-C1::DPTF|C_Burn KST.ANHD a KST.ANHD 1.0)])))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+;;the forced balance is discarded -- DPTF-G12b checks it
+(rollback-tx)
+
+;;|| NEXT >
+;;|| DPTF-G12b — the forced balance left no trace.
+;;
+(begin-tx "DPTF-G12b - no leakage")
+(namespace "ouronet-ns")
+(print "--- [DPTF-G12b · 01 · no leakage] ---")
+;;A leaked over-balance would let a later test burn or transfer tokens that do not exist, and would
+;;surface as an arithmetic mismatch somewhere unrelated.
+(print
+    (expect "<<DPTF-G12b>> ANHD's balance is back within the total supply"
+        true (<= (DPTF.UR_AccountSupply "MOCKA-98c486052a51" KST.ANHD)
+                 (DPTF.UR_Supply "MOCKA-98c486052a51"))))
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-I1 — C_ToggleFeeExemptionRole's FIRST successful execution, and its INFO_ preview")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-I1 · 01 · the other op that had never once succeeded] ---")
+;;OWNER RULING: "If an op exec counterpart is missing it has to be added, it means we missed it."
+;;
+;;`DPTF|C_ToggleFeeExemptionRole` had NEVER executed successfully anywhere in this repo. Every site
+;;was a refusal: <<DPTF-06>> above (standard account), `_scratch_dptf_h4_missing_imc.repl` (IMC gate),
+;;and two COMMENTED-OUT lines in `[4.0]_Sovereign-Executor.repl`. So the success path, and
+;;`INFO_DPTF|ToggleFeeExemptionRole`'s quote, were both unverified.
+;;
+;;WHY IT WAS NEVER BUILT. The defcap's two account guards look contradictory, and that is the trap:
+;;    (ref-DALOS::UEV_NotSmartOuronetAccount account)      ;;05_DPTF.pact:819
+;;    (ref-DALOS::UEV_EnforceAccountType account true)     ;;05_DPTF.pact:820
+;;Read casually, line 819 says "not smart" and line 820 says "must be smart". They are different
+;;predicates. `UEV_NotSmartOuronetAccount` rejects the EIGHT hard-coded PROTOCOL smart-contract
+;;accounts (DALOS, ATS, VST, LIQUID, OUROBOROS, SWP, DHV2, AQP — `01_DALOS.pact:1111`), while
+;;`UEV_EnforceAccountType … true` demands a Σ-prefixed account flagged smart. The intersection is
+;;exactly one class: a USER-DEPLOYED smart DALOS account.
+;;
+;;Both earlier attempts picked from outside that class and neither author noticed the set was
+;;non-empty:
+;;  - <<DPTF-06>> passes `emma`, a standard Ѻ. account -> dies on line 820. Pinned as a refusal.
+;;  - `[4.0]:1587/1591` pass the SWP contract -> would die on line 819 instead. Commented out.
+;;  - `_scratch_dptf_h4` says outright that "no such fixture was readily available in this harness's
+;;    boot chain" and routes around it.
+;;The fixture DID exist the whole time: `KC.BJ`, deployed at `[2.1]_Dalos.repl:192` as a "Banana
+;;Example" and therefore easy to miss. It is smart, and it is not one of the eight protocol accounts.
+;;THE LESSON: when a guard pair reads as a contradiction, it usually is not — it is an intersection,
+;;and the honest move is to work out which class satisfies both rather than conclude "unreachable".
+;;Three separate attempts concluded unreachable; the class had one member sitting in the boot chain.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+        ;;the one user-deployed smart account in the boot chain
+        (smart:string KC.BJ)
+    )
+    (map print
+        [
+            ;;the two halves of the intersection, asserted separately so a future reader can see
+            ;;WHY this account and not another
+            (expect "<<DPTF-I1>> the target is a SMART account (satisfies UEV_EnforceAccountType true)"
+                true (ref-DALOS::UR_AccountType smart))
+            (expect "<<DPTF-I1>> ...and is NOT one of the eight protocol contracts (satisfies UEV_NotSmartOuronetAccount)"
+                false (ref-DALOS::UR_AutonomicRoles smart))
+            (expect "<<DPTF-I1>> precondition: it does not already hold the role"
+                false (ref-DPTF::UR_AccountRoleFeeExemption a smart))
+        ]
+    )
+    (let
+        (
+            ;;FUNCTION COVERAGE (G6) — `INFO_DPTF|ToggleFeeExemptionRole`, per the owner's spec.
+            (predicted:object{OuronetInfoV2.ClientInfo}
+                (INFO-ONE.INFO_DPTF|ToggleFeeExemptionRole patron a smart true))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (msg:string (ref-TS01-C1::DPTF|C_ToggleFeeExemptionRole patron a smart true))
+        )
+        (map print
+            [
+                (format "<(DPTF|C_ToggleFeeExemptionRole)> => \"{}\"" [msg])
+                ;;1] it actually ran
+                (expect "<<DPTF-I1>> the fee-exemption role is now GRANTED — the op's first success"
+                    true (ref-DPTF::UR_AccountRoleFeeExemption a smart))
+                ;;2] the quote the client was shown is the price they paid
+                (expect "<<DPTF-I1>> INFO_DPTF|ToggleFeeExemptionRole's quote equals what it charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPTF-I1>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ;;3] and it is reversible — the revoke arm of the same toggle, which no test had reached either
+    (ref-TS01-C1::DPTF|C_ToggleFeeExemptionRole patron a smart false)
+    (map print
+        [
+            (expect "<<DPTF-I1>> ...and the role can be revoked again"
+                false (ref-DPTF::UR_AccountRoleFeeExemption a smart))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+;;discarded — MOCKA's role table is left exactly as the suite had it
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-I2 — INFO_DPTF|UpgradeBranding, the family's only unconditional STOA charge")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-I2 · 01 · a two-currency quote, measured in both currencies] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPTF|UpgradeBranding`, per the owner's spec. Template:
+;;`modules/ATS.repl <<ATS-I1>>`.
+;;
+;;WHY THIS OP SPECIFICALLY. It is the only one in the whole DPTF/DPOF family whose STOA collect is
+;;UNCONDITIONAL: `05_DPTF.pact:2854` calls `STOA|C_CollectWT patron (URCi_UpgradeBranding months)
+;;false` — the trigger is the hardcoded literal `false`, not `(URC_IsNativeGasZero)` as in
+;;`C_Issue` and `C_ToggleFeeLock`. So this charge cannot be switched off by protocol state, which
+;;makes it the one place a wrong STOA quote would reach every client unconditionally.
+;;
+;;Both currencies are checked. Checking only IGNIS is what let `INFO_EQUITY|IssueCompany` quote a
+;;918-STOA operation as free: half the quote was right, and the half that was tested was the right
+;;half. `ClientInfo` carries an `ignis` AND a `stoa` leg; an op can be exact in one and silently
+;;wrong in the other.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+    )
+    ;;The STOA fee is a real coin.transfer split 10/20/30/40 across the four fee targets, so it needs
+    ;;a managed coin.TRANSFER per leg. Sized from the same split the collector uses, never hardcoded.
+    ;;NOTE the `months` here (1) must match the exec below: the price is per-month, so a mismatch
+    ;;would under-size the caps and die inside coin.pact rather than in this file.
+    (let ((split-stoa:[decimal]
+              (ref-DALOS::URC_SplitSTOAPrices KST.ANHD (ref-DALOS::UR_UsagePrice "blue"))))
+        (env-sigs
+            [ { "key": "PK_AncientHodler", "caps": [] }
+              { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+              , "caps":
+                [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                      "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                      "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                      "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                  (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                      "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa)) ] } ]
+        )
+    )
+)
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+        (months:integer 1)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo}
+                (INFO-ONE.INFO_DPTF|UpgradeBranding patron a months))
+            (stoa-acct:string (ref-DALOS::UR_AccountStoa patron))
+        )
+        (let
+            (
+                (stoa-before:decimal (coin.get-balance stoa-acct))
+                (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+                (msg:string (ref-TS01-C1::DPTF|C_UpgradeBranding patron a months))
+            )
+            (map print
+                [
+                    (format "<<DPTF-I2>> IGNIS predicted={} real={} | STOA predicted={} real={}"
+                        [(at "ignis-need" (at "ignis" predicted))
+                         (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                         (at "stoa-need" (at "stoa" predicted))
+                         (- stoa-before (coin.get-balance stoa-acct))])
+                    (expect "<<DPTF-I2>> the STOA quote equals the STOA the upgrade charged"
+                        (- stoa-before (coin.get-balance stoa-acct))
+                        (at "stoa-need" (at "stoa" predicted)))
+                    (expect "<<DPTF-I2>> ...and branding is NOT free in STOA"
+                        true (> (- stoa-before (coin.get-balance stoa-acct)) 0.0))
+                    (expect "<<DPTF-I2>> the IGNIS quote equals the IGNIS it charged"
+                        (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                        (at "ignis-need" (at "ignis" predicted)))
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-I3 — INFO_DPTF|Mint quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-I3 · 01 · mint] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPTF|Mint`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        (emma:string KST.EMMA)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|Mint patron a patron 1.0 false))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPTF|C_Mint patron a patron 1.0 false))
+        )
+        (map print
+            [
+                (expect "<<DPTF-I3>> INFO_DPTF|Mint's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPTF-I3>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+                (expect "<<DPTF-I3>> ...and the mint really happened, so the quote is not for a no-op"
+                    true (> (ref-DPTF::UR_Supply a) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-I4 — INFO_DPTF|Burn quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-I4 · 01 · burn] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPTF|Burn`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        (emma:string KST.EMMA)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|Burn patron a patron 1.0))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPTF|C_Burn patron a patron 1.0))
+        )
+        (map print
+            [
+                (expect "<<DPTF-I4>> INFO_DPTF|Burn's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPTF-I4>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-I5 — INFO_DPTF|Transfer quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-I5 · 01 · a plain transfer] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPTF|Transfer`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+;;NOTE the arity difference: the preview takes 5 arguments and the exec 6 — the exec's trailing
+;;`method:bool` has no bearing on price, so the preview omits it. Anything pairing previews to ops by
+;;signature shape will mis-flag this one.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        (emma:string KST.EMMA)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|Transfer patron a patron lumy 10.0))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPTF|C_Transfer patron a patron lumy 10.0 false))
+        )
+        (map print
+            [
+                (expect "<<DPTF-I5>> INFO_DPTF|Transfer's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPTF-I5>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+                ;;the amount really moved — MOCKA's min-move is 7.0 and its fee toggle is off,
+                ;;so 10.0 arrives whole and no fee leg can blur the measurement
+                (expect "<<DPTF-I5>> ...and the receiver really got the tokens"
+                    true (> (ref-DPTF::UR_AccountSupply a lumy) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-I6 — INFO_DPTF|SetFee quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-I6 · 01 · set the fee promile] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPTF|SetFee`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        (emma:string KST.EMMA)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|SetFee patron a 30.0))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPTF|C_SetFee patron a 30.0))
+        )
+        (map print
+            [
+                (expect "<<DPTF-I6>> INFO_DPTF|SetFee's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPTF-I6>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+                (expect "<<DPTF-I6>> ...and the new promile is stored" 30.0 (ref-DPTF::UR_FeePromile a))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-I7 — INFO_DPTF|ToggleFee quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-I7 · 01 · turn the fee on] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPTF|ToggleFee`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        (emma:string KST.EMMA)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|ToggleFee patron a true))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPTF|C_ToggleFee patron a true))
+        )
+        (map print
+            [
+                (expect "<<DPTF-I7>> INFO_DPTF|ToggleFee's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPTF-I7>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+                (expect "<<DPTF-I7>> ...and the fee is now on" true (ref-DPTF::UR_FeeToggle a))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-I8 — INFO_DPTF|SetMinMove quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-I8 · 01 · set the minimum move] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPTF|SetMinMove`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        (emma:string KST.EMMA)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|SetMinMove patron a 5.0))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPTF|C_SetMinMove patron a 5.0))
+        )
+        (map print
+            [
+                (expect "<<DPTF-I8>> INFO_DPTF|SetMinMove's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPTF-I8>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+                (expect "<<DPTF-I8>> ...and the new minimum is stored" 5.0 (ref-DPTF::UR_MinMove a))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-I9 — INFO_DPTF|TogglePause quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-I9 · 01 · pause the token] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPTF|TogglePause`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        (emma:string KST.EMMA)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|TogglePause patron a true))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPTF|C_TogglePause patron a true))
+        )
+        (map print
+            [
+                (expect "<<DPTF-I9>> INFO_DPTF|TogglePause's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPTF-I9>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+                (expect "<<DPTF-I9>> ...and the token is now paused" true (ref-DPTF::UR_Paused a))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-I10 — INFO_DPTF|ToggleReservation quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-I10 · 01 · open reservations] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPTF|ToggleReservation`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        (emma:string KST.EMMA)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|ToggleReservation patron a true))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPTF|C_ToggleReservation patron a true))
+        )
+        (map print
+            [
+                (expect "<<DPTF-I10>> INFO_DPTF|ToggleReservation's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPTF-I10>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-I11 — INFO_DPTF|ToggleBurnRole quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-I11 · 01 · grant the burn role] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPTF|ToggleBurnRole`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        (emma:string KST.EMMA)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|ToggleBurnRole patron a lumy true))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPTF|C_ToggleBurnRole patron a lumy true))
+        )
+        (map print
+            [
+                (expect "<<DPTF-I11>> INFO_DPTF|ToggleBurnRole's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPTF-I11>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+                (expect "<<DPTF-I11>> ...and the role really landed" true (ref-DPTF::UR_AccountRoleBurn a lumy))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-I12 — INFO_DPTF|ToggleMintRole quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-I12 · 01 · grant the mint role] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPTF|ToggleMintRole`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        (emma:string KST.EMMA)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|ToggleMintRole patron a lumy true))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPTF|C_ToggleMintRole patron a lumy true))
+        )
+        (map print
+            [
+                (expect "<<DPTF-I12>> INFO_DPTF|ToggleMintRole's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPTF-I12>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+                (expect "<<DPTF-I12>> ...and the role really landed" true (ref-DPTF::UR_AccountRoleMint a lumy))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-I13 — INFO_DPTF|ToggleFreezeAccount quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-I13 · 01 · freeze a holder] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPTF|ToggleFreezeAccount`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        (emma:string KST.EMMA)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|ToggleFreezeAccount patron a lumy true))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron a lumy true))
+        )
+        (map print
+            [
+                (expect "<<DPTF-I13>> INFO_DPTF|ToggleFreezeAccount's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPTF-I13>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+                (expect "<<DPTF-I13>> ...and the holder is really frozen" true (ref-DPTF::UR_AccountFrozenState a lumy))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-I14 — INFO_DPTF|BulkTransfer quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-I14 · 01 · one sender, many receivers] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPTF|BulkTransfer`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        (emma:string KST.EMMA)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|BulkTransfer patron a patron [lumy] [10.0]))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPTF|C_BulkTransfer patron a patron [lumy] [10.0]))
+        )
+        (map print
+            [
+                (expect "<<DPTF-I14>> INFO_DPTF|BulkTransfer's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPTF-I14>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-I15 — INFO_DPTF|UpdatePendingBranding quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-I15 · 01 · queue a branding update] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPTF|UpdatePendingBranding`, per the owner's spec.
+;;NOTE the arity difference: the preview takes 2 arguments and the exec 6 — the four branding strings
+;;are free-form content and do not move the price, so the preview does not ask for them.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        (emma:string KST.EMMA)
+        (coca:string KST.COCA)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|UpdatePendingBranding patron a))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPTF|C_UpdatePendingBranding patron a "ipfs://logo" "desc" "https://site.example" []))
+        )
+        (map print
+            [
+                (expect "<<DPTF-I15>> INFO_DPTF|UpdatePendingBranding's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPTF-I15>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-I16 — INFO_DPTF|SetFeeTarget quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-I16 · 01 · redirect the fee target] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPTF|SetFeeTarget`, per the owner's spec.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        (emma:string KST.EMMA)
+        (coca:string KST.COCA)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|SetFeeTarget patron a emma))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPTF|C_SetFeeTarget patron a emma))
+        )
+        (map print
+            [
+                (expect "<<DPTF-I16>> INFO_DPTF|SetFeeTarget's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPTF-I16>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-I17 — INFO_DPTF|DonateFees quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-I17 · 01 · donate the fee stream] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPTF|DonateFees`, per the owner's spec.
+;;`DonateFees` points the fee target at the DALOS contract. The current target is the Ouroboros
+;;contract, so the "must be different" guard passes — reusing this block after a SetFeeTarget to DALOS
+;;would not.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        (emma:string KST.EMMA)
+        (coca:string KST.COCA)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|DonateFees patron a))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPTF|C_DonateFees patron a))
+        )
+        (map print
+            [
+                (expect "<<DPTF-I17>> INFO_DPTF|DonateFees's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPTF-I17>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-I18 — INFO_DPTF|RotateOwnership quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-I18 · 01 · hand the token to a new owner] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPTF|RotateOwnership`, per the owner's spec.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        (emma:string KST.EMMA)
+        (coca:string KST.COCA)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|RotateOwnership patron a emma))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPTF|C_RotateOwnership patron a emma))
+        )
+        (map print
+            [
+                (expect "<<DPTF-I18>> INFO_DPTF|RotateOwnership's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPTF-I18>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-I19 — INFO_DPTF|ToggleTransferRole quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-I19 · 01 · grant the transfer role] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPTF|ToggleTransferRole`, per the owner's spec.
+;;`KST.COCA` is untouched by this harness, so `true` is a real state change here — EMMA and LUMY
+;;already hold the role and granting it again would be refused as a no-op.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        (emma:string KST.EMMA)
+        (coca:string KST.COCA)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|ToggleTransferRole patron a coca true))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPTF|C_ToggleTransferRole patron a coca true))
+        )
+        (map print
+            [
+                (expect "<<DPTF-I19>> INFO_DPTF|ToggleTransferRole's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPTF-I19>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-I20 — INFO_DPTF|MultiTransfer quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-I20 · 01 · several tokens in one call] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPTF|MultiTransfer`, per the owner's spec.
+;;NOTE the arity difference: the preview takes 5 arguments and the exec 6 — the trailing `method:bool`
+;;does not move the price.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        (emma:string KST.EMMA)
+        (coca:string KST.COCA)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|MultiTransfer patron [a] patron lumy [10.0]))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPTF|C_MultiTransfer patron [a] patron lumy [10.0] false))
+        )
+        (map print
+            [
+                (expect "<<DPTF-I20>> INFO_DPTF|MultiTransfer's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPTF-I20>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-I21 — INFO_DPTF|MultiBulkTransfer quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-I21 · 01 · several tokens, several receivers] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPTF|MultiBulkTransfer`, per the owner's spec.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        (emma:string KST.EMMA)
+        (coca:string KST.COCA)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|MultiBulkTransfer patron [a] patron [[lumy]] [[10.0]]))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPTF|C_MultiBulkTransfer patron [a] patron [[lumy]] [[10.0]]))
+        )
+        (map print
+            [
+                (expect "<<DPTF-I21>> INFO_DPTF|MultiBulkTransfer's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPTF-I21>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-I22 — INFO_DPTF|Wipe quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-I22 · 01 · wipe a frozen holder's whole balance] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPTF|Wipe`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+    )
+    ;;SETUP, outside the measurement window — `DPTF|C>X_WIPE` requires the target account FROZEN.
+    ;;LUMY holds 20.0 MOCKA; EMMA is unusable here because DPTF-09 froze her permanently and left
+    ;;her at zero. The freeze is a billed op, so it closes before `ignis-before` is read.
+    (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron a lumy true)
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|Wipe patron a lumy))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPTF|C_Wipe patron a lumy))
+        )
+        (map print
+            [
+                (expect "<<DPTF-I22>> INFO_DPTF|Wipe's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPTF-I22>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-I23 — INFO_DPTF|WipeSlim quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-I23 · 01 · wipe part of a frozen holder's balance] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPTF|WipeSlim`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+    )
+    ;;SETUP, outside the measurement window — `DPTF|C>X_WIPE` requires the target account FROZEN.
+    ;;LUMY holds 20.0 MOCKA; EMMA is unusable here because DPTF-09 froze her permanently and left
+    ;;her at zero. The freeze is a billed op, so it closes before `ignis-before` is read.
+    (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron a lumy true)
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|WipeSlim patron a lumy 5.0))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DPTF|C_WipeSlim patron a lumy 5.0))
+        )
+        (map print
+            [
+                (expect "<<DPTF-I23>> INFO_DPTF|WipeSlim's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPTF-I23>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-I24 — INFO_DPTF|Issue: both currencies measured")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-I24 · 01 · issue a fresh true fungible] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPTF|Issue`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+;;
+;;THIS PREVIEW WAS ALREADY "COVERED" AND HAD NEVER BEEN WEIGHED. It is named by a shape-check or an
+;;abort-pin elsewhere in the suite, which satisfies `_scale_report.py --untested` — a tool that asks
+;;"was it reached", not "does the quote equal the charge". `REPL/_info_measured.py` separates the two.
+;;A FRESH TICKER is mandatory — ids derive from the ticker, so reusing MOCKA collides on insert
+;;rather than on price, and that failure would read like a pricing problem.
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+            ]
+        }
+    ]
+)
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|Issue patron patron ["CostProbeTf"]))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
+            (m (ref-TS01-C1::DPTF|C_Issue patron patron ["CostProbeTf"] ["CPTF"] [24] [true] [true] [true] [true] [true] [true]))
+        )
+        (map print
+            [
+                (format "<<DPTF-I24>> IGNIS predicted={} real={} | STOA predicted={} real={}"
+                    [(at "ignis-need" (at "ignis" predicted))
+                     (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                     (at "stoa-need" (at "stoa" predicted))
+                     (- stoa-before (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))])
+                (expect "<<DPTF-I24>> the IGNIS quote equals the IGNIS charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPTF-I24>> the STOA quote equals the STOA charged"
+                    (- stoa-before (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
+                    (at "stoa-need" (at "stoa" predicted)))
+                (expect "<<DPTF-I24>> ...and the operation is NOT free"
+                    true (> (+ (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                               (- stoa-before (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-I25 — INFO_DPTF|UpgradeBranding: both currencies measured")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-I25 · 01 · buy branding months for a true fungible] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPTF|UpgradeBranding`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+;;
+;;THIS PREVIEW WAS ALREADY "COVERED" AND HAD NEVER BEEN WEIGHED. It is named by a shape-check or an
+;;abort-pin elsewhere in the suite, which satisfies `_scale_report.py --untested` — a tool that asks
+;;"was it reached", not "does the quote equal the charge". `REPL/_info_measured.py` separates the two.
+;;STOA-ONLY. THE CLOCK IS THE FIXTURE: `BRD|C>UPGRADE` refuses while >15 days of Blue Flag remain
+;;(`04_BRD.pact:266`). `rollback-tx` does NOT undo `env-chain-data`, so the restore is mandatory.
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+            ]
+        }
+    ]
+)
+(env-chain-data { "block-time": (time "2030-11-22T00:00:00Z") })
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|UpgradeBranding patron a 1))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
+            (m (ref-TS01-C1::DPTF|C_UpgradeBranding patron a 1))
+        )
+        (map print
+            [
+                (format "<<DPTF-I25>> IGNIS predicted={} real={} | STOA predicted={} real={}"
+                    [(at "ignis-need" (at "ignis" predicted))
+                     (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                     (at "stoa-need" (at "stoa" predicted))
+                     (- stoa-before (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))])
+                (expect "<<DPTF-I25>> the IGNIS quote equals the IGNIS charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPTF-I25>> the STOA quote equals the STOA charged"
+                    (- stoa-before (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
+                    (at "stoa-need" (at "stoa" predicted)))
+                (expect "<<DPTF-I25>> ...and the operation is NOT free"
+                    true (> (+ (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                               (- stoa-before (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-chain-data { "block-time": (time "2025-11-22T00:00:00Z") })
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-I26 — INFO_DPTF|ToggleFeeLock: both currencies measured")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DPTF-I26 · 01 · lock, then UNLOCK the fee (the charged direction)] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DPTF|ToggleFeeLock`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+;;
+;;THIS PREVIEW WAS ALREADY "COVERED" AND HAD NEVER BEEN WEIGHED. It is named by a shape-check or an
+;;abort-pin elsewhere in the suite, which satisfies `_scale_report.py --untested` — a tool that asks
+;;"was it reached", not "does the quote equal the charge". `REPL/_info_measured.py` separates the two.
+;;ARITY DIVERGENCE — the preview takes FOUR arguments, the exec three. The fourth, `fee-unlocks`,
+;;is declared and never referenced in the preview body (`02_INFO-ONE+.pact:672-697`); the cost comes
+;;from `URCi_ToggleFeeLock` / `URCi_ToggleFeeLockStoa` on `(id, toggle)` alone.
+;;THE UNLOCK IS THE CHARGED LEG: `URCi_ToggleFeeLockStoa` is `(if toggle 0.0 (UC_FeeUnlockPrice))`
+;;(`05_DPTF.pact:1834`), so locking is free and only the release costs — exactly the shape that
+;;kept `INFO_SWP|ToggleFeeLock`'s missing STOA leg invisible until it was weighed.
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+            ]
+        }
+    ]
+)
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+    )
+    ;;SETUP — lock first, on the FREE direction, so the unlock below has something to release.
+    (ref-TS01-C1::DPTF|C_ToggleFeeLock patron a true)
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|ToggleFeeLock patron a false 0))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
+            (m (ref-TS01-C1::DPTF|C_ToggleFeeLock patron a false))
+        )
+        (map print
+            [
+                (format "<<DPTF-I26>> IGNIS predicted={} real={} | STOA predicted={} real={}"
+                    [(at "ignis-need" (at "ignis" predicted))
+                     (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                     (at "stoa-need" (at "stoa" predicted))
+                     (- stoa-before (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))])
+                (expect "<<DPTF-I26>> the IGNIS quote equals the IGNIS charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DPTF-I26>> the STOA quote equals the STOA charged"
+                    (- stoa-before (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
+                    (at "stoa-need" (at "stoa" predicted)))
+                (expect "<<DPTF-I26>> ...and the operation is NOT free"
+                    true (> (+ (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                               (- stoa-before (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)

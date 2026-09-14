@@ -306,6 +306,20 @@
           registered-by:string )
         @doc "Mnemosyne operator registers a new codex identity. Derives Apollo halves from composite codex-id."
         @event
+        ;;FIXED 2026-09-12: the LENGTH check is enforced HERE, above the binding group.
+        ;;It used to be computed inside the `let` below as `iz-composite-len` and folded in with the
+        ;;other six conditions -- but a `let` is EAGER and `fold (and)` does not short-circuit, so for
+        ;;an id too short to split, `iz-standard-valid` ran anyway, indexed into an empty derived half
+        ;;and raised `Array index out of bounds. Length (0), Index (0)`. Being false in the FIRST
+        ;;conjunct saved nothing, and a truncated or hand-typed id -- the likeliest bad input on this
+        ;;path -- got no message at all.
+        ;;A length test needs nothing but the parameter, so it can run before anything is derived.
+        ;;The fold below is unchanged and still answers for every other way to be invalid.
+        ;;Pinned by REPL/modules/CODEX.repl <<CODEX-G3>>.
+        (enforce
+            (= (length codex-id) CODEX|APOLLO-COMPOSITE-LEN)
+            "Invalid codex identity: composite Apollo codex-id must be 325 characters"
+        )
         (let
             (
                 (ref-U|DALOS:module{UtilityDalosGlyphsV3} U|DALOS)
@@ -886,6 +900,7 @@
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
+    ;;Protection: Class 2 — SECURE
     (defun XI_InsertIdentity:string
         ( codex-id:string
           public-standard:string
@@ -903,11 +918,13 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdateCodexGuard:string (codex-id:string new-codex-guard:guard)
         @doc "Under SECURE (from CODEX|C>ROTATE-GUARD): update codex-guard only. Write only."
         (require-capability (SECURE))
         (update CODEX|T|Identities codex-id (UDC_CIX|GuardUpdate new-codex-guard))
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_InsertArweaveTracker:string (codex-id:string arweave-tx-id:string uploaded-bytes:integer)
         @doc "Under SECURE (from CODEX|C>RECORD-ARWEAVE): append tracker row. Write only."
         (require-capability (SECURE))
@@ -917,6 +934,7 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpsertStoicTag:string (tag-name:string account-address:string)
         @doc "Under SECURE (from CODEX|C>REGISTER-STOICTAG): insert new or re-activate released rows. Write only."
         (require-capability (SECURE))
@@ -938,6 +956,7 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_DeactivateStoicTag:string (tag-name:string)
         @doc "Under SECURE (from CODEX|C>RELEASE-STOICTAG): set iz-active false on both tables. Write only."
         (require-capability (SECURE))

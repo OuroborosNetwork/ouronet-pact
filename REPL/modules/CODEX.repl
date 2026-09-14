@@ -4,3 +4,276 @@
 (load "../deploy-stage00.repl")
 (load "../deploy-stage01.repl")
 (load "../Stage_01/[6.9]_CODEX.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "CODEX-G1 — the StoicTag registry's four uniqueness and liveness guards")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [CODEX-G1 · 01 · REGISTER-STOICTAG / RELEASE-STOICTAG] ---")
+;;P3.3. Four @event defcap guards, reached through the real TS01-C4 client path.
+;;
+;;A StoicTag is a human-readable name bound to an Ouronet account — so the registry has to be a
+;;BIJECTION, and two of these guards enforce the two directions of that:
+;;  * one name cannot be held by two accounts  -> "StoicTag name is already active"
+;;  * one account cannot hold two names        -> "Account already has an active StoicTag"
+;;Without the second, an account could accumulate names and the reverse lookup (UR_STBA, address ->
+;;tag) would silently return only one of them.
+;;
+;;The other two are the liveness pair on release: the row must EXIST and must be ACTIVE. They are
+;;separate because a released tag's row is KEPT (TX006 above re-activates one), so "absent" and
+;;"present but released" are genuinely different states and a single check would conflate them.
+;;
+;;The interface is TalosStageOne_ClientFourV8, not V2 — the Talos client interfaces are at different
+;;version numbers from each other, and guessing costs a "Cannot find module" round trip.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-CODEX:module{CodexV2} CODEX)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
+        (tag:string "codextest01")
+    )
+    (let
+        (
+            (holder:string (ref-CODEX::UR_STG|AccountAddress tag))
+        )
+        (map print
+            [
+                ;;precondition: the fixture tag is live and bound to an account.
+                (expect "<<CODEX-G1>> the fixture StoicTag is active" true (ref-CODEX::UR_STG|IzActive tag))
+                ;;--- NAME uniqueness: re-registering a live name.
+                (expect-failure "<<CODEX-G1>> a StoicTag name that is already active cannot be re-registered"
+                    "StoicTag name is already active"
+                    (ref-TS01-C4::CODEX|C_RegisterStoicTag KST.ANHD tag holder))
+                ;;--- ACCOUNT uniqueness: a DIFFERENT, unused name for the SAME account. The name
+                ;;    guard above provably passes here, so only the account side can answer.
+                (expect-failure "<<CODEX-G1>> ...and an account that already holds one cannot take a second"
+                    "Account already has an active StoicTag"
+                    (ref-TS01-C4::CODEX|C_RegisterStoicTag KST.ANHD "codextest02" holder))
+                ;;--- RELEASE, guard 1: a name with no row at all.
+                (expect-failure "<<CODEX-G1>> releasing a StoicTag that was never registered is refused"
+                    "StoicTag not found"
+                    (ref-TS01-C4::CODEX|C_ReleaseStoicTag KST.ANHD "nosuchtag999"))
+            ]
+        )
+        ""
+    )
+)
+(env-sigs [])
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "CODEX-G2 — releasing a tag that is present but already released")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [CODEX-G2 · 01 · RELEASE-STOICTAG liveness] ---")
+;;The second release guard needs a row that EXISTS but is INACTIVE — a state no fixture leaves
+;;behind, because TX006 re-activates the released tag. So the tag is released here, the refusal
+;;driven, and the tag re-registered to the same account so the file ends as it began.
+;;
+;;This is the distinction the two guards exist for: release keeps the row (so the name's history and
+;;its former holder stay auditable), which means "absent" and "released" must be told apart.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-CODEX:module{CodexV2} CODEX)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
+        (tag:string "codextest01")
+    )
+    (let
+        (
+            (holder:string (ref-CODEX::UR_STG|AccountAddress tag))
+        )
+        (ref-TS01-C4::CODEX|C_ReleaseStoicTag KST.ANHD tag)
+        (map print
+            [
+                (expect "<<CODEX-G2>> the tag is now released, but its row is KEPT"
+                    [false true] [(ref-CODEX::UR_STG|IzActive tag) (!= holder "")])
+                (expect-failure "<<CODEX-G2>> releasing an already-released StoicTag is refused"
+                    "StoicTag is not active"
+                    (ref-TS01-C4::CODEX|C_ReleaseStoicTag KST.ANHD tag))
+            ]
+        )
+        ;;RE-REGISTERING COSTS STOA (1 per glyph), so the restore needs the four-way fee split
+        ;;signed — the release above is IGNIS-only and needed none, which is why my first attempt
+        ;;failed here with "Managed capability not installed: (coin.TRANSFER ...)". The split amounts
+        ;;are derived from URC_SplitSTOAPrices rather than hardcoded, so a price change moves with it.
+        ;;Recipe mirrored from this suite's own TX006, which re-registers a released tag.
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (fee:decimal (ref-CODEX::UC_StoicTagStoaFee tag))
+            )
+            (let
+                (
+                    (patron-stoa:string (ref-DALOS::UR_AccountStoa KST.ANHD))
+                    (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))
+                    (split:[decimal] (ref-DALOS::URC_SplitSTOAPrices holder fee))
+                )
+                (env-sigs
+                    [
+                        { "key": "PK_AncientHodler", "caps": [] }
+                        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+                          "caps":
+                            [
+                                (coin.TRANSFER patron-stoa (ref-DALOS::UR_AccountStoa (at 1 demiurgoi)) (at 2 split))
+                                (coin.TRANSFER patron-stoa (ref-DALOS::UR_AccountStoa (at 2 demiurgoi)) (at 0 split))
+                                (coin.TRANSFER patron-stoa (ref-DALOS::UR_AccountStoa (ref-DALOS::GOV|OUROBOROS|SC_NAME)) (at 3 split))
+                                (coin.TRANSFER patron-stoa (ref-DALOS::UR_AccountStoa (ref-DALOS::GOV|DALOS|SC_NAME)) (at 1 split))
+                            ]
+                        }
+                    ]
+                )
+            )
+        )
+        (ref-TS01-C4::CODEX|C_RegisterStoicTag KST.ANHD tag holder)
+        (map print
+            [
+                (expect "<<CODEX-G2>> ...and the tag is active again, bound to the same account"
+                    [true holder] [(ref-CODEX::UR_STG|IzActive tag) (ref-CODEX::UR_STG|AccountAddress tag)])
+            ]
+        )
+        ""
+    )
+)
+(env-sigs [])
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "CODEX-G3 — the composite-id guard, and the one input it cannot describe")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-data { "CX_KS": { "keys": ["PK_AncientHodler"], "pred": "keys-all" } })
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [CODEX-G3 · 01 · a codex-id is two Apollo halves joined by a colon] ---")
+;;`CODEX|A>REGISTER-IDENTITY` folds SEVEN conditions under one message: the composite length, the
+;;separator position, both Apollo halves, that the halves re-concatenate to the original, and both
+;;pubkeys being non-empty. A codex-id is 162 + 1 + 162 = 325 characters, asserted below from the
+;;module's own constants so this test cannot drift from them.
+(let*
+    (
+        (half:string (fold (+) "" (make-list 162 "a")))
+        (good-sep:string (format "{}:{}" [half half]))
+        (bad-sep:string (format "{}X{}" [half half]))
+    )
+    (map print
+        [
+            (expect "<<CODEX-G3>> a half is 162 characters and a composite is 325"
+                [162 325] [(length half) (length good-sep)])
+            ;;REACHABLE 1 -- right length, wrong separator. The `iz-separator` conjunct answers.
+            (expect-failure "<<CODEX-G3>> a composite with the wrong separator is refused"
+                "Invalid codex identity: composite Apollo codex-id or pubkey material"
+                (TS01-C4.CODEX|A_RegisterCodexIdentity bad-sep "p1" "p2"
+                    (read-keyset "CX_KS") KST.ANHD))
+            ;;REACHABLE 2 -- right length, right separator, halves that are not valid Apollo accounts.
+            ;;Driven as well as case 1 because the two exercise different conjuncts of the same fold,
+            ;;and one message cannot tell them apart from the outside.
+            (expect-failure "<<CODEX-G3>> ...and so is one whose halves are not Apollo accounts"
+                "Invalid codex identity: composite Apollo codex-id or pubkey material"
+                (TS01-C4.CODEX|A_RegisterCodexIdentity good-sep "p1" "p2"
+                    (read-keyset "CX_KS") KST.ANHD))
+        ]
+    )
+    (print "--- [CODEX-G3 · 02 · FIXED: a short codex-id is now named, not an index fault] ---")
+    ;;A codex-id too short to split used to get no message at all -- just
+    ;;    Array index out of bounds. Length (0), Index (0)
+    ;;
+    ;;WHY. The `let` above the enforce computed ALL seven conjuncts eagerly, including
+    ;;    (iz-standard-valid (GLYPH|UEV_ApolloAccountCheck (UC_CodexIdStandard codex-id) false))
+    ;;and for an id with no separator the derived half is empty, so the Apollo check indexed into an
+    ;;empty list. `iz-composite-len` was computed FIRST and was already false -- but a `let` is EAGER
+    ;;and `fold (and)` does not short-circuit, so **being wrong early saved nothing**. The affected
+    ;;input is the likeliest one on this path: a truncated or hand-typed id.
+    ;;
+    ;;FIXED 2026-09-12, owner-ruled. The length test is hoisted into its own enforce ABOVE the `let`.
+    ;;A length test needs nothing but the parameter, so it can run before anything is derived -- which
+    ;;is what makes this the cheapest member of the class to repair.
+    ;;
+    ;;THE FOLD IS UNCHANGED and still answers for every other way to be invalid; section 01 above
+    ;;drives two of those (wrong separator, non-Apollo halves) and is the contrast that shows the
+    ;;hoist narrowed nothing.
+    (map print
+        [
+            (expect-failure "<<CODEX-G3>> a short codex-id is refused by LENGTH, with a sentence"
+                "composite Apollo codex-id must be 325 characters"
+                (TS01-C4.CODEX|A_RegisterCodexIdentity "bad" "p1" "p2"
+                    (read-keyset "CX_KS") KST.ANHD))
+            ;;...and the empty id, the other truncation that used to fault, is named the same way.
+            (expect-failure "<<CODEX-G3>> ...and so is an empty one"
+                "composite Apollo codex-id must be 325 characters"
+                (TS01-C4.CODEX|A_RegisterCodexIdentity "" "p1" "p2"
+                    (read-keyset "CX_KS") KST.ANHD))
+            ;;WORTH KEEPING: why there was no second way to observe the old defect. `try` returns its
+            ;;FALLBACK on failure rather than the error text, and an index fault is a NATIVE fault
+            ;;`try` cannot recover from at all -- the same boundary that stops `enforce-one` catching
+            ;;one. `expect-failure` matching by substring was the only instrument that could show it.
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "CODEX-I1 — INFO_ cost previews vs what the ops actually charge")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [CODEX-I1 · 01 · predicted IGNIS vs measured, on a live upload] ---")
+;;FUNCTION COVERAGE (G6) — the `INFO_` family, per the owner's spec: an INFO_ must report the same
+;;cost the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+;;
+;;`INFO_CODEX|RecordArweaveUpload` previews `TS01-C4.CODEX|C_RecordArweaveUpload`, and the two take
+;;IDENTICAL arguments — so the preview can be read with exactly what the exec is then handed, which
+;;is the strongest form of this test: no translation between the two call sites where a mistake
+;;could hide.
+;;CODEX-G3 above replaced env-data wholesale, so the fixture composite-id is no longer in
+;;scope -- restore it. Same 325-char literal as `Stage_01/[6.9]_CODEX.repl` INIT TX000.
+(env-data { "CODEX|COMPOSITE-ID": "₱.ŹΘHYSç7þУJΛpøЩфμбÄИЫŒП9ó7æйȘΣßлΔσ3äЬyrfжπйôleBĄиĄLtźș∇îИyKβńĎDûuÁCȘñЯÒźâŒíßRζäĞΩěѺtşlęHБMŸíWlãąŹÔИЖÊzHțćœŽζýżχδšωχUΨNńúńñУnИкjубâ£ßMKηжлý9κιЦвSαцууěÖщьΩùцn₳Бεůφ:Π.ЙÛœ5ŒOóцιbÌȘŚÚůVÀΠьδЬÃςиbIñжÄoTЬŮşÄrhûεżęF5h₳ΞžGËWXÇûKÖLÙNÂ₱ůθŚяZ₳tœ¥ÅÂΓŹË4uĂбoÚAвOUζÂwΩэí₳ÜŻŁqΣкΣΨΨþѺBkĞõeѺńξTŠB0èΦeπδóýwÑeщIäΣMNøθΔîý₿ŹďρŁȘρτYEúNвÓûĐØúkŹýşθÞΓ" })
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Florean", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (composite-id:string (read-string "CODEX|COMPOSITE-ID"))
+        (patron:string KST.ANHD)
+        ;;a SECOND arweave tx-id: the fixture's own was already consumed by [6.9] TX003, and the
+        ;;upload path refuses a duplicate. 43 chars, base64url, as the id validator requires.
+        (tx2:string "Bc7dEf9GhIjKlMnOpQrStUvWxYz012345678-_abcd9")
+        (bytes:integer 2048)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo}
+                (CODEX.INFO_CODEX|RecordArweaveUpload patron composite-id tx2 bytes))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+        )
+        (let
+            (
+                (predicted-ignis:decimal (at "ignis-need" (at "ignis" predicted)))
+            )
+            (ref-TS01-C4::CODEX|C_RecordArweaveUpload patron composite-id tx2 bytes)
+            (let
+                (
+                    (real-ignis:decimal (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)))
+                )
+                (map print
+                    [
+                        (format "<<CODEX-I1>> predicted={} real={}" [predicted-ignis real-ignis])
+                        (expect "<<CODEX-I1>> INFO_CODEX|RecordArweaveUpload's quote equals the real charge"
+                            real-ignis predicted-ignis)
+                        ;;non-zero, so the equality is not 0 == 0 under a zero-gas boot
+                        (expect "<<CODEX-I1>> ...and it is a real, non-zero charge"
+                            true (> real-ignis 0.0))
+                    ]
+                )
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+;;the upload is discarded — the fixture keeps exactly the one [6.9] recorded
+(rollback-tx)

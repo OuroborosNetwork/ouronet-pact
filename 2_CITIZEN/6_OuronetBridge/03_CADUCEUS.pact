@@ -375,3 +375,18 @@
     )
 
 )
+
+;;<=========================================================================>
+;;  TABLE CREATION
+;;
+;;BUGFIX: both tables were declared with (deftable ...) and never created. A deftable is only a
+;;DECLARATION -- the module loads and deploys cleanly without these two lines, which is exactly
+;;why nothing caught it: the only thing that ever touched CADUCEUS was a load-only compile check
+;;(archive/_scratch_n2_caduceus_compile_check.repl). At runtime every single path through this
+;;module reads or writes CADUCEUS|ConfigTable, so all of them failed with
+;;`Table ouronet-ns.CADUCEUS_CADUCEUS|ConfigTable not found` -- the bridge was wholly
+;;non-functional. Found by REPL/modules/CADUCEUS.repl, which is this module's first real coverage.
+;;Matches the convention used by every other table-owning module (AOZ+ 8/8, 99_TS02-CPAD 2/2,
+;;03_DSP+ 2/2).
+(create-table CADUCEUS|ConfigTable)
+(create-table CADUCEUS|SignalTable)

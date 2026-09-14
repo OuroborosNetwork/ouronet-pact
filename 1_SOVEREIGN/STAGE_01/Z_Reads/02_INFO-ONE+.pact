@@ -384,6 +384,51 @@
             resulted-string
         )
     )
+    ;;
+    (defun UC_LiquidityTaxDeclaration:[string]
+        (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData})
+        @doc "The pre-text lines that DECLARE what an add-liquidity takes BEYOND its gas quote. \
+            \ Adding liquidity charges the caller TWO different ways. Gas travels through the \
+            \ OutputCumulator and lands in <ignis-need>, which every INFO_ already reports. The \
+            \ Asymmetric-Liquidity TAX does not: it is IGNIS moved as PRINCIPAL (and LP \
+            \ relinquished to the pool), so it never touches a cumulator and no ClientInfo field \
+            \ saw it. Until 2026-09-14 that made the add-liquidity previews quote a number that \
+            \ was correct and incomplete at the same time -- measured at modules/SWP.repl \
+            \ <<SWP-I14>>, where 1118.83 was quoted and 1318.83 left the account. \
+            \ The CLAD already computes both the figures and the per-leg wording; this only \
+            \ presents them, which is why it is a UC_ over an argument and reads nothing. \
+            \ NOTE the gaseous leg is NOT part of the tax total: it is billed as gas and is \
+            \ therefore already inside <ignis-need>. Its text is carried for completeness."
+        (let
+            (
+                (tax:decimal (at "total-ignis-tax-needed" clad))
+                (relinquish:decimal (at "relinquish-lp" clad))
+            )
+            (+
+                [
+                    (if (> tax 0.0)
+                        (format "PRINCIPAL, NOT included in the IGNIS cost below: {} IGNIS of Asymmetric-Liquidity TAX, transferred out of the account on top of the gas."
+                            [tax])
+                        "No Asymmetric-Liquidity TAX: this addition costs gas only."
+                    )
+                ]
+                (+
+                    (if (> relinquish 0.0)
+                        [(format "PRINCIPAL, NOT included in the IGNIS cost below: {} LP relinquished to the pool."
+                            [relinquish])]
+                        []
+                    )
+                    [
+                        (at "gaseous-text" clad)
+                        (at "deficit-text" clad)
+                        (at "special-text" clad)
+                        (at "lqboost-text" clad)
+                        (at "fueling-text" clad)
+                    ]
+                )
+            )
+        )
+    )
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
     ;;  [SIP|URC] - Simple Ignis Price >> dependent on a single trigger
@@ -1688,7 +1733,19 @@
             )
         )
     )
-    ;; ---- Special-link creation (IGNIS only; STOA auto-fuel is protocol, not a patron charge) ----
+    ;; ---- Special-link creation ----
+    ;;DEFECT FIXED 2026-09-14. This block used to be headed "(IGNIS only; STOA auto-fuel is protocol,
+    ;;not a patron charge)" and all five previews returned OI|UDC_NoStoaCosts on the strength of it.
+    ;;The comment conflates two different things. The PROTOCOL auto-fuel (TS01-A::XB_DynamicFuelSTOA)
+    ;;really is not a patron charge -- and is inert anyway while <native-gas-pump> is false. But
+    ;;XI_CreateSpecialTrueFungibleLink (11_VST.pact:1489) and XI_CreateSpecialOrtoFungibleLink
+    ;;(11_VST.pact:1553) each run `(ref-IGNIS::STOA|C_Collect patron stoa-costs)` -- a direct,
+    ;;discounted charge to the patron of UR_UsagePrice "dptf"/"dpmf". So all five ops DO cost STOA,
+    ;;and every one of them was previewed as free. `REPL/modules/VST.repl` proved it the whole time:
+    ;;VST-02 cannot run without signing four managed coin.TRANSFER caps built from
+    ;;`URC_SplitSTOAPrices patron (UR_UsagePrice "dpmf")`.
+    ;;Same shape as INFO_EQUITY|IssueCompany, INFO_SWP|ToggleFeeLock and INFO_ATS|ToggleParameterLock.
+    ;;Pinned by `REPL/modules/VST.repl <<VST-I1>>`.
     (defun INFO_VST|CreateFrozenLink:object{OuronetInfoV2.ClientInfo} (patron:string dptf:string)
         (let
             (
@@ -1700,7 +1757,7 @@
                 [(format "Operation: Creates the Frozen Special-DPTF link for {}" [dptf])]
                 [(format "Frozen Special-DPTF link for {} created succesfully" [dptf])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-VST::URCi_CreateSpecialTrueFungibleLinkStoa))
                 []
             )
         )
@@ -1716,7 +1773,7 @@
                 [(format "Operation: Creates the Reservation Special-DPTF link for {}" [dptf])]
                 [(format "Reservation Special-DPTF link for {} created succesfully" [dptf])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-VST::URCi_CreateSpecialTrueFungibleLinkStoa))
                 []
             )
         )
@@ -1732,7 +1789,7 @@
                 [(format "Operation: Creates the Vesting Special-DPOF link for {}" [dptf])]
                 [(format "Vesting Special-DPOF link for {} created succesfully" [dptf])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-VST::URCi_CreateSpecialOrtoFungibleLinkStoa))
                 []
             )
         )
@@ -1748,7 +1805,7 @@
                 [(format "Operation: Creates the Sleeping Special-DPOF link for {}" [dptf])]
                 [(format "Sleeping Special-DPOF link for {} created succesfully" [dptf])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-VST::URCi_CreateSpecialOrtoFungibleLinkStoa))
                 []
             )
         )
@@ -1764,7 +1821,7 @@
                 [(format "Operation: Creates the Hibernating Special-DPOF link for {}" [dptf])]
                 [(format "Hibernating Special-DPOF link for {} created succesfully" [dptf])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-VST::URCi_CreateSpecialOrtoFungibleLinkStoa))
                 []
             )
         )
@@ -2418,12 +2475,12 @@
                                     (format "This Fee is collected by strengthening the {}" [index-name])
                                     (format "This Fee is collected by burning the Reward Tokens {}" [rt-lst])
                                 )
-                                (format "And Amounts to {} {}" [(ref-ATS::URC_RTSplitAmounts ats c-rbt-fee) rt-lst])
+                                (format "And Amounts to {} {}" [(ref-ATS::URCv_RTSplitAmounts ats c-rbt-fee) rt-lst])
                             ]
                         )
                         (format "Cold Recovery will be executed {} Cold-Recovery-Fee" [0])
                     )
-                    (format "{} {} will be recovarable after {} hour(s)" [(ref-ATS::URC_RTSplitAmounts ats c-rbt-remainder) rt-lst h])
+                    (format "{} {} will be recovarable after {} hour(s)" [(ref-ATS::URCv_RTSplitAmounts ats c-rbt-remainder) rt-lst h])
                 ]
                 [
                     (format "Succesfully placed {} {} ATS-Pair RBT into Cold Recovery" [ra ats])
@@ -2462,7 +2519,7 @@
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [
-                    (format "Operation: Culls the Cold Recovery Positions, recovering RTs")
+                    "Operation: Culls the Cold Recovery Positions, recovering RTs"
                     (if (= cw empty)
                         "Currently no RTs can be collected"
                         (format "Currently RTs {} can be recovered with amounts of: {}" [rt-lst cw])
@@ -2496,7 +2553,7 @@
                     )
                 )
                 (reward-tokens:[string] (ref-ATS::UR_RewardTokenList ats))
-                (release-amounts:[decimal] (ref-ATS::URC_RTSplitAmounts ats c-rbt-remainder))
+                (release-amounts:[decimal] (ref-ATS::URCv_RTSplitAmounts ats c-rbt-remainder))
                 ;;
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_DirectRecovery recoverer ats ra)))
             )
@@ -2590,7 +2647,9 @@
                 [(if toggle (format "Operation: Locks Parameters of ATS-Pair {}" [ats]) (format "Operation: Unlocks Parameters of ATS-Pair {}" [ats]))]
                 [(if toggle (format "Parameters of ATS-Pair {} succesfully locked" [ats]) (format "Parameters of ATS-Pair {} succesfully unlocked" [ats]))]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_ToggleParameterLock ats toggle)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [toggle])
+                ;;UNLOCKING is not free: ATS::C_ToggleParameterLock hands XI_ToggleParameterLock's
+                ;;STOA leg to STOA|C_Collect. Previously hardcoded NoStoaCosts.
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-ATS::URCi_ToggleParameterLockStoa ats toggle)) [toggle])
         ))
     (defun INFO_ATS|AddSecondary:object{OuronetInfoV2.ClientInfo} (patron:string ats:string reward-token:string rt-nfr:bool)
         (let
@@ -3078,7 +3137,7 @@
                 (ouro-precision:integer (ref-DPTF::UR_Decimals ouro-id))
                 (ouro-split:[decimal] (ref-U|ATS::UC_PromilleSplit 10.0 ouro-amount ouro-precision))
                 (ouro-remainder-amount:decimal (at 0 ouro-split))
-                (ignis-amount:decimal (ref-ORBR::URC_Sublimate ouro-remainder-amount))
+                (ignis-amount:decimal (ref-ORBR::URCv_Sublimate ouro-remainder-amount))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [
@@ -3116,7 +3175,7 @@
                 ;;
                 (ouro-id:string (ref-DALOS::UR_OuroborosID))
                 (ouro-remainder-amount:decimal (at 0 (ref-U|ATS::UC_PromilleSplit 10.0 ouro-amount (ref-DPTF::UR_Decimals ouro-id))))
-                (ignis-amount:decimal (ref-ORBR::URC_Sublimate ouro-remainder-amount))
+                (ignis-amount:decimal (ref-ORBR::URCv_Sublimate ouro-remainder-amount))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Sublimates {} Ouroboros (positive-supply V2) from {} generating IGNIS on {} at 99.0% efficiency; 1.0% Sublimation Fee" [ouro-amount sa1 sa2])]
@@ -3402,7 +3461,9 @@
                 [(if toggle (format "Operation: Locks Fee Settings of SWP-Pair {}" [swpair]) (format "Operation: Unlocks Fee Settings of SWP-Pair {}" [swpair]))]
                 [(if toggle (format "Fee Settings of SWP-Pair {} succesfully locked" [swpair]) (format "Fee Settings of SWP-Pair {} succesfully unlocked" [swpair]))]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWP::URCi_ToggleFeeLock swpair toggle)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [toggle])
+                ;;UNLOCKING is not free: SWP::C_ToggleFeeLock hands XI_ToggleFeeLock's STOA leg to
+                ;;STOA|C_Collect. Previously hardcoded NoStoaCosts, which quoted the unlock as free.
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-SWP::URCi_ToggleFeeLockStoa swpair toggle)) [toggle])
         ))
     (defun INFO_SWP|UpdatePendingBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string)
         (let
@@ -3511,7 +3572,7 @@
                 (X-prec:[integer] (ref-SWP::UR_PoolTokenPrecisions swpair))
                 
                 (input-positions:[integer] (ref-SWPI::URCv_PoolTokenPositions swpair input-ids))
-                (output-position:integer (ref-SWP::UR_PoolTokenPosition swpair output-id))
+                (output-position:integer (ref-SWP::URv_PoolTokenPosition swpair output-id))
                 (W:[decimal] (ref-SWP::UR_Weigths swpair))
                 (dtso:object{UtilitySwpV2.DirectTaxedSwapOutput}
                     (ref-SWPI::UC_BareboneSwapWithFeez firestarter pool-type dsid fees A X X-prec input-positions output-position W)
@@ -3521,7 +3582,7 @@
                 (ouro-precision:integer (ref-DPTF::UR_Decimals ouro-id))
                 (ouro-split:[decimal] (ref-U|ATS::UC_PromilleSplit 10.0 gained-ouro ouro-precision))
                 (ouro-remainder-amount:decimal (at 0 ouro-split))
-                (ignis-amount:decimal (ref-ORBR::URC_Sublimate ouro-remainder-amount))
+                (ignis-amount:decimal (ref-ORBR::URCv_Sublimate ouro-remainder-amount))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Uses 10 Native Stoa as Fuel to create Ignis GAS"]
@@ -3539,7 +3600,6 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-SWPI:module{SwapperIssueV4} SWPI)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
@@ -3547,14 +3607,20 @@
                 [(format "Operation: Issues a Stable SWP-Pair with {} pool-tokens on Account {}" [(length pool-tokens) sa])]
                 [(format "Stable SWP-Pair issued succesfully on Account {}" [sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPI::URCi_Issue "SWP|C_IssueStable" account pool-tokens)))
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))) [])
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron
+                    ;;OVER-QUOTE FIXED (2026-09-14). This quoted (+ UsagePrice "dptf" "swp") -- the
+                    ;;figure the DEFPACT pool-issue path (MTX-SWP) charges -- while the SINGLE-TX path
+                    ;;this previews charges UC_StoaPrice "issue-swp-pair" via SWPI::C_Issue. Measured
+                    ;;600.0 quoted against 500.0 charged. The three *Pool previews keep the MTX figure,
+                    ;;because for them it is the right one. Pinned by
+                    ;;`Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl <<SWP-ISSUE-INFO>>`.
+                    (ref-SWPI::URCi_IssueStoa)) [])
         ))
     (defun INFO_SWP|IssueStandard:object{OuronetInfoV2.ClientInfo}
         (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool)
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-SWPI:module{SwapperIssueV4} SWPI)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
@@ -3562,14 +3628,20 @@
                 [(format "Operation: Issues a Standard SWP-Pair with {} pool-tokens on Account {}" [(length pool-tokens) sa])]
                 [(format "Standard SWP-Pair issued succesfully on Account {}" [sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPI::URCi_Issue "SWP|C_IssueStandard" account pool-tokens)))
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))) [])
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron
+                    ;;OVER-QUOTE FIXED (2026-09-14). This quoted (+ UsagePrice "dptf" "swp") -- the
+                    ;;figure the DEFPACT pool-issue path (MTX-SWP) charges -- while the SINGLE-TX path
+                    ;;this previews charges UC_StoaPrice "issue-swp-pair" via SWPI::C_Issue. Measured
+                    ;;600.0 quoted against 500.0 charged. The three *Pool previews keep the MTX figure,
+                    ;;because for them it is the right one. Pinned by
+                    ;;`Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl <<SWP-ISSUE-INFO>>`.
+                    (ref-SWPI::URCi_IssueStoa)) [])
         ))
     (defun INFO_SWP|IssueWeighted:object{OuronetInfoV2.ClientInfo}
         (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool)
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-SWPI:module{SwapperIssueV4} SWPI)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
@@ -3577,7 +3649,14 @@
                 [(format "Operation: Issues a Weighted SWP-Pair with {} pool-tokens on Account {}" [(length pool-tokens) sa])]
                 [(format "Weighted SWP-Pair issued succesfully on Account {}" [sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPI::URCi_Issue "SWP|C_IssueWeighted" account pool-tokens)))
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))) [])
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron
+                    ;;OVER-QUOTE FIXED (2026-09-14). This quoted (+ UsagePrice "dptf" "swp") -- the
+                    ;;figure the DEFPACT pool-issue path (MTX-SWP) charges -- while the SINGLE-TX path
+                    ;;this previews charges UC_StoaPrice "issue-swp-pair" via SWPI::C_Issue. Measured
+                    ;;600.0 quoted against 500.0 charged. The three *Pool previews keep the MTX figure,
+                    ;;because for them it is the right one. Pinned by
+                    ;;`Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl <<SWP-ISSUE-INFO>>`.
+                    (ref-SWPI::URCi_IssueStoa)) [])
         ))
     (defun INFO_SWP|IssueStablePool:object{OuronetInfoV2.ClientInfo}
         (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool)
@@ -3745,9 +3824,15 @@
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                ;;the CLAD is read from SWPLC's own twin of the pricing reader, so the DECLARED tax
+                ;;and the CHARGED tax come from one place and the two collection flags are never
+                ;;restated here. See UC_LiquidityTaxDeclaration.
+                (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
+                    (ref-SWPLC::URCi_AddStandardLiquidityClad account swpair input-amounts stoa-pid))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
-                [(format "Operation: Adds Standard (native-LP) Liquidity to SWP-Pair {} with amounts {}" [swpair input-amounts])]
+                (+ [(format "Operation: Adds Standard (native-LP) Liquidity to SWP-Pair {} with amounts {}" [swpair input-amounts])]
+                   (UC_LiquidityTaxDeclaration clad))
                 [(format "Succesfully added Standard Liquidity to SWP-Pair {} from Account {}" [swpair sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_AddStandardLiquidity account swpair input-amounts stoa-pid)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [input-amounts])
@@ -3759,9 +3844,15 @@
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                ;;the CLAD is read from SWPLC's own twin of the pricing reader, so the DECLARED tax
+                ;;and the CHARGED tax come from one place and the two collection flags are never
+                ;;restated here. See UC_LiquidityTaxDeclaration.
+                (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
+                    (ref-SWPLC::URCi_AddStandardLiquidityClad account swpair input-amounts stoa-pid))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
-                [(format "Operation: Adds Standard (native-LP) Liquidity to SWP-Pair {} with amounts {} (multistep)" [swpair input-amounts])]
+                (+ [(format "Operation: Adds Standard (native-LP) Liquidity to SWP-Pair {} with amounts {} (multistep)" [swpair input-amounts])]
+                   (UC_LiquidityTaxDeclaration clad))
                 [(format "Succesfully added Standard Liquidity to SWP-Pair {} from Account {}" [swpair sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_AddStandardLiquidity account swpair input-amounts stoa-pid)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [input-amounts])
@@ -3773,9 +3864,15 @@
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                ;;the CLAD is read from SWPLC's own twin of the pricing reader, so the DECLARED tax
+                ;;and the CHARGED tax come from one place and the two collection flags are never
+                ;;restated here. See UC_LiquidityTaxDeclaration.
+                (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
+                    (ref-SWPLC::URCi_AddIcedLiquidityClad account swpair input-amounts stoa-pid))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
-                [(format "Operation: Adds Iced Liquidity to SWP-Pair {} with amounts {}" [swpair input-amounts])]
+                (+ [(format "Operation: Adds Iced Liquidity to SWP-Pair {} with amounts {}" [swpair input-amounts])]
+                   (UC_LiquidityTaxDeclaration clad))
                 [(format "Succesfully added Iced Liquidity to SWP-Pair {} from Account {}" [swpair sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_AddIcedLiquidity account swpair input-amounts stoa-pid)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [input-amounts])
@@ -3787,9 +3884,15 @@
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                ;;the CLAD is read from SWPLC's own twin of the pricing reader, so the DECLARED tax
+                ;;and the CHARGED tax come from one place and the two collection flags are never
+                ;;restated here. See UC_LiquidityTaxDeclaration.
+                (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
+                    (ref-SWPLC::URCi_AddGlacialLiquidityClad account swpair input-amounts stoa-pid))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
-                [(format "Operation: Adds Glacial Liquidity to SWP-Pair {} with amounts {}" [swpair input-amounts])]
+                (+ [(format "Operation: Adds Glacial Liquidity to SWP-Pair {} with amounts {}" [swpair input-amounts])]
+                   (UC_LiquidityTaxDeclaration clad))
                 [(format "Succesfully added Glacial Liquidity to SWP-Pair {} from Account {}" [swpair sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_AddGlacialLiquidity account swpair input-amounts stoa-pid)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [input-amounts])
@@ -3801,9 +3904,15 @@
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                ;;the CLAD is read from SWPLC's own twin of the pricing reader, so the DECLARED tax
+                ;;and the CHARGED tax come from one place and the two collection flags are never
+                ;;restated here. See UC_LiquidityTaxDeclaration.
+                (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
+                    (ref-SWPLC::URCi_AddFrozenLiquidityClad account swpair frozen-dptf input-amount stoa-pid))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
-                [(format "Operation: Adds Frozen Liquidity ({} {}) to SWP-Pair {}" [input-amount frozen-dptf swpair])]
+                (+ [(format "Operation: Adds Frozen Liquidity ({} {}) to SWP-Pair {}" [input-amount frozen-dptf swpair])]
+                   (UC_LiquidityTaxDeclaration clad))
                 [(format "Succesfully added Frozen Liquidity to SWP-Pair {} from Account {}" [swpair sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_AddFrozenLiquidity account swpair frozen-dptf input-amount stoa-pid)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [(ref-I|OURONET::OI|UC_FormatTokenAmount input-amount)])
@@ -3815,9 +3924,15 @@
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                ;;the CLAD is read from SWPLC's own twin of the pricing reader, so the DECLARED tax
+                ;;and the CHARGED tax come from one place and the two collection flags are never
+                ;;restated here. See UC_LiquidityTaxDeclaration.
+                (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
+                    (ref-SWPLC::URCi_AddSleepingLiquidityClad account swpair sleeping-dpof nonce stoa-pid))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
-                [(format "Operation: Adds Sleeping Liquidity ({} Nonce {}) to SWP-Pair {}" [sleeping-dpof nonce swpair])]
+                (+ [(format "Operation: Adds Sleeping Liquidity ({} Nonce {}) to SWP-Pair {}" [sleeping-dpof nonce swpair])]
+                   (UC_LiquidityTaxDeclaration clad))
                 [(format "Succesfully added Sleeping Liquidity to SWP-Pair {} from Account {}" [swpair sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_AddSleepingLiquidity account swpair sleeping-dpof nonce stoa-pid)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [nonce])
@@ -3856,7 +3971,6 @@
     (defun INFO_DALOS|ControlSmartAccount:object{OuronetInfoV2.ClientInfo} (patron:string account:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 ;;
@@ -3876,7 +3990,6 @@
     (defun INFO_DALOS|DeploySmartAccount:object{OuronetInfoV2.ClientInfo} (account:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 ;;
@@ -3896,7 +4009,6 @@
     (defun INFO_DALOS|DeployStandardAccount:object{OuronetInfoV2.ClientInfo} (account:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 ;;
@@ -3916,7 +4028,6 @@
     (defun INFO_DALOS|RotateGovernor:object{OuronetInfoV2.ClientInfo} (patron:string account:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 ;;
@@ -3936,7 +4047,6 @@
     (defun INFO_DALOS|RotateGuard:object{OuronetInfoV2.ClientInfo} (patron:string account:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 ;;
@@ -3956,7 +4066,6 @@
     (defun INFO_DALOS|RotateStoa:object{OuronetInfoV2.ClientInfo} (patron:string account:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 ;;
@@ -3976,7 +4085,6 @@
     (defun INFO_DALOS|RotateSovereign:object{OuronetInfoV2.ClientInfo} (patron:string account:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 ;;
@@ -3996,7 +4104,6 @@
     (defun INFO_DALOS|UpdateEliteAccount:object{OuronetInfoV2.ClientInfo} (patron:string account:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 ;;
@@ -4016,7 +4123,6 @@
     (defun INFO_DALOS|UpdateEliteAccountSquared:object{OuronetInfoV2.ClientInfo} (patron:string sender:string receiver:string)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 ;;

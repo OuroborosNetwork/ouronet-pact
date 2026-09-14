@@ -151,9 +151,25 @@
         (new-codex-guard:guard (read-keyset "KEY_CODEX_GUARD_NEW"))
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
         (ref-CODEX:module{CodexV2} CODEX)
+        ;;FUNCTION COVERAGE (G6) — `INFO_CODEX|RotateCodexGuard`, per the owner's spec: an INFO_ must
+        ;;report the same cost the op actually charges. Template: `modules/ATS.repl <<ATS-I1>>`.
+        ;;These bindings rely on `let` being EAGER and ORDERED: the quote and the pre-op balance are
+        ;;both taken BEFORE `rot-msg` runs the rotation.
+        (predicted:object{OuronetInfoV2.ClientInfo}
+            (CODEX.INFO_CODEX|RotateCodexGuard KST.ANHD composite-id))
+        (ignis-before:decimal (DALOS.UR_TF_AccountSupply KST.ANHD false))
         (rot-msg:string
             (ref-TS01-C4::CODEX|C_RotateCodexGuard KST.ANHD composite-id new-codex-guard)
         )
+    )
+    (map print
+        [
+            (expect "<<TX002-INFO>> the preview's IGNIS quote equals what the guard rotation charged"
+                (- ignis-before (DALOS.UR_TF_AccountSupply KST.ANHD false))
+                (at "ignis-need" (at "ignis" predicted)))
+            (expect "<<TX002-INFO>> ...and rotating a Codex guard is NOT free"
+                true (> (- ignis-before (DALOS.UR_TF_AccountSupply KST.ANHD false)) 0.0))
+        ]
     )
     ;;==== TX002 · 02 · Talos C_Rotate ====
     (print "--- [TX002 · 02 · Talos C_Rotate] ---")
@@ -219,6 +235,28 @@
                 arweave-tx-id
                 (ref-CODEX::UR_AWT|ArweaveTxId composite-id arweave-tx-id)
             )
+            ;;`21_CODEX.pact:379`, the upload-shape rule, driven on BOTH of its conjuncts. The
+            ;;accepted call three lines up is the contrast, and it matters here more than usual: the
+            ;;guard sits BELOW `(compose-capability (CODEX|OWNER codex-id))`, so a registered codex
+            ;;AND the current guard's signature are hard preconditions. Anything short of that dies
+            ;;on a row read or a keyset failure and never reaches this message.
+            ;;This transaction already holds both -- TX001 registered the identity and TX002 rotated
+            ;;its guard to PK_Florean, which is signed above -- so the only thing varying below is
+            ;;the argument under test.
+            (expect-failure "<<TX003>> a tx-id of the wrong LENGTH is refused"
+                "Invalid arweave upload: bad tx-id format or non-positive uploaded-bytes"
+                (ref-TS01-C4::CODEX|C_RecordArweaveUpload KST.ANHD composite-id "tooshort" 1024))
+            ;;...a 43-character id with a character outside the base64url alphabet -- same length,
+            ;;wrong charset. Driving this as well as the length case is what shows
+            ;;UC_ValidateArweaveTxId checks both, not just the easy one.
+            (expect-failure "<<TX003>> ...and so is a right-length id with a non-base64url character"
+                "Invalid arweave upload: bad tx-id format or non-positive uploaded-bytes"
+                (ref-TS01-C4::CODEX|C_RecordArweaveUpload KST.ANHD composite-id
+                    "+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" 1024))
+            ;;...and the OTHER conjunct: a valid id with nothing uploaded.
+            (expect-failure "<<TX003>> ...and so is a valid tx-id with zero uploaded bytes"
+                "Invalid arweave upload: bad tx-id format or non-positive uploaded-bytes"
+                (ref-TS01-C4::CODEX|C_RecordArweaveUpload KST.ANHD composite-id arweave-tx-id 0))
             (expect
                 "<<TX003>> UR_AWT|UploadedBytes 1024"
                 1024
@@ -285,9 +323,28 @@
     )
     (let
         (
+            ;;FUNCTION COVERAGE (G6) — `INFO_CODEX|RegisterStoicTag`, per the owner's spec.
+            ;;Template: `modules/ATS.repl <<ATS-I1>>`. This is the STOA member of the CODEX family
+            ;;(1 STOA per glyph via `STOA|C_CollectWTEx`, with the Elite discount taken from
+            ;;`account-address` rather than from the patron) — so the quote must track BOTH a
+            ;;length-dependent price AND a discount read off a different account than the payer.
+            ;;The managed coin.TRANSFER caps installed just above are what let the charge land.
+            (predicted:object{OuronetInfoV2.ClientInfo}
+                (CODEX.INFO_CODEX|RegisterStoicTag patron tag-name account-address))
+            (stoa-before:decimal (coin.get-balance patron-stoa))
             (stg-msg:string
                 (ref-TS01-C4::CODEX|C_RegisterStoicTag patron tag-name account-address)
             )
+        )
+        (map print
+            [
+                (format "<<TX004-INFO>> STOA predicted={} real={}"
+                    [(at "stoa-need" (at "stoa" predicted)) (- stoa-before (coin.get-balance patron-stoa))])
+                (expect "<<TX004-INFO>> the preview's STOA quote equals what registering the tag charged"
+                    (- stoa-before (coin.get-balance patron-stoa)) (at "stoa-need" (at "stoa" predicted)))
+                (expect "<<TX004-INFO>> ...and registering a StoicTag is NOT free"
+                    true (> (- stoa-before (coin.get-balance patron-stoa)) 0.0))
+            ]
         )
         ;;==== TX004 · 03 · Talos C_RegisterStoicTag ====
         (print "--- [TX004 · 03 · Talos C_RegisterStoicTag] ---")
@@ -362,7 +419,33 @@
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
         (ref-CODEX:module{CodexV2} CODEX)
         (tag-fee:decimal (ref-CODEX::UC_StoicTagStoaFee tag-name))
+        ;;FUNCTION COVERAGE (G6) — `INFO_CODEX|ReleaseStoicTag`, per the owner's spec. Template:
+        ;;`modules/ATS.repl <<ATS-I1>>`. This completes CODEX: rotate-guard (IGNIS) at <<TX002-INFO>>,
+        ;;arweave-upload (IGNIS) at `modules/CODEX.repl <<CODEX-I1>>`, register-tag (STOA) at
+        ;;<<TX004-INFO>>, release-tag here — all four client ops now have a measured quote.
+        ;;Release is the interesting twin of register: the SAME per-glyph figure is charged, but in
+        ;;IGNIS rather than STOA, so a preview that copied its sibling's currency would be caught here.
+        (predicted:object{OuronetInfoV2.ClientInfo}
+            (CODEX.INFO_CODEX|ReleaseStoicTag patron tag-name))
+        (ignis-before:decimal (DALOS.UR_TF_AccountSupply patron false))
+        (stoa-before:decimal (coin.get-balance (DALOS.UR_AccountStoa patron)))
         (rel-msg:string (ref-TS01-C4::CODEX|C_ReleaseStoicTag patron tag-name))
+    )
+    (map print
+        [
+            (format "<<TX005-INFO>> IGNIS predicted={} real={}"
+                [(at "ignis-need" (at "ignis" predicted)) (- ignis-before (DALOS.UR_TF_AccountSupply patron false))])
+            (expect "<<TX005-INFO>> the preview's IGNIS quote equals what releasing the tag charged"
+                (- ignis-before (DALOS.UR_TF_AccountSupply patron false))
+                (at "ignis-need" (at "ignis" predicted)))
+            (expect "<<TX005-INFO>> ...and releasing a StoicTag is NOT free"
+                true (> (- ignis-before (DALOS.UR_TF_AccountSupply patron false)) 0.0))
+            ;;and the currency really is IGNIS, not STOA: the sibling register-tag op charges the same
+            ;;per-glyph figure in STOA, so "no STOA moved" is what distinguishes the two.
+            (expect "<<TX005-INFO>> ...and it is charged in IGNIS, not STOA — unlike its register twin"
+                (- stoa-before (coin.get-balance (DALOS.UR_AccountStoa patron)))
+                (at "stoa-need" (at "stoa" predicted)))
+        ]
     )
     ;;==== TX005 · 01b · IGNIS fee echo (same UC_StoicTagStoaFee amount) ====
     (print "--- [TX005 · 01b · IGNIS fee (UC_StoicTagStoaFee amount, 1 per glyph)] ---")

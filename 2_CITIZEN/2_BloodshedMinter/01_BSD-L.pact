@@ -367,7 +367,6 @@
         @doc "Issue Bloodshed NFT Collection"
         (let
             (
-                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
                 (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
             )
             (ref-TS02-C2::DPNF|C_Issue

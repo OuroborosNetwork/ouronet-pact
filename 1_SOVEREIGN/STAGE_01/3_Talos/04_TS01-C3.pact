@@ -342,7 +342,6 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (ref-SWP:module{SwapperV4} SWP)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-SWP::C_ChangeOwnership swpair new-owner)

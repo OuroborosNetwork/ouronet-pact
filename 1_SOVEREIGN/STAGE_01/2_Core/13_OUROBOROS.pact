@@ -47,7 +47,7 @@
     ;;
     (defun URC_ProjectedStoaLiquindex:[decimal] ())
     (defun URCv_Compress:[decimal] (ignis-amount:decimal))
-    (defun URC_Sublimate:decimal (ouro-amount:decimal))
+    (defun URCv_Sublimate:decimal (ouro-amount:decimal))
     (defun URCi_Compress:object{IgnisCollectorV2.OutputCumulator} (client:string ignis-amount:decimal))
     (defun URCi_Fuel:object{IgnisCollectorV2.OutputCumulator} ())
     (defun URCi_Sublimate:object{IgnisCollectorV2.OutputCumulator} (client:string target:string ouro-amount:decimal))
@@ -395,12 +395,17 @@
             )
         )
     )
-    (defun URC_Sublimate:decimal (ouro-amount:decimal)
+    (defun URCv_Sublimate:decimal (ouro-amount:decimal)
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
             )
+            ;;NOTE: the constant is 0.99, not the 1.0 the message advertises. Pinned AS WRITTEN
+            ;;in REPL/modules/OUROBOROS.repl <<ORBR-G1>> (0.99 accepted, 0.98 refused) so the
+            ;;test states what the code does rather than what the text claims. Left as-is: the
+            ;;tolerance is deliberate (it absorbs a floor() at the caller), but the message is
+            ;;misleading and should say 0.99 the next time this interface is bumped.
             (enforce (>= ouro-amount 0.99) "Only amounts greater than or equal to 1.0 can be used to make gas!")
             (ref-DPTF::UEV_Amount (ref-DALOS::UR_OuroborosID) ouro-amount)
             (let
@@ -499,7 +504,7 @@
                 (ouro-precision:integer (ref-DPTF::UR_Decimals ouro-id))
                 ;;
                 (ouro-remainder-amount:decimal (at 0 (ref-U|ATS::UC_PromilleSplit 10.0 ouro-amount ouro-precision)))
-                (ignis-amount:decimal (URC_Sublimate ouro-remainder-amount))
+                (ignis-amount:decimal (URCv_Sublimate ouro-remainder-amount))
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                 [
@@ -530,7 +535,7 @@
                 (ouro-precision:integer (ref-DPTF::UR_Decimals ouro-id))
                 ;;
                 (ouro-remainder-amount:decimal (at 0 (ref-U|ATS::UC_PromilleSplit 10.0 ouro-amount ouro-precision)))
-                (ignis-amount:decimal (URC_Sublimate ouro-remainder-amount))
+                (ignis-amount:decimal (URCv_Sublimate ouro-remainder-amount))
                 (frozen-state:bool (ref-DPTF::UR_AccountFrozenState ouro-id client))
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators
@@ -555,7 +560,6 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 (withdraw-amount:decimal (ref-DPTF::UR_AccountSupply id ORBR|SC_NAME))
@@ -573,14 +577,29 @@
     )
     ;;{5.4}  Validate [UEV/CAP]
     (defun UEV_Exchange ()
+        ;;FIXED 2026-09-12: the two BAR checks are enforced in an OUTER let, above the role reads.
+        ;;They used to sit BELOW a single binding group that already did
+        ;;`(o-rm (UR_AccountRoleMint ouro-id orb-sc))`, and a `let` is EAGER -- so when ouro-id was
+        ;;still BAR that read raised `DPTF ID | does not exist` before either enforce was consulted.
+        ;;Setting OURO alone did not help: the gas-id read then aborted the same way. Both written
+        ;;sentences were unreachable on the only chain state where they mean anything -- the boot
+        ;;window, before the two ids are configured.
+        ;;Splitting the group is enough: the id reads depend on nothing, the ROLE reads depend on the
+        ;;ids, so the enforces go between them. Pinned by
+        ;;REPL/Stage_01/[4.0]_Sovereign-Executor.repl <<TX4.0-CONFIG>>.
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ouro-id:string (ref-DALOS::UR_OuroborosID))
+                (gas-id:string (ref-DALOS::UR_IgnisID))
+            )
+            (enforce (!= ouro-id BAR) "Ouroboros is not set")
+            (enforce (!= gas-id BAR) "Ignis is not set")
+        (let
+            (
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (orb-sc ORBR|SC_NAME)
 
-                (ouro-id:string (ref-DALOS::UR_OuroborosID))
-                (gas-id:string (ref-DALOS::UR_IgnisID))
                 (o-rm:bool (ref-DPTF::UR_AccountRoleMint ouro-id orb-sc))
                 (o-rb:bool (ref-DPTF::UR_AccountRoleBurn ouro-id orb-sc))
                 (t1:bool (and o-rm o-rb))
@@ -589,15 +608,26 @@
                 (t2:bool (and g-rm g-rb))
                 (t3:bool (and t1 t2))
             )
-            ;;Checks Ouroboros and Ignis are properly set up
-            (enforce (!= ouro-id BAR) "Ouroboros is not set")
-            (enforce (!= gas-id BAR) "Ignis is not set")
-            ;;Checks Exchange Permission
+            ;;Checks Exchange Permission (the two BAR checks now live in the outer let above)
+            ;;t3 = t1 AND t2, over four reads of the shape (UR_AccountRoleMint <id> orb-sc). Each of
+            ;;those ends in
+            ;;    (or <the account's role flag> (DALOS::UR_AutonomicRoles account))
+            ;;and `UR_AutonomicRoles` is a PURE fold over a hardcoded list of smart-contract account
+            ;;names -- not a table read. `ORBR|SC_NAME` resolves to `DALOS::GOV|OUROBOROS|SC_NAME`,
+            ;;which IS one of the entries. So the right-hand side is a compile-time `true`, the `or`
+            ;;short-circuits, and t1/t2/t3 hold for every possible chain state. Writing the role flags
+            ;;with env-module-admin does not help -- they are ORed away.
+            ;;Both facts are asserted in REPL/modules/OUROBOROS.repl <<ORB-G1>>, so this annotation
+            ;;cannot rot silently: if the autonomic list ever drops OUROBOROS, that test goes red and
+            ;;this guard becomes live. Kept as a fail-closed backstop for exactly that day.
+            ;;UNREACHABLE BY CONSTRUCTION -- unlike the two BAR guards above (which were MUTE and were
+            ;;repaired by splitting the binding group), no STATE can reach this one at all.
             (enforce t3 "Permission invalid for Ignis Exchange")
-        )
+        ))
     )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
+    ;;Protection: Class 5 — IMC + Custom: IGNIS|XB>COMPRESS
     (defun XB_Compress:object{IgnisCollectorV2.OutputCumulator}
         (client:string ignis-amount:decimal)
         @doc "SC-account-tolerant IGNIS→OURO compress for INTERNAL module callers (registered OUROBOROS IMC). Same \
@@ -724,7 +754,7 @@
                 ;;
                 (ouro-split:[decimal] (ref-U|ATS::UC_PromilleSplit 10.0 ouro-amount ouro-precision))
                 (ouro-remainder-amount:decimal (at 0 ouro-split))
-                (ignis-amount:decimal (URC_Sublimate ouro-remainder-amount))
+                (ignis-amount:decimal (URCv_Sublimate ouro-remainder-amount))
             )
             (with-capability (IGNIS|C>SUBLIMATE client target)
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
@@ -760,7 +790,7 @@
                 ;;
                 (ouro-split:[decimal] (ref-U|ATS::UC_PromilleSplit 10.0 ouro-amount ouro-precision))
                 (ouro-remainder-amount:decimal (at 0 ouro-split))
-                (ignis-amount:decimal (URC_Sublimate ouro-remainder-amount))
+                (ignis-amount:decimal (URCv_Sublimate ouro-remainder-amount))
                 (frozen-state:bool (ref-DPTF::UR_AccountFrozenState ouro-id client))
             )
             (with-capability (IGNIS|C>SUBLIMATE client target)
@@ -791,7 +821,6 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 (withdraw-amount:decimal (ref-DPTF::UR_AccountSupply id ORBR|SC_NAME))

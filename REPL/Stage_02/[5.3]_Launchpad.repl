@@ -1132,23 +1132,27 @@
             ;;
             ;;FINDING -- PROVABLY DEAD ENFORCE. The message you get is "Invalid Read Type",
             ;;NOT the "Invalid Withdrawal type" that DEMIPAD|C>WITHDRAW raises. C_Withdraw
-            ;;binds (UR_Funds asset-id type) BEFORE entering with-capability, and UR_Funds
+            ;;binds (URv_Funds asset-id type) BEFORE entering with-capability, and URv_Funds
             ;;opens with the IDENTICAL predicate:
             ;;
-            ;;    UR_Funds            (enforce (contains type [1 2 3]) "Invalid Read Type")
+            ;;    URv_Funds            (enforce (contains type [1 2 3]) "Invalid Read Type")
             ;;    DEMIPAD|C>WITHDRAW  (enforce iz-type                 "Invalid Withdrawal type")
             ;;                        where iz-type = (contains type [1 2 3])
             ;;
             ;;Same predicate, and the reader runs first. So for EVERY input the cap's enforce
-            ;;is unreachable: type in [1 2 3] passes both, type outside it dies in UR_Funds.
+            ;;is unreachable: type in [1 2 3] passes both, type outside it dies in URv_Funds.
             ;;This is not "hard to test" -- it is untestable by construction, which is the
             ;;definition in REPL_TEST_ARCHITECTURE.md Rule 3, and the duplicate-validation
             ;;case CLAUDE.md warns about (do not repeat the same check in defcap and reader).
-            ;;Left in place pending the owner's call: removing it is a core-code change, and
-            ;;the argument for keeping it is defence-in-depth if C_Withdraw is ever refactored
-            ;;to stop reading first. Either way the message a caller actually sees today is
-            ;;the one asserted here, so this test tracks reality rather than intent.
-            (expect-failure "<<TX-DEP-02>> FINDING: type 0 dies in UR_Funds, so the cap's own type enforce is unreachable"
+            ;;RULED 2026-09-10 -- KEPT, and the reasoning now also sits on the defcap itself so a
+            ;;reader of the CODE does not assume it fires. Unlike DPDC::UEV_Nonce and
+            ;;DPDC-S::UEV_SetClass (both shadowed guards, both hoisted and now live), this one
+            ;;cannot be un-shadowed the same way: <retrieval-amount> is a parameter of the @event
+            ;;capability and the body needs it, so the read must precede acquisition, and moving
+            ;;it inside would change an EVENT SIGNATURE that indexers consume. It is also not a
+            ;;hole -- the input is rejected either way, only the message is less specific. The
+            ;;enforce stays as defence-in-depth for any future caller that does not read first.
+            (expect-failure "<<TX-DEP-02>> FINDING: type 0 dies in URv_Funds, so the cap's own type enforce is unreachable"
                 "Invalid Read Type"
                 (ref-TS02-DPAD::DEMIPAD|C_Withdraw KST.ANHD asset 0 KST.EMMA))
             ;;The same shadowing for every other out-of-range type -- so the deadness is a
@@ -1169,6 +1173,81 @@
     )
     ""
 )
+;;==== TX-DEP-02 · 01b · the access gate, and the registration gate ==== ===========================
+(print "--- [TX-DEP-02 · 01b · access and registration] ---")
+;;Two more guards on the same pair of clients, both needing nothing this transaction has not built.
+;;
+;;`00_Demipad.pact:488` -- `DEMIPAD|C>REGISTERED-ACCESS`, an enforce-one over the asset's own
+;;owner-guard and the launchpad GOV keyset, composed by `DEMIPAD|C>WITHDRAW`. Reaching its own
+;;message means failing BOTH branches, so the caller must be neither the asset owner nor LPAD admin.
+;;That is the same trap ATS-G14 records: signing the patron key would satisfy the admin branch and
+;;the call would sail through to fail somewhere else entirely.
+;;
+;;`00_Demipad.pact:513` -- the deposit-side registration check. Driven with an asset that exists as
+;;a token but was never registered to the launchpad, so the only thing wrong with it is the thing
+;;the guard names.
+(let
+    (
+        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+        (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+        (asset:string "DHOC-98c486052a51")
+        ;;A DELIBERATELY NON-EXISTENT id, not a real-but-unregistered one. The first draft used
+        ;;OURO and passed here -- then the GATE went red, because other entrypoints that load this
+        ;;file DO register OURO to the launchpad, so `UR_CheckRegistration` answered true and the
+        ;;deposit got as far as "not open for business". A fixture assumption that holds in one chain
+        ;;and not another is exactly what G3 (determinism) exists to catch. An id no chain can have
+        ;;makes the assertion true everywhere.
+        (unregistered:string "NEVERREGISTERED-98c486052a51")
+    )
+    ;;LUMY: a funded third party, neither the asset's owner|creator nor a launchpad admin.
+    (env-sigs [{ "key": "PK_Lumy", "caps": [] }])
+    (map print
+        [
+            ;;the premise -- the asset IS registered, so a refusal below is about the CALLER
+            (expect "<<TX-DEP-02>> DHOC is registered to the launchpad"
+                true (ref-DPAD::UR_CheckRegistration asset))
+            ;;THE ITEM (:488)
+            (expect-failure "<<TX-DEP-02>> a third party may not withdraw launchpad funds"
+                "Only LPAD Admin or DHOC-98c486052a51 Owner|Creator may acces the Launchpad"
+                (ref-TS02-DPAD::DEMIPAD|C_Withdraw KST.LUMY asset 1 KST.EMMA))
+            ;;:513 -- FIXED 2026-09-12, owner-ruled. This was the twelfth instance of the eager-`let`
+            ;;mute-guard class (2026-09-12-eager-let-mute-guards.md) and is now the first one repaired.
+            ;;
+            ;;`DEMIPAD|C>DEPOSIT` opens with a `let` binding FOUR reads of the same Ledger row:
+            ;;    (iz-registered (UR_CheckRegistration asset-id))
+            ;;    (ofb           (UR_OpenForBusiness  asset-id))
+            ;;    (iz-sstoa      (UR_IzSSTOA          asset-id))
+            ;;    (iz-ouro       (UR_IzOURO           asset-id))
+            ;;then enforces `iz-registered` with a written, user-facing message. A `let` is EAGER, so
+            ;;all four run before any enforce -- and the last three are bare `read`s. For an
+            ;;unregistered asset they abort with
+            ;;    No value found in table ouronet-ns.DEMIPAD_DEMIPAD|T|Ledger for key: OURO-…
+            ;;and the sentence that was written for exactly this case never arrives.
+            ;;
+            ;;WHAT WAS WRONG: `UR_CheckRegistration` wraps its `with-read` in `(try false ...)`, so it
+            ;;answered `false` correctly -- but its three neighbours in the same eager `let`
+            ;;(`UR_OpenForBusiness`, `UR_IzSSTOA`, `UR_IzOURO`) were bare `read`s and aborted the
+            ;;transaction before the enforce below them could run. The deposit was refused either way,
+            ;;so it was never a funds hole; what was lost was the sentence, replaced by a table key.
+            ;;
+            ;;THE FIX (owner ruling: "make each one succeed to either false or true"): all three are
+            ;;now `with-default-read` defaulting to `false`. Evaluation ORDER is untouched -- the
+            ;;bindings still run first, they simply return a value instead of exploding -- which is a
+            ;;strictly smaller change than moving code, and repairs those readers for every other
+            ;;caller too. All four call sites of UR_OpenForBusiness were checked first.
+            ;;
+            ;;BOTH HALVES ARE ASSERTED: the reader answers, AND the guard now speaks.
+            (expect "<<TX-DEP-02>> every reader now ANSWERS for an unregistered asset instead of aborting"
+                [false false] [(ref-DPAD::UR_CheckRegistration unregistered)
+                               (ref-DPAD::UR_OpenForBusiness unregistered)])
+            (expect-failure "<<TX-DEP-02>> ...so the deposit now gives the written message, not a table key"
+                "is not registered to the Demiourgos Lauchpad. Deposit unallowed"
+                (ref-TS02-DPAD::DEMIPAD|C_Deposit KST.LUMY KST.LUMY unregistered 10.0 0 false -1.0))
+        ]
+    )
+    ""
+)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "")
 ;;==== TX-DEP-02 · 02 · the payout ==== ============================================================
 (print "--- [TX-DEP-02 · 02 · the payout] ---")
@@ -1986,10 +2065,24 @@
                         (+ holder-w0 (* holder0 cost)) (ref-DPTF::UR_AccountSupply w KST.ANHD))
                     (expect "<<TX-SPK-03>> INVARIANT: Spark supply is still conserved"
                         supply0 (ref-DPTF::UR_Supply spark-id))
-                    ;;Redeeming an empty balance is a zero-quantity transfer, which DPTF refuses.
-                    (expect-failure "<<TX-SPK-03>> redeeming an ALREADY-empty balance is refused"
-                        "Amount"
+                    ;;CORRECTED: this used to expect the bare substring "Amount" and the note here
+                    ;;claimed DPTF refused the zero-quantity transfer. It never got that far. The
+                    ;;refusal is SPARK's own, one layer earlier -- `SPARK|C>X_REEDEM` reads the
+                    ;;holder's balance itself and enforces `(and (> redemption-quantity 0.0) (<=
+                    ;;redemption-quantity supply))`. RedemAll passes the balance AS the quantity, so
+                    ;;on an emptied account the quantity is 0.0 and the `> 0.0` half fails here.
+                    ;;"Amount" matched by substring against "Invalid Redemmption Amount" and so the
+                    ;;assertion was green for the wrong reason -- and left `01_Spark:267` unpinned.
+                    ;;(The spelling "Redemmption" is the source's; matched verbatim on purpose.)
+                    (expect-failure "<<TX-SPK-03>> redeeming an ALREADY-empty balance is refused by SPARK's own bound"
+                        "Invalid Redemmption Amount"
                         (ref-CPAD::SPARK|C_RedemAllSparks KST.ANHD KST.EMMA KST.ANHD))
+                    ;;the OTHER half of that same enforce: RedemFew takes the quantity from the
+                    ;;caller, so it can be driven ABOVE the balance -- the `<= supply` half. Same
+                    ;;message, opposite side of the bound, and only reachable through this entrypoint.
+                    (expect-failure "<<TX-SPK-03>> ...and so is redeeming MORE than the balance holds"
+                        "Invalid Redemmption Amount"
+                        (ref-CPAD::SPARK|C_RedemFewSparks KST.ANHD KST.EMMA KST.ANHD 1000000.0))
                 ]
             )
         )

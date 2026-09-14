@@ -518,6 +518,7 @@
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
+    ;;Protection: Class 3 — Custom: DPDC|C>TG_ADD-QTY-R
     (defun XI_ToggleAddQuantityRole (id:string account:string toggle:bool)
         (require-capability (DPDC|C>TG_ADD-QTY-R id account toggle))
         (let
@@ -528,6 +529,7 @@
             (ref-DPDC::XE_U|VerumRoles id true 3 toggle account)
         )
     )
+    ;;Protection: Class 3 — Custom: DPDC|C>FRZ-ACC
     (defun XI_ToggleFreezeAccount (id:string son:bool account:string toggle:bool)
         (require-capability (DPDC|C>FRZ-ACC id son account toggle))
         (let
@@ -539,6 +541,7 @@
             (ref-DPDC::XE_U|VerumRoles id son 1 toggle account)
         )
     )
+    ;;Protection: Class 3 — Custom: DPDC|C>TG_EXEMPTION-R
     (defun XI_ToggleExemptionRole (id:string son:bool account:string toggle:bool)
         (require-capability (DPDC|C>TG_EXEMPTION-R id son account toggle))
         (let
@@ -550,6 +553,7 @@
             (ref-DPDC::XE_U|VerumRoles id son 2 toggle account)
         )
     )
+    ;;Protection: Class 3 — Custom: DPDC|C>TG_BURN-R
     (defun XI_ToggleBurnRole (id:string son:bool account:string toggle:bool)
         (require-capability (DPDC|C>TG_BURN-R id son account toggle))
         (let
@@ -560,6 +564,7 @@
             (ref-DPDC::XE_U|VerumRoles id son 4 toggle account)
         )
     )
+    ;;Protection: Class 3 — Custom: DPDC|C>TG_UPDATE-R
     (defun XI_ToggleUpdateRole (id:string son:bool account:string toggle:bool)
         (require-capability (DPDC|C>TG_UPDATE-R id son account toggle))
         (let
@@ -570,6 +575,7 @@
             (ref-DPDC::XE_U|VerumRoles id son 7 toggle account)
         )
     )
+    ;;Protection: Class 3 — Custom: DPDC|C>TG_MODIFY-CREATOR-R
     (defun XI_ToggleModifyCreatorRole (id:string son:bool account:string toggle:bool)
         (require-capability (DPDC|C>TG_MODIFY-CREATOR-R id son account toggle))
         (let
@@ -580,6 +586,7 @@
             (ref-DPDC::XE_U|VerumRoles id son 8 toggle account)
         )
     )
+    ;;Protection: Class 3 — Custom: DPDC|C>TG_MODIFY-ROYALTIES-R
     (defun XI_ToggleModifyRoyaltiesRole (id:string son:bool account:string toggle:bool)
         (require-capability (DPDC|C>TG_MODIFY-ROYALTIES-R id son account toggle))
         (let
@@ -590,6 +597,7 @@
             (ref-DPDC::XE_U|VerumRoles id son 9 toggle account)
         )
     )
+    ;;Protection: Class 3 — Custom: DPDC|C>TG_TRANSFER-R
     (defun XI_ToggleTransferRole (id:string son:bool account:string toggle:bool)
         (require-capability (DPDC|C>TG_TRANSFER-R id son account toggle))
         (let
@@ -601,6 +609,7 @@
         )
     )
     ;;
+    ;;Protection: Class 3 — Custom: DPDC|C>MV_CREATE-R
     (defun XI_MoveCreateRole (id:string son:bool old-account:string new-account:string)
         (require-capability (DPDC|C>MV_CREATE-R id son old-account new-account))
         (let
@@ -613,6 +622,7 @@
             (ref-DPDC::XE_U|VerumRoles id son 5 true new-account)
         )
     )
+    ;;Protection: Class 3 — Custom: DPDC|C>MV_RECREATE-R
     (defun XI_MoveRecreateRole (id:string son:bool old-account:string new-account:string)
         (require-capability (DPDC|C>MV_RECREATE-R id son old-account new-account))
         (let
@@ -625,6 +635,7 @@
             (ref-DPDC::XE_U|VerumRoles id son 6 true new-account)
         )
     )
+    ;;Protection: Class 3 — Custom: DPDC|C>MV_SET-URI-R
     (defun XI_MoveSetUriRole (id:string son:bool old-account:string new-account:string)
         (require-capability (DPDC|C>MV_SET-URI-R id son old-account new-account))
         (let
@@ -644,7 +655,6 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
             (with-capability (DPDC|C>TG_ADD-QTY-R id account toggle)
@@ -659,7 +669,6 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
             (with-capability (DPDC|C>FRZ-ACC id son account toggle)
@@ -674,7 +683,6 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
             (with-capability (DPDC|C>TG_EXEMPTION-R id son account toggle)
@@ -689,7 +697,6 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
             (with-capability (DPDC|C>TG_BURN-R id son account toggle)
@@ -704,7 +711,6 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
             (with-capability (DPDC|C>TG_UPDATE-R id son account toggle)
@@ -719,7 +725,6 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
             (with-capability (DPDC|C>TG_MODIFY-CREATOR-R id son account toggle)
@@ -734,7 +739,6 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
             (with-capability (DPDC|C>TG_MODIFY-ROYALTIES-R id son account toggle)
@@ -749,7 +753,6 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
             (with-capability (DPDC|C>TG_TRANSFER-R id son account toggle)
@@ -765,7 +768,6 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
                 (old-account:string (ref-DPDC::UR_Verum5 id son))
             )
@@ -781,7 +783,6 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
                 (old-account:string (ref-DPDC::UR_Verum6 id son))
             )
@@ -797,7 +798,6 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
                 (old-account:string (ref-DPDC::UR_Verum10 id son))
             )

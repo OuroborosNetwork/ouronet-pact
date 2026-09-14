@@ -351,7 +351,6 @@
     (defcap GAS_PAYER:bool (user:string limit:integer price:decimal)
         (let
             (
-                (ref-U|ST:module{OuronetGasStationV2} U|ST)
                 (iz-single:bool (contains "exec-code" (read-msg)))
                 (exec-lines:[string] (at "exec-code" (read-msg)))
                 (n:integer (length exec-lines))
@@ -366,14 +365,34 @@
                     ;;(enforce-guard (ref-U|ST::UEV_max-gas-notional 0.02))
                 ]
             )
+            ;;UNREACHABLE: <iz-single> and <exec-lines> are bound in the SAME let above, and Pact
+            ;;evaluates both eagerly -- so (at "exec-code" …) raises on a message without the key
+            ;;before this enforce is ever consulted. A caller who omits exec-code sees
+            ;;`Key "exec-code" not found in object: {}` instead of this message. Pinned AS IT
+            ;;BEHAVES in REPL/modules/DALOS-ADMIN.repl <<DALOS-G1e>>. To make it live, bind
+            ;;<exec-lines> lazily (inside the branch) or hoist this check above the let.
             (enforce iz-single "Only for transactions with code")
             ;; Exec-code: 1 = single allowed form; 2 = only both coin.C_; 3 = namespace+IGNIS+(let
             (enforce (>= n 1) "Empty exec code")
+            ;;UNREACHABLE: the line above already enforces n >= 1, and `n=1 or n=2 or n>=3` then
+            ;;covers every remaining integer -- a tautology. It reads like a whitelist of accepted
+            ;;shapes and is a no-op; the real shape enforcement is the enforce-one below. No input
+            ;;can trip it. Demonstrated in REPL/modules/DALOS-ADMIN.repl <<DALOS-G1e>>.
             (enforce (fold (or) false [(= n 1) (= n 2) (>= n 3)]) "Exec code must be 1 form, 2 coin forms, or namespace+IGNIS+let (3+ lines)")
             (enforce-one
                 "Payable Modules / form count not satisfied"
                 [
                     ;; Case 1: single top-level form — coin.C_, ouronet-ns.TS, or ouronet-ns.DSP only
+                    ;;NOTE ON THE MESSAGES BELOW THIS POINT: every enforce / enforce-one nested
+                    ;;inside this enforce-one is MUTE. Pact tries each branch, and when all fail
+                    ;;it raises the OUTER enforce-one's own message -- so a caller always sees
+                    ;;"Payable Modules / form count not satisfied" and never the specific reason.
+                    ;;That includes the nested enforce-one "First form must be coin.C_, …", whose
+                    ;;message is swallowed exactly like a nested enforce's. Demonstrated by
+                    ;;REPL/modules/DALOS-ADMIN.repl <<DALOS-G2c>>, which drives (bogus.thing) and
+                    ;;receives the outer message. These strings document intent; they are not
+                    ;;diagnostics. If per-case feedback is wanted, the cases have to be dispatched
+                    ;;with `if` on the form count instead of raced by enforce-one.
                     (enforce 
                         (fold (and) true
                             [
@@ -1327,6 +1346,7 @@
     ;;
     ;;
     ;;      [X-A]
+    ;;Protection: Class 3 — Custom: DALOS|C>DEPLOY-SMART-OURONET-ACCOUNT
     (defun XI_DeploySmartAccount (account:string guard:guard stoa:string sovereign:string public:string)
         ;;#26M fix: validation now happens in the caller's own client cap
         ;;(A_DeploySmartAccount composes DALOS|A>DEPLOY-SMART-OURONET-ACCOUNT,
@@ -1354,6 +1374,7 @@
         )
         (XI_UpdateStoaLedger stoa account true)
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_DeployStandardAccount (account:string guard:guard stoa:string public:string)
         (require-capability (SECURE))
         (with-capability (DALOS|C>DEPLOY-STANDARD-OURONET-ACCOUNT account guard stoa)
@@ -1378,6 +1399,7 @@
             (XI_UpdateStoaLedger stoa account true)
         )
     )
+    ;;Protection: Class 3 — Custom: GOV|DALOS_ADMIN
     (defun XI_GasToggle (native:bool toggle:bool)
         (require-capability (GOV|DALOS_ADMIN))
         (if (= native true)
@@ -1389,12 +1411,14 @@
             )
         )
     )
+    ;;Protection: Class 3 — Custom: GOV|DALOS_ADMIN
     (defun XI_ToggleAccountCreationStoa (toggle:bool)
         (require-capability (GOV|DALOS_ADMIN))
         (update DALOS|GasManagementTable DALOS|VGD
             {"account-creation-stoa" : toggle}
         )
     )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XB_UpdateOuroPrice (price:decimal)
         (P|UEV_IMC)
         (update DALOS|PropertiesTable DALOS|INFO
@@ -1402,6 +1426,7 @@
         )
     )
     ;;      [X-C]
+    ;;Protection: Class 3 — Custom: DALOS|C>CONTROL-SMART-OURONET-ACCOUNT
     (defun XI_UpdateSmartAccountParameters (account:string pasc:bool pbsc:bool pbm:bool)
         (require-capability (DALOS|C>CONTROL-SMART-OURONET-ACCOUNT account pasc pbsc pbm))
         (update DALOS|AccountTable account
@@ -1410,6 +1435,7 @@
             ,"payable-by-method"            : pbm}
         )
     )
+    ;;Protection: Class 3 — Custom: DALOS|C>ROTATE-OA_GOVERNOR
     (defun XI_RotateGovernor (account:string governor:guard)
         @doc "Under DALOS|C>ROTATE-OA_GOVERNOR: update governor only. Write only."
         (require-capability (DALOS|C>ROTATE-OA_GOVERNOR account governor))
@@ -1417,6 +1443,7 @@
             {"governor" : governor}
         )
     )
+    ;;Protection: Class 3 — Custom: DALOS|C>ROTATE-OA-GUARD
     (defun XI_RotateGuard (account:string new-guard:guard safe:bool)
         @doc "Under DALOS|C>ROTATE-OA-GUARD: update guard (and governor on standard accounts). Write only."
         (require-capability (DALOS|C>ROTATE-OA-GUARD account new-guard safe))
@@ -1430,6 +1457,7 @@
             )
         )
     )
+    ;;Protection: Class 3 — Custom: DALOS|C>ROTATE-OA-STOA
     (defun XI_RotateStoa (account:string stoa:string)
         @doc "Under DALOS|C>ROTATE-OA-STOA: update stoa-konto only. Write only."
         (require-capability (DALOS|C>ROTATE-OA-STOA account))
@@ -1437,6 +1465,7 @@
             {"stoa-konto"                  : stoa}
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdateStoaLedger (stoa:string dalos:string direction:bool)
         (require-capability (SECURE))
         (let
@@ -1479,6 +1508,7 @@
             )
         )
     )
+    ;;Protection: Class 3 — Custom: DALOS|S>ROTATE-OA-SOVEREIGN
     (defun XI_RotateSovereign (account:string new-sovereign:string)
         (require-capability (DALOS|S>ROTATE-OA-SOVEREIGN account new-sovereign))
         (update DALOS|AccountTable account
@@ -1486,6 +1516,7 @@
         )
     )
     ;;      [X-DALOS|PropertiesTable]
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_UpdateTreasury (type:integer tdp:decimal tds:decimal)
         (P|UEV_IMC)
         (update DALOS|PropertiesTable DALOS|INFO
@@ -1495,6 +1526,7 @@
 
         )
     );;     [X-DALOS|GasManagementTable]
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_IgnisIncrement (native:bool increment:decimal)
         (P|UEV_IMC)
         (if (= native true)
@@ -1507,6 +1539,7 @@
         )
     )
     ;;      [X-DALOS|AccountTable]
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_IncrementOuronetAccountNonce (account:string)
         (P|UEV_IMC)
         (with-read DALOS|AccountTable account
@@ -1514,6 +1547,7 @@
             (update DALOS|AccountTable account { "nonce" : (+ n 1)})
         )
     )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_UpdateElite (account:string amount:decimal)
         (P|UEV_IMC)
         (let
@@ -1528,6 +1562,7 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdateTF (account:string snake-or-gas:bool new-obj:object{OuronetDalosV2.DPTF|BalanceSchema})
         (require-capability (SECURE))
         (if snake-or-gas
@@ -1539,6 +1574,7 @@
             )
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: SECURE
     (defun XB_UpdateBalance (account:string snake-or-gas:bool new-balance:decimal)
         (P|UEV_IMC)
         (with-capability (SECURE)
@@ -1562,6 +1598,7 @@
             )
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: SECURE
     (defun XE_UpdateFreeze (account:string snake-or-gas:bool new-freeze:bool)
         (P|UEV_IMC)
         (with-capability (SECURE)
@@ -1573,6 +1610,7 @@
             )
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: SECURE
     (defun XE_UpdateBurnRole (account:string snake-or-gas:bool new-burn:bool)
         (P|UEV_IMC)
         (with-capability (SECURE)
@@ -1584,6 +1622,7 @@
             )
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: SECURE
     (defun XE_UpdateMintRole (account:string snake-or-gas:bool new-mint:bool)
         (P|UEV_IMC)
         (with-capability (SECURE)
@@ -1595,6 +1634,7 @@
             )
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: SECURE
     (defun XE_UpdateFeeExemptionRole (account:string snake-or-gas:bool new-fee-exemption:bool)
         (P|UEV_IMC)
         (with-capability (SECURE)
@@ -1606,6 +1646,7 @@
             )
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: SECURE
     (defun XE_UpdateTransferRole (account:string snake-or-gas:bool new-transfer:bool)
         (P|UEV_IMC)
         (with-capability (SECURE)

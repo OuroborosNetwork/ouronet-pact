@@ -130,7 +130,7 @@
         [
             (expect-failure "<<CONF-02>> XI_ is unreachable: SECURE is not in scope out here"
                 "require-capability"
-                (DPTF.XI_IncrementFeeUnlocks a))
+                (DPTF.XIv_IncrementFeeUnlocks a))
             (expect-failure "<<CONF-02>> XE_ is unreachable: the IMC guard has nothing to match"
                 "None of the guards passed"
                 (ref-DPTF::XE_UpdateFeeVolume a 1.0 true))
@@ -272,6 +272,235 @@
         )
     )
     ""
+)
+(print "===^^^===")
+(commit-tx)
+(print "")
+
+;;|| NEXT >
+;;
+(begin-tx "CONF-05 — every A_ in TS01-A gates on the ADMIN cap, including the one that did not")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [CONF-05 · 01 · the A_ gate, swept rather than sampled] ---")
+;;CONF-04 above proves the admin boundary holds for ONE entrypoint. This block is the sweep, and
+;;it exists because the sweep found a hole.
+;;
+;;FINDING (fixed in 01_TS01-A.pact): ORBR|A_Fuel was written (with-capability (SECURE) ...), and
+;;SECURE in that module is (defcap SECURE () true) -- a C1 trivial cap that grants itself. Every
+;;other |A_ entrypoint there composes P|ADMINISTRATIVE-SUMMONER (P|TS + GOV|TS01-A_ADMIN), so
+;;this one was a single-identifier outlier. Its own @doc said "As Stand-Alone Function, can only
+;;be used by the Admin" -- the intent was documented and simply not enforced, which is why no
+;;reader caught it.
+;;
+;;What an attacker got: the ability to force the STOA fuelling of the Liquid Index at a moment
+;;of their choosing rather than when the fee-collecting paths do it. Not theft -- the STOA
+;;reaches the index either way -- but the TIMING of an index move is exactly the kind of thing
+;;worth controlling if you hold a position on either side of it.
+;;
+;;Closing it cost nothing: the sole live caller ([6.3]_SWP.repl:2443) already signs with a
+;;Demiurgoi key. The assertions below are what keeps it closed.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+    )
+    (map print
+        [
+            ;;the regression itself
+            (expect-failure "<<CONF-05>> ORBR|A_Fuel is refused for a non-admin signer"
+                "Keyset failure"
+                (ref-TS01-A::ORBR|A_Fuel))
+            ;;...and its siblings, so this reads as a swept property rather than one lucky case.
+            ;;Each is called with a VALID argument shape, because an arity or type error would
+            ;;also raise -- and would look exactly like a passing access-control test while
+            ;;proving nothing. That trap is how this whole finding nearly went unnoticed.
+            (expect-failure "<<CONF-05>> SWP|A_UpdateLimit likewise"
+                "Keyset failure"
+                (ref-TS01-A::SWP|A_UpdateLimit 5.0 false))
+            (expect-failure "<<CONF-05>> SWP|A_ToggleAsymetricLiquidityAddition likewise"
+                "Keyset failure"
+                (ref-TS01-A::SWP|A_ToggleAsymetricLiquidityAddition true))
+            (expect-failure "<<CONF-05>> LIQUID|A_MigrateLiquidFunds likewise"
+                "Keyset failure"
+                (ref-TS01-A::LIQUID|A_MigrateLiquidFunds "k:abc"))
+            (expect-failure "<<CONF-05>> ATS|A_KickStart likewise"
+                "Keyset failure"
+                (ref-TS01-A::ATS|A_KickStart KST.EMMA KST.EMMA
+                    "PlebeicStrength-98c486052a51" [1.0] 1.0))
+        ]
+    )
+    ""
+)
+(print "===^^^===")
+(commit-tx)
+(print "")
+
+;;|| NEXT >
+;;
+(begin-tx "CONF-06a — the module GOVERNANCE caps, swept: ATS")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [CONF-06a · 01 · GOV|*_ADMIN] ---")
+;;Six modules each carry a GOV|<X>_ADMIN capability -- the guard that governs UPGRADING that
+;;module. It is the highest-consequence gate in the codebase (whoever satisfies it can replace
+;;the code outright) and not one of the six had a negative test.
+;;
+;;A PREVIOUS PASS CONCLUDED THESE WERE UNREACHABLE, and that was wrong. The reasoning was that
+;;the only route in is a Talos admin entrypoint, and Talos's own keyset check fires first --
+;;which is true, and irrelevant: `test-capability` acquires a capability DIRECTLY, running its
+;;body without any wrapper. Six guards moved from "unreachable" to pinned on that one fact.
+;;
+;;Each is an enforce-one over the Demiurgoi and the module's own service keyset, so signing as a
+;;legitimate-but-unprivileged user (EMMA) satisfies neither branch and the enforce-one reports
+;;its own message. Each gets its own transaction, because a granted capability is cached for the
+;;rest of the tx.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(map print
+    [
+        (expect-failure "<<CONF-06a>> ATS governance is refused for a legitimate but unprivileged signer"
+            "ATS Autostake Admin not satisfed"
+            (test-capability (ATS.GOV|ATS_ADMIN)))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "CONF-06b — the module GOVERNANCE caps, swept: ATSU")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [CONF-06b · 01 · GOV|*_ADMIN] ---")
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(map print
+    [
+        (expect-failure "<<CONF-06b>> ATSU governance is refused for a legitimate but unprivileged signer"
+            "ATSU Autostake Admin not satisfed"
+            (test-capability (ATSU.GOV|ATSU_ADMIN)))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "CONF-06c — the module GOVERNANCE caps, swept: VST")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [CONF-06c · 01 · GOV|*_ADMIN] ---")
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(map print
+    [
+        (expect-failure "<<CONF-06c>> VST governance is refused for a legitimate but unprivileged signer"
+            "VESTING Admin not satisfed"
+            (test-capability (VST.GOV|VESTING_ADMIN)))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "CONF-06d — the module GOVERNANCE caps, swept: LIQUID")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [CONF-06d · 01 · GOV|*_ADMIN] ---")
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(map print
+    [
+        (expect-failure "<<CONF-06d>> LIQUID governance is refused for a legitimate but unprivileged signer"
+            "LIQUID Admin not satisfed"
+            (test-capability (LIQUID.GOV|LIQUID_ADMIN)))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "CONF-06e — the module GOVERNANCE caps, swept: OUROBOROS")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [CONF-06e · 01 · GOV|*_ADMIN] ---")
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(map print
+    [
+        (expect-failure "<<CONF-06e>> OUROBOROS governance is refused for a legitimate but unprivileged signer"
+            "ORBR Admin not satisfed"
+            (test-capability (OUROBOROS.GOV|ORBR_ADMIN)))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "CONF-06f — the module GOVERNANCE caps, swept: SWP")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [CONF-06f · 01 · GOV|*_ADMIN] ---")
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(map print
+    [
+        (expect-failure "<<CONF-06f>> SWP governance is refused for a legitimate but unprivileged signer"
+            "SWP Swapper Admin not satisfed"
+            (test-capability (SWP.GOV|SWP_ADMIN)))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "CONF-06g — IGNIS|C>TRANSFER: the zero-amount floor")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [CONF-06g · 01 · gas transfer floor] ---")
+;;Not governance, but the same technique and the same module band. A zero or negative GAS
+;;transfer is refused before any account is read -- so it is reachable with dummy accounts, and
+;;the guard is what stops a caller from emitting a transfer event that moves nothing.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(map print
+    [
+        (expect-failure "<<CONF-06g>> a ZERO-amount GAS transfer is refused"
+            "Cannot debit|credit 0.0 or negative GAS amounts"
+            (test-capability (IGNIS.IGNIS|C>TRANSFER "a" "b" 0.0)))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "CONF-06h — ...and the negative case, which is the one that would mint gas")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [CONF-06h · 01 · gas transfer floor, negative] ---")
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(map print
+    [
+        (expect-failure "<<CONF-06h>> a NEGATIVE GAS transfer is refused — it would reverse the direction"
+            "Cannot debit|credit 0.0 or negative GAS amounts"
+            (test-capability (IGNIS.IGNIS|C>TRANSFER "a" "b" -1.0)))
+    ]
+)
+(commit-tx)
+(print "")
+
+;;|| NEXT >
+;;
+(begin-tx "CONF-07 — IGNIS|C>DEBIT: the gas-balance floor")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [CONF-07 · 01 · gas debit floor] ---")
+;;The companion to CONF-06g/h, which pin the TRANSFER amount rules. This one is the balance check:
+;;an account cannot be debited more GAS than it holds. Without it the virtual-chain gas ledger
+;;could go negative, which is the one thing a gas meter must never do.
+;;
+;;A REAL account is used with an absurd amount, rather than a dummy id with a small one. Both trip
+;;the guard, but only the real account makes the failure attributable to the BALANCE — with a
+;;dummy id the same message could equally mean "this account has no row at all".
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(map print
+    [
+        (expect-failure "<<CONF-07>> debiting more GAS than the account holds is refused"
+            "Insufficient GAS for GAS-Debiting"
+            (test-capability (IGNIS.IGNIS|C>DEBIT KST.ANHD 999999999.0)))
+    ]
 )
 (print "===^^^===")
 (commit-tx)

@@ -1,0 +1,270 @@
+;; REPL/modules/AQP-LP.repl — AQP on a chain that ALSO has SWP liquidity pools.
+;;
+;; WHY THIS FILE EXISTS. Several AQP-SCORE / AQP guards read an SWP LP pair AND an AQP score in the same
+;; expression, and no harness carried both: `modules/SWP.repl` builds the pools but stops at Stage 01,
+;; `modules/AQP.repl` builds the scores but has no pools. `UEV_LpStakeScoreContext` was recorded as
+;; not-pinnable for exactly that reason — its `let` hard-reads `SWP|LP` before any of its conjuncts, so on
+;; a pool-less chain every argument dies in the read rather than reaching the guard.
+;;
+;; The load order is the one `modules/STAGE-Z.repl` already proves: Stage 00 -> Stage 01 -> the CHEAP
+;; DPTF/SWP issuance-only path -> Stage 02, with the AQP umbrella last. The issuance-only variant is
+;; deliberate: it is measured at ~8s against the full `[6.3]_SWP` suite, and all that is needed here is
+;; that the LP rows EXIST.
+;;
+;; Run: cd REPL && pact modules/AQP-LP.repl
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+(load "../Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl")
+(load "../deploy-stage02.repl")
+(load "../Stage_02/[6.2]_AQP.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "AQPLP-G1 — the LP-stake score context, on a chain that has both halves")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;The LP id is DISCOVERED from the chain, not hardcoded. The issuance-only path builds its own pairs
+;;(S|AG-…|AL-…, S|AL-…|AU-… and so on), NOT the S|DLK-…|OURO-…|DWK-… that the full [6.3]_SWP suite makes --
+;;which the first version of this file assumed and died on. Reading the first LP row is both shorter and
+;;immune to the pair set changing; the assertion below proves a row was actually found.
+(env-module-admin SWP)
+(print "--- [AQPLP-G1 · 01 · both fixtures are present] ---")
+;;The whole point of this file, asserted before anything depends on it: an SWP LP pair and an AQP score on
+;;one chain. If either half ever stops loading, this says so directly instead of the guard below failing
+;;for an unrelated reason.
+(let
+    (
+        (ref-SWP:module{SwapperV4} SWP)
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (lp:string (at 0 (keys SWP.SWP|LP)))
+        (sc:string "DhbVacateScore-98c486052a51")
+        (pool:string "DhbVacatePool-98c486052a51")
+    )
+    (map print
+        [
+            (expect "<<AQPLP-G1>> an LP row exists and resolves to a real swap pair"
+                true (and (!= "" lp) (!= "" (ref-SWP::UR_GetLpSwpair lp))))
+            (expect "<<AQPLP-G1>> ...and the AQP score exists, linked to its pool"
+                pool (ref-SCR::UR_SCR|ScoreAqpoolLink sc))
+        ]
+    )
+    (print "--- [AQPLP-G1 · 02 · the three conjuncts, named individually] ---")
+    ;;`UEV_LpStakeScoreContext` folds THREE conditions under one message, so the message alone cannot say
+    ;;which failed. Each is therefore asserted on its own first, and the refusal afterwards. Two of the
+    ;;three are false for this score, which is exactly why the individual assertions matter: without them
+    ;;the refusal would be evidence that *something* was wrong, not that this guard checks what it says.
+    (let
+        (
+            (native-lp:string (ref-SCR::URC_StakeLpTokenToNativeLpDptf lp))
+        )
+        (let
+            (
+                (swpair:string (ref-SWP::UR_GetLpSwpair native-lp))
+            )
+            (map print
+                [
+                    (expect "<<AQPLP-G1>> conjunct 1 HOLDS: the score's pool link matches the pool-id"
+                        true (= (ref-SCR::UR_SCR|ScoreAqpoolLink sc) pool))
+                    (expect "<<AQPLP-G1>> conjunct 2 FAILS: the score is not class 0"
+                        false (= (ref-SCR::UR_SCR|ScoreClass sc) 0))
+                    (expect "<<AQPLP-G1>> conjunct 3 FAILS: its lp-denominator is the BAR sentinel"
+                        false (contains (ref-SCR::UR_SCR|ScoreLpDenominator sc)
+                                        (ref-SWP::UR_PoolTokens swpair)))
+                    ;;...and the guard refuses, having actually reached its own enforce -- which is the
+                    ;;thing this file was built to make possible.
+                    (expect-failure "<<AQPLP-G1>> so the LP-stake context is refused"
+                        "LP stake score context: pool-id, score-class, or LP pair vs lp-denominator mismatch"
+                        (ref-SCR::UEV_LpStakeScoreContext KST.ANHD pool sc lp))
+                    ;;...and with a pool-id that does NOT match the score's link, conjunct 1 fails too --
+                    ;;same message, different cause. Driven so the fold is known to read the pool-id at all.
+                    (expect-failure "<<AQPLP-G1>> ...and also when the pool-id does not match the score's link"
+                        "LP stake score context"
+                        (ref-SCR::UEV_LpStakeScoreContext KST.ANHD "DhnVacatePool-98c486052a51" sc lp))
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "AQPLP-G2 — a CLASS-0 liquidity score, and the guards that needed one")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;Issuing a score is STOA-priced and settles as coin transfers, so the managed caps must be in scope --
+;;otherwise the call dies in `coin.TRANSFER` before the score exists. The fee is split across receivers,
+;;so all four legs are granted with headroom rather than exact amounts (pinning the split here would make
+;;this fixture fail on every price change).
+(env-sigs
+    [ { "key": "PK_AncientHodler", "caps": [] }
+      { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+      , "caps":
+        [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                         "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000.0)
+          (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                         "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000.0)
+          (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                         "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000.0)
+          (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                         "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000.0) ] } ])
+(print "--- [AQPLP-G2 · 01 · issuing the score the suite never had] ---")
+;;`modules/AQP.repl` carries 37 scores and **none of them is class 0** (measured). Class 0 is the LP/farm
+;;class, and several guards only have anything to say about it -- so they sat on the worklist reading as
+;;"needs a fixture" with nobody naming the fixture.
+;;
+;;It is one client call: `AQP-SCR|C_IssueLiquidityScore` creates a class-0 score with a chosen
+;;lp-denominator. Done here rather than in `modules/AQP.repl` because the interesting guards compare that
+;;denominator against an SWP PAIR, and this is the only chain carrying both.
+(let
+    (
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-SWP:module{SwapperV4} SWP)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+    )
+    (env-module-admin SWP)
+    (let*
+        (
+            (lp:string (at 0 (keys SWP.SWP|LP)))
+            (swpair:string (ref-SWP::UR_GetLpSwpair lp))
+            (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
+            ;;a denominator that is NOT one of the pair's tokens -- OURO is not in the issuance-only
+            ;;pairs, which are built from AG/AL/AU/BI/CO. That mismatch is what the target guards test.
+            (outsider:string (DALOS.UR_OuroborosID))
+        )
+        (map print
+            [
+                (expect "<<AQPLP-G2>> the pair has tokens, and OURO is not one of them"
+                    [true false]
+                    [(> (length pool-tokens) 0) (contains outsider pool-tokens)])
+            ]
+        )
+        ;;precision 6, mx-frozen/mx-sleeping 2.0 -- the values AQP-BOOT's Step 6 uses. The issuer bounds
+        ;;precision to [3,24] and requires BOTH multipliers to be strictly positive; 0.0 was rejected on
+        ;;the first attempt with "Invalid precision, score-class, mx-frozen, mx-sleeping, mx-hibernated
+        ;;or nft-score-model" -- one message over eight conjuncts, so the only way to know which was
+        ;;wrong was to read them.
+        (ref-TS02-C3::AQP-SCR|C_IssueLiquidityScore
+            KST.ANHD KST.ANHD "LpProbeScore" 6 outsider 2.0 2.0)
+        (let
+            (
+                (sc:string (ref-U|DALOS::UDC_Makeid "LpProbeScore"))
+            )
+            (map print
+                [
+                    ;;the fixture, asserted: a genuine class-0 score with an unlinked pool and the
+                    ;;denominator just chosen
+                    (expect "<<AQPLP-G2>> the new score is CLASS 0 -- the first on any chain in this suite"
+                        0 (ref-SCR::UR_SCR|ScoreClass sc))
+                    (expect "<<AQPLP-G2>> ...with no pool link yet, and OURO as its lp-denominator"
+                        [(U|CT.CT_BAR) outsider]
+                        [(ref-SCR::UR_SCR|ScoreAqpoolLink sc)
+                         (ref-SCR::UR_SCR|ScoreLpDenominator sc)])
+                    ;;NOW the class-0 branch of UEV_LpStakeScoreContext is reachable with conjunct 2
+                    ;;HOLDING, which AQPLP-G1 could not do -- there, class 0 was false. Here only the
+                    ;;denominator-vs-pair conjunct fails, so the refusal isolates conjunct 3.
+                    (expect "<<AQPLP-G2>> conjunct 2 now HOLDS: the score really is class 0"
+                        true (= (ref-SCR::UR_SCR|ScoreClass sc) 0))
+                    (expect "<<AQPLP-G2>> ...while conjunct 3 fails: OURO is not in the LP pair"
+                        false (contains (ref-SCR::UR_SCR|ScoreLpDenominator sc) pool-tokens))
+                    ;;conjunct 1 needs the pool link to match, and this score has none -- so passing BAR
+                    ;;as the pool-id satisfies it and leaves conjunct 3 as the only failure.
+                    (expect-failure "<<AQPLP-G2>> so the context is refused on the denominator alone"
+                        "LP stake score context: pool-id, score-class, or LP pair vs lp-denominator mismatch"
+                        (ref-SCR::UEV_LpStakeScoreContext KST.ANHD (U|CT.CT_BAR) sc lp))
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+;;the issued score is a real row; this transaction keeps it, because AQPLP-G3 builds on it
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "AQPLP-G3 — the class-0 pool rule, reached by building the pool the suite never had")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;same STOA caps as AQPLP-G2 -- issuing a pool is priced the same way as issuing a score
+(env-sigs
+    [ { "key": "PK_AncientHodler", "caps": [] }
+      { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+      , "caps":
+        [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                         "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000.0)
+          (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                         "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000.0)
+          (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                         "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000.0)
+          (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                         "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000.0) ] } ])
+(print "--- [AQPLP-G3 · 01 · a class-0 pool anchored on a real LP token] ---")
+;;`UEV_AddScorePoolAndScore` has THREE enforces in sequence, and only the third says anything about
+;;class 0:
+;;    1] slot-index in 0..6, that slot free, prior slots occupied
+;;    2] score exists, its aqpool-link is BAR, its class equals the POOL's aqp-class, not already slotted
+;;    3] if aqp-class is 0: the score's lp-denominator must be a token of the pool asset's swap pair
+;;
+;;Reaching 3 therefore needs a class-0 POOL as well as the class-0 SCORE from AQPLP-G2 -- and the AQP
+;;suite builds neither. The pool is one client call, `AQP-POOL|C_Issue … 0`, anchored on the same LP token
+;;the score was NOT given as its denominator. That mismatch is the whole subject of enforce 3.
+(let
+    (
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-SWP:module{SwapperV4} SWP)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+    )
+    (env-module-admin SWP)
+    (let*
+        (
+            (lp:string (at 0 (keys SWP.SWP|LP)))
+            (sc:string (ref-U|DALOS::UDC_Makeid "LpProbeScore"))
+        )
+        (ref-TS02-C3::AQP-POOL|C_Issue KST.ANHD "LpProbePool" lp 0)
+        (let*
+            (
+                (pool:string (ref-U|DALOS::UDC_Makeid "LpProbePool"))
+                (swpair:string (ref-SWP::UR_GetLpSwpair lp))
+                (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
+            )
+            (map print
+                [
+                    (expect "<<AQPLP-G3>> the new pool is class 0 and anchored on the LP token"
+                        [0 lp]
+                        [(AQP-POOL.UR_AQP|PoolAqpClass pool) (AQP-POOL.UR_AQP|PoolAssetId pool)])
+                    ;;enforce 2's conditions all HOLD, which is what leaves enforce 3 as the only failure
+                    (expect "<<AQPLP-G3>> the score is unlinked, class 0, and matches the pool's class"
+                        [(U|CT.CT_BAR) 0 0]
+                        [(ref-SCR::UR_SCR|ScoreAqpoolLink sc)
+                         (ref-SCR::UR_SCR|ScoreClass sc)
+                         (AQP-POOL.UR_AQP|PoolAqpClass pool)])
+                    ;;enforce 3's condition is the one that fails: the score's denominator is OURO, and
+                    ;;the issuance-only pairs are built from AG/AL/AU/BI/CO.
+                    (expect "<<AQPLP-G3>> ...but its lp-denominator is not a token of the pool's pair"
+                        false (contains (ref-SCR::UR_SCR|ScoreLpDenominator sc) pool-tokens))
+                    (expect-failure "<<AQPLP-G3>> so assigning it to the class-0 pool is refused"
+                        "Class 0 score lp-denominator must appear in the swap pair for the pool native LP asset-id"
+                        (AQP-POOL.UEV_AddScorePoolAndScore pool sc 0))
+                    ;;...and the FIRST enforce fronts it, which locates the three in order: an
+                    ;;out-of-range slot never reaches the class-0 rule at all.
+                    (expect-failure "<<AQPLP-G3>> ...while a slot index past 6 is stopped by the FIRST enforce"
+                        "Invalid or unavailable score slot index for pool"
+                        (AQP-POOL.UEV_AddScorePoolAndScore pool sc 7))
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+;;the pool is kept, like the score: both are fixtures the next pass builds on
+(commit-tx)
+(print "")
+(print "=== END modules/AQP-LP.repl ===")

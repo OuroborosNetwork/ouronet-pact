@@ -1081,7 +1081,6 @@
             (enforce (!= fourth BAR) "Sleeping LP Tokens not allowed for this operation")
             (let
                 (
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                     (first-two:string (take 2 dpmf))
                 )
                 (if (= first-two "V|")
@@ -1330,6 +1329,7 @@
     )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XB_DeployAccountWNE (id:string account:string)
         (P|UEV_IMC)
         (let
@@ -1342,6 +1342,7 @@
             )
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: DPMF|C>ISSUE
     (defun XB_IssueFree:object{IgnisCollectorV2.OutputCumulator}
         (
             account:string
@@ -1404,6 +1405,7 @@
             )
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: P|DPMF|CALLER
     (defun XB_UpdateEliteSingle (id:string account:string)
         (P|UEV_IMC)
         (let
@@ -1423,6 +1425,7 @@
             )
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: P|DPMF|CALLER
     (defun XB_UpdateElite (id:string sender:string receiver:string)
         (P|UEV_IMC)
         (let
@@ -1447,6 +1450,7 @@
             )
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: BASIS|C>X_WRITE-ROLES
     (defun XB_WriteRoles (id:string account:string rp:integer d:bool)
         (P|UEV_IMC)
         (let
@@ -1513,6 +1517,7 @@
         )
     )
     ;;
+    ;;Protection: Class 5 — IMC + Custom: DPMF|S>MOVE_CREATE-R
     (defun XE_MoveCreateRole (id:string receiver:string)
         (P|UEV_IMC)
         (with-capability (DPMF|S>MOVE_CREATE-R id receiver)
@@ -1532,6 +1537,7 @@
             )
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: DPMF|S>TG_ADD-QTY-R
     (defun XE_ToggleAddQuantityRole (id:string account:string toggle:bool)
         (P|UEV_IMC)
         (with-capability (DPMF|S>TG_ADD-QTY-R id account toggle)
@@ -1540,6 +1546,7 @@
             )
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: DPMF|S>TG_BURN-R
     (defun XE_ToggleBurnRole (id:string account:string toggle:bool)
         (P|UEV_IMC)
         (with-capability (DPMF|S>TG_BURN-R id account toggle)
@@ -1548,6 +1555,7 @@
             )
         )
     )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_UpdateRewardBearingToken (atspair:string id:string)
         (P|UEV_IMC)
         (UEV_UpdateRewardBearingToken id)
@@ -1555,6 +1563,7 @@
             {"reward-bearing-token" : atspair}
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: DPMF|C>UPDATE-SPECIAL
     (defun XE_UpdateSpecialMetaFungible:object{IgnisCollectorV2.OutputCumulator}
         (main-dptf:string secondary-dpmf:string vesting-or-sleeping:bool)
         (P|UEV_IMC)
@@ -1579,6 +1588,7 @@
         )
     )
     ;;
+    ;;Protection: Class 3 — Custom: DPMF|C>ADD-QTY
     (defun XI_AddQuantity (id:string nonce:integer account:string amount:decimal)
         (require-capability (DPMF|C>ADD-QTY id account amount))
         (with-read DPMF|BalanceTable (concat [id BAR account])
@@ -1600,17 +1610,20 @@
         )
         (XI_UpdateSupply id amount true)
     )
+    ;;Protection: Class 3 — Custom: DPMF|C>BURN
     (defun XI_Burn (id:string nonce:integer account:string amount:decimal)
         (require-capability (DPMF|C>BURN id account amount))
         (XI_DebitStandard id nonce account amount)
         (XI_UpdateSupply id amount false)
     )
+    ;;Protection: Class 3 — Custom: DPMF|S>RT_OWN
     (defun XI_ChangeOwnership (id:string new-owner:string)
         (require-capability (DPMF|S>RT_OWN id new-owner))
         (update DPMF|PropertiesTable id
             {"owner-konto"                      : new-owner}
         )
     )
+    ;;Protection: Class 3 — Custom: DPMF|S>CTRL
     (defun XI_Control
         (
             id:string
@@ -1633,6 +1646,7 @@
             ,"can-transfer-nft-create-role" : can-transfer-nft-create-role}
         )
     )
+    ;;Protection: Class 3 — Custom: DPMF|C>CREATE
     (defun XI_Create:integer (id:string account:string meta-data:[object])
         (require-capability (DPMF|C>CREATE id account))
         (let
@@ -1678,6 +1692,7 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_Credit (id:string nonce:integer meta-data:[object] account:string amount:decimal)
         (require-capability (SECURE))
         (let
@@ -1735,11 +1750,13 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_DebitAdmin (id:string nonce:integer account:string amount:decimal)
         (require-capability (SECURE))
         (CAP_Owner id)
         (XI_DebitPure id nonce account amount)
     )
+    ;;Protection: Class 1 — Innate protection offered by XI_DebitPaired
     (defun XI_DebitMultiple (id:string nonce-lst:[integer] account:string balance-lst:[decimal])
         (let
             (
@@ -1748,6 +1765,7 @@
             (map (lambda (x:object{DemiourgosPactMetaFungibleV7.DPMF|Nonce-Balance}) (XI_DebitPaired id account x)) nonce-balance-obj-lst)
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by XI_DebitAdmin
     (defun XI_DebitPaired (id:string account:string nonce-balance-obj:object{DemiourgosPactMetaFungibleV7.DPMF|Nonce-Balance})
         (let
             (
@@ -1757,6 +1775,7 @@
             (XI_DebitAdmin id nonce account balance)
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_DebitPure (id:string nonce:integer account:string amount:decimal)
         (require-capability (SECURE))
         (with-read DPMF|BalanceTable (concat [id BAR account])
@@ -1802,6 +1821,7 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_DebitStandard (id:string nonce:integer account:string amount:decimal)
         (require-capability (SECURE))
         (let
@@ -1812,6 +1832,7 @@
             (XI_DebitPure id nonce account amount)
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_IncrementNonce (id:string)
         (require-capability (SECURE))
         (with-read DPMF|PropertiesTable id
@@ -1819,6 +1840,7 @@
             (update DPMF|PropertiesTable id { "nonces-used" : (+ nu 1)})
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_Issue:string
         (
             account:string
@@ -1869,6 +1891,7 @@
             id
         )
     )
+    ;;Protection: Class 3 — Custom: DPMF|C>MINT
     (defun XI_Mint:integer (id:string account:string amount:decimal meta-data:[object])
         (require-capability (DPMF|C>MINT id account amount))
         (let
@@ -1881,24 +1904,28 @@
             new-nonce
         )
     )
+    ;;Protection: Class 3 — Custom: DPMF|S>X_FRZ-ACC
     (defun XI_ToggleFreezeAccount (id:string account:string toggle:bool)
         (require-capability (DPMF|S>X_FRZ-ACC id account toggle))
         (update DPMF|BalanceTable (concat [id BAR account])
             { "frozen" : toggle}
         )
     )
+    ;;Protection: Class 3 — Custom: DPMF|S>TG_PAUSE
     (defun XI_TogglePause (id:string toggle:bool)
         (require-capability (DPMF|S>TG_PAUSE id toggle))
         (update DPMF|PropertiesTable id
             { "is-paused" : toggle}
         )
     )
+    ;;Protection: Class 3 — Custom: DPMF|S>X_TG_TRANSFER-R
     (defun XI_ToggleTransferRole (id:string account:string toggle:bool)
         (require-capability (DPMF|S>X_TG_TRANSFER-R id account toggle))
         (update DPMF|BalanceTable (concat [id BAR account])
             {"role-transfer" : toggle}
         )
     )
+    ;;Protection: Class 3 — Custom: DPMF|C>TRANSFER
     (defun XI_Transfer (id:string nonce:integer sender:string receiver:string transfer-amount:decimal method:bool)
         (require-capability (DPMF|C>TRANSFER id sender receiver transfer-amount method))
         (let
@@ -1912,6 +1939,7 @@
             (XB_UpdateElite id sender receiver)
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdateRoleTransferAmount (id:string direction:bool)
         (require-capability (SECURE))
         (if (= direction true)
@@ -1929,18 +1957,21 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdateVesting (dptf:string dpmf:string)
         (require-capability (SECURE))
         (update DPMF|PropertiesTable dpmf
             {"vesting-link" : dptf}
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdateSleeping (dptf:string dpmf:string)
         (require-capability (SECURE))
         (update DPMF|PropertiesTable dpmf
             {"sleeping-link" : dptf}
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdateSupply (id:string amount:decimal direction:bool)
         (require-capability (SECURE))
         (UEV_Amount id amount)
@@ -1957,6 +1988,7 @@
             )
         )
     )
+    ;;Protection: Class 3 — Custom: DPMF|C>TOTAL-WIPE
     (defun XI_Wipe (id:string account-to-be-wiped:string)
         (require-capability (DPMF|C>TOTAL-WIPE id account-to-be-wiped))
         (let
@@ -1969,6 +2001,7 @@
             (XI_UpdateSupply id sum false)
         )
     )
+    ;;Protection: Class 3 — Custom: DPMF|C>PARTIAL-WIPE
     (defun XI_WipePartial (id:string account-to-be-wiped:string nonces:[integer])
         (require-capability (DPMF|C>PARTIAL-WIPE id account-to-be-wiped nonces))
         (let

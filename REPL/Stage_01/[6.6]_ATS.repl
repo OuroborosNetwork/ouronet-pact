@@ -454,7 +454,7 @@
         (a-k:string "AKOSON-98c486052a51")
         ;;
         (nonce-supply-1:decimal (ref-DPOF::UR_NonceSupply dd-k 1))
-        (total-rts-1:[decimal] (ref-ATS::URC_RTSplitAmounts ps nonce-supply-1))
+        (total-rts-1:[decimal] (ref-ATS::URCv_RTSplitAmounts ps nonce-supply-1))
         (total-value-1:decimal (fold (+) 0.0 total-rts-1))
         (p-before:decimal (ref-DPTF::UR_AccountSupply p-k aoz))
         (e-before:decimal (ref-DPTF::UR_AccountSupply e-k aoz))
@@ -537,7 +537,7 @@
         (pd-k:string "PDKOSON-98c486052a51")
         ;;
         (nonce-supply-2:decimal (ref-DPOF::UR_NonceSupply dd-k 2))
-        (total-rts-2:[decimal] (ref-ATS::URC_RTSplitAmounts ps nonce-supply-2))
+        (total-rts-2:[decimal] (ref-ATS::URCv_RTSplitAmounts ps nonce-supply-2))
         (total-value-2:decimal (fold (+) 0.0 total-rts-2))
         (p-before:decimal (ref-DPTF::UR_AccountSupply p-k aoz))
         (e-before:decimal (ref-DPTF::UR_AccountSupply e-k aoz))
@@ -3598,7 +3598,7 @@
 ;; elsewhere in this file — only for KoriID, in [4.0]_Sovereign-Executor.repl). ps's direct-recovery
 ;; fee (d-promile) was never set, so it's still the 0.0 default — the fee-free branch of
 ;; C_DirectRecovery burns <ra> of the cold-RBT and releases the equivalent value in reward tokens
-;; (via the pool's current index, URC_RTSplitAmounts — NOT a flat 1:1, since ps's index has moved
+;; (via the pool's current index, URCv_RTSplitAmounts — NOT a flat 1:1, since ps's index has moved
 ;; well off its 1.0 genesis value from all the Coil/Cull/fee activity earlier in this file), split
 ;; proportionally across ps's reward-token list.
 (let
@@ -3616,7 +3616,7 @@
             (rt-lst:[string] (ref-ATS::UR_RewardTokenList ps))
             (pd-k-before:decimal (ref-DPTF::UR_AccountSupply pd-k aoz))
             (ra:decimal 10.0)
-            (expected-release-sum:decimal (fold (+) 0.0 (ref-ATS::URC_RTSplitAmounts ps 10.0)))
+            (expected-release-sum:decimal (fold (+) 0.0 (ref-ATS::URCv_RTSplitAmounts ps 10.0)))
         )
         (let
             (

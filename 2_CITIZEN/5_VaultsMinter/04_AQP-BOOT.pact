@@ -471,6 +471,15 @@
         ;;   [(U|DALOS.UDC_Makeid "SilverSnakePower") (U|DALOS.UDC_Makeid "BronzeSnakePower") (U|DALOS.UDC_Makeid "GoldenSnakePower")]
         ;; )
         (with-capability (GOV|AQP_BOOT_ADMIN)
+            ;;FIXED 2026-09-12: the LENGTH check is enforced HERE, above the binding group.
+            ;;It used to sit BELOW a `let` that already did `(at 0 boost-class-ids)`, `(at 1 …)` and
+            ;;`(at 2 …)`. A `let` is EAGER, so for a SHORT list those indexes ran first and the
+            ;;operator got `Array index out of bounds` instead of the sentence naming the argument.
+            ;;The message only ever arrived for a list that was too LONG -- the one case the `at`s
+            ;;survive. C_Step9 in this same file is the correctly-ordered twin, so the fix was
+            ;;demonstrated in place. A length test needs nothing but the parameter, so it can run
+            ;;before anything is derived. Pinned by REPL/modules/DPDC.repl <<DPDC-G10>>.
+            (enforce (= (length boost-class-ids) 3) "Step 6 expects boost-class-ids=[silver bronze golden].")
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -484,7 +493,6 @@
                     (bronze-boost-class-id:string (at 1 boost-class-ids))
                     (golden-boost-class-id:string (at 2 boost-class-ids))
                 )
-                (enforce (= (length boost-class-ids) 3) "Step 6 expects boost-class-ids=[silver bronze golden].")
                 ;; [1..2] Silver
                 (ref-TS02-C3::AQP-SCR|C_IssueLiquidityScore
                     patron owner-konto BOOT|SCORE_SILVER BOOT|PRECISION lp-denominator BOOT|MX_FROZEN BOOT|MX_SLEEPING
@@ -566,6 +574,19 @@
         ;;   [(U|DALOS.UDC_Makeid "SilverSnakePower") (U|DALOS.UDC_Makeid "BronzeSnakePower") (U|DALOS.UDC_Makeid "GoldenSnakePower")]
         ;; )
         (with-capability (GOV|AQP_BOOT_ADMIN)
+            ;;FIXED 2026-09-12: all FOUR length checks are enforced HERE, above the binding group.
+            ;;They used to sit BELOW a `let` that indexes every one of these lists -- (at 0 dh-score-ids)
+            ;;through (at 8 dh-score-ids), and so on. A `let` is EAGER, so for any list that was too
+            ;;SHORT the indexes ran first and the operator got `Array index out of bounds` instead of
+            ;;the sentence naming which argument was wrong. Six operator-facing messages in this file
+            ;;arrived only when a list was too LONG -- the one case the `at`s survive.
+            ;;C_Step9 in this same file is the correctly-ordered twin. Length tests need nothing but
+            ;;the parameters, so they run before anything is derived.
+            ;;Pinned by REPL/modules/DPDC.repl <<DPDC-G10>>.
+                (enforce (= (length dh-asset-ids) 6) "Step 7 expects dh-asset-ids=[coding bloodshed company wondercoach nosferatu bunnies].")
+                (enforce (= (length dh-pool-ids) 6) "Step 7 expects dh-pool-ids=[pool-coding pool-bloodshed pool-company pool-wondercoach pool-nosferatu pool-bunnies].")
+                (enforce (= (length dh-score-ids) 9) "Step 7 expects dh-score-ids=[coding sub-coding bloodshed sub-bloodshed company-share company-snakes sub-wondercoach sub-nosferatu sub-bunnies].")
+                (enforce (= (length ouro-triplet-score-ids) 3) "Step 7 expects ouro-triplet-score-ids=[silver bronze golden].")
             (let
                 (
                     (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
@@ -598,10 +619,6 @@
                     (score-bronze:string (at 1 ouro-triplet-score-ids))
                     (score-golden:string (at 2 ouro-triplet-score-ids))
                 )
-                (enforce (= (length dh-asset-ids) 6) "Step 7 expects dh-asset-ids=[coding bloodshed company wondercoach nosferatu bunnies].")
-                (enforce (= (length dh-pool-ids) 6) "Step 7 expects dh-pool-ids=[pool-coding pool-bloodshed pool-company pool-wondercoach pool-nosferatu pool-bunnies].")
-                (enforce (= (length dh-score-ids) 9) "Step 7 expects dh-score-ids=[coding sub-coding bloodshed sub-bloodshed company-share company-snakes sub-wondercoach sub-nosferatu sub-bunnies].")
-                (enforce (= (length ouro-triplet-score-ids) 3) "Step 7 expects ouro-triplet-score-ids=[silver bronze golden].")
                 ;;
                 ;; [1] DHCodingDivision — aqp-class 3 (DPSF)
                 (ref-TS02-C3::AQP-POOL|C_Issue patron "DHCodingDivision" asset-coding 3)

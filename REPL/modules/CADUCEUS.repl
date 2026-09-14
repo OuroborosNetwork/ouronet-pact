@@ -1,0 +1,334 @@
+;; REPL/modules/CADUCEUS.repl — STANDALONE CADUCEUS tester (the Ouronet bridge citizen module).
+;;
+;; WHY THIS FILE EXISTS: until now CADUCEUS had ZERO REPL coverage anywhere in the repo. No .repl
+;; in the active tree loaded it — the only thing that ever touched it was
+;; archive/_scratch_n2_caduceus_compile_check.repl, a load-only structural check written during the
+;; DALOS #N2 audit, which says so in its own header. A 377-line module with 29 definitions was
+;; therefore deployable with nothing asserting anything about it.
+;;
+;; This suite deploys it for real and pins its configuration gates. It is deliberately light:
+;; CADUCEUS references only OuronetConstantsV2, OuronetDalosV2, TalosStageOne_AdminV2 and
+;; TalosStageOne_ClientOneV2, so deploy-stage01 is enough — no Stage 2 needed (the archived check
+;; loaded all of Stage 2 unnecessarily).
+;;
+;; Legend (angle-bracket log prefixes):
+;;   <<CAD-Gn>>  — P3.3 guard-family negative tests
+;;
+;; Source: 2_CITIZEN/6_OuronetBridge/03_CADUCEUS.pact
+;;
+;; Run: cd REPL && pact modules/CADUCEUS.repl
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "CAD-00 — deploy the CADUCEUS citizen module")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [CAD-00 · 01 · deploy] ---")
+;;TWO DIFFERENT KEYSETS are in play and they are easy to confuse:
+;;  - DEFINING a module inside ouronet-ns needs the NAMESPACE user keyset (the raw hex keys below).
+;;  - CALLING its A_ functions needs GOV|CADUCEUS_ADMIN, which resolves to DALOS's Demiurgoi set
+;;    (PK_AncientHodler / PK_Florex).
+;;Signing only one gives a bare `Keyset failure (keys-any)` whose key list is the only clue which
+;;of the two was wanted.
+(env-sigs [ { "key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": [] } ])
+(load "../../2_CITIZEN/6_OuronetBridge/03_CADUCEUS.pact")
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "CAD-G1 — the bridge refuses to operate before it is configured")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [CAD-G1 · 01 · UEV_Ready on a fresh, unconfigured module] ---")
+;;P3.3. This is the ONE window in which UEV_Ready can speak: the config row is written by
+;;A_SetBridgeConfig and never deleted, so once any suite configures the bridge the guard passes
+;;forever. A freshly deployed module has an empty ConfigTable.
+;;
+;;UR_BridgeConfigured is (contains CFG_KEY (keys ...)), so it answers for the empty table rather
+;;than raising — which is what makes the guard reachable at all here.
+(map print
+    [
+        (expect "<<CAD-G1>> a freshly deployed bridge reports itself unconfigured"
+            false (CADUCEUS.UR_BridgeConfigured))
+        (expect-failure "<<CAD-G1>> ...and UEV_Ready refuses on that basis"
+            "CADUCEUS bridge is not configured"
+            (CADUCEUS.UEV_Ready))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "CAD-G2 — configured but paused: the second gate, and the first one satisfied")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [CAD-G2 · 01 · A_SetBridgeConfig active=false, then UEV_Active] ---")
+;;A_SetBridgeConfig takes <active> as a parameter, so the bridge can be brought up in the PAUSED
+;;state directly — no separate toggle needed to reach the disabled gate. That ordering matters:
+;;UR_BridgeActive is a hard `read` of the config row, so UEV_Active is NOT reachable before
+;;configuration (it would abort in the read, not the enforce). Configured-but-paused is the only
+;;state in which it can answer.
+;;
+;;Both gates are driven in sequence here, which is the point: UEV_Ready now PASSES while
+;;UEV_Active fails, so the two are shown to be independent rather than two names for one check.
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+(CADUCEUS.A_SetBridgeConfig
+    "Σ.CADUCEUS-BRIDGE-TEST"          ;;bridge-account (not deployed — these gates never read it)
+    "k:test-bridge-stoa"              ;;bridge-stoa
+    KST.ANHD                          ;;bridge-sovereign
+    "test-bridge-public"              ;;bridge-public
+    "OURO-98c486052a51"               ;;dptf-id
+    KST.ANHD                          ;;patron (relayer)
+    false                             ;;active — brought up PAUSED on purpose
+)
+(map print
+    [
+        (expect "<<CAD-G2>> the bridge now reports itself configured"
+            true (CADUCEUS.UR_BridgeConfigured))
+        (expect "<<CAD-G2>> ...so UEV_Ready is satisfied"
+            true (CADUCEUS.UEV_Ready))
+        (expect "<<CAD-G2>> ...but it is paused"
+            false (CADUCEUS.UR_BridgeActive))
+        (expect-failure "<<CAD-G2>> ...and UEV_Active refuses a paused bridge"
+            "CADUCEUS bridge is disabled"
+            (CADUCEUS.UEV_Active))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "CAD-G3 — unpausing satisfies the second gate too")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [CAD-G3 · 01 · A_SetBridgeActive true] ---")
+;;The positive half. Without it, CAD-G2's rejection would be satisfied equally well by a
+;;UEV_Active that refuses every state.
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+(CADUCEUS.A_SetBridgeActive true)
+(map print
+    [
+        (expect "<<CAD-G3>> the bridge is active"
+            true (CADUCEUS.UR_BridgeActive))
+        (expect "<<CAD-G3>> ...and UEV_Active is satisfied"
+            true (CADUCEUS.UEV_Active))
+        ;;...and a signal never seen before is fresh. UR_SignalProcessed is a keys/contains check,
+        ;;so an unknown id answers false without raising.
+        (expect "<<CAD-G3>> an unseen signal id is fresh"
+            true (CADUCEUS.UEV_FreshSignal "signal-never-seen"))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+;;The replay guard needs a real signal in CADUCEUS|SignalTable, and the only writers are the two
+;;bridge flows — each of which runs a live mint/transfer or burn first. So reaching it means
+;;standing the bridge up for real. That is what the rest of this file does.
+(load "../fixtures/mock-tf.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "CAD-04 — full bridge bring-up: keyset, config, smart account, DPTF roles")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [CAD-04 · 01 · relayer keyset + bridge account + roles] ---")
+;;Four things have to exist before either bridge flow can run, and each failed differently while
+;;I worked this out:
+;;  1] the RELAYER keyset. BRIDGE|RELAYER enforces (keyset-ref-guard (CT_BridgeKey)), i.e.
+;;     "ouronet-ns.dh_bridge_caduceus-keyset" — a NAMESPACE keyset that simply did not exist
+;;     anywhere, so the cap could never be acquired. Defined here the same way [5.2]_Dispenser+
+;;     defines its smart-contract keysets.
+;;  2] a real Σ BRIDGE ACCOUNT. CAD-G2 configured a placeholder name on purpose (those gates never
+;;     read it); the flows DO. DALOS|C_DeploySmartAccount runs UEV_Glyph on the name, so it has to
+;;     be a genuine 200-glyph Σ account, not a readable string.
+;;  3] a DPTF THE PATRON OWNS. deploy-stage01 leaves none — every token it creates belongs to a
+;;     smart contract — hence the mock-tf fixture above.
+;;  4] the bridge account's mint/burn/transfer ROLES on that DPTF.
+(env-data { "KEY_BRIDGE" : { "keys": ["PK_AncientHodler"] } })
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+(define-keyset "ouronet-ns.dh_bridge_caduceus-keyset" (read-keyset "KEY_BRIDGE"))
+(let*
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (bridge:string "Σ.XéødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
+        (fake-kda:string "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263")
+        (fake-pbl:string "9G.CgcAjiI89ICnk45mxx63hwkBe5G71sIqfEta0ugkzF7EB6cy55BtzlFa27jDGE7Kn7ChljCmkcIsrDw9JwzJECieGLB5Jlkz9Blo6iJct6uxIA1u64Hr7HKa93EAiCwJJBBKAojJtwupEsvspH1jjGxKyFsb8fbfnJm1rAKxcIzcFILmmdHFaICfFpnbJG6tJu0HM9JCJ7MBCE7C2LiqvE6Fc1hqCeAdGHxDp7sGquI0wl2l08aa6wlKvwu44jgqF8mqDnCyjpxHuttEqjs4h9IJ28kmB53ppwoznt16rjzeMl21n3rwfI2es56rp5xavCabDacyCuonniz72L5d7dq3ptIEiuggEyLIIGe9sadH6eaMyitcmKaH7orgFz6d9kL9FKorBr06owFg328wFhCIlCFpwIzokmo47xKKt5kBzhyodBAjhCqayuHBue4oDhoA21A2H9ut9gApMuxokcmsi7Bd1kitrfJAy1GkrGiBK5dvlhgshcnGaG3vhkCm6dI5idCGjDEodivvDbgyI6zaajHvIMdBtrGvuKnxvsBulkbaDbk2wIdKwrK")
+        (mocka:string (ref-U|DALOS::UDC_Makeid "MOCKA"))
+    )
+    ;;re-point the config at the real account + a real DPTF, and unpause. A_SetBridgeConfig uses
+    ;;`write`, so reconfiguring over CAD-G2's placeholder is the supported path.
+    (CADUCEUS.A_SetBridgeConfig bridge fake-kda KST.ANHD fake-pbl mocka KST.ANHD true)
+    (CADUCEUS.A_DeployBridgeSmartAccount (keyset-ref-guard "ouronet-ns.dh_ah-keyset"))
+    (CADUCEUS.A_ProvisionBridgeDptfRoles)
+    (map print
+        [
+            (expect "<<CAD-04>> the bridge smart account is deployed and is smart-contract type"
+                true (ref-DALOS::UR_AccountType bridge))
+            (expect "<<CAD-04>> ...and holds mint, burn and transfer roles on the bridged DPTF"
+                [true true true]
+                [(DPTF.UR_AccountRoleMint mocka bridge)
+                 (DPTF.UR_AccountRoleBurn mocka bridge)
+                 (DPTF.UR_AccountRoleTransfer mocka bridge)])
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "CAD-G4 — the replay guard, on both bridge directions")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [CAD-G4 · 01 · UEV_FreshSignal refuses a consumed signal] ---")
+;;P3.3, and the guard that matters most in this module. A bridge signal is an assertion ABOUT
+;;ANOTHER CHAIN, relayed by an off-chain watcher — so nothing on this chain can re-derive whether
+;;an inbound transfer was already honoured. UEV_FreshSignal is the only thing standing between a
+;;relayer (or anyone who can replay its payload) and minting the same external deposit twice.
+;;
+;;Driven on BOTH flows. They are separate entrypoints with separate writers, and a refactor that
+;;dropped the check from one of them would still pass a test that only drove the other — the
+;;inbound direction is the one that MINTS, so that is where a missing check costs real supply.
+;;
+;;Each direction is shown working FIRST with a fresh id, because a replay rejection proves nothing
+;;if the flow rejects every signal.
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+(let
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+    )
+    (let
+        (
+            (mocka:string (ref-U|DALOS::UDC_Makeid "MOCKA"))
+            (bridge:string (CADUCEUS.UR_BridgeAccount))
+        )
+        (map print
+            [
+                ;;--- inbound: mint on the bridge, forward to the user, consume the signal.
+                (expect "<<CAD-G4>> a FRESH inbound signal is honoured"
+                    "Bridge mint signal sig-1 processed"
+                    (CADUCEUS.C_MintToUserFromBridgeSignal "sig-1" "ethereum" "0xdead" KST.EMMA 10.0))
+                (expect "<<CAD-G4>> ...the user received the bridged amount"
+                    10.0 (DPTF.UR_AccountSupply mocka KST.EMMA))
+                (expect "<<CAD-G4>> ...and the signal is now recorded as consumed"
+                    true (CADUCEUS.UR_SignalProcessed "sig-1"))
+                ;;--- and replaying it mints nothing.
+                (expect-failure "<<CAD-G4>> REPLAYING that inbound signal is refused"
+                    "Bridge signal already processed"
+                    (CADUCEUS.C_MintToUserFromBridgeSignal "sig-1" "ethereum" "0xdead" KST.EMMA 10.0))
+                (expect "<<CAD-G4>> ...and the user's balance is unchanged by the attempt"
+                    10.0 (DPTF.UR_AccountSupply mocka KST.EMMA))
+            ]
+        )
+        ""
+    )
+)
+(env-sigs [])
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "CAD-G5 — the outbound direction, and its own replay refusal")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [CAD-G5 · 01 · burn flow + replay] ---")
+;;The outbound flow burns from the bridge account, so the bridge needs a balance to burn. The
+;;inbound flow cannot supply one — it forwards everything it mints straight to the user, which is
+;;why CAD-G4 left the bridge at zero and my first attempt at this block failed with
+;;"Cannot Debit DPTF ... into the negatives". The bridge is funded directly instead, by the DPTF
+;;owner, which is what a real outbound transfer would do.
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+(let
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+    )
+    (let
+        (
+            (mocka:string (ref-U|DALOS::UDC_Makeid "MOCKA"))
+            (bridge:string (CADUCEUS.UR_BridgeAccount))
+        )
+        (TS01-C1.DPTF|C_Mint KST.ANHD mocka bridge 20.0 false)
+        (map print
+            [
+                (expect "<<CAD-G5>> the bridge is funded, so the burn has something to burn"
+                    20.0 (DPTF.UR_AccountSupply mocka bridge))
+                (expect "<<CAD-G5>> a FRESH outbound signal is honoured"
+                    "Bridge burn signal sig-2 processed"
+                    (CADUCEUS.C_BurnFromBridgeSignal "sig-2" "ethereum" "0xbeef" 4.0))
+                (expect "<<CAD-G5>> ...and the burnt amount left the bridge"
+                    16.0 (DPTF.UR_AccountSupply mocka bridge))
+                (expect-failure "<<CAD-G5>> REPLAYING that outbound signal is refused"
+                    "Bridge signal already processed"
+                    (CADUCEUS.C_BurnFromBridgeSignal "sig-2" "ethereum" "0xbeef" 4.0))
+                (expect "<<CAD-G5>> ...and the bridge balance is unchanged by the attempt"
+                    16.0 (DPTF.UR_AccountSupply mocka bridge))
+            ]
+        )
+        ""
+    )
+)
+(env-sigs [])
+(commit-tx)
+;;|| NEXT >
+;;
+(begin-tx "CAD-G6 — two Stage-1 guards the bridge fixture happens to unlock")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [CAD-G6 · 01 · TFT transfer roles + IGNIS smart patron] ---")
+;;P3.3, and these live here for a fixture reason rather than a thematic one.
+;;
+;;TFT's UEV_MoveRoleCheck only engages when a token has a NON-EMPTY transfer-role list: with no
+;;roles granted, transfers are open to everyone and the check short-circuits. No other suite grants
+;;one — but CAD-04 above grants mint/burn/TRANSFER on MOCKA to the bridge account, which switches
+;;the rule on for that token. So the fixture that exists to test the bridge also makes this
+;;Stage-1 guard reachable for the first time.
+;;
+;;Both sides are driven, because the rule is an enforce-one over (sender-has-role OR
+;;receiver-has-role): a transfer between two role-LESS accounts is refused, while the same function
+;;ALLOWS a transfer whose sender holds the role. Without the positive case the rejection would be
+;;satisfied by a check that blocked every transfer once any role existed — which would silently
+;;freeze a token the moment its first role was granted.
+(let*
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TFT:module{TrueFungibleTransferV2} TFT)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (mocka:string (ref-U|DALOS::UDC_Makeid "MOCKA"))
+        (bridge:string (CADUCEUS.UR_BridgeAccount))
+    )
+    (map print
+        [
+            ;;precondition: roles ARE active on MOCKA (the bridge holds one) and NEITHER test
+            ;;account does. Both halves matter — if the list were empty the guard would not engage
+            ;;at all, and if ANHD held the role the refusal below would not happen.
+            (expect "<<CAD-G6>> MOCKA has exactly one transfer-role holder: the bridge"
+                [1 false false]
+                [(length (ref-DPTF::UR_Verum5 mocka))
+                 (ref-DPTF::UR_AccountRoleTransfer mocka KST.ANHD)
+                 (ref-DPTF::UR_AccountRoleTransfer mocka KST.EMMA)])
+            ;;--- neither side holds the role.
+            (expect-failure "<<CAD-G6>> a transfer between two role-less accounts is refused"
+                "Incompatible Transfer Roles from"
+                (ref-TFT::UEV_MoveRoleCheck mocka KST.ANHD KST.EMMA))
+            ;;--- ...but the SENDER holding it is enough, which is what the enforce-one means.
+            (expect "<<CAD-G6>> ...while a transfer SENT by the role holder is allowed"
+                true (!= "" (format "{}" [(ref-TFT::UEV_MoveRoleCheck mocka bridge KST.EMMA)])))
+            ;;--- IGNIS: only ONE smart account may pay gas as a patron. Any other contract naming
+            ;;    itself patron would spend the gas station's budget on its own behalf.
+            (expect-failure "<<CAD-G6>> a smart account other than DALOS cannot be an IGNIS patron"
+                "Only the DALOS Account can be a Smart Patron"
+                (ref-IGNIS::UEV_Patron (ref-DALOS::GOV|OUROBOROS|SC_NAME)))
+        ]
+    )
+    ""
+)
+(commit-tx)
+
+(print "=== END modules/CADUCEUS.repl ===")

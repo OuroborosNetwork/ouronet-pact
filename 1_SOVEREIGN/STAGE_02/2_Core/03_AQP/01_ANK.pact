@@ -450,6 +450,20 @@
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
             )
             ;;1]<total-dptf-amount> must be non-negative (0.0 allowed — vacate/unstake refresh)
+            ;;
+            ;;DATA-INTEGRITY BACKSTOP, NOT A CLIENT-FACING CHECK. The value is never caller-supplied.
+            ;;The only caller is FVT::XI_RefreshTrueFungibleStakeAnchors, reaching this cap through
+            ;;AQP-ANK::XE_UpdateTrueFungibleUserAnchorValues, which opens with (P|UEV_IMC) — so no
+            ;;external account can present an argument here at all. What FVT passes is the post-stake
+            ;;tracker total, a sum over AQP|T|DPTFTracker balances, each of which is itself non-negative
+            ;;by the custody cap (AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY refuses an unstake larger than the
+            ;;staked balance, so a row can reach 0.0 but never go below it). A negative therefore cannot
+            ;;be constructed from any sequence of user actions; only a corrupt tracker write could
+            ;;produce one, which is precisely what this line exists to catch. Kept deliberately at >=
+            ;;rather than >: 0.0 is the legal vacate/unstake refresh value.
+            ;;Backed by REPL/modules/AQP.repl <<AQP-G45>>, which asserts the IMC gate and the
+            ;;non-negativity of the derivation rather than pretending to drive the guard.
+            ;;UNREACHABLE
             (enforce (>= total-dptf-amount 0.0) "total-dptf-amount must be non-negative")
             ;;2]<account> must exist
             (ref-DALOS::UEV_EnforceAccountExists account)
@@ -665,6 +679,11 @@
         (CAP_Owner anchor-id)
         (compose-capability (SECURE))
     )
+    ;;UNUSED and REDUNDANT -- harmless. The live revoke path (XI at ~2280) acquires
+    ;;ANK|C>REVOKE-BOOST-CLASS directly, and that cap is itself @event and carries both real
+    ;;guards (empty class, still active). This wrapper only re-emits around it, so nothing is
+    ;;lost by it never being reached: no guard is skipped and the inner event still fires.
+    ;;Contrast ATS|S>CONTROL-DIRECT-RECOVERY, whose orphaning DOES skip a guard. Flagged 2026-09-10.
     (defcap ANK|C>REVOKE-BOOST-CLASS-ENTRY (boost-class-id:string)
         @doc "Authorizes revoking a BoostClass entity."
         @event
@@ -1621,8 +1640,6 @@
         \ 2] For DPSFs and DPNFs can be either its Owner or Creator"
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-DPDC:module{DpdcV2} DPDC)
                 ;;
                 (ank-asset:string (UR_ANK|AnchoredAsset anchor-id))
@@ -1817,6 +1834,7 @@
     ;; --- Block F · shared leaf ---
     ;;   XI_2|RecomputeAffectedBoostAggregates (TF / SF / NF / resync)
     ;;
+    ;;Protection: Class 1 — Innate protection offered by WI_BoostClass
     (defun XI_IssueBoostClass:string
         (boost-class-name:string)
         @doc "Internal (C_Issue*Anchor · depth 0]): create BoostClass inline when acnoi; returns boost-class-id."
@@ -1833,6 +1851,7 @@
             boost-class-id
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by WI_Anchor
     (defun XI_IssueAnchor:string
         (
             ank-name:string ank-asset:string ank-fungibility:[bool] boost-class-id:string ank-precision:integer ank-promile:decimal
@@ -1855,6 +1874,7 @@
             anchor-id
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by WW_BoostClass, WW_AssetAnchors
     (defun XI_PlaceAnchorInBookkeeping (anchor-id:string asset-id:string boost-class-id:string)
         @doc "Internal (C_Issue*Anchor · depth 1]): place anchor in BoostClass + AssetAnchors bookkeeping."
         ;; SECURE: granted by WW_BoostClass and WW_AssetAnchors (underlying W_).
@@ -1869,6 +1889,8 @@
     )
     ;;
     ;; --- Block B · C_RevokeAnchor ---
+    ;;Protection: Class 1 — Innate protection offered by C_RevokeAnchor, WW_BoostClass,
+    ;;Protection:          WW_AssetAnchors
     (defun XI_RevokeAnchorBookkeeping (anchor-id:string)
         @doc "Internal (C_RevokeAnchor · depth 0]): remove anchor from BoostClass + AssetAnchors bookkeeping."
         ;; SECURE: granted by WW_BoostClass and WW_AssetAnchors (underlying W_).
@@ -1883,6 +1905,7 @@
             (WW_AssetAnchors ank-asset (UDC_AA|RemoveAnchor aa anchor-id))
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by WW_Anchors
     (defun XI_1|UpdateTrueFungibleUserAnchorValues
         (account:string dptf-id:string total-dptf-amount:decimal)
         @doc "Internal (XE_Update*TF · depth 1]): rewrite user promile for each live TF anchor on dptf-id, then XI_2|RecomputeAffectedBoostAggregates."
@@ -1916,6 +1939,7 @@
             )
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by WW_Anchors
     (defun XI_1|UpdateSemiFungibleUserAnchorValues
         (account:string dpsf-id:string nonces:[integer] nonce-amounts:[integer] direction:bool)
         @doc "Internal (XE_Update*SF · depth 1]): rewrite user promile for each live SF anchor on dpsf-id, then XI_2|RecomputeAffectedBoostAggregates."
@@ -1949,6 +1973,7 @@
             )
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by WW_Anchors
     (defun XI_1|UpdateNonFungibleUserAnchorValues
         (account:string dpnf-id:string nonces:[integer] direction:bool)
         @doc "Internal (XE_Update*NF · depth 1]): rewrite user promile for each live NF anchor on dpnf-id, then XI_2|RecomputeAffectedBoostAggregates."
@@ -1982,6 +2007,7 @@
             )
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by WW_Anchors
     (defun XI_1|ResyncSemiFungibleUserAnchorValues
         (account:string dpsf-id:string nonces:[integer] nonce-amounts:[integer])
         @doc "Internal (XE_ResyncSemiFungible* · depth 1]): absolute promile per live SF anchor from rollup nonce inventory."
@@ -2016,6 +2042,7 @@
             )
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by WW_Anchors
     (defun XI_1|ResyncNonFungibleUserAnchorValues
         (account:string dpnf-id:string nonces:[integer])
         @doc "Internal (XE_ResyncNonFungible* · depth 1]): absolute promile per live NF anchor from rollup nonce inventory."
@@ -2052,6 +2079,7 @@
     )
     ;;
     ;; --- Block F · shared leaf ---
+    ;;Protection: Class 1 — Innate protection offered by WW_UserBoost
     (defun XI_2|RecomputeAffectedBoostAggregates (account:string boost-class-ids:[string])
         @doc "Internal (user promile update · depth 2 · shared leaf]): recompute ANK|T|UserBoost aggregate-promile per boost-class-id."
         ;; SECURE: granted by WW_UserBoost (underlying W_).
@@ -2098,6 +2126,7 @@
         )
     )
     ;; [XE]
+    ;;Protection: Class 5 — IMC + Custom: ANK|XE>SWEEP-REVOKE
     (defun XE_SweepRevokeAnchor:string
         (anchor-id:string)
         @doc "Forward (re-score sweep terminal · MTX-AQP): revoke an EMPLOYED anchor after the sweep has refreshed \
@@ -2112,6 +2141,7 @@
         )
         anchor-id
     )
+    ;;Protection: Class 5 — IMC + Custom: ANK|C>BUMP-BOOST-CLASS-LINKS
     (defun XE_BumpBoostClassScoreLinks:string
         (boost-class-id:string score-id:string)
         @doc "Forward (AQP-SCORE::XI_CreateBoostClassLink): register score-id in the BoostClass reverse-index set, \
@@ -2122,6 +2152,7 @@
             (WU_BC|AddScoreLink boost-class-id score-id)
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: ANK|C>BUMP-BOOST-CLASS-LINKS
     (defun XE_UnbumpBoostClassScoreLinks:string
         (boost-class-id:string score-id:string)
         @doc "Forward (AQP-SCORE::XI_CreateBoostClassLink re-point/unlink): remove score-id from the BoostClass \
@@ -2132,6 +2163,7 @@
             (WU_BC|RemoveScoreLink boost-class-id score-id)
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: ANK|XE>SWEEP
     (defun XE_RecomputeUserBoostAggregates:string
         (account:string boost-class-ids:[string])
         @doc "Forward (re-score sweep): refold this user's aggregate-promile for the given boost-classes from the \
@@ -2147,6 +2179,7 @@
     )
     ;;
     ;; --- Block C · TF user promile ---
+    ;;Protection: Class 5 — IMC + Custom: ANK|C>UPDATE-DPTF
     (defun XE_UpdateTrueFungibleUserAnchorValues:object{IgnisCollectorV2.OutputCumulator}
         (account:string dptf-id:string total-dptf-amount:decimal)
         @doc "Backward (FVT::XI_RefreshTrueFungibleStakeAnchors / C_Sync*): P|UEV_IMC + XI_1|UpdateTrueFungibleUserAnchorValues \
@@ -2177,6 +2210,7 @@
     )
     ;;
     ;; --- Block D · SF user promile ---
+    ;;Protection: Class 5 — IMC + Custom: ANK|C>UPDATE-DPSF
     (defun XE_UpdateSemiFungibleUserAnchorValues
         (account:string dpsf-id:string nonces:[integer] nonce-amounts:[integer] direction:bool)
         @doc "Updates user promile for each live SF anchor on dpsf-id, then recomputes affected BoostClass aggregates."
@@ -2187,6 +2221,7 @@
     )
     ;;
     ;; --- Block E · NF user promile ---
+    ;;Protection: Class 5 — IMC + Custom: ANK|C>UPDATE-DPNF
     (defun XE_UpdateNonFungibleUserAnchorValues
         (account:string dpnf-id:string nonces:[integer] direction:bool)
         @doc "Updates user promile for each live NF anchor on dpnf-id, then recomputes affected BoostClass aggregates."
@@ -2197,6 +2232,7 @@
     )
     ;;
     ;; --- Block D′ · SF resync (C_SyncCollectableAnchors · son=true) ---
+    ;;Protection: Class 5 — IMC + Custom: ANK|C>UPDATE-DPSF
     (defun XE_ResyncSemiFungibleUserAnchorValues:object{IgnisCollectorV2.OutputCumulator}
         (account:string dpsf-id:string nonces:[integer] nonce-amounts:[integer])
         @doc "Backward (AQP::C_SyncCollectableAnchors): rewrite SF promile from full rollup inventory; IGNIS per live anchor."
@@ -2225,6 +2261,7 @@
     )
     ;;
     ;; --- Block E′ · NF resync (C_SyncCollectableAnchors · son=false) ---
+    ;;Protection: Class 5 — IMC + Custom: ANK|C>UPDATE-DPNF
     (defun XE_ResyncNonFungibleUserAnchorValues:object{IgnisCollectorV2.OutputCumulator}
         (account:string dpnf-id:string nonces:[integer])
         @doc "Backward (AQP::C_SyncCollectableAnchors): rewrite NF promile from full rollup inventory; IGNIS per live anchor."

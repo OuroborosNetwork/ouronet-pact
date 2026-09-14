@@ -55,7 +55,6 @@
     (defun UC_EightSplitter:[integer] (input:integer))
     ;;
     (defun UC_OuroDispo:decimal (input:object{DispoData}))
-    (defun UC_UnlockPrice:[decimal] (unlocks:integer))
     (defun UC_VolumetricTax (precision:integer amount:decimal))
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;{5.4}  Validate [UEV/CAP]
@@ -69,7 +68,7 @@
     @doc "DPTF fungible-token utility library (implements UtilityDptfV2). Provides \
         \ even-split helpers that divide an integer into 2/4/8 near-equal parts, the \
         \ DispoData schema plus helpers for computing an account's max negative-Ouro \
-        \ overconsumption, UC_UnlockPrice (DPTF unlock gas costs), and UC_VolumetricTax for \
+        \ overconsumption, and UC_VolumetricTax for \
         \ the logarithmic volumetric transaction tax."
 
     ;;<=========================================================================>
@@ -205,18 +204,6 @@
                 0.0
                 (floor (fold (*) 1.0 [a-idx ea-idx ea-amount olpd]) o-prec)
             )
-        )
-    )
-    (defun UC_UnlockPrice:[decimal] (unlocks:integer)
-        @doc "Computes DPTF unlock price (audit finding #27L / L9: doc said 'ATS', a copy- \
-            \ paste from U_ATS - the code itself is a correct shared-core wrapper, not a \
-            \ duplicate-logic bug). \
-            \ Outputs [virtual-gas-costs (IGNIS) native-gas-cost(STOA)]"
-        (let
-            (
-                (ref-U|DEC:module{OuronetDecimalsV2} U|DEC)
-            )
-            (ref-U|DEC::UC_UnlockPrice unlocks true)
         )
     )
     (defun UC_VolumetricTax (precision:integer amount:decimal)

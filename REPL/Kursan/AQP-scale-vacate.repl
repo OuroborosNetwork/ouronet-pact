@@ -89,10 +89,103 @@
         [
             (expect "<<SCALE-VAC-01>> 50 legs staked" 50 (at "leg-count" (AQP-VCT.URH_VacateTfInventory pool-id ouro-id)))
             (expect "<<SCALE-VAC-01>> pool NOT yet vacating" false (ref-AQP::UR_AQP|PoolVacateInProgress pool-id))
+            ;;GUARD `06_VCT.pact:520`. This file walks a pool through every vacate state, so the
+            ;;three state guards below cost nothing here -- no fixture, and no rollback either,
+            ;;because each aborts in its DEFCAP before any write. The one just above is the premise:
+            ;;the pool is staked and NOT vacating, which is precisely the state finalize must refuse.
+            (expect-failure "<<SCALE-VAC-01>> finalizing a pool with no vacate in progress is refused"
+                "Finalize: no vacate in progress on this pool"
+                (ref-TS02-C3::AQP-POOL|C_FinalizeVacate patron pool-id))
+            ;;...and the state is untouched by the refusal. Asserted rather than assumed: an
+            ;;`expect-failure` does NOT roll back writes the failed expression already made
+            ;;(2026-09-11-expect-failure-does-not-roll-back-writes.md), so "it threw" is not the
+            ;;same as "it changed nothing". Here it is true because the guard is in the cap.
+            (expect "<<SCALE-VAC-01>> ...and the refusal left the pool exactly as it was"
+                [false 50]
+                [(ref-AQP::UR_AQP|PoolVacateInProgress pool-id)
+                 (at "leg-count" (AQP-VCT.URH_VacateTfInventory pool-id ouro-id))])
         ]
     )
 )
 (env-sigs [])
+(commit-tx)
+(print "")
+
+;;|| NEXT >
+;;|| SCALE-VAC-SYNC — the cross-pool anchor-repair admission guard, both directions.
+;;
+(begin-tx "SCALE-VAC-SYNC - AQP|C>SYNC-TF-ANCHORS needs stake to repair")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [SCALE-VAC-SYNC · the sync guard, staked vs unstaked beneficiary] ---")
+;;`03_AQP.pact:820`. Anchor repair is pool-AGNOSTIC: it walks a beneficiary's stake across every
+;;pool and rebuilds their ANK anchors. With no stake anywhere there is nothing to walk, and the
+;;guard refuses rather than writing an empty repair.
+;;
+;;THE TWO DIRECTIONS ARE AVAILABLE HERE AND NOWHERE ELSE CHEAPLY, because this file has just staked
+;;50 synth accounts and has not drained them yet: synth-001 has OURO stake, the patron has none.
+;;Same call, same token, two beneficiaries — so the refusal is attributable to the stake and not to
+;;the operation being broken. Run BEFORE the drain, since after it every synth is at zero too.
+;;
+;;Rolled back: the ADMITTED branch rewrites anchors, and the drain rounds below assert exact leg
+;;counts and gas. SCALE-VAC-SYNCb is the leakage check.
+(let
+    (
+        (patron:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+    )
+    (let
+        (
+            (staked:string (VCTGAS.UC_SynthAccount 1))
+        )
+        (map print
+            [
+                ;;the premise, read live rather than assumed
+                (expect "<<SCALE-VAC-SYNC>> synth-001 holds OURO stake and the patron holds none"
+                    [true false]
+                    [(> (ref-AQP::UR_AQP|BenDptfTotalBalance staked ouro-id) 0.0)
+                     (> (ref-AQP::UR_AQP|BenDptfTotalBalance patron ouro-id) 0.0)])
+                ;;THE ITEM — nothing to repair
+                (expect-failure "<<SCALE-VAC-SYNC>> syncing a beneficiary with no stake is refused"
+                    "No cross-pool TF stake to sync"
+                    (ref-TS02-C3::AQP-POOL|C_SyncTrueFungibleAnchors patron patron ouro-id))
+                ;;CONTRAST — the same call on a staked beneficiary is admitted
+                (expect "<<SCALE-VAC-SYNC>> ...while a staked one is admitted"
+                    true (!= "" (format "{}"
+                        [(ref-TS02-C3::AQP-POOL|C_SyncTrueFungibleAnchors patron staked ouro-id)])))
+            ]
+        )
+        ""
+    )
+)
+(env-sigs [])
+;;the admitted repair is discarded -- SCALE-VAC-SYNCb checks it
+(rollback-tx)
+
+;;|| NEXT >
+;;|| SCALE-VAC-SYNCb — the anchor repair left no trace.
+;;
+(begin-tx "SCALE-VAC-SYNCb - no leakage")
+(namespace "ouronet-ns")
+(print "--- [SCALE-VAC-SYNCb · no leakage] ---")
+;;The drain rounds below assert exact leg counts and per-leg gas. An anchor rewrite that survived
+;;would move the gas figures without moving any assertion that names it, which is the worst kind of
+;;leak — it would look like gas-schedule drift.
+(let
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+    )
+    (print
+        (expect "<<SCALE-VAC-SYNCb>> the pool still holds all 50 legs, undrained and unvacating"
+            [50 false]
+            [(at "leg-count" (AQP-VCT.URH_VacateTfInventory
+                 (ref-U|DALOS::UDC_Makeid "ScaleVacPool") "OURO-98c486052a51"))
+             (AQP-POOL.UR_AQP|PoolVacateInProgress (ref-U|DALOS::UDC_Makeid "ScaleVacPool"))]))
+)
 (commit-tx)
 (print "")
 ;;
@@ -143,6 +236,30 @@
                     (expect (format "<<SCALE-VAC-R1>> round fits 2M gas={}" [g]) true (<= g 2000000))
                     (expect (format "<<SCALE-VAC-R1>> legs remaining={}" [remain]) 35 remain)
                     (expect "<<SCALE-VAC-R1>> pool STILL vacating (freeze holds, not finalized)" true (ref-AQP::UR_AQP|PoolVacateInProgress pool-id))
+                    ;;THE MID-DRAIN WINDOW -- vacate in progress AND 35 legs still staked. Two guards
+                    ;;need exactly this and nothing else in the suite produces it: a vacate that has
+                    ;;STARTED but not FINISHED. `CC_FullVacate` does the whole thing atomically, so
+                    ;;the paged drain in this file is the only place the half-state is observable.
+                    ;;
+                    ;;GUARD `06_VCT.pact:521` -- finalize now names a DIFFERENT reason than it did in
+                    ;;SCALE-VAC-01. Same call, same caller, same pool; only the state moved. That is
+                    ;;what shows the two enforces are ordered and independent rather than one of them
+                    ;;answering for both.
+                    (expect-failure "<<SCALE-VAC-R1>> finalizing a PARTIALLY drained pool is refused"
+                        "Finalize: pool not fully drained (nns != 0)"
+                        (ref-TS02-C3::AQP-POOL|C_FinalizeVacate patron pool-id))
+                    ;;GUARD `03_AQP.pact:655` -- and stake cannot be re-enabled mid-drain. This is the
+                    ;;guard that matters operationally: re-enabling stake while legs are still being
+                    ;;drained would let new stakers enter a pool that is being emptied underneath them.
+                    (expect-failure "<<SCALE-VAC-R1>> ...and pool stake cannot be re-enabled mid-drain"
+                        "Cannot enable pool stake while a vacate is in progress"
+                        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id))
+                    ;;neither refusal disturbed the drain -- the next round asserts 20 remaining and
+                    ;;would fail loudly if either call had written, but that is a late signal.
+                    (expect "<<SCALE-VAC-R1>> ...and neither refusal moved the drain on"
+                        [true 35]
+                        [(ref-AQP::UR_AQP|PoolVacateInProgress pool-id)
+                         (at "leg-count" (AQP-VCT.URH_VacateTfInventory pool-id ouro-id))])
                 ]
             )
         )

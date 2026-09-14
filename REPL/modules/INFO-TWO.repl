@@ -1,0 +1,89 @@
+;; REPL/modules/INFO-TWO.repl — STANDALONE INFO-TWO tester.
+;;
+;; INFO-TWO had ZERO test coverage. Not "thin" — zero: it is deployed by [Z]_Reads.repl, which is a
+;; deploy file with no assertions, and no .repl anywhere referenced it. The scale sweep
+;; (_scale_report.py) is what surfaced it: 153 of its 154 functions were never reached by any test
+;; path, while its Stage-1 sibling INFO-ONE has had a dedicated tester all along. That asymmetry
+;; looks like an oversight rather than a decision — INFO-TWO is Stage-2 and the INFO tester is
+;; Stage-1, so it fell between them.
+;;
+;; WHY IT MATTERS. These are the cost PREVIEWS a UI shows a user before they commit to an
+;; operation. A preview that disagrees with what the operation actually charges is a user-facing
+;; correctness bug, and nothing in the suite would have caught one.
+;;
+;; THE INVARIANT WORTH TESTING is therefore not "does it return an object" but "does the preview
+;; agree with the cost reader it wraps". Each INFO_ function computes its IGNIS figure from the
+;; corresponding URCi_ reader on the core module; this file recomputes that figure independently
+;; and asserts the two match. That is the assertion that would fail if a preview drifted.
+;;
+;; Run: cd REPL && pact modules/INFO-TWO.repl
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+(load "../deploy-stage02.repl")
+(load "../Stage_02/[6.1.3]_DPDC-S.repl")
+(load "../Stage_02/[6.1.4]_DPDC-NF.repl")
+(load "../Stage_02/[6.1.5]_DEMIPAD.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "INFO2-01 — the preview agrees with the cost reader it wraps")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [INFO2-01 · 01 · preview/charge agreement] ---")
+;;INFO_DEMIPAD|Withdraw builds its IGNIS figure from TFT::URCi_Transfer. This block recomputes that
+;;transfer cost from the same inputs the preview derives internally — the launchpad account, the
+;;working token for the requested type, and the accumulated funds — and asserts the preview's
+;;ignis-full equals it.
+;;
+;;ignis-full is the right field to compare, not ignis-need: `need` is `full` after the patron's
+;;elite discount, so comparing it would fold two independent things into one assertion and a
+;;discount change would look like a preview bug.
+(let*
+    (
+        (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TFT:module{TrueFungibleTransferV2} TFT)
+        (ref-I:module{OuronetInfoV2} IGNIS)
+        (asset:string "TSFS-98c486052a51")
+        (lpad:string (ref-DEMIPAD::GOV|DEMIPAD|SC_NAME))
+        (amount:decimal (ref-DEMIPAD::URv_Funds asset 1))
+        (working-id:string (ref-DALOS::UR_WrappedStoaID))
+        ;;the cost the REAL operation would charge, computed here from the core reader
+        (charged:decimal
+            (ref-I::OI|UC_IfpFromOutputCumulator
+                (ref-TFT::URCi_Transfer working-id lpad KST.ANHD amount)))
+        (preview:object{OuronetInfoV2.ClientInfo}
+            (INFO-TWO.INFO_DEMIPAD|Withdraw KST.ANHD asset 1 KST.ANHD))
+        (ig:object{OuronetInfoV2.ClientIgnisCosts} (at "ignis" preview))
+    )
+    (map print
+        [
+            ;;THE ASSERTION THIS FILE EXISTS FOR
+            (expect "<<INFO2-01>> the preview's full IGNIS cost equals what the operation charges"
+                charged (at "ignis-full" ig))
+            ;;...and the discounted figure is a discount OF that, never more than it
+            (expect "<<INFO2-01>> the discounted figure never exceeds the full cost"
+                true (<= (at "ignis-need" ig) (at "ignis-full" ig)))
+            (expect "<<INFO2-01>> ...and is not negative"
+                true (>= (at "ignis-need" ig) 0.0))
+            ;;the preview must actually say something — an empty description is a broken preview
+            ;;even when the numbers are right.
+            (expect "<<INFO2-01>> the preview carries a description and a result line"
+                true (and (> (length (at "pre-text" preview)) 0)
+                          (> (length (at "post-text" preview)) 0)))
+            ;;a withdrawal moves tokens, not STOA, so the STOA side must be empty. This is the
+            ;;cheapest way to catch a preview wired to the wrong cost constructor.
+            (expect "<<INFO2-01>> a withdrawal previews NO STOA cost"
+                0.0 (at "stoa-need" (at "stoa" preview)))
+        ]
+    )
+    ""
+)
+(commit-tx)
+(print "")
+;;NOT COVERED, and what it would take. The other INFO_DEMIPAD previews (Deposit, Fuel*, Retrieve*)
+;;need the launchpad asset in states this suite does not create — a funded sale, an open deposit
+;;window. Each is the SAME shape as the block above, so extending this file is a matter of reaching
+;;the state, not of working out what to assert: recompute the wrapped URCi_ cost, compare
+;;ignis-full. The EQUITY and DPDC preview families are untouched for the same reason.
+(print "=== END modules/INFO-TWO.repl ===")

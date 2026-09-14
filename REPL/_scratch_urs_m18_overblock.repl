@@ -21,6 +21,7 @@
     (print
         (expect-failure
             "UEV_EnforceReserved wrongly rejects a legitimate custom account name shaped like a principal (over-blocking)"
+                "Reserved protocol guard violation: z"
             (ref-U|RS::UEV_EnforceReserved legit-custom-name g)
         )
     )

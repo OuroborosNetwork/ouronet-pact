@@ -707,6 +707,7 @@
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
+    ;;Protection: Class 3 — Custom: P|TS
     (defun AQP-POOL|XB_VacateTrueFungible:string
         (patron:string pool-id:string)
         @doc "Vacate rehaul — pool-owner vacate of a pool's TrueFungible leg only (one tx; used standalone or by \
@@ -722,6 +723,7 @@
             )
         )
     )
+    ;;Protection: Class 3 — Custom: P|TS
     (defun AQP-POOL|XB_VacateOrtoFungible:string
         (patron:string pool-id:string dpof-id:string)
         @doc "Vacate rehaul — pool-owner vacate of ONE OrtoFungible asset of a pool (one tx; standalone or per \
@@ -737,6 +739,7 @@
             )
         )
     )
+    ;;Protection: Class 3 — Custom: P|TS
     (defun AQP-POOL|XB_VacateSemiFungible:string
         (patron:string pool-id:string dpsf-id:string)
         @doc "Vacate rehaul — pool-owner vacate of the DPSF (semi-fungible) collection of a class-3 pool (one tx). \
@@ -752,6 +755,7 @@
             )
         )
     )
+    ;;Protection: Class 3 — Custom: P|TS
     (defun AQP-POOL|XB_VacateNonFungible:string
         (patron:string pool-id:string dpnf-id:string)
         @doc "Vacate rehaul — pool-owner vacate of the DPNF (non-fungible) collection of a class-4 pool (one tx). \

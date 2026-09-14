@@ -157,6 +157,77 @@
 (env-sigs [])
 (commit-tx)
 (print "")
+(begin-tx "SCALE-SWP-FREEZE - collect is refused while the sweep is open")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [SCALE-SWP-FREEZE . collect during an open sweep] ---")
+;;FVT::UEV_CollectContext's first guard -- "Collect is frozen while a re-score sweep is in progress
+;;on this pool" -- was UNPINNED (`python3 REPL/_cheapseam.py`). It needs a pool with an OPEN sweep,
+;;which exists for exactly the span between CC_SweepBegin above and the recompute chunks below, so
+;;this is the only point in the suite where it can be reached. The block above already reads
+;;UR_AQP|PoolSweepInProgress and asserts the pool is FROZEN; this asserts what that freeze is FOR.
+;;
+;;Why it matters, from the source's own note: mid-sweep the aggregate-promile is in flux, so a
+;;collect on an unswept holder would refresh deb against a stale-high aggregate -- i.e. pay out on
+;;a number the sweep is in the middle of correcting.
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpFvt"))
+        (score-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpScore"))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpPool"))
+        (ouro-id:string "OURO-98c486052a51")
+    )
+    (map print
+        [
+            ;;the precondition, asserted here too so this block stands on its own: if the sweep were
+            ;;NOT open the rejection below would have to come from some other guard, and the test
+            ;;would be pinning the wrong thing.
+            (expect "<<SCALE-SWP-FREEZE>> the pool really is mid-sweep at this point"
+                true (ref-AQP::UR_AQP|PoolSweepInProgress pool-id))
+            (expect-failure "<<SCALE-SWP-FREEZE>> a collect on that pool is refused while the sweep is open"
+                "Collect is frozen while a re-score sweep is in progress on this pool"
+                (ref-TS02-C3::AQP-FVT|CC_Collect patron fvt-id 1 score-id ouro-id))
+            ;;TWO MORE GUARDS LIVE IN EXACTLY THIS WINDOW, and nowhere else in the suite: an OPEN
+            ;;sweep is the precondition for both, and it exists only between CC_SweepBegin above and
+            ;;the recompute chunks below.
+            ;;
+            ;;`05_FVT.pact:3118` -- a sweep cannot be opened twice on the same anchor. Without this
+            ;;a second Begin would reset the cursor mid-drain and silently re-freeze pools that the
+            ;;finalizing chunk had already released.
+            (expect-failure "<<SCALE-SWP-FREEZE>> a sweep cannot be opened twice on the same anchor"
+                "A sweep is already in progress for this anchor"
+                (ref-TS02-C3::AQP-FVT|CC_SweepBegin patron
+                    (ref-U|DALOS::UDC_Makeid "ScaleSwpAnchor")))
+            ;;`05_FVT.pact:1006` -- the chunk size bound, BOTH ends. SWEEP-CHUNK-MAX is derived as
+            ;;SWEEP-CHUNK-GAS-BUDGET / SWEEP-GAS-PER-HOLDER = 2,000,000 / 2,000 = 1000, so the bound
+            ;;is computed from the gas model rather than typed. It is deliberately LOOSE -- the UI
+            ;;sizes the real chunk by simulation and the node gas meter is the actual enforcement --
+            ;;which is exactly why it is worth pinning: a backstop nobody drives is a backstop nobody
+            ;;knows the value of.
+            (expect "<<SCALE-SWP-FREEZE>> the chunk bound is derived from the gas model, not typed"
+                1000 AQP-FVT.SWEEP-CHUNK-MAX)
+            (expect-failure "<<SCALE-SWP-FREEZE>> a ZERO chunk is out of range"
+                "Sweep chunk out of range"
+                (ref-TS02-C3::AQP-FVT|CCp_SweepRecomputeChunk patron
+                    (ref-U|DALOS::UDC_Makeid "ScaleSwpAnchor") 0))
+            (expect-failure "<<SCALE-SWP-FREEZE>> ...and so is one past SWEEP-CHUNK-MAX"
+                "Sweep chunk out of range"
+                (ref-TS02-C3::AQP-FVT|CCp_SweepRecomputeChunk patron
+                    (ref-U|DALOS::UDC_Makeid "ScaleSwpAnchor") 1001))
+            ;;the ACCEPTING side is not driven here on purpose: a valid chunk does real recompute
+            ;;work and would advance the cursor this file's later assertions count on. SCALE-SWP-R1
+            ;;below drives chunk 15 successfully, which is the contrast.
+        ]
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
 (begin-tx "SCALE-SWP-R1 - CCp_SweepRecomputeChunk 15")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)

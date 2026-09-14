@@ -1302,6 +1302,21 @@
     (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD pool7 spt2)
     (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD pool8 spt2)
     ;;Enable Asymetric Liquidity Addition and Primordial Pool
+    ;;==== P3.3 · the PrimordialPool precondition, pinned in its only window ====
+    ;;SWP|C>TG-ASYMETRIC-LQ refuses to touch the global asymmetric-liquidity switch until a
+    ;;primordial pool exists: that pool is the price reference the asymmetric deviation bound is
+    ;;measured against, so enabling asymmetry without one would admit unbounded deviation.
+    ;;
+    ;;Every suite has the primordial pool set, because the line immediately below sets it -- so
+    ;;this guard is reachable ONLY here, in the one statement's worth of window before it. The
+    ;;call fails inside the defcap, before any write, so nothing is left behind.
+    (print
+        (expect "<<SWP-PP>> no primordial pool is set yet at this point in the chain"
+            true (= (SWP.UR_PrimordialPool) "|")))
+    (print
+        (expect-failure "<<SWP-PP>> the asymmetric-liquidity switch is refused before a primordial pool exists"
+            "PrimordialPool must be set for this operation"
+            (ref-TS01-A::SWP|A_ToggleAsymetricLiquidityAddition true)))
     (ref-TS01-A::SWP|A_DefinePrimordialPool pool1)
     (ref-TS01-A::SWP|A_ToggleAsymetricLiquidityAddition true)
     ;;Toggle Add Liquidity
@@ -3919,9 +3934,13 @@
     ;;direct-adjacency only, not transitive/multi-hop BFS reachability.
     (map print
         [
+            ;;TIGHTENED 2026-09-13 to the 3-argument form. This assertion already REACHED
+            ;;`16_SWPI.pact:2512` but accepted ANY error, so the guard counted as unpinned -- the
+            ;;suite was one string away from proving it and had been for a while. That is the whole
+            ;;point of RULE 8: a 2-arg expect-failure proves the call failed, not that the rule fired.
             (expect-failure
-                "S|TSTM|TSTQ rejected — TSTM is only transitively (2-hop), not \
-                \ directly, connected to a principal (#34bM fix)"
+                "S|TSTM|TSTQ rejected — TSTM is only transitively (2-hop), not directly, connected to a principal (#34bM fix)"
+                "TSTM-98c486052a51 is not directly pooled with any Principal token"
                 (ref-TS01-C3::SWP|C_IssueStable KST.ANHD KST.ANHD
                     [
                         { "token-id": "TSTM-98c486052a51", "token-supply": 800.0}
@@ -5368,6 +5387,7 @@
         (ref-SWP:module{SwapperV4} SWP)
         (ref-SWPT:module{SwapTracerV3} SWPT)
         (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
         (test-pool:string "P|OURO-98c486052a51|VST-98c486052a51")
         (all-swpairs:[string] (ref-SWP::URC_Swpairs))
         (all-nodes:[string] (ref-U|SWP::UC_MakeGraphNodes SWPT.BAR SWPT.BAR all-swpairs))
@@ -5381,6 +5401,77 @@
             from-raw-result
         )
     )
+    ;;THE ASSERTION ABOVE IS VACUOUS ON THIS POOL, and that is worth stating rather than quietly
+    ;;fixing. <test-pool>'s FIRST token is OURO (asserted below), and URC_PoolValueFromRaw feeds
+    ;;that first token to URC_WorthWSTOAFromRaw -- whose `id == ouro` branch short-circuits to
+    ;;URC_SingleOuroWorthWSTOA and NEVER READS <raw-graph> AT ALL. So the equality above would hold
+    ;;just as well if the graph parameter were ignored, or handed garbage: it proves the two
+    ;;functions agree, but proves nothing about the graph-SOURCING that is the whole point of the
+    ;;#65bL Phase 4 change. Demonstrated directly, not argued -- an EMPTY graph gives the same answer.
+    (print
+        (expect "#65bL Phase 4 CAVEAT: an EMPTY graph gives the identical answer -- the parameter is unused here"
+            original-result
+            (ref-SWPI::URC_PoolValueFromRaw test-pool [])
+        )
+    )
+    (print
+        (expect "#65bL Phase 4 CAVEAT: ...because this pool's first token is OURO, a short-circuit id"
+            (ref-DALOS::UR_OuroborosID)
+            (at 0 (ref-SWP::UR_PoolTokens test-pool))
+        )
+    )
+)
+;;==== SWP|TX 032z6d - #65bL Phase 4 Proof · 03 · the NON-vacuous case ====
+(print "--- [SWP|TX 032z6d - #65bL Phase 4 Proof · 03 · a pool that actually needs the graph] ---")
+;;The real proof of the shared-fetch refactor needs a pool whose first token is NOT one of the three
+;;short-circuit ids (OURO / WSTOA / SSTOA), so that URC_WorthWSTOAFromRaw has to walk the graph it
+;;was handed. The BUSD stable pool is that pool -- its first token is a plain token that reaches
+;;WSTOA only by graph search.
+;;
+;;TWO assertions, and the second is what makes the first mean anything: the shared-graph result
+;;matches the self-fetching one, AND an empty graph does NOT match. Without the second, this is the
+;;same vacuous shape as the block above.
+(let*
+    (
+        (ref-SWPI:module{SwapperIssueV4} SWPI)
+        (ref-SWP:module{SwapperV4} SWP)
+        (ref-SWPT:module{SwapTracerV3} SWPT)
+        (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (graph-pool:string "S|BUSD-98c486052a51|TUSD-98c486052a51|USDT-98c486052a51|USDC-98c486052a51|USDD-98c486052a51|AUSD-98c486052a51|CUSD-98c486052a51")
+        (all-swpairs:[string] (ref-SWP::URC_Swpairs))
+        (all-nodes:[string] (ref-U|SWP::UC_MakeGraphNodes SWPT.BAR SWPT.BAR all-swpairs))
+        (raw-graph:[object{SwapTracerV3.RawGraphNode}] (ref-SWPT::URC_FetchRawGraph all-nodes))
+    )
+    (map print
+        [
+            ;;the premise: this pool's first token is NOT a short-circuit id, so the graph is consulted
+            (expect "#65bL Phase 4: the BUSD pool's first token is none of OURO / WSTOA / SSTOA"
+                false
+                (contains (at 0 (ref-SWP::UR_PoolTokens graph-pool))
+                    [(ref-DALOS::UR_OuroborosID) (ref-DALOS::UR_WrappedStoaID) (ref-DALOS::UR_SilverStoaID)]))
+            ;;the equality that the Phase 4 refactor actually promises
+            (expect "#65bL Phase 4: shared raw-graph == self-fetch on a GRAPH-SEARCHED pool"
+                (ref-SWPI::URC_PoolValue graph-pool)
+                (ref-SWPI::URC_PoolValueFromRaw graph-pool raw-graph))
+            ;;...and the control that makes it non-vacuous: starve the graph and the answer changes.
+            ;;If this ever starts passing, the graph parameter has stopped being consulted and the
+            ;;assertion above has silently become decorative again.
+            ;;...and the control that makes the equality above non-vacuous: STARVE the graph and the
+            ;;call cannot complete. It does not merely return a different number -- it indexes into
+            ;;an empty node list and faults, which is the sharpest possible evidence that the graph
+            ;;parameter is genuinely consumed on this pool. Contrast the OURO pool one block up,
+            ;;where the identical starvation changes nothing at all.
+            ;;
+            ;;IF THIS EVER STOPS FAILING, the graph parameter has stopped being consulted and the
+            ;;equality above has silently become decorative again -- which is exactly what had
+            ;;happened to the original Phase 4 proof before this block was added.
+            (expect-failure "#65bL Phase 4: ...while an EMPTY graph cannot complete -- the parameter is genuinely used"
+                "Array index out of bounds. Length (0), Index (0)"
+                (ref-SWPI::URC_PoolValueFromRaw graph-pool []))
+        ]
+    )
+    ""
 )
 (env-sigs [])
 (commit-tx)
@@ -5488,6 +5579,57 @@
             from-graph-result
         )
     )
+)
+;;==== SWP|TX 032z6g - #65bL Phase 7 Proof · 03 · the NON-vacuous case ====
+(print "--- [SWP|TX 032z6g - #65bL Phase 7 Proof · 03 · a pool that actually needs the graph] ---")
+;;SAME CAVEAT AS PHASE 4, and for the same reason: the block above uses a <test-pool> whose FIRST
+;;token is OURO, and URC_WorthWSTOAFromGraph short-circuits on OURO without ever reading <graph>.
+;;So that assertion proves the two functions agree while proving nothing about the graph-SOURCING
+;;the Phase 7 refactor exists to deliver. The pair below repairs it the same way: a pool whose
+;;first token must be graph-searched, plus a starvation control that fails.
+(let*
+    (
+        (ref-SWPI:module{SwapperIssueV4} SWPI)
+        (ref-SWP:module{SwapperV4} SWP)
+        (ref-SWPT:module{SwapTracerV3} SWPT)
+        (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (graph-pool:string "S|BUSD-98c486052a51|TUSD-98c486052a51|USDT-98c486052a51|USDC-98c486052a51|USDD-98c486052a51|AUSD-98c486052a51|CUSD-98c486052a51")
+        (all-swpairs:[string] (ref-SWP::URC_Swpairs))
+        (all-nodes:[string] (ref-U|SWP::UC_MakeGraphNodes SWPT.BAR SWPT.BAR all-swpairs))
+        (raw-graph:[object{SwapTracerV3.RawGraphNode}] (ref-SWPT::URC_FetchRawGraph all-nodes))
+        (graph:[object{BreadthFirstSearchV2.GraphNode}]
+            (ref-SWPT::UC_MakeGraphFromRaw SWPT.BAR SWPT.BAR all-swpairs raw-graph)
+        )
+    )
+    (map print
+        [
+            (expect "#65bL Phase 7: the BUSD pool's first token is none of OURO / WSTOA / SSTOA"
+                false
+                (contains (at 0 (ref-SWP::UR_PoolTokens graph-pool))
+                    [(ref-DALOS::UR_OuroborosID) (ref-DALOS::UR_WrappedStoaID) (ref-DALOS::UR_SilverStoaID)]))
+            (expect "#65bL Phase 7: shared BUILT graph == self-fetch on a GRAPH-SEARCHED pool"
+                (ref-SWPI::URC_PoolValue graph-pool)
+                (ref-SWPI::URC_PoolValueFromGraph graph-pool graph))
+            ;;STARVATION CONTROL, and the twins do NOT behave the same way here -- which is the most
+            ;;interesting thing this pair of blocks turned up. Handed an empty graph on the same
+            ;;pool:
+            ;;    URC_PoolValueFromRaw   -> FAULTS ("Array index out of bounds")
+            ;;    URC_PoolValueFromGraph -> returns [0.0 0.0], SILENTLY
+            ;;Both prove the parameter is consumed, so both serve as controls. But the asymmetry is
+            ;;worth pinning in its own right: a caller who hands FromGraph a stale or empty graph
+            ;;gets a plausible-looking ZERO VALUATION rather than an error, and a pool valued at
+            ;;zero is not obviously wrong to downstream code the way an abort is. Recorded here
+            ;;rather than "fixed", because URCx_Hopper only ever builds the graph immediately before
+            ;;use -- but if a cached-graph caller is ever added, this is the trap waiting for it.
+            (expect "#65bL Phase 7: an EMPTY graph yields a SILENT ZERO here, not a fault as in Phase 4"
+                [0.0 0.0] (ref-SWPI::URC_PoolValueFromGraph graph-pool []))
+            ;;...and that zero really is different from the true value, so the parameter is used
+            (expect "#65bL Phase 7: ...and the true value is NOT zero, so the graph is genuinely consumed"
+                false (= [0.0 0.0] (ref-SWPI::URC_PoolValue graph-pool)))
+        ]
+    )
+    ""
 )
 (env-sigs [])
 (commit-tx)
@@ -6256,7 +6398,7 @@
         (s-lp:string (ref-DPTF::UR_Sleeping pool-lp))
         ;;
         (dptf:string (ref-DPOF::UR_Sleeping s-vst))
-        (ptp:integer (ref-SWP::UR_PoolTokenPosition pool dptf))
+        (ptp:integer (ref-SWP::URv_PoolTokenPosition pool dptf))
         (batch-amount:decimal (ref-DPOF::UR_NonceSupply s-vst 31))
         (lq-lst:[decimal] (ref-U|SWP::UC_MakeLiquidityList pool ptp batch-amount))
         (ld:object{SwapperLiquidityV2.LiquidityData}

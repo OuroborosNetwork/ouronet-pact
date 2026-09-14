@@ -6,3 +6,29 @@
 (load "../Stage_01/[6.2]_DPTF.repl")
 (load "../Stage_01/[6.3]_SWP.repl")
 (load "../Stage_01/[6.4]_Admin.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "ADMIN-G9 -- the branding-administrator claim on BRD|A_Live")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(print "--- [ADMIN-G9 . 01 . a non-admin cannot promote pending branding to live] ---")
+;;FOUND BY `python3 _docclaims.py`. TS01-A's BRD|A_Live says "Can only be done by Branding
+;;Administrator" and nothing asserted it. The Talos wrapper is gated only by `(with-capability
+;;(P|TS))` -- the marker meaning "arrived through Talos", which enforces no authority at all -- so
+;;the claim rests entirely on the core it delegates to. That is the SAME SHAPE as TS01-A's
+;;ORBR|A_Fuel, where the downstream gate turned out to be `(defcap SECURE () true)` and the
+;;function was open to any signer.
+;;
+;;Here the gate is real: BRD::A_Live acquires BRD|C>LIVE, which composes GOV|BRD_ADMIN. So there
+;;is no bug -- but the shape is indistinguishable from the bug at the call site, which is exactly
+;;why it needs an assertion rather than a reading. EMMA is refused by the Demiurgoi keyset.
+(map print
+    [
+        (expect-failure "<<ADMIN-G9>> a non-admin cannot set branding live"
+            "Keyset failure (keys-any)"
+            (TS01-A.BRD|A_Live "MOCKA-98c486052a51"))
+    ]
+)
+(commit-tx)

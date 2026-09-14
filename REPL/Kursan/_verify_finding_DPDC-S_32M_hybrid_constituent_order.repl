@@ -16,7 +16,11 @@
 (begin-tx "PROBE-32M - Hybrid constituent order now matches Make-time convention")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
-(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;SIGNS AS BOTH -- same reason as _verify_finding_DPDC-S_31M. DPSF|C_DefineHybridSet reaches
+;;DPDC-C|C>REGISTER-NONCES, which enforces ownership of the collection's NFT CREATE-ROLE account
+;;(DPDC-C.pact:288, on UR_Verum5) -- not the collection owner. DHCD is owned by ANHD but its create
+;;role sits with EMMA, so the patron's signature alone fails a gate unrelated to the patron.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)

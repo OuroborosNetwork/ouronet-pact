@@ -1771,7 +1771,6 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (ref-ORBR:module{OuroborosV2} OUROBOROS)
                     (ico:object{IgnisCollectorV2.OutputCumulator}
                         (ref-ORBR::C_Compress client ignis-amount)
@@ -1790,7 +1789,6 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (ref-ORBR:module{OuroborosV2} OUROBOROS)
                     (ico:object{IgnisCollectorV2.OutputCumulator}
                         (ref-ORBR::C_Sublimate client target ouro-amount)
@@ -1809,7 +1807,6 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (ref-ORBR:module{OuroborosV2} OUROBOROS)
                     (ico:object{IgnisCollectorV2.OutputCumulator}
                         (ref-ORBR::C_SublimateV2 client target ouro-amount)

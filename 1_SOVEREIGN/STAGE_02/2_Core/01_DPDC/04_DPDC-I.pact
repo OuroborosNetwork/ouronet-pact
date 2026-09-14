@@ -54,7 +54,7 @@
     ;;
     ;; C_DeployAccountSFT/NFT removed — DPDC Audit #35M: standalone deployment, reachable via a public
     ;; Talos entrypoint with no ownership check, let any signer force any existing account to associate
-    ;; with any collection. Real auto-association always calls DPDC::XB_DeployAccountSFT/NFT directly,
+    ;; with any collection. Real auto-association always calls DPDC::XBv_DeployAccountSFT/NFT directly,
     ;; module-to-module (see DPDC-C/DPDC-F/DPDC-R/DPDC-S and this module's own Issue flow below).
     (defun C_IssueDigitalCollection:object{IgnisCollectorV2.OutputCumulator}
         (
@@ -281,6 +281,7 @@
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
+    ;;Protection: Class 3 — Custom: DPDC-I|C>ISSUE
     (defun XI_IssueDigitalCollection:string
         (
             son:bool
@@ -293,7 +294,6 @@
         (let
             (
                 (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
                 (ref-DPDC:module{DpdcV2} DPDC)
                 (id:string (ref-U|DALOS::UDC_Makeid collection-ticker))
@@ -391,7 +391,6 @@
         (with-capability (DPDC-I|C>ISSUE owner-account creator-account collection-name collection-ticker iz-special)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (ref-BRD:module{BrandingV2} BRD)
                     (ref-DPDC:module{DpdcV2} DPDC)
@@ -418,7 +417,7 @@
                     ;;SFT New Account Roles
                     (if (!= owner-account creator-account)
                         (do
-                            (ref-DPDC::XB_DeployAccountSFT owner-account id
+                            (ref-DPDC::XBv_DeployAccountSFT owner-account id
                                 true    ;;role-nft-add-quantity
                                 false   ;;frozen
                                 false   ;;role-exemption
@@ -431,7 +430,7 @@
                                 false   ;;role-set-new-uri
                                 false   ;;role-transfer
                             )
-                            (ref-DPDC::XB_DeployAccountSFT creator-account id
+                            (ref-DPDC::XBv_DeployAccountSFT creator-account id
                                 false   ;;role-nft-add-quantity
                                 false   ;;frozen
                                 true    ;;role-exemption
@@ -445,7 +444,7 @@
                                 false   ;;role-transfer
                             )
                         )
-                        (ref-DPDC::XB_DeployAccountSFT owner-account id
+                        (ref-DPDC::XBv_DeployAccountSFT owner-account id
                             true    ;;role-nft-add-quantity
                             false   ;;frozen
                             true    ;;role-exemption
@@ -461,7 +460,7 @@
                     )
                     (if (!= owner-account creator-account)
                         (do
-                            (ref-DPDC::XB_DeployAccountNFT owner-account id
+                            (ref-DPDC::XBv_DeployAccountNFT owner-account id
                                 false   ;;frozen
                                 false   ;;role-exemption
                                 true    ;;role-nft-burn
@@ -473,7 +472,7 @@
                                 false   ;;role-set-new-uri
                                 false   ;;role-transfer
                             )
-                            (ref-DPDC::XB_DeployAccountNFT creator-account id
+                            (ref-DPDC::XBv_DeployAccountNFT creator-account id
                                 false   ;;frozen
                                 true    ;;role-exemption
                                 false   ;;role-nft-burn
@@ -486,7 +485,7 @@
                                 false   ;;role-transfer
                             )
                         )
-                        (ref-DPDC::XB_DeployAccountNFT owner-account id
+                        (ref-DPDC::XBv_DeployAccountNFT owner-account id
                             false   ;;frozen
                             true    ;;role-exemption
                             true    ;;role-nft-burn

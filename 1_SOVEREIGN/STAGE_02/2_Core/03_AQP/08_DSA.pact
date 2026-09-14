@@ -300,7 +300,6 @@
         @event
         (let
             (
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (fvt-owner:string (RPS.UR_FVT|OwnerKonto fvt-id))
             )
@@ -331,13 +330,8 @@
             \ FVT is a DSA vault + the score entity is a delegation member. Composes P|SECURE-CALLER for the FVT \
             \ XE_SetMemberCapture write."
         @event
-        (let
-            (
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
-            )
-            (enforce (URC_DsaTemplateActive fvt-id) "DSA vault not defined or inactive")
-            (enforce (RPS.UR_FVT-SEL|Delegation fvt-id score-entity-id) "Score entity is not a delegation member")
-        )
+        (enforce (URC_DsaTemplateActive fvt-id) "DSA vault not defined or inactive")
+        (enforce (RPS.UR_FVT-SEL|Delegation fvt-id score-entity-id) "Score entity is not a delegation member")
         (compose-capability (P|SECURE-CALLER))
     )
     (defcap DSA|C>SET-ORACLE-AUTH (patron:string fvt-id:string)
@@ -346,7 +340,6 @@
         @event
         (let
             (
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (fvt-owner:string (RPS.UR_FVT|OwnerKonto fvt-id))
             )
@@ -363,7 +356,6 @@
         @event
         (let
             (
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (fvt-owner:string (RPS.UR_FVT|OwnerKonto fvt-id))
             )
@@ -380,7 +372,6 @@
         @event
         (let
             (
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (fvt-owner:string (RPS.UR_FVT|OwnerKonto fvt-id))
             )
@@ -397,7 +388,6 @@
         @event
         (let
             (
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (fvt-owner:string (RPS.UR_FVT|OwnerKonto fvt-id))
             )
@@ -414,7 +404,6 @@
         @event
         (let
             (
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (fvt-owner:string (RPS.UR_FVT|OwnerKonto fvt-id))
             )
@@ -430,17 +419,12 @@
             \ (DSA|OracleAuth), the score entity is a delegation member, nodes non-negative, uptime in \
             \ [DSA_UPTIME_MIN, DSA_UPTIME_FULL]. Composes P|SECURE-CALLER for the recompute + FVT capture write."
         @event
-        (let
-            (
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
-            )
-            (enforce-guard (UR_DSA-ORA|Guard fvt-id))
-            (enforce (RPS.UR_FVT-SEL|Delegation fvt-id score-entity-id) "Score entity is not a delegation member")
-            (enforce (fold (and) true
-                [ (>= nodes 0)
-                  (>= uptime DSA_UPTIME_MIN)
-                  (<= uptime DSA_UPTIME_FULL) ]) "Oracle values out of range (nodes >= 0, uptime 0..1000)")
-        )
+        (enforce-guard (UR_DSA-ORA|Guard fvt-id))
+        (enforce (RPS.UR_FVT-SEL|Delegation fvt-id score-entity-id) "Score entity is not a delegation member")
+        (enforce (fold (and) true
+            [ (>= nodes 0)
+              (>= uptime DSA_UPTIME_MIN)
+              (<= uptime DSA_UPTIME_FULL) ]) "Oracle values out of range (nodes >= 0, uptime 0..1000)")
         (compose-capability (P|SECURE-CALLER))
     )
     ;;{C4}  Ownership [gold]
@@ -664,7 +648,6 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
             )
             (+ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (URCi_WithdrawRoyalty patron [fvt-id]))
                (RPS.URCi_WithdrawRoyaltyCustody fvt-id reward-dptf-id (RPS.UR_FVT|OwnerKonto fvt-id)))
@@ -675,7 +658,6 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
             )
             (+ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (URCi_BurnRoyalty patron [fvt-id]))
                (RPS.URCi_BurnRoyaltyCustody fvt-id reward-dptf-id))
@@ -686,7 +668,6 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
             )
             (+ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (URCi_FuelRoyalty patron [fvt-id]))
                (RPS.URCi_FuelRoyaltyCustody fvt-id reward-dptf-id swpair))
@@ -738,6 +719,7 @@
     )
     ;;{5.6}  Aux/X
     ;; [XI]
+    ;;Protection: Class 2 — SECURE
     (defun XI_ApplyCapture:string (fvt-id:string score-entity-id:string oracle-ts:time)
         @doc "Recompute an agency's capture from CURRENT Q / nodes / uptime and write it onto the FVT member \
             \ (XE_SetMemberCapture), stamping the given oracle-ts. Callers hold P|SECURE-CALLER (⇒ SECURE + the \
@@ -746,7 +728,6 @@
         (require-capability (SECURE))
         (let
             (
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                 (units:decimal (URC_CaptureUnits fvt-id score-entity-id))
             )
             (RPS.XE_SetMemberCapture fvt-id score-entity-id
@@ -816,12 +797,7 @@
             \ with no/stale entry captures 0). Composes P|SECURE-CALLER for the FVT global-config write."
         (with-capability (GOV|DSA_ADMIN)
             (with-capability (P|SECURE-CALLER)
-                (let
-                    (
-                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
-                    )
-                    (RPS.XE_SetExternalOracle on)
-                )
+                (RPS.XE_SetExternalOracle on)
             )
         )
     )
@@ -832,12 +808,7 @@
         (enforce (> seconds 0) "oracle-validity must be positive")
         (with-capability (GOV|DSA_ADMIN)
             (with-capability (P|SECURE-CALLER)
-                (let
-                    (
-                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
-                    )
-                    (RPS.XE_SetOracleValidity seconds)
-                )
+                (RPS.XE_SetOracleValidity seconds)
             )
         )
     )
@@ -851,7 +822,6 @@
         (with-capability (DSA|C>WITHDRAW-ROYALTY patron fvt-id)
             (let
                 (
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
@@ -870,7 +840,6 @@
         (with-capability (DSA|C>BURN-ROYALTY patron fvt-id)
             (let
                 (
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
@@ -889,7 +858,6 @@
         (with-capability (DSA|C>FUEL-ROYALTY patron fvt-id swpair)
             (let
                 (
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
@@ -909,7 +877,6 @@
         (with-capability (DSA|C>SET-AGENCY-FEE patron fvt-id score-entity-id fee-per-mille)
             (let
                 (
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
@@ -933,7 +900,6 @@
         (with-capability (DSA|C>OPEN-AGENCY patron fvt-id score-entity-id fee-per-mille)
             (let
                 (
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
@@ -955,7 +921,6 @@
         (with-capability (DSA|C>RECOMPUTE-CAPTURE patron fvt-id score-entity-id)
             (let
                 (
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )

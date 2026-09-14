@@ -34,4 +34,15 @@
 (load "Stage_02/[6.4]_AQP-EXHAUSTIVE-BOOT-POOLS.repl")
 (load "Stage_02/[6.4]_AQP-EXHAUSTIVE-RPS.repl")
 (load "Stage_02/[6.4]_AQP-EXHAUSTIVE-COLLECT.repl")
+
+;;AQP-INFO is loaded HERE, not inside the suite below, because a SHARED suite file may only name what
+;;its narrowest loader provides — the lesson from the launchpad gate failure, where `[5.3]_Launchpad`
+;;compiled under one Stage-02 chain and died under the other. This runner is the only LIVE loader of
+;;the suite below (AQP-FULL keeps it commented out), so it is the one chain that can supply the reader.
+(begin-tx "AQP-INFO - load module for the zero-quote cost block")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": [] }])
+(load "../1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact")
+(commit-tx)
 (load "Stage_02/[6.2.8c]_AQP-INJECT-CC.repl")

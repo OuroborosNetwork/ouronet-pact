@@ -1,18 +1,20 @@
 {
  "AQP-ANK|C_IssueNonFungibleAnchor": {
-  "invocations": 1,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 2,
+  "pos": 4,
+  "neg": 6,
   "files": [
-   "REPL/Stage_02/[6.2.15]_AQP-NF-ANCHOR.repl"
+   "REPL/Stage_02/[6.2.15]_AQP-NF-ANCHOR.repl",
+   "REPL/modules/AQP.repl"
   ]
  },
  "AQP-ANK|C_IssueNonFungibleSetAnchor": {
-  "invocations": 1,
-  "pos": 6,
-  "neg": 0,
+  "invocations": 3,
+  "pos": 10,
+  "neg": 6,
   "files": [
-   "REPL/Stage_02/[6.2.4]_AQP-FVT-NF.repl"
+   "REPL/Stage_02/[6.2.4]_AQP-FVT-NF.repl",
+   "REPL/modules/AQP.repl"
   ]
  },
  "AQP-ANK|C_IssueSemiFungibleAnchor": {
@@ -24,9 +26,9 @@
   ]
  },
  "AQP-ANK|C_IssueTrueFungibleAnchor": {
-  "invocations": 44,
-  "pos": 13,
-  "neg": 9,
+  "invocations": 45,
+  "pos": 17,
+  "neg": 15,
   "files": [
    "REPL/Kursan/AQP-scale-sweep.repl",
    "REPL/Kursan/AQP-stream-tests.repl",
@@ -34,7 +36,8 @@
    "REPL/Stage_02/[6.2.1]_AQP-ANK.repl",
    "REPL/Stage_02/[6.2.4]_AQP-FVT.repl",
    "REPL/Stage_02/[6.2.6]_AQP-VCT-GAS-BASE.repl",
-   "REPL/Stage_02/[6.2.6]_AQP-VCT-GAS.repl"
+   "REPL/Stage_02/[6.2.6]_AQP-VCT-GAS.repl",
+   "REPL/modules/AQP.repl"
   ]
  },
  "AQP-ANK|C_RevokeAnchor": {
@@ -47,11 +50,12 @@
   ]
  },
  "AQP-ANK|C_RevokeBoostClass": {
-  "invocations": 10,
-  "pos": 5,
-  "neg": 2,
+  "invocations": 12,
+  "pos": 9,
+  "neg": 8,
   "files": [
-   "REPL/Stage_02/[6.2.1]_AQP-ANK.repl"
+   "REPL/Stage_02/[6.2.1]_AQP-ANK.repl",
+   "REPL/modules/AQP.repl"
   ]
  },
  "AQP-DSA|A_SetOracleValidity": {
@@ -73,9 +77,9 @@
   ]
  },
  "AQP-DSA|CC_OpenAgency": {
-  "invocations": 7,
+  "invocations": 8,
   "pos": 7,
-  "neg": 4,
+  "neg": 5,
   "files": [
    "REPL/Kursan/dsa-agency-tests.repl",
    "REPL/Kursan/dsa-capture-tests.repl",
@@ -84,36 +88,39 @@
   ]
  },
  "AQP-DSA|C_BurnRoyalty": {
-  "invocations": 1,
-  "pos": 3,
-  "neg": 0,
+  "invocations": 4,
+  "pos": 14,
+  "neg": 15,
   "files": [
-   "REPL/Kursan/dsa-capture-tests.repl"
+   "REPL/Kursan/dsa-capture-tests.repl",
+   "REPL/Kursan/dsa-grand-tour.repl"
   ]
  },
  "AQP-DSA|C_DefineDelegationVault": {
-  "invocations": 7,
-  "pos": 8,
-  "neg": 3,
+  "invocations": 8,
+  "pos": 9,
+  "neg": 6,
   "files": [
    "REPL/Kursan/dsa-agency-tests.repl",
    "REPL/Kursan/dsa-capture-tests.repl",
    "REPL/Kursan/dsa-fee-tests.repl",
-   "REPL/Kursan/dsa-grand-tour.repl"
+   "REPL/Kursan/dsa-grand-tour.repl",
+   "REPL/modules/AQP.repl"
   ]
  },
  "AQP-DSA|C_FuelRoyalty": {
-  "invocations": 1,
-  "pos": 4,
-  "neg": 0,
+  "invocations": 5,
+  "pos": 20,
+  "neg": 17,
   "files": [
-   "REPL/Kursan/dsa-capture-tests.repl"
+   "REPL/Kursan/dsa-capture-tests.repl",
+   "REPL/Kursan/dsa-grand-tour.repl"
   ]
  },
  "AQP-DSA|C_OracleWrite": {
-  "invocations": 11,
-  "pos": 24,
-  "neg": 1,
+  "invocations": 15,
+  "pos": 35,
+  "neg": 16,
   "files": [
    "REPL/Kursan/dsa-capture-tests.repl",
    "REPL/Kursan/dsa-fee-tests.repl",
@@ -129,18 +136,18 @@
   ]
  },
  "AQP-DSA|C_SetAgencyFee": {
-  "invocations": 2,
-  "pos": 8,
-  "neg": 0,
+  "invocations": 6,
+  "pos": 25,
+  "neg": 15,
   "files": [
    "REPL/Kursan/dsa-fee-tests.repl",
    "REPL/Kursan/dsa-grand-tour.repl"
   ]
  },
  "AQP-DSA|C_SetOracleAuth": {
-  "invocations": 3,
-  "pos": 9,
-  "neg": 0,
+  "invocations": 4,
+  "pos": 20,
+  "neg": 15,
   "files": [
    "REPL/Kursan/dsa-capture-tests.repl",
    "REPL/Kursan/dsa-fee-tests.repl",
@@ -148,18 +155,20 @@
   ]
  },
  "AQP-DSA|C_WithdrawRoyalty": {
-  "invocations": 3,
-  "pos": 5,
-  "neg": 1,
+  "invocations": 4,
+  "pos": 16,
+  "neg": 16,
   "files": [
-   "REPL/Kursan/dsa-capture-tests.repl"
+   "REPL/Kursan/dsa-capture-tests.repl",
+   "REPL/Kursan/dsa-grand-tour.repl"
   ]
  },
  "AQP-FVT|CC_Collect": {
-  "invocations": 55,
-  "pos": 146,
-  "neg": 0,
+  "invocations": 59,
+  "pos": 161,
+  "neg": 4,
   "files": [
+   "REPL/Kursan/AQP-scale-sweep.repl",
    "REPL/Kursan/AQP-stream-tests.repl",
    "REPL/Kursan/dsa-capture-tests.repl",
    "REPL/Kursan/dsa-fee-tests.repl",
@@ -174,8 +183,8 @@
   ]
  },
  "AQP-FVT|CC_Inject": {
-  "invocations": 39,
-  "pos": 155,
+  "invocations": 40,
+  "pos": 161,
   "neg": 0,
   "files": [
    "REPL/Kursan/dsa-capture-tests.repl",
@@ -203,7 +212,7 @@
  },
  "AQP-FVT|CC_InjectStream": {
   "invocations": 10,
-  "pos": 22,
+  "pos": 29,
   "neg": 3,
   "files": [
    "REPL/Kursan/AQP-stream-tests.repl",
@@ -211,9 +220,9 @@
   ]
  },
  "AQP-FVT|CC_SweepBegin": {
-  "invocations": 2,
-  "pos": 13,
-  "neg": 0,
+  "invocations": 3,
+  "pos": 15,
+  "neg": 4,
   "files": [
    "REPL/Kursan/AQP-scale-sweep.repl",
    "REPL/Stage_02/[6.2.8]_AQP-SWEEP-CC.repl"
@@ -236,29 +245,32 @@
   ]
  },
  "AQP-FVT|CCp_InjectFixChunk": {
-  "invocations": 5,
-  "pos": 10,
-  "neg": 0,
+  "invocations": 7,
+  "pos": 13,
+  "neg": 5,
   "files": [
    "REPL/Kursan/AQP-scale-inject.repl",
-   "REPL/Stage_02/[6.2.8c]_AQP-INJECT-CC.repl"
+   "REPL/Stage_02/[6.2.8c]_AQP-INJECT-CC.repl",
+   "REPL/modules/AQP.repl"
   ]
  },
  "AQP-FVT|CCp_SweepRecomputeChunk": {
-  "invocations": 5,
-  "pos": 21,
-  "neg": 0,
+  "invocations": 8,
+  "pos": 26,
+  "neg": 9,
   "files": [
    "REPL/Kursan/AQP-scale-sweep.repl",
-   "REPL/Stage_02/[6.2.8]_AQP-SWEEP-CC.repl"
+   "REPL/Stage_02/[6.2.8]_AQP-SWEEP-CC.repl",
+   "REPL/modules/AQP.repl"
   ]
  },
  "AQP-FVT|CCp_UnstaleAll": {
-  "invocations": 3,
-  "pos": 8,
-  "neg": 1,
+  "invocations": 5,
+  "pos": 11,
+  "neg": 6,
   "files": [
-   "REPL/Stage_02/[6.2.8d]_AQP-UNSTALE-ALL-CC.repl"
+   "REPL/Stage_02/[6.2.8d]_AQP-UNSTALE-ALL-CC.repl",
+   "REPL/modules/AQP.repl"
   ]
  },
  "AQP-FVT|C_AddRewardLink": {
@@ -284,18 +296,19 @@
   ]
  },
  "AQP-FVT|C_Control": {
-  "invocations": 2,
-  "pos": 1,
-  "neg": 3,
+  "invocations": 5,
+  "pos": 5,
+  "neg": 8,
   "files": [
+   "REPL/Kursan/dsa-grand-tour.repl",
    "REPL/Stage_02/[6.2.10]_AQP-NEGATIVES.repl",
    "REPL/Stage_02/[6.4]_AQP-EXHAUSTIVE-FVT-ADMIN.repl"
   ]
  },
  "AQP-FVT|C_Issue": {
-  "invocations": 11,
+  "invocations": 16,
   "pos": 24,
-  "neg": 1,
+  "neg": 5,
   "files": [
    "REPL/Kursan/AQP-stream-tests.repl",
    "REPL/Kursan/dsa-agency-tests.repl",
@@ -304,7 +317,8 @@
    "REPL/Kursan/dsa-grand-tour.repl",
    "REPL/Stage_02/[6.2.11]_AQP-SPLIT-MODE.repl",
    "REPL/Stage_02/[6.2.12]_AQP-ANCHOR-TAIL.repl",
-   "REPL/Stage_02/[6.2.4]_AQP-FVT.repl"
+   "REPL/Stage_02/[6.2.4]_AQP-FVT.repl",
+   "REPL/modules/AQP.repl"
   ]
  },
  "AQP-FVT|C_IssueMultipletFamily": {
@@ -316,11 +330,12 @@
   ]
  },
  "AQP-FVT|C_RotateOwnership": {
-  "invocations": 1,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 2,
+  "pos": 7,
+  "neg": 4,
   "files": [
-   "REPL/Stage_02/[6.2.12]_AQP-ANCHOR-TAIL.repl"
+   "REPL/Stage_02/[6.2.12]_AQP-ANCHOR-TAIL.repl",
+   "REPL/Stage_02/[6.4]_AQP-EXHAUSTIVE-FVT-ADMIN.repl"
   ]
  },
  "AQP-FVT|C_SetCommonDenominator": {
@@ -349,47 +364,50 @@
   ]
  },
  "AQP-FVT|C_SetSplitMode": {
-  "invocations": 6,
+  "invocations": 7,
   "pos": 6,
-  "neg": 2,
+  "neg": 3,
   "files": [
    "REPL/Stage_02/[6.2.11]_AQP-SPLIT-MODE.repl",
-   "REPL/Stage_02/[6.2.9]_AQP-BOOT-FULL.repl"
+   "REPL/Stage_02/[6.2.9]_AQP-BOOT-FULL.repl",
+   "REPL/modules/AQP.repl"
   ]
  },
  "AQP-FVT|C_ToggleRewardLink": {
   "invocations": 2,
-  "pos": 5,
-  "neg": 0,
+  "pos": 7,
+  "neg": 4,
   "files": [
    "REPL/Stage_02/[6.4]_AQP-EXHAUSTIVE-FVT-ADMIN.repl"
   ]
  },
  "AQP-FVT|C_ToggleScoreEntityLink": {
-  "invocations": 6,
-  "pos": 6,
-  "neg": 0,
+  "invocations": 12,
+  "pos": 11,
+  "neg": 4,
   "files": [
    "REPL/Stage_02/[6.2.4]_AQP-FVT.repl",
-   "REPL/Stage_02/[6.4]_AQP-EXHAUSTIVE-FVT-ADMIN.repl"
+   "REPL/Stage_02/[6.4]_AQP-EXHAUSTIVE-FVT-ADMIN.repl",
+   "REPL/modules/AQP.repl"
   ]
  },
  "AQP-POOL|CC_FullVacate": {
-  "invocations": 19,
-  "pos": 33,
-  "neg": 5,
+  "invocations": 21,
+  "pos": 38,
+  "neg": 8,
   "files": [
    "REPL/Stage_02/[6.2.4]_AQP-FVT-DC.repl",
    "REPL/Stage_02/[6.2.4]_AQP-FVT-OF.repl",
    "REPL/Stage_02/[6.2.5]_AQP-VCT.repl",
    "REPL/Stage_02/[6.4]_AQP-TRIPLET-COLLECT.repl",
-   "REPL/Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl"
+   "REPL/Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl",
+   "REPL/modules/AQP.repl"
   ]
  },
  "AQP-POOL|CC_StakeNonFungibleCollectable": {
-  "invocations": 31,
-  "pos": 98,
-  "neg": 0,
+  "invocations": 32,
+  "pos": 99,
+  "neg": 1,
   "files": [
    "REPL/Kursan/dsa-hetero-split-tests.repl",
    "REPL/Stage_02/[6.2.4]_AQP-FVT-NF.repl",
@@ -408,7 +426,7 @@
  },
  "AQP-POOL|CC_StakeOrtoFungible": {
   "invocations": 25,
-  "pos": 50,
+  "pos": 52,
   "neg": 1,
   "files": [
    "REPL/Stage_02/[6.2.4]_AQP-FVT-OF.repl",
@@ -422,7 +440,7 @@
  },
  "AQP-POOL|CC_StakeSemiFungibleCollectable": {
   "invocations": 46,
-  "pos": 84,
+  "pos": 86,
   "neg": 1,
   "files": [
    "REPL/Kursan/dsa-capture-tests.repl",
@@ -443,7 +461,7 @@
  },
  "AQP-POOL|CC_StakeTrueFungible": {
   "invocations": 53,
-  "pos": 139,
+  "pos": 147,
   "neg": 3,
   "files": [
    "REPL/Kursan/AQP-stream-tests.repl",
@@ -473,12 +491,13 @@
   ]
  },
  "AQP-POOL|CC_UnstakeOrtoFungible": {
-  "invocations": 6,
+  "invocations": 7,
   "pos": 18,
-  "neg": 1,
+  "neg": 2,
   "files": [
    "REPL/Stage_02/[6.2.4]_AQP-FVT-OF.repl",
-   "REPL/Stage_02/[6.2.8]_AQP-STAKE-GAS.repl"
+   "REPL/Stage_02/[6.2.8]_AQP-STAKE-GAS.repl",
+   "REPL/modules/AQP.repl"
   ]
  },
  "AQP-POOL|CC_UnstakeSemiFungibleCollectable": {
@@ -494,7 +513,7 @@
  },
  "AQP-POOL|CC_UnstakeTrueFungible": {
   "invocations": 9,
-  "pos": 33,
+  "pos": 34,
   "neg": 0,
   "files": [
    "REPL/Kursan/AQP-stream-tests.repl",
@@ -524,8 +543,8 @@
  },
  "AQP-POOL|CCp_BatchDrainTrueFungible": {
   "invocations": 8,
-  "pos": 28,
-  "neg": 0,
+  "pos": 29,
+  "neg": 2,
   "files": [
    "REPL/Kursan/AQP-scale-vacate.repl",
    "REPL/Stage_02/[6.2.5]_AQP-VCT.repl",
@@ -534,7 +553,7 @@
  },
  "AQP-POOL|CCp_BatchVacateCollectables": {
   "invocations": 20,
-  "pos": 28,
+  "pos": 29,
   "neg": 0,
   "files": [
    "REPL/Stage_02/[6.2.4]_AQP-FVT-DC.repl",
@@ -570,16 +589,16 @@
  },
  "AQP-POOL|C_AbortVacate": {
   "invocations": 3,
-  "pos": 4,
+  "pos": 5,
   "neg": 3,
   "files": [
    "REPL/Stage_02/[6.2.5]_AQP-VCT.repl"
   ]
  },
  "AQP-POOL|C_AddScore": {
-  "invocations": 107,
-  "pos": 107,
-  "neg": 5,
+  "invocations": 111,
+  "pos": 126,
+  "neg": 12,
   "files": [
    "REPL/Kursan/AQP-scale-inject.repl",
    "REPL/Kursan/AQP-scale-sweep.repl",
@@ -601,21 +620,23 @@
    "REPL/Stage_02/[6.2.8]_AQP-STAKE-GAS.repl",
    "REPL/Stage_02/[6.2.9]_AQP-BOOT-FULL.repl",
    "REPL/Stage_02/[6.2.9]_AQP-STAKE-GAS-LADDER.repl",
-   "REPL/Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl"
+   "REPL/Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl",
+   "REPL/modules/AQP.repl"
   ]
  },
  "AQP-POOL|C_DisablePoolStake": {
-  "invocations": 2,
+  "invocations": 4,
   "pos": 1,
   "neg": 4,
   "files": [
-   "REPL/Stage_02/[6.2.10]_AQP-NEGATIVES.repl"
+   "REPL/Stage_02/[6.2.10]_AQP-NEGATIVES.repl",
+   "REPL/modules/AQP.repl"
   ]
  },
  "AQP-POOL|C_EnablePoolStake": {
-  "invocations": 33,
-  "pos": 73,
-  "neg": 5,
+  "invocations": 36,
+  "pos": 81,
+  "neg": 8,
   "files": [
    "REPL/Kursan/AQP-scale-inject.repl",
    "REPL/Kursan/AQP-scale-sweep.repl",
@@ -626,22 +647,23 @@
    "REPL/Stage_02/[6.2.4]_AQP-FVT-OF.repl",
    "REPL/Stage_02/[6.2.4]_AQP-FVT.repl",
    "REPL/Stage_02/[6.2.5]_AQP-VCT.repl",
-   "REPL/Stage_02/[6.4]_AQP-TRIPLET-COLLECT.repl"
+   "REPL/Stage_02/[6.4]_AQP-TRIPLET-COLLECT.repl",
+   "REPL/modules/AQP.repl"
   ]
  },
  "AQP-POOL|C_FinalizeVacate": {
-  "invocations": 2,
-  "pos": 13,
-  "neg": 0,
+  "invocations": 4,
+  "pos": 20,
+  "neg": 3,
   "files": [
    "REPL/Kursan/AQP-scale-vacate.repl",
    "REPL/Stage_02/[6.2.5]_AQP-VCT.repl"
   ]
  },
  "AQP-POOL|C_Issue": {
-  "invocations": 86,
-  "pos": 107,
-  "neg": 2,
+  "invocations": 87,
+  "pos": 111,
+  "neg": 5,
   "files": [
    "REPL/Kursan/AQP-scale-inject.repl",
    "REPL/Kursan/AQP-scale-sweep.repl",
@@ -661,7 +683,8 @@
    "REPL/Stage_02/[6.2.6]_AQP-VCT-GAS.repl",
    "REPL/Stage_02/[6.2.9]_AQP-BOOT-FULL.repl",
    "REPL/Stage_02/[6.2.9]_AQP-STAKE-GAS-LADDER.repl",
-   "REPL/Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl"
+   "REPL/Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl",
+   "REPL/modules/AQP-LP.repl"
   ]
  },
  "AQP-POOL|C_RevokeScore": {
@@ -682,25 +705,27 @@
   ]
  },
  "AQP-POOL|C_SyncSemiFungibleAnchors": {
-  "invocations": 1,
-  "pos": 6,
-  "neg": 0,
+  "invocations": 3,
+  "pos": 9,
+  "neg": 1,
   "files": [
+   "REPL/Kursan/dsa-grand-tour.repl",
    "REPL/Stage_02/[6.2.4]_AQP-FVT-DC.repl"
   ]
  },
  "AQP-POOL|C_SyncTrueFungibleAnchors": {
-  "invocations": 1,
-  "pos": 6,
-  "neg": 0,
+  "invocations": 3,
+  "pos": 9,
+  "neg": 1,
   "files": [
+   "REPL/Kursan/AQP-scale-vacate.repl",
    "REPL/Stage_02/[6.2.4]_AQP-FVT.repl"
   ]
  },
  "AQP-SCR|C_CombineTripletScoreModel": {
-  "invocations": 6,
-  "pos": 15,
-  "neg": 3,
+  "invocations": 10,
+  "pos": 19,
+  "neg": 6,
   "files": [
    "REPL/Kursan/dsa-agency-tests.repl",
    "REPL/Kursan/dsa-capture-tests.repl",
@@ -710,20 +735,22 @@
   ]
  },
  "AQP-SCR|C_ControlScore": {
-  "invocations": 4,
-  "pos": 6,
-  "neg": 0,
+  "invocations": 7,
+  "pos": 11,
+  "neg": 2,
   "files": [
-   "REPL/Stage_02/[6.2.2]_AQP-SCORE.repl"
+   "REPL/Stage_02/[6.2.2]_AQP-SCORE.repl",
+   "REPL/modules/AQP.repl"
   ]
  },
  "AQP-SCR|C_CreateScoreBoostClassLink": {
-  "invocations": 2,
-  "pos": 4,
-  "neg": 0,
+  "invocations": 5,
+  "pos": 11,
+  "neg": 4,
   "files": [
    "REPL/Kursan/AQP-scale-sweep.repl",
-   "REPL/Kursan/AQP-sweep-single-tx.repl"
+   "REPL/Kursan/AQP-sweep-single-tx.repl",
+   "REPL/modules/AQP.repl"
   ]
  },
  "AQP-SCR|C_CreateScoreBoostLink": {
@@ -746,17 +773,20 @@
   ]
  },
  "AQP-SCR|C_IssueLiquidityScore": {
-  "invocations": 1,
-  "pos": 2,
-  "neg": 0,
+  "invocations": 8,
+  "pos": 25,
+  "neg": 10,
   "files": [
-   "REPL/Kursan/AQP-stream-tests.repl"
+   "REPL/Kursan/AQP-stream-tests.repl",
+   "REPL/Kursan/dsa-grand-tour.repl",
+   "REPL/modules/AQP-LP.repl",
+   "REPL/modules/AQP.repl"
   ]
  },
  "AQP-SCR|C_IssueNonFungibleScore": {
-  "invocations": 21,
-  "pos": 32,
-  "neg": 0,
+  "invocations": 23,
+  "pos": 45,
+  "neg": 4,
   "files": [
    "REPL/Stage_02/[6.2.4]_AQP-FVT-NF.repl",
    "REPL/Stage_02/[6.2.5]_AQP-VCT.repl",
@@ -764,24 +794,27 @@
    "REPL/Stage_02/[6.2.6]_AQP-VCT-GAS.repl",
    "REPL/Stage_02/[6.2.8]_AQP-STAKE-GAS.repl",
    "REPL/Stage_02/[6.2.9]_AQP-STAKE-GAS-LADDER.repl",
-   "REPL/Stage_02/[6.4]_AQP-EXHAUSTIVE-DPNF.repl"
+   "REPL/Stage_02/[6.4]_AQP-EXHAUSTIVE-DPNF.repl",
+   "REPL/modules/AQP.repl"
   ]
  },
  "AQP-SCR|C_IssueNonFungibleScoreDefinition": {
-  "invocations": 3,
-  "pos": 5,
-  "neg": 1,
+  "invocations": 4,
+  "pos": 18,
+  "neg": 2,
   "files": [
    "REPL/Stage_02/[6.2.4]_AQP-FVT-NF.repl",
-   "REPL/Stage_02/[6.4]_AQP-EXHAUSTIVE-DPNF.repl"
+   "REPL/Stage_02/[6.4]_AQP-EXHAUSTIVE-DPNF.repl",
+   "REPL/modules/AQP.repl"
   ]
  },
  "AQP-SCR|C_IssueNonFungibleSetScoreDefinition": {
-  "invocations": 1,
-  "pos": 0,
-  "neg": 1,
+  "invocations": 3,
+  "pos": 13,
+  "neg": 2,
   "files": [
-   "REPL/Stage_02/[6.2.10]_AQP-NEGATIVES.repl"
+   "REPL/Stage_02/[6.2.10]_AQP-NEGATIVES.repl",
+   "REPL/modules/AQP.repl"
   ]
  },
  "AQP-SCR|C_IssueOrtoFungibleScore": {
@@ -798,21 +831,22 @@
   ]
  },
  "AQP-SCR|C_IssueScoreFromModel": {
-  "invocations": 6,
+  "invocations": 7,
   "pos": 11,
-  "neg": 1,
+  "neg": 4,
   "files": [
    "REPL/Kursan/dsa-agency-tests.repl",
    "REPL/Kursan/dsa-capture-tests.repl",
    "REPL/Kursan/dsa-fee-tests.repl",
    "REPL/Kursan/dsa-grand-tour.repl",
-   "REPL/Kursan/dsa-model-tests.repl"
+   "REPL/Kursan/dsa-model-tests.repl",
+   "REPL/modules/AQP.repl"
   ]
  },
  "AQP-SCR|C_IssueSemiFungibleScore": {
-  "invocations": 25,
+  "invocations": 26,
   "pos": 26,
-  "neg": 1,
+  "neg": 4,
   "files": [
    "REPL/Stage_02/[6.2.2]_AQP-SCORE.repl",
    "REPL/Stage_02/[6.2.3]_AQP-POOL.repl",
@@ -821,15 +855,17 @@
    "REPL/Stage_02/[6.2.6]_AQP-VCT-GAS.repl",
    "REPL/Stage_02/[6.2.8]_AQP-STAKE-GAS.repl",
    "REPL/Stage_02/[6.2.9]_AQP-STAKE-GAS-LADDER.repl",
-   "REPL/Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl"
+   "REPL/Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl",
+   "REPL/modules/AQP.repl"
   ]
  },
  "AQP-SCR|C_IssueSemiFungibleScoreDefinition": {
-  "invocations": 6,
+  "invocations": 7,
   "pos": 0,
-  "neg": 1,
+  "neg": 4,
   "files": [
-   "REPL/Stage_02/[6.2.2]_AQP-SCORE.repl"
+   "REPL/Stage_02/[6.2.2]_AQP-SCORE.repl",
+   "REPL/modules/AQP.repl"
   ]
  },
  "AQP-SCR|C_IssueSingleScoreModel": {
@@ -845,17 +881,19 @@
   ]
  },
  "AQP-SCR|C_IssueTriplet": {
-  "invocations": 1,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 5,
+  "pos": 11,
+  "neg": 5,
   "files": [
-   "REPL/Stage_02/[6.2.13]_AQP-TRIPLET.repl"
+   "REPL/Kursan/dsa-grand-tour.repl",
+   "REPL/Stage_02/[6.2.13]_AQP-TRIPLET.repl",
+   "REPL/modules/AQP.repl"
   ]
  },
  "AQP-SCR|C_IssueTrueFungibleScore": {
-  "invocations": 25,
-  "pos": 40,
-  "neg": 1,
+  "invocations": 29,
+  "pos": 41,
+  "neg": 2,
   "files": [
    "REPL/Kursan/AQP-scale-inject.repl",
    "REPL/Kursan/AQP-scale-sweep.repl",
@@ -869,14 +907,16 @@
    "REPL/Stage_02/[6.2.6]_AQP-VCT-GAS.repl",
    "REPL/Stage_02/[6.2.8]_AQP-STAKE-GAS.repl",
    "REPL/Stage_02/[6.2.9]_AQP-STAKE-GAS-LADDER.repl",
-   "REPL/Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl"
+   "REPL/Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl",
+   "REPL/modules/AQP.repl"
   ]
  },
  "AQP-SCR|C_RotateScoreOwnership": {
-  "invocations": 4,
-  "pos": 6,
-  "neg": 0,
+  "invocations": 5,
+  "pos": 8,
+  "neg": 1,
   "files": [
+   "REPL/Stage_02/[6.2.10]_AQP-NEGATIVES.repl",
    "REPL/Stage_02/[6.2.2]_AQP-SCORE.repl"
   ]
  },
@@ -890,51 +930,56 @@
   ]
  },
  "ATS|A_KickStart": {
-  "invocations": 1,
+  "invocations": 2,
   "pos": 2,
-  "neg": 0,
+  "neg": 5,
   "files": [
-   "REPL/Stage_01/[6.6]_ATS.repl"
+   "REPL/Stage_01/[6.6]_ATS.repl",
+   "REPL/modules/CONFORMANCE.repl"
   ]
  },
  "ATS|CC_RemoveSecondary": {
-  "invocations": 2,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 3,
+  "pos": 2,
+  "neg": 2,
   "files": [
    "REPL/Stage_01/[6.6]_ATS.repl",
-   "REPL/_audit_ats_baseline.repl"
+   "REPL/_audit_ats_baseline.repl",
+   "REPL/modules/ATS.repl"
   ]
  },
  "ATS|C_AddHotRBT": {
-  "invocations": 2,
-  "pos": 2,
-  "neg": 0,
+  "invocations": 7,
+  "pos": 14,
+  "neg": 7,
   "files": [
    "REPL/Stage_01/[6.6]_ATS.repl",
-   "REPL/_cov_draft.repl"
+   "REPL/_cov_draft.repl",
+   "REPL/modules/ATS.repl"
   ]
  },
  "ATS|C_AddSecondary": {
-  "invocations": 2,
-  "pos": 2,
-  "neg": 0,
+  "invocations": 3,
+  "pos": 9,
+  "neg": 3,
   "files": [
-   "REPL/Stage_01/[6.6]_ATS.repl"
+   "REPL/Stage_01/[6.6]_ATS.repl",
+   "REPL/modules/ATS.repl"
   ]
  },
  "ATS|C_Brumate": {
-  "invocations": 1,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 3,
+  "pos": 1,
+  "neg": 3,
   "files": [
-   "REPL/Stage_01/[6.6]_ATS.repl"
+   "REPL/Stage_01/[6.6]_ATS.repl",
+   "REPL/modules/ATS.repl"
   ]
  },
  "ATS|C_Coil": {
-  "invocations": 29,
-  "pos": 3,
-  "neg": 0,
+  "invocations": 30,
+  "pos": 5,
+  "neg": 3,
   "files": [
    "REPL/Stage_01/[4.0]_Sovereign-Executor.repl",
    "REPL/Stage_01/[5.1]_Aoz+.repl",
@@ -943,30 +988,32 @@
    "REPL/Stage_01/[6.6]_ATS.repl",
    "REPL/_audit_ats_baseline.repl",
    "REPL/_cov_draft.repl",
-   "REPL/_scratch_infoone_h6_coil_cost.repl"
+   "REPL/_scratch_infoone_h6_coil_cost.repl",
+   "REPL/modules/ATS.repl"
   ]
  },
  "ATS|C_ColdRecovery": {
-  "invocations": 273,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 277,
+  "pos": 14,
+  "neg": 8,
   "files": [
    "REPL/Stage_01/[6.6]_ATS.repl",
-   "REPL/_audit_ats_baseline.repl"
+   "REPL/_audit_ats_baseline.repl",
+   "REPL/modules/ATS.repl"
   ]
  },
  "ATS|C_Constrict": {
-  "invocations": 1,
-  "pos": 6,
-  "neg": 0,
+  "invocations": 2,
+  "pos": 7,
+  "neg": 3,
   "files": [
    "REPL/modules/ATS.repl"
   ]
  },
  "ATS|C_Control": {
-  "invocations": 7,
-  "pos": 8,
-  "neg": 3,
+  "invocations": 12,
+  "pos": 21,
+  "neg": 7,
   "files": [
    "REPL/Stage_01/[4.0]_Sovereign-Executor.repl",
    "REPL/Stage_01/[6.6]_ATS.repl",
@@ -1000,11 +1047,12 @@
   ]
  },
  "ATS|C_Curl": {
-  "invocations": 1,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 3,
+  "pos": 2,
+  "neg": 3,
   "files": [
-   "REPL/Stage_01/[6.6]_ATS.repl"
+   "REPL/Stage_01/[6.6]_ATS.repl",
+   "REPL/modules/ATS.repl"
   ]
  },
  "ATS|C_DirectRecovery": {
@@ -1017,11 +1065,12 @@
   ]
  },
  "ATS|C_Fuel": {
-  "invocations": 5,
-  "pos": 2,
-  "neg": 0,
+  "invocations": 7,
+  "pos": 10,
+  "neg": 3,
   "files": [
-   "REPL/Stage_01/[6.6]_ATS.repl"
+   "REPL/Stage_01/[6.6]_ATS.repl",
+   "REPL/modules/ATS.repl"
   ]
  },
  "ATS|C_HotRecovery": {
@@ -1045,28 +1094,31 @@
   ]
  },
  "ATS|C_KickStart": {
-  "invocations": 2,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 3,
+  "pos": 2,
+  "neg": 2,
   "files": [
-   "REPL/Stage_01/[4.0]_Sovereign-Executor.repl"
+   "REPL/Stage_01/[4.0]_Sovereign-Executor.repl",
+   "REPL/modules/ATS.repl"
   ]
  },
  "ATS|C_Redeem": {
-  "invocations": 2,
-  "pos": 5,
-  "neg": 0,
+  "invocations": 3,
+  "pos": 7,
+  "neg": 3,
   "files": [
-   "REPL/Stage_01/[6.6]_ATS.repl"
+   "REPL/Stage_01/[6.6]_ATS.repl",
+   "REPL/modules/ATS.repl"
   ]
  },
  "ATS|C_Reverse": {
-  "invocations": 2,
-  "pos": 3,
-  "neg": 0,
+  "invocations": 3,
+  "pos": 5,
+  "neg": 3,
   "files": [
    "REPL/Stage_01/[6.6]_ATS.repl",
-   "REPL/_cov_draft.repl"
+   "REPL/_cov_draft.repl",
+   "REPL/modules/ATS.repl"
   ]
  },
  "ATS|C_RotateOwnership": {
@@ -1086,10 +1138,11 @@
   ]
  },
  "ATS|C_SetColdRecoveryFees": {
-  "invocations": 3,
+  "invocations": 5,
   "pos": 0,
-  "neg": 0,
+  "neg": 2,
   "files": [
+   "REPL/Kursan/_verify_finding_EMPTY-LIST_01_index_iterating_cumulators.repl",
    "REPL/Stage_01/[4.0]_Sovereign-Executor.repl"
   ]
  },
@@ -1135,13 +1188,14 @@
   ]
  },
  "ATS|C_SwitchDirectRecovery": {
-  "invocations": 3,
-  "pos": 2,
+  "invocations": 5,
+  "pos": 4,
   "neg": 0,
   "files": [
    "REPL/Stage_01/[4.0]_Sovereign-Executor.repl",
    "REPL/Stage_01/[6.6]_ATS.repl",
-   "REPL/_cov_draft.repl"
+   "REPL/_cov_draft.repl",
+   "REPL/modules/ATS.repl"
   ]
  },
  "ATS|C_SwitchHotRecovery": {
@@ -1155,28 +1209,31 @@
   ]
  },
  "ATS|C_Syphon": {
-  "invocations": 1,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 8,
+  "pos": 12,
+  "neg": 6,
   "files": [
-   "REPL/Stage_01/[6.6]_ATS.repl"
+   "REPL/Stage_01/[6.6]_ATS.repl",
+   "REPL/modules/ATS.repl"
   ]
  },
  "ATS|C_ToggleElite": {
-  "invocations": 1,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 2,
+  "pos": 9,
+  "neg": 6,
   "files": [
-   "REPL/Stage_01/[4.0]_Sovereign-Executor.repl"
+   "REPL/Stage_01/[4.0]_Sovereign-Executor.repl",
+   "REPL/modules/ATS.repl"
   ]
  },
  "ATS|C_ToggleParameterLock": {
-  "invocations": 3,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 6,
+  "pos": 7,
+  "neg": 3,
   "files": [
    "REPL/Stage_01/[6.6]_ATS.repl",
-   "REPL/_audit_ats_baseline.repl"
+   "REPL/_audit_ats_baseline.repl",
+   "REPL/modules/ATS.repl"
   ]
  },
  "ATS|C_ToggleUpgrade": {
@@ -1210,27 +1267,29 @@
   ]
  },
  "ATS|C_UpdateSyphon": {
-  "invocations": 1,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 4,
+  "pos": 10,
+  "neg": 9,
   "files": [
-   "REPL/Stage_01/[6.6]_ATS.repl"
+   "REPL/Stage_01/[6.6]_ATS.repl",
+   "REPL/modules/ATS.repl"
   ]
  },
  "ATS|C_UpgradeBranding": {
   "invocations": 1,
-  "pos": 3,
-  "neg": 1,
+  "pos": 5,
+  "neg": 0,
   "files": [
    "REPL/modules/ATS.repl"
   ]
  },
  "ATS|C_VestedCoil": {
-  "invocations": 1,
+  "invocations": 2,
   "pos": 0,
-  "neg": 0,
+  "neg": 1,
   "files": [
-   "REPL/Stage_01/[6.7]_VST.repl"
+   "REPL/Stage_01/[6.7]_VST.repl",
+   "REPL/modules/ATS.repl"
   ]
  },
  "ATS|C_VestedCurl": {
@@ -1242,12 +1301,14 @@
   ]
  },
  "ATS|C_WithdrawRoyalties": {
-  "invocations": 2,
-  "pos": 2,
-  "neg": 0,
+  "invocations": 4,
+  "pos": 3,
+  "neg": 3,
   "files": [
+   "REPL/Kursan/_verify_finding_EMPTY-LIST_01_index_iterating_cumulators.repl",
    "REPL/Stage_01/[6.6]_ATS.repl",
-   "REPL/_cov_draft.repl"
+   "REPL/_cov_draft.repl",
+   "REPL/modules/ATS.repl"
   ]
  },
  "ATS|HOT-RBT|C_Repurpose": {
@@ -1279,51 +1340,56 @@
   ]
  },
  "BRD|A_Live": {
-  "invocations": 1,
+  "invocations": 2,
   "pos": 0,
-  "neg": 0,
+  "neg": 1,
   "files": [
-   "REPL/Stage_01/[6.4]_Admin.repl"
+   "REPL/Stage_01/[6.4]_Admin.repl",
+   "REPL/modules/ADMIN.repl"
   ]
  },
  "BRD|A_SetFlag": {
-  "invocations": 1,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 5,
+  "pos": 16,
+  "neg": 6,
   "files": [
-   "REPL/Stage_01/[6.4]_Admin.repl"
+   "REPL/Stage_01/[6.4]_Admin.repl",
+   "REPL/modules/SWP.repl"
   ]
  },
  "CODEX|A_RegisterCodexIdentity": {
-  "invocations": 2,
-  "pos": 3,
-  "neg": 0,
+  "invocations": 6,
+  "pos": 4,
+  "neg": 4,
   "files": [
-   "REPL/Stage_01/[6.9]_CODEX.repl"
+   "REPL/Stage_01/[6.9]_CODEX.repl",
+   "REPL/modules/CODEX.repl"
   ]
  },
  "CODEX|C_RecordArweaveUpload": {
-  "invocations": 2,
+  "invocations": 5,
   "pos": 2,
-  "neg": 0,
+  "neg": 3,
   "files": [
    "REPL/Stage_01/[6.9]_CODEX.repl"
   ]
  },
  "CODEX|C_RegisterStoicTag": {
-  "invocations": 4,
-  "pos": 11,
-  "neg": 0,
+  "invocations": 7,
+  "pos": 14,
+  "neg": 4,
   "files": [
-   "REPL/Stage_01/[6.9]_CODEX.repl"
+   "REPL/Stage_01/[6.9]_CODEX.repl",
+   "REPL/modules/CODEX.repl"
   ]
  },
  "CODEX|C_ReleaseStoicTag": {
-  "invocations": 2,
-  "pos": 4,
-  "neg": 0,
+  "invocations": 5,
+  "pos": 7,
+  "neg": 4,
   "files": [
-   "REPL/Stage_01/[6.9]_CODEX.repl"
+   "REPL/Stage_01/[6.9]_CODEX.repl",
+   "REPL/modules/CODEX.repl"
   ]
  },
  "CODEX|C_RotateCodexGuard": {
@@ -1343,9 +1409,9 @@
   ]
  },
  "DALOS|A_AccountCreationStoaToggle": {
-  "invocations": 4,
+  "invocations": 5,
   "pos": 76,
-  "neg": 2,
+  "neg": 6,
   "files": [
    "REPL/Stage_01/[6.1]_Cumulator.repl",
    "REPL/modules/DALOS-ADMIN.repl"
@@ -1400,20 +1466,22 @@
   ]
  },
  "DALOS|A_SetIgnisSourcePrice": {
-  "invocations": 2,
-  "pos": 4,
-  "neg": 0,
+  "invocations": 5,
+  "pos": 6,
+  "neg": 2,
   "files": [
    "REPL/Stage_01/[6.12]_DALOS-ADMIN.repl",
-   "REPL/Stage_01/[6.4]_Admin.repl"
+   "REPL/Stage_01/[6.4]_Admin.repl",
+   "REPL/modules/DALOS-ADMIN.repl"
   ]
  },
  "DALOS|A_ToggleGAP": {
-  "invocations": 8,
-  "pos": 30,
-  "neg": 3,
+  "invocations": 13,
+  "pos": 36,
+  "neg": 17,
   "files": [
    "REPL/Stage_01/[6.12]_DALOS-ADMIN.repl",
+   "REPL/modules/AQP.repl",
    "REPL/modules/CONFORMANCE.repl",
    "REPL/modules/DALOS-ADMIN.repl",
    "REPL/modules/LIQUID.repl"
@@ -1436,37 +1504,41 @@
   ]
  },
  "DALOS|A_UpdateUsagePrice": {
-  "invocations": 32,
-  "pos": 5,
-  "neg": 0,
+  "invocations": 36,
+  "pos": 11,
+  "neg": 4,
   "files": [
    "REPL/Stage_01/[4.0]_Sovereign-Executor.repl",
+   "REPL/modules/AQP.repl",
    "REPL/modules/DALOS-ADMIN.repl"
   ]
  },
  "DALOS|C_ControlSmartAccount": {
-  "invocations": 1,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 2,
+  "pos": 2,
+  "neg": 5,
   "files": [
-   "REPL/Stage_01/[6.4]_Admin.repl"
+   "REPL/Stage_01/[6.4]_Admin.repl",
+   "REPL/modules/DALOS-ADMIN.repl"
   ]
  },
  "DALOS|C_DeploySmartAccount": {
-  "invocations": 4,
-  "pos": 0,
-  "neg": 1,
+  "invocations": 5,
+  "pos": 2,
+  "neg": 6,
   "files": [
    "REPL/Stage_01/[6.3]_SWP.repl",
-   "REPL/_scratch_dalos_m2_deploysmart_capsplit.repl"
+   "REPL/_scratch_dalos_m2_deploysmart_capsplit.repl",
+   "REPL/modules/DALOS-ADMIN.repl"
   ]
  },
  "DALOS|C_DeployStandardAccount": {
-  "invocations": 1,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 2,
+  "pos": 2,
+  "neg": 5,
   "files": [
-   "REPL/Stage_01/[6.3]_SWP.repl"
+   "REPL/Stage_01/[6.3]_SWP.repl",
+   "REPL/modules/DALOS-ADMIN.repl"
   ]
  },
  "DALOS|C_RotateGovernor": {
@@ -1522,11 +1594,12 @@
   ]
  },
  "DEMIPAD|C_Deposit": {
-  "invocations": 2,
-  "pos": 19,
-  "neg": 0,
+  "invocations": 9,
+  "pos": 29,
+  "neg": 14,
   "files": [
-   "REPL/Stage_02/[5.3]_Launchpad.repl"
+   "REPL/Stage_02/[5.3]_Launchpad.repl",
+   "REPL/modules/DEMIPAD.repl"
   ]
  },
  "DEMIPAD|C_FuelNonFungible": {
@@ -1595,18 +1668,19 @@
   ]
  },
  "DEMIPAD|C_Withdraw": {
-  "invocations": 5,
-  "pos": 7,
-  "neg": 4,
+  "invocations": 6,
+  "pos": 9,
+  "neg": 6,
   "files": [
    "REPL/Stage_02/[5.3]_Launchpad.repl"
   ]
  },
  "DPDC|C_BulkTransfer": {
-  "invocations": 1,
+  "invocations": 2,
   "pos": 4,
-  "neg": 0,
+  "neg": 1,
   "files": [
+   "REPL/Kursan/_verify_finding_EMPTY-LIST_01_index_iterating_cumulators.repl",
    "REPL/modules/DPDC.repl"
   ]
  },
@@ -1635,12 +1709,13 @@
   ]
  },
  "DPNF|C_BulkTransfer": {
-  "invocations": 4,
-  "pos": 4,
-  "neg": 0,
+  "invocations": 7,
+  "pos": 6,
+  "neg": 3,
   "files": [
    "REPL/Stage_02/[6.1.4]_DPDC-NF.repl",
-   "REPL/Stage_02/[6.1.8]_DPDC-HYDRA-WIPE.repl"
+   "REPL/Stage_02/[6.1.8]_DPDC-HYDRA-WIPE.repl",
+   "REPL/modules/DPDC.repl"
   ]
  },
  "DPNF|C_Burn": {
@@ -1727,7 +1802,7 @@
  "DPNF|C_Issue": {
   "invocations": 14,
   "pos": 5,
-  "neg": 21,
+  "neg": 22,
   "files": [
    "REPL/Kursan/_verify_finding_DPDC-C_24M_fragment_credit_amount.repl",
    "REPL/Kursan/_verify_finding_DPDC-I_33M_makeid_same_block_collision.repl",
@@ -2174,11 +2249,12 @@
   ]
  },
  "DPOF|C_BulkTransfer": {
-  "invocations": 1,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 3,
+  "pos": 8,
+  "neg": 5,
   "files": [
-   "REPL/Stage_01/[6.5]_DPOF.repl"
+   "REPL/Stage_01/[6.5]_DPOF.repl",
+   "REPL/modules/DPOF.repl"
   ]
  },
  "DPOF|C_Burn": {
@@ -2190,9 +2266,9 @@
   ]
  },
  "DPOF|C_Control": {
-  "invocations": 5,
-  "pos": 8,
-  "neg": 0,
+  "invocations": 7,
+  "pos": 13,
+  "neg": 4,
   "files": [
    "REPL/Stage_01/[6.5]_DPOF.repl",
    "REPL/Stage_02/[6.1.6]_DPOF.repl",
@@ -2226,9 +2302,9 @@
   ]
  },
  "DPOF|C_Mint": {
-  "invocations": 25,
-  "pos": 19,
-  "neg": 1,
+  "invocations": 27,
+  "pos": 27,
+  "neg": 6,
   "files": [
    "REPL/Stage_01/[6.5]_DPOF.repl",
    "REPL/Stage_02/[6.1.5]_DEMIPAD.repl",
@@ -2299,19 +2375,20 @@
  },
  "DPOF|C_TogglePause": {
   "invocations": 4,
-  "pos": 5,
-  "neg": 0,
+  "pos": 10,
+  "neg": 4,
   "files": [
    "REPL/Stage_01/[6.5]_DPOF.repl",
    "REPL/modules/DPOF.repl"
   ]
  },
  "DPOF|C_ToggleTransferRole": {
-  "invocations": 1,
-  "pos": 0,
+  "invocations": 2,
+  "pos": 4,
   "neg": 0,
   "files": [
-   "REPL/Stage_01/[6.3]_SWP.repl"
+   "REPL/Stage_01/[6.3]_SWP.repl",
+   "REPL/modules/DPOF.repl"
   ]
  },
  "DPOF|C_Transfer": {
@@ -2329,13 +2406,14 @@
   ]
  },
  "DPOF|C_Transmit": {
-  "invocations": 6,
-  "pos": 13,
-  "neg": 2,
+  "invocations": 8,
+  "pos": 21,
+  "neg": 7,
   "files": [
    "REPL/Stage_02/[6.1.6]_DPOF.repl",
    "REPL/_scratch_dpof_c3_noncedupe.repl",
-   "REPL/_scratch_dpof_transmit_metadata_bug.repl"
+   "REPL/_scratch_dpof_transmit_metadata_bug.repl",
+   "REPL/modules/DPOF.repl"
   ]
  },
  "DPOF|C_UpdatePendingBranding": {
@@ -2387,12 +2465,13 @@
   ]
  },
  "DPSF|CC_Break": {
-  "invocations": 11,
-  "pos": 23,
-  "neg": 0,
+  "invocations": 12,
+  "pos": 26,
+  "neg": 4,
   "files": [
    "REPL/Stage_02/[6.1.3]_DPDC-S.repl",
-   "REPL/Stage_02/[6.1]_DPDC.repl"
+   "REPL/Stage_02/[6.1]_DPDC.repl",
+   "REPL/modules/DPDC.repl"
   ]
  },
  "DPSF|CC_WipeHeavy": {
@@ -2404,11 +2483,12 @@
   ]
  },
  "DPSF|C_AddQuantity": {
-  "invocations": 2,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 6,
+  "pos": 3,
+  "neg": 3,
   "files": [
-   "REPL/Stage_02/[6.1]_DPDC.repl"
+   "REPL/Stage_02/[6.1]_DPDC.repl",
+   "REPL/modules/DPDC.repl"
   ]
  },
  "DPSF|C_BulkTransfer": {
@@ -2437,16 +2517,17 @@
   ]
  },
  "DPSF|C_Create": {
-  "invocations": 11,
-  "pos": 7,
-  "neg": 1,
+  "invocations": 16,
+  "pos": 8,
+  "neg": 5,
   "files": [
    "REPL/Kursan/_verify_finding_DPDC-N_12Hc_set_instance_lock.repl",
    "REPL/Stage_02/[4.0]_Sovereign-Executor.repl",
    "REPL/Stage_02/[6.1.2]_DPDC-FRAGMENTS.repl",
    "REPL/Stage_02/[6.1.3]_DPDC-S.repl",
    "REPL/Stage_02/[6.1.8]_DPDC-HYDRA-WIPE.repl",
-   "REPL/fixtures/mock-collections.repl"
+   "REPL/fixtures/mock-collections.repl",
+   "REPL/modules/DPDC.repl"
   ]
  },
  "DPSF|C_DefineCompositeSet": {
@@ -2483,54 +2564,60 @@
   ]
  },
  "DPSF|C_EnableNonceFragmentation": {
-  "invocations": 6,
-  "pos": 5,
-  "neg": 1,
+  "invocations": 8,
+  "pos": 8,
+  "neg": 6,
   "files": [
    "REPL/Stage_02/[4.0]_Sovereign-Executor.repl",
    "REPL/Stage_02/[6.1.2]_DPDC-FRAGMENTS.repl",
-   "REPL/Stage_02/[6.1]_DPDC.repl"
+   "REPL/Stage_02/[6.1]_DPDC.repl",
+   "REPL/modules/DPDC-FRAGMENTS.repl",
+   "REPL/modules/DPDC-S.repl"
   ]
  },
  "DPSF|C_EnableSetClassFragmentation": {
-  "invocations": 5,
-  "pos": 4,
-  "neg": 2,
+  "invocations": 6,
+  "pos": 6,
+  "neg": 3,
   "files": [
    "REPL/Kursan/_verify_finding_DPDC-S_30M_enable-frag-active-gate.repl",
-   "REPL/Stage_02/[6.1.3]_DPDC-S.repl"
+   "REPL/Stage_02/[6.1.3]_DPDC-S.repl",
+   "REPL/modules/DPDC-S.repl"
   ]
  },
  "DPSF|C_Issue": {
-  "invocations": 11,
+  "invocations": 12,
   "pos": 3,
-  "neg": 1,
+  "neg": 2,
   "files": [
    "REPL/Kursan/_verify_finding_DPDC-I_33M_makeid_same_block_collision.repl",
    "REPL/Kursan/_verify_finding_DPDC-N_12Hc_set_instance_lock.repl",
    "REPL/Stage_02/[4.0]_Sovereign-Executor.repl",
    "REPL/Stage_02/[6.1.2]_DPDC-FRAGMENTS.repl",
    "REPL/Stage_02/[6.1.3]_DPDC-S.repl",
+   "REPL/fixtures/adversarial-collections.repl",
    "REPL/fixtures/mock-collections.repl"
   ]
  },
  "DPSF|C_IssueCompany": {
-  "invocations": 3,
+  "invocations": 6,
   "pos": 6,
-  "neg": 0,
+  "neg": 3,
   "files": [
    "REPL/Stage_02/[4.0]_Sovereign-Executor.repl",
-   "REPL/Stage_02/[6.1.1]_EQUITY.repl"
+   "REPL/Stage_02/[6.1.1]_EQUITY.repl",
+   "REPL/modules/EQUITY.repl"
   ]
  },
  "DPSF|C_Make": {
-  "invocations": 13,
-  "pos": 23,
-  "neg": 0,
+  "invocations": 15,
+  "pos": 26,
+  "neg": 3,
   "files": [
    "REPL/Kursan/_verify_finding_DPDC-N_12Hc_set_instance_lock.repl",
    "REPL/Stage_02/[6.1.3]_DPDC-S.repl",
-   "REPL/Stage_02/[6.1]_DPDC.repl"
+   "REPL/Stage_02/[6.1]_DPDC.repl",
+   "REPL/modules/DPDC-S.repl"
   ]
  },
  "DPSF|C_MakeFragments": {
@@ -2547,12 +2634,13 @@
   ]
  },
  "DPSF|C_MergeFragments": {
-  "invocations": 3,
-  "pos": 5,
-  "neg": 0,
+  "invocations": 5,
+  "pos": 7,
+  "neg": 4,
   "files": [
    "REPL/Stage_02/[6.1.2]_DPDC-FRAGMENTS.repl",
-   "REPL/Stage_02/[6.1]_DPDC.repl"
+   "REPL/Stage_02/[6.1]_DPDC.repl",
+   "REPL/modules/DPDC-S.repl"
   ]
  },
  "DPSF|C_MorphEquity": {
@@ -2606,11 +2694,12 @@
   ]
  },
  "DPSF|C_RenameSet": {
-  "invocations": 2,
-  "pos": 4,
-  "neg": 1,
+  "invocations": 3,
+  "pos": 5,
+  "neg": 3,
   "files": [
-   "REPL/Stage_02/[6.1.3]_DPDC-S.repl"
+   "REPL/Stage_02/[6.1.3]_DPDC-S.repl",
+   "REPL/modules/DPDC-S.repl"
   ]
  },
  "DPSF|C_Repurpose": {
@@ -2622,12 +2711,13 @@
   ]
  },
  "DPSF|C_RepurposeFragments": {
-  "invocations": 5,
-  "pos": 4,
-  "neg": 6,
+  "invocations": 6,
+  "pos": 6,
+  "neg": 10,
   "files": [
    "REPL/Kursan/_verify_finding_DPDC-F-S_47L-51L_empty_definition_guards.repl",
-   "REPL/Stage_02/[6.1.2]_DPDC-FRAGMENTS.repl"
+   "REPL/Stage_02/[6.1.2]_DPDC-FRAGMENTS.repl",
+   "REPL/modules/DPDC-S.repl"
   ]
  },
  "DPSF|C_ToggleAddQuantityRole": {
@@ -2647,11 +2737,12 @@
   ]
  },
  "DPSF|C_ToggleExemptionRole": {
-  "invocations": 2,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 3,
+  "pos": 3,
+  "neg": 4,
   "files": [
-   "REPL/Stage_02/[6.1]_DPDC.repl"
+   "REPL/Stage_02/[6.1]_DPDC.repl",
+   "REPL/modules/DPDC.repl"
   ]
  },
  "DPSF|C_ToggleFreezeAccount": {
@@ -2689,12 +2780,13 @@
   ]
  },
  "DPSF|C_ToggleSet": {
-  "invocations": 6,
-  "pos": 4,
-  "neg": 2,
+  "invocations": 8,
+  "pos": 6,
+  "neg": 3,
   "files": [
    "REPL/Kursan/_verify_finding_DPDC-S_30M_enable-frag-active-gate.repl",
-   "REPL/Stage_02/[6.1.3]_DPDC-S.repl"
+   "REPL/Stage_02/[6.1.3]_DPDC-S.repl",
+   "REPL/modules/DPDC-S.repl"
   ]
  },
  "DPSF|C_ToggleTransferRole": {
@@ -2807,11 +2899,12 @@
   ]
  },
  "DPSF|C_UpdateNonces": {
-  "invocations": 1,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 2,
+  "pos": 3,
+  "neg": 4,
   "files": [
-   "REPL/Stage_02/[6.1.7]_DPSF-UPDATES.repl"
+   "REPL/Stage_02/[6.1.7]_DPSF-UPDATES.repl",
+   "REPL/modules/DPDC.repl"
   ]
  },
  "DPSF|C_UpdatePendingBranding": {
@@ -2952,36 +3045,39 @@
  },
  "DPTF|A_DeployAccount": {
   "invocations": 10,
-  "pos": 0,
-  "neg": 0,
+  "pos": 2,
+  "neg": 1,
   "files": [
    "REPL/Stage_01/[4.0]_Sovereign-Executor.repl",
    "REPL/Stage_01/[5.2]_Dispenser+.repl"
   ]
  },
  "DPTF|A_UpdateTreasuryDispoParameters": {
-  "invocations": 1,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 4,
+  "pos": 8,
+  "neg": 6,
   "files": [
-   "REPL/Stage_01/[6.3]_SWP.repl"
+   "REPL/Stage_01/[6.3]_SWP.repl",
+   "REPL/modules/DPTF.repl"
   ]
  },
  "DPTF|A_WipeTreasuryDebt": {
-  "invocations": 1,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 3,
+  "pos": 8,
+  "neg": 4,
   "files": [
-   "REPL/Stage_01/[6.3]_SWP.repl"
+   "REPL/Stage_01/[6.3]_SWP.repl",
+   "REPL/modules/DPTF.repl"
   ]
  },
  "DPTF|A_WipeTreasuryDebtPartial": {
-  "invocations": 2,
-  "pos": 0,
-  "neg": 1,
+  "invocations": 5,
+  "pos": 8,
+  "neg": 5,
   "files": [
    "REPL/Stage_01/[6.3]_SWP.repl",
-   "REPL/_scratch_ts01a_n3_treasury_gate_check.repl"
+   "REPL/_scratch_ts01a_n3_treasury_gate_check.repl",
+   "REPL/modules/DPTF.repl"
   ]
  },
  "DPTF|C_BulkTransfer": {
@@ -2995,28 +3091,31 @@
   ]
  },
  "DPTF|C_Burn": {
-  "invocations": 3,
-  "pos": 4,
-  "neg": 1,
+  "invocations": 5,
+  "pos": 8,
+  "neg": 2,
   "files": [
    "REPL/Stage_01/[6.4]_Admin.repl",
    "REPL/modules/DPTF.repl"
   ]
  },
  "DPTF|C_ClearDispo": {
-  "invocations": 1,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 5,
+  "pos": 7,
+  "neg": 3,
   "files": [
-   "REPL/Stage_01/[6.2]_DPTF.repl"
+   "REPL/Stage_01/[6.2]_DPTF.repl",
+   "REPL/modules/DPTF.repl"
   ]
  },
  "DPTF|C_Control": {
-  "invocations": 3,
-  "pos": 11,
-  "neg": 1,
+  "invocations": 7,
+  "pos": 19,
+  "neg": 6,
   "files": [
    "REPL/Stage_01/[6.4]_Admin.repl",
+   "REPL/fixtures/adversarial-tf.repl",
+   "REPL/modules/ADVERSARIAL.repl",
    "REPL/modules/DPTF.repl"
   ]
  },
@@ -3041,9 +3140,9 @@
   ]
  },
  "DPTF|C_Issue": {
-  "invocations": 24,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 25,
+  "pos": 2,
+  "neg": 8,
   "files": [
    "REPL/Stage_01/[4.0]_Sovereign-Executor.repl",
    "REPL/Stage_01/[5.1]_Aoz+.repl",
@@ -3054,13 +3153,14 @@
    "REPL/Stage_02/[5.3]_Launchpad.repl",
    "REPL/_scratch_dpof_h7_hibernation_immutability.repl",
    "REPL/_scratch_dptf_h4_missing_imc.repl",
+   "REPL/fixtures/adversarial-tf.repl",
    "REPL/fixtures/mock-tf.repl"
   ]
  },
  "DPTF|C_Mint": {
-  "invocations": 97,
-  "pos": 7,
-  "neg": 1,
+  "invocations": 100,
+  "pos": 14,
+  "neg": 4,
   "files": [
    "REPL/Kursan/AQP-scale-inject.repl",
    "REPL/Stage_01/[4.0]_Sovereign-Executor.repl",
@@ -3070,7 +3170,10 @@
    "REPL/Stage_01/[6.3]_SWP.repl",
    "REPL/Stage_01/[6.7]_VST.repl",
    "REPL/Stage_02/[5.3]_Launchpad.repl",
+   "REPL/fixtures/adversarial-tf.repl",
    "REPL/fixtures/mock-tf-supply.repl",
+   "REPL/modules/ADVERSARIAL.repl",
+   "REPL/modules/CADUCEUS.repl",
    "REPL/modules/DPTF.repl"
   ]
  },
@@ -3083,18 +3186,19 @@
   ]
  },
  "DPTF|C_MultiTransfer": {
-  "invocations": 4,
+  "invocations": 7,
   "pos": 0,
-  "neg": 0,
+  "neg": 3,
   "files": [
    "REPL/Stage_01/[6.2]_DPTF.repl",
-   "REPL/Stage_01/[6.3]_SWP.repl"
+   "REPL/Stage_01/[6.3]_SWP.repl",
+   "REPL/modules/DPTF.repl"
   ]
  },
  "DPTF|C_ResetFeeTarget": {
   "invocations": 2,
   "pos": 6,
-  "neg": 0,
+  "neg": 1,
   "files": [
    "REPL/Stage_01/[6.4]_Admin.repl",
    "REPL/modules/DPTF.repl"
@@ -3102,8 +3206,8 @@
  },
  "DPTF|C_RotateOwnership": {
   "invocations": 2,
-  "pos": 4,
-  "neg": 0,
+  "pos": 8,
+  "neg": 2,
   "files": [
    "REPL/Stage_01/[6.4]_Admin.repl",
    "REPL/modules/DPTF.repl"
@@ -3111,8 +3215,8 @@
  },
  "DPTF|C_SetFee": {
   "invocations": 26,
-  "pos": 6,
-  "neg": 0,
+  "pos": 8,
+  "neg": 9,
   "files": [
    "REPL/Stage_01/[4.0]_Sovereign-Executor.repl",
    "REPL/Stage_01/[5.1]_Aoz+.repl",
@@ -3123,9 +3227,9 @@
   ]
  },
  "DPTF|C_SetFeeTarget": {
-  "invocations": 3,
-  "pos": 6,
-  "neg": 0,
+  "invocations": 5,
+  "pos": 8,
+  "neg": 11,
   "files": [
    "REPL/Stage_01/[4.0]_Sovereign-Executor.repl",
    "REPL/Stage_01/[6.3]_SWP.repl",
@@ -3133,9 +3237,9 @@
   ]
  },
  "DPTF|C_SetMinMove": {
-  "invocations": 3,
-  "pos": 5,
-  "neg": 1,
+  "invocations": 5,
+  "pos": 9,
+  "neg": 12,
   "files": [
    "REPL/Stage_01/[4.0]_Sovereign-Executor.repl",
    "REPL/Stage_01/[6.7]_VST.repl",
@@ -3154,9 +3258,9 @@
   ]
  },
  "DPTF|C_ToggleFee": {
-  "invocations": 27,
-  "pos": 6,
-  "neg": 0,
+  "invocations": 29,
+  "pos": 19,
+  "neg": 14,
   "files": [
    "REPL/Stage_01/[4.0]_Sovereign-Executor.repl",
    "REPL/Stage_01/[5.1]_Aoz+.repl",
@@ -3168,16 +3272,16 @@
  },
  "DPTF|C_ToggleFeeExemptionRole": {
   "invocations": 1,
-  "pos": 5,
-  "neg": 1,
+  "pos": 7,
+  "neg": 4,
   "files": [
    "REPL/modules/DPTF.repl"
   ]
  },
  "DPTF|C_ToggleFeeLock": {
   "invocations": 23,
-  "pos": 0,
-  "neg": 0,
+  "pos": 2,
+  "neg": 8,
   "files": [
    "REPL/Stage_01/[4.0]_Sovereign-Executor.repl",
    "REPL/Stage_01/[5.1]_Aoz+.repl",
@@ -3186,9 +3290,9 @@
   ]
  },
  "DPTF|C_ToggleFreezeAccount": {
-  "invocations": 4,
-  "pos": 7,
-  "neg": 1,
+  "invocations": 6,
+  "pos": 18,
+  "neg": 6,
   "files": [
    "REPL/Stage_01/[6.4]_Admin.repl",
    "REPL/modules/DPTF.repl"
@@ -3208,39 +3312,41 @@
  },
  "DPTF|C_TogglePause": {
   "invocations": 3,
-  "pos": 5,
-  "neg": 1,
+  "pos": 7,
+  "neg": 4,
   "files": [
    "REPL/Stage_01/[6.4]_Admin.repl",
    "REPL/modules/DPTF.repl"
   ]
  },
  "DPTF|C_ToggleReservation": {
-  "invocations": 3,
-  "pos": 8,
-  "neg": 1,
+  "invocations": 5,
+  "pos": 16,
+  "neg": 3,
   "files": [
    "REPL/Stage_01/[6.3]_SWP.repl",
+   "REPL/modules/DPTF.repl",
    "REPL/modules/VST.repl",
    "REPL/vst-harness.repl"
   ]
  },
  "DPTF|C_ToggleTransferRole": {
   "invocations": 3,
-  "pos": 9,
-  "neg": 1,
+  "pos": 11,
+  "neg": 4,
   "files": [
    "REPL/Stage_01/[6.3]_SWP.repl",
    "REPL/modules/DPTF.repl"
   ]
  },
  "DPTF|C_Transfer": {
-  "invocations": 59,
-  "pos": 75,
-  "neg": 1,
+  "invocations": 64,
+  "pos": 92,
+  "neg": 2,
   "files": [
    "REPL/Kursan/AQP-scale-inject.repl",
    "REPL/Kursan/AQP-stream-tests.repl",
+   "REPL/Kursan/_verify_finding_ORBR-FEE_01_withdraw_ownership.repl",
    "REPL/Stage_01/[4.0]_Sovereign-Executor.repl",
    "REPL/Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl",
    "REPL/Stage_01/[6.2]_DPTF.repl",
@@ -3260,6 +3366,7 @@
    "REPL/Stage_02/[6.4]_AQP-TRIPLET-COLLECT.repl",
    "REPL/_audit_ats_baseline.repl",
    "REPL/modules/DPTF.repl",
+   "REPL/modules/OUROBOROS.repl",
    "REPL/modules/VST.repl",
    "REPL/vst-harness.repl"
   ]
@@ -3299,26 +3406,28 @@
   ]
  },
  "DPTF|C_WipeSlim": {
-  "invocations": 1,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 5,
+  "pos": 11,
+  "neg": 5,
   "files": [
-   "REPL/Stage_01/[6.4]_Admin.repl"
+   "REPL/Stage_01/[6.4]_Admin.repl",
+   "REPL/modules/DPTF.repl"
   ]
  },
  "KPAY|C_BuyStoicPay": {
-  "invocations": 2,
-  "pos": 2,
-  "neg": 0,
+  "invocations": 3,
+  "pos": 3,
+  "neg": 1,
   "files": [
    "REPL/launchpad-groundtruth.repl"
   ]
  },
  "LIQUID|A_MigrateLiquidFunds": {
-  "invocations": 2,
+  "invocations": 3,
   "pos": 12,
-  "neg": 1,
+  "neg": 6,
   "files": [
+   "REPL/modules/CONFORMANCE.repl",
    "REPL/modules/LIQUID.repl"
   ]
  },
@@ -3374,11 +3483,12 @@
   ]
  },
  "ORBR|A_Fuel": {
-  "invocations": 1,
+  "invocations": 2,
   "pos": 0,
-  "neg": 0,
+  "neg": 5,
   "files": [
-   "REPL/Stage_01/[6.3]_SWP.repl"
+   "REPL/Stage_01/[6.3]_SWP.repl",
+   "REPL/modules/CONFORMANCE.repl"
   ]
  },
  "ORBR|C_Compress": {
@@ -3390,13 +3500,14 @@
   ]
  },
  "ORBR|C_Sublimate": {
-  "invocations": 7,
-  "pos": 0,
+  "invocations": 8,
+  "pos": 1,
   "neg": 0,
   "files": [
    "REPL/Stage_01/[4.0]_Sovereign-Executor.repl",
    "REPL/Stage_01/[6.2]_DPTF.repl",
-   "REPL/Stage_01/[6.3]_SWP.repl"
+   "REPL/Stage_01/[6.3]_SWP.repl",
+   "REPL/modules/OUROBOROS.repl"
   ]
  },
  "ORBR|C_SublimateV2": {
@@ -3408,10 +3519,11 @@
   ]
  },
  "ORBR|C_WithdrawFees": {
-  "invocations": 1,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 4,
+  "pos": 4,
+  "neg": 2,
   "files": [
+   "REPL/Kursan/_verify_finding_ORBR-FEE_01_withdraw_ownership.repl",
    "REPL/Stage_01/[6.3]_SWP.repl"
   ]
  },
@@ -3425,9 +3537,9 @@
   ]
  },
  "PYTHIA|A_Link": {
-  "invocations": 6,
+  "invocations": 7,
   "pos": 13,
-  "neg": 0,
+  "neg": 1,
   "files": [
    "REPL/Stage_01/[6.10]_PYTHIA.repl"
   ]
@@ -3459,19 +3571,21 @@
   ]
  },
  "PYTHIA|C_DeployApiKey": {
-  "invocations": 8,
+  "invocations": 12,
   "pos": 11,
-  "neg": 0,
+  "neg": 2,
   "files": [
-   "REPL/Stage_01/[6.10]_PYTHIA.repl"
+   "REPL/Stage_01/[6.10]_PYTHIA.repl",
+   "REPL/modules/PYTHIA.repl"
   ]
  },
  "PYTHIA|C_Link": {
-  "invocations": 2,
-  "pos": 6,
-  "neg": 0,
+  "invocations": 4,
+  "pos": 8,
+  "neg": 2,
   "files": [
-   "REPL/Stage_01/[6.10]_PYTHIA.repl"
+   "REPL/Stage_01/[6.10]_PYTHIA.repl",
+   "REPL/modules/PYTHIA.repl"
   ]
  },
  "PYTHIA|C_RevokeLink": {
@@ -3500,7 +3614,7 @@
  },
  "P|A_AddIMP": {
   "invocations": 1,
-  "pos": 8,
+  "pos": 9,
   "neg": 7,
   "files": [
    "REPL/Stage_01/[2.1]_Dalos.repl"
@@ -3527,9 +3641,9 @@
   ]
  },
  "SPARK|C_BuySparks": {
-  "invocations": 3,
-  "pos": 5,
-  "neg": 0,
+  "invocations": 4,
+  "pos": 6,
+  "neg": 1,
   "files": [
    "REPL/Stage_02/[5.3]_Launchpad.repl",
    "REPL/launchpad-groundtruth.repl"
@@ -3538,15 +3652,15 @@
  "SPARK|C_RedemAllSparks": {
   "invocations": 2,
   "pos": 5,
-  "neg": 1,
+  "neg": 2,
   "files": [
    "REPL/Stage_02/[5.3]_Launchpad.repl"
   ]
  },
  "SPARK|C_RedemFewSparks": {
-  "invocations": 1,
-  "pos": 7,
-  "neg": 0,
+  "invocations": 2,
+  "pos": 12,
+  "neg": 2,
   "files": [
    "REPL/Stage_02/[5.3]_Launchpad.repl"
   ]
@@ -3560,55 +3674,62 @@
   ]
  },
  "SWP|A_DefinePrimordialPool": {
-  "invocations": 3,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 4,
+  "pos": 2,
+  "neg": 4,
   "files": [
    "REPL/Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl",
-   "REPL/Stage_01/[6.3]_SWP.repl"
+   "REPL/Stage_01/[6.3]_SWP.repl",
+   "REPL/modules/SWP.repl"
   ]
  },
  "SWP|A_RotatePrincipal": {
-  "invocations": 5,
-  "pos": 11,
-  "neg": 6,
+  "invocations": 8,
+  "pos": 14,
+  "neg": 11,
   "files": [
-   "REPL/Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl"
+   "REPL/Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl",
+   "REPL/modules/SWP.repl"
   ]
  },
  "SWP|A_ToggleAsymetricLiquidityAddition": {
-  "invocations": 2,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 6,
+  "pos": 3,
+  "neg": 7,
   "files": [
    "REPL/Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl",
-   "REPL/Stage_01/[6.3]_SWP.repl"
+   "REPL/Stage_01/[6.3]_SWP.repl",
+   "REPL/modules/CONFORMANCE.repl",
+   "REPL/modules/SWP.repl"
   ]
  },
  "SWP|A_UpdateLimit": {
-  "invocations": 2,
+  "invocations": 3,
   "pos": 0,
-  "neg": 0,
+  "neg": 5,
   "files": [
-   "REPL/Stage_01/[6.4]_Admin.repl"
+   "REPL/Stage_01/[6.4]_Admin.repl",
+   "REPL/modules/CONFORMANCE.repl"
   ]
  },
  "SWP|A_UpdateLiquidBoost": {
-  "invocations": 19,
+  "invocations": 20,
   "pos": 10,
-  "neg": 4,
+  "neg": 8,
   "files": [
-   "REPL/Stage_01/[6.3]_SWP.repl"
+   "REPL/Stage_01/[6.3]_SWP.repl",
+   "REPL/modules/SWP.repl"
   ]
  },
  "SWP|A_UpdatePrincipal": {
-  "invocations": 14,
-  "pos": 6,
-  "neg": 4,
+  "invocations": 17,
+  "pos": 11,
+  "neg": 10,
   "files": [
    "REPL/Stage_01/[4.0]_Sovereign-Executor.repl",
    "REPL/Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl",
-   "REPL/Stage_01/[6.3]_SWP.repl"
+   "REPL/Stage_01/[6.3]_SWP.repl",
+   "REPL/modules/SWP.repl"
   ]
  },
  "SWP|CC_SmartSwapNoSlippage": {
@@ -3674,17 +3795,18 @@
   ]
  },
  "SWP|C_AddStandardLiquidity": {
-  "invocations": 1,
+  "invocations": 2,
   "pos": 0,
   "neg": 0,
   "files": [
-   "REPL/Stage_01/[6.3]_SWP.repl"
+   "REPL/Stage_01/[6.3]_SWP.repl",
+   "REPL/modules/SWP.repl"
   ]
  },
  "SWP|C_ChangeOwnership": {
-  "invocations": 2,
-  "pos": 9,
-  "neg": 1,
+  "invocations": 5,
+  "pos": 15,
+  "neg": 4,
   "files": [
    "REPL/modules/SWP.repl"
   ]
@@ -3707,11 +3829,12 @@
   ]
  },
  "SWP|C_Firestarter": {
-  "invocations": 1,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 2,
+  "pos": 2,
+  "neg": 3,
   "files": [
-   "REPL/Stage_01/[6.3]_SWP.repl"
+   "REPL/Stage_01/[6.3]_SWP.repl",
+   "REPL/modules/SWP.repl"
   ]
  },
  "SWP|C_Fuel": {
@@ -3775,20 +3898,22 @@
   ]
  },
  "SWP|C_ModifyCanChangeOwner": {
-  "invocations": 2,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 7,
+  "pos": 10,
+  "neg": 8,
   "files": [
-   "REPL/Stage_01/[6.3]_SWP.repl"
+   "REPL/Stage_01/[6.3]_SWP.repl",
+   "REPL/modules/SWP.repl"
   ]
  },
  "SWP|C_ModifyWeights": {
-  "invocations": 6,
-  "pos": 0,
-  "neg": 4,
+  "invocations": 12,
+  "pos": 7,
+  "neg": 13,
   "files": [
    "REPL/Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl",
-   "REPL/Stage_01/[6.3]_SWP.repl"
+   "REPL/Stage_01/[6.3]_SWP.repl",
+   "REPL/modules/SWP.repl"
   ]
  },
  "SWP|C_MultiSwapNoSlippage": {
@@ -3808,12 +3933,13 @@
   ]
  },
  "SWP|C_RemoveLiquidity": {
-  "invocations": 2,
-  "pos": 0,
+  "invocations": 3,
+  "pos": 2,
   "neg": 1,
   "files": [
    "REPL/Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl",
-   "REPL/Stage_01/[6.3]_SWP.repl"
+   "REPL/Stage_01/[6.3]_SWP.repl",
+   "REPL/modules/STAGE-Z.repl"
   ]
  },
  "SWP|C_SingleSwapNoSlippage": {
@@ -3850,12 +3976,13 @@
   ]
  },
  "SWP|C_ToggleAddLiquidity": {
-  "invocations": 22,
-  "pos": 0,
-  "neg": 1,
+  "invocations": 23,
+  "pos": 1,
+  "neg": 6,
   "files": [
    "REPL/Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl",
-   "REPL/Stage_01/[6.3]_SWP.repl"
+   "REPL/Stage_01/[6.3]_SWP.repl",
+   "REPL/modules/SWP.repl"
   ]
  },
  "SWP|C_ToggleFeeLock": {
@@ -3867,30 +3994,33 @@
   ]
  },
  "SWP|C_ToggleSwapCapability": {
-  "invocations": 42,
-  "pos": 6,
-  "neg": 4,
+  "invocations": 46,
+  "pos": 15,
+  "neg": 7,
   "files": [
    "REPL/Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl",
-   "REPL/Stage_01/[6.3]_SWP.repl"
+   "REPL/Stage_01/[6.3]_SWP.repl",
+   "REPL/modules/SWP.repl"
   ]
  },
  "SWP|C_UpdateAmplifier": {
-  "invocations": 10,
-  "pos": 0,
-  "neg": 4,
+  "invocations": 13,
+  "pos": 5,
+  "neg": 5,
   "files": [
    "REPL/Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl",
-   "REPL/Stage_01/[6.3]_SWP.repl"
+   "REPL/Stage_01/[6.3]_SWP.repl",
+   "REPL/modules/SWP.repl"
   ]
  },
  "SWP|C_UpdateFee": {
-  "invocations": 19,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 23,
+  "pos": 4,
+  "neg": 3,
   "files": [
    "REPL/Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl",
-   "REPL/Stage_01/[6.3]_SWP.repl"
+   "REPL/Stage_01/[6.3]_SWP.repl",
+   "REPL/modules/SWP.repl"
   ]
  },
  "SWP|C_UpdatePendingBranding": {
@@ -3910,18 +4040,19 @@
   ]
  },
  "SWP|C_UpdateSpecialFeeTargets": {
-  "invocations": 17,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 20,
+  "pos": 6,
+  "neg": 3,
   "files": [
    "REPL/Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl",
-   "REPL/Stage_01/[6.3]_SWP.repl"
+   "REPL/Stage_01/[6.3]_SWP.repl",
+   "REPL/modules/SWP.repl"
   ]
  },
  "SWP|C_UpgradeBranding": {
-  "invocations": 1,
-  "pos": 9,
-  "neg": 1,
+  "invocations": 8,
+  "pos": 25,
+  "neg": 7,
   "files": [
    "REPL/modules/SWP.repl"
   ]
@@ -3936,17 +4067,17 @@
  },
  "VST|C_Awake": {
   "invocations": 2,
-  "pos": 13,
-  "neg": 1,
+  "pos": 14,
+  "neg": 0,
   "files": [
    "REPL/modules/VST.repl",
    "REPL/vst-harness.repl"
   ]
  },
  "VST|C_CreateFrozenLink": {
-  "invocations": 4,
-  "pos": 3,
-  "neg": 0,
+  "invocations": 8,
+  "pos": 8,
+  "neg": 3,
   "files": [
    "REPL/Stage_01/[4.0]_Sovereign-Executor.repl",
    "REPL/Stage_02/[5.3]_Launchpad.repl",
@@ -3955,9 +4086,9 @@
   ]
  },
  "VST|C_CreateHibernatingLink": {
-  "invocations": 6,
+  "invocations": 7,
   "pos": 8,
-  "neg": 0,
+  "neg": 1,
   "files": [
    "REPL/Stage_01/[4.0]_Sovereign-Executor.repl",
    "REPL/_scratch_dpof_h7_hibernation_immutability.repl",
@@ -3967,30 +4098,33 @@
   ]
  },
  "VST|C_CreateReservationLink": {
-  "invocations": 1,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 3,
+  "pos": 5,
+  "neg": 3,
   "files": [
-   "REPL/Stage_01/[4.0]_Sovereign-Executor.repl"
+   "REPL/Stage_01/[4.0]_Sovereign-Executor.repl",
+   "REPL/modules/VST.repl"
   ]
  },
  "VST|C_CreateSleepingLink": {
-  "invocations": 4,
-  "pos": 2,
-  "neg": 0,
+  "invocations": 6,
+  "pos": 4,
+  "neg": 1,
   "files": [
    "REPL/Stage_01/[4.0]_Sovereign-Executor.repl",
    "REPL/Stage_01/[6.3]_SWP.repl",
+   "REPL/modules/SWP.repl",
    "REPL/modules/VST.repl",
    "REPL/vst-harness.repl"
   ]
  },
  "VST|C_CreateVestingLink": {
-  "invocations": 3,
+  "invocations": 4,
   "pos": 0,
-  "neg": 0,
+  "neg": 1,
   "files": [
-   "REPL/Stage_01/[4.0]_Sovereign-Executor.repl"
+   "REPL/Stage_01/[4.0]_Sovereign-Executor.repl",
+   "REPL/modules/VST.repl"
   ]
  },
  "VST|C_Freeze": {
@@ -4004,20 +4138,21 @@
   ]
  },
  "VST|C_Hibernate": {
-  "invocations": 5,
-  "pos": 25,
-  "neg": 2,
+  "invocations": 8,
+  "pos": 32,
+  "neg": 7,
   "files": [
    "REPL/modules/VST.repl",
    "REPL/vst-harness.repl"
   ]
  },
  "VST|C_Merge": {
-  "invocations": 1,
-  "pos": 8,
-  "neg": 0,
+  "invocations": 4,
+  "pos": 16,
+  "neg": 4,
   "files": [
-   "REPL/modules/VST.repl"
+   "REPL/modules/VST.repl",
+   "REPL/vst-harness.repl"
   ]
  },
  "VST|C_RepurposeFrozen": {
@@ -4057,8 +4192,8 @@
  },
  "VST|C_RepurposeSleeping": {
   "invocations": 2,
-  "pos": 13,
-  "neg": 1,
+  "pos": 14,
+  "neg": 0,
   "files": [
    "REPL/modules/VST.repl",
    "REPL/vst-harness.repl"
@@ -4093,8 +4228,8 @@
  },
  "VST|C_Sleep": {
   "invocations": 79,
-  "pos": 34,
-  "neg": 2,
+  "pos": 35,
+  "neg": 1,
   "files": [
    "REPL/Stage_01/[6.3]_SWP.repl",
    "REPL/Stage_01/[6.7]_VST.repl",
@@ -4105,11 +4240,10 @@
  },
  "VST|C_Slumber": {
   "invocations": 2,
-  "pos": 7,
-  "neg": 1,
+  "pos": 1,
+  "neg": 3,
   "files": [
-   "REPL/modules/VST.repl",
-   "REPL/vst-harness.repl"
+   "REPL/modules/VST.repl"
   ]
  },
  "VST|C_ToggleTransferRoleFrozenDPTF": {
@@ -4161,20 +4295,21 @@
   ]
  },
  "VST|C_Unsleep": {
-  "invocations": 3,
-  "pos": 13,
-  "neg": 1,
+  "invocations": 5,
+  "pos": 20,
+  "neg": 6,
   "files": [
    "REPL/modules/VST.repl",
    "REPL/vst-harness.repl"
   ]
  },
  "VST|C_Unvest": {
-  "invocations": 2,
-  "pos": 0,
-  "neg": 0,
+  "invocations": 3,
+  "pos": 6,
+  "neg": 6,
   "files": [
    "REPL/Stage_01/[6.3]_SWP.repl",
+   "REPL/modules/VST.repl",
    "REPL/vst-harness.repl"
   ]
  },

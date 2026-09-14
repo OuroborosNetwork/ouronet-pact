@@ -208,7 +208,6 @@
     (defun P|A_Define ()
         (let
             (
-                (ref-P|DALOS:module{OuronetPolicyV2} DALOS)
                 (ref-P|BRD:module{OuronetPolicyV2} BRD)
                 (ref-P|DPTF:module{OuronetPolicyV2} DPTF)
                 (ref-P|DPOF:module{OuronetPolicyV2} DPOF)
@@ -634,7 +633,7 @@
                     )
                     ;;
                     (dptf:string (ref-DPTF::UR_Frozen frozen-dptf))
-                    (ptp:integer (ref-SWP::UR_PoolTokenPosition swpair dptf))
+                    (ptp:integer (ref-SWP::URv_PoolTokenPosition swpair dptf))
                     (lq-lst:[decimal] (ref-U|SWP::UC_MakeLiquidityList swpair ptp input-amount))
                     (ld:object{SwapperLiquidityV2.LiquidityData}
                         (ref-SWPL::URC_LD swpair lq-lst)
@@ -763,7 +762,7 @@
                     )
                     ;;
                     (dptf:string (ref-DPOF::UR_Sleeping sleeping-dpof))
-                    (ptp:integer (ref-SWP::UR_PoolTokenPosition swpair dptf))
+                    (ptp:integer (ref-SWP::URv_PoolTokenPosition swpair dptf))
                     (batch-amount:decimal (ref-DPOF::UR_NonceSupply sleeping-dpof nonce))
                     (lq-lst:[decimal] (ref-U|SWP::UC_MakeLiquidityList swpair ptp batch-amount))
                     (ld:object{SwapperLiquidityV2.LiquidityData}

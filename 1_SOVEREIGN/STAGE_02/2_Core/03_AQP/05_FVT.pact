@@ -910,7 +910,7 @@
         @doc "Inject a reward DPTF as a TIME-STREAM (linear vesting over `duration` seconds). Same reward context \
             \ as an instant inject (UEV_InjectContext: not vacate-frozen, reward-enabled, patron/amount valid) plus \
             \ the count-independent stream-param guard (UEV_StreamParams: duration bounds + min rate). The slot-cap \
-            \ (Elite-tier concurrent-stream limit on the FVT owner konto) is enforced in XI_FvtAddStream AFTER the \
+            \ (Elite-tier concurrent-stream limit on the FVT owner konto) is enforced in XIv_FvtAddStream AFTER the \
             \ drip. Composes the same P|SECURE-CALLER + P|FVT|REMOTE-GOV as an inject (TFT custody to AQP|SC_NAME)."
         @event
         (UEV_InjectContext patron fvt-id reward-dptf-id amount)
@@ -1902,6 +1902,14 @@
             \ silver-owner matches FVT-owner, no pre-existing link, silver has an aqpool link, all three \
             \ (bronze/silver/golden) score fvt-links are BAR, correct <swpair>, and the class-0 farm vs \
             \ vault/treasury weight rule. Enforces FVT-owner ownership."
+        ;;SHADOWED-GUARD FIX: "Triplet must be issued in AQP-SCORE" used to be the first enforce
+        ;;INSIDE the inner let, under FIVE hard reads of SCR|T|Triplet keyed by <triplet-id>
+        ;;(bronze/silver/golden score ids, category, true-triplet). Pact evaluates let bindings
+        ;;eagerly, so a triplet that does not exist aborted on "row not found" and the guard was
+        ;;unreachable for EVERY input. URC_TripletExists is a with-default-read written precisely
+        ;;to answer for a missing row -- it simply never got the chance. Hoisted here.
+        (let ((ref-SCR:module{AcquisitionScoresV2} AQP-SCORE))
+            (enforce (ref-SCR::URC_TripletExists triplet-id) "Triplet must be issued in AQP-SCORE"))
         (let
             (
                 (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
@@ -1923,17 +1931,31 @@
                 (silver-lp-denom:string (ref-SCR::UR_SCR|ScoreLpDenominator silver-id))
                 (expected-swpair:string (URC_ResolveScoreEntitySwpair CT_SCORE_ENTITY_TRIPLET triplet-id fvt-class))
             )
-            (enforce (ref-SCR::URC_TripletExists triplet-id) "Triplet must be issued in AQP-SCORE")
+            ;;(the existence check now runs ABOVE this let -- see the note on the defun.)
             (enforce (ref-SCR::URC_TripletCategoryMatchesFvtClass triplet-cat fvt-class) "Triplet category must match FVT class")
+            ;;FIXED 2026-09-12, owner-ruled. This was a THREE-argument `or`, and Pact's `or` is
+            ;;BINARY -- it raised `Attempted to apply a closure to too many arguments` instead of
+            ;;evaluating. The outer `(or mosaic ...)` SHORT-CIRCUITS and every FVT built so far is
+            ;;mosaic, so the broken branch had never been reached and the fault was invisible.
+            ;;It was not a mute message: the ADMITTING modes failed identically to the refusing one,
+            ;;so no NON-MOSAIC FVT could admit a triplet in ANY mode.
+            ;;Owner ruling: "triple or or multiple or is not allowed. instead use fold construction
+            ;;using or over false." -- which is also the `or` analogue of the 3+ boolean rule already
+            ;;in CLAUDE.md for `and`. `fold` is not short-circuiting, but all three disjuncts here are
+            ;;comparisons on already-bound locals, so evaluating all three is free.
+            ;;The legal 2-argument twin is UEV_AddScoreEntityScoreContext above, which always worked.
+            ;;Pinned by REPL/Kursan/dsa-grand-tour.repl <<GT-16>> section 03, which now drives all
+            ;;three modes against a non-mosaic vault. 2026-09-12-binary-or-arity-break.md
             (enforce
                 (or (ref-RPS::UR_FVT|Mosaic fvt-id)
                     (let
                         (
                             (mode:string (ref-RPS::UR_FVT|MembershipMode fvt-id))
                         )
-                        (or (= mode CT_MEMBERSHIP_MODE_BAR)
-                            (and (= mode CT_MEMBERSHIP_MODE_TRUE_TRIPLET) is-true-triplet)
-                            (and (= mode CT_MEMBERSHIP_MODE_STANDARD_TRIPLET) (not is-true-triplet)))
+                        (fold (or) false
+                            [(= mode CT_MEMBERSHIP_MODE_BAR)
+                             (and (= mode CT_MEMBERSHIP_MODE_TRUE_TRIPLET) is-true-triplet)
+                             (and (= mode CT_MEMBERSHIP_MODE_STANDARD_TRIPLET) (not is-true-triplet))])
                     ))
                 "Non-mosaic FVT membership mode mismatch for triplet admission")
             (enforce
@@ -2030,7 +2052,7 @@
             \ [STREAM_MIN_DURATION, STREAM_MAX_DURATION] and a minimum release rate amount/duration >= \
             \ STREAM_MIN_UPS * 10^(-reward-decimals) (precision-normalized via exact integer pow, so the floor is \
             \ uniform across token decimals; 1e-5/sec for a 12-dp token). The count-DEPENDENT slot-cap check lives \
-            \ in XI_FvtAddStream AFTER the drip — a finished stream frees its slot only once the drip prunes it."
+            \ in XIv_FvtAddStream AFTER the drip — a finished stream frees its slot only once the drip prunes it."
         (let
             (
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
@@ -2231,6 +2253,7 @@
     ;;   C_Inject — phased recipe (see canonical inject map above C_Inject)
     ;;   CC_Collect — phased recipe (see canonical collect map above CC_Collect)
     ;;
+    ;;Protection: Class 1 — Innate protection offered by WI_Fvt, XE_WI_FvtRewardAggregate
     (defun XI_IssueFvt:string
         (fvt-id:string fvt-class:integer owner-konto:string common-denominator:string)
         @doc "Under SECURE (FVT|C>ISSUE-FVT): insert FVT|T row with zeroed aggregates and enabled-reward-count 0."
@@ -2250,6 +2273,7 @@
         )
     )
     )
+    ;;Protection: Class 1 — Innate protection offered by WU2_Fvt|Control
     (defun XI_Control:string
         (fvt-id:string new-can-upgrade:bool new-can-change-owner:bool)
         @doc "Under SECURE (FVT|C>CONTROL-FVT): update can-upgrade and can-change-owner."
@@ -2257,6 +2281,7 @@
         (WU2_Fvt|Control fvt-id new-can-upgrade new-can-change-owner)
         fvt-id
     )
+    ;;Protection: Class 1 — Innate protection offered by WU_Fvt|CommonDenominator
     (defun XI_SetCommonDenominator:string
         (fvt-id:string common-denominator:string)
         @doc "Under SECURE (FVT|C>SET-COMMON-DENOMINATOR): update farm common-denominator."
@@ -2296,6 +2321,7 @@
     ;;     └ AQP-POOL::XB_SetBenDptfAnkSyncCount
     ;;
     ;; --- Anchors (AQP-ANK · TF stake only) ---
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XI_RefreshTrueFungibleStakeAnchors:object{IgnisCollectorV2.OutputCumulator}
         (beneficiary-id:string dptf-id:string)
         @doc "Internal (CC_TrueFungibleStakeFlow phase 3.1 · depth 0]): read post-ico1 BenDptfTotal balance, \
@@ -2325,6 +2351,7 @@
     ;;     ├ AQP-ANK::XE_UpdateSemiFungible* or XE_UpdateNonFungible*
     ;;     └ AQP-POOL::XB_SetBenCollectableAnkSyncCount
     ;;
+    ;;Protection: Class 2 — SECURE
     (defun XI_RefreshCollectableStakeAnchors:object{IgnisCollectorV2.OutputCumulator}
         (
             beneficiary-id:string
@@ -2369,6 +2396,7 @@
     ;;   XI_CheckpointStakeRps — nested map (score plan × reward line); no child XI_*.
     ;;
     ;; [XE]
+    ;;Protection: Class 5 — IMC + Custom: FVT|XE>SWEEP-BRACKET
     (defun XE_SweepBegin:string (anchor-id:string)
         @doc "Sweep bracket BEGIN (paginated MTX|n|C_SweepRevokeAnchor): freeze every affected pool (stake + collect \
             \ blocked) then remove the anchor globally (swept-revoke — skips the #9 score-link lock). Mirrors steps \
@@ -2391,6 +2419,7 @@
             )
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: FVT|XE>SWEEP-BRACKET
     (defun XE_SweepEnd:string (anchor-id:string)
         @doc "Sweep bracket END (paginated MTX|n|C_SweepRevokeAnchor terminal step): unfreeze every affected pool. \
             \ The anchor was already swept-revoked in XE_SweepBegin; the reverse index is unchanged so score-ids \
@@ -2412,6 +2441,7 @@
     )
     ;;
     ;; --- XE forwarders (AQP-VCT TF vacate composes stake/RPS primitives via IMC) ---
+    ;;Protection: Class 5 — IMC + Custom: SECURE
     (defun XE_SetFvtVacateFrozen:string (fvt-id:string frozen:bool)
         @doc "AQP-VCT begin/finalize: set this FVT's vacate-frozen flag (blocks collect + inject during a pool \
             \ vacate). Called once per the vacating pool's employed-score FVTs. P|UEV_IMC + SECURE."
@@ -2420,6 +2450,7 @@
             (WU_FvtVacateFreeze fvt-id frozen)
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: SECURE
     (defun XE_SetFvtOracleOn:string (fvt-id:string oracle-on:bool)
         @doc "DSA: toggle this FVT's node/uptime oracle (off ⇒ capture = units, uptime ≡ 1000, no expiry). P|UEV_IMC + SECURE."
         (P|UEV_IMC)
@@ -2427,6 +2458,7 @@
             (WU_Fvt|OracleOn fvt-id oracle-on)
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: SECURE
     (defun XE_RefreshTrueFungibleStakeAnchors:object{IgnisCollectorV2.OutputCumulator}
         (beneficiary-id:string dptf-id:string)
         @doc "Forward (stake/unstake flow): recompute the beneficiary's true-fungible stake-anchor values for \
@@ -2436,6 +2468,7 @@
             (XI_RefreshTrueFungibleStakeAnchors beneficiary-id dptf-id)
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: SECURE
     (defun XE_RefreshCollectableStakeAnchors:object{IgnisCollectorV2.OutputCumulator}
         (
             beneficiary-id:string
@@ -2456,6 +2489,7 @@
         )
     )
     ;; [XB]
+    ;;Protection: Class 5 — IMC + Custom: FVT|C>INJECT
     (defun XB_FvtInject:object{IgnisCollectorV2.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "THE single authorized inject entry — usable BOTH internally (C_Inject delegates here) and externally \
@@ -2486,7 +2520,6 @@
         (with-capability (FVT|C>ISSUE-FVT fvt-name owner-konto fvt-class common-denominator)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     ;;
@@ -2529,7 +2562,6 @@
             (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 ;;
                 (owner-konto:string (ref-RPS::UR_FVT|OwnerKonto fvt-id))
             )
@@ -2841,7 +2873,7 @@
             \ LINEARLY over `duration` seconds (1h..365d) and whoever is staked during each slice earns that slice \
             \ (late stakers included). duration = 0 is not accepted here — use C_Inject for an instant inject. \
             \ Streams are independent + overlap (no merge), capped per the FVT owner konto's Elite tier; a full \
-            \ lane accepts only instant injects until a stream finishes. Delegates to XI_FvtAddStream under \
+            \ lane accepts only instant injects until a stream finishes. Delegates to XIv_FvtAddStream under \
             \ FVT|C>INJECT-STREAM (validate + custody + SECURE). UI: URC_LiveClaimable / URC_StreamStatus show \
             \ real-time accrual. See Audit/STREAMED-INJECT-DESIGN.md."
         (let
@@ -3621,6 +3653,12 @@
                     )
                     (ref-SCR::XE_CreateFvtLink score-id fvt-id)
                 )
+                ;;UNREACHABLE BY A NEGATIVE TEST: this is a POST-CONDITION self-check, not an
+                ;;input guard. It asserts that XE_CreateFvtLink on the line above actually wrote
+                ;;the link, so the only way to trip it is to break XE_CreateFvtLink itself -- no
+                ;;argument to this helper can do it. Worth keeping (a silent no-op write here
+                ;;would produce a vault that looks bootstrapped and is not), but it is not
+                ;;coverage, and this helper is REPL-only in any case.
                 (enforce (= (ref-SCR::UR_SCR|ScoreFvtLink score-id) fvt-id)
                     "REPL_BootstrapVault: SCR fvt-link not set after XE_CreateFvtLink")
             )
@@ -3655,6 +3693,12 @@
                     )
                     (ref-SCR::XE_CreateFvtLink score-id fvt-id)
                 )
+                ;;UNREACHABLE BY A NEGATIVE TEST: this is a POST-CONDITION self-check, not an
+                ;;input guard. It asserts that XE_CreateFvtLink on the line above actually wrote
+                ;;the link, so the only way to trip it is to break XE_CreateFvtLink itself -- no
+                ;;argument to this helper can do it. Worth keeping (a silent no-op write here
+                ;;would produce a vault that looks bootstrapped and is not), but it is not
+                ;;coverage, and this helper is REPL-only in any case.
                 (enforce (= (ref-SCR::UR_SCR|ScoreFvtLink score-id) fvt-id)
                     "REPL_BootstrapTreasury: SCR fvt-link not set after XE_CreateFvtLink")
             )

@@ -69,3 +69,344 @@
     ""
 )
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DEMIPAD-G2 — the launchpad sale/retrieval toggles and the deposit admission chain")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DEMIPAD-G2 · 01 · TOGGLE-SALE / TOGGLE-RETRIEVAL / C>DEPOSIT] ---")
+;;P3.3. @event defcaps, reached through the real TS02-DPAD path. The interfaces are
+;;DemiourgosLaunchpadV2 and TalosStageTwo_DemiPadV2 — the module is DEMIPAD but its interface is not
+;;"DemiPadV2", which cost a "Cannot find module" round trip.
+;;
+;;THE DEPOSIT CAP IS AN ORDERED CHAIN, and each case below is built so only its own link can answer:
+;;  registered -> dollar amount -> slippage -> type -> SSTOA/OURO branch -> open-for-business
+;;So the dollar-amount case passes a valid type, the type case passes a valid amount, and the
+;;open-for-business case passes valid everything. TSFS is registered, retrieval ON and sale OFF in
+;;this suite, which is what makes the last one reachable without touching any flag.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+        (ref-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+        (sft:string "TSFS-98c486052a51")
+    )
+    (map print
+        [
+            ;;preconditions, all four read live: the asset is registered, the sale is CLOSED, and
+            ;;neither alternative deposit currency is enabled.
+            (expect "<<DEMIPAD-G2>> TSFS is registered, sale CLOSED, SSTOA and OURO deposits OFF"
+                [true false false false]
+                [(ref-DEMIPAD::UR_CheckRegistration sft) (ref-DEMIPAD::UR_OpenForBusiness sft)
+                 (ref-DEMIPAD::UR_IzSSTOA sft) (ref-DEMIPAD::UR_IzOURO sft)])
+            ;;--- the two idempotent toggles. Each emits an event and bills IGNIS, so a silent no-op
+            ;;    would leave an audit record of a sale being opened (or closed) that never changed.
+            ;;    Both read the CURRENT value and feed it straight back, so they stay correct
+            ;;    whatever state earlier blocks leave behind.
+            (expect-failure "<<DEMIPAD-G2>> setting open-for-business to the value it already holds is refused"
+                "Open for business is already"
+                (ref-DPAD::A_ToggleOpenForBusiness sft (ref-DEMIPAD::UR_OpenForBusiness sft)))
+            (expect-failure "<<DEMIPAD-G2>> ...and retrieval likewise"
+                "Retrieval is already"
+                (ref-DPAD::A_ToggleRetrieval sft (ref-DEMIPAD::UR_Retrieval sft)))
+            ;;--- dollar amount: zero. Type 0 is valid, so the type guard cannot be what answers.
+            (expect-failure "<<DEMIPAD-G2>> a deposit of zero dollars is refused"
+                "Invalid Dollar Amount for Deposit"
+                (ref-DPAD::DEMIPAD|C_Deposit KST.ANHD KST.ANHD sft 0.0 0 false -1.0))
+            ;;--- deposit type out of range, with a valid amount.
+            (expect-failure "<<DEMIPAD-G2>> a deposit type outside 0..3 is refused"
+                "Invalid Deposit type"
+                (ref-DPAD::DEMIPAD|C_Deposit KST.ANHD KST.ANHD sft 10.0 99 false -1.0))
+            ;;--- the two alternative-currency branches. Type 2 = SSTOA, type 3 = OURO; both are
+            ;;    switched off for this asset, so each branch refuses. See the FINDING below: they
+            ;;    carry the SAME message even though they check different flags.
+            (expect-failure "<<DEMIPAD-G2>> a type-2 (SSTOA) deposit is refused while SSTOA is off"
+                "SSTOA Deposits must be turned on for exec"
+                (ref-DPAD::DEMIPAD|C_Deposit KST.ANHD KST.ANHD sft 10.0 2 false -1.0))
+            (expect-failure "<<DEMIPAD-G2>> ...and a type-3 (OURO) deposit while OURO is off"
+                "SSTOA Deposits must be turned on for exec"
+                (ref-DPAD::DEMIPAD|C_Deposit KST.ANHD KST.ANHD sft 10.0 3 false -1.0))
+            ;;--- and the gate the whole launchpad turns on: a perfectly well-formed deposit is
+            ;;    refused because the sale is not open. Type 0, positive amount, slippage off — every
+            ;;    earlier link provably passes.
+            (expect-failure "<<DEMIPAD-G2>> a well-formed deposit is refused while the sale is CLOSED"
+                "is not open for business"
+                (ref-DPAD::DEMIPAD|C_Deposit KST.ANHD KST.ANHD sft 10.0 0 false -1.0))
+            ;;--- FIXED 2026-09-12, owner-ruled. This assertion used to pin the defect AS IT BEHAVED:
+            ;;    the "Asset is not registered" guard could never fire, because the eager `let` above
+            ;;    it bound three BARE reads of DEMIPAD|T|Ledger and an unregistered asset -- the only
+            ;;    case the guard exists for -- aborted in one of them first. A caller who fat-fingered
+            ;;    an asset id got a raw table key instead of the written sentence.
+            ;;    (The diagnosis above this line was half right and worth correcting for the record:
+            ;;    it blamed UR_CheckRegistration, which is in fact the ONE reader that was already
+            ;;    safe -- it wraps its with-read in `(try false ...)`. The culprits were its three
+            ;;    neighbours, UR_OpenForBusiness / UR_IzSSTOA / UR_IzOURO.)
+            ;;    Ruling: "make each one succeed to either false or true". All three are now
+            ;;    with-default-read, so evaluation order is untouched and the guard is reached.
+            (expect-failure "<<DEMIPAD-G2>> an unregistered asset now gets the WRITTEN message"
+                "is not registered to the Demiourgos Lauchpad. Deposit unallowed"
+                (ref-DPAD::DEMIPAD|C_Deposit KST.ANHD KST.ANHD "ghost-asset" 10.0 0 false -1.0))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(commit-tx)
+;;FINDING (message only, no behaviour change) — the SSTOA and OURO branches of C>DEPOSIT carry the
+;;IDENTICAL message:
+;;    (if (= type 2) (enforce iz-sstoa "SSTOA Deposits must be turned on for exec")
+;;                   (enforce iz-ouro  "SSTOA Deposits must be turned on for exec"))
+;;The else-branch checks iz-OURO and says SSTOA. Both are driven above, so both sites are genuinely
+;;exercised — but a type-3 depositor is told to enable the wrong switch, and the two sites share
+;;wording inside one module, so the coverage tool can credit them only nominally. One word.
+
+;;|| NEXT >
+;;
+(begin-tx "DEMIPAD-I1 — INFO_DEMIPAD|FuelTrueFungible and RetrieveTrueFungible quotes vs measured charges")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DEMIPAD-I1 · 01 · fuel the pad, then retrieve it back] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DEMIPAD|FuelTrueFungible` and `INFO_DEMIPAD|RetrieveTrueFungible`, per the owner's
+;;spec: an INFO_ must report the same cost the op actually charges. Template: `modules/ATS.repl
+;;<<ATS-I1>>`.
+;;
+;;The two are measured as a PAIR, in that order, because they are inverses: fuelling moves the asset
+;;into the pad and retrieving moves it back, so running both leaves the ledger where it started and
+;;the second measurement has a valid fixture without inventing one. Fuel/Retrieve are also the two
+;;ops most likely to be given the same preview by accident — they are near-mirror images — so pricing
+;;them in the same block puts any copied quote side by side with the charge that contradicts it.
+;;
+;;NOTE for the TrueFungible and OrtoFungible pairs specifically: the Talos wrapper does NOT call
+;;`IGNIS::C_Collect` itself — the billing happens one layer down, inside `TS01-C1::DPTF|C_Transfer` /
+;;`DPOF|C_Transfer`, against the same patron. So the collector is absent from the function this block
+;;names, and the charge still lands. Do not read that absence as "this op is free".
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+        (asset:string "OURO-98c486052a51")
+    )
+    (let
+        (
+            (predicted-f:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DEMIPAD|FuelTrueFungible patron patron asset 100.0))
+            (ignis-before-f:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (mf (ref-DPAD::DEMIPAD|C_FuelTrueFungible patron patron asset 100.0))
+        )
+        (map print
+            [
+                (expect "<<DEMIPAD-I1>> INFO_DEMIPAD|FuelTrueFungible's quote equals what fuelling charged"
+                    (- ignis-before-f (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted-f)))
+                (expect "<<DEMIPAD-I1>> ...and fuelling is NOT free"
+                    true (> (- ignis-before-f (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    (let
+        (
+            (predicted-r:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DEMIPAD|RetrieveTrueFungible patron patron asset 100.0))
+            (ignis-before-r:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (mr (ref-DPAD::DEMIPAD|C_RetrieveTrueFungible patron patron asset 100.0))
+        )
+        (map print
+            [
+                (expect "<<DEMIPAD-I1>> INFO_DEMIPAD|RetrieveTrueFungible's quote equals what retrieving charged"
+                    (- ignis-before-r (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted-r)))
+                (expect "<<DEMIPAD-I1>> ...and retrieving is NOT free"
+                    true (> (- ignis-before-r (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DEMIPAD-I2 — INFO_DEMIPAD|FuelOrtoFungible and RetrieveOrtoFungible quotes vs measured charges")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DEMIPAD-I2 · 01 · fuel the pad, then retrieve it back] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DEMIPAD|FuelOrtoFungible` and `INFO_DEMIPAD|RetrieveOrtoFungible`, per the owner's
+;;spec: an INFO_ must report the same cost the op actually charges. Template: `modules/ATS.repl
+;;<<ATS-I1>>`.
+;;
+;;The two are measured as a PAIR, in that order, because they are inverses: fuelling moves the asset
+;;into the pad and retrieving moves it back, so running both leaves the ledger where it started and
+;;the second measurement has a valid fixture without inventing one. Fuel/Retrieve are also the two
+;;ops most likely to be given the same preview by accident — they are near-mirror images — so pricing
+;;them in the same block puts any copied quote side by side with the charge that contradicts it.
+;;
+;;NOTE for the TrueFungible and OrtoFungible pairs specifically: the Talos wrapper does NOT call
+;;`IGNIS::C_Collect` itself — the billing happens one layer down, inside `TS01-C1::DPTF|C_Transfer` /
+;;`DPOF|C_Transfer`, against the same patron. So the collector is absent from the function this block
+;;names, and the charge still lands. Do not read that absence as "this op is free".
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+        (asset:string "COF-98c486052a51")
+    )
+    (let
+        (
+            (predicted-f:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DEMIPAD|FuelOrtoFungible patron patron asset [1]))
+            (ignis-before-f:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (mf (ref-DPAD::DEMIPAD|C_FuelOrtoFungible patron patron asset [1]))
+        )
+        (map print
+            [
+                (expect "<<DEMIPAD-I2>> INFO_DEMIPAD|FuelOrtoFungible's quote equals what fuelling charged"
+                    (- ignis-before-f (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted-f)))
+                (expect "<<DEMIPAD-I2>> ...and fuelling is NOT free"
+                    true (> (- ignis-before-f (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    (let
+        (
+            (predicted-r:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DEMIPAD|RetrieveOrtoFungible patron patron asset [1]))
+            (ignis-before-r:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (mr (ref-DPAD::DEMIPAD|C_RetrieveOrtoFungible patron patron asset [1]))
+        )
+        (map print
+            [
+                (expect "<<DEMIPAD-I2>> INFO_DEMIPAD|RetrieveOrtoFungible's quote equals what retrieving charged"
+                    (- ignis-before-r (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted-r)))
+                (expect "<<DEMIPAD-I2>> ...and retrieving is NOT free"
+                    true (> (- ignis-before-r (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DEMIPAD-I3 — INFO_DEMIPAD|FuelSemiFungible and RetrieveSemiFungible quotes vs measured charges")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DEMIPAD-I3 · 01 · fuel the pad, then retrieve it back] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DEMIPAD|FuelSemiFungible` and `INFO_DEMIPAD|RetrieveSemiFungible`, per the owner's
+;;spec: an INFO_ must report the same cost the op actually charges. Template: `modules/ATS.repl
+;;<<ATS-I1>>`.
+;;
+;;The two are measured as a PAIR, in that order, because they are inverses: fuelling moves the asset
+;;into the pad and retrieving moves it back, so running both leaves the ledger where it started and
+;;the second measurement has a valid fixture without inventing one. Fuel/Retrieve are also the two
+;;ops most likely to be given the same preview by accident — they are near-mirror images — so pricing
+;;them in the same block puts any copied quote side by side with the charge that contradicts it.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+        (asset:string "TSFS-98c486052a51")
+    )
+    (let
+        (
+            (predicted-f:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DEMIPAD|FuelSemiFungible patron patron asset [5] [100]))
+            (ignis-before-f:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (mf (ref-DPAD::DEMIPAD|C_FuelSemiFungible patron patron asset [5] [100]))
+        )
+        (map print
+            [
+                (expect "<<DEMIPAD-I3>> INFO_DEMIPAD|FuelSemiFungible's quote equals what fuelling charged"
+                    (- ignis-before-f (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted-f)))
+                (expect "<<DEMIPAD-I3>> ...and fuelling is NOT free"
+                    true (> (- ignis-before-f (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    (let
+        (
+            (predicted-r:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DEMIPAD|RetrieveSemiFungible patron patron asset [5] [100]))
+            (ignis-before-r:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (mr (ref-DPAD::DEMIPAD|C_RetrieveSemiFungible patron patron asset [5] [100]))
+        )
+        (map print
+            [
+                (expect "<<DEMIPAD-I3>> INFO_DEMIPAD|RetrieveSemiFungible's quote equals what retrieving charged"
+                    (- ignis-before-r (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted-r)))
+                (expect "<<DEMIPAD-I3>> ...and retrieving is NOT free"
+                    true (> (- ignis-before-r (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DEMIPAD-I4 — INFO_DEMIPAD|FuelNonFungible and RetrieveNonFungible quotes vs measured charges")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DEMIPAD-I4 · 01 · fuel the pad, then retrieve it back] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DEMIPAD|FuelNonFungible` and `INFO_DEMIPAD|RetrieveNonFungible`, per the owner's
+;;spec: an INFO_ must report the same cost the op actually charges. Template: `modules/ATS.repl
+;;<<ATS-I1>>`.
+;;
+;;The two are measured as a PAIR, in that order, because they are inverses: fuelling moves the asset
+;;into the pad and retrieving moves it back, so running both leaves the ledger where it started and
+;;the second measurement has a valid fixture without inventing one. Fuel/Retrieve are also the two
+;;ops most likely to be given the same preview by accident — they are near-mirror images — so pricing
+;;them in the same block puts any copied quote side by side with the charge that contradicts it.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+        (asset:string "CNF-98c486052a51")
+    )
+    (let
+        (
+            (predicted-f:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DEMIPAD|FuelNonFungible patron patron asset [2] [1]))
+            (ignis-before-f:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (mf (ref-DPAD::DEMIPAD|C_FuelNonFungible patron patron asset [2] [1]))
+        )
+        (map print
+            [
+                (expect "<<DEMIPAD-I4>> INFO_DEMIPAD|FuelNonFungible's quote equals what fuelling charged"
+                    (- ignis-before-f (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted-f)))
+                (expect "<<DEMIPAD-I4>> ...and fuelling is NOT free"
+                    true (> (- ignis-before-f (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    (let
+        (
+            (predicted-r:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DEMIPAD|RetrieveNonFungible patron patron asset [2] [1]))
+            (ignis-before-r:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (mr (ref-DPAD::DEMIPAD|C_RetrieveNonFungible patron patron asset [2] [1]))
+        )
+        (map print
+            [
+                (expect "<<DEMIPAD-I4>> INFO_DEMIPAD|RetrieveNonFungible's quote equals what retrieving charged"
+                    (- ignis-before-r (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted-r)))
+                (expect "<<DEMIPAD-I4>> ...and retrieving is NOT free"
+                    true (> (- ignis-before-r (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)

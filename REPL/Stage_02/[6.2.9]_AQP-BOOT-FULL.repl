@@ -576,3 +576,162 @@
 (print "=== END TX-BOOT-13-SPLIT ==================================================")
 (print "")
 (print "=== END [6.2.9]_AQP-BOOT-FULL.repl =========================================")
+(print "")
+;;
+(begin-tx "TX-BOOT-G1 - the AddScoreEntity context validators, probed against the boot fixture")
+(print "")
+(print "=== TX-BOOT-G1 — UEV_AddScoreEntity{Score,Triplet}Context ======================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-BOOT-G1 · 01 · admission guards ==== ====================================================
+(print "--- [TX-BOOT-G1 · 01 · admission guards] ---")
+;;P3.3. These two validators carry ten guards between them and were the largest unpinned cluster
+;;in the suite. They are only reachable where a FARM (class 0), a TREASURY (class 1) and a real
+;;TRIPLET all exist at once -- which is here, and nowhere else. That is the whole reason this
+;;block lives in the boot suite rather than in modules/AQP.repl: the fixture already exists, so
+;;the guards cost nothing beyond asking.
+;;
+;;What is reachable, and what is not, is stated explicitly below rather than left as silence.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+    )
+    (let
+        (
+            (farm:string     (ref-U|DALOS::UDC_Makeid "OuroLpFarm"))
+            (treasury:string (ref-U|DALOS::UDC_Makeid "CodingDivisionTreasury"))
+            (silver:string   (ref-U|DALOS::UDC_Makeid "SilverSnakePower"))
+            (triplet:string
+                (concat ["T" "|" (ref-U|DALOS::UDC_Makeid "BronzeSnakePower")
+                             "|" (ref-U|DALOS::UDC_Makeid "SilverSnakePower")
+                             "|" (ref-U|DALOS::UDC_Makeid "GoldenSnakePower")]))
+        )
+        (map print
+            [
+                ;;PRECONDITIONS, asserted. Every rejection below depends on the farm being class
+                ;;0, the treasury class 1 and the triplet categorised LP; if any of those were
+                ;;wrong the tests would still fail, just for a different reason, and would read
+                ;;as passes.
+                (expect "<<TX-BOOT-G1>> OuroLpFarm is a class-0 FARM"
+                    0 (ref-RPS::UR_FVT|FvtClass farm))
+                (expect "<<TX-BOOT-G1>> CodingDivisionTreasury is a class-1 VAULT/TREASURY"
+                    1 (ref-RPS::UR_FVT|FvtClass treasury))
+                (expect "<<TX-BOOT-G1>> the boot triplet exists and is categorised LP"
+                    ["LP" true]
+                    [(ref-SCR::UR_SCR|TripletCategory triplet) (ref-SCR::URC_TripletExists triplet)])
+                ;;--- CATEGORY vs CLASS. An LP triplet belongs to a farm, not to a treasury, and
+                ;;this is the guard that says so. It is the ONLY one of the triplet family whose
+                ;;rejecting input is a straight mismatch between two live rows.
+                (expect-failure "<<TX-BOOT-G1>> an LP triplet cannot be admitted to a class-1 treasury"
+                    "Triplet category must match FVT class"
+                    (AQP-FVT.UEV_AddScoreEntityTripletContext treasury triplet "|" 0.0))
+                ;;--- ALREADY ADMITTED. Step11 wired this triplet to this farm, so asking again
+                ;;must be refused -- re-admission would double-count the triplet's weight in the
+                ;;farm's reward share, which is the whole reason the row-exists check is in the
+                ;;fold rather than left to an insert collision.
+                (expect-failure "<<TX-BOOT-G1>> ...and the triplet already wired to the farm cannot be re-admitted"
+                    "Invalid AddScoreEntity triplet: row exists, links, or swpair mismatch"
+                    (AQP-FVT.UEV_AddScoreEntityTripletContext farm triplet "OURO-98c486052a51" 1.0))
+                ;;--- the SCORE twin of the same rule. SilverSnakePower is already linked to an
+                ;;FVT, so its fvt-link is not BAR and the fold refuses it.
+                (expect-failure "<<TX-BOOT-G1>> a score already linked to an FVT cannot be admitted again"
+                    "Invalid AddScoreEntity score: row exists, links, class, or swpair mismatch"
+                    (AQP-FVT.UEV_AddScoreEntityScoreContext farm silver "OURO-98c486052a51" 1.0))
+                ;;--- FINDING: the unlinked-to-pool case never reaches its own guard.
+                ;;
+                ;;The fold in UEV_AddScoreEntityScoreContext contains (!= aqpool-link BAR) -- a
+                ;;score that belongs to no pool should be refused with the named message. It
+                ;;never is. The `let` above the enforce binds
+                ;;    expected-swpair = (URC_ResolveScoreEntitySwpair …)
+                ;;which HARD-READS the pool table using that same aqpool-link, so a score whose
+                ;;link is BAR aborts on a raw table miss for key "|" before any enforce runs.
+                ;;
+                ;;Same shape as the PYTHIA degradation recorded at [6.10]_PYTHIA <<TX007e-03>>:
+                ;;the guard is live for its real case and unhelpful for the case a caller is most
+                ;;likely to hit. Pinned AS IT BEHAVES, so that fixing it (bind the swpair lazily,
+                ;;or hoist the link check above the let) has to update this line deliberately.
+                (expect-failure "<<TX-BOOT-G1>> FINDING: a pool-less score aborts in a table read, not its own guard"
+                    "No value found in table"
+                    (AQP-FVT.UEV_AddScoreEntityScoreContext
+                        farm (ref-U|DALOS::UDC_Makeid "Bloodshed") "OURO-98c486052a51" 1.0))
+                ;;--- NOT PINNED, recorded rather than left silent:
+                ;;  "Score owner must match FVT owner" / "...Non-mosaic FVT locked to score
+                ;;      membership only" — every FVT in this suite is mosaic and owned by the same
+                ;;      konto, so neither has a reachable state here.
+                ;;  "Non-mosaic FVT membership mode mismatch for triplet admission" — needs a
+                ;;      NON-mosaic FVT and a real triplet in the SAME suite. modules/AQP.repl has
+                ;;      the first (TfMosaicVault, mode SCORE) and no triplet; this suite has the
+                ;;      triplet and no non-mosaic FVT. One C_IssueFvt with mosaic=false here would
+                ;;      close it.
+                ;;  "Farm score/triplet: lp-denominator and ghost weight required" and the
+                ;;      vault/treasury twin — these sit BELOW the fold, so reaching them needs an
+                ;;      entity that passes it: unlinked, pool-attached, class-matched. No such
+                ;;      score exists in any suite; it needs a freshly issued one.
+            ]
+        )
+        ""
+    )
+)
+(env-sigs [])
+(print "")
+(print "===^^^===")
+(commit-tx)
+(print "")
+;;
+(begin-tx "TX-BOOT-G2 - UEV_SetCommonDenominatorContext, which needs the class-0 FARM")
+(print "")
+(print "=== TX-BOOT-G2 — common-denominator guards on OuroLpFarm ======================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-BOOT-G2 · 01 · common denominator ==== ==================================================
+(print "--- [TX-BOOT-G2 · 01 · common denominator] ---")
+;;Both guards sit behind "SetCommonDenominator applies to farm (class 0) FVT only", and OuroLpFarm
+;;is the only class-0 farm in any suite — so this block lives here for the same reason TX-BOOT-G1
+;;does: the fixture exists here and nowhere else.
+;;
+;;The two guards are ordered, and the order is the point. The IMMUTABILITY check runs first: once
+;;score entities are linked, the denominator is frozen, because every linked score's weight is
+;;expressed in it and re-denominating would silently restate all of them. Only if no links exist
+;;does the shape check get to object to the id itself.
+;;
+;;OuroLpFarm has linked entities (TX-BOOT-11 wired its triplet), so BOTH inputs below trip the
+;;immutability guard — a valid-looking denominator and a BAR one alike. That is asserted rather
+;;than assumed, and it is why the shape guard is recorded as unreachable here instead of claimed.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+    )
+    (let
+        (
+            (farm:string (ref-U|DALOS::UDC_Makeid "OuroLpFarm"))
+        )
+        (map print
+            [
+                (expect "<<TX-BOOT-G2>> OuroLpFarm is the class-0 farm"
+                    0 (ref-RPS::UR_FVT|FvtClass farm))
+                (expect "<<TX-BOOT-G2>> ...and it already carries linked score entities"
+                    true (> (ref-RPS::UR_FVT|MemberLinkCount farm) 0))
+                (expect-failure "<<TX-BOOT-G2>> re-denominating a farm that has linked entities is refused"
+                    "Cannot change common-denominator after ScoreEntityLink rows exist"
+                    (AQP-FVT.UEV_SetCommonDenominatorContext farm "OURO-98c486052a51"))
+                ;;same guard answers for a malformed id too, because it runs FIRST
+                (expect-failure "<<TX-BOOT-G2>> ...and the same guard answers even for a malformed id"
+                    "Cannot change common-denominator after ScoreEntityLink rows exist"
+                    (AQP-FVT.UEV_SetCommonDenominatorContext farm "|"))
+            ]
+        )
+        ""
+    )
+)
+;;NOT PINNED: "common-denominator must be a full native DPTF id" needs a class-0 farm with ZERO
+;;linked entities. OuroLpFarm is the only farm and it is linked, so the immutability guard above
+;;always answers first. Issuing a second, unlinked farm would close it.
+(env-sigs [])
+(print "")
+(print "===^^^===")
+(commit-tx)

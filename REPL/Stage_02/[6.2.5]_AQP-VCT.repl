@@ -556,9 +556,51 @@
             )
         )
         ;; Abort the campaign: VIP clears, but stake STAYS disabled (ops must re-enable — see L04).
-        (print (format "<(TS02-C3.AQP-POOL|C_AbortVacate)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|C_AbortVacate patron pool-id)
-        ]))
+        ;;
+        ;;FUNCTION COVERAGE (G6) — `INFO_AQP-POOL|AbortVacate`, per the owner's spec: an INFO_ must
+        ;;report the same cost the op actually charges. Template: `modules/ATS.repl <<ATS-I1>>`.
+        ;;
+        ;;This preview quotes "Costs you nothing" — `OI|UDC_NoIgnisCosts` + `OI|UDC_NoStoaCosts` — even
+        ;;though the Talos op DOES run `IGNIS::C_Collect patron (VCT::C_AbortVacate pool-id)`. That is
+        ;;correct rather than a defect, because `C_AbortVacate` returns `UC_EmptyOc`, and collecting an
+        ;;empty cumulator collects nothing. But "correct" was, until now, an unverified claim about a
+        ;;code path that visibly calls the collector — so it is measured here.
+        ;;
+        ;;NOTE the asymmetry with `<<SWP-I1>>` / `<<ATS-I2>>`: those two assert `(> real 0.0)` to stop
+        ;;a zero-quote agreeing with a zero-charge vacuously. Here zero IS the claim, so that guard
+        ;;cannot apply; what makes this non-vacuous instead is that the op is independently proven to
+        ;;have DONE something — the two assertions below already show it cleared vacate-in-progress.
+        ;;A free op that is also a no-op would fail those, not this.
+        ;;
+        ;;The proof is SPLIT, because `AQP-INFO` is not loaded in every chain that runs this file
+        ;;(`Stage_02/[6.5]_AQP-INFO.repl` is its only loader, and it is not in the `AQP-core-vct.repl`
+        ;;chain). Naming it here would make this file fail depending on which runner reached it. So:
+        ;;  HERE  — the op is measured and proven to charge nothing (needs no INFO module);
+        ;;  THERE — `[6.5]_AQP-INFO.repl` asserts the preview quotes zero for the same op.
+        ;;Together those are the round trip; apart, each one lives in a chain that can actually run it.
+        (let
+            (
+                (ignis-before:decimal (DALOS.UR_TF_AccountSupply patron false))
+            )
+            (print (format "<(TS02-C3.AQP-POOL|C_AbortVacate)> => \"{}\"" [
+                (ref-TS02-C3::AQP-POOL|C_AbortVacate patron pool-id)
+            ]))
+            (let
+                (
+                    (real-ignis:decimal (- ignis-before (DALOS.UR_TF_AccountSupply patron false)))
+                )
+                (map print
+                    [
+                        ;;`INFO_AQP-POOL|AbortVacate` quotes "Costs you nothing". This is the half of
+                        ;;that claim which can be checked here: the op really charges nothing, even
+                        ;;though it visibly calls `IGNIS::C_Collect` — because `C_AbortVacate` returns
+                        ;;`UC_EmptyOc`, and collecting an empty cumulator collects nothing.
+                        (expect "<<TX-VCT-L03>> C_AbortVacate charges no IGNIS: collecting an empty cumulator collects nothing"
+                            0.0 real-ignis)
+                    ]
+                )
+            )
+        )
         (let
             (
                 (vacate-in-progress:bool (ref-VCT::UR_VacateInProgress pool-id))
@@ -1098,9 +1140,21 @@
     ]))
     (map print
         [
+            ;;FLIPPED 2026-09-13, and the old expectation is worth recording because it DOCUMENTED
+            ;;a defect without recognising it as one. This used to expect the native fault
+            ;;"Array index out of bounds. Length (0), Index (0)" -- while its own label already said
+            ;;the intent was "(gas-ok requires l>0)". Both halves were true at once: the shape guard
+            ;;`URC_TfOwnerArraysGasOk` really did compute `false` for an empty batch, and the caller
+            ;;really did see an index fault, because the guard's verdict went into a `let` BINDING
+            ;;and a SIBLING binding (`legs`) built the legs eagerly and faulted first. A MUTE GUARD:
+            ;;right answer, no voice.
+            ;;
+            ;;`UC_TfLegsFromParallelArrays` and its three siblings in 06_VCT are now total, so the
+            ;;enforce is reached and the caller gets the message the cap actually intends. Pinned
+            ;;from the unit side by REPL/modules/AQP.repl <<AQP-F6>>.
             (expect-failure
-                (format "<<TX-VCT-N01 expect-failure>> empty batch arrays rejected (gas-ok requires l>0)" [])
-                "Array index out of bounds. Length (0), Index (0)"
+                (format "<<TX-VCT-N01 expect-failure>> an empty batch is refused by the CAP's own message, not an index fault" [])
+                "Invalid TF vacate cap input"
                 (ref-TS02-C3::AQP-POOL|CCp_BatchVacateTrueFungible
                     patron pool-id ouro-id [] [] []
                 )

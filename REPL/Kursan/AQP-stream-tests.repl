@@ -148,19 +148,64 @@
               (coin.TRANSFER (concat ["k:" gs-key]) "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
               (coin.TRANSFER (concat ["k:" gs-key]) "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
               (coin.TRANSFER (concat ["k:" gs-key]) "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
-    (let ((anhd-pre:decimal (ref-DPTF::UR_AccountSupply ouro-id anhd)))
+    ;;FUNCTION-COVERAGE (G6, Tier 1: RPS reward math). `RPS::URC_LiveClaimable` is the UI's read-only
+    ;;projection of what a user would be paid RIGHT NOW, streams dripped in memory and nothing
+    ;;written. It had never been called from any .repl, and neither had the two functions it is built
+    ;;on -- `URC_ReleasableToNow` and `URC_ProjectedIndexAdvance`. A projection that silently drifts
+    ;;from the real payout is the worst kind of bug in this module: nothing fails, the UI simply lies
+    ;;about money.
+    ;;
+    ;;THE GROUND TRUTH IS RIGHT HERE and costs nothing: read the projection immediately BEFORE the
+    ;;collect, then compare it against what the collect actually pays. This fixture already knows the
+    ;;answer independently (180 / 60 from the stream arithmetic), so all three numbers have to agree.
+    (let ((anhd-pre:decimal (ref-DPTF::UR_AccountSupply ouro-id anhd))
+          (anhd-proj:decimal (RPS.URC_LiveClaimable anhd fvt-id pool-id 1 score-id ouro-id))
+          (releasable-pre:decimal (RPS.URC_ReleasableToNow fvt-id ouro-id))
+          (status-pre:object (RPS.URC_StreamStatus fvt-id ouro-id)))
         (ref-TS02-C3::AQP-FVT|CC_Collect anhd fvt-id 1 score-id ouro-id)
         (let ((anhd-payout:decimal (- (ref-DPTF::UR_AccountSupply ouro-id anhd) anhd-pre)))
             (map print
-                [ (format "<<T-STREAM-01>> ANHD payout @24h = {}" [anhd-payout])
-                  (expect (format "<<T-STREAM-01>> ANHD = 180 (120 sole h0-12 + 60 half h12-24) got={}" [anhd-payout]) true (and (> anhd-payout 179.99) (< anhd-payout 180.01))) ])))
-    (let ((emma-pre:decimal (ref-DPTF::UR_AccountSupply ouro-id emma)))
+                [ (format "<<T-STREAM-01>> ANHD payout @24h = {} (projected {})" [anhd-payout anhd-proj])
+                  (expect (format "<<T-STREAM-01>> ANHD = 180 (120 sole h0-12 + 60 half h12-24) got={}" [anhd-payout]) true (and (> anhd-payout 179.99) (< anhd-payout 180.01)))
+                  ;;THE PROJECTION MATCHES REALITY, to the token's own precision. ANHD is NOT the
+                  ;;last claimant here, so the @doc's dust-sweep caveat does not apply to him and
+                  ;;the equality is expected to be exact.
+                  (expect "<<T-STREAM-01>> URC_LiveClaimable predicted ANHD's payout EXACTLY"
+                      true (and (> anhd-proj (- anhd-payout 0.000001)) (< anhd-proj (+ anhd-payout 0.000001))))
+                  ;;the undripped remainder the projection had to account for: the h12-24 half of the
+                  ;;240 stream. If URC_ReleasableToNow returned 0 here the projection above would
+                  ;;have under-reported by exactly this much, so pinning it isolates that term.
+                  (expect (format "<<T-STREAM-01>> URC_ReleasableToNow saw the undripped 120 at finish, got={}" [releasable-pre])
+                      true (and (> releasable-pre 119.99) (< releasable-pre 120.01)))
+                  ;;URC_StreamStatus is the 7x7 UI summary over the same lane -- one live stream,
+                  ;;and its unreleased figure must be the same number URC_ReleasableToNow just gave.
+                  (expect "<<T-STREAM-01>> URC_StreamStatus agrees: one active stream"
+                      1 (at "active-count" status-pre))
+                  (expect "<<T-STREAM-01>> ...and its unreleased total is the same 120"
+                      true (and (> (at "unreleased" status-pre) 119.99) (< (at "unreleased" status-pre) 120.01))) ])))
+    (let ((emma-pre:decimal (ref-DPTF::UR_AccountSupply ouro-id emma))
+          (emma-proj:decimal (RPS.URC_LiveClaimable emma fvt-id pool-id 1 score-id ouro-id)))
         (ref-TS02-C3::AQP-FVT|CC_Collect emma fvt-id 1 score-id ouro-id)
         (let ((emma-payout:decimal (- (ref-DPTF::UR_AccountSupply ouro-id emma) emma-pre)))
             (map print
-                [ (format "<<T-STREAM-01>> EMMA payout @24h = {}" [emma-payout])
+                [ (format "<<T-STREAM-01>> EMMA payout @24h = {} (projected {})" [emma-payout emma-proj])
                   (expect (format "<<T-STREAM-01>> EMMA = 60 (only post-join half of h12-24) got={}" [emma-payout]) true (and (> emma-payout 59.99) (< emma-payout 60.01)))
-                  (expect "<<T-STREAM-01>> stream pruned @24h (count 0)" 0 (AQP-FVT.UR_FVT-RG|StreamCount fvt-id ouro-id)) ])))
+                  ;;EMMA IS THE LAST CLAIMANT, which is the one case the @doc says the projection
+                  ;;does NOT predict exactly: "for the last-claimant dust-sweep edge the real collect
+                  ;;pays the whole available-rewards, so this slightly UNDER-estimates there (a UI
+                  ;;hint, not a promise)". So the assertion is the documented INEQUALITY, not
+                  ;;equality -- and it is one-sided on purpose. A projection that OVER-promised would
+                  ;;be a UI lying upward about money, and that is what this catches.
+                  (expect "<<T-STREAM-01>> URC_LiveClaimable never OVER-promises the last claimant (the documented dust-sweep edge)"
+                      true (<= emma-proj (+ emma-payout 0.000001)))
+                  ;;...and it is not uselessly conservative either: the under-estimate is dust, not
+                  ;;an order of magnitude. Without this the inequality above would pass at zero.
+                  (expect "<<T-STREAM-01>> ...and the under-estimate really is dust, not a wrong answer"
+                      true (> emma-proj (- emma-payout 0.01)))
+                  (expect "<<T-STREAM-01>> stream pruned @24h (count 0)" 0 (AQP-FVT.UR_FVT-RG|StreamCount fvt-id ouro-id))
+                  ;;and with the lane drained, the two stream readers agree on empty
+                  (expect "<<T-STREAM-01>> URC_ReleasableToNow is 0.0 once the lane is drained"
+                      0.0 (RPS.URC_ReleasableToNow fvt-id ouro-id)) ])))
     (env-sigs [])
 )
 (commit-tx)
@@ -457,3 +502,113 @@
 (commit-tx)
 (print "")
 (print "=== END AQP-stream-tests.repl ===")
+
+;;|| NEXT >
+;;
+(begin-tx "T-STREAM-RT - RPS per-field readers: the key round-trip")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [T-STREAM-RT · 01 · every identity field reads back the key component it was stored under] ---")
+;;FUNCTION COVERAGE (G6, Tier 1: RPS). `04_RPS.pact` carries a large family of per-field row readers
+;;-- UR_FVT-RU|*, UR_FVT-RM|*, UR_FVT-RG|*, UR_FVT-SEL|* -- and NOT ONE of them had ever been called
+;;from a .repl. Individually they look too trivial to test: each is `(at "field" (full-row-read …))`.
+;;
+;;THEY ARE NOT TRIVIAL AS A GROUP, and the reason is what makes this sweep worth writing. Four of
+;;these tables are keyed by COMPOSITE keys built from 2-4 components, and each row STORES those same
+;;components as columns. So every identity reader is a round trip: put (user, fvt, score-entity,
+;;dptf) in as a key, get the same four values back as fields. That round trip breaks if a key builder
+;;transposes two components, if a writer stores a column in the wrong slot, or if a reader is
+;;copy-pasted between sibling tables and left pointing at the neighbour's column -- and all three are
+;;real bug shapes in this codebase (DPDC-MNG carried an account/id transposition of exactly this kind).
+;;
+;;A single wrong reader here would be invisible to every existing test, because the value returned is
+;;still a plausible id of the right shape. Asserting the ROUND TRIP is what makes it visible.
+(let
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (u:string KST.ANHD)
+        (o:string "OURO-98c486052a51")
+    )
+    (let
+        (
+            (f:string (ref-U|DALOS::UDC_Makeid "StreamVault"))
+            (sc:string (ref-U|DALOS::UDC_Makeid "StreamScore"))
+        )
+        (map print
+            [
+                ;;RU — the user RPS row, the widest key in the module: all FOUR components round-trip.
+                ;;A transposition of any pair would show up as two mismatches here.
+                (expect "<<T-STREAM-RT>> UR_FVT-RU|* returns all four key components unchanged"
+                    [u f sc o]
+                    [(RPS.UR_FVT-RU|UserId u f sc o)
+                     (RPS.UR_FVT-RU|FvtId u f sc o)
+                     (RPS.UR_FVT-RU|ScoreEntityId u f sc o)
+                     (RPS.UR_FVT-RU|DptfId u f sc o)])
+                ;;RM — the member row: three components. Note the argument ORDER differs from RU
+                ;;(no user), which is exactly the kind of neighbouring-signature slip this catches.
+                (expect "<<T-STREAM-RT>> UR_FVT-RM|* likewise, on the three-component member key"
+                    [f sc o]
+                    [(RPS.UR_FVT-RM|FvtId f sc o)
+                     (RPS.UR_FVT-RM|ScoreEntityId f sc o)
+                     (RPS.UR_FVT-RM|DptfId f sc o)])
+                ;;RG — the lane/registry row: two components
+                (expect "<<T-STREAM-RT>> UR_FVT-RG|* likewise, on the two-component lane key"
+                    [f o]
+                    [(RPS.UR_FVT-RG|FvtId f o)
+                     (RPS.UR_FVT-RG|DptfId f o)])
+                ;;SEL — the score-entity link row: two components, and this one shares BOTH its
+                ;;argument shape and its column names with RG's neighbour, so a copy-paste between
+                ;;the two would be silent everywhere except here.
+                (expect "<<T-STREAM-RT>> UR_FVT-SEL|* likewise, on the score-entity link key"
+                    [f sc]
+                    [(RPS.UR_FVT-SEL|FvtId f sc)
+                     (RPS.UR_FVT-SEL|ScoreEntityId f sc)])
+                ;;=== THE ABOVE IS VACUOUS WITHOUT THIS ===
+                ;;`UR_FVT-RU|RpsUser` is a `with-default-read` whose DEFAULT OBJECT IS BUILT FROM THE
+                ;;KEY COMPONENTS (`UDC_FVT|RPS|User 0.0 0.0 user-id fvt-id score-entity-id dptf-id`).
+                ;;So on a MISSING row the identity readers echo the arguments straight back, and every
+                ;;round-trip assertion above would pass against an EMPTY TABLE. Discovered by writing
+                ;;the negative control below and watching it return the key instead of failing.
+                ;;
+                ;;The round trips are still worth having -- on a row that REALLY EXISTS the values
+                ;;come from stored columns, so a writer that transposed two of them is caught -- but
+                ;;only once existence is established independently. That is what this pair does.
+                (expect "<<T-STREAM-RT>> PREMISE: the RU row is REAL, not a default -- its checkpoint advanced past 0.0"
+                    true (> (RPS.UR_FVT-RU|LastRps u f sc o) 0.0))
+                ;;THE TRAP, pinned deliberately: a caller cannot use an identity reader to ask
+                ;;"does this row exist". Handed a token that was never in this lane, it answers with
+                ;;the token it was handed, confidently and wrongly.
+                (expect "<<T-STREAM-RT>> TRAP: on a MISSING row the identity readers echo the key rather than failing"
+                    ["NOSUCHTOKEN-98c486052a51" u]
+                    [(RPS.UR_FVT-RU|DptfId u f sc "NOSUCHTOKEN-98c486052a51")
+                     (RPS.UR_FVT-RU|UserId  u f sc "NOSUCHTOKEN-98c486052a51")])
+                ;;...while the NUMERIC fields do default honestly to 0.0, which is the documented
+                ;;behaviour ("absent rows read as zero pending and zero last-rps checkpoint") and the
+                ;;only part of a defaulted row that can be distinguished from a real one.
+                (expect "<<T-STREAM-RT>> ...and only the NUMERIC fields reveal the default: 0.0 checkpoint"
+                    0.0 (RPS.UR_FVT-RU|LastRps u f sc "NOSUCHTOKEN-98c486052a51"))
+
+                ;;the non-identity readers in the same family. CORRECTED 2026-09-13: this used to
+                ;;assert `boosted >= base`, which passed here only because BOTH are 0.0 for this
+                ;;vault class -- a vacuous pass hiding a wrong claim. `total-base-score` and
+                ;;`total-boosted-score` are documented as independent sums ("Sum of user base-scores"
+                ;;/ "Sum of user boosted-scores"), not a multiplier relationship, so no ordering
+                ;;between them is guaranteed. (The SCORE module's *-deb-* pair IS a decomposition and
+                ;;IS pinned additively -- see modules/AQP.repl <<AQP-F5>>; these are not those.)
+                ;;Only non-negativity is actually claimed, so only non-negativity is asserted.
+                (expect "<<T-STREAM-RT>> the vault aggregates are all non-negative"
+                    true (and (>= (RPS.UR_FVT|TotalBoostedScore f) 0.0)
+                              (and (>= (RPS.UR_FVT|TotalBaseScore f) 0.0)
+                                   (>= (RPS.UR_FVT|TotalNzsCount f) 0))))
+                ;;UR_FVT-UP|IsPresent — the user-presence flag. Both arms, because a reader that
+                ;;always answered true would pass the first alone.
+                (expect "<<T-STREAM-RT>> UR_FVT-UP|IsPresent is true for a staker and false for a stranger"
+                    [true false]
+                    [(RPS.UR_FVT-UP|IsPresent f u)
+                     (RPS.UR_FVT-UP|IsPresent f "definitely-not-a-staker")])
+            ]
+        )
+    )
+    ""
+)
+(commit-tx)

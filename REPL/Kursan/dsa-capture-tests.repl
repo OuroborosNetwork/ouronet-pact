@@ -38,6 +38,19 @@
 (env-sigs [{ "key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": [] }])
 (load "../../2_CITIZEN/5_VaultsMinter/04_AQP-BOOT.pact")
 (commit-tx)
+
+;;AQP-INFO is loaded HERE so the cost blocks below can name it. This runner self-boots Stage 02 by
+;;hand and never reaches `Stage_02/[Z]_Reads.repl`, the only other loader of the preview module. The
+;;DSA family's fixtures exist ONLY in these `Kursan/dsa-*.repl` runners, and none of them loaded the
+;;reader — which is why all three `INFO_AQP-DSA|*` previews sat unmeasured while the reachability
+;;report counted them as covered. The fix belongs in the RUNNER, not in a shared suite file (the rule
+;;the launchpad gate failure established).
+(begin-tx "AQP-INFO - load module for the DSA cost blocks")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": [] }])
+(load "../../1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact")
+(commit-tx)
 (begin-tx "P3-BOOT - Step0")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
@@ -885,13 +898,28 @@
                 (roy-before:decimal (ref-FVT::UR_FVT-RG|RoyaltyRewards fvt-id ouro))
                 (supply-before:decimal (ref-DPTF::UR_Supply ouro))
             )
+            ;;FUNCTION COVERAGE (G6) — `INFO_AQP-DSA|BurnRoyalty`, per the owner's spec. Template:
+            ;;`modules/ATS.repl <<ATS-I1>>`. The preview is STATE-DEPENDENT (its cost reflects whether a
+            ;;royalty balance exists), so it must be read immediately before the burn that consumes it.
+            (let
+                (
+                    (predicted:decimal
+                        (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-DSA|BurnRoyalty anhd fvt-id ouro))))
+                    (pre-gas:decimal (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" anhd))
+                )
             (ref-TS02-C3::AQP-DSA|C_BurnRoyalty anhd fvt-id ouro)
             (let ((burned:decimal (- supply-before (ref-DPTF::UR_Supply ouro))))
                 (map print
-                  [ ;; the whole royalty (350) was burned — OURO total supply dropped by exactly that
+                  [ (format "<<TX-P3-18>> INFO_AQP-DSA|BurnRoyalty predicted={} real={}"
+                        [predicted (- pre-gas (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" anhd))])
+                    (expect "<<TX-P3-18>> INFO_AQP-DSA|BurnRoyalty's quote equals what the burn charged"
+                        (- pre-gas (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" anhd)) predicted)
+                    (expect "<<TX-P3-18>> ...and it is a real, non-zero charge"
+                        true (> (- pre-gas (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" anhd)) 0.0))
+                    ;; the whole royalty (350) was burned — OURO total supply dropped by exactly that
                     (expect "<<TX-P3-18>> total OURO supply dropped by the royalty" roy-before burned)
                     (expect "<<TX-P3-18>> burned exactly 350" 350.0 burned)
-                    (expect "<<TX-P3-18>> royalty pool zeroed after burn" 0.0 (ref-FVT::UR_FVT-RG|RoyaltyRewards fvt-id ouro)) ]))
+                    (expect "<<TX-P3-18>> royalty pool zeroed after burn" 0.0 (ref-FVT::UR_FVT-RG|RoyaltyRewards fvt-id ouro)) ])))
         )
     )
 )
@@ -1015,6 +1043,7 @@
         (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
     )
     (let
         (
@@ -1027,13 +1056,40 @@
             ;; at the DEFAULT validity (25h) a 2h-old oracle is fresh → effective = stored weight (1.5)
             (expect "<<TX-P3-21>> 2h-old oracle fresh at default validity → 1.5" 1.5 (ref-FVT::URC_MemberEffectiveCapture fvt-id triplet-id))
             ;; shrink validity to 1h (via the Talos GOV wrapper) → the same 2h-old oracle is now expired → effective 0
+            ;;FUNCTION COVERAGE (G6) — `INFO_AQP-DSA|SetOracleValidity`, per the owner's spec.
+            ;;
+            ;;THE ONLY PREVIEW IN THE WHOLE SURFACE WITH NO `patron` ARGUMENT — it takes `(seconds)` and
+            ;;nothing else, because the op is a chain-wide GOV switch rather than a client action. There
+            ;;is no account to bill, which is why it quotes zero of both currencies.
+            ;;A ZERO-VS-ZERO EQUALITY IS VACUOUS ALONE, so the guard is the pair of assertions already
+            ;;below: this same call provably moved the validity window AND flipped a live oracle from
+            ;;fresh to expired. The zero is therefore about the FEE, not about whether anything happened.
+            ;;ANHD's balance is differenced simply because GOV ops bill nobody — if that ever changed,
+            ;;the signer is who would pay. (`KST.ANHD` directly: this block binds no `anhd` local.)
+            (let
+                (
+                    (quote-obj:object{OuronetInfoV2.ClientInfo}
+                        (AQP-INFO.INFO_AQP-DSA|SetOracleValidity 3600))
+                    (gas-pre:decimal (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" KST.ANHD))
+                )
             (ref-TS02-C3::AQP-DSA|A_SetOracleValidity 3600)
             (map print
-              [ (expect "<<TX-P3-21>> oracle-validity set to 3600s (Talos wrapper)" 3600 (ref-FVT::UR_OracleValidity))
+              [ (format "<<TX-P3-21>> SetOracleValidity quoted ignis={} stoa={} ; real gas delta={}"
+                    [(at "ignis-need" (at "ignis" quote-obj))
+                     (at "stoa-need" (at "stoa" quote-obj))
+                     (- gas-pre (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" KST.ANHD))])
+                (expect "<<TX-P3-21>> INFO_AQP-DSA|SetOracleValidity quotes ZERO IGNIS"
+                    0.0 (at "ignis-need" (at "ignis" quote-obj)))
+                (expect "<<TX-P3-21>> ...and ZERO STOA"
+                    0.0 (at "stoa-need" (at "stoa" quote-obj)))
+                (expect "<<TX-P3-21>> ...and the GOV switch really charged nobody"
+                    0.0 (- gas-pre (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" KST.ANHD)))
+                (expect "<<TX-P3-21>> oracle-validity set to 3600s (Talos wrapper)" 3600 (ref-FVT::UR_OracleValidity))
                 (expect "<<TX-P3-21>> 2h-old oracle EXPIRED at 1h validity → 0" 0.0 (ref-FVT::URC_MemberEffectiveCapture fvt-id triplet-id)) ])
             ;; restore the default window for the switch tests
             (ref-TS02-C3::AQP-DSA|A_SetOracleValidity 90000)
             ""
+            )
         )
     )
 )

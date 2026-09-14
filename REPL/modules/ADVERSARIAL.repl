@@ -1,0 +1,133 @@
+;; REPL/modules/ADVERSARIAL.repl — guards that no happy-path fixture can reach.
+;;
+;; Run: cd REPL && pact modules/ADVERSARIAL.repl
+;;
+;; P3.3's rate problem, stated plainly: a guard can only be pinned if some entity is in the state
+;; it rejects, and every existing fixture is built to SUCCEED. Guards that reject a spent
+;; one-shot, an exhausted allowance or a closed window therefore have no live input anywhere in
+;; the corpus, and no amount of re-reading the suites produces one.
+;;
+;; This tester pairs with REPL/fixtures/adversarial-tf.repl, whose entities are issued and then
+;; deliberately moved INTO rejecting states. The fixture owns the state; the assertions live here
+;; (fixtures must not carry tests for the module under test -- see fixtures/mock-tf.repl).
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+(load "../fixtures/adversarial-tf.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "ADV-01 — DPTF|C>MINT: the origin mint is once-only")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [ADV-01 · 01 · UEV_Virgin] ---")
+;;UEV_Virgin enforces (and (= origin-mint false) (= origin-mint-amount 0.0)) and is composed by
+;;DPTF|C>MINT only on the origin=true branch -- it is what makes the origin mint once-only.
+;;
+;;Issuance sets origin-mint-amount to 0.0, so a FRESH token PASSES this guard: the rejecting
+;;state is "already origin-minted", which no other suite produces because every other mint in the
+;;corpus passes origin=false. Both directions are asserted below, because a guard that always
+;;fired would satisfy the rejection alone and still be broken.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+    )
+    (let
+        (
+            (spent:string (ref-U|DALOS::UDC_Makeid "ADVO"))
+            (fresh:string (ref-U|DALOS::UDC_Makeid "ADVF"))
+        )
+        (map print
+            [
+                ;;preconditions -- the pair below means nothing unless the two tokens really are
+                ;;on opposite sides of the guard.
+                (expect "<<ADV-01>> ADVO's origin mint is SPENT" 1000.0 (ref-DPTF::UR_OriginAmount spent))
+                ;;the guard ACCEPTS a token whose origin mint is unspent...
+                (expect "<<ADV-01>> UEV_Virgin accepts a token that has never origin-minted"
+                    true (!= "" (format "{}" [(ref-DPTF::UEV_Virgin fresh)])))
+                ;;...and REJECTS the one the fixture spent.
+                (expect-failure "<<ADV-01>> UEV_Virgin rejects a token whose origin mint is spent"
+                    "Origin Mint for" (ref-DPTF::UEV_Virgin spent))
+                ;;...and the same rejection surfaces through the real client path, which is the
+                ;;behaviour the guard actually protects: no second origin mint, ever.
+                (expect-failure "<<ADV-01>> a SECOND origin mint is refused through Talos"
+                    "Origin Mint for"
+                    (ref-TS01-C1::DPTF|C_Mint patron spent patron 1.0 true))
+                ;;...and the refused call minted nothing.
+                (expect "<<ADV-01>> the refused mint left the origin amount untouched"
+                    1000.0 (ref-DPTF::UR_OriginAmount spent))
+            ]
+        )
+        ""
+    )
+)
+(env-sigs [])
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "ADV-02 — DPTF property guards that read a flag with no argument to vary")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [ADV-02 · 01 · UEV_CanUpgradeON / UEV_CanChangeOwnerON] ---")
+;;A DIFFERENT guard shape from ADV-01 and from the 2x2 families. These take no boolean to vary:
+;;
+;;    (let ((x:bool (UR_CanUpgrade id))) (enforce x "..."))
+;;
+;;so the ONLY way to reach the rejection is a token whose flag is actually off -- and turning
+;;can-upgrade off is ONE-WAY, because DPTF|S>CONTROL itself acquires UEV_CanUpgradeON. A shared
+;;fixture cannot be used and put back; the state has to belong to a token issued for it. ADVL is
+;;that token, and ADVF is the accepting side.
+;;
+;;This is the case that made the adversarial fixture worth building rather than another window.
+;;
+;;SIGS: the last assertion goes through Talos, and DPTF|S>CONTROL acquires CAP_Owner BEFORE
+;;UEV_CanUpgradeON -- without the owner signature it fails on the keyset and never reaches the
+;;guard under test. (It did, on the first run.) The direct UEV_ probes above need no signature.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+    )
+    (let
+        (
+            (locked:string (ref-U|DALOS::UDC_Makeid "ADVL"))
+            (open:string (ref-U|DALOS::UDC_Makeid "ADVF"))
+        )
+        (map print
+            [
+                ;;preconditions: the two tokens are on opposite sides of both flags
+                (expect "<<ADV-02>> ADVL has can-upgrade OFF"        false (ref-DPTF::UR_CanUpgrade locked))
+                (expect "<<ADV-02>> ADVL has can-change-owner OFF"   false (ref-DPTF::UR_CanChangeOwner locked))
+                (expect "<<ADV-02>> ADVF has both ON"               true  (and (ref-DPTF::UR_CanUpgrade open)
+                                                                                (ref-DPTF::UR_CanChangeOwner open)))
+                ;;accepting side
+                (expect "<<ADV-02>> both guards accept a token whose flags are ON"
+                    true (!= "" (format "{}{}" [(ref-DPTF::UEV_CanUpgradeON open)
+                                                (ref-DPTF::UEV_CanChangeOwnerON open)])))
+                ;;rejecting side -- unreachable without a permanently locked token
+                (expect-failure "<<ADV-02>> UEV_CanUpgradeON rejects a token that cannot be upgraded"
+                    "properties cannot be upgraded" (ref-DPTF::UEV_CanUpgradeON locked))
+                (expect-failure "<<ADV-02>> UEV_CanChangeOwnerON rejects a token whose ownership is fixed"
+                    "ownership cannot be changed" (ref-DPTF::UEV_CanChangeOwnerON locked))
+                ;;...and the lock really is one-way: Control cannot be re-acquired on ADVL.
+                ;;ATTRIBUTION CAVEAT: this one goes through Talos, so it names TS01-C1 rather than
+                ;;a core module, and "properties cannot be upgraded" is worded identically in
+                ;;DPMF/DPDC/DPTF/DPOF/ATS -- _enforce_coverage.py --ambiguous flags it, correctly.
+                ;;It is a supplementary claim about IRREVERSIBILITY, not the pin: DPTF's guard is
+                ;;already pinned unambiguously by the direct ref-DPTF:: probe two lines above.
+                (expect-failure "<<ADV-02>> the lock is IRREVERSIBLE -- C_Control is refused on ADVL"
+                    "properties cannot be upgraded"
+                    (ref-TS01-C1::DPTF|C_Control KST.ANHD locked true true true false false true))
+            ]
+        )
+        ""
+    )
+)
+(env-sigs [])
+(commit-tx)

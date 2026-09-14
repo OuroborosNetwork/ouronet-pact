@@ -858,6 +858,14 @@
                 (score-row-id:string (UR_SCR|ScoreScoreId score-id))
                 (score-class:integer (UR_SCR|ScoreClass score-id))
             )
+            ;;ONLY THE CLASS CONJUNCT IS LIVE. <score-row-id> is the row's OWN id field, read with
+            ;;<score-id> as the key -- so (= score-row-id score-id) is a tautology for every
+            ;;well-formed row, and for a MISSING row UR_SCR|ScoreScoreId has already aborted on
+            ;;"row not found" above. It can therefore never be false in practice, and the "must
+            ;;exist ... with matching score-id" half of the message can never be the reason a
+            ;;caller is rejected. Kept as a data-integrity assertion against a corrupt write
+            ;;(same disposition as DPDC-S::UEV_SetClass's (= set-class sc)); (= score-class 4)
+            ;;is the conjunct that actually rejects callers.
             (enforce
                 (and (= score-row-id score-id) (= score-class 4))
                 "Invalid score/dpnf: score must exist as DPNF (class 4) with matching score-id"
@@ -984,6 +992,14 @@
                 (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (aqpool-link:string (UR_SCR|ScoreAqpoolLink score-id))
             )
+            ;;UNREACHABLE via its only caller. XE_CreateAqpoolLink is called from exactly one
+            ;;place -- AQP::C_AddScore -- and that body runs inside
+            ;;(with-capability (AQP|C>ADD-SCORE ...)), whose cap calls UEV_AddScorePoolAndScore
+            ;;FIRST. That validator already enforces (= aqpool-link BAR) and rejects with "Invalid
+            ;;score-id for pool assignment ...", pinned in REPL/modules/AQP.repl <<AQP-G19>>.
+            ;;Verified by calling C_AddScore on an already-linked score: the AQP message comes
+            ;;back, never this one. Kept as cross-module defence-in-depth -- SCORE must not trust
+            ;;a forward module -- but it is not coverage.
             (enforce
                 (and (= aqpool-link BAR) (!= pool-id BAR))
                 "Aqpool link slot must be unset and pool-id must be non-BAR"
@@ -1002,6 +1018,10 @@
                 (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (aqpool-link:string (UR_SCR|ScoreAqpoolLink score-id))
             )
+            ;;UNREACHABLE via its only caller, for the same reason as the CREATE twin above:
+            ;;AQP::C_RevokeScore validates through UEV_RevokeScorePoolAndScore inside
+            ;;(with-capability (AQP|C>REVOKE-SCORE ...)) before reaching XE_RevokeAqpoolLink, and
+            ;;answers with "score-id is not assigned to pool" -- pinned in <<AQP-G19>>.
             (enforce
                 (and (= aqpool-link pool-id) (!= pool-id BAR))
                 "Aqpool link must match pool-id and pool-id must be non-BAR"
@@ -1087,6 +1107,19 @@
                             (q:decimal (at idx nonce-amounts))
                         )
                         (ref-DPOF::UEV_Amount dpof-id q)
+                        ;;`nonce-amounts` is not a client argument. TS02-C3's CC_StakeOrtoFungible
+                        ;;derives it with `DPOF::UR_NoncesSupplies dpof-id nonces`, which folds
+                        ;;`UR_NonceSupply id element` -- the SAME reader this enforce compares against.
+                        ;;So through the only client, `q` IS `(UR_NonceSupply dpof-id n)` and this is
+                        ;;a self-comparison: true for every input.
+                        ;;CONTRAST with the DPNF twin at :1282, which looked identical and is NOT:
+                        ;;that client derives from `UR_AccountNoncesSupplies` (PER-ACCOUNT), so a
+                        ;;zero is constructible there. One word in the reader name is the whole
+                        ;;difference between a tautology and a live guard -- worth the care.
+                        ;;Kept as defence-in-depth for a future caller that supplies its own amounts.
+                        ;;Pinned by REPL/Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl <<TX-INFO-GT>>,
+                        ;;which asserts the tautology so this annotation cannot rot silently.
+                        ;;UNREACHABLE via its only caller, same category as :995, :1021 and :1282.
                         (enforce (= q (ref-DPOF::UR_NonceSupply dpof-id n)) "orto LP stake requires whole nonce supply")
                     )
                 )
@@ -1259,6 +1292,17 @@
                             (q:integer (at idx nonce-amounts))
                         )
                         (ref-DPDC::UEV_Nonce dpnf-id false n)
+                        ;;`nonce-amounts` is not a client argument: TS02-C3's NFT stake derives it
+                        ;;from DPDC::UR_AccountNoncesSupplies, the owner's real holdings. For an NFT
+                        ;;that is 1 when held and 0 when not -- so the only way to reach a zero here
+                        ;;is for the owner not to hold the nonce, and DPDC::UEV_NonceQuantityInclusion
+                        ;;(02_DPDC.pact:1253) already checks the NFT's HOLDER IDENTITY upstream, which
+                        ;;for an NFT is the same fact. Measured: re-staking a just-staked nonce returns
+                        ;;DPDC's "doesnt hold NFT ..." and never this message.
+                        ;;Kept as cross-module defence-in-depth -- SCORE must not trust a forward
+                        ;;module -- and pinned by REPL/Stage_02/[6.4]_AQP-EXHAUSTIVE-DPNF.repl
+                        ;;<<TX-AQP-NF01>>, which goes red if that upstream check is ever relaxed.
+                        ;;UNREACHABLE via its only caller, same category as :995 and :1021 above.
                         (enforce (> q 0) "DPNF stake nonce amount must be positive")
                     )
                 )
@@ -2130,7 +2174,7 @@
                     ;;
                     (native-lp:string (URC_StakeLpTokenToNativeLpDptf lp-id))
                     (swpair:string (ref-SWP::UR_GetLpSwpair native-lp))
-                    (denom-pos:integer (ref-SWP::UR_PoolTokenPosition swpair lp-denominator))
+                    (denom-pos:integer (ref-SWP::URv_PoolTokenPosition swpair lp-denominator))
                     (break-amounts:[decimal] (ref-SWPL::URC_LpBreakAmounts swpair lp-amount))
                 )
                 (at denom-pos break-amounts)
@@ -3163,6 +3207,7 @@
     ;;   C_IssueNonFungible* → XI_IssueNonFungibleScoreDefinitionCore
     ;;   C_CreateBoost* → XI_CreateBoostClassLink / XI_CreateBoostLink
     ;;
+    ;;Protection: Class 3 — Custom: SCR|XI>ISSUE-SCORE
     (defun XI_Issue:string
         (
             score-name:string
@@ -3206,24 +3251,28 @@
             )
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by WU_Score|OwnerKonto
     (defun XI_RotateOwnership:string
         (score-id:string new-owner-konto:string)
         @doc "Under SECURE (from SCR|C>ROTATE-OWNERSHIP-SCORE): update owner-konto only. Write only; C_RotateOwnership builds IGNIS cumulator."
         ;; SECURE: granted by WU_Score|OwnerKonto (underlying W_).
         (WU_Score|OwnerKonto score-id new-owner-konto)
     )
+    ;;Protection: Class 1 — Innate protection offered by WU2_Score|Control
     (defun XI_Control:string
         (score-id:string new-can-upgrade:bool new-can-change-owner:bool)
         @doc "Under SECURE (from SCR|C>CONTROL-SCORE): update can-upgrade and can-change-owner only. Write only; C_Control builds IGNIS cumulator."
         ;; SECURE: granted by WU2_Score|Control (underlying W_).
         (WU2_Score|Control score-id new-can-upgrade new-can-change-owner)
     )
+    ;;Protection: Class 1 — Innate protection offered by WU_Score|DebBoost
     (defun XI_EnableDebBoost:string
         (score-id:string)
         @doc "Under SECURE (from SCR|C>ENABLE-DEB-BOOST-SCORE): set deb-boost true only. Write only; C_EnableDebBoost builds IGNIS cumulator."
         ;; SECURE: granted by WU_Score|DebBoost (underlying W_).
         (WU_Score|DebBoost score-id)
     )
+    ;;Protection: Class 3 — Custom: SCR|C>ISSUE-TRIPLET
     (defun XI_IssueTriplet:string
         (bronze-score-id:string silver-score-id:string golden-score-id:string)
         @doc "Under SCR|C>ISSUE-TRIPLET: insert triplet row (true-triplet from boost topology) and mark all three scores triplet=true. Write only."
@@ -3244,6 +3293,7 @@
             triplet-id
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by WW_SFScore, WW_SFDefRevision
     (defun XI_IssueSemiFungibleScoreDefinition:string
         (score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal])
         @doc "Under SECURE (from SCR|C>ISSUE-SF-SCORE-DEFINITION): write SCR|T|SF|Score rows and increment SF DefRevision once per call."
@@ -3272,6 +3322,8 @@
             )
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by WW_NFTraitScore, WW_NFClassScore,
+    ;;Protection:          WW_NFTraitKeys, WW_NFDefRevision
     (defun XI_IssueNonFungibleScoreDefinitionCore:string
         (
             score-id:string
@@ -3343,6 +3395,8 @@
         )
     )
     ;; Link fields [..] on SCR|Schema: XI under SECURE from SCR|C>*; XE from forward modules (P|UEV_IMC + SCR|XE>*).
+    ;;Protection: Class 1 — Innate protection offered by XE_UnbumpBoostClassScoreLinks,
+    ;;Protection:          WU_Score|BoostClassLink, XE_BumpBoostClassScoreLinks
     (defun XI_CreateBoostClassLink:string
         (score-id:string boost-class-id:string)
         @doc "Under SECURE: (re)set boost-class-link + move the ANK BoostClass score-link count (H4 #9 revoke lock). \
@@ -3366,12 +3420,14 @@
             (ref-ANK::XE_BumpBoostClassScoreLinks boost-class-id score-id)
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by WU_Score|BoostLink
     (defun XI_CreateBoostLink:string
         (score-id:string boost-score-id:string)
         @doc "Under SECURE: set boost-link only. Write only; C_CreateBoostLink builds IGNIS cumulator."
         ;; SECURE: granted by WU_Score|BoostLink (underlying W_).
         (WU_Score|BoostLink score-id boost-score-id)
     )
+    ;;Protection: Class 3 — Custom: SCR|XE>UPDATE-LP-STAKE-DPTF-LP
     (defun XI_1|UpdateScoreDataForTrueFungibleLP:string
         (
             ouronet-account:string
@@ -3395,6 +3451,7 @@
             )
         )
     )
+    ;;Protection: Class 3 — Custom: SCR|XE>UPDATE-STAKE-DPTF
     (defun XI_1|UpdateScoreDataForTrueFungible:string
         (
             ouronet-account:string
@@ -3418,6 +3475,7 @@
             )
         )
     )
+    ;;Protection: Class 3 — Custom: SCR|XE>UPDATE-LP-STAKE-ORTO-LP
     (defun XI_1|UpdateScoreDataForOrtoFungibleLP:string
         (
             ouronet-account:string
@@ -3441,6 +3499,7 @@
             )
         )
     )
+    ;;Protection: Class 3 — Custom: SCR|XE>UPDATE-STAKE-DPOF
     (defun XI_1|UpdateScoreDataForOrtoFungible:string
         (
             ouronet-account:string
@@ -3464,6 +3523,7 @@
             )
         )
     )
+    ;;Protection: Class 3 — Custom: SCR|XE>UPDATE-STAKE-DPOF-SPECIAL
     (defun XI_1|UpdateScoreDataForSpecialOrtoFungible:string
         (
             ouronet-account:string
@@ -3490,6 +3550,7 @@
             )
         )
     )
+    ;;Protection: Class 3 — Custom: SCR|XE>UPDATE-STAKE-DPSF
     (defun XI_1|UpdateScoreDataForSemiFungible:string
         (
             ouronet-account:string
@@ -3513,6 +3574,7 @@
             )
         )
     )
+    ;;Protection: Class 3 — Custom: SCR|XE>UPDATE-STAKE-DPNF
     (defun XI_1|UpdateScoreDataForNonFungible:string
         (
             ouronet-account:string
@@ -3534,6 +3596,8 @@
             )
         )
     )
+    ;;Protection: Class 1 — Innate protection offered by WW_UserScore,
+    ;;Protection:          WU3_Score|VaultTotals, WU_Score|NzsCount
     (defun XI_2|ApplySingularUserScoreDelta:string
         (ouronet-account:string pool-id:string score-id:string signed-user-base-delta:decimal)
         @doc "PHASE 4 orchestrator — UrStoa 2.2 + 2.3 NZS: 4.2 user → 4.1 vault → 4.3 nzs per score row."
@@ -3566,6 +3630,7 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_IssueOneFromModel:string (owner-konto:string single-model-id:string score-name:string)
         @doc "Issue ONE SF score (class 3) named <score-name> + its SF definition from a SINGLE model, owned by \
             \ owner-konto. Returns the score-id (UDC_Makeid score-name). require SECURE; acquires SCR|XI>ISSUE-SCORE \
@@ -3597,6 +3662,7 @@
     ;;          ├ WU3_Score|VaultTotals        UrStoa ≡ UpdateVaultScore
     ;;          └ WU_Score|NzsCount            UrStoa ≡ UpdateNZS
     ;;
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_ApplyTrueFungibleStakeDelta:object{IgnisCollectorV2.OutputCumulator}
         (pool-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool employed-ids:[string] native-leg:bool)
         @doc "UrStoa phases 2.2.1 + 2.2.2 + 2.3.1 per employed score (TF). P|UEV_IMC only."
@@ -3631,6 +3697,7 @@
             (ref-IGNIS::UDC_ConcatenateOutputCumulators score-ocs [])
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: SCR|XE>REFRESH-USER-SCORE-DEB
     (defun XE_RefreshUserScoreDeb:string
         (ouronet-account:string pool-id:string score-id:string)
         @doc "Forward (AQP-FVT): M3 deb-staleness backstop. If this user's score deb is stale (Elite-DEB changed \
@@ -3645,6 +3712,7 @@
             "score deb already fresh — no refresh"
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: SCR|XE>NUKE-SCORE-FOR-VACATE
     (defun XE_NukeScoreForVacate:string
         (score-id:string)
         @doc "Forward (AQP-VCT): vacate-v2 §5 finalize nuke of ONE employed score — bulk-zero the aggregates + \
@@ -3655,6 +3723,7 @@
         (with-capability (SCR|XE>NUKE-SCORE-FOR-VACATE score-id)
             (WU_Score|Nuke score-id))
     )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_ApplyOrtoFungibleStakeDelta:object{IgnisCollectorV2.OutputCumulator}
         (
             pool-id:string
@@ -3717,6 +3786,7 @@
             (ref-IGNIS::UDC_ConcatenateOutputCumulators score-ocs [])
         )
     )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_ApplyCollectableStakeDelta:object{IgnisCollectorV2.OutputCumulator}
         (
             pool-id:string
@@ -3770,6 +3840,7 @@
     ;; --- Block C · Link-field XE (leaf writes · no XI children) ---
     ;;   XE_CreateAqpoolLink / XE_RevokeAqpoolLink / XE_CreateFvtLink
     ;;
+    ;;Protection: Class 5 — IMC + Custom: SCR|XE>CREATE-AQPOOL-LINK
     (defun XE_CreateAqpoolLink:string
         (score-id:string pool-id:string)
         @doc "Forward entry (e.g. AQP-POOL): P|UEV_IMC; SCR|XE>CREATE-AQPOOL-LINK validates BAR + ownership; write aqpool-link only."
@@ -3779,6 +3850,7 @@
         )
         pool-id
     )
+    ;;Protection: Class 5 — IMC + Custom: SCR|XE>REVOKE-AQPOOL-LINK
     (defun XE_RevokeAqpoolLink:string
         (score-id:string pool-id:string)
         @doc "Forward entry (e.g. AQP-POOL): P|UEV_IMC; SCR|XE>REVOKE-AQPOOL-LINK validates aqpool-link = pool-id + ownership; clear to BAR."
@@ -3787,6 +3859,7 @@
             (WU_Score|AqpoolLink score-id BAR)
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: SCR|XE>CREATE-FVT-LINK
     (defun XE_CreateFvtLink:string
         (score-id:string fvt-id:string)
         @doc "Forward entry (e.g. AQP-FVT): P|UEV_IMC; SCR|XE>CREATE-FVT-LINK validates BAR + ownership; write fvt-link only."
@@ -3808,7 +3881,6 @@
         (with-capability (SCR|C>ISSUE-LIQUIDITY-SCORE owner-konto score-name precision lp-denominator mx-frozen mx-sleeping)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     ;;
@@ -3828,7 +3900,6 @@
         (with-capability (SCR|C>ISSUE-TRUE-FUNGIBLE-SCORE owner-konto score-name precision mx-frozen)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     ;;
@@ -3849,7 +3920,6 @@
         (with-capability (SCR|C>ISSUE-ORTO-FUNGIBLE-SCORE owner-konto score-name precision mx-sleeping mx-hibernated)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     ;;
@@ -3869,7 +3939,6 @@
         (with-capability (SCR|C>ISSUE-SEMI-FUNGIBLE-SCORE owner-konto score-name precision sft-equality)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     ;;
@@ -3889,7 +3958,6 @@
         (with-capability (SCR|C>ISSUE-NON-FUNGIBLE-SCORE owner-konto score-name precision nft-score-model)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                     ;;
@@ -3923,7 +3991,6 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 ;;
                 (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
             )
@@ -3940,7 +4007,6 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 ;;
                 (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
             )
@@ -3956,7 +4022,6 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 ;;
                 (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
             )
@@ -3972,7 +4037,6 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 ;;
                 (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
             )
@@ -4007,7 +4071,6 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 ;;
                 (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
@@ -4028,7 +4091,6 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 ;;
                 (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
@@ -4051,7 +4113,6 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 ;;
                 (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))

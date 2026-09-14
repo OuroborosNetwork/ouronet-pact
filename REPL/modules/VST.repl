@@ -74,10 +74,84 @@
             }
         ]
     )
-    (let ((created:[string] (ref-TS01-C2::VST|C_CreateFrozenLink patron a)))
+    ;;FUNCTION COVERAGE (G6) — `INFO_VST|CreateFrozenLink`, per the owner's spec: an INFO_ must report
+    ;;the same cost the op actually charges. Template: `modules/ATS.repl <<ATS-I1>>`.
+    ;;
+    ;;<<VST-I1>> DEFECT FIX. All five `INFO_VST|Create*Link` previews returned `OI|UDC_NoStoaCosts`,
+    ;;under a header comment claiming "IGNIS only; STOA auto-fuel is protocol, not a patron charge".
+    ;;That conflated two different things: the protocol auto-fuel really is not a patron charge (and
+    ;;is inert while <native-gas-pump> is false), but `XI_CreateSpecialTrueFungibleLink` runs
+    ;;`(ref-IGNIS::STOA|C_Collect patron stoa-costs)` directly — a real, discounted charge to the
+    ;;patron. So all five ops cost STOA and all five were previewed as free.
+    ;;
+    ;;THE EVIDENCE WAS ALREADY IN THIS FILE. The four managed `coin.TRANSFER` caps signed just above
+    ;;are built from `URC_SplitSTOAPrices patron (UR_UsagePrice ...)` — this test could not run
+    ;;without them, because the patron's own STOA account is debited. A test that has to sign for a
+    ;;charge is standing proof the charge exists; nobody had asked the preview whether it agreed.
+    ;;Same shape as EQUITY / SWP / ATS — fourth module, fifth through ninth instance.
+    (let (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_VST|CreateFrozenLink patron a))
+            (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (created:[string] (ref-TS01-C2::VST|C_CreateFrozenLink patron a))
+         )
         (print (format "<(VST|C_CreateFrozenLink)> => {}" [created]))
         (map print
             [
+                (format "<<VST-I1>> STOA predicted={} real={}"
+                    [(at "stoa-need" (at "stoa" predicted))
+                     (- stoa-before (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))])
+                ;;THE REGRESSION: this asserted 0.0 == <the real fee> before the fix.
+                (expect "<<VST-I1>> the preview's STOA quote equals what creating the link charged"
+                    (- stoa-before (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
+                    (at "stoa-need" (at "stoa" predicted)))
+                ;;...and creating a link genuinely costs STOA, so the equality above cannot be the
+                ;;old bug agreeing with itself at zero.
+                (expect "<<VST-I1>> ...and creating a special link is NOT free"
+                    true (> (- stoa-before (coin.get-balance (ref-DALOS::UR_AccountStoa patron))) 0.0))
+                                ;;...and the IGNIS half, which now agrees too.
+                (format "<<VST-I1>> IGNIS predicted={} real={}"
+                    [(at "ignis-need" (at "ignis" predicted))
+                     (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))])
+                ;;DEFECT FIX (2026-09-14), and it was a REVENUE bug, not a quoting one. This block used
+                ;;to pin a disagreement — 719.74 quoted against 601.02 charged — as a FINDING, because
+                ;;the two sides were wrong in OPPOSITE directions and it was not clear which to trust:
+                ;;
+                ;;    preview leg 1 = vst-link deterrence 279.0 + issue 1070.0   (one folded leg)
+                ;;    preview legs 2+3 = 5.0 + a hand-made 4.0 "leg cumulator"
+                ;;    exec          = issue 1070.0 + update 5.0 + the REAL toggle 59.0, NO deterrence
+                ;;
+                ;;The owner settled the design: a special link costs a SMALL DETERRENCE plus payment IN
+                ;;FULL for the token it issues. That makes both sides wrong in a decidable way —
+                ;;    the EXEC was under-collecting the 279.0 deterrence it was designed to charge;
+                ;;    the PREVIEW was under-modelling the transfer-role toggle as 4.0 against a real 59.0.
+                ;;Both are corrected in `11_VST.pact`, and the deterrence now comes from ONE reader
+                ;;(`URCi_CreateSpecial*LinkDeterrence`) that the preview and the exec both call, so the
+                ;;pair cannot drift apart again.
+                ;;
+                ;;    intended = 279.0 + 1070.0 + 5.0 + 59.0 = 1413.0 raw -> 748.89 at this patron's discount
+                ;;
+                ;;The preview also SPLITS the deterrence and the issue into two legs rather than folding
+                ;;them into one: `UDC_PrimeIgnisCumulator` discounts and quarter-splits PER LEG, so a
+                ;;preview with a different leg count can round differently from its exec even when the
+                ;;totals are algebraically equal.
+                ;;
+                ;;BLAST RADIUS — the reader pair is shared, so SEVEN previews were affected and are now
+                ;;all correct: `INFO_VST|CreateFrozenLink` / `CreateReservationLink` (TrueFungible),
+                ;;`CreateVestingLink` / `CreateSleepingLink` / `CreateHibernatingLink` (Orto), and
+                ;;`INFO_SWP|EnableFrozenLP` / `EnableSleepingLP`, which preview the same link creation.
+                ;;The SWP pair is asserted the same way at `modules/SWP.repl <<SWP-I8>>` / `<<SWP-I9>>`.
+                (expect "<<VST-I1>> the IGNIS quote equals the IGNIS charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<VST-I1>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+                ;;the deterrence really is IN the charge now — without this the equality above would
+                ;;pass just as well if both sides had dropped it together
+                (expect "<<VST-I1>> ...and the charge really includes the vst-link deterrence"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                            (* (ref-DALOS::URC_IgnisGasDiscount patron)
+                               (+ (ref-DPTF::URCi_IssueGas 1) 64.0))))
                 (expect "<<VST-02>> C_CreateFrozenLink registered the frozen link on the DPTF"
                     true (ref-DPTF::URC_HasFrozen a))
                 (expect "<<VST-02>> creating the FROZEN link did not create the others"
@@ -135,6 +209,177 @@
 (commit-tx)
 
 ;;|| NEXT >
+;;|| VST-G8 — an ATS guard that only a VST fixture can reach.
+;;
+(begin-tx "VST-G8 - ATS refuses a Special or LP token as RT or RBT")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [VST-G8 · 01 · the Special/LP token rule, reached from the VST side] ---")
+;;THIS GUARD LIVES IN 08_ATS.pact, NOT IN VST. It is pinned here because this is the only gated
+;;chain that HAS a special token: `ATS-G8` in modules/ATS.repl reaches it and gives up, recording
+;;"needs a special (F|/R|) or LP (S|/W|/P|) DPTF that EXISTS in this suite ... F|MOCKA lives in the
+;;VST suite". VST-03 above has just minted exactly that. So rather than cross-load an ATS fixture
+;;into VST or a VST fixture into ATS, the assertion moves to the chain that already pays for the
+;;state. **Check which chain already has the state before building it anywhere** -- the same rule
+;;that let the AQP-LP harness reuse the SWP pairs.
+;;
+;;ONE OBSTACLE, and it is why this needs `env-module-admin`: `UEV_IssueData` calls `CAP_Owner` on
+;;BOTH tokens before it reaches the rule, and a frozen link is owned by the DPTF smart-contract
+;;account (`Σ.…`), whose guard is a module guard -- no key satisfies it. Probed rather than
+;;assumed: `(UR_Konto "F|MOCKA-…")` is NOT `KST.ANHD`. Reassigning `owner-konto` for the duration
+;;reproduces the ownership a normal RT candidate would have, which is the precondition the rule is
+;;written to be evaluated AFTER; it does not weaken the rule under test.
+(let
+    (
+        (ref-ATS:module{AutostakeV3} ATS)
+        (a:string "MOCKA-98c486052a51")
+        (b:string "MOCKB-98c486052a51")
+        (frozen:string "F|MOCKA-98c486052a51")
+    )
+    (env-module-admin DPTF)
+    (update DPTF.DPTF|PropertiesTable frozen { "owner-konto" : KST.ANHD })
+    (map print
+        [
+            (expect "<<VST-G8>> the frozen link is temporarily owned by the patron, so CAP_Owner passes"
+                KST.ANHD (DPTF.UR_Konto frozen))
+            ;;THE CONTRAST FIRST: two ordinary tokens, same owner, same everything else. Without this
+            ;;the two refusals below would be consistent with the guard refusing every input.
+            (expect "<<VST-G8>> two ordinary tokens are accepted as RT and RBT"
+                true (!= "" (format "{}" [(ref-ATS::UEV_IssueData "NewPair" 12 a b)])))
+            ;;THE RULE, both conjuncts. An autostake pool converts RT into RBT; a Special (F|/R|) or
+            ;;LP (S|/W|/P|) token is already a derived claim on something else, so staking it would
+            ;;compound a wrapper against its own wrapped supply. The guard is ONE `and` of two
+            ;;`not contains`, so both sides yield the same sentence -- driving both is what shows
+            ;;neither conjunct is dead.
+            (expect-failure "<<VST-G8>> a SPECIAL token is refused as the REWARD token"
+                "An Autostake Pool cannot be issued when either the RT or RBT are Special or LP Tokens"
+                (ref-ATS::UEV_IssueData "NewPair" 12 frozen b))
+            (expect-failure "<<VST-G8>> ...and equally as the REWARD-BEARING token"
+                "An Autostake Pool cannot be issued when either the RT or RBT are Special or LP Tokens"
+                (ref-ATS::UEV_IssueData "NewPair" 12 a frozen))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+;;the ownership reassignment is discarded -- VST-G8b checks it
+(rollback-tx)
+
+;;|| NEXT >
+;;|| VST-G8b — the ownership reassignment left no trace.
+;;
+(begin-tx "VST-G8b - no leakage")
+(namespace "ouronet-ns")
+(print "--- [VST-G8b · 01 · no leakage] ---")
+;;A leaked owner-konto on the frozen link would let a later unfreeze be authorised by the wrong
+;;key, which is the kind of thing that passes quietly and fails in a different file.
+(print
+    (expect "<<VST-G8b>> the frozen link is owned by the smart-contract account again"
+        false (= (DPTF.UR_Konto "F|MOCKA-98c486052a51") KST.ANHD)))
+(commit-tx)
+
+;;|| NEXT >
+;;|| VST-G9 — a SPECIAL token cannot itself be given a frozen link.
+;;
+(begin-tx "VST-G9 - DPTF|C>UPDATE-SPECIAL: the main DPTF cannot be Special")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-G9 · 01 · a frozen link on a RESERVED token] ---")
+;;`05_DPTF.pact:1010`. The obvious attempt is to freeze an already-FROZEN token, and it does not
+;;reach this guard: `F|MOCKA` already carries a frozen link, so the enforce two lines ABOVE -- the
+;;immutability check -- answers first. Measured, not assumed; that attempt returned
+;;"Special True Fungible Links (Frozen or Reserved) are immutable !".
+;;
+;;THE INPUT THAT DOES REACH IT IS A **RESERVED** TOKEN WITH THE **FROZEN** TAG. `R|MOCKA` is Special
+;;by prefix, but its FROZEN slot is empty (asserted below), so the immutability check passes and the
+;;prefix rule is the first thing that can refuse it. The two guards read different fields -- one the
+;;link slot, one the id prefix -- and only a cross-kind input separates them.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (a:string "MOCKA-98c486052a51")
+        (b:string "MOCKB-98c486052a51")
+    )
+    ;;SIX calls are priced in this transaction, and a managed `coin.TRANSFER` cap is a BUDGET, not a
+    ;;permission -- it is consumed across the whole transaction, not re-granted per call. The first
+    ;;draft signed one call's worth and the SECOND call died with "STOA TRANSFER exceeded for balance
+    ;;0.0", which reads like a funding problem and is not one. Sign the whole transaction's traffic.
+    (let ((sp:[decimal] (map (* 6.0)
+              (ref-DALOS::URC_SplitSTOAPrices KST.ANHD (ref-DALOS::UR_UsagePrice "dptf")))))
+    (env-sigs
+        [ { "key": "PK_AncientHodler", "caps": [] }
+          { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+            "caps":
+              [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 sp))
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 sp))
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 sp))
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 sp)) ] } ]))
+    ;;build the reserved token through the ORDINARY client path -- nothing forced here
+    (ref-TS01-C2::VST|C_CreateReservationLink KST.ANHD a)
+    ;;ownership only: the wrapper belongs to the VST smart-contract account, whose module guard no
+    ;;key can satisfy, and CAP_Owner runs before the rule. Same obstacle as VST-G8.
+    (env-module-admin DPTF)
+    (update DPTF.DPTF|PropertiesTable "R|MOCKA-98c486052a51" { "owner-konto" : KST.ANHD })
+    (update DPTF.DPTF|PropertiesTable "F|MOCKA-98c486052a51" { "owner-konto" : KST.ANHD })
+    (map print
+        [
+            (expect "<<VST-G9>> the reserved token exists and is owned by the patron"
+                ["R|MOCKA-98c486052a51" KST.ANHD]
+                [(ref-DPTF::UR_Reservation a) (ref-DPTF::UR_Konto "R|MOCKA-98c486052a51")])
+            ;;the precondition that makes this input reach the rule rather than the immutability check
+            (expect "<<VST-G9>> ...and its FROZEN slot is empty, so the immutability check passes"
+                "|" (ref-DPTF::UR_Frozen "R|MOCKA-98c486052a51"))
+            ;;THE ITEM
+            (expect-failure "<<VST-G9>> a SPECIAL token cannot be given a frozen link"
+                "When setting a Frozen Link, the main DPTF R|MOCKA-98c486052a51 cannot be a Special Token"
+                (ref-TS01-C2::VST|C_CreateFrozenLink KST.ANHD "R|MOCKA-98c486052a51"))
+            ;;CONTRAST 1 -- an ORDINARY token takes a frozen link, so the refusal is about the prefix
+            ;;and not about the operation.
+            (expect "<<VST-G9>> ...while an ordinary token takes one"
+                true (!= "" (format "{}" [(ref-TS01-C2::VST|C_CreateFrozenLink KST.ANHD b)])))
+            ;;CONTRAST 2 -- the ALREADY-FROZEN token gets the OTHER message, which is what shows the
+            ;;two guards are distinct rather than one wording covering both cases. It has to be
+            ;;`F|MOCKA` and not `MOCKA`: pointing the client at MOCKA makes it try to ISSUE a wrapper
+            ;;named F|MOCKA, which already exists, so it dies on an insert collision inside
+            ;;XI_CreateSpecialTrueFungibleLink long before any guard. That is a third failure mode,
+            ;;and confusing it for this one is easy -- the first draft did exactly that.
+            (expect-failure "<<VST-G9>> ...and an already-linked token gets the immutability message instead"
+                "Special True Fungible Links (Frozen or Reserved) are immutable !"
+                (ref-TS01-C2::VST|C_CreateFrozenLink KST.ANHD "F|MOCKA-98c486052a51"))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+;;the reservation link, the frozen link on MOCKB and the ownership move are all discarded
+(rollback-tx)
+
+;;|| NEXT >
+;;|| VST-G9b — none of VST-G9's three writes survived.
+;;
+(begin-tx "VST-G9b - no leakage")
+(namespace "ouronet-ns")
+(print "--- [VST-G9b · 01 · no leakage] ---")
+;;Three separate writes to undo, and the reservation is the dangerous one: later tests in this file
+;;assert MOCKA's link slots, and a leaked R| link would change what they read.
+(map print
+    [
+        (expect "<<VST-G9b>> MOCKA has no reservation link"
+            "|" (DPTF.UR_Reservation "MOCKA-98c486052a51"))
+        (expect "<<VST-G9b>> MOCKB has no frozen link"
+            "|" (DPTF.UR_Frozen "MOCKB-98c486052a51"))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
 ;;
 (begin-tx "VST-04 — hibernation: link, hibernate, and the nonce-bearing form")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
@@ -170,14 +415,41 @@
             }
         ]
     )
-    (let ((created:[string] (ref-TS01-C2::VST|C_CreateHibernatingLink patron a)))
+    ;;<<VST-I1c>> the THIRD branch of the shared link preview. `URCi_CreateSpecialOrtoFungibleLink`
+    ;;takes a <vzh-tag>, and only tags 1 (Vesting) and 2 (Sleeping) pay the transfer-role toggle --
+    ;;tag 3 (Hibernating) is transfer-free and resolves that leg to EOC. <<VST-I1>> measures the
+    ;;TrueFungible twin and `modules/SWP.repl <<SWP-I9>>` measures tag 2, so without this block the
+    ;;EOC branch of the 2026-09-14 fix would be the one shape nothing executes against its charge.
+    (let (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_VST|CreateHibernatingLink patron a))
+            (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (created:[string] (ref-TS01-C2::VST|C_CreateHibernatingLink patron a))
+         )
         (print (format "<(VST|C_CreateHibernatingLink)> => {}" [created]))
+        (print (format "<<VST-I1c>> IGNIS predicted={} real={} | STOA predicted={} real={}"
+            [(at "ignis-need" (at "ignis" predicted))
+             (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+             (at "stoa-need" (at "stoa" predicted))
+             (- stoa-before (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))]))
         (map print
             [
                 (expect "<<VST-04>> C_CreateHibernatingLink registered the link"
                     true (ref-DPTF::URC_HasHibernation a))
                 (expect "<<VST-04>> the FROZEN link is still present and separate"
                     true (ref-DPTF::URC_HasFrozen a))
+                (expect "<<VST-I1c>> the IGNIS quote equals the IGNIS charged on the toggle-FREE branch"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<VST-I1c>> the STOA quote equals the STOA charged"
+                    (- stoa-before (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
+                    (at "stoa-need" (at "stoa" predicted)))
+                ;;non-vacuity, and it also PINS the branch: a hibernating link must cost strictly LESS
+                ;;IGNIS than a sleeping one of the same token, because it skips the toggle leg. If the
+                ;;`if` on <vzh-tag> ever collapses, this is the assertion that notices.
+                (expect "<<VST-I1c>> ...and the toggle-free branch is cheaper than the toggling one"
+                    true (< (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                            (at "ignis-need" (at "ignis" (INFO-ONE.INFO_VST|CreateSleepingLink patron a)))))
             ]
         )
     ))
@@ -327,8 +599,16 @@
                     [120.0 80.0] [(ref-DPOF::UR_NonceSupply slp 1) (ref-DPOF::UR_NonceSupply slp 2)])
             ]
         )
-        ;;SLUMBER = merge several sleeping nonces into one position
-        (ref-TS01-C2::VST|C_Slumber patron patron slp [1 2])
+        ;;MERGE = combine several SLEEPING nonces into one position.
+        ;;C_Merge, NOT C_Slumber. VST-08 below records the naming trap: C_Merge/C_RepurposeMerge are
+        ;;vzh-tag 2 = SLEEPING, while C_Slumber/C_RepurposeSlumber are vzh-tag 3 = HIBERNATION. This
+        ;;line used to call C_Slumber on a SLEEPING token, which is what minted the un-unsleepable
+        ;;nonce 3 that VST-G7 pinned: the tag decided the metadata SHAPE, so a sleeping nonce got
+        ;;{mint-time, release-date} where VST|MetaDataSchema expects {release-amount, release-date},
+        ;;and C_Unsleep then died on a runtime typecheck before reaching any guard.
+        ;;VST|C>SLUMBER now enforces an H| token, so that misuse is refused outright rather than
+        ;;silently corrupting a row.
+        (ref-TS01-C2::VST|C_Merge patron patron slp [1 2])
         (map print
             [
                 (expect "<<VST-07>> C_Slumber decommissioned the first merged nonce"
@@ -425,8 +705,8 @@
 (print "--- [VST-09 · 01 · C_Merge on the sleeping link] ---")
 ;;VST|C_Merge was invoked by NOTHING in any asserting test (ledger G1 gap). It is the SLEEPING
 ;;merge; C_Slumber is the HIBERNATION merge. Both land on the same private helper:
-;;      C_Merge   -> XI_MergeNonces(... vzh-tag 2)   tag 2 = Sleeping
-;;      C_Slumber -> XI_MergeNonces(... vzh-tag 3)   tag 3 = Hibernating
+;;      C_Merge   -> XIv_MergeNonces(... vzh-tag 2)   tag 2 = Sleeping
+;;      C_Slumber -> XIv_MergeNonces(... vzh-tag 3)   tag 3 = Hibernating
 ;;and the tag decides TWO things: which link resolves the underlying DPTF, and which METADATA
 ;;SHAPE the surviving nonce is minted with.
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
@@ -470,7 +750,7 @@
 )
 (print "--- [VST-09 · 02 · FINDING: no guard ties the merge op to the link kind] ---")
 ;;VST-07 called C_Slumber -- the HIBERNATION merge -- on this SLEEPING dpof, and it SUCCEEDED.
-;;Nothing in C_Slumber, VST|C>SLUMBER or XI_MergeNonces checks that <dpof> is actually the
+;;Nothing in C_Slumber, VST|C>SLUMBER or XIv_MergeNonces checks that <dpof> is actually the
 ;;hibernating link. Two consequences, both provable from the state VST-07 left behind:
 ;;
 ;;  1] The surviving nonce is minted with the WRONG METADATA SHAPE. Sleeping positions carry
@@ -493,10 +773,15 @@
         [
             (expect "<<VST-09>> nonce 3 sits in the SLEEPING dpof"
                 200.0 (ref-DPOF::UR_NonceSupply slp 3))
-            (expect "<<VST-09>> ...yet C_Slumber gave it the HIBERNATING metadata shape"
-                true (contains "mint-time" (at 0 (ref-DPOF::UR_NonceMetaData slp 3))))
-            (expect "<<VST-09>> ...and it is MISSING the release-amount every sleeping reader wants"
-                false (contains "release-amount" (at 0 (ref-DPOF::UR_NonceMetaData slp 3))))
+            ;;FIXED 2026-09-12. These two used to assert the DEFECT: nonce 3 was minted by
+            ;;C_Slumber (vzh-tag 3 = HIBERNATION) on a SLEEPING token, so it carried {mint-time,
+            ;;release-date} where VST|MetaDataSchema expects {release-amount, release-date}.
+            ;;VST-07 now calls C_Merge (tag 2), the correct client for sleeping nonces, and
+            ;;VST|C>SLUMBER enforces an H| token so the misuse is refused outright.
+            (expect "<<VST-09>> ...and now carries the SLEEPING metadata shape"
+                true (contains "release-amount" (at 0 (ref-DPOF::UR_NonceMetaData slp 3))))
+            (expect "<<VST-09>> ...with no hibernation mint-time on it"
+                false (contains "mint-time" (at 0 (ref-DPOF::UR_NonceMetaData slp 3))))
         ]
     )
     ""
@@ -763,13 +1048,20 @@
 (print "--- [VST-11 · 04 · FINDING: the malformed nonce is PERMANENTLY LOCKED] ---")
 ;;VST-09 showed C_Slumber (the HIBERNATION merge) succeeds on a SLEEPING dpof and mints the wrong
 ;;METADATA SHAPE. This is what that costs. Nonce 3 carries {mint-time, release-date} where
-;;VST|MetaDataSchema wants {release-amount, release-date}, so C_Unsleep dies in
+;;VST|MetaDataSchema wants {release-amount, release-date}, so C_Unsleep USED TO die in
 ;;URC_CullMetaDataAmountWithObject on a RUNTIME TYPECHECK -- not a guard, not a named rejection.
 ;;
-;;The nonce is fully matured (block-time is 2035) and holds 200.0 of real value. There is no
-;;other release path for a sleeping position: C_Unsleep is it. So the value is locked FOREVER,
-;;and the operation that locked it reported success. That escalates VST-09 from "writes a
-;;malformed record" to "silently and irreversibly destroys access to the underlying tokens".
+;;THE STAKES, recorded because they are what justified the fix: the nonce is fully matured
+;;(block-time is 2035) and holds 200.0 of real value, and C_Unsleep is the ONLY release path for a
+;;sleeping position. So the value was locked FOREVER, and the operation that locked it had reported
+;;success. That escalated VST-09 from "writes a malformed record" to "silently and irreversibly
+;;destroys access to the underlying tokens".
+;;
+;;FIXED 2026-09-12 (see VST-G7 section 03 for the full diagnosis, including the first WRONG one).
+;;Root cause was not the metadata writer but the two merge capabilities, neither of which checked
+;;what KIND of DPOF it was handed -- so the shape was chosen by which client the caller picked
+;;rather than by what the token is. VST|C>MERGE now requires Z|, VST|C>SLUMBER requires H|, and the
+;;callers use C_Merge for sleeping nonces. The assertion below is now the RELEASE succeeding.
 (let
     (
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
@@ -781,11 +1073,16 @@
         [
             (expect "<<VST-11>> the malformed nonce still holds its full value"
                 200.0 (ref-DPOF::UR_NonceSupply slp 3))
-            (expect-failure "<<VST-11>> FINDING: it cannot be released -- runtime typecheck, not a guard"
-                "Runtime typecheck failure"
-                (ref-TS01-C2::VST|C_Unsleep patron patron slp 3))
-            (expect "<<VST-11>> ...and it is still sitting there after the failed release"
-                200.0 (ref-DPOF::UR_NonceSupply slp 3))
+            ;;FIXED 2026-09-12: the merged nonce is well-formed and MATURE here (block-time is 2035),
+            ;;so the release succeeds and returns the underlying. This assertion is the one that
+            ;;measures the defect's real cost -- 200.0 of value that used to be unreachable.
+            (expect "<<VST-11>> FIXED: it releases, returning the underlying to the holder"
+                true (!= "" (format "{}" [(ref-TS01-C2::VST|C_Unsleep patron patron slp 3)])))
+            ;;FIXED 2026-09-12: the release now SUCCEEDS, so the nonce is decommissioned (-1.0)
+            ;;rather than left stranded at its full 200.0. This is the assertion that shows the
+            ;;defect's real cost was a stuck holding, and that the fix returns it.
+            (expect "<<VST-11>> ...and the nonce is decommissioned by the successful release"
+                -1.0 (ref-DPOF::UR_NonceSupply slp 3))
         ]
     )
     ""
@@ -863,3 +1160,1727 @@
 )
 (print "===^^^===")
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-G1 — VST|X>REPURPOSE-ORTO-FUNGIBLE: the vesting/sleeping/hibernation tag")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-G1 · 01 · vzh tag domain] ---")
+;;VST's repurpose caps dispatch on a tag — 1 vesting, 2 sleeping, 3 hibernation — and a tag
+;;outside that set would fall through the cond to BAR and repurpose the wrong special token.
+;;
+;;This is a defcap, so the route in looks like a full Talos repurpose. It is not: `test-capability`
+;;acquires a capability directly and runs its body, and this enforce is the cap's FIRST line,
+;;above every read. Dummy ids reach it.
+;;
+;;NOTE ON ATTRIBUTION: DPOF|C>UPDATE-SPECIAL carries the IDENTICAL message, so this test is
+;;written as a module-qualified call — (VST.VST|X>REPURPOSE-ORTO-FUNGIBLE …) — which is what lets
+;;the coverage tool credit VST rather than crediting both modules from one assertion.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(map print
+    [
+        (expect-failure "<<VST-G1>> a tag above the 1..3 domain is refused"
+            "Invalid Vesting|Sleeping|Hibernation Tag"
+            (test-capability (VST.VST|X>REPURPOSE-ORTO-FUNGIBLE "a" "b" "c" 9)))
+        (expect-failure "<<VST-G1>> ...and zero, one below it"
+            "Invalid Vesting|Sleeping|Hibernation Tag"
+            (test-capability (VST.VST|X>REPURPOSE-ORTO-FUNGIBLE "a" "b" "c" 0)))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-G2 — DPTF|C>UPDATE-SPECIAL: the special-link rules, using VST's own linked tokens")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-G2 · 01 · special true-fungible link admission] ---")
+;;These guards live in DPTF but are only reachable where SPECIAL tokens exist, and VST is what
+;;creates them: this suite leaves MOCKA carrying a frozen link to F|MOCKA, with both owned by the
+;;same account. That matters because the cap runs CAP_Owner on BOTH tokens before any of these
+;;enforces, so a fixture where the two halves have different owners never reaches them at all.
+;;
+;;The assertions are module-qualified — (DPTF.DPTF|C>UPDATE-SPECIAL …) — so coverage credits DPTF
+;;even though the block lives in the VST suite.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+    )
+    (map print
+        [
+            ;;precondition: MOCKA really is already linked, and MOCKB really is not. Both are
+            ;;asserted, because the first guard is about exactly that difference.
+            (expect "<<VST-G2>> MOCKA already carries a frozen link"
+                "F|MOCKA-98c486052a51" (ref-DPTF::UR_Frozen "MOCKA-98c486052a51"))
+            (expect "<<VST-G2>> ...and MOCKB carries none"
+                "|" (ref-DPTF::UR_Frozen "MOCKB-98c486052a51"))
+            ;;--- once set, a special link can never be re-pointed. This is the guard that makes
+            ;;a frozen balance safe to hold: if the link could move, the frozen supply would
+            ;;follow it to a token the holder never agreed to.
+            (expect-failure "<<VST-G2>> re-linking a token that ALREADY has a frozen link is refused"
+                "Special True Fungible Links (Frozen or Reserved) are immutable !"
+                (test-capability (DPTF.DPTF|C>UPDATE-SPECIAL
+                    "MOCKA-98c486052a51" "MOCKB-98c486052a51" 1)))
+            ;;--- a special token cannot itself take a RESERVE link. Specials and LP tokens are
+            ;;both excluded here, and the message names both, because either would create a
+            ;;two-level special chain that the supply arithmetic does not model.
+            (expect-failure "<<VST-G2>> a SPECIAL token (F|…) cannot be the main side of a reserve link"
+                "cannot be a Special or LP Token"
+                (test-capability (DPTF.DPTF|C>UPDATE-SPECIAL
+                    "F|MOCKA-98c486052a51" "MOCKB-98c486052a51" 2)))
+        ]
+    )
+    ""
+)
+;;NOT PINNED, with the reason rather than silence:
+;;
+;;  "When setting a Frozen Link, the main DPTF {} cannot be a Special Token" — needs a main that
+;;      IS special yet has NO frozen link of its own. F|MOCKA does not qualify: the frozen link is
+;;      stored symmetrically, so F|MOCKA points back at MOCKA and trips the IMMUTABLE guard three
+;;      lines earlier instead. Reaching it needs an R|-prefixed token (whose frozen slot is empty)
+;;      owned by the signer; this suite creates F|, Z| and H| specials but no R|.
+;;
+;;  "Special True Fungible cannot be RTs or Cold-RBTs" — needs the SECONDARY token to be a reward
+;;      token owned by the signer. Every RT in the suite (OURO, DLK) belongs to a smart-contract
+;;      account, so CAP_Owner rejects before the guard is consulted.
+(commit-tx)
+
+;;|| NEXT >
+;;
+;;FIXTURE, loaded HERE rather than in this file's header: the DPOF special-link guards below need
+;;a plain ortofungible OWNED BY THE SIGNER, and this suite has none — VST's own Z|/H| specials
+;;belong to the VST smart-contract account (Σ. prefix) by design, so CAP_Owner can never pass for
+;;a user signer. mock-of.repl issues MOCKO to the patron. Loading it at the END means no existing
+;;assertion in this file can be affected by the extra token.
+(load "../fixtures/mock-of.repl")
+;;
+(begin-tx "VST-G3 — DPOF|C>UPDATE-SPECIAL: all three link kinds refuse a SPECIAL main token")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-G3 · 01 · special orto-fungible link admission] ---")
+;;This cap is asymmetric in a way that decides where it can be tested at all: the MAIN side is a
+;;DPTF and the SECONDARY side is a DPOF, and CAP_Owner runs on BOTH before any enforce. Special
+;;DPTFs (F|…) stay with their issuer, but special DPOFs are transferred to the VST smart contract
+;;— so the main can be special and user-owned, while the secondary must be an ORDINARY DPOF.
+;;That is exactly the pairing assembled here: F|MOCKA as main, MOCKO as secondary.
+;;
+;;The tag then selects one of three cond branches, each with its own exclusion list:
+;;
+;;   1 vesting      main may not be R| F| S| W| P|   (specials AND LP tokens)
+;;   2 sleeping     main may not be R| F|            (specials only — LP tokens ARE allowed)
+;;   3 hibernation  main may not be R| F| S| W| P|
+;;
+;;All three are driven, because the SLEEPING list is deliberately shorter than the other two and
+;;a single test would not show that. An edit that "tidied" the three lists into one shared
+;;constant would silently forbid sleeping links on LP tokens, and only this block would notice.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+    )
+    (map print
+        [
+            ;;preconditions: the fixture really is signer-owned, and the special main really has
+            ;;empty special slots — otherwise the immutable guard would answer for every case.
+            (expect "<<VST-G3>> MOCKO is owned by the signer"
+                KST.ANHD (ref-DPOF::UR_Konto "MOCKO-98c486052a51"))
+            (expect "<<VST-G3>> F|MOCKA carries no special links of its own"
+                ["|" "|" "|"]
+                [(ref-DPTF::UR_Vesting "F|MOCKA-98c486052a51")
+                 (ref-DPTF::UR_Sleeping "F|MOCKA-98c486052a51")
+                 (ref-DPTF::UR_Hibernation "F|MOCKA-98c486052a51")])
+            ;;--- immutability, on the SLEEPING slot MOCKA already fills
+            (expect "<<VST-G3>> MOCKA already has a sleeping link" 
+                "Z|MOCKA-98c486052a51" (ref-DPTF::UR_Sleeping "MOCKA-98c486052a51"))
+            (expect-failure "<<VST-G3>> ...so re-pointing it is refused"
+                "Special Orto Fungible Links (Vesting, Sleeping or Hibernation) are immutable !"
+                (test-capability (DPOF.DPOF|C>UPDATE-SPECIAL
+                    "MOCKA-98c486052a51" "MOCKO-98c486052a51" 2)))
+            ;;--- the three exclusion lists, one per tag, all with the SAME special main
+            (expect-failure "<<VST-G3>> a special main is refused a VESTING link"
+                "When setting a Vesting Link"
+                (test-capability (DPOF.DPOF|C>UPDATE-SPECIAL
+                    "F|MOCKA-98c486052a51" "MOCKO-98c486052a51" 1)))
+            (expect-failure "<<VST-G3>> ...a SLEEPING link"
+                "When setting a Sleeping Link"
+                (test-capability (DPOF.DPOF|C>UPDATE-SPECIAL
+                    "F|MOCKA-98c486052a51" "MOCKO-98c486052a51" 2)))
+            (expect-failure "<<VST-G3>> ...and a HIBERNATION link"
+                "When setting a Hibernation Link"
+                (test-capability (DPOF.DPOF|C>UPDATE-SPECIAL
+                    "F|MOCKA-98c486052a51" "MOCKO-98c486052a51" 3)))
+        ]
+    )
+    ""
+)
+;;NOT PINNED: "Special Orto Fungible cannot be a Hot-RBT" needs the SECONDARY to be a
+;;reward-bearing ortofungible owned by the signer. Every RBT in the suite belongs to an ATS
+;;smart-contract account, so CAP_Owner rejects two lines before the guard is consulted.
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-G4 -- the ownership claim on every Create*Link, asserted rather than assumed")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-G4 . 01 . a non-owner is refused on all three link types] ---")
+;;FOUND BY `python3 _docclaims.py`, which audits @doc text for RULES no test pins. All three
+;;VST|C_Create*Link docs make an AUTHORITY claim about who may create a link:
+;;  frozen      -- "Only the <dptf> owner can create Frozen Tokens to Target Accounts"
+;;  reservation -- "As opposed to frozen tokens, where only the <dptf> owner can generate them…"
+;;  vesting     -- "The <dptf> owner has the ability to vest its <dptf> token…"
+;;All three were TRUE and none was tested, so deleting the ownership gate would have broken
+;;nothing visible. VST-02 above already covers the POSITIVE half for the frozen link (ANHD, the
+;;owner of MOCKA, creates one successfully), which is what stops these three from being satisfied
+;;by a function that refuses everybody.
+;;
+;;EMMA pays the STOA herself here rather than riding ANHD's signature. That is deliberate: the
+;;charge is levied BEFORE the ownership check, so a caller with no STOA fails on payment and never
+;;reaches the authority error -- which would make this test pass for entirely the wrong reason.
+;;Funding her first means the rejection below really is the ownership gate. Note the message: it
+;;demands the OWNER's keyset (PK_AncientHodler), not EMMA's -- that is the gate speaking.
+(let ((split-stoa:[decimal] (DALOS.URC_SplitSTOAPrices KST.EMMA (DALOS.UR_UsagePrice "dpmf")))
+      (ek:string "ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"))
+  (env-sigs
+    [ { "key": "PK_Emma", "caps": [] }
+      { "key": ek, "caps":
+        [ (coin.TRANSFER (format "k:{}" [ek]) "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+          (coin.TRANSFER (format "k:{}" [ek]) "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+          (coin.TRANSFER (format "k:{}" [ek]) "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+          (coin.TRANSFER (format "k:{}" [ek]) "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa)) ] } ]))
+(map print
+    [
+        (expect-failure "<<VST-G4>> a NON-owner cannot create a FROZEN link on someone else's DPTF"
+            "Keyset failure (keys-all)"
+            (TS01-C2.VST|C_CreateFrozenLink KST.EMMA "MOCKB-98c486052a51"))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-G4b -- reservation link")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-G4b . 01 . reservation] ---")
+;;The reservation doc draws an explicit contrast -- reserved TOKENS may later be generated by
+;;clients once the owner opens reservations, unlike frozen ones. That is about generating tokens,
+;;NOT about creating the LINK, and the two are easy to conflate when reading. Creating the link is
+;;owner-only for all three types; this pins that the contrast does not leak into link creation.
+(map print
+    [
+        (expect-failure "<<VST-G4>> a NON-owner cannot create a RESERVATION link either"
+            "Keyset failure (keys-all)"
+            (TS01-C2.VST|C_CreateReservationLink KST.EMMA "MOCKB-98c486052a51"))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-G4c -- vesting link")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-G4c . 01 . vesting] ---")
+(map print
+    [
+        (expect-failure "<<VST-G4>> a NON-owner cannot create a VESTING link either"
+            "Keyset failure (keys-all)"
+            (TS01-C2.VST|C_CreateVestingLink KST.EMMA "MOCKB-98c486052a51"))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-G5 -- the IMMUTABLE claim: a link cannot be created twice")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [VST-G5 . 01 . re-creating an existing sleeping link] ---")
+;;FOUND BY `python3 _docclaims.py` (IMMUTABLE tier -- added after noticing that "immutable" matched
+;;none of the AUTHORITY/BOUND/INVARIANT patterns, and that a permanent property of stored state is
+;;the strongest promise a contract makes and the most damaging to get wrong).
+;;
+;;VST|C_CreateSleepingLink and VST|C_CreateHibernatingLink both say "A ... Link is immutable, and
+;;noted in the Token Properties of both DPTFs". VST-04 and VST-06 above create those links on MOCKA
+;;and assert they registered -- the POSITIVE half. Nothing asserted the immutable half: that the
+;;link cannot then be replaced by creating it again, which is what "immutable" actually promises.
+;;
+;;THE CLAIM HOLDS, and the mechanism is worth recording because it is not a deliberate guard: the
+;;second create dies on the DPOF insert COLLIDING with the existing counterpart row. So a caller
+;;gets a raw database error rather than "this DPTF already has a sleeping link". That is the same
+;;diagnosability shape as the empty-list index faults in
+;;Kursan/_verify_finding_EMPTY-LIST_01_index_iterating_cumulators.repl -- correct behaviour,
+;;unhelpful message. Pinned on the stable prefix so it stays meaningful; if a real guard with a
+;;readable message is ever added, this fails and the expectation moves to that message.
+(map print
+    [
+        (expect-failure "<<VST-G5>> a sleeping link cannot be re-created -- it is immutable"
+            "Value already found while in Insert mode"
+            (TS01-C2.VST|C_CreateSleepingLink KST.ANHD "MOCKA-98c486052a51"))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-G5b -- and the hibernating link likewise")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [VST-G5b . 01 . re-creating an existing hibernating link] ---")
+;;Both link types carry the same @doc sentence, so both are asserted. A guard added to one and not
+;;the other is exactly the drift a single-type test would miss.
+(map print
+    [
+        (expect-failure "<<VST-G5>> a hibernating link cannot be re-created either"
+            "Value already found while in Insert mode"
+            (TS01-C2.VST|C_CreateHibernatingLink KST.ANHD "MOCKA-98c486052a51"))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-G6 — UEV_StillHasSleeping: dormancy is read off the CLOCK, not off a flag")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-G6 · 01 · the dormancy window] ---")
+;;UEV_StillHasSleeping sat on the unpinned worklist, and the reason it sat there was wrong. It was
+;;filed as needing "a sleeping DPOF nonce that is not dormant", i.e. a fixture. No fixture was
+;;needed: by the time this file reaches its end, Z|MOCKA's nonces are ALREADY past their release
+;;dates, because the suite's block-time is 2035-01-01 and the releases were written for 2026. The
+;;guard had simply never been called from a transaction that ran late enough.
+;;
+;;    (dt:decimal (diff-time release-date present-time))
+;;    (enforce (> dt 0.0) "Nonce {} of Sleeping DPOF {} must be dormant for operation")
+;;
+;;Read the sign carefully: dt is POSITIVE while the release date is still in the FUTURE, so this
+;;enforces "still dormant" and fires once the nonce has matured. The name says the same thing but
+;;it is easy to read backwards, which is why both directions are driven below.
+;;
+;;TIME IS THE FIXTURE. `env-chain-data` moves block-time, so both sides of the window are reachable
+;;without touching a single table -- no module admin, nothing to roll back but the clock itself. When
+;;a guard compares against `(at "block-time" (chain-data))`, reach for this before reaching for state
+;;surgery; it is cheaper and it cannot leak.
+(let
+    (
+        (z:string "Z|MOCKA-98c486052a51")
+        (release:time (at "release-date" (at 0 (DPOF.UR_NonceMetaData "Z|MOCKA-98c486052a51" 1))))
+        (now:time (at "block-time" (chain-data)))
+    )
+    (map print
+        [
+            ;;the premise, asserted rather than assumed: the suite's clock is already PAST the
+            ;;release date. If the fixture dates are ever moved forward, this fails first and names
+            ;;the reason, instead of the expect-failure below mysteriously inverting.
+            (expect "<<VST-G6>> the suite clock is already past nonce 1's release date"
+                true (> (diff-time now release) 0.0))
+            ;;...so the guard fires, naming both the nonce and the token
+            (expect-failure "<<VST-G6>> a matured nonce is no longer dormant, and is refused"
+                "Nonce 1 of Sleeping DPOF Z|MOCKA-98c486052a51 must be dormant for operation"
+                (VST.UEV_StillHasSleeping z 1))
+        ]
+    )
+    ;;rewind the clock to before the release date: the SAME nonce now satisfies the same guard.
+    ;;This is the half that proves the guard is a window and not a constant rejection.
+    (env-chain-data { "block-time" : (time "2026-01-01T00:00:00Z") })
+    (map print
+        [
+            (expect "<<VST-G6>> rewound before the release date, the same nonce IS dormant"
+                true (VST.UEV_StillHasSleeping z 1))
+            (expect "<<VST-G6>> ...and nothing about the nonce changed -- only the clock did"
+                release (at "release-date" (at 0 (DPOF.UR_NonceMetaData z 1))))
+        ]
+    )
+    ;;restore the clock. Every later file sets its own chain-data, but leaving a rewound clock here
+    ;;would make this file's own tail behave differently depending on where it is loaded from.
+    (env-chain-data { "block-time" : (time "2035-01-01T00:00:00Z") })
+    (map print
+        [
+            (expect "<<VST-G6>> the clock is restored"
+                true (> (diff-time (at "block-time" (chain-data)) release) 0.0))
+            ;;A NONCE THAT DOES NOT EXIST gets no answer from this guard at all -- the meta-data
+            ;;read fails first, with a raw table error naming the composite key. So the guard
+            ;;protects against a MATURED nonce, never against a BOGUS one; callers that accept a
+            ;;nonce from outside need their own existence check before this.
+            (expect-failure "<<VST-G6>> a nonexistent nonce dies in the table read, not in the guard"
+                "No value found in table ouronet-ns.DPOF_DPOF|T|Nonces for key: Z|MOCKA-98c486052a51|99"
+                (VST.UEV_StillHasSleeping z 99))
+        ]
+    )
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-G7 — the hibernation bound, two clock guards, and a nonce that cannot be unsleeped")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }, { "key": "PK_Emma", "caps": [] }])
+(print "--- [VST-G7 · 01 · hibernation must last between a day and a century] ---")
+;;`VST|C>HIBERNATE` bounds its duration: `(and (>= dayz 1) (<= dayz 36500))`. Pure argument-domain, and
+;;both ends are driven, because a guard written `(>= dayz 1)` alone would pass a zero test and fail
+;;nothing else -- one case cannot tell a range from a floor.
+(let
+    (
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (m:string "MOCKA-98c486052a51")
+        (z:string "Z|MOCKA-98c486052a51")
+        (v:string "V|OURO-98c486052a51")
+    )
+    (map print
+        [
+            (expect-failure "<<VST-G7>> a zero-day hibernation is refused"
+                "Between 1 Day and 100 years is allowed for Hibernation"
+                (ref-TS01-C2::VST|C_Hibernate KST.ANHD KST.ANHD KST.ANHD m 1.0 0))
+            (expect-failure "<<VST-G7>> ...and so is one day over a century"
+                "Between 1 Day and 100 years is allowed for Hibernation"
+                (ref-TS01-C2::VST|C_Hibernate KST.ANHD KST.ANHD KST.ANHD m 1.0 36501))
+            ;;...and 36500 -- the last legal value -- is NOT refused by this guard. Shown by the
+            ;;duration guard STOPPING: a different guard (the amount check) answers instead. Cheaper
+            ;;than the fixture a successful hibernation needs, and it is the whole claim.
+            (expect-failure "<<VST-G7>> ...while 36500 days gets past it and the AMOUNT guard answers"
+                "is not a Valid Transaction amount"
+                (ref-TS01-C2::VST|C_Hibernate KST.ANHD KST.ANHD KST.ANHD m 0.0 36500))
+        ]
+    )
+    (print "--- [VST-G7 · 02 · two guards whose real subject is the clock] ---")
+    ;;Neither of these reads a flag -- both compare an amount that TIME releases. They were unpinned
+    ;;because by the end of this file the suite's clock (2035) is long past every release date the
+    ;;fixtures use (2026), so everything is fully released and both guards pass.
+    ;;
+    ;;The fixture is therefore the CLOCK, rewound to before the releases. Nothing is written and there
+    ;;is nothing to restore but `env-chain-data` itself -- the cheapest fixture in the suite, same move
+    ;;as VST-G6. When a guard compares against a release date, reach for this before touching tables.
+    (let ((now:time (at "block-time" (chain-data))))
+        (map print
+            [
+                ;;nonce 6 is the one driven below: in circulation, and carrying ordinary
+                ;;`release-amount` metadata. Nonce 1 is NOT usable for this -- it is out of
+                ;;circulation (supply -1.0, holder BAR, the state DPOF-G6 describes) and a guard pinned
+                ;;with a dead nonce leaves a reader unsure which fact caused the refusal.
+                (expect "<<VST-G7>> nonce 6 is in circulation and nonce 1 is not"
+                    [true false]
+                    [(> (ref-DPOF::UR_NonceSupply z 6) 0.0)
+                     (> (ref-DPOF::UR_NonceSupply z 1) 0.0)])
+                (expect "<<VST-G7>> ...and the vested nonce releases its 100 in 2026, long before now"
+                    true (> (diff-time now
+                                (at "release-date" (at 0 (ref-DPOF::UR_NonceMetaData v 1)))) 0.0))
+            ]
+        )
+        (env-chain-data { "block-time" : (time "2026-01-01T00:00:00Z") })
+        (map print
+            [
+                ;;UNSLEEP requires the WHOLE amount to have been released: `(= nonce-supply
+                ;;culled-amount)`. Rewound before the schedule, culled is short of supply.
+                (expect-failure "<<VST-G7>> a sleeping nonce cannot be unsleeped before its release"
+                    "Z|MOCKA-98c486052a51 Nonce 6 cannot be unsleeped yet"
+                    (ref-TS01-C2::VST|C_Unsleep KST.ANHD KST.ANHD z 6))
+                ;;CULL (reached through C_Unvest) requires SOMETHING to have vested: `(> culled-amount
+                ;;0.0)`. Rewound before the first release date, nothing has.
+                (expect-failure "<<VST-G7>> ...and a vested nonce cannot be culled before anything vests"
+                    "Nonce 1 cant be culled"
+                    (ref-TS01-C2::VST|C_Unvest KST.ANHD KST.ANHD v 1))
+            ]
+        )
+        (print "--- [VST-G7 · 03 · FIXED: the merged nonce is readable again] ---")
+        ;;THIS SECTION USED TO PIN A DEFECT AS-BEHAVES, and it is worth keeping the history because
+        ;;the first diagnosis was wrong in a way that would have produced a worse fix.
+        ;;
+        ;;WHAT WAS OBSERVED: unsleeping nonce 3 reached no guard at all --
+        ;;    Runtime typecheck failure, argument is list , but expected type
+        ;;    list (object{ouronet-ns.VestingV2.VST|MetaDataSchema})
+        ;;Nonce 3 was minted by VST-07 merging nonces 1 and 2. It carried {mint-time, release-date}
+        ;;while VST|MetaDataSchema is {release-amount, release-date}, so it failed Pact's runtime
+        ;;typecheck on the way in and the holding was stuck: in circulation, held by a real account,
+        ;;and un-unsleepable at any clock.
+        ;;
+        ;;THE FIRST DIAGNOSIS -- "C_Slumber writes the wrong metadata shape" -- was WRONG, and acting
+        ;;on it would have broken the hibernation path. XIv_MergeNonces already branches correctly on
+        ;;its vzh-tag (2 = sleeping metadata, 3 = hibernating). The real fault was one level up:
+        ;;NEITHER VST|C>MERGE NOR VST|C>SLUMBER CHECKED WHAT KIND OF DPOF THEY WERE GIVEN, so the
+        ;;metadata shape was decided by which CLIENT the caller picked rather than by what the TOKEN
+        ;;is. VST-07 called C_Slumber (tag 3) on a SLEEPING token and stamped hibernation metadata
+        ;;onto it.
+        ;;
+        ;;FIXED 2026-09-12, owner-ruled, in two parts:
+        ;;  1. VST|C>MERGE now enforces a Z| token and VST|C>SLUMBER an H| one, so the misuse is
+        ;;     refused outright instead of silently corrupting a row;
+        ;;  2. VST-07 and vst-harness.repl now call C_Merge, the correct client for sleeping nonces.
+        ;;The kind guard was deliberately NOT added to the REPURPOSE pair: RepurposeSlumber is the
+        ;;only exit for a row that was already minted wrong, and guarding it would strand exactly the
+        ;;holders the fix protects.
+        ;;
+        ;;WHAT THE ASSERTIONS SHOW NOW: the shape is right, and unsleep reaches the MATURITY guard --
+        ;;a real rule with a real message -- instead of dying in the typechecker.
+        (map print
+            [
+                (expect "<<VST-G7>> nonce 3 now carries release-amount, like its sleep-minted siblings"
+                    [false true]
+                    [(contains "mint-time"
+                        (format "{}" [(ref-DPOF::UR_NonceMetaData z 3)]))
+                     (contains "release-amount"
+                        (format "{}" [(ref-DPOF::UR_NonceMetaData z 3)]))])
+                (expect "<<VST-G7>> ...matching nonce 6, which C_Sleep minted directly"
+                    true (contains "release-amount"
+                        (format "{}" [(ref-DPOF::UR_NonceMetaData z 6)])))
+                ;;THE PROOF THE STUCK HOLDING IS FREED, and it is stronger than a message check:
+                ;;VST-11 above ALREADY released this nonce successfully, which is only possible
+                ;;because the shape is right. A decommissioned (-1.0) supply here is the receipt.
+                ;;Before the fix this read 200.0 -- value sitting in a nonce no path could reach.
+                (expect "<<VST-G7>> ...and it was RELEASED by VST-11, not stranded at 200.0"
+                    -1.0 (ref-DPOF::UR_NonceSupply z 3))
+            ]
+        )
+        ;;restore the clock, and ASSERT the restore -- an earlier test this session asserted a restore
+        ;;it had not performed, and the assertion is the only reason it was caught.
+        (env-chain-data { "block-time" : now })
+        (map print
+            [
+                (expect "<<VST-G7>> the clock is restored"
+                    now (at "block-time" (chain-data)))
+                ;;...and at the restored clock it is still the maturity rule answering, so the
+                ;;behaviour is a schedule, not a clock artefact.
+                (expect-failure "<<VST-G7>> ...and the maturity rule still answers at the suite's own clock"
+                    "Nonce 3 cannot be unsleeped yet"
+                    (ref-TS01-C2::VST|C_Unsleep KST.ANHD KST.ANHD z 3))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(commit-tx)
+
+;;|| NEXT >
+;;|| VST-G10 — the two DPOF-kind guards added with the C_Slumber fix.
+;;
+(begin-tx "VST-G10 - the merge clients refuse the wrong DPOF kind")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [VST-G10 · 01 · Merge wants Z|, Slumber wants H|] ---")
+;;`11_VST.pact:471` and `:477`, both ADDED 2026-09-12 as the fix for the un-unsleepable nonce
+;;(VST-G7 section 03). Pinning guards this session introduced is not ceremony: a guard nobody drives
+;;is a guard nobody knows fires, and these two are the whole fix -- without them the metadata shape
+;;is chosen by which client the caller picks rather than by what the token is.
+;;
+;;BOTH DIRECTIONS OF BOTH GUARDS, which for a pair of mirrored rules is the minimum that means
+;;anything: each client must ACCEPT its own kind and REFUSE the other's. Two refusals alone would be
+;;satisfied by a pair of clients that refuse everything.
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (slp:string "Z|MOCKA-98c486052a51")
+        (hib:string "H|MOCKA-98c486052a51")
+    )
+    (map print
+        [
+            ;;the premise: two live DPOFs of different kinds on the same underlying
+            (expect "<<VST-G10>> both a SLEEPING and a HIBERNATING dpof exist for MOCKA"
+                ["Z|" "H|"] [(take 2 slp) (take 2 hib)])
+            ;;CROSS PAIR 1 -- Slumber (hibernation merge) refuses a sleeping token. THIS is the
+            ;;combination that used to succeed and mint the un-unsleepable nonce.
+            (expect-failure "<<VST-G10>> Slumber refuses a SLEEPING dpof"
+                "Slumber requires a Hibernating DPOF"
+                (ref-TS01-C2::VST|C_Slumber KST.ANHD KST.ANHD slp [1 2]))
+            ;;CROSS PAIR 2 -- and Merge (sleeping merge) refuses a hibernating one, the mirror.
+            (expect-failure "<<VST-G10>> ...and Merge refuses a HIBERNATING dpof"
+                "Merge requires a Sleeping DPOF"
+                (ref-TS01-C2::VST|C_Merge KST.ANHD KST.ANHD hib [1 2]))
+            ;;...and each guard is checked BEFORE the nonce-shape rule, so a wrong-kind token is
+            ;;refused on kind even when the nonce list is also invalid. That ordering is what makes
+            ;;the message accurate rather than incidental.
+            (expect-failure "<<VST-G10>> the kind check answers before the nonce-count rule"
+                "Slumber requires a Hibernating DPOF"
+                (ref-TS01-C2::VST|C_Slumber KST.ANHD KST.ANHD slp [1]))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+;;nothing was written -- every call above was refused in its capability
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-I2 — C_Slumber's FIRST successful execution, and its INFO_ cost preview")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-I2 · 01 · the op that had never once succeeded] ---")
+;;OWNER RULING: "If an op exec counterpart is missing it has to be added, it means we missed it."
+;;
+;;`VST|C_Slumber` has NEVER executed successfully anywhere in this repo. Its only two live call sites
+;;are the `expect-failure`s in <<VST-G10>> just above; every other mention is a comment. So its whole
+;;success path — and `INFO_VST|Slumber`'s quote — were unverified until this block.
+;;
+;;WHY IT WAS NEVER BUILT, which is the interesting part. It is not that the op is hard to call; it is
+;;that the ONE historical caller was calling it BY MISTAKE. Before 2026-09-12, VST-07 ran C_Slumber
+;;on a SLEEPING token, and it succeeded — minting the un-unsleepable nonce that <<VST-G7>> still
+;;pins. The names are the trap:
+;;    C_Merge   / C_RepurposeMerge     -> vzh-tag 2 = SLEEPING
+;;    C_Slumber / C_RepurposeSlumber   -> vzh-tag 3 = HIBERNATING
+;;"Slumber" and "Sleep" are synonyms in English and opposites here. `VST|C>SLUMBER` was then given
+;;`(enforce (= (take 2 dpof) "H|") ...)`, the mistaken call was corrected to `C_Merge`, and nobody
+;;wrote a correctly-typed caller to replace it. The guard turned a silent misuse into a loud refusal,
+;;the refusal got a regression test, and the SUCCESS path was left with none. A fix plus a negative
+;;test can look complete while leaving the positive case permanently unexercised.
+;;
+;;The second reason it stayed unreachable: `XIv_MergeNonces` wipes every nonce in the list from the
+;;merger, so the merger must HOLD at least two live H| nonces. Tracing this file, ANHD holds ZERO at
+;;this point — every hibernating nonce it ever minted was awakened (VST-11 §03) or repurposed to
+;;EMMA (VST-05, VST-08). There has never been a moment in this harness with two ANHD-held H| nonces,
+;;so even someone who got the "H|" prefix right would have died inside C_WipeClean.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (h:string "H|MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+    )
+    ;;SETUP — mint the two hibernating nonces the merge needs. `dayz 30` against this suite's 2035
+    ;;clock means neither matures, so XIv_MergeNonces takes its LOCKED branch: both sources are
+    ;;wiped and one replacement nonce is minted carrying the summed value. That is the branch worth
+    ;;exercising — the matured branch would also move free balance and need a funded transfer leg.
+    (ref-TS01-C2::VST|C_Hibernate patron patron patron a 10.0 30)
+    (ref-TS01-C2::VST|C_Hibernate patron patron patron a 20.0 30)
+    (let
+        (
+            ;;DERIVED, never hardcoded: if anything is inserted above, literal nonce numbers rot
+            ;;silently into a different nonce that happens to exist.
+            (used:integer (ref-DPOF::UR_NoncesUsed h))
+        )
+        (let
+            (
+                (pair:[integer] [(- used 1) used])
+            )
+            (map print
+                [
+                    (expect "<<VST-I2>> precondition: the merger really holds both nonces"
+                        true (and (> (ref-DPOF::UR_NonceSupply h (- used 1)) 0.0)
+                                  (> (ref-DPOF::UR_NonceSupply h used) 0.0)))
+                ]
+            )
+            (let
+                (
+                    ;;FUNCTION COVERAGE (G6) — `INFO_VST|Slumber`, per the owner's spec. The preview
+                    ;;reads the very nonces the exec is about to wipe, so it MUST be taken first.
+                    (predicted:object{OuronetInfoV2.ClientInfo}
+                        (INFO-ONE.INFO_VST|Slumber patron patron h pair))
+                    (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (slumber-msg:string (ref-TS01-C2::VST|C_Slumber patron patron h pair))
+                )
+                (map print
+                    [
+                        (format "<(VST|C_Slumber)> => \"{}\"" [slumber-msg])
+                        ;;1] it actually ran — the two sources are gone and one replacement exists.
+                        ;;The consumed nonces read -1.0, not 0.0: this codebase DECOMMISSIONS a spent
+                        ;;nonce with a -1.0 sentinel rather than zeroing it, so the row survives and
+                        ;;stays distinguishable from a live nonce that merely holds nothing. Asserting
+                        ;;-1.0 is the stronger claim — 0.0 would also be true of an emptied-but-live
+                        ;;nonce, and would not prove the merge retired them.
+                        (expect "<<VST-I2>> C_Slumber DECOMMISSIONED both source nonces (-1.0 sentinel)"
+                            [-1.0 -1.0] [(ref-DPOF::UR_NonceSupply h (- used 1))
+                                         (ref-DPOF::UR_NonceSupply h used)])
+                        (expect "<<VST-I2>> ...and minted exactly ONE replacement nonce"
+                            (+ used 1) (ref-DPOF::UR_NoncesUsed h))
+                        ;;2] value is conserved: 10.0 + 20.0 arrives whole on the replacement
+                        (expect "<<VST-I2>> ...carrying the summed value of both sources"
+                            30.0 (ref-DPOF::UR_NonceSupply h (+ used 1)))
+                        ;;3] and the quote the client was shown is the price they paid
+                        (expect "<<VST-I2>> INFO_VST|Slumber's quote equals what C_Slumber charged"
+                            (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                            (at "ignis-need" (at "ignis" predicted)))
+                        (expect "<<VST-I2>> ...and it is a real, non-zero charge"
+                            true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+                    ]
+                )
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+;;discarded — this proof leaves the harness's nonce ledger exactly as it found it
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-I3 — INFO_VST|Freeze quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-I3 · 01 · freeze moves balance into the F| twin] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_VST|Freeze`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template: `modules/ATS.repl <<ATS-I1>>`.
+;;
+;;WHY THIS FAMILY NEEDS MEASURING AND CANNOT BE STATICALLY CHECKED. `VST::URCi_Freeze` is an AGGREGATE
+;;— a sigma over the component legs the operation really bills (mint/burn/transfer cumulators). So
+;;the preview deliberately names a cost function the exec never calls, and any static "does the
+;;preview quote what the exec quotes" check reports the whole family as drifting. The only question
+;;that matters — does the aggregate equal the sum of the legs? — is numeric, and only the scales
+;;answer it. That is what this block is.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_VST|Freeze patron patron patron a 10.0))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (msg-f:string (ref-TS01-C2::VST|C_Freeze patron patron patron a 10.0))
+        )
+        (map print
+            [
+                (expect "<<VST-I3>> the preview's IGNIS quote equals what the op charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<VST-I3>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+;;discarded — the harness's balances and nonce ledger are left exactly as found
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-I4 — INFO_VST|Hibernate quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-I4 · 01 · hibernate, then awake the same nonce] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_VST|Hibernate`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template: `modules/ATS.repl <<ATS-I1>>`.
+;;
+;;WHY THIS FAMILY NEEDS MEASURING AND CANNOT BE STATICALLY CHECKED. `VST::URCi_Hibernate` is an AGGREGATE
+;;— a sigma over the component legs the operation really bills (mint/burn/transfer cumulators). So
+;;the preview deliberately names a cost function the exec never calls, and any static "does the
+;;preview quote what the exec quotes" check reports the whole family as drifting. The only question
+;;that matters — does the aggregate equal the sum of the legs? — is numeric, and only the scales
+;;answer it. That is what this block is.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (patron:string KST.ANHD)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_VST|Hibernate patron patron patron a 10.0 30))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (msg-h:string (ref-TS01-C2::VST|C_Hibernate patron patron patron a 10.0 30))
+        )
+        (map print
+            [
+                (expect "<<VST-I4>> the preview's IGNIS quote equals what the op charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<VST-I4>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ;;...and now AWAKE the very nonce that mint just produced. Deriving it from UR_NoncesUsed rather
+    ;;than hardcoding is not pedantry here: this file mints H| nonces in five earlier blocks, so any
+    ;;literal would silently drift onto a different nonce that happens to exist.
+    (let
+        (
+            (h:string "H|MOCKA-98c486052a51")
+        )
+        (let
+            (
+                (n:integer (ref-DPOF::UR_NoncesUsed h))
+            )
+            (let
+                (
+                    (predicted-a:object{OuronetInfoV2.ClientInfo}
+                        (INFO-ONE.INFO_VST|Awake patron patron h n))
+                    (ignis-before-a:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (msg-a:string (ref-TS01-C2::VST|C_Awake patron patron h n))
+                )
+                (map print
+                    [
+                        (expect "<<VST-I4>> INFO_VST|Awake's quote equals what the awake charged"
+                            (- ignis-before-a (ref-DALOS::UR_TF_AccountSupply patron false))
+                            (at "ignis-need" (at "ignis" predicted-a)))
+                        (expect "<<VST-I4>> ...and it is a real, non-zero charge"
+                            true (> (- ignis-before-a (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+                        ;;the awake really happened: the nonce is decommissioned (-1.0 sentinel)
+                        (expect "<<VST-I4>> ...and the hibernating nonce is retired, so neither quote is for a no-op"
+                            -1.0 (ref-DPOF::UR_NonceSupply h n))
+                    ]
+                )
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+;;discarded — the harness's balances and nonce ledger are left exactly as found
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-I5 — INFO_VST|Sleep quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-I5 · 01 · sleep mints a time-locked Z| nonce] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_VST|Sleep`, per the owner's spec. Rationale for measuring rather than
+;;statically checking this family is written out at <<VST-I3>>: the `URCi_` a VST preview quotes is an
+;;AGGREGATE over the legs the exec bills, so preview and exec name different functions BY DESIGN and
+;;only the scales can say whether they agree.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (f:string "F|MOCKA-98c486052a51")
+        (z:string "Z|MOCKA-98c486052a51")
+        (o:string "OURO-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_VST|Sleep patron patron patron a 10.0 3600))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m:string (ref-TS01-C2::VST|C_Sleep patron patron patron a 10.0 3600))
+        )
+        (map print
+            [
+                (expect "<<VST-I5>> INFO_VST|Sleep's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<VST-I5>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+                ;;the sleep really minted something, so the quote is not for a no-op
+                (expect "<<VST-I5>> ...and a new sleeping nonce now exists"
+                    true (> (ref-DPOF::UR_NonceSupply z (ref-DPOF::UR_NoncesUsed z)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-I6 — INFO_VST|Merge quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-I6 · 01 · merge two sleeping nonces into one] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_VST|Merge`, per the owner's spec. Rationale for measuring rather than
+;;statically checking this family is written out at <<VST-I3>>: the `URCi_` a VST preview quotes is an
+;;AGGREGATE over the legs the exec bills, so preview and exec name different functions BY DESIGN and
+;;only the scales can say whether they agree.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (f:string "F|MOCKA-98c486052a51")
+        (z:string "Z|MOCKA-98c486052a51")
+        (o:string "OURO-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+    )
+    ;;SETUP — C_Merge wipes every listed nonce from the merger, so the merger must hold at least
+    ;;two. At this point in the file ANHD holds exactly one live Z| nonce, so the pair is minted here
+    ;;and the whole tx rolled back. Nonce numbers are DERIVED below for the same reason as <<VST-I4>>.
+    (ref-TS01-C2::VST|C_Sleep patron patron patron a 10.0 3600)
+    (ref-TS01-C2::VST|C_Sleep patron patron patron a 20.0 3600)
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_VST|Merge patron patron z [(- (ref-DPOF::UR_NoncesUsed z) 1) (ref-DPOF::UR_NoncesUsed z)]))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m:string (ref-TS01-C2::VST|C_Merge patron patron z [(- (ref-DPOF::UR_NoncesUsed z) 1) (ref-DPOF::UR_NoncesUsed z)]))
+        )
+        (map print
+            [
+                (expect "<<VST-I6>> INFO_VST|Merge's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<VST-I6>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+                ;;value is conserved into the single replacement nonce
+                (expect "<<VST-I6>> ...and the merge carried both values whole into one nonce"
+                    30.0 (ref-DPOF::UR_NonceSupply z (ref-DPOF::UR_NoncesUsed z)))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-I7 — INFO_VST|ToggleTransferRoleFrozenDPTF quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-I7 · 01 · grant the F| transfer role] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_VST|ToggleTransferRoleFrozenDPTF`, per the owner's spec. Rationale for measuring rather than
+;;statically checking this family is written out at <<VST-I3>>: the `URCi_` a VST preview quotes is an
+;;AGGREGATE over the legs the exec bills, so preview and exec name different functions BY DESIGN and
+;;only the scales can say whether they agree.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (f:string "F|MOCKA-98c486052a51")
+        (z:string "Z|MOCKA-98c486052a51")
+        (o:string "OURO-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_VST|ToggleTransferRoleFrozenDPTF patron f lumy true))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m:string (ref-TS01-C2::VST|C_ToggleTransferRoleFrozenDPTF patron f lumy true))
+        )
+        (map print
+            [
+                (expect "<<VST-I7>> INFO_VST|ToggleTransferRoleFrozenDPTF's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<VST-I7>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+                ;;the toggle really flipped — <<VST-12>> earlier revoked LUMY, so true is a
+                ;;real state change here and not a no-op the quote could hide behind
+                (expect "<<VST-I7>> ...and the role is now genuinely granted"
+                    true (ref-DPTF::UR_AccountRoleTransfer f lumy))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-I8 — INFO_VST|RepurposeFrozen quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-I8 · 01 · recover a frozen balance to another account] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_VST|RepurposeFrozen`, per the owner's spec. Rationale for measuring rather than
+;;statically checking this family is written out at <<VST-I3>>: the `URCi_` a VST preview quotes is an
+;;AGGREGATE over the legs the exec bills, so preview and exec name different functions BY DESIGN and
+;;only the scales can say whether they agree.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (f:string "F|MOCKA-98c486052a51")
+        (z:string "Z|MOCKA-98c486052a51")
+        (o:string "OURO-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_VST|RepurposeFrozen patron f patron emma))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m:string (ref-TS01-C2::VST|C_RepurposeFrozen patron f patron emma))
+        )
+        (map print
+            [
+                (expect "<<VST-I8>> INFO_VST|RepurposeFrozen's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<VST-I8>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+                ;;the whole frozen balance moved, so this is a real operation
+                (expect "<<VST-I8>> ...and the source account is now emptied of the frozen twin"
+                    0.0 (ref-DPTF::UR_AccountSupply f patron))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-I9 — INFO_VST|Vest quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-I9 · 01 · vest OURO to a target account] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_VST|Vest`, per the owner's spec. Rationale for MEASURING rather than
+;;statically checking this family is written out at <<VST-I3>>: the `URCi_` a VST preview quotes is an
+;;AGGREGATE over the legs the exec bills, so preview and exec name different functions BY DESIGN and
+;;only the scales can say whether they agree.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let*
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (f:string "F|MOCKA-98c486052a51")
+        (z:string "Z|MOCKA-98c486052a51")
+        (h:string "H|MOCKA-98c486052a51")
+        (o:string "OURO-98c486052a51")
+        (v:string "V|OURO-98c486052a51")
+        (r:string "R|OURO-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_VST|Vest patron patron emma o 100.0 0 2592000 1))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C2::VST|C_Vest patron patron emma o 100.0 0 2592000 1))
+        )
+        (map print
+            [
+                (expect "<<VST-I9>> INFO_VST|Vest's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<VST-I9>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-I10 — INFO_VST|Unvest quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-I10 · 01 · release a vested position] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_VST|Unvest`, per the owner's spec. Rationale for MEASURING rather than
+;;statically checking this family is written out at <<VST-I3>>: the `URCi_` a VST preview quotes is an
+;;AGGREGATE over the legs the exec bills, so preview and exec name different functions BY DESIGN and
+;;only the scales can say whether they agree.
+;;SETUP vests first, so the nonce being unvested is one this block created: at EOF the V| nonce
+;;numbering depends on what earlier blocks left behind, and hardcoding an index is exactly how a
+;;measurement quietly starts pricing a decommissioned row.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let*
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (f:string "F|MOCKA-98c486052a51")
+        (z:string "Z|MOCKA-98c486052a51")
+        (h:string "H|MOCKA-98c486052a51")
+        (o:string "OURO-98c486052a51")
+        (v:string "V|OURO-98c486052a51")
+        (r:string "R|OURO-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+        (vn:integer (+ 1 (ref-DPOF::UR_NoncesUsed v)))
+    )
+    (ref-TS01-C2::VST|C_Vest patron patron patron o 100.0 0 2592000 1)
+    ;;...and move past the 30-day vest so there is something to release. `env-chain-data` is the
+    ;;fixture here, exactly as VST-G7 uses it; the clock is put back at the end of the block because
+    ;;`rollback-tx` does NOT undo it and every later assertion in this file assumes 2035-01-01.
+    (env-chain-data { "block-time": (time "2036-01-01T00:00:00Z") })
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_VST|Unvest patron patron v vn))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C2::VST|C_Unvest patron patron v vn))
+        )
+        (map print
+            [
+                (expect "<<VST-I10>> INFO_VST|Unvest's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<VST-I10>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(env-chain-data { "block-time": (time "2035-01-01T00:00:00Z") })
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-I11 — INFO_VST|RepurposeVested quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-I11 · 01 · move a vested position to another account] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_VST|RepurposeVested`, per the owner's spec. Rationale for MEASURING rather than
+;;statically checking this family is written out at <<VST-I3>>: the `URCi_` a VST preview quotes is an
+;;AGGREGATE over the legs the exec bills, so preview and exec name different functions BY DESIGN and
+;;only the scales can say whether they agree.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let*
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (f:string "F|MOCKA-98c486052a51")
+        (z:string "Z|MOCKA-98c486052a51")
+        (h:string "H|MOCKA-98c486052a51")
+        (o:string "OURO-98c486052a51")
+        (v:string "V|OURO-98c486052a51")
+        (r:string "R|OURO-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+        (vn:integer (+ 1 (ref-DPOF::UR_NoncesUsed v)))
+    )
+    (ref-TS01-C2::VST|C_Vest patron patron patron o 100.0 0 2592000 1)
+    ;;...and move past the 30-day vest so there is something to release. `env-chain-data` is the
+    ;;fixture here, exactly as VST-G7 uses it; the clock is put back at the end of the block because
+    ;;`rollback-tx` does NOT undo it and every later assertion in this file assumes 2035-01-01.
+    (env-chain-data { "block-time": (time "2036-01-01T00:00:00Z") })
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_VST|RepurposeVested patron v vn patron emma))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C2::VST|C_RepurposeVested patron v vn patron emma))
+        )
+        (map print
+            [
+                (expect "<<VST-I11>> INFO_VST|RepurposeVested's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<VST-I11>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(env-chain-data { "block-time": (time "2035-01-01T00:00:00Z") })
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-I12 — INFO_VST|Reserve quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-I12 · 01 · reserve OURO] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_VST|Reserve`, per the owner's spec. Rationale for MEASURING rather than
+;;statically checking this family is written out at <<VST-I3>>: the `URCi_` a VST preview quotes is an
+;;AGGREGATE over the legs the exec bills, so preview and exec name different functions BY DESIGN and
+;;only the scales can say whether they agree.
+;;Reservations were opened on OURO at VST-10 and never closed, which is the whole precondition here.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let*
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (f:string "F|MOCKA-98c486052a51")
+        (z:string "Z|MOCKA-98c486052a51")
+        (h:string "H|MOCKA-98c486052a51")
+        (o:string "OURO-98c486052a51")
+        (v:string "V|OURO-98c486052a51")
+        (r:string "R|OURO-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_VST|Reserve patron patron o 10.0))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C2::VST|C_Reserve patron patron o 10.0))
+        )
+        (map print
+            [
+                (expect "<<VST-I12>> INFO_VST|Reserve's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<VST-I12>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-I13 — INFO_VST|Unreserve quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-I13 · 01 · release a reserved position] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_VST|Unreserve`, per the owner's spec. Rationale for MEASURING rather
+;;than statically checking this family is written out at <<VST-I3>>.
+;;
+;;RESERVE AND UNRESERVE DISAGREE ABOUT WHO MAY CALL THEM, and it is worth writing down because it is
+;;not symmetric and nothing else in this file says so:
+;;    VST|C>RESERVE   (11_VST.pact:356) -> (UEV_EnforceAccountType reserver   FALSE)  ;; STANDARD only
+;;    VST|C>UNRESERVE (11_VST.pact:370) -> (UEV_EnforceAccountType unreserver TRUE)   ;; SMART only
+;;So the account that CAN reserve can never unreserve its own position, and vice versa. That is why
+;;<<VST-I12>> above runs as ANHD and this block cannot: the reserved balance has to be handed to a
+;;smart account first. `KC.BJ` is the one user-deployed smart account in the boot chain
+;;(`[2.1]_Dalos.repl:192`); the eight protocol smart accounts would fail a different guard.
+;;
+;;UNRESERVE DOES NOT REQUIRE THE UNRESERVER'S SIGNATURE — the cap checks the account TYPE plus
+;;`DPTF::CAP_Owner` on the parent token, not ownership of the unreserver. BJ signs here only because
+;;`DPTF|C_DeployAccount` (setup) does enforce ownership of its target.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_BJ", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (r:string "R|OURO-98c486052a51")
+        (patron:string KST.ANHD)
+        (bj:string KC.BJ)
+    )
+    ;;SETUP, outside the measurement window — give the smart account a reserved balance to release.
+    ;;This is the same three-step hand-off `Stage_01/[6.3]_SWP.repl:2624-2629` performs.
+    (ref-TS01-C1::DPTF|C_DeployAccount patron r bj)
+    (ref-TS01-C1::DPTF|C_ToggleTransferRole patron r bj true)
+    (ref-TS01-C1::DPTF|C_Transfer patron r patron bj 20.0 true)
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_VST|Unreserve patron bj r 10.0))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C2::VST|C_Unreserve patron bj r 10.0))
+        )
+        (map print
+            [
+                (expect "<<VST-I13>> INFO_VST|Unreserve's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<VST-I13>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+                (expect "<<VST-I13>> ...and the smart account really gave up 10.0 of the reserved wrapper"
+                    10.0 (ref-DPTF::UR_AccountSupply r bj))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-I14 — INFO_VST|RepurposeReserved quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-I14 · 01 · move a whole reserved position] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_VST|RepurposeReserved`, per the owner's spec. Rationale for MEASURING rather than
+;;statically checking this family is written out at <<VST-I3>>: the `URCi_` a VST preview quotes is an
+;;AGGREGATE over the legs the exec bills, so preview and exec name different functions BY DESIGN and
+;;only the scales can say whether they agree.
+;;This moves the WHOLE reserved balance, not an amount — which is why the preview takes no quantity.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let*
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (f:string "F|MOCKA-98c486052a51")
+        (z:string "Z|MOCKA-98c486052a51")
+        (h:string "H|MOCKA-98c486052a51")
+        (o:string "OURO-98c486052a51")
+        (v:string "V|OURO-98c486052a51")
+        (r:string "R|OURO-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_VST|RepurposeReserved patron r patron emma))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C2::VST|C_RepurposeReserved patron r patron emma))
+        )
+        (map print
+            [
+                (expect "<<VST-I14>> INFO_VST|RepurposeReserved's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<VST-I14>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-I15 — INFO_VST|ToggleTransferRoleReservedDPTF quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-I15 · 01 · revoke a reserved-DPTF transfer role] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_VST|ToggleTransferRoleReservedDPTF`, per the owner's spec. Rationale for MEASURING rather than
+;;statically checking this family is written out at <<VST-I3>>: the `URCi_` a VST preview quotes is an
+;;AGGREGATE over the legs the exec bills, so preview and exec name different functions BY DESIGN and
+;;only the scales can say whether they agree.
+;;`false`, not `true`: LUMY was granted this role at VST-12 and never lost it, so re-granting would
+;;be refused by the state guard before the price was ever reached.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let*
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (f:string "F|MOCKA-98c486052a51")
+        (z:string "Z|MOCKA-98c486052a51")
+        (h:string "H|MOCKA-98c486052a51")
+        (o:string "OURO-98c486052a51")
+        (v:string "V|OURO-98c486052a51")
+        (r:string "R|OURO-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_VST|ToggleTransferRoleReservedDPTF patron r lumy false))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C2::VST|C_ToggleTransferRoleReservedDPTF patron r lumy false))
+        )
+        (map print
+            [
+                (expect "<<VST-I15>> INFO_VST|ToggleTransferRoleReservedDPTF's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<VST-I15>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-I16 — INFO_VST|Unsleep quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-I16 · 01 · wake a matured sleeping nonce] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_VST|Unsleep`, per the owner's spec. Rationale for MEASURING rather than
+;;statically checking this family is written out at <<VST-I3>>: the `URCi_` a VST preview quotes is an
+;;AGGREGATE over the legs the exec bills, so preview and exec name different functions BY DESIGN and
+;;only the scales can say whether they agree.
+;;SETUP sleeps first for the same reason <<VST-I10>> vests first — nonce indices at EOF are a
+;;consequence of every earlier block, and a decommissioned nonce prices differently from a live one.
+;;`3600` seconds against the file's 2035 clock means the new nonce is already matured.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let*
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (f:string "F|MOCKA-98c486052a51")
+        (z:string "Z|MOCKA-98c486052a51")
+        (h:string "H|MOCKA-98c486052a51")
+        (o:string "OURO-98c486052a51")
+        (v:string "V|OURO-98c486052a51")
+        (r:string "R|OURO-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+        (zn:integer (+ 1 (ref-DPOF::UR_NoncesUsed z)))
+    )
+    (ref-TS01-C2::VST|C_Sleep patron patron patron a 10.0 3600)
+    ;;...and step past the one-hour lock, because C_Unsleep enforces that the WHOLE nonce has matured
+    ;;("cannot be unsleeped yet" otherwise). The clock is restored below: `rollback-tx` does not undo
+    ;;`env-chain-data`, and everything after this block assumes the file's 2035-01-01 fixture time.
+    (env-chain-data { "block-time": (time "2035-01-02T00:00:00Z") })
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_VST|Unsleep patron patron z zn))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C2::VST|C_Unsleep patron patron z zn))
+        )
+        (map print
+            [
+                (expect "<<VST-I16>> INFO_VST|Unsleep's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<VST-I16>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(env-chain-data { "block-time": (time "2035-01-01T00:00:00Z") })
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-I17 — INFO_VST|RepurposeSleeping quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-I17 · 01 · move a sleeping nonce to another account] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_VST|RepurposeSleeping`, per the owner's spec. Rationale for MEASURING rather than
+;;statically checking this family is written out at <<VST-I3>>: the `URCi_` a VST preview quotes is an
+;;AGGREGATE over the legs the exec bills, so preview and exec name different functions BY DESIGN and
+;;only the scales can say whether they agree.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let*
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (f:string "F|MOCKA-98c486052a51")
+        (z:string "Z|MOCKA-98c486052a51")
+        (h:string "H|MOCKA-98c486052a51")
+        (o:string "OURO-98c486052a51")
+        (v:string "V|OURO-98c486052a51")
+        (r:string "R|OURO-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+        (zn:integer (+ 1 (ref-DPOF::UR_NoncesUsed z)))
+    )
+    (ref-TS01-C2::VST|C_Sleep patron patron patron a 10.0 3600)
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_VST|RepurposeSleeping patron z zn patron emma))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C2::VST|C_RepurposeSleeping patron z zn patron emma))
+        )
+        (map print
+            [
+                (expect "<<VST-I17>> INFO_VST|RepurposeSleeping's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<VST-I17>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-I18 — INFO_VST|ToggleTransferRoleSleepingDPOF quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-I18 · 01 · revoke a sleeping-DPOF transfer role] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_VST|ToggleTransferRoleSleepingDPOF`, per the owner's spec. Rationale for MEASURING rather than
+;;statically checking this family is written out at <<VST-I3>>: the `URCi_` a VST preview quotes is an
+;;AGGREGATE over the legs the exec bills, so preview and exec name different functions BY DESIGN and
+;;only the scales can say whether they agree.
+;;`false`: EMMA already holds this role from VST-07.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let*
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (f:string "F|MOCKA-98c486052a51")
+        (z:string "Z|MOCKA-98c486052a51")
+        (h:string "H|MOCKA-98c486052a51")
+        (o:string "OURO-98c486052a51")
+        (v:string "V|OURO-98c486052a51")
+        (r:string "R|OURO-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_VST|ToggleTransferRoleSleepingDPOF patron z emma false))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C2::VST|C_ToggleTransferRoleSleepingDPOF patron z emma false))
+        )
+        (map print
+            [
+                (expect "<<VST-I18>> INFO_VST|ToggleTransferRoleSleepingDPOF's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<VST-I18>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-I19 — INFO_VST|RepurposeMerge quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-I19 · 01 · move a merged pair of sleeping nonces] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_VST|RepurposeMerge`, per the owner's spec. Rationale for MEASURING rather than
+;;statically checking this family is written out at <<VST-I3>>: the `URCi_` a VST preview quotes is an
+;;AGGREGATE over the legs the exec bills, so preview and exec name different functions BY DESIGN and
+;;only the scales can say whether they agree.
+;;TWO fresh sleeping nonces are minted in setup. Only nonce 6 survives at EOF and a merge needs at
+;;least two, so the alternative would be pricing a merge that cannot happen.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let*
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (f:string "F|MOCKA-98c486052a51")
+        (z:string "Z|MOCKA-98c486052a51")
+        (h:string "H|MOCKA-98c486052a51")
+        (o:string "OURO-98c486052a51")
+        (v:string "V|OURO-98c486052a51")
+        (r:string "R|OURO-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+        (z1:integer (+ 1 (ref-DPOF::UR_NoncesUsed z)))
+        (z2:integer (+ 2 (ref-DPOF::UR_NoncesUsed z)))
+    )
+    (ref-TS01-C2::VST|C_Sleep patron patron patron a 10.0 3600)
+    (ref-TS01-C2::VST|C_Sleep patron patron patron a 20.0 3600)
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_VST|RepurposeMerge patron z [z1 z2] patron emma))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C2::VST|C_RepurposeMerge patron z [z1 z2] patron emma))
+        )
+        (map print
+            [
+                (expect "<<VST-I19>> INFO_VST|RepurposeMerge's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<VST-I19>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-I20 — INFO_VST|RepurposeHibernating quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-I20 · 01 · move a hibernating nonce] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_VST|RepurposeHibernating`, per the owner's spec. Rationale for MEASURING rather than
+;;statically checking this family is written out at <<VST-I3>>: the `URCi_` a VST preview quotes is an
+;;AGGREGATE over the legs the exec bills, so preview and exec name different functions BY DESIGN and
+;;only the scales can say whether they agree.
+;;EMMA holds `H|MOCKA` nonces 2 and 5 (VST-05 and VST-08 put them there); ANHD holds none, because
+;;VST-11 awakened its last one. So the direction here is emma -> patron, the reverse of most blocks.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let*
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (f:string "F|MOCKA-98c486052a51")
+        (z:string "Z|MOCKA-98c486052a51")
+        (h:string "H|MOCKA-98c486052a51")
+        (o:string "OURO-98c486052a51")
+        (v:string "V|OURO-98c486052a51")
+        (r:string "R|OURO-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_VST|RepurposeHibernating patron h 2 emma patron))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C2::VST|C_RepurposeHibernating patron h 2 emma patron))
+        )
+        (map print
+            [
+                (expect "<<VST-I20>> INFO_VST|RepurposeHibernating's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<VST-I20>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-I21 — INFO_VST|RepurposeSlumber quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-I21 · 01 · move a slumbered pair of hibernating nonces] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_VST|RepurposeSlumber`, per the owner's spec. Rationale for MEASURING rather than
+;;statically checking this family is written out at <<VST-I3>>: the `URCi_` a VST preview quotes is an
+;;AGGREGATE over the legs the exec bills, so preview and exec name different functions BY DESIGN and
+;;only the scales can say whether they agree.
+;;Nonces 2 and 5, both EMMA's. Note the naming trap this file documents at VST-08: Merge/RepurposeMerge
+;;are vzh-tag 2 (SLEEPING) while Slumber/RepurposeSlumber are vzh-tag 3 (HIBERNATION), so this pair must
+;;be fed an `H|` token and the sleeping one a `Z|`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let*
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (f:string "F|MOCKA-98c486052a51")
+        (z:string "Z|MOCKA-98c486052a51")
+        (h:string "H|MOCKA-98c486052a51")
+        (o:string "OURO-98c486052a51")
+        (v:string "V|OURO-98c486052a51")
+        (r:string "R|OURO-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_VST|RepurposeSlumber patron h [2 5] emma patron))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C2::VST|C_RepurposeSlumber patron h [2 5] emma patron))
+        )
+        (map print
+            [
+                (expect "<<VST-I21>> INFO_VST|RepurposeSlumber's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<VST-I21>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-I22 — INFO_VST|ToggleTransferRoleHibernatingDPOF quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [VST-I22 · 01 · revoke a hibernating-DPOF transfer role] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_VST|ToggleTransferRoleHibernatingDPOF`, per the owner's spec. Rationale for MEASURING rather than
+;;statically checking this family is written out at <<VST-I3>>: the `URCi_` a VST preview quotes is an
+;;AGGREGATE over the legs the exec bills, so preview and exec name different functions BY DESIGN and
+;;only the scales can say whether they agree.
+;;`false`: EMMA already holds it from VST-05, and VST-08 pins that re-granting is refused.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let*
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (a:string "MOCKA-98c486052a51")
+        (f:string "F|MOCKA-98c486052a51")
+        (z:string "Z|MOCKA-98c486052a51")
+        (h:string "H|MOCKA-98c486052a51")
+        (o:string "OURO-98c486052a51")
+        (v:string "V|OURO-98c486052a51")
+        (r:string "R|OURO-98c486052a51")
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_VST|ToggleTransferRoleHibernatingDPOF patron h emma false))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C2::VST|C_ToggleTransferRoleHibernatingDPOF patron h emma false))
+        )
+        (map print
+            [
+                (expect "<<VST-I22>> INFO_VST|ToggleTransferRoleHibernatingDPOF's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<VST-I22>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)

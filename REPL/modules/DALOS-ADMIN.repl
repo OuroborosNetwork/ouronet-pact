@@ -370,3 +370,764 @@
 )
 (print "===^^^===")
 (commit-tx)
+
+;;|| NEXT >
+;;|| DALOS-G8 — the second arm of UEV_StandardAccOwn: a backstop, EXECUTED.
+;;
+(begin-tx "DALOS-G8 - UEV_StandardAccOwn's governor check, driven")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [DALOS-G8 · 01 · guard and governor forced apart] ---")
+;;`01_DALOS.pact:1215` -- "Incompatible Governer Guard detected for Standard DALOS Account",
+;;`(= account-guard governor)`. NO LEGITIMATE FLOW CAN TRIP IT, and that was proven three ways:
+;;account creation writes `"governor" : guard` on BOTH branches; `XI_RotateGuard` updates both
+;;fields on a standard account and says so in its @doc; and `XI_RotateGovernor` -- the only writer
+;;that touches `governor` alone -- is gated to SMART accounts. The two fields cannot diverge here.
+;;
+;;THE STANDING PROPOSAL WAS TO ANNOTATE IT `;;UNREACHABLE` and drop it from the worklist. Executing
+;;it is strictly better, and the difference matters: an `;;UNREACHABLE` annotation is a claim about
+;;today's call graph, and it goes stale silently the first time someone adds a writer. This guard is
+;;a BACKSTOP AGAINST CORRUPTION -- its whole job is to fire in a state the writers are supposed to
+;;prevent -- so the honest test is to produce that state and watch it fire. `env-module-admin` does
+;;exactly that, and `rollback-tx` discards it.
+;;
+;;So this is not "pinning an unreachable guard". It is the one case where the two techniques give
+;;different answers, and the executing one answers the question actually being asked: if the
+;;invariant upstream ever breaks, does this catch it? It does.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (standard:string KST.ANHD)
+        (other:string KST.EMMA)
+    )
+    (map print
+        [
+            ;;the premise the writers maintain, asserted rather than assumed
+            (expect "<<DALOS-G8>> guard and governor agree on an untouched standard account"
+                true (= (ref-DALOS::UR_AccountGuard standard) (ref-DALOS::UR_AccountGovernor standard)))
+            (expect "<<DALOS-G8>> ...and the guard accepts it"
+                true (!= "" (format "{}" [(ref-DALOS::UEV_StandardAccOwn standard)])))
+        ]
+    )
+    ;;force the corruption: ANHD keeps its own guard but is given EMMA's governor. Nothing in DALOS
+    ;;writes this combination; it is what a partial or mis-ordered write would leave behind.
+    (env-module-admin DALOS)
+    (update DALOS.DALOS|AccountTable standard
+        { "governor" : (ref-DALOS::UR_AccountGuard other) })
+    (map print
+        [
+            (expect "<<DALOS-G8>> the two fields now disagree"
+                false (= (ref-DALOS::UR_AccountGuard standard) (ref-DALOS::UR_AccountGovernor standard)))
+            ;;THE ITEM. Note this fires even though the SIGNATURE is valid -- ANHD's own key is in
+            ;;scope and `enforce-guard` on the third line would have passed. The guard rejects on the
+            ;;structural mismatch BEFORE authority is considered, which is the correct order for a
+            ;;corruption check and is the part worth pinning.
+            (expect-failure "<<DALOS-G8>> ...and the backstop fires, with a correctly-signed caller"
+                "Incompatible Governer Guard detected for Standard DALOS Account"
+                (ref-DALOS::UEV_StandardAccOwn standard))
+            ;;and the FIRST arm still discriminates in the corrupted state, so the two enforces are
+            ;;independent rather than one masking the other.
+            (expect-failure "<<DALOS-G8>> ...while the sovereign arm still rejects a smart account"
+                "Incompatible Sovereign detected for a Standard DALOS Account"
+                (ref-DALOS::UEV_StandardAccOwn (ref-DALOS::GOV|DALOS|SC_NAME)))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+;;the corruption is discarded -- DALOS-G8b checks it
+(rollback-tx)
+
+;;|| NEXT >
+;;|| DALOS-G8b — the forced divergence left no trace.
+;;
+(begin-tx "DALOS-G8b - no leakage")
+(namespace "ouronet-ns")
+(print "--- [DALOS-G8b · 01 · no leakage] ---")
+;;ANHD is the patron of nearly every transaction in this suite. A leaked governor would fail far
+;;from here and look like an authorisation bug rather than a test artefact.
+(print
+    (expect "<<DALOS-G8b>> ANHD's guard and governor agree again"
+        true (= (DALOS.UR_AccountGuard KST.ANHD) (DALOS.UR_AccountGovernor KST.ANHD))))
+(commit-tx)
+
+;;|| NEXT >
+;;|| DALOS-G9 — the OURO-price permission gate, reached by failing all three branches.
+;;
+(begin-tx "DALOS-G9 - DALOS|S>SET-OURO-PRICE: who may move the IGNIS source price")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DALOS-G9 · 01 · an enforce-one over three DALOS-account guards] ---")
+;;`01_DALOS.pact:713`. The OURO source price feeds compression and sublimation, so moving it moves
+;;what every IGNIS operation on the chain costs. It is gated by an `enforce-one` over THREE guards --
+;;the DALOS smart-contract account's own guard, its sovereign's, and its governor's -- and reaching
+;;the enforce-one's OWN message means failing all three.
+;;
+;;THAT IS THE TRAP THIS BLOCK EXISTS TO AVOID, and it has bitten twice before in this campaign
+;;(ATS-G14, DEMIPAD's launchpad access gate): signing PK_AncientHodler satisfies the admin branch,
+;;the call sails through, and the test ends up pinning something else entirely. LUMY is a funded
+;;third party holding none of the three, which is the only way the outer message can surface.
+;;
+;;Reached through the real Talos path (TS01-A), not the core function, so this is the permission a
+;;client would actually meet.
+(let
+    (
+        (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+    )
+    (env-sigs [{ "key": "PK_Lumy", "caps": [] }])
+    (print
+        (expect-failure "<<DALOS-G9>> a third party holding none of the three guards is refused"
+            "Permission not granted to Update OURO Price !"
+            (ref-TS01-A::DALOS|A_SetIgnisSourcePrice 42.0)))
+    ;;...and with NO signature at all, the same message -- so the refusal is about holding none of
+    ;;the three, not about LUMY specifically.
+    (env-sigs [])
+    (print
+        (expect-failure "<<DALOS-G9>> ...and so is an unsigned call"
+            "Permission not granted to Update OURO Price !"
+            (ref-TS01-A::DALOS|A_SetIgnisSourcePrice 42.0)))
+    ;;CONTRAST: the DALOS admin key DOES satisfy the first branch, so the same call succeeds. Without
+    ;;this the two refusals are equally consistent with the operation being broken outright -- and it
+    ;;is exactly the signature that would have hidden the guard.
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (print
+        (expect "<<DALOS-G9>> ...while the DALOS admin key satisfies the first branch"
+            true (!= "" (format "{}" [(ref-TS01-A::DALOS|A_SetIgnisSourcePrice 42.0)]))))
+    ""
+)
+(env-sigs [])
+;;the price write is discarded -- DALOS-G9b checks it
+(rollback-tx)
+
+;;|| NEXT >
+;;|| DALOS-G9b — the price write left no trace.
+;;
+(begin-tx "DALOS-G9b - no leakage")
+(namespace "ouronet-ns")
+(print "--- [DALOS-G9b · 01 · no leakage] ---")
+;;The OURO source price is chain-wide and feeds every IGNIS cost computation. A leaked 42.0 would
+;;silently reprice the whole suite, and the pricing assertions live in a different file.
+(print
+    (expect "<<DALOS-G9b>> the OURO price is not the probe value"
+        false (= 42.0 (DALOS.UR_OuroborosPrice))))
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DALOS-G2a — GAS_PAYER: the payable form IS funded")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DALOS-G2a · 01 · the happy path] ---")
+;;GAS_PAYER is the capability the Ouronet gas station acquires before agreeing to pay for a
+;;transaction, and it is the most commercially exposed guard family in DALOS: everything it
+;;rejects is a transaction someone else would otherwise have funded. It had NO negative coverage.
+;;
+;;It was reachable all along and nobody had noticed HOW: it reads its subject straight out of
+;;(read-msg "exec-code"), so `env-data` IS the fixture and `test-capability` acquires the cap
+;;directly. No Talos call, no account, no signing dance.
+;;
+;;EACH CASE GETS ITS OWN TRANSACTION, and that is not tidiness. A capability acquired by
+;;test-capability stays granted for the rest of the tx, so a second acquisition with the SAME
+;;arguments returns the cached grant WITHOUT re-running the body -- every rejection after the
+;;happy path silently passed as `()`. The first draft of this block did exactly that.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(env-chain-data { "gas-limit": 1000, "gas-price": 0.0000001 })
+(env-data {"exec-code": ["(ouronet-ns.TS01-C1.something)"]})
+(map print
+    [
+        ;;the HAPPY PATH. Without it every rejection below is equally satisfied by a station that
+        ;;refuses to fund anything, which is a broken gas station rather than a safe one.
+        (expect "<<DALOS-G2a>> a single ouronet-ns.TS form IS funded"
+            true (!= "" (format "{}" [(test-capability (DALOS.GAS_PAYER KST.EMMA 1000 0.0000001))])))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DALOS-G2b — GAS_PAYER: a transaction carrying no forms")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DALOS-G2b · 01 · empty exec code] ---")
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(env-chain-data { "gas-limit": 1000, "gas-price": 0.0000001 })
+(env-data {"exec-code": []})
+(map print
+    [
+        (expect-failure "<<DALOS-G2b>> a transaction carrying NO forms is refused"
+            "Empty exec code"
+            (test-capability (DALOS.GAS_PAYER KST.EMMA 1000 0.0000001)))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DALOS-G2c — GAS_PAYER: a form outside the payable module set")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DALOS-G2c · 01 · payable module set] ---")
+;;The one that matters commercially: the station funds coin.C_, ouronet-ns.TS*, ouronet-ns.DSP*
+;;and STOAICO, and nothing else.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(env-chain-data { "gas-limit": 1000, "gas-price": 0.0000001 })
+(env-data {"exec-code": ["(bogus.thing)"]})
+(map print
+    [
+        (expect-failure "<<DALOS-G2c>> a form outside the payable module set is refused"
+            "Payable Modules / form count not satisfied"
+            (test-capability (DALOS.GAS_PAYER KST.EMMA 1000 0.0000001)))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DALOS-G2d — GAS_PAYER: the notional ceiling, same form as the happy path")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DALOS-G2d · 01 · notional ceiling] ---")
+;;Same payable form as DALOS-G2a, so the ONLY thing that changed is the gas budget -- which is
+;;what makes this attributable to the ceiling and not to the code shape.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(env-data {"exec-code": ["(ouronet-ns.TS01-C1.something)"]})
+(env-chain-data { "gas-limit": 100000000, "gas-price": 0.001 })
+(map print
+    [
+        (expect-failure "<<DALOS-G2d>> the same form is refused once the notional exceeds the allowance"
+            "Add multiple conditions needed to use Ouronet DALOS Gas-Station"
+            (test-capability (DALOS.GAS_PAYER KST.EMMA 1000 0.001)))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DALOS-G2e — GAS_PAYER: two guards that cannot fire, and why")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DALOS-G2e · 01 · two dead guards] ---")
+;;FINDING 1: "Only for transactions with code" cannot fire.
+;;
+;;    (iz-single:bool      (contains "exec-code" (read-msg)))
+;;    (exec-lines:[string] (at "exec-code" (read-msg)))
+;;
+;;Both bindings sit in the SAME let and Pact evaluates them eagerly, so the `at` on a message
+;;without the key raises before <iz-single> is ever consulted. A caller who omits exec-code gets
+;;`Key "exec-code" not found in object: {}` instead of the written message. THIRD instance of
+;;this exact shape (PYTHIA <<TX007e-03>>, FVT <<TX-BOOT-G1>>): a guard's own subject is bound
+;;eagerly above it, so the binding fails first and the guard is mute. Pinned AS IT BEHAVES so a
+;;fix has to update this line deliberately.
+;;
+;;FINDING 2: the form-count enforce below "Empty exec code" is DEAD, and needs no test.
+;;
+;;    (enforce (>= n 1) "Empty exec code")
+;;    (enforce (fold (or) false [(= n 1) (= n 2) (>= n 3)]) "Exec code must be 1 form, 2 coin …")
+;;
+;;Once n >= 1 is enforced, `n=1 or n=2 or n>=3` is a tautology covering every remaining integer.
+;;It reads like a whitelist of accepted shapes and is a no-op; the real shape enforcement is the
+;;enforce-one below it, pinned in DALOS-G2c. Annotated at the source.
+;;
+;;Likewise "First form must be coin.C_, ouronet-ns.TS, or ouronet-ns.DSP" is the message of an
+;;enforce-one NESTED in the outer enforce-one's branch list. Pact discards a failed branch's
+;;message and reports the OUTER one -- which is exactly what DALOS-G2c observes.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(env-chain-data { "gas-limit": 1000, "gas-price": 0.0000001 })
+(env-data {})
+(map print
+    [
+        (expect-failure "<<DALOS-G2e>> FINDING: omitting exec-code aborts in the BINDING, not the guard"
+            "not found in object"
+            (test-capability (DALOS.GAS_PAYER KST.EMMA 1000 0.0000001)))
+    ]
+)
+(env-data {})
+(print "===^^^===")
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DALOS-G3 — the idempotent-toggle family: setting a flag to what it already is")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DALOS-G3 · 01 · already-in-that-state] ---")
+;;Three admin guards that share one idea: a toggle refuses a no-op write. That is not fussiness --
+;;each of these emits an event and bills IGNIS, so a silent no-op would leave an audit record of
+;;a change that never happened.
+;;
+;;Every one reads its CURRENT value and feeds it straight back, so the tests stay correct whatever
+;;state earlier blocks leave behind. Hardcoding `false` would pass today and silently stop testing
+;;anything the day something flips one of them.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+    )
+    (map print
+        [
+            (expect-failure "<<DALOS-G3>> toggling GAP to the value it already holds is refused"
+                "GAP is already toggled to"
+                (ref-TS01-A::DALOS|A_ToggleGAP (ref-DALOS::UR_GAP)))
+            (expect-failure "<<DALOS-G3>> ...and likewise the account-creation STOA switch"
+                "Account-creation STOA collection is already in that state"
+                (ref-TS01-A::DALOS|A_AccountCreationStoaToggle (ref-DALOS::UR_AccountCreationStoa)))
+            ;;the usage-price floor. A zero or negative price would make account deployment free
+            ;;or, worse, pay the depositor.
+            (expect-failure "<<DALOS-G3>> a negative usage price is refused"
+                "New price must be a positive amount"
+                (ref-TS01-A::DALOS|A_UpdateUsagePrice "smart" -1.0))
+            (expect-failure "<<DALOS-G3>> ...and so is zero"
+                "New price must be a positive amount"
+                (ref-TS01-A::DALOS|A_UpdateUsagePrice "smart" 0.0))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(print "===^^^===")
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DALOS-G4 — transferability, the smart-account control no-op, and account glyphs")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DALOS-G4 · 01 · who may be paid, and what an account id may look like] ---")
+;;P3.3. Four guards, all argument-driven once you have one standard and one smart account --
+;;which this suite already has.
+;;
+;;UEV_EnforceTransferability is driven TWICE because URC_Transferability underneath it is a
+;;DECISION TREE, and the two rejections land on different leaves of it:
+;;
+;;    sender standard, receiver smart, method=false  ->  consults receiver's PAYABLE-AS
+;;    sender smart,    receiver smart, method=false  ->  consults receiver's PAYABLE-BY
+;;
+;;Those are separate fields with separate meanings ("may a user pay this contract directly" vs
+;;"may another contract pay it"), and a refactor that collapsed the tree into a single
+;;payable-anything flag would still pass a test that only drove one of them.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (std:string KST.ANHD)
+    )
+    (let
+        (
+            (smart:string (ref-DALOS::GOV|DALOS|SC_NAME))
+            (smart2:string (ref-DALOS::GOV|OUROBOROS|SC_NAME))
+            (g:guard (ref-DALOS::UR_AccountGuard KST.ANHD))
+        )
+        (map print
+            [
+                ;;preconditions. These are what make the two rejections below MEAN something: the
+                ;;receiver is payable BY METHOD but neither payable-as nor payable-by, so each
+                ;;rejection is attributable to the specific field its branch consults.
+                (expect "<<DALOS-G4>> the smart receiver is payable by METHOD only"
+                    [false false true]
+                    [(ref-DALOS::UR_AccountPayableAs smart)
+                     (ref-DALOS::UR_AccountPayableBy smart)
+                     (ref-DALOS::UR_AccountPayableByMethod smart)])
+                ;;--- leaf 1: standard -> smart, method off, so PAYABLE-AS decides. It is false.
+                (expect-failure "<<DALOS-G4>> a standard account cannot pay a smart one that is not payable-AS"
+                    "Method is not ensured"
+                    (ref-DALOS::UEV_EnforceTransferability std smart false))
+                ;;--- leaf 2: smart -> smart, method off, so PAYABLE-BY decides. Also false.
+                (expect-failure "<<DALOS-G4>> nor can another smart account, when it is not payable-BY"
+                    "Method is not ensured"
+                    (ref-DALOS::UEV_EnforceTransferability smart2 smart false))
+                ;;...and the SAME pair succeeds with method on, which is the field that IS set.
+                ;;Without this, a guard that refused every transfer would satisfy both rejections.
+                (expect "<<DALOS-G4>> ...but the same pair transfers fine BY METHOD"
+                    true (!= "" (format "{}" [(ref-DALOS::UEV_EnforceTransferability std smart true)])))
+                ;;--- a control call that turns every smart-account parameter off is refused. It
+                ;;would be a no-op that still emits an event and bills IGNIS, leaving an audit
+                ;;record of a permission change that never happened.
+                (expect-failure "<<DALOS-G4>> controlling a smart account with ALL parameters false is refused"
+                    "At least one Smart DALOS Account parameter must be true"
+                    (ref-TS01-C1::DALOS|C_ControlSmartAccount std smart false false false))
+                ;;--- the two account-id glyph guards. Each is driven with the OTHER kind's glyph
+                ;;rather than a random character: confusing the two deploy entrypoints is the
+                ;;realistic caller error, and it is the one a prefix check exists to catch.
+                ;;Both fail inside the defcap, so neither creates an account.
+                (expect-failure "<<DALOS-G4>> the STANDARD deploy rejects a Sigma-prefixed id"
+                    "Format for a Standard DALOS Account"
+                    (ref-TS01-C1::DALOS|C_DeployStandardAccount (+ "Σ" "WrongKind") g "stoa" "pub"))
+                (expect-failure "<<DALOS-G4>> the SMART deploy rejects an Ouroboros-prefixed id"
+                    "Format for a Smart DALOS Account"
+                    (ref-TS01-C1::DALOS|C_DeploySmartAccount (+ "Ѻ" "WrongKind") g "stoa" std "pub"))
+            ]
+        )
+        ""
+    )
+)
+(env-sigs [])
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DALOS-G5 — the gas-station notional allowance, driven directly")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DALOS-G5 · 01 · UEV_enforce-notional-at-floor] ---")
+;;P3.3. DALOS-G2d already drives this rule THROUGH GAS_PAYER — but there it sits inside an
+;;enforce-one, so the message a caller sees is the enforce-one's own ("Add multiple conditions
+;;needed to use Ouronet DALOS Gas-Station") and this function's message never surfaces. Called
+;;DIRECTLY it does, which is what makes the site pinnable at all.
+;;
+;;The function takes NO arguments on purpose: it reads gas-price and gas-limit from (chain-data)
+;;and the protocol floor live from <coin>. So `env-chain-data` IS the fixture — and it is GLOBAL
+;;REPL state, not pool state, which is why the prior values are captured and put back at the end.
+;;(env-chain-data returns a string, not a bool, so it cannot be folded into a let binding typed
+;;:bool — the calls stay as their own statements.)
+(let
+    (
+        (prior-price:decimal (at "gas-price" (chain-data)))
+        (prior-limit:integer (at "gas-limit" (chain-data)))
+    )
+    ;;--- a modest notional is funded. Established FIRST so the rejection below is about the SIZE
+    ;;of the notional and not about the function refusing every input.
+    (env-chain-data {"gas-price": 0.0000001, "gas-limit": 1000})
+    (print
+        (expect "<<DALOS-G5>> a 1000-gas notional at the protocol minimum is within the allowance"
+            true (!= "" (format "{}" [(DALOS.UEV_enforce-notional-at-floor)]))))
+    ;;--- and a large one is not. This is the station's own spending cap: gas-price x gas-limit is
+    ;;what the project pays for someone else's transaction, so the ceiling is the difference
+    ;;between subsidising a client call and funding an arbitrarily expensive one.
+    (env-chain-data {"gas-price": 0.001, "gas-limit": 10000000})
+    (print
+        (expect-failure "<<DALOS-G5>> ...while a 10M-gas notional at a 10,000x price is refused"
+            "Gas notional exceeds the Gas-Station allowance of"
+            (DALOS.UEV_enforce-notional-at-floor)))
+    ;;--- restore, and assert the restoration.
+    (env-chain-data {"gas-price": prior-price, "gas-limit": prior-limit})
+    (print
+        (expect "<<DALOS-G5>> chain-data restored to what this block found"
+            [prior-price prior-limit]
+            [(at "gas-price" (chain-data)) (at "gas-limit" (chain-data))]))
+    ""
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DALOS-G6 — the Global Administrative Pause freezes every Stage-1 Talos client")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DALOS-G6 · 01 · P|TS under GAP, every Stage-1 Talos module] ---")
+;;P3.3, and the highest-leverage fixture left: ONE toggle reaches a guard in EVERY Talos module.
+;;
+;;Each Talos module carries its own copy of P|TS — the cap every client function composes first —
+;;and each copy independently refuses while GAP is on. That duplication is the point: GAP is the
+;;protocol's emergency stop, and it only works if NO module has its own unpaused path. A module
+;;added later without the check would leave a live entrypoint during a freeze, and nothing else in
+;;the suite would notice. So all five Stage-1 modules are driven separately rather than sampled.
+;;
+;;P|TS is NOT an @event cap, so test-capability acquires it directly — no client call, no account,
+;;no signing beyond the admin key needed for the toggle itself.
+;;
+;;GAP is restored to whatever it was found as (not to a hardcoded false), and the restoration is
+;;asserted: this is global state and DALOS-ADMIN-03 later depends on GAP being off.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+    )
+    (let
+        (
+            (gap0:bool (ref-DALOS::UR_GAP))
+        )
+        (ref-TS01-A::DALOS|A_ToggleGAP true)
+        (map print
+            [
+                (expect "<<DALOS-G6>> the global pause is ON" true (ref-DALOS::UR_GAP))
+                ;;one per Talos module. TS01-CP is the module inside 05_TS01-P.pact — the file and
+                ;;the module disagree, which is worth knowing: my first attempt addressed TS01-P and
+                ;;got "Module TS01-P has no such member: P|TS".
+                (expect-failure "<<DALOS-G6>> TS01-C1 refuses every client function"
+                    "While Global Administrative Pause is online" (test-capability (TS01-C1.P|TS)))
+                (expect-failure "<<DALOS-G6>> ...TS01-C2 likewise"
+                    "While Global Administrative Pause is online" (test-capability (TS01-C2.P|TS)))
+                (expect-failure "<<DALOS-G6>> ...TS01-C3 likewise"
+                    "While Global Administrative Pause is online" (test-capability (TS01-C3.P|TS)))
+                (expect-failure "<<DALOS-G6>> ...TS01-CP likewise"
+                    "While Global Administrative Pause is online" (test-capability (TS01-CP.P|TS)))
+                (expect-failure "<<DALOS-G6>> ...TS01-C4 likewise"
+                    "While Global Administrative Pause is online" (test-capability (TS01-C4.P|TS)))
+            ]
+        )
+        (ref-TS01-A::DALOS|A_ToggleGAP gap0)
+        (map print
+            [
+                (expect "<<DALOS-G6>> GAP restored to the value this block found" gap0 (ref-DALOS::UR_GAP))
+                ;;...and the same cap is acquirable again, which proves the refusals above were
+                ;;about GAP and not about P|TS being unacquirable in a REPL.
+                (expect "<<DALOS-G6>> ...and TS01-C1's P|TS is acquirable once more"
+                    true (!= "" (format "{}" [(test-capability (TS01-C1.P|TS))])))
+            ]
+        )
+        ""
+    )
+)
+(env-sigs [])
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DALOS-G7 — three more module-governance caps refuse a non-admin signer")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DALOS-G7 · 01 · GOV|SWPL / SWPLC / MTX-SWP admin] ---")
+;;P3.3, completing the GOV|*_ADMIN family started in the CONFORMANCE suite. These are the caps that
+;;govern whether each module can be REPLACED, so an unguarded one is the highest-consequence defect
+;;available. Each is a plain (non-@event) defcap, so test-capability reaches it directly; EMMA is a
+;;legitimate account that simply is not a Demiurgos.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(map print
+    [
+        (expect-failure "<<DALOS-G7>> SWPL governance refuses a non-admin signer"
+            "SWPL Ownership not verified" (test-capability (SWPL.GOV|SWPL_ADMIN)))
+        (expect-failure "<<DALOS-G7>> ...SWPLC likewise"
+            "SWPLC Ownership not verified" (test-capability (SWPLC.GOV|SWPLC_ADMIN)))
+        (expect-failure "<<DALOS-G7>> ...MTX-SWP likewise"
+            "MTX-SWP Ownership not verified" (test-capability (MTX-SWP.GOV|MTX-SWP_ADMIN)))
+    ]
+)
+(env-sigs [])
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DALOS-G2f -- enforce-one recovers from a failed enforce, NOT from a native fault")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DALOS-G2f . 01 . the limit of enforce-one] ---")
+;;DALOS-G2c pinned that enforce-one SWALLOWS a nested branch's message and reports its own. This
+;;pins the other half, which is easy to assume wrongly in the opposite direction: enforce-one is
+;;not a general try/catch. It recovers from a failed `enforce` and from nothing else. A native
+;;fault -- an out-of-bounds index, say -- propagates straight through it and kills the transaction.
+;;
+;;Why it matters here rather than as a language curiosity. GAS_PAYER validates the transaction's
+;;forms as three enforce-one branches, and each branch is a (fold (and) true [...]) that indexes
+;;exec-lines -- (at 0 …) in case 1, (at 1 …) in cases 2 and 3. `fold` builds its whole list before
+;;`and` runs, so those indexes are NOT guarded by the (= n 1) / (= n 2) conjuncts sitting beside
+;;them. What actually keeps the gas station safe is enforce-one's ORDERING: for n=1 case 1 succeeds
+;;and the later branches are never evaluated, so (at 1 exec-lines) is never reached.
+;;
+;;That is a real guarantee, but it is a load-bearing accident of branch order, not a check. Reorder
+;;those branches, or hand GAS_PAYER an EMPTY exec-lines, and case 1's own (at 0 exec-lines) faults
+;;with a raw index error that enforce-one cannot absorb -- asserted below. Empty transaction code
+;;is not reachable in practice, which is why this is pinned as a boundary rather than filed as a
+;;defect. The detector for the shape is `python3 _foldeager.py` ([index] section).
+(map print
+    [
+        ;;half one: a failed enforce inside a branch IS recovered -- the next branch is tried
+        (expect "<<DALOS-G2f>> enforce-one recovers from a failed enforce in an earlier branch"
+            true (enforce-one "outer" [(enforce false "branch one fails") true]))
+        ;;half two: a native fault in an earlier branch is NOT recovered. Note the message that
+        ;;arrives is the INDEX error, not "outer" -- so enforce-one did not even get to report.
+        (expect-failure "<<DALOS-G2f>> ...but a native index fault propagates straight through it"
+            "Array index out of bounds. Length (1), Index (5)"
+            (enforce-one "outer" [(enforce (= "x" (at 5 ["a"])) "branch one") true]))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DALOS-I1 — INFO_DALOS|UpdateEliteAccount quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DALOS-I1 · 01 · recompute an elite tier] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DALOS|UpdateEliteAccount`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (bj:string KC.BJ)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DALOS|UpdateEliteAccount patron patron))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DALOS|C_UpdateEliteAccount patron patron))
+        )
+        (map print
+            [
+                (expect "<<DALOS-I1>> INFO_DALOS|UpdateEliteAccount's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DALOS-I1>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DALOS-I2 — INFO_DALOS|UpdateEliteAccountSquared quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DALOS-I2 · 01 · recompute both sides of a pair] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DALOS|UpdateEliteAccountSquared`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (bj:string KC.BJ)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DALOS|UpdateEliteAccountSquared patron patron patron))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DALOS|C_UpdateEliteAccountSquared patron patron patron))
+        )
+        (map print
+            [
+                (expect "<<DALOS-I2>> INFO_DALOS|UpdateEliteAccountSquared's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DALOS-I2>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DALOS-I3 — INFO_DALOS|RotateGuard quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DALOS-I3 · 01 · rotate an account guard] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DALOS|RotateGuard`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+;;NOTE the arity difference: the preview takes 2 arguments and the exec 4 — the new guard and the
+;;`safe` flag are not price inputs, so the preview does not ask for them. The rotation below installs
+;;the guard EMMA already has, which keeps it idempotent while still exercising the full write path.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (bj:string KC.BJ)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DALOS|RotateGuard patron emma))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DALOS|C_RotateGuard patron emma (keyset-ref-guard "ouronet-ns.us-0001_emma-keyset") true))
+        )
+        (map print
+            [
+                (expect "<<DALOS-I3>> INFO_DALOS|RotateGuard's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DALOS-I3>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DALOS-I4 — INFO_DALOS|RotateStoa quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DALOS-I4 · 01 · point an account at a different Stoa account] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DALOS|RotateStoa`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (bj:string KC.BJ)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DALOS|RotateStoa patron emma))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DALOS|C_RotateStoa patron emma KC.KADN_NAME_000d))
+        )
+        (map print
+            [
+                (expect "<<DALOS-I4>> INFO_DALOS|RotateStoa's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DALOS-I4>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DALOS-I5 — INFO_DALOS|ControlSmartAccount quote vs measured charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DALOS-I5 · 01 · set a smart account payability flag] ---")
+;;FUNCTION COVERAGE (G6) — `INFO_DALOS|ControlSmartAccount`, per the owner's spec: an INFO_ must report the same cost
+;;the op actually charges. Template and rationale: `modules/ATS.repl <<ATS-I1>>`.
+;;`KC.BJ` is the one USER-DEPLOYED smart account in the boot chain — the same fixture <<DPTF-I1>>
+;;needed, and for the same reason: protocol smart-contract accounts are excluded by a separate guard.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_BM", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (bj:string KC.BJ)
+    )
+    (let
+        (
+            (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DALOS|ControlSmartAccount patron bj))
+            (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            (m (ref-TS01-C1::DALOS|C_ControlSmartAccount patron bj true false true))
+        )
+        (map print
+            [
+                (expect "<<DALOS-I5>> INFO_DALOS|ControlSmartAccount's quote equals what the op actually charged"
+                    (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false))
+                    (at "ignis-need" (at "ignis" predicted)))
+                (expect "<<DALOS-I5>> ...and it is a real, non-zero charge"
+                    true (> (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)

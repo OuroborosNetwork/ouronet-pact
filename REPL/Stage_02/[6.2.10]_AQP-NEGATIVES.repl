@@ -347,5 +347,52 @@
 (commit-tx)
 (print "=== END TX-AQP-NEG-INPUT =====================================================")
 (print "")
+;;
+(begin-tx "TX-AQP-NEG-SCRCTL - SCORE control-flag guards on their own arguments")
+(print "")
+(print "=== TX-AQP-NEG-SCRCTL — score rotate/control argument guards =================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;; SCR|C>ROTATE-OWNERSHIP-SCORE enforces (and can-change-owner (!= new-owner owner-now)) BEFORE
+;; CAP_EnforceAccountOwnership, so the distinctness half is reachable without any signature -- the
+;; guard rejects the call before ownership is ever consulted. Reading the CURRENT owner and handing
+;; it straight back is the one input that isolates that half: can-change-owner is true on this
+;; score (asserted below), so a failure here can only be the distinctness clause.
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (score-id:string (ref-U|DALOS::UDC_Makeid "TfStakeScore"))
+    )
+    (let
+        (
+            (owner-now:string (ref-SCR::UR_SCR|ScoreOwnerKonto score-id))
+            (cco:bool (ref-SCR::UR_SCR|ScoreCanChangeOwner score-id))
+        )
+        (map print
+            [
+                ;;Pin the OTHER half of the conjunction to its live value first, so the rejection
+                ;;below is attributable to distinctness alone rather than to can-change-owner.
+                (expect "<<TX-AQP-NEG-SCRCTL>> TfStakeScore still allows owner rotation" true cco)
+                ;;The expected text must start at "Score" -- FVT carries a NEAR-IDENTICAL message
+                ;;("FVT owner rotation requires can-change-owner true and a distinct new
+                ;;owner-konto"), so the shared tail alone would credit BOTH guards to this one
+                ;;test. That is the "PINNED is an upper bound" caveat _enforce_coverage.py reports,
+                ;;and it silently marked FVT's guard as covered until this was tightened.
+                (expect-failure "<<TX-AQP-NEG-SCRCTL>> rotating a score to the owner it ALREADY has is rejected"
+                    "Score owner rotation requires"
+                    (ref-TS02-C3::AQP-SCR|C_RotateScoreOwnership patron score-id owner-now))
+                ;;...and the rejected call changed nothing.
+                (expect "<<TX-AQP-NEG-SCRCTL>> the owner-konto is untouched after the rejection"
+                    owner-now (ref-SCR::UR_SCR|ScoreOwnerKonto score-id))
+            ]
+        )
+    )
+)
+(commit-tx)
+(print "=== END TX-AQP-NEG-SCRCTL ====================================================")
+(print "")
 (print "=== END FILE [6.2.10]_AQP-NEGATIVES.repl =====================================")
 (print "")

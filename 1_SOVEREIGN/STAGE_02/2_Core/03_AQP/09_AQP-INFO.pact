@@ -1097,7 +1097,16 @@
                 ["Operation: Inject reward tokens as a linear time-stream over the given duration."
                  "Executes via TS02-C3.AQP-FVT|CC_InjectStream."]
                 [(format "Streaming {} of {} into FVT {} over {}s." [amount reward-dptf-id fvt-id duration])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (RPS.URCi_Inject "AQP-FVT|CC_InjectStream" fvt-id [])))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    ;;MISSING LEG FIXED (2026-09-14) — same defect as INFO_AQP-FVT|Inject, same cause.
+                    ;;This quoted only RPS.URCi_Inject (the gas leg) while the exec also collects the
+                    ;;custody transfer of the reward principal: XIv_FvtAddStream PHASE 1 runs
+                    ;;`(ref-TFT::C_Transfer reward-dptf-id patron AQP|SC_NAME amount true)` ahead of the
+                    ;;gas leg, and that transfer carries its own cumulator. All FOUR members of the
+                    ;;inject family shared this. Measured and pinned for CC_Inject at
+                    ;;`Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl <<TX-INFO-GT-INJECT>>`; the other
+                    ;;three route through the identical core, so the same reader fixes them.
+                    (RPS.URCi_InjectFull "AQP-FVT|CC_InjectStream" patron fvt-id reward-dptf-id amount))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount])
         )
@@ -1113,7 +1122,14 @@
                 ["Operation: Enforced-fresh single-tx inject (fixes all stale members first)."
                  "Executes via TS02-C3.AQP-FVT|CC_Inject."]
                 [(format "Fresh-injected {} of {} into FVT {}." [amount reward-dptf-id fvt-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (RPS.URCi_Inject "AQP-FVT|CC_Inject" fvt-id [])))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    ;;MISSING LEG FIXED (2026-09-14). This quoted only RPS.URCi_Inject -- the gas leg --
+                    ;;while CC_Inject also collects the custody transfer of the reward principal
+                    ;;(XI_FvtInjectCore PHASE 1, 04_RPS.pact). Measured short by exactly the transfer
+                    ;;cumulator. URCi_InjectFull counts both, matching how URCi_CollectFull and
+                    ;;URCi_TrueFungibleStakeFlow already count theirs. Pinned by
+                    ;;`Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl <<TX-INFO-GT-INJECT>>`.
+                    (RPS.URCi_InjectFull "AQP-FVT|CC_Inject" patron fvt-id reward-dptf-id amount))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount])
         )
@@ -1129,7 +1145,16 @@
                 ["Operation: Finalize a paginated fresh inject (zero-stale gate, then inject)."
                  "Executes via TS02-C3.AQP-FVT|CC_InjectFinalize."]
                 [(format "Finalized fresh inject of {} of {} into FVT {}." [amount reward-dptf-id fvt-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (RPS.URCi_Inject "AQP-FVT|CC_InjectFinalize" fvt-id [])))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    ;;MISSING LEG FIXED (2026-09-14) — same defect as INFO_AQP-FVT|Inject, same cause.
+                    ;;This quoted only RPS.URCi_Inject (the gas leg) while the exec also collects the
+                    ;;custody transfer of the reward principal: XI_FvtInjectCore PHASE 1, via XE_XI_FvtInjectCore runs
+                    ;;`(ref-TFT::C_Transfer reward-dptf-id patron AQP|SC_NAME amount true)` ahead of the
+                    ;;gas leg, and that transfer carries its own cumulator. All FOUR members of the
+                    ;;inject family shared this. Measured and pinned for CC_Inject at
+                    ;;`Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl <<TX-INFO-GT-INJECT>>`; the other
+                    ;;three route through the identical core, so the same reader fixes them.
+                    (RPS.URCi_InjectFull "AQP-FVT|CC_InjectFinalize" patron fvt-id reward-dptf-id amount))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount])
         )
@@ -1449,7 +1474,16 @@
                 ["Operation: 2-step enforced-fresh inject (spike fallback for CC_Inject on vault/treasury)."
                  "Executes via TS02-C3.MTX-AQP|2|CC_Inject."]
                 [(format "2-step fresh-injected {} of {} into FVT {}." [amount reward-dptf-id fvt-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (RPS.URCi_Inject "MTX-AQP|2|CC_Inject" fvt-id [])))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    ;;MISSING LEG FIXED (2026-09-14) — same defect as INFO_AQP-FVT|Inject, same cause.
+                    ;;This quoted only RPS.URCi_Inject (the gas leg) while the exec also collects the
+                    ;;custody transfer of the reward principal: XI_FvtInjectCore PHASE 1, via XB_FvtInject runs
+                    ;;`(ref-TFT::C_Transfer reward-dptf-id patron AQP|SC_NAME amount true)` ahead of the
+                    ;;gas leg, and that transfer carries its own cumulator. All FOUR members of the
+                    ;;inject family shared this. Measured and pinned for CC_Inject at
+                    ;;`Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl <<TX-INFO-GT-INJECT>>`; the other
+                    ;;three route through the identical core, so the same reader fixes them.
+                    (RPS.URCi_InjectFull "MTX-AQP|2|CC_Inject" patron fvt-id reward-dptf-id amount))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount])
         )

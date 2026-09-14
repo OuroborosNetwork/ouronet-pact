@@ -97,7 +97,19 @@
                 (map print
                     [ (expect (format "SPARK-BUY-GT: buyer received {} sparks" [amount]) (dec amount) (- post-sparks pre-sparks))
                       (expect (format "SPARK-BUY-GT: INFO predicted {} == real GAS delta {}" [predicted (- pre-gas post-gas)])
-                        predicted (- pre-gas post-gas)) ]))
+                        predicted (- pre-gas post-gas))
+                      ;;`01_Spark.pact:239`. The sale's supply cap, driven from the LIVE remaining
+                      ;;balance rather than a typed constant -- the buy above has just consumed some,
+                      ;;so a hardcoded number would either be stale or accidentally still valid.
+                      ;;Reading it and asking for one more is the form that survives the fixture
+                      ;;changing underneath it.
+                      (expect "<<SPARK-BUY-GT>> the launchpad still holds unsold sparks"
+                        true (> (ref-DPTF::UR_AccountSupply spark-id (DEMIPAD-SPARK.GOV|DEMIPAD|SC_NAME)) 0.0))
+                      (expect-failure "<<SPARK-BUY-GT>> buying ONE more than remains is refused"
+                        "Remaining Amount surpassed!"
+                        (ref-TS02-CPAD::SPARK|C_BuySparks patron patron
+                            (+ 1 (round (ref-DPTF::UR_AccountSupply spark-id (DEMIPAD-SPARK.GOV|DEMIPAD|SC_NAME))))
+                            iz-native -1.0)) ]))
         )
     )
 )
@@ -194,7 +206,18 @@
                 (map print
                     [ (expect (format "STOICPAY-BUY-GT: buyer received {} StoicPay" [amount]) (dec amount) (- post-kpay pre-kpay))
                       (expect (format "STOICPAY-BUY-GT: INFO predicted {} == real GAS delta {}" [predicted (- pre-gas post-gas)])
-                        predicted (- pre-gas post-gas)) ]))
+                        predicted (- pre-gas post-gas))
+                      ;;`04_STOICPAY.pact:239`, the twin of SPARK's supply cap above. Pinned
+                      ;;SEPARATELY even though the message is byte-identical: the two sales are
+                      ;;different citizen modules with their own remaining-supply readers
+                      ;;(UR_KpayLeft here, an account-supply read in SPARK), so one assertion proves
+                      ;;one of them and credits both by wording alone.
+                      (expect "<<STOICPAY-BUY-GT>> the sale still has StoicPay left"
+                        true (> (ref-KPAY::UR_KpayLeft) 0.0))
+                      (expect-failure "<<STOICPAY-BUY-GT>> buying ONE more than remains is refused"
+                        "Remaining Amount surpassed!"
+                        (ref-TS02-CPAD::KPAY|C_BuyStoicPay patron patron
+                            (+ 1 (round (ref-KPAY::UR_KpayLeft))) iz-native -1.0)) ]))
         )
     )
 )
@@ -203,3 +226,224 @@
 (print "")
 (print "=== [launchpad-groundtruth] SPARK-BUY-GT + STOICPAY-BUY-GT (functional+exact) + SPARK-REDEEM-URCi complete ===")
 
+
+;;|| NEXT >
+;;
+(begin-tx "TX-SNAKES-ACQUIRE-GT - SNAKES|C_Acquire + INFO_Acquire == real gas delta")
+(print "--- [SNAKES-ACQUIRE-GT] pure-citizen Snakes acquisition + GAS-delta ---")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;FUNCTION COVERAGE (G6) — `DEMIPAD-SNAKES.INFO_Acquire`, per the owner's spec: an INFO_ must report
+;;the same cost the op actually charges. Completes the citizen-sale family alongside the SPARK and
+;;KPAY ground truths above; the Custodians twin follows in the next block.
+;;
+;;TWO TRAPS, both specific to the sale modules:
+;; 1] THE PATRON MUST NOT BE THE COLLECTION CREATOR. `KST.ANHD` created this collection, and a buy
+;;    where creator == buyer aborts with "Sender and Receiver must be different" — the transfer leg
+;;    would be a self-transfer. `KST.EMMA` is the buyer here for that reason, so the managed
+;;    coin.TRANSFER caps are signed with HER key, not ANHD's.
+;; 2] THE PREVIEW AND THE EXEC DIFFER BY ONE ARGUMENT: the exec takes a trailing `max-cost`, the
+;;    slippage bound. `-1.0` is the documented "no bound" sentinel and is not a price input, which is
+;;    why the preview does not ask for it.
+;;
+;;NOTE what is NOT asserted: the native coin the buyer spends. That is the ACQUISITION PRICE — the
+;;good being bought — not a protocol fee, and the module deliberately reports `stoa-need 0.0` while
+;;declaring the amount in `pre-text` instead. That convention is consistent across all four sales.
+;;What this measures is the IGNIS the sale charges to execute, which is the part the preview prices.
+(let
+    (
+        (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+        (ref-SNAKES:module{SaleSnakesV2} DEMIPAD-SNAKES)
+        (patron:string KST.EMMA)
+        (asset-id:string "E|DH-98c486052a51")
+        (nonce:integer 1)
+        (amount:integer 2)
+        (iz-native:bool true)
+        (type:integer 0)
+    )
+    (let
+        (
+            (correct-pid:decimal (* 10.0 (dec amount)))
+        )
+        (let
+            (
+                (prices-obj:object{DemiourgosLaunchpadV2.DEMIPAD|Prices}
+                    (ref-DPAD::URC_Prices asset-id correct-pid type))
+            )
+            (let
+                (
+                    (a1:decimal (at "amount-one" prices-obj))
+                    (a2:decimal (at "amount-two" prices-obj))
+                    (a3:decimal (at "amount-three" prices-obj))
+                    (a4:decimal (at "amount-four" prices-obj))
+                    (env-amount:decimal (at "enviroment-amount" prices-obj))
+                    (non-enviroment:decimal (+ (at "coding-amount" prices-obj) (at "remainder-amount" prices-obj)))
+                )
+                (env-sigs
+                    [ { "key": "PK_AncientHodler", "caps": [] }
+                      { "key": "PK_Emma", "caps": [] }
+                      { "key": "ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48",
+                        "caps":
+                          [ (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"
+                                "c:ZNfuj3iZI83n7MUSKGuoXoSxFg1cyMxCzB3szUHVvrI" non-enviroment)
+                            (coin.TRANSFER "c:ZNfuj3iZI83n7MUSKGuoXoSxFg1cyMxCzB3szUHVvrI"
+                                "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" env-amount)
+                            (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"
+                                "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" a1)
+                            (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"
+                                "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" a2)
+                            (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"
+                                "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" a3)
+                            (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"
+                                "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" a4) ] } ])
+                (let
+                    (
+                        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                        (ref-CPAD:module{CitizenLaunchpadTalosV2} TS02-CPAD)
+                        (gas-id:string "GAS-98c486052a51")
+                    )
+                    (let
+                        (
+                            (predicted:decimal
+                                (at "ignis-need" (at "ignis"
+                                    (ref-SNAKES::INFO_Acquire patron patron nonce amount iz-native))))
+                            (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+                        )
+                        (print (format "<(TS02-CPAD.SNAKES|C_Acquire)> => \"{}\""
+                            [(ref-CPAD::SNAKES|C_Acquire patron patron nonce amount iz-native -1.0)]))
+                        (let
+                            (
+                                (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+                            )
+                            (map print
+                                [
+                                    (format "<<TX-SNAKES-ACQUIRE-GT>> predicted={} real={}" [predicted real])
+                                    (expect "<<TX-SNAKES-ACQUIRE-GT>> INFO_Acquire's quote equals what the acquisition charged"
+                                        real predicted)
+                                    (expect "<<TX-SNAKES-ACQUIRE-GT>> ...and it is a real, non-zero charge"
+                                        true (> real 0.0))
+                                ]
+                            )
+                        )
+                    )
+                )
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-CUSTODIANS-ACQUIRE-GT - CUSTODIANS|C_Acquire + INFO_Acquire == real gas delta")
+(print "--- [SNAKES-ACQUIRE-GT] pure-citizen Custodians acquisition + GAS-delta ---")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;FUNCTION COVERAGE (G6) — `DEMIPAD-CUSTODIANS.INFO_Acquire`, per the owner's spec: an INFO_ must report
+;;the same cost the op actually charges. The twin of <<TX-SNAKES-ACQUIRE-GT>> above: a
+;;DIFFERENT module with a byte-identical `URCi_Acquire`, which is why both carried the same missing
+;;royalty leg and why both needed pinning — fixing one and trusting the other would have left half
+;;the defect in place.
+;;
+;;TWO TRAPS, both specific to the sale modules:
+;; 1] THE PATRON MUST NOT BE THE COLLECTION CREATOR. `KST.ANHD` created this collection, and a buy
+;;    where creator == buyer aborts with "Sender and Receiver must be different" — the transfer leg
+;;    would be a self-transfer. `KST.EMMA` is the buyer here for that reason, so the managed
+;;    coin.TRANSFER caps are signed with HER key, not ANHD's.
+;; 2] THE PREVIEW AND THE EXEC DIFFER BY ONE ARGUMENT: the exec takes a trailing `max-cost`, the
+;;    slippage bound. `-1.0` is the documented "no bound" sentinel and is not a price input, which is
+;;    why the preview does not ask for it.
+;;
+;;NONCE -1 IS NOT A TYPO. Custodians acquisition nonces are negative by design and only -1 is
+;;stocked in this fixture; nonce 1 is refused as "Invalid Custodian Acquisition Nonce".
+;;
+;;NOTE what is NOT asserted: the native coin the buyer spends. That is the ACQUISITION PRICE — the
+;;good being bought — not a protocol fee, and the module deliberately reports `stoa-need 0.0` while
+;;declaring the amount in `pre-text` instead. That convention is consistent across all four sales.
+;;What this measures is the IGNIS the sale charges to execute, which is the part the preview prices.
+(let
+    (
+        (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
+        (ref-CUST:module{SaleCustodiansV2} DEMIPAD-CUSTODIANS)
+        (patron:string KST.EMMA)
+        (asset-id:string "DHOC-98c486052a51")
+        (nonce:integer -1)
+        (amount:integer 4)
+        (iz-native:bool true)
+        (type:integer 0)
+    )
+    (let
+        (
+            (correct-pid:decimal (* 1.5 (dec amount)))
+        )
+        (let
+            (
+                (prices-obj:object{DemiourgosLaunchpadV2.DEMIPAD|Prices}
+                    (ref-DPAD::URC_Prices asset-id correct-pid type))
+            )
+            (let
+                (
+                    (a1:decimal (at "amount-one" prices-obj))
+                    (a2:decimal (at "amount-two" prices-obj))
+                    (a3:decimal (at "amount-three" prices-obj))
+                    (a4:decimal (at "amount-four" prices-obj))
+                    (env-amount:decimal (at "enviroment-amount" prices-obj))
+                    (non-enviroment:decimal (+ (at "coding-amount" prices-obj) (at "remainder-amount" prices-obj)))
+                )
+                (env-sigs
+                    [ { "key": "PK_AncientHodler", "caps": [] }
+                      { "key": "PK_Emma", "caps": [] }
+                      { "key": "ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48",
+                        "caps":
+                          [ (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"
+                                "c:ZNfuj3iZI83n7MUSKGuoXoSxFg1cyMxCzB3szUHVvrI" non-enviroment)
+                            (coin.TRANSFER "c:ZNfuj3iZI83n7MUSKGuoXoSxFg1cyMxCzB3szUHVvrI"
+                                "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" env-amount)
+                            (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"
+                                "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" a1)
+                            (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"
+                                "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" a2)
+                            (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"
+                                "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" a3)
+                            (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"
+                                "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" a4) ] } ])
+                (let
+                    (
+                        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                        (ref-CPAD:module{CitizenLaunchpadTalosV2} TS02-CPAD)
+                        (gas-id:string "GAS-98c486052a51")
+                    )
+                    (let
+                        (
+                            (predicted:decimal
+                                (at "ignis-need" (at "ignis"
+                                    (ref-CUST::INFO_Acquire patron patron nonce amount iz-native))))
+                            (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+                        )
+                        (print (format "<(TS02-CPAD.CUSTODIANS|C_Acquire)> => \"{}\""
+                            [(ref-CPAD::CUSTODIANS|C_Acquire patron patron nonce amount iz-native -1.0)]))
+                        (let
+                            (
+                                (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
+                            )
+                            (map print
+                                [
+                                    (format "<<TX-CUSTODIANS-ACQUIRE-GT>> predicted={} real={}" [predicted real])
+                                    (expect "<<TX-CUSTODIANS-ACQUIRE-GT>> INFO_Acquire's quote equals what the acquisition charged"
+                                        real predicted)
+                                    (expect "<<TX-CUSTODIANS-ACQUIRE-GT>> ...and it is a real, non-zero charge"
+                                        true (> real 0.0))
+                                ]
+                            )
+                        )
+                    )
+                )
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)

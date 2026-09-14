@@ -188,7 +188,7 @@
             )
             (ref-P|TS01-A::P|A_AddIMP mg)
             (ref-P|DPAD::P|A_AddIMP mg)
-            ;;DPDC Audit #35M: TS02-DPAD calls DPDC::XB_DeployAccountSFT/NFT directly (the removed
+            ;;DPDC Audit #35M: TS02-DPAD calls DPDC::XBv_DeployAccountSFT/NFT directly (the removed
             ;;DPSF|C_DeployAccount/DPNF|C_DeployAccount Talos wrappers previously carried TS02-C1/C2's
             ;;own registered guard through the call chain instead) -- register this module's own guard
             ;;as a trusted DPDC peer so P|UEV_IMC recognizes the direct call.
@@ -262,13 +262,13 @@
                 ;;   requires the caller to own <account>, which they don't for lpad.
                 ;; #35M: the public DPSF|C_DeployAccount/DPNF|C_DeployAccount Talos wrappers were REMOVED
                 ;;   (any signer could force any account onto any collection); sf/nf now call
-                ;;   DPDC::XB_DeployAccountSFT/NFT directly, module-to-module — the pattern every
+                ;;   DPDC::XBv_DeployAccountSFT/NFT directly, module-to-module — the pattern every
                 ;;   legitimate internal caller (DPDC-C/DPDC-F/DPDC-R/DPDC-S) already uses.
                 (cond
                     ((= fungibility tf) (ref-TS01-A::DPTF|A_DeployAccount patron asset-id lpad))
                     ((= fungibility of) (ref-TS01-A::DPOF|A_DeployAccount patron asset-id lpad))
-                    ((= fungibility sf) (ref-DPDC::XB_DeployAccountSFT lpad asset-id f f f f f f f f f f f))
-                    ((= fungibility nf) (ref-DPDC::XB_DeployAccountNFT lpad asset-id f f f f f f f f f f))
+                    ((= fungibility sf) (ref-DPDC::XBv_DeployAccountSFT lpad asset-id f f f f f f f f f f f))
+                    ((= fungibility nf) (ref-DPDC::XBv_DeployAccountNFT lpad asset-id f f f f f f f f f f))
                     true
                 )
             )
@@ -340,7 +340,7 @@
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                    (retrieval-amount:decimal (ref-DEMIPAD::UR_Funds asset-id type))
+                    (retrieval-amount:decimal (ref-DEMIPAD::URv_Funds asset-id type))
                     (working-id:string
                         (if (= type 1)
                             (ref-DALOS::UR_WrappedStoaID)

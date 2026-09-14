@@ -298,7 +298,9 @@
     (map print
         [
             (expect-failure "<<DSU-05>> EMMA holds 50 of nonce 7; taking 51 must reject"
-                "Nonce 7 in sufficient quantity for Operation"
+                ;;a complete fixed run of the guard, not a fragment spanning the interpolated
+                ;;nonce number -- see the note in modules/DPDC.repl <<DPDC-G6>>
+                "in sufficient quantity for Operation"
                 (ref-TS02-C1::DPSF|C_Repurpose KST.ANHD id KST.EMMA KST.ANHD [7] [51]))
             (expect "<<DSU-05>> EMMA's holding is intact after the rejected take" 50
                 (ref-DPDC::UR_AccountNonceSupply KST.EMMA id true 7))

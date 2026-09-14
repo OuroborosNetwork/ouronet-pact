@@ -740,7 +740,6 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPDC:module{DpdcV2} DPDC)
                 (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
                 (creator:string (ref-DPDC::UR_CreatorKonto id son))
@@ -767,9 +766,36 @@
     )
     (defun URCi_DefineHybridSet:object{IgnisCollectorV2.OutputCumulator}
         (id:string son:bool)
-        @doc "Cost preview for C_DefineHybridSet: identical cost shape to \
-            \ URCi_DefinePrimordialSet (the NFT XE_DeployAccountWNE leg is a free write)."
-        (URCi_DefinePrimordialSet id son)
+        @doc "Cost preview for C_DefineHybridSet: the same SHAPE as URCi_DefinePrimordialSet -- base \
+            \ token-issue price on the creator + (SFT only) the zero-supply set-nonce creation, the NFT \
+            \ XE_DeployAccountWNE leg being a free write -- but NOT the same PRICE. \
+            \ PRICE-KEY FIX (2026-09-14): this delegated to URCi_DefinePrimordialSet, which reads the \
+            \ <DP*|C_DefinePrimordialSet> key at 43.0, while C_DefineHybridSet bills its own \
+            \ <DP*|C_DefineHybridSet> key at 45.0 (02_IGNIS.pact:682/764). The preview therefore \
+            \ under-quoted a hybrid set-class definition by 2.0 raw IGNIS on BOTH fungibility sides. \
+            \ Composite really is 43.0, so that sibling's delegation stays correct -- which is exactly \
+            \ why only this one drifted and why the old @doc's claim of an identical cost read as true. \
+            \ Measured against a real charge by modules/DPDC-S.repl <<DPDC-S-I27>> and <<DPDC-S-I33>>."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-DPDC:module{DpdcV2} DPDC)
+                (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
+                (creator:string (ref-DPDC::UR_CreatorKonto id son))
+                (price:decimal (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_DefineHybridSet" "define-set")
+                                (ref-IGNIS::UC_IgnisPrice "DPNF|C_DefineHybridSet" "define-set")))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (ref-IGNIS::UDC_ConstructOutputCumulator price creator false [])
+                    (if son
+                        (ref-DPDC-C::URCi_CreateNewNonces id son [0])
+                        EOC
+                    )
+                ]
+                []
+            )
+        )
     )
     (defun URCi_EnableSetClassFragmentation:object{IgnisCollectorV2.OutputCumulator}
         (id:string son:bool)
@@ -906,11 +932,25 @@
         )
     )
     (defun UEV_SetClass (id:string son:bool set-class:integer)
+        @doc "Validates <set-class> for the given DPDC id. \
+            \ SHADOWED-GUARD FIX: the domain guard used to sit INSIDE the let, below the \
+            \ <UR_SetClass> binding. Pact evaluates let bindings before the body, and \
+            \ UR_Set does a HARD read keyed by <set-class> - so any out-of-domain value \
+            \ aborted on 'row not found' and this enforce was unreachable for every input. \
+            \ Hoisted above the let, matching UEV_IzSetClassFragmented directly below."
+        (enforce (> set-class 0) "Invalid Set-Class Value")
         (let
             (
                 (sc:integer (UR_SetClass id son set-class))
             )
-            (enforce (> set-class 0) "Invalid Set-Class Value")
+            ;;Data-integrity assertion, not an input guard: <sc> is the set-class FIELD of the row
+            ;;keyed BY set-class, so this can only fire on a corrupt row. Fail-closed by design.
+            ;;UNREACHABLE: no argument can trip it. For any EXISTING row the two values are equal
+            ;;by construction (the row is keyed by the field it is compared against), and for a
+            ;;non-existent row UR_SetClass hard-reads and aborts on "row not found" before this
+            ;;enforce runs. The only way to fire it is to corrupt the table, which no caller can
+            ;;do. Worth keeping — it fails closed if a migration ever writes a mismatched row —
+            ;;but it is not coverage.
             (enforce (= set-class sc) "Invalid DPDC Set Data")
         )
     )
@@ -1054,6 +1094,7 @@
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     ;; C_UpdateSetMultiplier removed — DPDC Audit #15H.
+    ;;Protection: Class 3 — Custom: DPDC-S|C>DEFINE-PRIMORDIAL
     (defun XI_PrimordialSet:integer
         (
             id:string son:bool set-name:string score-multiplier:decimal
@@ -1094,6 +1135,7 @@
             set-class
         )
     )
+    ;;Protection: Class 3 — Custom: DPDC-S|C>DEFINE-COMPOSITE
     (defun XI_CompositeSet:integer
         (
             id:string son:bool set-name:string score-multiplier:decimal
@@ -1134,6 +1176,7 @@
             set-class
         )
     )
+    ;;Protection: Class 3 — Custom: DPDC-S|C>DEFINE-HYBRID
     (defun XI_HybridSet:integer
         (
             id:string son:bool set-name:string score-multiplier:decimal
@@ -1175,15 +1218,18 @@
             set-class
         )
     )
+    ;;Protection: Class 3 — Custom: DPDC-S|C>ENABLE-FRAGMENTATION
     (defun XI_FragmentSetClass
         (id:string son:bool set-class:integer fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData})
         (require-capability (DPDC-S|C>ENABLE-FRAGMENTATION id son set-class fragmentation-ind))
         (XB_U|NonceOrSplitData id son set-class false fragmentation-ind)
     )
+    ;;Protection: Class 3 — Custom: DPDC-S|C>TOGGLE
     (defun XI_ToggleSetClass (id:string son:bool set-class:integer toggle:bool)
         (require-capability (DPDC-S|C>TOGGLE id son set-class toggle))
         (XI_U|IzActive id son set-class toggle)
     )
+    ;;Protection: Class 3 — Custom: DPDC-S|C>RENAME
     (defun XI_RenameSet (id:string son:bool set-class:integer new-name:string)
         (require-capability (DPDC-S|C>RENAME id son set-class new-name))
         (XI_U|SetName id son set-class new-name)
@@ -1191,6 +1237,7 @@
     ;; XI_Multiplier removed — DPDC Audit #15H.
     ;;
     ;; [<SetsTable> Writings] [3]
+    ;;Protection: Class 2 — SECURE
     (defun XI_I|CollectionSet (id:string son:bool set-class:integer set:object{DpdcUdcV2.DPDC|Set})
         (require-capability (SECURE))
         (if son
@@ -1198,6 +1245,7 @@
             (insert DPNF|SetsTable (concat [id BAR (format "{}" [set-class])]) set)
         )
     )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XB_U|NonceOrSplitData (id:string son:bool set-class:integer nos:bool nd:object{DpdcUdcV2.DPDC|NonceData})
         ;;(require-capability (SECURE))
         (P|UEV_IMC)
@@ -1212,6 +1260,7 @@
             )
         )  
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_U|IzActive (id:string son:bool set-class:integer toggle:bool)
         (require-capability (SECURE))
         (if son
@@ -1219,6 +1268,7 @@
             (update DPNF|SetsTable (concat [id BAR (format "{}" [set-class])]) {"iz-active" : toggle})
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_U|SetName (id:string son:bool set-class:integer new-name:string)
         (require-capability (SECURE))
         (if son
@@ -1376,7 +1426,6 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
                     (ref-DPDC:module{DpdcV2} DPDC)
                     (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
                     ;;
@@ -1409,7 +1458,6 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
                     (ref-DPDC:module{DpdcV2} DPDC)
                     (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
                     ;;
@@ -1443,7 +1491,6 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
                     (ref-DPDC:module{DpdcV2} DPDC)
                     (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
                     (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
@@ -1476,37 +1523,22 @@
         )
         (P|UEV_IMC)
         (with-capability (DPDC-S|C>ENABLE-FRAGMENTATION id son set-class fragmentation-ind)
-            (let
-                (
-                    (ref-DPDC:module{DpdcV2} DPDC)
-                )
-                (XI_FragmentSetClass id son set-class fragmentation-ind)
-                (URCi_EnableSetClassFragmentation id son)
-            )
+            (XI_FragmentSetClass id son set-class fragmentation-ind)
+            (URCi_EnableSetClassFragmentation id son)
         )
     )
     (defun C_ToggleSet:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool set-class:integer toggle:bool)
         (P|UEV_IMC)
         (with-capability (DPDC-S|C>TOGGLE id son set-class toggle)
-            (let
-                (
-                    (ref-DPDC:module{DpdcV2} DPDC)
-                )
-                (XI_ToggleSetClass id son set-class toggle)
-                (URCi_ToggleSet id son)
-            )
+            (XI_ToggleSetClass id son set-class toggle)
+            (URCi_ToggleSet id son)
         )
     )
     (defun C_RenameSet:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool set-class:integer new-name:string)
         (P|UEV_IMC)
         (with-capability (DPDC-S|C>RENAME id son set-class new-name)
-            (let
-                (
-                    (ref-DPDC:module{DpdcV2} DPDC)
-                )
-                (XI_RenameSet id son set-class new-name)
-                (URCi_RenameSet id son)
-            )
+            (XI_RenameSet id son set-class new-name)
+            (URCi_RenameSet id son)
         )
     )
 

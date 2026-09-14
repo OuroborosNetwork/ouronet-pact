@@ -1,0 +1,84 @@
+;; REPL/fixtures/adversarial-collections.repl — ADVERSARIAL collectable fixture.
+;;
+;; PROVIDES : SFT collection "AdversarialLockedSft"/ADVC -> id ADVC-98c486052a51, owned+created by
+;;            KST.ANHD, issued with can-add-special-role, can-wipe and can-pause ALL FALSE.
+;; REQUIRES : deploy-stage00 + deploy-stage01 + deploy-stage02.   LOAD ONCE (RULE 5).
+;; ASSERTS  : its own postcondition only (the collection exists with those three flags off).
+;;
+;; WHY THIS EXISTS. DPDC has NO Control operation -- unlike DPTF and DPOF, whose property flags
+;; can be flipped and flipped back through C_Control. A DPDC collection's flags are fixed AT
+;; ISSUANCE and never change, so UEV_CanPauseON / UEV_CanAddSpecialRoleON / UEV_CanWipeON cannot
+;; be reached with a reversible window on MOCKN/MOCKS: they can only be reached by a collection
+;; issued with those flags off in the first place. That is what this provides.
+;;
+;; Carries no tests of its own; the assertions live in REPL/modules/DPDC.repl (DPDC-G3).
+
+(begin-tx "FIXTURE adversarial-collections — issue ADVC with three flags OFF")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [FIXTURE adversarial-collections · 01 · let / STOA split] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        ;;one SFT collection, so one <dpsf> usage price (mock-collections pays dpnf + dpsf).
+        (split-stoa:[decimal]
+            (ref-DALOS::URC_SplitSTOAPrices patron (ref-DALOS::UR_UsagePrice "dpsf"))
+        )
+    )
+(print "--- [FIXTURE adversarial-collections · 02 · env-sigs (caps)] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa))
+                ]
+            }
+        ]
+    )
+(print "--- [FIXTURE adversarial-collections · 03 · issue] ---")
+    (let
+        (
+            (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        )
+        ;;   cu   cco  ccc  casr   cnfcr  cf     cw     cp
+        (print (ref-TS02-C1::DPSF|C_Issue patron patron patron "AdversarialLockedSft" "ADVC"
+                   true true true false true false false false))
+    )
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "FIXTURE adversarial-collections — postcondition")
+(namespace "ouronet-ns")
+(print "--- [FIXTURE adversarial-collections · 04 · postcondition] ---")
+(let
+    (
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (c:string "ADVC-98c486052a51")
+    )
+    (map print
+        [
+            (expect "<<FIXTURE adversarial-collections>> ADVC exists and is owned by the patron"
+                KST.ANHD (ref-DPDC::UR_OwnerKonto c true))
+            (expect "<<FIXTURE adversarial-collections>> can-add-special-role is OFF"
+                false (ref-DPDC::UR_CanAddSpecialRole c true))
+            (expect "<<FIXTURE adversarial-collections>> can-wipe is OFF"
+                false (ref-DPDC::UR_CanWipe c true))
+            (expect "<<FIXTURE adversarial-collections>> can-pause is OFF"
+                false (ref-DPDC::UR_CanPause c true))
+        ]
+    )
+    ""
+)
+(commit-tx)

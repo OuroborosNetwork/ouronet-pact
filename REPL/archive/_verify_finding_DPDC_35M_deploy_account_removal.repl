@@ -1,6 +1,6 @@
 ;; Verify Fix for DPDC Audit #35M — DPSF|C_DeployAccount/DPNF|C_DeployAccount (standalone Talos
 ;; entrypoints, no ownership check on <account>) removed. Their one real internal caller,
-;; TS02-DPAD::A_RegisterAssetToLaunchpad, was redirected to call DPDC::XB_DeployAccountSFT/NFT directly,
+;; TS02-DPAD::A_RegisterAssetToLaunchpad, was redirected to call DPDC::XBv_DeployAccountSFT/NFT directly,
 ;; module-to-module -- the same pattern every other legitimate internal caller already used.
 ;;
 ;; This full end-to-end run of the real launchpad scenario ([5.3]_Launchpad.repl, which registers a real

@@ -262,7 +262,15 @@
     ;;{5.7}  User [A/C]
     ;;
     (defun A_Fix01 (patron:string dhn-id:string account:string mdm:[[string]])
-        (C_Fix patron dhn-id account "Legendary" 1 100 mdm)
+        @doc "Fix Nosferatu Legendary (1-70) — the metadata twin of A_Step01, and it must stay a \
+            \ 70-position rung. FIXED 2026-09-14: this read <1 100>, which (a) overlapped A_Fix02a's \
+            \ Legendary 71-100 so those thirty positions were written twice, and (b) demanded a \
+            \ 100-row mdm list from C_Fix's (= (length mdm) number-of-positions) enforce, where every \
+            \ other rung in BOTH ladders takes at most 70. That 70 is not a style choice: it is the \
+            \ per-transaction budget that forced the a/b rung splits in the first place, so this was \
+            \ the one rung that could fail to fit on chain. The two ladders are otherwise identical \
+            \ rung-for-rung; REPL/_ladder.py now checks that they stay that way."
+        (C_Fix patron dhn-id account "Legendary" 1 70 mdm)
     )
     (defun A_Fix02a (patron:string dhn-id:string account:string mdm:[[string]])
         (C_Fix patron dhn-id account "Legendary" 71 30 mdm)

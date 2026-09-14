@@ -94,7 +94,20 @@
     ;; bulk transfer 100 units of nonce 7 to EMMA (account auto-deploys; method=false, standard acct)
     (ref-TS02-C1::DPSF|C_BulkTransfer patron id [[7]] [[100]] patron [emma] false)
     ;; premium branding upgrade (STOA fee)
-    (ref-TS02-C1::DPSF|C_UpgradeBranding patron id 1)
+    ;;ORDER-DEPENDENCE FIX (G3), third site -- see [6.1.4]_DPDC-NF.repl and [6.1.6]_DPOF.repl for
+    ;;the full reasoning. BRD allows an upgrade only under 15 days of remaining premium
+    ;;(04_BRD.pact:258); whether that holds depends on the enclosing run's chain time.
+    (let
+        (
+            (remaining:decimal
+                (diff-time (BRD.UR_PremiumUntil id false) (at "block-time" (chain-data))))
+        )
+        (if (< remaining 1296000.0)
+            (ref-TS02-C1::DPSF|C_UpgradeBranding patron id 1)
+            (print (format "<<TX-SU-002>> UpgradeBranding SKIPPED — {} s premium remain (BRD allows under 1296000 s)"
+                [remaining]))
+        )
+    )
     (print "<<TX-SU-002>> DPSF UpdateNonces + BulkTransfer + UpgradeBranding OK")
 )
 (print "===^^^===")

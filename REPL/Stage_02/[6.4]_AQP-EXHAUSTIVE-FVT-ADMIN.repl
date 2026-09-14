@@ -27,12 +27,56 @@
     (print (expect (format "<<TX-AQP-FA01>> score-entity-link enabled pre got={}" [(ref-FVT::UR_FVT-SEL|Enabled fvt-id score-id)]) true (ref-FVT::UR_FVT-SEL|Enabled fvt-id score-id)))
     (print (format "<(C_ToggleScoreEntityLink disable)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_ToggleScoreEntityLink patron fvt-id 1 score-id false)]))
     (print (expect (format "<<TX-AQP-FA01>> score-entity-link disabled got={}" [(ref-FVT::UR_FVT-SEL|Enabled fvt-id score-id)]) false (ref-FVT::UR_FVT-SEL|Enabled fvt-id score-id)))
+    ;;--- guard family, window 1: the score-entity-link is DISABLED for exactly these two lines.
+    ;;UEV_CollectContext checks, in order: sweep-in-progress, vacate-frozen, reward-row-exists,
+    ;;reward-ENABLED, link-row-exists, link-ENABLED. The reward is still on here, so the first
+    ;;four pass and this window isolates the SIXTH guard. (The reward-disabled window further
+    ;;down isolates the FOURTH -- two guards in one validator, each pinned where it is the one
+    ;;that fires.)
+    (map print
+        [
+            (expect-failure "<<TX-AQP-FA01>> UEV_CollectContext refuses a DISABLED score-entity-link"
+                "ScoreEntityLink must be enabled for collect"
+                (AQP-FVT.UEV_CollectContext patron fvt-id 1 score-id wstoa-id))
+        ]
+    )
     (print (format "<(C_ToggleScoreEntityLink enable)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_ToggleScoreEntityLink patron fvt-id 1 score-id true)]))
     (print (expect (format "<<TX-AQP-FA01>> score-entity-link re-enabled got={}" [(ref-FVT::UR_FVT-SEL|Enabled fvt-id score-id)]) true (ref-FVT::UR_FVT-SEL|Enabled fvt-id score-id)))
     (print (format "<(C_ToggleRewardLink Wstoa disable)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_ToggleRewardLink patron fvt-id wstoa-id false)]))
     (print (expect (format "<<TX-AQP-FA01>> reward disabled got={}" [(ref-FVT::UR_FVT-RG|RewardEnabled fvt-id wstoa-id)]) false (ref-FVT::UR_FVT-RG|RewardEnabled fvt-id wstoa-id)))
+    ;;--- guard family, window 2: the WSTOA reward link is DISABLED for exactly these two lines,
+    ;;and the score-entity-link was re-enabled above -- so collect now stops at the FOURTH guard
+    ;;instead of the sixth, and inject stops at its own reward-enabled guard. Both are read-only
+    ;;calls, so nothing here disturbs the re-enable that follows.
+    (map print
+        [
+            (expect-failure "<<TX-AQP-FA01>> UEV_CollectContext refuses a DISABLED reward token"
+                "Reward token is disabled for collect"
+                (AQP-FVT.UEV_CollectContext patron fvt-id 1 score-id wstoa-id))
+            (expect-failure "<<TX-AQP-FA01>> UEV_InjectContext refuses a DISABLED reward token"
+                "Reward token is disabled for inject"
+                (AQP-FVT.UEV_InjectContext patron fvt-id wstoa-id 1.0))
+        ]
+    )
     (print (format "<(C_ToggleRewardLink Wstoa enable)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_ToggleRewardLink patron fvt-id wstoa-id true)]))
     (print (expect (format "<<TX-AQP-FA01>> reward re-enabled got={}" [(ref-FVT::UR_FVT-RG|RewardEnabled fvt-id wstoa-id)]) true (ref-FVT::UR_FVT-RG|RewardEnabled fvt-id wstoa-id)))
+    ;;--- FVT|C>ROTATE-OWNERSHIP guard, on its own argument. The enforce runs BEFORE
+    ;;CAP_EnforceAccountOwnership, so handing back the CURRENT owner trips it without needing any
+    ;;signature. Expected text starts at "FVT" deliberately: AQP-SCORE carries a near-identical
+    ;;message and a shared-tail match would cover both guards with one test.
+    (let ((owner-now:string (ref-FVT::UR_FVT|OwnerKonto fvt-id)))
+        (map print
+            [
+                (expect "<<TX-AQP-FA01>> CodingDivisionTreasury still allows owner rotation"
+                    true (ref-FVT::UR_FVT|CanChangeOwner fvt-id))
+                (expect-failure "<<TX-AQP-FA01>> rotating an FVT to the owner it ALREADY has is rejected"
+                    "FVT owner rotation requires"
+                    (ref-TS02-C3::AQP-FVT|C_RotateOwnership patron fvt-id owner-now))
+                (expect "<<TX-AQP-FA01>> the owner-konto is untouched after the rejection"
+                    owner-now (ref-FVT::UR_FVT|OwnerKonto fvt-id))
+            ]
+        )
+    )
 )
 (env-sigs [])
 (commit-tx)
@@ -59,6 +103,29 @@
     ]))
     (print (expect (format "<<TX-AQP-FA02>> can-upgrade false got={}" [(ref-FVT::UR_FVT|CanUpgrade fvt-id)]) false (ref-FVT::UR_FVT|CanUpgrade fvt-id)))
     (print "<<TX-AQP-FA02>> NOTE: cannot C_Control restore once can-upgrade=false (cap requires current can-upgrade true)")
+    ;;--- guard family: can-upgrade=false is IRREVERSIBLE (see the NOTE above), which makes this
+    ;;the one point in the whole suite where the two "requires can-upgrade true" guards are live.
+    ;;Both are module-only UEV_* (no interface stub), so they are reached by dotted access rather
+    ;;than through <ref-FVT>. Each guard reads owner-konto and can-upgrade in its let and only
+    ;;then enforces -- the reads succeed on a real FVT, so the enforce is genuinely reachable
+    ;;rather than shadowed by a missing row.
+    (map print
+        [
+            (expect-failure "<<TX-AQP-FA02>> UEV_SetMosaicContext refuses a locked FVT"
+                "FVT mosaic update requires can-upgrade true"
+                (AQP-FVT.UEV_SetMosaicContext fvt-id true))
+            (expect-failure "<<TX-AQP-FA02>> UEV_SetCommonDenominatorContext refuses a locked FVT"
+                "SetCommonDenominator requires can-upgrade true"
+                (AQP-FVT.UEV_SetCommonDenominatorContext fvt-id "OURO-98c486052a51"))
+            ;;Dispatch default of UEV_AddScoreEntityContext. Unlike the (enforce false) backstops
+            ;;exempted by StoicSyntax §7.20, this one IS reachable: <score-entity-type> is a
+            ;;client-supplied argument, and nothing is read before the branch, so type 2 trips it
+            ;;without touching any state.
+            (expect-failure "<<TX-AQP-FA02>> UEV_AddScoreEntityContext rejects an unknown entity type"
+                "score-entity-type must be 1 (score) or 3 (triplet)"
+                (AQP-FVT.UEV_AddScoreEntityContext fvt-id 2 "x" "|" 0.0))
+        ]
+    )
 )
 (env-sigs [])
 (commit-tx)
@@ -94,5 +161,109 @@
 )
 (env-sigs [])
 (commit-tx)
+(print "")
+(begin-tx "TX-AQP-FA04 - RPS reward-link and stake-leg validators")
+(print "")
+(print "=== TX-AQP-FA04 — RPS UEV_ guards on their own arguments =====================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;; Both validators are module-only (no interface stub), so they are reached by dotted access.
+;; Neither writes; the FVT and its WSTOA reward link are the ones TX-AQP-FA01 already uses.
+(let
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "CodingDivisionTreasury"))
+    )
+    (let
+        (
+            (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
+            (other-score:string (ref-U|DALOS::UDC_Makeid "TfStakeScore"))
+        )
+        (map print
+            [
+                ;;--- UEV_TrueFungibleStakeNotReserved: a one-line prefix check, so the happy path
+                ;;matters as much as the trip -- a guard that always fired would satisfy the
+                ;;rejection below and still be broken.
+                (expect "<<TX-AQP-FA04>> a normal DPTF leg is accepted for staking"
+                    true (!= "" (format "{}" [(RPS.UEV_TrueFungibleStakeNotReserved wstoa-id)])))
+                (expect-failure "<<TX-AQP-FA04>> an R| reserved DPTF cannot be staked"
+                    "Reserved DPTF (R|) cannot be staked"
+                    (RPS.UEV_TrueFungibleStakeNotReserved "R|WSTOA-98c486052a51"))
+                ;;--- UEV_AddRewardLinkContext, guard 1: one RPS|Global row per (fvt, dptf).
+                ;;The precondition is asserted first, so the rejection is attributable to
+                ;;duplication rather than to the fixture being absent.
+                (expect "<<TX-AQP-FA04>> the WSTOA reward link exists on this FVT"
+                    true (ref-RPS::URC_FvtRpsGlobalRowExists fvt-id wstoa-id))
+                (expect-failure "<<TX-AQP-FA04>> AddRewardLink refuses a duplicate reward link"
+                    "Reward link row already exists"
+                    (RPS.UEV_AddRewardLinkContext fvt-id wstoa-id "PLAIN" "|"))
+                ;;--- guard 2: a FRESH (fvt, dptf) pair clears guard 1 and lands in the else-arm,
+                ;;which is the only way to reach it. PLAIN kind with a non-BAR family id is the
+                ;;input that isolates the second half of that conjunction.
+                (expect "<<TX-AQP-FA04>> ...and this pair has no link yet, so guard 1 cannot fire"
+                    false (ref-RPS::URC_FvtRpsGlobalRowExists fvt-id "NOTAREWARD-98c486052a51"))
+                (expect-failure "<<TX-AQP-FA04>> a PLAIN reward may not carry a multiplet-family-id"
+                    "PLAIN reward requires reward-kind PLAIN and multiplet-family-id BAR"
+                    (RPS.UEV_AddRewardLinkContext fvt-id "NOTAREWARD-98c486052a51" "PLAIN" "NOTBAR"))
+                ;;--- UEV_CollectContext guard 5, and a SHADOWING BOUNDARY found by writing it.
+                ;;The obvious input -- a score-entity-id that does not exist -- does NOT reach this
+                ;;guard. UEV_CollectContext binds <pool-id> in its let via
+                ;;    (ref-SCR::UR_SCR|ScoreAqpoolLink score-entity-id)
+                ;;which HARD-READS SCR|T|Score keyed by that id, and Pact evaluates let bindings
+                ;;before the body. A missing score dies on "No value found in table
+                ;;ouronet-ns.AQP-SCORE_SCR|T|Score" and never reaches any enforce. (First draft of
+                ;;this test asserted exactly that and failed, which is how the boundary surfaced.)
+                ;;
+                ;;So the guard's real domain is narrower than it reads: a score that EXISTS but is
+                ;;not linked to THIS FVT. TfStakeScore is exactly that -- issued by [6.2] and never
+                ;;linked to CodingDivisionTreasury. Both facts are asserted so the rejection is
+                ;;attributable to the missing LINK rather than to a missing score.
+                (expect "<<TX-AQP-FA04>> TfStakeScore exists (its aqpool link reads without aborting)"
+                    true (!= "" (format "{}" [(ref-SCR::UR_SCR|ScoreAqpoolLink other-score)])))
+                (expect "<<TX-AQP-FA04>> ...and it has no ScoreEntityLink on this FVT"
+                    false (ref-RPS::URC_FvtScoreEntityLinkRowExists fvt-id other-score))
+                (expect-failure "<<TX-AQP-FA04>> UEV_CollectContext needs a ScoreEntityLink row to exist"
+                    "ScoreEntityLink row must exist"
+                    (AQP-FVT.UEV_CollectContext KST.ANHD fvt-id 1 other-score wstoa-id))
+                ;;--- UEV_SetCommonDenominatorContext guard 2. Reached by choosing the FIXTURE
+                ;;rather than by changing state: CodingDivisionTreasury has can-upgrade ON (so
+                ;;guard 1 passes) and is NOT a farm, which is the only thing guard 2 rejects.
+                ;;Both facts are asserted first so the rejection cannot be for another reason.
+                (expect "<<TX-AQP-FA04>> CodingDivisionTreasury has can-upgrade ON"
+                    true (ref-FVT::UR_FVT|CanUpgrade fvt-id))
+                (expect "<<TX-AQP-FA04>> ...and is not a farm (class 0)"
+                    false (= 0 (ref-FVT::UR_FVT|FvtClass fvt-id)))
+                (expect-failure "<<TX-AQP-FA04>> SetCommonDenominator is farm-only"
+                    "applies to farm (class 0) FVT only"
+                    (AQP-FVT.UEV_SetCommonDenominatorContext fvt-id "OURO-98c486052a51"))
+                ;;--- REGRESSION PIN for a guard that was DEAD until 2026-09-10.
+                ;;"Triplet must be issued in AQP-SCORE" sat as the first enforce INSIDE a let that
+                ;;hard-reads SCR|T|Triplet five times on <triplet-id>. Pact evaluates let bindings
+                ;;eagerly, so a non-existent triplet aborted on "row not found" and the guard could
+                ;;not fire for ANY input -- even though URC_TripletExists is a with-default-read
+                ;;written specifically to answer for a missing row. The enforce is now hoisted
+                ;;above the let. If it is ever pushed back down, this flips to a table error.
+                ;;--- UEV_SetMosaicContext guard 2. Guard 1 (can-upgrade) passes on this FVT --
+                ;;asserted above -- so this is the conjunct that fires. CodingDivisionTreasury
+                ;;carries the TheCodingDivision score-entity link from TX-AQP-FA01, which is
+                ;;exactly the state the guard exists to refuse.
+                (expect "<<TX-AQP-FA04>> this FVT has at least one ScoreEntityLink"
+                    true (> (ref-RPS::UR_FVT|MemberLinkCount fvt-id) 0))
+                (expect-failure "<<TX-AQP-FA04>> mosaic cannot change while ScoreEntityLink rows exist"
+                    "Cannot change mosaic while ScoreEntityLink rows exist"
+                    (AQP-FVT.UEV_SetMosaicContext fvt-id true))
+                (expect-failure "<<TX-AQP-FA04>> FIXED: a non-existent triplet is rejected BY THE GUARD"
+                    "Triplet must be issued in AQP-SCORE"
+                    (AQP-FVT.UEV_AddScoreEntityTripletContext fvt-id "NOSUCHTRIPLET-98c486052a51" "|" 0.0))
+            ]
+        )
+    )
+)
+(commit-tx)
+(print "=== END TX-AQP-FA04 ==========================================================")
 (print "")
 (print "=== END [6.4]_AQP-EXHAUSTIVE-FVT-ADMIN.repl =================================")

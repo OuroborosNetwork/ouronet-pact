@@ -207,6 +207,7 @@
 (env-data
     {
         "KEY_TEST_SingleKey": { "keys": ["PK_Emma"], "pred": "keys-all" }
+        ,"KEY_TEST_MultiKey": { "keys": ["PK_Emma", "PK_AncientHodler"], "pred": "keys-all" }
     }
 )
 (env-sigs
@@ -234,10 +235,26 @@
                 (format "<<TX-04 expect>> <(DALOS|UC_GuardProtocol keyset-ref)> got={} expected=r:" [(ref-DALOS::UC_GuardProtocol key-ref)])
                 "r:"
                 (ref-DALOS::UC_GuardProtocol key-ref))
+            ;;This assertion used to compare (UC_GuardProtocol key-read) to ITSELF -- the only
+            ;;positive assertion in the whole suite that could not fail (found by _vacuous.py).
+            ;;Its doc said "expected=k: or w:", so the intent was "one of two values", which
+            ;;`expect` cannot express directly; the self-comparison looks like an unfinished
+            ;;placeholder. Measured, the answer is narrower than the doc guessed: a read-keyset
+            ;;guard is ALWAYS w:, so the real expectation is exact.
             (expect
-                (format "<<TX-04 expect>> <(DALOS|UC_GuardProtocol read-keyset)> got={} expected=k: or w: (both key-based)" [(ref-DALOS::UC_GuardProtocol key-read)])
-                (ref-DALOS::UC_GuardProtocol key-read)
+                (format "<<TX-04 expect>> <(DALOS|UC_GuardProtocol read-keyset)> got={} expected=w:" [(ref-DALOS::UC_GuardProtocol key-read)])
+                "w:"
                 (ref-DALOS::UC_GuardProtocol key-read))
+            ;;...and the part a reader WILL assume wrongly. key-read above holds exactly ONE key
+            ;;and still reads w:, NOT k: -- `k:` is the protocol for a bare single-key guard, while
+            ;;anything from read-keyset is a keyset guard at any size. This is the multi-key half of
+            ;;that pair: same answer, so the protocol does not vary with keyset size. Both halves
+            ;;are needed -- the 1-key case alone looks like an accident, the 2-key case alone does
+            ;;not rule out k: for size 1.
+            (expect
+                (format "<<TX-04 expect>> a MULTI-key keyset is w: too -- size does not change it" [])
+                "w:"
+                (ref-DALOS::UC_GuardProtocol (read-keyset "KEY_TEST_MultiKey")))
             (expect
                 (format "<<TX-04 expect>> <(DALOS|UEV_EnforceGuardProtocol keyset-ref true)> must pass" [])
                 true

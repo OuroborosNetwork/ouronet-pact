@@ -157,6 +157,10 @@
     (defun UCv_SplitBalanceForVesting:[decimal] (precision:integer amount:decimal milestones:integer)
         @doc "Splits an Amount according to vesting parameters"
         (UEV_Milestone milestones)
+        ;;UNREACHABLE: UEV_Milestone on the line above restricts <milestones> to [1,250], so the
+        ;;zero case is already rejected with "Milestone splitting number 0 is out of bounds"
+        ;;before this line is reached. Fail-closed backstop, not a live guard - no input can pin
+        ;;it. Verified in REPL/modules/UTILITIES.repl <<UTIL-13>>.
         (enforce (!= milestones 0) "Cannot split with zero milestones")
         (let
             (

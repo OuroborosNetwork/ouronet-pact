@@ -5,3 +5,108 @@
 (load "../deploy-stage01.repl")
 (load "../deploy-stage02.repl")
 (load "../Stage_02/[6.3]_STOAICO.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "SICO-G9 -- the ADMIN claim on the distribution-vault mutators")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(print "--- [SICO-G9 . 01 . a non-admin cannot stake into the vault] ---")
+;;FOUND BY `python3 _docclaims.py` -- and only after its AUTHORITY pattern was WIDENED. The first
+;;version matched "can only be used/called/invoked" and missed these two entirely, because their
+;;docs say "Can only be DONE by the Admin". One unlisted verb hid two unverified admin claims on
+;;functions that move real contribution balances. The regex now covers done/executed/performed/
+;;run/fired, and the tool notes that a false positive costs one read while a miss costs a claim.
+;;
+;;These are the money-moving pair for the StoicIco distribution vault: A_Stake adds a virtual-$
+;;contribution that buys into the 10 mil wSTOA distribution, A_Unstake removes one. Both are
+;;refused for a non-admin by the Demiurgoi keyset (ANHD + FLRN).
+(map print
+    [
+        (expect-failure "<<SICO-G9>> a non-admin cannot add a contribution to the vault"
+            "Keyset failure (keys-any)"
+            (STOAICO.A_Stake KST.EMMA KST.EMMA 100.0))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "SICO-G9b -- ...nor remove one")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(print "--- [SICO-G9b . 01 . nor unstake] ---")
+;;Both halves matter: a gate applied to the deposit but not the withdrawal would let a non-admin
+;;drain contributions while looking protected from the A_Stake side alone.
+(map print
+    [
+        (expect-failure "<<SICO-G9>> ...and a non-admin cannot remove one either"
+            "Keyset failure (keys-any)"
+            (STOAICO.A_Unstake KST.EMMA KST.EMMA 100.0))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "SICO-G10 — the period domain, and two contribution guards")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [SICO-G10 · 01 · the KPay period domain, both ends] ---")
+;;`DEMIPAD-STOICPAY::URv_PeriodAllocation` bounds its period to [-1, 25]: -1 is "sale not started", 0 is
+;;"concluded", 1..25 are the live stages. A `URv_` is unprotected and directly callable, so this is the
+;;cheapest shape of guard there is -- one call, no signer, no state, and both ends driven because a
+;;single case cannot tell a range from a floor.
+;;
+;;The two SENTINEL periods are asserted alongside, because they are the interesting part of the domain:
+;;-1 and 0 are INSIDE the legal range and both allocate zero, so "legal" and "allocates something" are
+;;different questions and the guard only answers the first.
+(map print
+    [
+        (expect "<<SICO-G10>> period 1 is a live stage and allocates its tranche"
+            true (> (DEMIPAD-STOICPAY.URv_PeriodAllocation 1) 0.0))
+        (expect "<<SICO-G10>> ...while period 0 is legal but allocates nothing -- the concluded sentinel"
+            0.0 (DEMIPAD-STOICPAY.URv_PeriodAllocation 0))
+        (expect "<<SICO-G10>> ...and so is period -1, the not-yet-started sentinel"
+            0.0 (DEMIPAD-STOICPAY.URv_PeriodAllocation -1))
+        (expect-failure "<<SICO-G10>> one below the sentinel is out of range"
+            "Invalid Period"
+            (DEMIPAD-STOICPAY.URv_PeriodAllocation -2))
+        (expect-failure "<<SICO-G10>> ...and so is one past the last stage"
+            "Invalid Period"
+            (DEMIPAD-STOICPAY.URv_PeriodAllocation 26))
+        (expect "<<SICO-G10>> ...while 25, the last stage, is accepted, so the bound is inclusive"
+            true (>= (DEMIPAD-STOICPAY.URv_PeriodAllocation 25) 0.0))
+    ]
+)
+(print "--- [SICO-G10 · 02 · unstaking more than was contributed, and collecting as a stranger] ---")
+;;Two STOAICO guards, both reachable with ANHD -- who is NOT a STOAICO participant on this chain, which
+;;is exactly what makes both inputs available. Asserted first, because both refusals are statements
+;;about that fact.
+(map print
+    [
+        (expect "<<SICO-G10>> ANHD is not a STOAICO account and holds no contribution score"
+            [false 0.0] [(STOAICO.UR_IzAccount KST.ANHD) (STOAICO.UR_User1 KST.ANHD)])
+        ;;1] REMOVE-CONTRIBUTION bounds the withdrawal by what the account actually contributed. With a
+        ;;   score of zero, any positive amount exceeds it -- and the message quotes both the amount and
+        ;;   the account, which is what makes it useful in a batch.
+        (expect-failure "<<SICO-G10>> unstaking more than was contributed is refused, quoting the amount"
+            "Removing 999999.0 from Account"
+            (STOAICO.A_Unstake KST.ANHD KST.ANHD 999999.0))
+        (expect-failure "<<SICO-G10>> ...and the refusal names the balance it exceeded"
+            "exceeds its existing balance"
+            (STOAICO.A_Unstake KST.ANHD KST.ANHD 999999.0))
+        ;;2] REDEEM-CONTRIBUTION refuses an account the ICO has never seen. Note the ORDER: this guard
+        ;;   sits BEHIND `CAP_EnforceAccountOwnership`, so it can only be reached by a caller who owns
+        ;;   the account being collected for -- a stranger collecting for someone else is stopped
+        ;;   earlier, by ownership, not by this.
+        (expect-failure "<<SICO-G10>> collecting for an account the ICO has never seen is refused"
+            "cannot be redeemed"
+            (STOAICO.C_Collect KST.ANHD KST.ANHD))
+    ]
+)
+(env-sigs [])
+(commit-tx)

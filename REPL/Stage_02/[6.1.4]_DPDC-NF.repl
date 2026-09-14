@@ -328,12 +328,41 @@
         (id:string "CNF-98c486052a51")
         (patron:string KST.ANHD)
     )
-    (map print
-        [
-            (format "<(DPNF|C_UpgradeBranding CNF 1 month)> => \"{}\""
-                [(ref-TS02-C2::DPNF|C_UpgradeBranding patron id 1)])
-            ""
-        ]
+    ;;ORDER-DEPENDENCE FIX (G3). BRD only permits a branding upgrade when FEWER THAN 15 DAYS of
+    ;;premium remain -- 04_BRD.pact:258, (enforce (< remaining 1296000.0) "Blue Flag has more than
+    ;;15 days remainig!"). Whether CNF's flag has decayed that far depends on how much chain time
+    ;;the enclosing run has consumed before reaching this line.
+    ;;
+    ;;Inside ZALL the chain is long and the upgrade succeeds. Standalone -- and in the eight Kursan
+    ;;verify-finding harnesses, which load Stage00a_StoaTests.repl and therefore take a DIFFERENT
+    ;;path -- the flag is still fresh and this unconditional call aborted the whole file. That is
+    ;;the single cause behind all eight EXCLUDED entries in _gate.py.
+    ;;
+    ;;This step is a print-only smoke call: nothing asserts on its result and no later block reads
+    ;;CNF's branding. So the fix is to ask the SAME question BRD asks, and skip when the answer says
+    ;;the upgrade is not yet permitted. The step still exercises the path wherever it legitimately
+    ;;can, and no longer decides whether unrelated suites run.
+    (let
+        (
+            (remaining:decimal
+                (diff-time (BRD.UR_PremiumUntil id false) (at "block-time" (chain-data))))
+        )
+        (if (< remaining 1296000.0)
+            (map print
+                [
+                    (format "<(DPNF|C_UpgradeBranding CNF 1 month)> => \"{}\""
+                        [(ref-TS02-C2::DPNF|C_UpgradeBranding patron id 1)])
+                    ""
+                ]
+            )
+            (map print
+                [
+                    (format "<(DPNF|C_UpgradeBranding CNF)> SKIPPED — {} s of premium remain, BRD allows an upgrade only under 1296000 s (15 days)"
+                        [remaining])
+                    ""
+                ]
+            )
+        )
     )
 )
 (print "===^^^===")

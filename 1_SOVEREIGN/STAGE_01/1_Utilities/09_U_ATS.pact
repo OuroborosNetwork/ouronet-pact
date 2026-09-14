@@ -54,7 +54,6 @@
     (defun UCv_SolidifyUnstakeObject:object{Awo} (input:object{Awo} remove-position:integer))
     (defun UCv_SplitBalanceWithBooleans:[decimal] (precision:integer amount:decimal milestones:integer boolean:[bool]))
     (defun UC_SplitByIndexedRBT:[decimal] (rbt-amount:decimal pair-rbt-supply:decimal index:decimal resident-amounts:[decimal] rt-precisions:[integer]))
-    (defun UC_UnlockPrice:[decimal] (unlocks:integer))
     (defun UC_IzStoicTagIndexChar:bool (c:string))
     (defun UC_IzStoicTagIndex:bool (name:string))
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
@@ -397,7 +396,7 @@
             \ (the primal RT), mirroring the pool-level primal-RT swap in ATSU.XI_RemoveSecondary. \
             \ Fix (audit finding #1C / C2c): this MUST run unconditionally — an all-zero (never-touched) \
             \ Awo still needs its array shrunk to match the post-removal reward-token list, or every later \
-            \ read (URCx_PosObjSt, XI_StoreUnstakeObject) that structurally compares it against a freshly \
+            \ read (URCx_PosObjSt, XIv_StoreUnstakeObject) that structurally compares it against a freshly \
             \ length-derived zero/negative sentinel will see a stale, longer array and misclassify an \
             \ empty slot as permanently occupied. UCv_SolidifyUnstakeObject is safe to run unconditionally: \
             \ merging a 0.0 removee into slot 0 is a no-op on the value, it only ever needs to shrink the array."
@@ -510,16 +509,6 @@
                 )
                 output
             )
-        )
-    )
-    (defun UC_UnlockPrice:[decimal] (unlocks:integer)
-        @doc "Computes  ATS unlock price \
-            \ Outputs [virtual-gas-costs (IGNIS) native-gas-cost(STOA)]"
-        (let
-            (
-                (ref-U|DEC:module{OuronetDecimalsV2} U|DEC)
-            )
-            (ref-U|DEC::UC_UnlockPrice unlocks false)
         )
     )
     (defun UC_IzStoicTagIndexChar:bool (c:string)

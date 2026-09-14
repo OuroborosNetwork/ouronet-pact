@@ -257,6 +257,7 @@
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     ;;
+    ;;Protection: Class 2 — SECURE
     (defun XI_IncrementPrimalTrueFungiblesCounter ()
         (require-capability (SECURE))
         (with-read AOZ|T|AssetCounter AOZ|COUNTER
@@ -266,6 +267,7 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_IncrementPrimalOrtoFungiblesCounter ()
         (require-capability (SECURE))
         (with-read AOZ|T|AssetCounter AOZ|COUNTER
@@ -275,6 +277,7 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_IncrementATSPairsCounter ()
         (require-capability (SECURE))
         (with-read AOZ|T|AssetCounter AOZ|COUNTER
@@ -284,6 +287,7 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_IncrementTrueFungiblesCounter ()
         (require-capability (SECURE))
         (with-read AOZ|T|AssetCounter AOZ|COUNTER
@@ -293,6 +297,7 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_IncrementOrtoFungiblesCounter ()
         (require-capability (SECURE))
         (with-read AOZ|T|AssetCounter AOZ|COUNTER
@@ -302,6 +307,7 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_IncrementSemiFungiblesCounter ()
         (require-capability (SECURE))
         (with-read AOZ|T|AssetCounter AOZ|COUNTER
@@ -311,6 +317,7 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_IncrementNonFungiblesCounter ()
         (require-capability (SECURE))
         (with-read AOZ|T|AssetCounter AOZ|COUNTER
@@ -321,42 +328,49 @@
         )
     )
     ;;
+    ;;Protection: Class 2 — SECURE
     (defun XI_W|PrimalTrueFungible (id:string position:integer)
         (require-capability (SECURE))      
         (write AOZ|T|PrimalTrueFungibles (UC_Str position)
             {"primal-tf-id" : id}
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_W|PrimalOrtoFungible (id:string position:integer)
         (require-capability (SECURE))      
         (write AOZ|T|PrimalOrtoFungibles (UC_Str position)
             {"primal-of-id" : id}
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_W|AutostakePair (id:string position:integer)
         (require-capability (SECURE))      
         (write AOZ|T|AutostakePairs (UC_Str position)
             {"atspair-id" : id}
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_W|TrueFungible (id:string position:integer)
         (require-capability (SECURE))      
         (write AOZ|T|TrueFungibles (UC_Str position)
             {"tf-asset" : id}
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_W|OrtoFungible (id:string position:integer)
         (require-capability (SECURE))      
         (write AOZ|T|OrtoFungibles (UC_Str position)
             {"of-asset" : id}
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_W|SemiFungible (id:string position:integer)
         (require-capability (SECURE))      
         (write AOZ|T|SemiFungibles (UC_Str position)
             {"sf-asset" : id}
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_W|NonFungible (id:string position:integer)
         (require-capability (SECURE))      
         (write AOZ|T|NonFungibles (UC_Str position)

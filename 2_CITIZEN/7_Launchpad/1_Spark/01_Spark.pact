@@ -423,7 +423,6 @@
         (let
             (
                 (ref-U|CT:module{OuronetConstantsV2} U|CT)
-                (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
                 (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))
                 (boost:decimal (UR_BoostPromille))
             )
@@ -586,6 +585,7 @@
     )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
+    ;;Protection: Class 2 — SECURE
     (defun XI_RedeemSparks 
         (patron:string redemption-payer:string account-to-redeem:string redemption-quantity:decimal)
         (require-capability (SECURE))
@@ -622,6 +622,7 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_CustomRedeemSparks 
         (patron:string redemption-payer:string account-to-redeem:string redemption-quantity:decimal custom-stoa-pid:decimal)
         (require-capability (SECURE))

@@ -113,10 +113,15 @@ But it is the wrong default for localised testing: nothing about `C_BurnSFT` nee
 
 ---
 
-# 4. The three coverage gates
+# 4. The coverage gates
 
-Every gate is a number anyone can recompute with `REPL/_coverage.py`. No gate is a matter of
+Every gate is a number anyone can recompute from a script in the repo. No gate is a matter of
 opinion.
+
+> **Six gates, not four.** G1–G4 are below. **G5 (documented claims)** and **G6 (function reach)**
+> were added 2026-09-12 and are defined in section 7's ORDER OF WORK block, with phases P3.6 and
+> P3.7. They exist because the two largest remaining bodies of work were measured by none of G1–G4,
+> which is how both stayed invisible while the guard number moved.
 
 ### G1 — Surface
 **Every Talos entrypoint is invoked inside its own module tester.**
@@ -430,6 +435,108 @@ REPL/
 
 # 7. Status and plan
 
+## ORDER OF WORK — set by the owner 2026-09-12
+
+**This block is authoritative. When it disagrees with a phase's own text below, this block wins.**
+The phases were written in dependency order; this is the order they are actually being executed in,
+which is not the same thing. Everything here precedes **P6 red team**.
+
+| # | what | gate | size | status |
+|---|---|---|---:|---|
+| ~~1~~ | ~~Finish guard pinning~~ | G2 | **0 left** | **DONE 2026-09-13** — 752/777 pinned (96%), 698 module-unique (89%), 31 proven-unreachable and annotated, 3 untestable-from-REPL, 25 in dead DPMF. **LIVE worklist = 0.** |
+| ~~2~~ | ~~Architectural conformance~~ | G4 | 114 | **DONE 2026-09-13** — VIOLATIONS 0 throughout; observations 117 -> 114. The 3 `shadowed-let-binding` sites were DELETED (that rule is now a regression detector at 0); the `self-C-call-citizen` (64) and `C-without-cumulator` (38) families were settled by execution and their rulings BOUNDED; `cross-module-scan` (10) kept, but its "zero Pact callers" premise is now machine-checked every run by a new VIOLATION rule `cross-module-scan-called`. See `memories/2026-09-13-conformance-phase.md`. |
+| ~~3~~ | ~~Close the open defect decisions~~ | — | 0 | **DONE 2026-09-13** — 4 of 5 ruled by the owner 2026-09-12 and applied; the last (`10_ATSU.pact:395` fuel-index wording) closed under the standing "stop asking, just fix it" instruction |
+| ~~4~~ | ~~`@doc` claims verified~~ | **G5** | **0 left** | **DONE 2026-09-13** — scoped at ~100, real worklist was **19** (81 already exercised); all 19 closed. Found and repaired **two VACUOUS existing proofs** (the #65bL shared-graph equalities short-circuited on OURO and never read the graph argument) and pinned the `UR_TopologyVersion` counter, which no REPL had ever read. See `memories/2026-09-13-docclaims-phase.md`. |
+| **5** | **Function coverage** | **G6** | **787 unreached** (excl. dead DPMF) | **NEXT — SCOPE AGREED 2026-09-14.** IN: `INFO_` 322, `URCi_` 71, `UEV_` 56, `A_` 31, `C_` 2 (do properly); `URC_` 71, `UR_` 60, `UC_`/`UDC_` 36, `URH_` 10, `CAP_` 9 (judgement). **OUT: `CT_` constants (113) — owner ruled SKIP.** Target ~93%. **`INFO_` spec (owner): the cost fields must equal what the exec counterpart ACTUALLY charges — not a hardcoded figure (that already went stale once) and not the `URCi_` it is built from (tautological).** **If an op's exec counterpart is not exercised anywhere, BUILD IT — a missing exec test is a gap we missed, not a reason to skip.** See `memories/2026-09-14-HANDOFF-START-HERE.md`. |
+| 6 | Assembly + **folder reorganisation** | G3 | — | see P4; reorg is owner-requested, do it LAST |
+
+**Why this order and not the dependency order.** Items 2 and 3 are small and unblock reasoning about
+the rest: a conformance observation may turn out to mean a guard should not exist, and the four open
+defects include the mute-guard class, which is itself holding worklist items open in item 1. Item 4
+before item 5 because it is an order of magnitude smaller and because an unverified `@doc` claim is
+a *stated* promise — a stronger thing to leave untested than an unexercised function.
+
+**Item 1 closed 2026-09-13.** The last eleven guards were resolved in one pass after five read-only
+research agents were fanned out by module family; the agents produced *hypotheses with confidence*
+rather than verdicts, which was the right call — static reading had been wrong three times earlier
+in the session, and two of the eleven hypotheses were again wrong in a way only execution caught.
+Three lessons are worth carrying into items 2, 4 and 5:
+
+* **`test-capability` cannot acquire an `@event` defcap.** It routes to the install path and fails
+  with *"capability is not managed and cannot be installed"*. Two guards (`01_ANK:453`,
+  `06_VCT:537`) looked directly drivable and were not; VCT was reached instead through its real
+  Talos client (`AQP-POOL|CC_FullVacate`) on a forced row, and ANK turned out to be genuinely
+  unreachable. Check for `@event` before planning a `test-capability` route.
+* **"No fixture in THIS harness" is not "unreachable."** Three guards carried stale notes declaring
+  them unreachable that were really statements about one collection. The fixture existed in a
+  sibling harness every time.
+* **An unreachable guard still needs an executed assertion behind it.** Every `;;UNREACHABLE`
+  annotation added in this phase is backed by a test that drives the route to whatever wall actually
+  stops it and reads the message that comes back — see `modules/ATS.repl` `<<ATS-G23>>` for the
+  pattern. That is what turns an annotation from a claim into a regression trip-wire.
+
+**Item 5 is the one to scope before starting, not during.** 1,268 client-reachable functions have
+never been reached. 100% is almost certainly the wrong target; a defensible line (every `C_` client
+entrypoint, or every `UEV_`) needs to be drawn first, with the cost of each option measured. Do that
+measurement as the first task of the phase, not as a surprise halfway through.
+
+### The key-echo reader family — a standing test hazard (added 2026-09-13)
+
+Hit three times in one phase, costing a vacuous test each time. **Read this before writing any test
+against a per-field row reader.**
+
+Several reader families are built on `with-default-read` whose **default object is constructed from
+the key components**:
+
+```pact
+(with-default-read FVT|T|RPS|User (UCk_RpsUser user-id fvt-id score-entity-id dptf-id)
+    (UDC_FVT|RPS|User 0.0 0.0 user-id fvt-id score-entity-id dptf-id)   ;; <- the key, echoed back
+    …)
+```
+
+Two consequences, both counter-intuitive:
+
+1. **The identity readers are TOTAL and echo their arguments on a miss.** They cannot be used as
+   existence checks — handed a key that was never written, they answer with that key, confidently.
+   Only the NUMERIC fields default honestly (to `0.0` / `0`).
+2. **A round-trip test against them is VACUOUS on its own.** "Every identity field equals the key
+   component it was looked up by" passes against an *empty table*. The round trip is still worth
+   asserting — on a row that really exists the values come from stored columns, so a writer that
+   transposed two same-typed components is caught — but only once existence is established
+   INDEPENDENTLY, from a value field.
+
+**The pattern to follow:** assert the premise first (a balance / checkpoint / score that cannot be
+faked by the default), then the round trip, then pin the echo itself as a documented trap.
+
+Known families and their worked examples:
+
+| family | existence oracle | example |
+|---|---|---|
+| `RPS::UR_FVT-RU|*` | `UR_FVT-RU|LastRps > 0.0` | `Kursan/AQP-stream-tests.repl` `<<T-STREAM-RT>>` |
+| `SCORE::UR_U-SCR|UserScore*` | `UserScoreBaseScore` vs a known-absent score | `modules/AQP.repl` `<<AQP-F5>>` |
+| `AQP::UR_AQP|*Tracker*` | `…TrackerBalance > 0.0` | `modules/AQP.repl` `<<AQP-F7>>` |
+
+The AQP tracker case is the sharpest illustration of why the round trip matters at all: its key is
+four same-typed strings (`pool-id, token-id, owner-id, beneficiary-id`), so a transposition anywhere
+in the key builder or writer still returns plausible ids and nothing else in the suite would notice.
+
+### Two gates added 2026-09-12
+
+The four gates in section 4 measure guards, surface, determinism and conformance. Neither of the two
+largest remaining bodies of work is measured by any of them, which is how both stayed invisible while
+the guard number moved. They are gates, not chores: each is a number recomputable from a script.
+
+* **G5 — Documented claims.** Every `@doc` that states a RULE (AUTHORITY, IMMUTABLE, BOUND,
+  INVARIANT) has a test proving it. `_docclaims.py`. *Measured 2026-09-12: 73 INVARIANT + 15
+  AUTHORITY + 7 BOUND + 5 IMMUTABLE = 100 unverified.* **This gate can fail in a way G2 cannot:**
+  G2 asks whether the guard we wrote works, G5 asks whether the guard we PROMISED exists at all.
+* **G6 — Function reach.** Every client-reachable function is exercised by some test.
+  `_scale_report.py --functions`. *Measured 2026-09-12: 3,230 / 4,498 = **72%**; 1,268 never
+  reached.* Note the denominator: "all defined" (5,422) includes dead `00_DPMF` and the internal-only
+  `XI_`/`XB_`/`XE_`/`W*_` families no test can call by design.
+
+---
+
 **Measured 2026-09-09.** 241 `.repl` files; `ZALL.repl` executed **66 of them (27%)** in 54 s. Its
 own previous spec called for "every suite we have ever built, ~an hour" — that was never
 assembled. 175 files never ran, including **~32 audit-finding regression tests**, 7 DSA suites
@@ -611,6 +718,23 @@ purposes only, no modifications and no testing.** That removes 33 sites from the
   to P3 — it is not a separate P2 debt.
 
 ## P3 — G2: every rejection path proven  *(the bulk)*
+
+> **STATUS 2026-09-12 — order-of-work item 1, IN PROGRESS.** 713/783 pinned (91%), 657 of those by
+> a module-unique message (87%). **18 live guards remain**, plus 24 proven unreachable and annotated
+> at the source, 40 unreachable inside an `enforce-one`, and 24 in the dead `00_DPMF`.
+> **The cheap seam is exhausted**: every guard callable directly is done, and all 59 remaining sit
+> inside a `defcap` reachable only through a Talos client — signers, pricing caps and fixture state
+> per test. Re-measure with `python3 REPL/_enforce_coverage.py`; rank the remainder with
+> `python3 REPL/_cheapseam.py` (run from the repo ROOT, not from `REPL/`).
+>
+> **RULE 3 has been applied in a third way this campaign, and it is worth stating.** The rule says a
+> guard you cannot write a failing test for is dead code — delete it. In practice three outcomes
+> occur, and only the first two were anticipated: (a) pin it; (b) prove it unreachable and delete;
+> **(c) prove it unreachable because an INVARIANT holds, then drive the invariant false and pin it
+> anyway.** Case (c) is not deletion — the guard is a backstop against corruption and its job is to
+> fire in a state the writers are supposed to prevent. `01_DALOS:1215` was headed for an
+> `;;UNREACHABLE` annotation and is now pinned by `DALOS-G8`. **Annotate only when no state could
+> ever reach it** — when the CALL does not exist, as with `03_DPDC-C:279`.
 * **3.1** **Tighten the 137 weak `expect-failure`s to the 3-arg form (RULE 8) — do this FIRST.**
   Until it is done, every adversarial number is inflated.
 * **3.2** Enumerate all 1,015 `enforce` sites + 998 defcap rejections into a worklist.
@@ -1032,6 +1156,51 @@ finding: the code is right and one sentence is too tight.
   the code does not follow is not a rule.
 * **Exit:** **G4 = 100%**; the linter runs in CI (P5).
 
+## P3.6 — G5: every documented claim proven  *(added 2026-09-12; order-of-work item 4)*
+
+A `@doc` that states a rule is a promise to an integrator. G2 proves the guards we WROTE work; this
+proves the guards we PROMISED exist. The two can diverge silently, and when they do the doc is the
+thing people build against.
+
+`python3 REPL/_docclaims.py` enumerates them. **Measured 2026-09-12: 100 unverified.**
+
+| kind | count | what it claims |
+|---|---:|---|
+| INVARIANT | 73 | a property that always holds |
+| AUTHORITY | 15 | only X may do this |
+| BOUND | 7 | a numeric or size limit |
+| IMMUTABLE | 5 | this cannot change once set |
+
+* **3.6.1** Triage first: each claim is (a) already pinned by an existing G2 test under different
+  wording — mark and move on; (b) provable with a new test; or (c) **false**. Expect (c) to be
+  non-empty, and treat each one as a finding, not a doc typo — a false AUTHORITY or IMMUTABLE claim
+  is a security statement that is not true.
+* **3.6.2** Write the missing tests, heaviest kind first (AUTHORITY and IMMUTABLE before INVARIANT —
+  they are the ones an integrator will trust without checking).
+* **3.6.3** Any claim that is false: either fix the code or fix the doc, and record which and why.
+  **Do not silently soften the wording** — that converts a defect into a non-event.
+* **Exit:** G5 = 100%; every (c) resolved with a recorded decision.
+
+## P3.7 — G6: every client-reachable function exercised  *(added 2026-09-12; order-of-work item 5)*
+
+**The largest remaining body of work in the campaign — scope it before starting it.**
+`python3 REPL/_scale_report.py --functions`. **Measured 2026-09-12: 3,230 / 4,498 = 72%; 1,268
+never reached.**
+
+* **3.7.0 — DO THIS FIRST, as its own deliverable.** Break the 1,268 down **by prefix and by
+  module** and cost each candidate target line:
+  *every `C_` client entrypoint* / *every `UEV_`* / *every unprotected function* / *100%*.
+  Put the numbers in front of the owner and let the target be chosen from measurements. Starting
+  this phase without a chosen line means discovering its size halfway through — which is how the
+  guard worklist's own cost model (P3.3) got written the expensive way.
+* **3.7.1** Against the chosen line, group by fixture the way P3.3 did: **a function is cheap when
+  the chain already has its state.** The single biggest lever in P3.3 was checking which existing
+  chain already carried the state before building anything, and it applies here unchanged.
+* **3.7.2** Distinguish *named directly by a test* (1,816) from *reached only through another
+  function* (1,414). The second group is exercised but not **asserted on** — reaching a function is
+  not testing it, and counting it as coverage is the same optimistic failure as RULE 10.
+* **Exit:** G6 meets the agreed line; the residue is enumerated with a reason per entry.
+
 ## P4 — Assembly
 * **4.1** `entities/` testers per logical entity (SWP = SWP+SWPI+SWPL+SWPLC+SWPU+MTX-SWP; AQP =
   ANK+SCORE+POOL+FVT+RPS+VCT+DSA; DPDC = the DPDC family).
@@ -1039,7 +1208,19 @@ finding: the code is right and one sentence is too tight.
   first folds to fail** — that is the known cost (`[6.2.6]_AQP-VCT-GAS` already does).
 * **4.3** Delete the second runner (RULE 4).
 * **4.4** Balance splits to `longest_file ~ total_work / 16` (RULE 1).
-* **Exit:** **B2 = 100%**, G3 holds (every test green standalone AND in `Z.repl`).
+* **4.5 — FOLDER REORGANISATION (owner-requested 2026-09-12).** `REPL/` has grown to **259 `.repl`
+  files** with 76 gate entrypoints, and the layout is now archaeology rather than design: `modules/`
+  (32), `Stage_01/` (25), `Stage_02/` (61), `Kursan/` (31), `fixtures/` (9), `archive/` (50) and a
+  scatter of loose files at the root. **Do this LAST, after P3.7**, for one reason: every path change
+  invalidates every `(load …)` and every tool that resolves files by path, so doing it while tests
+  are still being written pays the cost repeatedly. When it happens:
+  - decide the taxonomy first (by module? by gate? by cost?) and write it down before moving a file;
+  - `archive/` (50 files, ungated) is dead weight — decide delete vs keep, do not carry it through;
+  - `_gate.py`'s entrypoint discovery, the orphan check and the scratch-file guard all encode path
+    assumptions and must move with the files;
+  - re-run the gate immediately after; a path typo produces a *silently smaller* suite, not an error.
+* **Exit:** **B2 = 100%**, G3 holds (every test green standalone AND in `Z.repl`); layout documented
+  in section 5 and matching reality.
 
 ## P5 — Make it un-rottable
 * **5.1** `_coverage.py` printing G1/G2/G3 + the untested lists.

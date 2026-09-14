@@ -42,6 +42,22 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 # first one excludes is exactly what RULE 4 forbids: regressions/run.sh is deleted and these are
 # gate entrypoints now.
 KURSAN = [
+    # The seven verify-finding harnesses, re-included 2026-09-11 after the two G3 causes were fixed
+    # (see the note in EXCLUDED below). Each verified to load standalone before being added here.
+    "Kursan/_verify_finding_DPDC-F-S_47L-51L_empty_definition_guards.repl",
+    "Kursan/_verify_finding_DPDC-I_33M_makeid_same_block_collision.repl",
+    "Kursan/_verify_finding_DPDC-S_30M_enable-frag-active-gate.repl",
+    "Kursan/_verify_finding_DPDC-S_31M_primordial_element_bounds.repl",
+    "Kursan/_verify_finding_DPDC-S_32M_hybrid_constituent_order.repl",
+    "Kursan/_verify_finding_DPDC-UDC-S_38M_sentinel_unreachable.repl",
+    "Kursan/_verify_finding_DPDC_34M_empty_nonces_with_supplies.repl",
+    # Open finding (2026-09-11): TFT multi-transfer dies on an EMPTY leg list, reachable via
+    # ATSU royalty withdrawal on a pool with nothing accrued. Loads Stage-1 deploys only.
+    "Kursan/_verify_finding_EMPTY-LIST_01_index_iterating_cumulators.repl",
+    # Security claim (2026-09-11): TS01-C2 ORBR|C_WithdrawFees' @doc says "Only the Token Owner
+    # can withdraw these fees" -- true, and previously untested. Needs the [6.2]_DPTF chain,
+    # the only one that produces a token with ACCRUED fees. Found by _docclaims.py.
+    "Kursan/_verify_finding_ORBR-FEE_01_withdraw_ownership.repl",
     "Kursan/AQP-scale-inject.repl",
     "Kursan/AQP-scale-sweep.repl",
     "Kursan/AQP-scale-vacate.repl",
@@ -84,19 +100,27 @@ GATE = (["ZALL.repl", "AQP-FULL.repl", "AQP-core-vct.repl", "triplet-collect-gol
 # something already gated" is. Reviewing this list IS reviewing the suite's honesty.
 EXCLUDED = [
     ("archive/",       "retired probes; kept for provenance, not run"),
-    # The eight Kursan verify-finding harnesses below share ONE root cause and are the G3
-    # order-dependence defect, not eight separate problems: [6.1.4]_DPDC-NF.repl:333 upgrades
-    # CNF's branding by a month and BRD rejects with "Blue Flag has more than 15 days remainig!"
-    # when the flag is still fresh. They pass inside ZALL and fail standalone because they load
-    # Stage00a_StoaTests.repl, which ZALL never loads, so the longer chain leaves CNF already
-    # branded. Fixing that one line unblocks all eight at once -- tracked for P4/G3.
-    ("Kursan/_verify_finding_DPDC-I_33M_makeid_same_block_collision.repl",   "G3: [6.1.4]:333"),
-    ("Kursan/_verify_finding_DPDC-F-S_47L-51L_empty_definition_guards.repl", "G3: [6.1.4]:333"),
-    ("Kursan/_verify_finding_DPDC-S_30M_enable-frag-active-gate.repl",       "G3: [6.1.4]:333"),
-    ("Kursan/_verify_finding_DPDC-S_31M_primordial_element_bounds.repl",     "G3: [6.1.4]:333"),
-    ("Kursan/_verify_finding_DPDC-S_32M_hybrid_constituent_order.repl",      "G3: [6.1.4]:333"),
-    ("Kursan/_verify_finding_DPDC-UDC-S_38M_sentinel_unreachable.repl",      "G3: [6.1.4]:333"),
-    ("Kursan/_verify_finding_DPDC_34M_empty_nonces_with_supplies.repl",      "G3: [6.1.4]:333"),
+    # G3 order-dependence — RESOLVED 2026-09-11, all seven harnesses re-included.
+    #
+    # They failed standalone for TWO independent reasons, not the one this note used to name:
+    #
+    #   1  BRANDING TIME. BRD allows an upgrade only under 15 days of remaining premium
+    #      (04_BRD.pact:258). THREE suites called it unconditionally -- [6.1.4]_DPDC-NF:333,
+    #      [6.1.6]_DPOF:73, [6.1.7]_DPSF-UPDATES:97 -- and each aborted its whole file wherever the
+    #      flag was still fresh. All three now ask BRD's own question and skip when the upgrade is
+    #      not yet permitted. Each is a print-only smoke step; verified no-ops in the gated chains.
+    #
+    #   2  CREATE-ROLE OWNERSHIP. DPSF set definitions reach DPDC-C|C>REGISTER-NONCES, which enforces
+    #      ownership of the collection's NFT CREATE-ROLE account (DPDC-C.pact:288, UR_Verum5) -- not
+    #      the collection owner. DHCD is owned by ANHD but its create role sits with EMMA, so two
+    #      harnesses signing only as the patron failed a gate unrelated to the patron. Both now sign
+    #      as both.
+    #
+    # A third harness (_DPDC-I_33M) also asserted an outcome the code does not produce: it expected a
+    # same-ticker NFT issuance to SUCCEED because DPNF and DPSF have separate properties tables. It
+    # aborts instead, in BRD|BrandingTable -- which is keyed on the bare id and SHARED across every
+    # collection type, so per-type separation does not give cross-type id independence. Now pinned as
+    # the behaviour it actually has.
     ("Kursan/VCT-comprehensive.repl",
                        "driver for [6.2.6]_AQP-VCT-GAS, which fails inside its own VCTGAS probe "
                        "module -- same known breakage as VCT-gas-sweep.repl below"),
@@ -187,6 +211,91 @@ def main():
     ap.add_argument("-j", type=int, default=os.cpu_count())
     ap.add_argument("--audit-only", action="store_true", help="orphan check only, run nothing")
     a = ap.parse_args()
+
+    # FRESHNESS HEADER, flushed before any work. This exists because of a real incident on
+    # 2026-09-14: the gate was launched as `cd REPL && ... python3 _gate.py > /tmp/gateN.log`
+    # from a shell ALREADY inside REPL/. The `cd` failed, `&&` short-circuited, _gate.py never
+    # ran -- and a log from a PREVIOUS session was still sitting at that path, ending in
+    # "GATE GREEN". The trailing `; echo rc=$?` reported success for the echo. A stale green was
+    # read as a fresh green and a genuine failure ([6.1] TX-IGC-008) stayed hidden for hours.
+    #
+    # Two properties fix that, and both are needed. This line is written FIRST and flushed, so a
+    # log that lacks it never started; and it carries a wall-clock stamp, so a log that is merely
+    # OLD is visible as old without having to stat the file. Anything reading a gate log -- human
+    # or otherwise -- should check this line before believing the verdict at the bottom.
+    # (No cwd guard here: line 35 already chdirs to this file's own directory, so the gate is
+    # cwd-INDEPENDENT -- `python3 REPL/_gate.py` works from anywhere and the `cd REPL &&` that
+    # caused the incident was never needed in the first place. A guard on cwd would be unreachable
+    # code dressed as protection, which is the same shadowed-guard pattern _shadowed.py exists to
+    # find. The header below is the whole defence, and it is sufficient: no header, no run.)
+    print(f"GATE RUN STARTED {time.strftime('%Y-%m-%d %H:%M:%S')} "
+          f"(pid {os.getpid()})", flush=True)
+
+    # Scratch probes. Iterating on this suite means dropping a throwaway loader in modules/ to see
+    # what a function does; modules/*.repl is GLOBBED into the gate, so a forgotten one runs as a
+    # real entrypoint. That happened -- a probe full of deliberately-wrong expected messages failed
+    # the gate 200 seconds in. Failing here instead costs nothing and names the file. Convention:
+    # anything in modules/ starting with `_` is scratch and must be deleted before a gate run.
+    # `Kursan/` is globbed too, and on 2026-09-12 a probe landed there instead of in modules/ --
+    # outside this guard's reach. Kursan's own underscore files follow one convention,
+    # `_verify_finding_*`, so anything else starting with `_` there is scratch by the same rule.
+    # (The orphan check later would also catch an asserting leftover, but only AFTER the orphan scan
+    # and with a message about reachability rather than "you forgot to delete this".)
+    _scratch = (sorted(glob.glob("modules/_*.repl"))
+                + sorted(f for f in glob.glob("Kursan/_*.repl")
+                         if not os.path.basename(f).startswith("_verify_finding_")))
+    if _scratch:
+        sys.exit("GATE FAILED: leftover scratch loader(s) -- delete before running:\n"
+                 + "\n".join(f"   {x}" for x in _scratch))
+
+    # The Stage-Z testing variant is GENERATED from canonical (see _stagez_variant.py). If canonical
+    # moved and the variant was not regenerated, the STAGE-Z assertions are testing a stale copy and
+    # would still go green -- so this must fail the gate, not warn.
+    _sv = subprocess.run([sys.executable, "_stagez_variant.py", "--check"],
+                         capture_output=True, text=True)
+    if _sv.returncode != 0:
+        print(_sv.stdout + _sv.stderr)
+        sys.exit("GATE FAILED: Stage-Z testing variant is stale vs canonical.")
+
+    # BATCH LADDER TILING. The citizen minters encode their mint plan as literals inside one-line
+    # A_StepNN / A_FixNN wrappers, and no .repl can read a literal -- it can only execute a rung.
+    # So a mis-tiled ladder (gap, overlap, or an over-budget rung that cannot fit in a transaction)
+    # is invisible to the suite no matter how green it is. Found exactly that on 2026-09-14:
+    # NOSFERATU A_Fix01 read `Legendary 1 100` against its twin A_Step01's `1 70`, double-covering
+    # thirty positions. Static property, static check, and it fails the gate rather than warning.
+    _ld = subprocess.run([sys.executable, "_ladder.py", "--check"], capture_output=True, text=True)
+    if _ld.returncode != 0:
+        print(_ld.stdout + _ld.stderr)
+        sys.exit("GATE FAILED: a citizen minter batch ladder does not tile its collection.")
+
+    # TOOL INTEGRITY. Every analysis tool in this directory is a `_*.py`; none of them is imported
+    # by the gate, so a syntax error in one is INVISIBLE here. That is not hypothetical -- on
+    # 2026-09-12 an edit to `_conformance.py`'s rule text left an unescaped quote inside a string,
+    # and the gate went GREEN TWICE before anyone ran the tool. A green gate was reporting on a
+    # suite whose conformance checker could not start.
+    #
+    # So: byte-compile every tool, and run `--selftest` on the ones that have it. Compiling is the
+    # part that catches the failure above; the selftests are the part that catches a rule quietly
+    # matching nothing. Both are seconds. A tool that cannot run is worse than a missing tool,
+    # because its silence reads as "clean".
+    _tools = sorted(t for t in glob.glob("_*.py") if t != os.path.basename(__file__))
+    _broken = []
+    for t in _tools:
+        r = subprocess.run([sys.executable, "-m", "py_compile", t], capture_output=True, text=True)
+        if r.returncode != 0:
+            _broken.append(f"   {t}: will not compile\n{r.stderr.strip()}")
+    if _broken:
+        sys.exit("GATE FAILED: analysis tool(s) are broken -- their silence would read as clean:\n"
+                 + "\n".join(_broken))
+    _st_failed = []
+    for t in _tools:
+        if "--selftest" not in read(t):
+            continue
+        r = subprocess.run([sys.executable, t, "--selftest"], capture_output=True, text=True)
+        if r.returncode != 0:
+            _st_failed.append(f"   {t} --selftest exited {r.returncode}\n{(r.stdout + r.stderr).strip()}")
+    if _st_failed:
+        sys.exit("GATE FAILED: analysis tool selftest(s) failed:\n" + "\n".join(_st_failed))
 
     reachable = set()
     for g in GATE: reachable |= closure(g)

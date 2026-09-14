@@ -27,6 +27,20 @@ A name is `PREFIX_Name` (or `PREFIX_Scope|Name`). The prefix is read left-to-rig
     one place all real paths already share. Introduced 2026-08-24 (SWP audit L56) — retroactively also
     covers the `U|LST` bounds-guard exception from v1.9.0/§6.1 (L41), now a named category instead of an
     ad-hoc carve-out.
+  - **Three ways a `v` is EARNED** (any one suffices; all are re-checked every run):
+    1. **derived-value** — an `enforce` reads a name bound by this function's own `let`. Relocating
+       duplicates the derivation. (`UCv_SplitBalanceWithBooleans` enforces on `split`/`big-chunk`.)
+    2. **own-dispatch** — the `enforce` is the domain guard on this function's own `cond`, and that
+       `cond` has a **fall-through default**. Delete the guard and an out-of-domain input silently
+       returns the default instead of failing — the guard is what makes the dispatch total.
+       (`URv_TotalRaised` / `URv_Funds` / `URv_GetVerumChain`.)
+    3. **call-site count** — relocating would copy the check into N > 1 call sites.
+       **REPL suites count as call sites**: a test that calls the function directly and asserts its
+       failure message depends on the check being inline, and moving it breaks that test.
+       (This is also why "0 callers" must be measured over `.repl` too — `UCv_Percent` had zero
+       `.pact` callers and was almost deleted, while `REPL/modules/UTILITIES.repl` asserts both its
+       value and its failure message.)
+
   - **THE `v` MUST BE EARNED, AND RE-EARNED — check it, do not assume it.** A `v` variant exists
     because the `enforce` was judged *optimally* placed inline. That judgement is mechanical and
     must be applied to **every** `UCv_`/`URv_`/`URCv_`/`URDCv_` when written and whenever its call
@@ -100,6 +114,7 @@ because it does no reads. A conditionally-heavy function takes the heavy prefix 
 | `UEV_`  | enforce | Read **+ `enforce`** — may abort the tx | yes | **ENFORCE** |
 | `CAP_`  | enforce·ownership | Account-ownership `enforce` (UEV-like, ownership-specific) | yes | **ENFORCE** |
 | `UDC_`  | construct | **Data constructor** — named object builder (no reads, no enforce) | yes | **CONSTRUCT** |
+| `UM_`   | migrate   | **Utility Migrate** — the ONLY reader permitted to WRITE: persists a schema backfill, declares it in the name. Parked; zero exist (§7.19) | yes | **WRITE** |
 | `UDCx_` | construct·aux | `UDC_` **auxiliary** | yes | **CONSTRUCT** (dim) |
 | `CT_`   | constant | Constant accessor — wraps a shared `defconst` / utility constant | yes | **CONSTANT** |
 
@@ -547,7 +562,7 @@ first** (e.g. `URHC_` before `URH_`, `URCi_` before `URC_` before `UR_`, `CC_` b
 | **ENFORCE**      | `UEV_IMC` (structural, see below) · `UEV_` `CAP_` |
 | **CONSTRUCT**    | `UDCx_` `UDC_` |
 | **CONSTANT**     | `CT_` |
-| **WRITE**        | `WI_` `WU4_` `WU3_` `WU2_` `WU_` `WW_` |
+| **WRITE**        | `WI_` `WU4_` `WU3_` `WU2_` `WU_` `WW_` · `UM_` (migrate-on-read, §7.19) |
 | **RECIPE**       | `AAp_` `AA_` `Ap_` `AU_` `A_` · `CCp_` `CC_` `Cp_` `C_` |
 | **PROTECTED**    | `XI_` `XE_` `XB_` |
 | **STRUCTURAL**   | `GOV` `GOV\|` `P\|` `SECURE` `UEV_IMC` |
@@ -818,3 +833,216 @@ table/name qualifier on a read → prefix-first (`UR_TABLE|Field`).**
 > this rule those are the owning-entity form and *should* be scope-first (`DPTF|C_Issue`, `DPNF|C_Create`,
 > `DALOS|A_ToggleGAP`). Sweeping them is a large rename touching every Talos module, interface, caller, and REPL
 > suite — deferred to an explicit owner-approved pass, not done implicitly. Only the STOA violation is fixed here.
+
+### 7.18 `X_` protection classes — the mandatory `;;Protection:` line — amendment 2026-09-10
+
+**Owner ruling.** The layer contract is fixed:
+
+1. **`W_` writers** (`WW_` / `WI_` / `WU_` and every numbered variant) are **`SECURE`-protected direct
+   data writers — all of them, without exception** — and are called only from inside their own module.
+2. **`X_` functions** (`XI_` / `XE_` / `XB_`) **aggregate** those writes when custom logic is needed.
+   They are called by `C_` and `A_`.
+3. Normally **no enforcement sits at the `X_` level** (no direct `UEV_*`). Compute and read functions
+   may sit there, **including their validating (`UCv_` / `URv_` / `URCv_`) variants**.
+4. An `X_` that needs validating is protected by a **`require-capability`**, and that capability is
+   **composed into the main evented capability** the `C_` / `A_` already needs — which relocates the
+   pure validators into the capability, where they belong.
+
+**Therefore every `X_` function is protected, and in exactly one of five ways. This is the whole
+list; there is no sixth.**
+
+| Class | Name | What it means |
+|-------|------|---------------|
+| **1** | **Innate** | Protected by something it composes. **The protecting function(s) MUST be named.** |
+| **2** | **SECURE** | `require-capability` / `with-capability` on `SECURE`. |
+| **3** | **Custom** | A purpose-built capability. |
+| **4** | **IMC** | `P|UEV_IMC` — which itself composes `SECURE`, so the function stays callable from within. |
+| **5** | **IMC + Custom** | `P|UEV_IMC`, then `(with-capability (CUSTOM-CAP) …)`. |
+
+> **Why Class 2 is absolute.** `SECURE` can be composed only from **within** the module, or from
+> outside it with **module admin**. (The capability bug that allowed free external composition was
+> fixed in the latest patch.) So everything protected by `SECURE` is protected, full stop.
+
+#### The annotation — mandatory, one per `X_` function, no exceptions
+
+Every `X_` definition carries a `;;Protection:` line **immediately above its `(defun`** (above, not
+inside: §CLAUDE.md requires `@doc` to sit immediately after the parameter list).
+
+```pact
+;;Protection: Class 2 — SECURE
+(defun XI_Issue (id:string account:string amount:decimal)
+```
+```pact
+;;Protection: Class 1 — Innate protection offered by WI_RpsGlobal, WU_Fvt|EnabledRewardCount
+(defun XI_AddRewardLink (…)
+```
+
+Exact forms:
+
+| Class | Line |
+|---|---|
+| 1 | `;;Protection: Class 1 — Innate protection offered by <fn>[, <fn>…]` |
+| 2 | `;;Protection: Class 2 — SECURE` |
+| 3 | `;;Protection: Class 3 — Custom: <CAP>[, <CAP>…]` |
+| 4 | `;;Protection: Class 4 — IMC (P\|UEV_IMC, which composes SECURE)` |
+| 5 | `;;Protection: Class 5 — IMC + Custom: <CAP>[, <CAP>…]` |
+
+#### Class 1 is a linked list, not a claim
+
+A Class 1 line names **only the ONE-HOP protectors**. An auditor reading it walks to that function
+and reads *its* `;;Protection:` line, and so on. This is why a Class 1 may legitimately name another
+Class 1 — **the walk continues**. What must hold:
+
+- **The chain TERMINATES** at a Class 2–5. A chain that cycles or dead-ends is a **bug**.
+- **Every write path reaches a protector.** A Class 1 body may write directly — see the ruling below
+  — but a branch that writes while reaching *no* protector at all is protected by nothing.
+
+> **Owner ruling 2026-09-10 — a direct write inside a Class 1 body is NOT a bug, and order does not
+> matter.** An earlier draft of this section claimed the opposite. It was wrong. *"Even if Class 1
+> would do a direct write, and would be protected by another function, if the prerequisites for that
+> function fail, so too would the direct write."* Pact transactions are atomic: when the delegated
+> protector rejects, the whole transaction aborts and the earlier write is discarded with it. The
+> write can never outlive the check that guards it.
+>
+> Verified empirically, both directions:
+> * A protector that rejects **after** a direct write → the aborted tx discards the write.
+> * The one escape hatch — swallowing the protector's failure with `try` so the tx still commits —
+>   **cannot be built**: Pact rejects DB writes inside `try` with *"Operation disallowed in
+>   read-only or sys-only mode"*.
+>
+> Beware the REPL artifact when re-testing this: **`expect-failure` catches the error, so the tx is
+> never aborted and the write DOES persist** (REPL_TEST_ARCHITECTURE RULE 9). That artifact is what
+> made the first run of this experiment appear to confirm the wrong rule.
+
+*Measured 2026-09-10 across all **632** `X_` implementations: Class 1 = 107, Class 2 = 177,
+Class 3 = 135, Class 4 = 57, Class 5 = 156, **UNCLASSIFIED = 0**. Every Class 1 chain terminates in
+1–2 hops (93 at one hop, 14 at two). Separately, zero Class 1 functions write directly — so every
+write is delegated to an already-protected callee. That is an observation about the code as it
+stands, **not a rule**: a future Class 1 may write directly and still be correct.*
+
+#### Enforcement
+
+`REPL/_xprotect.py` derives the class from source and `REPL/_conformance.py` `[x-protection-declared]`
+fails when a declared line is **missing**, or **disagrees** with what the source actually does. The
+annotation is generated, never hand-written — a hand-edited line that drifts from the code is worse
+than no line at all, because it reads as verified.
+
+```bash
+cd REPL && python3 _xprotect.py            # class census
+cd REPL && python3 _xprotect.py --verify   # declared vs derived; non-zero on mismatch
+cd REPL && python3 _xprotect.py --write    # generate/refresh every annotation
+```
+
+### 7.19 `UM_` (Utility Migrate) — the ONLY reader allowed to write — amendment 2026-09-10
+
+**Owner ruling.** A `UR_*` / `URC_*` / `UC_*` reader **must not write**. Where a schema migration
+genuinely has to persist, it is spelled **`UM_*`** — *Utility Migrate* — so that the write is
+visible in the name instead of hiding behind a reader's.
+
+| Prefix | Meaning |
+|---|---|
+| `UM_*` | **Utility Migrate.** A read that also persists a schema backfill. Declares the write in its own name. Must carry a `@doc` stating which field it backfills and why the lazy form was chosen over a one-time `A_` migration. |
+
+#### Why a reader that writes is not a harmless optimisation
+
+Found 2026-09-10: eight ATS readers (`UR_CanUpgrade`, `UR_Hibernate`, `UR_Royalty`,
+`UR_PeakHibernatePromile`, `UR_HibernateDecay`, `UR_RewardTokens`, `UR_DirectRecoveryFee`,
+`UR_ToggleDirectRecovery`) backfilled a missing field with a live `update`. Four distinct defects:
+
+1. **It is an ungated write.** These were the **only 8 unprotected writing functions in the whole
+   sovereign codebase** (of 504 that write). Anyone could call them and cause a table write.
+2. **It is invisible to the `X_` protection sweep** (§7.18), which classifies `X*_` only. A writer
+   wearing a reader's prefix is not in that population at all — the audit scheme cannot see it.
+3. **It charges the caller gas for someone else's migration**, on a nominal read.
+4. **It is fatal inside `try`.** Pact bans DB writes there (*"Operation is not allowed in read-only
+   or system-only mode"*), and `(try false (UR_X key))` is this codebase's own row-existence probe,
+   used across LIQUID, CODEX, DPOF, DPL-UR. Worse, that error is **not catchable** — it propagates
+   and fails the whole transaction rather than returning the `try` default.
+
+Both `ATSU::URC_MultiCull` and the citizen `DPL-UR::URC_0012_RecoveryPrimordial` reached these,
+so a citizen *read* module could trigger a sovereign table write.
+
+#### Status: canonised and PARKED — currently zero `UM_` functions exist
+
+All known migrations are **complete**, verified against live StoaChain (chain 0) on 2026-09-10 via
+the Pythia dirty-read gateway (`OuronetInformational/pythia-dirty-read-access.md`):
+
+| Table | Rows | Fields probed | Cells | Backfill fired |
+|---|---|---|---|---|
+| `ATS\|Pairs` | 4 | 8 | 32 | **0** |
+| `DPTF\|PropertiesTable` | 18 | 1 (`hibernation-link`) | 18 | **0** |
+| `SWP\|Pairs` | 1 | 1 (`stoa-value`) | 1 | **0** |
+
+**Method** — wrap each reader in `try`. Pact forbids DB writes inside `try`, so a row still needing
+the backfill makes the call fail; a migrated row returns its value. **Calibrated with a live
+negative control**: `coin.create-account` on chain 0 returned `"Write succeeded"` bare, and
+`Operation is not allowed in read-only or system-only mode` inside `try`. Because that error
+propagates rather than being caught, a single unmigrated row would have failed the **entire batch** —
+all 51 cells returned `success`.
+
+The three lazy backfills have therefore all been retired to plain `UR_` form: DPTF `#30M`,
+SWP `#50L`, and ATS `#ATSm` (the 8 above). `UM_` exists for the **next** migration, not a current one.
+
+#### Enforcement
+
+`_conformance.py` `[UR-no-write]` fails any `UR_`/`URC_`/`UC_` containing `insert`/`update`/`write`;
+`UM_` is the sanctioned exemption. Self-tested against the pre-fix ATS source: catches all 8.
+
+### 7.20 `XIv_` / `XBv_` / `XEv_` — the `v` role reaches the protected band — amendment 2026-09-10
+
+**Owner ruling.** The `v` role (§1) now extends to protected `X_` functions, with a strict order of
+preference. An enforcement in an `X_` is a **last resort**, and when it is unavoidable it must be
+**visible in the name**.
+
+#### The order of preference — strive, in this order
+
+1. **Move it out.** A **pure** enforcement — a call to `UEV_*` / `CAP_*`, or an `enforce` over the
+   function's own **arguments** — does not belong in an `X_` at all. Relocate it to a `UEV_*`, or to
+   a `UCv_`/`URv_`/`URCv_` where it is intrinsic to a computation.
+2. **Put it in a capability.** Preferably the one the `X_` already requires, so the check sits in
+   **one single place** and every caller inherits it by composing that capability — rather than
+   being copied into each call site.
+3. **Only if neither is optimal, keep it — and rename to `XIv_` / `XBv_` / `XEv_`.**
+
+> **"Optimal" is the same test as §1, unchanged: relocating is "complicated" EXACTLY when it results
+> in MORE CODE.** A check inside a function with 5 call sites becomes 5 lines when pushed to the
+> callers — that is more code, so it stays and earns the `v`.
+
+#### The `;;Enforce:` line — mandatory on every `v` variant of an `X_`
+
+Like `;;Protection:` (§7.18), it sits **immediately above the `(defun`** and states *why* the check
+could not be relocated, so an auditor never has to re-derive it:
+
+The `;;Enforce:` block sits **above** the `;;Protection:` block, which stays adjacent to the
+`(defun` — `_xprotect.py` locates the protection block by scanning up from the `defun`, so nothing
+may come between them:
+
+```pact
+;;Enforce: read-and-write-in-one -- <fee-unlocks> is read here and written back incremented, so a
+;;         defcap would have to re-read the same row.
+;;Protection: Class 2 — SECURE
+(defun XIv_IncrementFeeUnlocks (id:string)
+```
+
+Three recognised justifications (state the applicable one):
+- **read-and-write-in-one** — the enforced value is read here and used to build the write; a defcap
+  must re-read the same row.
+- **derived-in-flight** — the value does not exist until an earlier phase of this same function has
+  run, so no caller-side capability can see it (`RPS::XIv_FvtAddStream` checks a **post-drip** count).
+- **N call sites** — relocating would duplicate the check N times. State N.
+
+#### Exemption: the fail-closed `(enforce false)` backstop
+
+`(enforce false …)` as the **default arm of an exhaustive `cond`/`if` chain** is NOT an enforcement
+and does NOT earn a `v`. It is an assertion that the branch table is exhaustive — a defcap cannot
+express it, because it does not know which branch ran. Worked example, `DPDC-C::XI_CreditOrDebitCollectables`
+(DPDC Audit #23M): 16 branches each taking a different `require-capability`, and a default that must
+hard-abort rather than fall through to the write with no capability checked at all.
+
+**The exemption is narrow by design** — default arm of a branch chain only. `(enforce false)` anywhere
+else is a real enforcement and is treated as one, so this cannot become a general escape hatch.
+
+#### Enforcement
+
+`_conformance.py` `[XI-no-enforce]` skips `Xv_` variants (they have declared themselves) and skips a
+default-arm `(enforce false)`; `[x-enforce-declared]` requires the `;;Enforce:` line on every `Xv_`.

@@ -354,16 +354,27 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                 (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
                 (asset:string (UR_AssetID))
                 (pid:decimal (at "pid" (URC_NonceAmountCosts nonce amount)))
                 (type:integer (if iz-native 0 1))
             )
-            (+ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
-                   (ref-DEMIPAD::URCi_Deposit buyer asset pid type false))
-               (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
-                   (ref-DPDC-T::URCi_MultiTransferCumulator [asset] [true] DEMIPAD|SC_NAME buyer [[nonce]] [[amount]])))
+            (+ (+ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
+                      (ref-DEMIPAD::URCi_Deposit buyer asset pid type false))
+                  (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
+                      (ref-DPDC-T::URCi_MultiTransferCumulator [asset] [true] DEMIPAD|SC_NAME buyer [[nonce]] [[amount]])))
+               ;;MISSING LEG FIXED (2026-09-14). The Sigma counted the deposit and the transfer GAS but
+               ;;not the IGNIS ROYALTY. `DPDC|C_MultiTransfer` runs `C_IgnisRoyaltyCollector patron ...`
+               ;;before its own collect, and that pays the collection creator OUT OF THE PATRON — so a
+               ;;buyer of a royalty-bearing nonce is charged more than this preview quoted. Measured
+               ;;89.002 quoted against 89.004 charged on a 2-share buy (0.001/share).
+               ;;The `(if virtual-gas-zero 0.0 ...)` mirrors the collector's own short-circuit, so the
+               ;;preview stays correct when virtual gas is switched off.
+               (if (ref-IGNIS::URC_IsVirtualGasZero)
+                   0.0
+                   (ref-DPDC-T::URC_SummedIgnisRoyalty DEMIPAD|SC_NAME asset true [nonce] [amount])))
         )
     )
     (defun INFO_Acquire:object{OuronetInfoV2.ClientInfo} (patron:string buyer:string nonce:integer amount:integer iz-native:bool)
@@ -429,6 +440,7 @@
     )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
+    ;;Protection: Class 3 — Custom: GOV|CUSTODIANS_ADMIN
     (defun XI_I|AssetId (asset-id:string)
         (require-capability (GOV|CUSTODIANS_ADMIN))
         (insert CUSTODIANS|T|Properties CUSTODIANS|INFO

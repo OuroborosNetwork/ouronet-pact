@@ -148,8 +148,7 @@
     (defun UR_Verum9:[string] (id:string son:bool))
     (defun UR_Verum10:string (id:string son:bool))
     (defun UR_Verum11:[string] (id:string son:bool))
-    (defun UR_GetSingleVerum:string (id:string son:bool rp:integer))
-    (defun UR_GetVerumChain:[string] (id:string son:bool rp:integer))
+    (defun URv_GetVerumChain:[string] (id:string son:bool rp:integer))
     ;;  [4]
     (defun UR_IzAccount:bool (account:string id:string son:bool))
     (defun UR_CA|R:object{DpdcUdcV2.AccountRoles} (id:string son:bool account:string))
@@ -227,14 +226,14 @@
     ;;
     ;; [<AccountsTable> Writings] [0]
     ;;
-    (defun XB_DeployAccountSFT
+    (defun XBv_DeployAccountSFT
         (
             account:string id:string
             input-rnaq:bool f:bool re:bool rnb:bool rnc:bool rnr:bool
             rnu:bool rmc:bool rmr:bool rsnu:bool rt:bool
         )
     )
-    (defun XB_DeployAccountNFT 
+    (defun XBv_DeployAccountNFT 
         (
             account:string id:string
             f:bool re:bool rnb:bool rnc:bool rnr:bool
@@ -700,16 +699,7 @@
     (defun UR_Verum11:[string] (id:string son:bool)
         (at "r-transfer" (UR_VerumRoles id son))
     )
-    (defun UR_GetSingleVerum:string (id:string son:bool rp:integer)
-        (enforce (contains rp [5 6 10]) "Invalid Position for Single Verum")
-        (cond
-            ((= rp 5) (UR_Verum5 id son))
-            ((= rp 6) (UR_Verum6 id son))
-            ((= rp 10) (UR_Verum10 id son))
-            BAR
-        )
-    )
-    (defun UR_GetVerumChain:[string] (id:string son:bool rp:integer)
+    (defun URv_GetVerumChain:[string] (id:string son:bool rp:integer)
         (enforce (contains rp [1 2 3 4 7 8 9 11]) "Invalid Position for Multi Verum")
         (cond
             ((= rp 1) (UR_Verum1 id son))
@@ -955,16 +945,23 @@
         )
     )
     (defun UEV_Nonce (id:string son:bool nonce:integer)
+        @doc "Validates a nonce for the given DPDC id. \
+            \ SHADOWED-GUARD FIX: all three predicates used to sit in ONE enforce BELOW a \
+            \ <UR_NonceValue> binding. That reader hard-reads DPSF|T|Nonces / DPNF|T|Nonces \
+            \ keyed by the nonce itself, and Pact evaluates let bindings before the body - so \
+            \ nonce 0 or any nonce above <nonces-used> aborted on 'row not found' and NONE of \
+            \ the three predicates was reachable for any input. \
+            \ The two INPUT guards now run before the keyed read; the third is kept after it as \
+            \ a data-integrity assertion. Message is unchanged on every path."
         (let
             (
                 (an:integer (abs nonce))
-                (nv:integer (UR_NonceValue id son an))
                 (nu:integer (UR_NoncesUsed id son))
             )
-            (enforce
-                (fold (and) true [(!= an 0) (<= an nu) (= an nv)])
-                "Invalid Nonce Value"
-            )
+            ;;Split rather than folded into one enforce on purpose: the second predicate needs a
+            ;;read keyed BY <an>, so it can only be evaluated once <an> is known to be in range.
+            (enforce (and (!= an 0) (<= an nu)) "Invalid Nonce Value")
+            (enforce (= an (UR_NonceValue id son an)) "Invalid Nonce Value")
         )
     )
     (defun UEV_CanUpgradeON (id:string son:bool)
@@ -1300,7 +1297,10 @@
     ;;{5.6}  Aux/X
     ;;
     ;; [<AccountsTable> Writings] [0]
-    (defun XB_DeployAccountSFT
+    ;;Enforce: 5 call sites (C_IssueDigitalCollection, A_RegisterAssetToLaunchpad, XE_DeployAccountWNE,
+    ;;          DPDC-I, TS02-DPAD) -- relocating UEV_EnforceAccountExists duplicates it 5x.
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    (defun XBv_DeployAccountSFT
         (
             account:string id:string
             input-rnaq:bool f:bool re:bool rnb:bool rnc:bool rnr:bool
@@ -1330,7 +1330,10 @@
             )
         )
     )
-    (defun XB_DeployAccountNFT 
+    ;;Enforce: 5 call sites (C_IssueDigitalCollection, A_RegisterAssetToLaunchpad, XE_DeployAccountWNE,
+    ;;          DPDC-I, TS02-DPAD) -- relocating UEV_EnforceAccountExists duplicates it 5x.
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    (defun XBv_DeployAccountNFT 
         (
             account:string id:string
             f:bool re:bool rnb:bool rnc:bool rnr:bool
@@ -1358,7 +1361,9 @@
             )
         )
     )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_DeployAccountWNE (account:string id:string son:bool)
+        (P|UEV_IMC)
         (let
             (
                 (collection-account-exists:bool (UR_IzAccount account id son))
@@ -1366,20 +1371,22 @@
             )
             (if (not collection-account-exists)
                 (if son
-                    (XB_DeployAccountSFT account id f f f f f f f f f f f)
-                    (XB_DeployAccountNFT account id f f f f f f f f f f)
+                    (XBv_DeployAccountSFT account id f f f f f f f f f f f)
+                    (XBv_DeployAccountNFT account id f f f f f f f f f f)
                 )
                 true
             )
         )
     )
     ;;
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_U|Rnaq (id:string account:string toggle)
         (P|UEV_IMC)
         (update DPSF|T|Account (concat [id BAR account])
             {"role-nft-add-quantity" : toggle}
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_U|AccountRoles (id:string son:bool account:string new-roles:object{DpdcUdcV2.AccountRoles})
         (require-capability (SECURE))
         (if son
@@ -1392,6 +1399,7 @@
         )
     )
     ;; [<PropertiesTable> Writings] [1]
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_I|Collection
         (id:string son:bool idp:object{DpdcUdcV2.DPDC|Properties})
         (P|UEV_IMC)
@@ -1400,6 +1408,7 @@
             (insert DPNF|T|Properties id idp)
         )
     )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_U|Specs (id:string son:bool specs:object{DpdcUdcV2.DPDC|Properties})
         (P|UEV_IMC)
         (if son
@@ -1407,6 +1416,7 @@
             (update DPNF|T|Properties id specs)
         )
     )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_U|IsPaused (id:string son:bool toggle:bool)
         (P|UEV_IMC)
         (if son
@@ -1414,6 +1424,7 @@
             (update DPNF|T|Properties id {"is-paused" : toggle})
         )
     )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_U|NoncesUsed (id:string son:bool new-nv:integer)
         (P|UEV_IMC)
         (if son
@@ -1421,6 +1432,7 @@
             (update DPNF|T|Properties id {"nonces-used" : new-nv})
         )
     )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_U|SetClassesUsed (id:string son:bool new-nsc:integer)
         (P|UEV_IMC)
         (if son
@@ -1429,6 +1441,7 @@
         )
     )
     ;; [<NoncesTable> Writings] [2]
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_I|CollectionElement (id:string son:bool nonce-value:integer ned:object{DpdcUdcV2.DPDC|NonceElement})
         (P|UEV_IMC)
         (if son
@@ -1436,10 +1449,12 @@
             (insert DPNF|T|Nonces (concat [id BAR (format "{}" [nonce-value])]) ned)
         )
     )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_U|NonceSupply (id:string nonce-value:integer new-supply:integer)
         (P|UEV_IMC)
         (update DPSF|T|Nonces (concat [id BAR (format "{}" [nonce-value])]) {"nonce-supply" : new-supply})
     )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_U|NonceHolder (id:string nonce-value:integer new-holder-account:string)
         (P|UEV_IMC)
         (let
@@ -1456,6 +1471,7 @@
             (update DPNF|T|Nonces (concat [id BAR (format "{}" [nonce-value])]) {"nonce-holder" : sh})
         )
     )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_U|NonceOrSplitData (id:string son:bool nonce-value:integer nos:bool nd:object{DpdcUdcV2.DPDC|NonceData} )
         (P|UEV_IMC)
         (if nos
@@ -1470,6 +1486,7 @@
         )
     )
     ;; [<VerumRolesTable> Writings] [3]
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_I|VerumRoles (id:string son:bool verum-chain:object{DpdcUdcV2.DPDC|VerumRoles})
         (P|UEV_IMC)
         (if son
@@ -1477,6 +1494,7 @@
             (insert DPNF|T|VerumRoles id verum-chain)
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_U|VerumRole1 (id:string son:bool ul:[string])
         (require-capability (SECURE))
         (if son
@@ -1484,6 +1502,7 @@
             (update DPNF|T|VerumRoles id {"a-frozen" : ul})
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_U|VerumRole2 (id:string son:bool ul:[string])
         (require-capability (SECURE))
         (if son
@@ -1491,6 +1510,7 @@
             (update DPNF|T|VerumRoles id {"r-exemption" : ul})
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_U|VerumRole3 (id:string son:bool ul:[string])
         (require-capability (SECURE))
         (if son
@@ -1498,6 +1518,7 @@
             (update DPNF|T|VerumRoles id {"r-nft-add-quantity" : ul})
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_U|VerumRole4 (id:string son:bool ul:[string])
         (require-capability (SECURE))
         (if son
@@ -1505,6 +1526,7 @@
             (update DPNF|T|VerumRoles id {"r-nft-burn" : ul})
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_U|VerumRole5 (id:string son:bool ul:string)
         (require-capability (SECURE))
         (if son
@@ -1512,6 +1534,7 @@
             (update DPNF|T|VerumRoles id {"r-nft-create" : ul})
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_U|VerumRole6 (id:string son:bool ul:string)
         (require-capability (SECURE))
         (if son
@@ -1519,6 +1542,7 @@
             (update DPNF|T|VerumRoles id {"r-nft-recreate" : ul})
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_U|VerumRole7 (id:string son:bool ul:[string])
         (require-capability (SECURE))
         (if son
@@ -1526,6 +1550,7 @@
             (update DPNF|T|VerumRoles id {"r-nft-update" : ul})
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_U|VerumRole8 (id:string son:bool ul:[string])
         (require-capability (SECURE))
         (if son
@@ -1533,6 +1558,7 @@
             (update DPNF|T|VerumRoles id {"r-modify-creator" : ul})
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_U|VerumRole9 (id:string son:bool ul:[string])
         (require-capability (SECURE))
         (if son
@@ -1540,6 +1566,7 @@
             (update DPNF|T|VerumRoles id {"r-modify-royalties" : ul})
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_U|VerumRole10 (id:string son:bool ul:string)
         (require-capability (SECURE))
         (if son
@@ -1547,6 +1574,7 @@
             (update DPNF|T|VerumRoles id {"r-set-new-uri" : ul})
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_U|VerumRole11 (id:string son:bool ul:[string])
         (require-capability (SECURE))
         (if son
@@ -1557,6 +1585,7 @@
     ;;
     ;;  [Indirect Writings]
     ;;
+    ;;Protection: Class 5 — IMC + Custom: SECURE
     (defun XE_U|Frozen (id:string son:bool account:string toggle:bool)
         (P|UEV_IMC)
         (with-capability (SECURE) 
@@ -1568,6 +1597,7 @@
             )
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: SECURE
     (defun XE_U|Exemption (id:string son:bool account:string toggle:bool)
         (P|UEV_IMC)
         (with-capability (SECURE) 
@@ -1579,6 +1609,7 @@
             )
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: SECURE
     (defun XE_U|Burn (id:string son:bool account:string toggle:bool)
         (P|UEV_IMC)
         (with-capability (SECURE) 
@@ -1590,6 +1621,7 @@
             )
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: SECURE
     (defun XE_U|Create (id:string son:bool account:string toggle:bool)
         (P|UEV_IMC)
         (with-capability (SECURE) 
@@ -1601,6 +1633,7 @@
             )
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: SECURE
     (defun XE_U|Recreate (id:string son:bool account:string toggle:bool)
         (P|UEV_IMC)
         (with-capability (SECURE) 
@@ -1612,6 +1645,7 @@
             )
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: SECURE
     (defun XE_U|Update (id:string son:bool account:string toggle:bool)
         (P|UEV_IMC)
         (with-capability (SECURE) 
@@ -1623,6 +1657,7 @@
             )
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: SECURE
     (defun XE_U|ModifyCreator (id:string son:bool account:string toggle:bool)
         (P|UEV_IMC)
         (with-capability (SECURE) 
@@ -1634,6 +1669,7 @@
             )
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: SECURE
     (defun XE_U|ModifyRoyalties (id:string son:bool account:string toggle:bool)
         (P|UEV_IMC)
         (with-capability (SECURE) 
@@ -1645,6 +1681,7 @@
             )
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: SECURE
     (defun XE_U|SetNewUri (id:string son:bool account:string toggle:bool)
         (P|UEV_IMC)
         (with-capability (SECURE) 
@@ -1656,6 +1693,7 @@
             )
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: SECURE
     (defun XE_U|Transfer (id:string son:bool account:string toggle:bool)
         (P|UEV_IMC)
         (with-capability (SECURE) 
@@ -1667,6 +1705,7 @@
             )
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: SECURE
     (defun XE_U|VerumRoles (id:string son:bool rp:integer aor:bool account:string)
         (P|UEV_IMC)
         (if (contains rp [5 6 10])
@@ -1683,9 +1722,8 @@
             )
             (let
                 (
-                    (ref-U|LST:module{StringProcessorV2} U|LST)
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (current-verum-chain:[string] (UR_GetVerumChain id son rp))
+                    (current-verum-chain:[string] (URv_GetVerumChain id son rp))
                     (ul:[string] (ref-U|DALOS::UCv_NewRoleList current-verum-chain account aor))
                 )
                 (with-capability (SECURE)
@@ -1705,6 +1743,7 @@
         )
     )
     ;;
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_W|Supply (account:string id:string son:bool nonce-value:integer amount:integer)
         (P|UEV_IMC)
         (let
@@ -1840,7 +1879,6 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-BRD:module{BrandingV2} BRD)
                 (owner:string (UR_OwnerKonto entity-id son))
                 (multiplier:decimal (if son 4.0 5.0))
@@ -1855,7 +1893,6 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
                 (ref-BRD:module{BrandingV2} BRD)
                 (owner:string (UR_OwnerKonto entity-id son))

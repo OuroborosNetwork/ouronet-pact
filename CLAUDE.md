@@ -143,6 +143,31 @@ This is the intended decomposition — deviations should be deliberate.
 - **`XE_*`**: forward-module entrypoint. Start with `UEV_IMC`, then `with-capability (…|XE>…)` inside the defun. The defcap holds all local + deployed-dep checks. The defun body is writes (and scoped reads) only — no `enforce` / `UEV_*` after `UEV_IMC`. No `OutputCumulator`; the forward module's `C_` composes IGNIS.
 - **`C_*`**: wiring + billing. `UEV_IMC`, `with-capability (ClientCap …)`, one or more `XI`/`XE`/`XB` calls, optional STOA / `KDA|C_Collect`, then `IGNIS::UDC_*` / `UDC_ConstructOutputCumulator` so the returned `OutputCumulator` reflects the whole operation.
 
+#### Two billing shapes, and where the "no self-`C_`" rule actually applies
+
+The sentence above describes **shape A**, which is the common case but not the only correct one. A full trace of all 38 non-cumulator `C_`s (2026-09-13) found **six** shapes, all legitimate:
+
+| shape | where the billing happens | example |
+|---|---|---|
+| **A** | core `C_` returns the cumulator; Talos passes it to `IGNIS::C_Collect` | most ops |
+| **B** | Talos wrapper builds the cumulator from a `URCi_*` and collects | `DALOS::C_RotateGuard` → `TS01-C1` |
+| **C** | STOA-priced — wrapper calls `STOA|C_Collect*`, no IGNIS at all | `DALOS::C_DeploySmartAccount` |
+| **D** | billed **in the core** — the `C_` itself ends on `STOA|C_CollectWT` | `SWPLC::C_UpgradeBrandingLPs` |
+| **E** | **defpact step** — the `C_` is only a starter; a later step bills | the 8 `MTX-SWP` pool/liquidity ops |
+| **F** | **nested Talos** — the core calls another Talos client that collects | `DEMIPAD::C_Transmit*` → `DPTF|C_Transfer` |
+
+Plus **primitives** (`IGNIS::C_TransferDalosFuel`, the `STOA|C_Collect*` family) which *are* the collectors and cannot collect from themselves.
+
+The choice belongs to the op. `_conformance.py`'s `C-without-cumulator` reports all of these as **observations**, not violations — but the rule is still worth reading, because it is the only place that would surface a genuinely unbilled operation.
+
+**One deliberately free op exists** and is worth knowing about: `TS01-C4::PYTHIA|C_Link` takes no `patron` and collects nothing, while its three siblings all charge. It is safe because it is bounded, not because it is cheap: linking needs two deployed Apollo halves at 500 native STOA each, and counterparts are **never cleared** (revoke only deactivates), so it is **one-shot per pair, forever**. That bound is pinned by `modules/PYTHIA.repl` `<<PYTHIA-LINK-ECON>>`. If counterparts ever become clearable, the op stops being safe.
+
+**`C_` must not be invoked inside its own module** — but read the rule for what it protects, which is the cumulator. A sovereign `C_` builds an OutputCumulator that only Talos may collect, so a self-call can drop or double it. That is why the rule is absolute for sovereign modules (`self-C-call` must stay at **0**).
+
+In the **citizen minters** (`NOSFERATU`, `KBunnies`) the direction is inverted: their `C_Spawn` / `C_Fix` call *into* Talos and return the wrapper's **string**, after Talos has already collected. There is no cumulator at that level to mishandle, so `A_StepNN → C_Spawn` is sound. `_conformance.py` splits these into `self-C-call-citizen` (observation, bounded to those two files). **The bound is the point** — a citizen `C_` that returns an `OutputCumulator` is shape A and the rule applies to it normally.
+
+When a citizen batch step splits one logical mint across several `C_` calls, the safety condition is that the price carries **no fixed per-call component** (`URCi_RegisterCollectablesPrice` is `smallest × Σamounts`). Pinned by `Stage_02/[5.1]_PopulateNosferatu.repl` `<<NSFR-G2>>`, which also pins the one non-linear branch (the `E|` + `son` + `nonces-used = 0` first-nonce discount) as out of reach for a DPNF.
+
 If one user operation spans multiple tables, use **multiple** `XI`/`XB` functions — one focused write path each — rather than cramming unrelated persistence into a single `XI`.
 
 ### Combining boolean checks in one `enforce`

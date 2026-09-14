@@ -1140,6 +1140,7 @@
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
+    ;;Protection: Class 5 — IMC + Custom: SECURE
     (defun XE_UpdateGraph (swpair:string)
         @doc "Records <swpair> in the adjacency graph: every token in <swpair> gets \
             \ every OTHER token in <swpair> appended to its neighbour list (idempotent \
@@ -1150,6 +1151,7 @@
             (XI_UpdateGraphForSwpair swpair)
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdateGraphForSwpair (swpair:string)
         (require-capability (SECURE))
         (let*
@@ -1174,6 +1176,7 @@
             )
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_UpdatePair (from:string to:string swpair:string)
         @doc "Adds <to> as a neighbour of <from> via <swpair>, creating the neighbour \
             \ entry if this is the first connection between them, or appending \
@@ -1221,6 +1224,7 @@
             (if did-change (XI_BumpTopologyVersion) "no-op")
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_BumpTopologyVersion ()
         @doc "#65bL Phase 1: increments the global topology-version counter by 1. \
             \ Called only from <XI_UpdatePair> when it detects a genuine change — \
@@ -1230,6 +1234,7 @@
             {"version": (+ (UR_TopologyVersion) 1)}
         )
     )
+    ;;Protection: Class 2 — SECURE
     (defun XI_RegisterPath (token-a:string token-b:string nodes:[string] edges:[string])
         @doc "#34 Phase 7: registration into SWPT|PathCache. Self-verifying (owner's \
             \ final-check catch, 2026-08-21) — checks whether a row already exists in \
@@ -1274,6 +1279,7 @@
             )
         )
     )
+    ;;Protection: Class 5 — IMC + Custom: SECURE, SWPT.SECURE
     (defun XE_RegisterPath (token-a:string token-b:string nodes:[string] edges:[string])
         @doc "#34 Phase 8: forward-module entrypoint for XI_RegisterPath, mirroring \
             \ XE_UpdateGraph exactly — P|UEV_IMC gate, then internal SECURE composition. \

@@ -111,13 +111,26 @@
         (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (score-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryWonderCoach"))
         (pool-id:string (ref-U|DALOS::UDC_Makeid "DHWonderCoach"))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
         (auryn-id:string "AURYN-98c486052a51")
     )
+    ;;FUNCTION COVERAGE (G6) — `INFO_AQP-FVT|UnstaleAll`, per the owner's spec. Template:
+    ;;`modules/ATS.repl <<ATS-I1>>`. `AQP-INFO` is loaded by this file's one live runner,
+    ;;`deb-staleness-unstale-all-cc.repl`; the reasoning is written out there.
+    ;;
+    ;;ANOTHER ZERO QUOTE, and the same argument as the sweep pair in `[6.2.8]`: a literal-zero preview
+    ;;is the shape that was a real defect three times over, and zero-vs-zero proves nothing by itself.
+    ;;The non-vacuity guard is the assertion block below, which already pins that this call unstaled a
+    ;;real staker and left the entity injection-ready — so the zero is about the FEE, not about a no-op.
+    ;;`CCp_` marks a Hydra parallel-slice recipe: the gas station pays, which is why the owner does not.
     (let
         (
+            (quote-obj:object{OuronetInfoV2.ClientInfo}
+                (AQP-INFO.INFO_AQP-FVT|UnstaleAll anhd fvt-id auryn-id 100))
+            (gas-pre:decimal (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" anhd))
             (report:string (ref-TS02-C3::AQP-FVT|CCp_UnstaleAll anhd fvt-id auryn-id 100))
         )
         (let
@@ -127,6 +140,16 @@
             (map print
                 [
                     (format "<(UNSTALEALL03 report)> => \"{}\"" [report])
+                    (format "<<TX-UNSTALEALL03>> UnstaleAll quoted ignis={} stoa={} ; real gas delta={}"
+                        [(at "ignis-need" (at "ignis" quote-obj))
+                         (at "stoa-need" (at "stoa" quote-obj))
+                         (- gas-pre (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" anhd))])
+                    (expect "<<TX-UNSTALEALL03>> INFO_AQP-FVT|UnstaleAll quotes ZERO IGNIS"
+                        0.0 (at "ignis-need" (at "ignis" quote-obj)))
+                    (expect "<<TX-UNSTALEALL03>> ...and ZERO STOA"
+                        0.0 (at "stoa-need" (at "stoa" quote-obj)))
+                    (expect "<<TX-UNSTALEALL03>> ...and the owner really was charged nothing: gas-station subsidised"
+                        0.0 (- gas-pre (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" anhd)))
                     (format "<(UNSTALEALL03 post: stale-count / forced-fix-count)> => {} / {}" [(length (ref-FVT::URH_FvtStalePresentUsers fvt-id)) ffc-post])
                     ;; (a) reported the "unstaled N" branch (single present staker ⇒ 1 of 1, injection-ready)
                     (expect "<<TX-UNSTALEALL03>> report is the unstaled-N branch"
