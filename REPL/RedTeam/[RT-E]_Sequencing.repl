@@ -1,0 +1,143 @@
+;;
+;; REPL/RedTeam/[RT-E]_Sequencing.repl — FAMILY E: sequencing & state.
+;;
+;; "Can a LEGAL operation, in an illegal ORDER, leave value locked or misdirected?"
+;;
+;; Nothing here bypasses a guard. Every call is one the caller is entitled to make. The question is
+;; whether the protocol's assumptions about ORDER survive a caller who does not follow it.
+;;
+;; Run: cd REPL && pact "RedTeam/[RT-E]_Sequencing.repl"
+;;
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+(load "../deploy-stage02.repl")
+(load "../Stage_02/[6.3]_STOAICO.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "RT-E-001 - steal the STOAICO dust sweep with a late contribution")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== RT-E-001 · 01 · the last-unclaimed sweep, and who counts as last ====
+(print "--- [RT-E-001 · 01 · the last-unclaimed sweep, and who counts as last] ---")
+;;<<RT-E-001>> FAMILY: E | STATUS: REFUSED
+;;HYPOTHESIS: STOAICO pays the LAST unclaimed staker the whole remaining vault rather than their
+;;            computed share -- a dust sweep, so nothing is stranded. "Last" is decided by
+;;            <unclaimed-count>, which is set to <nzs-count> ONLY at inject. If a contribution
+;;            recorded mid-round moves nzs-count without moving unclaimed-count, a fresh account
+;;            owed nothing should be able to collect while the counter still reads 1, and take the
+;;            entire remaining supply out from under the staker it belongs to.
+;;METHOD:     drive the suite to its end state (one staker collected, one outstanding, the whole
+;;            690.53 owed to her), then have the admin record a legitimate late contribution of
+;;            1.0 v-USD for a NEW participant, and try to collect as that participant.
+;;RESULT:     the counters DO diverge and the reader DOES offer the whole vault to an account owed
+;;            zero -- but the collect is refused one layer down. Attack fails. Detail below.
+;;
+;;THE HALF THAT IS TRUE, and it is worth pinning on its own. After the late stake:
+;;
+;;    unclaimed-count = 1      nzs-count = 3       <- they have diverged, exactly as predicted
+;;    URC_AvailableRewards(newcomer)  = 0.000000000000     <- owed nothing
+;;    URC_ClaimableRewards(newcomer)  = 690.525983513596   <- offered the ENTIRE vault
+;;
+;;So `URC_ClaimableRewards` will hand the whole remaining supply to an account with no claim on it.
+;;That value is real and it is wrong; it is simply not reachable through the collect path.
+;;
+;;WHAT STOPS IT, and it is deliberate rather than lucky. `A_Stake`'s insert for a new contributor
+;;stamps <last-collected-round> with the CURRENT distribution-round:
+;;
+;;    ;;#1C: new contributor starts at the CURRENT distribution-round, so a (mis-ordered)
+;;    ;;     post-inject stake is not eligible for the already-injected round.
+;;    (UDC_UserData 0.0 0 (UR_Global6) 0.0 (UR_Global11) account)
+;;
+;;and `STOAICO|REDEEM-CONTRIBUTION` enforces `(< last-collected-round distribution-round)`. A
+;;newcomer is therefore born already-collected for the round they joined. Someone modelled this
+;;exact attack and closed it at the eligibility layer.
+;;
+;;WHY THIS IS STILL WORTH A BLOCK RATHER THAN A SHRUG. The theft is prevented by ONE stamp, in a
+;;different function from the one that computes the dangerous number, with no assertion previously
+;;connecting them. `URC_ClaimableRewards` is also read by presentation paths, where it will state a
+;;figure the account cannot have. If that stamp is ever changed -- a new contributor starting at
+;;round 0, say, which reads like a harmless initialisation -- this becomes a live theft primitive
+;;with no other guard in the way. The assertions below pin BOTH halves, so the day the stamp moves,
+;;the first two go red and name what broke.
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "PK_LPAD", "caps": [] }
+        { "key": "PK_Emma", "caps": [] }
+        { "key": "PK_Lumy", "caps": [] }
+        ;;THE ATTACKER'S OWN KEY. Without it the collect is refused by CAP_EnforceAccountOwnership
+        ;;with `Keyset failure (keys-all)` -- a refusal that has NOTHING to do with the defence
+        ;;under test. The first run of this block did exactly that, and a bare `expect-failure`
+        ;;would have recorded a defence that does not exist. This is the family rule earning its
+        ;;place: a red-team refusal must name its message.
+        { "key": "PK_Byta", "caps": [] }
+    ]
+)
+(let
+    (
+        (ref-CPAD:module{CitizenLaunchpadTalosV2} TS02-CPAD)
+        (patron:string KST.ANHD)
+        (victim:string KST.LUMY)
+        (newcomer:string KST.BYTA)
+    )
+    (let
+        (
+            (supply-before:decimal (STOAICO.UR_Global4))
+            (victim-owed:decimal (STOAICO.URC_AvailableRewards victim))
+            (unclaimed-before:integer (STOAICO.UR_Global7))
+            (nzs-before:integer (STOAICO.UR_Global5))
+        )
+        ;;the setup this attack needs: exactly one staker outstanding, and the whole vault is hers.
+        (map print
+            [
+                (format "<<RT-E-001>> pre: unclaimed={} nzs={} supply={} owed-to-victim={}"
+                    [unclaimed-before nzs-before supply-before victim-owed])
+                (expect "<<RT-E-001>> pre: exactly one staker is unclaimed, so the sweep is armed"
+                    1 unclaimed-before)
+                ;;"the whole vault is hers" to within the per-collect floor: URC_AvailableRewards
+                ;;floors at STOA_PREC, so it trails the raw supply by dust (~2.4e-8 here). Asserted
+                ;;as a bound rather than an equality, because the dust is the POINT of the sweep.
+                (expect "<<RT-E-001>> pre: and effectively the whole remaining vault is owed to HER"
+                    true (and (<= victim-owed supply-before)
+                              (> victim-owed (* 0.9999 supply-before))))
+            ]
+        )
+        ;;THE ATTACK. A legitimate admin action -- recording a late contribution -- performed in the
+        ;;wrong ORDER relative to the outstanding collect.
+        (STOAICO.A_Stake patron newcomer 1.0)
+        (map print
+            [
+                (format "<<RT-E-001>> post-stake: unclaimed={} nzs={} newcomer-owed={} newcomer-OFFERED={}"
+                    [(STOAICO.UR_Global7) (STOAICO.UR_Global5)
+                     (STOAICO.URC_AvailableRewards newcomer)
+                     (STOAICO.URC_ClaimableRewards newcomer)])
+                ;;1] the divergence is real: nzs moved, unclaimed did not.
+                (expect "<<RT-E-001>> the two counters DO diverge -- nzs rose, unclaimed did not"
+                    [(+ nzs-before 1) unclaimed-before]
+                    [(STOAICO.UR_Global5) (STOAICO.UR_Global7)])
+                ;;2] THE LATENT HAZARD, pinned as observed. The reader offers the whole vault to an
+                ;;   account owed nothing. This assertion is the one that matters long-term: it is
+                ;;   true today and harmless only because of the stamp checked at 3].
+                (expect "<<RT-E-001>> FINDING: the reader offers the ENTIRE vault to an account owed zero"
+                    [0.0 supply-before]
+                    [(STOAICO.URC_AvailableRewards newcomer)
+                     (STOAICO.URC_ClaimableRewards newcomer)])
+                ;;3] ...and the single thing that stops it being theft: the newcomer is born
+                ;;   already-collected for the round they joined. Message checked, per the family
+                ;;   rule -- "refused" proves nothing if the refusal came from somewhere else.
+                (expect-failure "<<RT-E-001>> ATTACK REFUSED: a newcomer is born already-collected for this round"
+                    "has already collected this distribution round"
+                    (ref-CPAD::STOAICO|C_Collect patron newcomer))
+                ;;4] and the refusal is TOTAL -- the vault is untouched, so the victim's claim
+                ;;   survives intact. Without this, 3] would also pass against a refusal that
+                ;;   happened after a partial payout.
+                (expect "<<RT-E-001>> ...and the vault is untouched, so the rightful claim survives"
+                    supply-before (STOAICO.UR_Global4))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)

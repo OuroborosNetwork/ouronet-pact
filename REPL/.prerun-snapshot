@@ -48,6 +48,7 @@
 6 REPL/Kursan/table-write-partial-test.repl
 2 REPL/Kursan/table-write-partial-test2.repl
 3 REPL/Kursan/table-write-partial-test3.repl
+4 REPL/RedTeam/[RT-A]_Economics.repl
 0 REPL/Stage00_Sanboxes.repl
 0 REPL/Stage00a_StoaTests.repl
 0 REPL/Stage00b_Run.repl
@@ -274,4 +275,5 @@
 197 REPL/modules/VST.repl
 0 REPL/triplet-collect-golden.repl
 0 REPL/vst-harness.repl
-4 REPL/RedTeam/[RT-A]_Economics.repl
+7 REPL/RedTeam/[RT-E]_Sequencing.repl
+5 REPL/RedTeam/[RT-F]_Griefing.repl

@@ -171,6 +171,29 @@ because it does no reads. A conditionally-heavy function takes the heavy prefix 
 > 3. **Bracket (optional)** — a `C_`/`CC_` **begin** (freeze state) and **finalize** (nuke / unfreeze); these
 >    are single ordered transactions, not slices.
 >
+> **CORRECTION 2026-09-14 — two shapes wear the `p`, and only one of them is parallel.** A red-team
+> pass over every `Cp_`/`CCp_`/`Ap_`/`AAp_` in the tree found exactly three, and they do not agree:
+>
+> | function | argument | actual shape |
+> |---|---|---|
+> | `DPTF::Cp_WipeSlice`, `DPOF::Cp_WipeSlice` | an explicit `removable-nonces-obj` **slice** | fed-slice — order-independent, parallel-safe, exactly as described above |
+> | `AQP-FVT::CCp_SweepRecomputeChunk` | a chunk **size** | **cursor pager** — it reads `FVT\|SweepProgress`, computes its own window `[offset, min(offset+chunk, total))`, and advances the cursor |
+>
+> The sweep chunk is therefore **strictly sequential**: it is not "fed one slice", and two of them
+> cannot be fired concurrently as independent units of work — the second reads the cursor the first
+> advanced. Its own `@doc` is honest about this ("PAGE a paginated re-score sweep … advancing the
+> cursor"); it is this page that overstated the contract.
+>
+> **Why the distinction is load-bearing rather than pedantic.** The prefix is the only thing a client
+> author reads before deciding whether they may submit N of these at once. For a fed-slice they may;
+> for a pager the concurrency buys nothing and the mental model is wrong. Nothing about the sweep is
+> unsafe — `FVT\|C>SWEEP-DRAIN` bounds `chunk` to `(0, SWEEP-CHUNK-MAX]`, so the cursor cannot be
+> driven backwards, and completion is enforced by `offset` reaching `total` before any pool unfreezes.
+> The defect is in the promise, not the code.
+>
+> **If a third shape appears, give it its own letter.** Overloading `p` to mean "multi-transaction"
+> rather than "parallel" is how this drifted.
+>
 > Canonical Hydra families: deb-unstale, anchor-sweep, vacate/drain. Migration candidates: wipes and
 > oversized multi-transfers (a transfer whose leg set exceeds one tx). The **cost preview** falls out for
 > free: each Hydra op gets `…|INFO_<Op>Full` (from the preflight plan → grand total + slice breakdown) and

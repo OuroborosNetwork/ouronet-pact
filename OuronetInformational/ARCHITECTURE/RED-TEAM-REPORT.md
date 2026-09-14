@@ -166,3 +166,127 @@ exploit went red at the moment of repair — evidence a fix-first approach canno
 *Footnote worth keeping: the exploit assertion itself first failed on a three-argument `(* a b c)`.
 Pact's `*` is binary — the same arity trap this project's ledger already records for a
 three-argument `or`.*
+
+
+### RT-E-001 — the STOAICO dust sweep, and who counts as "last" *(REFUSED)*
+
+**Hypothesis.** STOAICO pays the last unclaimed staker the **whole remaining vault** rather than
+their computed share — a dust sweep, so nothing is stranded. "Last" is decided by
+`unclaimed-count`, which is set to `nzs-count` **only at inject**. A contribution recorded mid-round
+moves `nzs-count` without moving `unclaimed-count`, so an account owed nothing should be able to
+collect while the counter still reads 1 and take the vault out from under its rightful claimant.
+
+**Half of it is true, and that half is pinned.** After a legitimate admin action — recording a late
+1.0 v-USD contribution — the counters diverge exactly as predicted, and the reader offers the entire
+vault to an account owed nothing:
+
+    unclaimed-count = 1        nzs-count = 2 -> 3          <- diverged
+    URC_AvailableRewards(newcomer) = 0.000000000000        <- owed nothing
+    URC_ClaimableRewards(newcomer) = 690.525983513596      <- offered the ENTIRE vault
+
+**What stops it is one stamp, and it is deliberate.** `A_Stake`'s insert for a new contributor sets
+`last-collected-round` to the *current* distribution-round, and the collect cap enforces
+`(< last-collected-round distribution-round)`. A newcomer is born already-collected for the round
+they joined. The source comment says so outright: *"a (mis-ordered) post-inject stake is not
+eligible for the already-injected round."* Someone modelled this attack and closed it at the
+eligibility layer.
+
+**Why the block exists anyway.** The theft is prevented by a single stamp, written in a different
+function from the one computing the dangerous number, with no assertion previously connecting them.
+`URC_ClaimableRewards` also feeds presentation paths, where it will state a figure the account
+cannot have. If that stamp ever changes — a newcomer starting at round 0 reads like harmless
+initialisation — this becomes a live theft primitive with nothing else in the way. The block pins
+**both halves**, so the day the stamp moves the finding assertion goes red and names what broke.
+
+**The method caught an error inside the red-team suite itself.** The first run recorded the attack
+as refused — by `Keyset failure (keys-all): [PK_Byta...]`. The attacker's key had not been signed,
+so the collect died at ownership, nowhere near the defence under test. **A bare `expect-failure`
+would have recorded a defence that does not exist.** That is the shadowed-guard trap reproduced
+inside the adversarial suite, on its second attack, and it is the clearest possible argument for the
+message-checking rule.
+
+
+---
+
+## Stage 2 — Family F, griefing and denial of service
+
+### RT-F-001 — one ordinary swap destroys a stranger's add-liquidity fee *(SUCCEEDED — open)*
+
+**Hypothesis.** `MTX|C_AddLiquidity` collects its entire deterrent in **step 0**, then validates in
+**step 1** that the pool has not moved since it quoted. `PoolState` includes the pool's **token
+supplies**, which every swap changes. So any stranger's ordinary trade should permanently invalidate
+an in-flight add — *after* its fee is paid, with no refund.
+
+**Confirmed, measured:**
+
+    step 0   victim pays                                       557.03 IGNIS
+             pool supplies unchanged (step 0 only quotes)
+    attack   one SWP|C_SingleSwapNoSlippage by another account
+             supplies move  [798.4087…, 901.5915…, 850.0]
+                         -> [798.3981…, 903.5915…, 848.0213…]
+    step 1   "Execution Step of Adding Liquidity cannot execute on altered pool state!"
+             victim's 557.03 is NOT returned
+
+**The guard is correct and must stay.** Executing a quote against a moved pool is how a liquidity
+provider silently gets a worse ratio than they agreed to; `modules/SWP.repl <<SWPX-10>>` already
+pins that it fires. **What nothing pinned is what it costs the victim when it does.**
+
+**The defect is the ORDER of fee and validation, not the validation.** Money moves in step 0; the
+condition deciding whether the operation can happen at all is checked in step 1. On a pool with any
+trading activity the defpact add is not merely grief-able — it is **unreliable by construction**,
+because `PoolState` equality is exact and includes supplies. The attacker's cost is a normal trade;
+they need no knowledge of the victim beyond the fact that adds are in flight, which on a public
+chain is visible.
+
+**This finding is a direct consequence of `RT-A-001`'s repair, and that must be stated plainly.**
+Closing the churn-deterrent bypass raised this step-0 fee from a flat 100.0 to the real 1051.0
+deterrent — correctly, since the cheap door let providers decline the deterrent entirely. But the
+same change **multiplied the griefing payoff by ten**: what one swap destroys went from 53.0 to
+557.03 net. The trade is still worth making — an optional deterrent is worse than an expensive one —
+but a fix with a second-order cost should be recorded at the moment it is made, not discovered
+later by someone else. This is the argument for red-teaming *after* a repair pass rather than
+before.
+
+**Recommended, not applied:** collect the deterrent in the step that **succeeds**, or refund it on
+the rollback path. Both change when money moves inside a defpact — a design decision, not a
+transcription fix — so it is left for an owner ruling. The block pins present behaviour meanwhile,
+and will go red the day the ordering changes.
+
+
+### Hydra slice replay — investigated, no attack block written *(and why that is the right outcome)*
+
+**Hypothesis.** The architecture documents `Cp_`/`CCp_`/`Ap_`/`AAp_` as *"fed one slice of a `URH_*`
+dirty-read plan, order-independent, retryable, fired **in parallel**"*. If a slice can be **replayed**
+or applied **out of order**, work is double-applied or skipped. Nothing in the suite tested that
+claim.
+
+**What the investigation found instead — a documentation defect, not an attack.** There are exactly
+**three** Hydra functions in the tree, and they do not agree with each other:
+
+| function | argument | actual shape |
+|---|---|---|
+| `DPTF::Cp_WipeSlice`, `DPOF::Cp_WipeSlice` | an explicit `removable-nonces-obj` **slice** | fed-slice — order-independent, parallel-safe, exactly as documented |
+| `AQP-FVT::CCp_SweepRecomputeChunk` | a chunk **size** | **cursor pager** — reads `FVT\|SweepProgress`, computes its own window `[offset, min(offset+chunk, total))`, advances the cursor |
+
+The sweep chunk is **strictly sequential**. It is not fed a slice, and two cannot be fired as
+independent units — the second reads the cursor the first advanced. Its own `@doc` is honest
+("PAGE a paginated re-score sweep … advancing the cursor"); the *prefix contract* overstated.
+
+**No exploit.** The obvious attacks are closed by construction: `FVT|C>SWEEP-DRAIN` enforces
+`(and (> chunk 0) (<= chunk SWEEP-CHUNK-MAX))`, so the cursor cannot be driven backwards by a
+negative chunk; and because the window derives from stored progress rather than an argument, a
+replay simply pages forward rather than re-applying. Completion is enforced by `offset` reaching
+`total` before any pool unfreezes.
+
+**Why no block was written, and this is a deliberate methodological point.** The chunk bound is
+**already pinned twice** (`Kursan/AQP-scale-sweep.repl:215`/`:219`). Writing a red-team block that
+re-asserts an existing guard would inflate the attack register with a test that discovers nothing —
+and the register's only value is that its numbers mean something. **Not every investigation yields
+an attack; recording that honestly is what keeps the count trustworthy.**
+
+**Fixed:** the prefix contract in `CLAUDE.md` and `StoicSyntax-Prefixes.md` now describes both
+shapes and tells a reader to check which one they have before firing N at once. The prefix is the
+only thing a client author consults before deciding whether they may submit concurrently — for a
+fed-slice they may, for a pager the concurrency buys nothing and the mental model is wrong. The
+correction closes with the rule that caused the drift: *if a third shape appears, give it its own
+letter; overloading `p` to mean "multi-transaction" rather than "parallel" is how this happened.*
