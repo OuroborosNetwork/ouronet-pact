@@ -54,3 +54,31 @@ parser desyncs on them) at least four times.
 | `_toolindex.py` | Regenerate TOOLS.md — an index of every REPL analysis script, from its first docstring line. |
 | `_vacuous.py` | VACUOUS / WEAK POSITIVE ASSERTIONS — which `(expect ...)` cannot fail, or barely can? |
 | `_xprotect.py` | X_ PROTECTION CLASSES — derive, verify and emit the `;;Protection:` line. |
+
+## Which tools the GATE actually enforces
+
+A tool that is merely *present* proves nothing: on 2026-09-14 a fix-verification pass found that two
+figures quoted in the defect ledger as evidence of a repair — `_conformance.py`'s "0 violations" and
+`_heavy.py`'s "`single-reaches-heavy` = 0" — were **hand-measured**. The gate byte-compiled both
+files and ran conformance's selftest, but never ran either tool. Re-introducing `X-02`
+(`ORBR|A_Fuel` gated only by a self-granting `SECURE`, *verified exploitable* before it was fixed)
+would have left the gate GREEN.
+
+**The rule:** a number quoted as evidence of a repair must be one the gate re-derives on every run.
+Otherwise it is a claim about the past, and the repair it certifies can be undone without anything
+going red.
+
+| tool | gate behaviour |
+|---|---|
+| `_stagez_variant.py --check` | **fatal** — the generated Stage-Z variant is stale vs canonical |
+| `_ladder.py --check` | **fatal** — a minter batch ladder does not tile its collection |
+| `_colproj.py --check` | **fatal** — a projecting `read` names a column its table lacks |
+| `_redteam.py --check` | **fatal** — a `RedTeam/` block has a malformed or duplicate attack header |
+| `_conformance.py --check` | **fatal on VIOLATIONS only** — the 114 OBSERVATIONS are not failures |
+| `_heavy.py --check` | **fatal on `single-reaches-heavy` only** — the over-budget inventory is an observation |
+| every other `_*.py` | byte-compiled; `--selftest` run where one exists |
+
+Both new checks are deliberately narrow. Conformance's observations record where the documentation
+is narrower than correct practice, and `_heavy`'s over-budget list is an inventory, not a defect
+list — failing on either would make the check unusable and therefore ignored, which is how a
+safety net stops being one.

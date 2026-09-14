@@ -82,6 +82,8 @@ def parse(path):
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--show", type=int, default=8)
+    ap.add_argument("--check", action="store_true",
+                    help="exit 1 if a single-prefixed C_/A_ reaches a heavy read (gate mode)")
     a = ap.parse_args()
     files = [f for f in sorted(glob.glob(f"{ROOT}/1_SOVEREIGN/**/*.pact", recursive=True)
                                + glob.glob(f"{ROOT}/2_CITIZEN/**/*.pact", recursive=True))
@@ -189,6 +191,18 @@ def main():
         print(f"    {f.replace(ROOT+'/',''):56s} {mod}.{name}")
         print(f"        reaches -> {h[0]}.{h[1]}")
     if len(single_has_heavy) > a.show: print(f"    … and {len(single_has_heavy)-a.show} more")
+
+    # --check: the ONE class here that is a defect rather than an observation.
+    # ADDED 2026-09-14. A fix-verification pass found that this tool's "0" was a HAND-MEASURED
+    # figure: the gate byte-compiled this file but never ran it, so re-introducing the X-04 defect
+    # (a single `C_`/`A_` whose tree reaches a heavy URH_ scan) would have left the gate GREEN.
+    # A number quoted in an audit document as evidence of a repair must be one the gate re-derives.
+    # Only `single-reaches-heavy` is fatal -- `over_budget` and the doubled-prefix inventory are
+    # observations, and failing on those would make the check unusable and therefore ignored.
+    if a.check and single_has_heavy:
+        print("\nCHECK FAILED: a single-prefixed C_/A_ reaches a heavy read -- the name promises "
+              "bounded cost and the call tree does not deliver it.")
+        return 1
     return 0
 
 sys.exit(main())

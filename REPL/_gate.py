@@ -312,6 +312,27 @@ def main():
         print(_rt.stdout + _rt.stderr)
         sys.exit("GATE FAILED: a RedTeam/ block has a malformed or duplicate attack header.")
 
+    # CONFORMANCE and HEAVY-PREFIX, both fatal on VIOLATIONS only.
+    # ADDED 2026-09-14, after a fix-verification pass found that both tools' "0" was a
+    # HAND-MEASURED figure. The gate byte-compiled them and ran conformance's selftest, but never
+    # ran either tool -- so re-introducing X-02 (`ORBR|A_Fuel` gated only by a self-granting
+    # `SECURE`, VERIFIED EXPLOITABLE before it was fixed) or X-04 (a single-prefixed `C_`/`A_`
+    # whose tree reaches a heavy `URH_` scan) would have left the gate GREEN.
+    #
+    # The principle, and it generalises past these two: a number quoted in an audit document as
+    # evidence of a repair must be one the gate RE-DERIVES on every run. Otherwise it is a claim
+    # about the past, and the repair it certifies can be undone without anything going red.
+    #
+    # Both are deliberately fatal on VIOLATIONS ONLY. Conformance carries 114 OBSERVATIONS (where
+    # the documentation is narrower than correct practice) and _heavy also reports an over-budget
+    # inventory; failing on those would make the check unusable and therefore ignored.
+    for _tool, _why in (("_conformance.py", "conformance violation(s)"),
+                        ("_heavy.py", "a single-prefixed C_/A_ reaching a heavy read")):
+        _r = subprocess.run([sys.executable, _tool, "--check"], capture_output=True, text=True)
+        if _r.returncode != 0:
+            print(_r.stdout + _r.stderr)
+            sys.exit(f"GATE FAILED: {_why} -- see {_tool}.")
+
     # TOOL INTEGRITY. Every analysis tool in this directory is a `_*.py`; none of them is imported
     # by the gate, so a syntax error in one is INVISIBLE here. That is not hypothetical -- on
     # 2026-09-12 an edit to `_conformance.py`'s rule text left an unescaped quote inside a string,

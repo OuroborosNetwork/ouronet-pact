@@ -1135,6 +1135,8 @@ def main():
     ap.add_argument("--rule", help="only this rule id")
     ap.add_argument("--selftest", action="store_true",
                     help="run the added rules against synthetic inputs and exit")
+    ap.add_argument("--check", action="store_true",
+                    help="exit 1 on VIOLATIONS (never on observations) -- gate mode")
     a = ap.parse_args()
     if a.selftest:
         return run_selftest()
@@ -1207,6 +1209,20 @@ def main():
     print(f"VIOLATIONS: {len(viol)}   ({sum(1 for x in viol if x[4])} state-dependent, "
           f"{sum(1 for x in viol if not x[4])} argument-domain)")
     print(f"OBSERVATIONS: {obs}   (the doc is narrower than the code's correct practice)")
+
+    # --check: fail on VIOLATIONS only, never on OBSERVATIONS.
+    # ADDED 2026-09-14. A fix-verification pass found this tool's "0 violations" was a
+    # HAND-MEASURED figure: the gate byte-compiled this file and ran its selftest, but never ran
+    # the tool, so re-introducing the X-02 defect (`ORBR|A_Fuel` gated only by a self-granting
+    # SECURE) would have left the gate GREEN -- and that defect was VERIFIED EXPLOITABLE before it
+    # was fixed. A number quoted in an audit document as evidence of a repair has to be one the
+    # gate re-derives on every run, or it is a claim about the past.
+    # Observations are deliberately NOT fatal: there are 114 of them, they record where the
+    # documentation is narrower than correct practice, and failing on them would make this
+    # unusable and therefore ignored.
+    if "--check" in sys.argv and viol:
+        print(f"\nCHECK FAILED: {len(viol)} conformance violation(s).")
+        return 1
     return 0
 
 sys.exit(main())

@@ -19,6 +19,22 @@
 > | **A-08** | NOSFERATU `A_Fix01` mis-tiled rung | **CONFIRMED**, then FIXED, and the class made permanent (`REPL/_ladder.py`, gate-enforced, mutation-tested). |
 > | §5 | "a green `Z.repl` executes none of the pricing assertions" | **REFUTED.** `Z.repl` runs 106 pricing assertions (`[6.1.9]` 64 + `[6.2.16]` 42); it skips `[6.1]`'s 75. The rule survives, its justification did not. CLAUDE.md and `IGNIS-PRICING.md` §8 corrected. |
 >
+> **FIXED-CLAIM SWEEP, 2026-09-14.** All **56 entries claiming `fixed`** were independently
+> re-verified against current source by three parallel agents, split by class. Result:
+> **56 FIX-CONFIRMED, 0 FIX-ABSENT, 0 FIX-PARTIAL, 0 CANNOT-DETERMINE.** Every claimed repair is
+> physically present, and every named pin tag still exists in `REPL/` as a live `expect` rather
+> than a comment. Two were additionally **mutation-tested**: reverting X-02's `ORBR|A_Fuel` to the
+> pre-fix `SECURE`-only form makes `[admin-gate-terminal]` fire, and reverting A-08's rung to
+> `Legendary 1 100` makes all three of `_ladder.py`'s rules fire.
+>
+> Three independent CLASS sweeps were also run to rule out partial fixes, all negative: single-
+> argument `format` (exactly the 2 documented DPMF sites), 3-or-more-argument `or`/`and` (0), and
+> the `UC_RemoveItem` sentinel-drop shape (0 beyond A-01).
+>
+> **A false `fixed` is the most damaging error this document can contain** — worse than an
+> unverified `open`, because it asserts a repair that may not exist. That is why this sweep was
+> run before the `open` backlog was revisited.
+>
 > **Not yet independently verified:** the remaining entries, and in particular the **open** count.
 > That count is the figure an external auditor will press hardest on, and this round has already
 > produced one cautionary example: a "78 unreached `UEV_` guards" worklist carried across two
@@ -148,6 +164,59 @@ client cannot pay is an audit finding in its own right.
 | **GS-01** | `IGNIS-PRICE-SHEET.md:530–536` — all five `C_Add*Liquidity` rows | Published as **`≥ 100`** with the breakdown `"legs: literal 100"`. The source (`18_SWPLC.pact:639`, and the matching exec leg at `:1106`) charges `UC_IgnisPrice "SWP|C_AddStandardLiquidity" "lp-churn"` = a **1000 deterrent plus the op's own component**, plus the CLAD fee and an LP transfer. **The sheet publishes a $1.00 floor where the chain charges more than $10.** The `"literal 100"` breakdown is the *literal-counted-as-a-price* generator bug (the same class that once published every SWP swap as free) still live on this family. | open — contradicts `IGNIS-PRICING.md` §6's *"0 unresolved … complete and ready as the Chapter-2 input"* |
 | **GS-02** | same rows | The rows are titled `C_AddStandardLiquidity` — a **core** function name. The actual Talos client is `SWP\|C_AddLiquidity` (`04_TS01-C3.pact:81`/`:633`), and it appears **zero times** in the sheet. So one real client entrypoint is **unpriced** in the documentation input while a non-callable name is priced in its place — against the sheet's own stated contract, *"the sheet now enumerates the TALOS wrappers (what a client actually calls)."* | open |
 | **GS-03** | `IGNIS-DETER-WORKSHEET.md` header lines 2–7 | The generated worksheet **publishes the pre-calibration formula** — `ceil(update-fields/2)` and read multipliers `1/1/2/3` — while the code that produced every number beneath it is calibrated (`REPL/_ignis_deter_worksheet.py:27` `IG_UPD_FLDDIV = 4`; `_bucket` → `(1,1)/(2,2)/(3,5)/(5,9)`). Only the `print` statements at lines 264 and 267 were never updated. The document `IGNIS-PRICING.md` §1 designates as *"the supporting working the component costs are derived from"* therefore states a formula that contradicts its own contents. | open |
+
+### Corrections from the fixed-claim sweep *(2026-09-14)*
+
+None change a verdict; all change what the row asserts, which for an audit document is the same
+kind of error.
+
+| entry | correction |
+|---|---|
+| **S-08** | the cited pin `deb-staleness-proof.repl TX-AQP-DEB10` has **zero** occurrences of that tag. It lives in `Stage_02/[6.2.7]_AQP-DEB-MTX.repl` (10 occurrences) and does pin the claimed properties. |
+| **R-05** | the stated mechanism does not describe the code. The row says "`try` + a single `read`"; source uses `with-default-read` with a `day: -1` sentinel (`22_PYTHIA.pact:1011-1015`) and there is no `try` on that path. The 80k-gas defect **is** gone — no `keys` survives on the flush path. Also: the cited pin is a **sizing harness that prints `env-gas` and asserts nothing**, so it would not fail if the scan returned. |
+| **M-06** | the pin column reads "—", which **understates** it. Both arms are pinned in separate transactions with **different text each**, preceded by an assertion of the live state: `modules/DPTF.repl:342` `<<DPTF-07>>` (OPEN) and `:618` `<<DPTF-G1>>` (CLOSED). |
+| **M-01** | two of its five sites have **no assertion demanding the new message** — `03_DSP+.pact:360` and `01_DPL-UR.pact:2433` (whose only `REPL/` hit is a comment). Both remain covered by the gate-enforced `format-no-arglist` structural detector, so the shape cannot regress, but the branches are never executed: **structurally guarded, behaviourally untested.** |
+| **X-02 / X-04** | *(fixed in the tooling rather than the text — see below.)* The pins were described as detectors, implying gate enforcement. They were **hand-measured**: `_gate.py` byte-compiled `_conformance.py` and `_heavy.py` and ran conformance's selftest, but never ran either tool. Re-introducing X-02 — a defect **verified exploitable** before it was fixed — would have left the gate GREEN. Both now have a `--check` mode wired into the gate, fatal on VIOLATIONS only. |
+
+**The generalisable rule, now in `_gate.py`'s own comment:** *a number quoted in an audit document as
+evidence of a repair must be one the gate re-derives on every run. Otherwise it is a claim about the
+past, and the repair it certifies can be undone without anything going red.*
+
+### GS-04 — `INFO_SWP|Issue*Pool` over-quotes by ~652 raw IGNIS *(FOUND 2026-09-14, LIVE)*
+
+Not in the original compilation; surfaced while verifying P-06/P-11, and it is **the same shape as
+the red team's `RT-A-001`**: one reader serving two executions that bill differently.
+
+`SWPI::URCi_Issue` was repaired under **P-11** to equal the **single-tx** `SWPI::C_Issue` — its own
+comments say so outright (*"MUST equal what C_Issue bills"*). **Six** previews share that one reader,
+and **three of them price the defpact instead**: `INFO_SWP|IssueStablePool` / `IssueStandardPool` /
+`IssueWeightedPool` route `TS01-P -> MTX-SWP::C_Issue*Pool -> defpact MTX|C_Issue`, which hand-builds
+its own bill and then discards `XE_IssueWrite`'s sub-cumulators.
+
+| | legs | total |
+|---|---|---|
+| exec, `20_MTX-SWP.pact:957-966` | ONE: deter `issue-swp-pair` 5000 + `tier-token-issue` 500 + `tier-biggest` 5 + `tier-smallest` 1 | **5506** |
+| preview, `16_SWPI.pact:2341-2359` | FOUR: `URCi_IssueGas 1` 1070 + `DPTF\|C_Mint usage` 87 + `tier-smallest` 1 + deter 5000 | **6158** |
+
+Note the leg COUNT differs too, which matters independently: `UDC_PrimeIgnisCumulator` discounts and
+quarter-splits per leg, so even equal totals could round apart.
+
+**A dead parameter is the tell.** `op-key` is still in `URCi_Issue`'s signature and interface
+declaration but appears **nowhere in its body** — the P-11 repair removed the component cost that
+once consumed it. So all six previews now return the same number for executions that do not bill the
+same, and the parameter that was added precisely to distinguish them (commit `e735f6d`) no longer
+does anything.
+
+**Why nothing caught it.** Every existing pin measures a single-tx issue. **Nothing measures a
+`*Pool` issue against its preview**, and a defpact cannot be measured inside one `begin-tx` — which
+is exactly the structural gap `REPL-ROUND-REPORT.md` §3 lists as the reason 3 of the 15 unmeasured
+previews are unmeasurable. The gap in the instrument and the location of the defect are the same
+place.
+
+*Status:* **open**, recorded rather than fixed. The repair is a separate `URCi_IssuePool` reader for
+the defpact path — the same shape as `UC_AddLiquidityChurnKey` in the `RT-A-001` fix — plus removing
+or re-honouring the dead `op-key`. Needs a measurement to land against, and the defpact measurement
+harness does not exist yet.
 
 ## 1.2 Guard reachability — mute, shadowed and dead guards
 

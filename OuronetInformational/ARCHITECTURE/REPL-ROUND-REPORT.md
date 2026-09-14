@@ -266,10 +266,39 @@ assertions, and on 2026-09-14 one of them was the only assertion in the entire s
 preview leg-split that every total-level assertion passed straight through. But an overstated rule
 is one people stop believing. Both documents corrected.
 
-**`DEFECT-LEDGER.md` was compiled from project records, and compilation is not verification.** Six
-of its claims have been independently re-traced in source and are marked as such in its header; the
-rest have not, and its **open** count in particular should be treated as a claim with a named source
-until verified. It also lists **21 internal contradictions** — places where two project documents
+**`DEFECT-LEDGER.md` was compiled from project records, and compilation is not verification.** Its
+two largest claim-sets have since been checked, and the results differ in a way worth stating:
+
+| claim-set | status |
+|---|---|
+| the **28 `open`** entries | all 28 re-verified against source, all confirmed open; eight factual corrections; one escalation REFUTED by measurement |
+| the **56 `fixed`** entries | **56 FIX-CONFIRMED, 0 FIX-ABSENT, 0 FIX-PARTIAL**; every named pin still exists as a live `expect`; two mutation-tested by reverting the fix and watching the detector fire |
+
+**The `fixed` sweep was run before revisiting the `open` backlog, and the ordering was deliberate.**
+A false `fixed` is the most damaging error this document can contain — worse than an unverified
+`open` — because it asserts a repair that may not exist. It came back clean, which is the strongest
+single statement this report can make about the repair record.
+
+It also produced two results that change what the numbers above mean:
+
+**A new live defect, `GS-04`, of exactly the cross-route shape §8 describes.** `SWPI::URCi_Issue` was
+repaired to equal the **single-tx** `C_Issue`; six previews share it and **three price the defpact
+instead**, which bills 5506 in one leg against the preview's 6158 in four. The tell is a **dead
+parameter** — `op-key` sits in the signature and is used nowhere, the term that consumed it having
+been removed by the repair. Nothing caught it because every pin measures a single-tx issue and **a
+defpact cannot be measured inside one `begin-tx`** — the same structural limit §3 gives as the reason
+three previews are unmeasurable. *The gap in the instrument and the location of the defect are the
+same place.*
+
+**Two figures this report relied on were hand-measured, not gate-derived.** `_conformance.py`'s "0
+violations" and `_heavy.py`'s "single-reaches-heavy = 0" appear in §3 as coverage evidence. The gate
+byte-compiled both tools but never ran them, so re-introducing `X-02` — a defect *verified
+exploitable* before it was fixed — would have left the gate green. Both are now `--check`-wired and
+fatal on violations. The rule this produced is general enough to state on its own:
+
+> **A number quoted as evidence of a repair must be one the gate re-derives on every run.**
+> Otherwise it is a claim about the past, and the repair it certifies can be undone without
+> anything going red. It also lists **21 internal contradictions** — places where two project documents
 disagree and a published paper cannot carry both. Three are live defects in the generated pricing
 artefacts that feed the Chapter-2 documentation.
 

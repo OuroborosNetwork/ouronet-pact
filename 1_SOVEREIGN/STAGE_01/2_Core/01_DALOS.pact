@@ -511,7 +511,7 @@
             ;;guard wants. The behaviour is deliberate: P|TS, behind nearly every Talos client op,
             ;;enforces (not gap), so demanding GAP ON means the chain is frozen for the whole window
             ;;in which the gas station is empty. Only the message was wrong.
-            (enforce gap (format "Migration can only be executed when Global Administrative Pause is online" []))
+            (enforce gap "Migration can only be executed when Global Administrative Pause is online")
             (enforce (= target-balance 0.0) "Migration can only be executed to an empty stoa account")
             (compose-capability (GOV|DALOS_ADMIN))
             (compose-capability (DALOS|NATIVE-AUTOMATIC))
