@@ -39,7 +39,28 @@
 ;;            `IGNIS::C_Collect` of `UDC_CustomCodeCumulator`, for a standard patron and for a
 ;;            gassless one.
 ;;
-;;RESULT: SUCCEEDED, and the defect is NOT the unvalidated tail -- that is the custom-code door
+;;RESULT: SUCCEEDED -- and after the owner stated the intended design (2026-09-15) the finding
+;;        SHARPENED from an economics question into a plain DESIGN-INTENT VIOLATION.
+;;
+;;        OWNER: "an IGNIS gas payer account can only be a STANDARD account. A smart account
+;;        can never be a gassless payer, EXCEPT one single account HARDCODED into the code,
+;;        to allow admin-based gassless IGNIS transactions -- the Ouroboros daily minter uses
+;;        such a gassless patron. No other smart account should have this property."
+;;
+;;        THE CODE IMPLEMENTS NO SUCH HARDCODING. `iz-gassles-patron` is
+;;        `(DALOS::UR_AccountType patron)` = the `smart-contract` flag, which
+;;        `XI_DeploySmartAccount` sets to `true` UNCONDITIONALLY. "gassles" appears exactly
+;;        TWICE in all of 1_SOVEREIGN and both are those two lines. So the exemption's
+;;        population is not one account -- it is SEVEN system smart accounts created by
+;;        [4.0]_Sovereign-Executor, PLUS every user smart account, because
+;;        `DALOS|C_DeploySmartAccount` is a CLIENT wrapper (TS01-C1:311), not an admin one.
+;;        Measured on KC.BJ -- an ordinary user account on a user keyset -- at RT-I-001h.
+;;
+;;        FIX SHAPE (the account is the owner's to name): `iz-gassles-patron` should compare
+;;        the patron against the ONE designated account, not read the smart flag.
+;;
+;;        The original framing below still holds and is the mechanism: the defect is NOT the
+;;        unvalidated tail -- that is the custom-code door
 ;;        working as designed, with the fee as its bound. The defect is that THE FEE CAN BE
 ;;        DECLINED. Every link measured below:
 ;;
@@ -275,4 +296,46 @@
 )
 (print "===^^^===")
 (env-sigs [])
+(commit-tx)
+;;|| NEXT >
+;;
+(begin-tx "RT-I-001h - WHICH accounts are gassless, against the stated design")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [RT-I-001h · the exemption's actual population] ---")
+;;OWNER'S STATED DESIGN (2026-09-15): "an IGNIS gas payer account can only be a STANDARD account. A
+;;smart account can never be a gassless payer, EXCEPT for one single account hardcoded into the
+;;code, to allow admin-based gassless IGNIS transactions -- for example the Ouroboros daily minter
+;;uses such a gassless patron. No other smart account should have this property."
+;;
+;;WHAT THE CODE DOES. `iz-gassles-patron` is `(DALOS::UR_AccountType patron)`, and UR_AccountType is
+;;`(at 0 (UR_AccountProperties account))` = the `smart-contract` flag. `XI_DeploySmartAccount`
+;;sets that flag to `true` UNCONDITIONALLY for every account deployed through it, and BOTH
+;;`DALOS|A_DeploySmartAccount` (admin) and `DALOS|C_DeploySmartAccount` (CLIENT, TS01-C1:311,
+;;permissionless, STOA-priced) route there. There is NO hardcoded account: "gassles" appears exactly
+;;twice in all of 1_SOVEREIGN, and both are the two lines in IGNIS::C_Collect.
+;;
+;;So the exemption's population is "every smart account", not "one". This block states that as a
+;;measurement on a specific, ordinary user account.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (user-smart:string KC.BJ)
+    )
+    (map print
+        [
+            (format "<<RT-I-001>> KC.BJ (us-0008_bnjr, an ORDINARY user smart account) gassless={}"
+                [(ref-DALOS::UR_AccountType user-smart)])
+            ;;THE DESIGN VIOLATION, stated positively so it cannot pass vacuously: an ordinary user
+            ;;account -- deployed from the client surface, owned by a user keyset, not hardcoded
+            ;;anywhere -- carries the exemption that the design reserves for ONE system account.
+            (expect "<<RT-I-001>> an ORDINARY user smart account carries the gassless exemption"
+                true (ref-DALOS::UR_AccountType user-smart))
+            ;;...and a standard account does not, so the flag really is "is smart", not "is the
+            ;;designated payer". Without this the line above could be true of everything.
+            (expect "<<RT-I-001>> ...while a standard account does not -- the flag is 'is smart'"
+                false (ref-DALOS::UR_AccountType KST.ANHD))
+        ])
+)
+(print "===^^^===")
 (commit-tx)

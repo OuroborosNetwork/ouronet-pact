@@ -669,7 +669,42 @@ silent about the 10th. Widened to `A-Z`, family I registered, and an unknown fam
 *Third instance this round of a checker silently narrowing to the region it was told about, after the
 price sheet's write-only `skipped` counter and `canon_check`'s `diff[:8]`.*
 
-### Owner ruling needed
+### The owner named the design, and it turned the finding into a plain violation
+
+Presented with RT-I-001, the owner stated the intent (2026-09-15):
+
+> *"An IGNIS gas payer account can only be a **standard** account. A smart account can never be a
+> gassless payer, **except one single account hardcoded into the code**, to allow admin-based gassless
+> IGNIS transactions — the Ouroboros daily minter uses such a gassless patron. No other smart account
+> should have this property."*
+
+**The code implements no such hardcoding.** `iz-gassles-patron` is `(DALOS::UR_AccountType patron)`,
+which is `(at 0 (UR_AccountProperties …))` — the **`smart-contract` flag** — and
+`XI_DeploySmartAccount` sets it `true` **unconditionally**. The string `gassles` appears **exactly
+twice in all of `1_SOVEREIGN/`**, and both are those two lines in `IGNIS::C_Collect`.
+
+So the exemption's population is not one account:
+
+| holder | how it gets the flag |
+|---|---|
+| **7 system smart accounts** — DALOS, ATS, VST, LIQUID, OUROBOROS, SWP, … | `[4.0]_Sovereign-Executor` deploys them via `DALOS\|A_DeploySmartAccount` |
+| **every user smart account** | `DALOS\|C_DeploySmartAccount` is a **client** wrapper (`TS01-C1:311`), permissionless, STOA-priced — and that fee is conditional on `UR_AccountCreationStoa`, so it can be **zero** |
+
+Measured at `<<RT-I-001h>>` on `KC.BJ` — an ordinary user account on a user keyset
+(`us-0008_bnjr-keyset`), hardcoded nowhere: **`gassless = true`**, while a standard account
+(`KST.ANHD`) is `false`. The flag is *"is smart"*, not *"is the designated payer"*.
+
+**This is no longer an economics question.** The intended rule exists and the code does not implement
+it. The fix shape is one line — `iz-gassles-patron` should compare the patron against the **one**
+designated account rather than read the smart flag — and the only open item is **which account**,
+which is the owner's to name. The Ouroboros daily minter is the cited consumer; the seven candidates
+are the system smart accounts above.
+
+**Not applied unilaterally**, because naming the wrong account would silently break whichever
+automaton actually depends on the exemption — and that automaton is exactly the kind of thing that
+fails quietly, once a day, in production.
+
+### Owner ruling needed *(superseded by the section above — retained for the reasoning)*
 
 The gassless exemption is presumably deliberate — smart accounts are contract-controlled and meant to
 operate without holding IGNIS. The question is whether that exemption should extend to the
