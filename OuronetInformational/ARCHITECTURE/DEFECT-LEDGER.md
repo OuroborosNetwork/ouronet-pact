@@ -229,6 +229,38 @@ Worth recording about the guard itself: after this round of generator fixes, `_p
 **fired unprompted** on the drift the regeneration had just created in `IGNIS-PRICING.md`. That is
 the check working in the workflow rather than in a selftest.
 
+### The preview-coverage denominator was measuring the wrong set *(2026-09-15)*
+
+After GS-13 the gap bucket read **"14 never named at all"**, which looks like fourteen holes in the
+owner's first rule. It was one. The instrument was counting the wrong things.
+
+| | |
+|---|---:|
+| `INFO_` defuns total | 412 |
+| — return `HibernatedNoncesView`, i.e. **display readers, not cost previews** | 2 |
+| — **`INFO_DPDC-*`**: son-discriminated **shared implementations** called by the `INFO_DPNF\|*` / `INFO_DPSF\|*` wrappers that *are* measured | 9 |
+| **client-facing cost previews** | **401** |
+| measured against a live charge | **400** |
+| **real gap** | **1** — `INFO_SWP\|Firestarter` |
+
+`INFO_DPNF|Issue` is literally `(INFO_DPDC-I|Issue patron owner-account collection-name false)`; the
+DPDC helpers carry 48 / 32 / 14 / 9 / 7 / 5 / 2 / 2 / 2 call sites between them. They are exercised
+transitively every time a wrapper is measured.
+
+**Why this mattered enough to fix the tool rather than just read past it:** a coverage report that
+cries wolf nine times is one nobody reads to the end, and *the one real gap was ninth in an
+alphabetical list of ten*. `_info_measured.py` now reports the three sets separately, so the
+denominator is the thing being covered.
+
+**The one real gap, stated honestly rather than padded.** `INFO_SWP|Firestarter` has **zero call
+sites and zero mentions in any `.repl`.** Its exec, `SWP|C_Firestarter`, *is* exercised — but only
+on the refusal path (`modules/SWP.repl` `<<SWPX-11>>` proves a funded account cannot firestart), so
+there has never been a successful firestart to measure a charge against. **Not fixed.** A pin needs
+a bespoke fixture: an account under 1.0 OURO and under 100.0 IGNIS that nonetheless holds 10 native
+STOA to wrap. That is worth building — firestarting is the **bootstrap op for a brand-new user**, so
+an over-quote there misinforms someone on the one operation where they have no margin — but it is a
+fixture job, not a side effect of a coverage audit.
+
 ### GS-14 — the stats generator degraded silently, and took its checker with it *(FOUND + FIXED 2026-09-15)*
 
 Adding GS-13's two pins moved the assertion count 21,519 → 21,523, so `REPL_SUITE_STATS.md` had to be

@@ -37,9 +37,44 @@ def declared():
     out = {}
     for f in PREVIEW_SOURCES:
         p = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), f)
-        for m in re.finditer(r'^\s+\(defun (INFO_[^\s:]+)', open(p).read(), re.M):
+        # ONLY ClientInfo-returning previews. The owner's rule -- "the INFO function must output
+        # the exact same cost as the real execution function" -- is about COST previews. Matching
+        # every INFO_ defun swept in display readers that quote no cost at all
+        # (INFO_VST|HibernatedNonceDisplay / |HibernatedNoncesDisplay return HibernatedNoncesView),
+        # which inflated the denominator and reported two permanent "gaps" that were never in
+        # scope. A coverage figure is only meaningful if its denominator is the thing being covered.
+        for m in re.finditer(r'^\s+\(defun (INFO_[^\s:(]+)(:[^\s(]+)?', open(p).read(), re.M):
+            if 'ClientInfo' not in (m.group(2) or ''):
+                continue
             out[m.group(1)] = os.path.basename(f)
     return out
+
+def internal_helpers(dec):
+    """Previews that exist only to be called by OTHER previews, and are therefore exercised
+    transitively whenever a caller is measured.
+
+    2026-09-15: the "never named" bucket read 14 and looked like 14 holes in the owner's first
+    rule. Two were display readers returning HibernatedNoncesView, not cost previews at all. NINE
+    of the remaining twelve were the `INFO_DPDC-*` family -- son-discriminated SHARED
+    IMPLEMENTATIONS, called 48/32/14/9/7/5/2/2/2 times by the `INFO_DPNF|*` / `INFO_DPSF|*`
+    wrappers that ARE measured. INFO_DPNF|Issue is literally
+    `(INFO_DPDC-I|Issue patron owner-account collection-name false)`.
+
+    Counting them as gaps buried the ONE real gap among nine non-gaps -- and a coverage report
+    that cries wolf nine times is a coverage report nobody reads to the end.
+    """
+    helpers = set()
+    for f in PREVIEW_SOURCES:
+        p = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), f)
+        src = open(p).read()
+        for name in dec:
+            if dec[name] != os.path.basename(f):
+                continue
+            # a CALL, not the defun: "(NAME " with a space, never "(defun NAME"
+            if re.search(r'(?<!defun )\(' + re.escape(name) + r'[\s)]', src):
+                helpers.add(name)
+    return helpers
+
 
 def scan():
     named, measured = {}, {}
@@ -65,17 +100,24 @@ def main():
     d = set(dec)
     n = set(named) & d
     m = set(measured) & d
-    print(f"declared previews      : {len(d)}")
+    helpers = internal_helpers(dec) - n
+    client = d - helpers
+    print(f"cost previews declared : {len(d)}   (ClientInfo-returning only)")
+    print(f"  INFO-internal helpers: {len(helpers)}   (called by another preview; exercised transitively)")
+    print(f"  CLIENT-FACING        : {len(client)}   <-- the denominator the owner's rule is about")
     print(f"named in a live .repl  : {len(n)}")
     print(f"MEASURED (cost proof)  : {len(m)}   <-- the number that answers the owner's spec")
     print(f"named but NOT measured : {len(n - m)}")
-    print(f"never named at all     : {len(d - n)}")
+    print(f"client-facing, NEVER named: {len(client - n)}")
     if "--gaps" in sys.argv:
         print("\n-- named but NOT measured (shape-check / abort-pin only) --")
         for x in sorted(n - m):
             print(f"   {x:<52} {sorted(named[x])[0]}")
-        print("\n-- never named --")
-        for x in sorted(d - n):
+        print("\n-- CLIENT-FACING, never named (real gaps) --")
+        for x in sorted(client - n):
+            print(f"   {x:<52} {dec[x]}")
+        print("\n-- INFO-internal helpers, never named directly (exercised via their callers) --")
+        for x in sorted(helpers):
             print(f"   {x:<52} {dec[x]}")
     return 0
 
