@@ -244,3 +244,93 @@
 (print "===^^^===")
 (env-sigs [])
 (rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RT-A-003 - the share price has a singularity, and one of its two doors is unguarded")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== RT-A-003 · 01 · coil into a zero-index pool ====
+(print "--- [RT-A-003 · 01 · coil into a zero-index pool] ---")
+;;<<RT-A-003>> FAMILY: A | STATUS: FIXED
+;;HYPOTHESIS: an ATS pool's index is a SHARE PRICE -- `floor(resident-sum / rbt-supply, p)` -- and
+;;            `URC_RBT` inverts it to price a deposit: `floor(rt-amount / index, p-rbt)`. This was
+;;            entered looking for the classic vault-inflation attack (tiny genesis supply, then
+;;            donate to inflate the price against later depositors). Audit finding #11M already
+;;            bounded the KickStart RATIO to [0.1, 100.0] for exactly that reason, and the RBT's
+;;            24-decimal precision makes the remaining rounding loss (index x 10^-24 per coil)
+;;            uneconomic to chase. But the same expression has a SINGULARITY the bound does not
+;;            cover: `index = 0`, which is a reachable live state -- any pool whose reward-bearing
+;;            token has supply MINTED OUTSIDE THE POOL reads resident-sum 0 against a positive
+;;            rbt-supply. Five such pools exist at deploy (the AOZ primal assets).
+;;METHOD:     measure the state first rather than assume it, then drive the real client entrypoint
+;;            `TS01-C2::ATS|C_Coil` into it, and pin the refusal BY MESSAGE. The control is the
+;;            SIBLING op: `ATS|C_Fuel` guards this identical state deliberately and says so.
+;;RESULT:     CONFIRMED, then FIXED. The inflation attack itself is REFUSED on economics -- at 24
+;;            decimals the per-coil rounding loss is index x 10^-24, so moving a real pool would
+;;            take ~10^24 times its own supply in donated tokens. The SINGULARITY was live:
+;;            `ATS|C_Coil` into a zero-index pool died with "Arithmetic exception: div by zero,
+;;            decimal", through the real Talos client, on a pool that exists at deploy. The same
+;;            call on the sibling op was refused cleanly by name. Repaired in 08_ATS.pact by
+;;            enforcing (> index 0.0) inside `URC_RBT` -- the function that actually divides, and
+;;            the one the INFO previews share, so a quote for an impossible coil now refuses in
+;;            the same words instead of throwing. A healthy pool still prices normally.
+;;
+;;WHY THE SIBLING IS THE WHOLE POINT. `ATSU|C>FUEL` carries
+;;    (enforce (>= index 0.1) "Fueling requires an ATS-Pair Index of at least 0.1")
+;;and its comment block is unusually careful -- it was REWORDED on 2026-09-13 precisely so a caller
+;;whose index is 0.05 is not told something untrue about their own pair. That much thought went
+;;into the message of one guard, while `ATSU|C>COIL` -- the op an ordinary user actually reaches --
+;;has NO index check at all and dies inside the arithmetic. The guard was not missing because the
+;;state was unknown. It was missing on the door nobody looked at.
+;;
+(let*
+    (
+        (pool:string "Bisthanium-98c486052a51")
+        (rt:string (at 0 (ouronet-ns.ATS.UR_RewardTokenList pool)))
+        (healthy:string "ComatiCommand-98c486052a51")
+        (h-rt:string (at 0 (ouronet-ns.ATS.UR_RewardTokenList healthy)))
+    )
+    (map print
+        [
+            ;;The precondition, MEASURED. A zero index is not a contrived input: it is what a
+            ;;positive rbt-supply with a zero resident-sum evaluates to, and the AOZ primal-asset
+            ;;pools are in that state from deploy.
+            (expect
+                (format "<<RT-A-003a>> {} is live and its index is ZERO: supply {} against resident-sum {}"
+                    [pool (ouronet-ns.ATS.URC_PairRBTSupply pool) (ouronet-ns.ATS.URC_ResidentSum pool)])
+                [0.0 true 0.0]
+                [ (ouronet-ns.ATS.URC_Index pool)
+                  (> (ouronet-ns.ATS.URC_PairRBTSupply pool) 0.0)
+                  (ouronet-ns.ATS.URC_ResidentSum pool) ])
+            ;;The sibling op ALREADY refuses this exact pool, with a message written with care.
+            (expect-failure
+                "<<RT-A-003b>> the SIBLING op, C_Fuel, refuses this very pool and says why"
+                "Fueling requires an ATS-Pair Index of at least 0.1"
+                (let ((r:module{TalosStageOne_ClientTwoV2} TS01-C2))
+                    (r::ATS|C_Fuel KST.ANHD KST.ANHD pool rt 100.0)))
+            ;;The door a user actually uses.
+            (expect-failure
+                "<<RT-A-003c>> ...and C_Coil must refuse it too, by a guard rather than by dividing"
+                "Coiling requires an ATS-Pair Index greater than zero"
+                (let ((r:module{TalosStageOne_ClientTwoV2} TS01-C2))
+                    (r::ATS|C_Coil KST.ANHD KST.ANHD pool rt 100.0)))
+            ;;The shared reader -- so the INFO preview of a coil refuses identically rather than
+            ;;throwing an arithmetic exception at anyone asking for a quote.
+            (expect-failure
+                "<<RT-A-003d>> the shared pricing reader refuses it too, so a PREVIEW cannot throw"
+                "Coiling requires an ATS-Pair Index greater than zero"
+                (ouronet-ns.ATS.URC_RBT pool rt 100.0))
+            ;;NON-VACUITY: the same reader on a HEALTHY pool prices normally. Without this, the
+            ;;three refusals above are consistent with the reader simply being broken.
+            (expect
+                (format "<<RT-A-003e>> the same reader prices a HEALTHY pool (index {}) normally"
+                    [(ouronet-ns.ATS.URC_Index healthy)])
+                true
+                (> (ouronet-ns.ATS.URC_RBT healthy h-rt 100.0) 0.0))
+        ])
+    ""
+)
+(print "")
+(print "===^^^===")
+(commit-tx)

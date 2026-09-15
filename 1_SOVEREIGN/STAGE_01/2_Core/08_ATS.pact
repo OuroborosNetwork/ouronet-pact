@@ -1589,6 +1589,27 @@
                 (= (floor rt-amount p-rbt) rt-amount)
                 (format "Input amount of {} must have at most a precision equal to that of the Cold-RBT ({})" [rt-amount p-rbt])
             )
+            ;;THE SINGULARITY. <index> is a share price and the line below inverts it, so a zero
+            ;;index is a division by zero -- and zero is a REACHABLE LIVE STATE, not a contrived
+            ;;input: any pair whose reward-bearing token carries supply minted OUTSIDE the pool
+            ;;reads resident-sum 0 against a positive rbt-supply, which is exactly the state the
+            ;;five AOZ primal-asset pools are in at deploy.
+            ;;
+            ;;The sibling op already refuses this: ATSU|C>FUEL enforces (>= index 0.1) and its
+            ;;message was reworded on 2026-09-13 specifically so the caller is told something true
+            ;;about their own pair. ATSU|C>COIL has no index check at all, so the coil door -- the
+            ;;one an ordinary user reaches -- died inside the arithmetic with
+            ;;"Arithmetic exception: div by zero, decimal", which names neither the pool nor the
+            ;;cause, and which `try` cannot even catch.
+            ;;
+            ;;Guarded HERE rather than in ATSU|C>COIL deliberately: this is the function that
+            ;;divides, and it is shared by the exec path and by the INFO cost previews, so a quote
+            ;;for an impossible coil now refuses in the same words instead of throwing.
+            ;;Pinned by RedTeam/[RT-A]_Economics.repl <<RT-A-003c>>/<<RT-A-003d>>.
+            (enforce
+                (> index 0.0)
+                (format "Coiling requires an ATS-Pair Index greater than zero; {} has none" [atspair])
+            )
             (floor (/ rt-amount index) p-rbt)
         )
     )
