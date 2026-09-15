@@ -18,6 +18,7 @@
 ;;         1_SOVEREIGN/STAGE_01/2_Core/01_DALOS.pact (XB_UpdateBalance — core-token balances)
 ;;
 ;; REPL tests: <<RT-J-001a>> <<RT-J-001b>> <<RT-J-001c>> <<RT-J-001d>> <<RT-J-001e>>
+;;             <<RT-J-002a>> .. <<RT-J-002f>>
 ;;
 ;; Run: cd REPL && pact "RedTeam/[RT-J]_Conservation.repl"
 ;;
@@ -25,6 +26,12 @@
 (load "../deploy-stage01.repl")
 (load "../Stage_01/[6.2]_DPTF.repl")
 (load "../Stage_01/[6.3]_SWP.repl")
+;;[6.6]+[6.7] are what actually POPULATE DPOF: without them 11 of 12 ortofungibles sit
+;;at zero supply and the RT-J-002 sweep is a sweep over zeros. [6.5]_DPOF is deliberately
+;;NOT loaded -- the Stage-2 AQP path self-loads it, and a second load re-issues MVST
+;;(duplicate insert). ZALL.repl carries the same note.
+(load "../Stage_01/[6.6]_ATS.repl")
+(load "../Stage_01/[6.7]_VST.repl")
 
 ;;|| NEXT >
 ;;
@@ -135,6 +142,137 @@
                 (format "<<RT-J-001e>> IGNIS: the virtual-gas ledger balances -- supply {} vs held {}"
                     [(ouronet-ns.DPTF.UR_Supply gas) gas-sum])
                 (ouronet-ns.DPTF.UR_Supply gas) gas-sum)
+        ])
+    ""
+)
+(print "")
+(print "===^^^===")
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RT-J-002 - the ortofungible keeps a CACHED total beside the ledger it summarises")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== RT-J-002 · 01 · DPOF: three levels that must agree ====
+(print "--- [RT-J-002 · 01 · DPOF: three levels that must agree] ---")
+;;<<RT-J-002>> FAMILY: J | STATUS: REFUSED
+;;HYPOTHESIS: DPOF (ortofungible) keeps the SAME quantity in three places -- `Properties.supply`,
+;;            a per-account `total-account-supply` in DPOF|T|AccountRoles, and a per-nonce `supply`
+;;            in DPOF|T|Nonces where each nonce records its own `holder`. The nonce table is the
+;;            LEDGER; `total-account-supply` is a CACHED AGGREGATE of it. A cached aggregate beside
+;;            its own source of truth is the classic place for drift, and no test had ever compared
+;;            them -- RT-J-001's sweep covers DPTF only, and DPOF's writers are a different family.
+;;METHOD:     enumerate ids (UR_P-KEYS), account rows (UR_KEYS) and nonce rows (UR_N-KEYS), attribute
+;;            by FULL-ID prefix -- DPOF ids contain the separator far more often than DPTF's do
+;;            (`V|OURO-`, `Z|VST-`, `Z|P|OURO-BUSD|LP-`), so splitting on the first bar is useless
+;;            here -- and cross-check all three levels against each other.
+;;RESULT:     REFUSED. 16 ortofungibles, 34 account rows, 80 nonce rows: every level agrees exactly,
+;;            including the aggregate-vs-ledger check, which is the one that had never been run.
+;;
+;;THE FIRST RUN LOOKED LIKE FOUR DEFECTS AND WAS FOUR MISREADINGS OF ONE CONVENTION. Summing nonce
+;;supplies naively gave `Z|VST` short by 31.0, `DDKOSON` by 4.0, `V|OURO` by 1.0, and `Z|OURO` a
+;;NEGATIVE total of -1.0 against a supply of 0.0. Every one of those deltas turned out to equal that
+;;token's `UR_NoncesExcluded` exactly, because an excluded nonce is TOMBSTONED, not deleted:
+;;
+;;      supply = -1.0   and   holder = BAR
+;;
+;;`-1.0` is a marker, not a balance. So the assertions below do not merely skip tombstones -- that
+;;would hide the convention rather than test it. They pin it: the tombstone COUNT must equal
+;;`UR_NoncesExcluded`, no nonce may carry any other negative value, and `supply = -1.0` must hold
+;;if and only if `holder = BAR`.
+;;
+;;MUTATION-TESTED, because an all-green sweep is exactly the shape a vacuous one has. TWO controls
+;;were needed, and finding that out was the point:
+;;
+;;  1] sentinel -1.0 -> -2.0 in this block: <<RT-J-002b>>, <<RT-J-002c>> and <<RT-J-002d>> go red.
+;;  2] that control left <<RT-J-002e>> GREEN -- and the reason matters. 002e selects a nonce by its
+;;     HOLDER, and a tombstone's holder is BAR, which is not an account, so no account ever picks a
+;;     tombstone up no matter what the sentinel is. The aggregate-vs-ledger check is therefore
+;;     independent of the tombstone convention, and needed its own control: flipping the holder
+;;     match to `!=` reddens <<RT-J-002e>> and NOTHING ELSE.
+;;
+;;One perturbation reddening four assertions would have PROVEN LESS, not more -- it would have meant
+;;the four were one assertion wearing four labels.
+;;
+(let*
+    (
+        (ids:[string] (ouronet-ns.DPOF.UR_P-KEYS))
+        (akeys:[string] (ouronet-ns.DPOF.UR_KEYS))
+        (nkeys:[string] (ouronet-ns.DPOF.UR_N-KEYS))
+        ;;BAR, read out of the module rather than retyped: UC_IdAccount "" "" is exactly the separator.
+        (bar:string (ouronet-ns.DPOF.UC_IdAccount "" ""))
+        (res:[object] (map (lambda (id:string)
+            (let* ((n:integer (+ 1 (length id)))
+                   (pfx:string (format "{}|" [id]))
+                   (owns (lambda (k:string) (and (>= (length k) n) (= (take n k) pfx))))
+                   (ak:[string] (filter (lambda (k:string) (owns k)) akeys))
+                   (nk:[string] (filter (lambda (k:string) (owns k)) nkeys))
+                   (ncs:[integer] (map (lambda (k:string) (str-to-int (drop n k))) nk))
+                   (sup:[decimal] (map (lambda (c:integer) (ouronet-ns.DPOF.UR_NonceSupply id c)) ncs))
+                   (live:decimal (fold (+) 0.0 (filter (lambda (x:decimal) (!= x -1.0)) sup)))
+                   ;;tombstone <=> holder is BAR, tested in BOTH directions with !=  on two booleans
+                   (tomb-mismatch:integer (length (filter (lambda (c:integer)
+                        (!= (= (ouronet-ns.DPOF.UR_NonceSupply id c) -1.0)
+                            (= (ouronet-ns.DPOF.UR_NonceHolder id c) bar))) ncs)))
+                   ;;the cached aggregate, against the nonce ledger it summarises
+                   (acct-drift:integer (length (filter (lambda (k:string)
+                        (let ((acct:string (drop n k)))
+                            (!= (ouronet-ns.DPOF.UR_AccountSupply id acct)
+                                (fold (+) 0.0 (map (lambda (c:integer)
+                                    (if (and (!= (ouronet-ns.DPOF.UR_NonceSupply id c) -1.0)
+                                             (= (ouronet-ns.DPOF.UR_NonceHolder id c) acct))
+                                        (ouronet-ns.DPOF.UR_NonceSupply id c) 0.0)) ncs))))) ak)))
+                   (acct-sum:decimal (fold (+) 0.0
+                        (map (lambda (k:string) (ouronet-ns.DPOF.UR_AccountSupply id (drop n k))) ak))))
+                { "id"            : id
+                , "d-live"        : (- (ouronet-ns.DPOF.UR_Supply id) live)
+                , "d-acct"        : (- (ouronet-ns.DPOF.UR_Supply id) acct-sum)
+                , "d-tomb"        : (- (length (filter (lambda (x:decimal) (= x -1.0)) sup))
+                                       (ouronet-ns.DPOF.UR_NoncesExcluded id))
+                , "other-neg"     : (length (filter (lambda (x:decimal) (and (< x 0.0) (!= x -1.0))) sup))
+                , "tomb-mismatch" : tomb-mismatch
+                , "acct-drift"    : acct-drift
+                , "na"            : (length ak)
+                , "nn"            : (length nk) })) ids))
+        (off (lambda (field:string)
+            (map (lambda (r:object) (at "id" r))
+                 (filter (lambda (r:object)
+                    (if (= field "d-live") (!= (at "d-live" r) 0.0)
+                    (if (= field "d-acct") (!= (at "d-acct" r) 0.0)
+                    (if (= field "d-tomb") (!= (at "d-tomb" r) 0)
+                    (if (= field "other-neg") (!= (at "other-neg" r) 0)
+                    (if (= field "tomb-mismatch") (!= (at "tomb-mismatch" r) 0)
+                                                  (!= (at "acct-drift" r) 0))))))) res))))
+        (attr-a:integer (fold (+) 0 (map (lambda (r:object) (at "na" r)) res)))
+        (attr-n:integer (fold (+) 0 (map (lambda (r:object) (at "nn" r)) res)))
+    )
+    (map print
+        [
+            (expect
+                (format "<<RT-J-002a>> all {} account rows and {} nonce rows attribute to exactly one of the {} ortofungibles"
+                    [(length akeys) (length nkeys) (length ids)])
+                [(length akeys) (length nkeys)] [attr-a attr-n])
+            (expect
+                (format "<<RT-J-002b>> supply == sum of LIVE nonce supplies, all {} ortofungibles; offenders: {}"
+                    [(length ids) (off "d-live")])
+                [] (off "d-live"))
+            (expect
+                (format "<<RT-J-002c>> tombstone count == UR_NoncesExcluded, and no other negative supply exists; offenders: {} / {}"
+                    [(off "d-tomb") (off "other-neg")])
+                [[] []] [(off "d-tomb") (off "other-neg")])
+            (expect
+                (format "<<RT-J-002d>> a nonce is tombstoned (-1.0) IF AND ONLY IF its holder is BAR [{}]; offenders: {}"
+                    [bar (off "tomb-mismatch")])
+                [] (off "tomb-mismatch"))
+            (expect
+                (format "<<RT-J-002e>> the CACHED total-account-supply equals the nonces that account actually holds; offenders: {}"
+                    [(off "acct-drift")])
+                [] (off "acct-drift"))
+            (expect
+                (format "<<RT-J-002f>> supply == sum of the cached per-account totals; offenders: {}"
+                    [(off "d-acct")])
+                [] (off "d-acct"))
         ])
     ""
 )

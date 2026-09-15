@@ -1020,6 +1020,52 @@ A sweep is an argument of the form *"I looked everywhere and found nothing"* —
 > **Without the second guard this sweep would have reported a different wrong number with equal
 > confidence.** It is the difference between a measurement and a coincidence.
 
+### RT-J-002 — REFUSED: the ortofungible's cached aggregate matches its ledger
+
+RT-J-001 swept DPTF only. **DPOF** — the ortofungible — keeps the same quantity in *three* places:
+
+| level | table | role |
+|---|---|---|
+| `Properties.supply` | `DPOF\|T\|Properties` | the headline total |
+| `total-account-supply` | `DPOF\|T\|AccountRoles` | a **cached aggregate**, per account |
+| `supply` + `holder` | `DPOF\|T\|Nonces` | the **ledger** — every nonce records its own holder |
+
+A cached aggregate sitting beside its own source of truth is the classic place for drift, and
+nothing had ever compared them. **16 ortofungibles, 34 account rows, 80 nonce rows: every level
+agrees exactly**, including the aggregate-vs-ledger check.
+
+**The first run looked like four defects and was four misreadings of one convention.** Summing nonce
+supplies naively left `Z|VST` short by 31.0, `DDKOSON` by 4.0, `V|OURO` by 1.0, and gave `Z|OURO` a
+*negative* total of −1.0 against a supply of 0.0. Every delta turned out to equal that token's
+`UR_NoncesExcluded` **exactly**: an excluded nonce is **tombstoned, not deleted** —
+
+```
+supply = -1.0    and    holder = BAR
+```
+
+`−1.0` is a marker, not a balance. The assertions therefore do not merely *skip* tombstones, which
+would hide the convention rather than test it. They **pin** it: the tombstone count must equal
+`UR_NoncesExcluded`, no nonce may carry any other negative value, and `supply = −1.0` must hold
+**if and only if** `holder = BAR`.
+
+### Two controls were needed, and that is the finding about the test
+
+An all-green sweep is exactly the shape a vacuous one has, so the block was mutation-tested.
+
+1. Sentinel `−1.0 → −2.0`: **`002b`, `002c`, `002d` go red.**
+2. That control left **`002e` — the aggregate-vs-ledger check — GREEN.** The reason matters: `002e`
+   selects a nonce by its **holder**, and a tombstone's holder is `BAR`, which is not an account, so
+   no account picks a tombstone up whatever the sentinel is. It needed its own control: flipping the
+   holder match to `!=` reddens **`002e` and nothing else**.
+
+> **One perturbation reddening four assertions would have proven *less*, not more** — it would have
+> meant the four were one assertion wearing four labels.
+
+The suite was also made heavier for this: without `[6.6]_ATS` and `[6.7]_VST`, **11 of 12
+ortofungibles sit at zero supply** and the sweep is a sweep over zeros. Loading them raised DPOF to
+16 tokens with real balances — and raised RT-J-001's own coverage from 296 tokens / 739 rows to
+**297 / 745**, still exact.
+
 ### What the instrument could not do, and it is worth recording
 
 `DALOS|AccountTable` has **no on-chain key enumerator**. `AU_OuronetAccounts`'s own `@doc` says
@@ -1044,8 +1090,8 @@ harness may hold the account list that the chain will not give it.
 | G — Hostile citizen module | 2 |  |  | 2 |
 | H — Input domain | 2 |  | 2 |  |
 | I — Gas station payable surface | 1 |  | 1 |  |
-| J — Ledger conservation | 1 |  | 1 |  |
-| **total** | **14** | **0** | **7** | **7** |
+| J — Ledger conservation | 2 |  | 1 | 1 |
+| **total** | **15** | **0** | **7** | **8** |
 <!-- REGISTER:END -->
 
 **Seven of fourteen attacks found a defect, and all seven are fixed and measured.** The table above

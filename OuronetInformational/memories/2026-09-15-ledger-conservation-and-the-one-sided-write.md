@@ -92,3 +92,54 @@ simply **not an existence check**; use `try` around `UEV_EnforceAccountExists` f
 `REPL_SUITE_STATS.md`; it has no opinion about the attack register, so nothing compared the two.
 The table is now generated between markers by `_redteam.py --sync` and diffed by `--check` in the
 gate. **A missing marker is an error, not a pass** — the `_figuresync` lesson.
+
+---
+
+# Addendum — DPOF (RT-J-002, same day): REFUSED, and what the test cost
+
+DPOF keeps the same quantity in **three** places: `Properties.supply`, a per-account
+`total-account-supply` (a **cached aggregate**), and a per-nonce `supply` with its own `holder`
+(the **ledger**). Nothing had compared them. **16 tokens, 34 account rows, 80 nonce rows — every
+level agrees exactly**, including the aggregate-vs-ledger check.
+
+## The tombstone convention, which looked like four defects
+
+An excluded DPOF nonce is **tombstoned, not deleted**:
+
+```
+supply = -1.0    and    holder = BAR ("|")
+```
+
+A naive nonce sum therefore reads short by exactly `UR_NoncesExcluded` — `Z|VST` by 31, `DDKOSON`
+by 4, `V|OURO` by 1, and `Z|OURO` came out **negative** against a zero supply. All four were my
+misreading of one convention. `-1.0` is a marker, not a balance.
+
+**Do not "skip" a sentinel in a test — pin it.** The assertions require tombstone-count ==
+`UR_NoncesExcluded`, forbid any other negative value, and require `supply = -1.0` **iff**
+`holder = BAR`.
+
+Also note the holder sentinel is **`"|"` (BAR), not `""`**. A display that did `(drop 2 h)` to strip
+the `Ѻ.`/`Σ.` prefix rendered it as empty and sent me down the wrong path for one round.
+
+## Two controls, because one would have proven less
+
+- sentinel `-1.0 -> -2.0` reddens `002b/002c/002d`;
+- it leaves `002e` **green**, because `002e` selects nonces by **holder**, and a tombstone's holder
+  is BAR, which is not an account. It needed its own control — flipping the holder match to `!=`
+  reddens `002e` **and nothing else**.
+
+> One perturbation reddening four assertions would have meant the four were one assertion wearing
+> four labels.
+
+## Fixture note
+
+Without `[6.6]_ATS` + `[6.7]_VST`, **11 of 12 ortofungibles sit at zero supply** and the sweep is a
+sweep over zeros. `[6.5]_DPOF` must NOT be added — the Stage-2 AQP path self-loads it and a second
+load re-issues MVST (duplicate insert); `ZALL.repl` carries the same note. Loading ATS+VST also
+raised RT-J-001's own DPTF coverage from 296 tokens / 739 rows to **297 / 745**.
+
+## Still unswept
+
+**DPDC** (collectables — DPNF/DPSF) has its own `UR_AccountSupply` returning an object, and
+`(keys (if son DPSF|T|AccountSupplies DPNF|T|AccountSupplies))` at `02_DPDC.pact:542`. It is
+Stage 2, so it needs a Stage-2 harness. That is the obvious next target for family J.
