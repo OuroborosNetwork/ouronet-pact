@@ -700,6 +700,42 @@ designated account rather than read the smart flag — and the only open item is
 which is the owner's to name. The Ouroboros daily minter is the cited consumer; the seven candidates
 are the system smart accounts above.
 
+#### The designated account exists — and the one-line fix is still unsafe
+
+The owner remembered correctly. `2_CITIZEN/Stage_Z/03_DSP+.pact`:
+
+```pact
+(defconst GASLESS-PATRON (URC_Gassless))
+(defun URC_Gassless () … (ref-DALOS::GOV|DALOS|SC_NAME))
+```
+
+Every daily-emission call in `A_OuroMinterStageOne` and the Koson minter passes exactly that — the
+**DALOS smart account**. So the intended account is named, and the intended consumer is real.
+
+**But it is a caller-side convention, not an enforcement.** DSP *chooses* to pass one account;
+`IGNIS::C_Collect` still exempts **any** smart patron. That is `RT-C-001`'s lesson in a new place —
+*a convention that is honoured is indistinguishable from a rule that is enforced, until someone does
+not honour it* — and the Case 3 door lets an attacker write the patron into their **own transaction
+text**, where DSP's discipline has no reach at all.
+
+**And narrowing the exemption to that one account would break live flows.** Measured at
+`<<RT-I-001i>>`: `SWP|SC_NAME` is gassless **and is passed as a patron by live liquidity code** —
+`VST::C_Freeze` / `C_Sleep` at `20_MTX-SWP:684,830,983` and `18_SWPLC:1168,1229,1299,1381` — as is
+`AQP|SC_NAME` to `SWPLC::C_Fuel` (`04_RPS:5317`). Those accounts hold no IGNIS; charging them would
+fail the flows, not the attacker.
+
+**So the fix does not belong in the exemption. It belongs in the gas station**, which is where "gas
+payer" actually means something. Two shapes, both implementing the owner's own sentence — *"an IGNIS
+gas payer account can only be a standard account"* — at the point it is about:
+
+| option | change | risk |
+|---|---|---|
+| **A** | Case 3 enforces `(= n 3)` — no appended forms at all | may break a legitimate client flow that appends; unknown from inside the repo |
+| **B** | Case 3 additionally enforces that the patron named in **form 1** is **not** a smart account | implements the stated rule literally; needs string extraction of the account from the form, and leaves the SWP/AQP exemption untouched |
+
+**B is the recommendation.** It closes RT-I-001 at the door rather than at the till, and it does not
+disturb the internal flows that depend on the exemption.
+
 **Not applied unilaterally**, because naming the wrong account would silently break whichever
 automaton actually depends on the exemption — and that automaton is exactly the kind of thing that
 fails quietly, once a day, in production.

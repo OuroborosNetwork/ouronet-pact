@@ -339,3 +339,47 @@
 )
 (print "===^^^===")
 (commit-tx)
+;;|| NEXT >
+;;
+(begin-tx "RT-I-001i - why the one-line fix is NOT safe")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [RT-I-001i · the exemption's live dependants] ---")
+;;THE INTENDED ACCOUNT EXISTS, AND THE OWNER REMEMBERED IT CORRECTLY. `03_DSP+.pact` defines
+;;`(defconst GASLESS-PATRON (URC_Gassless))` and `URC_Gassless` returns
+;;`(ref-DALOS::GOV|DALOS|SC_NAME)` -- the DALOS smart account. Every daily-emission call in the
+;;Ouroboros and Koson minters passes exactly that.
+;;
+;;BUT IT IS A CALLER-SIDE CONVENTION, NOT AN ENFORCEMENT. DSP *chooses* to pass one account;
+;;`IGNIS::C_Collect` still exempts ANY smart patron. That is RT-C-001's lesson in a new place: a
+;;convention that is honoured is indistinguishable from a rule that is enforced, until someone does
+;;not honour it -- and the Case 3 door lets an attacker write the patron into their own transaction
+;;text, where DSP's discipline has no reach at all.
+;;
+;;AND THE OBVIOUS ONE-LINE FIX WOULD BREAK LIVE FLOWS. Narrowing `iz-gassles-patron` to
+;;`(= patron (GOV|DALOS|SC_NAME))` would start charging IGNIS to system accounts that are ALREADY
+;;used as patrons and hold none:
+;;    SWP|SC_NAME -> VST::C_Freeze / C_Sleep   (20_MTX-SWP:684,830,983; 18_SWPLC:1168,1229,1299,1381)
+;;    AQP|SC_NAME -> SWPLC::C_Fuel             (04_RPS:5317)
+;;This block pins that those accounts really are gassless today, so the constraint on any fix is a
+;;measurement rather than a worry.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-SWP:module{SwapperV4} SWP)
+    )
+    (map print
+        [
+            (format "<<RT-I-001>> DALOS|SC_NAME gassless={} (the DESIGNATED one, per DSP's GASLESS-PATRON)"
+                [(ref-DALOS::UR_AccountType (ref-DALOS::GOV|DALOS|SC_NAME))])
+            ;;the designated account is gassless -- the mechanism does serve its intended consumer
+            (expect "<<RT-I-001>> the DESIGNATED account (DALOS|SC_NAME) is gassless, as designed"
+                true (ref-DALOS::UR_AccountType (ref-DALOS::GOV|DALOS|SC_NAME)))
+            ;;...and so is SWP's, which is passed as a PATRON by live liquidity code. Narrowing the
+            ;;exemption to the designated account alone would start charging this one.
+            (expect "<<RT-I-001>> ...but so is SWP|SC_NAME, which live code passes AS A PATRON"
+                true (ref-DALOS::UR_AccountType (ref-SWP::GOV|SWP|SC_NAME)))
+        ])
+)
+(print "===^^^===")
+(commit-tx)
