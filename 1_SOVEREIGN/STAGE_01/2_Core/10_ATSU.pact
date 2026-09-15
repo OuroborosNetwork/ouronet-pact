@@ -393,6 +393,19 @@
             (compose-capability (P|TT))
         )
     )
+    ;;Module-local (no interface change): the single source for "can this pair be fuelled".
+    ;;Shared by ATSU|C>FUEL and URCi_Fuel so the quote and the op refuse in the same words.
+    (defun UEV_FuelableIndex (ats:string)
+        (let
+            (
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
+            (enforce
+                (>= (ref-ATS::URC_Index ats) 0.1)
+                "Fueling requires an ATS-Pair Index of at least 0.1"
+            )
+        )
+    )
     (defcap ATSU|C>FUEL (ats:string reward-token:string)
         @event
         (let
@@ -410,7 +423,11 @@
             ;;The two states this rejects are the -1.0 sentinel (URC_Index's "no RBT supply at all")
             ;;and a live pair whose index has fallen under the floor; the new message covers both.
             ;;Pinned in BOTH states by REPL/modules/ATS.repl <<ATS-G17>>.
-            (enforce (>= index 0.1) "Fueling requires an ATS-Pair Index of at least 0.1")
+            ;;REFUSAL PARITY (2026-09-15): this enforce used to be written out here, which meant
+            ;;URCi_Fuel had no way to share it and quoted a confident "Succesfully fueled ..." for
+            ;;pairs this line refuses. It now lives in UEV_FuelableIndex, called by BOTH, so the
+            ;;preview and the exec cannot drift apart or word the same refusal differently.
+            (UEV_FuelableIndex ats)
             (compose-capability (P|TT))
         )
     )
@@ -801,6 +818,10 @@
     (defun URCi_Fuel:object{IgnisCollectorV2.OutputCumulator}
         (fueler:string ats:string reward-token:string amount:decimal)
         @doc "Cost preview for C_Fuel — a single reward-token transfer into the ATS SC."
+        ;;The op's own gate, not a copy of it. Without this the quote succeeded -- returning a
+        ;;cost AND the post-text "Succesfully fueled ..." -- for a pair C_Fuel refuses outright.
+        ;;Pinned by RedTeam/[RT-K]_PreviewParity.repl <<RT-K-001b>>.
+        (UEV_FuelableIndex ats)
         (let
             (
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
@@ -888,6 +909,17 @@
             \ + cold-burn + (unlimited-uncoil when position=-1) + (fee-leg burns when a \
             \ non-redirected c-rbt fee exists). Re-derived purely via URC_ reads + sub-op \
             \ cost readers; the exec fold's XE_UpdateRUR side-writes don't affect cost."
+        ;;The exec's OWN state guard, called rather than re-typed -- UEV_ColdRecoveryState is the very
+        ;;function ATSU|C>COLD_RECOVERY uses, so the refusal is identical by construction and
+        ;;cannot drift. It must precede the binding group below: Pact evaluates every binding in a
+        ;;group before the body, and those bindings read state that does not exist for a pair in
+        ;;this condition. Pinned by RedTeam/[RT-K]_PreviewParity.repl <<RT-K-001d>>.
+        (let
+            (
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
+            (ref-ATS::UEV_ColdRecoveryState ats true)
+        )
         (let
             (
                 (ref-U|ATS:module{UtilityAtsV3} U|ATS)
@@ -1012,6 +1044,11 @@
             (
                 (ref-ATS:module{AutostakeV3} ATS)
             )
+            ;;ORDER MATTERS FOR PARITY, not just for safety. ATS|C>HOT_RECOVERY checks the
+            ;;toggle first and the Hot-RBT second; a preview that checked them the other way round
+            ;;refused for a TRUE but DIFFERENT reason than the op would give, which is its own kind
+            ;;of lie. Same guards, same order, same message.
+            (ref-ATS::UEV_HotRecoveryState ats true)
             (enforce
                 (ref-ATS::URC_IzPresentHotRBT ats)
                 (format "ATS-Pair {} has no Hot-RBT, so Hot Recovery is impossible" [ats])
@@ -1160,6 +1197,17 @@
         @doc "Cost preview for C_DirectRecovery: cold-transfer + cold-burn + a \
             \ multi-transfer of the fee-adjusted reward-token split back to recoverer, \
             \ re-derived purely via sub-op cost readers."
+        ;;The exec's OWN state guard, called rather than re-typed -- UEV_DirectRecoveryState is the very
+        ;;function ATSU|C>DIRECT_RECOVERY uses, so the refusal is identical by construction and
+        ;;cannot drift. It must precede the binding group below: Pact evaluates every binding in a
+        ;;group before the body, and those bindings read state that does not exist for a pair in
+        ;;this condition. Pinned by RedTeam/[RT-K]_PreviewParity.repl <<RT-K-001f>>.
+        (let
+            (
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
+            (ref-ATS::UEV_DirectRecoveryState ats true)
+        )
         (let
             (
                 (ref-U|ATS:module{UtilityAtsV3} U|ATS)

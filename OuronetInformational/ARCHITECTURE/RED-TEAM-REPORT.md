@@ -1362,6 +1362,55 @@ Three instances in one day of one shape: **a sentinel value flowing into a posit
 real one** — `"|"` as a table key, `0` as a divisor — and in two of the three the exec path and its
 preview had to be fixed independently.
 
+## Stage 16 — Family K, preview/exec divergence *(2026-09-15)*
+
+Ouronet's first rule is that an INFO preview reports the same **cost** as the execution it previews,
+and `_info_measured.py` proves that for all **401** client-facing previews. Nothing checked the
+other half: **does the preview refuse when the op refuses, and say the same thing when it does?**
+
+A preview is what a UI calls *before* it submits anything. It has exactly two ways to lie — quote a
+cost for an operation that cannot execute, or throw a raw internal error where the op gives a clean
+refusal. **Both were found live, in one module family, on one pool.**
+
+### RT-K-001 — SUCCEEDED, then FIXED. 3 of 7 ATS ops diverged
+
+Driven at an ATS pair with **index 0 and no Hot-RBT** (five exist at deploy):
+
+| op | preview | exec |
+|---|---|---|
+| Coil, Curl | identical | identical |
+| **Fuel** | a full quote — `ignis-need 0.53`, post-text *"Succesfully fueled …"* | refuses outright |
+| **ColdRecovery** | `No value found in table … ATS\|Ledger for key: <pool>\|<caller's full account>` | clean refusal |
+| **DirectRecovery** | `Arithmetic exception: div by zero, decimal` | clean refusal |
+| **HotRecovery** | refused — naming the missing Hot-RBT | refused — naming the toggle |
+
+Fuel is the worst: a **confident prediction of success** for something that cannot happen.
+HotRecovery is the subtlest: both messages were *true*, and they still disagreed.
+
+### The bug had three layers
+
+`DirectRecovery` carried it in the **exec**, again in **`URCi_DirectRecovery`** (its own eager
+`let`), and again in **`INFO_ATS|DirectRecovery`**, whose wrapper re-derives `release-amounts`
+before it ever calls the cost reader. Fixing the first two left the quote still throwing.
+
+> Exec, cost reader, presentation wrapper — each can hold its own copy. **Fixing the one you found
+> looks finished.**
+
+### Every repair shares a guard; none copies a message
+
+- **`UEV_FuelableIndex`** — a module-local helper called by `ATSU|C>FUEL` **and** `URCi_Fuel`.
+- The Cold/Direct/Hot previews call **`ref-ATS::UEV_*RecoveryState`** — the very function their own
+  capabilities call, so the refusal is identical *by construction*.
+- **`URCv_RTSplitAmounts`** takes the zero-index guard once, covering all **ten** call sites.
+- **`INFO_ATS|DirectRecovery`** binds its cost reader **first**.
+
+Why Coil and Curl already agreed states the lesson positively: their guard lives in `URC_RBT`, a
+reader **both paths share**. Shared readers cannot drift.
+
+**Scope, honestly:** this swept **ATS only — 7 of 401 previews.** The method is cheap and
+mechanical; the hard part is finding the separating input. A pair with a zero index and no Hot-RBT
+made three divergences visible at once.
+
 # Closing assessment
 
 ## The register
@@ -1379,7 +1428,8 @@ preview had to be fixed independently.
 | H — Input domain | 3 |  | 3 |  |
 | I — Gas station payable surface | 1 |  | 1 |  |
 | J — Ledger conservation | 3 |  | 1 | 2 |
-| **total** | **20** | **0** | **10** | **10** |
+| K — Preview/exec divergence | 1 |  | 1 |  |
+| **total** | **21** | **0** | **11** | **10** |
 <!-- REGISTER:END -->
 
 **Seven of fourteen attacks found a defect, and all seven are fixed and measured.** The table above
@@ -1409,6 +1459,7 @@ round exactly:
 | **prefix-as-privilege** | B | refused — but by one hardcoded flag, repeated in four places |
 | **share-price math** | A | 1 defect — a live `index = 0` state divided by zero on the coil path |
 | **sentinel-as-key** | H | 1 defect — the BAR sentinel reaching a table read, in an eager `let` |
+| **preview honesty** | K | 3 defects — quotes that promised success, or threw where the op refuses |
 
 > **The guards in this system are present and they hold. What fails is the arithmetic around them,
 > and the order in which things happen.**

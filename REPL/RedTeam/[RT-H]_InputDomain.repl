@@ -325,9 +325,17 @@
             ;;`URCi_HotRecovery` has its own eager `let` with the same two lines, so a QUOTE still
             ;;died with the raw table error after `C_HotRecovery` was clean. A preview is what a UI
             ;;calls BEFORE it submits anything -- it must refuse in the same words as the op.
+            ;;
+            ;;THE EXPECTED MESSAGE HERE CHANGED ONCE, AND THE GATE IS WHY. It first read
+            ;;"has no Hot-RBT", because that was the only guard the preview had. Establishing
+            ;;refusal parity (family K) then put the TOGGLE check first in the preview, to match the
+            ;;order ATS|C>HOT_RECOVERY uses -- and this line went red, catching a contradiction
+            ;;between two of this suite's own assertions. Parity is the stronger requirement: with
+            ;;the toggle off, the op says the toggle, so the preview must say the toggle. The
+            ;;Hot-RBT wording is now pinned in block 02, where the toggle is ON and the op says it.
             (expect-failure
-                "<<RT-H-003f>> the INFO cost PREVIEW refuses in the same words, not with a table error"
-                "has no Hot-RBT"
+                "<<RT-H-003f>> the INFO cost PREVIEW refuses in the EXEC's words, not with a table error"
+                "must be set to true for exec"
                 (ouronet-ns.INFO-ONE.INFO_ATS|HotRecovery KST.ANHD KST.ANHD pool 1.0))
         ])
     ""
@@ -353,6 +361,12 @@
                 "<<RT-H-003e>> ...and hot recovery must STILL refuse by name, not by table key"
                 "has no Hot-RBT"
                 (r::ATS|C_HotRecovery KST.ANHD KST.ANHD pool 1.0))
+            ;;Parity in the state that actually reaches the Hot-RBT guard: with the toggle ON the
+            ;;op names the missing Hot-RBT, so the preview must name it too.
+            (expect-failure
+                "<<RT-H-003g>> ...and the PREVIEW names it too, in the same words as the op"
+                "has no Hot-RBT"
+                (ouronet-ns.INFO-ONE.INFO_ATS|HotRecovery KST.ANHD KST.ANHD pool 1.0))
         ])
     ;;Leave the pair as it was found.
     (r::ATS|C_SwitchHotRecovery KST.ANHD pool false)

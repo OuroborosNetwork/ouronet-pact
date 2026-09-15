@@ -1,0 +1,141 @@
+;;
+;; REPL/RedTeam/[RT-K]_PreviewParity.repl — FAMILY K: preview/exec divergence.
+;;
+;; "Does the quote tell the truth about the operation?"
+;;
+;; Ouronet's first rule is that an INFO preview must report the same COST as the execution it
+;; previews, and `_info_measured.py` proves that for all 401 client-facing previews. Nothing checked
+;; the other half: that a preview REFUSES WHEN THE OP REFUSES, and says the same thing when it does.
+;;
+;; A preview is what a UI calls BEFORE it submits anything. It has exactly two ways to lie:
+;;   * quote a cost for an operation that cannot execute  -> the user signs, pays gas, and fails;
+;;   * throw a raw internal error where the op gives a clean refusal -> the user is told nothing
+;;     useful about their own pair, and a caller cannot even catch it (`try` does not catch
+;;     arithmetic exceptions).
+;;
+;; Both were found live, in the same module family, on the same pool.
+;;
+;; Legend: each assertion drives the PREVIEW and the EXEC at one input and requires the SAME
+;;         message from both. Either half drifting turns that one line red.
+;;
+;; Source: 1_SOVEREIGN/STAGE_01/2_Core/10_ATSU.pact   (URCi_* cost readers, ATSU|C>* capabilities)
+;;         1_SOVEREIGN/STAGE_01/2_Core/08_ATS.pact    (URCv_RTSplitAmounts, URC_RBT)
+;;         1_SOVEREIGN/STAGE_01/Z_Reads/02_INFO-ONE+.pact (INFO_ATS|* wrappers)
+;;
+;; REPL tests: <<RT-K-001a>> .. <<RT-K-001g>>
+;;
+;; Run: cd REPL && pact "RedTeam/[RT-K]_PreviewParity.repl"
+;;
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+(load "../Stage_01/[6.2]_DPTF.repl")
+(load "../Stage_01/[6.3]_SWP.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "RT-K-001 - does the quote refuse where the op refuses")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+;;==== RT-K-001 · 01 · preview and exec, same input, same answer ====
+(print "--- [RT-K-001 · 01 · preview and exec, same input, same answer] ---")
+;;<<RT-K-001>> FAMILY: K | STATUS: FIXED
+;;HYPOTHESIS: cost parity is proven for all 401 previews; REFUSAL parity is proven for none. Where a
+;;            preview re-derives state instead of sharing the op's readers, the two can disagree --
+;;            and an ATS pair with a zero index and no Hot-RBT (five exist at deploy) is exactly the
+;;            input that separates them.
+;;METHOD:     drive INFO_ATS|<op> and TS01-C2::ATS|C_<op> at the SAME arguments and require the same
+;;            message from both. Non-vacuity last: the same preview on a HEALTHY pair must still
+;;            return a quote, or these lines only prove that previews throw.
+;;RESULT:     CONFIRMED, then FIXED. THREE of seven ATS ops diverged, in three different ways:
+;;            Fuel's preview QUOTED a success the op refuses; ColdRecovery's threw a raw table
+;;            error naming a composite key and the caller's full account; DirectRecovery's threw
+;;            an arithmetic exception. HotRecovery's refused for a different (though true) reason
+;;            than the op. Only Coil and Curl already agreed -- because their guard lives in a
+;;            reader BOTH paths share, which is the whole lesson. All seven now refuse in
+;;            identical words, and a healthy pair still quotes normally.
+;;
+;;WHAT WAS FOUND, of seven ops swept:
+;;
+;;   Coil, Curl        parity already -- their guard lives in URC_RBT, which BOTH paths share.
+;;   Fuel              the preview returned a FULL QUOTE, ignis-need 0.53, with the post-text
+;;                     "Succesfully fueled 100.0 BI-... into ATS-Pair Bisthanium-..." for an op
+;;                     C_Fuel refuses outright. A confident prediction of success for something
+;;                     that cannot happen.
+;;   ColdRecovery      the preview threw `No value found in table ouronet-ns.ATS_ATS|Ledger for
+;;                     key: <pool>|<the caller's full 162-char account>` -- a raw table error that
+;;                     also prints the account back at them.
+;;   DirectRecovery    the preview threw `Arithmetic exception: div by zero, decimal`.
+;;   HotRecovery       both refused cleanly but for DIFFERENT reasons -- the preview named the
+;;                     missing Hot-RBT, the op named the toggle. Both true; still a divergence.
+;;
+;;AND THE BUG HAD THREE LAYERS, which is the part worth remembering. DirectRecovery carried it in
+;;the exec (fixed first), again in `URCi_DirectRecovery` (its own eager `let`), and AGAIN in
+;;`INFO_ATS|DirectRecovery`, whose wrapper re-derives `release-amounts` before it ever calls the
+;;cost reader. Fixing the first two left the quote still throwing.
+;;
+;;THE REPAIRS ARE ALL "SHARE THE GUARD", NEVER "COPY THE MESSAGE":
+;;   * `UEV_FuelableIndex` -- new module-local helper, called by ATSU|C>FUEL *and* URCi_Fuel, so the
+;;     message exists once;
+;;   * the Cold/Direct/Hot previews call `ref-ATS::UEV_*RecoveryState` -- the very function their
+;;     capabilities call;
+;;   * `URCv_RTSplitAmounts` gets the zero-index guard once, covering all TEN of its call sites;
+;;   * `INFO_ATS|DirectRecovery` binds its cost reader FIRST, so the op's gate runs before the
+;;     wrapper's own derivations.
+;;
+(let
+    (
+        (pool:string "Bisthanium-98c486052a51")
+        (rt:string "BI-98c486052a51")
+        (healthy:string "ComatiCommand-98c486052a51")
+        (r:module{TalosStageOne_ClientTwoV2} TS01-C2)
+    )
+    (map print
+        [
+            (expect
+                (format "<<RT-K-001a>> the separating input, measured: {} has index {} and no Hot-RBT"
+                    [pool (ouronet-ns.ATS.URC_Index pool)])
+                [0.0 false]
+                [ (ouronet-ns.ATS.URC_Index pool) (ouronet-ns.ATS.URC_IzPresentHotRBT pool) ])
+            ;;--- Fuel: the preview used to QUOTE this successfully ---
+            (expect-failure "<<RT-K-001b>> Fuel  · PREVIEW" "Fueling requires an ATS-Pair Index of at least 0.1"
+                (ouronet-ns.INFO-ONE.INFO_ATS|Fuel KST.ANHD KST.ANHD pool rt 100.0))
+            (expect-failure "<<RT-K-001b>> Fuel  · EXEC   (same message)" "Fueling requires an ATS-Pair Index of at least 0.1"
+                (r::ATS|C_Fuel KST.ANHD KST.ANHD pool rt 100.0))
+            ;;--- Coil: parity was already there, because both paths share URC_RBT ---
+            (expect-failure "<<RT-K-001c>> Coil  · PREVIEW" "Coiling requires an ATS-Pair Index greater than zero"
+                (ouronet-ns.INFO-ONE.INFO_ATS|Coil KST.ANHD KST.ANHD pool rt 100.0))
+            (expect-failure "<<RT-K-001c>> Coil  · EXEC   (same message)" "Coiling requires an ATS-Pair Index greater than zero"
+                (r::ATS|C_Coil KST.ANHD KST.ANHD pool rt 100.0))
+            ;;--- ColdRecovery: the preview used to leak a composite key and the caller's account ---
+            (expect-failure "<<RT-K-001d>> Cold  · PREVIEW" "Cold Recovery for ATS Pair"
+                (ouronet-ns.INFO-ONE.INFO_ATS|ColdRecovery KST.ANHD KST.ANHD pool 1.0))
+            (expect-failure "<<RT-K-001d>> Cold  · EXEC   (same message)" "Cold Recovery for ATS Pair"
+                (r::ATS|C_ColdRecovery KST.ANHD KST.ANHD pool 1.0))
+            ;;--- HotRecovery: both refused, but for different reasons ---
+            (expect-failure "<<RT-K-001e>> Hot   · PREVIEW" "Hot Recovery for ATS Pair"
+                (ouronet-ns.INFO-ONE.INFO_ATS|HotRecovery KST.ANHD KST.ANHD pool 1.0))
+            (expect-failure "<<RT-K-001e>> Hot   · EXEC   (same message)" "Hot Recovery for ATS Pair"
+                (r::ATS|C_HotRecovery KST.ANHD KST.ANHD pool 1.0))
+            ;;--- DirectRecovery: three layers deep ---
+            (expect-failure "<<RT-K-001f>> Direct· PREVIEW" "Direct Recovery for ATS Pair"
+                (ouronet-ns.INFO-ONE.INFO_ATS|DirectRecovery KST.ANHD KST.ANHD pool 1.0))
+            (expect-failure "<<RT-K-001f>> Direct· EXEC   (same message)" "Direct Recovery for ATS Pair"
+                (r::ATS|C_DirectRecovery KST.ANHD KST.ANHD pool 1.0))
+            ;;--- NON-VACUITY: without this, the ten lines above are consistent with
+            ;;--- "every preview throws", which would prove nothing about parity at all.
+            (expect
+                (format "<<RT-K-001g>> the same preview still QUOTES a healthy pair (index {})"
+                    [(ouronet-ns.ATS.URC_Index healthy)])
+                true
+                (> (at "ignis-need"
+                      (at "ignis"
+                          (ouronet-ns.INFO-ONE.INFO_ATS|Fuel KST.ANHD KST.ANHD healthy
+                              (at 0 (ouronet-ns.ATS.UR_RewardTokenList healthy)) 100.0))) 0.0))
+        ])
+    ""
+)
+(env-sigs [])
+(print "")
+(print "===^^^===")
+(commit-tx)

@@ -2544,6 +2544,14 @@
                 (ref-ATS:module{AutostakeV3} ATS)
                 (ref-ATSU:module{AutostakeUsageV2} ATSU)
                 ;;
+                ;;THE COST READER IS BOUND FIRST, and that ordering is load-bearing. URCi_
+                ;;DirectRecovery carries the op's own state guard, so binding it first makes this
+                ;;preview refuse exactly where C_DirectRecovery refuses. Bound last -- as it was --
+                ;;the derivations below ran first and a pair with a zero index died on
+                ;;"Arithmetic exception: div by zero, decimal" while the op itself gives a clean
+                ;;refusal. Pinned by RedTeam/[RT-K]_PreviewParity.repl <<RT-K-001f>>.
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_DirectRecovery recoverer ats ra)))
+                ;;
                 (c-rbt:string (ref-ATS::UR_ColdRewardBearingToken ats))
                 (fee:decimal (ref-ATS::UR_DirectRecoveryFee ats))
                 (c-rbt-remainder:decimal
@@ -2554,8 +2562,6 @@
                 )
                 (reward-tokens:[string] (ref-ATS::UR_RewardTokenList ats))
                 (release-amounts:[decimal] (ref-ATS::URCv_RTSplitAmounts ats c-rbt-remainder))
-                ;;
-                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_DirectRecovery recoverer ats ra)))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [

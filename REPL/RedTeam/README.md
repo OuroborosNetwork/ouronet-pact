@@ -22,6 +22,7 @@ Fixed taxonomy. Every attack block declares exactly one.
 | **H** | Input domain | empty, duplicate, negative, sentinel and oversized inputs. |
 | **I** | Gas station payable surface | what will Ouronet pay the gas for, and can the fee for that be declined? |
 | **J** | Ledger conservation | do the books add up? does every token's recorded supply equal the sum of what accounts actually hold? |
+| **K** | Preview/exec divergence | does the quote tell the truth? does the preview refuse where the op refuses, in the same words? |
 
 ## Block header — required, and machine-read
 

@@ -35,6 +35,7 @@ FAMILIES = {
     "H": "Input domain",
     "I": "Gas station payable surface",
     "J": "Ledger conservation",
+    "K": "Preview/exec divergence",
 }
 STATUSES = ["SUCCEEDED", "FIXED", "REFUSED", "ACCEPTED", "UNREACHABLE"]
 # A-Z, not A-H (2026-09-15). The range was hard-coded to the families that existed when the

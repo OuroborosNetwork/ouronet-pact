@@ -1624,6 +1624,14 @@
                 (rt-precision-lst:[integer] (UR_RtPrecisions atspair))
             )
             (enforce (<= rbt-amount rbt-supply) "Cannot compute for amounts greater than the pairs rbt supply")
+            ;;Same singularity URC_RBT carries, same reasoning: the split divides by <index>, and a
+            ;;zero index is a reachable live state (rbt-supply minted outside the pool). Guarded
+            ;;HERE because ten call sites across ATSU and the INFO readers share this function --
+            ;;one enforce covers every one of them, and they all refuse in the same words.
+            (enforce
+                (> index 0.0)
+                (format "ATS-Pair {} has a zero Index; reward-token amounts cannot be derived" [atspair])
+            )
             (ref-U|ATS::UC_SplitByIndexedRBT rbt-amount rbt-supply index resident-amounts rt-precision-lst)
         )
     )
