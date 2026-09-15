@@ -1680,7 +1680,19 @@
                 ;;via ico5
                 (ref-ATS::XE_UpdateRUR auryndex ouro-id 1 false ouro-amount)
             ;;6] Finally clears dispo setting OURO <acount> amount to zero
+                ;;A dispo IS a negative OURO balance -- the defcap above refuses anything else --
+                ;;and <UR_Supply> counts it as negative: the sublimation that opened the dispo
+                ;;decremented supply by the very amount it drove the balance below zero. So
+                ;;zeroing the balance RETURNS <ouro-amount> to the ledger and supply must follow
+                ;;it. Without the second line, ico5's burn is the only supply move in this
+                ;;function and it is counted TWICE -- once against ATS's real OURO, once against
+                ;;the phantom OURO the dispo represented -- leaving total supply permanently
+                ;;BELOW the sum of all balances, by the amount of every dispo ever cleared.
+                ;;This is the ONLY one-sided call to DALOS::XB_UpdateBalance in the tree; the
+                ;;other four sites are the two halves of a transfer, or DPTF's own dispatch.
+                ;;Pinned by RedTeam/[RT-J]_Conservation.repl <<RT-J-001c>>/<<RT-J-001d>>.
                 (ref-DALOS::XB_UpdateBalance account true 0.0)
+                (ref-DPTF::XBv_UpdateSupply ouro-id ouro-amount true)
             ;;7] Updating Elite Account and Constructing the Output: Pleasure doing business with you !
                 (XI_DirectUpdateEliteAccount account)
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3  ico4 ico5] [])

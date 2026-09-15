@@ -20,6 +20,8 @@ Fixed taxonomy. Every attack block declares exactly one.
 | **F** | Griefing / denial of service | can I make someone else's operation impossible? |
 | **G** | Hostile citizen module | the namespace invites anyone to deploy. What does a deliberately malicious one reach? |
 | **H** | Input domain | empty, duplicate, negative, sentinel and oversized inputs. |
+| **I** | Gas station payable surface | what will Ouronet pay the gas for, and can the fee for that be declined? |
+| **J** | Ledger conservation | do the books add up? does every token's recorded supply equal the sum of what accounts actually hold? |
 
 ## Block header — required, and machine-read
 

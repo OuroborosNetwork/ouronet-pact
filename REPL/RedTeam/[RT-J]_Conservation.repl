@@ -1,0 +1,143 @@
+;;
+;; REPL/RedTeam/[RT-J]_Conservation.repl — FAMILY J: ledger conservation.
+;;
+;; "Does the money add up?"
+;;
+;; Every other family in this programme attacks a guard. This one attacks the BOOKS. A token's
+;; recorded `supply` and the sum of every account's balance are written by two different code
+;; paths, in two different modules, and nothing in the tree has ever compared them. The invariant
+;; is the oldest one in finance: supply == the sum of what everyone holds.
+;;
+;; Legend:
+;;   <<RT-J-00Na>>  partition completeness   — every balance row attributed to exactly one token
+;;   <<RT-J-00Nb>>  account-set completeness — the swept account set IS every account that exists
+;;   <<RT-J-00Nc>>  the invariant itself, across every token in the tree
+;;
+;; Source: 1_SOVEREIGN/STAGE_01/2_Core/09_TFT.pact  (C_ClearDispo)
+;;         1_SOVEREIGN/STAGE_01/2_Core/05_DPTF.pact (XBv_UpdateSupply / XB_Debit / XB_Credit)
+;;         1_SOVEREIGN/STAGE_01/2_Core/01_DALOS.pact (XB_UpdateBalance — core-token balances)
+;;
+;; REPL tests: <<RT-J-001a>> <<RT-J-001b>> <<RT-J-001c>> <<RT-J-001d>> <<RT-J-001e>>
+;;
+;; Run: cd REPL && pact "RedTeam/[RT-J]_Conservation.repl"
+;;
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+(load "../Stage_01/[6.2]_DPTF.repl")
+(load "../Stage_01/[6.3]_SWP.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "RT-J-001 - does every token's supply equal the sum of its balances")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== RT-J-001 · 01 · sweep every token, every holder ====
+(print "--- [RT-J-001 · 01 · sweep every token, every holder] ---")
+;;<<RT-J-001>> FAMILY: J | STATUS: FIXED
+;;HYPOTHESIS: a DPTF's `supply` and the sum of its account balances are maintained by SEPARATE
+;;            write paths -- `XBv_UpdateSupply` writes the supply column of DPTF|PropertiesTable,
+;;            while balances are written by `XI_UpdateBalance`, which for the two CORE tokens
+;;            (OUROBOROS and IGNIS) dispatches into a table owned by a DIFFERENT MODULE, DALOS.
+;;            Nothing anywhere compares the two. If any client path moves one without the other,
+;;            the ledger drifts silently and permanently, and no existing test can see it: every
+;;            conservation assertion in the suite is LOCAL and HAND-NAMED ("op+emma+lumy = 5000").
+;;METHOD:     sweep, do not reason. Enumerate every token with `DPTF.UR_P-KEYS` and every balance
+;;            row with `DPTF.UR_KEYS`, attribute each row to its token by FULL-ID prefix (two token
+;;            ids contain the separator -- `F|VST-...`, `R|OURO-...` -- so splitting on the first
+;;            bar misattributes them), and compare `UR_Supply` against the summed balances. The
+;;            two CORE tokens are not row-enumerable at all: DALOS exposes no key list for
+;;            DALOS|AccountTable, only a COUNT. So their holders are supplied as a candidate set
+;;            and the sweep is made non-vacuous by proving that set exhaustive AGAINST that count.
+;;RESULT:     CONFIRMED, then FIXED. Measured exploit-first across 296 tokens and 739 balance
+;;            rows: 295 tokens conserved to the last decimal and ONE did not -- OURO, the
+;;            protocol's own money, with supply 8.0 BELOW the sum of all balances. Bisected to a
+;;            single transaction and then to a single call, `DPTF|C_ClearDispo`. Its step 6 zeroes
+;;            a negative OURO balance by calling DALOS::XB_UpdateBalance DIRECTLY -- the only
+;;            one-sided use of that writer in the tree -- so the balance rises by the cleared
+;;            dispo while supply does not. Repaired in 09_TFT.pact by pairing that write with
+;;            `XBv_UpdateSupply ouro-id ouro-amount true`. After the fix all 296 tokens conserve.
+;;
+;;WHY THE TWO NON-VACUITY GUARDS ARE NOT DECORATION. This sweep is an argument of the form "I
+;;looked everywhere and found nothing", which is worthless unless "everywhere" is proven. Both
+;;guards fired for real during construction:
+;;
+;;  (a) the first run reported OURO conserved and GAS off by 9302.0225. Both were WRONG -- the
+;;      sweep was summing DALOS balances over only the accounts that happened to own a DPTF
+;;      placeholder row, 6 of 24. The partition guard says every row is attributed; the account
+;;      guard says every ACCOUNT is swept. Only the second one could catch that.
+;;  (b) loading [6.3]_SWP raised the account count from 24 to 26 -- it deploys two more. The
+;;      account guard went red immediately. Without it the sweep would have quietly gone back to
+;;      under-counting, and reported a DIFFERENT wrong number with equal confidence.
+;;
+(let*
+    (
+        (ids:[string] (ouronet-ns.DPTF.UR_P-KEYS))
+        (bkeys:[string] (ouronet-ns.DPTF.UR_KEYS))
+        ;;The candidate holder set for the two CORE tokens. Non-existent entries are harmless --
+        ;;they read 0.0 -- so this is deliberately a SUPERSET, made exact by <<RT-J-001b>>.
+        (cand0:[string]
+            (+  [ KST.ANHD KST.FLRN KST.EMMA KST.BYTA KST.LUMY KST.COCA KST.KISS
+                  KST.PLCS KST.NANI KST.AOZT KST.TALOS KST.ATSTK KST.VESTG KST.LIQST
+                  KST.OURBR KST.SWAPR KC.BM KC.BJ
+                  (+ "Σ" (drop 1 KST.ANHD))
+                  (ouronet-ns.DALOS.GOV|DHV1|SC_NAME) (ouronet-ns.DALOS.GOV|DHV2|SC_NAME)
+                  (ouronet-ns.DALOS.GOV|AQP|SC_NAME)
+                  "Ѻ.hÜ5ĞÊÜεŞΓõè1Ă₳äàÄìãÓЦφLÕзЯŮμĞ₿мK6àŘуVćχδдзηφыβэÎχUHRêγBğΛ∇VŒižďЬШ£îOÜøE4ÖFSõЩЩAłκè1ččΨΦŻЖэч6Iчη₱ØćнúŒψУćÀyпãЗцÚäδÏÍtςřïçγț6γÎęôigFzÝûηы₿ÏЬüБэΞčмŃт₳ŘчjζsŠȚHъĘïЦ0" "Σ.hÜ5ĞÊÜεŞΓõè1Ă₳äàÄìãÓЦφLÕзЯŮμĞ₿мK6àŘуVćχδдзηφыβэÎχUHRêγBğΛ∇VŒižďЬШ£îOÜøE4ÖFSõЩЩAłκè1ččΨΦŻЖэч6Iчη₱ØćнúŒψУćÀyпãЗцÚäδÏÍtςřïçγț6γÎęôigFzÝûηы₿ÏЬüБэΞčмŃт₳ŘчjζsŠȚHъĘïЦ0" "Ѻ.Щę7ãŽÓλ4ěПîЭđЮЫAďбQOχnиИДχѺNŽł6ПžιéИąĞuπЙůÞ1ęrПΔżæÍžăζàïαŮŘDzΘ€ЦBGÝŁЭЭςșúÜđŻõËŻκΩÎzŁÇÉΠмłÔÝÖθσ7₱в£μŻzéΘÚĂИüyćťξюWc2И7кςαTnÿЩE3MVTÀεPβafÖôoъBσÂбýжõÞ7ßzŁŞε0âłXâÃЛ" "Σ.Щę7ãŽÓλ4ěПîЭđЮЫAďбQOχnиИДχѺNŽł6ПžιéИąĞuπЙůÞ1ęrПΔżæÍžăζàïαŮŘDzΘ€ЦBGÝŁЭЭςșúÜđŻõËŻκΩÎzŁÇÉΠмłÔÝÖθσ7₱в£μŻzéΘÚĂИüyćťξюWc2И7кςαTnÿЩE3MVTÀεPβafÖôoъBσÂбýжõÞ7ßzŁŞε0âłXâÃЛ" "Ѻ.þódýSå∇θœŻθäЮânΦěÂCÉΛŠĚыćжŃУфÑíтσÈŸüÓÿÂи₳áìĚàŘhÃѺuΔuțŒЭěвžsÊ¢tWÛěbtõ₿1LΔмëøÆŚøξѺŮŤÒÚτцoDêžńęQvNTжÚž∇9ÂKуŞşи0ΛкДżεŽбÎбεÀÆãчvĚЫбçrЭKãwÿŽΨáÕЦê1мòğćZЮĞÉø1Î$mДMѺπďRЫ" ]
+                (ouronet-ns.DALOS.UR_DemiurgoiID)))
+        (cand:[string] (fold (lambda (a:[string] x:string) (if (contains x a) a (+ a [x]))) [] cand0))
+        (live:[string] (filter (lambda (x:string)
+            (try false (let ((z:bool true)) (ouronet-ns.DALOS.UEV_EnforceAccountExists x) z))) cand))
+        ;;Attribution: a row belongs to token <id> iff it starts with <id> + BAR. Counted per
+        ;;token and summed, so a row matching TWO ids is counted twice and the guard goes red.
+        (attributed:integer (fold (+) 0 (map (lambda (id:string)
+            (let ((n:integer (+ 1 (length id))))
+                (length (filter (lambda (k:string)
+                    (and (>= (length k) n) (= (take n k) (format "{}|" [id])))) bkeys)))) ids)))
+        (rows:[object] (map (lambda (id:string)
+            (let* ((core:bool (ouronet-ns.DPTF.URC_IzCoreDPTF id))
+                   (n:integer (+ 1 (length id)))
+                   (accts:[string] (if core live
+                        (map (lambda (k:string) (drop n k))
+                             (filter (lambda (k:string)
+                                (and (>= (length k) n) (= (take n k) (format "{}|" [id])))) bkeys))))
+                   (sum:decimal (fold (+) 0.0
+                        (map (lambda (a:string) (ouronet-ns.DPTF.UR_AccountSupply id a)) accts))))
+                { "id" : id , "delta" : (- (ouronet-ns.DPTF.UR_Supply id) sum) })) ids))
+        (bad:[string] (map (lambda (r:object) (format "{}:{}" [(at "id" r) (at "delta" r)]))
+                        (filter (lambda (r:object) (!= (at "delta" r) 0.0)) rows)))
+        (ouro:string (ouronet-ns.DALOS.UR_OuroborosID))
+        (gas:string (ouronet-ns.DALOS.UR_IgnisID))
+        (ouro-sum:decimal (fold (+) 0.0
+            (map (lambda (a:string) (ouronet-ns.DPTF.UR_AccountSupply ouro a)) live)))
+        (gas-sum:decimal (fold (+) 0.0
+            (map (lambda (a:string) (ouronet-ns.DPTF.UR_AccountSupply gas a)) live)))
+    )
+    (map print
+        [
+            (expect
+                (format "<<RT-J-001a>> every one of the {} balance rows is attributed to exactly one of the {} tokens"
+                    [(length bkeys) (length ids)])
+                (length bkeys) attributed)
+            (expect
+                (format "<<RT-J-001b>> the swept core-holder set is EVERY account that exists ({} of them)"
+                    [(length live)])
+                (ouronet-ns.DALOS.URH_AccountCounter)
+                (format "Ouronet has {} real Accounts!" [(length live)]))
+            (expect
+                (format "<<RT-J-001c>> supply == sum-of-balances for all {} tokens; offenders: {}"
+                    [(length ids) bad])
+                [] bad)
+            (expect
+                (format "<<RT-J-001d>> OURO: the protocol's own money balances -- supply {} vs held {}"
+                    [(ouronet-ns.DPTF.UR_Supply ouro) ouro-sum])
+                (ouronet-ns.DPTF.UR_Supply ouro) ouro-sum)
+            (expect
+                (format "<<RT-J-001e>> IGNIS: the virtual-gas ledger balances -- supply {} vs held {}"
+                    [(ouronet-ns.DPTF.UR_Supply gas) gas-sum])
+                (ouronet-ns.DPTF.UR_Supply gas) gas-sum)
+        ])
+    ""
+)
+(print "")
+(print "===^^^===")
+(commit-tx)
