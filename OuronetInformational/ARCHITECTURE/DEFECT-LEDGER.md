@@ -692,7 +692,35 @@ because the `let` holding the opening balance does not survive the commit.
 
 ### Owner rulings, 2026-09-15 — the grief path, canon, and DPMF
 
-**1. The 200 grief charge STANDS, and it is deliberate.** Owner: *"grief costs 200 it is, the
+**1. The 200 grief charge STANDS, and it is deliberate — with a CORRECTION to the first analysis.**
+
+*First answer, partly wrong:* it covered only `gas-payer-v1` (the `GAS_PAYER` defcap `01_DALOS.pact`
+implements, whitelisting via `exec-code`) and concluded continuations cannot be funded at all. The
+owner then recalled the counterexample: **`stoa-xchain-gas`**. He was right. That account is **not a
+`gas-payer-v1` module** — it is a plain `coin` account whose **guard** does the work
+(`stoa-genesis-5.pact`): `enforce-guard-all [ (coin.gas-only) below-or-at-gas-price
+(enforce-below-or-at-gas-limit 850) ]`. `coin.gas-only` is `(require-capability (GAS))`, so it is
+spendable on gas and nothing else — and it **never inspects the payload**, which is exactly why it
+funds continuations.
+
+*What survives the correction:* nothing exposes the **pact-id** of a cont, so payload introspection
+cannot restrict by namespace under any mechanism. **Kadena does not solve that either — it bounds
+size**, `gas-limit <= 850`. Ouronet's measured continuation steps are 162,334 and 30,262 gas, so the
+equivalent cap is ~200,000: **235× Kadena's**.
+
+*What the correction unlocks:* a user guard can `enforce-guard` a keyset — **already proven in your
+own genesis**, where `final-guard` composes `(enforce-or (keyset-ref-guard "ns-admin-keyset")
+gas-restriction-guard)`. So replace *introspection* (unavailable) with *authorisation* (available):
+add `(keyset-ref-guard "ouronet-ns.cont-relayer-keyset")` to the AND. Foreign continuations are then
+excluded **because they cannot be signed**, which is stronger than a namespace check — a namespace
+check trusts what the payload claims, a signature check trusts a key you hold. Cost: every
+continuation must be co-signed by Ouronet infrastructure. Full analysis, including the two economics
+facts that make it safer than it looks (gas is charged as USED not as declared, and an attacker must
+fund their own step 0 because the exec station only pays for `(ouronet-ns.TS…`), plus the caveat that
+the keyset conjunct is **untested during buy-gas and must be smoke-tested on chain**:
+`memories/2026-09-15-gas-station-cannot-whitelist-continuations.md`.
+
+**The ruling itself is unchanged.** Owner: *"grief costs 200 it is, the
 strongest anti-spam."* The reason is structural and was not previously recorded: the Ouronet gas
 station can whitelist `exec` transactions only. The buy-gas message exposes `tx-type` and — for exec
 alone — `exec-code`; a `cont` payload exposes **nothing identifying the pact being continued**, so

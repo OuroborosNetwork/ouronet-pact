@@ -1,55 +1,88 @@
-# The gas station cannot whitelist continuations — settled, with the measurement that makes it moot
+# Funding continuations: what is and is not possible — settled, with a correction
 
-*2026-09-15. Owner question: "is there a way to allow the gas station to pay only continuations of
-functions from our namespace? I couldn't find one and I still think it's impossible to code."*
+*2026-09-15. Owner: "is there a way to allow the gas station to pay only continuations of functions
+from our namespace?" — then, correctly: "wait, we have `stoa-xchain-gas`, that pays for
+continuations on any chain, so accounts CAN be conceived to pay for continuations somehow."*
 
-## The answer: correct, it is not expressible — and the reason is structural
+## CORRECTION to the first answer
 
-The Ouronet gas station (`01_DALOS.pact`, `GAS_PAYER`) whitelists by reading the transaction's code:
+The first version of this note answered only about **`gas-payer-v1`** — the `GAS_PAYER` defcap that
+`01_DALOS.pact` implements, which whitelists by reading `(at "exec-code" (read-msg))`. That analysis
+was right about `gas-payer-v1` and **wrong as a general answer**, because `stoa-xchain-gas` is not a
+`gas-payer-v1` module at all.
 
-```pact
-(exec-lines:[string] (at "exec-code" (read-msg)))
-... (enforce (= "(ouronet-ns.TS" (take 14 (at 0 exec-lines))) "Only TALOS or DSP Modules allowed")
-```
-
-**That is the whole surface Chainweb gives a gas payer.** The buy-gas message carries:
-
-| field | present for | contents |
-|---|---|---|
-| `tx-type` | exec **and** cont | `"exec"` / `"cont"` |
-| `exec-code` | **exec only** | the list of top-level code strings |
-| — | cont | **nothing identifying the pact being continued** |
-
-A `cont` payload is `{pactId, step, rollback, data, proof}`, and **none of `pactId` / `step` is
-exposed to Pact during gas buy**. So "pay only for continuations of our namespace" has nothing to
-test. `tx-type` is the only lever and it is all-or-nothing: allow conts and you subsidise the
-continuation of *any* defpact anyone has ever started.
-
-**Independent confirmation is already in this repo.** `Audit/SWP/reference/KADDEX-SOURCE-4.md:35` —
-Kaddex, a production DEX built on defpacts — does exactly one thing about it:
+**`stoa-xchain-gas` is a plain `coin` account whose GUARD does the work** (`stoa-genesis-5.pact`):
 
 ```pact
-(enforce (= "exec" (at "tx-type" (read-msg))) "Inside an exec")
+(gas-restriction-guard:guard
+    (create-user-guard
+        (util.gas-guards.enforce-guard-all
+            [ (create-user-guard (coin.gas-only))
+              below-or-at-gas-price
+              (create-user-guard (util.gas-guards.enforce-below-or-at-gas-limit 850)) ])))
 ```
 
-They hard-refuse. Same conclusion, reached independently, by the largest defpact user on the chain.
+`coin.gas-only` is `(require-capability (GAS))` — `GAS` being the magic capability Chainweb puts in
+scope only during gas buy/redeem. So the account is **spendable on gas and nothing else**, and it
+**never inspects the payload**. That is exactly why it funds continuations: it does not care what the
+transaction is.
 
-### Why the obvious workarounds fail
+## What is still true, and what it costs Kadena
 
-* **Put the pact-id in the cont payload's `data` and check it against a table step 0 wrote.** The
-  `data` field is not bound to the actual continuation target. An attacker continues *their own*
-  pact while quoting a sanctioned id, and the station pays.
-* **Require a signed capability naming the pact.** Signing a capability does not constrain which
-  payload the transaction carries. Same hole.
-* **Cap the gas limit for conts.** Caps the drain per transaction; does not bound the count.
-* **Rate-limit by writing from `GAS_PAYER`.** A capability body is the wrong place for state, and it
-  still cannot tell our continuation from theirs — it only meters the bleeding.
+**Nothing exposes the pact-id of a continuation.** The buy-gas message carries `tx-type` and — for
+exec only — `exec-code`. A `cont` payload is `{pactId, step, rollback, data, proof}` and none of it
+reaches Pact. So *payload introspection cannot restrict continuations by namespace*, whichever
+mechanism you use.
 
-## The measurement that makes the question moot
+**Kadena does not solve this either. It bounds the damage instead:** `gas-limit <= 850`. A
+`coin.transfer-crosschain` step 1 fits; essentially nothing else does. The restriction is *size*, not
+identity.
 
-The deterrent exists to protect a path that no longer needs to exist. **Every multi-step defpact in
-Ouronet runs end to end inside ONE transaction**, measured under the same `table` gas model chainweb
-uses, with all three steps in a single `begin-tx`:
+For Ouronet that bound does not transfer. Measured continuation steps of `MTX|C_AddLiquidity`:
+**step 1 = 162,334 gas, step 2 = 30,262**. A cap sized for those is ~200,000 — **235x** Kadena's 850.
+
+## The mechanism that DOES restrict to us: authorisation, not introspection
+
+A user guard is arbitrary Pact evaluated at debit time, so it can `enforce-guard` a keyset. **This is
+already proven in your own genesis code** — `final-guard` composes exactly that:
+
+```pact
+(util.guards.enforce-or (keyset-ref-guard "ns-admin-keyset") gas-restriction-guard)
+```
+
+So a continuation-funding account can be guarded by an **AND** of four conditions:
+
+```pact
+(enforce-guard-all
+  [ (create-user-guard (coin.gas-only))                                   ;; gas only, never transferable
+    (create-user-guard (enforce-below-or-at-gas-price <protocol-min>))    ;; cheapest possible
+    (create-user-guard (enforce-below-or-at-gas-limit 200000))            ;; sized to the measured step 1
+    (keyset-ref-guard "ouronet-ns.cont-relayer-keyset") ])                ;; <-- ONLY OUR TRANSACTIONS
+```
+
+**Foreign continuations are excluded not because we inspect them, but because they cannot be
+signed.** That is strictly stronger than a namespace check: a namespace check trusts what the payload
+claims; a signature check trusts a key you hold.
+
+### Two economics facts that make this safer than it first looks
+
+* **Kadena charges for gas USED, not the declared limit** — unused gas is refunded at redeem. So a
+  high cap does not mean a high per-transaction loss; the loss is what the attacker's continuation
+  actually consumes.
+* **An attacker must fund their own step 0 first.** Your `exec` station only pays for
+  `(ouronet-ns.TS…` code, so starting a foreign defpact costs the attacker real KDA. Continuations
+  are not free to manufacture.
+
+### The trade-off, stated plainly
+
+The relayer keyset means **every continuation must be co-signed by Ouronet infrastructure**. If users
+submit continuations directly today, they would need a signing service. That is a real operational
+cost, and it is the whole price of the feature.
+
+## The alternative that removes the question instead of answering it
+
+**Every multi-step defpact already fits in ONE transaction**, measured under the same `table` gas
+model chainweb uses, all steps inside a single `begin-tx`:
 
 | defpact | gas, all steps, one tx | of `DALOS\|GAS-BUDGET` (2,000,000) |
 |---|---:|---:|
@@ -58,23 +91,21 @@ uses, with all three steps in a single `begin-tx`:
 | `MTX\|C_Issue` — standard pool | 127,357 | 6% |
 | `MTX\|C_Issue` — weighted pool | 106,912 | 5% |
 
-Worst case is **4.8× inside the budget**, and those figures *include* the harness's own preview call
-and balance reads, so the operations are cheaper than shown.
+**4.8x headroom on the worst case**, including harness overhead. Pinned at `DEFPACT-BILLING.repl`
+`<<DPB-01>>` against **half** the budget — if it ever crosses, the collapse stops being available.
 
-**Pinned**, so the headroom cannot quietly evaporate: `DEFPACT-BILLING.repl` `<<DPB-01>>` asserts the
-whole defpact completes under **half** the budget. Half, not all — if it ever crosses that, the
-single-transaction collapse stops being available and this question comes back.
+Collapse the `MTX|` defpacts into single-tx `C_` ops and there are no continuations to fund, no
+relayer to run, and no grief deterrent needed.
 
-## What follows
+## Recommendation
 
-1. **Keep the gas station `exec`-only.** It is not a limitation to work around; it is the only safe
-   setting, and the industry agrees.
-2. **The multi-step path can be retired.** Collapsing each `MTX|` defpact into a single-tx `C_`
-   removes the continuation from the gas-paid surface entirely.
-3. **Then the grief deterrent becomes unnecessary.** `LQ|INITIATION-FEE` is charged at step 0 *and*
-   again on the step-1 rollback branch — 200 raw on a griefed add. That 200 exists to protect the
-   gas station from continuation drain. No continuations, no drain, no need for the deterrent.
+1. **Prefer the collapse.** It removes an entire class of problem for 21% of a gas budget.
+2. **If continuations must stay**, the relayer-keyset guard above is the correct shape, on a
+   **separate, thinly funded account** whose balance is the blast radius.
+3. **Verify on chain before trusting it.** Whether a `keyset-ref-guard` evaluates as expected inside
+   a guard during *buy-gas* is exactly the kind of thing that must be smoke-tested live rather than
+   reasoned about — the REPL does not model the gas-buy phase at all. `stoa-xchain-gas` proves
+   `gas-only` + price + limit works; the keyset conjunct is the untested part.
 
-*Until then the owner's ruling stands: 200 it is, and it is the strongest anti-spam. It is a
-deliberate price paid for a structural gap in `gas-payer-v1`, not an oversight — and that is worth
-recording, because it looks like a double-charge to anyone who finds it later.*
+*Until any of this changes, the owner's ruling stands: the 200 grief charge is the deliberate price
+of the gap, and it is now written down so it does not read as a double-charge to the next person.*
