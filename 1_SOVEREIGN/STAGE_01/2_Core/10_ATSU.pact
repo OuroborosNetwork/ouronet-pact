@@ -511,6 +511,15 @@
             )
             (ref-DALOS::CAP_EnforceAccountOwnership recoverer)
             (ref-ATS::UEV_HotRecoveryState ats true)
+            ;;The toggle and the Hot-RBT are INDEPENDENT: ATS|S>SWITCH-HOT-RECOVERY checks only
+            ;;CAP_Owner and the previous toggle value, so a pool owner may switch recovery ON for a
+            ;;pair that has no Hot-RBT. In that state the line above passes and the body would read
+            ;;the DPOF properties table keyed by the BAR sentinel. Pinned by <<RT-H-003e>>, which
+            ;;constructs exactly that state through the owner's own client op.
+            (enforce
+                (ref-ATS::URC_IzPresentHotRBT ats)
+                (format "ATS-Pair {} has no Hot-RBT, so Hot Recovery is impossible" [ats])
+            )
             (compose-capability (P|TT))
         )
     )
@@ -1888,6 +1897,16 @@
     (defun C_HotRecovery:object{IgnisCollectorV2.OutputCumulator}
         (recoverer:string ats:string ra:decimal)
         (P|UEV_IMC)
+        ;;THE CAPABILITY IS ACQUIRED BEFORE THE `let`, and that ordering is load-bearing -- the same
+        ;;repair C_Recover received on 2026-09-12, for the same reason, twenty lines below.
+        ;;`UR_HotRewardBearingToken` returns the BAR sentinel for a pair with no Hot-RBT (nine of
+        ;;the fifteen live pairs), and the `new-nonce` binding then read the DPOF properties table
+        ;;keyed by "|", dying with `No value found in table ouronet-ns.DPOF_DPOF|T|Properties for
+        ;;key: |` before any guard in ATS|C>HOT_RECOVERY could run. All three cap arguments are
+        ;;plain defun parameters, so hoisting costs nothing and is the shape StoicSyntax asks for:
+        ;;validation in the defcap, work in the body.
+        ;;Pinned by RedTeam/[RT-H]_InputDomain.repl <<RT-H-003c>>/<<RT-H-003e>>.
+        (with-capability (ATS|C>HOT_RECOVERY recoverer ats ra)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
@@ -1903,7 +1922,6 @@
                 (new-nonce:integer (+ (ref-DPOF::UR_NoncesUsed h-rbt) 1))
                 ;;
             )
-            (with-capability (ATS|C>HOT_RECOVERY recoverer ats ra)
                 (let
                     (
                         (ico1:object{IgnisCollectorV2.OutputCumulator}
@@ -1929,7 +1947,7 @@
                     )
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3 ico4 ico5] [])
                 )
-            )
+        )
         )
     )
     (defun C_Recover:object{IgnisCollectorV2.OutputCumulator}

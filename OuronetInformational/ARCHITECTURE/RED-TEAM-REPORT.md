@@ -1292,6 +1292,56 @@ the one the INFO previews share, so a **quote** for an impossible coil now refus
 instead of throwing. Pact's `try` cannot catch an arithmetic exception, so the old failure was not
 merely ugly: it was uncatchable by any caller.
 
+## Stage 15 — the sibling rule, applied mechanically *(2026-09-15)*
+
+RT-A-003 ended on a rule rather than a patch:
+
+> **When one sibling op guards a state deliberately, check the other siblings for the same state.**
+
+So every ATS client op was driven at the same zero-index pool and its failure mode recorded:
+
+| op | result |
+|---|---|
+| Coil / Curl | the new index guard |
+| Fuel | its own `index >= 0.1` guard |
+| Syphon / Cold Recovery / Direct Recovery | clean feature-flag refusals |
+| Cull | clean *"nothing to cull just yet"* |
+| **HotRecovery** | **`No value found in table ouronet-ns.DPOF_DPOF\|T\|Properties for key: \|`** |
+
+One raw database error out of eight, leaking an internal table name.
+
+### RT-H-003 — SUCCEEDED, then FIXED
+
+`UR_HotRewardBearingToken` returns the **BAR sentinel** for a pair with no Hot-RBT — **nine of the
+fifteen live pairs**. `C_HotRecovery` bound `h-rbt` from it and, in the *same eager `let` group*,
+read the DPOF properties table keyed by `"|"`. Bindings evaluate **before** `with-capability`, so no
+guard in the capability could run first.
+
+**`C_Recover`, twenty lines below, carries a comment block about this exact bug, fixed three days
+earlier:**
+
+> *"for a token that is not reward-bearing `UR_RewardBearingToken` returns the BAR sentinel, so the
+> next binding looked up ATS pair `|` and died with `No value found in table
+> ouronet-ns.ATS_ATS|Pairs for key: |`."*
+
+Same sentinel, same ordering, same error shape, different table — and the sibling immediately above
+it was left alone. **The repair applied here is the one already written once.**
+
+**Reachability is not hypothetical.** `ATS|S>SWITCH-HOT-RECOVERY` checks only `CAP_Owner` and the
+previous toggle value — it does **not** require a Hot-RBT to exist. `<<RT-H-003d>>` constructs that
+state through the owner's own client op and `<<RT-H-003e>>` drives it.
+
+Fixed by hoisting the capability above the binding group **and** adding a `URC_IzPresentHotRBT`
+check to `ATS|C>HOT_RECOVERY`, because the toggle and the Hot-RBT are independent.
+
+> **The hoist is visible in the test itself.** Block 01 now needs a signature it did not need
+> before: once the capability runs first, `CAP_EnforceAccountOwnership` answers ahead of any
+> business rule — *authorisation precedes validation*, as ruled. The refusal changing from a table
+> error to a keyset failure **is** the evidence the hoist landed.
+
+Two instances in one day of one shape: **a sentinel value flowing into a position that requires a
+real one** — `"|"` as a table key, `0` as a divisor.
+
 # Closing assessment
 
 ## The register
@@ -1306,10 +1356,10 @@ merely ugly: it was uncatchable by any caller.
 | E — Sequencing & state | 2 |  |  | 2 |
 | F — Griefing / denial of service | 1 |  | 1 |  |
 | G — Hostile citizen module | 2 |  |  | 2 |
-| H — Input domain | 2 |  | 2 |  |
+| H — Input domain | 3 |  | 3 |  |
 | I — Gas station payable surface | 1 |  | 1 |  |
 | J — Ledger conservation | 3 |  | 1 | 2 |
-| **total** | **19** | **0** | **9** | **10** |
+| **total** | **20** | **0** | **10** | **10** |
 <!-- REGISTER:END -->
 
 **Seven of fourteen attacks found a defect, and all seven are fixed and measured.** The table above
@@ -1338,6 +1388,7 @@ round exactly:
 | **ownership, Stage 2** | D | 1 defect — an 11-char abbreviation used as a possession gate |
 | **prefix-as-privilege** | B | refused — but by one hardcoded flag, repeated in four places |
 | **share-price math** | A | 1 defect — a live `index = 0` state divided by zero on the coil path |
+| **sentinel-as-key** | H | 1 defect — the BAR sentinel reaching a table read, in an eager `let` |
 
 > **The guards in this system are present and they hold. What fails is the arithmetic around them,
 > and the order in which things happen.**

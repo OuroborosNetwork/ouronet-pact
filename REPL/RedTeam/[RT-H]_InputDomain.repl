@@ -253,3 +253,104 @@
 )
 (print "===^^^===")
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RT-H-003 - the BAR sentinel as a table key, again")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== RT-H-003 · 01 · a sentinel that is not a key ====
+(print "--- [RT-H-003 · 01 · a sentinel that is not a key] ---")
+;;<<RT-H-003>> FAMILY: H | STATUS: FIXED
+;;HYPOTHESIS: `UR_HotRewardBearingToken` returns the BAR sentinel ("|") when an ATS pair has no
+;;            Hot-RBT -- nine of the fifteen live pairs are in that state. `C_HotRecovery` binds
+;;            `h-rbt` from it and, in the SAME eager `let` group, does
+;;            `(UR_NoncesUsed h-rbt)` -- a DPOF properties read keyed by "|". The bindings are
+;;            evaluated BEFORE `with-capability`, so no guard in `ATS|C>HOT_RECOVERY` can run first.
+;;METHOD:     drive the real client entrypoint at a pair with no Hot-RBT and pin the refusal by
+;;            message. Then CONSTRUCT the harder state -- the pool owner switches hot recovery ON
+;;            while the pair still has no Hot-RBT, which `ATS|S>SWITCH-HOT-RECOVERY` permits because
+;;            it checks only `CAP_Owner` and the previous toggle value -- and drive it again.
+;;RESULT:     CONFIRMED, then FIXED. Both calls died with
+;;            `No value found in table ouronet-ns.DPOF_DPOF|T|Properties for key: |` -- through the
+;;            real Talos client, on a pair that exists at deploy, and in the owner-constructed state
+;;            too. Repaired in 10_ATSU.pact by hoisting `with-capability` above the binding group
+;;            (the C_Recover repair, re-applied) and adding a Hot-RBT presence check to
+;;            `ATS|C>HOT_RECOVERY`, because the toggle and the Hot-RBT are independent.
+;;            The hoist is visible in the test itself: block 01 now needs a signature, because once
+;;            the capability runs first `CAP_EnforceAccountOwnership` answers before any business
+;;            rule -- authorisation before validation, as ruled.
+;;
+;;THIS EXACT BUG WAS FIXED TWENTY LINES BELOW, THREE DAYS EARLIER. `C_Recover` carries a comment
+;;block explaining that its capability was moved ABOVE its `let` on 2026-09-12 because
+;;
+;;    "for a token that is not reward-bearing `UR_RewardBearingToken` returns the BAR sentinel, so
+;;     the next binding looked up ATS pair `|` and died with
+;;     `No value found in table ouronet-ns.ATS_ATS|Pairs for key: |`."
+;;
+;;Same sentinel, same eager-`let` ordering, same error shape, different table -- and the sibling
+;;immediately above it was left alone. The repair here is the one that was already written once.
+;;
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+(let
+    (
+        (pool:string "Bisthanium-98c486052a51")
+        (ok-pool:string "PlebeicStrength-98c486052a51")
+    )
+    (map print
+        [
+            ;;Precondition, measured: the getter really does hand back the separator.
+            (expect
+                (format "<<RT-H-003a>> {} has NO Hot-RBT -- the getter returns the BAR sentinel" [pool])
+                [false "|"]
+                [ (ouronet-ns.ATS.URC_IzPresentHotRBT pool)
+                  (ouronet-ns.ATS.UR_HotRewardBearingToken pool) ])
+            ;;The control: a pool that HAS one. Without this the guards below could be refusing
+            ;;every pool for some unrelated reason.
+            (expect
+                (format "<<RT-H-003b>> {} HAS one -- so the predicate discriminates" [ok-pool])
+                true (ouronet-ns.ATS.URC_IzPresentHotRBT ok-pool))
+            ;;With the toggle OFF the capability's own state check must answer -- which it can only
+            ;;do if the capability is acquired BEFORE the binding group. The signature above is
+            ;;required for the same reason and is itself evidence the hoist landed: once the cap
+            ;;runs first, `CAP_EnforceAccountOwnership` answers before any business rule, per the
+            ;;owner ruling that authorisation precedes validation. Unsigned, this now returns a
+            ;;keyset failure rather than a table error -- which is the whole point.
+            (expect-failure
+                "<<RT-H-003c>> hot recovery on a pair with none is refused by a GUARD, not by a table read"
+                "must be set to true for exec"
+                (let ((r:module{TalosStageOne_ClientTwoV2} TS01-C2))
+                    (r::ATS|C_HotRecovery KST.ANHD KST.ANHD pool 1.0)))
+        ])
+    ""
+)
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+;;==== RT-H-003 · 02 · the state the pool OWNER can construct ====
+(print "--- [RT-H-003 · 02 · the state the pool OWNER can construct] ---")
+;;ANHD owns this pair, and ATS|S>SWITCH-HOT-RECOVERY checks only CAP_Owner plus the previous toggle
+;;value -- it does NOT require a Hot-RBT to exist. So the owner can switch recovery ON for a pair
+;;that has none, and every caller then meets the raw DPOF read.
+(let
+    (
+        (pool:string "Bisthanium-98c486052a51")
+        (r:module{TalosStageOne_ClientTwoV2} TS01-C2)
+    )
+    (r::ATS|C_SwitchHotRecovery KST.ANHD pool true)
+    (map print
+        [
+            (expect
+                "<<RT-H-003d>> the owner CAN switch hot recovery on for a pair with no Hot-RBT"
+                true (ouronet-ns.ATS.UR_ToggleHotRecovery pool))
+            (expect-failure
+                "<<RT-H-003e>> ...and hot recovery must STILL refuse by name, not by table key"
+                "has no Hot-RBT"
+                (r::ATS|C_HotRecovery KST.ANHD KST.ANHD pool 1.0))
+        ])
+    ;;Leave the pair as it was found.
+    (r::ATS|C_SwitchHotRecovery KST.ANHD pool false)
+    ""
+)
+(env-sigs [])
+(print "")
+(print "===^^^===")
+(commit-tx)
