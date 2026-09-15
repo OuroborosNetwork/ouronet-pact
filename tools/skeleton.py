@@ -20,10 +20,17 @@ import cap_band
 FN_CLASS = [
     ("5.1", ["CT_","UDCx_","UDC_"]),
     ("5.2", ["UCkx_","UCxx_","UCk_","UCv_","UCx_","UC_"]),
-    ("5.3", ["URHCx_","URHC_","URHx_","URH_","URCix_","URCi_","URCx_","URCv_","URC_","URU_","UR_","INFO_"]),
+    # URv_ added 2026-09-15. The `v` role (a reader whose enforce is intrinsic to its own
+    # computation) was already known here for UCv_ and URCv_ but not for URv_, so eight live
+    # functions classified as UNCLASSIFIED and canon_check reported their files as drift.
+    ("5.3", ["URHCx_","URHC_","URHx_","URH_","URCix_","URCi_","URCx_","URCv_","URC_","URU_","URv_","UR_","INFO_"]),
     ("5.4", ["UEV_","CAP_"]),
     ("5.5", ["WI_","WU7_","WU6_","WU5_","WU4_","WU3_","WU2_","WU_","WW_"]),
-    ("5.6", ["XI_","XE_","XB_"]),
+    # X*v_ added 2026-09-15 -- the SAME variant-prefix blind spot that hid five ops from
+    # _ignis_price_sheet.py on the same day. Two independent tools, one cause: each keeps its own
+    # hand-written copy of the prefix vocabulary and neither re-derives it from the source.
+    # XEv_ is listed for symmetry; it has no instances yet.
+    ("5.6", ["XIv_","XEv_","XBv_","XI_","XE_","XB_"]),
     ("5.7", ["AAp_","AA_","Ap_","AUx_","AU_","A_","CCp_","CC_","Cp_","C_"]),
 ]
 REPL_PFX = "REPL_"

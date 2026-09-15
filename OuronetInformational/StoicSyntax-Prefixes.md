@@ -769,13 +769,31 @@ way it sweeps `(module …)`.
 > left unannotated (tables are allowed there).
 
 ### 7.13 Enforcement & authoring (Phase 7 — the drift gate)
+
+> **CORRECTED 2026-09-15 — this section called `tools/gate.sh` "the hard gate", and it is not.**
+> The hard gate is **`python3 REPL/tools/_gate.py`**: 86 entrypoints, 21,519 assertions, plus the
+> fatal static checks (`_figuresync`, `_pricesync`, `_toolpaths`, `_prefixsync`, `_conformance`,
+> `_heavy`). `tools/gate.sh` runs `canon_check` and **`Z.repl`** — and `CLAUDE.md` says outright
+> that *"`Z.repl` is the fast path, not the gate"*, since it skips `[6.1]_Cumulator.repl`'s 75
+> leg-level pricing assertions among others. Two live documents each named a different thing "the
+> hard gate", and the weaker one was the one being pointed at.
+>
+> Measured on 2026-09-15: **`tools/hooks/pre-commit` was not installed** in `.git/hooks`, so the
+> canon check had never run on a commit; and `canon_check.py` **failed on 21 files**. Six of those
+> were not drift at all — the classifier's `FN_CLASS` did not know `URv_`/`XIv_`/`XBv_`, the same
+> variant-prefix blind spot that hid five ops from the price-sheet generator on the same day. With
+> the vocabulary corrected, **15 files remain genuinely non-canonical** (mostly `defconst`
+> placement), listed in `ARCHITECTURE/DEFECT-LEDGER.md`. `REPL/tools/_prefixsync.py --check`, now
+> fatal in the gate, stops the vocabulary falling behind again.
+
 Canon is now **self-enforcing** so future work can't silently drift (no re-sweep needed):
 - **`tools/skeleton_emit.py`** — the *fixer*: re-lays any module/interface into canonical form.
 - **`tools/cap_band.py`** — the composition-based cap classifier (C1–C4, §7.5).
 - **`tools/canon_check.py`** — the *verifier*: runs the fixer in a temp copy and asserts the file is
   already canonical **up to blank lines** (blank spacing is cosmetic, not a canon rule). Exit 1 on any real
   drift (member re-ordered, wrong marker/band, unknown prefix, `CAP_` outside `{5.4}`, …).
-- **`tools/gate.sh`** — the hard gate: **`canon_check` clean AND `Z.repl` green**. Run before committing / in CI.
+- **`tools/gate.sh`** — a *convenience* runner: `canon_check` clean AND `Z.repl` green. It is **not**
+  the hard gate (see the correction above); `Z.repl` is the fast path. Use `REPL/tools/_gate.py`.
 - **`tools/hooks/pre-commit`** — blocks a commit whose staged `.pact` drift (install:
   `ln -sf ../../tools/hooks/pre-commit .git/hooks/pre-commit`).
 

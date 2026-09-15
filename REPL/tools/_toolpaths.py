@@ -38,6 +38,16 @@ HERE = os.path.dirname(os.path.abspath(__file__))          # REPL/tools
 REPL = os.path.dirname(HERE)                               # REPL
 ROOT = os.path.dirname(REPL)                               # repo root
 
+# THREE tool directories exist, and this checker originally scanned one (2026-09-15).
+# `REPL/TOOLS.md` states "All 44 analysis scripts live in REPL/tools/" -- which is false: there are
+# seven more in `tools/` (including a `gate.sh` that StoicSyntax-Prefixes.md calls "the hard gate")
+# and a module-index generator in `OuronetInformational/tools/`. A checker that covers one of three
+# directories reports clean about the two it never opened -- the same shape as the `skipped` counter
+# that hid 18 unpriced entrypoints. Enumerate the directories instead of naming one.
+TOOL_DIRS = [HERE,
+             os.path.join(ROOT, 'tools'),
+             os.path.join(ROOT, 'OuronetInformational', 'tools')]
+
 PATHISH_EXT = ('.py', '.repl', '.pact', '.md', '.json', '.txt', '.csv')
 OPENERS = {'open', 'spec_from_file_location', 'Path', 'read_text'}
 
@@ -112,7 +122,8 @@ def scan_one(path):
     # file does exist beside the tool, and does not exist where the tool actually looks.
     # Siblings that are meant to be siblings are built with os.path.join(dirname(__file__),..),
     # which is a Call, not a literal, so nothing legitimate depends on that fallback.
-    bases = (cwd_base,) if cwd_base else (ROOT, REPL, HERE)
+    _own = os.path.dirname(os.path.abspath(path))
+    bases = (cwd_base,) if cwd_base else (ROOT, REPL, _own)
     # Two classes, both real, reported distinctly. IMPORT dies the moment anything loads the tool
     # -- that is the tools-move bug. DEFERRED dies only when the owning function runs, which is
     # how `_tighten.py` kept a stale '_gate.py' (it chdirs to REPL/, so the literal resolved to
@@ -149,7 +160,7 @@ def scan_one(path):
 
 def check(quiet=False):
     allf, allw = [], []
-    tools = sorted(_glob.glob(os.path.join(HERE, '*.py')))
+    tools = sorted(t for d in TOOL_DIRS for t in _glob.glob(os.path.join(d, '*.py')))
     for t in tools:
         f, w = scan_one(t)
         allf += f; allw += w

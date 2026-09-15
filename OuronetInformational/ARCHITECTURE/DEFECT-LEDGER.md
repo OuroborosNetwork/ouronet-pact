@@ -229,6 +229,55 @@ Worth recording about the guard itself: after this round of generator fixes, `_p
 **fired unprompted** on the drift the regeneration had just created in `IGNIS-PRICING.md`. That is
 the check working in the workflow rather than in a selftest.
 
+### GS-12 — a second "hard gate", uninstalled and unrun *(FOUND 2026-09-15)*
+
+Chasing the `MODULE-INDEX.md` → `coin-live.pact` pointer led to a **third tool directory**. There are
+three, and `CLAUDE.md` asserted *"All 44 analysis scripts live in `REPL/tools/`"*:
+
+| directory | contents | checked by the gate before today |
+|---|---|---|
+| `REPL/tools/` | the analysis suite + `_gate.py` | yes |
+| `tools/` | StoicSyntax canon: `skeleton_emit`, `canon_check`, `cap_band`, `gate.sh`, `hooks/pre-commit` | **no** |
+| `OuronetInformational/tools/` | `gen-module-index.mjs` | **no** |
+
+`StoicSyntax-Prefixes.md` §7.13 documents **`tools/gate.sh` as "the hard gate … run before
+committing / in CI"**. It runs `canon_check` plus **`Z.repl`** — which `CLAUDE.md` states outright
+*is not the gate*. **Two live documents each named a different thing the hard gate, and the weaker,
+unrun one was the one being pointed at.**
+
+Measured, not inferred:
+
+* **`tools/hooks/pre-commit` is not installed** in `.git/hooks`, so the canon check had never run
+  on a commit.
+* `canon_check.py` **failed on 21 files**.
+* **6 of the 21 were not drift.** `FN_CLASS` in `tools/skeleton.py` did not know `URv_` (8
+  functions), `XIv_` (8) or `XBv_` (6) — **the same three variant prefixes that were invisible to
+  `_ignis_price_sheet.py` on the same day**. Two independent tools, one cause: each keeps its own
+  hand-written copy of the prefix vocabulary and neither re-derives it from the source.
+* **15 files remain genuinely non-canonical**, mostly `defconst` placement:
+  `01_DALOS`, `04_BRD`, `06_DPOF`, `08_ATS`, `11_VST`, `15_SWP`, `16_SWPI`, `20_MTX-SWP`,
+  `02_INFO-ONE+`, and AQP's `01_ANK`, `02_SCORE`, `03_AQP`, `04_RPS`, `05_FVT`, `08_DSA`.
+  **Not fixed here** — `skeleton_emit.py` is a rewriter, and reformatting 15 live sovereign core
+  modules is not a change to make as a side effect of a tooling audit. Recorded as a known,
+  enumerated quantity with a one-command fix (`python3 tools/skeleton_emit.py <file>`) rather than
+  left as an unrun tool of unknown state.
+
+*A false positive rate nobody has measured is indistinguishable from a defect rate.* `canon_check`'s
+21 was 6 parts stale-classifier and 15 parts real, and there was no way to tell without running it.
+
+**Guards added:** `_prefixsync.py --check` (fatal) asserts every live `defun`/`defpact` prefix is
+classifiable by `tools/skeleton.py`; validated against the real pre-fix classifier, where it names
+exactly the three missing prefixes with file and example. `_toolpaths.py` now scans **all three**
+tool directories (47 → 53 tools).
+
+**On `MODULE-INDEX.md` → `coin-live.pact`** *(the thread that started this)*: verified rather than
+assumed. The file the Stoa sandbox actually loads is `00_StoaSandbox/coin.pact`, and it **carries the
+guarded dust sweep**. `coin-live.pact`, `coin-stoa.pact` and `coin-repl.pact` do **not** — a file
+named *live* that is not live and holds a fixed bug. `MODULE-INDEX.md` is generated and lists every
+file defining a module called `coin` (five of them); it is an inventory, not a deploy pointer. Left
+as-is, documented here, because editing a generated inventory by hand is how the pricing artefacts
+came to lie.
+
 **The second guard, and the more general one:** `REPL/tools/_toolpaths.py --check`, also fatal in
 the gate. The eleven dead tools were found by grepping for `REPL/_letfix.py` — a pattern already
 suspected. *A targeted grep only finds the drift you went looking for.* `_toolpaths.py` instead

@@ -347,6 +347,17 @@ def main():
         print(_tp.stdout + _tp.stderr)
         sys.exit("GATE FAILED: a tool references a path that does not exist.")
 
+    # PREFIX SYNC -- every function prefix live in the tree must be classifiable by the tool that
+    # reasons about prefixes. The vocabulary is hand-maintained in each tool and nothing re-derived
+    # it from the source, so on 2026-09-15 the SAME three prefixes (URv_/XIv_/XBv_) were missing
+    # from two independent tools: the price-sheet walker dropped five ops, and canon_check reported
+    # six files as drift that were not drift.
+    _px = subprocess.run([sys.executable, "tools/_prefixsync.py", "--check"],
+                         capture_output=True, text=True)
+    if _px.returncode != 0:
+        print(_px.stdout + _px.stderr)
+        sys.exit("GATE FAILED: a live function prefix is unknown to tools/skeleton.py.")
+
     # CONFORMANCE and HEAVY-PREFIX, both fatal on VIOLATIONS only.
     # ADDED 2026-09-14, after a fix-verification pass found that both tools' "0" was a
     # HAND-MEASURED figure. The gate byte-compiled them and ran conformance's selftest, but never
