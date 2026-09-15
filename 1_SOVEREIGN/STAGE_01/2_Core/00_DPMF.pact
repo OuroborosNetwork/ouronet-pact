@@ -1,3 +1,34 @@
+;;<=============================================================================================>
+;;  DEPRECATED — HISTORICAL ONLY. SUPERSEDED BY DPOF (06_DPOF.pact).
+;;<=============================================================================================>
+;;  DPMF is the original MetaFungible module. Live metadata-rich fungible behaviour is DPOF
+;;  (OrtoFungible); the rename separated the active path from legacy meta-fungible semantics.
+;;  Owner ruling 2026-09-15: KEEP AS IS, as dead material, with commentary only. Nothing below
+;;  this banner has been restructured.
+;;
+;;  MEASURED STATE (2026-09-15) — this module is INERT, not merely unused:
+;;
+;;    * `create-table` is called ZERO times against FIVE `deftable` declarations. Every other
+;;      module in the tree creates its tables at the end of the file. So DPMF is deployed with
+;;      NO STORAGE, and every storage-backed function in it errors on contact. Pinned by
+;;      REPL/modules/CONFORMANCE.repl <<CONF-06>>, which asserts the exact failure
+;;      `Table ouronet-ns.DPMF_P|MT not found`.
+;;    * ZERO inbound callers: `ref-DPMF::` appears nowhere in 1_SOVEREIGN/ or 2_CITIZEN/, and no
+;;      module names the `DemiourgosPactMetaFungible*` interface. The Talos mentions of "DPMF"
+;;      are @doc prose only.
+;;    * It carries 13 DEAD MODULE-REFERENCE CALLS (`_audit_modref_calls.py`): eleven
+;;      `UDC_<tier>Cumulator` refs that no longer exist on IGNIS, plus
+;;      `ref-DALOS::STOA|C_CollectWT` and `ref-DALOS::STOA|C_Collect` — members that live on
+;;      IGNIS, not DALOS. `OuronetDalosV2` declares no `STOA|*` members at all. They would abort
+;;      if reached; they cannot be reached.
+;;    * 95,601 bytes — about 64% of a ~150k deploy slot, in a system whose deploy-size cap
+;;      dictates module ordering.
+;;
+;;  DO NOT "FIX" ANY OF THE ABOVE IN PLACE. Creating the tables without wiring the callers would
+;;  turn an inert module into a live one with dead calls inside it; <<CONF-06>> goes red on
+;;  exactly that half-migration, by design.
+;;<=============================================================================================>
+;;
 ;; Deploy: load THIS file — interface(s) + module ship together.
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
 ;;

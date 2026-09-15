@@ -401,7 +401,7 @@ fixture job, not a side effect of a coverage audit.
 
 ### GS-14 — the stats generator degraded silently, and took its checker with it *(FOUND + FIXED 2026-09-15)*
 
-Adding GS-13's two pins moved the assertion count 21,519 → 21,538, so `REPL_SUITE_STATS.md` had to be
+Adding GS-13's two pins moved the assertion count 21,519 → 21,539, so `REPL_SUITE_STATS.md` had to be
 regenerated. `_figuresync --check` reported **clean** before the regeneration — truthfully, and
 uselessly: it compares the narrative documents against the stats file, and **nothing compared the
 stats file against a live gate.** One link in the chain had never been verified.
@@ -485,7 +485,7 @@ position. All five were run.
 
 **`_vacuous.py --check` is now fatal in the gate.** An assertion that cannot fail is a green light
 wired to nothing, and it is indistinguishable from a real one in every summary the gate prints — it
-counts toward the 21,538, it shows in the `+` column, and it never goes red. I wrote one myself this
+counts toward the 21,539, it shows in the `+` column, and it never goes red. I wrote one myself this
 month (`step1 > discount × 951`, which the defect it was written for would have passed). Proven by
 injecting `(expect "…" 42 42)`: the check exits 1 and names the site. Only VACUOUS is fatal; WEAK
 stays advisory, because *"it runs at all"* is sometimes genuinely the assertion.
@@ -690,6 +690,34 @@ The existing suites drive defpacts across `commit-tx` boundaries with an explici
 when the point is to prove the steps are independent transactions, and useless for measuring a total,
 because the `let` holding the opening balance does not survive the commit.
 
+### Owner rulings, 2026-09-15 — the grief path, canon, and DPMF
+
+**1. The 200 grief charge STANDS, and it is deliberate.** Owner: *"grief costs 200 it is, the
+strongest anti-spam."* The reason is structural and was not previously recorded: the Ouronet gas
+station can whitelist `exec` transactions only. The buy-gas message exposes `tx-type` and — for exec
+alone — `exec-code`; a `cont` payload exposes **nothing identifying the pact being continued**, so
+"pay only for continuations of our namespace" has nothing to test. Allowing conts means subsidising
+every defpact anyone has ever started. Kaddex reached the same conclusion
+(`Audit/SWP/reference/KADDEX-SOURCE-4.md:35`: `(enforce (= "exec" (at "tx-type" (read-msg))))`).
+**The second `LQ|INITIATION-FEE` is the price of that gap, not an oversight** — recorded because it
+looks like a double-charge to anyone who finds it later.
+
+**Measured, and it makes the gap retirable:** every multi-step defpact runs end to end inside ONE
+transaction — worst case `MTX|C_AddLiquidity` at **415,419 gas against a 2,000,000 budget (21%,
+4.8× headroom)**, including harness overhead. Pinned at `<<DPB-01>>` against **half** the budget, so
+the collapse stays available. Full analysis: `memories/2026-09-15-gas-station-cannot-whitelist-continuations.md`.
+
+**2. Canon: fix incrementally.** Owner: *"fix incrementally … must make sure you don't break shit
+up."* The 15 files stay enumerated; they are corrected one module at a time with a full gate between,
+never bundled with other work.
+
+**3. DPMF: keep as dead material, commentary only.** Owner: *"it's only kept for historical purposes
+… leaving as is and adding only commentaries."* A deprecation banner now heads `00_DPMF.pact`
+recording the measured state — 0 `create-table` against 5 `deftable`, 0 inbound callers, 13 dead
+modref calls, 95,601 bytes — and warning that creating the tables without wiring the callers would
+turn an inert module into a live one with dead calls inside it. `<<CONF-06>>` goes red on exactly
+that half-migration. **No code was restructured.**
+
 ### GS-05 — RECLASSIFIED: correct in form, but it was never a live defect *(CORRECTED 2026-09-15)*
 
 > **This entry previously claimed a consequence that does not exist. The claim is retracted here,
@@ -706,7 +734,7 @@ because the `let` holding the opening balance does not survive the commit.
 >
 > **Measured three ways, not argued:**
 > 1. Reverting one trigger and re-running `DEFPACT-BILLING.repl`: **identical output**.
-> 2. Reverting **all six** and re-running the **whole gate**: **GREEN, 21,538 assertions, 0
+> 2. Reverting **all six** and re-running the **whole gate**: **GREEN, 21,539 assertions, 0
 >    failures.** No assertion anywhere detects the removal, because there is nothing to detect.
 > 3. Regenerating the price sheet from the reverted source: **byte-identical**.
 >

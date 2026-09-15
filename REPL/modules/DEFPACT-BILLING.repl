@@ -131,6 +131,29 @@
                                 (expect "<<DPB-01>> everything except the initiation slice is billed AFTER step 0"
                                     (- (+ quoted tax) (* (ref-DALOS::URC_IgnisGasDiscount patron) 100.0))
                                     (- b1 b3))
+                                ;;GAS HEADROOM, and it is the figure that decides whether the
+                                ;;multi-step path needs to exist at all. All three steps ran inside
+                                ;;THIS ONE TRANSACTION, so (env-gas) is the whole op's cost under
+                                ;;the same table model chainweb uses. Measured 2026-09-15: 415,419
+                                ;;against DALOS|GAS-BUDGET of 2,000,000 -- 21%, 4.8x headroom, and
+                                ;;that INCLUDES this harness's preview call and balance reads.
+                                ;;
+                                ;;WHY IT IS ASSERTED HERE. The Ouronet gas station can only
+                                ;;whitelist `exec` transactions: the buy-gas message carries
+                                ;;`tx-type` and, for exec only, `exec-code`. A `cont` payload
+                                ;;identifies NOTHING about which defpact is being continued, so
+                                ;;"pay only for continuations of our namespace" is not expressible
+                                ;;-- allowing conts means subsidising every pact anyone ever
+                                ;;started. Kaddex reached the same conclusion and hard-refuses
+                                ;;(`(enforce (= "exec" (at "tx-type" (read-msg))))`).
+                                ;;
+                                ;;So the defpact's whole cost fitting in one transaction is what
+                                ;;makes the problem disappear rather than be solved. If this ever
+                                ;;approaches the budget, the single-tx collapse stops being
+                                ;;available and the continuation problem comes back -- which is
+                                ;;why half the budget is the tripwire, not the full one.
+                                (expect "<<DPB-01>> the WHOLE defpact fits in one tx at under half the 2M gas budget"
+                                    true (< (env-gas) (/ DALOS.DALOS|GAS-BUDGET 2)))
                                 (expect "<<DPB-01>> step 2 charges the LP transfer-out, and it is not free"
                                     true (> (- b2 b3) 0.0))
                                 ;;non-vacuity on the tax term: a symmetric add would make the identity
