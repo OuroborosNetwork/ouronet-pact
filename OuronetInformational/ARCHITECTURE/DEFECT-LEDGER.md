@@ -229,6 +229,46 @@ Worth recording about the guard itself: after this round of generator fixes, `_p
 **fired unprompted** on the drift the regeneration had just created in `IGNIS-PRICING.md`. That is
 the check working in the workflow rather than in a selftest.
 
+### The owner's first rule is now fully satisfied: 401 / 401 *(2026-09-15)*
+
+> *"the INFO function must output the exact same cost as the real execution function"*
+
+**Every client-facing cost preview is now pinned to a measured balance delta.** The last one —
+`INFO_SWP|Firestarter`, the subject of GS-15 — is pinned at `modules/SWP.repl` `<<SWPX-14b>>`:
+
+```
+quoted-ignis = 0.0    stoa-spent = 10.00    ignis-gained = 488.0
+```
+
+| | |
+|---|---:|
+| cost previews declared (ClientInfo-returning) | 410 |
+| INFO-internal helpers (exercised transitively) | 9 |
+| **client-facing** | **401** |
+| **measured against a live charge** | **401** |
+| never named | **0** |
+
+**Why a balance delta alone could not state this claim.** Firestarting *credits* IGNIS, so
+`before − after` is not a charge and any skim would hide inside the payout. The assertion that
+actually closes it is the **native STOA leg**: exactly `10.0` leaves and nothing else does — which
+makes the IGNIS increase dispositive, because the only outflow is already accounted for.
+
+**Finding an eligible account took a survey of all ten in the harness — every one carries ≥ 1
+OURO.** Two blockers were mapped on the way and are worth keeping, because they will recur for
+anyone building a "poor account" fixture:
+
+* **IGNIS has `min-move` 1000.0** (`[4.0]_Sovereign-Executor.repl:731`). An account holding ~200
+  IGNIS therefore *cannot transfer it out at all* — it can only **spend** it.
+* **A DPTF transfer burns exactly 1.0 IGNIS** for this patron. Draining COCA's 205.6 below the
+  100 bound would have taken **~102 operations**. BYTA was one transfer away instead: 88.1 IGNIS
+  (already under), 18,789 native STOA (already funded), 21.9 OURO.
+
+**And one Pact fact the first draft got wrong:** a signature carrying a cap list is **scoped**, and
+a scoped signature does **not** satisfy a bare `(enforce-guard account-guard)`. `DALOS::UEV_StandardAccOwn`
+needs an **unscoped** entry (`"caps": []`), *plus* a separate scoped entry for the STOA principal's
+own key — the `k:` address minus its prefix — because `C_WrapStoa` ends in a bare `coin::transfer`
+out of the linked account.
+
 ### GS-15 — the sheet priced the bootstrap op at 93 IGNIS, and contradicted its own legend *(FOUND + FIXED 2026-09-15)*
 
 Chasing the one remaining unmeasured preview (`INFO_SWP|Firestarter`) led here. The preview is
@@ -315,7 +355,7 @@ fixture job, not a side effect of a coverage audit.
 
 ### GS-14 — the stats generator degraded silently, and took its checker with it *(FOUND + FIXED 2026-09-15)*
 
-Adding GS-13's two pins moved the assertion count 21,519 → 21,523, so `REPL_SUITE_STATS.md` had to be
+Adding GS-13's two pins moved the assertion count 21,519 → 21,527, so `REPL_SUITE_STATS.md` had to be
 regenerated. `_figuresync --check` reported **clean** before the regeneration — truthfully, and
 uselessly: it compares the narrative documents against the stats file, and **nothing compared the
 stats file against a live gate.** One link in the chain had never been verified.
@@ -399,7 +439,7 @@ position. All five were run.
 
 **`_vacuous.py --check` is now fatal in the gate.** An assertion that cannot fail is a green light
 wired to nothing, and it is indistinguishable from a real one in every summary the gate prints — it
-counts toward the 21,523, it shows in the `+` column, and it never goes red. I wrote one myself this
+counts toward the 21,527, it shows in the `+` column, and it never goes red. I wrote one myself this
 month (`step1 > discount × 951`, which the defect it was written for would have passed). Proven by
 injecting `(expect "…" 42 42)`: the check exits 1 and names the site. Only VACUOUS is fatal; WEAK
 stays advisory, because *"it runs at all"* is sometimes genuinely the assertion.

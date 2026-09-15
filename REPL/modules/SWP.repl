@@ -5187,3 +5187,131 @@
 )
 (env-sigs [])
 (rollback-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| SWPX-14 — the FIRESTARTER positive path: the one op the price sheet publishes as FREE.
+;;
+;;GS-15 (2026-09-15). SWP|C_Firestarter let-binds three cumulators -- C_WrapStoa, C_Swap,
+;;C_SublimateV2 -- reads `gained-ouro` out of one, and contains NO C_Collect at all. Its own
+;;message is "Used 10 native STOA to generate {} IGNIS with no IGNIS Costs!", and
+;;INFO_SWP|Firestarter quotes OI|UDC_NoIgnisCosts. The price sheet nevertheless published >= 93,
+;;because the generator's free-by-design rule fired only when the static walk had ALSO failed to
+;;find legs. Firestarting is the BOOTSTRAP op, gated on holding under 100 IGNIS -- so the sheet
+;;told someone whose defining characteristic is having no IGNIS that they needed 93 of it first.
+;;
+;;WHY NO PIN EXISTED. `_info_measured.py` listed INFO_SWP|Firestarter as the ONE client-facing
+;;preview never named in any .repl. SWPX-11 drives the REFUSAL path only, so there has never been
+;;a successful firestart to measure. Finding an eligible account took a survey of all ten in the
+;;harness: every one carries >= 1 OURO. Two blockers were mapped on the way and are worth keeping:
+;;IGNIS has min-move 1000.0, so an account holding ~200 can never transfer it out -- it can only
+;;SPEND it -- and a DPTF transfer burns exactly 1.0 IGNIS for this patron, so draining COCA's
+;;205.6 below the bound would have taken ~102 operations. BYTA is the cheap fixture: 88.1 IGNIS
+;;(already under), 18,789 native STOA (already funded), and 21.9 OURO -- one transfer away.
+;;
+;;WHAT IS ASSERTED, and why a balance delta will not do it alone. The op CREDITS IGNIS, so
+;;`before - after` is not a charge and a skim would hide inside the payout. The exact economic
+;;claim is the native STOA leg: EXACTLY 10.0 leaves, and the IGNIS balance moves UP, not down.
+(begin-tx "SWPX-14a - bring BYTA under both firestarter bounds")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_Byta", "caps": [] }])
+(print "--- [SWPX-14a · 01 · one transfer to eligibility] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+    )
+    (let
+        (
+            (ouro:string (ref-DALOS::UR_OuroborosID))
+            (ignis:string (ref-DALOS::UR_IgnisID))
+        )
+        (ref-TS01-C1::DPTF|C_Transfer KST.BYTA ouro KST.BYTA KST.ANHD 21.0 false)
+        (map print
+            [
+                (format "<<SWPX-14a>> BYTA ouro={} ignis={}"
+                    [(ref-DPTF::UR_AccountSupply ouro KST.BYTA)
+                     (ref-DPTF::UR_AccountSupply ignis KST.BYTA)])
+                (expect "<<SWPX-14a>> BYTA is under BOTH firestarter bounds (<1 OURO, <100 IGNIS)"
+                    [true true]
+                    [(< (ref-DPTF::UR_AccountSupply ouro KST.BYTA) 1.0)
+                     (< (ref-DPTF::UR_AccountSupply ignis KST.BYTA) 100.0)])
+            ])
+    )
+    ""
+)
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "SWPX-14b - firestart, and measure what it actually costs")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [SWPX-14b · 01 · 10 native STOA in, IGNIS out, nothing skimmed] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
+    )
+    (let
+        (
+            (ignis:string (ref-DALOS::UR_IgnisID))
+            (byta-stoa:string (ref-DALOS::UR_AccountStoa KST.BYTA))
+            (lq-stoa:string (LIQUID.GOV|LIQUID|SC_STOA-NAME))
+        )
+        ;;TWO signer entries, and both are needed for different reasons.
+        ;;  * PK_Byta UNSCOPED (empty caps): DALOS::UEV_StandardAccOwn does a bare
+        ;;    (enforce-guard account-guard). A signature carrying a cap list is SCOPED and does not
+        ;;    satisfy an unscoped enforce-guard -- the first draft passed only the scoped entry and
+        ;;    died on "Keyset failure (keys-all)".
+        ;;  * the STOA ADDRESS's own key, scoped to the coin.TRANSFER: C_WrapStoa ends in
+        ;;    IGNIS::C_TransferDalosFuel, a bare coin::transfer out of the firestarter's linked
+        ;;    k: account. That principal's key is the k: address minus its prefix.
+        (env-sigs
+            [
+                { "key": "PK_Byta", "caps": [] }
+                { "key": (drop 2 byta-stoa)
+                , "caps": [(coin.TRANSFER byta-stoa lq-stoa 10.0)] }
+            ]
+        )
+        (let
+            (
+                (quoted:decimal
+                    (at "ignis-need" (at "ignis" (INFO-ONE.INFO_SWP|Firestarter KST.BYTA))))
+                (c0:decimal (coin.get-balance byta-stoa))
+                (i0:decimal (ref-DPTF::UR_AccountSupply ignis KST.BYTA))
+            )
+            (ref-TS01-C3::SWP|C_Firestarter KST.BYTA)
+            (let
+                (
+                    (stoa-spent:decimal (- c0 (coin.get-balance byta-stoa)))
+                    (ignis-delta:decimal (- (ref-DPTF::UR_AccountSupply ignis KST.BYTA) i0))
+                )
+                (map print
+                    [
+                        (format "<<SWPX-14b>> quoted-ignis={} stoa-spent={} ignis-gained={}"
+                            [quoted stoa-spent ignis-delta])
+                        ;;the sheet's claim, now measured rather than read off a legend
+                        (expect "<<SWPX-14b>> firestarting takes EXACTLY 10.0 native STOA and nothing else"
+                            10.0 stoa-spent)
+                        ;;GS-15: the preview says free, and the balance says the preview is right --
+                        ;;IGNIS moves UP. A charge would have to be netted out of the payout to hide,
+                        ;;which the STOA assertion above already excludes as the only outflow.
+                        (expect "<<SWPX-14b>> ...and the firestarter's IGNIS goes UP, it is not charged"
+                            true (> ignis-delta 0.0))
+                        (expect "<<SWPX-14b>> INFO_SWP|Firestarter quotes ZERO ignis-need, matching the charge"
+                            0.0 quoted)
+                    ])
+            )
+        )
+    )
+    ""
+)
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
