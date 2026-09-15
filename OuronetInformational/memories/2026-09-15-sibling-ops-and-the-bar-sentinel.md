@@ -65,3 +65,43 @@ a real one** (`"|"` as a DPOF key; `0` as a divisor). Grep for getters documente
 then check every consumer — especially consumers inside an *eager `let`*, which no defcap can
 protect. `REPL/tools/_eagerlet.py` exists for that ordering question and is worth pointing at the
 BAR-returning getters specifically.
+
+---
+
+## Addendum — the sweep caught my own incomplete fix
+
+After `C_HotRecovery` was clean I ran the static sweep properly: **every getter that can return
+`BAR`**, every consumer, checking for a nearby sentinel check.
+
+**The tree is mostly disciplined about BAR**, which is worth recording as a negative result:
+
+| site | how it handles the sentinel |
+|---|---|
+| `AQP::URC_PoolScoreIds` | a dedicated *"non-BAR score-id values"* helper — `filter (!= sid BAR)` |
+| `AQP` slot ops | compare `(= … BAR)` / `(= … score-id)`, never read by it |
+| `VCT` nzs check | `(if (= score-id BAR) true …)` |
+| `PYTHIA::UR_Counterpart` | equality comparisons only, one pinned as unreachable |
+| `ATS::URC_PairRBTSupply` | gates on `URC_IzPresentHotRBT` |
+| `DSA` template reads | `with-default-read … {"fvt-id" : BAR} … (!= f BAR)` — the sentinel and its check in one form |
+
+**One site was not: `URCi_HotRecovery`** — the cost preview. It has its **own** eager `let` with the
+same two lines, so `INFO_ATS|HotRecovery` still died with
+`No value found in table ouronet-ns.DPOF_DPOF|T|Properties for key: |` **after** the exec path was
+fixed.
+
+> RT-A-003's guard went into `URC_RBT` because exec and preview **share** that reader — one
+> `enforce` covered both. `C_HotRecovery` and `URCi_HotRecovery` share nothing, so the guard had to
+> be written **twice**, and writing it once looked finished.
+
+**A preview is what a UI calls before it submits anything.** It must refuse in the same words as the
+op it previews. Pinned separately as `<<RT-H-003f>>`.
+
+## Style note caught in review
+
+The preview guard must run *before* the main binding group, so it cannot sit in that `let` — Pact
+evaluates every binding in a group before the body. First draft reached for
+`ouronet-ns.ATS.URC_IzPresentHotRBT`, a **fully-qualified cross-module call**, which the project
+forbids (`CLAUDE.md`: cross-module calls go through the interface modref `::`, never
+`module.function`, because the qualified form couples to the whole module rather than the interface
+member). Corrected to an own-`let` binding `(ref-ATS:module{AutostakeV3} ATS)` — and
+`URC_IzPresentHotRBT` is in the `AutostakeV3` interface (line 151), so the modref compiles.

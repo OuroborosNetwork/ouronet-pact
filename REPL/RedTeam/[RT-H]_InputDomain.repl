@@ -321,6 +321,14 @@
                 "must be set to true for exec"
                 (let ((r:module{TalosStageOne_ClientTwoV2} TS01-C2))
                     (r::ATS|C_HotRecovery KST.ANHD KST.ANHD pool 1.0)))
+            ;;THE PREVIEW IS A SEPARATE COPY OF THE BUG. Fixing the exec path did NOT fix this:
+            ;;`URCi_HotRecovery` has its own eager `let` with the same two lines, so a QUOTE still
+            ;;died with the raw table error after `C_HotRecovery` was clean. A preview is what a UI
+            ;;calls BEFORE it submits anything -- it must refuse in the same words as the op.
+            (expect-failure
+                "<<RT-H-003f>> the INFO cost PREVIEW refuses in the same words, not with a table error"
+                "has no Hot-RBT"
+                (ouronet-ns.INFO-ONE.INFO_ATS|HotRecovery KST.ANHD KST.ANHD pool 1.0))
         ])
     ""
 )

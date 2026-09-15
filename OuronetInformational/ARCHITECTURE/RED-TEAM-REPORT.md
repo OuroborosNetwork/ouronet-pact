@@ -1339,8 +1339,28 @@ check to `ATS|C>HOT_RECOVERY`, because the toggle and the Hot-RBT are independen
 > business rule — *authorisation precedes validation*, as ruled. The refusal changing from a table
 > error to a keyset failure **is** the evidence the hoist landed.
 
-Two instances in one day of one shape: **a sentinel value flowing into a position that requires a
-real one** — `"|"` as a table key, `0` as a divisor.
+### My own fix was incomplete, and the sweep that found the bug found that too
+
+After `C_HotRecovery` was clean, a **static sweep of every getter that can return `BAR`** was run
+across both source trees, checking each consumer for a nearby sentinel check. Most of the tree is
+disciplined about it — AQP carries a dedicated *"non-BAR score-id values"* helper that filters
+explicitly, VCT guards with `(if (= score-id BAR) true …)`, PYTHIA compares rather than reads, and
+`URC_PairRBTSupply` gates on `URC_IzPresentHotRBT`. **One site was not: `URCi_HotRecovery`, the cost
+preview.**
+
+It has its **own** eager `let` with the same two lines, so a *quote* still died with the raw table
+error after the exec path was fixed. Measured through `INFO_ATS|HotRecovery`.
+
+> **A preview is what a UI calls *before* it submits anything.** It must refuse in the same words as
+> the op it previews. RT-A-003's fix landed in `URC_RBT` precisely because exec and preview share
+> that reader — one `enforce` covered both. Here they share nothing, so the guard had to be written
+> twice, and writing it once looked finished.
+
+Pinned separately as `<<RT-H-003f>>`.
+
+Three instances in one day of one shape: **a sentinel value flowing into a position that requires a
+real one** — `"|"` as a table key, `0` as a divisor — and in two of the three the exec path and its
+preview had to be fixed independently.
 
 # Closing assessment
 

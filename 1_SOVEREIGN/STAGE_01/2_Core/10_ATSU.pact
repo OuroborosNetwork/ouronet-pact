@@ -995,6 +995,28 @@
         @doc "Cost preview for C_HotRecovery (flavor-B composer): fixed 3x-biggest \
             \ construct + cold-transfer + cold-burn + hot-mint + hot-transfer, re-derived \
             \ purely via sub-op cost readers. Cost-equivalent to C_HotRecovery."
+        ;;THE PREVIEW NEEDS ITS OWN COPY OF THE GUARD, and that is the whole lesson of this repair.
+        ;;C_HotRecovery was fixed by hoisting its capability above the binding group -- but this
+        ;;reader has its OWN eager `let` with the same two lines, so a QUOTE for a pair with no
+        ;;Hot-RBT still died with `No value found in table ouronet-ns.DPOF_DPOF|T|Properties for
+        ;;key: |` after the exec path was clean. A preview is what a UI calls before it ever
+        ;;submits; it must refuse in the SAME WORDS as the op it previews, not louder and not
+        ;;differently. (URC_RBT carries its guard for exactly this reason -- it is shared by both
+        ;;paths, so one enforce covered both. Here the two paths do not share a reader, so the
+        ;;guard has to be written twice.)
+        ;;Pinned by RedTeam/[RT-H]_InputDomain.repl <<RT-H-003f>>.
+        ;;Own let for the modref: the guard must run BEFORE the main binding group, and Pact
+        ;;evaluates every binding in a group before its body -- so it cannot live in the let below.
+        ;;Cross-module calls go through the interface modref (`::`), never `module.function`.
+        (let
+            (
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
+            (enforce
+                (ref-ATS::URC_IzPresentHotRBT ats)
+                (format "ATS-Pair {} has no Hot-RBT, so Hot Recovery is impossible" [ats])
+            )
+        )
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
