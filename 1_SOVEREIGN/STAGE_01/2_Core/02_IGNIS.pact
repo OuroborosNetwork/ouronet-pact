@@ -1839,7 +1839,33 @@
                 )
                 (ignis-prices:[decimal] (at "ignis-prices" (at "primed-cumulator" primed-cumulator)))
                 (ignis-sum:decimal (fold (+) 0.0 ignis-prices))
-                (iz-gassles-patron:bool (ref-DALOS::UR_AccountType patron))
+                ;;RT-I-001 FIX (2026-09-15, owner design confirmed). This read
+                ;;`(ref-DALOS::UR_AccountType patron)` -- the `smart-contract` flag, which
+                ;;XI_DeploySmartAccount sets to `true` UNCONDITIONALLY for EVERY smart account,
+                ;;including the seven system ones and every user account created through the
+                ;;PERMISSIONLESS client wrapper DALOS|C_DeploySmartAccount (TS01-C1:311).
+                ;;
+                ;;OWNER: "an IGNIS gas payer account can only be a STANDARD account. A smart account
+                ;;can never be a gassless payer, EXCEPT one single account hardcoded into the code,
+                ;;to allow admin-based gassless IGNIS transactions -- the Ouroboros daily minter uses
+                ;;such a gassless patron. No other smart account should have this property."
+                ;;
+                ;;That account is `GOV|DALOS|SC_NAME`: 03_DSP+.pact binds
+                ;;`(defconst GASLESS-PATRON (URC_Gassless))` and `URC_Gassless` returns it. But that
+                ;;was a CALLER-SIDE CONVENTION, not an enforcement -- DSP chose to pass one account
+                ;;while this line exempted any smart one. RT-C-001's lesson in a new place: a
+                ;;convention that is honoured is indistinguishable from a rule that is enforced,
+                ;;until someone does not honour it. The GAS_PAYER Case 3 custom-code door let an
+                ;;attacker write the patron into their OWN transaction text, where DSP's discipline
+                ;;has no reach at all -- see RedTeam/[RT-I]_GasStation.repl.
+                ;;
+                ;;SAFE TO NARROW, MEASURED: resolving every call site that passes a smart-account
+                ;;constant as a FIRST argument, against the callee's actual first PARAMETER NAME,
+                ;;gives 37 genuine `patron` slots and ALL 37 are in 03_DSP+.pact. The sovereign hits
+                ;;that looked like patrons are not -- VST::C_Freeze takes `freezer`, C_Sleep takes
+                ;;`sleeper`, C_Hibernate takes `hibernator`, SWPLC::C_Fuel takes `account`. Nothing
+                ;;outside DSP relies on this exemption.
+                (iz-gassles-patron:bool (= patron (ref-DALOS::GOV|DALOS|SC_NAME)))
                 (virtual-gas-toggle:bool (ref-DALOS::UR_VirtualToggle))
             )
             (if (and (!= ignis-sum 0.0) (not iz-gassles-patron))

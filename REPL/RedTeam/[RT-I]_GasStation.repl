@@ -23,7 +23,7 @@
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [RT-I-001a] ---")
-;;<<RT-I-001>> FAMILY: I | STATUS: SUCCEEDED
+;;<<RT-I-001>> FAMILY: I | STATUS: FIXED
 ;;HYPOTHESIS: the Ouronet gas station whitelists by reading the transaction's top-level forms out of
 ;;            `exec-code`. Case 1 pins a SINGLE form to `(coin.C_`, `(ouronet-ns.TS`,
 ;;            `(ouronet-ns.DSP` or `(ouronet-ns.STOAICO.`; Case 2 pins BOTH of two forms to
@@ -78,7 +78,8 @@
 ;;
 ;;  So: pay once (or nothing), then submit unlimited transactions of the shape
 ;;  `namespace + IGNIS.C_Collect(CustomCodeCumulator) + (let ...) + <arbitrary code>`, paying NO
-;;  IGNIS, with Ouronet funding up to DALOS|GAS-BUDGET = 2,000,000 gas units of KDA each time.
+;;  IGNIS, with the gas station funding up to DALOS|GAS-BUDGET = 2,000,000 gas units of NATIVE STOA
+;;  each time. (There is no gas station for IGNIS -- only for native STOA.)
 ;;
 ;;  THIS IS RT-A-001's SHAPE IN THE GAS STATION: a deterrent that can be declined. There the second
 ;;  door skipped `lp-churn`; here the gassless exemption skips the custom-code fee. The appended
@@ -249,19 +250,31 @@
 (commit-tx)
 ;;|| NEXT >
 ;;
-(begin-tx "RT-I-001g - does a GASSLESS patron pay for the custom-code door at all?")
+(begin-tx "RT-I-001g - the exemption jumped over a guard that already said this")
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
 (namespace "ouronet-ns")
-(print "--- [RT-I-001g · the exemption underneath the fee] ---")
-;;THE FEE HAS AN EXEMPTION, AND IT IS THE WHOLE QUESTION. `IGNIS::C_Collect` collects only when
-;;    (if (and (!= ignis-sum 0.0) (not iz-gassles-patron)) ...)
-;;where `iz-gassles-patron` is `(DALOS::UR_AccountType patron)` -- the SMART-ACCOUNT flag. If a smart
-;;account pays nothing, then RT-I-001f's 13.25 IGNIS is not the price of the custom-code door; it is
-;;the price for STANDARD accounts only, and the door is FREE for anyone who deploys a smart account.
+(print "--- [RT-I-001g · the shadowed patron guard] ---")
+;;THE RULE ALREADY EXISTED. `IGNIS::UEV_Patron` is exactly the owner's sentence, in code:
 ;;
-;;The discount cannot get there on its own: UC_GasDiscount is (7*(major-1) + minor) percent, so at
-;;the top tier seen in this harness (major 7) the cost floor is ~51%, never zero. The exemption is a
-;;different mechanism and it is binary.
+;;    (if (ref-DALOS::UR_AccountType patron)
+;;        (do (enforce (= patron DALOS|SC_NAME) "Only the DALOS Account can be a Smart Patron")
+;;            (ref-DALOS::CAP_EnforceAccountOwnership DALOS|SC_NAME))
+;;        (ref-DALOS::CAP_EnforceAccountOwnership patron))
+;;
+;;BUT IT WAS UNREACHABLE FOR THE ACCOUNTS IT IS ABOUT. `UEV_Patron` runs inside
+;;`IGNIS|C>COLLECT`, and `C_Collect` acquires that capability only when it actually collects:
+;;
+;;    (if (and (!= ignis-sum 0.0) (not iz-gassles-patron)) (with-capability (IGNIS|C>DC patron) ...))
+;;
+;;and `iz-gassles-patron` was `(UR_AccountType patron)` -- true for EVERY smart account. So a smart
+;;patron took the branch that SKIPS collection, and skipping collection skipped the guard that says
+;;only one smart account may be a patron. THE EXEMPTION JUMPED OVER THE RULE WRITTEN TO CONSTRAIN
+;;IT. That is RT-C-001's shadowed admin gate, in the billing path: a guard that is present, correct,
+;;and never consulted for the inputs it was written about.
+;;
+;;FIXED 2026-09-15 by making `iz-gassles-patron` compare against GOV|DALOS|SC_NAME instead of
+;;reading the flag. The designated account stays exempt -- the DSP daily minters are unaffected --
+;;and every other smart account now reaches UEV_Patron and is REFUSED BY NAME.
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }, { "key": "PK_BJ", "caps": [] }])
 (let
     (
@@ -269,30 +282,19 @@
         (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
         (smart:string KC.BJ)
     )
-    (let
-        (
-            (iz-smart:bool (ref-DALOS::UR_AccountType smart))
-            (b0:decimal (ref-DALOS::UR_TF_AccountSupply smart false))
-        )
-        (ref-IGNIS::C_Collect smart (ref-IGNIS::UDC_CustomCodeCumulator))
-        (let
-            (
-                (paid:decimal (- b0 (ref-DALOS::UR_TF_AccountSupply smart false)))
-            )
-            (map print
-                [
-                    (format "<<RT-I-001>> smart-account patron: iz-gassless={} paid={} IGNIS" [iz-smart paid])
-                    ;;non-vacuity: the account really is the gassless kind, so a zero below means the
-                    ;;exemption fired and not that the fixture picked an ordinary account.
-                    (expect "<<RT-I-001>> the fixture really is a gassless (smart) account"
-                        true iz-smart)
-                    ;;THE FINDING, whichever way it lands -- stated as a measurement, not a guess.
-                    (expect "<<RT-I-001>> ...and this is what the custom-code door costs it"
-                        0.0 paid)
-                ])
-        )
-    )
-    ""
+    (map print
+        [
+            ;;non-vacuity: the fixture really is the gassless KIND, so the refusal below is about
+            ;;WHICH smart account it is, not about it being ordinary.
+            (expect "<<RT-I-001>> the fixture really is a smart account"
+                true (ref-DALOS::UR_AccountType smart))
+            ;;THE FIX, ASSERTED AS A REFUSAL AND PINNED BY MESSAGE. Before the repair this call
+            ;;SUCCEEDED and charged 0.0 -- free execution through the custom-code door. Now it
+            ;;reaches the guard that was always there, and the message proves WHICH guard refused.
+            (expect-failure "<<RT-I-001>> FIXED: a non-designated smart patron is refused BY NAME"
+                "Only the DALOS Account can be a Smart Patron"
+                (ref-IGNIS::C_Collect smart (ref-IGNIS::UDC_CustomCodeCumulator)))
+        ])
 )
 (print "===^^^===")
 (env-sigs [])
@@ -329,7 +331,9 @@
             ;;THE DESIGN VIOLATION, stated positively so it cannot pass vacuously: an ordinary user
             ;;account -- deployed from the client surface, owned by a user keyset, not hardcoded
             ;;anywhere -- carries the exemption that the design reserves for ONE system account.
-            (expect "<<RT-I-001>> an ORDINARY user smart account carries the gassless exemption"
+            ;;the FLAG is still "is smart" -- that is a correct account property and untouched.
+            ;;What changed is that the EXEMPTION no longer follows it (see RT-I-001g).
+            (expect "<<RT-I-001>> the smart-contract FLAG is still set on an ordinary user account"
                 true (ref-DALOS::UR_AccountType user-smart))
             ;;...and a standard account does not, so the flag really is "is smart", not "is the
             ;;designated payer". Without this the line above could be true of everything.
@@ -377,7 +381,15 @@
                 true (ref-DALOS::UR_AccountType (ref-DALOS::GOV|DALOS|SC_NAME)))
             ;;...and so is SWP's, which is passed as a PATRON by live liquidity code. Narrowing the
             ;;exemption to the designated account alone would start charging this one.
-            (expect "<<RT-I-001>> ...but so is SWP|SC_NAME, which live code passes AS A PATRON"
+            ;;CORRECTION (2026-09-15). This block first claimed SWP|SC_NAME was passed AS A
+            ;;PATRON by live liquidity code, and concluded the fix was unsafe. That was a
+            ;;NAME-COLLISION ERROR in the sweep: it matched callees by bare name, so VST::C_Freeze
+            ;;matched a DIFFERENT module's C_Freeze whose first parameter is `patron`. VST's is
+            ;;`freezer`; C_Sleep takes `sleeper`, C_Hibernate `hibernator`, SWPLC::C_Fuel
+            ;;`account`. Resolving each call site to its actual callee gives 37 genuine patron
+            ;;slots, ALL 37 in 03_DSP+.pact and none elsewhere -- which is exactly what the owner
+            ;;said from memory, and why the narrow fix was safe after all.
+            (expect "<<RT-I-001>> SWP|SC_NAME is smart, but is NOT a patron anywhere -- flag only"
                 true (ref-DALOS::UR_AccountType (ref-SWP::GOV|SWP|SC_NAME)))
         ])
 )

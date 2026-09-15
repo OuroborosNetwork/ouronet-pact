@@ -634,7 +634,7 @@ Every link measured at `RedTeam/[RT-I]_GasStation.repl`:
 
 **Composed:** pay once, or nothing, then submit unlimited transactions shaped
 `namespace + IGNIS.C_Collect(CustomCodeCumulator) + (let …) + <arbitrary code>`, paying **no IGNIS**,
-with Ouronet funding up to `DALOS|GAS-BUDGET` = **2,000,000 gas units** of KDA each time.
+with the gas station funding up to `DALOS|GAS-BUDGET` = **2,000,000 gas units** of **native STOA** each time. *(Corrected: there is no gas station for IGNIS — only for native STOA. IGNIS is the virtual-chain fee, and it is the IGNIS side that the exemption waived.)*
 
 > **This is `RT-A-001`'s shape in the gas station.** There a second door skipped the `lp-churn`
 > deterrent; here the gassless exemption skips the custom-code fee. A deterrent that can be declined
@@ -700,7 +700,57 @@ designated account rather than read the smart flag — and the only open item is
 which is the owner's to name. The Ouroboros daily minter is the cited consumer; the seven candidates
 are the system smart accounts above.
 
-#### The designated account exists — and the one-line fix is still unsafe
+#### FIXED — and the rule was already there, shadowed by the exemption
+
+*Two corrections to my own analysis are recorded here, because both were wrong in the owner's
+favour and both were caught by asking him.*
+
+**The guard already existed.** `IGNIS::UEV_Patron` is the owner's sentence in code:
+
+```pact
+(if (ref-DALOS::UR_AccountType patron)
+    (do (enforce (= patron DALOS|SC_NAME) "Only the DALOS Account can be a Smart Patron")
+        (ref-DALOS::CAP_EnforceAccountOwnership DALOS|SC_NAME))
+    (ref-DALOS::CAP_EnforceAccountOwnership patron))
+```
+
+**It was unreachable for exactly the accounts it is about.** `UEV_Patron` runs inside
+`IGNIS|C>COLLECT`, and `C_Collect` acquires that capability only when it actually collects:
+
+```pact
+(if (and (!= ignis-sum 0.0) (not iz-gassles-patron)) (with-capability (IGNIS|C>DC patron) …))
+```
+
+and `iz-gassles-patron` was `(UR_AccountType patron)` — **true for every smart account**. So a smart
+patron took the branch that *skips collection*, and skipping collection skipped the guard that says
+only one smart account may be a patron.
+
+> **The exemption jumped over the rule written to constrain it.** That is `RT-C-001`'s shadowed admin
+> gate, in the billing path: a guard present, correct, and never consulted for the inputs it was
+> written about.
+
+**The fix** (`02_IGNIS.pact`): `iz-gassles-patron` now compares the patron against
+`GOV|DALOS|SC_NAME` instead of reading the flag. The designated account stays exempt — the DSP daily
+minters are untouched and the gate is green — and every other smart patron now **reaches
+`UEV_Patron` and is refused by name**. Pinned at `<<RT-I-001g>>` as an `expect-failure` on the exact
+message, so the guard that refuses is identified rather than assumed.
+
+##### Two things I got wrong, and how
+
+1. **"No hardcoded check exists anywhere."** It does — `UEV_Patron`. I searched for the string
+   `gassles`, found two hits, and concluded from their absence elsewhere. *The rule was not named
+   after the exemption, so a search for the exemption could not find it.*
+2. **"The one-line fix is unsafe — SWP/AQP depend on the exemption."** A **name-collision error**:
+   my sweep matched callees by bare name, so `VST::C_Freeze` matched a *different* module's
+   `C_Freeze` whose first parameter is `patron`. VST's is `freezer`; `C_Sleep` takes `sleeper`,
+   `C_Hibernate` `hibernator`, `SWPLC::C_Fuel` `account`. Resolving every call site to its **actual
+   callee signature** gives **37 genuine `patron` slots, all 37 in `03_DSP+.pact`**, none elsewhere —
+   which is what the owner said from memory before any of it was measured.
+
+*This is the third false positive this round from matching Pact members by bare name, after the
+twin-divergence sweep and the canon diff. A bare name is not an identity in a module system.*
+
+#### The earlier analysis, retained for the reasoning *(its conclusion was wrong)*
 
 The owner remembered correctly. `2_CITIZEN/Stage_Z/03_DSP+.pact`:
 
