@@ -22,7 +22,7 @@
 ;;         1_SOVEREIGN/STAGE_01/2_Core/08_ATS.pact    (URCv_RTSplitAmounts, URC_RBT)
 ;;         1_SOVEREIGN/STAGE_01/Z_Reads/02_INFO-ONE+.pact (INFO_ATS|* wrappers)
 ;;
-;; REPL tests: <<RT-K-001a>> .. <<RT-K-001g>>
+;; REPL tests: <<RT-K-001a>> .. <<RT-K-001g>> (ATS) · <<RT-K-002a>> .. <<RT-K-002e>> (DPTF)
 ;;
 ;; Run: cd REPL && pact "RedTeam/[RT-K]_PreviewParity.repl"
 ;;
@@ -132,6 +132,103 @@
                       (at "ignis"
                           (ouronet-ns.INFO-ONE.INFO_ATS|Fuel KST.ANHD KST.ANHD healthy
                               (at 0 (ouronet-ns.ATS.UR_RewardTokenList healthy)) 100.0))) 0.0))
+        ])
+    ""
+)
+(env-sigs [])
+(print "")
+(print "===^^^===")
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RT-K-002 - the same question of the most-used family, and where the line is")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+;;==== RT-K-002 · 01 · structural impossibility vs transient affordability ====
+(print "--- [RT-K-002 · 01 · structural impossibility vs transient affordability] ---")
+;;<<RT-K-002>> FAMILY: K | STATUS: FIXED
+;;HYPOTHESIS: RT-K-001 swept ATS. The same question of DPTF -- the most-used family in the system.
+;;METHOD:     drive preview and exec at a token that DOES NOT EXIST, and separately at an amount the
+;;            holder cannot afford. Require the same message in the first case; in the second,
+;;            record what each does and decide nothing.
+;;RESULT:     CONFIRMED and FIXED for the structural case; the transient case is RECORDED, not
+;;            changed. `INFO_DPTF|Burn` and `INFO_DPTF|Mint` returned full quotes narrating
+;;            "Succesfully burned/minted 1.0 NOSUCHTOKEN-98c486052a51 ..." for a token that has
+;;            never existed, while their execs refused with UEV_id's own message. Repaired by
+;;            calling `UEV_id` inside `URCi_Burn` / `URCi_Mint` -- the readers BOTH paths share, so
+;;            one wording serves both. The affordability divergence is pinned as-is under
+;;            <<RT-K-002e>> for the owner to rule on.
+;;
+;;THE LINE THIS BLOCK DRAWS, because getting it wrong would mean bolting validation onto 401
+;;previews on my own authority:
+;;
+;;  STRUCTURAL impossibility -- the token does not exist, the pool index is zero, there is no
+;;      Hot-RBT. Nothing the caller does in this block makes the op available. A quote here is
+;;      simply WRONG, and `INFO_DPTF|Burn` was returning the post-text
+;;      "Succesfully burned 1.0 NOSUCHTOKEN-98c486052a51 on Account ..." -- narrating success for a
+;;      token that has never existed. FIXED: URCi_Burn / URCi_Mint now call `UEV_id`, the same
+;;      check the exec uses, so both refuse in one wording.
+;;
+;;  TRANSIENT affordability -- the balance is too low, the role is missing. These change between
+;;      the quote and the submission, and that is the normal life of a quote. `INFO_DPTF|Transfer`
+;;      quotes 99,999,999 BUSD against a balance of 8,929,990 and says
+;;      "Succesfully transfered ...". That is defensible AS A COST QUOTE: `post-text` reads as the
+;;      success TEMPLATE rather than a prediction, and a UI may well want the price before the user
+;;      has funded anything. It is also arguably a dry-run failure. THAT IS AN OWNER DECISION, not
+;;      mine, so <<RT-K-002e>> pins the CURRENT behaviour rather than changing it -- documented, and
+;;      impossible to alter silently.
+;;
+;;ALSO OBSERVED, and left alone deliberately: driven at a non-existent id, `DPTF|C_Transfer` and its
+;;preview BOTH give the raw `No value found in table ouronet-ns.DPTF_DPTF|PropertiesTable for key:`
+;;-- they are in PARITY, so it is not a family-K divergence, but neither carries the `UEV_id` check
+;;that `C_Burn` and `C_Mint` both have. That is the sibling-rule shape from RT-H-003 on a hotter
+;;path, and it is recorded rather than patched here because it changes a refusal MESSAGE on the most
+;;frequently called op in the system, which is exactly the kind of change that wants its own pass.
+;;
+(let
+    (
+        (bad:string "NOSUCHTOKEN-98c486052a51")
+        (real:string "BUSD-98c486052a51")
+        (big:decimal 99999999.0)
+        (r:module{TalosStageOne_ClientOneV2} TS01-C1)
+    )
+    (map print
+        [
+            (expect
+                (format "<<RT-K-002a>> the separating input, measured: {} does not exist; {} does" [bad real])
+                [false true]
+                [ (ouronet-ns.DPTF.UEV_CheckID bad) (ouronet-ns.DPTF.UEV_CheckID real) ])
+            (expect-failure "<<RT-K-002b>> Burn · PREVIEW refuses a non-existent token" "does not exist"
+                (ouronet-ns.INFO-ONE.INFO_DPTF|Burn KST.ANHD bad KST.ANHD 1.0))
+            (expect-failure "<<RT-K-002b>> Burn · EXEC   (same message)" "does not exist"
+                (r::DPTF|C_Burn KST.ANHD bad KST.ANHD 1.0))
+            (expect-failure "<<RT-K-002c>> Mint · PREVIEW refuses a non-existent token" "does not exist"
+                (ouronet-ns.INFO-ONE.INFO_DPTF|Mint KST.ANHD bad KST.ANHD 1.0 false))
+            (expect-failure "<<RT-K-002c>> Mint · EXEC   (same message)" "does not exist"
+                (r::DPTF|C_Mint KST.ANHD bad KST.ANHD 1.0 false))
+            ;;NON-VACUITY: the guard must not have turned these previews into functions that always
+            ;;throw. On a REAL token the quote still comes back.
+            (expect
+                (format "<<RT-K-002d>> ...and both previews still QUOTE the real token {}" [real])
+                true
+                (and (> (at "ignis-need" (at "ignis"
+                          (ouronet-ns.INFO-ONE.INFO_DPTF|Burn KST.ANHD real KST.ANHD 1.0))) 0.0)
+                     (> (at "ignis-need" (at "ignis"
+                          (ouronet-ns.INFO-ONE.INFO_DPTF|Mint KST.ANHD real KST.ANHD 1.0 false))) 0.0)))
+            ;;OWNER DECISION, PARKED: transient affordability. The preview quotes what the exec
+            ;;refuses. Pinned as-is so the behaviour is documented and cannot change unnoticed.
+            (expect
+                (format "<<RT-K-002e>> OPEN (owner): the transfer PREVIEW still quotes {} against a balance of {}"
+                    [big (ouronet-ns.DPTF.UR_AccountSupply real KST.ANHD)])
+                true
+                (> (at "ignis-need" (at "ignis"
+                      (ouronet-ns.INFO-ONE.INFO_DPTF|Transfer KST.ANHD real KST.ANHD KST.EMMA big))) 0.0))
+            (expect-failure
+                "<<RT-K-002e>> ...while the EXEC refuses it outright -- the divergence, recorded not judged"
+                "Cannot Debit DPTF"
+                (r::DPTF|C_Transfer KST.ANHD real KST.ANHD KST.EMMA big true))
         ])
     ""
 )

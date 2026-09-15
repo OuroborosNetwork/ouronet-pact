@@ -1747,6 +1747,15 @@
         )
     )
     (defun URCi_Burn:object{IgnisCollectorV2.OutputCumulator} (id:string account:string)
+        ;;REFUSAL PARITY (family K, 2026-09-15): this reader is shared by the exec's cumulator and
+        ;;by INFO_DPTF|Burn, and without this line the PREVIEW narrated
+        ;;"Succesfully burned 1.0 NOSUCHTOKEN-98c486052a51 on Account ..." for a token that does not
+        ;;exist, while C_Burn refuses with UEV_id's own message. A non-existent token is a
+        ;;STRUCTURAL impossibility -- no action by the caller makes the op available -- so the quote
+        ;;was simply wrong, not merely optimistic about a balance. Guarded HERE rather than in the
+        ;;INFO wrapper so both paths keep using one message.
+        ;;Pinned by RedTeam/[RT-K]_PreviewParity.repl <<RT-K-002b>>.
+        (UEV_id id)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
@@ -1755,6 +1764,15 @@
         )
     )
     (defun URCi_Mint:object{IgnisCollectorV2.OutputCumulator} (id:string account:string origin:bool)
+        ;;REFUSAL PARITY (family K, 2026-09-15): this reader is shared by the exec's cumulator and
+        ;;by INFO_DPTF|Mint, and without this line the PREVIEW narrated
+        ;;"Succesfully minted 1.0 NOSUCHTOKEN-98c486052a51 on Account ..." for a token that does not
+        ;;exist, while C_Mint refuses with UEV_id's own message. A non-existent token is a
+        ;;STRUCTURAL impossibility -- no action by the caller makes the op available -- so the quote
+        ;;was simply wrong, not merely optimistic about a balance. Guarded HERE rather than in the
+        ;;INFO wrapper so both paths keep using one message.
+        ;;Pinned by RedTeam/[RT-K]_PreviewParity.repl <<RT-K-002c>>.
+        (UEV_id id)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV2} IGNIS)

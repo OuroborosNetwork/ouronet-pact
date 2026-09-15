@@ -1407,9 +1407,41 @@ before it ever calls the cost reader. Fixing the first two left the quote still 
 Why Coil and Curl already agreed states the lesson positively: their guard lives in `URC_RBT`, a
 reader **both paths share**. Shared readers cannot drift.
 
-**Scope, honestly:** this swept **ATS only — 7 of 401 previews.** The method is cheap and
-mechanical; the hard part is finding the separating input. A pair with a zero index and no Hot-RBT
-made three divergences visible at once.
+### RT-K-002 — the same question of DPTF, and where the line is
+
+Extending the sweep to the most-used family drew a distinction that matters more than either
+finding, because getting it wrong would mean bolting validation onto 401 previews unilaterally.
+
+**Structural impossibility — a quote is simply wrong. FIXED.** `INFO_DPTF|Burn` and
+`INFO_DPTF|Mint` returned full quotes narrating *"Succesfully burned 1.0 NOSUCHTOKEN-98c486052a51
+on Account …"* for a token that has **never existed**, while their execs refused with `UEV_id`'s own
+message. Repaired by calling `UEV_id` inside `URCi_Burn` / `URCi_Mint` — the readers **both** paths
+share, so one wording serves both.
+
+**Transient affordability — an owner decision, recorded not changed.** `INFO_DPTF|Transfer` quotes
+**99,999,999 BUSD against a balance of 8,929,990** and says *"Succesfully transfered …"*. That is
+defensible *as a cost quote*: `post-text` reads as the success **template** rather than a
+prediction, and a UI may legitimately want the price before the user has funded anything. It is also
+arguably a dry-run failure. **That is a product decision about 401 previews**, so `<<RT-K-002e>>`
+pins the current behaviour rather than changing it — documented, and impossible to alter unnoticed.
+
+**Observed and deliberately left alone:** at a non-existent id, `DPTF|C_Transfer` **and** its
+preview both give the raw `No value found in table … DPTF|PropertiesTable for key:`. They are in
+**parity**, so not a family-K divergence — but neither carries the `UEV_id` check that `C_Burn` and
+`C_Mint` both have. The sibling-rule shape from RT-H-003, on a hotter path. Recorded rather than
+patched, because it changes a refusal *message* on the most frequently called op in the system.
+
+### The rule family K should be applied with
+
+1. **Does the condition change between quote and submit?** If no, the preview must refuse as the op
+   does. If yes, it is a product decision — record it, do not decide it.
+2. **A raw internal error in a preview is wrong under either answer** — `try` cannot catch an
+   arithmetic exception, so the caller cannot even handle it.
+3. **Fix by sharing the guard, never by copying the message.**
+
+**Scope, honestly:** ATS and DPTF — **9 of 401 previews.** The method is cheap and mechanical; the
+hard part is finding the separating input. A pair with a zero index and no Hot-RBT made three
+divergences visible at once.
 
 # Closing assessment
 
@@ -1428,8 +1460,8 @@ made three divergences visible at once.
 | H — Input domain | 3 |  | 3 |  |
 | I — Gas station payable surface | 1 |  | 1 |  |
 | J — Ledger conservation | 3 |  | 1 | 2 |
-| K — Preview/exec divergence | 1 |  | 1 |  |
-| **total** | **21** | **0** | **11** | **10** |
+| K — Preview/exec divergence | 2 |  | 2 |  |
+| **total** | **22** | **0** | **12** | **10** |
 <!-- REGISTER:END -->
 
 **Seven of fourteen attacks found a defect, and all seven are fixed and measured.** The table above
