@@ -138,8 +138,17 @@ sweep over zeros. `[6.5]_DPOF` must NOT be added — the Stage-2 AQP path self-l
 load re-issues MVST (duplicate insert); `ZALL.repl` carries the same note. Loading ATS+VST also
 raised RT-J-001's own DPTF coverage from 296 tokens / 739 rows to **297 / 745**.
 
-## Still unswept
+## DPDC — done (RT-J-003), and the two sons need DIFFERENT rules
 
-**DPDC** (collectables — DPNF/DPSF) has its own `UR_AccountSupply` returning an object, and
-`(keys (if son DPSF|T|AccountSupplies DPNF|T|AccountSupplies))` at `02_DPDC.pact:542`. It is
-Stage 2, so it needs a Stage-2 harness. That is the obvious next target for family J.
+- **DPSF**: `nonce-supply` IS a quantity; it equals the sum of `AccountSupplies` over holders.
+  72 nonces, 0 mismatches.
+- **DPNF**: `nonce-supply` is **NOT** a quantity — *"Always 1 for NFT, even when burned or wiped"*
+  (`01_DPDC-UDC.pact:55`). Possession is `AccountSupplies`; `nonce-holder = BAR` means
+  **inactivated**. Summed naively it reports 7 phantom leaks on a healthy ledger.
+
+Enumeration note: DPDC exposes only `URH_AS-Keys` (holdings). Ids and nonces are derived from
+holding rows, so sweep **1..`UR_NoncesUsed`** per discovered id rather than only the nonces that
+appear in holdings — a nonce carrying supply with no holder is precisely the leak worth finding,
+and it is invisible to a holdings-driven sweep.
+
+**All three asset families are now proven to conserve.**

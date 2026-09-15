@@ -38,7 +38,29 @@ CANON = {
     "distinct assertions written":            ["distinct assertions written"],
     "assertions **executed** per full gate run": ["assertions executed per full gate run"],
     "gate entrypoints":                       ["gate entrypoints"],
+    "per-function rows":                      ["per-function rows"],
+    # THE SUB-ROWS. Added 2026-09-15 after they were found stale by 926 and 175 respectively,
+    # sitting DIRECTLY BENEATH two rows this tool was already checking. Nothing had ever compared
+    # them, and their position made that invisible: a checker that covers some rows of a table
+    # reads, to anyone glancing at it, as covering the table.
+    "positive (`expect`)":                    ["positive (`expect`)"],
+    "negative (`expect-failure`)":            ["negative (`expect-failure`)"],
 }
+
+# WHY PROSE IS DELIBERATELY OUT OF SCOPE, and why this is not an oversight to be "fixed" later.
+# Extending this checker to figures written in prose ("N assertions", "N entrypoints") was tried on
+# 2026-09-15 and abandoned after a dry run, because most such numerals are FROZEN HISTORICAL RECORD
+# and rewriting them would destroy the audit trail:
+#
+#   DEFECT-LEDGER.md:238          "86 entrypoints, 21,527 assertions, still GREEN"  — a dated result
+#   REPL_TEST_ARCHITECTURE.md:262 "9209 assertions in 166 seconds"                  — a parallel run
+#   RED-TEAM-REPORT.md:850        "gate green at 21,588 assertions"                 — that stage
+#   REPL-ROUND-REPORT.md:69,82    "21,732 -> 21,511"                                — a worked example
+#
+# The last one matters most: it sits in the CURRENT-STATE document, so not even a per-document
+# opt-in separates live figures from frozen ones. The safe boundary is a LABELLED TABLE ROW, whose
+# label states that it is the current value. A figure written in prose is human-maintained here;
+# the honest move is to say so rather than to assume coverage that does not exist.
 # EVERY .md in ARCHITECTURE/ except the generated source itself. Deliberately a GLOB rather than a
 # list: at the time of writing only REPL-ROUND-REPORT.md carries labelled figure rows, so a list
 # would have been complete AND silently wrong the day someone adds a statistics table to another
@@ -90,10 +112,37 @@ def scan(stats_text, docs, strict=False):
                 errs.append(f"{name}: '{k2}' = {v:,} but REPL_SUITE_STATS.md says {want[k2]:,}")
     return want, errs
 
+ROW = re.compile(r'^(\|\s*(?:&nbsp;)*\s*)(.+?)(\s*\|\s*)(\*{0,2})([\d,]+)(\*{0,2})\s*\|\s*$', re.M)
+
+def rewrite(text, want):
+    """Rewrite every canonical LABELLED ROW to its canonical value, preserving that row's own
+    formatting -- the leading &nbsp; indent and whatever ** bolding it already carries. Rows whose
+    label is not canonical, and every figure written in prose, are left exactly as they were."""
+    n = [0]
+    def sub(m):
+        head, label, mid, pre, num, post = m.groups()
+        k = label.replace("**", "").strip()
+        if k not in want or int(num.replace(",", "")) == want[k]:
+            return m.group(0)
+        n[0] += 1
+        return f"{head}{label}{mid}{pre}{want[k]:,}{post} |"
+    return ROW.sub(sub, text), n[0]
+
 def main():
     stats = open(STATS, encoding="utf-8").read()
     docs = [(n, open(os.path.join(ARCH, n), encoding="utf-8").read()) for n in _narrative()]
     want, errs = scan(stats, docs, strict=True)
+    if "--write" in sys.argv and not [e for e in errs if "MISSING" in e]:
+        total = 0
+        for name, text in docs:
+            out, n = rewrite(text, want)
+            if n:
+                open(os.path.join(ARCH, name), "w", encoding="utf-8").write(out)
+                print(f"  rewrote {n} figure row(s) in {name}")
+                total += n
+        print(f"figure sync: wrote {total} row(s). "
+              f"NOTE: figures in PROSE are not touched -- see the header comment.")
+        return 0
     print(f"canonical figures from REPL_SUITE_STATS.md: "
           + ", ".join(f"{k}={v:,}" for k, v in sorted(want.items())))
     if errs:
@@ -118,7 +167,28 @@ def selftest():
     _, e = scan(s, [("prose.md", "the suite executed 21,732 assertions at that moment\n")])
     if e:
         print("SELFTEST FAILED: prose flagged as drift"); return 1
-    print("selftest ok (3 cases: match, drift, prose-exempt)")
+    # --write must FIX a drifted row, PRESERVE its formatting, and LEAVE PROSE ALONE. The last
+    # clause is the one worth a test: a rewriter that also "helpfully" corrected prose would
+    # silently rewrite every dated measurement in the defect ledger.
+    want = {"distinct assertions written": 5417, "gate entrypoints": 86}
+    mixed = ("| **distinct assertions written** | **5,399** |\n"
+             "| &nbsp;&nbsp;gate entrypoints | 12 |\n"
+             # a NON-canonical row that still ends in a number: spared by the LABEL whitelist,
+             # which is the real protection here -- not the row regex.
+             "| `.repl` files reachable from the gate | 306 |\n"
+             "the suite executed 21,732 assertions at that moment\n")
+    out, n = rewrite(mixed, want)
+    if n != 2:
+        print(f"SELFTEST FAILED: --write changed {n} rows, expected 2"); return 1
+    if "**5,417**" not in out:
+        print("SELFTEST FAILED: --write lost the ** bolding"); return 1
+    if "| &nbsp;&nbsp;gate entrypoints | 86 |" not in out:
+        print("SELFTEST FAILED: --write lost the &nbsp; indent"); return 1
+    if "21,732 assertions at that moment" not in out:
+        print("SELFTEST FAILED: --write rewrote a figure in PROSE"); return 1
+    if "| `.repl` files reachable from the gate | 306 |" not in out:
+        print("SELFTEST FAILED: --write touched a NON-canonical row"); return 1
+    print("selftest ok (6 cases: match, drift, prose-exempt, write-fixes, write-keeps-format, write-spares-prose+non-canonical rows)")
     return 0
 
 if __name__ == "__main__":

@@ -202,6 +202,12 @@ def main():
         A(f"| &nbsp;&nbsp;positive (`expect`) | {ex_pos:,} |")
         A(f"| &nbsp;&nbsp;negative (`expect-failure`) | {ex_neg:,} |")
         A(f"| gate entrypoints | {entries} |")
+    # PER-FUNCTION ROWS. Emitted as a LABELLED FIGURE, not just printed to stdout, because
+    # REPL-ROUND-REPORT.md cites it ("plus all N per-function rows") and nothing could check that
+    # cell: _figuresync only knows figures that appear in this table. It had drifted to the
+    # "distinct assertions written" value and stayed wrong across several rounds, because a human
+    # syncing figures by hand reaches for the nearest number of the right magnitude.
+    A(f"| per-function rows | {len(rows):,} |")
     A("")
     A("*Executed* exceeds *distinct* because shared files run once per entrypoint that loads them. "
       "**Quote the distinct figure for \"how many tests exist\"**; the executed figure answers "

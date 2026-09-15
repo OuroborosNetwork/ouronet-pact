@@ -1209,6 +1209,36 @@ A future wrapper that plumbed `iz-special` through to its caller — the obvious
 LP-style names are ever wanted — would open all three privileges at once, in three modules **none of
 which mention `iz-special`**. The refusal is pinned by message so that wrapper cannot land quietly.
 
+## Stage 13 — Family J completed: all three asset families *(2026-09-15)*
+
+### RT-J-003 — REFUSED: the collectable ledgers
+
+DPDC is the last asset family, and the only one whose two halves are **not the same kind of thing**:
+
+| | `nonce-supply` | possession |
+|---|---|---|
+| **DPSF** (semi-fungible) | a real quantity | sum of `AccountSupplies` over holders |
+| **DPNF** (non-fungible) | *"Always 1 … even when burned or wiped"* | `AccountSupplies` + `nonce-holder = BAR` means **inactivated** |
+
+Swept: **82 DPSF + 26 DPNF holdings rows, 72 DPSF nonces, 13 DPNF nonces.** DPSF conserves exactly.
+DPNF is consistent under its own rule — 6 active nonces each with exactly one full-account holder,
+7 inactive held by nobody, and `nonce-supply` the constant 1 throughout.
+
+**Summed naively, DPNF looks broken**: seven nonces report supply 1 against zero holdings. They are
+not leaks, and `<<RT-J-003e>>` pins the constant itself so that if `nonce-supply` ever *becomes* a
+quantity for NFTs, the sweep goes red and tells whoever changed it that its meaning moved.
+
+`<<RT-J-003c>>` is also **RT-D-002's safety premise**. That fix rested on a single measurement — that
+`AccountSupplies` is reliably maintained for NFTs. It is now a standing assertion rather than a
+memory.
+
+**Mutation-tested one control per assertion**, because RT-J-002 showed that a single perturbation
+reddening several lines proves they are one assertion wearing several labels. Each of the five
+reddens exactly its own line and nothing else.
+
+> **All three asset families are now proven to conserve**: DPTF (incl. the two core tokens), DPOF
+> (three levels, including the cached aggregate), DPDC (both sons, under the correct rule for each).
+
 # Closing assessment
 
 ## The register
@@ -1225,8 +1255,8 @@ which mention `iz-special`**. The refusal is pinned by message so that wrapper c
 | G — Hostile citizen module | 2 |  |  | 2 |
 | H — Input domain | 2 |  | 2 |  |
 | I — Gas station payable surface | 1 |  | 1 |  |
-| J — Ledger conservation | 2 |  | 1 | 1 |
-| **total** | **17** | **0** | **8** | **9** |
+| J — Ledger conservation | 3 |  | 1 | 2 |
+| **total** | **18** | **0** | **8** | **10** |
 <!-- REGISTER:END -->
 
 **Seven of fourteen attacks found a defect, and all seven are fixed and measured.** The table above

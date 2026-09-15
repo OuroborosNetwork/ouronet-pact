@@ -1,0 +1,184 @@
+;;
+;; REPL/RedTeam/[RT-J2]_Conservation-Collectables.repl — FAMILY J, Stage 2: collectables.
+;;
+;; "Does the money add up?" — third and last asset family.
+;;
+;; [RT-J]_Conservation.repl covers DPTF (true fungibles, incl. the two CORE tokens) and DPOF
+;; (ortofungibles). DPDC is the remaining one, and it is the only family whose two halves are
+;; NOT the same kind of thing:
+;;
+;;   DPSF (semi-fungible) — `nonce-supply` IS a quantity. It must equal the sum of what accounts
+;;                          hold of that nonce. Ordinary conservation.
+;;   DPNF (non-fungible)  — `nonce-supply` is NOT a quantity. The schema says so outright:
+;;                          "Always 1 for NFT, even when burned or wiped". Possession lives in
+;;                          DPxF|T|AccountSupplies, and `nonce-holder = BAR` means INACTIVATED.
+;;
+;; Summing the second one as if it were the first is exactly the mistake this file exists to stop
+;; anyone repeating: it reports six phantom leaks on a healthy ledger.
+;;
+;; Legend:
+;;   <<RT-J-003a>>  partition — every holdings row parses and attributes to exactly one collection
+;;   <<RT-J-003b>>  DPSF: per-nonce supply == sum of holdings
+;;   <<RT-J-003c>>  DPNF: an ACTIVE nonce has exactly ONE full-account holder, and it is the right one
+;;   <<RT-J-003d>>  DPNF: an INACTIVE nonce is held by nobody
+;;   <<RT-J-003e>>  DPNF: `nonce-supply` is the constant 1 — the convention itself, pinned
+;;
+;; Source: 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/02_DPDC.pact      (UR_NonceSupply / UR_AccountSupply)
+;;         1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/01_DPDC-UDC.pact  (DPDC|NonceElement schema)
+;;
+;; REPL tests: <<RT-J-003a>> <<RT-J-003b>> <<RT-J-003c>> <<RT-J-003d>> <<RT-J-003e>>
+;;
+;; Run: cd REPL && pact "RedTeam/[RT-J2]_Conservation-Collectables.repl"
+;;
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+(load "../deploy-stage02.repl")
+(load "../Stage_02/[6.1.2]_DPDC-FRAGMENTS.repl")
+(load "../Stage_02/[6.1.3]_DPDC-S.repl")
+(load "../Stage_02/[6.1.4]_DPDC-NF.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "RT-J-003 - do the collectable ledgers add up")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== RT-J-003 · 01 · DPSF conserves; DPNF does something else entirely ====
+(print "--- [RT-J-003 · 01 · DPSF conserves; DPNF does something else entirely] ---")
+;;<<RT-J-003>> FAMILY: J | STATUS: REFUSED
+;;HYPOTHESIS: DPDC stores possession in DPxF|T|AccountSupplies, keyed <account>+BAR+<id>+BAR+<nonce>,
+;;            beside a per-nonce `nonce-supply` on the nonce row itself. Two tables, two writers,
+;;            nothing comparing them -- the shape that produced RT-J-001's live defect in DPTF.
+;;METHOD:     enumerate every holdings row with `URH_AS-Keys` for BOTH sons, split each key on BAR
+;;            (ids themselves contain bars -- `E|DH-...` -- so the middle segments are rejoined,
+;;            never split on the first bar), and for each collection sweep EVERY nonce 1..NoncesUsed
+;;            rather than only the nonces that happen to appear in a holdings row. A nonce carrying
+;;            supply with NO holder is precisely the leak worth finding, and it is invisible to a
+;;            sweep driven by holdings alone.
+;;RESULT:     REFUSED. DPSF conserves exactly across every nonce. DPNF is consistent under its OWN
+;;            rule, which is not conservation: supply is the constant 1, an ACTIVE nonce has exactly
+;;            one full-account holder, and an INACTIVE one has none.
+;;
+;;THE MISREADING THIS FILE EXISTS TO PREVENT. Summed naively, DPNF looks broken: six `CNF` nonces
+;;and one `TSFN` nonce report supply 1 against zero holdings. They are not leaks. `nonce-supply` for
+;;an NFT is documented as "Always 1 ... even when burned or wiped" (01_DPDC-UDC.pact:55) and
+;;`nonce-holder = BAR` means the nonce is INACTIVATED. So <<RT-J-003e>> pins the constant itself:
+;;if `nonce-supply` ever becomes a real quantity for NFTs, this goes red and whoever made that
+;;change is told that the sweep above now means something different.
+;;
+;;<<RT-J-003c>> IS ALSO RT-D-002's SAFETY PREMISE. That fix added a full-account possession check to
+;;`UEV_NonceQuantityInclusion` on the strength of one measurement -- that AccountSupplies is reliably
+;;maintained for NFTs. Here that measurement becomes a standing assertion instead of a memory.
+;;
+;;MUTATION-TESTED, one control PER ASSERTION. RT-J-002 established why that matters: a single
+;;perturbation reddening several assertions proves they are one assertion wearing several labels,
+;;and a single perturbation that leaves one green proves nothing about it at all. Each of these
+;;reddens EXACTLY its own line and nothing else:
+;;
+;;   003a   count rows with parts > 2 instead of < 3
+;;   003b   compare DPSF supply against (held + 1)
+;;   003c   flip the holder short-form match to !=
+;;   003d   flag inactive nonces with n = 0 instead of n != 0
+;;   003e   assert the NFT supply constant is 2 instead of 1
+;;
+(let*
+    (
+        (ref-U|LST:module{StringProcessorV2} U|LST)
+        (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+        (bar:string "|")
+        (toint (lambda (x:string)
+            (if (= (take 1 x) "-") (* -1 (str-to-int (drop 1 x))) (str-to-int x))))
+        ;;Parse every holdings key into (account, id, nonce). `parts` < 3 would mean a key shape this
+        ;;code cannot read, which would silently shrink every sweep below -- counted, not assumed.
+        (rows (lambda (son:bool)
+            (map (lambda (k:string)
+                (let* ((p:[string] (ref-U|LST::UC_SplitString bar k)) (n:integer (length p)))
+                    { "acct"  : (at 0 p)
+                    , "id"    : (fold (lambda (a:string j:integer)
+                                    (if (= a "") (at j p) (format "{}|{}" [a (at j p)])))
+                                  "" (enumerate 1 (- n 2)))
+                    , "nonce" : (toint (at (- n 1) p))
+                    , "parts" : n }))
+              (ouronet-ns.DPDC.URH_AS-Keys son))))
+        (sft:[object] (rows true))
+        (nft:[object] (rows false))
+        (malformed:integer (length (filter (lambda (o:object) (< (at "parts" o) 3)) (+ sft nft))))
+        (ids-of (lambda (rs:[object])
+            (fold (lambda (a:[string] o:object)
+                (if (contains (at "id" o) a) a (+ a [(at "id" o)]))) [] rs)))
+        ;;Every nonce that exists for a discovered collection, plus any nonce named by a holdings
+        ;;row (fragment nonces are negative and sit outside the 1..NoncesUsed range).
+        (all-nonces (lambda (rs:[object] son:bool id:string)
+            (let ((used:integer (ouronet-ns.DPDC.UR_NoncesUsed id son)))
+                (fold (lambda (b:[integer] o:object)
+                        (if (and (= (at "id" o) id) (not (contains (at "nonce" o) b)))
+                            (+ b [(at "nonce" o)]) b))
+                    (if (> used 0) (enumerate 1 used) []) rs))))
+        (held (lambda (rs:[object] son:bool id:string nc:integer)
+            (fold (+) 0 (map (lambda (o:object)
+                    (at "supply" (ouronet-ns.DPDC.UR_AccountSupply (at "acct" o) id son nc)))
+                (filter (lambda (o:object)
+                    (and (= (at "id" o) id) (= (at "nonce" o) nc))) rs)))))
+        ;;--- DPSF: ordinary conservation, per nonce ---
+        (sft-bad:[string] (fold (lambda (acc:[string] id:string)
+            (+ acc (fold (lambda (a2:[string] nc:integer)
+                    (if (= (ouronet-ns.DPDC.UR_NonceSupply id true nc) (held sft true id nc))
+                        a2 (+ a2 [(format "{}#{}" [id nc])])))
+                  [] (all-nonces sft true id))))
+          [] (ids-of sft)))
+        (sft-checked:integer (fold (+) 0 (map (lambda (id:string)
+            (length (all-nonces sft true id))) (ids-of sft))))
+        ;;--- DPNF: not conservation. Active <=> exactly one full-account holder, and the right one.
+        (nft-rows:[object] (fold (lambda (acc:[object] id:string)
+            (+ acc (map (lambda (nc:integer)
+                (let* ((h:string (ouronet-ns.DPDC.UR_NonceHolder id false nc))
+                       (holders:[object] (filter (lambda (o:object)
+                            (and (and (= (at "id" o) id) (= (at "nonce" o) nc))
+                                 (> (at "supply" (ouronet-ns.DPDC.UR_AccountSupply
+                                        (at "acct" o) id false nc)) 0))) nft)))
+                    { "tag"    : (format "{}#{}" [id nc])
+                    , "active" : (!= h bar)
+                    , "n"      : (length holders)
+                    , "one"    : (if (= (length holders) 1)
+                                     (= (ref-I|OURONET::OI|UC_ShortAccount (at "acct" (at 0 holders))) h)
+                                     false)
+                    , "supply" : (ouronet-ns.DPDC.UR_NonceSupply id false nc) }))
+              (let ((used:integer (ouronet-ns.DPDC.UR_NoncesUsed id false)))
+                  (if (> used 0) (enumerate 1 used) [])))))
+          [] (ids-of nft)))
+        (active:[object] (filter (lambda (r:object) (at "active" r)) nft-rows))
+        (inactive:[object] (filter (lambda (r:object) (not (at "active" r))) nft-rows))
+        (bad-active:[string] (map (lambda (r:object) (at "tag" r))
+            (filter (lambda (r:object) (or (!= (at "n" r) 1) (not (at "one" r)))) active)))
+        (bad-inactive:[string] (map (lambda (r:object) (at "tag" r))
+            (filter (lambda (r:object) (!= (at "n" r) 0)) inactive)))
+        (bad-supply:[string] (map (lambda (r:object) (at "tag" r))
+            (filter (lambda (r:object) (!= (at "supply" r) 1)) nft-rows)))
+    )
+    (map print
+        [
+            (expect
+                (format "<<RT-J-003a>> all {} DPSF + {} DPNF holdings rows parse into account/id/nonce"
+                    [(length sft) (length nft)])
+                0 malformed)
+            (expect
+                (format "<<RT-J-003b>> DPSF: per-nonce supply == sum of holdings, {} nonces swept; offenders: {}"
+                    [sft-checked sft-bad])
+                [] sft-bad)
+            (expect
+                (format "<<RT-J-003c>> DPNF: each of the {} ACTIVE nonces has exactly ONE full-account holder, and its short form is the stored holder; offenders: {}"
+                    [(length active) bad-active])
+                [] bad-active)
+            (expect
+                (format "<<RT-J-003d>> DPNF: each of the {} INACTIVE nonces is held by nobody; offenders: {}"
+                    [(length inactive) bad-inactive])
+                [] bad-inactive)
+            (expect
+                (format "<<RT-J-003e>> DPNF: `nonce-supply` is the constant 1 across all {} nonces -- it is a marker, not a quantity; offenders: {}"
+                    [(length nft-rows) bad-supply])
+                [] bad-supply)
+        ])
+    ""
+)
+(print "")
+(print "===^^^===")
+(commit-tx)
