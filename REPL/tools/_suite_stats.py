@@ -23,7 +23,14 @@ def _newest_gate():
     """Most recent gate output. Hardcoding one path meant the report silently quoted a stale run
     after the next gate wrote to a different file."""
     import glob as _g
-    outs = [f for f in _g.glob("/tmp/gate*.out") if "GATE GREEN" in open(f, errors="ignore").read()]
+    # Both extensions, because the convention is `.log` in practice and `.out` was what this
+    # globbed (2026-09-15). The mismatch cost two headline rows: with no match this returns None,
+    # the `if ex_tot:` block below is skipped, and the report is written WITHOUT "assertions
+    # executed per full gate run" or "gate entrypoints" -- silently. _figuresync then reported
+    # "clean" while no longer checking either figure, because its canonical source had stopped
+    # containing them. A generator that degrades quietly takes its checker down with it.
+    outs = [f for f in (_g.glob("/tmp/gate*.out") + _g.glob("/tmp/gate*.log"))
+            if "GATE GREEN" in open(f, errors="ignore").read()]
     return max(outs, key=os.path.getmtime) if outs else None
 
 
@@ -184,6 +191,12 @@ def main():
     A("| | |")
     A("|---|---:|")
     A(f"| **distinct assertions written** | **{distinct:,}** |")
+    if not ex_tot:
+        sys.exit("_suite_stats: REFUSING to write a report with no gate figures.\n"
+                 "  No green gate output found in /tmp/gate*.{out,log}.\n"
+                 "  Run `python3 REPL/tools/_gate.py` first, or re-run this with --gate.\n"
+                 "  (Writing the report anyway silently drops 'assertions executed per full gate\n"
+                 "   run' and 'gate entrypoints', and _figuresync then stops checking them.)")
     if ex_tot:
         A(f"| assertions **executed** per full gate run | **{ex_tot:,}** |")
         A(f"| &nbsp;&nbsp;positive (`expect`) | {ex_pos:,} |")

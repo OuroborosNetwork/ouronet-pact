@@ -54,7 +54,7 @@ def rows(text):
         out[m.group(1).strip().strip('*').strip()] = int(m.group(2).replace(",", ""))
     return out
 
-def scan(stats_text, docs):
+def scan(stats_text, docs, strict=False):
     canon, errs = rows(stats_text), []
     want = {}
     for slabel, aliases in CANON.items():
@@ -63,6 +63,26 @@ def scan(stats_text, docs):
             if k.replace("**", "") == key:
                 for a in aliases:
                     want[a] = v
+    # A CANONICAL FIGURE THAT VANISHES FROM THE SOURCE MUST BE AN ERROR, NOT A QUIET NARROWING.
+    # 2026-09-15: _suite_stats.py globbed /tmp/gate*.out while the convention is /tmp/gate*.log, so
+    # it found no gate output, skipped its `if ex_tot:` block, and wrote a report with neither
+    # "assertions executed per full gate run" nor "gate entrypoints". This checker then reported
+    # CLEAN -- truthfully, about the one figure it could still find. Coverage had silently dropped
+    # from three figures to one, and nothing said so.
+    # `strict` only for the REAL stats file: the selftest feeds a synthetic table that
+    # deliberately carries one figure, and a missing-figure error there would be noise.
+    missing = ([a for slabel, aliases in CANON.items() for a in aliases if a not in want]
+               if strict else [])
+    if missing:
+        print(f"\n{len(missing)} CANONICAL FIGURE(S) MISSING from {os.path.basename(STATS)}:")
+        for a in missing:
+            print(f"   {a}")
+        print("\nThe generated source no longer carries these, so nothing is checking the\n"
+              "documents' claims about them. Regenerate with:\n"
+              "   python3 REPL/tools/_gate.py && python3 REPL/tools/_suite_stats.py")
+        errs += [f"{os.path.basename(STATS)}: canonical figure '{a}' is MISSING" for a in missing]
+        return want, errs
+
     for name, text in docs:
         for k, v in rows(text).items():
             k2 = k.replace("**", "")
@@ -73,7 +93,7 @@ def scan(stats_text, docs):
 def main():
     stats = open(STATS, encoding="utf-8").read()
     docs = [(n, open(os.path.join(ARCH, n), encoding="utf-8").read()) for n in _narrative()]
-    want, errs = scan(stats, docs)
+    want, errs = scan(stats, docs, strict=True)
     print(f"canonical figures from REPL_SUITE_STATS.md: "
           + ", ".join(f"{k}={v:,}" for k, v in sorted(want.items())))
     if errs:

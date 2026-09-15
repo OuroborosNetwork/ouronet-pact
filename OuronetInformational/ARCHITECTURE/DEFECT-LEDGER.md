@@ -229,6 +229,74 @@ Worth recording about the guard itself: after this round of generator fixes, `_p
 **fired unprompted** on the drift the regeneration had just created in `IGNIS-PRICING.md`. That is
 the check working in the workflow rather than in a selftest.
 
+### GS-14 — the stats generator degraded silently, and took its checker with it *(FOUND + FIXED 2026-09-15)*
+
+Adding GS-13's two pins moved the assertion count 21,519 → 21,523, so `REPL_SUITE_STATS.md` had to be
+regenerated. `_figuresync --check` reported **clean** before the regeneration — truthfully, and
+uselessly: it compares the narrative documents against the stats file, and **nothing compared the
+stats file against a live gate.** One link in the chain had never been verified.
+
+Regenerating exposed something worse. `_suite_stats.py` locates the newest green gate output by
+globbing **`/tmp/gate*.out`**, while the convention in practice is **`/tmp/gate*.log`**. With no
+match it returns `None`, the `if ex_tot:` block is skipped, and the report is written **without
+"assertions executed per full gate run" and without "gate entrypoints"** — no warning, exit 0.
+
+Then the second-order failure: `_figuresync`'s canonical figures come from that file, so its
+coverage **silently dropped from three figures to one**, and it printed `clean`. *A generator that
+degrades quietly takes its checker down with it, and the checker reports success about the coverage
+it just lost.*
+
+Both halves fixed:
+
+* `_suite_stats.py` now globs both extensions and **refuses to write a report at all** when no green
+  gate output exists, naming the two rows that would have gone missing.
+* `_figuresync.py` now treats a **canonical figure absent from the source** as an error, not as
+  nothing to check. Proven by deleting the `gate entrypoints` row: exit 1, `canonical figure 'gate
+  entrypoints' is MISSING`. Applied with a `strict` flag so the synthetic selftest — which
+  deliberately feeds a one-figure table — is unaffected.
+
+This is the fourth distinct instance this round of the same shape: **a true report whose truth had
+stopped covering the thing it was cited for.**
+
+### GS-13 — GS-04's own fix was pinned on one of three twins *(FOUND + FIXED 2026-09-15)*
+
+`_info_measured.py` answers the owner's first rule — *"the INFO function must output the exact same
+cost as the real execution function"* — and reported **398 measured, 0 named-but-unmeasured**. The
+line that mattered was the fourth: **14 previews are never named in any live `.repl` at all.** Two of
+them were **`INFO_SWP|IssueStablePool` and `INFO_SWP|IssueWeightedPool`** — two of the three previews
+GS-04 was about.
+
+`DEFPACT-BILLING.repl`'s own header names all three and pinned one. The exec side of the other two
+runs in `[6.3]_SWP.repl`, but across `commit-tx` boundaries, so nothing had ever compared either
+preview to either charge. *The covered twin was the one I had fixed.*
+
+**Negative control, run before trusting the new pins.** Re-pointing **only**
+`INFO_SWP|IssueStablePool` back at the pre-GS-04 `URCi_Issue`:
+
+| | quoted | charged | delta |
+|---|---:|---:|---:|
+| `DPB-02` Standard (the existing pin) | 2920.30 | 2920.30 | **0.00 — stayed GREEN** |
+| `DPB-03` Stable (new) | **3265.33** | 2919.77 | **−345.56 — RED** |
+| `DPB-04` Weighted (new) | 2919.77 | 2919.77 | 0.00 (untouched) |
+
+**−345.56 is GS-04's own figure** (652 raw × the patron's 0.53 discount). So the two twins carried
+the identical latent over-quote, and the existing pin could not see it: re-pointing either back at
+the old reader would have left the gate green and shipped a 652-raw-IGNIS over-quote on two of three
+pool-issuance previews.
+
+**Three real business rules were discovered by running the new blocks**, each on a separate attempt,
+and each is a rule the harness now documents rather than a harness quirk:
+
+1. `SWPI::UEV_Issue` — the **first** pool token must be *directly pooled with a Principal* (`USDC`
+   first failed; `BUSD` passes).
+2. For a **weighted** pool (`amp = -1.0`) the first token must **be** a Principal, not merely
+   neighbour one (`BUSD` first failed; `SSTOA` passes). Two different enforces, two different
+   strictnesses, on ops that look symmetrical from outside.
+3. A **minimum pool worth in WSTOA** — `100 / 1000 / 1000` did not clear the spawn limit.
+
+*Fixing a defect and pinning one member of its family leaves the family unpinned.* GS-04's entry
+already said "three previews"; the pin said one.
+
 ### The ungated-checker sweep — generalising GS-12 *(2026-09-15)*
 
 `canon_check.py` was a checker nobody ran, and running it changed what was known about the repo.
@@ -247,7 +315,7 @@ position. All five were run.
 
 **`_vacuous.py --check` is now fatal in the gate.** An assertion that cannot fail is a green light
 wired to nothing, and it is indistinguishable from a real one in every summary the gate prints — it
-counts toward the 21,519, it shows in the `+` column, and it never goes red. I wrote one myself this
+counts toward the 21,523, it shows in the `+` column, and it never goes red. I wrote one myself this
 month (`step1 > discount × 951`, which the defect it was written for would have passed). Proven by
 injecting `(expect "…" 42 42)`: the check exits 1 and names the site. Only VACUOUS is fatal; WEAK
 stays advisory, because *"it runs at all"* is sometimes genuinely the assertion.

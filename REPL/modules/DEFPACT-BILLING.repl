@@ -13,6 +13,17 @@
 ;; harness could therefore only ever see ONE STEP of a multi-step op, and comparing one step's
 ;; charge to a whole-op quote is not a test, it is a mismatch waiting to be explained away.
 ;;
+;; ALL THREE GS-04 PREVIEWS ARE NOW PINNED (2026-09-15). This file originally pinned ONE of the
+;; three it names below -- DPB-02, Standard -- and `_info_measured.py --gaps` showed the other
+;; two were NEVER NAMED in any live .repl. Their exec side runs in [6.3]_SWP.repl, but across
+;; commit-tx boundaries, so nothing had ever compared either preview to either charge.
+;; NEGATIVE CONTROL, run before adding them: re-pointing ONLY INFO_SWP|IssueStablePool back at
+;; URCi_Issue left DPB-02 GREEN and turned DPB-03 RED at quoted=3265.33 charged=2919.77,
+;; delta -345.56 -- the SAME figure as GS-04's own control (652 raw x the patron's 0.53
+;; discount). So the twins carried the identical latent over-quote and the existing pin was
+;; blind to it: a defect surviving in one of three symmetrical ops, hidden by the one that was
+;; fixed.
+;;
 ;; WHAT THE GAP COST. GS-04: three previews -- INFO_SWP|IssueStablePool, |IssueStandardPool,
 ;; |IssueWeightedPool -- routed through SWPI::URCi_Issue, a reader tuned to the SINGLE-TX
 ;; SWPI::C_Issue, while the op they preview is the DEFPACT MTX-SWP::MTX|C_Issue. FOUR preview legs
@@ -236,6 +247,199 @@
                         ;;non-vacuity: a quote of zero against a charge of zero would satisfy the
                         ;;line above while proving nothing about either.
                         (expect "<<DPB-02>> ...and issuing a pool is a real, non-zero charge"
+                            true (> total 0.0))
+                    ]
+                )
+            )
+        )
+    )
+    ""
+)
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "DPB-03 - the STABLE pool defpact, preview vs charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== DPB-03 · 01 · the preview and the defpact, bracketed together ====
+(print "--- [DPB-03 · 01 · the preview and the defpact, bracketed together] ---")
+;;<<DPB-03>> THE OTHER TWO THIRDS OF GS-04.
+;;
+;;This file's own header names THREE previews that shared the wrong reader --
+;;INFO_SWP|IssueStablePool, |IssueStandardPool and |IssueWeightedPool -- and then pinned exactly
+;;ONE of them (DPB-02, Standard). `_info_measured.py --gaps` says the quiet part out loud: the
+;;other two are NEVER NAMED in any live .repl. The exec side of both runs in [6.3]_SWP.repl, but
+;;across commit-tx boundaries, so nothing has ever compared either preview to either charge.
+;;
+;;That is the exact shape this round kept finding and that I wrote down as a rule: A DEFECT
+;;SURVIVING IN ONE OF TWO SYMMETRICAL OPS HIDES LONGEST, BECAUSE THE WORKING TWIN MAKES THE FAMILY
+;;LOOK COVERED. Here the covered twin was the one I fixed. All three route through the same
+;;SWPI::URCi_IssuePool now, so re-pointing any ONE of them back at URCi_Issue would leave DPB-02
+;;green and ship the over-quote on the other two.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+    )
+    (let
+        (
+            (split-stoa:[decimal]
+                (ref-DALOS::URC_SplitSTOAPrices patron
+                    (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))))
+            (pool-tokens:[object{SwapperV4.PoolTokens}]
+                [
+                    ;;BUSD leads because SWPI::UEV_Issue enforces that the FIRST pool token is
+                    ;;directly pooled with a Principal token. USDC first failed exactly there --
+                    ;;a real business rule, caught on the first run of this block.
+                    { "token-id":  "BUSD-98c486052a51", "token-supply": 1000.0}
+                    { "token-id":  "USDC-98c486052a51", "token-supply": 1000.0}
+                    { "token-id":  "USDD-98c486052a51", "token-supply": 1000.0}
+                ]
+            )
+        )
+        (env-sigs
+            [
+                { "key": "PK_AncientHodler", "caps": [] }
+                { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+                  "caps":
+                    [
+                        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                            "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                            "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                            "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                            "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa))
+                    ]
+                }
+            ]
+        )
+        (let
+            (
+                (quoted:decimal
+                    (at "ignis-need" (at "ignis"
+                        (INFO-ONE.INFO_SWP|IssueStablePool patron patron pool-tokens 10.0 85.0 false))))
+                (b0:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            )
+            (TS01-CP.SWP|C_IssueStablePool patron patron pool-tokens 10.0 85.0 false)
+            (continue-pact 1)
+            (continue-pact 2)
+            (let
+                (
+                    (total:decimal (- b0 (ref-DALOS::UR_TF_AccountSupply patron false)))
+                )
+                (map print
+                    [
+                        (format "<<DPB-03>> quoted={} charged={} delta={}"
+                            [quoted total (- total quoted)])
+                        (expect "<<DPB-03>> INFO_SWP|IssueStablePool's quote equals what the DEFPACT charged"
+                            total quoted)
+                        (expect "<<DPB-03>> ...and issuing a pool is a real, non-zero charge"
+                            true (> total 0.0))
+                    ]
+                )
+            )
+        )
+    )
+    ""
+)
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "DPB-04 - the WEIGHTED pool defpact, preview vs charge")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== DPB-04 · 01 · the preview and the defpact, bracketed together ====
+(print "--- [DPB-04 · 01 · the preview and the defpact, bracketed together] ---")
+;;<<DPB-04>> THE OTHER TWO THIRDS OF GS-04.
+;;
+;;This file's own header names THREE previews that shared the wrong reader --
+;;INFO_SWP|IssueStablePool, |IssueStandardPool and |IssueWeightedPool -- and then pinned exactly
+;;ONE of them (DPB-02, Standard). `_info_measured.py --gaps` says the quiet part out loud: the
+;;other two are NEVER NAMED in any live .repl. The exec side of both runs in [6.3]_SWP.repl, but
+;;across commit-tx boundaries, so nothing has ever compared either preview to either charge.
+;;
+;;That is the exact shape this round kept finding and that I wrote down as a rule: A DEFECT
+;;SURVIVING IN ONE OF TWO SYMMETRICAL OPS HIDES LONGEST, BECAUSE THE WORKING TWIN MAKES THE FAMILY
+;;LOOK COVERED. Here the covered twin was the one I fixed. All three route through the same
+;;SWPI::URCi_IssuePool now, so re-pointing any ONE of them back at URCi_Issue would leave DPB-02
+;;green and ship the over-quote on the other two.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (patron:string KST.ANHD)
+    )
+    (let
+        (
+            (split-stoa:[decimal]
+                (ref-DALOS::URC_SplitSTOAPrices patron
+                    (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))))
+            (pool-tokens:[object{SwapperV4.PoolTokens}]
+                [
+                    ;;A WEIGHTED pool is stricter than a stable one: SWPI::UEV_Issue enforces
+                    ;;that the first token IS a Principal (amp = -1.0 branch), not merely that it
+                    ;;neighbours one. BUSD first failed there after USDC had already failed the
+                    ;;weaker neighbour rule for DPB-03 -- two different enforces, two runs, both
+                    ;;real business rules rather than harness noise.
+                    ;;...and a THIRD rule underneath those two: SWPI::UEV_Issue enforces a
+                    ;;minimum pool worth in WSTOA ("More liquidity is needed to open a new pool!"),
+                    ;;which 100/1000/1000 did not clear.
+                    { "token-id":  (ref-DALOS::UR_SilverStoaID),  "token-supply": 2000.0}
+                    { "token-id":  "AUSD-98c486052a51", "token-supply": 50000.0}
+                    { "token-id":  "CUSD-98c486052a51", "token-supply": 50000.0}
+                ]
+            )
+        )
+        (env-sigs
+            [
+                { "key": "PK_AncientHodler", "caps": [] }
+                { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+                  "caps":
+                    [
+                        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                            "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                            "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                            "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                            "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa))
+                    ]
+                }
+            ]
+        )
+        (let
+            (
+                (quoted:decimal
+                    (at "ignis-need" (at "ignis"
+                        (INFO-ONE.INFO_SWP|IssueWeightedPool patron patron pool-tokens 10.0 [0.3 0.5 0.2] false))))
+                (b0:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
+            )
+            (TS01-CP.SWP|C_IssueWeightedPool patron patron pool-tokens 10.0 [0.3 0.5 0.2] false)
+            (continue-pact 1)
+            (continue-pact 2)
+            (let
+                (
+                    (total:decimal (- b0 (ref-DALOS::UR_TF_AccountSupply patron false)))
+                )
+                (map print
+                    [
+                        (format "<<DPB-04>> quoted={} charged={} delta={}"
+                            [quoted total (- total quoted)])
+                        (expect "<<DPB-04>> INFO_SWP|IssueWeightedPool's quote equals what the DEFPACT charged"
+                            total quoted)
+                        (expect "<<DPB-04>> ...and issuing a pool is a real, non-zero charge"
                             true (> total 0.0))
                     ]
                 )
