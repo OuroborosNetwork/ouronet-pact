@@ -1,4 +1,30 @@
-# Funding continuations: what is and is not possible — settled, with a correction
+# Funding continuations — CLOSED as a non-issue (owner ruling 2026-09-15)
+
+> ## RULING — READ THIS FIRST, THE ANALYSIS BELOW IS BACKGROUND
+>
+> **This is theoretical, not a live concern.** Owner, 2026-09-15:
+>
+> * **Multi-step transactions only ever existed because the block gas limit was 150k.** With the
+>   current 2,000,000 headroom there is no reason to use them. The measurement below
+>   (worst case **415,419 gas, 21% of budget**) is the evidence for that, and it is pinned.
+> * **The defpact paths are kept for historical / learning purposes only.** They are not the
+>   supported route for anything.
+> * **The gas station does not pay continuations in production — the CUSTOMER ACCOUNT does.**
+>   That is the UI implementation. So the "foreign continuation drains the station" vector does not
+>   exist on the supported path: there is nothing to drain, because the station is never the payer.
+>
+> Consequently **no work is planned here**: no continuation-funding account, no relayer keyset, no
+> co-signing service. The `exec`-only gas station stays as it is and is correct.
+>
+> The `LQ|INITIATION-FEE` charged twice on a griefed add (200 raw) also **stands unchanged** — but
+> note its original rationale (protecting the gas station from continuation drain) does not apply
+> when the customer pays their own continuation gas. It survives as plain anti-spam, which the owner
+> ruled is what he wants.
+>
+> **Everything below is kept because the mechanism analysis is correct and was expensive to
+> establish** — and because the next person to find a double-charge on the add-liquidity rollback
+> branch deserves to find the reason next to it rather than reconstruct it.
+
 
 *2026-09-15. Owner: "is there a way to allow the gas station to pay only continuations of functions
 from our namespace?" — then, correctly: "wait, we have `stoa-xchain-gas`, that pays for

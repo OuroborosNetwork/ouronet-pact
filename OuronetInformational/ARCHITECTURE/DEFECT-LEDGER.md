@@ -692,7 +692,21 @@ because the `let` holding the opening balance does not survive the commit.
 
 ### Owner rulings, 2026-09-15 — the grief path, canon, and DPMF
 
-**1. The 200 grief charge STANDS, and it is deliberate — with a CORRECTION to the first analysis.**
+**1. The 200 grief charge STANDS — and the whole continuation question is CLOSED as theoretical.**
+
+*Owner ruling, final:* **multi-step transactions only existed because the gas limit was 150k.** With
+the 2,000,000 headroom there is no reason to use them; the defpact paths are kept for
+**historical / learning purposes only**; and in production **the gas station does not pay
+continuations at all — the customer account does** (that is the UI implementation). So the
+"foreign continuation drains the station" vector does not exist on the supported path: the station
+is never the payer. **No work is planned** — no continuation-funding account, no relayer keyset, no
+co-signing service. The `exec`-only station stays and is correct. The 200 survives as plain
+anti-spam, which is what the owner wants; its *original* rationale (gas-station drain) does not
+apply once the customer pays their own continuation gas.
+
+*The mechanism analysis is retained anyway* — it was expensive to establish, it is correct, and the
+next person to find a double-charge on the rollback branch should find the reason beside it. It also
+contains a CORRECTION worth keeping on its own:
 
 *First answer, partly wrong:* it covered only `gas-payer-v1` (the `GAS_PAYER` defcap `01_DALOS.pact`
 implements, whitelisting via `exec-code`) and concluded continuations cannot be funded at all. The
