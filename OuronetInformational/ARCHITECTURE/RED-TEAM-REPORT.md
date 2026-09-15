@@ -1074,6 +1074,90 @@ from **off-chain**. So the conservation of OURO and IGNIS, the two tokens the wh
 denominated in, **cannot be verified on-chain by anything**. The sweep works only because a test
 harness may hold the account list that the chain will not give it.
 
+## Stage 11 — Family D reopened: an abbreviation is not an identity *(2026-09-15)*
+
+Found while extending family J into **DPDC** (collectables). The conservation sweep kept reporting
+DPNF nonces whose `supply` was 1 but which nobody held; the schema explains that
+(`nonce-supply` is *"Always 1 for NFT, even when burned or wiped"*, and `nonce-holder = BAR` means
+inactivated). What the schema does **not** say is what `nonce-holder` actually contains.
+
+### RT-D-002 — SUCCEEDED, then FIXED
+
+`DPDC|NonceElement.nonce-holder` is documented as *"Stores the `<OuronetAccount>` holding the
+Nonce"*. It stores this instead — `XE_U|NonceHolder`, `02_DPDC.pact:1482`:
+
+```pact
+(sh:string (if iz-bar BAR (ref-I|OURONET::OI|UC_ShortAccount new-holder-account)))
+```
+
+and `OI|UC_ShortAccount` is
+
+```pact
+(concat [(take 5 account) "..." (take -3 account)])
+```
+
+**Eleven characters**, two of which are the fixed `Ѻ.` prefix — **six characters of entropy.**
+
+`UEV_NonceQuantityInclusion` is the possession gate inside `DPDC-C|C>SINGLE-DEBIT`, which guards
+every NFT debit, burn and transfer. Its shape:
+
+```pact
+(let ((nonce-supply (UR_AccountNonceSupply account id son nonce)))   ;; keyed by the FULL account
+    (if (or son (< nonce 0))
+        (enforce (<= amount nonce-supply) …)     ;; SFT branch: spends it
+        (… (enforce (= sa nft-holder) …))))       ;; NFT branch: binds it and never uses it
+```
+
+**On the NFT branch the only ownership test was the abbreviation compare.**
+
+### Measured, all three arms in one run
+
+| account passed to the gate | result |
+|---|---|
+| the true holder (`ANHD`) | **PASSES** |
+| an unrelated account (`EMMA`) | **REFUSED** |
+| **a collider** — distinct, glyph-valid, 162 chars | **PASSES** |
+
+The middle row matters as much as the last: it proves the gate is neither always-true nor
+always-false, so the third row is a real discrimination failure rather than a broken test.
+
+### No grinding is required, and that is the point
+
+`GLYPH|UEV_DalosAccount` enforces **length 162**, the `Ѻ`/`Σ` prefix, the `.` separator and
+membership of `DALOS|CHARSET` — **and nothing else**. There is no checksum and **no binding between
+the account string and the guard**. So the collider is not searched for, it is *written down*: the
+victim's first three body characters, 154 characters lifted from any other real account, the
+victim's last three.
+
+Nor does the `patron`/`account` split help. `DPDC-C|C>SINGLE-DEBIT` gates with
+`CAP_EnforceAccountOwnership account` — an attacker naming their **own** colliding account satisfies
+that completely. And `DALOS|C_DeployStandardAccount` is a permissionless **client** wrapper on
+`TS01-C1` whose STOA fee is itself toggle-conditional, so the colliding account can cost nothing.
+
+### The fix was already in the function
+
+`nonce-supply` is read from `AccountSupplies`, whose key carries the **complete 162-character
+account string** — the only value in scope that can tell two accounts apart. The NFT branch now
+spends it:
+
+```pact
+(enforce (<= amount nonce-supply) "Account {} doesnt hold NFT {} Nonce {}")
+(enforce (= sa nft-holder)        "NFT {} Nonce {} is not active on Account {}")
+```
+
+The abbreviation compare is **kept, with its own message**, because it carries a second meaning the
+quantity check does not: an inactivated NFT stores `BAR` there. Two checks, two messages — so a
+future refusal says *which* thing was wrong, the lesson from RT-C-001.
+
+Safety was established before the change rather than assumed: across every DPNF nonce in the
+harness, **each of the 6 active nonces has exactly one full-account holder with supply 1 whose short
+form equals the stored abbreviation, and all 7 inactive nonces are held by nobody.** So
+`AccountSupplies` is reliably maintained for NFTs and the added check refuses nothing legitimate.
+
+> **A lossy display value had become a security predicate.** `OI|UC_ShortAccount` lives in the INFO
+> module and its 20-odd other uses are all what it was built for — putting a readable account into a
+> Talos result string. One caller stored it and then compared it.
+
 # Closing assessment
 
 ## The register
@@ -1084,14 +1168,14 @@ harness may hold the account list that the chain will not give it.
 | A — Arithmetic & value | 2 |  | 1 | 1 |
 | B — Permissionless reach | 1 |  | 1 |  |
 | C — Admin impersonation | 1 |  |  | 1 |
-| D — Ownership bypass | 1 |  |  | 1 |
+| D — Ownership bypass | 2 |  | 1 | 1 |
 | E — Sequencing & state | 2 |  |  | 2 |
 | F — Griefing / denial of service | 1 |  | 1 |  |
 | G — Hostile citizen module | 2 |  |  | 2 |
 | H — Input domain | 2 |  | 2 |  |
 | I — Gas station payable surface | 1 |  | 1 |  |
 | J — Ledger conservation | 2 |  | 1 | 1 |
-| **total** | **15** | **0** | **7** | **8** |
+| **total** | **16** | **0** | **8** | **8** |
 <!-- REGISTER:END -->
 
 **Seven of fourteen attacks found a defect, and all seven are fixed and measured.** The table above
@@ -1117,6 +1201,7 @@ round exactly:
 | **input domain** | E, H | 2 defects fixed (RT-H-001/002) + 2 refusals, both **by the wrong guard** |
 | **gas station** | I | 1 defect — a fee that a whole class of account could decline |
 | **ledger conservation** | J | 1 defect — supply and balances drifting apart, permanently |
+| **ownership, Stage 2** | D | 1 defect — an 11-char abbreviation used as a possession gate |
 
 > **The guards in this system are present and they hold. What fails is the arithmetic around them,
 > and the order in which things happen.**

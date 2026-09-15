@@ -1,0 +1,126 @@
+;;
+;; REPL/RedTeam/[RT-D2]_Ownership-Collectables.repl — FAMILY D: ownership bypass, Stage 2.
+;;
+;; "Can I act on assets whose ownership I have not proven?"
+;;
+;; [RT-D]_Ownership.repl asks that of Stage 1, where the interesting shape is `patron` vs `account`.
+;; Stage 2 has a different one. A DPNF (NFT) nonce does not record WHO holds it — it records an
+;; ELEVEN-CHARACTER ABBREVIATION of who holds it, and an abbreviation is not an identity.
+;;
+;; Legend:
+;;   <<RT-D-002a>>  the real holder passes            (the gate is not simply "always true")
+;;   <<RT-D-002b>>  an unrelated account is refused   (the gate is not simply "always false")
+;;   <<RT-D-002c>>  the collider is a VALID, DISTINCT account with an IDENTICAL abbreviation
+;;   <<RT-D-002d>>  the collider is refused           (the finding)
+;;   <<RT-D-002e>>  ...BY THE FULL-ACCOUNT CHECK      (pinned by message)
+;;   <<RT-D-002f>>  the ORIGINAL check keeps its ORIGINAL message for everyone else
+;;
+;; Source: 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/02_DPDC.pact  (UEV_NonceQuantityInclusion)
+;;         1_SOVEREIGN/STAGE_01/2_Core/02_IGNIS.pact         (OI|UC_ShortAccount)
+;;         1_SOVEREIGN/STAGE_01/1_Utilities/08_U_DALOS.pact  (GLYPH|UEV_DalosAccount)
+;;
+;; REPL tests: <<RT-D-002a>> <<RT-D-002b>> <<RT-D-002c>> <<RT-D-002d>> <<RT-D-002e>> <<RT-D-002f>>
+;;
+;; Run: cd REPL && pact "RedTeam/[RT-D2]_Ownership-Collectables.repl"
+;;
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+(load "../deploy-stage02.repl")
+(load "../Stage_02/[6.1.4]_DPDC-NF.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "RT-D-002 - an abbreviation is not an identity")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== RT-D-002 · 01 · two different accounts, one stored holder ====
+(print "--- [RT-D-002 · 01 · two different accounts, one stored holder] ---")
+;;<<RT-D-002>> FAMILY: D | STATUS: FIXED
+;;HYPOTHESIS: `DPDC|NonceElement.nonce-holder` is documented as "Stores the <OuronetAccount>
+;;            holding the Nonce". It does not. `XE_U|NonceHolder` writes
+;;            `OI|UC_ShortAccount(account)` = `(take 5) + "..." + (take -3)` -- ELEVEN characters,
+;;            of which the first two are the fixed `Ѻ.` prefix, leaving SIX characters of entropy.
+;;            `UEV_NonceQuantityInclusion` -- the possession gate inside `DPDC-C|C>SINGLE-DEBIT`,
+;;            which guards every NFT debit, burn and transfer -- decides possession by comparing
+;;            that abbreviation. If two valid accounts can share it, the gate cannot tell them
+;;            apart, and the one that does NOT hold the NFT passes the check that exists to stop it.
+;;METHOD:     construct a second account that is glyph-valid, exactly 162 characters, DISTINCT from
+;;            the holder, and shares its first three and last three body characters. No grinding is
+;;            involved and none is needed: `GLYPH|UEV_DalosAccount` enforces length, the `Ѻ`/`Σ`
+;;            prefix, the `.` separator and the DALOS|CHARSET -- and NOTHING ELSE. The account
+;;            string is not derived from the guard, so it is chosen freely by whoever deploys it.
+;;            Then call the gate directly with three accounts: the true holder, an unrelated
+;;            account, and the collider.
+;;RESULT:     CONFIRMED, then FIXED. Measured exploit-first, all three arms in one run: the true
+;;            holder PASSES, an unrelated account is REFUSED -- so the gate is neither always-true
+;;            nor always-false -- and the collider, a distinct glyph-valid 162-character account,
+;;            PASSES. Repaired in 02_DPDC.pact by enforcing `amount <= nonce-supply` on the NFT
+;;            branch, where `nonce-supply` is the AccountSupplies read keyed by the COMPLETE
+;;            account string and was already bound, unused, at the top of the function. The
+;;            abbreviation compare is kept, with its own message, because it also carries the
+;;            "nonce is active" meaning -- an inactivated NFT stores BAR there.
+;;
+;;WHY THE `patron`/`account` SPLIT DOES NOT SAVE THIS. `DPDC-C|C>SINGLE-DEBIT` gates with
+;;`CAP_EnforceAccountOwnership account` -- so the caller must genuinely own the account they name.
+;;An attacker naming their OWN colliding account satisfies that completely. The second gate, the
+;;one that is supposed to establish that this account holds THIS NFT, is the abbreviation compare.
+;;And `DALOS|C_DeployStandardAccount` is a permissionless CLIENT wrapper on TS01-C1, whose STOA fee
+;;is itself toggle-conditional -- so the colliding account costs nothing to obtain.
+;;
+;;WHAT THE FUNCTION ALREADY HAD. `UEV_NonceQuantityInclusion` opens by binding
+;;`(nonce-supply (UR_AccountNonceSupply account id son nonce))` -- a read keyed by the FULL account
+;;string. The SFT branch enforces against it. The NFT branch BINDS IT AND NEVER USES IT. The fix is
+;;not new machinery; it is spending the value the function already computed.
+;;
+(let*
+    (
+        (id:string "CNF-98c486052a51")
+        (nonce:integer 2)
+        (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+        (ref-U|DALOS:module{UtilityDalosGlyphsV3} U|DALOS)
+        ;;Built exactly as an attacker would: the holder's first three and last three body
+        ;;characters, with 154 characters of another real account's body in between -- which
+        ;;guarantees they are in DALOS|CHARSET without needing to reproduce the charset here.
+        (collider:string "Ѻ.éXøьπΨтÎșπЦĐđŽ6ЫêÀεÅĐȘдÞЩ4Ł2ďй5žömiτsλÚÇдěÒaV₱ÏûιЩД₳îJÍşыyÜŹżęìvAЙsÄ¢ÿnΦIťQůЮ7ĄвaèďíoáнõÎLJθÆEáПiXÿÒÀĘ14цU1çΞêSťüIψчèι₱ê9ŽчΓüЦrÀÓμĆ99κQťqPÖшŮ1ÈČSĐŁÌбÝàŞbPσŃĎÌàî")
+        (try-gate (lambda (acct:string)
+            (try "REFUSED" (let ((z:string "PASSES"))
+                (ouronet-ns.DPDC.UEV_NonceQuantityInclusion acct id false nonce 1) z))))
+    )
+    (map print
+        [
+            (expect
+                (format "<<RT-D-002a>> the TRUE holder of {} nonce {} passes the possession gate" [id nonce])
+                "PASSES" (try-gate KST.ANHD))
+            (expect
+                "<<RT-D-002b>> an unrelated account is refused -- the gate is not vacuous"
+                "REFUSED" (try-gate KST.EMMA))
+            (expect
+                (format "<<RT-D-002c>> the collider is a VALID, DISTINCT account whose stored abbreviation is identical: [{}]"
+                    [(ref-I|OURONET::OI|UC_ShortAccount collider)])
+                [true 162 false true]
+                [ (ref-U|DALOS::GLYPH|UEV_DalosAccountCheck collider)
+                  (length collider)
+                  (= collider KST.ANHD)
+                  (= (ref-I|OURONET::OI|UC_ShortAccount collider)
+                     (ouronet-ns.DPDC.UR_NonceHolder id false nonce)) ])
+            (expect
+                "<<RT-D-002d>> the collider does NOT hold the NFT and must be refused"
+                "REFUSED" (try-gate collider))
+            ;;Pinned BY MESSAGE, because a refusal by the wrong guard is indistinguishable from a
+            ;;refusal by the right one (RT-C-001). The collider passes the abbreviation compare --
+            ;;that is the whole finding -- so the ONLY check that can refuse it is the full-account
+            ;;one. Delete that check and this goes red even if some other guard starts refusing.
+            (expect-failure
+                "<<RT-D-002e>> ...and it is the FULL-ACCOUNT check that refuses it, not the abbreviation compare"
+                "is not the full-account holder of NFT"
+                (ouronet-ns.DPDC.UEV_NonceQuantityInclusion collider id false nonce 1))
+            (expect-failure
+                "<<RT-D-002f>> an unrelated account still trips the ORIGINAL check, with its ORIGINAL message"
+                "doesnt hold NFT"
+                (ouronet-ns.DPDC.UEV_NonceQuantityInclusion KST.EMMA id false nonce 1))
+        ])
+    ""
+)
+(print "")
+(print "===^^^===")
+(commit-tx)

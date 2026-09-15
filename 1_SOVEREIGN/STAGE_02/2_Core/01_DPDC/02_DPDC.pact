@@ -1265,7 +1265,31 @@
                         (nft-holder:string (UR_NonceHolder id false nonce))
                         (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                     )
-                    (enforce (= sa nft-holder) (format "Account {} doesnt hold NFT {} Nonce {}" [account id nonce]))
+                    ;;1] ACTIVE-NONCE check, and the ORIGINAL check on this branch. Kept FIRST and
+                    ;;with its ORIGINAL MESSAGE, so every refusal that fired here before still fires
+                    ;;here, with the same wording: [6.4]_AQP-EXHAUSTIVE-DPNF <<TX-AQP-NF01>> pins it
+                    ;;by message, and reordering these two broke that pin the first time round. It
+                    ;;is also the only check that distinguishes an INACTIVATED nonce, which stores
+                    ;;BAR here. But it must never be the ONLY gate, because it compares an
+                    ;;ABBREVIATION, not an identity. <nonce-holder> stores
+                    ;;OI|UC_ShortAccount = (take 5) + "..." + (take -3) = 11 characters, two of
+                    ;;which are the fixed `Ѻ.` prefix. Any two glyph-valid accounts sharing three
+                    ;;leading and three trailing body characters are IDENTICAL to it, and the
+                    ;;account string is chosen freely by whoever deploys it -- GLYPH|UEV_DalosAccount
+                    ;;checks length, prefix, separator and charset, and does not bind the string to
+                    ;;the guard.
+                    ;;2] FULL-ACCOUNT possession, and the fix. <nonce-supply> is read from the
+                    ;;AccountSupplies table, whose key carries the COMPLETE 162-character account
+                    ;;string, so it is the only value in scope that can tell two accounts apart. It
+                    ;;was already bound at the top of this function and, on this branch alone, was
+                    ;;never spent. Added AFTER line 1 and with a DISTINCT message, so the two
+                    ;;refusals stay tellable apart -- the RT-C-001 lesson.
+                    ;;Pinned by RedTeam/[RT-D2]_Ownership-Collectables.repl <<RT-D-002d>>.
+                    (enforce (= sa nft-holder)
+                        (format "Account {} doesnt hold NFT {} Nonce {}" [account id nonce]))
+                    (enforce (<= amount nonce-supply)
+                        (format "Account {} is not the full-account holder of NFT {} Nonce {}"
+                            [account id nonce]))
                 )
             )
         )
