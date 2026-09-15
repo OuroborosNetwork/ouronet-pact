@@ -530,4 +530,75 @@
 (print "===^^^===")
 (commit-tx)
 (print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "CONF-06 - the GS-07 default, on a module that is genuinely unregistered")
+(namespace "ouronet-ns")
+(print "--- [CONF-06 · 01 · P|UR_IMP before any registration] ---")
+;;<<CONF-06>> GS-07, WHICH WAS UNPROTECTED IN ALL 61 MODULES UNTIL THIS BLOCK.
+;;
+;;GS-07 made `P|UR_IMP` default to the module's own SECURE capability guard instead of doing a bare
+;;`read`, which RAISES `No value found in table <M>_P|MT for key: InterModulePolicies` when no row
+;;exists. Nothing tested it. Proven by reverting 06_VCT.pact's P|UR_IMP to the pre-GS-07 bare read
+;;and re-running the whole gate: 86 entrypoints, 21,527 assertions, STILL GREEN. A 61-module safety
+;;change that nothing could detect the removal of.
+;;
+;;WHY THE EXISTING IMC TESTS DO NOT COVER IT. [6.2.10]_AQP-NEGATIVES pins the refusal MESSAGE
+;;correctly ("None of the guards passed") -- but by the time it runs, those modules' rows EXIST,
+;;because some other module's `P|A_Define` registered with them. The bare read succeeds there. The
+;;pre-registration window is the thing GS-07 fixed and the thing nothing entered.
+;;
+;;FINDING A MODULE THAT IS ACTUALLY UNREGISTERED. Cross-referencing every module holding
+;;`P|UR_IMP` (59) against every `ref-X::P|A_AddIMP` target (46) leaves 13 that are NEVER
+;;registered with -- and all ten Talos modules are among them (this harness loads Stage 1, so it pins two of them). For those, the GS-07 default is not
+;;a nicety, it is the only thing standing between a caller and a raw table error naming a row key.
+(let
+    (
+        (ref-P|TS01C1:module{OuronetPolicyV2} TS01-C1)
+        (ref-P|TS01C3:module{OuronetPolicyV2} TS01-C3)
+        (ref-P|DPMF:module{OuronetPolicyV2} DPMF)
+    )
+    (map print
+        [
+            ;;1] THE READER. An unregistered module answers with a ONE-element policy list -- its own
+            ;;   SECURE capability guard -- rather than raising. Reverting GS-07 turns each of these
+            ;;   into "No value found in table ..." and the expect dies on the error, not the value.
+            (expect "<<CONF-06>> TS01-C1 is unregistered, and P|UR_IMP answers with exactly one guard"
+                1 (length (ref-P|TS01C1::P|UR_IMP)))
+            (expect "<<CONF-06>> ...same for TS01-C3"
+                1 (length (ref-P|TS01C3::P|UR_IMP)))
+            ;;DPMF IS DIFFERENT, AND THE DIFFERENCE IS WORTH PINNING. It does not fail the GS-07
+            ;;   way -- it fails EARLIER. `with-default-read` defaults a missing ROW; it cannot
+            ;;   default a missing TABLE. DPMF `deftable`s P|T and P|MT and then calls
+            ;;   `create-table` ZERO times -- every other module creates its tables at the end of
+            ;;   the file. So the legacy MetaFungible module is deployed with no storage at all and
+            ;;   every storage-backed function in it errors. Combined with the separate finding that
+            ;;   NOTHING in 1_SOVEREIGN or 2_CITIZEN calls `ref-DPMF::`, this states the strong form:
+            ;;   DPMF is not merely unreferenced, it is INERT. Asserted rather than left implicit, so
+            ;;   a half-migration that creates the tables without wiring the callers goes red here.
+            (expect-failure "<<CONF-06>> DPMF is INERT -- it never create-tables its policy storage"
+                "Table ouronet-ns.DPMF_P|MT not found"
+                (ref-P|DPMF::P|UR_IMP))
+            ;;2] THE GATE BUILT ON IT, pinned BY MESSAGE. This is the assertion that fails if GS-07
+            ;;   is reverted: the refusal must be the POLICY refusal. A table error is also a
+            ;;   refusal, and from the outside the two are indistinguishable unless the message is
+            ;;   checked -- the same lesson RT-C-001 recorded about a shadowed admin gate.
+            (expect-failure "<<CONF-06>> P|UEV_IMC on an unregistered module refuses BY POLICY, not by table error"
+                "None of the guards passed"
+                (ref-P|TS01C1::P|UEV_IMC))
+            (expect-failure "<<CONF-06>> ...and the same on a second, independent Talos module"
+                "None of the guards passed"
+                (ref-P|TS01C3::P|UEV_IMC))
+            ;;3] NON-VACUITY. The guard the default seeds is a capability guard, so it is
+            ;;   unsatisfiable from outside the owning module BY CONSTRUCTION -- not merely absent.
+            ;;   A default of [] would also make UEV_Any refuse, and would prove nothing about what
+            ;;   the list contains; this asserts the list is non-empty AND still refuses.
+            (expect "<<CONF-06>> the refusal is a NON-EMPTY guard list, not an empty one"
+                true (> (length (ref-P|TS01C1::P|UR_IMP)) 0))
+        ])
+)
+(print "===^^^===")
+(commit-tx)
+(print "")
 (print "=== END modules/CONFORMANCE.repl ===")

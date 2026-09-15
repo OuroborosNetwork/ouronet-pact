@@ -229,6 +229,52 @@ Worth recording about the guard itself: after this round of generator fixes, `_p
 **fired unprompted** on the drift the regeneration had just created in `IGNIS-PRICING.md`. That is
 the check working in the workflow rather than in a selftest.
 
+### GS-16 — GS-07 was unprotected in all 61 modules, and DPMF is INERT *(FOUND + FIXED 2026-09-15)*
+
+GS-07 was the largest blast radius of the round — `P|UR_IMP` changed in **61 modules**. Asking the
+obvious follow-up question, *what pins it?*, produced the obvious bad answer.
+
+**Proven by removal, not by reading.** `06_VCT.pact`'s `P|UR_IMP` was reverted to the pre-GS-07 bare
+`read` and the **whole gate re-run: 86 entrypoints, 21,527 assertions, still GREEN.** A 61-module
+safety change whose removal nothing could detect.
+
+**Why the existing tests do not cover it.** `[6.2.10]_AQP-NEGATIVES` pins the IMC refusal *by
+message* — `"None of the guards passed"` — which is exactly right, and is why it looks like coverage.
+But by the time it runs, those modules' rows **exist**, because some other module's `P|A_Define`
+registered with them, so the bare read succeeds. **The pre-registration window is the thing GS-07
+fixed and the thing nothing entered.**
+
+**Finding a module that is genuinely unregistered.** Cross-referencing every module holding
+`P|UR_IMP` (**59**) against every `ref-X::P|A_AddIMP` target (**46**) leaves **13 never registered
+with** — and **all ten Talos modules are among them**. For those the default is not a nicety; it is
+the only thing between a caller and a raw table error naming a row key.
+
+**The pin:** `modules/CONFORMANCE.repl` `<<CONF-06>>`, six assertions. Negative control — reverting
+`TS01-C1`'s `P|UR_IMP` alone:
+
+```
+FAILURE: <<CONF-06>> P|UEV_IMC on an unregistered module refuses BY POLICY, not by table error:
+   expected error message 'None of the guards passed',
+   got 'No value found in table ouronet-ns.TS01-C1_P|MT for key: InterModulePolicies'
+```
+
+Three of the six go red and the message names the exact pre-GS-07 error.
+
+#### DPMF is INERT, not merely unreferenced
+
+Writing CONF-06 turned up something stronger than the earlier "95,601 bytes, zero inbound
+references" observation. DPMF failed *differently*: **`Table ouronet-ns.DPMF_P|MT not found`**.
+`with-default-read` defaults a missing **row**; it cannot default a missing **table**.
+
+**`00_DPMF.pact` contains 5 `deftable` declarations and `create-table` ZERO times.** Every other
+module creates its tables at the end of the file. So the legacy MetaFungible module is deployed with
+no storage at all, and every storage-backed function in it errors on contact.
+
+That settles the earlier open question in the strong form: DPMF is not merely unreferenced, **it is
+inert** — and the 13 dead modref calls inside it (see the ungated-checker sweep) could never have
+been reached anyway. Pinned by `<<CONF-06>>` as an `expect-failure` on the table-not-found message,
+so a half-migration that creates the tables without wiring the callers goes red.
+
 ### The owner's first rule is now fully satisfied: 401 / 401 *(2026-09-15)*
 
 > *"the INFO function must output the exact same cost as the real execution function"*
@@ -355,7 +401,7 @@ fixture job, not a side effect of a coverage audit.
 
 ### GS-14 — the stats generator degraded silently, and took its checker with it *(FOUND + FIXED 2026-09-15)*
 
-Adding GS-13's two pins moved the assertion count 21,519 → 21,527, so `REPL_SUITE_STATS.md` had to be
+Adding GS-13's two pins moved the assertion count 21,519 → 21,533, so `REPL_SUITE_STATS.md` had to be
 regenerated. `_figuresync --check` reported **clean** before the regeneration — truthfully, and
 uselessly: it compares the narrative documents against the stats file, and **nothing compared the
 stats file against a live gate.** One link in the chain had never been verified.
@@ -439,7 +485,7 @@ position. All five were run.
 
 **`_vacuous.py --check` is now fatal in the gate.** An assertion that cannot fail is a green light
 wired to nothing, and it is indistinguishable from a real one in every summary the gate prints — it
-counts toward the 21,527, it shows in the `+` column, and it never goes red. I wrote one myself this
+counts toward the 21,533, it shows in the `+` column, and it never goes red. I wrote one myself this
 month (`step1 > discount × 951`, which the defect it was written for would have passed). Proven by
 injecting `(expect "…" 42 42)`: the check exits 1 and names the site. Only VACUOUS is fatal; WEAK
 stays advisory, because *"it runs at all"* is sometimes genuinely the assertion.
