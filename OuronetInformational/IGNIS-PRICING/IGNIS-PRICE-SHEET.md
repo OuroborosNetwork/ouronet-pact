@@ -554,7 +554,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_ChangeOwnership` | `C_ChangeOwnership` | AUTH | **29** | — | $0.29 | deter:auth 10 + components:SWP|C_ChangeOwnership 19 |
 | `C_EnableFrozenLP` | `C_EnableFrozenLP` | SETUP | **≥ 282** | 100 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:vst-link 250 + components:VST|C_CreateFrozenLink 29 + medium 3 | STOA: dptf 100 |
 | `C_EnableSleepingLP` | `C_EnableSleepingLP` | SETUP | **≥ 282** | 100 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:vst-link 250 + components:VST|C_CreateVestingLink 29 + medium 3 | STOA: dpmf 100 |
-| `C_Firestarter` | `C_WrapStoa` ×3 | USAGE | **≥ 93** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPTF|C_Mint 86 + smallest 1 + small 2 + medium 3 |
+| `C_Firestarter` | `C_WrapStoa` ×3 | USAGE | **0** | — | free | free by design — builds cumulators and collects none of them |
 | `C_Fuel` | `C_Fuel` | USAGE | **≥ 6** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 + small 2 + medium 3 |
 | `C_IssueStable` | `C_Issue` | ISSUE | **≥ 5087** | 500 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPTF|C_Mint 86 + deter:issue-swp-pair 5000 | STOA: stoa:issue-swp-pair 500 |
 | `C_IssueStablePool` | `C_IssueStablePool` ×2 | ISSUE | **≥ 5606** | 600 | COMPLEX | charge multiplies by an item count; legs: deter:issue-swp-pair 5000 + token-issue 500 + biggest 5 + smallest 1 + literal 100 | STOA: dptf 100 + swp 500 |
@@ -633,7 +633,7 @@ another Talos wrapper, not a core op) or admin entrypoints that are exempt by ru
 | P\|A_AddIMP | admin entrypoint -- IGNIS + STOA free by owner rule, nothing to price |
 
 ---
-182 simple (exact price) · 200 complex (floor price) · 11 STOA-only · 49 exempt · 0 unresolved · 5 unpriced · 431 Talos client functions
+182 simple (exact price) · 199 complex (floor price) · 11 STOA-only · 50 exempt · 0 unresolved · 5 unpriced · 431 Talos client functions
 
 `×N` on a core op = the wrapper drives N priced core ops in a FIXED composition (still exactly knowable).
 

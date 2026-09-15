@@ -44,6 +44,30 @@ def generate(tool):
     return r.stdout
 
 
+def legend_vs_table(sheet_text):
+    """Every op the sheet's own EXEMPT legend names must be published as free in its own table.
+
+    2026-09-15: line 22 of IGNIS-PRICE-SHEET.md read "EXEMPT -- deliberately free: ... the IGNIS
+    machinery itself (the collectors, Compress/Sublimate/Firestarter, DalosFuel)" while line 557
+    published `C_Firestarter` at **>= 93** COMPLEX. The document contradicted itself 535 lines
+    apart, and nothing compared the two halves. Derived from the legend text rather than a retyped
+    list, so a new exempt name is covered the day it is added.
+    """
+    import re as _re
+    m = _re.search(r'\*\*EXEMPT\*\*(.{0,400}?)\n\n', sheet_text, _re.S)
+    if not m:
+        return ["could not find the EXEMPT legend paragraph in the price sheet"]
+    names = set(_re.findall(r'[A-Z][A-Za-z]{3,}', m.group(1)))
+    bad = []
+    for w in sorted(names):
+        row = _re.search(r'^\| `C_' + _re.escape(w) + r'[A-Za-z]*` \|[^|]*\|[^|]*\| \*\*([^*]+)\*\* \|',
+                         sheet_text, _re.M)
+        if row and row.group(1).strip() != "0":
+            bad.append(f"the EXEMPT legend names '{w}' as deliberately free, but the table "
+                       f"publishes C_{w}... at {row.group(1).strip()}")
+    return bad
+
+
 NARRATIVE = "OuronetInformational/IGNIS-PRICING/IGNIS-PRICING.md"
 
 
@@ -107,7 +131,11 @@ def check(write=False, quiet=False):
     # the narrative doc must quote the artefact, not a memory of it
     if not write:
         try:
-            for _bad in narrative_tally(generate(ARTEFACTS[0][0])):
+            _sheet = generate(ARTEFACTS[0][0])
+            for _bad in legend_vs_table(_sheet):
+                drift += 1
+                print(f"\nDRIFT: {_bad}")
+            for _bad in narrative_tally(_sheet):
                 drift += 1
                 print(f"\nDRIFT: {_bad}")
         except RuntimeError as e:

@@ -159,6 +159,19 @@ def billing_text(src, name, depth=3):
         frontier = nxt
     return txt
 
+_OC_BIND = re.compile(r'\(([A-Za-z0-9|_-]+)\s*:\s*object\{IgnisCollectorV2\.OutputCumulator\}')
+def _discards_cumulators(body):
+    """True when the wrapper binds OutputCumulators and hands none of them to a collector."""
+    code = re.sub(r'"(?:[^"\\]|\\[\s\S])*"', ' ', body)
+    names = set(_OC_BIND.findall(code))
+    if not names:
+        return False
+    for n in names:
+        if re.search(r'C_Collect\w*[^()]*\b' + re.escape(n) + r'\b', code):
+            return False
+    return True
+
+
 def is_variable(core_file, core_fn, talos_body):
     """COMPLEX per the owner: a VARYING composition of simpler ops."""
     if HEAVY_PREFIX.match(core_fn):     return 'heavy / parallel-slice op'
@@ -600,11 +613,49 @@ for entity in sorted(rows):
             nexempt += 1
             print(f"| {tfn_s} | {cf_s}{compose} | {role} | **0** | — | free | "
                   f"core op returns an empty cumulator — charges nothing |")
+        elif (igl and not stl
+              and not COLLECTS.search(talos_body_by_row[(entity, tfn)])
+              and _discards_cumulators(talos_body_by_row[(entity, tfn)])):
+            # BUILD-AND-DISCARD. The wrapper let-binds one or more OutputCumulators, never passes
+            # any of them to a collector, and contains no C_Collect at all -- so the legs the
+            # walker harvested from the composed ops are never charged. SWP|C_Firestarter binds
+            # ico1/ico2/ico3 (C_WrapStoa, C_Swap, C_SublimateV2), reads `gained-ouro` out of one,
+            # and returns a string; its own message is "with no IGNIS Costs!" and
+            # INFO_SWP|Firestarter quotes OI|UDC_NoIgnisCosts. The sheet published >= 93.
+            #
+            # That is the worst row in the sheet to get wrong: firestarting is the BOOTSTRAP op for
+            # a brand-new account, GATED on holding under 100 IGNIS. The sheet told someone whose
+            # defining characteristic is having no IGNIS that they needed 93 of it first.
+            #
+            # Deliberately requires a BOUND-AND-UNUSED cumulator rather than merely "no C_Collect
+            # in the wrapper" -- see the note in the next branch for why the looser test is wrong.
+            nexempt += 1
+            print(f"| {tfn_s} | {cf_s}{compose} | {role} | **0** | — | free | "
+                  f"free by design — builds cumulators and collects none of them |")
         elif not igl and not stl and not COLLECTS.search(talos_body_by_row[(entity, tfn)]):
-            # Talos is the ONLY place IGNIS is collected (MODULE_ARCHITECTURE), so a wrapper with
-            # no C_Collect and no STOA collection charges NOTHING -- it is free by design, not
-            # unresolvable. These are the gas-station-subsidised hydra slices (AQP-FVT sweep /
-            # unstale / inject chunks) the INFO audit already flagged as deliberately free.
+            # Talos is the ONLY place IGNIS is collected (MODULE_ARCHITECTURE), so an op with
+            # no C_Collect in EITHER the wrapper or the core tree charges NOTHING -- free by
+            # design, not unresolvable. The gas-station-subsidised hydra slices are like this.
+            #
+            # NOTE the `not igl`: dropping it is WRONG and was tried. "No C_Collect in the
+            # wrapper" is not dispositive, because shapes D/E/F bill in the core, in defpact steps,
+            # or in a nested Talos wrapper -- removing the guard flipped 14 rows to free including
+            # C_AddStandardLiquidity (whole point: a 1000 lp-churn deterrent) and C_BuySparks.
+            # The narrow, correct rule for a build-and-discard op is the branch below.
+            #
+            # 2026-09-15: SWP|C_Firestarter
+            # builds three cumulators (C_WrapStoa, C_Swap, C_SublimateV2) and DISCARDS all three:
+            # they are let-bound, `gained-ouro` is read out of one, and no C_Collect exists
+            # anywhere in the function. Its own success message says "with no IGNIS Costs!" and
+            # INFO_SWP|Firestarter quotes OI|UDC_NoIgnisCosts. The sheet published >= 93.
+            #
+            # That is the worst possible row to get wrong: firestarting is the BOOTSTRAP op for a
+            # brand-new account, gated on holding under 100 IGNIS. The sheet told someone whose
+            # defining characteristic is having no IGNIS that they needed 93 of it first.
+            #
+            # The absence of a collector is dispositive on its own. Checking the CORE tree too
+            # keeps shape D honest (SWPLC::C_UpgradeBrandingLPs bills inside the core, so its
+            # wrapper has no C_Collect while the op is very much charged).
             nexempt += 1
             print(f"| {tfn_s} | {cf_s}{compose} | {role} | **0** | — | free | "
                   f"free by design — Talos wrapper collects no IGNIS and no STOA |")

@@ -229,6 +229,58 @@ Worth recording about the guard itself: after this round of generator fixes, `_p
 **fired unprompted** on the drift the regeneration had just created in `IGNIS-PRICING.md`. That is
 the check working in the workflow rather than in a selftest.
 
+### GS-15 — the sheet priced the bootstrap op at 93 IGNIS, and contradicted its own legend *(FOUND + FIXED 2026-09-15)*
+
+Chasing the one remaining unmeasured preview (`INFO_SWP|Firestarter`) led here. The preview is
+**correct** — it quotes `OI|UDC_NoIgnisCosts`, and the exec collects nothing: `SWP|C_Firestarter`
+let-binds three cumulators (`C_WrapStoa`, `C_Swap`, `C_SublimateV2`), reads `gained-ouro` out of one,
+and contains **no `C_Collect` at all**. Its own success message is *"Used 10 native STOA to generate
+{} IGNIS with no IGNIS Costs!"*.
+
+**The price sheet published `≥ 93`.** And it contradicted itself to do so, 535 lines apart in the
+same file:
+
+| line | says |
+|---|---|
+| **22** (legend) | *"**EXEMPT** — deliberately free: … the IGNIS machinery itself (the collectors, Compress/Sublimate/**Firestarter**, DalosFuel)"* |
+| **557** (table) | `` C_Firestarter `` · **≥ 93** · COMPLEX |
+
+**Why this is the worst row in the sheet to get wrong.** Firestarting is the **bootstrap op for a
+brand-new account**, and it is *gated on the caller holding under 100 IGNIS*. The sheet told someone
+whose defining characteristic is having no IGNIS that they needed 93 of it first — on the one
+operation that exists to give them their first IGNIS.
+
+**The generator defect.** The "free by design" branch read:
+
+```python
+elif not igl and not stl and not COLLECTS.search(talos_body_by_row[...]):
+```
+
+The `not igl` made the rule fire **only when the walker had also failed to find any legs** — so it
+worked by accident for ops whose costs were invisible, and failed for exactly the ops that build
+cumulators and throw them away.
+
+**Removing `not igl` is wrong, and was tried first.** "No `C_Collect` in the wrapper" is *not*
+dispositive: shapes D/E/F bill in the core, in defpact steps, or in a nested Talos wrapper. Dropping
+the guard flipped **14 rows** to free, including `C_AddStandardLiquidity` — whose entire point is a
+1000 `lp-churn` deterrent — and `C_BuySparks`. *A fix whose blast radius is 14 rows when the defect
+is 1 row is not a fix.*
+
+The correct rule models the actual situation: **build-and-discard**. The wrapper binds ≥1
+`object{IgnisCollectorV2.OutputCumulator}`, hands none of them to a collector, and has no
+`C_Collect`. Blast radius: **exactly one row.**
+
+**Guard:** `_pricesync.py` now also checks the sheet **against its own legend** — every op the
+EXEMPT paragraph names must be published free. Derived from the legend text, not a retyped list, so
+a new exempt name is covered the day it is added. Proven by restoring `≥ 93` into the table alone:
+*"the EXEMPT legend names 'Firestarter' as deliberately free, but the table publishes
+C_Firestarter... at ≥ 93"*.
+
+**Still open:** the exec-side pin. `INFO_SWP|Firestarter` remains the one client-facing preview with
+no measured charge, because there has never been a *successful* firestart in the suite — only the
+refusal path. Now that the expected answer is known to be **zero**, the pin is an equality against 0
+plus a non-vacuity arm proving the account really did gain IGNIS.
+
 ### The preview-coverage denominator was measuring the wrong set *(2026-09-15)*
 
 After GS-13 the gap bucket read **"14 never named at all"**, which looks like fourteen holes in the
