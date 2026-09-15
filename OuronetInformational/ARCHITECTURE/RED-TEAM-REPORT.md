@@ -901,6 +901,55 @@ authentication at all.*
 
 ---
 
+## Stage 9 — Family A reopened: the three add-liquidity doors *(2026-09-15)*
+
+### RT-A-002 — the door that *requires* asymmetry is the one that does not tax it *(REFUSED)*
+
+This was chased because from the outside it is `RT-A-001` exactly. `MTX|C_AddLiquidity` takes
+`asymmetric-collection` and `gaseous-collection`, and **the core picks them per door** — the client
+only picks the door:
+
+| door | flags | asymmetry tax |
+|---|---|---|
+| `C_AddStandardLiquidity` | `true  true` | **charged** |
+| `C_AddIcedLiquidity` | `false true` | **not charged** |
+| `C_AddGlacialLiquidity` | `false false` | **not charged** |
+
+All three branches then call the **identical** function with **identical** arguments —
+`ref-SWPL::XE_STOA-PID|AddLiquidity account swpair asymmetric-collection gaseous-collection
+stoa-pid ld clad` — differing only in which capability is acquired. Inside SWPL the flag gates
+nothing but tax collection. Same operation, two prices, caller picks.
+
+And it gets sharper: `UEV_AddChilledLiquidity` enforces *"Chilled Liquidity can only be added when
+asymtric liquidity exists"*. **The two doors that require asymmetry are exactly the two that do not
+tax it.**
+
+**REFUSED.** The tax is not skipped, it is **exchanged for a lock**. Step 2 of the pact:
+
+```pact
+(if (not asymmetric-collection)
+    (ref-VST::C_Freeze SWP|SC_NAME account lp-id secondary) …)
+```
+
+The doors that skip the asymmetry tax hand back **frozen** LP, locked in VST; the Standard door
+hands back free LP. The provider pays in liquidity instead of IGNIS. A coherent product trade-off,
+not a bypass.
+
+**Why the block exists anyway.** The two consequences of one flag — *"no tax"* and *"LP is frozen"* —
+live **forty lines and one defpact step apart**, in different capabilities. The price and the thing
+paid for it are not visible together anywhere in the source. If a future change ever removed or
+conditioned that freeze, the bypass would become real and **nothing would notice**, because no test
+asserted the two were coupled. `<<RT-A-002>>` now does, from the side that cannot be faked: the
+untaxed door is **refused outright** on a pool without frozen-LP enabled, so *untaxed* and *locked*
+cannot come apart by pool configuration.
+
+**One incidental measurement worth keeping:** step 0 of the Iced door **succeeds and charges the
+100 initiation fee**, and only **step 1** refuses with *"Frozen LP Functionality is not enabled"*.
+The caller pays before learning the door is unavailable — `RT-F-001`'s shape, now the documented
+design after the owner's ruling (100 at step 0, the rest at the succeeding step).
+
+---
+
 # Closing assessment
 
 ## The register
