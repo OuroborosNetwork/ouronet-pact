@@ -391,6 +391,10 @@
     (defcap SWPU|OPU|C>SINGL-SWAP-WITH-SLIPPAGE
         (account:string swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData} slippage:decimal slippage-bounds:object{SwapperUsageV3.Slippage})
         @event
+        ;;RT-H-002: the slippage DOMAIN, checked where the value is USED rather than only in
+        ;;the UI-side constructor. Validation belongs in the defcap (CLAUDE.md), and these four
+        ;;took `slippage` as a parameter while validating nothing about it.
+        (UEV_Slippage slippage)
         (compose-capability (SWPU|X>SWAP swpair dsid))
     )
     (defcap SWPU|OPU|C>SINGL-SWAP-NO-SLIPPAGE
@@ -401,6 +405,10 @@
     (defcap SWPU|OPU|C>MULTI-SWAP-WITH-SLIPPAGE
         (account:string swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData} slippage:decimal slippage-bounds:object{SwapperUsageV3.Slippage})
         @event
+        ;;RT-H-002: the slippage DOMAIN, checked where the value is USED rather than only in
+        ;;the UI-side constructor. Validation belongs in the defcap (CLAUDE.md), and these four
+        ;;took `slippage` as a parameter while validating nothing about it.
+        (UEV_Slippage slippage)
         (compose-capability (SWPU|X>SWAP swpair dsid))
     )
     (defcap SWPU|OPU|C>MULTI-SWAP-NO-SLIPPAGE
@@ -411,6 +419,10 @@
     (defcap SWPU|C>SINGL-SWAP-WITH-SLIPPAGE
         (account:string swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData} slippage:decimal slippage-bounds:object{SwapperUsageV3.Slippage})
         @event
+        ;;RT-H-002: the slippage DOMAIN, checked where the value is USED rather than only in
+        ;;the UI-side constructor. Validation belongs in the defcap (CLAUDE.md), and these four
+        ;;took `slippage` as a parameter while validating nothing about it.
+        (UEV_Slippage slippage)
         (compose-capability (SWPU|X>SWAP swpair dsid))
     )
     (defcap SWPU|C>SINGL-SWAP-NO-SLIPPAGE
@@ -421,6 +433,10 @@
     (defcap SWPU|C>MULTI-SWAP-WITH-SLIPPAGE
         (account:string swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData} slippage:decimal slippage-bounds:object{SwapperUsageV3.Slippage})
         @event
+        ;;RT-H-002: the slippage DOMAIN, checked where the value is USED rather than only in
+        ;;the UI-side constructor. Validation belongs in the defcap (CLAUDE.md), and these four
+        ;;took `slippage` as a parameter while validating nothing about it.
+        (UEV_Slippage slippage)
         (compose-capability (SWPU|X>SWAP swpair dsid))
     )
     (defcap SWPU|C>MULTI-SWAP-NO-SLIPPAGE
@@ -1273,6 +1289,36 @@
         )
     )
     ;;{5.4}  Validate [UEV/CAP]
+    ;;MODULE-ONLY on purpose: nothing outside SWPU needs it, and declaring it in SwapperUsageV3
+    ;;would bump the interface and pull every consumer along under the cascade rule -- the same
+    ;;reasoning 04_BRD.pact records for UDC_BrandingGenesis.
+    (defun UEV_Slippage (slippage:decimal)
+        @doc "RT-H-002 / Stage-0 target V-01 (2026-09-15). The <= 50 ceiling existed ONLY inside \
+            \ UDC_SpawnSmartSwapSlippageBounds and UDC_SlippageObject -- CONSTRUCTORS, whose own \
+            \ @doc says they are called by the UI. The client surface takes the BUILT OBJECT: \
+            \ SWP|CC_SmartSwapWithSlippage receives slippage-bounds, and TS01-C3 reads the number \
+            \ back out of it. An integrator who hand-builds the object never calls the constructor, \
+            \ and nothing downstream re-checked it -- UEV_SwapData validates token sets and lengths \
+            \ only. MEASURED at RedTeam/[RT-H]_InputDomain.repl <<RT-H-002>>: a forged 9999% drives \
+            \ UC_SlippageMinMax's floor to -98990.0, so no output can breach it and the bound is \
+            \ inoperative -- precisely what the ceiling exists to prevent. The rule mirrors the \
+            \ constructor's exactly, -1.0 included, so a WITH-SLIPPAGE cap that legitimately \
+            \ receives the no-slippage sentinel is unaffected."
+        (enforce
+            (= (floor slippage 2) slippage)
+            (format "{} is not slippage conform decimal wise (max 2 decimals allowed)" [slippage])
+        )
+        (enforce
+            (or
+                (= slippage -1.0)
+                (and
+                    (> slippage 0.0)
+                    (<= slippage 50.0)
+                )
+            )
+            "Slippage must be greater than 0.0 and maximum 50.0, or -1.0 for no slippage"
+        )
+    )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     ;;Protection: Class 2 — SECURE

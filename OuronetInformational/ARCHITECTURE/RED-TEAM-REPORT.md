@@ -800,6 +800,63 @@ unilaterally.
 
 ---
 
+## Stage 7 — V-01, the last Stage-0 target *(2026-09-15)*
+
+### RT-H-002 — the slippage ceiling lived in the constructor, not the consumer *(SUCCEEDED — FIXED)*
+
+Stage 0's third and final first-rank target, and with it every target that stage produced is closed.
+Its words: *"slippage unbounded in **both** directions; the `@doc`'s '≤ 50' is UI policy the chain
+never runs, and the on-chain ceiling is opt-in and disabled by a negative sentinel."*
+
+**The rule existed — in the wrong place.** `UDC_SpawnSmartSwapSlippageBounds` enforces
+`(or (= slippage -1.0) (and (> slippage 0.0) (<= slippage 50.0)))`, and its own `@doc` says it is
+*"Called by the UI to generate the slippage-bounds object before submitting the Smart Swap
+transaction."* But the **client surface takes the built object**:
+`SWP|CC_SmartSwapWithSlippage (patron account input-id input-amount output-id slippage-bounds)`,
+and `TS01-C3` then reads the number **back out of it**:
+
+```pact
+(slippage:decimal (at "slippage-percent" slippage-bounds))
+```
+
+So the value the chain acts on is whatever the caller put in the object. An integrator who
+hand-builds it never calls the constructor — and **nothing downstream re-checked it.**
+`UEV_SwapData` validates token sets, lengths and output-∉-inputs and says nothing about slippage;
+a search for `enforce` beside `slippage` in `19_SWPU.pact` returned **one hit, and it was a comment.**
+
+**Measured**, on a hand-built object the constructor would refuse:
+
+| object | derived floor | derived ceiling |
+|---|---:|---:|
+| forged `slippage-percent = 9999.0` | **−98,990.0** | 100,990.0 |
+| conforming `10.0` | 900.0 | 1,100.0 |
+
+`UC_SlippageMinMax` computes `min = expected − (sp/100 × expected)`. Above 100% the floor goes
+**negative**, so no output can ever breach it — the bound is not loose, it is **inoperative**. That
+is exactly what the ≤ 50 ceiling exists to prevent.
+
+> **A bound enforced in a constructor is a bound the caller may decline by not calling it.** The
+> constructor refused `9999.0`; the consumer accepted the same value handed to it in an object.
+
+**Fixed** by putting the rule where the value is used: a module-only `UEV_Slippage` carrying the
+constructor's exact rule (`-1.0` included, so the no-slippage sentinel is unaffected), called from
+**all four** `*-WITH-SLIPPAGE` defcaps — which previously took `slippage` as a parameter and
+validated nothing about it. Module-only deliberately: declaring it in `SwapperUsageV3` would bump
+the interface and cascade to every consumer, the same reasoning `04_BRD.pact` records for
+`UDC_BrandingGenesis`.
+
+Pinned at `<<RT-H-002>>` with both arms and both directions: `9999.0` and `0.0` refused **by
+message**, `10.0` and `-1.0` still accepted. Nothing in the tree passed an out-of-range slippage, so
+tightening all four caps left the gate green at 21,588 assertions.
+
+**Severity, stated honestly:** this is **self-harm** — a caller weakening their own execution
+guarantee, which the `-1.0` sentinel already offers openly. What was broken is the **invariant**: a
+documented, constructed rule that the chain did not keep on the path that uses it. An integrator
+building against Talos directly would reasonably assume the `≤ 50` in the error message applies to
+them. Now it does.
+
+---
+
 # Closing assessment
 
 ## The register

@@ -150,3 +150,106 @@
 )
 (env-sigs [])
 (rollback-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "RT-H-002 - hand-build the Slippage object the constructor would refuse")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== RT-H-002 · 01 · a bound that lives in the constructor, not the consumer ====
+(print "--- [RT-H-002 · 01 · a bound that lives in the constructor, not the consumer] ---")
+;;<<RT-H-002>> FAMILY: H | STATUS: FIXED
+;;HYPOTHESIS: this is Stage 0's V-01, the last of its three first-rank targets -- "slippage
+;;            unbounded in BOTH directions; the @doc's '<= 50' is UI policy the chain never runs".
+;;            `UDC_SpawnSmartSwapSlippageBounds` enforces
+;;            `(or (= slippage -1.0) (and (> slippage 0.0) (<= slippage 50.0)))`, and its own @doc
+;;            says it is "Called by the UI to generate the slippage-bounds object before submitting
+;;            the Smart Swap transaction". But the CLIENT SURFACE takes the built OBJECT:
+;;            `SWP|CC_SmartSwapWithSlippage (patron account input-id input-amount output-id
+;;            slippage-bounds)`. Talos then does
+;;            `(slippage:decimal (at "slippage-percent" slippage-bounds))` -- it reads the number
+;;            back OUT of the caller's object. So if nothing downstream re-checks it, the ceiling is
+;;            advisory: an integrator who hand-builds the object is not obliged to call the
+;;            constructor at all.
+;;METHOD:     assert the constructor DOES refuse an out-of-range value, then feed a hand-built
+;;            object carrying that same value to the consumer that actually derives the bounds,
+;;            `UC_SlippageMinMax`, and see what it computes. Pure compute on both sides, so the
+;;            result is arithmetic rather than circumstance.
+;;RESULT:     the ceiling is not enforced anywhere the value is USED. `UEV_SwapData` validates token
+;;            sets, lengths and output-not-in-inputs and says nothing about slippage; a grep for
+;;            `enforce` beside `slippage` in 19_SWPU.pact returns ONE hit and it is a doc comment.
+;;            Above 100% the derived `min` goes NEGATIVE, which makes the bound a no-op -- every
+;;            possible output passes. That is what the <= 50 ceiling exists to prevent.
+(let
+    (
+        (ref-SWPU:module{SwapperUsageV3} SWPU)
+        ;;hand-built, never passed through the constructor. This is the whole attack: the schema is
+        ;;public and the client surface accepts the object, so nothing obliges a caller to use
+        ;;UDC_SpawnSmartSwapSlippageBounds at all.
+        (forged:object{SwapperUsageV3.Slippage}
+            { "expected-output-amount" : 1000.0
+            , "output-precision"       : 12
+            , "slippage-percent"       : 9999.0 })
+        (conforming:object{SwapperUsageV3.Slippage}
+            { "expected-output-amount" : 1000.0
+            , "output-precision"       : 12
+            , "slippage-percent"       : 10.0 })
+    )
+    (let
+        (
+            (forged-mm:[decimal]     (ref-SWPU::UC_SlippageMinMax forged))
+            (conforming-mm:[decimal] (ref-SWPU::UC_SlippageMinMax conforming))
+        )
+        (map print
+            [
+                (format "<<RT-H-002>> forged 9999%% -> min={} max={} | conforming 10%% -> min={} max={}"
+                    [(at 0 forged-mm) (at 1 forged-mm) (at 0 conforming-mm) (at 1 conforming-mm)])
+                ;;1] THE CONSTRUCTOR DOES ITS JOB. Without this the rest proves nothing -- a ceiling
+                ;;   that is enforced nowhere at all is a different (smaller) finding than one that
+                ;;   is enforced in the wrong place.
+                (expect-failure "<<RT-H-002>> the constructor REFUSES 9999% -- the rule exists"
+                    "Slippage must be greater than 0.0 and maximum 50.0, or -1.0 for no slippage"
+                    (ref-SWPU::UDC_SpawnSmartSwapSlippageBounds
+                        "AKOSON-98c486052a51" 5.0 "TUSD-98c486052a51" 9999.0))
+                ;;2] ...AND THE CONSUMER DOES NOT. The same value, in a hand-built object, is
+                ;;   accepted and turned into bounds without complaint.
+                (expect "<<RT-H-002>> ...but the CONSUMER accepts the same value from a hand-built object"
+                    2 (length forged-mm))
+                ;;3] THE CONSEQUENCE, and it is arithmetic: above 100% the floor goes NEGATIVE, so
+                ;;   no output can ever breach it. The bound is not merely loose, it is inoperative.
+                (expect "<<RT-H-002>> a forged 9999% drives the slippage FLOOR below zero"
+                    true (< (at 0 forged-mm) 0.0))
+                ;;4] NON-VACUITY. A conforming 10% keeps the floor positive and tight, so assertion
+                ;;   3 is about the forged value and not about UC_SlippageMinMax always going
+                ;;   negative.
+                (expect "<<RT-H-002>> ...while a conforming 10% keeps the floor positive"
+                    true (> (at 0 conforming-mm) 0.0))
+                ;;5] and the floor is exactly expected*(1 - sp/100), so the mechanism is pinned
+                ;;   rather than inferred from the sign alone.
+                (expect "<<RT-H-002>> the floor is expected*(1 - sp/100), pinned exactly"
+                    900.0 (at 0 conforming-mm))
+                ;;6] THE FIX (2026-09-15). `UEV_Slippage` now carries the constructor's rule and is
+                ;;   called by all four `*-WITH-SLIPPAGE` defcaps, which previously took `slippage`
+                ;;   as a parameter and validated nothing about it. Module-only, so no interface
+                ;;   bump and no cascade. Pinned BY MESSAGE, so the refusal is attributable.
+                (expect-failure "<<RT-H-002>> FIXED: the consumer-side validator refuses 9999%"
+                    "Slippage must be greater than 0.0 and maximum 50.0, or -1.0 for no slippage"
+                    (SWPU.UEV_Slippage 9999.0))
+                ;;7] ...and it refuses the OTHER direction too -- V-01 said "unbounded in BOTH
+                ;;   directions", and a zero or negative percent is just as inoperative.
+                (expect-failure "<<RT-H-002>> ...and 0.0, which would make min=max=expected"
+                    "Slippage must be greater than 0.0 and maximum 50.0, or -1.0 for no slippage"
+                    (SWPU.UEV_Slippage 0.0))
+                ;;8] NON-VACUITY, both arms. A validator that refuses everything is not a bound, it
+                ;;   is a broken function -- so the conforming value and the documented -1.0
+                ;;   sentinel must both still pass.
+                (expect "<<RT-H-002>> ...while a conforming 10% passes"
+                    true (!= "" (format "{}" [(SWPU.UEV_Slippage 10.0)])))
+                (expect "<<RT-H-002>> ...and the -1.0 no-slippage sentinel still passes"
+                    true (!= "" (format "{}" [(SWPU.UEV_Slippage -1.0)])))
+            ]
+        )
+    )
+)
+(print "===^^^===")
+(commit-tx)
