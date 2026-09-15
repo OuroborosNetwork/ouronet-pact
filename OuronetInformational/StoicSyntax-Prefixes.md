@@ -788,6 +788,14 @@ way it sweeps `(module …)`.
 
 Canon is now **self-enforcing** so future work can't silently drift (no re-sweep needed):
 - **`tools/skeleton_emit.py`** — the *fixer*: re-lays any module/interface into canonical form.
+  **WARNING (measured 2026-09-15): it is LOSSY for comments.** Across the 15 currently
+  non-canonical files it moves 251 forms, deletes **0** of them, and **drops 24 comment
+  lines** — every one an audit annotation recording a prior investigation (*"NEVER COMPOSED,
+  and the asymmetry it would close is INTENTIONAL"*, *"TESTED, AND THE HYPOTHESIS WAS
+  WRONG"*, *"NINE FVT|C>* defcaps were REMOVED here on 2026-09-10"*). The output loads and
+  passes the gate, which is what makes it dangerous. **Do not run it blind on live core** —
+  move the forms by hand carrying their commentary, or fix the emitter to keep comments
+  attached to the form beneath them. `canon_check` now prints every line that would be lost.
 - **`tools/cap_band.py`** — the composition-based cap classifier (C1–C4, §7.5).
 - **`tools/canon_check.py`** — the *verifier*: runs the fixer in a temp copy and asserts the file is
   already canonical **up to blank lines** (blank spacing is cosmetic, not a canon rule). Exit 1 on any real

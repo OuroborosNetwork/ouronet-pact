@@ -749,7 +749,45 @@ transaction — worst case `MTX|C_AddLiquidity` at **415,419 gas against a 2,000
 4.8× headroom)**, including harness overhead. Pinned at `<<DPB-01>>` against **half** the budget, so
 the collapse stays available. Full analysis: `memories/2026-09-15-gas-station-cannot-whitelist-continuations.md`.
 
-**2. Canon: fix incrementally.** Owner: *"fix incrementally … must make sure you don't break shit
+**2. Canon: fix incrementally — and the first increment found that the FIXER IS LOSSY.**
+Owner: *"fix incrementally … must make sure you don't break shit up."* Taking that literally and
+measuring before touching anything changed the plan.
+
+`tools/skeleton_emit.py` was described (by me, and by `canon_check`'s own footer) as a one-command
+fix. **It is not safe to run blind.** Measured across all 15 offenders, whitespace-normalised,
+comparing the original against the re-laid output as multisets:
+
+| | |
+|---|---:|
+| forms moved | 251 |
+| forms **deleted** | **0** |
+| **comment lines deleted** | **24** |
+
+No code is lost — which is exactly what makes it dangerous, because the result loads and passes the
+gate. What it deletes is **audit commentary, and every single line records a prior investigation**:
+
+* `08_ATS` — *"NEVER COMPOSED, and the asymmetry it would close is INTENTIONAL. Investigated
+  2026-09-10"* and *"TESTED, AND THE HYPOTHESIS WAS WRONG"*
+* `04_RPS` — *"NINE FVT|C>* defcaps were REMOVED here on 2026-09-10 (281 lines)"*
+* `11_VST` — *"…close a defect that minted an unreadable nonce"*
+* `04_BRD` — *"MODULE-ONLY … deliberately so: declaring it in the interface would [cascade]"*
+* `02_INFO-ONE+` — *"DEFECT FIXED 2026-09-14"*
+
+*Deleting "TESTED, AND THE HYPOTHESIS WAS WRONG" is how the next person runs the experiment again.*
+
+**Why nobody could see this:** `canon_check` truncated every file's diff to **eight lines**
+(`return diff[:8]`), so seven of the fifteen reported exactly "8" and the real scale was invisible —
+and a positional diff cannot distinguish a MOVE from a DELETE, which is the only question that
+matters before rewriting live core. Both fixed: it now computes net content loss as a multiset
+difference and prints every comment that would be lost, and its footer no longer tells you to run
+the fixer.
+
+**Status: the 15 stay as they are.** The options are to move the forms **by hand** carrying their
+commentary, or to fix `skeleton_emit` to keep comments attached to the form beneath them — after
+which canon becomes a safe one-command job permanently. Until one of those happens, canon is
+cosmetic and the annotations are not.
+
+*(superseded — original ruling text)* **2. Canon: fix incrementally.** Owner: *"fix incrementally … must make sure you don't break shit
 up."* The 15 files stay enumerated; they are corrected one module at a time with a full gate between,
 never bundled with other work.
 
