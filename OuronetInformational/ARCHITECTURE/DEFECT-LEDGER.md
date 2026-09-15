@@ -401,7 +401,7 @@ fixture job, not a side effect of a coverage audit.
 
 ### GS-14 — the stats generator degraded silently, and took its checker with it *(FOUND + FIXED 2026-09-15)*
 
-Adding GS-13's two pins moved the assertion count 21,519 → 21,539, so `REPL_SUITE_STATS.md` had to be
+Adding GS-13's two pins moved the assertion count 21,519 → 21,575, so `REPL_SUITE_STATS.md` had to be
 regenerated. `_figuresync --check` reported **clean** before the regeneration — truthfully, and
 uselessly: it compares the narrative documents against the stats file, and **nothing compared the
 stats file against a live gate.** One link in the chain had never been verified.
@@ -485,7 +485,7 @@ position. All five were run.
 
 **`_vacuous.py --check` is now fatal in the gate.** An assertion that cannot fail is a green light
 wired to nothing, and it is indistinguishable from a real one in every summary the gate prints — it
-counts toward the 21,539, it shows in the `+` column, and it never goes red. I wrote one myself this
+counts toward the 21,575, it shows in the `+` column, and it never goes red. I wrote one myself this
 month (`step1 > discount × 951`, which the defect it was written for would have passed). Proven by
 injecting `(expect "…" 42 42)`: the check exits 1 and names the site. Only VACUOUS is fatal; WEAK
 stays advisory, because *"it runs at all"* is sometimes genuinely the assertion.
@@ -814,7 +814,7 @@ that half-migration. **No code was restructured.**
 >
 > **Measured three ways, not argued:**
 > 1. Reverting one trigger and re-running `DEFPACT-BILLING.repl`: **identical output**.
-> 2. Reverting **all six** and re-running the **whole gate**: **GREEN, 21,539 assertions, 0
+> 2. Reverting **all six** and re-running the **whole gate**: **GREEN, 21,575 assertions, 0
 >    failures.** No assertion anywhere detects the removal, because there is nothing to detect.
 > 3. Regenerating the price sheet from the reverted source: **byte-identical**.
 >

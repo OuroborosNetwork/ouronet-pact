@@ -610,6 +610,75 @@ computation of a swap that could never have succeeded.
 
 ---
 
+## Stage 6 — Family I, the gas station's payable surface *(2026-09-15)*
+
+The last first-rank target Stage 0 produced, and the only one that had never been attacked. Stage 0's
+own words: *"`GAS_PAYER` Case 3 validates exec-code forms 0, 1 and 2 only; forms at index ≥ 3 are
+unconstrained and form 2 need only start with `(let`. The only bound is economic."*
+
+### RT-I-001 — the custom-code door, and the deterrent that can be declined *(SUCCEEDED)*
+
+**The defect is not the unvalidated tail.** That is the custom-code door working as designed, with
+the fee as its bound. **The defect is that the fee can be declined.**
+
+Every link measured at `RedTeam/[RT-I]_GasStation.repl`:
+
+| # | fact | block |
+|---|---|---|
+| 1 | Case 3 inspects forms 0, 1, 2 only; `(>= n 3)` bounds nothing above | `RT-I-001c` |
+| 2 | the **count** of appended forms is unbounded | `RT-I-001d` |
+| 3 | form 2 need only **start with** `(let` — its body is unread | `RT-I-001e` |
+| 4 | the door is priced at a **flat** `(* 5.0 tier-biggest)` — 25 raw, **13.25** after a top-tier discount, *independent of what the tail does* | `RT-I-001f` |
+| 5 | **a gassless (smart) account pays 0.0** — `C_Collect` collects only `(if (and (!= ignis-sum 0.0) (not iz-gassles-patron)) …)` | `RT-I-001g` |
+| 6 | smart accounts are **permissionless**: `DALOS\|C_DeploySmartAccount` is a **client** wrapper (`TS01-C1:311`), STOA-priced at `acct-smart` 1000 deter = 100 STOA — *and that fee is itself conditional on `UR_AccountCreationStoa`, so it is **zero** when the account-creation toggle is off* | read off the Talos surface |
+
+**Composed:** pay once, or nothing, then submit unlimited transactions shaped
+`namespace + IGNIS.C_Collect(CustomCodeCumulator) + (let …) + <arbitrary code>`, paying **no IGNIS**,
+with Ouronet funding up to `DALOS|GAS-BUDGET` = **2,000,000 gas units** of KDA each time.
+
+> **This is `RT-A-001`'s shape in the gas station.** There a second door skipped the `lp-churn`
+> deterrent; here the gassless exemption skips the custom-code fee. A deterrent that can be declined
+> is not one.
+
+It is **not theft** — the appended code still satisfies its own guards. It is **free execution**,
+which is the one thing a gas station exists to ration.
+
+### What is proven, and what is inference
+
+Links 1–5 are **measured**. Link 6 is read off the Talos surface. The **composition is not executed
+end to end**, because no REPL can simulate chainweb's buy-gas phase — `test-capability` acquires
+`GAS_PAYER` exactly as buy-gas does, which is what makes 1–3 real, but nothing here can show KDA
+leaving the station. That last step is an on-chain smoke test and is the only part of this finding
+that is inference rather than measurement.
+
+### The method correction this attack forced
+
+The first draft put all five cases in **one** `begin-tx` and reported a clean success. **It was
+vacuous.** `test-capability` grants the capability for the remainder of the transaction, so cases
+2–5 never re-evaluated the defcap body — they read a cap already in scope from case 1. The **control**
+exposed it: a single foreign form, which `DALOS-G2c` proves is refused, came back as *"expected
+failure, got result: ()"*. Without that control this file would have claimed a gas-station hole it
+had not demonstrated. *A control is not a formality; it is the only assertion that can tell you your
+attack did not run.*
+
+### The register could not see this family at all
+
+`_redteam.py` hard-coded `RT-([A-H])` in **both** its header regex and its malformed-header scan, so
+adding family I produced **nothing** — not a row, not an error. The register said 9 attacks and was
+silent about the 10th. Widened to `A-Z`, family I registered, and an unknown family is now an error.
+*Third instance this round of a checker silently narrowing to the region it was told about, after the
+price sheet's write-only `skipped` counter and `canon_check`'s `diff[:8]`.*
+
+### Owner ruling needed
+
+The gassless exemption is presumably deliberate — smart accounts are contract-controlled and meant to
+operate without holding IGNIS. The question is whether that exemption should extend to the
+**custom-code door specifically**. Two contained options: charge `UDC_CustomCodeCumulator` even for
+gassless patrons, or refuse Case 3 for gassless patrons. Both are economics, so neither was applied
+unilaterally.
+
+---
+
 # Closing assessment
 
 ## The register

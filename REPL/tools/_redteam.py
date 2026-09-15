@@ -33,10 +33,18 @@ FAMILIES = {
     "F": "Griefing / denial of service",
     "G": "Hostile citizen module",
     "H": "Input domain",
+    "I": "Gas station payable surface",
 }
 STATUSES = ["SUCCEEDED", "FIXED", "REFUSED", "ACCEPTED", "UNREACHABLE"]
+# A-Z, not A-H (2026-09-15). The range was hard-coded to the families that existed when the
+# tool was written, and BOTH the header regex and the malformed-header scan below used it.
+# So adding family I produced NOTHING: not a row, not an error, not a warning -- the register
+# reported 9 attacks and said nothing about the 10th. Same shape as the price sheet's
+# write-only `skipped` counter and canon_check's `diff[:8]`: a checker silently narrowing to
+# the region it was told about. An unknown family is now an ERROR, which is the only way a
+# hard-coded list can fail safely.
 HDR = re.compile(
-    r';;<<(RT-([A-H])-\d{3})>>\s*FAMILY:\s*([A-H])\s*\|\s*STATUS:\s*([A-Z]+)\s*\n'
+    r';;<<(RT-([A-Z])-\d{3})>>\s*FAMILY:\s*([A-Z])\s*\|\s*STATUS:\s*([A-Z]+)\s*\n'
     r'\s*;;HYPOTHESIS:\s*(.+?)\n(?=\s*;;METHOD:)', re.S)
 
 def scan_text(src, where="<mem>"):
@@ -52,7 +60,7 @@ def scan_text(src, where="<mem>"):
         out.append({"tag": tag, "family": fam, "status": status,
                     "hypothesis": " ".join(hyp.replace(";;", " ").split()), "file": where})
     # a block tagged <<RT-...>> with no parsable header is the failure mode that matters
-    for m in re.finditer(r';;<<(RT-[A-H]-\d{3})>>', src):
+    for m in re.finditer(r';;<<(RT-[A-Z]-\d{3})>>', src):
         if not any(r["tag"] == m.group(1) for r in out):
             errs.append(f"{where}: {m.group(1)} has no parsable FAMILY/STATUS/HYPOTHESIS header")
     return out, errs
