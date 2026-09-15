@@ -209,6 +209,26 @@ multi-step add-liquidity path a griefed provider pays **200**, not 100 — `LQ|I
 step 0 *and* the same amount again on the step-1 rollback branch. Both charges land, because defpact
 steps are separate committed transactions. This predates the `RT-F-001` split.
 
+**GS-02 follow-through (same day).** Publishing the 12 was the floor, not the fix. Four further
+resolution gaps were found and closed, taking the unpriced set **18 → 12 → 5**:
+
+| gap | example | why it mattered |
+|---|---|---|
+| `CLIENT` missing the optional `ENTITY\|` prefix | `ref-SWPLC::STOA-PID\|C_AddStandardLiquidity` | `SWP\|C_AddLiquidity` — the second add-liquidity door, the one `RT-A-001` was about — had no row at all |
+| `MODULE.fn` dot-notation calls invisible | `(STOAICO.C_Collect patron account)` in `99_TS02-CPAD.pact` | `CLAUDE.md` says cross-module calls use `::`. This one does not. It works, so nothing complained — and the op was absent from the price sheet |
+| same-file Talos→Talos delegation not followed | `DPNF\|C_RemoveNonceScore` is literally `(DPNF\|C_UpdateNonceScore … -1.0)` | a wrapper that delegates to a sibling reached no core op |
+| …and when it was followed, only for the **same** entity prefix | `DPSF\|C_BulkTransfer` → `DPDC\|C_BulkTransfer` | its DPNF twin resolved while it did not — *the same defect surviving in one of two symmetrical ops is the shape that hides longest* |
+
+The **5** that remain are now honestly classified rather than lumped together: **3 admin entrypoints**
+(free by owner rule — the row builder already forced `d = None` for them, so reporting "could not
+resolve" stated a failure where the truth was a policy) and **2 shape-B wrappers** that bill through
+their own `URCi_` reader, for which the sheet **names the authoritative reader** rather than
+inventing a component cost it cannot model.
+
+Worth recording about the guard itself: after this round of generator fixes, `_pricesync --check`
+**fired unprompted** on the drift the regeneration had just created in `IGNIS-PRICING.md`. That is
+the check working in the workflow rather than in a selftest.
+
 **The second guard, and the more general one:** `REPL/tools/_toolpaths.py --check`, also fatal in
 the gate. The eleven dead tools were found by grepping for `REPL/_letfix.py` — a pattern already
 suspected. *A targeted grep only finds the drift you went looking for.* `_toolpaths.py` instead

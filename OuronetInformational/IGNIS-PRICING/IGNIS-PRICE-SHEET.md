@@ -277,6 +277,8 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_MoveCreateRole` | `C_MoveCreateRole` | AUTH | **29** | — | $0.29 | deter:auth 10 + components:DPNF|C_MoveCreateRole 19 |
 | `C_MoveRecreateRole` | `C_MoveRecreateRole` | AUTH | **29** | — | $0.29 | deter:auth 10 + components:DPNF|C_MoveRecreateRole 19 |
 | `C_MoveSetUriRole` | `C_MoveSetUriRole` | AUTH | **29** | — | $0.29 | deter:auth 10 + components:DPNF|C_MoveSetUriRole 19 |
+| `C_RemoveNonceScore` | `C_UpdateNonceScore` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
+| `C_RemoveSetNonceScore` | `C_UpdateNonceScore` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
 | `C_RenameSet` | `C_RenameSet` | SETUP | **14** | — | $0.14 | deter:setup 5 + components:DPNF|C_RenameSet 9 |
 | `C_Repurpose` | `C_RepurposeCollectable` | USAGE | **≥ 5** | — | COMPLEX | charge multiplies by an item count; legs: small 2 + medium 3 |
 | `C_RepurposeFragments` | `C_RepurposeCollectableFragments` | USAGE | **5** | — | $0.05 | small 2 + medium 3 |
@@ -353,6 +355,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | Talos function | core op | role | IGNIS | STOA | $ (ignis) | charge breakdown |
 |----------------|---------|------|------:|-----:|----------:|------------------|
 | `C_AddQuantity` | `C_AddQuantity` | SETUP | **18** | — | $0.18 | deter:setup 5 + components:DPSF|C_AddQuantity 13 |
+| `C_BulkTransfer` | `C_BulkTransfer` ×2 | USAGE | **≥ 6** | — | COMPLEX | per-nonce / per-item work; legs: smallest 1 + small 2 + medium 3 |
 | `C_Burn` | `C_BurnSFT` | SETUP | **20** | — | $0.20 | deter:setup 5 + components:DPSF|C_Burn 15 |
 | `C_Control` | `C_Control` | SETUP | **20** | — | $0.20 | deter:setup 5 + components:DPSF|C_Control 15 |
 | `C_Create` | `C_CreateNewNonce` ×2 | ISSUE | **1** | — | $0.01 | smallest 1 |
@@ -370,6 +373,8 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_MoveCreateRole` | `C_MoveCreateRole` | AUTH | **29** | — | $0.29 | deter:auth 10 + components:DPSF|C_MoveCreateRole 19 |
 | `C_MoveRecreateRole` | `C_MoveRecreateRole` | AUTH | **29** | — | $0.29 | deter:auth 10 + components:DPSF|C_MoveRecreateRole 19 |
 | `C_MoveSetUriRole` | `C_MoveSetUriRole` | AUTH | **29** | — | $0.29 | deter:auth 10 + components:DPSF|C_MoveSetUriRole 19 |
+| `C_RemoveNonceScore` | `C_UpdateNonceScore` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
+| `C_RemoveSetNonceScore` | `C_UpdateNonceScore` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
 | `C_RenameSet` | `C_RenameSet` | SETUP | **14** | — | $0.14 | deter:setup 5 + components:DPSF|C_RenameSet 9 |
 | `C_Repurpose` | `C_RepurposeCollectable` | USAGE | **≥ 5** | — | COMPLEX | charge multiplies by an item count; legs: small 2 + medium 3 |
 | `C_RepurposeFragments` | `C_RepurposeCollectableFragments` | USAGE | **5** | — | $0.05 | small 2 + medium 3 |
@@ -524,6 +529,12 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_RedemAllSparks` | `C_RedemAllSparks` | SETUP | **≥ 236** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPTF|C_ToggleFreezeAccount 58 + components:DPTF|C_WipeSlim 80 + deter:usage 1 + components:DPTF|C_Mint 86 + smallest 1 + small 2 + medium 3 |
 | `C_RedemFewSparks` | `C_RedemFewSparks` | SETUP | **≥ 236** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPTF|C_ToggleFreezeAccount 58 + components:DPTF|C_WipeSlim 80 + deter:usage 1 + components:DPTF|C_Mint 86 + smallest 1 + small 2 + medium 3 |
 
+## STOAICO
+
+| Talos function | core op | role | IGNIS | STOA | $ (ignis) | charge breakdown |
+|----------------|---------|------|------:|-----:|----------:|------------------|
+| `C_Collect` | `C_Collect` | USAGE | **≥ 93** | — | COMPLEX | charge multiplies by an item count; legs: deter:usage 1 + components:DPTF|C_Mint 86 + smallest 1 + small 2 + medium 3 |
+
 ## SWP
 
 | Talos function | core op | role | IGNIS | STOA | $ (ignis) | charge breakdown |
@@ -547,6 +558,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_Fuel` | `C_Fuel` | USAGE | **≥ 6** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 + small 2 + medium 3 |
 | `C_IssueStable` | `C_Issue` | ISSUE | **≥ 5087** | 500 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPTF|C_Mint 86 + deter:issue-swp-pair 5000 | STOA: stoa:issue-swp-pair 500 |
 | `C_IssueStablePool` | `C_IssueStablePool` ×2 | ISSUE | **≥ 5606** | 600 | COMPLEX | charge multiplies by an item count; legs: deter:issue-swp-pair 5000 + token-issue 500 + biggest 5 + smallest 1 + literal 100 | STOA: dptf 100 + swp 500 |
+| `C_IssueStandard` | `C_Issue` | ISSUE | **≥ 5087** | 500 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPTF|C_Mint 86 + deter:issue-swp-pair 5000 | STOA: stoa:issue-swp-pair 500 |
 | `C_IssueStandardPool` | `C_IssueStandardPool` | ISSUE | **≥ 5606** | 600 | COMPLEX | charge multiplies by an item count; legs: deter:issue-swp-pair 5000 + token-issue 500 + biggest 5 + smallest 1 + literal 100 | STOA: dptf 100 + swp 500 |
 | `C_IssueWeighted` | `C_Issue` | ISSUE | **≥ 5087** | 500 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPTF|C_Mint 86 + deter:issue-swp-pair 5000 | STOA: stoa:issue-swp-pair 500 |
 | `C_IssueWeightedPool` | `C_IssueWeightedPool` | ISSUE | **≥ 5606** | 600 | COMPLEX | charge multiplies by an item count; legs: deter:issue-swp-pair 5000 + token-issue 500 + biggest 5 + smallest 1 + literal 100 | STOA: dptf 100 + swp 500 |
@@ -614,21 +626,14 @@ another Talos wrapper, not a core op) or admin entrypoints that are exempt by ru
 
 | Talos entrypoint | why it is unpriced |
 |---|---|
-| DALOS\|C_UpdateEliteAccount | no core client op reached from body |
-| DALOS\|C_UpdateEliteAccountSquared | no core client op reached from body |
-| DPNF\|C_RemoveNonceScore | no core client op reached from body |
-| DPNF\|C_RemoveSetNonceScore | no core client op reached from body |
-| DPSF\|C_BulkTransfer | no core client op reached from body |
-| DPSF\|C_RemoveNonceScore | no core client op reached from body |
-| DPSF\|C_RemoveSetNonceScore | no core client op reached from body |
-| ORBR\|A_Fuel | no core client op reached from body |
-| P\|A_Add | no core client op reached from body |
-| P\|A_AddIMP | no core client op reached from body |
-| STOAICO\|C_Collect | no core client op reached from body |
-| SWP\|C_IssueStandard | no core client op reached from body |
+| DALOS\|C_UpdateEliteAccount | billed by the wrapper itself (shape B) through `DALOS\|URCi_UpdateEliteAccount` — no core op to key a row on; read the cost there |
+| DALOS\|C_UpdateEliteAccountSquared | billed by the wrapper itself (shape B) through `DALOS\|URCi_UpdateEliteAccountSquared` — no core op to key a row on; read the cost there |
+| ORBR\|A_Fuel | admin entrypoint -- IGNIS + STOA free by owner rule, nothing to price |
+| P\|A_Add | admin entrypoint -- IGNIS + STOA free by owner rule, nothing to price |
+| P\|A_AddIMP | admin entrypoint -- IGNIS + STOA free by owner rule, nothing to price |
 
 ---
-178 simple (exact price) · 197 complex (floor price) · 11 STOA-only · 49 exempt · 0 unresolved · 12 unpriced · 424 Talos client functions
+182 simple (exact price) · 200 complex (floor price) · 11 STOA-only · 49 exempt · 0 unresolved · 5 unpriced · 431 Talos client functions
 
 `×N` on a core op = the wrapper drives N priced core ops in a FIXED composition (still exactly knowable).
 

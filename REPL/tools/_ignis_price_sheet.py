@@ -438,12 +438,55 @@ for tf in TALOS:
         # (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL). Resolve aliases from the wrapper's own
         # file, else every AQP-* wrapper silently fails module lookup and gets skipped.
         alias = dict(re.findall(r'\(ref-([A-Za-z0-9|_+-]+):module\{[^}]*\}\s+([A-Za-z0-9|_+-]+)\)', src))
-        cores = [(alias.get(mod, mod), cf)
-                 for mod, cf in re.findall(r'ref-([A-Za-z0-9|_+-]+)::([A-Za-z0-9_|+-]+)', body)
+        # Three call forms reach a core client op, and the sheet used to see only the first.
+        #   1. ref-MOD::C_Fn            -- the convention
+        #   2. MODULE.C_Fn              -- dot notation. CLAUDE.md says cross-module calls use `::`,
+        #      and 99_TS02-CPAD.pact's `(STOAICO.C_Collect patron account)` does not. It works
+        #      (same namespace), so nothing complained -- but the op was invisible to this tool and
+        #      therefore absent from the price sheet entirely.
+        #   3. (ENTITY|Fn ...)          -- a wrapper delegating to ANOTHER WRAPPER IN THE SAME
+        #      TALOS FILE. `DPNF|C_RemoveNonceScore` is literally
+        #      `(DPNF|C_UpdateNonceScore patron id account nonce nos -1.0)`. One hop, resolved
+        #      below, exactly like the same-module C_ alias hop billing_text already does at
+        #      round 0; more hops would start charging a neighbour's deterrence here.
+        _calls = (re.findall(r'ref-([A-Za-z0-9|_+-]+)::([A-Za-z0-9_|+-]+)', body)
+                  + re.findall(r'\(([A-Z][A-Za-z0-9|_+-]*)\.([A-Za-z0-9_|+-]+)', body))
+        cores = [(alias.get(mod, mod), cf) for mod, cf in _calls
                  if CLIENT.match(cf) and alias.get(mod, mod) != 'IGNIS']
+        if not cores:
+            # ANY entity in the same file, not just this wrapper's own: DPSF|C_BulkTransfer
+            # is `(DPDC|C_BulkTransfer patron id true ...)` -- the delegate wears a different
+            # ENTITY prefix, so an own-entity-only scan missed it while its DPNF twin resolved.
+            for _sib in re.findall(r'\(([A-Za-z0-9-]+\|[A-Za-z0-9_|+-]+)', body):
+                if _sib == f'{entity}|{fn}':
+                    continue
+                _sb = defun_body(src, _sib)
+                if not _sb:
+                    continue
+                _sa = (re.findall(r'ref-([A-Za-z0-9|_+-]+)::([A-Za-z0-9_|+-]+)', _sb)
+                       + re.findall(r'\(([A-Z][A-Za-z0-9|_+-]*)\.([A-Za-z0-9_|+-]+)', _sb))
+                cores += [(alias.get(m2, m2), c2) for m2, c2 in _sa
+                          if CLIENT.match(c2) and alias.get(m2, m2) != 'IGNIS']
+                if cores:
+                    body = body + ' ' + _sb      # the delegate's legs are this op's legs
+                    break
         seen=set(); cores=[c for c in cores if not (c in seen or seen.add(c))]
         if not cores:
-            dropped.append((entity, fn, 'no core client op reached from body')); continue
+            # Shape B (CLAUDE.md, "Two billing shapes"): the WRAPPER builds the cumulator from a
+            # URCi_ reader and collects it itself, so there is no core client op to hang a row on.
+            # DALOS|C_UpdateEliteAccountSquared collects ref-IGNIS::DALOS|URCi_UpdateEliteAccount-
+            # Squared. The op is billed and the cost IS knowable -- just not through this sheet's
+            # row model, which is keyed on a core op. Name the authoritative reader rather than
+            # print a bare "could not resolve", and never invent a component cost for it.
+            _rdr = re.search(r'C_Collect\w*\s+[A-Za-z0-9|_-]+\s*\(\s*(?:ref-[A-Za-z0-9|_+-]+::)?'
+                             r'((?:[A-Za-z0-9-]+\|)?URCi[x]?_[A-Za-z0-9|_-]+)', body)
+            _msg = ('no core client op reached from body' if not _rdr else
+                    # the reader name carries an ENTITY| prefix; an unescaped pipe would
+                    # split this markdown table cell in two.
+                    f'billed by the wrapper itself (shape B) through '
+                    f'`{_rdr.group(1).replace(chr(124), chr(92) + chr(124))}` — '
+                    f'no core op to key a row on; read the cost there')
+            dropped.append((entity, fn, _msg)); continue
         if (entity, fn) in emitted:      # Talos files declare each fn twice (interface + module)
             continue
         emitted.add((entity, fn))
@@ -597,6 +640,12 @@ _unpriced = {}
 for _e, _fn, _why in dropped:
     if not _CLIENT_FN.match(_fn.split('|')[-1]):   continue   # policy/plumbing, not a client op
     if (_e, _fn) in emitted:                       continue   # priced from the sibling declaration
+    # An admin entrypoint carries no IGNIS and no STOA by owner rule -- the row builder already
+    # forces `d = None` for every `A_`/`AA_` wrapper. Reporting one as "could not resolve" states
+    # a failure where the truth is a policy, and buries the ops that ARE unresolved among ops that
+    # are simply free.
+    if re.match(r'^A{1,2}p?_', _fn.split('|')[-1]):
+        _why = 'admin entrypoint -- IGNIS + STOA free by owner rule, nothing to price'
     _unpriced.setdefault(f'{_e}|{_fn}', _why)
 if _unpriced:
     print("\n## UNPRICED — Talos client entrypoints this sheet could not resolve\n")

@@ -246,7 +246,7 @@ table is the completion ledger.
 | **P5** migrate ~200 `URCi_` readers off legacy tiers | **done** — zero deterrence-only readers, zero legacy tier calls on a client path |
 | **P6** retire dead cumulator constructors | **done in practice** — the 11 surviving `UDC_<tier>Cumulator` refs are all in `00_DPMF.pact`, dead code that is out of scope |
 | **P7** REPL price assertions (acceptance gate) | **done** — 73 assertions in `[6.1]_Cumulator.repl` plus 8 full-module sweeps (DPTF, ATS, DPDC, DPOF, SWP, SCORE/RPS, AQP, IG\|LEGS) |
-| **P8** the documentation price list | **done** — 424 Talos client functions priced, 0 unresolved. 12 further Talos entrypoints could NOT be attached to a priced core op and are listed in the sheet's `UNPRICED` section (2026-09-15: they used to be dropped silently) |
+| **P8** the documentation price list | **done** — 431 Talos client functions priced, 0 unresolved. 5 entrypoints carry no row: 3 admin ops (free by rule) and 2 shape-B wrappers that bill through their own `URCi_` reader. All 5 are listed in the sheet's `UNPRICED` section (2026-09-15: they used to be dropped silently) |
 
 **Beyond the original plan** (owner decisions taken after it was written): the dollar rule for all
 STOA; the constants-only conversion (65 table reads lifted); the `define-set` / `ats-secondary` /
@@ -255,23 +255,33 @@ STOA; the constants-only conversion (65 table reads lifted); the `define-set` / 
 
 ## What is open
 
-**12 Talos entrypoints are unpriced.** The rest — **424** — carry a price:
+**431** Talos client functions carry a price; **5** carry no row, and the sheet now says which:
 
 ```
-178 exact  ·  197 floor  ·  11 STOA-only  ·  49 exempt  ·  0 unresolved  ·  12 unpriced
+182 exact  ·  200 floor  ·  11 STOA-only  ·  49 exempt  ·  0 unresolved  ·  5 unpriced
 ```
+
+Of the 5: **3 are admin entrypoints** (`ORBR|A_Fuel`, `P|A_Add`, `P|A_AddIMP`) — IGNIS and
+STOA free by owner rule, so there is nothing to price. The other **2 are billing shape B**
+(`DALOS|C_UpdateEliteAccount` and its `Squared` twin): the Talos wrapper builds the cumulator from a
+`URCi_` reader and collects it itself, so there is no core op for this sheet's row model to key on.
+Their cost is knowable — the sheet names the authoritative reader instead of inventing a component
+cost for it.
 
 CORRECTED 2026-09-15. This block used to read *"Nothing on pricing. Every one of the 420 Talos
-client functions now carries a price ... complete and ready as the Chapter-2 input."* Two things
-were wrong with it. The figures were **stale** -- both generators had been dead since the tools
-move, so nothing had re-derived them. And "every one" was never true: the generator kept a
-`skipped` counter that it **incremented at two sites and printed nowhere**, so 18 live client
-entrypoints had no row while the footer reported `0 unresolved`. Six were recovered by fixing the
-`CLIENT` prefix regex; the remaining 12 are now published in the sheet's `UNPRICED`
-section and counted here.
+client functions now carries a price … complete and ready as the Chapter-2 input."* Two things were
+wrong. The figures were **stale** — both generators had been dead since the tools move, so nothing
+had re-derived them. And "every one" was never true: the generator kept a `skipped` counter that it
+**incremented at two sites and printed nowhere**, so 18 live client entrypoints had no row while the
+footer reported `0 unresolved`. Recovering them took four separate fixes — the `CLIENT` regex was
+missing the optional `ENTITY|` prefix its sibling already had; `MODULE.fn` dot-notation calls were
+invisible (`99_TS02-CPAD.pact` uses them, against the `::` convention); same-file Talos→Talos
+delegation was not followed; and when it was, it only matched delegates wearing the *same* entity
+prefix, so `DPSF|C_BulkTransfer` → `DPDC|C_BulkTransfer` still fell through while its DPNF twin
+resolved.
 
 The numbers above are re-derived from `IGNIS-PRICE-SHEET.md` by `REPL/tools/_pricesync.py --check`,
-which is fatal in the gate -- so this block cannot go stale again without something going red.
+which is fatal in the gate — so this block cannot go stale again without something going red.
 
 Two small judgement calls remain, neither blocking:
 * `MTX-SWP::C_AddSleepingLiquidity` carries `tier-token-issue` 500 — the last legacy number
