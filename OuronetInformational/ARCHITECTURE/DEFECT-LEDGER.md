@@ -229,6 +229,47 @@ Worth recording about the guard itself: after this round of generator fixes, `_p
 **fired unprompted** on the drift the regeneration had just created in `IGNIS-PRICING.md`. That is
 the check working in the workflow rather than in a selftest.
 
+### The ungated-checker sweep — generalising GS-12 *(2026-09-15)*
+
+`canon_check.py` was a checker nobody ran, and running it changed what was known about the repo.
+That is a class, not an incident, so the obvious next question: **how many of the 56 tools does the
+gate actually invoke?** Answer at the time: **10.** Most of the other 46 are one-shot generators or
+mutators that should not be gated — but five were *checkers*, sitting in exactly `canon_check`'s
+position. All five were run.
+
+| checker | result |
+|---|---|
+| `_infostoa.py` — `INFO_` previews claiming STOA-free whose exec tree reaches `STOA\|C_Collect` | **0 to review** |
+| `_vacuous.py` — positive `expect` sites that cannot fail | **0 vacuous** of 4,219; 12 weak (advisory) |
+| `_audit_modref_calls.py` — modref calls to a member the bound module does not have | **13**, all in `00_DPMF.pact` |
+| `_twindiverge.py` | 23 reported, 0 real (see above) |
+| `tools/canon_check.py` | 15 real (see GS-12) |
+
+**`_vacuous.py --check` is now fatal in the gate.** An assertion that cannot fail is a green light
+wired to nothing, and it is indistinguishable from a real one in every summary the gate prints — it
+counts toward the 21,519, it shows in the `+` column, and it never goes red. I wrote one myself this
+month (`step1 > discount × 951`, which the defect it was written for would have passed). Proven by
+injecting `(expect "…" 42 42)`: the check exits 1 and names the site. Only VACUOUS is fatal; WEAK
+stays advisory, because *"it runs at all"* is sometimes genuinely the assertion.
+
+#### The 13 dead modref calls, and the question underneath them
+
+All 13 are in `00_DPMF.pact`. Eleven are the `UDC_<tier>Cumulator` refs a prior audit already scoped
+out as dead code. **Two were not covered**: `(ref-DALOS::STOA|C_CollectWT …)` at `:2067` and
+`(ref-DALOS::STOA|C_Collect …)` at `:2181`. Those members live on **IGNIS**, not DALOS, and
+`OuronetDalosV2` declares **no `STOA|*` members at all** — yet DPMF loads, so Pact resolves the
+member at call time and these two sites would abort if reached.
+
+Reachability, checked rather than assumed: **nothing calls `ref-DPMF::` anywhere** in
+`1_SOVEREIGN/` or `2_CITIZEN/`; the Talos hits for "DPMF" are `@doc` prose only; no module names
+`DemiourgosPactMetaFungible`. So the paths are unreachable and this is not a live defect.
+
+**The question underneath is worth more than the finding.** `00_DPMF.pact` is **95,601 bytes — 64%
+of a full ~150k deploy slot — and has zero inbound references from anywhere in the codebase**, in a
+system whose deploy-size cap is a documented hard architectural constraint that dictates module
+ordering. It is still loaded at `Stage_01/[2.2]_Core.repl:107`. Whether it should still be deployed
+is an owner decision, not an audit one — but the cost is now measured rather than assumed.
+
 ### Twin-divergence sweep — a measured ZERO on the contracts *(2026-09-15)*
 
 The sharpest lesson of this round was a heuristic, not a bug: **a defect surviving in one of two

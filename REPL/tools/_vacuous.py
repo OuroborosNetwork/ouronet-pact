@@ -189,6 +189,14 @@ def main():
     ap.add_argument("--weak", action="store_true", help="list the WEAK sites too")
     ap.add_argument("--selftest", action="store_true",
                     help="run the detector against synthetic inputs and exit")
+    # VACUOUS is a hard invariant and WEAK is not, so only VACUOUS is fatal. Wired into _gate.py
+    # 2026-09-15: a suite whose assertions cannot fail reports clean about a region it has stopped
+    # testing, which is the deepest version of the failure this whole round has been about. I wrote
+    # a toothless assertion myself this month (`step1 > discount x 951`, which the defect it was
+    # written for would have passed); nothing but a detector catches that, because a green test and
+    # a green non-test look identical from the outside.
+    ap.add_argument("--check", action="store_true",
+                    help="exit non-zero if any positive assertion is VACUOUS (WEAK is advisory)")
     a = ap.parse_args()
     if a.selftest:
         return run_selftest()
@@ -226,6 +234,8 @@ def main():
             print(f"  {f}:{line}\n      {doc[:88]}\n      {act[:96]}")
         if len(weak) > a.show:
             print(f"  … and {len(weak)-a.show} more")
+    if a.check:
+        return 1 if vac else 0
     return 0
 
 

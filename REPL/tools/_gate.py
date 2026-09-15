@@ -358,6 +358,17 @@ def main():
         print(_px.stdout + _px.stderr)
         sys.exit("GATE FAILED: a live function prefix is unknown to tools/skeleton.py.")
 
+    # VACUOUS ASSERTIONS -- fatal on VACUOUS only; WEAK stays advisory.
+    # An assertion that cannot fail is a green light wired to nothing, and it is indistinguishable
+    # from a real one in every summary the gate prints: it counts toward the 21,519, it shows in the
+    # `+` column, and it never goes red. Measured 2026-09-15 across 4,219 positive `expect` sites:
+    # 0 vacuous, 12 weak. Gating it keeps that 0 a fact rather than a memory.
+    _vc = subprocess.run([sys.executable, "tools/_vacuous.py", "--check"],
+                         capture_output=True, text=True)
+    if _vc.returncode != 0:
+        print(_vc.stdout + _vc.stderr)
+        sys.exit("GATE FAILED: a positive assertion cannot fail (vacuous).")
+
     # CONFORMANCE and HEAVY-PREFIX, both fatal on VIOLATIONS only.
     # ADDED 2026-09-14, after a fix-verification pass found that both tools' "0" was a
     # HAND-MEASURED figure. The gate byte-compiled them and ran conformance's selftest, but never
