@@ -147,3 +147,86 @@
 ;;rolled back: this moves a live price input, and leaving it moved would silently re-point every
 ;;downstream gas figure in the suite.
 (rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RT-B-002 - mint yourself a privileged prefix")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== RT-B-002 · 01 · the bar in a ticker is a capability ====
+(print "--- [RT-B-002 · 01 · the bar in a ticker is a capability] ---")
+;;<<RT-B-002>> FAMILY: B | STATUS: REFUSED
+;;HYPOTHESIS: Ouronet encodes PRIVILEGE IN A TOKEN-ID PREFIX. At least three places read the first
+;;            two characters of an id and change behaviour on the result:
+;;
+;;              05_DPTF.pact  DPTF|C>X_TOGGLE-TRANSFER-ROLE   ft in ["F|" "R|"]  SKIPS two validations
+;;              03_DPDC-C.pact URCi_RegisterCollectablesPrice  ft = "E|"          price DIVIDED BY 1000
+;;              07_DPDC-T.pact URC_TotalTransferPrice          ft = "E|"          per-nonce price /1000
+;;
+;;            An id is `UDC_Makeid(ticker)` = ticker + "-" + block-hash, so the prefix is simply the
+;;            first two characters of a CALLER-SUPPLIED TICKER. `CT_SPECIAL` is ["|" "-" "^"] and
+;;            `UEV_NameOrTicker` applies NO positional rule -- a special character is legal at index
+;;            0. So the question is whether a caller can name a token `E|...` and buy the thousandfold
+;;            discount that `C_IssueShareholderCollection` charges a $100 equity premium for.
+;;METHOD:     issue through the ONLY supported client path (Talos) with a barred ticker, and pin the
+;;            refusal BY MESSAGE. Then issue an otherwise identical PLAIN ticker and pin ITS failure
+;;            by message too -- it must fail SOMEWHERE ELSE, and later, or the first result proves
+;;            nothing about the bar.
+;;RESULT:     REFUSED, but by ONE HARDCODED BOOLEAN, repeated. Every issuance family gates the
+;;            special charset behind an `iz-special` flag, and every client-reachable wrapper passes
+;;            it FALSE and does not expose it: `TS02-C1::DPSF|C_Issue` and `TS02-C2::DPNF|C_Issue`
+;;            pass a literal `false`; `DPTF::C_Issue` and `DPOF::C_Issue` build
+;;            `(make-list l1 false)` internally and take no such argument at all. The barred ticker
+;;            dies at `UEV_NameOrTicker`; the plain one sails past it and dies much later, paying.
+;;
+;;WHY THIS IS WORTH A TEST DESPITE BEING REFUSED. The prefixes are load-bearing in three modules and
+;;the only thing standing between a user and one of them is a literal `false` written out four
+;;times, with nothing central enforcing it. A new issue wrapper that plumbed `iz-special` through to
+;;its caller -- the obvious thing to do if someone ever wants user-defined LP-style names -- would
+;;open all three privileges at once, in three modules none of which mention `iz-special`.
+;;The refusal below is pinned by message so that wrapper cannot land quietly.
+;;
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+    )
+    (map print
+        [
+            ;;The prefix class is not hypothetical: a barred-prefix token already exists, minted by
+            ;;the system. The attack is to obtain its sibling.
+            (expect
+                "<<RT-B-002a>> a barred-prefix token ALREADY EXISTS in the ledger, system-minted"
+                true (contains "F|VST-98c486052a51" (ouronet-ns.DPTF.UR_P-KEYS)))
+            (expect-failure
+                "<<RT-B-002b>> a ticker carrying the bar is refused by the CHARSET guard"
+                "Designation does not conform character-wise"
+                (ref-TS01-C1::DPTF|C_Issue KST.ANHD KST.ANHD
+                    ["FrozenThing"] ["F|FRZ"] [12] [true] [true] [true] [false] [false] [true]))
+            (expect-failure
+                "<<RT-B-002c>> ...and the equity prefix likewise -- same guard, same message"
+                "Designation does not conform character-wise"
+                (ref-TS01-C1::DPTF|C_Issue KST.ANHD KST.ANHD
+                    ["EquityThing"] ["E|EQT"] [12] [true] [true] [true] [false] [false] [true]))
+            ;;NON-VACUITY, and the only arm that makes the two above mean anything: an otherwise
+            ;;IDENTICAL call with an unbarred ticker gets PAST the charset guard and dies much
+            ;;later, in STOA collection. Different guard, different message, later in the flow.
+            (expect-failure
+                "<<RT-B-002d>> an unbarred ticker passes the charset guard and reaches STOA payment"
+                "Managed capability not installed"
+                (ref-TS01-C1::DPTF|C_Issue KST.ANHD KST.ANHD
+                    ["PlainThing"] ["PLN"] [12] [true] [true] [true] [false] [false] [true]))
+            ;;The same protection, in a DIFFERENT issuance family -- DPOF builds its own all-false
+            ;;list. If the guard were unique to DPTF this would pass.
+            (expect-failure
+                "<<RT-B-002e>> the DPOF issuance family refuses the bar identically"
+                "Designation does not conform character-wise"
+                (ref-TS01-C1::DPOF|C_Issue KST.ANHD KST.ANHD
+                    ["VestedThing"] ["V|VST"] [12] [true] [true] [true] [true] [false] [false] [true]))
+        ])
+    ""
+)
+(env-sigs [])
+(print "")
+(print "===^^^===")
+(commit-tx)

@@ -1158,6 +1158,57 @@ form equals the stored abbreviation, and all 7 inactive nonces are held by nobod
 > module and its 20-odd other uses are all what it was built for — putting a readable account into a
 > Talos result string. One caller stored it and then compared it.
 
+## Stage 12 — Family B reopened: the bar in a ticker is a capability *(2026-09-15)*
+
+RT-D-002 ended on a generalisable rule — *grep for a display helper appearing inside an `enforce`,
+a `defcap`, or a table write*. Running that produced one more class, and it is not a display helper:
+**a token-id PREFIX used as a privilege marker.**
+
+At least three places read the first two characters of an id and change behaviour:
+
+| where | test | effect |
+|---|---|---|
+| `05_DPTF.pact` `DPTF\|C>X_TOGGLE-TRANSFER-ROLE` | `ft ∈ ["F\|" "R\|"]` | **skips two validations** |
+| `03_DPDC-C.pact` `URCi_RegisterCollectablesPrice` | `ft = "E\|"` | **price ÷ 1000** |
+| `07_DPDC-T.pact` `URC_TotalTransferPrice` | `ft = "E\|"` | **per-nonce price ÷ 1000** |
+
+An id is `UDC_Makeid(ticker)` = `ticker + "-" + block-hash`, so the prefix is the first two characters
+of a **caller-supplied ticker**. `CT_SPECIAL` is `["|" "-" "^"]`, and `UEV_NameOrTicker` enforces
+**length and charset only — no positional rule**, so a special character is legal at index 0.
+
+And the `E|` discount is not incidental: `EQUITY+`'s own `@doc` spells out that
+`UC_EquityID` *"forces an 'E|' ticker … so take-2 of the id is 'E|'"*, which is what makes the
+`/1000` branch fire — while the legitimate route, `C_IssueShareholderCollection`, charges a **$100
+equity premium** for the privilege.
+
+### RT-B-002 — REFUSED, by one hardcoded boolean, written out four times
+
+Every issuance family gates the special charset behind an `iz-special` flag, and **every
+client-reachable wrapper passes it `false`**:
+
+- `TS02-C1::DPSF|C_Issue` and `TS02-C2::DPNF|C_Issue` pass a literal `false` as the last argument;
+- `DPTF::C_Issue` and `DPOF::C_Issue` build `(make-list l1 false)` internally and **take no such
+  argument at all**, so Talos cannot pass one even by mistake.
+
+Measured through the only supported client path:
+
+| ticker | outcome |
+|---|---|
+| `F\|FRZ` | refused — *"Designation does not conform character-wise"* |
+| `E\|EQT` | refused — same guard, same message |
+| `V\|VST` via **DPOF** | refused — same, in a different issuance family |
+| `PLN` *(non-vacuity)* | **passes the charset guard**, dies later at STOA — *"Managed capability not installed"* |
+
+The last row is what makes the first three mean anything: an otherwise identical call with an
+unbarred ticker gets **past** the guard and fails somewhere else, later, paying.
+
+> The prefixes are load-bearing in three modules, and the only thing between a user and one of them
+> is a literal `false` written out four times, with nothing central enforcing it.
+
+A future wrapper that plumbed `iz-special` through to its caller — the obvious move if user-defined
+LP-style names are ever wanted — would open all three privileges at once, in three modules **none of
+which mention `iz-special`**. The refusal is pinned by message so that wrapper cannot land quietly.
+
 # Closing assessment
 
 ## The register
@@ -1166,7 +1217,7 @@ form equals the stored abbreviation, and all 7 inactive nonces are held by nobod
 | family | attempted | succeeded | fixed | refused |
 |---|---:|---:|---:|---:|
 | A — Arithmetic & value | 2 |  | 1 | 1 |
-| B — Permissionless reach | 1 |  | 1 |  |
+| B — Permissionless reach | 2 |  | 1 | 1 |
 | C — Admin impersonation | 1 |  |  | 1 |
 | D — Ownership bypass | 2 |  | 1 | 1 |
 | E — Sequencing & state | 2 |  |  | 2 |
@@ -1175,7 +1226,7 @@ form equals the stored abbreviation, and all 7 inactive nonces are held by nobod
 | H — Input domain | 2 |  | 2 |  |
 | I — Gas station payable surface | 1 |  | 1 |  |
 | J — Ledger conservation | 2 |  | 1 | 1 |
-| **total** | **16** | **0** | **8** | **8** |
+| **total** | **17** | **0** | **8** | **9** |
 <!-- REGISTER:END -->
 
 **Seven of fourteen attacks found a defect, and all seven are fixed and measured.** The table above
@@ -1202,6 +1253,7 @@ round exactly:
 | **gas station** | I | 1 defect — a fee that a whole class of account could decline |
 | **ledger conservation** | J | 1 defect — supply and balances drifting apart, permanently |
 | **ownership, Stage 2** | D | 1 defect — an 11-char abbreviation used as a possession gate |
+| **prefix-as-privilege** | B | refused — but by one hardcoded flag, repeated in four places |
 
 > **The guards in this system are present and they hold. What fails is the arithmetic around them,
 > and the order in which things happen.**

@@ -111,3 +111,51 @@ by construction — reaches the new check.
 
 `<<RT-D-002e>>` and `<<RT-D-002f>>` now pin both messages, so neither check can be removed or
 reordered without a red gate.
+
+---
+
+# Follow-up sweep — the rule found a second class: PREFIX-AS-PRIVILEGE
+
+Running the generalisable rule (*a value built for humans appearing inside a security decision*)
+turned up no more display helpers — `OI|UC_ConvertPrice`, `OI|UC_FormatIndex`,
+`OI|UC_FormatTokenAmount` and `OI|UC_IfpFromOutputCumulator` have **zero** call sites inside an
+`enforce` or a write. `OI|UC_ShortAccount` was the unique offender; that class is closed.
+
+But it surfaced a **different** one: **the first two characters of a token id are a capability.**
+
+| where | test | effect |
+|---|---|---|
+| `05_DPTF.pact` `DPTF\|C>X_TOGGLE-TRANSFER-ROLE` | `ft ∈ ["F\|" "R\|"]` | **skips two validations** |
+| `03_DPDC-C.pact` `URCi_RegisterCollectablesPrice` | `ft = "E\|"` | **price ÷ 1000** |
+| `07_DPDC-T.pact` `URC_TotalTransferPrice` | `ft = "E\|"` | **per-nonce price ÷ 1000** |
+
+`UDC_Makeid(ticker)` = `ticker + "-" + block-hash`, so the prefix is the first two characters of a
+**caller-supplied ticker**. `CT_SPECIAL` = `["|" "-" "^"]`. `UEV_NameOrTicker` enforces **length and
+charset only — there is no positional rule**, so a special character is legal at index 0.
+
+`EQUITY+`'s own `@doc` confirms the link is deliberate: `UC_EquityID` *"forces an 'E|' ticker … so
+take-2 of the id is 'E|'"*, which is what makes the `/1000` branch fire — and the legitimate route
+`C_IssueShareholderCollection` charges a **$100 equity premium** for it.
+
+## Why it is not reachable — and why that is thin
+
+Every issuance family gates the special charset behind `iz-special`, and every client-reachable
+wrapper passes it **false**:
+
+- `TS02-C1::DPSF|C_Issue`, `TS02-C2::DPNF|C_Issue` — literal `false` as the last argument;
+- `DPTF::C_Issue`, `DPOF::C_Issue` — build `(make-list l1 false)` internally and **take no such
+  argument**, so Talos cannot pass one even by mistake.
+
+> One boolean, written out four times, with nothing central enforcing it — holding privileges in
+> three modules that never mention `iz-special`.
+
+Pinned by message in `[RT-B]_PermissionlessReach.repl` `<<RT-B-002b..e>>`, including a non-vacuity
+arm: an unbarred ticker gets **past** the charset guard and dies later at STOA payment
+(*"Managed capability not installed"*), so the refusals are demonstrably about the bar.
+
+## Pact fact learned the hard way
+
+**`try` evaluates its body in read-only mode.** A call that writes fails inside `try` with
+*"Operation disallowed in read-only or sys-only mode"*. So `try` is fine for probing `UEV_`/read
+paths (that is how RT-D-002's three arms were measured) but **cannot** be used to probe a successful
+write — use a direct call, or `expect-failure` with the message.
