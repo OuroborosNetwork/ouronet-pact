@@ -209,6 +209,21 @@ multi-step add-liquidity path a griefed provider pays **200**, not 100 — `LQ|I
 step 0 *and* the same amount again on the step-1 rollback branch. Both charges land, because defpact
 steps are separate committed transactions. This predates the `RT-F-001` split.
 
+**The second guard, and the more general one:** `REPL/tools/_toolpaths.py --check`, also fatal in
+the gate. The eleven dead tools were found by grepping for `REPL/_letfix.py` — a pattern already
+suspected. *A targeted grep only finds the drift you went looking for.* `_toolpaths.py` instead
+parses every tool's AST and resolves every hard-coded path literal, splitting them into **[IMPORT]**
+(dies the moment anything loads the tool) and **[DEFERRED]** (dies when the owning function runs).
+It is **deliberately static** — it executes nothing, because five of the tools it scans rewrite
+`.pact` files at module level.
+
+It is validated against the incident rather than against a fixture: run over a worktree of
+`6ab8fe6`, the tree as it stood before the repair, it reports **11 of 11**. Getting there took two
+corrections, both of which were the checker being too lenient — it first scanned only module level
+(10/11, missing `_tighten.py`), then still allowed the tool's own directory as a fallback base for a
+module that `chdir`s, which is exactly how `_tighten.py`'s stale `'_gate.py'` had survived: the file
+does exist beside the tool, and does not exist where the tool actually looks.
+
 **The guard:** `REPL/tools/_pricesync.py --check`, wired into `_gate.py` as **fatal**, regenerates
 both artefacts and diffs them against the committed files. It sits *before* the 86-entrypoint run,
 so drift fails in seconds. Proven by re-injecting GS-03 into the worksheet: the gate exited 1 with

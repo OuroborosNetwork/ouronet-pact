@@ -80,6 +80,11 @@ and `IGNIS-DETER-WORKSHEET.md` are regenerated and diffed by `REPL/tools/_prices
 fatal inside `_gate.py`. Edit the **generator**, never the artefact; `--write` to refresh both.
 The sibling check for `ARCHITECTURE/*.md` is `_figuresync.py`.
 
+**Tool paths are gate-enforced too.** `REPL/tools/_toolpaths.py --check` statically resolves every
+hard-coded path literal in every tool. If you move a tool, this is what tells you what you broke —
+the 2026-09-14 move killed eleven tools that died at *import*, so nothing that diffed their output
+could see it.
+
 ## Repository layout
 
 | Path | Role |

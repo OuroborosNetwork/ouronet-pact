@@ -336,6 +336,17 @@ def main():
         print(_ps.stdout + _ps.stderr)
         sys.exit("GATE FAILED: a generated pricing artefact does not match its generator.")
 
+    # TOOL PATH INTEGRITY -- static, executes nothing (several tools rewrite source at import).
+    # The 2026-09-14 tools move killed ELEVEN tools by leaving hard-coded sibling paths behind;
+    # they died at module level, so "verified by output diffing" could not see them -- a dead tool
+    # produces no output to diff. Two generated audit artefacts drifted underneath for a full day.
+    # Validated by running it against a worktree of the pre-repair commit: 11 of 11 caught.
+    _tp = subprocess.run([sys.executable, "tools/_toolpaths.py", "--check"],
+                         capture_output=True, text=True)
+    if _tp.returncode != 0:
+        print(_tp.stdout + _tp.stderr)
+        sys.exit("GATE FAILED: a tool references a path that does not exist.")
+
     # CONFORMANCE and HEAVY-PREFIX, both fatal on VIOLATIONS only.
     # ADDED 2026-09-14, after a fix-verification pass found that both tools' "0" was a
     # HAND-MEASURED figure. The gate byte-compiled them and ran conformance's selftest, but never
