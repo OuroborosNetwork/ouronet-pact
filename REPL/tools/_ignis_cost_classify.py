@@ -6,7 +6,9 @@ _ignis_cost_classify.py — #76. Classify every client/admin core entrypoint by 
 "issue > setup > usage, usage scales with compute" gate philosophy. DPMF excluded (historic stub).
 """
 import re, glob, importlib.util
-spec=importlib.util.spec_from_file_location('lf','REPL/_letfix.py'); lf=importlib.util.module_from_spec(spec); spec.loader.exec_module(lf)
+import os as _os
+_HERE=_os.path.dirname(_os.path.abspath(__file__))
+spec=importlib.util.spec_from_file_location('lf',_os.path.join(_HERE,'_letfix.py')); lf=importlib.util.module_from_spec(spec); spec.loader.exec_module(lf)
 PREF=('CCp_','CC_','Cp_','C_','AAp_','AA_','Ap_','A_')
 GAS={}
 for f in glob.glob('1_SOVEREIGN/**/*.pact',recursive=True)+glob.glob('2_CITIZEN/**/*.pact',recursive=True):

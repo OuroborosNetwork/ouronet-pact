@@ -1,7 +1,26 @@
 #!/usr/bin/env python3
 """_fvtasm.py — assemble a first-draft 04_RPS.pact from 04_FVT.pact spans + a hand header."""
+
+# ---------------------------------------------------------------------------------------------
+# SAFETY GATE (2026-09-15). This script REWRITES SOURCE FILES and has no
+# `if __name__ == "__main__"` guard, so merely IMPORTING it mutates the tree.
+#
+# That is not theoretical. On 2026-09-15, after reviving eleven tools the 2026-09-14 move had left
+# dead, a loop that imported each one "just to prove it loads" executed five of these and silently
+# deleted 111 lines of schemas from 05_FVT.pact. Reviving a dead mutator is not neutral: it turns
+# an inert file into a loaded one, and a one-shot migration script does not stop being a weapon
+# just because its job is finished. Make the intent explicit.
+# ---------------------------------------------------------------------------------------------
+import sys as _sys
+if "--apply" not in _sys.argv:
+    print(f"{__file__}: REFUSING TO RUN -- this script rewrites source files in place.")
+    print("Re-run with --apply if that is genuinely what you want.")
+    raise SystemExit(0)
+
 import importlib.util, re
-spec=importlib.util.spec_from_file_location('lf','REPL/_letfix.py'); lf=importlib.util.module_from_spec(spec); spec.loader.exec_module(lf)
+import os as _os
+_HERE=_os.path.dirname(_os.path.abspath(__file__))
+spec=importlib.util.spec_from_file_location('lf',_os.path.join(_HERE,'_letfix.py')); lf=importlib.util.module_from_spec(spec); spec.loader.exec_module(lf)
 F='1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact'
 s=open(F).read(); toks=lf.tokenize(s); match=lf.match_parens(toks)
 i=0

@@ -68,6 +68,18 @@ python3 REPL/tools/_normalize_repl_layout.py   # Preamble + ;;|| NEXT > between 
 python3 REPL/tools/_subdivide_repl.py          # Only the mm-banner insertion inside each begin-tx
 ```
 
+**Tools that rewrite source require `--apply`.** `_fvtasm` / `_fvtcut` / `_fvtfacade` / `_fvtflip` /
+`_fvtgen` mutate `.pact` files **at module level** — they have no `if __name__ == "__main__"` guard,
+so *importing* them used to be enough to rewrite the tree. On 2026-09-15 a loop that imported each
+revived tool "just to prove it loads" fired five of them and silently deleted 111 lines of schemas
+from `05_FVT.pact`. They now refuse unless `--apply` is passed. **Never run a tool to find out what
+it does** — read its docstring, or check the table in `REPL/TOOLS.md`.
+
+**Generated artefacts are gate-enforced.** `OuronetInformational/IGNIS-PRICING/IGNIS-PRICE-SHEET.md`
+and `IGNIS-DETER-WORKSHEET.md` are regenerated and diffed by `REPL/tools/_pricesync.py --check`,
+fatal inside `_gate.py`. Edit the **generator**, never the artefact; `--write` to refresh both.
+The sibling check for `ARCHITECTURE/*.md` is `_figuresync.py`.
+
 ## Repository layout
 
 | Path | Role |

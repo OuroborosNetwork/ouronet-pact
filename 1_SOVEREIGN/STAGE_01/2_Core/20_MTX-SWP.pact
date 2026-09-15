@@ -651,7 +651,7 @@
                 )
                 (ref-IGNIS::C_Collect patron 
                     (ref-IGNIS::UDC_ConstructOutputCumulator
-                        100.0 SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []
+                        LQ|INITIATION-FEE SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []
                     )
                 )
                 (format "Inconsistent Pool State detected: Adding Liquidity not allowed; Stepped rolled back; 2|3" [swpair])
@@ -807,7 +807,7 @@
                 )
                 (ref-IGNIS::C_Collect patron 
                     (ref-IGNIS::UDC_ConstructOutputCumulator
-                        100.0 SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []
+                        LQ|INITIATION-FEE SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []
                     )
                 )
                 (format "Inconsistent Pool State detected: Adding Liquidity not allowed; 2|3" [swpair])
@@ -959,7 +959,7 @@
                 )
                 (ref-IGNIS::C_Collect patron 
                     (ref-IGNIS::UDC_ConstructOutputCumulator
-                        100.0 SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []
+                        LQ|INITIATION-FEE SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []
                     )
                 )
                 (format "Inconsistent Pool State detected: Adding Liquidity not allowed; Stepped rolled back; 2|3" [swpair])

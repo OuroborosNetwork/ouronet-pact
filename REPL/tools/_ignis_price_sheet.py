@@ -23,7 +23,9 @@ Option-A component model), so the two documents cannot drift.
 import re, glob, importlib.util
 from collections import defaultdict
 
-spec = importlib.util.spec_from_file_location('dw', 'REPL/_ignis_deter_worksheet.py')
+import os as _os
+_HERE = _os.path.dirname(_os.path.abspath(__file__))
+spec = importlib.util.spec_from_file_location('dw', _os.path.join(_HERE, '_ignis_deter_worksheet.py'))
 dw = importlib.util.module_from_spec(spec); spec.loader.exec_module(dw)   # main() is guarded
 
 TALOS = sorted(glob.glob('1_SOVEREIGN/STAGE_01/3_Talos/*.pact')
@@ -42,7 +44,13 @@ for p in dw.MODS:
     OPS[p] = {nm: (rl, comp, d, why)
               for nm, rl, ins, upd, r, sc, x, comp, cur, d, why in dw.analyze(p)}
 
-CLIENT = re.compile(r'^(C{1,2}p?_|A{1,2}p?_)')
+# GS-02: the optional ENTITY| prefix was missing here while its sibling HEAVY_PREFIX (next
+# line) already had it. A wrapper delegating to `ref-SWPLC::STOA-PID|C_AddStandardLiquidity`
+# therefore reached NO core client op, and the whole entrypoint was dropped -- silently,
+# because the `skipped` counter it incremented was never printed. SWP|C_AddLiquidity, one
+# of the two live add-liquidity paths (the one RT-A-001 was about), was absent from the
+# sheet entirely while the footer reported '0 unresolved'.
+CLIENT = re.compile(r'^(?:[A-Za-z0-9-]+\|)?(C{1,2}p?_|A{1,2}p?_)')
 HEAVY_PREFIX = re.compile(r'^(?:[A-Za-z0-9-]+\|)?(CC_|AA_|CCp_|AAp_|Cp_|Ap_)')
 VARIABLE_FAMILY = re.compile(r'(Wipe|MultiTransfer|MultiBulk|BulkTransfer|SmartSwap|Vacate'
                              r'|Drain|Sweep|Unstale|Slice)')
@@ -57,7 +65,7 @@ SCALES = re.compile(r'\(dec\s*\(length|\(dec\s+token-count\)|\(dec\s+no-of-nonce
 # UDC_*Cumulator constructors are cost SOURCES, not plumbing: IGNIS::UDC_BrandingCumulator holds
 # the 100-ignis branding charge, so every C_UpdatePendingBranding ended at "?" while its own @doc
 # said "costing 100 IGNIS". Follow them like any other cost reader.
-BILL_FN = re.compile(r'((?:[A-Za-z0-9-]+\|)?(?:URCi[x]?_|XB_|XI_|XE_|UDC_[A-Za-z]*Cumulator)[A-Za-z0-9|_-]*)')
+BILL_FN = re.compile(r'((?:[A-Za-z0-9-]+\|)?(?:URCi[x]?_|X[IEB]v?_|UDC[x]?_[A-Za-z]*Cumulator)[A-Za-z0-9|_-]*)')
 
 def defun_body(src, name):
     hits = [m for m in re.finditer(r'\(def(?:un|pact)\s+' + re.escape(name) + r'(?::[^\s(]+)?\s*\(', src)]
@@ -122,7 +130,8 @@ def billing_text(src, name, depth=3):
             # published "?" while charging $50. Deliberately NARROW -- only names that say they
             # are about price/fee/cost/config/stoa -- so this cannot become "follow everything".
             nxt.extend((csrc, f) for f in re.findall(
-                r'\((U(?:C|R|RC)_[A-Za-z0-9|_-]*(?:Price|Fee|Cost|Config|Stoa)[A-Za-z0-9|_-]*)', b_code))
+                r'\((U(?:C|R|RC)_(?:[A-Za-z0-9|_-]*(?:Price|Fee|Cost|Config|Stoa)[A-Za-z0-9|_-]*'
+                r'|[A-Za-z0-9|_-]*Ignis))(?![A-Za-z0-9|_-])', b_code))
             # Follow cross-module CLIENT ops too (ref-TFT::C_Transfer, ref-DPTF::C_Mint …):
             # ops like VST|C_Freeze hold no cumulator of their own, they CONCATENATE the
             # cumulators of the client ops they drive. Without this they read as unresolved
@@ -140,8 +149,9 @@ def billing_text(src, name, depth=3):
             # because these are always reached through a ref.
             for mod, rf in re.findall(
                     r'(ref-[A-Za-z0-9|_+-]+)::((?:[A-Za-z0-9-]+\|)?'
-                    r'(?:URCi[x]?_|XB_|XI_|XE_|CC?p?_|UDC_[A-Za-z]*Cumulator'
-                    r'|U(?:C|R|RC)_[A-Za-z0-9|_-]*(?:Price|Fee|Cost|Config|Stoa))'
+                    r'(?:URCi[x]?_|X[IEB]v?_|CC?p?_|UDC[x]?_[A-Za-z]*Cumulator'
+                    r'|U(?:C|R|RC)_[A-Za-z0-9|_-]*(?:Price|Fee|Cost|Config|Stoa)'
+                    r'|U(?:C|R|RC)_[A-Za-z0-9|_-]*Ignis(?![A-Za-z0-9|_-]))'
                     r'[A-Za-z0-9|_-]*)', b_code):
                 real = alias2mod.get(mod) or mod[4:]
                 mf = MOD2FILE.get(real) or MOD2FILE.get(mod[4:])
@@ -302,6 +312,16 @@ def _charge_at(src, core_fn, entity=None, extra='', _depth=3):
     for _n, _v in FEE_CONSTS.items():
         if re.search(r'(?<![A-Za-z0-9|_-])' + re.escape(_n) + r'(?![A-Za-z0-9|_-])', txt):
             ig.append(('const:' + _n, _v))
+        # A SPLIT charge nets to the whole, not to the whole plus the slice. RT-F-001 divided
+        # every multi-step add-liquidity into LQ|INITIATION-FEE at step 0 and
+        # `(- (UC_IgnisPrice op-key "lp-churn") LQ|INITIATION-FEE)` at the exec step, so the
+        # text carries the constant AND the deter key AND a subtraction of the constant. Summing
+        # only the additive legs published 1200 for an op the chain charges ~1051 -- GS-01's
+        # "literal counted as a price" mechanism reappearing on the rows GS-01 was about, this
+        # time inflating instead of deflating. Emit the negative leg so the split cancels.
+        for _ in re.finditer(r'\(-\s[^()]*(?:\([^()]*\)[^()]*)*' +
+                             r'(?<![A-Za-z0-9|_-])' + re.escape(_n) + r'(?![A-Za-z0-9|_-])', txt):
+            ig.append(('less:' + _n, -_v))
     # CODEX StoicTag: 1 STOA per glyph, fixed in STOA units and non-discountable (owner
     # 2026-09-07). The amount is (dec (length tag-name)), so the op is genuinely variable --
     # record the per-glyph unit rather than pretending a total exists.
@@ -401,7 +421,12 @@ rows = defaultdict(list)
 talos_body_by_row = {}
 cf_mod = {}     # entity -> [ (talos_fn, core_fn, role, deter, comp, reason) ]
 emitted = set()
-skipped = 0
+# GS-02 (2026-09-15): this used to be `skipped = 0` -- incremented at two sites and PRINTED
+# NOWHERE. The footer's "N Talos client functions / 0 unresolved" therefore counted only the
+# rows the generator managed to build, so 18 live client entrypoints were missing from the
+# sheet while it read as complete. A coverage number that counts only what it managed to look
+# at is worse than no number. Record them and publish them instead.
+dropped = []
 for tf in TALOS:
     src = open(tf).read()
     for m in re.finditer(r'^    \(defun\s+([A-Za-z0-9-]+)\|([A-Za-z0-9_|+-]+?)(?::[^\s(]+)?\s*\(', src, flags=re.M):
@@ -418,7 +443,7 @@ for tf in TALOS:
                  if CLIENT.match(cf) and alias.get(mod, mod) != 'IGNIS']
         seen=set(); cores=[c for c in cores if not (c in seen or seen.add(c))]
         if not cores:
-            skipped += 1; continue
+            dropped.append((entity, fn, 'no core client op reached from body')); continue
         if (entity, fn) in emitted:      # Talos files declare each fn twice (interface + module)
             continue
         emitted.add((entity, fn))
@@ -436,7 +461,7 @@ for tf in TALOS:
             mod, cf = next(c for c in cores if c[1] == fn)
         cfile = MOD2FILE.get(mod)
         if not cfile or cfile not in OPS or cf not in OPS[cfile]:
-            skipped += 1; continue
+            dropped.append((entity, fn, f'core {mod}::{cf} not in the priced op index')); continue
         role, comp, d, why = OPS[cfile][cf]
         if re.match(r'^A{1,2}p?_', fn):
             d = None                    # admin-run Talos entrypoint: IGNIS+STOA free (owner rule)
@@ -462,8 +487,8 @@ for tf in TALOS:
         cf_mod[(entity, f'{entity}|{fn}')] = mod
 
 print("# IGNIS PRICE SHEET — per Talos client function, grouped by logical module\n")
-print("Generated by `REPL/_ignis_price_sheet.py` (shares the pricing brain of")
-print("`REPL/_ignis_deter_worksheet.py`, so the two sheets cannot drift).\n")
+print("Generated by `REPL/tools/_ignis_price_sheet.py` (shares the pricing brain of")
+print("`REPL/tools/_ignis_deter_worksheet.py`, so the two sheets cannot drift).\n")
 print("## How to read this\n")
 print("**`TOTAL = deter + components`.** The *deter* column is the deterrence multiplier only —")
 print("a \"$100 function\" means deter = 10000x, i.e. 10000 IGNIS of deterrence. The normal IGNIS")
@@ -563,10 +588,33 @@ for entity in sorted(rows):
             print(f"| {tfn_s} | {cf_s}{compose} | {role} | **{ig_sum:g}** | {st_cell} | "
                   f"{money(ig_sum)} | {legs} |")
 
+# --- GS-02: publish what the sheet could NOT price ------------------------------------------
+# Only client-prefixed wrappers, and only those that never got emitted under ANY Talos file
+# (each entrypoint is declared twice -- interface + module -- and the first skip site fires
+# before the de-dup, so a name can be recorded here and still be priced from the other file).
+_CLIENT_FN = re.compile(r'^(?:C{1,2}p?_|A{1,2}p?_)')
+_unpriced = {}
+for _e, _fn, _why in dropped:
+    if not _CLIENT_FN.match(_fn.split('|')[-1]):   continue   # policy/plumbing, not a client op
+    if (_e, _fn) in emitted:                       continue   # priced from the sibling declaration
+    _unpriced.setdefault(f'{_e}|{_fn}', _why)
+if _unpriced:
+    print("\n## UNPRICED — Talos client entrypoints this sheet could not resolve\n")
+    print("These are live `ENTITY|fn` wrappers on the Talos client surface that the static walk")
+    print("could not attach to a priced core op, so **they carry no row above**. They are listed")
+    print("here because a price sheet that drops them silently reports as complete while a client")
+    print("can still call them and be charged. Most are Talos->Talos delegations (the callee is")
+    print("another Talos wrapper, not a core op) or admin entrypoints that are exempt by rule.\n")
+    print("| Talos entrypoint | why it is unpriced |")
+    print("|---|---|")
+    for _k in sorted(_unpriced):
+        print(f"| {_k.replace('|', chr(92)+'|')} | {_unpriced[_k]} |")
+
 print(f"\n---\n{nsimple} simple (exact price) · {ncomplex} complex (floor price) · "
       f"{nstoaonly} STOA-only · {nexempt} exempt"
       f" · {nunknown} unresolved"
+      f" · {len(_unpriced)} unpriced"
       f" · {nsimple+ncomplex+nexempt} Talos client functions"
       f"\n\n`×N` on a core op = the wrapper drives N priced core ops in a FIXED composition"
       f" (still exactly knowable).\n")
-print("Regenerate: `python3 REPL/_ignis_price_sheet.py > OuronetInformational/IGNIS-PRICING/IGNIS-PRICE-SHEET.md`")
+print("Regenerate: `python3 REPL/tools/_ignis_price_sheet.py > OuronetInformational/IGNIS-PRICING/IGNIS-PRICE-SHEET.md`")

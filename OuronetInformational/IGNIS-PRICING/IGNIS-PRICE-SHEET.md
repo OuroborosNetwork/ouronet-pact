@@ -99,18 +99,18 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_FinalizeVacate` | `C_FinalizeVacate` | USAGE | **≥ 18** | — | COMPLEX | per-nonce / per-item work; legs: deter:usage 1 + components:AQP-POOL|C_FinalizeVacate 17 |
 | `C_Issue` | `C_Issue` | ISSUE | **≥ 1020** | 100 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-pool 1000 + components:AQP-POOL|C_Issue 20 | STOA: stoa:issue-pool 100 |
 | `C_RevokeScore` | `C_RevokeScore` | SETUP | **298** | — | $2.98 | deter:revoke-score 250 + components:AQP-POOL|C_RevokeScore 48 |
-| `C_SyncNonFungibleAnchors` | `C_SyncCollectableAnchors` | USAGE | **86** | — | $0.86 | deter:sync-anchors 50 + components:AQP-POOL|C_SyncSemiFungibleAnchors 36 |
-| `C_SyncSemiFungibleAnchors` | `C_SyncCollectableAnchors` | USAGE | **86** | — | $0.86 | deter:sync-anchors 50 + components:AQP-POOL|C_SyncSemiFungibleAnchors 36 |
-| `C_SyncTrueFungibleAnchors` | `C_SyncTrueFungibleAnchors` | SETUP | **66** | — | $0.66 | deter:sync-anchors 50 + components:AQP-POOL|C_SyncTrueFungibleAnchors 16 |
+| `C_SyncNonFungibleAnchors` | `C_SyncCollectableAnchors` | USAGE | **≥ 88** | — | COMPLEX | charge multiplies by an item count; legs: deter:sync-anchors 50 + components:AQP-POOL|C_SyncSemiFungibleAnchors 36 + small 2 |
+| `C_SyncSemiFungibleAnchors` | `C_SyncCollectableAnchors` | USAGE | **≥ 88** | — | COMPLEX | charge multiplies by an item count; legs: deter:sync-anchors 50 + components:AQP-POOL|C_SyncSemiFungibleAnchors 36 + small 2 |
+| `C_SyncTrueFungibleAnchors` | `C_SyncTrueFungibleAnchors` | SETUP | **≥ 68** | — | COMPLEX | charge multiplies by an item count; legs: deter:sync-anchors 50 + components:AQP-POOL|C_SyncTrueFungibleAnchors 16 + small 2 |
 | `CC_FullVacate` | `CC_FullVacate` | USAGE | **≥ 6** | — | COMPLEX | heavy / parallel-slice op; legs: small 2 + smallest 1 + medium 3 |
-| `CC_StakeNonFungibleCollectable` | `CC_CollectableStakeFlow` | USAGE | **≥ 6** | — | COMPLEX | heavy / parallel-slice op; legs: smallest 1 + small 2 + medium 3 |
-| `CC_StakeOrtoFungible` | `CC_OrtoFungibleStakeFlow` | USAGE | **≥ 3** | — | COMPLEX | heavy / parallel-slice op; legs: small 2 + smallest 1 |
-| `CC_StakeSemiFungibleCollectable` | `CC_CollectableStakeFlow` | USAGE | **≥ 6** | — | COMPLEX | heavy / parallel-slice op; legs: smallest 1 + small 2 + medium 3 |
-| `CC_StakeTrueFungible` | `CC_TrueFungibleStakeFlow` | USAGE | **≥ 6** | — | COMPLEX | heavy / parallel-slice op; legs: smallest 1 + small 2 + medium 3 |
-| `CC_UnstakeNonFungibleCollectable` | `CC_CollectableStakeFlow` | USAGE | **≥ 6** | — | COMPLEX | heavy / parallel-slice op; legs: smallest 1 + small 2 + medium 3 |
-| `CC_UnstakeOrtoFungible` | `CC_OrtoFungibleStakeFlow` | USAGE | **≥ 3** | — | COMPLEX | heavy / parallel-slice op; legs: small 2 + smallest 1 |
-| `CC_UnstakeSemiFungibleCollectable` | `CC_CollectableStakeFlow` | USAGE | **≥ 6** | — | COMPLEX | heavy / parallel-slice op; legs: smallest 1 + small 2 + medium 3 |
-| `CC_UnstakeTrueFungible` | `CC_TrueFungibleStakeFlow` | USAGE | **≥ 6** | — | COMPLEX | heavy / parallel-slice op; legs: smallest 1 + small 2 + medium 3 |
+| `CC_StakeNonFungibleCollectable` | `CC_CollectableStakeFlow` | USAGE | **≥ 18** | — | COMPLEX | heavy / parallel-slice op; legs: biggestx2 10 + biggest 5 + medium 3 |
+| `CC_StakeOrtoFungible` | `CC_OrtoFungibleStakeFlow` | USAGE | **≥ 21** | — | COMPLEX | heavy / parallel-slice op; legs: biggestx2 10 + small 2 + smallest 1 + biggest 5 + medium 3 |
+| `CC_StakeSemiFungibleCollectable` | `CC_CollectableStakeFlow` | USAGE | **≥ 18** | — | COMPLEX | heavy / parallel-slice op; legs: biggestx2 10 + biggest 5 + medium 3 |
+| `CC_StakeTrueFungible` | `CC_TrueFungibleStakeFlow` | USAGE | **≥ 20** | — | COMPLEX | heavy / parallel-slice op; legs: biggestx2 10 + small 2 + biggest 5 + medium 3 |
+| `CC_UnstakeNonFungibleCollectable` | `CC_CollectableStakeFlow` | USAGE | **≥ 18** | — | COMPLEX | heavy / parallel-slice op; legs: biggestx2 10 + biggest 5 + medium 3 |
+| `CC_UnstakeOrtoFungible` | `CC_OrtoFungibleStakeFlow` | USAGE | **≥ 21** | — | COMPLEX | heavy / parallel-slice op; legs: biggestx2 10 + small 2 + smallest 1 + biggest 5 + medium 3 |
+| `CC_UnstakeSemiFungibleCollectable` | `CC_CollectableStakeFlow` | USAGE | **≥ 18** | — | COMPLEX | heavy / parallel-slice op; legs: biggestx2 10 + biggest 5 + medium 3 |
+| `CC_UnstakeTrueFungible` | `CC_TrueFungibleStakeFlow` | USAGE | **≥ 20** | — | COMPLEX | heavy / parallel-slice op; legs: biggestx2 10 + small 2 + biggest 5 + medium 3 |
 | `CCp_BatchDrainCollectable` | `CCp_BatchDrainCollectable` | USAGE | **≥ 6** | — | COMPLEX | heavy / parallel-slice op; legs: smallest 1 + small 2 + medium 3 |
 | `CCp_BatchDrainOrtoFungible` | `CCp_BatchDrainOrtoFungible` | USAGE | **≥ 3** | — | COMPLEX | heavy / parallel-slice op; legs: small 2 + smallest 1 |
 | `CCp_BatchDrainTrueFungible` | `CCp_BatchDrainTrueFungible` | USAGE | **≥ 6** | — | COMPLEX | heavy / parallel-slice op; legs: small 2 + smallest 1 + medium 3 |
@@ -185,6 +185,9 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_VestedCurl` | `C_Curl` ×2 | USAGE | **≥ 93** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPTF|C_Mint 86 + smallest 1 + small 2 + medium 3 |
 | `C_WithdrawRoyalties` | `C_WithdrawRoyalties` | USAGE | **≥ 6** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 + small 2 + medium 3 |
 | `CC_RemoveSecondary` | `CC_RemoveSecondary` | SETUP | **≥ 291** | — | COMPLEX | heavy / parallel-slice op; legs: deter:ats-secondary 250 + components:ATS|CC_RemoveSecondary 41 |
+| HOT-RBT\|C_Repurpose | HOT-RBT\|C_Repurpose | SETUP | **≥ 141** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_ToggleFreezeAccount 53 + components:DPOF|C_Mint 80 + small 2 + smallest 1 |
+| HOT-RBT\|C_UpdatePendingBranding | HOT-RBT\|C_UpdatePendingBranding | SETUP | **≥ 100** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: branding 100 |
+| HOT-RBT\|C_UpgradeBranding | HOT-RBT\|C_UpgradeBranding | SETUP | **0** | 250 | STOA only | no IGNIS charged — priced in STOA only; STOA: blue 250 |
 
 ## BRD
 
@@ -487,6 +490,12 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_SublimateV2` | `C_SublimateV2` | SETUP | **0** | — | free | admin/exempt |
 | `C_WithdrawFees` | `C_WithdrawFees` | USAGE | **≥ 106** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:fee-withdraw 100 + smallest 1 + small 2 + medium 3 |
 
+## P
+
+| Talos function | core op | role | IGNIS | STOA | $ (ignis) | charge breakdown |
+|----------------|---------|------|------:|-----:|----------:|------------------|
+| `A_Define` | P\|A_Add ×10 | SETUP | **0** | — | free | admin/exempt |
+
 ## PYTHIA
 
 | Talos function | core op | role | IGNIS | STOA | $ (ignis) | charge breakdown |
@@ -525,18 +534,19 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `A_UpdateLimit` | `A_UpdateLimit` | SETUP | **0** | — | free | admin/exempt |
 | `A_UpdateLiquidBoost` | `A_UpdateLiquidBoost` | SETUP | **0** | — | free | admin/exempt |
 | `A_UpdatePrincipal` | `A_UpdatePrincipal` | SETUP | **0** | — | free | admin/exempt |
-| `C_AddFrozenLiquidity` | `C_AddFrozenLiquidity` | USAGE | **≥ 172** | — | COMPLEX | charge multiplies by an item count; legs: deter:usage 1 + components:DPTF|C_Burn 71 + literal 100 |
-| `C_AddGlacialLiquidity` | `C_AddGlacialLiquidity` | USAGE | **≥ 100** | — | COMPLEX | charge multiplies by an item count; legs: literal 100 |
-| `C_AddIcedLiquidity` | `C_AddIcedLiquidity` | USAGE | **≥ 100** | — | COMPLEX | charge multiplies by an item count; legs: literal 100 |
-| `C_AddSleepingLiquidity` | `C_AddSleepingLiquidity` | SETUP | **≥ 153** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Burn 45 + small 2 + smallest 1 + literal 100 |
-| `C_AddStandardLiquidity` | `C_AddStandardLiquidity` | USAGE | **≥ 100** | — | COMPLEX | charge multiplies by an item count; legs: literal 100 |
+| `C_AddFrozenLiquidity` | STOA-PID\|C_AddFrozenLiquidity | USAGE | **≥ 1221** | — | COMPLEX | charge multiplies by an item count; legs: deter:lp-churn 1000 + components:SWP|C_AddFrozenLiquidity 57 + deter:usage 1 + components:DPTF|C_Burn 71 + components:DPTF|C_Mint 86 + smallest 1 + small 2 + medium 3 |
+| `C_AddGlacialLiquidity` | STOA-PID\|C_AddGlacialLiquidity | USAGE | **≥ 1215** | — | COMPLEX | charge multiplies by an item count; legs: deter:lp-churn 1000 + components:SWP|C_AddGlacialLiquidity 51 + deter:usage 1 + components:DPTF|C_Burn 71 + components:DPTF|C_Mint 86 + small 2 + smallest 1 + medium 3 |
+| `C_AddIcedLiquidity` | STOA-PID\|C_AddIcedLiquidity | USAGE | **≥ 1215** | — | COMPLEX | charge multiplies by an item count; legs: deter:lp-churn 1000 + components:SWP|C_AddIcedLiquidity 51 + deter:usage 1 + components:DPTF|C_Burn 71 + components:DPTF|C_Mint 86 + small 2 + smallest 1 + medium 3 |
+| `C_AddLiquidity` | STOA-PID\|C_AddStandardLiquidity | USAGE | **≥ 1215** | — | COMPLEX | charge multiplies by an item count; legs: deter:lp-churn 1000 + components:SWP|C_AddStandardLiquidity 51 + deter:usage 1 + components:DPTF|C_Burn 71 + components:DPTF|C_Mint 86 + small 2 + smallest 1 + medium 3 |
+| `C_AddSleepingLiquidity` | STOA-PID\|C_AddSleepingLiquidity | USAGE | **≥ 1359** | — | COMPLEX | charge multiplies by an item count; legs: deter:lp-churn 1000 + components:SWP|C_AddSleepingLiquidity 65 + deter:setup 5 + components:DPOF|C_Burn 45 + deter:usage 1 + components:DPTF|C_Burn 71 + components:DPTF|C_Mint 86 + components:DPOF|C_Mint 80 + small 2 + smallest 1 + medium 3 |
+| `C_AddStandardLiquidity` | `C_AddStandardLiquidity` | USAGE | **≥ 1000** | — | COMPLEX | charge multiplies by an item count; legs: deter:lp-churn 1000 + const:LQ|INITIATION-FEE 100 + less:LQ|INITIATION-FEE -100 |
 | `C_ChangeOwnership` | `C_ChangeOwnership` | AUTH | **29** | — | $0.29 | deter:auth 10 + components:SWP|C_ChangeOwnership 19 |
-| `C_EnableFrozenLP` | `C_EnableFrozenLP` | SETUP | **≥ 3** | 100 | COMPLEX | composes other client ops (legs may repeat — floor); legs: medium 3 | STOA: dptf 100 |
-| `C_EnableSleepingLP` | `C_EnableSleepingLP` | SETUP | **≥ 3** | 100 | COMPLEX | composes other client ops (legs may repeat — floor); legs: medium 3 | STOA: dpmf 100 |
+| `C_EnableFrozenLP` | `C_EnableFrozenLP` | SETUP | **≥ 282** | 100 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:vst-link 250 + components:VST|C_CreateFrozenLink 29 + medium 3 | STOA: dptf 100 |
+| `C_EnableSleepingLP` | `C_EnableSleepingLP` | SETUP | **≥ 282** | 100 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:vst-link 250 + components:VST|C_CreateVestingLink 29 + medium 3 | STOA: dpmf 100 |
 | `C_Firestarter` | `C_WrapStoa` ×3 | USAGE | **≥ 93** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPTF|C_Mint 86 + smallest 1 + small 2 + medium 3 |
 | `C_Fuel` | `C_Fuel` | USAGE | **≥ 6** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 + small 2 + medium 3 |
 | `C_IssueStable` | `C_Issue` | ISSUE | **≥ 5087** | 500 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPTF|C_Mint 86 + deter:issue-swp-pair 5000 | STOA: stoa:issue-swp-pair 500 |
-| `C_IssueStablePool` | `C_IssueStablePool` | ISSUE | **≥ 5606** | 600 | COMPLEX | charge multiplies by an item count; legs: deter:issue-swp-pair 5000 + token-issue 500 + biggest 5 + smallest 1 + literal 100 | STOA: dptf 100 + swp 500 |
+| `C_IssueStablePool` | `C_IssueStablePool` ×2 | ISSUE | **≥ 5606** | 600 | COMPLEX | charge multiplies by an item count; legs: deter:issue-swp-pair 5000 + token-issue 500 + biggest 5 + smallest 1 + literal 100 | STOA: dptf 100 + swp 500 |
 | `C_IssueStandardPool` | `C_IssueStandardPool` | ISSUE | **≥ 5606** | 600 | COMPLEX | charge multiplies by an item count; legs: deter:issue-swp-pair 5000 + token-issue 500 + biggest 5 + smallest 1 + literal 100 | STOA: dptf 100 + swp 500 |
 | `C_IssueWeighted` | `C_Issue` | ISSUE | **≥ 5087** | 500 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPTF|C_Mint 86 + deter:issue-swp-pair 5000 | STOA: stoa:issue-swp-pair 500 |
 | `C_IssueWeightedPool` | `C_IssueWeightedPool` | ISSUE | **≥ 5606** | 600 | COMPLEX | charge multiplies by an item count; legs: deter:issue-swp-pair 5000 + token-issue 500 + biggest 5 + smallest 1 + literal 100 | STOA: dptf 100 + swp 500 |
@@ -544,7 +554,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_ModifyWeights` | `C_ModifyWeights` | FEE | **44** | — | $0.44 | deter:fee 25 + components:SWP|C_ModifyWeights 19 |
 | `C_MultiSwapNoSlippage` | `C_Swap` | USAGE | **≥ 6** | — | COMPLEX | charge multiplies by an item count; legs: small 2 + smallest 1 + medium 3 |
 | `C_MultiSwapWithSlippage` | `C_Swap` | USAGE | **≥ 6** | — | COMPLEX | charge multiplies by an item count; legs: small 2 + smallest 1 + medium 3 |
-| `C_RemoveLiquidity` | `C_RemoveLiquidity` | USAGE | **≥ 1078** | — | COMPLEX | charge multiplies by an item count; legs: deter:usage 1 + components:DPTF|C_Burn 71 + deter:lp-churn 1000 + smallest 1 + small 2 + medium 3 |
+| `C_RemoveLiquidity` | `C_RemoveLiquidity` | USAGE | **≥ 1107** | — | COMPLEX | charge multiplies by an item count; legs: deter:lp-churn 1000 + components:SWP|C_RemoveLiquidity 29 + deter:usage 1 + components:DPTF|C_Burn 71 + smallest 1 + small 2 + medium 3 |
 | `C_SingleSwapNoSlippage` | `C_Swap` | USAGE | **≥ 6** | — | COMPLEX | charge multiplies by an item count; legs: small 2 + smallest 1 + medium 3 |
 | `C_SingleSwapWithSlippage` | `C_Swap` | USAGE | **≥ 6** | — | COMPLEX | charge multiplies by an item count; legs: small 2 + smallest 1 + medium 3 |
 | `C_SmartSwapNoSlippage` | `C_SmartSwap` | USAGE | **≥ 6** | — | COMPLEX | per-nonce / per-item work; legs: small 2 + smallest 1 + medium 3 |
@@ -567,11 +577,11 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | Talos function | core op | role | IGNIS | STOA | $ (ignis) | charge breakdown |
 |----------------|---------|------|------:|-----:|----------:|------------------|
 | `C_Awake` | `C_Awake` | SETUP | **≥ 128** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Burn 45 + deter:usage 1 + components:DPTF|C_Burn 71 + small 2 + smallest 1 + medium 3 |
-| `C_CreateFrozenLink` | `C_CreateFrozenLink` | ISSUE | **≥ 1059** | 100 | COMPLEX | charge multiplies by an item count; legs: deter:usage 1 + components:DPTF|C_ToggleTransferRole 58 + deter:issue-tf 1000 | STOA: dptf 100 |
-| `C_CreateHibernatingLink` | `C_CreateHibernatingLink` | ISSUE | **≥ 1054** | 100 | COMPLEX | charge multiplies by an item count; legs: deter:usage 1 + components:DPOF|C_ToggleTransferRole 53 + deter:issue-of 1000 | STOA: dpmf 100 |
-| `C_CreateReservationLink` | `C_CreateReservationLink` | ISSUE | **≥ 1059** | 100 | COMPLEX | charge multiplies by an item count; legs: deter:usage 1 + components:DPTF|C_ToggleTransferRole 58 + deter:issue-tf 1000 | STOA: dptf 100 |
-| `C_CreateSleepingLink` | `C_CreateSleepingLink` | ISSUE | **≥ 1054** | 100 | COMPLEX | charge multiplies by an item count; legs: deter:usage 1 + components:DPOF|C_ToggleTransferRole 53 + deter:issue-of 1000 | STOA: dpmf 100 |
-| `C_CreateVestingLink` | `C_CreateVestingLink` | ISSUE | **≥ 1054** | 100 | COMPLEX | charge multiplies by an item count; legs: deter:usage 1 + components:DPOF|C_ToggleTransferRole 53 + deter:issue-of 1000 | STOA: dpmf 100 |
+| `C_CreateFrozenLink` | `C_CreateFrozenLink` | ISSUE | **≥ 1338** | 100 | COMPLEX | charge multiplies by an item count; legs: deter:vst-link 250 + components:VST|C_CreateFrozenLink 29 + deter:usage 1 + components:DPTF|C_ToggleTransferRole 58 + deter:issue-tf 1000 | STOA: dptf 100 |
+| `C_CreateHibernatingLink` | `C_CreateHibernatingLink` | ISSUE | **≥ 1333** | 100 | COMPLEX | charge multiplies by an item count; legs: deter:vst-link 250 + components:VST|C_CreateVestingLink 29 + deter:usage 1 + components:DPOF|C_ToggleTransferRole 53 + deter:issue-of 1000 | STOA: dpmf 100 |
+| `C_CreateReservationLink` | `C_CreateReservationLink` | ISSUE | **≥ 1338** | 100 | COMPLEX | charge multiplies by an item count; legs: deter:vst-link 250 + components:VST|C_CreateFrozenLink 29 + deter:usage 1 + components:DPTF|C_ToggleTransferRole 58 + deter:issue-tf 1000 | STOA: dptf 100 |
+| `C_CreateSleepingLink` | `C_CreateSleepingLink` | ISSUE | **≥ 1333** | 100 | COMPLEX | charge multiplies by an item count; legs: deter:vst-link 250 + components:VST|C_CreateVestingLink 29 + deter:usage 1 + components:DPOF|C_ToggleTransferRole 53 + deter:issue-of 1000 | STOA: dpmf 100 |
+| `C_CreateVestingLink` | `C_CreateVestingLink` | ISSUE | **≥ 1333** | 100 | COMPLEX | charge multiplies by an item count; legs: deter:vst-link 250 + components:VST|C_CreateVestingLink 29 + deter:usage 1 + components:DPOF|C_ToggleTransferRole 53 + deter:issue-of 1000 | STOA: dpmf 100 |
 | `C_Freeze` | `C_Freeze` | USAGE | **≥ 93** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPTF|C_Mint 86 + smallest 1 + small 2 + medium 3 |
 | `C_Hibernate` | `C_Hibernate` | SETUP | **≥ 91** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Mint 80 + small 2 + smallest 1 + medium 3 |
 | `C_Merge` | `C_Merge` | SETUP | **≥ 146** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_ToggleFreezeAccount 53 + components:DPOF|C_Mint 80 + biggest 5 + small 2 + smallest 1 |
@@ -594,8 +604,31 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_Unvest` | `C_Unvest` | SETUP | **≥ 136** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Mint 80 + components:DPOF|C_Burn 45 + smallest 1 + small 2 + medium 3 |
 | `C_Vest` | `C_Vest` | SETUP | **≥ 91** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Mint 80 + small 2 + smallest 1 + medium 3 |
 
+## UNPRICED — Talos client entrypoints this sheet could not resolve
+
+These are live `ENTITY|fn` wrappers on the Talos client surface that the static walk
+could not attach to a priced core op, so **they carry no row above**. They are listed
+here because a price sheet that drops them silently reports as complete while a client
+can still call them and be charged. Most are Talos->Talos delegations (the callee is
+another Talos wrapper, not a core op) or admin entrypoints that are exempt by rule.
+
+| Talos entrypoint | why it is unpriced |
+|---|---|
+| DALOS\|C_UpdateEliteAccount | no core client op reached from body |
+| DALOS\|C_UpdateEliteAccountSquared | no core client op reached from body |
+| DPNF\|C_RemoveNonceScore | no core client op reached from body |
+| DPNF\|C_RemoveSetNonceScore | no core client op reached from body |
+| DPSF\|C_BulkTransfer | no core client op reached from body |
+| DPSF\|C_RemoveNonceScore | no core client op reached from body |
+| DPSF\|C_RemoveSetNonceScore | no core client op reached from body |
+| ORBR\|A_Fuel | no core client op reached from body |
+| P\|A_Add | no core client op reached from body |
+| P\|A_AddIMP | no core client op reached from body |
+| STOAICO\|C_Collect | no core client op reached from body |
+| SWP\|C_IssueStandard | no core client op reached from body |
+
 ---
-181 simple (exact price) · 191 complex (floor price) · 10 STOA-only · 48 exempt · 0 unresolved · 420 Talos client functions
+178 simple (exact price) · 197 complex (floor price) · 11 STOA-only · 49 exempt · 0 unresolved · 12 unpriced · 424 Talos client functions
 
 `×N` on a core op = the wrapper drives N priced core ops in a FIXED composition (still exactly knowable).
 

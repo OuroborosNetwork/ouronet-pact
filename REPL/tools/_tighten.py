@@ -101,7 +101,7 @@ def owning_entrypoint(path):
     harvest matches FAILURE lines back by FILE AND LINE -- which works because the sentinel is
     inserted inline, leaving line numbers unchanged."""
     import glob as _g, importlib.util, sys as _sys
-    spec = importlib.util.spec_from_file_location('_gate', '_gate.py')
+    spec = importlib.util.spec_from_file_location('_gate', os.path.join(os.path.dirname(os.path.abspath(__file__)), '_gate.py'))
     m = importlib.util.module_from_spec(spec)
     argv, _sys.argv = _sys.argv, ['_gate', '--audit-only']
     try: spec.loader.exec_module(m)

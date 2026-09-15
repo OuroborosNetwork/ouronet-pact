@@ -325,6 +325,17 @@ def main():
         print(_fs.stdout + _fs.stderr)
         sys.exit("GATE FAILED: an audit document quotes a figure the generated stats do not support.")
 
+    # PRICE SYNC -- the GENERATED pricing artefacts must equal what their generators emit.
+    # _figuresync guards ARCHITECTURE/*.md against the suite stats; it does not look at
+    # IGNIS-PRICING/, and that is exactly where the worst rot was found on 2026-09-15: both
+    # generators had been DEAD since the tools move, the artefacts were stale by the X-04 rename,
+    # and their `Regenerate:` lines had been hand-corrected to name a command that crashed.
+    _ps = subprocess.run([sys.executable, "tools/_pricesync.py", "--check"],
+                         capture_output=True, text=True)
+    if _ps.returncode != 0:
+        print(_ps.stdout + _ps.stderr)
+        sys.exit("GATE FAILED: a generated pricing artefact does not match its generator.")
+
     # CONFORMANCE and HEAVY-PREFIX, both fatal on VIOLATIONS only.
     # ADDED 2026-09-14, after a fix-verification pass found that both tools' "0" was a
     # HAND-MEASURED figure. The gate byte-compiled them and ran conformance's selftest, but never

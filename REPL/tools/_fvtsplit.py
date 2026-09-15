@@ -9,7 +9,9 @@ Classifies each as RPS / FVT / SEAM (both) / FREE (neither), and flags any
 RPS-classified function that DIRECTLY reads an FVT table (would break the DAG).
 """
 import importlib.util, sys, re
-spec=importlib.util.spec_from_file_location('lf','REPL/_letfix.py'); lf=importlib.util.module_from_spec(spec); spec.loader.exec_module(lf)
+import os as _os
+_HERE=_os.path.dirname(_os.path.abspath(__file__))
+spec=importlib.util.spec_from_file_location('lf',_os.path.join(_HERE,'_letfix.py')); lf=importlib.util.module_from_spec(spec); spec.loader.exec_module(lf)
 
 F='1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact'
 s=open(F).read(); toks=lf.tokenize(s); match=lf.match_parens(toks)
