@@ -857,6 +857,50 @@ them. Now it does.
 
 ---
 
+## Stage 8 — Family E reopened: defpact continuation authority *(2026-09-15)*
+
+### RT-E-002 — continue a defpact you did not start *(REFUSED — and the manner is the finding)*
+
+A defpact's steps are separate transactions, so **the signer set can change between them**. And
+`20_MTX-SWP.pact` contains **zero** occurrences of `CAP_EnforceAccountOwnership` or `CAP_Owner` —
+no step asks who is driving it.
+
+That matters because `RT-F-001` established what step 1 does when the pool has moved: it takes the
+rollback branch and the starter loses the initiation fee. **An attacker who could time the
+continuation could swap against the pool first, then continue the victim's pact into its own
+failure branch** — turning RT-F-001's accident into a directed grief.
+
+**Attempted**, on two pact families, by starting as `ANHD` and replacing the signer set with
+`EMMA`'s alone before continuing:
+
+| pact | result |
+|---|---|
+| `MTX\|C_AddLiquidity` step 1 | **refused** — `Keyset failure (keys-all): [PK_Ancie…]` |
+| `MTX\|C_Issue` step 1 | **refused** — same |
+| the same pact, continued by its **starter** | **proceeds** *(non-vacuity, `RT-E-002b`)* |
+
+**The manner is the result.** The refusal is a plain keyset failure naming the **starter's** key —
+it comes from a **downstream core op that happens to touch the starter's account**, not from
+anything in the defpact layer. *The protection is a property of what the step does, not of the
+pact.*
+
+> Safe today, structurally thin. Every MTX step currently moves the starter's tokens, so every one
+> demands their key. **A future step that touched only protocol state — a sweep, a recompute, a flag
+> flip — would have nothing to demand it**, and this attack would succeed against that step without
+> anything else changing.
+
+This is the fourth refusal in the programme that came **from the wrong guard**, joining `RT-E-001`,
+`RT-H-001` and `RT-C-001`. The attack is kept precisely because it does not test a guard — **it
+tests an absence, and the absence is still there.**
+
+**Not fixed**, deliberately: adding a continuation-authority check to the defpact layer is a design
+decision about who may drive a multi-step operation (the starter only? the account? an authorised
+relayer?), and it would touch every `MTX|` pact. Recorded as a standing constraint on any new
+defpact step instead: *if a step does not move the starter's own assets, it has no caller
+authentication at all.*
+
+---
+
 # Closing assessment
 
 ## The register
