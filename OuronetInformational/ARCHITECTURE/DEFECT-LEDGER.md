@@ -229,6 +229,41 @@ Worth recording about the guard itself: after this round of generator fixes, `_p
 **fired unprompted** on the drift the regeneration had just created in `IGNIS-PRICING.md`. That is
 the check working in the workflow rather than in a selftest.
 
+### Twin-divergence sweep — a measured ZERO on the contracts *(2026-09-15)*
+
+The sharpest lesson of this round was a heuristic, not a bug: **a defect surviving in one of two
+symmetrical operations hides longest, because the working twin makes the family look covered.** It
+had already paid out twice — `coin`'s guarded sweep against its two ports, and the price-sheet
+walker resolving `DPNF|C_BulkTransfer` while dropping `DPSF|C_BulkTransfer`. So it was worth running
+against the whole tree rather than leaving as a postmortem note.
+
+`REPL/tools/_twindiverge.py` normalises twin tokens out of function names (CamelCase, UPPER-HYPHEN,
+lower-hyphen and short-form spellings all together), groups the families, and compares guard sets.
+**309 twin families. 23 asymmetries reported. 0 real.**
+
+The zero is the finding: **the symmetrical families in the contracts are guard-consistent.** Every
+survivor is structural (DPTF has no nonces), factored out into a composed sibling, a naming split
+(`DPOF|S>X_FREEZE` vs `DPTF|C>X_FREEZE`), a thin alias whose delegate holds the gate
+(`DPNF|C_BulkTransfer` → `DPDC|C_BulkTransfer`, which *does* acquire `P|TS`), or already annotated
+in place by a prior audit (`DPTF|C>UPDATE-SPECIAL`, "UNREACHABLE BY CONSTRUCTION"). **The twin
+divergences this round were in the tooling, not the contracts.**
+
+**The instrument produced four confident false positives before it produced a trustworthy zero**,
+and each correction is a reusable rule:
+
+| the probe said | why it was wrong |
+|---|---|
+| "`DPOF\|S` is missing `CAP_Owner`" | `>` was not in the name character class, so ~15 distinct `DPOF\|S>*` defcaps merged into one pseudo-function |
+| "this cap has no guards at all" | interface **declarations** (no body → empty guard set) were grouped with module **definitions** under the same name, and dict-overwrite let the empty one win |
+| "`ANK\|C>ISSUE-DPNF` lost 4 guards" | no transitive closure over `compose-capability`; all four live in the `ANK\|XI>ISSUE-DPNF-COMMON` it composes. **Without closure the detector is loudest exactly where the code is best refactored** |
+| "`DPTF\|C>MINT` lost 2 account-state guards" | those `UEV_`s do not exist in DPTF at all — reporting that a true fungible is not a collectable |
+
+**It is deliberately NOT wired into `_gate.py`.** A 23-reported / 0-real instrument added as a gate
+check is noise that trains people to ignore the gate. Its measured false-positive rate is written
+into its own docstring, because *an instrument whose false-positive rate nobody has measured is
+indistinguishable from a defect detector* — which is precisely the position `tools/canon_check.py`
+was in until it was run (21 reported = 6 stale-classifier + 15 real).
+
 ### GS-12 — a second "hard gate", uninstalled and unrun *(FOUND 2026-09-15)*
 
 Chasing the `MODULE-INDEX.md` → `coin-live.pact` pointer led to a **third tool directory**. There are
