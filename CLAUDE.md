@@ -64,9 +64,24 @@ Stage 1 has two DPTF/SWP paths — pick **one** in `Stage01_Tester.repl`: full s
 Run from repo root (they skip the two reference AQP REPLs):
 
 ```bash
-python3 REPL/tools/_normalize_repl_layout.py   # Preamble + ;;|| NEXT > between commit-tx/begin-tx + subdivision
-python3 REPL/tools/_subdivide_repl.py          # Only the mm-banner insertion inside each begin-tx
+python3 REPL/tools/_normalize_repl_layout.py --apply   # Preamble + ;;|| NEXT > between commit-tx/begin-tx + subdivision
+python3 REPL/tools/_subdivide_repl.py --apply          # Only the mm-banner insertion inside each begin-tx
 ```
+
+**`--apply` is REQUIRED on both, since 2026-09-16, and this block used to omit it** — which
+contradicted the rule three paragraphs below (*"Tools that rewrite source require `--apply`"*). That
+rule was added after the 2026-09-15 incident and applied to the five `_fvt*` tools that caused it,
+not to the class; these two still rewrote the tree on a bare run. A tool census on 2026-09-16 did
+exactly that — **188 files, 16,457 insertions** — and because `_normalize_repl_layout` *also*
+performs subdivision, running both duplicated every `;;====` banner. Nothing was lost, because the
+tree was committed; "the tree was committed" is not a safety property.
+
+**Run only ONE of the two.** `_normalize_repl_layout` already calls `_subdivide_repl`'s logic
+internally; running both duplicates the banners it inserts.
+
+**Both are currently NON-NO-OP on the committed tree**: `--apply` changes ~167 files, so the
+committed REPL layout has drifted from what the formatter produces (expected — blocks get appended
+by hand). Re-normalising is a deliberate, reviewable act, not a tidy-up to fold into another commit.
 
 **Tools that rewrite source require `--apply`.** `_fvtasm` / `_fvtcut` / `_fvtfacade` / `_fvtflip` /
 `_fvtgen` mutate `.pact` files **at module level** — they have no `if __name__ == "__main__"` guard,

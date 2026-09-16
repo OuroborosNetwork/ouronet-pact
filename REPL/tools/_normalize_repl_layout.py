@@ -104,6 +104,22 @@ def process(path: Path, root: Path) -> bool:
 
 
 def main() -> None:
+    # REWRITES SOURCE IN PLACE -- requires --apply (2026-09-16).
+    # The 2026-09-15 incident added this guard to the five `_fvt*` tools that caused it. It was not
+    # extended to the class, and these two formatters still rewrote the tree on a bare run. On
+    # 2026-09-16 a tool census did exactly that: 188 files, 16,457 insertions, and because
+    # _normalize_repl_layout ALSO performs subdivision, running both duplicated every `;;====`
+    # banner. Nothing was lost (the tree was committed), but "the tree was committed" is not a
+    # safety property.
+    #
+    # The guard lives HERE, in main(), not at module level: `_normalize_repl_layout` imports this
+    # module for `subdivide_text`, and a module-level `SystemExit` would kill that import -- which
+    # is the same shape as the `_fvt*` tools having no `__main__` guard in the first place.
+    import sys as _sys
+    if "--apply" not in _sys.argv:
+        print(f"{__file__}: REFUSING TO RUN -- this script rewrites .repl files in place.")
+        print("Re-run with --apply if that is genuinely what you want.")
+        raise SystemExit(0)
     root = Path(__file__).resolve().parent.parent
     n = 0
     for p in sorted(root.rglob("*.repl")):

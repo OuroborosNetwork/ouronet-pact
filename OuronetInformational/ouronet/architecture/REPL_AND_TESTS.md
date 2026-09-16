@@ -34,8 +34,8 @@ Include **`FILE`**, **Legend** (what **`<<…>>`**, **`<(Talos…>`**, **`<(Modu
 
 For mechanical alignment (legacy **`;;>>>>>>>>…`** → **`;;|| NEXT >`**, **`FILE`** / legend preamble when missing, and **intra-`begin-tx`** **`mm`** banners), use:
 
-- **`REPL/tools/_normalize_repl_layout.py`** (run from repo root: **`python3 REPL/tools/_normalize_repl_layout.py`**) — preamble, **`NEXT`** between **`commit-tx`** / **`begin-tx`**, then **subdivision** (see below). It skips **`Stage_02/[6.2.1]_AQP-ANK.repl`** and **`Stage_02/[6.2.2]_AQP-SCORE.repl`** (those are the hand-maintained reference layouts).
-- **`REPL/tools/_subdivide_repl.py`** — same **`mm`** insertion logic **alone** (strips obsolete pre-**`begin-tx`** **`· 01 · (group)`** pairs, inserts **`01`/`02`/`03`** inside each **`(begin-tx …) … (commit-tx)`** at fixed anchors: **`env-sigs`** / chain / namespace / gas model, **`let`** / **`load`**, first gas **`format "<<<<<<<"`** echo). Run: **`python3 REPL/tools/_subdivide_repl.py`**. Skips the same two reference REPLs.
+- **`REPL/tools/_normalize_repl_layout.py`** (run from repo root: **`python3 REPL/tools/_normalize_repl_layout.py --apply`**) — preamble, **`NEXT`** between **`commit-tx`** / **`begin-tx`**, then **subdivision** (see below). It skips **`Stage_02/[6.2.1]_AQP-ANK.repl`** and **`Stage_02/[6.2.2]_AQP-SCORE.repl`** (those are the hand-maintained reference layouts).
+- **`REPL/tools/_subdivide_repl.py`** — same **`mm`** insertion logic **alone** (strips obsolete pre-**`begin-tx`** **`· 01 · (group)`** pairs, inserts **`01`/`02`/`03`** inside each **`(begin-tx …) … (commit-tx)`** at fixed anchors: **`env-sigs`** / chain / namespace / gas model, **`let`** / **`load`**, first gas **`format "<<<<<<<"`** echo). Run: **`python3 REPL/tools/_subdivide_repl.py --apply`** (required since 2026-09-16; a bare run refuses). Skips the same two reference REPLs.
 
 Automated subdivision is a **baseline**; refine slugs or add **`04`**, … by hand where a transaction has more phases than those anchors cover.
 

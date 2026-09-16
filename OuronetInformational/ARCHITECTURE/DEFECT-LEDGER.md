@@ -2035,6 +2035,49 @@ So the survey ends with three tools fixed and five cleared **by measurement**. "
 available and would have been wrong about `_leakaudit` and `_ignis_price_sheet`, both of which looked
 equally fine.
 
+## 7.2f The `--apply` guard was given to the five tools that caused the incident, not to the class *(2026-09-16)*
+
+**Found by walking into it.** CLAUDE.md says *"Never run a tool to find out what it does — read its
+docstring, or check the table in `REPL/TOOLS.md`."* A census that ran all 48 tools to establish which
+were alive did exactly the forbidden thing, and the tree was rewritten: **188 files, 16,457
+insertions.** A second, smaller run during an idempotency probe added **167 more**. Both were
+stashed; nothing was lost, because the tree was committed. **"The tree was committed" is not a safety
+property** — it is a description of luck at that moment.
+
+**The mechanism is a mitigation that stopped at its own incident.** The 2026-09-15 repair added
+`if "--apply" not in sys.argv: refuse` to the five `_fvt*` tools that had fired on import. The rule
+was written down in CLAUDE.md as *"Tools that rewrite source require `--apply`"* — but two more
+mutate-by-default tools existed, and CLAUDE.md's own tools table showed them being invoked **bare**,
+three paragraphs above the rule. **The document contradicted itself, and the table is the half people
+copy from.**
+
+| tool | before | now |
+|---|---|---|
+| `_normalize_repl_layout.py` | rewrote every `.repl` on a bare run | refuses without `--apply` |
+| `_subdivide_repl.py` | same | refuses without `--apply` |
+
+**The guard is in `main()`, not at module level**, and that placement is the point:
+`_normalize_repl_layout` *imports* `_subdivide_repl` to reuse `subdivide_text`, so a module-level
+`SystemExit` would kill the importer — which is the same shape as the `_fvt*` tools having no
+`__main__` guard in the first place. Verified: the import still works, `--apply` still does the work,
+and two bare runs now change nothing.
+
+**Two further facts the accident exposed, both worth keeping:**
+
+1. **Running BOTH duplicates every banner.** `_normalize_repl_layout` already performs subdivision
+   internally; `_subdivide_repl` does "only" that step. The docs imply it with the word *only*; the
+   diff says it outright, twice per banner. Now stated explicitly in CLAUDE.md.
+2. **The committed REPL layout has DRIFTED from its own formatter.** `--apply` is not a no-op on a
+   clean tree: it changes ~167 files. That is expected — blocks are appended by hand between
+   normalisation runs — but it means re-normalising is a deliberate, reviewable act and can never be
+   folded into an unrelated commit. Anyone who runs the formatter "to tidy up" produces a 13,000-line
+   diff that no reviewer will read.
+
+> The general shape, and the reason this sits in the ledger rather than a commit message: **a
+> mitigation written against the instances is not a mitigation of the class.** Five tools misbehaved,
+> five tools were guarded, and the sentence generalising it was filed in a document whose own
+> examples still showed the unguarded form.
+
 ## 7.3 Known-open, recorded deliberately
 
 - **RT-F-001 is one of THREE identical ops, and only one is pinned.** *(found 2026-09-16, by asking
