@@ -255,6 +255,8 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+        (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+        (ouro-id:string "OURO-98c486052a51")
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (anchor-id:string (ref-U|DALOS::UDC_Makeid "AurynRain"))
         (score-id:string (ref-U|DALOS::UDC_Makeid "ResumeVacScore"))
@@ -324,6 +326,32 @@
                 (format "<<TX-AQP-NEG-OWNER2>> non-owner AQP-FVT|C_RotateOwnership rejected (fvt-owner gate)" [])
                 "Keyset failure (keys-all): [PK_Ancie...]"
                 (ref-TS02-C3::AQP-FVT|C_RotateOwnership foreign fvt-id foreign))
+            ;;--- two more FVT owner gates, each shadowed by a ROW-EXISTENCE enforce rather than by
+            ;;a latched flag. The discipline is the same and matters more here: a missing row is the
+            ;;single likeliest way to reach these ops, so a non-owner test that did not first prove
+            ;;the row EXISTS would be pinning "Reward link row must exist" and crediting it to the
+            ;;owner gate -- RT-C-001's failure mode exactly. Both rows come from
+            ;;`REPL_BootstrapVault` in [6.2.5], which linked ResumeVacVault to OURO and to
+            ;;ResumeVacScore, so both are real and both are asserted before they are relied on.
+            (expect
+                (format "<<TX-AQP-NEG-OWNER2>> the ResumeVacVault/OURO reward-link row exists (TOGGLE-REWARD-LINK precondition)" [])
+                true (ref-RPS::URC_FvtRpsGlobalRowExists fvt-id ouro-id))
+            (expect-failure
+                (format "<<TX-AQP-NEG-OWNER2>> non-owner AQP-FVT|C_ToggleRewardLink rejected (fvt-owner gate)" [])
+                "Keyset failure (keys-all): [PK_Ancie...]"
+                (ref-TS02-C3::AQP-FVT|C_ToggleRewardLink foreign fvt-id ouro-id false))
+            ;;The score-entity variant carries a SECOND guard ahead of ownership -- the entity type
+            ;;must match the stored one -- so the type is READ rather than hardcoded. Writing a
+            ;;literal here would pass today and silently start testing the type guard instead of
+            ;;the owner gate the day a fixture changes class.
+            (expect
+                (format "<<TX-AQP-NEG-OWNER2>> the ResumeVacVault/ResumeVacScore entity-link row exists (TOGGLE-SCORE-ENTITY-LINK precondition)" [])
+                true (ref-RPS::URC_FvtScoreEntityLinkRowExists fvt-id score-id))
+            (expect-failure
+                (format "<<TX-AQP-NEG-OWNER2>> non-owner AQP-FVT|C_ToggleScoreEntityLink rejected (fvt-owner gate)" [])
+                "Keyset failure (keys-all): [PK_Ancie...]"
+                (ref-TS02-C3::AQP-FVT|C_ToggleScoreEntityLink foreign fvt-id
+                    (ref-RPS::UR_FVT-SEL|ScoreEntityType fvt-id score-id) score-id false))
         ]
     )
 )

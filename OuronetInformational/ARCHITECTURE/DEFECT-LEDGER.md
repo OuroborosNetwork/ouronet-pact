@@ -2256,11 +2256,16 @@ times** before it did:
 After all three, it reproduces the hand result exactly and clears `DEFINE-VAULT`. Measured over
 **112** owner-gated `defcap`s reachable from a named Talos op:
 
-| | observed refusing somebody | never observed |
+| state of the tree | observed refusing somebody | never observed |
 |---|---|---|
-| before this commit | **19** | **93** |
-| after | **22** | **90** |
-| …of the 38 whose gate sits after a business `enforce` | 11 → **14** | 27 → **24** |
+| before 2026-09-16 | **19** | **93** |
+| + the three `[6.2.10]` latched-flag witnesses | 22 | 90 |
+| + `RT-D-003` / `RT-D-004` (the transfer doors) | 24 | 88 |
+| + the two `[6.2.10]` row-existence witnesses | **26** | **86** |
+| …of the 38 whose gate sits after a business `enforce` | 11 → **17** | 27 → **21** |
+
+Re-run it with `python3 REPL/tools/_ownerobs.py`; the rows above are checkpoints on one measurement,
+not four separate claims.
 
 **What "never observed" means, precisely:** no test pins a refusal attributable to that gate — so
 deleting the gate would turn nothing red. It is *not* a claim that the gate is wrong — RT-D-003 below
