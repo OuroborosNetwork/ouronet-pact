@@ -154,6 +154,31 @@ def sync_report(rows, write):
                    "attack register. Regenerate with: python3 REPL/tools/_redteam.py --sync")
 
 
+# ---------------------------------------------------------------------------------------------
+# LEDGER COVERAGE. A defect recorded in only one of two defect records is a defect the audit will
+# undercount. On 2026-09-16 nine of the twelve red-team defects existed only in RED-TEAM-REPORT.md
+# while DEFECT-LEDGER.md's headline read 131 -- the same "a true record whose coverage stopped"
+# shape this programme keeps finding, sitting in an audit artefact. Every attack that FOUND a
+# defect must now appear in the ledger by tag, or the gate fails.
+# ---------------------------------------------------------------------------------------------
+LEDGER = os.path.join(ROOT, "..", "OuronetInformational", "ARCHITECTURE", "DEFECT-LEDGER.md")
+
+def check_ledger(rows):
+    """Return (ok, message). Every SUCCEEDED/FIXED attack must be named in the defect ledger."""
+    path = os.path.normpath(LEDGER)
+    if not os.path.exists(path):
+        return False, f"ledger coverage: {path} does not exist"
+    led = open(path, encoding="utf-8").read()
+    want = [r["tag"] for r in rows if r["status"] in ("SUCCEEDED", "FIXED")]
+    missing = [t for t in want if t not in led]
+    if missing:
+        return False, ("ledger coverage: {} defect-finding attack(s) are NOT recorded in "
+                       "DEFECT-LEDGER.md: {}\n"
+                       "   A defect in only one of the two records is one the audit undercounts."
+                       .format(len(missing), ", ".join(missing)))
+    return True, f"ledger coverage: ok -- all {len(want)} defect-finding attacks are in the ledger"
+
+
 if __name__ == "__main__":
     if "--selftest" in sys.argv:
         sys.exit(selftest())
@@ -191,6 +216,10 @@ if __name__ == "__main__":
         ok, msg = sync_report(rows, write=("--sync" in sys.argv))
         print("\n" + msg)
         if not ok:
+            bad = True
+        ok2, msg2 = check_ledger(rows)
+        print(msg2)
+        if not ok2:
             bad = True
     if errs:
         pass

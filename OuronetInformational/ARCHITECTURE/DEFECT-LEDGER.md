@@ -1564,6 +1564,13 @@ current source or a fresh tool run.
 | 1.9 Deployment, wiring, dead-on-arrival | 8 | 7 | 0 | 1 | 0 |
 | **TOTAL** | **131** | **74** | **41** | **4** | **12** |
 
+> **The 131 above is the REPL-round figure and does not include the adversarial round.** The
+> red-team programme is counted separately in **§7**: **22 attacks across 11 families, 12 defects,
+> all fixed and pinned.** They are kept apart on purpose — 131 is *compiled* from the project's own
+> records (see the provenance caveat at the top of this file), while every §7 entry was *measured
+> exploit-first* and carries an assertion that goes red if its fix is reverted. Merging them would
+> put two different standards of evidence behind one number.
+
 Several entries cover more than one function. The 17 preview/charge entries span the project's
 running count of **19 preview/charge defects**; P-14 alone covers 22 cost readers; the
 guard-reachability entries cover roughly 45 individual `enforce` sites; W-05 covers 11 dead call
@@ -1609,3 +1616,107 @@ _colproj.py          0 — no projecting read asks for a column its own table's 
 
 Scale for context: Pact source (`1_SOVEREIGN` + `2_CITIZEN`) **113,666 lines / 93 files**; REPL
 tests **103,379 lines / 259 files** — roughly 1:1. `REPL/TOOLS.md` indexes **43** analysis scripts.
+
+# 7. Red-team defects — the adversarial round (families A–K)
+
+*Added 2026-09-16. Until this section existed, **9 of the 12** red-team defects were recorded only in
+`RED-TEAM-REPORT.md`, and this ledger's headline of **131** silently excluded them. That is the same
+failure this document catalogues elsewhere — a true record whose coverage stopped — sitting in an
+audit artefact. `_redteam.py --check` now fails the gate if a `FIXED` attack is absent here, so the
+two records cannot diverge again.*
+
+**These are NOT folded into the 131.** That figure is compiled from the project's own records with a
+documented provenance caveat at the top of this file; changing it would break that provenance. The
+red-team count is stated separately and is **directly verified** — every entry below was measured
+exploit-first, fixed, and pinned by an assertion that goes red if the fix is reverted.
+
+| id | family | the defect | pinned by |
+|---|---|---|---|
+| **RT-A-001** | A | add-liquidity reachable through **two** Talos doors; one skipped the `lp-churn` deterrent — 53.0 vs 557.03 on the same op | `<<RT-A-001>>` *(also §1)* |
+| **RT-A-003** | A | `URC_RBT` divides by the pool index; **`index = 0` is a live state** (5 AOZ pools at deploy) and `ATS\|C_Coil` died with `Arithmetic exception: div by zero` | `<<RT-A-003c/d>>` |
+| **RT-B-001** | B | `P\|UEV_IMC` passed for the **master key**, which is not a module — the gate that makes "Talos is the only path" true | `<<RT-B-001>>` *(also §1)* |
+| **RT-D-002** | D | NFT possession decided by an **11-character abbreviation** — `OI\|UC_ShortAccount`, ~6 characters of entropy — while the full-account `nonce-supply` it had already bound went unused | `<<RT-D-002d/e/f>>` |
+| **RT-F-001** | F | `MTX\|C_AddLiquidity` collects its whole deterrent in step 0 and validates in step 1; a stranger's swap turns the victim's own pact into its failure branch | `<<RT-F-001>>` *(also §1)* |
+| **RT-H-001** | H | `SWPU\|X>SWAP` — the no-slippage path reached by the `-1.0` sentinel — validated the wrong operand | `<<RT-H-001>>` |
+| **RT-H-002** | H | the `<= 50.0` slippage ceiling lived in a **constructor** whose `@doc` says *"Called by the UI"*; the chain reads `slippage-percent` back out of a caller-supplied object. Forged `9999.0` drove the floor to **−98,990** | `<<RT-H-002>>` |
+| **RT-H-003** | H | the **BAR sentinel as a table key**: `C_HotRecovery`'s eager `let` read DPOF keyed by `"\|"` before any guard could run — the identical bug fixed in `C_Recover` **twenty lines below, three days earlier** | `<<RT-H-003c/e/f/g>>` |
+| **RT-I-001** | I | `iz-gassles-patron` read the *smart-account* flag, so **every** smart account was gas-exempt; `UEV_Patron` — which enforces that only `DALOS\|SC_NAME` may be a smart patron — sat inside the branch that only runs **when collecting**, so the exemption jumped the guard written to constrain it | `<<RT-I-001h/i>>` |
+| **RT-J-001** | J | `C_ClearDispo` zeroed a negative OURO balance through a **one-sided** `DALOS::XB_UpdateBalance` with no supply update — OURO supply **8.0 below** the sum of all balances, widening by every dispo ever cleared | `<<RT-J-001c/d>>` |
+| **RT-K-001** | K | **3 of 7** ATS previews disagreed with their execs: Fuel **quoted success** (*"Succesfully fueled …"*) for an op that refuses; ColdRecovery threw a raw ledger error **printing the caller's full account**; DirectRecovery threw div-by-zero; HotRecovery refused for a different reason | `<<RT-K-001b…f>>` |
+| **RT-K-002** | K | `INFO_DPTF\|Burn` / `\|Mint` quoted *"Succesfully burned/minted 1.0 NOSUCHTOKEN-98c486052a51"* for a token that has **never existed** | `<<RT-K-002b/c>>` |
+
+**Red-team total: 22 attacks across 11 families, 12 defects, all fixed and pinned.** Ten attacks were
+refused — and **seven of those by a guard other than the one the attack was about**, which is the
+programme's most durable result: *the guards in this system are present and they hold; what fails is
+the arithmetic around them and the order in which things happen.*
+
+## 7.1 What each fix changed, and how it was proved
+
+Full narratives live in `RED-TEAM-REPORT.md` (Stages 0–16). Recorded here is the measurement and the
+repair, because a ledger that only names a defect cannot be audited.
+
+- **RT-A-003** — guard `(> index 0.0)` placed inside `URC_RBT`, *the function that divides*, because
+  the exec path and the INFO previews **share** it: one `enforce` covers both. A healthy pool still
+  prices normally (non-vacuity). The inflation attack the hunt began with is **refused on
+  arithmetic** — 24-decimal RBT precision makes it need ~10²⁴× the pool's supply — and that is worth
+  recording, because audit **#11M** bounds the KickStart *ratio*, not the *scale*, so it is the
+  precision and not that bound which closes it.
+- **RT-D-002** — the NFT branch now spends `nonce-supply`, the `AccountSupplies` read keyed by the
+  **complete 162-character account**. Purely **additive**: the original check keeps its position and
+  its message, because `[6.4]_AQP-EXHAUSTIVE-DPNF` pins that refusal *by message* and my first
+  attempt — which reused it — turned the gate red. That failure also revealed the AQP path calls with
+  `amount = 0`, so a quantity check does not subsume a possession check.
+- **RT-H-003** — `with-capability` hoisted above the binding group (the `C_Recover` repair,
+  re-applied) plus a `URC_IzPresentHotRBT` check, because the toggle and the Hot-RBT are
+  **independent**: `ATS\|S>SWITCH-HOT-RECOVERY` lets an owner enable recovery on a pair that has
+  none, and `<<RT-H-003d>>` constructs exactly that state through the owner's own client op.
+- **RT-I-001** — `iz-gassles-patron` now compares against `GOV\|DALOS\|SC_NAME`. The designated
+  account stays exempt (DSP's daily minters untouched); every other smart patron reaches
+  `UEV_Patron` and is refused **by name**.
+- **RT-J-001** — the balance write is paired with `XBv_UpdateSupply … true`. This was the **only
+  one-sided** call to `DALOS::XB_UpdateBalance` in the tree; the other four sites are the two halves
+  of a transfer or DPTF's own dispatch.
+- **RT-K-001 / RT-K-002** — every repair **shares a guard**, none copies a message: a new
+  `UEV_FuelableIndex` called by both the capability and the preview; the recovery previews calling
+  the very `UEV_*RecoveryState` their capabilities call; one zero-index guard on
+  `URCv_RTSplitAmounts` covering all **ten** of its call sites; `UEV_id` inside `URCi_Burn`/`Mint`.
+
+## 7.2 The distinction family K is applied with
+
+Not every preview/exec disagreement is a defect, and deciding otherwise would have meant adding
+validation to 401 previews unilaterally:
+
+1. **Structural impossibility** — the token does not exist, the index is zero, there is no Hot-RBT.
+   Nothing the caller does makes the op available, so a quote is **wrong**. Fixed.
+2. **Transient affordability** — balance and roles change between quote and submission. That is the
+   normal life of a quote. `INFO_DPTF\|Transfer` quotes 99,999,999 BUSD against a balance of
+   8,929,990; `post-text` reads as the success *template*, not a prediction.
+   **DECIDED (2026-09-16): left as-is, and pinned** (`<<RT-K-002e>>`). Three reasons. A preview that
+   validates balance stops answering *"what would this cost"* and starts answering *"can I do this
+   right now"* — a different contract, across 401 functions. The balance it would check is **stale
+   by submission anyway**, so a validating preview trades one wrong answer for a more confident
+   wrong answer. And nothing is unsafe: the exec refuses correctly, so the cost of the current
+   behaviour is a failed transaction, not a loss. The pin makes the behaviour explicit and
+   unchangeable in silence, which is what the record needs.
+3. A **raw internal error** in a preview is wrong under either answer — `try` cannot catch an
+   arithmetic exception, so no caller can handle it.
+
+## 7.3 Known-open, recorded deliberately
+
+- `DPTF\|C_Transfer` and its preview **both** give the raw
+  `No value found in table ouronet-ns.DPTF_DPTF\|PropertiesTable for key:` at a non-existent id.
+  They are in **parity**, so not a family-K divergence — but neither carries the `UEV_id` check that
+  `C_Burn` and `C_Mint` both have. The RT-H-003 sibling shape on the most frequently called op in
+  the system.
+
+  **Attempted 2026-09-16 and reverted**, which is worth recording because it maps the fix point.
+  Guards added to `DPTF\|C>X-TRANSFER` and to `URCi_Transfer` **did not fire first**: `C_Transfer`
+  binds `(at "type" (URC_TransferClasses …))` in an eager `let` *before it acquires any capability*,
+  and `INFO_DPTF\|Transfer` classifies before it prices — the same three-layer shape as
+  RT-K-001's DirectRecovery. The single point both paths reach first is **`URC_TransferClasses`**,
+  and moving the guard there broke the module load on the first attempt. Reverted rather than left
+  half-applied, because a partial guard carrying a comment that claims to fix something is worse
+  than a documented gap. **Severity is message quality, not correctness** — both paths already
+  refuse, in the same words as each other. Wants its own pass, on the hottest op in the system,
+  with its own controls.
+- Family K has swept **9 of 401** previews (ATS and DPTF).

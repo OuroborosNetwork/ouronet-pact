@@ -220,7 +220,7 @@
             ;;OWNER DECISION, PARKED: transient affordability. The preview quotes what the exec
             ;;refuses. Pinned as-is so the behaviour is documented and cannot change unnoticed.
             (expect
-                (format "<<RT-K-002e>> OPEN (owner): the transfer PREVIEW still quotes {} against a balance of {}"
+                (format "<<RT-K-002e>> DECIDED: the transfer PREVIEW still quotes {} against a balance of {}"
                     [big (ouronet-ns.DPTF.UR_AccountSupply real KST.ANHD)])
                 true
                 (> (at "ignis-need" (at "ignis"
