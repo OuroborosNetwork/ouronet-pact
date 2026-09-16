@@ -2263,9 +2263,18 @@ After all three, it reproduces the hand result exactly and clears `DEFINE-VAULT`
 | …of the 38 whose gate sits after a business `enforce` | 11 → **14** | 27 → **24** |
 
 **What "never observed" means, precisely:** no test pins a refusal attributable to that gate — so
-deleting the gate would turn nothing red. It is *not* a claim that the gate is wrong. The denominator
-is also a floor: an op reachable other than through a Talos wrapper on the right module ref is not
-counted at all.
+deleting the gate would turn nothing red. It is *not* a claim that the gate is wrong — RT-D-003 below
+is the worked example of a gate whose defcap really is missing the line while the tree is still safe.
+The denominator is also a floor: an op reachable other than through a Talos wrapper on the right
+module ref is not counted at all (`DPTF|C>X-TRANSFER` reads `observed=None` while RT-D-001 plainly
+exercises it). Under-counting observation is the safe direction for this question; over-counting
+would manufacture false comfort.
+
+**The instrument is installed, not quoted.** It lives at `REPL/tools/_ownerobs.py`, resolves its
+paths from `__file__`, and carries the three validation failures above in its own docstring — so
+these figures are a *measurement* anyone can re-run, not a snapshot. That distinction is the one
+§7.2g had to make about `REPL_SUITE_STATS.md`, and quoting a number from a script in `/tmp` would
+have reproduced exactly the defect that section records.
 
 The sharpest instance is the **transfer family**, and it was confirmed by hand rather than taken from
 the tool. The entire suite contains **exactly one** non-owner transfer test —
