@@ -809,7 +809,7 @@
             ;;fixture-free (it passes "SCR-x"/"DPNF-x" to all 83 AQP readers because AQP prices are
             ;;argument-independent) and PINS those aborts. Defaulting a shared reader turns a pinned
             ;;expect-failure red. Full reasoning at 02_SCORE.pact's SCR|XI>X_ISSUE-NF-SCORE-DEFINITION
-            ;;and DEFECT-LEDGER 7.3, which records the same blocker for RT-K-007's preview half.
+            ;;and DEFECT-LEDGER G-37..G-41 + 7.2b; 7.3 records the same blocker for RT-K-007's preview half.
             (enforce
                 (fold (and) true
                     [
@@ -901,8 +901,8 @@
             ;;     preview aborting on an unknown score as a FINDING, and that suite is DELIBERATELY
             ;;     fixture-free -- it passes "SCR-x"/"DPNF-x" to all 83 AQP readers on the principle
             ;;     that AQP prices are argument-independent. Defaulting the shared reader turns that
-            ;;     pinned expect-failure red. Same blocker DEFECT-LEDGER 7.3 records for RT-K-007's
-            ;;     preview half, and the same real design question sits inside it.
+            ;;     pinned expect-failure red. Ledgered as G-38, with the class at G-37..G-41 / 7.2b;
+            ;;     7.3 records the same blocker for RT-K-007's preview half.
             ;;Unlike RT-K-007 there is also no purpose-built guard being silenced: SCORE has no
             ;;existence validator at all, and "must exist" is one conjunct of a compound message
             ;;whose other half is the tautology documented immediately below.
@@ -955,7 +955,7 @@
             ;;fixture-free (it passes "SCR-x"/"DPNF-x" to all 83 AQP readers because AQP prices are
             ;;argument-independent) and PINS those aborts. Defaulting a shared reader turns a pinned
             ;;expect-failure red. Full reasoning at 02_SCORE.pact's SCR|XI>X_ISSUE-NF-SCORE-DEFINITION
-            ;;and DEFECT-LEDGER 7.3, which records the same blocker for RT-K-007's preview half.
+            ;;and DEFECT-LEDGER G-37..G-41 + 7.2b; 7.3 records the same blocker for RT-K-007's preview half.
             (enforce
                 (fold (and) true
                     [
@@ -1000,7 +1000,7 @@
             ;;fixture-free (it passes "SCR-x"/"DPNF-x" to all 83 AQP readers because AQP prices are
             ;;argument-independent) and PINS those aborts. Defaulting a shared reader turns a pinned
             ;;expect-failure red. Full reasoning at 02_SCORE.pact's SCR|XI>X_ISSUE-NF-SCORE-DEFINITION
-            ;;and DEFECT-LEDGER 7.3, which records the same blocker for RT-K-007's preview half.
+            ;;and DEFECT-LEDGER G-37..G-41 + 7.2b; 7.3 records the same blocker for RT-K-007's preview half.
             (enforce
                 (fold (and) true
                     [

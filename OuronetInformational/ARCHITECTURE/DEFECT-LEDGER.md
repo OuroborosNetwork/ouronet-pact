@@ -1132,6 +1132,26 @@ no-op or a duplicate.
 | **G-34** | `16_SWPI.pact` `UEV_SwapData` count guard | **Unreachable for well-formed requests** — with distinct inputs, `l2 = l3` forces the output to be an input, so the "output cannot be an input" guard fires first. What reaches it is a **duplicated** input list, because nothing in the validator rejects duplicates. The real exposure: `[a a]` into a 3-token pool — a swap naming the same token twice, **under** the bound — is accepted outright. | **fixed 2026-09-15** — see §1.1d | `<<SWP-G1>>` |
 | **G-35** | `15_SWP.pact` `SWP\|S>RT_OWN` | Shadowed **by guard order**, not by a read: the Elite-tier check sits in front of the ownership flag, so `UEV_CanChangeOwnerON` is unreachable from the client until the tier is cleared. | accepted, pinned | `<<SWP-G21c>>` |
 | **G-36** | `02_SCORE.pact:1282` DPNF stake amount | Shadowed cross-module: `DPDC::UEV_NonceQuantityInclusion` checks the holder identity upstream, which for an NFT is the same fact. Predicted reachable; **proved not, by running**. | accepted, annotated | `<<TX-AQP-NF01>>` |
+| **G-37** | `02_SCORE.pact:805` `SCR\|C>ISSUE-SF-SCORE-DEFINITION` | Message claims existence — *"score **must exist**, sft-equality false, nonce/value lists aligned…"* — but the `let` above binds `UR_SCR\|ScoreOwnerKonto` / `ScoreScoreId` / `ScorePrecision`, all bare `read`s. A missing score dies in the table, not the sentence. **Found only after `_eagerlet`'s 300-char window was fixed**: the message sits past 300 characters, so the existence test could not see it. | `;;PRODUCED-TRIAGED` |
+| **G-38** | `02_SCORE.pact:884` `SCR\|XI>X_ISSUE-NF-SCORE-DEFINITION` | *"score **must exist** as DPNF (class 4)…"*. Two reasons it is not actionable alone: the **first raiser is upstream** (`UEV_NonFungibleScoreDefinition` opens with `UR_SCR\|ScorePrecision`), so defaulting the reader beneath this guard changes nothing a caller sees; and the readers are shared with the previews (below). | `;;PRODUCED-TRIAGED` |
+| **G-39** | `02_SCORE.pact:943` `SCR\|C>CREATE-BOOST-LINK-SCORE` | *"boost-score-id **must exist**, be non-BAR, not equal this score-id…"*. Same shape, same shared readers. | `;;PRODUCED-TRIAGED` |
+| **G-40** | `02_SCORE.pact:980` `SCR\|C>ISSUE-TRIPLET` | Triplet row-id equality fold over three scores; each `…RowSid` is a bare read, so any one missing triplet member aborts before the fold's own message. | `;;PRODUCED-TRIAGED` |
+| **G-41** | `05_FVT.pact:1982` `UEV_AddScoreEntityTripletContext` | *"Invalid AddScoreEntity triplet: row **exists**, links, or swpair mismatch"*. **This is G-20's untouched twin** — `UEV_AddScoreEntityScoreContext` was ledgered by hand in the same file and this one was not. The twin-divergence pattern §1.1d already has a section for, arriving in the guard-reachability class. | `;;PRODUCED-TRIAGED` |
+
+**G-37 … G-41 share ONE root cause and ONE blocker with G-20 and G-21**, and are recorded together
+for that reason. The readers (`UR_SCR\|Score*`, `UR_FVT\|*`) are **shared with the `INFO_` previews**,
+and `Stage_02/[6.5]_AQP-INFO.repl` is **deliberately fixture-free** — it passes `"SCR-x"` / `"DPNF-x"`
+to all 83 AQP readers on the sound principle that AQP prices are argument-independent — and **pins
+those aborts as findings**. Defaulting any shared reader turns a pinned `expect-failure` red. That is
+the same blocker §7.3 records for RT-K-007's preview half, and the same design question sits inside
+it: making AQP previews validate ids needs anchor, score and boost-class fixtures for every one of
+the 83.
+
+**What is new here is the COUNT, not the shape.** G-20 and G-21 were found by hand and ledgered as
+two sites. The class is **seven**, and five were invisible because the instrument was truncating the
+guard it was reading (§7.2a). One of the five is the direct twin of an already-ledgered site — which
+is the strongest available evidence that hand-finding had been sampling this class, not enumerating
+it.
 
 > **Not counted as defects.** 31 further `enforce` sites carry a `;;UNREACHABLE` annotation with a
 > proof at the source and are **correct fail-closed backstops** — `05_DPTF.pact:951/971/1004`,
@@ -1796,6 +1816,60 @@ one place in the tree that answers this question properly:
 **Four candidates remain as triage, not verdicts** — `08_ATS.pact:1790`, `18_SWPLC.pact:926`
 (addressed), `02_SCORE.pact:884`, `05_FVT.pact:1843`. Each needs the same question asked by hand
 before any reader is defaulted.
+
+## 7.2b The same tool, two more defects — and the class it had been under-counting *(2026-09-16)*
+
+§7.2a left **four `--produced` candidates** for hand-triage. Triaging them found one TOOL defect, and
+fixing that found a second. Neither is a contract defect; together they changed the count of a known
+contract class from two to seven.
+
+**1. `\b` is not an identifier boundary.** `08_ATS.pact:1790` was reported as *"an enforce here tests
+`c-rbt`"*. The enforce tests `c-rbt-amount`. In Python `\b` is a word/non-word transition and `-` is a
+**non-word** character, so `\bc-rbt\b` matches *inside* `c-rbt-amount`. Pact uses `-` freely, so `\b`
+silently turned every hyphenated name into a prefix match against every longer name containing it.
+The same `\b` sat in **eight places across five tools**, including `reader_kinds`'s own hardness test
+(a `read` keyed on `pool-id` "mentions" a parameter named `id`). Replaced by a shared
+`_pactlex.ident_re`.
+
+> **THE CORRECTION MATTERED MORE THAN THE FIX.** The first `ident_re` put `|` in the identifier
+> class. That took `_docclaims.py` from **1 unverified doc claim to 25** — twenty-four of them false.
+> Pact uses `|` as a **segment separator**, so `ATS|HOT-RBT|C_Repurpose` is searched for as
+> `C_Repurpose`, and every standalone `C_Repurpose` in the corpus is preceded by one. **A checker
+> that gets stricter and reports more is the easiest result to believe and the easiest to get
+> wrong** — the number moves in the direction that flatters the change. One `grep` of one of the 24
+> showed 17 live mentions and killed it.
+
+**2. A fixed 300-character window is not an `enforce`.** Wrong in *both* directions:
+
+* it **BLEEDS** into the next guard. `18_SWPLC.pact` has two adjacent enforces; scanning from the
+  first, the window reached the second, so the tool took its **variable** (`iz-frozen`) from one
+  guard and its **existence signal** (`exists`, in a sentence about *liquidity* existing rather than
+  a row) from another, then named a third line. **That compound artefact survived hand-triage** —
+  the site it named was real code that deserved a thought, so the wrong guard was reasoned about and
+  a defensible conclusion reached for entirely the wrong reason.
+* it **TRUNCATES**. An `enforce` whose message sits past 300 characters — every multi-line
+  `(fold (and) true [...])` guard in AQP — loses its message, so the existence test cannot fire.
+
+Running to the next `(enforce` fixes the truncation and keeps the bleed. The bound that is neither is
+the form's **own balanced parens**; `_pactlex.balanced` was already imported.
+
+**Measured:** `--wide` **15 → 6**, narrow **0 → 0**, `_pricesync --check` artefact byte-identical,
+`--produced` surfaced **six** previously-invisible AQP sites. **Mutation-tested after each change** —
+reverting RT-K-007's `UR_ANK|State` fix must make `--produced` name `UEV_LiveAnchor`, and does.
+
+**What it then showed: G-37 … G-41.** Seven AQP guards claim existence while a hard read of the same
+subject raises first. **Two were already ledgered** (G-20 `UEV_AddScoreEntityScoreContext`, G-21
+`UEV_AddScorePoolAndScore`), both found by hand. Five were not — and one of the five is **G-20's
+direct twin** in the same file. That is the strongest available evidence that hand-finding had been
+*sampling* this class rather than enumerating it, and it is why the instrument mattered more than any
+single site it found. All seven are annotated `;;PRODUCED-TRIAGED` at source; the mode now reports
+**7 known, 0 unexamined**.
+
+> A third annotation marker was added for them. `UNREACHABLE` and `CANNOT PROTECT` both **assert**
+> something strong, and these guards *are* reachable and *do* protect the rows that exist — they
+> answer a different question from the one the mode asks. Annotating them with an existing marker
+> would have meant **writing down something untrue in order to quiet a scanner**, which is the
+> cheapest possible way to corrupt a codebase's own record of itself.
 
 ## 7.3 Known-open, recorded deliberately
 
