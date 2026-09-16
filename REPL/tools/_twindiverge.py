@@ -69,6 +69,9 @@ TWINS = [
     ["-TF-","-NF-","-SF-","-OF-","-MF-"],
     ["TRUE","SEMI","NON","ORTO","META"],
     ["True","Semi","Non","Orto","Meta"],
+    # AQP score entities: the codebase dispatches on exactly this pair --
+    # UEV_AddScoreEntityContext, "type 1 = score rules; type 3 = triplet rules".
+    ["ScoreEntityScore","ScoreEntityTriplet"],
 ]
 TOKMAP = {}
 for i,fam in enumerate(TWINS):

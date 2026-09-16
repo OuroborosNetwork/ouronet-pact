@@ -8,6 +8,8 @@ fixture for every later block in the file. `try` is the opposite -- it forces
 read-only mode and the write itself errors.
 """
 import re, glob, os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _pactlex import strip_comments, balanced
 
 ROOT = "."
 WRITE = re.compile(r'\((?:insert|update|write)\s|\(WI_[A-Za-z]|::XE_WI_[A-Za-z]|\(XI_[A-Za-z]|::XE_[A-Z]')
@@ -64,7 +66,14 @@ for f in glob.glob("REPL/**/*.repl", recursive=True) + glob.glob("REPL/*.repl"):
 
 hits = []
 for f in files:
-    src = open(f, encoding='utf8', errors='ignore').read()
+    # STRIPPED, not raw. This scanner read raw source until 2026-09-16, and this codebase's
+    # comments QUOTE CODE constantly -- `;;    (enforce iz-anchor-active ...)`, `;;(update T k ...)`.
+    # Against raw text a commented `(update` becomes "the first persisting write" in the function,
+    # which drags the write position earlier and mis-classifies every enforce after it as sitting
+    # AFTER a write; a commented `(enforce` adds a phantom guard; a quoted message adds a phantom
+    # pin. `_pactlex` exists precisely because three scanners had already shipped with bugs in
+    # re-derived copies of this logic, and this one did not import it.
+    src = strip_comments(open(f, encoding='utf8', errors='ignore').read())
     for (s, e, kind, name) in top_forms(src):
         if kind != "defun":            # defcaps run before the body's writes
             continue
@@ -77,7 +86,12 @@ for f in files:
         for em in re.finditer(r'\(enforce(?:-one)?\b', body):
             if em.start() < wm.start():
                 continue
-            seg = body[em.start():em.start() + 1400]
+            # The enforce's OWN balanced parens, not a fixed window. A fixed slice is wrong in
+            # both directions, measurably so in `_eagerlet.py` (2026-09-16): it BLEEDS into a later
+            # enforce -- attributing that guard's pinned message to this one, AT THIS ONE'S LINE --
+            # and it TRUNCATES an enforce whose message sits past the cap. The window here was 1400,
+            # which makes truncation unlikely and bleed the more likely of the two.
+            seg = body[em.start():balanced(body, em.start()) + 1]
             for msg in re.findall(r'"((?:[^"\\]|\\.){12,})"', seg):
                 msg = msg.replace('\\"', '"').replace('\\\\', '\\')
                 if msg in pinned:

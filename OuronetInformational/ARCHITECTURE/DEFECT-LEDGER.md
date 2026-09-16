@@ -527,6 +527,23 @@ survivor is structural (DPTF has no nonces), factored out into a composed siblin
 in place by a prior audit (`DPTF|C>UPDATE-SPECIAL`, "UNREACHABLE BY CONSTRUCTION"). **The twin
 divergences this round were in the tooling, not the contracts.**
 
+**WHAT THE ZERO CANNOT MEAN — established 2026-09-16 by a counter-example.** The sentence above is
+carefully worded: the families are guard-**CONSISTENT**. It does not say they are correct, and the
+difference is not pedantry. `UEV_AddScoreEntityScoreContext` and `UEV_AddScoreEntityTripletContext`
+are a genuine twin pair in the same file — the codebase dispatches on exactly that distinction
+(*"type 1 = score rules; type 3 = triplet rules"*) — and **both carry the same defect** (G-20 and
+G-41: a message claiming existence, silenced by a hard read of its own subject). They agree
+perfectly, so an asymmetry detector is structurally incapable of seeing either.
+
+**An asymmetry detector finds a defect only when a twin got it RIGHT.** Where a mistake was made
+once and copied, the copy is what makes the family *look* consistent — which is the same sentence
+this section opens with, pointed the other way. The pair was found by `_eagerlet --produced` (§7.2b)
+instead, and only after that tool's own window bug was fixed.
+
+The twin family was added to `TWINS` anyway (`ScoreEntityScore` / `ScoreEntityTriplet`): measured
+**310 families, 23 asymmetries, byte-identical findings** — no new signal today, but the pair is now
+modelled, so a guard landing on one arm only would be caught. That is the tool's actual job.
+
 **The instrument produced four confident false positives before it produced a trustworthy zero**,
 and each correction is a reusable rule:
 
