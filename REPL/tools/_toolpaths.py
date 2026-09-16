@@ -51,6 +51,21 @@ TOOL_DIRS = [HERE,
 PATHISH_EXT = ('.py', '.repl', '.pact', '.md', '.json', '.txt', '.csv')
 OPENERS = {'open', 'spec_from_file_location', 'Path', 'read_text'}
 
+# SUBPROCESS IS THE OTHER WAY A TOOL RESOLVES A SIBLING, and it was the gap that let the
+# 2026-09-14 move keep three casualties a further two days (found 2026-09-16). This checker was
+# written from the import-time incident, so it modelled open()/spec_from_file_location()/Path()
+# and never looked inside `subprocess.run([sys.executable, 'REPL/_thing.py', ...])`.
+#
+# The three survivors, and note that they failed in THREE different ways -- only one of them
+# loudly:
+#   _cheapseam.py    exited with a message BLAMING THE USER'S WORKING DIRECTORY, which is why it
+#                    survived: the diagnosis was wrong, so following it never helped.
+#   _orphanmatch.py  ran to completion on EMPTY stdout and reported "orphans examined: 0 ...
+#                    uncredited coverage: 0" -- a dead tool publishing a reassuring zero. The real
+#                    figure is 120 orphans examined.
+#   _p33_classify.py printed nothing at all.
+SUBPROC = {'run', 'check_output', 'check_call', 'call', 'Popen'}
+
 
 def _is_pathish(s):
     if not s or '*' in s or '?' in s or '\n' in s or len(s) > 300:
@@ -103,7 +118,15 @@ def _chdir_base(tree):
                and node.func.attr == 'dirname' and node.args):
             depth += 1
             node = node.args[0]
-        base = HERE
+        # OFF BY ONE until 2026-09-16. The dirname wrappers are applied to `abspath(__file__)`,
+        # a FILE path, so the FIRST one yields the tool's own directory and only the rest walk up.
+        # Counting `depth` levels from HERE (already a directory) therefore lands one level too
+        # high: `_gate.py`'s two dirnames target REPL/, and this returned the repo root.
+        # It went unnoticed because the one case it was validated against -- `_tighten.py`'s stale
+        # `'_gate.py'` -- is flagged either way: that literal exists at neither base. The error only
+        # surfaces for a literal that IS valid at the true chdir target, which is exactly what
+        # `_gate.py`'s own `tools/_*.py` subprocess arguments are. Model the file, not the dir.
+        base = os.path.join(HERE, '_x.py')
         for _ in range(depth):
             base = os.path.dirname(base)
         return base
@@ -134,9 +157,16 @@ def scan_one(path):
     for call in _all:
         fn = call.func
         name = fn.id if isinstance(fn, ast.Name) else (fn.attr if isinstance(fn, ast.Attribute) else None)
-        if name not in OPENERS or _is_write(call):
+        if name in SUBPROC and call.args and isinstance(call.args[0], ast.List):
+            # argv form: the path is a string element of the list, alongside sys.executable
+            # (a Name, skipped) and flags like '--list' (not path-ish).
+            cand = [e for e in call.args[0].elts
+                    if isinstance(e, ast.Constant) and isinstance(e.value, str)]
+        elif name in OPENERS and not _is_write(call):
+            cand = call.args
+        else:
             continue
-        for arg in call.args:
+        for arg in cand:
             if not (isinstance(arg, ast.Constant) and isinstance(arg.value, str)):
                 continue
             lit = arg.value

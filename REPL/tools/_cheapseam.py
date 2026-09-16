@@ -6,12 +6,14 @@ enforces sit ABOVE the target inside the same function (its predecessors) -- 0 m
 is the first thing the function does, which is the cheapest possible case.
 """
 import re, glob, os, subprocess, sys
+import sys
 
 # RUN FROM THE REPO ROOT, not from REPL/ -- the subprocess path and the site paths below are both
 # root-relative. Run from the wrong place and subprocess.run returns empty stdout with rc=1, `sites`
 # parses to zero, and this script cheerfully reports "0 unpinned guards" when there are 51. That is
 # a silently wrong answer, so it is now checked rather than assumed.
-_cp = subprocess.run([sys.executable, 'REPL/_enforce_coverage.py', '--list'],
+_cp = subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                 '_enforce_coverage.py'), '--list'],
                      capture_output=True, text=True)
 if _cp.returncode != 0 or not _cp.stdout.strip():
     sys.exit("_cheapseam.py: could not run REPL/_enforce_coverage.py -- run this from the REPO ROOT "

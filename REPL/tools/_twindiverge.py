@@ -46,6 +46,9 @@ contracts.
 Re-run after adding a new asset family or a new variant op:  python3 REPL/tools/_twindiverge.py
 """
 import re, glob, os, itertools
+import os as _os3, sys as _sys3
+_sys3.path.insert(0, _os3.path.dirname(_os3.path.abspath(__file__)))
+from _pactlex import strip_comments
 from collections import defaultdict
 
 ROOT='.'
@@ -79,7 +82,14 @@ for i,fam in enumerate(TWINS):
 TOKRE = re.compile('|'.join(sorted(TOKMAP, key=len, reverse=True)))
 
 def bodies(path):
-    src=open(path).read()
+    # STRIPPED, not raw (2026-09-16). Two distinct hazards, both real in this corpus:
+    #  * `guards()` below strips STRINGS but not comments, so a commented `(UEV_Foo ...)` or
+    #    `(with-capability (X|C>Y)` adds a PHANTOM guard to a function's set. If its twin genuinely
+    #    has that guard the pair then looks symmetric, and a real asymmetry is HIDDEN -- the
+    #    dangerous direction for an instrument whose ZERO is cited as evidence.
+    #  * the body extractor below balances parens while tracking string state but NOT comment
+    #    state, so a comment containing an unbalanced paren mis-delimits the function body.
+    src=strip_comments(open(path).read())
     # Interface DECLARATIONS have no body, so their guard set is empty by construction.
     # Mixing them with module DEFINITIONS made every declared cap look stripped of guards --
     # and because the group was keyed by name alone, the empty declaration overwrote the real

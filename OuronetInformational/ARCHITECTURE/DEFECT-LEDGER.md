@@ -1975,6 +1975,66 @@ unexamined one.
 > wrong as soon as someone documents the thing it is looking for — which, in a codebase that
 > annotates its defects in place, is the most likely sentence anyone will write near it.
 
+## 7.2e The tools-move had three survivors, and the checker built for it could not see them *(2026-09-16)*
+
+`_toolpaths.py` exists because the 2026-09-14 move (`REPL/*.py` → `REPL/tools/*.py`) silently killed
+eleven tools, and it is validated against that incident: run on the pre-repair tree it reports 11 of
+11. It reported **clean** on the current tree. **Three tools were still dead.**
+
+The checker models `open()` / `spec_from_file_location()` / `Path()` / `read_text()` — the
+import-time death it was written from. It never looked inside
+`subprocess.run([sys.executable, 'REPL/_thing.py', …])`, which is the *other* way a tool resolves a
+sibling. Three tools resolved `_enforce_coverage.py` that way and still carried the pre-move path.
+
+**They failed in three different ways, and only one loudly:**
+
+| tool | symptom | why it survived |
+|---|---|---|
+| `_cheapseam.py` | exits with an error | **the error blamed the user's working directory.** "run this from the REPO ROOT" — so following the diagnosis never helped, because the diagnosis was wrong |
+| `_orphanmatch.py` | **runs, reports a clean zero** | empty stdout from the failed subprocess became *"orphans examined: 0 … uncredited coverage: 0"*. A dead tool publishing a reassuring result |
+| `_p33_classify.py` | prints nothing | silent |
+
+`_orphanmatch.py` is the one that matters. Its real figure is **120 orphans examined** — the
+conclusion (0 uncredited coverage) survives, but it was **unfounded for two days** and presented as
+measured. *A zero from a tool that examined nothing is the most expensive kind of green.*
+
+**Fixing the first bug in `_p33_classify.py` exposed a second**, which the first had masked: `ROOT`
+was the literal `".."`, correct only when run from `REPL/`. It now resolves the repo root from
+`__file__`. A tool that cannot start cannot show you its next defect.
+
+### The checker's own off-by-one, found by fixing it
+
+Teaching `_toolpaths` about `subprocess` immediately produced ten **false** positives on `_gate.py`'s
+own `tools/_*.py` arguments — which resolve fine at runtime. `_chdir_base` counts the `dirname`
+wrappers around `abspath(__file__)` and walks that many levels up **from a directory**. But the first
+`dirname` converts a FILE path to its directory and only the rest walk up, so `_gate.py`'s two
+wrappers (target: `REPL/`) resolved to the repo root.
+
+It had gone unnoticed because **the one case it was validated against is flagged either way**:
+`_tighten.py`'s stale `'_gate.py'` exists at neither base. The error only surfaces for a literal that
+IS valid at the true chdir target — exactly what `_gate.py`'s subprocess arguments are. Fixed by
+modelling the file rather than the directory.
+
+**Mutation-tested end to end**: reintroducing `'REPL/_enforce_coverage.py'` into `_orphanmatch.py` is
+caught at the right line and `--check` exits 1; restoring it exits 0; the tool's own `--selftest`
+still passes 2/2.
+
+### And the comment-blindness survey, closed with measurements rather than assumptions
+
+Of the remaining Pact analysers, exposure was measured **per tool, against the patterns each one
+actually uses** — not assumed:
+
+| tool | its patterns | comment-only occurrences |
+|---|---|---|
+| `_ignis_cost_classify` / `_cost_inventory` / `_deter_worksheet` | `(defconst GAS\|…` | **0** (and their main pass uses a real tokenizer) |
+| `_ignis_deter_worksheet` | `(deftable …` | **0** |
+| `_prefixsync` | `(defun` / `(defpact` | **0** |
+| `_colproj` | already stripped comments | 1 `.pact` string contains `;;`; upgraded to `_pactlex` anyway, output unchanged |
+
+So the survey ends with three tools fixed and five cleared **by measurement**. "Probably fine" was
+available and would have been wrong about `_leakaudit` and `_ignis_price_sheet`, both of which looked
+equally fine.
+
 ## 7.3 Known-open, recorded deliberately
 
 - **RT-F-001 is one of THREE identical ops, and only one is pinned.** *(found 2026-09-16, by asking

@@ -38,8 +38,14 @@ The bucket sizes are the point: they say what KIND of work the remainder is, and
 more grinding is worth it.
 """
 import re, subprocess, os, collections
-ROOT=".."
-out=subprocess.run(["python3","_enforce_coverage.py","--list"],capture_output=True,text=True).stdout
+import sys
+# ROOT was the literal "..", which assumed this tool ran from REPL/. After the 2026-09-14 tools
+# move it ran from REPL/tools/ (or the repo root) and ".." pointed somewhere else entirely.
+# `_enforce_coverage.py --list` emits paths relative to REPL/, so resolve that from THIS file.
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # repo root
+# (`_enforce_coverage.py --list` emits REPO-ROOT-relative paths: `1_SOVEREIGN/STAGE_01/...`.)
+out=subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        "_enforce_coverage.py"), "--list"],capture_output=True,text=True).stdout
 rows=[];lines=out.split("\n")
 for i,l in enumerate(lines):
     m=re.match(r'^  (1_SOVEREIGN|2_CITIZEN)(/\S+?):(\d+)\s+(\S.*)$', l)

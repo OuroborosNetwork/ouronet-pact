@@ -38,6 +38,9 @@ copy-paste class, not a type checker.
     python3 REPL/_colproj.py --selftest  # prove the check still detects a known-bad projection
 """
 import glob, os, re, sys
+import os as _os4, sys as _sys4
+_sys4.path.insert(0, _os4.path.dirname(_os4.path.abspath(__file__)))
+from _pactlex import strip_comments
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -47,7 +50,11 @@ def sources():
 
 def scan_text(src):
     """[(line, table, column, known_fields)] for every literal projection naming an unknown column."""
-    src = re.sub(r';;[^\n]*', '', src)          # comments never contain a real read
+    # Comments never contain a real read -- but `re.sub(r';;[^\n]*','',src)` cannot see that a `;;`
+    # inside a STRING is not a comment, and it truncates that line. One .pact string literal in this
+    # corpus contains one (CODEX's stoic-tag doc row). `_pactlex.strip_comments` tracks quote state
+    # across the `\`-newline continuations this codebase uses, which is the whole reason it exists.
+    src = strip_comments(src)
     schemas = {}
     for m in re.finditer(r'\(defschema\s+([\w|\-]+)((?:[^()]|\([^()]*\))*?)\)\s*(?=\(def)', src):
         schemas[m.group(1)] = set(re.findall(r'^\s*([\w\-|]+)\s*:', m.group(2), re.M))

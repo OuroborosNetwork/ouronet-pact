@@ -20,6 +20,7 @@ TWO BUGS THIS SCANNER HAD FIRST, both worth remembering:
      likely to contain.
 """
 import re, glob, os, subprocess, sys
+import sys
 
 ROOT = '.'
 
@@ -64,7 +65,8 @@ for f in files:
         if len(words) >= 4:
             guards.append((os.path.relpath(f, ROOT), src[:m.start()].count('\n') + 1, msg, words))
 
-out = subprocess.run([sys.executable, 'REPL/_enforce_coverage.py', '--orphans'],
+out = subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                 '_enforce_coverage.py'), '--orphans'],
                      capture_output=True, text=True).stdout
 orphans, cur = [], None
 for ln in out.split('\n'):
