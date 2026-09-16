@@ -193,6 +193,33 @@ def _(kind, name, body):
         m = re.match(r'^\s*\((ref-[A-Za-z0-9|_-]+):module\{[A-Za-z0-9|_-]+\}\s+[A-Za-z][A-Za-z0-9|_.-]*\)\s*$', ln)
         if m and not re.search(re.escape(m.group(1)) + r'::', txt): return i
 
+@rule("no-modref-parameter",
+      "No member may take a `module{...}` as a PARAMETER. A modref is CODE, so a parameter of that "
+      "type is an entrypoint that executes caller-supplied code inside the sovereign's own scope — "
+      "and, for anything reached under `with-capability`, inside its capability. Every modref in "
+      "this codebase is instead bound internally, `(ref-X:module{I} CONCRETE-MODULE)`, naming the "
+      "module at the call site. That is what bounds the hostile-citizen threat model (RedTeam "
+      "family G): a module deployed in the open `user` namespace has no way in. The property held "
+      "at 0 across 7,630 members when this rule was written; it is gated so it stays an invariant "
+      "rather than an accident.")
+def _(kind, name, body):
+    if kind not in ("defun", "defcap", "defpact"): return
+    txt = '\n'.join(body)
+    m = re.search(r'\((?:defun|defcap|defpact)\s+' + re.escape(name) + r'(?::[^\s(]+)?', txt)
+    if not m: return
+    i = txt.find('(', m.end())
+    if i < 0: return
+    depth, j = 0, i
+    while j < len(txt):                      # balance the PARAMETER LIST only: a `let` further
+        if txt[j] == '(': depth += 1         # down legitimately binds modrefs and must not count
+        elif txt[j] == ')':
+            depth -= 1
+            if depth == 0: break
+        j += 1
+    params = txt[i:j + 1]
+    if 'module{' in params:
+        return txt[:i].count('\n')
+
 @rule("URC-should-be-URCv", "`URC_*` that `enforce`s should be spelled **`URCv_`** — same `v` "
                             "role. (StoicSyntax-Prefixes.md §1)")
 def _(kind, name, body):

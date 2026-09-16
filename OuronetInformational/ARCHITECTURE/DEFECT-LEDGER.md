@@ -1871,6 +1871,36 @@ single site it found. All seven are annotated `;;PRODUCED-TRIAGED` at source; th
 > would have meant **writing down something untrue in order to quiet a scanner**, which is the
 > cheapest possible way to corrupt a codebase's own record of itself.
 
+## 7.2c Family G's threat model, converted from an accident into an invariant *(2026-09-16)*
+
+RT-G-001 and RT-G-002 tested the two doors a hostile citizen module would knock on: a direct call to
+a sovereign `C_` (refused by `P|UEV_IMC`) and `IGNIS::C_TransferDalosFuel`, the one client entrypoint
+of 290 without an IMC gate (refused three times). Both REFUSED, and family G has found no defect.
+
+The door neither attack tried is the one Pact opens that most languages do not: **a modref is CODE**.
+A function taking `module{SomeIface}` as a **parameter** is an entrypoint that executes
+caller-supplied code inside the sovereign's own scope — and, for anything reached under
+`with-capability`, inside its capability. A module deployed in the open `user` namespace implements
+the interface and is passed straight in; `P|UEV_IMC` never sees it, because the hostile code is not
+the *caller*, it is the *argument*.
+
+**Measured: ZERO such parameters exist, across 7,630 members in 93 modules.** Every modref in the
+codebase is bound internally — `(ref-X:module{I} CONCRETE-MODULE)` — naming the module at the call
+site. That is *why* family G's threat model is bounded, and until now it was bounded **by accident**:
+nothing stopped the next function from taking one.
+
+Gated as `_conformance.py [no-modref-parameter]`. **Mutation-tested** — injecting
+`(defun RT_HostileProbe:string (caller:string hostile:module{OuronetDalosV2}) ...)` into a module
+body makes it fire with file, line and member; removing it returns the count to 0. The rule
+deliberately balances the **parameter list only**, because a `let` binding a modref is the correct
+idiom and appears in most members of the codebase.
+
+> The first mutation attempt did NOT fire, and the reason is worth keeping: the probe was injected
+> before the module opened, into the **interface** that these files declare first, and `members()`
+> correctly skips interface stubs. A negative mutation result is not evidence the rule is blind
+> until the mutation itself is verified to be in scope. **Check that the thing you broke is a thing
+> the tool was ever looking at.**
+
 ## 7.3 Known-open, recorded deliberately
 
 - **RT-F-001 is one of THREE identical ops, and only one is pinned.** *(found 2026-09-16, by asking
