@@ -1275,6 +1275,12 @@
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
+            ;;The op's own existence check. Without it this preview returned a full quote narrating
+            ;;"Succesfully deployed a New DPOF Account for DPOF NOSUCHOFT-98c486052a51 ..." for a
+            ;;token that does not exist -- the wrapper only ever FORMATS <id>, so nothing here
+            ;;touched it. Same function the exec calls, so the refusal is identical by construction.
+            ;;Pinned by RedTeam/[RT-K]_PreviewParity.repl <<RT-K-003a>>.
+            (ref-DPOF::UEV_id id)
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Deploy a DPOF Account for DPOF {} on Ouronet Account {}" [id sa])]
                 [(format "Succesfully deployed a New DPOF Account for DPOF {} on Ouronet Account {}" [id sa])]

@@ -2964,6 +2964,16 @@
     ;;
     (defun C_DeployAccount (id:string account:string)
         (P|UEV_IMC)
+        ;;<id> IS CHECKED BEFORE THE BINDING GROUP, and that ordering is load-bearing. This call
+        ;;used to sit three lines below, inside the `let` body -- and the binding
+        ;;`(create-role-account (UR_Verum4 id))` reads DPOF|T|VerumRoles, so for an id that does not
+        ;;exist the function died with `No value found in table ouronet-ns.DPOF_DPOF|T|VerumRoles
+        ;;for key: <id>` and this check, written for exactly that input, was never reached.
+        ;;Third occurrence of the same eager-`let` shape: C_Recover (2026-09-12), C_HotRecovery
+        ;;(RT-H-003), and here. Pact evaluates every binding in a group before the body, so a
+        ;;validation placed in the body cannot protect a read placed in the bindings.
+        ;;Pinned by RedTeam/[RT-K]_PreviewParity.repl <<RT-K-003b>>.
+        (UEV_id id)
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -2972,7 +2982,6 @@
                 (role-oft-create-boolean:bool (if (= create-role-account account) true f))
             )
             (ref-DALOS::UEV_EnforceAccountExists account)
-            (UEV_id id)
             (with-default-read DPOF|T|AccountRoles (UC_IdAccount id account)
                 (UDC_AccountRoles 0.0 f f f role-oft-create-boolean f id account)
                 {"total-account-supply"     := tas

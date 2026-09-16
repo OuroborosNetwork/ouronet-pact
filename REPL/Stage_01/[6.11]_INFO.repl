@@ -108,7 +108,12 @@
     (map print
         [ (expect "INFO_DPOF|Issue -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_DPOF|Issue p a ["testorto"])))
           (expect "INFO_DPOF|Issue -> ClientInfo{stoa}" true (contains "stoa" (INFO-ONE.INFO_DPOF|Issue p a ["testorto"])))
-          (expect "INFO_DPOF|DeployAccount -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_DPOF|DeployAccount p "ORTO-x" a)))
+          ;;REAL id, not the "ORTO-x" placeholder this line used until 2026-09-16. The assertion is
+          ;;a SHAPE check (does the ClientInfo carry an "ignis" key), and it was passing a token
+          ;;that does not exist -- which only worked because the preview did not validate its id.
+          ;;RT-K-003 gave INFO_DPOF|DeployAccount the same existence check its exec runs, so the
+          ;;shape check now needs a token that exists. The intent of the line is unchanged.
+          (expect "INFO_DPOF|DeployAccount -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_DPOF|DeployAccount p "V|OURO-98c486052a51" a)))
           (expect "INFO_DPOF|UpgradeBranding -> ClientInfo{stoa}" true (contains "stoa" (INFO-ONE.INFO_DPOF|UpgradeBranding p "ORTO-x" 3))) ]))
 (print "")
 (commit-tx)

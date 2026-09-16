@@ -22,7 +22,7 @@
 ;;         1_SOVEREIGN/STAGE_01/2_Core/08_ATS.pact    (URCv_RTSplitAmounts, URC_RBT)
 ;;         1_SOVEREIGN/STAGE_01/Z_Reads/02_INFO-ONE+.pact (INFO_ATS|* wrappers)
 ;;
-;; REPL tests: <<RT-K-001a>> .. <<RT-K-001g>> (ATS) · <<RT-K-002a>> .. <<RT-K-002e>> (DPTF)
+;; REPL tests: <<RT-K-001a>> .. <<RT-K-001g>> (ATS) · <<RT-K-002a>> .. <<RT-K-002e>>  (DPTF)
 ;;
 ;; Run: cd REPL && pact "RedTeam/[RT-K]_PreviewParity.repl"
 ;;
@@ -229,6 +229,89 @@
                 "<<RT-K-002e>> ...while the EXEC refuses it outright -- the divergence, recorded not judged"
                 "Cannot Debit DPTF"
                 (r::DPTF|C_Transfer KST.ANHD real KST.ANHD KST.EMMA big true))
+        ])
+    ""
+)
+(env-sigs [])
+(print "")
+(print "===^^^===")
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RT-K-003 - the ortofungible family, and a guard that existed but could not run")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] } ])
+;;==== RT-K-003 · 01 · DPOF preview vs exec at a token that does not exist ====
+(print "--- [RT-K-003 · 01 · DPOF preview vs exec at a token that does not exist] ---")
+;;<<RT-K-003>> FAMILY: K | STATUS: FIXED
+;;HYPOTHESIS: third family swept. Six DPOF ops driven at a non-existent id, preview against exec.
+;;METHOD:     same as RT-K-001/002 -- one input, both paths, compare the message.
+;;RESULT:     CONFIRMED, then FIXED -- one divergence of six, and five clean negatives. The
+;;            DeployAccount preview quoted a token that does not exist; its exec died on a raw
+;;            VerumRoles read DESPITE ALREADY CALLING `UEV_id`, which sat in the `let` body under a
+;;            binding that reads that very table. Repaired by hoisting `UEV_id` above the binding
+;;            group (the third time this exact shape has been repaired) and by calling the same
+;;            function from the INFO wrapper. A real ortofungible still quotes normally.
+;;
+;;WHAT THE SWEEP RETURNED, and the negative half is most of it:
+;;
+;;   RotateOwnership, TogglePause, AddQuantity, Burn, Mint
+;;                    IN PARITY. Both paths give the SAME raw
+;;                    `No value found in table ouronet-ns.DPOF_DPOF|T|Properties for key: ...`.
+;;                    Not a family-K divergence -- the quote is exactly as wrong as the op, which
+;;                    is all family K asks. The shared raw WORDING is a separate, H-class gap and
+;;                    is recorded as known-open in DEFECT-LEDGER 7.3, together with the same gap on
+;;                    DPTF|C_Transfer. <<RT-K-003d>> pins the PARITY, deliberately not the wording:
+;;                    it must keep holding if and when that wording is improved on both sides.
+;;
+;;   DeployAccount    DIVERGED. The preview returned a full quote narrating
+;;                    "Succesfully deployed a New DPOF Account for DPOF NOSUCHOFT-98c486052a51 ..."
+;;                    -- the wrapper only ever FORMATS <id>, so nothing in it touched the token.
+;;
+;;AND THE EXEC SIDE WAS THE MORE INTERESTING HALF. `C_DeployAccount` ALREADY CALLED `UEV_id`. It sat
+;;in the `let` BODY, three lines under a binding group whose second entry is
+;;`(create-role-account (UR_Verum4 id))` -- a read of DPOF|T|VerumRoles. Pact evaluates every
+;;binding in a group before the body, so the check written for exactly this input could never run,
+;;and the op died with `No value found in table ouronet-ns.DPOF_DPOF|T|VerumRoles for key: <id>`.
+;;
+;;THIRD OCCURRENCE OF ONE SHAPE: C_Recover (fixed 2026-09-12), C_HotRecovery (RT-H-003), and here.
+;;A validation placed in a `let` body cannot protect a read placed in that `let`'s bindings. The
+;;guard being PRESENT is what makes it hard to see -- grep finds it, and the reviewer moves on.
+;;
+(let
+    (
+        (bad:string "NOSUCHOFT-98c486052a51")
+        (real:string "V|OURO-98c486052a51")
+        (r:module{TalosStageOne_ClientOneV2} TS01-C1)
+    )
+    (map print
+        [
+            (expect-failure
+                "<<RT-K-003a>> DeployAccount · PREVIEW refuses a token that does not exist"
+                "does not exist"
+                (ouronet-ns.INFO-ONE.INFO_DPOF|DeployAccount KST.ANHD bad KST.EMMA))
+            (expect-failure
+                "<<RT-K-003b>> DeployAccount · EXEC   (same message -- its own UEV_id, now reachable)"
+                "does not exist"
+                (r::DPOF|C_DeployAccount KST.ANHD bad KST.EMMA))
+            ;;NON-VACUITY: the guards must not have turned these into functions that always refuse.
+            (expect
+                (format "<<RT-K-003c>> ...and the preview still QUOTES the real ortofungible {}" [real])
+                true
+                (> (at "ignis-need" (at "ignis"
+                      (ouronet-ns.INFO-ONE.INFO_DPOF|DeployAccount KST.ANHD real KST.EMMA))) 0.0))
+            ;;THE NEGATIVE RESULT, pinned. These two agree with their execs already; the assertion
+            ;;is that they keep agreeing, not that the shared wording is good.
+            (expect-failure
+                "<<RT-K-003d>> Mint · PREVIEW and EXEC agree (parity pinned, wording not blessed)"
+                "DPOF|T|Properties"
+                (ouronet-ns.INFO-ONE.INFO_DPOF|Mint KST.ANHD bad KST.ANHD 1.0))
+            (expect-failure
+                "<<RT-K-003d>> Mint · EXEC   (same failure as the preview)"
+                "DPOF|T|Properties"
+                (r::DPOF|C_Mint KST.ANHD bad KST.ANHD 1.0 []))
         ])
     ""
 )

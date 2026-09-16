@@ -1439,7 +1439,35 @@ patched, because it changes a refusal *message* on the most frequently called op
    arithmetic exception, so the caller cannot even handle it.
 3. **Fix by sharing the guard, never by copying the message.**
 
-**Scope, honestly:** ATS and DPTF — **9 of 401 previews.** The method is cheap and mechanical; the
+### RT-K-003 — the third family, and a guard that existed but could not run
+
+Six DPOF ops driven at a non-existent id. **Five were already in parity** — both paths give the same
+raw properties-table error, which is all family K asks; the shared *wording* is a separate H-class
+gap, recorded as known-open. `<<RT-K-003d>>` pins that parity **without blessing the wording**, so
+it keeps holding when the wording is improved on both sides.
+
+**`DeployAccount` diverged**, and its exec side was the more interesting half.
+
+The preview quoted *"Succesfully deployed a New DPOF Account for DPOF NOSUCHOFT-98c486052a51 …"* —
+the wrapper only ever **formats** the id, so nothing in it touched the token. Meanwhile
+`C_DeployAccount` **already called `UEV_id`** — from the `let` **body**, three lines under a binding
+group whose second entry is `(create-role-account (UR_Verum4 id))`, a read of that very table. Pact
+evaluates every binding before the body, so the check written for exactly that input **could never
+run**, and the op died on a raw VerumRoles read.
+
+> **Third occurrence of one shape**: `C_Recover` (fixed 2026-09-12), `C_HotRecovery` (RT-H-003), and
+> here. *A validation placed in a `let` body cannot protect a read placed in that `let`'s bindings.*
+> The guard being **present** is what makes it hard to see — grep finds it, and the reviewer moves on.
+
+Two things this cost, both worth recording. The new **ledger-coverage check**, added an hour earlier,
+immediately failed the gate because RT-K-003 was not yet in `DEFECT-LEDGER.md` — the guard catching
+its author. And `[6.11]_INFO.repl` went red: it asserted the preview's *shape* while passing the
+placeholder id `"ORTO-x"`, which only worked because the preview did not validate. Repointed at a
+real ortofungible; the line's intent is unchanged.
+
+**Scope, honestly:** ATS, DPTF and DPOF — **15 of 401 previews.** Family K has now found a defect in
+**every family it has touched**, which is an argument for continuing it rather than a claim of
+coverage. The method is cheap and mechanical; the
 hard part is finding the separating input. A pair with a zero index and no Hot-RBT made three
 divergences visible at once.
 
@@ -1460,8 +1488,8 @@ divergences visible at once.
 | H — Input domain | 3 |  | 3 |  |
 | I — Gas station payable surface | 1 |  | 1 |  |
 | J — Ledger conservation | 3 |  | 1 | 2 |
-| K — Preview/exec divergence | 2 |  | 2 |  |
-| **total** | **22** | **0** | **12** | **10** |
+| K — Preview/exec divergence | 3 |  | 3 |  |
+| **total** | **23** | **0** | **13** | **10** |
 <!-- REGISTER:END -->
 
 **Seven of fourteen attacks found a defect, and all seven are fixed and measured.** The table above
