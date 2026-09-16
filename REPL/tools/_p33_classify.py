@@ -44,8 +44,13 @@ import sys
 # `_enforce_coverage.py --list` emits paths relative to REPL/, so resolve that from THIS file.
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # repo root
 # (`_enforce_coverage.py --list` emits REPO-ROOT-relative paths: `1_SOVEREIGN/STAGE_01/...`.)
-out=subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                        "_enforce_coverage.py"), "--list"],capture_output=True,text=True).stdout
+_r=subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        "_enforce_coverage.py"), "--list"],capture_output=True,text=True)
+# A dead dependency must not read as a clean result. `_orphanmatch.py` carried a stale path for two days and reported "orphans examined: 0 ... uncredited coverage: 0" the whole time, because empty stdout from a failed subprocess is indistinguishable from a genuine empty answer. Check the return code at the call site (2026-09-16).
+if _r.returncode != 0 or not _r.stdout.strip():
+    sys.exit(f"_p33_classify.py: _enforce_coverage.py --list failed (rc={_r.returncode}). "
+             f"REFUSING to classify an empty input.\n{_r.stderr.strip()[:300]}")
+out=_r.stdout
 rows=[];lines=out.split("\n")
 for i,l in enumerate(lines):
     m=re.match(r'^  (1_SOVEREIGN|2_CITIZEN)(/\S+?):(\d+)\s+(\S.*)$', l)

@@ -65,9 +65,14 @@ for f in files:
         if len(words) >= 4:
             guards.append((os.path.relpath(f, ROOT), src[:m.start()].count('\n') + 1, msg, words))
 
-out = subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)),
+_r = subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                  '_enforce_coverage.py'), '--orphans'],
-                     capture_output=True, text=True).stdout
+                    capture_output=True, text=True)
+# A dead dependency must not read as a clean result. `_orphanmatch.py` carried a stale path for two days and reported "orphans examined: 0 ... uncredited coverage: 0" the whole time, because empty stdout from a failed subprocess is indistinguishable from a genuine empty answer. Check the return code at the call site (2026-09-16).
+if _r.returncode != 0 or not _r.stdout.strip():
+    sys.exit(f"_orphanmatch.py: _enforce_coverage.py --orphans failed (rc={_r.returncode}). "
+             f"REFUSING to report a zero derived from nothing.\n{_r.stderr.strip()[:300]}")
+out = _r.stdout
 orphans, cur = [], None
 for ln in out.split('\n'):
     m = re.match(r"^    (\S+\.repl):(\d+)$", ln)

@@ -2078,6 +2078,58 @@ and two bare runs now change nothing.
 > five tools were guarded, and the sentence generalising it was filed in a document whose own
 > examples still showed the unguarded form.
 
+## 7.2g Fixing the path is not fixing the swallow *(2026-09-16)*
+
+§7.2e revived three tools killed by a stale sibling path. That repaired the trigger. The
+**mechanism** that turned a dead dependency into a clean-looking result was still in place, in those
+tools and in one more that matters more than either.
+
+Surveyed every `subprocess` call site in the tool suite for an unchecked return code:
+
+| site | consequence of a failed dependency |
+|---|---|
+| `_orphanmatch.py` | empty stdout → *"orphans examined: 0 … uncredited coverage: 0"* |
+| `_p33_classify.py` | empty stdout → classifies nothing, prints nothing |
+| **`_suite_stats.py`** | empty stdout → `grab()` returns `None` → surfaces at the first f-string, **five steps from the cause** |
+
+**`_suite_stats.py` is the one that matters**, because it generates `REPL_SUITE_STATS.md`, which
+`_figuresync --check` gates. And its own source already described this chain, verbatim, in the
+comment above `TOOL()`. **GS-14 fixed the path that triggered it and left the swallow live** — the
+same shape as §7.2f's `--apply` guard: the instance repaired, the mechanism documented, the mechanism
+still armed.
+
+All three now check the return code and refuse. **Mutation-tested**: reintroducing the stale path in
+`_orphanmatch.py` produces
+
+    _orphanmatch.py: _enforce_coverage.py --orphans failed (rc=2).
+    REFUSING to report a zero derived from nothing.
+
+and exit 1, where it previously produced a reassuring zero and exit 0. Restoring gives 120 orphans
+and exit 0.
+
+**The link GS-14 named as unverified was checked while here**, and it currently holds: the newest
+green gate log, `REPL_SUITE_STATS.md`, and a live gate run all agree at **22,454**. Worth noting that
+the tool finds that log by globbing `/tmp/gate*.out` and `/tmp/gate*.log` — so a cleared `/tmp`, or a
+session that writes its gate output under any other name (this one used `/tmp/gate_*.txt`), leaves it
+with nothing to read. That is now a loud failure rather than a quiet `None`.
+
+**AND THE UNVERIFIED LINK DRIFTED WHILE THIS WAS BEING WRITTEN.** Regenerating
+`REPL_SUITE_STATS.md` to test the new guard produced a real diff: **+11 comment lines**, all of them
+the RT-F-001 scope note committed earlier the same day. So the stats file had been stale since that
+commit, `_figuresync --check` reported clean throughout, and the gate stayed green — exactly GS-14's
+point, still live. `_figuresync` compares the narrative documents **against the stats file**; nothing
+compares the stats file **against the tree**. Regeneration is manual and nothing requires it, so the
+drift is silent and grows with every commit that touches a `.repl`.
+
+Not a defect in a contract, and not worth gating a full regeneration on every commit — but the
+figure `REPL_SUITE_STATS.md` publishes is a *snapshot*, not a *measurement*, and this entry is the
+evidence for that distinction rather than an assertion of it.
+
+> **A zero is a claim, and a claim needs a denominator.** Each of these tools printed one that was
+> true of its input and false of the world, because its input had silently become empty. Checking
+> `returncode` costs one line and converts the entire class from *silent wrong answer* to *loud no
+> answer* — which is the only trade worth making in an instrument.
+
 ## 7.3 Known-open, recorded deliberately
 
 - **RT-F-001 is one of THREE identical ops, and only one is pinned.** *(found 2026-09-16, by asking

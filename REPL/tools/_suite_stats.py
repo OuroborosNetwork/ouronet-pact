@@ -16,6 +16,7 @@ produced it so a reader can re-derive it independently.
 output is reused and the report says so -- it never presents a stale number as fresh.
 """
 import collections, os, re, subprocess, sys, time
+import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "..", "OuronetInformational", "ARCHITECTURE", "REPL_SUITE_STATS.md")
@@ -36,6 +37,14 @@ def _newest_gate():
 
 def run(cmd, timeout=1800):
     r = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True, timeout=timeout)
+    # THE SWALLOW, CLOSED (2026-09-16). The comment above TOOL() already described this exact
+    # chain -- "run() swallows that into empty output, grab() returns None, and the first f-string
+    # formatting a None is where it finally surfaces, five steps from the cause" -- and GS-14 fixed
+    # the PATH that triggered it while leaving the swallow in place. A generator that degrades
+    # quietly takes its checker with it, and this one feeds `_figuresync --check`.
+    if r.returncode != 0:
+        raise SystemExit(f"_suite_stats.py: sub-tool failed (rc={r.returncode}): {' '.join(map(str, cmd))}\n"
+                         f"REFUSING to generate statistics from a failed run.\n{r.stderr.strip()[:400]}")
     return r.stdout
 
 
