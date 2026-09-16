@@ -12,9 +12,9 @@ parser desyncs on them) at least four times.
 
 | script | what it answers |
 |---|---|
-| `tools/_audit_modref_calls.py` | (no docstring) |
+| `tools/_audit_modref_calls.py` | _audit_modref_calls.py — static audit for DEAD module-reference calls. |
 | `tools/_cheapseam.py` | Remaining unpinned guards that sit in a PLAIN callable defun (UEV_/URCv_/UCv_/UC_/URC_). |
-| `tools/_colproj.py` | (no docstring) |
+| `tools/_colproj.py` | REPL/_colproj.py -- a projecting `read` must ask for a column its own table actually has. |
 | `tools/_conformance.py` | STATIC CONFORMANCE LINTER — does the code obey the prefix contracts it claims? |
 | `tools/_deadbind.py` | DEAD LET-BINDINGS — a `let` binding that COMPUTES something and is then never read. |
 | `tools/_deadguard.py` | DEAD-GUARD PRE-PASS (plan step 3.4, run BEFORE 3.3) — which `enforce`s can never fire? |
@@ -26,33 +26,33 @@ parser desyncs on them) at least four times.
 | `tools/_foldeager.py` | [fold-eager] — a (fold (and) true [...]) whose LATER conjunct consumes a value an EARLIER |
 | `tools/_fvtasm.py` | _fvtasm.py — assemble a first-draft 04_RPS.pact from 04_FVT.pact spans + a hand header. |
 | `tools/_fvtcut.py` | _fvtcut.py — remove the RPS-exclusive defs/tables/schemas from 04_FVT.pact (in place). |
-| `tools/_fvtfacade.py` | (no docstring) |
+| `tools/_fvtfacade.py` | _fvtfacade.py — restore FVT's public reader API after the RPS split. |
 | `tools/_fvtflip.py` | _fvtflip.py — Stage 3 flip: cut RPS-domain from 04_FVT.pact, rewire calls to ref-RPS::, |
-| `tools/_fvtgen.py` | (no docstring) |
-| `tools/_fvtsplit.py` | (no docstring) |
+| `tools/_fvtgen.py` | _fvtgen.py — materialize 04_RPS.pact from 04_FVT.pact (P1 extraction, first draft). |
+| `tools/_fvtsplit.py` | _fvtsplit.py — static manifest builder for the FVT → (RPS + FVT) extraction. |
 | `tools/_gate.py` | THE GATE — the one runner that decides whether the REPL suite is green. |
 | `tools/_heavy.py` | HEAVY-PREFIX CHECKER (G4 / plan step 2.5.3) — is the DOUBLED prefix telling the truth? |
-| `tools/_ignis_cost_classify.py` | (no docstring) |
-| `tools/_ignis_cost_inventory.py` | (no docstring) |
+| `tools/_ignis_cost_classify.py` | _ignis_cost_classify.py — #76. Classify every client/admin core entrypoint by cost KIND |
+| `tools/_ignis_cost_inventory.py` | _ignis_cost_inventory.py — #76 prep. Static cost-vs-complexity inventory of every client/admin |
 | `tools/_ignis_deter_worksheet.py` | #76 — deterrence worksheet: per client/admin op, approx COMPUTE (module-internal transitive |
 | `tools/_ignis_price_sheet.py` | #76 — IGNIS PRICE SHEET, built from the TALOS client surface. |
-| `tools/_info_measured.py` | (no docstring) |
-| `tools/_infostoa.py` | (no docstring) |
-| `tools/_ladder.py` | (no docstring) |
+| `tools/_info_measured.py` | REPL/_info_measured.py -- how many INFO_* previews are MEASURED, not merely named. |
+| `tools/_infostoa.py` | _infostoa.py -- find INFO_ previews that quote a LITERAL ZERO for a currency their |
+| `tools/_ladder.py` | REPL/_ladder.py -- the citizen minters' BATCH LADDERS must tile their collection exactly once. |
 | `tools/_leakaudit.py` | Which PINNED guards sit AFTER a persisting write inside the same function body? |
 | `tools/_leakaudit_xmod.py` | CROSS-MODULE version of the leak audit. |
-| `tools/_letfix.py` | (no docstring) |
+| `tools/_letfix.py` | _letfix.py — canon §7.16 let/let* vertical-staircase normalizer (surgical). |
 | `tools/_normalize_repl_layout.py` | Normalize Ouronet REPL/*.repl to canonical layout. Skips 6.2.1 ANK and 6.2.2 SCORE. |
 | `tools/_orphanmatch.py` | Which ORPHAN assertions actually correspond to a real source guard? |
 | `tools/_p33_classify.py` | P3.3 residue classifier — WHY each remaining guard is unpinned, not just that it is. |
 | `tools/_pactlex.py` | Shared Pact lexing helpers for the analysis scripts. |
 | `tools/_prefixsync.py` | _prefixsync.py -- every function prefix used in the tree must be known to the tools. |
 | `tools/_pricesync.py` | _pricesync.py -- the generated IGNIS pricing artefacts must equal what the generators emit. |
-| `tools/_redteam.py` | (no docstring) |
+| `tools/_redteam.py` | REPL/_redteam.py -- the ATTACK REGISTER: what was attempted, and what happened. |
 | `tools/_scale_report.py` | SCALE OF THE REPL TEST SUITE — size, reach, and per-function exercise counts. |
 | `tools/_shadowed.py` | SHADOWED GUARDS — enforces that can never fire because a hard read runs first. |
 | `tools/_stagez_variant.py` | Generate the REPL-only Stage-Z TESTING VARIANT from the canonical module (never edit canonical). |
-| `tools/_subdivide_repl.py` | (no docstring) |
+| `tools/_subdivide_repl.py` | Subdivide each (begin-tx "TITLE") ... (commit-tx) block with internal ;;==== TITLE · mm · slug ==== |
 | `tools/_suite_stats.py` | SUITE STATS -> one Markdown report. Composes the other tools; computes nothing itself. |
 | `tools/_test_ledger.py` | REPL TEST LEDGER — every client function, how often it is tested, where, and how. |
 | `tools/_tighten.py` | TIGHTEN weak `expect-failure`s to the 3-arg form, by HARVESTING the real message. |

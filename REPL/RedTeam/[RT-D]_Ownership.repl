@@ -129,3 +129,111 @@
 )
 (env-sigs [])
 (rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RT-D-003 - the same theft through the MULTI transfer")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== RT-D-003 · 01 · multi-transfer, patron is not owner ====
+(print "--- [RT-D-003 · 01 · multi-transfer, patron is not owner] ---")
+;;<<RT-D-003>> FAMILY: D | STATUS: REFUSED
+;;HYPOTHESIS: RT-D-001 attacks `DPTF|C_Transfer`, whose defcap chain reaches
+;;            `DPTF|C>X-TRANSFER` and opens on `CAP_EnforceAccountOwnership sender`. The MULTI
+;;            variant does not use that chain: `DPTF|C>MULTI-TRANSFER` reproduces X-TRANSFER's
+;;            checklist per id -- transferability, pause state, both freeze states, move-role --
+;;            and is missing exactly one line of it, the sender ownership check. It enforces
+;;            ownership of the RECEIVER instead, and only when `method` is true and the receiver
+;;            is a smart account. So the same theft should go through the plural door.
+;;METHOD:     identical to RT-D-001 -- attacker is patron AND receiver, victim is sender, only the
+;;            attacker signs -- but through `DPTF|C_MultiTransfer` with a one-element list, the
+;;            shape that passes `UEV_IzUnique` and the length guard so nothing refuses early.
+;;RESULT:     REFUSED, and the reason is worth recording because the defcap really is missing the
+;;            line. The check is not absent, it is one layer DOWN: the debit leg calls
+;;            `DPTF::XB_DebitTrueFungible`, which acquires `DPTF|C>DEBIT`, which carries
+;;            `CAP_EnforceAccountOwnership account`. Every debit path in the module inherits it,
+;;            which is why the plural door is shut despite its own defcap not shutting it.
+;;
+;;WHY THIS TEST EXISTS AT ALL. `DPTF|C>DEBIT`'s ownership check was, before this block, pinned by
+;;NOTHING. RT-D-001 exercises X-TRANSFER's OWN `CAP_EnforceAccountOwnership sender`, a different
+;;call site, so deleting the one inside `DPTF|C>DEBIT` would not have turned a single assertion
+;;red -- while being the sole thing standing between a stranger and every multi-transfer in the
+;;tree. That is the shape CLAUDE.md's authorise-first ruling is about, arrived at from the other
+;;side: not a gate in the wrong order, but a gate with no witness.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ouro:string "OURO-98c486052a51")
+        (attacker:string KST.EMMA)
+        (victim:string KST.ANHD)
+    )
+    (let
+        (
+            (victim-before:decimal (ref-DPTF::UR_AccountSupply ouro victim))
+            (attacker-before:decimal (ref-DPTF::UR_AccountSupply ouro attacker))
+        )
+        (map print
+            [
+                ;;the attack is only meaningful if there is something to take.
+                (expect "<<RT-D-003>> the victim is holding a balance worth stealing"
+                    true (> victim-before 1000.0))
+                ;;THE ATTACK. Message pinned: an unqualified refusal here could be the length
+                ;;guard, the uniqueness guard, transferability or a freeze, none of which is the
+                ;;guard under test -- and one of those is exactly what a plausible-looking but
+                ;;wrong list argument would trip.
+                (expect-failure "<<RT-D-003>> ATTACK REFUSED: the plural door is shut too"
+                    "Keyset failure"
+                    (ref-TS01-C1::DPTF|C_MultiTransfer attacker [ouro] victim attacker [100.0] true))
+                ;;...and the refusal is TOTAL, so no leg of the batch moved behind the abort.
+                (expect "<<RT-D-003>> ...and neither balance moved"
+                    [victim-before attacker-before]
+                    [(ref-DPTF::UR_AccountSupply ouro victim)
+                     (ref-DPTF::UR_AccountSupply ouro attacker)])
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RT-D-003b - the same multi call, with the owner signing, must WORK")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== RT-D-003 · 02 · the multi call is well-formed, so the refusal above is specific ====
+(print "--- [RT-D-003 · 02 · the multi call is well-formed, so the refusal above is specific] ---")
+;;THE NON-VACUITY HALF. This file's own warning applies with extra force to a list-taking op: an
+;;arity, length or uniqueness mistake would also raise, and would look exactly like a passing
+;;access-control test while proving nothing about ownership. So the identical call runs again with
+;;the VICTIM signing as owner and the ATTACKER still the patron. It must now succeed.
+(env-sigs [{ "key": "PK_Emma", "caps": [] } { "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ouro:string "OURO-98c486052a51")
+        (sponsor:string KST.EMMA)
+        (owner:string KST.ANHD)
+    )
+    (let
+        (
+            (owner-before:decimal (ref-DPTF::UR_AccountSupply ouro owner))
+        )
+        (print (format "<(RT-D-003b multi as owner)> => \"{}\""
+            [(ref-TS01-C1::DPTF|C_MultiTransfer sponsor [ouro] owner sponsor [100.0] true)]))
+        (map print
+            [
+                ;;the same list, the same patron, the same receiver -- only the signature changed.
+                (expect "<<RT-D-003>> with the owner signing, the identical multi call succeeds"
+                    (- owner-before 100.0) (ref-DPTF::UR_AccountSupply ouro owner))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)

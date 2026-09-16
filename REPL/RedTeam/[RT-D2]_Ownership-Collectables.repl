@@ -283,3 +283,52 @@
 (print "")
 (print "===^^^===")
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RT-D-004 - the same theft, one collectable nonce")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== RT-D-004 · 01 · collectable transfer, patron is not owner ====
+(print "--- [RT-D-004 · 01 · collectable transfer, patron is not owner] ---")
+;;<<RT-D-004>> FAMILY: D | STATUS: REFUSED
+;;HYPOTHESIS: RT-D-001 and RT-D-003 shut the two TRUE-FUNGIBLE doors. The collectable family has
+;;            its own, and it does not share their code: `DPNF|C_TransferNonce` reaches
+;;            `DPDC-T|C>TRANSFER`, not `DPTF|C>X-TRANSFER` or `DPTF|C>DEBIT`. So the question has
+;;            to be asked again rather than inferred -- the same patron/owner split, on the one
+;;            family where possession is tracked per NONCE instead of per balance.
+;;METHOD:     the attacker is patron AND receiver, the victim is sender, only the attacker signs.
+;;            The nonce is one RT-D-002 already proved the victim holds -- it passes that block's
+;;            possession gate as the TRUE holder -- so possession cannot be what refuses this, and
+;;            ownership is the only thing left.
+;;RESULT:     REFUSED at the owner gate, naming the victim's key.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (id:string "CNF-98c486052a51")
+        (nonce:integer 2)
+        (attacker:string KST.EMMA)
+        (victim:string KST.ANHD)
+    )
+    (map print
+        [
+            ;;THE ATTACK. Message pinned: an unqualified refusal on a collectable op could be the
+            ;;possession gate, a pause state, a freeze or a missing transfer role -- and RT-D-002
+            ;;exists precisely because the possession gate on this family was once wrong.
+            ;;The VICTIM's key is named, not merely "a keyset failed": that is what separates
+            ;;"the owner gate refused" from "the attacker's own signature was somehow rejected",
+            ;;which would pass an unqualified match while proving the opposite.
+            (expect-failure "<<RT-D-004>> ATTACK REFUSED: holding the nonce is the victim's, not the payer's"
+                "Keyset failure (keys-all): [PK_Ancie...]"
+                (ref-TS02-C2::DPNF|C_TransferNonce attacker id victim attacker nonce 1 false))
+            ;;...and the nonce did not move: the victim still passes the possession gate afterwards.
+            (expect "<<RT-D-004>> ...and the victim still holds the nonce"
+                true (> (ref-DPDC::UR_AccountNonceSupply victim id false nonce) 0))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
