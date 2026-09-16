@@ -319,3 +319,76 @@
 (print "")
 (print "===^^^===")
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RT-K-005 - the swap family: a quote that could not warn about a door it knew was shut")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+;;==== RT-K-005 · 01 · the chilled doors, on a pair without frozen LP ====
+(print "--- [RT-K-005 · 01 · the chilled doors, on a pair without frozen LP] ---")
+;;<<RT-K-005>> FAMILY: K | STATUS: FIXED
+;;HYPOTHESIS: fifth family. SWP's previews are the most arithmetic-heavy in the system, so they
+;;            re-derive more pool state than any other family's -- the condition under which
+;;            RT-K-001's divergences appeared.
+;;METHOD:     first the cheap separating input, a swpair id that does not exist: FIVE ops swept
+;;            (ChangeOwnership, ToggleAddLiquidity, ToggleSwapCapability, UpdateFee,
+;;            RemoveLiquidity) and ALL FIVE were already in parity, both paths giving the same raw
+;;            SWP|Pairs read. A clean negative. Then the structural one that matters here: the
+;;            CHILLED doors on a pair whose frozen-LP functionality is off.
+;;RESULT:     CONFIRMED, then FIXED. The bad-id sweep found FIVE clean negatives. The structural
+;;            one found the defect: both chilled previews died on `DPTF ID | does not exist` -- the
+;;            BAR sentinel reaching a token-existence check -- for a pair whose real problem is that
+;;            frozen LP is off, and whose exec does not say so until STEP 1, after step 0 has taken
+;;            the initiation fee. Both previews now refuse with the door's own wording, before any
+;;            money moves. The STANDARD door still quotes the same pair and amounts.
+;;
+;;WHY THIS ONE IS WORTH MORE THAN A TIDIER MESSAGE. `SWP|C_AddIcedLiquidity` is a DEFPACT.
+;;`UEV_AddChilledLiquidity` refuses the door on a pair without frozen LP -- but it refuses in
+;;STEP 1, and RT-A-002 already measured that STEP 0 SUCCEEDS AND COLLECTS THE INITIATION FEE.
+;;So the quote is the only chance a caller has to learn the door is shut BEFORE paying to find out.
+;;
+;;And what the quote said instead was `DPTF ID | does not exist`. With frozen LP off, the frozen-
+;;token getter returns the BAR sentinel, which reached a token-existence check -- a true statement
+;;that names the SEPARATOR as if it were a token, about a token the caller never mentioned. Third
+;;family in which the BAR sentinel has surfaced as a user-facing message (RT-H-003, RT-K-003).
+;;
+;;ONLY THE FROZEN-LP HALF IS CHECKED in the preview. `UEV_AddChilledLiquidity`'s other enforce
+;;depends on the amounts, which the caller controls and can change between quote and submission --
+;;transient, and family K validates what the caller CANNOT change (RT-K-002).
+;;
+(let
+    (
+        (pool:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
+        (amounts:[decimal] [10.0 10.0 10.0])
+        (pid:decimal (U|CT.UR_STOA-PID|Price))
+    )
+    (map print
+        [
+            (expect
+                (format "<<RT-K-005a>> the separating input, measured: frozen LP is OFF on {}" [pool])
+                false (ouronet-ns.SWP.UR_IzFrozenLP pool))
+            (expect-failure
+                "<<RT-K-005b>> Iced · PREVIEW refuses in the DOOR'S OWN words, before step 0 can charge"
+                "Frozen LP Functionality is not enabled on Swpair"
+                (ouronet-ns.INFO-ONE.INFO_SWP|AddIcedLiquidity KST.ANHD KST.ANHD pool amounts pid))
+            (expect-failure
+                "<<RT-K-005c>> Glacial · PREVIEW likewise -- the other untaxed door shares the gate"
+                "Frozen LP Functionality is not enabled on Swpair"
+                (ouronet-ns.INFO-ONE.INFO_SWP|AddGlacialLiquidity KST.ANHD KST.ANHD pool amounts pid))
+            ;;NON-VACUITY, and deliberately chosen to isolate the CONDITION rather than the function:
+            ;;the STANDARD door on the SAME pair with the SAME amounts must still quote. If the guard
+            ;;had been written too broadly this goes red.
+            (expect
+                "<<RT-K-005d>> ...while the STANDARD door still quotes the same pair and amounts"
+                true
+                (> (at "ignis-need" (at "ignis"
+                      (ouronet-ns.INFO-ONE.INFO_SWP|AddStandardLiquidity KST.ANHD KST.ANHD pool amounts pid))) 0.0))
+        ])
+    ""
+)
+(env-sigs [])
+(print "")
+(print "===^^^===")
+(commit-tx)

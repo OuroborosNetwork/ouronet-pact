@@ -1487,9 +1487,37 @@ never got the chance to say the useful thing. Both sides now call it, first.
 > would have bought message parity at the price of turning 401 cost quotes into dry runs — decided
 > against in RT-K-002. A preview validates what the caller **cannot** change, not what they can.
 
-**Scope, honestly:** ATS, DPTF, DPOF and DPDC — **20 of 401 previews.** Family K has now found a
-defect in **every family it has touched**, which is an argument for continuing it rather than a
-claim of coverage. The method is cheap and mechanical; the
+### RT-K-005 — the swap family, and a quote that could not warn about a door it knew was shut
+
+The cheap separating input first: a swpair id that does not exist, across five ops
+(`ChangeOwnership`, `ToggleAddLiquidity`, `ToggleSwapCapability`, `UpdateFee`, `RemoveLiquidity`).
+**All five already in parity** — same raw `SWP|Pairs` read on both sides. A clean negative, and
+worth stating, because it says the divergences are not everywhere.
+
+Then the structural input: the **chilled** doors on a pair whose frozen-LP functionality is off.
+
+```
+preview:  DPTF ID | does not exist
+exec:     step 0 SUCCEEDS and collects the initiation fee;
+          step 1 refuses — "Frozen LP Functionality is not enabled on Swpair …"
+```
+
+**This one is worth more than a tidier message, because the op is a defpact.** RT-A-002 already
+measured that step 0 charges. So **the quote is the caller's only chance to learn the door is shut
+before paying to find out** — and what it said instead was the **BAR sentinel**, naming the
+separator as if it were a token the caller had never mentioned. Third family in which that sentinel
+has surfaced as a user-facing message.
+
+Both chilled previews now refuse in the **door's own wording**, before any money moves. Only the
+frozen-LP half is checked: the other enforce in `UEV_AddChilledLiquidity` depends on the amounts,
+which the caller controls — transient, and out of scope per RT-K-002.
+
+> Non-vacuity here deliberately isolates the **condition**, not the function: the **Standard** door
+> must still quote the *same pair with the same amounts*. A guard written too broadly turns that red.
+
+**Scope, honestly:** ATS, DPTF, DPOF, DPDC and SWP — **27 of 401 previews.** Family K has now found
+a defect in **all five families it has touched**, which is an argument for continuing it rather than
+a claim of coverage. The method is cheap and mechanical; the
 hard part is finding the separating input. A pair with a zero index and no Hot-RBT made three
 divergences visible at once.
 
@@ -1510,8 +1538,8 @@ divergences visible at once.
 | H — Input domain | 3 |  | 3 |  |
 | I — Gas station payable surface | 1 |  | 1 |  |
 | J — Ledger conservation | 3 |  | 1 | 2 |
-| K — Preview/exec divergence | 4 |  | 4 |  |
-| **total** | **24** | **0** | **14** | **10** |
+| K — Preview/exec divergence | 5 |  | 5 |  |
+| **total** | **25** | **0** | **15** | **10** |
 <!-- REGISTER:END -->
 
 **Seven of fourteen attacks found a defect, and all seven are fixed and measured.** The table above

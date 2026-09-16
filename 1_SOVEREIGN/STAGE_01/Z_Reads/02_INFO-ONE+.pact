@@ -3871,6 +3871,26 @@
         ))
     (defun INFO_SWP|AddIcedLiquidity:object{OuronetInfoV2.ClientInfo}
         (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
+        ;;THE POOL'S OWN GATE, RUN BEFORE THE QUOTE IS PRICED. `UEV_AddChilledLiquidity` refuses
+        ;;this door on a pair without frozen LP, with the message reproduced below -- but it refuses
+        ;;in STEP 1 of the defpact, after step 0 has already collected the initiation fee. So the
+        ;;quote is the only chance the caller has to learn the door is shut before paying for it.
+        ;;Until this line, the preview instead died on `DPTF ID | does not exist`: with frozen LP
+        ;;off, the frozen-token getter returns the BAR sentinel and it reached a token-existence
+        ;;check -- true, and naming the separator as if it were a token.
+        ;;It must precede the binding group below, which prices the CLAD and reads that very token.
+        ;;Only the frozen-LP half is checked here: the asymmetry half of UEV_AddChilledLiquidity
+        ;;depends on the amounts, which is transient, and family K validates what the caller cannot
+        ;;change. Pinned by RedTeam/[RT-K]_PreviewParity.repl <<RT-K-005a/b>>.
+        (let
+            (
+                (ref-SWP:module{SwapperV4} SWP)
+            )
+            (enforce
+                (ref-SWP::UR_IzFrozenLP swpair)
+                (format "Frozen LP Functionality is not enabled on Swpair {}" [swpair])
+            )
+        )
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
@@ -3891,6 +3911,26 @@
         ))
     (defun INFO_SWP|AddGlacialLiquidity:object{OuronetInfoV2.ClientInfo}
         (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
+        ;;THE POOL'S OWN GATE, RUN BEFORE THE QUOTE IS PRICED. `UEV_AddChilledLiquidity` refuses
+        ;;this door on a pair without frozen LP, with the message reproduced below -- but it refuses
+        ;;in STEP 1 of the defpact, after step 0 has already collected the initiation fee. So the
+        ;;quote is the only chance the caller has to learn the door is shut before paying for it.
+        ;;Until this line, the preview instead died on `DPTF ID | does not exist`: with frozen LP
+        ;;off, the frozen-token getter returns the BAR sentinel and it reached a token-existence
+        ;;check -- true, and naming the separator as if it were a token.
+        ;;It must precede the binding group below, which prices the CLAD and reads that very token.
+        ;;Only the frozen-LP half is checked here: the asymmetry half of UEV_AddChilledLiquidity
+        ;;depends on the amounts, which is transient, and family K validates what the caller cannot
+        ;;change. Pinned by RedTeam/[RT-K]_PreviewParity.repl <<RT-K-005a/b>>.
+        (let
+            (
+                (ref-SWP:module{SwapperV4} SWP)
+            )
+            (enforce
+                (ref-SWP::UR_IzFrozenLP swpair)
+                (format "Frozen LP Functionality is not enabled on Swpair {}" [swpair])
+            )
+        )
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)

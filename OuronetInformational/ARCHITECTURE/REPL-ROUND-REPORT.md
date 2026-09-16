@@ -56,15 +56,15 @@ explanation*, because stating precisely what an assertion proved exposed that it
 
 | | |
 |---|---:|
-| **distinct assertions written** | **5,542** |
-| **assertions executed per full gate run** | **22,198** |
-| &nbsp;&nbsp;positive (`expect`) | 18,096 |
-| &nbsp;&nbsp;negative (`expect-failure`) | 4,102 |
+| **distinct assertions written** | **5,546** |
+| **assertions executed per full gate run** | **22,202** |
+| &nbsp;&nbsp;positive (`expect`) | 18,098 |
+| &nbsp;&nbsp;negative (`expect-failure`) | 4,104 |
 | gate entrypoints | **91** |
 | `.repl` files reachable from the gate | 306 |
 | orphaned asserting files (written but never run) | **0** |
 
-**Quote 5,542 for "how many tests exist" and 22,198 for "how much ran".** They differ ~4x because
+**Quote 5,546 for "how many tests exist" and 22,202 for "how much ran".** They differ ~4x because
 
 > **The executed figure fell from 21,732 to 21,511 in the X-01 repair, and that is not a coverage
 > regression.** Five guard-type assertions moved out of `Stage_01/[2.1]_Dalos.repl` — a genesis
@@ -389,7 +389,7 @@ artefacts that feed the Chapter-2 documentation.
 
 | | |
 |---|---|
-| gate | **GREEN** — 91 entrypoints, 22,198 assertions, 0 failures |
+| gate | **GREEN** — 91 entrypoints, 22,202 assertions, 0 failures |
 | live unpinned guards | **0** |
 | `INFO_` previews named but unmeasured | **0** |
 | conformance violations | **0** |
@@ -448,7 +448,7 @@ not for the reason a reader would assume:
 | treasury-debt wipe | `GOV\|DPTF_ADMIN` | a **solvency check one line above it** |
 
 Each is green today and would **stay green through the change that breaks it**. This is the clearest
-limit on what §2's 22,198 executed assertions certify: they establish that the system behaves as
+limit on what §2's 22,202 executed assertions certify: they establish that the system behaves as
 documented, not that it is defended for the reasons the documentation implies.
 
 ### What it says about where the defects are

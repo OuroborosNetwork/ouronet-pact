@@ -138,3 +138,45 @@ wants its own pass with its own controls.
 2. A raw internal error in a preview is wrong under **either** answer. `try` cannot catch an
    arithmetic exception, so the caller cannot even handle it.
 3. Fix by **sharing the guard**, never by copying the message.
+
+---
+
+# Family K complete across the five asset/DeFi families (2026-09-16)
+
+| family | swept | result |
+|---|---|---|
+| **ATS** (RT-K-001) | 7 ops | **3 diverged** — a quote promising success, a raw ledger error printing the caller's account, a div-by-zero, and a true-but-different reason |
+| **DPTF** (RT-K-002) | 2+ ops | **2 diverged** — `Burn`/`Mint` quoting *"Succesfully …"* for a token that never existed |
+| **DPOF** (RT-K-003) | 6 ops | **1 diverged** — and the exec's own `UEV_id` was unreachable behind an eager `let` |
+| **DPDC** (RT-K-004) | 5 ops | **1 diverged** — and the exec was diagnosing a *role* on a collection it had not established exists |
+| **SWP** (RT-K-005) | 5 + 2 ops | **five clean negatives** on bad ids; **1 diverged** on the structural input |
+
+**A defect in all five families.** That is the argument for continuing, not a claim of coverage:
+**27 of 401** previews have been driven at a separating input.
+
+## What the five have in common
+
+Every divergence occurred where the preview **re-derives** state the exec computes elsewhere.
+Where the two **share a reader**, they never diverged — Coil and Curl were in parity from the start
+because their guard lives in `URC_RBT`, which both call. That is the whole design rule:
+
+> **Fix by sharing the guard, never by copying the message.** Two copies of a check are two things
+> that can drift; one function called twice cannot.
+
+## The separating input is the work
+
+The method is mechanical — drive `INFO_<op>` and the client at one input, compare. Finding the
+input is where the judgement is:
+
+- a **non-existent id** is cheap and found defects in DPTF, DPOF and DPDC — and *nothing* in SWP;
+- a **structural pool state** (zero index, no Hot-RBT, frozen LP off) found everything in ATS and
+  the only SWP defect.
+
+An input that separates nothing is not a failed test, it is a **negative result worth recording** —
+five SWP ops in parity is evidence about the system, not an absence of evidence.
+
+## The BAR sentinel keeps arriving as a user-facing message
+
+Three families now: `C_HotRecovery` reading DPOF keyed by `"|"` (RT-H-003); DPDC's
+`nonce-holder`; and here, `DPTF ID | does not exist` — a true statement naming the **separator** as
+a token the caller never mentioned. **A sentinel that reaches a message has escaped its type.**
