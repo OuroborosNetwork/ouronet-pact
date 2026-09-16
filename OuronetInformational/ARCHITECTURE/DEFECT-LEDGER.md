@@ -2253,7 +2253,18 @@ times** before it did:
    `<<DSA-VAULT-01>>`) yet was reported unobserved. Fixed by also collecting each `defcap`'s own
    ownership-worded `enforce` messages.
 
-After all three, it reproduces the hand result exactly and clears `DEFINE-VAULT`. Measured over
+**4. It recognised only one of the two ownership refusals.** `CAP_EnforceAccountOwnership` is an
+`if` on account type: a `Ѻ.` standard account raises a raw keyset failure, a `Σ.` **smart** account
+raises *"Smart DALOS Account … Ownership could not be verified!"*. Only the first was a signature, so
+every gate on a smart-account-owned entity read as unobserved even where a test drove it. Found the
+same way as defect 3 — by running the attack and reading what came back instead of what was expected
+to. DPTF's special-role trio is owned by a `Σ.` account and refuses in exactly those words.
+
+Each of the four was found by *using* the tool, never by reading it. That is the argument for
+treating a new instrument's first number as a hypothesis: this one was wrong four times, and three of
+the four wrongs were in the direction of **false comfort**.
+
+After all four, it reproduces the hand result exactly and clears `DEFINE-VAULT`. Measured over
 **112** owner-gated `defcap`s reachable from a named Talos op:
 
 | state of the tree | observed refusing somebody | never observed |
@@ -2262,8 +2273,10 @@ After all three, it reproduces the hand result exactly and clears `DEFINE-VAULT`
 | + the three `[6.2.10]` latched-flag witnesses | 22 | 90 |
 | + `RT-D-003` / `RT-D-004` (the transfer doors) | 24 | 88 |
 | + the two `[6.2.10]` row-existence witnesses | 26 | 86 |
-| + the two SCORE boost-link witnesses | **28** | **84** |
-| …of the 38 whose gate sits after a business `enforce` | 11 → **19** | 27 → **19** |
+| + the two SCORE boost-link witnesses | 28 | 84 |
+| + recognising the SMART-account refusal (defect 4) | 29 | 83 |
+| + the three `DPTF|S>` special-role witnesses | **32** | **80** |
+| …of the 38 whose gate sits after a business `enforce` | 11 → **22** | 27 → **16** |
 
 Re-run it with `python3 REPL/tools/_ownerobs.py`; the rows above are checkpoints on one measurement,
 not four separate claims.

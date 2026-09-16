@@ -2655,3 +2655,81 @@
 )
 (env-sigs [])
 (rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-G13 — the special-role owner gate, which nothing had ever driven")
+(print "")
+(print "=== DPTF-G13 — SET_MIN-MOVE / SET_FEE-TARGET / TOGGLE_FEE owner gate ==========")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;`DPTF|S>SET_MIN-MOVE`, `S>SET_FEE-TARGET` and `S>TOGGLE_FEE` each end on `CAP_Owner id`, which is
+;;`CAP_EnforceAccountOwnership (UR_Konto id)`. Every one of the three was exercised in this suite and
+;;in `[4.0]_Sovereign-Executor.repl` ONLY by the owner, so the gate had never been shown refusing
+;;anybody: delete `CAP_Owner` from all three and nothing in the tree would have turned red. Found by
+;;`REPL/tools/_ownerobs.py`, which enumerates exactly that question.
+;;
+;;THE REFUSAL IS NOT A KEYSET FAILURE, and that is the point worth recording. OURO's `konto` is a
+;;`Σ.` SMART account, so `CAP_EnforceAccountOwnership` takes its `UEV_SmartAccOwn` branch and the
+;;message is "Smart DALOS Account … Ownership could not be verified!". The standard-account branch
+;;raises a raw keyset failure instead. A sweep that recognises only one of the two -- as _ownerobs.py
+;;did until this block was written -- reports every smart-account-owned gate as untested.
+;;
+;;Each op's OWN guards are pinned to their live values first. All three run AHEAD of `CAP_Owner`, so
+;;a test that tripped one of them would be reporting a real refusal that says nothing about
+;;ownership: min-move -1.0 is the "unset" sentinel and satisfies both shape guards at any precision;
+;;the fee-promile must already be in range for TOGGLE_FEE to reach its owner check; and the new
+;;fee-target must differ from the current one.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ouro:string "OURO-98c486052a51")
+        (attacker:string KST.EMMA)
+    )
+    (let
+        (
+            (owner:string (ref-DPTF::UR_Konto ouro))
+            (promile:decimal (ref-DPTF::UR_FeePromile ouro))
+            (target-before:string (ref-DPTF::UR_FeeTarget ouro))
+            (minmove-before:decimal (ref-DPTF::UR_MinMove ouro))
+        )
+        (map print
+            [
+                ;;NON-VACUITY: the attacker really is not the owner, so a refusal is meaningful.
+                (expect "<<DPTF-G13>> the attacker is NOT the token owner"
+                    false (= owner attacker))
+                ;;...and the owner is a SMART account, which is why the message below is not a
+                ;;keyset failure. Asserted rather than assumed: if OURO were ever re-kontoed to a
+                ;;standard account this line goes red instead of the three refusals silently
+                ;;changing wording.
+                (expect "<<DPTF-G13>> ...and the owner is a SMART account, so the smart branch runs"
+                    true (= "Σ" (take 1 owner)))
+                ;;TOGGLE_FEE's own guard: the promile must be the unset sentinel or in range.
+                (expect "<<DPTF-G13>> the fee-promile is set, so TOGGLE_FEE reaches its owner check"
+                    true (or (= promile -1.0) (and (>= promile 0.0) (<= promile 1000.0))))
+                ;;SET_FEE-TARGET's own guard: the proposed target must differ from the current one.
+                (expect "<<DPTF-G13>> the proposed fee-target differs from the current one"
+                    false (= target-before attacker))
+                ;;THE THREE REFUSALS.
+                (expect-failure "<<DPTF-G13>> a non-owner cannot set the min-move"
+                    "Ownership could not be verified"
+                    (ref-TS01-C1::DPTF|C_SetMinMove attacker ouro -1.0))
+                (expect-failure "<<DPTF-G13>> a non-owner cannot redirect the fee target"
+                    "Ownership could not be verified"
+                    (ref-TS01-C1::DPTF|C_SetFeeTarget attacker ouro attacker))
+                (expect-failure "<<DPTF-G13>> a non-owner cannot toggle fee collection"
+                    "Ownership could not be verified"
+                    (ref-TS01-C1::DPTF|C_ToggleFee attacker ouro true))
+                ;;...and all three refusals were TOTAL.
+                (expect "<<DPTF-G13>> ...and none of the three changed anything"
+                    [minmove-before target-before]
+                    [(ref-DPTF::UR_MinMove ouro) (ref-DPTF::UR_FeeTarget ouro)])
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)

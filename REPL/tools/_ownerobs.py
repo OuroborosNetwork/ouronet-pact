@@ -53,6 +53,15 @@ def R(pattern):
 
 CAP = re.compile(r'CAP_[A-Za-z]')
 
+# BOTH BRANCHES of DALOS::CAP_EnforceAccountOwnership, which is an `if` on account type:
+#   UR_AccountType -> UEV_SmartAccOwn    -> "Smart DALOS Account {} Ownership could not be verified!"
+#                  -> UEV_StandardAccOwn -> a raw keyset failure
+# Only the standard branch was recognised until 2026-09-17, so every gate on a SMART-account-owned
+# entity read as unobserved even where a test drove it -- DPTF's special-role trio is owned by a
+# `Σ.` account and refuses in those words. Same class as defect 3 below, found the same way: by
+# running an attack and reading what actually came back instead of what was expected to.
+OWNERSHIP_SIGNATURES = ("Keyset failure", "Ownership could not be verified")
+
 def module_of(path):
     """The MODULE name a .pact file defines (files also contain interfaces above the module)."""
     m = re.search(r'\(module\s+([A-Za-z0-9_|\-]+)', strip_comments(open(path).read()))
@@ -130,7 +139,8 @@ def observed(names, own_msgs):
             end = balanced(txt, em.start())
             if end is None: continue
             seg = txt[em.start():end + 1]
-            if not ('Keyset failure' in seg or any(m[:40] in seg for m in own_msgs)):
+            if not (any(sig in seg for sig in OWNERSHIP_SIGNATURES)
+                    or any(m[:40] in seg for m in own_msgs)):
                 continue
             for nm in names:
                 if re.search(re.escape(nm) + r'(?![A-Za-z0-9_|\-])', seg):
@@ -149,7 +159,7 @@ for cap, (fil, shadowed, own_msgs) in sorted(gated.items()):
 
 tot = len(rows); obs = sum(1 for r in rows if r[3])
 print(f"owner-gated defcaps reachable from a named op : {tot}")
-print(f"  observed refusing somebody (Keyset failure) : {obs}")
+print(f"  observed refusing somebody (either signature): {obs}")
 print(f"  NEVER observed                              : {tot-obs}")
 sh = [r for r in rows if r[2]]
 print(f"\nof the {len(sh)} whose ownership gate sits AFTER a business enforce:")
