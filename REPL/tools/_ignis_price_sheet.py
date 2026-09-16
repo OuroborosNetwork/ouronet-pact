@@ -167,7 +167,10 @@ def _discards_cumulators(body):
     if not names:
         return False
     for n in names:
-        if re.search(r'C_Collect\w*[^()]*\b' + re.escape(n) + r'\b', code):
+        # identifier-aware boundary: `\b` would let `ico` match inside `ico0` / `ico-meta`,
+        # wrongly concluding a cumulator IS collected and suppressing the row. See _pactlex.ident_re.
+        if re.search(r'C_Collect\w*[^()]*(?<![A-Za-z0-9|_-])' + re.escape(n)
+                     + r'(?![A-Za-z0-9|_-])', code):
             return False
     return True
 

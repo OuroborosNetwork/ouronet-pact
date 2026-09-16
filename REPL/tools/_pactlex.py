@@ -13,6 +13,34 @@ One copy, used by everything. Import this; do not re-derive it.
 """
 import os, re
 
+def ident_re(name):
+    """A word-boundary regex for a PACT identifier. Use this instead of `\\b...\\b`.
+
+    `\\b` is a boundary between a word and a NON-word character, and `-` is a non-word character
+    -- so `\\bc-rbt\\b` matches INSIDE `c-rbt-amount`, and `\\bid\\b` matches inside `pool-id`.
+    Pact identifiers use `-` and `|` freely, so `\\b` silently turns a hyphenated name into a
+    prefix match against every longer name containing it.
+
+    MEASURED 2026-09-16. This made `_eagerlet.py --produced` report `08_ATS.pact:1790`: an
+    `enforce` on `c-rbt-amount`, reported as an enforce on `c-rbt`. That site was triaged by
+    hand as a judgement call before the boundary was suspected -- the tool sent a human to
+    read the wrong line. The same `\\b` appeared in EIGHT places across FIVE tools, including
+    `reader_kinds`'s own hardness test, where it over-marks readers as hard (a read whose key
+    is `pool-id` "mentions" a parameter named `id`).
+
+    Over-matching is the safe direction for a checker, but this suite's stated rule is that a
+    scanner should rather miss than cry wolf: a tool that cries wolf gets ignored, and a tool
+    that is ignored may as well not run.
+
+    `|` IS NOT AN IDENTIFIER CHARACTER HERE, and the first version of this helper said it was.
+    Pact uses `|` as a SEGMENT SEPARATOR inside qualified names -- `ATS|HOT-RBT|C_Repurpose` --
+    so treating it as part of the identifier makes the left boundary reject a genuine mention:
+    every standalone `C_Repurpose` in the REPL corpus is preceded by `|`. That mistake turned
+    `_docclaims.py` from 1 unverified doc claim to 25, all 24 of them false, and it would have
+    been reported as a find. `.` and `:` behave the same way and are excluded for the same reason.
+    """
+    return re.compile(r'(?<![A-Za-z0-9_-])' + re.escape(name) + r'(?![A-Za-z0-9_-])')
+
 def strip_comments(src):
     """Remove `;` comments, honouring string literals ACROSS newlines."""
     out, i, n, in_str, esc = [], 0, len(src), False, False
@@ -113,7 +141,7 @@ def reader_kinds(files, with_ambiguous=False):
         return re.findall(r'([A-Za-z][A-Za-z0-9|_-]*)\s*:', m.group(1)) if m else []
 
     def mentions_any(text, names):
-        return any(re.search(r'\b' + re.escape(n) + r'\b', text) for n in names)
+        return any(ident_re(n).search(text) for n in names)
 
     def raises_for_subject(b):
         """A bare `read` whose KEY derives from a parameter can abort for a caller's input; one

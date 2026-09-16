@@ -2329,6 +2329,14 @@
                 )
                 "Invalid or unavailable score slot index for pool"
             )
+            ;;PRODUCED-TRIAGED (_eagerlet --produced, 2026-09-16): this message claims EXISTENCE, and a
+            ;;hard read of the same subject raises before it can say so. Not actionable in isolation --
+            ;;it is one of SEVEN AQP guards sharing one root cause and one blocker: the readers are
+            ;;shared with the INFO_ previews, and `Stage_02/[6.5]_AQP-INFO.repl` is DELIBERATELY
+            ;;fixture-free (it passes "SCR-x"/"DPNF-x" to all 83 AQP readers because AQP prices are
+            ;;argument-independent) and PINS those aborts. Defaulting a shared reader turns a pinned
+            ;;expect-failure red. Full reasoning at 02_SCORE.pact's SCR|XI>X_ISSUE-NF-SCORE-DEFINITION
+            ;;and DEFECT-LEDGER 7.3, which records the same blocker for RT-K-007's preview half.
             (enforce
                 (fold (and) true
                     [

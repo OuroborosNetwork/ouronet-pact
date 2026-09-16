@@ -35,7 +35,7 @@ ORBR|C_WithdrawFees, the three VST|C_Create*Link, and ATS|C_VestedCoil.
 """
 import argparse, glob, os, re, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from _pactlex import strip_comments
+from _pactlex import strip_comments, ident_re
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REPO = os.path.dirname(ROOT)
@@ -120,7 +120,12 @@ def main():
             # now tested, so they are filtered out. It was reporting the tool healthy-or-broken
             # based on test coverage, which is the opposite of what it is for.
             classified.setdefault(tier, set()).add(name)
-            mentioned = re.search(r'\b' + re.escape(name.split('|')[-1]) + r'\b', repl) is not None
+            # identifier-aware boundary (see _pactlex.ident_re): with `\b`, a hyphenated name is a
+            # PREFIX match against every longer name containing it, so a function would be counted
+            # as "mentioned in the REPL corpus" because a DIFFERENT, longer function is. That
+            # direction under-reports unverified doc claims, which is the wrong way for this tool
+            # to be wrong.
+            mentioned = ident_re(name.split('|')[-1]).search(repl) is not None
             if mentioned and not a.all:
                 continue
             tiers[tier].append((os.path.relpath(f, REPO),

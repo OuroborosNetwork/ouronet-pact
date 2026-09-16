@@ -36,7 +36,7 @@ Sites already annotated `;;UNREACHABLE` at source are listed separately: they ar
 """
 import re, glob, os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from _pactlex import strip_comments, balanced, split_top, reader_kinds, UR_CALL
+from _pactlex import strip_comments, balanced, split_top, reader_kinds, UR_CALL, ident_re
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 files = [f for f in sorted(glob.glob(f"{ROOT}/1_SOVEREIGN/**/*.pact", recursive=True)
@@ -71,11 +71,42 @@ EXISTENCE = re.compile(r'"[^"]*\b('
 WIDE = '--wide' in sys.argv
 PRODUCED = '--produced' in sys.argv
 
+def enforce_span(body, start):
+    """The text of ONE `enforce` form -- its own balanced parens, and nothing else.
+
+    Two wrong answers were tried first, and each was wrong in a different direction:
+
+    1] A FIXED 300-CHARACTER WINDOW bleeds into the NEXT guard, and that produced a compound
+       false positive that survived hand-triage. `18_SWPLC.pact` has two adjacent enforces:
+           (enforce iz-asymmetric "... when asymtric liquidity exists")
+           (enforce iz-frozen     "Frozen LP Functionality is not enabled on Swpair {}")
+       Scanning from the FIRST, the window reached the second, so the tool took its VARIABLE
+       (`iz-frozen`) from one guard and its EXISTENCE signal (`exists`, in a sentence about
+       liquidity rather than about a row) from another, then reported a defect at a third place.
+       A human triaged the guard the tool NAMED, not the one it had matched.
+       The same cap also TRUNCATES: an enforce whose message sits past 300 characters loses its
+       message entirely, so the existence test silently cannot fire. Six real candidates in the
+       AQP family were invisible for exactly that reason.
+
+    2] RUNNING TO THE NEXT `(enforce` fixes the truncation but not the bleed -- the span then
+       swallows whatever ordinary code sits between two guards.
+
+    The bound that is neither too short nor too long is the form's OWN balanced parens.
+    """
+    end = balanced(body, start)
+    return body[start:end + 1] if end > start else body[start:]
+
 total_lets, flagged, known = 0, [], []
 for f in files:
     raw = open(f, encoding='utf8', errors='ignore').read()
+    # PRODUCED-TRIAGED is the third marker, added 2026-09-16 with --produced's first full triage.
+    # UNREACHABLE and CANNOT PROTECT both ASSERT something strong about the guard. The residue of
+    # a --produced sweep is neither: those guards ARE reachable and DO protect the rows that exist
+    # -- they simply answer a different question from the one this mode asks. Annotating them with
+    # either existing marker would write down something untrue to silence a scanner, so they get
+    # their own, which claims only what was actually done: examined, decision recorded at the site.
     annotated_lines = {i + 1 for i, ln in enumerate(raw.split('\n'))
-                       if re.match(r'\s*;+\s*(UNREACHABLE|CANNOT PROTECT)\b', ln)}
+                       if re.match(r'\s*;+\s*(UNREACHABLE|CANNOT PROTECT|PRODUCED-TRIAGED)\b', ln)}
     src = strip_comments(raw)
     for m in re.finditer(r'\(let\*?\s*\(', src):
         grp_open = src.index('(', m.end() - 1)
@@ -114,8 +145,8 @@ for f in files:
                 if not nm: continue
                 var = nm.group(1).split(':')[0]
                 for g in re.finditer(r'\(enforce(?:-one)?\s', body):
-                    seg = body[g.start():g.start() + 300]
-                    if not re.search(r'\b' + re.escape(var) + r'\b', seg):
+                    seg = enforce_span(body, g.start())
+                    if not ident_re(var).search(seg):
                         continue
                     # NARROWING, and the first attempt needed it. "A binding is hard-read and the
                     # body enforces on it" is not a defect signature -- it is how nearly every guard
@@ -141,13 +172,12 @@ for f in files:
             mb = re.match(r'\(\s*[A-Za-z][A-Za-z0-9|_-]*(?::[^\s]+)?\s+', b)
             value = b[mb.end():] if mb else b
             for v in bound:
-                if not re.search(r'\b' + re.escape(v) + r'\b', value):
+                if not ident_re(v).search(value):
                     continue
                 # is there a guard in the BODY testing that same var for BAR?
                 if WIDE:
                     gmatches = [m2 for m2 in re.finditer(r'\(enforce(?:-one)?\s', body)
-                                if re.search(r'\b' + re.escape(v) + r'\b',
-                                             body[m2.start():m2.start() + 300])]
+                                if ident_re(v).search(enforce_span(body, m2.start()))]
                 else:
                     gmatches = [g for g in GUARD.finditer(body) if g.group(1) == v]
                 for g in gmatches:

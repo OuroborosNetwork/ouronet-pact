@@ -802,6 +802,14 @@
                 (max-input-nonce:integer (if (> l1 0) (ref-U|INT::UEV_MaxInteger nonces) 0))
                 (nonces-used:integer (ref-DPDC::UR_NoncesUsed dpsf-id true))
             )
+            ;;PRODUCED-TRIAGED (_eagerlet --produced, 2026-09-16): this message claims EXISTENCE, and a
+            ;;hard read of the same subject raises before it can say so. Not actionable in isolation --
+            ;;it is one of SEVEN AQP guards sharing one root cause and one blocker: the readers are
+            ;;shared with the INFO_ previews, and `Stage_02/[6.5]_AQP-INFO.repl` is DELIBERATELY
+            ;;fixture-free (it passes "SCR-x"/"DPNF-x" to all 83 AQP readers because AQP prices are
+            ;;argument-independent) and PINS those aborts. Defaulting a shared reader turns a pinned
+            ;;expect-failure red. Full reasoning at 02_SCORE.pact's SCR|XI>X_ISSUE-NF-SCORE-DEFINITION
+            ;;and DEFECT-LEDGER 7.3, which records the same blocker for RT-K-007's preview half.
             (enforce
                 (fold (and) true
                     [
@@ -881,6 +889,24 @@
             ;;caller is rejected. Kept as a data-integrity assertion against a corrupt write
             ;;(same disposition as DPDC-S::UEV_SetClass's (= set-class sc)); (= score-class 4)
             ;;is the conjunct that actually rejects callers.
+            ;;EXAMINED under `_eagerlet --produced`, 2026-09-16. This message DOES claim existence
+            ;;("score must exist"), which is the signature the mode looks for -- but it is not
+            ;;actionable here, for two measured reasons:
+            ;;  1] THIS IS NOT THE FIRST RAISER. A caller never reaches this line with a missing
+            ;;     score: UEV_NonFungibleScoreDefinition runs first and opens with
+            ;;     (UR_SCR|ScorePrecision score-id), a bare read. Defaulting the reader beneath THIS
+            ;;     guard would change nothing any caller sees.
+            ;;  2] THE READER IS SHARED WITH THE PREVIEW, AND THE PREVIEW'S ABORT IS PINNED. Both
+            ;;     halves reach UR_SCR|ScoreOwnerKonto. `Stage_02/[6.5]_AQP-INFO.repl` pins the
+            ;;     preview aborting on an unknown score as a FINDING, and that suite is DELIBERATELY
+            ;;     fixture-free -- it passes "SCR-x"/"DPNF-x" to all 83 AQP readers on the principle
+            ;;     that AQP prices are argument-independent. Defaulting the shared reader turns that
+            ;;     pinned expect-failure red. Same blocker DEFECT-LEDGER 7.3 records for RT-K-007's
+            ;;     preview half, and the same real design question sits inside it.
+            ;;Unlike RT-K-007 there is also no purpose-built guard being silenced: SCORE has no
+            ;;existence validator at all, and "must exist" is one conjunct of a compound message
+            ;;whose other half is the tautology documented immediately below.
+            ;;PRODUCED-TRIAGED: examined, not actionable -- reasons immediately above.
             (enforce
                 (and (= score-row-id score-id) (= score-class 4))
                 "Invalid score/dpnf: score must exist as DPNF (class 4) with matching score-id"
@@ -922,6 +948,14 @@
                 (boost-row-sid:string (UR_SCR|ScoreScoreId boost-score-id))
             )
             ;; M4 #13: re-settable only while the score is EMPTY (nzs-count = 0). One-time slot check dropped.
+            ;;PRODUCED-TRIAGED (_eagerlet --produced, 2026-09-16): this message claims EXISTENCE, and a
+            ;;hard read of the same subject raises before it can say so. Not actionable in isolation --
+            ;;it is one of SEVEN AQP guards sharing one root cause and one blocker: the readers are
+            ;;shared with the INFO_ previews, and `Stage_02/[6.5]_AQP-INFO.repl` is DELIBERATELY
+            ;;fixture-free (it passes "SCR-x"/"DPNF-x" to all 83 AQP readers because AQP prices are
+            ;;argument-independent) and PINS those aborts. Defaulting a shared reader turns a pinned
+            ;;expect-failure red. Full reasoning at 02_SCORE.pact's SCR|XI>X_ISSUE-NF-SCORE-DEFINITION
+            ;;and DEFECT-LEDGER 7.3, which records the same blocker for RT-K-007's preview half.
             (enforce
                 (fold (and) true
                     [
@@ -959,6 +993,14 @@
                 (class-g:integer (UR_SCR|ScoreClass golden-score-id))
                 (cat:string (URC_TripletCategoryForClass class-b))
             )
+            ;;PRODUCED-TRIAGED (_eagerlet --produced, 2026-09-16): this message claims EXISTENCE, and a
+            ;;hard read of the same subject raises before it can say so. Not actionable in isolation --
+            ;;it is one of SEVEN AQP guards sharing one root cause and one blocker: the readers are
+            ;;shared with the INFO_ previews, and `Stage_02/[6.5]_AQP-INFO.repl` is DELIBERATELY
+            ;;fixture-free (it passes "SCR-x"/"DPNF-x" to all 83 AQP readers because AQP prices are
+            ;;argument-independent) and PINS those aborts. Defaulting a shared reader turns a pinned
+            ;;expect-failure red. Full reasoning at 02_SCORE.pact's SCR|XI>X_ISSUE-NF-SCORE-DEFINITION
+            ;;and DEFECT-LEDGER 7.3, which records the same blocker for RT-K-007's preview half.
             (enforce
                 (fold (and) true
                     [

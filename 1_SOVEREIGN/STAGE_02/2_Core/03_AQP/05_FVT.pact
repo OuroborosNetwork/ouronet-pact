@@ -1840,6 +1840,12 @@
                 (owner-konto:string (ref-RPS::UR_FVT|OwnerKonto fvt-id))
                 (can-upgrade:bool (UR_FVT|CanUpgrade fvt-id))
             )
+            ;;PRODUCED-TRIAGED (_eagerlet --produced, 2026-09-16): <can-upgrade> comes from a hard
+            ;;read, so for an FVT that does not exist the raw table error fires before this line.
+            ;;Left as is: this is a STATE claim about an FVT that exists. Telling a caller who named
+            ;;a non-existent FVT that it "requires can-upgrade true" asserts the entity is real and
+            ;;merely mis-configured, which is worse than saying the row was not found. Same
+            ;;disposition as SWPLC's UEV_AddChilledLiquidity.
             (enforce can-upgrade "FVT mosaic update requires can-upgrade true")
             (enforce
                 (= (ref-RPS::UR_FVT|MemberLinkCount fvt-id) 0)
@@ -1894,6 +1900,14 @@
                         (or (= mode CT_MEMBERSHIP_MODE_BAR) (= mode CT_MEMBERSHIP_MODE_SCORE))
                     ))
                 "Non-mosaic FVT locked to score membership only")
+            ;;PRODUCED-TRIAGED (_eagerlet --produced, 2026-09-16): this message claims EXISTENCE, and a
+            ;;hard read of the same subject raises before it can say so. Not actionable in isolation --
+            ;;it is one of SEVEN AQP guards sharing one root cause and one blocker: the readers are
+            ;;shared with the INFO_ previews, and `Stage_02/[6.5]_AQP-INFO.repl` is DELIBERATELY
+            ;;fixture-free (it passes "SCR-x"/"DPNF-x" to all 83 AQP readers because AQP prices are
+            ;;argument-independent) and PINS those aborts. Defaulting a shared reader turns a pinned
+            ;;expect-failure red. Full reasoning at 02_SCORE.pact's SCR|XI>X_ISSUE-NF-SCORE-DEFINITION
+            ;;and DEFECT-LEDGER 7.3, which records the same blocker for RT-K-007's preview half.
             (enforce
                 (fold (and) true
                     [(not (ref-RPS::URC_FvtScoreEntityLinkRowExists fvt-id score-id))
@@ -1973,6 +1987,14 @@
                              (and (= mode CT_MEMBERSHIP_MODE_STANDARD_TRIPLET) (not is-true-triplet))])
                     ))
                 "Non-mosaic FVT membership mode mismatch for triplet admission")
+            ;;PRODUCED-TRIAGED (_eagerlet --produced, 2026-09-16): this message claims EXISTENCE, and a
+            ;;hard read of the same subject raises before it can say so. Not actionable in isolation --
+            ;;it is one of SEVEN AQP guards sharing one root cause and one blocker: the readers are
+            ;;shared with the INFO_ previews, and `Stage_02/[6.5]_AQP-INFO.repl` is DELIBERATELY
+            ;;fixture-free (it passes "SCR-x"/"DPNF-x" to all 83 AQP readers because AQP prices are
+            ;;argument-independent) and PINS those aborts. Defaulting a shared reader turns a pinned
+            ;;expect-failure red. Full reasoning at 02_SCORE.pact's SCR|XI>X_ISSUE-NF-SCORE-DEFINITION
+            ;;and DEFECT-LEDGER 7.3, which records the same blocker for RT-K-007's preview half.
             (enforce
                 (fold (and) true
                     [(= silver-owner fvt-owner)

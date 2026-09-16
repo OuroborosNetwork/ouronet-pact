@@ -35,7 +35,7 @@ import re, glob, os, sys
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from _pactlex import strip_comments, balanced, split_top, reader_kinds, UR_CALL as READER
+from _pactlex import strip_comments, balanced, split_top, reader_kinds, UR_CALL as READER, ident_re
 
 files = [f for f in sorted(glob.glob(f"{ROOT}/1_SOVEREIGN/**/*.pact", recursive=True)
                            + glob.glob(f"{ROOT}/2_CITIZEN/**/*.pact", recursive=True))
@@ -70,7 +70,7 @@ for f in files:
             measured = {lm.group(1) for lm in
                         re.finditer(r'\(length\s+([A-Za-z][A-Za-z0-9|_-]*)\)', c)}
             for alias, lst in LEN_ALIAS.items():
-                if re.search(r'\b' + re.escape(alias) + r'\b', c):
+                if ident_re(alias).search(c):
                     measured.add(lst)
             for lvar in measured:
                 for later in conjuncts[idx+1:]:
@@ -88,7 +88,7 @@ for f in files:
                 rd = READER.search(later)
                 if rd and rd.group(1) not in HARD:
                     soft_skipped += 1; continue
-                if rd and re.search(r'\b' + re.escape(var) + r'\b', later):
+                if rd and ident_re(var).search(later):
                     hits.append((os.path.relpath(f, ROOT), src[:m.start()].count('\n') + 1,
                                  var, rd.group(1), later.strip()[:80]))
                     break

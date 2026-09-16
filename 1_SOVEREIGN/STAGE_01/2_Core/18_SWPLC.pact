@@ -924,6 +924,14 @@
                 (iz-asymmetric:bool (at "iz-asymmetric" (at "sorted-lq-type" ld)))
             )
             (enforce iz-asymmetric "Chilled Liquidity can only be added when asymtric liquidity exists")
+            ;;PRODUCED-TRIAGED (_eagerlet --produced, 2026-09-16): <iz-frozen> comes from a hard
+            ;;read, so for a swpair that does not exist the raw table error fires before this line.
+            ;;Left as is, deliberately. This message makes a STATE claim about a pool that exists;
+            ;;for a pool that does NOT exist, "Frozen LP Functionality is not enabled on Swpair X"
+            ;;is a MISLEADING answer -- it implies the pair is real and merely unconfigured. The raw
+            ;;"no value found" is the lesser evil, and defaulting the reader would manufacture
+            ;;exactly the wrong-diagnosis problem RT-K-004 found in DPDC. Same disposition as
+            ;;UEV_LockState / UEV_EliteState. The preview half was handled by RT-K-005.
             (enforce iz-frozen (format "Frozen LP Functionality is not enabled on Swpair {}" [swpair]))
         )
     )
