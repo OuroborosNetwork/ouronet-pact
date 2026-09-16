@@ -2261,8 +2261,9 @@ After all three, it reproduces the hand result exactly and clears `DEFINE-VAULT`
 | before 2026-09-16 | **19** | **93** |
 | + the three `[6.2.10]` latched-flag witnesses | 22 | 90 |
 | + `RT-D-003` / `RT-D-004` (the transfer doors) | 24 | 88 |
-| + the two `[6.2.10]` row-existence witnesses | **26** | **86** |
-| …of the 38 whose gate sits after a business `enforce` | 11 → **17** | 27 → **21** |
+| + the two `[6.2.10]` row-existence witnesses | 26 | 86 |
+| + the two SCORE boost-link witnesses | **28** | **84** |
+| …of the 38 whose gate sits after a business `enforce` | 11 → **19** | 27 → **19** |
 
 Re-run it with `python3 REPL/tools/_ownerobs.py`; the rows above are checkpoints on one measurement,
 not four separate claims.

@@ -256,7 +256,16 @@
         (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
         (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+        (ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)
         (ouro-id:string "OURO-98c486052a51")
+        (boost-score-id:string (ref-U|DALOS::UDC_Makeid "TfStakeScore"))
+        ;;An ACTIVE boost class, SELECTED rather than named. There is no C_IssueBoostClass -- classes
+        ;;appear as a side effect of anchor issuance with acnoi=true -- so any literal id here would
+        ;;be a guess about which anchor ran first, and would silently start testing the
+        ;;"BoostClass must be active" enforce instead of the owner gate the day that order changed.
+        (active-bcs:[string]
+            (filter (lambda (b:string) (ref-ANK::UR_BC|Active b)) (ref-ANK::URH_BC|AllBoostClassIds))
+        )
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (anchor-id:string (ref-U|DALOS::UDC_Makeid "AurynRain"))
         (score-id:string (ref-U|DALOS::UDC_Makeid "ResumeVacScore"))
@@ -352,6 +361,29 @@
                 "Keyset failure (keys-all): [PK_Ancie...]"
                 (ref-TS02-C3::AQP-FVT|C_ToggleScoreEntityLink foreign fvt-id
                     (ref-RPS::UR_FVT-SEL|ScoreEntityType fvt-id score-id) score-id false))
+            ;;--- the two SCORE boost-link owner gates. Both sit behind a multi-conjunct enforce, so
+            ;;every conjunct is pinned to its live value first: a non-owner test that tripped the
+            ;;fold instead would report a refusal that has nothing to do with ownership.
+            (expect
+                (format "<<TX-AQP-NEG-OWNER2>> TfStakeScore exists, so the boost-link fold cannot fail on it" [])
+                boost-score-id (ref-SCR::UR_SCR|ScoreScoreId boost-score-id))
+            (expect
+                (format "<<TX-AQP-NEG-OWNER2>> ResumeVacScore has no stakers, so the nzs-count conjunct passes" [])
+                0 (ref-SCR::UR_SCR|ScoreNzsCount score-id))
+            (expect-failure
+                (format "<<TX-AQP-NEG-OWNER2>> non-owner AQP-SCR|C_CreateScoreBoostLink rejected (score-owner gate)" [])
+                "Keyset failure (keys-all): [PK_Ancie...]"
+                (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostLink foreign score-id boost-score-id))
+            ;;The class variant adds one more guard ahead of ownership -- the class must be ACTIVE --
+            ;;so the id is taken from the live set rather than named, and the set is proved non-empty
+            ;;first so `(at 0 ...)` cannot be what fails.
+            (expect
+                (format "<<TX-AQP-NEG-OWNER2>> at least one ACTIVE BoostClass exists to aim at (got {})" [(length active-bcs)])
+                true (> (length active-bcs) 0))
+            (expect-failure
+                (format "<<TX-AQP-NEG-OWNER2>> non-owner AQP-SCR|C_CreateScoreBoostClassLink rejected (score-owner gate)" [])
+                "Keyset failure (keys-all): [PK_Ancie...]"
+                (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostClassLink foreign score-id (at 0 active-bcs)))
         ]
     )
 )
