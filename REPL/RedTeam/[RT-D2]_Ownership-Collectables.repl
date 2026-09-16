@@ -204,3 +204,82 @@
 (print "")
 (print "===^^^===")
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RT-K-007 - a third guard that existed and could not run")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+;;==== RT-K-007 · 01 · AQP anchors: the validator beneath a bare read ====
+(print "--- [RT-K-007 · 01 · AQP anchors: the validator beneath a bare read] ---")
+;;<<RT-K-007>> FAMILY: K | STATUS: FIXED
+;;HYPOTHESIS: seventh surface -- the AQP readers, the most derived cost logic in the codebase.
+;;METHOD:     three ops driven at an id that does not exist (RevokeAnchor, RotateScoreOwnership,
+;;            ControlScore). The last two were already in parity. RevokeAnchor was not, and chasing
+;;            it reached something better than a preview defect.
+;;RESULT:     CONFIRMED, then FIXED on the exec side, and the preview half is RECORDED with its
+;;            reason. The exec's refusal for a non-existent anchor moved from
+;;            `No value found in table ouronet-ns.AQP-ANK_ANK|T|Anchor for key: <id>` to
+;;            `Anchor <id> must be alive for operation` -- the sentence UEV_LiveAnchor was written
+;;            to say and could never reach. Two of the three ops swept were already in parity.
+;;
+;;`UEV_LiveAnchor` EXISTS AND IS WRITTEN FOR EXACTLY THIS INPUT:
+;;
+;;    (enforce iz-anchor-active (format "Anchor {} must be alive for operation" [anchor-id]))
+;;
+;;It could not deliver that sentence. `iz-anchor-active` comes from `UR_ANK|State`, which was a bare
+;;`read` -- so for an anchor that does not exist the raw
+;;`No value found in table ouronet-ns.AQP-ANK_ANK|T|Anchor for key: <id>` fired one line earlier,
+;;every time. The validator was reachable for anchors that exist and unreachable for the only input
+;;that needed it.
+;;
+;;THIRD INSTANCE OF ONE SHAPE, and the first where the obstruction was a READER rather than an eager
+;;`let`: C_Recover (2026-09-12) and C_HotRecovery (RT-H-003) had their capability below the bindings;
+;;C_DeployAccount (RT-K-003) had its check below the bindings; here the check is in the right place
+;;and the value it reads raises before it can be tested. Same lesson from a new direction: A GUARD
+;;BEING PRESENT IS NOT A GUARD BEING REACHABLE, and `grep` cannot tell the two apart.
+;;
+;;Fixed by defaulting `UR_ANK|State` -- an anchor that does not exist is not active, which is what
+;;both of its callers mean by the question (the other, an anchor filter, already screens BAR and
+;;wants false for anything not alive). Same shape as DPTF's `UEV_id`, which defaults <supply> to
+;;-1.0 for exactly this reason.
+;;
+;;THE PREVIEW HALF IS RECORDED, NOT FIXED, and DEFECT-LEDGER 7.3 carries the reason:
+;;`INFO_AQP-ANK|RevokeAnchor` still quotes a revoke of an anchor that never existed, post-text
+;;"Anchor <id> revoked." Guarding it is a two-line change, and it breaks
+;;`[6.5]_AQP-INFO.repl` -- a DELIBERATELY FIXTURE-FREE cost-shape suite that passes arbitrary ids
+;;("ANK-x", "DPTF-x", "BC-x") to all 83 AQP readers on the sound principle that AQP prices are
+;;ARGUMENT-INDEPENDENT. Making AQP previews validate ids would require anchor, score and boost-class
+;;fixtures for every one of them. That is a real piece of work with a real design question inside it,
+;;and it is not something to smuggle in behind a one-line commit.
+;;
+(let
+    (
+        (bad:string "NOSUCHANK-98c486052a51")
+        (other:string "ALSONOSUCHANK-98c486052a51")
+        (r:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+    )
+    (map print
+        [
+            (expect-failure
+                "<<RT-K-007a>> RevokeAnchor refuses BY NAME, not with a raw table read"
+                "Anchor NOSUCHANK-98c486052a51 must be alive for operation"
+                (r::AQP-ANK|C_RevokeAnchor KST.ANHD bad))
+            ;;NON-VACUITY: the message must be DERIVED FROM THE ARGUMENT, not a constant that any
+            ;;input would produce. A second id must appear in its own refusal.
+            (expect-failure
+                "<<RT-K-007b>> ...and the refusal names the id it was given, so it is not a constant"
+                "Anchor ALSONOSUCHANK-98c486052a51 must be alive for operation"
+                (r::AQP-ANK|C_RevokeAnchor KST.ANHD other))
+            ;;And the defaulted reader answers the question directly, rather than raising.
+            (expect
+                "<<RT-K-007c>> UR_ANK|State on a non-existent anchor is FALSE, not an exception"
+                false (ouronet-ns.AQP-ANK.UR_ANK|State bad))
+        ])
+    ""
+)
+(env-sigs [])
+(print "")
+(print "===^^^===")
+(commit-tx)

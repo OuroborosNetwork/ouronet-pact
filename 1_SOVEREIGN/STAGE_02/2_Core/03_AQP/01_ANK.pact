@@ -1053,8 +1053,21 @@
         (dec (at "ank-precision" (read ANK|T|Anchor anchor-id ["ank-precision"])))
     )
     (defun UR_ANK|State:bool (anchor-id:string)
-        @doc "Reads anchor active flag."
-        (at "ank-active" (read ANK|T|Anchor anchor-id ["ank-active"]))
+        @doc "Reads anchor active flag. DEFAULTED: an anchor that does not exist is not active, \
+            \ which is what every caller means by this question."
+        ;;This was a bare `read`, so for an anchor that does not exist it raised
+        ;;`No value found in table ouronet-ns.AQP-ANK_ANK|T|Anchor for key: <id>` -- and
+        ;;`UEV_LiveAnchor`, the validator built on it, could therefore never deliver its own
+        ;;message ("Anchor <id> must be alive for operation") for the one input that most needs it.
+        ;;Both callers are correct under the default: UEV_LiveAnchor wants false, and the anchor
+        ;;filter at ~1193 already screens BAR and wants false for anything not alive.
+        ;;Same shape as DPTF's UEV_id, which defaults <supply> to -1.0 for exactly this reason.
+        ;;Pinned by RedTeam/[RT-K]_PreviewParity.repl <<RT-K-007a/b>>.
+        (with-default-read ANK|T|Anchor anchor-id
+            { "ank-active" : false }
+            { "ank-active" := a }
+            a
+        )
     )
     (defun UR_ANK|Promile:decimal (anchor-id:string)
         @doc "Reads anchor promile value."

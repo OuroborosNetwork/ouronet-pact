@@ -1543,8 +1543,54 @@ through `DEMIPAD::URCi_Deposit` and *all* execute through `DEMIPAD|C>DEPOSIT` �
 **inline in the capability**, where no reader could share it. Extracted to
 `UEV_DepositDollarAmount`: **one definition, four sales**, demonstrated on StoicPay as well as Spark.
 
-**Scope, honestly:** ATS, DPTF, DPOF, DPDC, SWP and the citizen launchpad — **31 of 401 previews.**
-Family K has now found a defect in **all six surfaces it has touched**, which is an argument for
+### RT-K-007 — AQP, and a third guard that existed and could not run
+
+Seventh surface. Three ops at an id that does not exist; two already in parity. Chasing the third
+reached something better than a preview defect.
+
+`UEV_LiveAnchor` is written for exactly this input —
+`(enforce iz-anchor-active (format "Anchor {} must be alive for operation" [anchor-id]))` — **and
+could not deliver that sentence.** `iz-anchor-active` comes from `UR_ANK|State`, which was a bare
+`read`, so the raw `No value found in table … ANK|T|Anchor for key: <id>` fired one line earlier,
+every time. **The validator was reachable for anchors that exist and unreachable for the only input
+that needed it.**
+
+> **Third instance of one shape, and the first where the obstruction was a READER rather than an
+> eager `let`.** `C_Recover` and `C_HotRecovery` had their capability below the bindings;
+> `C_DeployAccount` had its check below the bindings; here the check sits in exactly the right place
+> and *the value it reads raises before it can be tested*. **A guard being present is not a guard
+> being reachable, and `grep` cannot tell the two apart.**
+
+Fixed by defaulting `UR_ANK|State` — an anchor that does not exist is not active, which is what both
+callers mean. Non-vacuity pins that the refusal is **derived from the argument**: a second id must
+appear in its own message.
+
+**The preview half is recorded, not fixed**, and the reason is in the ledger: guarding
+`INFO_AQP-ANK|RevokeAnchor` breaks `[6.5]_AQP-INFO.repl`, a *deliberately fixture-free* cost-shape
+suite that passes arbitrary ids to all **83** AQP readers on the sound principle that AQP prices are
+**argument-independent**. That is real work with a real design question inside it, not something to
+smuggle in behind a one-line commit.
+
+### What the fix surfaced in the test suite, and two mistakes of mine
+
+Changing that message turned `[6.2.10]_AQP-NEGATIVES.repl` red, and the assertion it broke **was
+vacuous with respect to the gate it named**: labelled *"anchor-owner gate"* while pinning the
+row-not-found error, because its id is a `UDC_Makeid` that can never match. Delete the owner gate and
+it would still have passed. It now pins the **liveness** gate, which is what that input tests.
+
+Two things I got wrong, recorded because the record is the point:
+
+- I tried to write the owner-gate half by revoking `(at 0 (URH_ANK|AllAnchorIds))` as a foreign
+  account. It **succeeded** — and that is **not** a bypass: `CAP_Owner` resolves anchor ownership
+  through the *anchored asset*, accepting its **owner or creator** for a DPSF/DPNF, so the signer
+  legitimately controlled it. The assertion also **mutated state inside a negatives suite**. Reverted
+  and recorded as known-open with what a correct version requires.
+- Removing a now-unused binding, I used a replace with **no count** and deleted the same line from
+  two other transactions that legitimately used it. The gate caught it as `BROKEN modules/AQP.repl`
+  with zero assertion failures — a load error, not a wrong answer.
+
+**Scope, honestly:** ATS, DPTF, DPOF, DPDC, SWP, citizen launchpad and AQP — **34 of 401 previews.**
+Family K has now found a defect in **all seven surfaces it has touched**, which is an argument for
 continuing it rather than a claim of coverage. The method is cheap and mechanical; the
 hard part is finding the separating input. A pair with a zero index and no Hot-RBT made three
 divergences visible at once.
@@ -1566,8 +1612,8 @@ divergences visible at once.
 | H — Input domain | 3 |  | 3 |  |
 | I — Gas station payable surface | 1 |  | 1 |  |
 | J — Ledger conservation | 3 |  | 1 | 2 |
-| K — Preview/exec divergence | 6 |  | 6 |  |
-| **total** | **26** | **0** | **16** | **10** |
+| K — Preview/exec divergence | 7 |  | 7 |  |
+| **total** | **27** | **0** | **17** | **10** |
 <!-- REGISTER:END -->
 
 **Seven of fourteen attacks found a defect, and all seven are fixed and measured.** The table above

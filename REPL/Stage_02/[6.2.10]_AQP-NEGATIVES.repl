@@ -243,10 +243,32 @@
     )
     (map print
         [
+            ;;THIS ASSERTION USED TO PROVE NOTHING ABOUT THE GATE IT NAMED, and RT-K-007 surfaced it.
+            ;;It was labelled "anchor-owner gate" while pinning
+            ;;`No value found in table ouronet-ns.AQP-ANK_ANK|T|Anchor for key:` -- because
+            ;;<anchor-id> is `UDC_Makeid "AurynRain"`, derived from THIS block's hash, so no such
+            ;;anchor has ever existed. The refusal came from a missing ROW, not from an owner check:
+            ;;delete the owner gate entirely and the line would still have passed. (RT-C-001's
+            ;;lesson: a refusal by the wrong guard is indistinguishable from the right one unless the
+            ;;message is pinned -- and pinning the WRONG message is worse than pinning none.)
+            ;;
+            ;;Split into the two things it was conflating. First: the id that does not exist now
+            ;;refuses with the LIVENESS message, which is what that input actually tests -- and which
+            ;;`UEV_LiveAnchor` could not deliver until `UR_ANK|State` stopped being a bare `read`.
             (expect-failure
-                (format "<<TX-AQP-NEG-OWNER2>> non-owner AQP-ANK|C_RevokeAnchor rejected (anchor-owner gate)" [])
-                "No value found in table ouronet-ns.AQP-ANK_ANK|T|Anchor for key:"
+                (format "<<TX-AQP-NEG-OWNER2>> AQP-ANK|C_RevokeAnchor on a NON-EXISTENT anchor: liveness gate" [])
+                "must be alive for operation"
                 (ref-TS02-C3::AQP-ANK|C_RevokeAnchor foreign anchor-id))
+            ;;THE OWNER-GATE HALF IS NOT WRITTEN HERE, and the attempt is worth recording. Taking
+            ;;`(at 0 (URH_ANK|AllAnchorIds))` and revoking it as <foreign> SUCCEEDED --
+            ;;"Successfully revoked Anchor NfSyncAnchor-98c486052a51." -- which is NOT a bypass:
+            ;;`CAP_Owner` resolves anchor ownership through the ANCHORED ASSET, and for a DPSF/DPNF
+            ;;it accepts the asset's OWNER **or** its CREATOR, so EMMA legitimately controlled that
+            ;;one. A correct owner-gate test must first establish an anchor whose anchored asset the
+            ;;signer neither owns nor created -- and must not do what that attempt did, which was to
+            ;;MUTATE STATE inside a negatives suite by actually revoking an anchor.
+            ;;Recorded as known-open in DEFECT-LEDGER 7.3 rather than left as a passing line that
+            ;;proves the wrong thing.
             (expect-failure
                 (format "<<TX-AQP-NEG-OWNER2>> non-owner AQP-SCR|C_EnableDebBoost rejected (score-owner gate)" [])
                 "Keyset failure (keys-all): [PK_Ancie...]"
