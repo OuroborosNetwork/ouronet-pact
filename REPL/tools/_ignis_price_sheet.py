@@ -21,6 +21,9 @@ Shares the pricing brain of _ignis_deter_worksheet.py (OWNER_DECISIONS + suggest
 Option-A component model), so the two documents cannot drift.
 """
 import re, glob, importlib.util
+import os as _os, sys as _sys
+_sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+from _pactlex import strip_comments
 from collections import defaultdict
 
 import os as _os
@@ -162,7 +165,14 @@ def billing_text(src, name, depth=3):
 _OC_BIND = re.compile(r'\(([A-Za-z0-9|_-]+)\s*:\s*object\{IgnisCollectorV2\.OutputCumulator\}')
 def _discards_cumulators(body):
     """True when the wrapper binds OutputCumulators and hands none of them to a collector."""
-    code = re.sub(r'"(?:[^"\\]|\\[\s\S])*"', ' ', body)
+    # COMMENTS TOO, not just strings. This blanked string literals and left `;;` comments intact
+    # until 2026-09-16, and `C_Collect` appears 26 times in comments across the tree (5.1% inflation
+    # over its 508 real uses) -- this codebase explains billing in prose constantly. A commented
+    # `C_Collect ... ico` makes the check below conclude the cumulator IS collected, so the row is
+    # not flagged, and the thing it would have flagged is an operation that builds a cumulator and
+    # never bills it. Under-reporting an unbilled op is the worst direction for this particular
+    # check to be wrong in.
+    code = strip_comments(re.sub(r'"(?:[^"\\]|\\[\s\S])*"', ' ', body))
     names = set(_OC_BIND.findall(code))
     if not names:
         return False

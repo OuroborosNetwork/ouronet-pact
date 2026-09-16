@@ -1918,6 +1918,63 @@ idiom and appears in most members of the codebase.
 > until the mutation itself is verified to be in scope. **Check that the thing you broke is a thing
 > the tool was ever looking at.**
 
+## 7.2d Scanners that could not tell code from commentary *(2026-09-16)*
+
+A survey after §7.2b: **18 of the Pact-analysing tools have no comment handling at all** — they match
+their patterns against raw source. This codebase explains itself in prose that QUOTES CODE, so the
+question is not whether that is sloppy but how much of it the scanners can see. Measured across
+93 modules:
+
+| token | real uses | exists ONLY in comments | inflation |
+|---|---:|---:|---:|
+| `C_Collect` | 508 | **26** | 5.1% |
+| `URCi_` | 1578 | **45** | 2.9% |
+| `with-default-read` | 260 | 11 | 4.2% |
+| `(read` | 461 | 7 | 1.5% |
+| `(enforce` | 875 | 6 | 0.7% |
+| `(update` / `(insert` / `(write` | 567 | 3 | 0.5% |
+
+**`_leakaudit.py` — fixed, exposure measured, effect nil.** It read raw source and re-derived its own
+paren balancer without importing `_pactlex` at all. A commented `(update` becomes "the first
+persisting write" in a function and mis-classifies every enforce after it; a commented `(enforce` is
+a phantom guard. Now stripped, window bounded by balanced parens. **Output unchanged** — the 2 known
+hits are real and the 20 comment-only writes happen not to land in functions carrying a pinned
+message after them. Recorded as latent-bug removal, not as a fixed live defect.
+
+**`_ignis_price_sheet.py` — fixed, and the bug is DEMONSTRABLE rather than latent.**
+`_discards_cumulators` blanked string literals and left `;;` comments intact. It is the check that
+would surface *an operation that builds an OutputCumulator and never bills it*. Unit-tested against
+the two bodies directly:
+
+| body | old | new |
+|---|---|---|
+| binds `ico`, never collects | `discards=True` (flagged) | `discards=True` |
+| …plus `;;NOTE: the caller does (ref-IGNIS::C_Collect patron ico)` | **`discards=False` (hidden)** | `discards=True` |
+
+One comment hides an unbilled operation. No current wrapper carries such a comment — the generated
+artefact is byte-identical — but `C_Collect` appears in 26 comments across the tree, so the trigger
+is one sentence away in a gate-enforced generator. **Under-reporting an unbilled op is the worst
+direction for that particular check to be wrong in.**
+
+**`_info_measured.py` — the cited number re-verified, and it holds.** This is the tool behind the
+claim that the owner's first rule is satisfied. It stripped comments with `l.split(";;")[0]`, the
+naive per-line form `_pactlex` was extracted to replace: it cannot see that a `;;` inside a STRING
+is not a comment, and **100 string literals in this corpus contain one** (every file header's
+Legend/Source line quotes `;;|| NEXT >`). Switched to `_pactlex.strip_comments` and re-run:
+
+    cost previews declared 410 · client-facing 401 · named 401 · MEASURED 401 · not measured 0
+
+**Byte-identical.** The affected lines are banner strings carrying no `INFO_` name and no
+`"ignis-need"`, so the truncation never touched a counted token. The headline claim survives a
+stricter instrument, which is worth more than the fix: it is now a re-verified number rather than an
+unexamined one.
+
+> The pattern across all three: **the fix changed nothing and was still worth making.** Two of the
+> three answers were right by luck rather than by construction, and the third is a live trap waiting
+> for a comment. A scanner that cannot distinguish code from commentary is not wrong yet; it is
+> wrong as soon as someone documents the thing it is looking for — which, in a codebase that
+> annotates its defects in place, is the most likely sentence anyone will write near it.
+
 ## 7.3 Known-open, recorded deliberately
 
 - **RT-F-001 is one of THREE identical ops, and only one is pinned.** *(found 2026-09-16, by asking

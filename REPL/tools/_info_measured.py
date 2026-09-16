@@ -25,6 +25,9 @@ can pass. Read the number as an upper bound on measured coverage, not a certific
     python3 REPL/_info_measured.py --gaps     # + the named-but-unmeasured and never-named lists
 """
 import re, glob, os, sys
+import os as _os2, sys as _sys2
+_sys2.path.insert(0, _os2.path.dirname(_os2.path.abspath(__file__)))
+from _pactlex import strip_comments
 
 PREVIEW_SOURCES = [
     "../1_SOVEREIGN/STAGE_01/Z_Reads/02_INFO-ONE+.pact",
@@ -85,7 +88,14 @@ def scan():
             continue
         txt = open(f, errors="ignore").read()
         for block in re.split(r'\(begin-tx', txt):
-            code = "\n".join(l.split(";;")[0] for l in block.split("\n"))
+            # PER-LINE `;;` splitting is the exact bug `_pactlex` was extracted to prevent: it
+            # cannot see that a `;;` inside a STRING is not a comment, and 100 string literals in
+            # this corpus contain one (the file headers' Legend/Source lines quote `;;|| NEXT >`).
+            # On those lines it deletes real code. Measured 2026-09-16: the result is unchanged
+            # here, because the affected lines are banner strings carrying no INFO_ name and no
+            # "ignis-need" -- but the number this tool prints is cited as the proof of the owner's
+            # first rule, so it should not rest on a strip that is known-wrong in general.
+            code = strip_comments(block)
             hits = set(NAME_RE.findall(code))
             is_cost = ('"ignis-need"' in code) or ('"stoa-need"' in code)
             for n in hits:
