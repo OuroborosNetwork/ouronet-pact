@@ -396,6 +396,13 @@
             (
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
+            ;;Collection Must Exist. Placed FIRST because the role check below reports on a
+            ;;collection it has not established: for an id that does not exist it answered
+            ;;"NFT Burn Role for <id> on Account <acct> must be set to true for exec", which is
+            ;;true and useless -- there is no collection to hold a role on. It also disagreed with
+            ;;INFO_DPNF|Burn, which died on a raw DPNF|T|Properties read at the same input.
+            ;;Pinned by RedTeam/[RT-K]_PreviewParity.repl <<RT-K-004a/b>>.
+            (ref-DPDC::UEV_id id false)
             ;;Account Ownership - via Debit Function
             ;;Correct Role
             (ref-DPDC::UEV_AccountBurnState id false account true)

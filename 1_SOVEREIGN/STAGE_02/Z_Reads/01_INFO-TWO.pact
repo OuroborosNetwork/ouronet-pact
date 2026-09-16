@@ -609,7 +609,15 @@
         (let
             (
                 (r:module{DpdcManagementV2} DPDC-MNG)
+                (d:module{DpdcV2} DPDC)
             )
+            ;;STRUCTURAL check only -- the SAME function the exec's capability calls, so the two
+            ;;refuse in one wording. Deliberately NOT the burn-ROLE check the exec also runs: a role
+            ;;is transient state that changes between quote and submission, and family K's rule
+            ;;(RT-K-002) is that previews validate what the caller cannot change, not what they can.
+            ;;Without this the quote died on a raw DPNF|T|Properties read while the op refused
+            ;;cleanly. Pinned by RedTeam/[RT-K]_PreviewParity.repl <<RT-K-004a>>.
+            (d::UEV_id id false)
             (INFO_DPDC-MNG|Simple patron (format "Operation: Burns NFT {} Nonce {}" [id nonce]) (format "NFT {} Nonce {} burned" [id nonce]) (r::URCi_BurnNFT id))
         )
     )

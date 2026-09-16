@@ -124,3 +124,83 @@
 (print "")
 (print "===^^^===")
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RT-K-004 - the collectable family: a role reported on a collection that does not exist")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] } ])
+;;==== RT-K-004 · 01 · DPDC preview vs exec at a collection that does not exist ====
+(print "--- [RT-K-004 · 01 · DPDC preview vs exec at a collection that does not exist] ---")
+;;<<RT-K-004>> FAMILY: K | STATUS: FIXED
+;;HYPOTHESIS: fourth family swept for refusal parity. Five DPDC ops, preview against exec, driven at
+;;            a collection id that does not exist.
+;;METHOD:     as RT-K-001/002/003 -- one input, both paths, compare the message.
+;;RESULT:     CONFIRMED, then FIXED -- one divergence of five, and it exposed an EXEC diagnosis bug
+;;            as well. The preview died on a raw properties read; the exec answered cleanly but
+;;            about a ROLE ON A COLLECTION IT HAD NOT ESTABLISHED EXISTS. `UEV_id` -- which DPDC
+;;            already has -- now runs FIRST in DPDC-MNG|C>BURN-NFT and is called by the preview,
+;;            so both say "DPNF ID <id> does not exist". A real collection still quotes normally.
+;;
+;;THE SWEEP: three of five in parity (DPNF/DPSF TogglePause, DPNF ToggleBurnRole -- both paths give
+;;the same raw properties-table read). One mismatch of internals, recorded not fixed: DPNF
+;;MoveCreateRole's preview names `DPNF|T|Properties` while its exec names `DPNF|T|VerumRoles` --
+;;both refuse, both rawly, and they disagree only about WHICH table they failed to read. That is the
+;;same shared-raw-wording gap recorded for DPTF|C_Transfer in DEFECT-LEDGER 7.3.
+;;
+;;AND ONE REAL DIVERGENCE, which also turned out to be an EXEC diagnosis bug:
+;;
+;;   preview  raw `No value found in table ouronet-ns.DPDC_DPNF|T|Properties for key: ...`
+;;   exec     clean, but WRONG ABOUT WHY:
+;;            "NFT Burn Role for NOSUCHCOL-98c486052a51 on Account ... must be set to true for exec"
+;;
+;;The op answered about a ROLE ON A COLLECTION IT HAD NOT ESTABLISHED EXISTS. That message is true
+;;and useless: there is no collection to hold a role on. `DPDC-MNG|C>BURN-NFT` checked the role
+;;before existence, so `UEV_id` -- which DPDC already has, and which yields
+;;"DPNF ID <id> does not exist" -- never got the chance to say the useful thing.
+;;
+;;WHY THE PREVIEW GOT ONLY THE STRUCTURAL CHECK, and not the role check its exec also runs: family
+;;K's rule from RT-K-002 is that a preview validates what the caller CANNOT change (the collection
+;;does not exist) and not what they can (a role they may be granted between quote and submission).
+;;Mirroring the role check would have bought message parity at the cost of turning 401 cost quotes
+;;into dry runs, which was decided against.
+;;
+(let
+    (
+        (bad:string "NOSUCHCOL-98c486052a51")
+        (real:string "CNF-98c486052a51")
+        (r2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+    )
+    (map print
+        [
+            (expect-failure
+                "<<RT-K-004a>> Burn · PREVIEW refuses a collection that does not exist"
+                "DPNF ID NOSUCHCOL-98c486052a51 does not exist"
+                (ouronet-ns.INFO-TWO.INFO_DPNF|Burn KST.ANHD bad KST.ANHD 1))
+            (expect-failure
+                "<<RT-K-004b>> Burn · EXEC   (same message -- and no longer a role report on nothing)"
+                "DPNF ID NOSUCHCOL-98c486052a51 does not exist"
+                (r2::DPNF|C_Burn KST.ANHD bad KST.ANHD 1))
+            ;;NON-VACUITY: the guard must not have turned the preview into one that always refuses.
+            (expect
+                (format "<<RT-K-004c>> ...and the preview still QUOTES the real collection {}" [real])
+                true
+                (> (at "ignis-need" (at "ignis"
+                      (ouronet-ns.INFO-TWO.INFO_DPNF|Burn KST.ANHD real KST.ANHD 2))) 0.0))
+            ;;THE NEGATIVE HALF, pinned as parity and not as wording.
+            (expect-failure
+                "<<RT-K-004d>> TogglePause · PREVIEW and EXEC agree (parity pinned, wording not blessed)"
+                "DPNF|T|Properties"
+                (ouronet-ns.INFO-TWO.INFO_DPNF|TogglePause KST.ANHD bad true))
+            (expect-failure
+                "<<RT-K-004d>> TogglePause · EXEC   (same failure as the preview)"
+                "DPNF|T|Properties"
+                (r2::DPNF|C_TogglePause KST.ANHD bad true))
+        ])
+    ""
+)
+(env-sigs [])
+(print "")
+(print "===^^^===")
+(commit-tx)

@@ -1644,9 +1644,10 @@ exploit-first, fixed, and pinned by an assertion that goes red if the fix is rev
 | **RT-J-001** | J | `C_ClearDispo` zeroed a negative OURO balance through a **one-sided** `DALOS::XB_UpdateBalance` with no supply update — OURO supply **8.0 below** the sum of all balances, widening by every dispo ever cleared | `<<RT-J-001c/d>>` |
 | **RT-K-001** | K | **3 of 7** ATS previews disagreed with their execs: Fuel **quoted success** (*"Succesfully fueled …"*) for an op that refuses; ColdRecovery threw a raw ledger error **printing the caller's full account**; DirectRecovery threw div-by-zero; HotRecovery refused for a different reason | `<<RT-K-001b…f>>` |
 | **RT-K-002** | K | `INFO_DPTF\|Burn` / `\|Mint` quoted *"Succesfully burned/minted 1.0 NOSUCHTOKEN-98c486052a51"* for a token that has **never existed** | `<<RT-K-002b/c>>` |
+| **RT-K-004** | K | `INFO_DPNF\|Burn` died on a raw properties read while its exec answered cleanly **about a role on a collection it had not established exists** — *"NFT Burn Role for NOSUCHCOL-… must be set to true"*, true and useless | `<<RT-K-004a/b/c>>` |
 | **RT-K-003** | K | `INFO_DPOF\|DeployAccount` quoted *"Succesfully deployed … for DPOF NOSUCHOFT-98c486052a51"*; and its exec died on a raw VerumRoles read **despite already calling `UEV_id`**, which sat in the `let` body under a binding that reads that very table | `<<RT-K-003a/b/c>>` |
 
-**Red-team total: 23 attacks across 11 families, 13 defects, all fixed and pinned.** Ten attacks were
+**Red-team total: 24 attacks across 11 families, 14 defects, all fixed and pinned.** Ten attacks were
 refused — and **seven of those by a guard other than the one the attack was about**, which is the
 programme's most durable result: *the guards in this system are present and they hold; what fails is
 the arithmetic around them and the order in which things happen.*
@@ -1677,6 +1678,13 @@ repair, because a ledger that only names a defect cannot be audited.
 - **RT-J-001** — the balance write is paired with `XBv_UpdateSupply … true`. This was the **only
   one-sided** call to `DALOS::XB_UpdateBalance` in the tree; the other four sites are the two halves
   of a transfer or DPTF's own dispatch.
+- **RT-K-004** — the divergence exposed an **exec diagnosis bug** as well. `DPDC-MNG|C>BURN-NFT`
+  checked the burn *role* before establishing the collection exists, so for a non-existent id it
+  answered *"NFT Burn Role for <id> on Account <acct> must be set to true for exec"* — true, and
+  useless, because there is no collection to hold a role on. `UEV_id` (which DPDC already has) now
+  runs first, and the preview calls the same function. The preview was given **only the structural
+  check, not the role check**: per RT-K-002, a preview validates what the caller *cannot* change,
+  not what they can.
 - **RT-K-003** — the exec's guard **already existed and could not run**. `C_DeployAccount` called
   `UEV_id` from the `let` **body**, three lines under a binding group whose second entry is
   `(create-role-account (UR_Verum4 id))` — a read of the same table. Pact evaluates every binding in
@@ -1731,5 +1739,5 @@ validation to 401 previews unilaterally:
   than a documented gap. **Severity is message quality, not correctness** — both paths already
   refuse, in the same words as each other. Wants its own pass, on the hottest op in the system,
   with its own controls.
-- Family K has swept **15 of 401** previews (ATS, DPTF, DPOF). It has now found a defect in every
+- Family K has swept **20 of 401** previews (ATS, DPTF, DPOF, DPDC). It has now found a defect in every
   family it has touched, which is the argument for continuing it rather than a claim of coverage.

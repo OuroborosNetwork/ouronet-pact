@@ -1465,9 +1465,31 @@ its author. And `[6.11]_INFO.repl` went red: it asserted the preview's *shape* w
 placeholder id `"ORTO-x"`, which only worked because the preview did not validate. Repointed at a
 real ortofungible; the line's intent is unchanged.
 
-**Scope, honestly:** ATS, DPTF and DPOF — **15 of 401 previews.** Family K has now found a defect in
-**every family it has touched**, which is an argument for continuing it rather than a claim of
-coverage. The method is cheap and mechanical; the
+### RT-K-004 — the collectables, and a role reported on a collection that does not exist
+
+Five DPDC ops. **Three in parity.** One mismatch of internals recorded not fixed — `MoveCreateRole`'s
+preview names `DPNF|T|Properties` while its exec names `DPNF|T|VerumRoles`; both refuse, both rawly,
+disagreeing only about which table they failed to read.
+
+**One real divergence, and it exposed an exec bug too:**
+
+| | |
+|---|---|
+| preview | raw `No value found in table … DPNF\|T\|Properties for key: …` |
+| exec | clean, but **wrong about why** — *"NFT Burn Role for NOSUCHCOL-… must be set to true for exec"* |
+
+The op answered about **a role on a collection it had not established exists**. That message is true
+and useless: there is no collection to hold a role on. `DPDC-MNG|C>BURN-NFT` checked the role before
+existence, so `UEV_id` — which DPDC already has, and which yields *"DPNF ID <id> does not exist"* —
+never got the chance to say the useful thing. Both sides now call it, first.
+
+> **The preview got only the structural check, deliberately.** Mirroring the exec's *role* check
+> would have bought message parity at the price of turning 401 cost quotes into dry runs — decided
+> against in RT-K-002. A preview validates what the caller **cannot** change, not what they can.
+
+**Scope, honestly:** ATS, DPTF, DPOF and DPDC — **20 of 401 previews.** Family K has now found a
+defect in **every family it has touched**, which is an argument for continuing it rather than a
+claim of coverage. The method is cheap and mechanical; the
 hard part is finding the separating input. A pair with a zero index and no Hot-RBT made three
 divergences visible at once.
 
@@ -1488,8 +1510,8 @@ divergences visible at once.
 | H — Input domain | 3 |  | 3 |  |
 | I — Gas station payable surface | 1 |  | 1 |  |
 | J — Ledger conservation | 3 |  | 1 | 2 |
-| K — Preview/exec divergence | 3 |  | 3 |  |
-| **total** | **23** | **0** | **13** | **10** |
+| K — Preview/exec divergence | 4 |  | 4 |  |
+| **total** | **24** | **0** | **14** | **10** |
 <!-- REGISTER:END -->
 
 **Seven of fourteen attacks found a defect, and all seven are fixed and measured.** The table above
