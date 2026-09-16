@@ -1873,6 +1873,42 @@ single site it found. All seven are annotated `;;PRODUCED-TRIAGED` at source; th
 
 ## 7.3 Known-open, recorded deliberately
 
+- **RT-F-001 is one of THREE identical ops, and only one is pinned.** *(found 2026-09-16, by asking
+  the same question of every `defpact` in the tree.)*
+
+  `MTX|C_AddLiquidity`, `MTX|C_AddFrozenLiquidity` and `MTX|C_AddSleepingLiquidity` are structurally
+  identical where it matters:
+
+  | | step 0 | step 1 |
+  |---|---|---|
+  | all three | `C_Collect patron (URCi_AddLiquidityInitiation)` | `(enforce (= prev-pool-state current-pool-state) "Execution Step of Adding Liquidity cannot execute on altered pool state!")` |
+
+  Same collector, same reader, same guard, **same message, character for character**. So the whole
+  of RT-F-001 — fee taken before the condition that decides whether the operation may happen, a
+  stranger's ordinary swap invalidating the quote, no refund — applies verbatim to the other two.
+  **The pending ruling therefore covers three ops, not one**, and a repair applied to
+  `MTX|C_AddLiquidity` alone would leave two siblings with the behaviour it was written to remove.
+
+  **The fourth defpact in the same file is the counter-example, and it is the specification.**
+  `MTX|C_Issue` validates in step 0 (`UEV_`) and collects in step 1 — validation before money, in
+  the same file, by the same author. The same tell that identified the SWP/ATS toggle-lock defect
+  in §1.1a: when one member of a family of identical ops is built the other way round, the odd one
+  out is the design, not the deviation. (The two AQP defpacts, `MTX|2|C_Inject` and
+  `MTX|2|C_SweepRevokeAnchor`, are a different shape — neither carries a state-equality guard.)
+
+  **NOT PINNED, and why — the fixtures do not exist and manufacturing them belongs elsewhere.**
+  Measured in the RT-F chain: nobody holds the frozen LP twin
+  (`F|P|OURO-BUSD|LP-98c486052a51` — ANHD 0.0, EMMA 0.0), and the LP has no sleeping link at all
+  (`UR_Sleeping` raises). Pinning the siblings needs a freeze and a sleep staged first, i.e. real
+  fixture construction inside a suite whose subject is two actors racing on an in-flight pact.
+  **A half-built griefing test is worse than a recorded gap**: it would report the family as covered
+  while exercising the one member that already was.
+
+  What this entry buys is the thing the count was hiding — *the ruling's scope*. It is recorded
+  rather than tested for the same reason RT-F-001's own remedy is recommended rather than applied:
+  when money moves inside a `defpact` is a design decision, and all three want deciding together.
+
+
 - `DPTF\|C_Transfer` and its preview **both** give the raw
   `No value found in table ouronet-ns.DPTF_DPTF\|PropertiesTable for key:` at a non-existent id.
   They are in **parity**, so not a family-K divergence — but neither carries the `UEV_id` check that

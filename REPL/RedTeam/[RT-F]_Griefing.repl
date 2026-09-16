@@ -58,6 +58,17 @@
 ;;RECOMMENDED, NOT APPLIED: collect the deterrent in the step that SUCCEEDS, or refund it on the
 ;;rollback path. Both change when money moves inside a defpact, which is a design decision and not
 ;;a transcription fix, so it is left for a ruling. The block pins present behaviour meanwhile.
+;;
+;;THE RULING COVERS THREE OPS, NOT ONE (established 2026-09-16 by asking the same question of every
+;;defpact in the tree). `MTX|C_AddFrozenLiquidity` and `MTX|C_AddSleepingLiquidity` collect the same
+;;`URCi_AddLiquidityInitiation` in step 0 and carry the SAME step-1 guard with the same message,
+;;character for character. Everything above applies to them verbatim; neither is pinned, because
+;;nobody in this chain holds the frozen LP twin and the LP has no sleeping link, so pinning them
+;;needs fixtures staged first. See DEFECT-LEDGER 7.3.
+;;
+;;AND THE FOURTH DEFPACT IN THE SAME FILE IS THE SPECIFICATION: `MTX|C_Issue` validates in step 0
+;;and collects in step 1 — validation before money, same file, same author. When one member of a
+;;family of identical ops is built the other way round, the odd one out is the design.
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
 (let
     (
