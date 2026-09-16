@@ -231,11 +231,30 @@
 ;;   · ResumeVacScore is fully vacated (nzs=0, deb-boost false) → ENABLE-DEB-BOOST precondition passes.
 ;;   · ResumeVacVault has can-upgrade=true (default) → CONTROL-FVT precondition passes.
 ;; So in every case the ONLY thing that could reject EMMA is ownership — non-vacuous by construction.
+;;
+;;EXTENDED 2026-09-16, because that reasoning was written for THREE ops and four more owner gates in
+;;the same family had no non-owner test at all. `FVT|C>CONTROL-FVT` (below) was the ONLY one of the
+;;four latched-flag AQP owner gates any test reached with a foreign signer; `SCR|C>CONTROL-SCORE`,
+;;`FVT|C>ROTATE-OWNERSHIP-FVT` and `SCR|C>ROTATE-OWNERSHIP-SCORE` were exercised exclusively by the
+;;OWNER, so their `CAP_EnforceAccountOwnership` had never once been shown refusing anybody. Each of
+;;those three sits AFTER a business `enforce` on a latched flag, which is the shadowing shape
+;;CLAUDE.md's 2026-09-14 ruling is about -- but the remedy here is NOT to reorder them. Two suites
+;;deliberately depend on the current order to reach the argument guard without a signature
+;;(`TX-AQP-NEG-SCRCTL` below, and `[6.4]` `<<TX-AQP-FA01>>`), so reordering would merely move the
+;;unobservable guard from one clause to the other. Ordering can expose only ONE of two
+;;state-dependent guards at a time; a fixture that satisfies the first guard exposes BOTH. That is
+;;what this block already did for CONTROL-FVT, and what the three additions below do for the rest.
+;;
+;;The preconditions are now ASSERTED rather than asserted-in-a-comment: each refusal is preceded by
+;;an `expect` pinning the flag it needs, so if a future suite latches one of these flags early the
+;;precondition goes red instead of the refusal quietly becoming vacuous again.
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (let
     (
         (foreign:string KST.EMMA)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (anchor-id:string (ref-U|DALOS::UDC_Makeid "AurynRain"))
         (score-id:string (ref-U|DALOS::UDC_Makeid "ResumeVacScore"))
@@ -277,6 +296,34 @@
                 (format "<<TX-AQP-NEG-OWNER2>> non-owner AQP-FVT|C_Control rejected (fvt-owner gate)" [])
                 "Keyset failure (keys-all): [PK_Ancie...]"
                 (ref-TS02-C3::AQP-FVT|C_Control foreign fvt-id false false))
+            ;;--- the three owner gates that no non-owner had ever reached (see preamble). Each is
+            ;;preceded by the flag its shadowing `enforce` reads, so the refusal below is
+            ;;attributable to ownership and to nothing else.
+            (expect
+                (format "<<TX-AQP-NEG-OWNER2>> ResumeVacScore is still controllable (CONTROL-SCORE precondition)" [])
+                true (ref-SCR::UR_SCR|ScoreCanUpgrade score-id))
+            (expect-failure
+                (format "<<TX-AQP-NEG-OWNER2>> non-owner AQP-SCR|C_ControlScore rejected (score-owner gate)" [])
+                "Keyset failure (keys-all): [PK_Ancie...]"
+                (ref-TS02-C3::AQP-SCR|C_ControlScore foreign score-id false false))
+            ;;Rotation needs BOTH halves of its conjunction to pass before ownership is consulted:
+            ;;can-change-owner true, and a new owner distinct from the current one. EMMA is not the
+            ;;owner (ANHD is), so handing EMMA in satisfies distinctness by the same fact that makes
+            ;;her a non-owner -- the one argument that cannot accidentally trip the guard instead.
+            (expect
+                (format "<<TX-AQP-NEG-OWNER2>> ResumeVacScore still allows owner rotation (ROTATE-SCORE precondition)" [])
+                true (ref-SCR::UR_SCR|ScoreCanChangeOwner score-id))
+            (expect-failure
+                (format "<<TX-AQP-NEG-OWNER2>> non-owner AQP-SCR|C_RotateScoreOwnership rejected (score-owner gate)" [])
+                "Keyset failure (keys-all): [PK_Ancie...]"
+                (ref-TS02-C3::AQP-SCR|C_RotateScoreOwnership foreign score-id foreign))
+            (expect
+                (format "<<TX-AQP-NEG-OWNER2>> ResumeVacVault still allows owner rotation (ROTATE-FVT precondition)" [])
+                true (ref-FVT::UR_FVT|CanChangeOwner fvt-id))
+            (expect-failure
+                (format "<<TX-AQP-NEG-OWNER2>> non-owner AQP-FVT|C_RotateOwnership rejected (fvt-owner gate)" [])
+                "Keyset failure (keys-all): [PK_Ancie...]"
+                (ref-TS02-C3::AQP-FVT|C_RotateOwnership foreign fvt-id foreign))
         ]
     )
 )

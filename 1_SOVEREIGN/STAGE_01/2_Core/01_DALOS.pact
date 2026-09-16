@@ -493,8 +493,13 @@
             (
                 (current-gap:bool (UR_GAP))
             )
-            (enforce (!= gap current-gap) (format "GAP is already toggled to {}" [gap]))
+            ;;AUTHORISATION FIRST (2026-09-16). The admin gate used to sit BELOW this enforce,
+            ;;so a caller asking for the value GAP already holds was refused by the business
+            ;;rule with the admin gate never consulted -- the shadowed-gate shape of the
+            ;;2026-09-14 ruling. The correctly-ordered twin is ten lines down in this same
+            ;;file (DALOS|C>TOGGLE-ACCOUNT-CREATION-STOA), which is why only a scan found this.
             (compose-capability (GOV|DALOS_ADMIN))
+            (enforce (!= gap current-gap) (format "GAP is already toggled to {}" [gap]))
         )
     )
     (defcap GOV|MIGRATE (migration-target-stoa-account:string)
@@ -511,10 +516,16 @@
             ;;guard wants. The behaviour is deliberate: P|TS, behind nearly every Talos client op,
             ;;enforces (not gap), so demanding GAP ON means the chain is frozen for the whole window
             ;;in which the gas station is empty. Only the message was wrong.
-            (enforce gap "Migration can only be executed when Global Administrative Pause is online")
-            (enforce (= target-balance 0.0) "Migration can only be executed to an empty stoa account")
+            ;;AUTHORISATION FIRST (2026-09-16), and this one is the 2026-09-14 ruling's own
+            ;;motivating shape. GAP OFFLINE IS THE NORMAL STATE, so with the admin gate below
+            ;;these enforces every caller -- admin or stranger -- was turned away by the
+            ;;business rule and GOV|DALOS_ADMIN was never reached. Deleting it would not have
+            ;;changed a single refusal, exactly as with GOV|WIPE_ALL-TREASURY-DEBT.
+            ;;DALOS|NATIVE-AUTOMATIC is a C1 `true` with no precondition, so it moves safely.
             (compose-capability (GOV|DALOS_ADMIN))
             (compose-capability (DALOS|NATIVE-AUTOMATIC))
+            (enforce gap "Migration can only be executed when Global Administrative Pause is online")
+            (enforce (= target-balance 0.0) "Migration can only be executed to an empty stoa account")
         )
     )
     ;;{G5}  functions

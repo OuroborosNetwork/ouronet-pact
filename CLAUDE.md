@@ -245,6 +245,25 @@ Swept across all 18 sites that had the two in the wrong order (`REPL/RedTeam/[RT
 `<<RT-C-001>>` pins the treasury case by its *message*, which is the only thing that can tell the two
 refusals apart).
 
+**SCOPED 2026-09-16 — the sweep covered the ADMIN band only.** "All 18 sites" is true of the
+definition the sweep used (a business `enforce` before a `compose-capability` of a `GOV|*_ADMIN`) and
+false of the rule as written, which says *"or equivalent"*. Re-scanning all 989 `defcap`s: **two**
+admin-band sites were still unswept — `GOV|GAP` and `GOV|MIGRATE`, both in `01_DALOS.pact`, the
+ruling's own module, with `GOV|MIGRATE` reproducing the treasury shape exactly (GAP-offline is the
+normal state, so the admin gate was never reached). Both fixed; see DEFECT-LEDGER §7.2h, G-42/G-43.
+Read "or equivalent" to include the `CAP_*` **ownership** gates — which the prefix table above calls
+*"Ouronet account-ownership enforcement"* — and there are **62 sites across 23 files**, none of them
+in the sweep's scope.
+
+**Do not resolve those 62 by reordering them.** Ordering is a *proxy* for testability, and it can
+expose only ONE of two state-dependent guards at a time. `[6.2.10]` `TX-AQP-NEG-SCRCTL` and `[6.4]`
+`<<TX-AQP-FA01>>` both **depend** on the current order to reach an argument guard without a
+signature; hoisting the ownership gate there would make the distinctness clause unreachable instead.
+**A fixture that satisfies the first guard exposes BOTH** — which is what `<<TX-AQP-NEG-OWNER2>>`
+does, choosing entities whose latched flag is still `true` so ownership is the only thing left that
+can refuse. Prefer that, and prefer it as an *additive* test: it cannot introduce an authorisation
+hole, which a reorder demonstrably can.
+
 **When moving an authorisation form, check what it is nested inside.** If it sits in an `if`, `and`,
 `or` or `cond` branch, the authorisation is *conditional* (e.g. `SWPI|C>ISSUE` requires the admin key
 only for a primordial issuance) and hoisting the bare `compose-capability` out of the branch changes

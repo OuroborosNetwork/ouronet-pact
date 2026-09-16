@@ -1110,6 +1110,8 @@ Three sub-shapes, and the third is the one an audit for the first two walks stra
 | **G-14** | `01_TS02-C1.pact` `DPDC\|C_BulkTransfer` + `07_DPDC-T.pact` `URCi_BulkTransferCumulator` | The core cap's shape guard is correct; the **Talos wrapper** derived `ids`/`sons` eagerly via `(enumerate 0 (- l 1))`, which for `l=0` is the descending pair `[0,-1]`. Measured matrix: empty list → index fault; more receivers than nonce legs → index fault; **more legs than receivers → the written message arrives.** That asymmetry is what makes it a defect rather than a dead guard. The **cost preview** carried the same fault, so a UI quoting an empty bulk transfer crashed. Fixed by calling the core first (matching `TS01-C1::DPOF\|C_BulkTransfer`, which was always in that order and never mute) and by making the `URCi_` **total** — a `URCi_` may not `enforce`, and an empty transfer has no legs, so it has no cost. Three independent hazards fed one symptom, which is why the first two fix attempts did not clear it. | `<<DPDC-G14>>`, `<<DPOF-G12>>` |
 | **G-15** | `04_RPS.pact:2981` `UEV_AddRewardLinkContext` | Sub-shape **C**. `[(!= multiplet-family-id BAR) … (UR_FVT-MF\|Active …) …]` — the third conjunct is a bare `read`, so passing `BAR`, the exact case the first conjunct exists to reject, aborts on key `\|`. Every *other* way to fail that fold does reach the message, which bounded it and hid it. | `<<AQP-G31>>`, `<<GT-12>>` |
 | **G-16** | `04_RPS.pact:3028` `UEV_QualitySplitContext` | Same shape: a PLAIN link carries a BAR family id and aborts on the raw table key instead of being told it is not a MULTIPLET ladder. Both hoists **added a new guard, and both new guards were pinned in the same edit** — a hoist that leaves its new message undriven just moves the hole. | `<<AQP-G31>>` |
+| **G-42** | `01_DALOS.pact` `GOV\|MIGRATE` — the `GOV\|DALOS_ADMIN` gate | **The 2026-09-14 treasury ruling's own shape, left behind by the sweep that ruling produced.** `(enforce gap "…Pause is online")` ran before the admin compose, and *GAP offline is the normal state*, so in normal operation every caller — admin or stranger — was refused by the business rule and the admin gate was never reached. Identical in kind to `GOV\|WIPE_ALL-TREASURY-DEBT`: delete `GOV\|DALOS_ADMIN` and every refusal is byte-identical. Both composes hoisted above both enforces (`DALOS\|NATIVE-AUTOMATIC` is a C1 `true` with no precondition, so it moves safely). | `<<DALOS-ADMIN-03b>>` ×2, `<<LQD-03pre>>` |
+| **G-43** | `01_DALOS.pact` `GOV\|GAP` — same gate | Same shape, weaker reach: `(enforce (!= gap current-gap) …)` refuses a no-op flip before the admin gate, so only a caller asking for the value already held is turned away without authorisation being consulted. Hoisted. The correctly-ordered twin `DALOS\|C>TOGGLE-ACCOUNT-CREATION-STOA` was **ten lines away in the same file** the whole time — which is why this needed a scan rather than a reading. | `<<DALOS-G3>>` |
 
 A related latent instance is worth recording because it is **worse in kind** than the rest:
 `04_RPS.pact:3876` `XE_XI_SettleScoreRps` has the same eager-fold-operand shape **inside an `if`**,
@@ -2129,6 +2131,156 @@ evidence for that distinction rather than an assertion of it.
 > true of its input and false of the world, because its input had silently become empty. Checking
 > `returncode` costs one line and converts the entire class from *silent wrong answer* to *loud no
 > answer* — which is the only trade worth making in an instrument.
+
+## 7.2h The authorise-first ruling was swept in one band and never applied to the other *(2026-09-16)*
+
+CLAUDE.md records the 2026-09-14 owner ruling — *authorisation precedes validation inside a
+`defcap`* — and states it was **"Swept across all 18 sites that had the two in the wrong order."**
+Re-deriving that set found the sweep was **complete for the band it was run over, and never run over
+the other one** — a different and more useful statement than "the sweep missed sites".
+
+### The sweep's own band: two residual sites, both in the ruling's own module
+
+Scanning all **989 `defcap`s** for the sweep's literal definition — a business `enforce` preceding a
+`compose-capability` of a `GOV|*_ADMIN` — leaves exactly **two**, and both are in `01_DALOS.pact`:
+
+| site | the shadowing guard | why it shadows |
+|---|---|---|
+| `GOV\|MIGRATE` | `(enforce gap "Migration can only be executed when Global Administrative Pause is online")` | **GAP offline is the normal state.** In normal operation *every* caller — admin or stranger — was refused by the business rule and `GOV\|DALOS_ADMIN` was never reached. |
+| `GOV\|GAP` | `(enforce (!= gap current-gap) …)` | Refuses a no-op flip before the admin gate. Weaker — the caller can pick the other boolean — but the same shape. |
+
+`GOV|MIGRATE` is the motivating case **verbatim**. The ruling was written against
+`GOV|WIPE_ALL-TREASURY-DEBT`, where "a solvent treasury is the normal state" made the admin gate
+unreachable; here "the pause is off" is the normal state and does the same thing. Delete
+`GOV|DALOS_ADMIN` from that capability and every refusal is byte-identical — the ruling's own test
+for *a shadowed gate is indistinguishable from an absent one*.
+
+What makes this a **methodology** finding rather than two more defect rows: the correctly-ordered
+shape was already in the same file. `DALOS|C>TOGGLE-ACCOUNT-CREATION-STOA` composes
+`GOV|DALOS_ADMIN` **first** and enforces after. `01_DALOS.pact` held both the swept shape and the
+missed shape ten lines apart, and nothing short of a scan tells them apart by reading.
+
+Both hoisted (G-42, G-43), under the sweep's own recorded precondition — *check what the
+authorisation is nested inside*: in both, the `compose-capability` is a flat form in the `let` body,
+not a branch of an `if`/`and`/`or`/`cond`, so no caller's authority changes. The four tests pinning
+these messages (`DALOS-ADMIN-03b` ×2, `DALOS-G3`, `LQD-03pre`) all sign `PK_AncientHodler`, which the
+sibling `TOGGLE-ACCOUNT-CREATION-STOA` assertion proves satisfies `GOV|DALOS_ADMIN` — it reaches that
+cap's *business* message through an admin-first gate. Admin passes the hoisted gate, the business
+rule still fires, all four keep their wording. Gate green.
+
+### The band that was never swept
+
+The ruling says `GOV|*_ADMIN` **"or equivalent"**, and CLAUDE.md's own prefix table defines `CAP_*` as
+*"Ouronet account-ownership enforcement"* — an authorisation gate by any reading. Extend the scan to
+those and the count is **62 `defcap`s across 23 files**, none touched by the sweep. The admin band was
+swept clean; the **owner** band was never in scope.
+
+### The count is definition-sensitive, and that is the finding
+
+Four readings of "authorisation", same tree, same question:
+
+| definition | sites |
+|---|---|
+| `compose-capability (GOV\|*_ADMIN)` only — the sweep's literal scope | **2** |
+| + `CAP_*` account-ownership gates | **62** |
+| …restricted to those whose shadowing `enforce` reads state first | **36** |
+| an earlier detector written the same day, same intent | **50** |
+
+**A headline of "N ordering violations" would have been a property of the detector, not of the
+contracts**, so none is published as a defect count. What the table *does* support is the structural
+claim above: one band swept, one band never.
+
+### Why the remedy is not a blanket reorder
+
+Reordering all 62 would be actively wrong, and the suite proves it. **Two suites deliberately depend
+on the current order** to reach an argument guard *without a signature*:
+
+- `[6.2.10]` `TX-AQP-NEG-SCRCTL` — *"`SCR|C>ROTATE-OWNERSHIP-SCORE` enforces … BEFORE
+  `CAP_EnforceAccountOwnership`, so the distinctness half is reachable without any signature."*
+- `[6.4]` `<<TX-AQP-FA01>>` — the same construction for the FVT twin.
+
+Hoisting the ownership gate there would make the *distinctness* clause unreachable without a
+signature: it trades one unobservable guard for another rather than removing one.
+
+> **Ordering can expose only ONE of two state-dependent guards at a time. A fixture that satisfies
+> the first guard exposes BOTH.** Ordering is a *proxy* for testability — neither necessary (a
+> fixture does the job without it) nor free (it can hide the guard it displaces).
+
+### What was actually defective: four owner gates, three never reached
+
+The defect is not the ordering, it is the **unobserved guard**. Four AQP owner gates sit behind a
+*latched* flag — once false it is irreversible, so the gate behind it is permanently unreachable for
+that entity (`SnakesTreasury` holds `can-upgrade=false` forever). Exactly **one** had ever been
+reached by a non-owner:
+
+| defcap | shadowing enforce | non-owner test before 2026-09-16 |
+|---|---|---|
+| `FVT\|C>CONTROL-FVT` | `can-upgrade` | **yes** — `<<TX-AQP-NEG-OWNER2>>` |
+| `SCR\|C>CONTROL-SCORE` | `can-upgrade` | none |
+| `FVT\|C>ROTATE-OWNERSHIP-FVT` | `can-change-owner` ∧ distinct | none |
+| `SCR\|C>ROTATE-OWNERSHIP-SCORE` | `can-change-owner` ∧ distinct | none |
+
+Every `expect-failure` on the latter three signed as the **owner**, so their
+`CAP_EnforceAccountOwnership` had never once been shown refusing anybody — the precise condition the
+ruling exists to prevent, reached by a route the ruling does not mention.
+
+Closed additively in `<<TX-AQP-NEG-OWNER2>>`, which already held the fixtures (`ResumeVacScore` /
+`ResumeVacVault`, owned by ANHD, EMMA as foreign signer) and had already demonstrated the
+fixture route for `CONTROL-FVT`. For rotation, passing EMMA as the *new* owner satisfies distinctness
+by the same fact that makes her a non-owner — the one argument that cannot accidentally trip the
+guard instead. Each refusal is preceded by an `expect` pinning the flag it depends on, so a future
+suite that latches a flag early turns the **precondition** red rather than letting the refusal go
+quietly vacuous — the failure mode the block's original comment described in prose but did not assert.
+
+### The instrument for the general question, and the three defects found by validating it
+
+"Which owner gates has no test ever reached?" is measurable, and a detector was written for it: map
+`CAP_*`-bearing `defcap`s → the core `C_` that acquires them → the Talos wrapper that calls it → any
+`expect-failure` whose refusal is attributable to that gate. It was validated against known ground
+truth — the three tests added above must flip **exactly** three entries — and it was **wrong three
+times** before it did:
+
+1. **Name collision.** It matched the bare core name `C_Control`, which **seven modules define**, so a
+   keyset test on DPTF's op credited SCORE's gate. The `\b` lesson of §7.2a one level up: *a name
+   unique inside its module is not unique in the tree.* Fixed by resolving `ref-X::fn` through the
+   `(ref-X:module{Iface} MODULE)` bindings of the enclosing Talos defun.
+2. **Fixed-width window.** It read 900 chars after each `expect-failure` instead of the balanced form,
+   so one keyset test credited every op in the same `map print` list. **Verbatim the defect fixed in
+   `_eagerlet.py` earlier the same day**, reintroduced in the instrument written to audit that class.
+3. **Proxy too narrow.** `Keyset failure` is the `CAP_*` signature, but a `defcap` may check ownership
+   by hand with its own wording — `DSA|C>DEFINE-VAULT` *is* driven by a non-owner
+   (`"Only the FVT owner may define the delegation vault"`, `Kursan/dsa-agency-tests.repl`
+   `<<DSA-VAULT-01>>`) yet was reported unobserved. Fixed by also collecting each `defcap`'s own
+   ownership-worded `enforce` messages.
+
+After all three, it reproduces the hand result exactly and clears `DEFINE-VAULT`. Measured over
+**112** owner-gated `defcap`s reachable from a named Talos op:
+
+| | observed refusing somebody | never observed |
+|---|---|---|
+| before this commit | **19** | **93** |
+| after | **22** | **90** |
+| …of the 38 whose gate sits after a business `enforce` | 11 → **14** | 27 → **24** |
+
+**What "never observed" means, precisely:** no test pins a refusal attributable to that gate — so
+deleting the gate would turn nothing red. It is *not* a claim that the gate is wrong. The denominator
+is also a floor: an op reachable other than through a Talos wrapper on the right module ref is not
+counted at all.
+
+The sharpest instance is the **transfer family**, and it was confirmed by hand rather than taken from
+the tool. The entire suite contains **exactly one** non-owner transfer test —
+`RedTeam/[RT-D]_Ownership.repl` `<<RT-D-001>>`, *"paying the gas does not prove you own the sender"*,
+on `DPTF|C_Transfer`. `DPOF|C>TRANSFER`, `DPOF|C>BULK-TRANSFER`, `DPDC-T|C>TRANSFER`,
+`DPDC-T|C>BULK-TRANSFER`, `DPDC|C>TG_TRANSFER-R` and `DPTF|C>MULTI-TRANSFER` all gate on
+`CAP_EnforceAccountOwnership sender` and **none of them has ever been shown refusing a non-owner**.
+Their negative tests drive list-shape and nonce guards with the owner as sender. This is the
+*sampled-not-enumerated* pattern of §7.3 applied to the highest-value operation surface in the tree:
+family D has two attacks and they cover one cap.
+
+> **Two of the three instrument defects were recurrences of defects fixed elsewhere in this same
+> session.** The lesson did not transfer from the repaired tool to the next tool written — which is
+> the argument for `ident_re()` and `balanced()` being *shared helpers in `_pactlex`* rather than
+> advice in a ledger. Advice is re-derived, and re-derived wrongly; an imported function is not.
 
 ## 7.3 Known-open, recorded deliberately
 
