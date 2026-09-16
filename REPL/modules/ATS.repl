@@ -4407,3 +4407,78 @@
 )
 (env-sigs [])
 (rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "ATS-G24 — the parameter owner gates, which only the owner had ever driven")
+(print "")
+(print "=== ATS-G24 — S>ROYALTY / S>SYPHON owner gate ================================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+;;`ATS|S>ROYALTY` and `ATS|S>SYPHON` both end on `CAP_Owner atspair`. Every call to either, here and
+;;in the deploy suites, was made BY the owner, so the gate had never been shown refusing anybody:
+;;delete `CAP_Owner` from both and nothing in the tree would have turned red. Surfaced by
+;;`REPL/tools/_ownerobs.py`, which enumerates precisely that.
+;;
+;;THE PAIR IS SELECTED, NOT NAMED, and the selection is what proves the test non-vacuous:
+;;`URH_OwnedAutostakePairs` returns the pairs an account OWNS, so any element of ANHD's list is
+;;ANHD-owned by construction. A hardcoded id would be an assumption about who owns it, and the
+;;assumption is exactly what the test is supposed to establish.
+;;
+;;Both ops' own guards run AHEAD of `CAP_Owner`, so both arguments are chosen to clear them and the
+;;one that is state-dependent is asserted: royalty 100.0 is a valid fee and under the 500.0 promile
+;;ceiling; syphon 1.0 is above the 0.1 floor and integral at any precision; and the pair's parameters
+;;must be UNLOCKED or `UEV_ParameterLockState` refuses first, with a message that has nothing to do
+;;with ownership.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (attacker:string KST.EMMA)
+        (victim:string KST.ANHD)
+    )
+    (let ((owned:[string] (ref-ATS::URH_OwnedAutostakePairs victim)))
+        (map print
+            [
+                (expect "<<ATS-G24>> ANHD owns at least one ATS pair to aim at"
+                    true (> (length owned) 0))
+                (expect "<<ATS-G24>> ...and the attacker is not that owner"
+                    false (= attacker victim))
+            ]
+        )
+        (let
+            (
+                (pair:string (at 0 owned))
+            )
+            (let
+                (
+                    (royalty-before:decimal (ref-ATS::UR_Royalty pair))
+                    (syphon-before:decimal (ref-ATS::UR_Syphon pair))
+                )
+                (map print
+                    [
+                        ;;the lock guard runs before the owner check, so prove it passes.
+                        (expect (format "<<ATS-G24>> {}'s parameters are UNLOCKED, so the owner check is reached" [pair])
+                            "UNLOCKED"
+                            (try "LOCKED"
+                                (let ((z:string "UNLOCKED")) (ref-ATS::UEV_ParameterLockState pair false) z)))
+                        (expect-failure "<<ATS-G24>> a non-owner cannot set the royalty"
+                            "Keyset failure (keys-all): [PK_Ancie...]"
+                            (ref-TS01-C2::ATS|C_UpdateRoyalty attacker pair 100.0))
+                        (expect-failure "<<ATS-G24>> a non-owner cannot set the syphon"
+                            "Keyset failure (keys-all): [PK_Ancie...]"
+                            (ref-TS01-C2::ATS|C_UpdateSyphon attacker pair 1.0))
+                        ;;...and both refusals were total.
+                        (expect "<<ATS-G24>> ...and neither parameter moved"
+                            [royalty-before syphon-before]
+                            [(ref-ATS::UR_Royalty pair) (ref-ATS::UR_Syphon pair)])
+                    ]
+                )
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
