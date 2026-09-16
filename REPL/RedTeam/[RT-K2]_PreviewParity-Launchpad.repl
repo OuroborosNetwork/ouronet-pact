@@ -1,0 +1,104 @@
+;;
+;; REPL/RedTeam/[RT-K2]_PreviewParity-Launchpad.repl — FAMILY K, the citizen launchpad.
+;;
+;; "Does the quote tell the truth about the operation?" — asked of the only client-facing surface
+;; no family had touched.
+;;
+;; The launchpad sales are PURE-CITIZEN modules: they call only sovereign Talos ops, are Sigma-billed,
+;; and carry their own `URCi_`/`INFO_` cost readers. Their previews are what a buyer's UI calls before
+;; committing money to a sale, which makes an over-optimistic quote here worse than elsewhere — the
+;; user is not testing the protocol, they are buying something.
+;;
+;; Source: 1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/00_Demipad.pact (UEV_DepositDollarAmount,
+;;         DEMIPAD|C>DEPOSIT, URCi_Deposit) · 2_CITIZEN/7_Launchpad/1_Spark/01_Spark.pact
+;;
+;; REPL tests: <<RT-K-006a>> .. <<RT-K-006d>>
+;;
+;; Run: cd REPL && pact "RedTeam/[RT-K2]_PreviewParity-Launchpad.repl"
+;;
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+(load "../Stage_01/[6.2]_DPTF.repl")
+(load "../Stage_01/[6.3]_SWP.repl")
+(load "../deploy-stage02.repl")
+(load "../Stage_02/[6.1]_DPDC.repl")
+(load "../Stage_02/[5.3]_Launchpad.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "RT-K-006 - the launchpad quote, at an amount no sale can honour")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+;;==== RT-K-006 · 01 · buying zero, and buying less than zero ====
+(print "--- [RT-K-006 · 01 · buying zero, and buying less than zero] ---")
+;;<<RT-K-006>> FAMILY: K | STATUS: FIXED
+;;HYPOTHESIS: the citizen launchpad previews were never swept. Their separating input is not a bad
+;;            id -- the sale is a live object -- but an AMOUNT no sale can honour.
+;;METHOD:     the sale's own gate `amount <= remaining-supply` is deliberately NOT used here: the
+;;            remaining supply changes as other buyers act, which makes it TRANSIENT, and family K
+;;            validates what the caller cannot change (RT-K-002). An amount of zero or below is
+;;            invalid whatever the chain does, so it is structural, and it is the right probe.
+;;RESULT:     CONFIRMED, then FIXED, in both directions. Buying ZERO was QUOTED by the preview and
+;;            refused by the op; buying -5 was refused by both but in DIFFERENT WORDS, the preview
+;;            borrowing "Deposit amount must be non-negative" from a royalty helper it happened to
+;;            reach first. The exec's inline enforce is now `UEV_DepositDollarAmount`, called by
+;;            DEMIPAD|C>DEPOSIT and by URCi_Deposit -- so ONE definition serves every sale on the
+;;            launchpad, demonstrated on StoicPay as well as Spark. A sane amount still quotes.
+;;
+;;WHAT WAS FOUND, in both directions at once:
+;;
+;;   buy 0     the PREVIEW QUOTED IT. The exec refuses "Invalid Dollar Amount for Deposit".
+;;   buy -5    both refused -- with DIFFERENT MESSAGES. The exec gave its own; the preview gave
+;;             "Deposit amount must be non-negative", which belongs to `UCv_ComputeDepositRoyalty`
+;;             and was reached incidentally on the way to a price. A refusal borrowed from whichever
+;;             helper happened to notice first is not the op's answer, it is a coincidence.
+;;
+;;THE FIX POINT IS WHY THIS ONE IS WORTH ITS RUNTIME. Every launchpad sale -- Spark, Snakes,
+;;Custodians, StoicPay -- prices its purchase through `DEMIPAD::URCi_Deposit`, and every one of them
+;;executes through `DEMIPAD|C>DEPOSIT`. The check lived INLINE in the capability, so the reader had
+;;no way to share it. Extracted to `UEV_DepositDollarAmount` and called by both, ONE definition now
+;;serves every sale on the launchpad.
+;;
+(let
+    (
+        (r:module{CitizenLaunchpadTalosV2} TS02-CPAD)
+    )
+    (map print
+        [
+            ;;NON-VACUITY FIRST, so the refusals below are read against a working baseline: the
+            ;;sale is live and a sane amount prices.
+            (expect
+                "<<RT-K-006a>> the sale is live -- a sane amount still QUOTES"
+                true
+                (> (at "ignis-need" (at "ignis"
+                      (ouronet-ns.DEMIPAD-SPARK.INFO_BuySparks KST.ANHD KST.ANHD 1 true))) 0.0))
+            (expect-failure
+                "<<RT-K-006b>> buy 0 · PREVIEW refuses (it used to quote it)"
+                "Invalid Dollar Amount for Deposit"
+                (ouronet-ns.DEMIPAD-SPARK.INFO_BuySparks KST.ANHD KST.ANHD 0 true))
+            (expect-failure
+                "<<RT-K-006b>> buy 0 · EXEC   (same message)"
+                "Invalid Dollar Amount for Deposit"
+                (r::SPARK|C_BuySparks KST.ANHD KST.ANHD 0 true 999999.0))
+            (expect-failure
+                "<<RT-K-006c>> buy -5 · PREVIEW refuses in the OP'S words, not a helper's"
+                "Invalid Dollar Amount for Deposit"
+                (ouronet-ns.DEMIPAD-SPARK.INFO_BuySparks KST.ANHD KST.ANHD -5 true))
+            (expect-failure
+                "<<RT-K-006c>> buy -5 · EXEC   (same message)"
+                "Invalid Dollar Amount for Deposit"
+                (r::SPARK|C_BuySparks KST.ANHD KST.ANHD -5 true 999999.0))
+            ;;The shared validator reaches the OTHER sales too, because they price through the same
+            ;;DEMIPAD reader. One definition, four sales.
+            (expect-failure
+                "<<RT-K-006d>> ...and the fix reaches StoicPay as well, via the same DEMIPAD reader"
+                "Invalid Dollar Amount for Deposit"
+                (ouronet-ns.DEMIPAD-STOICPAY.INFO_BuyStoicPay KST.ANHD KST.ANHD 0 true))
+        ])
+    ""
+)
+(env-sigs [])
+(print "")
+(print "===^^^===")
+(commit-tx)

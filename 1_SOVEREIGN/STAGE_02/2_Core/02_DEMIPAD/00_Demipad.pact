@@ -511,6 +511,19 @@
         (compose-capability (SECURE))
     )
     ;;Deposti and Withdrawal
+    ;;Module-local (no interface change): the single source for "is this a spendable dollar
+    ;;amount". Shared by DEMIPAD|C>DEPOSIT and URCi_Deposit so every launchpad quote and the
+    ;;deposit it previews refuse the same inputs, in the same words.
+    ;;Pinned by RedTeam/[RT-K]_PreviewParity.repl <<RT-K-006b/c>>.
+    (defun UEV_DepositDollarAmount (amount-in-dollars:decimal)
+        (enforce
+            (and
+                (= (floor amount-in-dollars 24) amount-in-dollars)
+                (> amount-in-dollars 0.0)
+            )
+            "Invalid Dollar Amount for Deposit"
+        )
+    )
     (defcap DEMIPAD|C>DEPOSIT (donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal)
         @event
         (let
@@ -535,14 +548,14 @@
             ;;with its `(try false ...)`. Pinned by REPL/Stage_02/[5.3]_Launchpad.repl <<TX-DEP-02>>
             ;;01b. See memories/2026-09-12-eager-let-mute-guards.md
             (enforce iz-registered (format "Asset {} is not registered to the Demiourgos Lauchpad. Deposit unallowed" [asset-id]))
-            ;;Validate the <amount-in-dollars> to be greater than zero with 3 decimals
-            (enforce
-                (and
-                    (= (floor amount-in-dollars 24) amount-in-dollars)
-                    (> amount-in-dollars 0.0)
-                )
-                "Invalid Dollar Amount for Deposit"
-            )
+            ;;Validate the <amount-in-dollars> to be greater than zero with 3 decimals.
+            ;;REFUSAL PARITY (family K, 2026-09-16): this enforce used to be written out here, so
+            ;;URCi_Deposit -- and therefore EVERY launchpad preview that prices a purchase through
+            ;;it -- had no way to share it. INFO_BuySparks quoted a buy of ZERO Sparks that this
+            ;;line refuses, and for a NEGATIVE amount the preview refused with someone else's
+            ;;message ("Deposit amount must be non-negative", reached incidentally from
+            ;;UCv_ComputeDepositRoyalty). Now in UEV_DepositDollarAmount, called by both.
+            (UEV_DepositDollarAmount amount-in-dollars)
             ;;Slippage bound (Variant 1): the live-computed dollar cost must not exceed the buyer's
             ;;signed ceiling <max-cost>. Sentinel <max-cost> < 0 = no bound (Variant 2, slippage off).
             (UEV_SlippageCost amount-in-dollars max-cost)
@@ -1055,6 +1068,8 @@
             \ (type 1) unwrap-STOA of the environment amount, and (unless direct-injection) the \
             \ donor->launchpad transfer of the working token. The Satisfy/Deposit writes are \
             \ free. Re-derived purely from URC_Prices."
+        ;;The op's own gate, not a copy of it -- see UEV_DepositDollarAmount above.
+        (UEV_DepositDollarAmount amount-in-dollars)
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)

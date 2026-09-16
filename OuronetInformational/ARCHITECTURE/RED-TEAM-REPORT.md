@@ -1515,9 +1515,37 @@ which the caller controls — transient, and out of scope per RT-K-002.
 > Non-vacuity here deliberately isolates the **condition**, not the function: the **Standard** door
 > must still quote the *same pair with the same amounts*. A guard written too broadly turns that red.
 
-**Scope, honestly:** ATS, DPTF, DPOF, DPDC and SWP — **27 of 401 previews.** Family K has now found
-a defect in **all five families it has touched**, which is an argument for continuing it rather than
-a claim of coverage. The method is cheap and mechanical; the
+### RT-K-006 — the citizen launchpad, where a quote is a price tag
+
+The only client-facing surface no family had touched. These sales are **pure-citizen** modules with
+their own cost readers, and a buyer's UI calls their previews **before committing money** — an
+over-optimistic quote here is worse than elsewhere, because the user is not testing the protocol,
+they are buying something.
+
+The sale's own `amount <= remaining-supply` gate was deliberately **not** used as the probe:
+remaining supply changes as other buyers act, so it is **transient** (RT-K-002). An amount of zero
+or below is invalid whatever the chain does — structural, and the right input.
+
+**It failed in both directions at once:**
+
+| input | preview | exec |
+|---|---|---|
+| buy **0** | **quoted it** | *"Invalid Dollar Amount for Deposit"* |
+| buy **−5** | *"Deposit amount must be non-negative"* | *"Invalid Dollar Amount for Deposit"* |
+
+The second row is the subtler one. Both refused — but the preview's message belongs to
+`UCv_ComputeDepositRoyalty`, a royalty helper it happened to reach on the way to a price.
+**A refusal borrowed from whichever helper noticed first is not the op's answer, it is a
+coincidence.**
+
+**The fix point is why this earns its runtime.** Spark, Snakes, Custodians and StoicPay *all* price
+through `DEMIPAD::URCi_Deposit` and *all* execute through `DEMIPAD|C>DEPOSIT` — and the check lived
+**inline in the capability**, where no reader could share it. Extracted to
+`UEV_DepositDollarAmount`: **one definition, four sales**, demonstrated on StoicPay as well as Spark.
+
+**Scope, honestly:** ATS, DPTF, DPOF, DPDC, SWP and the citizen launchpad — **31 of 401 previews.**
+Family K has now found a defect in **all six surfaces it has touched**, which is an argument for
+continuing it rather than a claim of coverage. The method is cheap and mechanical; the
 hard part is finding the separating input. A pair with a zero index and no Hot-RBT made three
 divergences visible at once.
 
@@ -1538,8 +1566,8 @@ divergences visible at once.
 | H — Input domain | 3 |  | 3 |  |
 | I — Gas station payable surface | 1 |  | 1 |  |
 | J — Ledger conservation | 3 |  | 1 | 2 |
-| K — Preview/exec divergence | 5 |  | 5 |  |
-| **total** | **25** | **0** | **15** | **10** |
+| K — Preview/exec divergence | 6 |  | 6 |  |
+| **total** | **26** | **0** | **16** | **10** |
 <!-- REGISTER:END -->
 
 **Seven of fourteen attacks found a defect, and all seven are fixed and measured.** The table above

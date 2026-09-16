@@ -56,19 +56,19 @@ explanation*, because stating precisely what an assertion proved exposed that it
 
 | | |
 |---|---:|
-| **distinct assertions written** | **5,546** |
-| **assertions executed per full gate run** | **22,202** |
-| &nbsp;&nbsp;positive (`expect`) | 18,098 |
-| &nbsp;&nbsp;negative (`expect-failure`) | 4,104 |
-| gate entrypoints | **91** |
+| **distinct assertions written** | **5,552** |
+| **assertions executed per full gate run** | **22,451** |
+| &nbsp;&nbsp;positive (`expect`) | 18,299 |
+| &nbsp;&nbsp;negative (`expect-failure`) | 4,152 |
+| gate entrypoints | **92** |
 | `.repl` files reachable from the gate | 306 |
 | orphaned asserting files (written but never run) | **0** |
 
-**Quote 5,546 for "how many tests exist" and 22,202 for "how much ran".** They differ ~4x because
+**Quote 5,552 for "how many tests exist" and 22,451 for "how much ran".** They differ ~4x because
 
 > **The executed figure fell from 21,732 to 21,511 in the X-01 repair, and that is not a coverage
 > regression.** Five guard-type assertions moved out of `Stage_01/[2.1]_Dalos.repl` — a genesis
-> fixture loaded by nearly all 91 entrypoints, so each assertion in it runs ~80 times — into
+> fixture loaded by nearly all 92 entrypoints, so each assertion in it runs ~80 times — into
 > `Stage_01/[6.12]_DALOS-ADMIN.repl`, which few entrypoints load. **Distinct assertions rose by 4**
 > over the same change. The two figures moved in opposite directions because they measure different
 > things, exactly as this section's own rule says: *distinct* answers "how many tests exist",
@@ -172,7 +172,7 @@ rather than charging it, so there is no charge to difference.
 
 ## 4. Execution: why this was run in parallel
 
-A full gate run is **91 entrypoints totalling 6,386 seconds of work — 1 hour 46 minutes serial.**
+A full gate run is **92 entrypoints totalling 6,386 seconds of work — 1 hour 46 minutes serial.**
 It completes in **~427 seconds wall on 16 workers**, a **15.0× speedup**.
 
 <sub>Recomputed 2026-09-14 from the gate's own per-entrypoint table, not carried forward. Both sides
@@ -389,7 +389,7 @@ artefacts that feed the Chapter-2 documentation.
 
 | | |
 |---|---|
-| gate | **GREEN** — 91 entrypoints, 22,202 assertions, 0 failures |
+| gate | **GREEN** — 92 entrypoints, 22,451 assertions, 0 failures |
 | live unpinned guards | **0** |
 | `INFO_` previews named but unmeasured | **0** |
 | conformance violations | **0** |
@@ -448,7 +448,7 @@ not for the reason a reader would assume:
 | treasury-debt wipe | `GOV\|DPTF_ADMIN` | a **solvency check one line above it** |
 
 Each is green today and would **stay green through the change that breaks it**. This is the clearest
-limit on what §2's 22,202 executed assertions certify: they establish that the system behaves as
+limit on what §2's 22,451 executed assertions certify: they establish that the system behaves as
 documented, not that it is defended for the reasons the documentation implies.
 
 ### What it says about where the defects are
