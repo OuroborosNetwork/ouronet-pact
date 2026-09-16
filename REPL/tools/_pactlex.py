@@ -11,7 +11,7 @@ Extracted after THREE separate scanners shipped with bugs in re-derived copies o
 
 One copy, used by everything. Import this; do not re-derive it.
 """
-import re
+import os, re
 
 def strip_comments(src):
     """Remove `;` comments, honouring string literals ACROSS newlines."""
@@ -63,27 +63,80 @@ STRLIT = re.compile(r'"((?:[^"\\]|\\.)*)"', re.S)
 
 UR_CALL = re.compile(r'\(\s*(?:ref-[A-Za-z0-9|_-]+::)?(UR_[A-Za-z][A-Za-z0-9|_-]*)\b')
 
-def reader_kinds(files):
+def reader_kinds(files, with_ambiguous=False):
     """Set of UR_* readers that bottom out in a bare `read` (can ABORT on a missing row).
 
     A `with-default-read` ANSWERS for an absent row instead of raising, so it is safe to evaluate
     eagerly. Reader kind propagates through delegation: a reader calling a hard reader is hard.
     Distinguishing the two is what makes these scanners usable rather than noise.
+
+    TWO CORRECTIONS, 2026-09-16, both found while adding _eagerlet.py's --produced mode:
+
+    1] AMBIGUOUS NAMES ARE WITHHELD. This keyed by BARE NAME and kept whichever body was LONGEST, so
+       for a reader defined in several modules the verdict was one module's answer applied to all.
+       Measured: 650 UR_ readers with a real body, 79 defined in MORE THAN ONE MODULE, 33 of those
+       DISAGREEING on hard/soft. `UR_AccountSupply` alone has five definitions, four soft and one
+       hard. A bare name is not an identity in a module system; where a name disagrees with itself
+       the honest answer is "unknown", so it is withheld from `hard` and returned separately when
+       <with_ambiguous> -- conservative, and visible rather than silent.
+
+    2] HARD NOW MEANS "CAN RAISE FOR THE SUBJECT", not "contains a raising read somewhere". A bare
+       `read` whose KEY is a constant is a singleton config row that always exists --
+       `(read DALOS|PropertiesTable DALOS|INFO ...)` -- and cannot abort for a caller-supplied id.
+       Counting those, then propagating through delegation, marked `UR_AccountRoleBurn` hard although
+       every branch of it is a `with-default-read`: it merely consults `UR_OuroborosID` to choose a
+       table. Propagation now also requires the caller to hand one of its OWN parameters to the hard
+       callee. Verified by hand on that reader.
     """
-    body, delegates = {}, {}
+    body, delegates, per_name = {}, {}, {}
     for f in files:
         src = strip_comments(open(f, encoding='utf8', errors='ignore').read())
+        mm = re.search(r'\(module\s+([A-Za-z][A-Za-z0-9|_-]*)', src)
+        mod = mm.group(1) if mm else os.path.basename(f)
         for m in re.finditer(r'\(defun\s+(UR_[A-Za-z][A-Za-z0-9|_-]*)', src):
             nm = m.group(1)
             end = balanced(src, m.start() - 0 if src[m.start()] == '(' else m.start())
             b = src[m.start():end if end > m.start() else m.start() + 400]
+            if len(b) >= 60:
+                raw_hard = bool(re.search(r'\(\s*read\s+', b)) and 'with-default-read' not in b
+                per_name.setdefault(nm, set()).add((mod, raw_hard))
             if nm in body and len(b) <= len(body[nm]):
                 continue                       # keep the implementation, not the interface stub
             body[nm] = b
             delegates[nm] = set(UR_CALL.findall(b)) - {nm}
+
+    ambiguous = {nm for nm, v in per_name.items()
+                 if len({m for m, _ in v}) > 1 and len({h for _, h in v}) > 1}
+
+    def params_of(b):
+        m = re.match(r'\(defun\s+[^\s(]+[^(]*?\(([^)]*)\)', b)
+        return re.findall(r'([A-Za-z][A-Za-z0-9|_-]*)\s*:', m.group(1)) if m else []
+
+    def mentions_any(text, names):
+        return any(re.search(r'\b' + re.escape(n) + r'\b', text) for n in names)
+
+    def raises_for_subject(b):
+        """A bare `read` whose KEY derives from a parameter can abort for a caller's input; one
+        whose key is a constant is a singleton config row that always exists."""
+        names = params_of(b)
+        for rm in re.finditer(r'\(\s*read\s+[^\s)]+\s+([^\s)\]]+)', b):
+            if mentions_any(rm.group(1), names):
+                return True
+        return False
+
     hard = {nm for nm, b in body.items()
-            if re.search(r'\(\s*read\s+', b) and 'with-default-read' not in b}
+            if re.search(r'\(\s*read\s+', b) and 'with-default-read' not in b
+            and raises_for_subject(b)}
     for _ in range(8):
         for nm, ds in delegates.items():
-            if nm not in hard and (ds & hard): hard.add(nm)
-    return hard
+            if nm in hard:
+                continue
+            names = params_of(body[nm])
+            for d in (ds & hard):
+                call = re.search(r'\((?:[A-Za-z0-9|_-]+::)?' + re.escape(d) + r'([^()]*)\)',
+                                 body[nm])
+                if call and mentions_any(call.group(1), names):
+                    hard.add(nm)
+                    break
+    hard -= ambiguous
+    return (hard, ambiguous) if with_ambiguous else hard

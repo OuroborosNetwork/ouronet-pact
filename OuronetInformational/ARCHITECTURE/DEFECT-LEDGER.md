@@ -1747,6 +1747,56 @@ validation to 401 previews unilaterally:
 3. A **raw internal error** in a preview is wrong under either answer — `try` cannot catch an
    arithmetic exception, so no caller can handle it.
 
+## 7.2a Instrumentation: the scanner that could not see the shape it was for *(2026-09-16)*
+
+Four instances of *"a guard that exists but cannot run"* were found **by accident** in two days —
+`C_Recover`, `C_HotRecovery` (RT-H-003), `C_DeployAccount` (RT-K-003), `UEV_LiveAnchor` (RT-K-007).
+`_eagerlet.py` covered the first three shapes and **modelled the wrong relation** for the fourth: it
+looks for a hard read that *consumes* the guard's subject, while RT-K-007's read *produces* it. Added
+as `--produced`, where the remedy also differs — the guard cannot be hoisted above the value it
+tests, so the reader must be defaulted.
+
+Chasing that exposed **two measured defects in `_pactlex.reader_kinds`**, the classifier shared by
+`_eagerlet.py`, `_foldeager.py` and anything asking *"can this read abort?"*:
+
+| | |
+|---|---:|
+| `UR_*` readers with a real body | 650 |
+| defined in **more than one module** | **79** |
+| and **disagreeing** on hard/soft | **33** |
+
+1. **It keyed by bare name** and kept whichever body was longest, so a name defined in several
+   modules got one module's verdict applied to all. `UR_AccountSupply` has five definitions — four
+   soft, one hard. Ambiguous names are now **withheld** from `hard` and reported separately.
+2. **`hard` meant "contains a raising read somewhere"**, not "can raise for the subject". A `read`
+   whose key is a **constant** is a singleton config row that always exists and cannot abort for a
+   caller's id; counting those and propagating them marked `UR_AccountRoleBurn` hard although every
+   branch of it is a `with-default-read`.
+
+**Measured effect:** hard readers **413 → 249**; `--wide` false positives **30 → 15**; narrow mode
+still **0**. The correction improved the checkers that already existed, not only the new mode.
+
+The detector itself took **three corrections against evidence** — 247 → 201 → 33 → 5 → **4** hits.
+The instructive one: the existence vocabulary first included *"must be set"*, which matched
+`UEV_LockState`, `UEV_EliteState` and the ATS recovery toggles — **not** this defect, because for a
+pair that does not exist *"its lock must be set"* is a misleading answer and defaulting those readers
+would manufacture the wrong-diagnosis problem RT-K-004 found in DPDC. **The signature only holds when
+the guard's message already covers absence.**
+
+It validated twice: it independently flagged `18_SWPLC.pact:926` — `UEV_AddChilledLiquidity`, which
+RT-K-005 had reached by hand — and it flagged `CODEX|C>RELEASE-STOICTAG`, which turned out to be the
+one place in the tree that answers this question properly:
+
+```pact
+(tag-row-found (not (= (try false (UR_STG|Data tag-name)) false)))   ;; try-wrap the probe
+(tag-iz-active (if tag-row-found (UR_STG|IzActive tag-name) false))  ;; conditionalise the rest
+(enforce tag-row-found "StoicTag not found")
+```
+
+**Four candidates remain as triage, not verdicts** — `08_ATS.pact:1790`, `18_SWPLC.pact:926`
+(addressed), `02_SCORE.pact:884`, `05_FVT.pact:1843`. Each needs the same question asked by hand
+before any reader is defaulted.
+
 ## 7.3 Known-open, recorded deliberately
 
 - `DPTF\|C_Transfer` and its preview **both** give the raw
