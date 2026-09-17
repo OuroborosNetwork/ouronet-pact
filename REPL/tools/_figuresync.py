@@ -128,6 +128,40 @@ def rewrite(text, want):
         return f"{head}{label}{mid}{pre}{want[k]:,}{post} |"
     return ROW.sub(sub, text), n[0]
 
+def stats_staleness():
+    """Is REPL_SUITE_STATS.md itself still true of the tree?
+
+    ADDED 2026-09-17. This tool checked that every narrative doc AGREES WITH the stats file, and
+    never that the stats file agrees with the TREE. So a stale stats file propagated consistently
+    into every document and nothing turned red -- measured at the time of writing: the file claimed
+    5,555 distinct assertions and 22,454 executed, against ~5,800 and 24,972 actual. Every figure in
+    every doc matched, and all of them were wrong together.
+
+    Contrast `_pricesync`, which regenerates its artefact IN MEMORY and diffs -- a closed loop. This
+    is the same loop for the one figure that can be derived statically. The EXECUTED count cannot be
+    (it needs a live gate), so it is deliberately not checked here; `_gate.py` is the only thing that
+    knows it, and the honest move is to say so rather than to check a number this tool cannot see.
+    """
+    import re as _re
+    live = 0
+    for dirpath, _d, fnames in os.walk(REPL):
+        for fn in fnames:
+            if fn.endswith(".repl"):
+                live += len(_re.findall(r"\(expect(?:-failure)?\b",
+                                        open(os.path.join(dirpath, fn), encoding="utf8",
+                                             errors="ignore").read()))
+    txt = open(STATS, encoding="utf-8").read()
+    m = _re.search(r"distinct assertions written\*\*\s*\|\s*\*\*([\d,]+)\*\*", txt)
+    if not m:
+        return [f"{os.path.basename(STATS)}: could not find the distinct-assertion row"]
+    claimed = int(m.group(1).replace(",", ""))
+    if claimed != live:
+        return [f"{os.path.basename(STATS)} is STALE against the tree: claims {claimed:,} distinct "
+                f"assertions, the tree has {live:,}. Regenerate with "
+                f"`cd REPL && python3 tools/_suite_stats.py` (add --gate for a live executed count)."]
+    return []
+
+
 def main():
     stats = open(STATS, encoding="utf-8").read()
     docs = [(n, open(os.path.join(ARCH, n), encoding="utf-8").read()) for n in _narrative()]
@@ -145,6 +179,10 @@ def main():
         return 0
     print(f"canonical figures from REPL_SUITE_STATS.md: "
           + ", ".join(f"{k}={v:,}" for k, v in sorted(want.items())))
+    # The stats file is this tool's SOURCE OF TRUTH, so it has to be checked against the tree or the
+    # whole comparison is circular -- every doc agreeing with a stale file reads exactly like every
+    # doc being right.
+    errs = errs + stats_staleness()
     if errs:
         print("\nFIGURE DRIFT:")
         for e in errs:

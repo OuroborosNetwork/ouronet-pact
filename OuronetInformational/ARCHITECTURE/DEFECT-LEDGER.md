@@ -3489,3 +3489,28 @@ The two modules are `99_TS02-**C**PAD.pact` (citizen, in the launchpad) and
 `1_SOVEREIGN/STAGE_02/3_Talos/05_TS02-**D**PAD.pact` (sovereign, moved out). One letter separates
 them, and the wrong one sat in the sentence that assigns the sovereign/citizen role — the single
 distinction the architecture rests on. Corrected.
+
+## 8.22 A consistency check whose source of truth was never checked
+
+`_figuresync.py` exists so the narrative documents cannot drift from `REPL_SUITE_STATS.md`. It
+verified that every document AGREES WITH the stats file — and never that the stats file agrees with
+the **tree**.
+
+That is circular, and it failed exactly as circularity does: **every figure in every document
+matched, and all of them were wrong together.** Measured when the loop was closed: the stats file
+claimed **5,555** distinct assertions against **5,830** in the tree, and **22,454** executed against
+a gate that runs **~25,000**. `_figuresync --check` was green throughout.
+
+> A consistency check between N documents and one source proves the N documents consistent. It says
+> nothing whatever about the source, and a stale source reads exactly like a correct one — *more*
+> convincingly, because everything agrees.
+
+Fixed by re-deriving the distinct-assertion count **in memory** from the tree and comparing, which is
+what `_pricesync` already does for its artefact. The **executed** count is deliberately *not* checked
+here: it needs a live gate, `_figuresync` cannot see one, and checking a number this tool cannot
+derive would re-create the same circularity one level down. `_gate.py` is the only thing that knows
+it, and the honest move is to say so rather than to guess.
+
+**This is the second gate-level defect of the same family today**, after §8.21's price sheet — and
+the two are mirror images. `_pricesync` enforced a number that was *wrong*; `_figuresync` enforced a
+number that was *unchecked*. Both were green. Both would have stayed green indefinitely.
