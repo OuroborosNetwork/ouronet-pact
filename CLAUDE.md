@@ -255,7 +255,13 @@ Read "or equivalent" to include the `CAP_*` **ownership** gates — which the pr
 *"Ouronet account-ownership enforcement"* — and there are **62 sites across 23 files**, none of them
 in the sweep's scope.
 
-**Do not resolve those 62 by reordering them.** Ordering is a *proxy* for testability, and it can
+**Do not resolve those 62 by reordering them.** *(Engineering position, 2026-09-17, NOT an owner
+ruling — the 2026-09-14 ruling above is one, and the two should not be read as equal.) In plain
+terms: a `defcap` usually has two checks, "are you allowed?" and "is this a sensible request?".
+Whichever runs first is the one a failing test sees, so the second one can be correct and still
+never be exercised. Swapping the order does not fix that — it just hides the other check instead.
+Choosing test data where the first check passes exercises BOTH. That is why the fix below is a
+fixture and not a reorder.* Ordering is a *proxy* for testability, and it can
 expose only ONE of two state-dependent guards at a time. `[6.2.10]` `TX-AQP-NEG-SCRCTL` and `[6.4]`
 `<<TX-AQP-FA01>>` both **depend** on the current order to reach an argument guard without a
 signature; hoisting the ownership gate there would make the distinctness clause unreachable instead.

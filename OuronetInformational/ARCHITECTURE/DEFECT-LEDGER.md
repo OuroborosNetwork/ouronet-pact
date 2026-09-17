@@ -2522,41 +2522,33 @@ literals *inside tools* and cannot see a path in prose.
 
 ## 7.3 Known-open, recorded deliberately
 
-- **RT-F-001 is one of THREE identical ops, and only one is pinned.** *(found 2026-09-16, by asking
-  the same question of every `defpact` in the tree.)*
+- **RT-F-001's sibling question: CLOSED 2026-09-17 by owner ruling — and my entry was wrong on its
+  own central claim.** *(raised 2026-09-16, settled and corrected here.)*
 
-  `MTX|C_AddLiquidity`, `MTX|C_AddFrozenLiquidity` and `MTX|C_AddSleepingLiquidity` are structurally
-  identical where it matters:
+  **The ruling.** *"Collect before validating is correct, leave as is."* `MTX|C_AddLiquidity`,
+  `MTX|C_AddFrozenLiquidity` and `MTX|C_AddSleepingLiquidity` stay as they are. Fee-before-validation
+  inside these `defpact`s is the design, not a defect, and the 2026-09-14 remedy — **split the fee,
+  do not refund it** — remains the whole of the mitigation.
 
-  | | step 0 | step 1 |
-  |---|---|---|
-  | all three | `C_Collect patron (URCi_AddLiquidityInitiation)` | `(enforce (= prev-pool-state current-pool-state) "Execution Step of Adding Liquidity cannot execute on altered pool state!")` |
+  **The correction, which matters more than the ruling.** This entry claimed *"a repair applied to
+  `MTX|C_AddLiquidity` alone would leave two siblings with the behaviour it was written to remove."*
+  **That was false, and one grep would have shown it.** All three collect
+  `URCi_AddLiquidityInitiation` in step 0 *and* `URCi_AddLiquidityChurnRemainder` in step 1: the
+  2026-09-14 split was applied to **all three** at the time. I established that the three shared a
+  **guard**, and inferred from that they shared an **unrepaired defect** — without once checking
+  whether the repair was present. A shared shape is evidence of a shared question, never of a shared
+  answer.
 
-  Same collector, same reader, same guard, **same message, character for character**. So the whole
-  of RT-F-001 — fee taken before the condition that decides whether the operation may happen, a
-  stranger's ordinary swap invalidating the quote, no refund — applies verbatim to the other two.
-  **The pending ruling therefore covers three ops, not one**, and a repair applied to
-  `MTX|C_AddLiquidity` alone would leave two siblings with the behaviour it was written to remove.
+  **The heuristic that produced the wrong recommendation, named so it is not trusted blindly again.**
+  The entry argued `MTX|C_Issue` was *"the counter-example, and it is the specification"*, on the
+  §1.1a tell: *when one member of a family of identical ops is built the other way round, the odd
+  one out is the design.* The owner's ruling says otherwise — `C_Issue` is a different shape
+  (`URCi_IssuePool`, no split, no state-equality guard), and being the minority told us nothing about
+  which shape was intended. **That tell finds candidates; it does not settle design questions, and
+  here it pointed at the wrong member of the family.**
 
-  **The fourth defpact in the same file is the counter-example, and it is the specification.**
-  `MTX|C_Issue` validates in step 0 (`UEV_`) and collects in step 1 — validation before money, in
-  the same file, by the same author. The same tell that identified the SWP/ATS toggle-lock defect
-  in §1.1a: when one member of a family of identical ops is built the other way round, the odd one
-  out is the design, not the deviation. (The two AQP defpacts, `MTX|2|C_Inject` and
-  `MTX|2|C_SweepRevokeAnchor`, are a different shape — neither carries a state-equality guard.)
-
-  **NOT PINNED, and why — the fixtures do not exist and manufacturing them belongs elsewhere.**
-  Measured in the RT-F chain: nobody holds the frozen LP twin
-  (`F|P|OURO-BUSD|LP-98c486052a51` — ANHD 0.0, EMMA 0.0), and the LP has no sleeping link at all
-  (`UR_Sleeping` raises). Pinning the siblings needs a freeze and a sleep staged first, i.e. real
-  fixture construction inside a suite whose subject is two actors racing on an in-flight pact.
-  **A half-built griefing test is worse than a recorded gap**: it would report the family as covered
-  while exercising the one member that already was.
-
-  What this entry buys is the thing the count was hiding — *the ruling's scope*. It is recorded
-  rather than tested for the same reason RT-F-001's own remedy is recommended rather than applied:
-  when money moves inside a `defpact` is a design decision, and all three want deciding together.
-
+  What survives: the scope observation was right — the question did cover three ops rather than one,
+  and asking it of all three is what produced a ruling that closes all three at once.
 
 - `DPTF\|C_Transfer` and its preview **both** give the raw
   `No value found in table ouronet-ns.DPTF_DPTF\|PropertiesTable for key:` at a non-existent id.
