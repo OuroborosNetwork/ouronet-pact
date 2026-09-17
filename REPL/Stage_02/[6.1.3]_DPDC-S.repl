@@ -766,3 +766,86 @@
 (commit-tx)
 (print "=== END TX-SET-008 ==================================================")
 (print "")
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+
+(begin-tx "TX-SET-009 - the NONCE-level owner gates, on this file's SFT fixture")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-SET-009 · 01 · non-owner AddQuantity / EnableNonceFragmentation ====
+(print "--- [TX-SET-009 · 01 · non-owner AddQuantity / EnableNonceFragmentation] ---")
+;;Two more gates with no witness, both nonce-level rather than set-level. They live HERE because the
+;;fixture does: `TSFS-98c486052a51` is defined by this file, and its nonce 1 is the only class-0
+;;UNFRAGMENTED nonce reachable without building one. `[6.1.2]_DPDC-FRAGMENTS`'s `TFRG` nonce 1 is
+;;already fragmented -- that is the entire point of that suite -- so aiming there would be refused by
+;;`(enforce (not iz-fragmented) …)` and would prove nothing about ownership.
+;;
+;;THE TWO GATES ARE NOT THE SAME GATE, which is why both are worth pinning:
+;;  · `DPDC-MNG|C>ADD-QUANTITY` ends on `CAP_EnforceAccountOwnership ACCOUNT` -- the account being
+;;    credited, not the token owner. It is the patron-vs-owner split of RT-D-001 in a mint: the
+;;    attacker pays, and names someone else's account as the one to receive quantity.
+;;  · `DPDC-F|C>ENABLE-FRAGMENTATION` ends on `DPDC::CAP_Owner id son` -- the TOKEN's owner.
+;;Both refuse with ANHD's key here only because ANHD happens to be both; the arguments are chosen so
+;;each op is refused by its own gate.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (attacker:string KST.EMMA)
+        (victim:string KST.ANHD)
+        (sft-id:string "TSFS-98c486052a51")
+        (nonce:integer 1)
+    )
+    (let
+        (
+            (supply-before:integer (ref-DPDC::UR_AccountNonceSupply victim sft-id true nonce))
+            (type:object{DpdcUdcV2.URI|Type}
+                (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        )
+        (let
+            (
+                (nd:object{DpdcUdcV2.DPDC|NonceData}
+                    (ref-DPDC-UDC::UDC_NonceData
+                        0.0 0.0 "FragN1" "Fragmentation marker" (ref-DPDC-UDC::UDC_NoMetaData) type
+                        (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
+                    )
+                )
+            )
+            (map print
+                [
+                    ;;PRECONDITIONS. Both ops guard on the nonce's class and fragmentation state
+                    ;;BEFORE reaching their owner checks.
+                    (expect "<<TX-SET-009>> nonce 1 is CLASS 0, which both ops require"
+                        0 (ref-DPDC::UR_NonceClass sft-id true nonce))
+                    (expect "<<TX-SET-009>> nonce 1 is NOT fragmented, so EnableNonceFragmentation reaches its owner check"
+                        false (ref-DPDC-F::UEV_IzNonceFragmented sft-id true nonce))
+                    (expect "<<TX-SET-009>> ...and the victim actually holds some of it, so the mint target is real"
+                        true (> supply-before 0))
+                    ;;THE TWO REFUSALS.
+                    (expect-failure "<<TX-SET-009>> paying the gas does not let you mint quantity into someone else's account"
+                        "Keyset failure (keys-all): [PK_Ancie...]"
+                        (ref-TS02-C1::DPSF|C_AddQuantity attacker sft-id victim nonce 5))
+                    (expect-failure "<<TX-SET-009>> a non-owner cannot enable fragmentation on a nonce"
+                        "Keyset failure (keys-all): [PK_Ancie...]"
+                        (ref-TS02-C1::DPSF|C_EnableNonceFragmentation attacker sft-id nonce nd))
+                    ;;...and both refusals were TOTAL: no quantity was minted, no flag was flipped.
+                    (expect "<<TX-SET-009>> ...and neither the supply nor the fragmentation flag moved"
+                        [supply-before false]
+                        [(ref-DPDC::UR_AccountNonceSupply victim sft-id true nonce)
+                         (ref-DPDC-F::UEV_IzNonceFragmented sft-id true nonce)])
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-SET-009 ==================================================")
+(print "")

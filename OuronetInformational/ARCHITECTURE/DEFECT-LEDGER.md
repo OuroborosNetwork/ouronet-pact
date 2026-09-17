@@ -2277,8 +2277,9 @@ After all four, it reproduces the hand result exactly and clears `DEFINE-VAULT`.
 | + recognising the SMART-account refusal (defect 4) | 29 | 83 |
 | + the three `DPTF|S>` special-role witnesses | 32 | 80 |
 | + the two `ATS|S>` parameter witnesses | 34 | 78 |
-| + the two `DPDC-S|C>` set witnesses | **36** | **76** |
-| …of the 38 whose gate sits after a business `enforce` | 11 → **26** | 27 → **12** |
+| + the two `DPDC-S|C>` set witnesses | 36 | 76 |
+| + the two DPDC nonce-level witnesses | **38** | **74** |
+| …of the 38 whose gate sits after a business `enforce` | 11 → **28** | 27 → **10** |
 
 Re-run it with `python3 REPL/tools/_ownerobs.py`; the rows above are checkpoints on one measurement,
 not four separate claims.
