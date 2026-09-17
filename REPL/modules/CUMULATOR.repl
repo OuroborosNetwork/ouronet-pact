@@ -67,3 +67,73 @@
 )
 (env-sigs [])
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "CUM-G8 — the DALOS audit's H3 zero-leg fix, which had no witness")
+(print "")
+(print "=== CUM-G8 — one free leg no longer aborts a billable bundle ================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;H3 / #8H: `IGNIS::C_Collect` had no per-leg zero filter, so ONE legitimately-free leg hit
+;;`IGNIS|C>TRANSFER`'s unconditional `(> ta 0.0)` enforce and aborted the WHOLE bundle. The fix
+;;(`02_IGNIS.pact:1896-1901`) routes a zero leg to `(with-capability (IGNIS|S>FREE) true)` instead,
+;;so the free leg is skipped, the billable legs still settle, and the free one stays observable
+;;on-chain as an event.
+;;
+;;It was present and unwitnessed: `IGNIS|S>FREE` appeared in no running `.repl` at all -- only in an
+;;archived scratch file the gate excludes by name. Reverting the fix turned nothing red.
+;;
+;;THE CONSTRUCTION IS DELICATE AND THAT IS WHY IT WAS NEVER RE-CREATED. Two conditions, both
+;;necessary, both learned by measurement here:
+;;  1] Interactors must be Sigma-prefixed SMART accounts (or BAR) -- `IGNIS|C>COLLECT` rejects an
+;;     ordinary standard account as an interactor outright.
+;;  2] They must be DISTINCT. Two legs sharing an interactor are COMPRESSED into one entry before
+;;     this branch is reached, so a zero leg merged into a billable one simply disappears and the
+;;     fix's branch is never entered. A first attempt with both legs on one account produced a
+;;     perfectly green, perfectly meaningless pass -- the bundle settled and `IGNIS|S>FREE` never
+;;     fired.
+;;Neither is routed through BAR, because priming would let the billable leg's redirected cut land on
+;;the same BAR bucket and turn the zero leg non-zero again, masking the very thing under test.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (zero-interactor:string (DALOS.GOV|VST|SC_NAME))
+        (real-interactor:string (DALOS.GOV|ATS|SC_NAME))
+    )
+    (let
+        (
+            (before:decimal (ref-DALOS::UR_TF_AccountSupply KST.EMMA false))
+        )
+        (ref-IGNIS::C_Collect KST.EMMA
+            { "cumulator-chain":
+                [ {"ignis": 0.0, "interactor": zero-interactor}
+                  {"ignis": 5.0, "interactor": real-interactor} ]
+            , "output": [] })
+        (let
+            (
+                (names:[string] (map (lambda (e:object) (at "name" e)) (env-events true)))
+            )
+            (map print
+                [
+                    ;;THE FIX. Before it, this whole call aborted on the zero leg.
+                    (expect "<<CUM-G8>> H3: the billable leg still settles despite a free leg beside it"
+                        5.00 (- before (ref-DALOS::UR_TF_AccountSupply KST.EMMA false)))
+                    ;;...and the free leg took the fix's branch, which is what makes this a test of
+                    ;;the fix rather than of the bundle merely surviving.
+                    (expect "<<CUM-G8>> ...and the free leg emitted IGNIS|S>FREE, the fix's own branch"
+                        true (contains "ouronet-ns.IGNIS.IGNIS|S>FREE" names))
+                    ;;NON-VACUITY on the construction: two DISTINCT interactors really did stay
+                    ;;distinct, i.e. compression did not merge them. Two collects, not one.
+                    (expect "<<CUM-G8>> ...and the two legs were NOT compressed into one"
+                        2 (length (filter (= "ouronet-ns.IGNIS.IGNIS|C>COLLECT") names)))
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
