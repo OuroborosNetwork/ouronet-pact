@@ -8,6 +8,32 @@
 
 | Band | Lines | Action |
 |------|-------|--------|
+> ## ⚠ MEASURED 2026-09-17 — THE BANDS BELOW MIS-ORDER THE POPULATION
+>
+> These thresholds are a **proxy** for deploy gas against StoaChain's 2,000,000 block limit. The
+> actual gas had never been read: 131 of 139 module measurements in the suite were bare
+> `(format …)` rather than `(print (format …))` — computed and discarded. Printed now.
+>
+> | module | lines | band | deploy gas | share of block |
+> |---|---:|---|---:|---:|
+> | `02_INFO-ONE+` | 4,200 | **Warning** | **436,250** | **22%** |
+> | `04_RPS` | 5,621 | **Danger** | 353,662 | 18% |
+> | `05_FVT` | 3,978 | Acceptable | 252,470 | 13% |
+> | `06_VCT` | 3,509 | Acceptable | 243,157 | 12% |
+> | `02_SCORE` | 4,284 | **Warning** | 229,505 | 11% |
+> | `03_AQP` | 3,508 | Acceptable | 203,552 | 10% |
+>
+> **The most expensive module in the system is in Warning, not Danger** — `INFO-ONE+` costs 23% more
+> to deploy than the module marked *"split before deploying"*, on 25% fewer lines. And a Warning
+> module (`SCORE`) deploys for less than two Acceptable ones.
+>
+> Line count is not monotone in deploy gas here, because modules differ in what their lines *are*.
+> **A threshold on this proxy cannot order the population, so it cannot decide which module to
+> split.** Nothing is near the limit: the worst case uses 22% of a block.
+>
+> Treat the bands below as a **review prompt**, not a gate, until they are re-derived from gas.
+> See `03_AQP/Audit/RPS-SPLIT-SCOPING.md` and `ARCHITECTURE/DEFECT-LEDGER.md` §8.29, §8.31.
+
 | Target | under **3,500** | fine |
 | Acceptable | 3,500 – 4,000 | only **with a plan** |
 | Warning | 4,000 – 4,500 | **start designing the split now** |
