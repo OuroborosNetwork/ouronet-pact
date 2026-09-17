@@ -3786,3 +3786,38 @@ real findings historically.
 **All 5 wide-mode hits inspected: every one a false positive** — two modref bindings, one guarded by
 the `(if row-found …)` idiom, one by `try`, one whose `enforce` makes no existence claim. The mode's
 own label says to expect them, and it is right. The tree is clean on this axis.
+
+## 8.32 The last live unpinned enforce — 0 of 790
+
+`URCv_RTSplitAmounts`' zero-index guard was the single live `enforce` in the tree with no negative
+test (the other 24 unpinned sit in legacy `00_DPMF`). Closed by `<<ATS-G31>>`.
+**`_enforce_coverage.py`: LIVE unpinned = 0.**
+
+**Why it survived every sweep, and it is not the reason the source gives.** The comment calls a zero
+index *"a reachable live state (rbt-supply minted outside the pool)"* — a state no suite creates. But
+`URC_Index` returns **-1.0** when rbt-supply is 0, so a freshly **issued, never-kickstarted** pair
+trips the same guard, and that is trivially constructible.
+
+**That state is DOUBLE-GUARDED, and the outer guard is why nobody found this.** With rbt-supply at 0,
+the enforce immediately above — `(<= rbt-amount rbt-supply)` — refuses any **positive** amount first.
+Measured: at `1.0` the answer is *"Cannot compute for amounts greater than the pairs rbt supply"*,
+never the index message.
+
+> **`0.0` is what threads the needle.** It satisfies `(<= 0.0 0.0)` and leaves the index check as the
+> only thing left to refuse. Every *natural* amount is stopped one line earlier — which is exactly
+> why an ordinary test never reached it, and why the site sat unpinned while the suite grew past
+> 25,000 assertions.
+
+Both halves are pinned side by side, so the pair localises any regression: the shadow at `1.0`, the
+guard at `0.0`.
+
+### Coverage worklists, all axes
+
+| axis | worklist |
+|---|---|
+| owner gates, shadowed and never witnessed (testable) | **0** |
+| live `enforce` sites unpinned | **0** |
+| client-facing cost previews never measured | **0** |
+| Talos client entrypoints never driven | **0** |
+| cross-module calls to a non-existent member | **0** |
+| positive assertions that cannot fail | **0** |

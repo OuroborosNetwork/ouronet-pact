@@ -5013,3 +5013,91 @@
 )
 (env-sigs [])
 (rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "ATS-G31 — the last live unpinned enforce in the tree")
+(print "")
+(print "=== ATS-G31 — URCv_RTSplitAmounts' zero-index guard ========================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+;;`REPL/tools/_enforce_coverage.py` measures which of the tree's 790 matchable `enforce` messages a
+;;negative test has actually pinned. After the 2026-09-17 sweep this was the ONE live site still
+;;unpinned -- the other 24 sit in the legacy `00_DPMF`.
+;;
+;;WHAT IT GUARDS. `URCv_RTSplitAmounts` divides by the pair's index, and the source notes that a zero
+;;index is "a reachable live state (rbt-supply minted outside the pool)". Ten call sites across ATSU
+;;and the INFO readers share this function, so one enforce covers all of them.
+;;
+;;WHY IT WAS NEVER PINNED, and it is not the reason the comment suggests. `URC_Index` returns **-1.0**
+;;when rbt-supply is 0 -- so a freshly ISSUED, never-KICKSTARTED pair trips the guard, which is far
+;;easier to reach than the "minted outside the pool" case. But that state is DOUBLE-GUARDED: with
+;;rbt-supply at 0, the enforce immediately above -- `(<= rbt-amount rbt-supply)` -- refuses any
+;;POSITIVE amount first. Measured: at 1.0 the answer is "Cannot compute for amounts greater than the
+;;pairs rbt supply", never the index message.
+;;
+;;An amount of **0.0** is what threads the needle: it satisfies `(<= 0.0 0.0)` and leaves the index
+;;guard as the only thing left to refuse. That is the whole trick, and it is why no ordinary test
+;;found this site -- every natural amount is stopped one line earlier.
+(env-sigs
+    [
+        { "key": "PK_AOZ", "caps": [] }
+        { "key": "95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf"
+        , "caps":
+            [
+                (coin.TRANSFER "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf"
+                    "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 100000.0)
+                (coin.TRANSFER "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf"
+                    "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 100000.0)
+                (coin.TRANSFER "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf"
+                    "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 100000.0)
+                (coin.TRANSFER "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf"
+                    "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 100000.0)
+            ]
+        }
+    ]
+)
+(let
+    (
+        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+    )
+    ;;A virgin cold-RBT and a virgin pair. Both are ordinary client issuances, and the pair is left
+    ;;UN-KICKSTARTED on purpose -- that is the state under test.
+    (ref-TS01-C1::DPTF|C_Issue KST.AOZT KST.AOZT
+        ["ZeroIdxRbt"] ["ZIRB"] [24] [true] [true] [true] [true] [true] [true])
+    (ref-TS01-C2::ATS|C_Issue KST.AOZT KST.AOZT ["ZeroIdxProbe"] [24]
+        [(at 0 (ref-ATS::UR_RewardTokenList "PlebeicStrength-98c486052a51"))] [false]
+        [(at 0 (filter (lambda (x:string) (contains "ZIRB" x))
+            (ref-DPTF::URH_OwnedTrueFungibles KST.AOZT)))] [true])
+    (let
+        (
+            (pair:string (at 0 (filter (lambda (x:string) (contains "ZeroIdx" x))
+                (ref-ATS::URH_OwnedAutostakePairs KST.AOZT))))
+        )
+        (map print
+            [
+                ;;THE STATE, asserted -- an un-kickstarted pair really does have no RBT supply, and
+                ;;its index really is the negative sentinel rather than a positive share price.
+                (expect "<<ATS-G31>> a freshly issued, un-kickstarted pair has no RBT supply"
+                    0.0 (ref-ATS::URC_PairRBTSupply pair))
+                (expect "<<ATS-G31>> ...so its index is the -1.0 sentinel, not a share price"
+                    (- 0.0 1.0) (ref-ATS::URC_Index pair))
+                ;;THE SHADOW. Any POSITIVE amount is refused one line earlier, by the supply guard.
+                ;;Pinned so the next assertion is visibly the one that escaped it.
+                (expect-failure "<<ATS-G31>> SHADOW: a positive amount is stopped by the supply guard above"
+                    "Cannot compute for amounts greater than the pairs rbt supply"
+                    (ref-ATS::URCv_RTSplitAmounts pair 1.0))
+                ;;THE GUARD. 0.0 satisfies (<= 0.0 0.0), leaving the index check as the only refuser.
+                (expect-failure "<<ATS-G31>> ...while 0.0 clears it and reaches the zero-index guard"
+                    "has a zero Index; reward-token amounts cannot be derived"
+                    (ref-ATS::URCv_RTSplitAmounts pair 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
