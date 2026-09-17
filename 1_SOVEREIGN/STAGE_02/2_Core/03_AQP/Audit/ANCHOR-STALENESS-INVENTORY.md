@@ -55,6 +55,27 @@ The **full** H4 fix has two halves:
 2. **A way to actually retire an employed anchor** — freeze the affected pools/scores, run the **re-score
    sweep** on-chain to zero/recompute the dependent scores, *then* allow revoke. ← **NOT BUILT YET.**
 
+> ## ⚠ CORRECTED 2026-09-17 — THE SWEEP LANDED; THIS DOCUMENT IS STALE BELOW THIS LINE
+>
+> The paragraph that follows says an employed anchor is **"locked forever"**. **That is no longer
+> true, and it is the dangerous direction for a stale document to be wrong in** — a reader
+> consulting this file would believe a permanent operational lock is in force and plan around a
+> constraint that does not exist.
+>
+> The unwind is BUILT and wired into Talos, through **two** doors
+> [VERIFIED by command, `1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact`]:
+> `AQP-FVT|CC_SweepRevokeAnchor` (`:291`) for a recompute set that fits in one transaction, and
+> `MTX-AQP|2|CC_SweepRevokeAnchor` (`:288`, `:2258`) — a defpact — when it does not. The
+> `XE_UnbumpBoostClassScoreLinks` decrement the paragraph asks for is live at `01_ANK.pact:2184`.
+>
+> Found while assembling Part I of the Audit Book, by checking each design document against the tree
+> rather than reading it. Two other "NOT BUILT" claims in the sibling `M3-DEB-DESIGN.md` were checked
+> the same way and **are still accurate** (`C_InjectChecked` and `InjectSweep` genuinely do not
+> exist) — the first pass matched them against similarly-named functions that do, which is why each
+> identifier was re-checked by exact name before anything was corrected here.
+>
+> *(Original text preserved below.)*
+
 Because the re-score sweep (§ item 4 above) does not exist yet, half 2 is deferred. **Consequence of the
 temporary patch:** once an anchor's boost-class is linked to a score, that anchor is **locked forever** (cannot
 be revoked) until we build the sweep-based (or vacate-based) unwind. That is intentionally conservative —

@@ -273,4 +273,12 @@ either fits or fails → fall back to defpact).
      calibration* below (real-state gas).
    - **2e IGNIS-surcharge penalty — ⏸ NOT BUILT.** `forced-fix-count × RATE`, non-discountable, charged at collect
      and zeroed (2.4.3). Depends on 2c/2d producing the forced-fix count.
+     > **PARTIALLY CORRECTED 2026-09-17.** The COUNTER exists: `FVT|T|ForcedFixCount` with its
+     > composite key `UCk_ForcedFixCount` (`05_FVT.pact:1444`), and it IS zeroed at collect via
+     > `XE_WU_FvtForcedFixCount|Zero` (`:3393`) [VERIFIED by command]. What is not built is the
+     > **surcharge** — no `forced-fix-count × RATE` charge exists. So the bookkeeping half shipped
+     > and the penalty half did not; "NOT BUILT" understates the former and is accurate about the
+     > latter. 2c (`C_InjectChecked`/`CC_InjectChecked`) and 2d (`InjectSweep`) were re-checked by
+     > exact name and are **correctly** marked NOT BUILT — neither identifier exists anywhere in the
+     > tree.
    Shares the H4 anchor sweep. #12 stays OPEN until 2b is proven (deb-moving test) and 2c–2e are built.
