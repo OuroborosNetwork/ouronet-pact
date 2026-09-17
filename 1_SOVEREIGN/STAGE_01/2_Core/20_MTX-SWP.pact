@@ -1004,6 +1004,27 @@
                     (ref-SWPI:module{SwapperIssueV4} SWPI)
                 )
                 (require-capability (SECURE))
+                ;;M11 FIX (2026-09-17) — AUTHORISATION BEFORE THE MONEY, per the 2026-09-14 ruling.
+                ;;This conditional admin gate used to live ONLY in step 3's <MTX-SWP|C>ISSUE>, which
+                ;;runs AFTER step 2 has irreversibly collected IGNIS + STOA. Measured by execution:
+                ;;a p=true issuance committed 2,919.77 IGNIS + 459.0 STOA in step 2 and was then
+                ;;refused in step 3 with "MTX-SWP Ownership not verified" -- no refund, no cancel,
+                ;;and rolling back costs a further 53.00 IGNIS. The SINGLE-TRANSACTION twin refuses
+                ;;the identical operation for ZERO, because <SWPI|C>ISSUE> hoisted this same branch
+                ;;above <UEV_Issue> during that sweep. Same operation, two live Talos doors, and
+                ;;only one charged you for a refusal -- selected by <p>, an undocumented raw bool.
+                ;;
+                ;;THE WHOLE CONDITIONAL FORM IS HOISTED, not the bare acquire: only a PERMISSIONED
+                ;;issuance needs the admin key, so unwrapping the branch would convert a conditional
+                ;;gate into an unconditional one and lock out every ordinary pool issuance. That is
+                ;;the exact mistake CLAUDE.md records a scripted reorder making during the sweep.
+                ;;<with-capability> rather than <compose-capability> because this is a defpact step,
+                ;;not a defcap body; acquiring <GOV|MTX-SWP_ADMIN> runs its enforce-one and nothing
+                ;;else, and step 3 re-acquires it unchanged.
+                (if p
+                    (with-capability (GOV|MTX-SWP_ADMIN) true)
+                    true
+                )
                 (ref-SWPI::UEV_Issue account pool-tokens fee-lp weights amp p)
             )
         )

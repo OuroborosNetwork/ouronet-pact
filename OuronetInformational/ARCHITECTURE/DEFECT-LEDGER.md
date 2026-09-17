@@ -2778,7 +2778,15 @@ about **authorisation after payment**, which is the subject of the *2026-09-14* 
 single-transaction twin already complies with it. The two rulings do not conflict; the question was
 never put in the terms that would have surfaced this one.
 
-**Not fixed here.** The repair has a precedent three lines long — hoist the `p`-conditional admin
+**FIXED 2026-09-17, pinned by `<<RT-F-002>>`.** The whole `(if p …)` form is hoisted into step 1,
+ahead of `UEV_Issue` and therefore ahead of all money — the branch preserved exactly, because only a
+*permissioned* issuance needs the key and unwrapping it would lock out every ordinary pool issuance.
+`RT-F-002` drives the Talos starter with `p=true` as a non-Demiurgoi and pins the refusal **in step
+1**, plus an attribution control: the same call with the same signer and only `p` flipped must fail
+for a *different* reason, because `PK_AncientHodler` is both an account key and a Demiurgoi master in
+this fixture and an ANHD-signed drive would prove nothing.
+
+*(Original note, kept:)* The repair has a precedent three lines long — hoist the `p`-conditional admin
 compose above `UEV_Issue` in step 0, mirroring `SWPI|C>ISSUE`, which is what the authorise-first sweep
 did everywhere it looked. It is recorded rather than applied because it changes when money moves in a
 live defpact, and this is the second time in two days that an assumption about this exact family was

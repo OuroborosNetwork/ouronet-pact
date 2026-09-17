@@ -178,3 +178,62 @@
 )
 (env-sigs [])
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RT-F-002 - pay 2,919 IGNIS for a refusal the free door gives away")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== RT-F-002 · 01 · permissioned issuance, no admin key ====
+(print "--- [RT-F-002 · 01 · permissioned issuance, no admin key] ---")
+;;<<RT-F-002>> FAMILY: F | STATUS: FIXED
+;;HYPOTHESIS: `MTX|C_Issue`'s admin gate lived only in STEP 3. Step 1 validated shape, step 2
+;;            irreversibly collected IGNIS + STOA, and only then did step 3 ask whether the caller
+;;            was allowed to do this at all. A non-Demiurgoi calling the permissioned door (`p=true`)
+;;            would pay in full and be refused afterwards, with no refund and no cancel -- while the
+;;            SINGLE-TRANSACTION twin refuses the identical operation for nothing.
+;;METHOD:     drive the Talos starter with `p=true` signed by a non-Demiurgoi. `p` is an
+;;            undocumented raw bool on the wrapper's signature, so this is an ordinary mistake, not
+;;            an exotic one.
+;;RESULT:     FIXED 2026-09-17. Measured before the fix, by execution: step 2 committed 2,919.77
+;;            IGNIS + 459.0 STOA and step 3 then refused with "MTX-SWP Ownership not verified";
+;;            rolling back cost a further 53.00 IGNIS. The conditional admin gate is now hoisted
+;;            into STEP 1, ahead of `UEV_Issue` and therefore ahead of all money, mirroring
+;;            `SWPI|C>ISSUE`, which the 2026-09-14 authorise-first sweep had already repaired.
+;;            The whole `(if p …)` form moved, not the bare acquire: only a PERMISSIONED issuance
+;;            needs the key, and unwrapping the branch would lock out every ordinary issuance.
+;;
+;;ORIGINALLY FILED AS M11 AND CLOSED AS UNREACHABLE. The verdict rested on "MTX-SWP has zero Talos
+;;wiring"; `05_TS01-P.pact:221-330` wires all six starters. DEFECT-LEDGER 8.4.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-TS01-CP:module{TalosStageOne_ClientPactsV4} TS01-CP)
+        (stranger:string KST.EMMA)
+        (pool-tokens:[object{SwapperV4.PoolTokens}]
+            [
+                { "token-id":  "BUSD-98c486052a51", "token-supply": 1000.0}
+                { "token-id":  "TUSD-98c486052a51", "token-supply": 1000.0}
+            ]
+        )
+    )
+    (map print
+        [
+            ;;THE ATTACK, now refused in step 1 -- before a single IGNIS moves.
+            (expect-failure "<<RT-F-002>> ATTACK REFUSED IN STEP 1: the admin gate now runs before the money"
+                "MTX-SWP Ownership not verified"
+                (ref-TS01-CP::SWP|C_IssueStandardPool stranger stranger pool-tokens 10.0 true))
+            ;;ATTRIBUTION, and this block needs it more than most: `PK_AncientHodler` is BOTH an
+            ;;ordinary account key AND a DemiurgoiSithMasters member in this fixture, so an
+            ;;ANHD-signed drive would pass the admin gate and prove nothing. Driving the SAME call
+            ;;with the SAME signer and only `p` flipped must fail for a DIFFERENT reason -- if both
+            ;;gave the admin message, the refusal would be about the signer, not about `p`.
+            (expect-failure "<<RT-F-002>> ...and with p=false the refusal is NOT the admin gate, so p is what fired it"
+                "Keyset failure"
+                (ref-TS01-CP::SWP|C_IssueStandardPool stranger stranger pool-tokens 10.0 false))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
