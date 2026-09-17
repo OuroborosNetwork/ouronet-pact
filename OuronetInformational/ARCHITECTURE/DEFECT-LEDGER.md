@@ -3707,3 +3707,46 @@ deploy size cap"* and got six modules over the line — which reads as far more 
 truth. `MODULE-SIZING.md`'s bands are in **LINES**, and calibrated to **StoaChain's 2,000,000 block
 gas limit**, not to Kadena mainnet's 150,000. Two different chains, two different limits, two
 different units. The alarming version was wrong.
+
+## 8.29 The Danger band that was never checked against the limit it approximates
+
+§8.28 recorded `04_RPS.pact` (5,621 lines) in `MODULE-SIZING.md`'s **Danger** band — *"split before
+deploying"* — and noted that roadmap 1.7.2.1 requires every module inside the ceiling before
+redeploy. Scoping the split produced two dead ends and then a third finding that retired the
+question.
+
+**There is no table seam.** Pact tables are module-private, so a split must partition the *tables*.
+With table reach computed **transitively** through intra-module calls — the direct-reference count
+says 103 of 339 functions touch a table, transitively it is **284**, and the direct figure would have
+produced a wrong design — the **15 substantive tables form ONE connected cluster**. Exhaustive search
+of every 2-way partition: the best cut peels off a single table, relieving **47 lines** while **73
+straddle**. *The best available split makes the module bigger.*
+
+**There is no prose remedy.** RPS is 7% comment lines; stripping every one leaves **5,207**, still
+707 above the threshold.
+
+**And then the number that mattered.** The bands are a **proxy** for deploy gas, calibrated to
+StoaChain's 2,000,000 block limit. The actual figure had never been read, and **the suite has been
+printing it all along**:
+
+| module | deploy gas | share of a block |
+|---|---:|---:|
+| **RPS** | **353,662** | **18%** |
+| FVT | 252,470 | 13% |
+| SCORE | 229,505 | 11% |
+
+The largest module in the system uses under a fifth of a block. **The 4,500-line Danger threshold
+maps to roughly 280,000 gas here — 14% — a conservative proxy by a factor of about five.**
+
+> **The question 1.4.1.2 should answer is no longer "how do we split RPS" but "are the bands right".**
+> One of those is a large refactor with an interface cascade behind it; the other is a calibration
+> check against a number already on screen.
+>
+> The refactor got scoped first because the band said *Danger*. A proxy that has never been checked
+> against the thing it approximates is indistinguishable from a measurement — and this one was
+> quoted in a roadmap phase as a blocking precondition for redeploy.
+
+**Two framing errors of mine along the way**, both caught before publication: I first sized the
+modules in **bytes** against Kadena's 150k cap (wrong chain, wrong limit, wrong unit — it made six
+modules look over the line), and I first measured table coupling **directly** rather than
+transitively, which would have produced a split design around a seam that does not exist.
