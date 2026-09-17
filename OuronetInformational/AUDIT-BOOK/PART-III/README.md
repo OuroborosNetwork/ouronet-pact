@@ -18,7 +18,7 @@ code reads like it would be. Every finding in this Part was reached by running s
 
 ## The register
 
-**36 attacks across 11 families. 19 found a defect. None succeeded.**
+**37 attacks across 11 families. 19 found a defect. None succeeded.**
 
 "None succeeded" means no attack achieved its stated goal — no value was moved, no gate was bypassed,
 no privilege was escalated. It does **not** mean nothing was wrong: 19 of the 35 exposed a real
@@ -30,7 +30,7 @@ defect on the way to being refused, and those are the substance of this Part.
 | **B** — permissionless reach | 2 | 1 | 1 |
 | **C** — admin impersonation | 1 | 0 | 1 |
 | **D** — ownership | 7 | 1 | 6 |
-| **E** — sequencing | 2 | 0 | 2 |
+| **E** — sequencing | 3 | 0 | 3 |
 | **F** — griefing | 2 | 2 | 0 |
 | **G** — hostile citizen module | 2 | 0 | 2 |
 | **H** — input domain | 3 | 3 | 0 |
@@ -58,7 +58,7 @@ actually received — stated as coverage, not as a claim of completeness.
 | defpact / Hydra-slice races | F | **adequate** — both attacks found defects, one of them a live money defect |
 | cross-module boundary abuse | G, B | **adequate** |
 | gas-station exploitation | I | **assessed as thin on an attack count of one — and that assessment was wrong.** `modules/DALOS-ADMIN.repl` already drives the gas capability through five blocks, including its spending ceiling. What was missing was not the cap but the arm beside it |
-| ordering / reentrancy-like | E | **thin — two attacks, both refused.** One of them documents a *structural absence* rather than a guard: nothing in the multi-transaction layer checks who is driving a recipe; safety today is a property of what each step happens to touch |
+| ordering / reentrancy-like | E | **three attacks, all refused.** One of them documents a *structural absence* rather than a guard: nothing in the multi-transaction layer checks who is driving a recipe; safety today is a property of what each step happens to touch |
 
 Two of the nine rows were **not on the plan at all** and were invented during the round: **J**
 (does the protocol's own accounting balance?) and **K**. K is the largest family and had a 100% hit
@@ -74,7 +74,17 @@ elsewhere** — and this is the second time in the round that "weakest family" t
 cap but the arm beside it: the cap is one branch of an `enforce-one` whose other branch is the admin
 guard, so the master keyset has no spending limit at all. Measured, and now pinned.
 
-The remaining thin row is named rather than rounded up. Family E's thinness is qualified: its second
+**The remaining row was closed the same way — by counting, not by intuition.** Asked which
+sequencing surface was least covered, the answer came from enumerating every multi-transaction recipe
+in the codebase and counting the test files that drive each. Ten of eleven had between three and
+seven. **One had none** — an *admin* entrypoint that push-collects other people's rewards, whose
+documentation made three claims and had never been executed by a test. Two of the three claims now
+hold under measurement; the third is untestable with the available fixture and is **stated as
+untested** rather than implied.
+
+> Both of the round's last two findings came from counting a population rather than inspecting a
+> candidate. Intuition kept pointing at surfaces that were already covered, and the thing with no
+> coverage at all was not the thing that looked suspicious. Family E's thinness is qualified: its second
 attack establishes that the defpact layer performs **no** driver check, and that every step is
 currently safe only because it happens to move the starter's own tokens. A future step touching only
 protocol state would have nothing to demand the starter's key, and that attack would succeed against
