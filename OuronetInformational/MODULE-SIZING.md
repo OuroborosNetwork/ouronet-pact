@@ -31,6 +31,33 @@
 > **A threshold on this proxy cannot order the population, so it cannot decide which module to
 > split.** Nothing is near the limit: the worst case uses 22% of a block.
 >
+> ### Proposed replacement — bands in GAS, for an owner ruling
+>
+> The limit is a **block**: 2,000,000 gas on StoaChain. Stating bands as a share of it removes the
+> proxy entirely.
+>
+> | proposed band | share of block | gas |
+> |---|---|---|
+> | Target | < 10% | < 200,000 |
+> | Acceptable | 10–20% | 200,000–400,000 |
+> | Warning | 20–35% | 400,000–700,000 |
+> | Danger | > 35% | > 700,000 |
+>
+> **Measured across 86 module deploys under that scheme: 79 Target · 6 Acceptable · 1 Warning ·
+> 0 Danger.** The single Warning is `02_INFO-ONE+` at 21.8%. `04_RPS` — the module the line bands
+> call Danger — lands in **Acceptable** at 17.7%.
+>
+> Why the line proxy cannot be repaired by moving its thresholds: **gas-per-line varies 26x across
+> the tree** (6.6 to 172.6, median 55.4). `INFO-ONE+` runs at 103.9, nearly double the median, which
+> is exactly why it outranks a module 25% longer. No single lines-threshold can order a population
+> that disperses that widely.
+>
+> *(Method: `cd REPL && pact modules/{ATS,AQP,DPDC,LAUNCHPAD}.repl`, which deploy the tree and now
+> print each module's gas — see DEFECT-LEDGER §8.31 for why they did not before. Test-transaction
+> lines are excluded; one of them, `Cold Recovery and Cull Test 2|5`, costs **930,805 gas — 46.5% of
+> a block** on its own. That is a RUNTIME figure, not a deploy one, and out of scope here, but it is
+> the largest single number the suite prints and nothing currently watches it.)*
+>
 > Treat the bands below as a **review prompt**, not a gate, until they are re-derived from gas.
 > See `03_AQP/Audit/RPS-SPLIT-SCOPING.md` and `ARCHITECTURE/DEFECT-LEDGER.md` §8.29, §8.31.
 
