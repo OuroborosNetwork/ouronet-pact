@@ -237,9 +237,23 @@ so the two cannot drift. This is the Option-A decision of 2026-08-27 that introd
 shared cost module. An atomic leaf cost must not cross a module boundary. If a module gets too
 big, split the module — do not exile its cost functions.
 
-**INFO layer:** 345 of 365 INFO implementations are thin wrappers over a `URCi_` reader; 14
-declare their op free (gas-station-subsidised hydra slices, ORBR, DSA oracle toggles), 4 are data
-views. 395 of 401 Talos client ops have an INFO preview.
+**INFO layer, re-measured 2026-09-17** (the figures below replace *"345 of 365 … 14 free … 4 data
+views. 395 of 401 Talos client ops"*, which was a correct census on 2026-09-06 and has been
+superseded by the round's own work — and whose sub-counts summed to 363, not the 365 it quoted):
+
+| | measured today | how |
+|---|---:|---|
+| `ClientInfo`-returning previews declared | **423** | `_info_measured.py` |
+| …client-facing (excluding INFO-internal helpers) | **414** | " |
+| …**measured** by a cost proof in a running suite | **414** | " |
+| …client-facing and never named by any test | **0** | " |
+| previews that wrap a `URCi_` reader | **346** | independent count, comments stripped |
+| Talos client entrypoints | **452** | independent count |
+
+The old *"395 of 401"* pairs a **preview** count with an **operation** count under one label; the
+Talos client surface is 452, so the two numbers were never the same population. `_info_measured.py`
+itself reported `401 of 401` until 2026-09-17, when it was found to be scanning three hardcoded
+files — see DEFECT-LEDGER §8.24.
 
 > **To decide whether an op charges, follow the Talos wrapper's `IGNIS::C_Collect` argument —
 > never the core `C_`'s return type.** A core `C_` returning a `string` says nothing; the cumulator
