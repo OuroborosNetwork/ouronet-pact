@@ -503,3 +503,82 @@
 )
 (env-sigs [])
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "TX-ICO-K8 — the preview quoted 88x the real cost, on the NORMAL state")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-ICO-K8 · 01 · preview/exec cost parity for the reward collect ====
+(print "--- [TX-ICO-K8 · 01 · preview/exec cost parity for the reward collect] ---")
+;;<<RT-K-008>> FAMILY: K | STATUS: FIXED
+;;HYPOTHESIS: `INFO_Collect` was the ONE client-facing cost preview in the tree named by no test at
+;;            all -- found not by suspicion but by counting the population, after the coverage tool
+;;            that reports on previews turned out to scan three HARDCODED files and to have
+;;            reported "401 of 401 measured, 0 never named" about a set it had defined to exclude
+;;            the gaps. An unmeasured preview is a number a client is shown and nobody checks.
+;;METHOD:     read the preview's `ignis-need`, then drive the real collect through the citizen
+;;            Talos and measure the patron's IGNIS balance across it. Preview against charge, one
+;;            transaction, nothing else moving.
+;;RESULT:     FIXED -- and the gap was not small. Preview said **88.0** (mint leg 87.0 + transfer
+;;            leg 1.0) for an operation that charged **1.0**.
+;;
+;;WHY, AND WHY IT IS THE NORMAL CASE RATHER THAN AN EDGE. `XI_CollectFor` used to mint urSTOA
+;;unconditionally; the 2026-09-14 vault-deadlock fix moved that mint INSIDE a
+;;`(!= urSTOA-supply 0.0)` guard, because a zero-amount mint is refused and the vault deadlocked.
+;;That fix repaired the EXECUTOR and left `URCi_Collect` -- the reader the preview wraps -- with its
+;;mint still outside the guard. And the collect that zeroes an account's urSTOA is its FIRST one, so
+;;the two paths disagreed on EVERY SUBSEQUENT ROUND. The disagreeing case is the ordinary one.
+;;
+;;The fix mirrors the executor's branch into the reader. This block asserts the state that makes it
+;;the interesting case, so a fixture drifting to non-zero urSTOA turns the PRECONDITION red rather
+;;than quietly making the parity check trivial.
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "PK_Florin", "caps": [] }
+        { "key": "PK_Lumy", "caps": [] }
+    ]
+)
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS02-CPAD:module{CitizenLaunchpadTalosV2} TS02-CPAD)
+    )
+    (let
+        (
+            (straggler:string (at 0 (STOAICO.URH_UncollectedAccounts)))
+            (ignis-id:string (ref-DALOS::UR_IgnisID))
+        )
+        (let
+            (
+                ;;Ordered: quote and balance BEFORE, charge measured across the call.
+                (urstoa:integer (STOAICO.UR_User2 straggler))
+                (quoted:decimal
+                    (at "ignis-need" (at "ignis" (STOAICO.INFO_Collect KST.ANHD straggler))))
+                (before:decimal (ref-DPTF::UR_AccountSupply ignis-id KST.ANHD))
+            )
+            (ref-TS02-CPAD::STOAICO|C_Collect KST.ANHD straggler)
+            (map print
+                [
+                    ;;THE PRECONDITION. Zero urSTOA is what makes the executor skip its mint leg,
+                    ;;and therefore what the reader has to agree with. If this ever goes non-zero,
+                    ;;this line goes red and says the case below stopped being the interesting one.
+                    (expect "<<RT-K-008>> the straggler's urSTOA is zero, so the executor skips its mint leg"
+                        0 urstoa)
+                    ;;NON-VACUITY: a real quote, not a zero that would match anything.
+                    (expect "<<RT-K-008>> the preview quotes a positive cost"
+                        true (> quoted 0.0))
+                    ;;THE PARITY. Before the fix this read 46.64 against a charge of 0.53.
+                    (expect "<<RT-K-008>> the preview quotes EXACTLY what the collect charges"
+                        quoted
+                        (- before (ref-DPTF::UR_AccountSupply ignis-id KST.ANHD)))
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(commit-tx)

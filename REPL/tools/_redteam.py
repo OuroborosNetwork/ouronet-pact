@@ -69,9 +69,28 @@ def scan_text(src, where="<mem>"):
 
 def collect():
     rows, errs = [], []
-    for p in sorted(glob.glob(os.path.join(ROOT, "RedTeam", "*.repl"))):
-        r, e = scan_text(open(p, errors="ignore").read(), os.path.relpath(p, ROOT))
+    # WIDENED 2026-09-17: this globbed `RedTeam/*.repl` only. The HEADER is the marker, not the
+    # directory -- and an attack that has to live beside its fixtures (RT-K-008 needs the STOAICO
+    # suite, which no RedTeam file loads) was simply absent from the register, silently. The total
+    # read 37 while 38 attacks existed. Same shape as the four enumeration defects found the same
+    # day: a scoped list that cannot report what it never opened.
+    #
+    # The RedTeam/ convention still matters, so attacks found OUTSIDE it are counted AND named,
+    # rather than either being dropped or being quietly normalised.
+    outside = []
+    for p in sorted(glob.glob(os.path.join(ROOT, "**", "*.repl"), recursive=True)):
+        rel = os.path.relpath(p, ROOT)
+        if rel.startswith("archive" + os.sep):
+            continue
+        r, e = scan_text(open(p, errors="ignore").read(), rel)
+        if r and not rel.startswith("RedTeam" + os.sep):
+            outside += [(x["tag"], rel) for x in r]
         rows += r; errs += e
+    if outside:
+        print("  NOTE: attack(s) registered from outside RedTeam/ (counted; listed so the "
+              "convention stays visible):")
+        for tag, rel in outside:
+            print(f"     {tag}  {rel}")
     seen = {}
     for r in rows:
         if r["tag"] in seen:

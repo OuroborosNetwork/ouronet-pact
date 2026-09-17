@@ -3563,3 +3563,47 @@ launchpad sales — and **one of them is named in no live `.repl` at all**. Hone
 
 The one gap is `STOAICO::INFO_Collect`, and chasing it found something better than a missing test —
 see §8.25.
+
+## 8.25 `RT-K-008` — the preview quoted 88× the real cost, on the ordinary case
+
+Found by chasing §8.24's single unmeasured preview, which was itself found by fixing the tool that
+had reported a perfect score. **Neither the defect nor the gap was suspected; both were counted into
+view.**
+
+`STOAICO::INFO_Collect` previews the StoicIco reward self-collect. Measured, one transaction, nothing
+else moving:
+
+| | |
+|---|---|
+| preview quoted | **88.0** (mint leg 87.0 + transfer leg 1.0) |
+| the operation charged | **1.0** |
+
+### Why, and why it is the NORMAL case rather than an edge
+
+`XI_CollectFor` used to mint urSTOA **unconditionally**. The 2026-09-14 vault-deadlock fix moved that
+mint **inside** a `(!= urSTOA-supply 0.0)` guard — because a zero-amount mint is refused and the
+whole vault deadlocked with no entrypoint able to restart it.
+
+That fix repaired the **executor** and left `URCi_Collect` — the reader the preview wraps — with its
+mint still outside the guard. And **the collect that zeroes an account's urSTOA is its first one**,
+so the two paths disagreed on **every subsequent round**. The disagreeing state is not an edge case;
+it is the steady state.
+
+> The deadlock fix's own comment runs to eighteen lines explaining the executor change, names the
+> three entrypoints that shared the deadlock, and cites a sibling module's `@doc` for the same
+> lesson. It does not mention the reader. **A preview and an executor are one pair; repairing one of
+> them is half a repair**, and the half that stays wrong is the half a client is shown *before*
+> committing.
+
+Fixed by mirroring the executor's branch into the reader. Now quotes **0.53** against a charge of
+**0.53**. Pinned by `<<RT-K-008>>`, which asserts the zero-urSTOA precondition explicitly so a
+drifting fixture turns *that* line red rather than quietly making the parity check trivial.
+
+**A register scoping fix came with it.** `_redteam.py` globbed `RedTeam/*.repl` only, so this attack —
+which must live beside the STOAICO fixtures, since no RedTeam file loads them — was absent from the
+register, silently: the published total read **37** while 38 attacks existed. The header is the
+marker, not the directory. Widened, and attacks found outside `RedTeam/` are now **counted and
+named**, so the convention stays visible rather than being dropped or quietly normalised.
+
+That is the **fifth** enumeration-vs-discovery defect of the session, and the register was the tool
+recording all the others.

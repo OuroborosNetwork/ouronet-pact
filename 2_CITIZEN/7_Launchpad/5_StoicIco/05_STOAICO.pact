@@ -499,12 +499,22 @@
                 (wSTOA-id:string (UR_Global8))
                 (urSTOA-id:string (UR_Global9))
             )
-            (+ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPTF::URCi_Mint urSTOA-id DEMIPAD|SC_NAME false))
-               (if (!= urSTOA-supply 0.0)
+            ;;PREVIEW/EXEC PARITY FIX (2026-09-17). The mint leg used to sit OUTSIDE this `if`,
+            ;;added unconditionally — exactly where `XI_CollectFor`'s mint used to sit before the
+            ;;2026-09-14 vault-deadlock fix moved it INSIDE the `(!= urSTOA-supply 0.0)` guard.
+            ;;That fix repaired the EXECUTOR and left this READER alone, so the two disagreed on
+            ;;every collect after an account's first — and the first collect is what zeroes urSTOA,
+            ;;which makes the disagreeing case the NORMAL one, not an edge.
+            ;;
+            ;;Measured before the fix: preview 88.0 (mint 87.0 + transfer 1.0) for an operation
+            ;;that charged 1.0. An 88x overstatement in the number a client is shown BEFORE
+            ;;committing. Pinned by REPL/RedTeam/[RT-K]_PreviewParity.repl <<RT-K-008>>.
+            (if (!= urSTOA-supply 0.0)
+                (+ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPTF::URCi_Mint urSTOA-id DEMIPAD|SC_NAME false))
                    (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
-                       (ref-TFT::URCi_MultiTransferCumulator [wSTOA-id urSTOA-id] DEMIPAD|SC_NAME account [wSTOA-supply urSTOA-supply]))
-                   (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
-                       (ref-TFT::URCi_Transfer wSTOA-id DEMIPAD|SC_NAME account wSTOA-supply))))
+                       (ref-TFT::URCi_MultiTransferCumulator [wSTOA-id urSTOA-id] DEMIPAD|SC_NAME account [wSTOA-supply urSTOA-supply])))
+                (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
+                    (ref-TFT::URCi_Transfer wSTOA-id DEMIPAD|SC_NAME account wSTOA-supply)))
         )
     )
     (defun INFO_Collect:object{OuronetInfoV2.ClientInfo} (patron:string account:string)
