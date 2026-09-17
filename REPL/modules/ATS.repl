@@ -4944,3 +4944,72 @@
 )
 (env-sigs [])
 (rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "ATS-G30 — the #5C Hot-RBT branding ownership fix, which had no witness")
+(print "")
+(print "=== ATS-G30 — ATS|C>HOT-RBT-BRD ============================================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;#5C / C5: branding a Hot-RBT must be gated on the owner of the ATS PAIR the token belongs to --
+;;the token is not owned directly, so the cap resolves the pair from it and then checks `CAP_Owner`.
+;;The fix is at `08_ATS.pact:736`. `[6.6]_ATS.repl` exercises Hot-RBT branding on the HAPPY PATH
+;;only; no assertion anywhere refused a non-owner, so the negative half lived solely in the archived
+;;baseline the gate excludes. Deleting `CAP_Owner` from that cap would have turned nothing red.
+;;
+;;THE ATTACKER IS EMMA AND THE VICTIM IS THE AOZ ACCOUNT, not ANHD. That is forced rather than
+;;chosen: none of ANHD's four pairs has a Hot-RBT at all (measured -- all four read the `|` sentinel),
+;;and `TestKickPair` is the fixture that does. It happens to be AOZ-owned, which makes the refusal
+;;MORE legible: the message names `PK_AOZ`, a key that is neither the attacker's nor the suite's
+;;usual owner, so it can only have come from resolving the pair behind the token.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (pair:string "TestKickPair-98c486052a51")
+    )
+    (let
+        (
+            (hot-rbt:string (ref-ATS::UR_HotRewardBearingToken pair))
+        )
+        (map print
+            [
+                ;;THE FIXTURE, asserted: this pair really has a Hot-RBT. Nine of the live pairs read
+                ;;the `|` sentinel instead, and against one of those the attack would be refused by
+                ;;the resolver rather than by ownership -- witnessing nothing.
+                (expect "<<ATS-G30>> the fixture pair really has a Hot-RBT to brand"
+                    false (= "|" hot-rbt))
+                ;;THE FIX. Refused, naming the PAIR OWNER's key -- not the attacker's, which is what
+                ;;separates "the ownership gate spoke" from "this signature was rejected".
+                (expect-failure "<<ATS-G30>> a non-owner cannot brand someone else's Hot-RBT (#5C)"
+                    "Keyset failure (keys-all): [PK_AOZ...]"
+                    (ref-TS01-C2::ATS|HOT-RBT|C_UpdatePendingBranding
+                        KST.EMMA hot-rbt "logo" "desc" "site" []))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [{ "key": "PK_Emma", "caps": [] } { "key": "PK_AOZ", "caps": [] }])
+(let
+    (
+        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+    )
+    (map print
+        [
+            ;;NON-VACUITY: only the signer set changes. With the pair owner signing, the identical
+            ;;call goes through -- so the refusal above was ownership and not a broken entrypoint.
+            (expect "<<ATS-G30>> ...while the pair owner can, so the refusal was the gate"
+                true (!= "" (format "{}"
+                    [(ref-TS01-C2::ATS|HOT-RBT|C_UpdatePendingBranding
+                        KST.EMMA (ref-ATS::UR_HotRewardBearingToken "TestKickPair-98c486052a51")
+                        "logo" "desc" "site" [])])))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
