@@ -234,7 +234,7 @@ def observed(names, own_msgs):
                 continue
             for nm in names:
                 if re.search(re.escape(nm) + r'(?![A-Za-z0-9_|\-])', seg):
-                    return f.split('/')[-1]
+                    return (f.split('/')[-1], nm)
     return None
 
 # --census: the tool's OWN denominator. Every figure this script prints is conditioned on a cap
@@ -283,9 +283,36 @@ for cap, (fil, shadowed, own_msgs) in sorted(gated.items()):
     if not names: continue
     rows.append((cap, fil, shadowed, observed(names, own_msgs)))
 
+# ATTRIBUTION. "Reached by a test" is not "refused by this gate". A wrapper that reaches N gated caps
+# credits all N from one refusal, though exactly one of them raised it. Where N == 1 the refusal IS
+# attributable; where N > 1 the credit is a guess that happens to be recorded as a fact.
+# MEASURED INSTANCE: `DPOF|C>TRANSFER` sat in the observed column before any test drove a non-owner
+# ortofungible transfer. Writing that attack (DPOF-G13) moved no count, because the gate was already
+# credited. The gap was real and the tool said it was covered.
+reach_count = collections.Counter()
+for c, ws in wrappers.items():
+    for w in ws:
+        reach_count[w] += 1
+
 tot = len(rows); obs = sum(1 for r in rows if r[3])
+attributed = sum(1 for r in rows if r[3] and reach_count[r[3][1]] == 1)
+ambiguous  = obs - attributed
 print(f"owner-gated defcaps reachable from a named op : {tot}")
 print(f"  observed (UPPER bound -- reachability, not proof): {obs}")
+# DILUTION, not a binary. The first cut of this reported "attributable" only when the crediting op
+# reached exactly ONE gate, which scored 1 of 63 and read as "the observed column is worthless".
+# The distribution says otherwise: half the credits come from ops reaching two gates, which is decent
+# evidence, while a fifth come from ops reaching ten or more, which is nearly none. A binary hid both.
+_dil = [reach_count[r[3][1]] for r in rows if r[3]]
+print(f"     credited by an op reaching 1 gate (attributable)  : {sum(1 for d in _dil if d == 1)}")
+print(f"     ...2 gates (strong)                               : {sum(1 for d in _dil if d == 2)}")
+print(f"     ...3-9 gates (weak)                               : {sum(1 for d in _dil if 3 <= d <= 9)}")
+print(f"     ...10+ gates (near-worthless as evidence)         : {sum(1 for d in _dil if d >= 10)}")
+if "--dilution" in sys.argv:
+    _d = collections.Counter(reach_count[r[3][1]] for r in rows if r[3])
+    print("     dilution of the crediting op (gates it reaches -> how many caps it credits):")
+    for k in sorted(_d):
+        print(f"        reaches {k:3} gate(s) : {_d[k]:3} cap(s) credited")
 print(f"  NEVER observed (LOWER bound on the real gap): {tot-obs}")
 sh = [r for r in rows if r[2]]
 print(f"\nof the {len(sh)} whose ownership gate sits AFTER a business enforce:")

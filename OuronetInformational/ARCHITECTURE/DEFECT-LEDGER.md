@@ -2323,6 +2323,23 @@ never visible. Progress reported against an excluding denominator flatters itsel
 second time in the same programme that a ratio has been published without its exclusions: §7.2g
 recorded the same error in other people's tools, and it recurred in mine.
 
+**HOW loose, measured.** `--dilution` reports, for each credited gate, how many gated caps the
+crediting op reaches — because a refusal credits all of them while exactly one raised it:
+
+| the crediting op reaches | caps credited | worth as evidence |
+|---|---|---|
+| 1 gate | **1** | attributable — the refusal *is* this gate |
+| 2 gates | **29** | strong |
+| 3–9 gates | **19** | weak |
+| 10+ gates | **14** | near-worthless |
+
+The first cut of this metric was a **binary** — "attributable" only at dilution 1 — which scored
+**1 of 63** and read as *the observed column is worthless*. That over-corrected: the distribution
+shows nearly half the credits are at dilution 2, which is decent evidence. A binary hid both the
+good half and the bad. The lesson is the one this section keeps re-learning from the other side:
+**a single number chosen to summarise a distribution is a claim about the distribution**, and here
+it was the wrong one — in my own metric, on the same day I wrote the caveat it was meant to quantify.
+
 **A DEMONSTRATED instance of the upper bound being loose, found the day it was introduced.**
 `DPOF|C>TRANSFER` was scored **observed** before any test had ever driven a non-owner ortofungible
 transfer — it was credited transitively by some other op that reaches it. `DPOF-G13` (2026-09-17)
