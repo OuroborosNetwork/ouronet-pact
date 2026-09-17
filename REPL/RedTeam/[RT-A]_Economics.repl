@@ -334,3 +334,119 @@
 (print "")
 (print "===^^^===")
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RT-A-004 - execute a quote after the price has moved under it")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== RT-A-004 · 01 · stale quote, moved price ====
+(print "--- [RT-A-004 · 01 · stale quote, moved price] ---")
+;;<<RT-A-004>> FAMILY: A | STATUS: REFUSED
+;;HYPOTHESIS: `UDC_SpawnSmartSwapSlippageBounds` quotes an expected output from the reserves AS THEY
+;;            ARE WHEN IT RUNS, and the bound is then carried into `CC_SmartSwapWithSlippage` as
+;;            plain data. If nothing re-checks it against live reserves at EXECUTION time, any trade
+;;            landing in between settles the quoted swap at the worse rate -- the back half of a
+;;            sandwich, whose cost to the attacker is an ordinary trade.
+;;METHOD:     the quote is bound EAGERLY in the `let`, so it is taken before anything else in the
+;;            block and is genuinely stale by the time the body runs. A swap in the same direction
+;;            then moves the price. The quoted swap is then executed carrying the pre-move bound.
+;;            The mover here is the same account, for fixture reasons -- the guard under test is
+;;            indifferent to WHO moved the price, only to whether execution re-reads the reserves.
+;;RESULT:     REFUSED. `UC_SlippageMinMax` derives the floor from the caller\'s OWN quoted expected
+;;            output, and `19_SWPU.pact` checks `(>= feeless-final min)` against live reserves at
+;;            execution -- the source calls it "the real protection this whole check exists for".
+;;
+;;WHY THIS BLOCK EXISTS AT ALL. That floor had NO witness before 2026-09-17. The only tests naming
+;;"out of Slippage bounds" are the #26M pair in `[6.2+3]_DPTF-SWP_Issuance-Only.repl`, and BOTH assert
+;;the message must NOT appear -- positive slippage is deliberately allowed, matching every major AMM.
+;;So the most important economic guard in the AMM was asserted only in the direction that proves it
+;;stays quiet. Deleting `(>= feeless-final min)` would have turned nothing in this tree red.
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "PK_AOZ", "caps": [] }
+    ]
+)
+(let
+    (
+        (ref-SWPU:module{SwapperUsageV3} SWPU)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
+        (trader:string KST.AOZT)
+        (in-id:string "AKOSON-98c486052a51")
+        (out-id:string "TUSD-98c486052a51")
+    )
+    (let
+        (
+            ;;THE QUOTE, taken BEFORE anything moves. Eager `let` is what makes this faithful rather
+            ;;than a re-quote: the bound is fixed here and cannot refresh.
+            (stale-bounds:object{SwapperUsageV3.Slippage}
+                (ref-SWPU::UDC_SpawnSmartSwapSlippageBounds in-id 5.0 out-id 0.01))
+        )
+        ;;THE PRICE MOVE: an ordinary, permitted swap in the same direction, priced at its own live
+        ;;quote so it cannot itself be the thing that fails.
+        (print (format "<(RT-A-004 price move)> => \"{}\""
+            [(ref-TS01-C3::SWP|CC_SmartSwapWithSlippage KST.ANHD trader in-id 5.0 out-id
+                (ref-SWPU::UDC_SpawnSmartSwapSlippageBounds in-id 5.0 out-id 50.0))]))
+        (map print
+            [
+                ;;REFUSED -- BUT NOT BY THE GUARD, AND THE MESSAGE IS DELIBERATELY NOT PINNED.
+                ;;Measured 2026-09-17: this returns `Array index out of bounds. Length (1), Index (3)`
+                ;;rather than "…out of Slippage bounds…". The attack fails and nothing moves, so the
+                ;;protection holds -- but it holds by faulting, not by refusing, and an index fault
+                ;;carries no information to a caller or an integrator. Pinning that text would make
+                ;;the DEFECT the expected behaviour and turn the eventual repair red, which is the
+                ;;inversion DEFECT-LEDGER 1.2 warns about ("pinning the WRONG message is worse than
+                ;;pinning none"). So the assertion below pins only what is legitimately true today --
+                ;;the call is refused and no value moves -- and the fault itself is filed as G-46.
+                (expect-failure "<<RT-A-004>> ATTACK REFUSED: a stale quote does not execute"
+                    (ref-TS01-C3::SWP|CC_SmartSwapWithSlippage KST.ANHD trader in-id 5.0 out-id stale-bounds))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RT-A-004b - the identical swap, price unmoved, must SUCCEED")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== RT-A-004 · 02 · the tolerance is not the reason ====
+(print "--- [RT-A-004 · 02 · the tolerance is not the reason] ---")
+;;THE NON-VACUITY HALF, and the block is worthless without it. A 0.01% tolerance refused could mean
+;;"the price moved" or it could mean "0.01% is tighter than this route\'s own rounding". Only running
+;;the identical swap, at the identical tolerance, with NOTHING moving in between, separates them.
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "PK_AOZ", "caps": [] }
+    ]
+)
+(let
+    (
+        (ref-SWPU:module{SwapperUsageV3} SWPU)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
+        (trader:string KST.AOZT)
+        (in-id:string "AKOSON-98c486052a51")
+        (out-id:string "TUSD-98c486052a51")
+    )
+    (let
+        (
+            (fresh-bounds:object{SwapperUsageV3.Slippage}
+                (ref-SWPU::UDC_SpawnSmartSwapSlippageBounds in-id 5.0 out-id 0.01))
+        )
+        (map print
+            [
+                (expect "<<RT-A-004>> unmoved, the same swap at the same tolerance succeeds"
+                    true (contains "Succesfully smart-swapped"
+                        (ref-TS01-C3::SWP|CC_SmartSwapWithSlippage KST.ANHD trader in-id 5.0 out-id fresh-bounds)))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)

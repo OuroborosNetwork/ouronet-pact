@@ -24,6 +24,25 @@ Every element carries a dotted address so you can point at it exactly. Header si
 **Legend:** ✅ done · ❌ not done · ⚠ open decision (blocks its phase) · 🔒 hard dependency on earlier phases · — future/out-of-scope.
 **Progress (2026-08-30): 10 ✅ / 70 ❌.** Chapter 1 · Phase 0 fully closed; Phase 1 is next.
 
+> **⚠ THIS DASHBOARD IS STALE — read this before trusting a ❌ below.** *(noted 2026-09-17.)* The
+> per-phase marks date from 2026-08-30 and were not updated as work landed. Measured against the tree
+> today, the phases marked ❌ have substantial completed artefacts:
+>
+> | phase | marked | measured in the tree today |
+> |---|---|---|
+> | 1.1 `URCi` cost architecture | ❌ NEXT | **267** distinct `URCi_` readers across `1_SOVEREIGN/` |
+> | 1.2 INFO rehaul | ❌ | **335** distinct `INFO_` previews |
+> | 1.3 Re-price IGNIS | ❌ | `IGNIS-PRICE-SHEET.md` generated + gate-enforced (`_pricesync.py --check`) |
+> | 1.4 AQP module splits | ❌ | `04_RPS.pact` exists — the `04_FVT` split shipped |
+> | 1.5 REPL finalization | ❌ | **22,939** assertions across 120 suites, one-command gate (`_gate.py`) |
+> | 1.6 Red team | ❌ | **IN PROGRESS** — 29 attacks, families A–K, 0 succeeded (`RED-TEAM-REPORT.md`) |
+>
+> The checkboxes below are deliberately NOT flipped: each sub-item needs its own verification, and
+> marking a phase ✅ from an aggregate count is exactly the kind of unearned claim the DEFECT-LEDGER
+> exists to catch. Treat individual ❌ marks as *unverified*, not as *not done*. The live status of
+> the red-team round is `ARCHITECTURE/RED-TEAM-REPORT.md` (register) and `ARCHITECTURE/DEFECT-LEDGER.md`
+> (findings); the live status of owner-gate coverage is `python3 REPL/tools/_ownerobs.py`.
+
 **The shape of the work.** **Chapter 1** is one long **code-finalization spine** (Phases 0→7) that ends in
 a fresh redeploy. **Chapter 2** is the **two capstones** that hang off the final deployed shape — the **UI**
 (Phase 8) and the **Documentation + Audit Book** (Phase 9). Everything in Chapter 2 needs the code frozen
@@ -305,7 +324,17 @@ red-team attack on ALL modules** to expose vulnerabilities. Its findings + fixes
       gas-station exploitation, sentinel/collision. Synthesize + **adversarially verify** each
       candidate finding against code (CONFIRMED/REFUTED), fix, re-test. Same rigor as the initial
       audits, adversarial framing.
-- [ ] ❌ **1.6.1.2 Carried-over leads for the red team** (audits explicitly filed these for main's red-team pass):
+- [x] ✅ **1.6.1.2 Carried-over leads for the red team — ALL THREE WORKED 2026-09-17.** Results in
+      `ARCHITECTURE/DEFECT-LEDGER.md` §8. **`URC_OuroPrimordialPrice`: CONFIRMED and LIVE** — the
+      weight omission is real, measured at **−38.65% at genesis weights** by a controlled experiment
+      (output bit-identical across three weightings), and it reaches the OURO oracle write and
+      DEMIPAD launchpad payments (§8.1). **Round III re-verify: 42 fixes re-checked, 100% coverage,
+      41 present, 1 NOT-FOUND** — M14/#39M's archived interfaces were deleted by an automated
+      "remove unreferenced versions" sweep, whose heuristic guaranteed it would delete exactly the
+      artefact the fix created (§8.2). **`#32bM` M11/M12: re-opened** — both DESIGN verdicts rest on
+      "MTX-SWP has zero Talos wiring", which `05_TS01-P.pact:221-330` refutes; they are live,
+      reachable, gas-station-funded paths. *(Original text below, kept.)*
+- [ ] ❌ **1.6.1.2 (original) Carried-over leads for the red team** (audits explicitly filed these for main's red-team pass):
       **SWP `#32bM`** (M11/M12 reachability — MTX-SWP fee-before-gate ordering / no-TTL rollback; verdicts
       unchanged, re-examine now that TS01-CP wiring is known-reachable); **SWP `URC_OuroPrimordialPrice`**
       (16_SWPI.pact — likely the same weight-omission bug fixed on the WSTOA side #73C; unconfirmed,

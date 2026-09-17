@@ -2619,3 +2619,114 @@ literals *inside tools* and cannot see a path in prose.
   question inside it, and not something to smuggle in behind a one-line commit. Recorded here so the
   decision is visible rather than forgotten. It has now found a defect in every
   family it has touched, which is the argument for continuing it rather than a claim of coverage.
+
+# 8. The carried-over red-team leads — worked 2026-09-17
+
+Roadmap §1.6.1.2 filed three leads "for main's red-team pass". None had been opened. All three were
+worked on 2026-09-17; two produced confirmed defects and one produced a lost fix.
+
+## 8.1 `URC_OuroPrimordialPrice` — CONFIRMED, LIVE, and it moves money
+
+**The lead** *(verbatim)*: "SWP `URC_OuroPrimordialPrice` (16_SWPI.pact — likely the same
+weight-omission bug fixed on the WSTOA side #73C; unconfirmed, 15-min trace + live check)."
+
+**Verdict: CONFIRMED. Not latent — live at genesis weights.** `16_SWPI.pact:1768` computes OURO's
+dollar price as `((R_wstoa + R_sstoa·k) × pid) / R_ouro` — a flat reserve ratio that **reads no
+weight at all**, which is precisely the pre-`#73C` expression. The fixed sibling,
+`URC_SingleOuroWorthWSTOA`, performs a real 1-unit weighted swap through `UC_ComputeWP`, the only
+math in the family that consumes `(at "weights" drsi)`.
+
+**Proven by controlled experiment, not by reading.** Reserves held constant, weights varied through
+the live `SWP|C_ModifyWeights` path:
+
+| pool weights `[SSTOA, OURO, WSTOA]` | `URC_OuroPrimordialPrice` | weight-aware sibling | error |
+|---|---|---|---|
+| `[0.4, 0.4, 0.2]` | `0.09200067782692156…` | `0.11998182062980…` | −23.3% |
+| `[0.2, 0.6, 0.2]` | `0.09200067782692156…` *(bit-identical)* | `0.17996364248400…` | −48.9% |
+| **`[0.3, 0.5, 0.2]` (genesis)** | `0.09200067782692156…` *(bit-identical)* | `0.14997348886490…` | **−38.65%** |
+
+**The output does not move by a single digit across three weightings of the pool it prices.** The
+−38.65% at genesis reproduces `#73C`'s independently measured ~38% on the WSTOA twin.
+
+**Why it is not latent.** `SWP|C>DEFINE-PRIMORDIAL-POOL` (`15_SWP.pact:781`) enforces a *weighted*
+pool of exactly three tokens — three equal decimal weights cannot sum to 1.0, so the pool it serves
+**cannot** be equal-weighted. Genesis ships `[0.3 0.5 0.2]` (`0_Sample/CodeStoa.pact:1613`), and the
+standard pipeline itself moves them to `[0.4 0.4 0.2]`.
+
+**Blast radius.** The oracle write (`XI_STOA-PID|OPU`, on every swap touching the primordial pool,
+enabled at genesis) publishes it as the canonical OURO price; **DEMIPAD launchpad payments** convert
+with it (`00_Demipad.pact:975`), making a type-3 buyer pay ≈1.63× at genesis weights — the sign flips
+with configuration, shorting the protocol the other way; the Explorer derives `dollar-auryn` /
+`price-elite-auryn` from it. `OUROBOROS::URCv_Compress`/`Sublimate` clamp below $1.00 and so are
+masked **today** — that masking ends the moment OURO's true price crosses $1 while the understated
+feed is below it.
+
+> **The most valuable thing here is that the code told us.** `URCx_PrimordialValueAndOuroSupply`'s own
+> `@doc` files the lead verbatim — *"likely has the identical weight-omission issue, unverified, left
+> for a follow-up"* — and `MERGE-HANDOFF.md` heads its section "The one item genuinely worth a look".
+> It sat unopened because it was filed as a lead rather than a defect. **A known-unknown with a
+> written home is only worth what the follow-up costs; this one cost 15 minutes and was real.**
+
+**Adjacent, LATENT, found in the same trace:** `URCx_PrimordialValueAndOuroSupply` hard-codes reserve
+positions `0=SSTOA, 1=OURO, 2=WSTOA`, while `C>DEFINE-PRIMORDIAL-POOL` checks only *membership* and
+length — no order check and no sort on the issuance path. A primordial pool issued with the same three
+tokens in a different order silently transposes the reserves. Unreachable today only because genesis
+and the fixture happen to use the matching order.
+
+## 8.2 SWP Round III re-verify — 42 fixes re-checked, one had been deleted
+
+Every `FIXED` finding in the SWP audit tracker was re-verified against current source — 75 rows, 42
+fixes, **100% covered, not sampled**. Result: **41 VERIFIED-PRESENT, 1 NOT-FOUND.**
+
+**M14 / `#39M` — the fix was silently deleted by an automated sweep.** Fix #25 had *archived* the
+frozen historical interfaces `TalosStageOne_ClientThreeV2` / `ClientPactsV2`. They are gone; zero
+references remain tree-wide. Root cause is commit `6833a21` (2026-09-02), whose own message says it
+*"deleted dead old versions … all 0/0"*.
+
+> **The tool's heuristic guaranteed it would delete exactly the artefact the fix created.** Zero
+> references is the *defining property* of a deliberately-frozen archive. A usage-counter sweep
+> cannot distinguish "unused because obsolete" from "unused on purpose", and nothing in the archive
+> said which it was. Impact here is provenance only — but the failure mode is generic, and the V3
+> pair has since been bumped to V4 **without** archiving V3, so the convention is now broken twice.
+
+**Three ordering observations that corroborate §7.2h from the other side.** The re-verify independently
+found `CAP_Owner` sitting *after* the business check in `SWP|C>ENABLE-FROZEN`, `C>ENABLE-SLEEPING`,
+`C>ADD-OR-SWAP`, `S>WEIGHTS`, `S>RT_CAN-CHANGE` and `SPW|S>UPDATE_SPECIAL-FEE-TARGETS` — i.e. the
+2026-09-14 sweep matched `compose-capability (GOV|…)` forms and missed the `CAP_Owner` ones. That is
+exactly the admin-band/owner-band split §7.2h measured, reached by a different route and on a
+different module family.
+
+**And one shape worth watching:** `C_ToggleAddOrSwap`'s `ico1` binding performs real
+`DPTF::C_Toggle*Role` writes inside an eager `let`, **above** the `with-capability
+(SWP|C>ADD-OR-SWAP …)` that its own `@doc` calls "the ONLY place in this call chain that enforces pool
+ownership". Transaction atomicity means nothing persists on abort, so it is not exploitable today. It
+is recorded because privileged writes sitting above their authorising capability is one refactor away
+from mattering.
+
+**Coverage note, independently reached:** the adversarial proofs for C1, C6, H2, H3, H4, M2, M13, L46,
+L61, L62 and all nine `#65bL` phases live in suites loaded **only by `ZALL.repl`** — most of this
+audit's proofs do not run under `Z.repl`. Consistent with CLAUDE.md's own warning, now stated with the
+list.
+
+## 8.3 `RT-A-004` — the AMM's slippage floor had no witness
+
+Family A's economic surface was the thinnest on the roadmap's list. Measured, the gap was not the
+design but the *witness*: `19_SWPU.pact`'s `(>= feeless-final min)` — which the source itself calls
+**"the real protection this whole check exists for"** — was asserted nowhere. The only tests naming
+`out of Slippage bounds` are the `#26M` pair, and **both assert the message must NOT appear** (positive
+slippage is deliberately allowed, matching every major AMM). The single most important economic guard
+in the swap engine was pinned only in the direction that proves it stays quiet.
+
+`RT-A-004` quotes a swap, moves the price underneath it, then executes against the stale quote. The
+quote is bound in an eager `let`, which is what makes it genuinely stale rather than a re-quote.
+`RT-A-004b` runs the identical swap at the identical tolerance with nothing moving in between and it
+succeeds — without that half, a refusal could equally mean "0.01% is tighter than this route's own
+rounding".
+
+**G-46 — the attack is refused, but by an index fault rather than by the guard.** The stale-quote
+execution returns `Array index out of bounds. Length (1), Index (3)`, not the written
+`…out of Slippage bounds…`. No value moves, so the protection holds — but it holds by *faulting*, and
+an index fault tells a caller or an integrator nothing. The message is deliberately **not** pinned:
+pinning it would make the defect the expected behaviour and turn the eventual repair red, the
+inversion §1.2 warns about. The assertion pins only what is legitimately true today — the call is
+refused and nothing moves.
