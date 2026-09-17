@@ -36,6 +36,47 @@ def _first_index(body: list[str], pred) -> int:
     return -1
 
 
+def _top_level_lines(body: list[str]) -> set[int]:
+    """Indices of body lines that begin at paren depth ZERO.
+
+    THE BUG THIS FIXES (2026-09-17). `_anchors` picked the FIRST line matching `(let` / `(load` /
+    `(env-sigs` and so on, ANYWHERE in the transaction body and at ANY nesting depth. When that line
+    sat inside another form, the banner was inserted into the MIDDLE of an expression:
+
+        (expect "<<AQP-G41>> ...the SAME amount in the STAKE direction is accepted outright"
+            "granted"
+        ;;==== AQP-G41 — ... · 02 · let / invocation ====      <-- inserted HERE
+        (print "--- [...] ---")
+
+    which is a parse error at best, and at worst a silently DIFFERENT expression. Applying the tool
+    on 2026-09-17 broke five suites and dropped 318 assertions; see DEFECT-LEDGER 8.34.
+
+    Depth is counted with strings and `;;` comments removed, because a paren inside either is not a
+    paren -- the same reason `_pactlex` exists and every other tool in this directory uses it.
+    """
+    out, depth = set(), 0
+    for i, ln in enumerate(body):
+        if depth == 0:
+            out.add(i)
+        j, in_str, esc = 0, False, False
+        while j < len(ln):
+            c = ln[j]
+            if in_str:
+                if esc: esc = False
+                elif c == "\\": esc = True
+                elif c == '"': in_str = False
+            elif c == '"':
+                in_str = True
+            elif c == ";" and j + 1 < len(ln) and ln[j + 1] == ";":
+                break
+            elif c == "(":
+                depth += 1
+            elif c == ")":
+                depth -= 1
+            j += 1
+    return out
+
+
 def _anchors(_title: str, body: list[str]) -> list[tuple[int, int, str]]:
     idx_chain = _first_index(body, lambda ln: ln.lstrip().startswith("(env-chain-data"))
     idx_ns = _first_index(body, lambda ln: ln.lstrip().startswith('(namespace "'))
@@ -86,6 +127,11 @@ def _anchors(_title: str, body: list[str]) -> list[tuple[int, int, str]]:
 
 def _insert_markers_into_body(body: list[str], title: str) -> list[str]:
     inserts = _anchors(title, body)
+    # DEPTH GUARD: never insert into the middle of a form. An anchor whose line is nested inside
+    # another expression is DROPPED rather than relocated -- a banner in the wrong place is worse
+    # than a missing one, and the tool has no way to know where the author would have wanted it.
+    top = _top_level_lines(body)
+    inserts = [t for t in inserts if t[0] in top]
     if not inserts:
         return body
     inserts.sort(key=lambda x: -x[0])
