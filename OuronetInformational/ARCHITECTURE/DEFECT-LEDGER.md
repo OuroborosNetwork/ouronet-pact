@@ -2730,3 +2730,73 @@ an index fault tells a caller or an integrator nothing. The message is deliberat
 pinning it would make the defect the expected behaviour and turn the eventual repair red, the
 inversion §1.2 warns about. The assertion pins only what is legitimately true today — the call is
 refused and nothing moves.
+
+## 8.4 `#32bM` / M11 — reachable, exploitable, and it falsifies §7.3's premise
+
+**The lead** *(roadmap §1.6.1.2)*: re-examine M11/M12, whose DESIGN verdicts rested on *"MTX-SWP has
+zero Talos wiring — unreachable through the only supported client path"*, retracted 2026-08-27 and
+never reopened.
+
+**The premise is dead.** `05_TS01-P.pact` wires **all six** MTX-SWP defpact starters (`:221`, `:238`,
+`:249` for the three `MTX|C_Issue` doors; `:261`–`:330` for the AddLiquidity family). The wrapper
+takes `p:bool` straight from the client and gates nothing but `P|TS`.
+
+**M11 is live, and it was proven by execution, not by reading.** Each step in its own committed
+transaction, pact-id pinned:
+
+| step | what happens |
+|---|---|
+| 0 | `SWPI::UEV_Issue … p` — **no authorisation check of any kind**. `p=true` *skips* the spawn-limit branch, so the permissioned path is the **laxer** one. |
+| 1 | **commits 5,506.0 raw IGNIS + 600.0 raw STOA** (2,919.77 / 459.0 net at a 0.53 patron) |
+| 2 | `MTX-SWP\|C>ISSUE p` → `GOV\|MTX-SWP_ADMIN` → refused: `MTX-SWP Ownership not verified` |
+
+No refund, no cancel. Rolling back costs a **further 53.00 IGNIS**; abandoning leaves the pact open
+forever (L68 — structural, Pact has no scheduled execution).
+
+**Three controls, because an unattributable refusal proves nothing.** *Attribution:* the same drive at
+`p=false` fails with a **different** message (`Keyset failure`, the downstream account guard), so the
+`p=true` refusal is the admin gate and nothing else. *Non-vacuity:* the pact completes when the master
+key signs. *The contrast that makes it a defect:* the single-transaction twin
+`TS01-C3.SWP|C_IssueStandard … p=true` refuses the same operation and charges **0 IGNIS / 0 STOA** —
+because `SWPI|C>ISSUE` (`16_SWPI.pact:424`) hoists its conditional admin gate **above** `UEV_Issue`,
+exactly as the 2026-09-14 authorise-first ruling requires.
+
+> **Same logical operation, two live Talos doors, and only one charges you for a refusal.** The cost
+> of the mistake is entirely a function of which door the caller walked through — and `p` is an
+> undocumented raw bool on the Talos signature whose `@doc` never mentions it.
+
+### This falsifies a claim I wrote in §7.3, and the owner ruled with it in front of them
+
+§7.3 records `MTX|C_Issue` as *"the counter-example, and it is the specification — validates in step 0
+and collects in step 1, validation before money"*. `REPL/RedTeam/[RT-F]_Griefing.repl:69` says the
+same. **That is true for `p=false` and false for `p=true`:** *shape* validation precedes the money;
+*authorisation* follows it. The op cited as the specification is the one carrying the unrepaired case.
+
+**The 2026-09-17 owner ruling does not cover this.** That ruling — *"collect before validating is
+correct, leave as is"* — was given on the three AddLiquidity siblings, about **validation**. M11 is
+about **authorisation after payment**, which is the subject of the *2026-09-14* ruling, and the
+single-transaction twin already complies with it. The two rulings do not conflict; the question was
+never put in the terms that would have surfaced this one.
+
+**Not fixed here.** The repair has a precedent three lines long — hoist the `p`-conditional admin
+compose above `UEV_Issue` in step 0, mirroring `SWPI|C>ISSUE`, which is what the authorise-first sweep
+did everywhere it looked. It is recorded rather than applied because it changes when money moves in a
+live defpact, and this is the second time in two days that an assumption about this exact family was
+wrong — mine in §7.3, and the audit's original reachability verdict before it.
+
+**M12 splits.** *"Rollback costs more than abandonment"*: **verified, measured** — 53.00 IGNIS extra,
+nothing refunded. For the AddLiquidity family the identical shape is **already ruled design** (anti-spam,
+`memories/2026-09-15-gas-station-cannot-whitelist-continuations.md`); the `MTX|C_Issue` instance has no
+such ruling, but it is the small term next to M11's 2,919.77. *"No TTL"*: correctly closed at L68.
+
+**Measured aside, not chased:** `MTX|C_Issue` step 0 is the only Talos-reachable SWP client op found
+that collects **zero IGNIS while doing real work** — 4,124 gas at `p=true`, **76,934 at `p=false`** —
+while its three sibling defpacts all take `LQ|INITIATION-FEE` in step 0 as anti-spam. `GAS_PAYER`
+Case 1 whitelists the `ouronet-ns.TS…` prefix, so the station pays it.
+
+**One inference, named:** the REPL fixture conflates identities — `PK_AncientHodler` is both an account
+key and a `DemiourgosSithMasters` member — so a single account could not both own the pool tokens and
+fail the master keyset. What was *measured* is that step 1 charges and that step 2's first and only
+obstacle at `p=true` is the master keyset. That a caller who cannot satisfy it therefore pays and is
+refused is **one inference step**, not a measurement. Closing it needs a non-Demiurgoi account that
+owns a DPTF.
