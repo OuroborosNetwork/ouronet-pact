@@ -2630,7 +2630,7 @@ worked on 2026-09-17; two produced confirmed defects and one produced a lost fix
 **The lead** *(verbatim)*: "SWP `URC_OuroPrimordialPrice` (16_SWPI.pact — likely the same
 weight-omission bug fixed on the WSTOA side #73C; unconfirmed, 15-min trace + live check)."
 
-**Verdict: CONFIRMED. Not latent — live at genesis weights.** `16_SWPI.pact:1768` computes OURO's
+**Verdict: CONFIRMED. Not latent — live at genesis weights. FIXED 2026-09-17, pinned by `<<SWP-G27>>`.** `16_SWPI.pact:1768` computes OURO's
 dollar price as `((R_wstoa + R_sstoa·k) × pid) / R_ouro` — a flat reserve ratio that **reads no
 weight at all**, which is precisely the pre-`#73C` expression. The fixed sibling,
 `URC_SingleOuroWorthWSTOA`, performs a real 1-unit weighted swap through `UC_ComputeWP`, the only

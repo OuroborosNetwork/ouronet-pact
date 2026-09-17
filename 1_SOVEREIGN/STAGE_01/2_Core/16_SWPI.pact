@@ -1766,22 +1766,32 @@
         )
     )
     (defun URC_OuroPrimordialPrice:decimal ()
-        @doc "#65fL Phase 8b fix: sources the shared primordial-pool read via \
-            \ URCx_PrimordialValueAndOuroSupply instead of its own inline copy — \
-            \ pure extraction, computation order and rounding UNCHANGED (still \
-            \ sum-in-WSTOA -> convert-to-dollar -> divide-by-ouro-supply, same 2 \
-            \ floor calls at the same precision, in the same order), verified \
-            \ byte-identical before/after."
+        @doc "OURO's price in dollars. \
+            \ #73C-TWIN FIX (2026-09-17): this used to compute its own flat reserve ratio -- \
+            \ (primordial-wstoa-value * stoa-pid) / ouro-supply -- which READ NO WEIGHT and so \
+            \ silently assumed the primordial pool was equal-weighted. It cannot be: \
+            \ SWP|C>DEFINE-PRIMORDIAL-POOL enforces a WEIGHTED pool of exactly three tokens, and \
+            \ genesis ships [SSTOA 0.3, OURO 0.5, WSTOA 0.2]. Measured before the fix, with \
+            \ reserves held constant and weights varied through the live C_ModifyWeights path, \
+            \ the old output was BIT-IDENTICAL across [0.4 0.4 0.2], [0.2 0.6 0.2] and genesis \
+            \ [0.3 0.5 0.2] -- it did not move one digit across three weightings of the pool it \
+            \ prices. Error at genesis weights: -38.65%, reproducing #73C's independently \
+            \ measured ~38% on the WSTOA twin, which is the same bug this is the twin of. \
+            \ It reached the OURO oracle write, DEMIPAD launchpad payments and the Explorer. \
+            \ The fix DELEGATES rather than re-deriving: URC_TokenDollarPrice -> \
+            \ URC_SingleWorthWSTOA -> URC_WorthWSTOA's OURO short-circuit -> \
+            \ URC_SingleOuroWorthWSTOA, a real 1-unit weighted swap through UC_ComputeWP -- the \
+            \ only math in the family that consumes (at \"weights\" drsi). That path is #73C's \
+            \ own repair, already live and already proven, so this carries no new arithmetic. \
+            \ See DEFECT-LEDGER 8.1."
         (let
             (
                 (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                (pv:[decimal] (URCx_PrimordialValueAndOuroSupply))
-                (primordial-wstoa-value:decimal (at 0 pv))
-                (ouro-supply:decimal (at 1 pv))
-                (primordial-wstoa-value-in-dollarz:decimal (floor (* primordial-wstoa-value stoa-pid) 24))
+                (ids:object{OuronetDalosV2.CanonicalStoaIds} (ref-DALOS::UR_CanonicalStoaIds))
             )
-            (floor (/ primordial-wstoa-value-in-dollarz ouro-supply) 24)
+            (URC_TokenDollarPrice (at "gas-source-id" ids) stoa-pid)
         )
     )
     (defun URC_SingleOuroWorthWSTOA:decimal (ouro:string wstoa:string)

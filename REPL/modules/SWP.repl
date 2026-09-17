@@ -5315,3 +5315,63 @@
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "SWP-G27 — OURO's price must come from the WEIGHTED pool math, not a flat ratio")
+(print "")
+(print "=== SWP-G27 — URC_OuroPrimordialPrice weight-awareness ======================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+;;#73C-TWIN REGRESSION GUARD (2026-09-17). `URC_OuroPrimordialPrice` used to compute its own flat
+;;reserve ratio, which READ NO WEIGHT. The primordial pool cannot be equal-weighted --
+;;`SWP|C>DEFINE-PRIMORDIAL-POOL` enforces a WEIGHTED 3-token pool and genesis ships
+;;[SSTOA 0.3, OURO 0.5, WSTOA 0.2] -- so the omission was live, not latent. Measured before the fix
+;;with reserves held constant and weights varied through `C_ModifyWeights`, the old output was
+;;BIT-IDENTICAL across three different weightings of the very pool it prices; error at genesis
+;;weights was -38.65%, reproducing #73C's independently measured ~38% on the WSTOA twin.
+;;
+;;THE BUG SHIPPED BECAUSE NOTHING ASSERTED THIS NUMBER AT ALL. There was no pinned OURO price
+;;anywhere in the suite, so the fix changed no assertion either -- which is exactly how a repriced
+;;oracle could regress unnoticed. This block is the witness both the bug and the fix lacked.
+;;
+;;It pins the INVARIANT rather than a figure: OURO's dollar price must equal what the generic
+;;weight-aware pricer returns for OURO. A literal would pin today's reserves and go red on any
+;;ordinary trade; the invariant only goes red if someone re-derives the price by hand again, which
+;;is precisely the regression that happened.
+(let
+    (
+        (ref-SWPI:module{SwapperIssueV4} SWPI)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
+    )
+    (let
+        (
+            (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
+            (ouro:string (at "gas-source-id" (ref-DALOS::UR_CanonicalStoaIds)))
+        )
+        (map print
+            [
+                (expect "<<SWP-G27>> OURO's price equals the WEIGHT-AWARE pricer's answer for OURO"
+                    (ref-SWPI::URC_TokenDollarPrice ouro stoa-pid)
+                    (ref-SWPI::URC_OuroPrimordialPrice))
+                ;;...and it is a real number, so the equality above cannot be two zeroes agreeing.
+                (expect "<<SWP-G27>> ...and that price is positive, so the check is not 0 == 0"
+                    true (> (ref-SWPI::URC_OuroPrimordialPrice) 0.0))
+                ;;THE COUNTER-EXAMPLE, CARRIED IN THE TEST. The removed formula is recomputed inline
+                ;;from the same shared core it used to call, and asserted to DISAGREE with the
+                ;;correct price. This is the mutation test made permanent: it proves the guard above
+                ;;discriminates rather than comparing something to itself, and it proves the original
+                ;;defect was real on live reserves -- both claims re-checked on every run, instead of
+                ;;resting on a measurement someone took once and wrote down.
+                (expect "<<SWP-G27>> the REMOVED flat-ratio formula really does disagree -- the bug was real"
+                    false
+                    (= (ref-SWPI::URC_OuroPrimordialPrice)
+                       (let ((pv:[decimal] (ouronet-ns.SWPI.URCx_PrimordialValueAndOuroSupply)))
+                            (floor (/ (floor (* (at 0 pv) stoa-pid) 24) (at 1 pv)) 24))))
+            ]
+        )
+    )
+    ""
+)
+(commit-tx)
