@@ -42,16 +42,26 @@ declarations (before the `(module …)` form, in this codebase's co-located inte
 implementations (after it). This is the same rule `REPL/tools/_scale_report.py` uses, so the numbers
 below agree with the project's own generated statistics.
 
-### `URCi_` — 322 implementations
+### `URCi_` — 313 implementations
 
 | | |
 |---|---:|
-| implementations, across **40** modules | **322** |
-| distinct names | 269 |
-| declared on an interface | **291** |
-| in-module-only | **31** |
+| implementations, across **39** modules | **313** |
+| distinct names | 260 |
+| declared on an interface | **282** |
 
-The gap between 322 and 269 is real and correct: `URCi_UpgradeBranding` is defined independently in
+> **CORRECTED 2026-09-17.** This chapter first published **322 / 269 / 291 / 31 across 40 modules**.
+> Re-derived: **595** `URCi_` defuns exist in total, partitioning exactly into **282** interface
+> declarations and **313** module implementations, over **39** modules and **260** distinct names.
+> The partition summing to the total is what makes it checkable — the superseded figures did not
+> (291 + 31 = 322, but 322 is not what the tree holds).
+>
+> Method, so it can be re-derived: comments stripped; for each `(defun URCi_…`, compare the nearest
+> preceding `^(interface` against the nearest preceding `^(module` and attribute it to whichever is
+> closer. One file in the tree declares more than one module, which a simpler "everything after the
+> first `(module`" rule mis-attributes.
+
+The gap between 313 and 260 is real and correct: `URCi_UpgradeBranding` is defined independently in
 DPTF, DPOF, ATS, SWP, BRD, DPDC and others, because each module prices its own branding upgrade.
 Counting names rather than implementations is the mistake the roadmap's own correction notice makes.
 
@@ -123,7 +133,7 @@ report that cries wolf nine times is a coverage report nobody reads to the end."
 
 | source | says | tree says |
 |---|---|---|
-| `POST-AUDIT-MAIN-ROADMAP.md` dashboard banner (2026-09-17) | 267 `URCi_`, 335 `INFO_` | **322** and **426** implementations; 269 and 425 distinct names |
+| `POST-AUDIT-MAIN-ROADMAP.md` dashboard banner (2026-09-17) | 267 `URCi_`, 335 `INFO_` | **313** and **426** implementations; 260 and 425 distinct names. *(Both the banner AND this chapter's first pass were wrong — the banner low on `INFO_` by 85 and high on `URCi_`, this chapter high on `URCi_` by 9. The roadmap banner has since been corrected to the sovereign-only scope it states.)* |
 | `IGNIS-PRICING.md` §5 | *"345 of 365 INFO implementations … 14 free … 4 data views"* | **346 / 426 / 20 / 1** |
 
 The second is worth being fair about. **[VERIFIED by command]** — `git show 6b7a85b` (2026-09-06)

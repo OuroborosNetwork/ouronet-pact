@@ -53,7 +53,14 @@ And what those deltas did to the two things a reader cares about — **[VERIFIED
 | Pact source lines | 96,310 | 114,156 | 116,018 |
 | `.repl` files (excl. `archive/`) | 181 | 209 | 207 |
 | `.repl` lines | 68,435 | 120,603 | 128,567 |
-| distinct assertions written | **1,604** | **5,262** | **5,816** |
+| distinct assertions written | **1,604** | **5,262** | **5,867** |
+
+> **These are a SNAPSHOT, and the book says so rather than implying permanence.** The distinct
+> count moved four times on 2026-09-17 alone as witnesses were added; it was **5,555** when the
+> figure-sync tool's own source of truth was found stale, **5,830** when that loop was closed, and
+> **5,867** at the time of writing. The canonical value is whatever `ARCHITECTURE/REPL_SUITE_STATS.md`
+> holds, which `_figuresync.py --check` now verifies **against the tree** rather than against itself
+> — see DEFECT-LEDGER §8.22.
 
 The test suite grew faster than the contracts it tests, by a factor of about four. That is the
 shape of the round.
@@ -71,7 +78,7 @@ command is named in the chapter that owns it.
 | **1.2** `INFO_` preview rehaul | one free preview per client operation | **426** implementations across **10** modules: **346** wrap a `URCi_`, **59** delegate to a sibling preview, **20** declare the op free, **1** is a data view |
 | **1.3** IGNIS re-pricing | the whole cost model moved into four constant maps | `IG\|DETER` **54** keys · `IG\|COMPONENTS` **396** · `IG\|WEIGHTS` **14** · `IG\|LEGS` **22**; the generated price sheet carries **442** priced rows + **5** declared unpriced |
 | **1.4** module splits | `04_FVT.pact` cut below the deploy ceiling | `04_RPS.pact` **5,621** lines + `05_FVT.pact` **3,977**; **0 of 93** modules over the ~6,635-line cliff, **1 in the project's own "Danger" band** |
-| **1.5** REPL finalisation | a one-command gate over the whole suite | **92** gate entrypoints, **12** fatal static checks, **5,816** distinct assertions, orphaned asserting files **0** |
+| **1.5** REPL finalisation | a one-command gate over the whole suite | **92** gate entrypoints, **12** fatal static checks, **5,867** distinct assertions, orphaned asserting files **0** |
 
 ---
 

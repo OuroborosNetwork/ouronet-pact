@@ -21,7 +21,7 @@ that, and rebuilt the runner architecture around the result.
 |---|---:|---:|---:|---:|---:|---:|
 | `.repl` files (excl. `archive/`) | 181 | — | — | 209 | — | 207 |
 | `.repl` lines | 68,435 | — | — | 120,603 | — | 128,567 |
-| distinct assertions | **1,604** | 1,663 | 2,431 | **5,262** | 5,555 | **5,816** |
+| distinct assertions | **1,604** | 1,663 | 2,431 | **5,262** | 5,555 | **5,867** |
 
 The suite roughly **3.3×'d** across the round, and most of that arrived between 2026-09-09 and
 2026-09-14 — the guard-pinning phase, which is the bulk of the work by volume.
@@ -190,7 +190,7 @@ runner, and intersecting it with the set of `.repl` files that contain assertion
 | distinct assertions in the suite | **5,747** |
 | …inside `ZALL.repl`'s closure | **1,434 (25%)** |
 
-<sub>The 5,747 here excludes `archive/`; §1's 5,816 is the project's own `_suite_stats.py` rule, which
+<sub>The 5,747 here excludes `archive/`; §1's 5,867 is the project's own `_suite_stats.py` rule, which
 walks all of `REPL/` including the 68 archived files. Same corpus, two denominators — quoted
 separately rather than reconciled, because each is the right one for its own question.</sub>
 
@@ -360,7 +360,7 @@ last generated the stats file and at HEAD:
 | | |
 |---|---:|
 | distinct assertions at `1821d73` (2026-09-16, the stats commit) | **5,555** — exactly what the file publishes |
-| distinct assertions at HEAD (2026-09-17) | **5,816** |
+| distinct assertions at HEAD (2026-09-17) | **5,867** |
 
 The generated statistics are **261 assertions stale today**, and nothing is red. The contrast with
 Chapter 2's `_pricesync.py` is the whole point: `_pricesync` **re-runs its generators in memory and
