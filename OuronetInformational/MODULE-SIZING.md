@@ -54,9 +54,11 @@
 >
 > *(Method: `cd REPL && pact modules/{ATS,AQP,DPDC,LAUNCHPAD}.repl`, which deploy the tree and now
 > print each module's gas — see DEFECT-LEDGER §8.31 for why they did not before. Test-transaction
-> lines are excluded; one of them, `Cold Recovery and Cull Test 2|5`, costs **930,805 gas — 46.5% of
-> a block** on its own. That is a RUNTIME figure, not a deploy one, and out of scope here, but it is
-> the largest single number the suite prints and nothing currently watches it.)*
+> lines are excluded; the largest, `Cold Recovery and Cull Test 2|5` at **930,805 gas — 46.5% of a
+> block** — is a BATCHING artefact, not a cost: it drives **14** `ATS|C_ColdRecovery` calls in one
+> transaction, about **66,500 gas each**, or 3.3% of a block per real client operation. Checked
+> because it is the largest single number the suite prints and nothing watches it; it turned out to
+> be nothing.)*
 >
 > Treat the bands below as a **review prompt**, not a gate, until they are re-derived from gas.
 > See `03_AQP/Audit/RPS-SPLIT-SCOPING.md` and `ARCHITECTURE/DEFECT-LEDGER.md` §8.29, §8.31.
