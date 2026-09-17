@@ -3679,3 +3679,31 @@ I had the arithmetic and stopped to measure instead. All three readings returned
 > either one alone gives a confident and opposite answer. This is the fourth time in the programme
 > that a defect inferred from reading evaporated on execution — and the first where the wrong answer
 > would have been a ten-thousand-fold underpricing claim against a shipped system.
+
+## 8.28 Phase 1.4.1.2 is open, and it blocks the deploy-ready gate
+
+Measured across all 93 modules against `MODULE-SIZING.md`'s own bands:
+
+| band | threshold | count | modules |
+|---|---|---:|---|
+| Target | < 3,500 lines | **87** | |
+| Acceptable | 3,500–4,000 | 3 | `05_FVT` 3,978 · `06_VCT` 3,509 · `03_AQP` 3,508 |
+| **Warning** | 4,000–4,500 — *"start designing the split now"* | **2** | `02_SCORE` 4,284 · `02_INFO-ONE+` 4,200 |
+| **Danger** | > 4,500 — ***"split before deploying"*** | **1** | **`04_RPS` 5,621** |
+
+`04_RPS.pact` is the module the FVT split *created*: `04_FVT.pact` was 7,527 lines and became
+RPS 5,621 + FVT 3,978. The split relieved FVT and left its larger half above the line the spec says
+must be cleared before deploying.
+
+**Roadmap 1.7.2.1 requires "every module within the deploy ceiling" as a precondition of redeploy**,
+so this is not a tidiness item — it gates the phase after the red team.
+
+**Not attempted here.** Splitting a 5,600-line sovereign module is a design change with an interface
+cascade behind it, and the roadmap schedules it as its own subphase. Recorded with the measurement so
+the gate's precondition is a number rather than an impression.
+
+**A framing error worth recording.** I first measured this in BYTES against CLAUDE.md's *"~150k
+deploy size cap"* and got six modules over the line — which reads as far more alarming than the
+truth. `MODULE-SIZING.md`'s bands are in **LINES**, and calibrated to **StoaChain's 2,000,000 block
+gas limit**, not to Kadena mainnet's 150,000. Two different chains, two different limits, two
+different units. The alarming version was wrong.
