@@ -4770,3 +4770,70 @@
 )
 (env-sigs [])
 (rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "ATS-G27 — the last live enforce in the tree with no test")
+(print "")
+(print "=== ATS-G27 — URCx_PosSt's positional bound ================================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;`REPL/tools/_enforce_coverage.py` measures which of the tree's 790 matchable `enforce` messages a
+;;negative test has actually pinned. 765 are pinned; of the 25 that are not, 24 sit in the LEGACY
+;;`00_DPMF` module. **This was the one live unpinned enforce in the entire codebase.**
+;;
+;;WHY IT WAS NEVER REACHED. `URCx_PosSt`'s only in-tree caller is `URCx_PSL`, which folds over
+;;`(enumerate 1 7)` -- it supplies its own indices, and all seven are inside the bound. So no client
+;;path can trip this guard, which is why nothing pinned it. It is nonetheless a LIVE guard rather
+;;than a dead one: `URCx_PosSt` carries no `require-capability`, so it is directly callable, and the
+;;day a second caller appears the bound is what stands between it and a silent wrong read.
+;;
+;;Driving a compute function directly, rather than through a client op, is the same shape
+;;`modules/DALOS-ADMIN.repl` <<DALOS-G5>> uses for the gas station's notional ceiling. It witnesses
+;;the GUARD, not a route to it -- and this block says so rather than implying more.
+(let
+    (
+        (ref-ATS:module{AutostakeV3} ATS)
+    )
+    (let
+        (
+            (pair:string (at 0 (ref-ATS::URH_OwnedAutostakePairs KST.ANHD)))
+        )
+        (map print
+            [
+                ;;NON-VACUITY FIRST, at BOTH ends of the range -- without it, a function that
+                ;;refused every input would satisfy the two assertions below.
+                (expect "<<ATS-G27>> position 1 is inside the bound and answers"
+                    true (!= "" (format "{}" [(ATS.URCx_PosSt pair KST.ANHD 1)])))
+                (expect "<<ATS-G27>> ...and so is position 7, the last one"
+                    true (!= "" (format "{}" [(ATS.URCx_PosSt pair KST.ANHD 7)])))
+                ;;THE GUARD, at both ends. 8 is one past the top; 0 is the off-by-one a caller
+                ;;reaches by treating a 1-based position list as 0-based, which is the likelier
+                ;;mistake of the two.
+                (expect-failure "<<ATS-G27>> position 8 is one past the top and is refused"
+                    "Input Position out of bounds"
+                    (ATS.URCx_PosSt pair KST.ANHD 8))
+                (expect-failure "<<ATS-G27>> ...and position 0, the 1-based/0-based off-by-one"
+                    "Input Position out of bounds"
+                    (ATS.URCx_PosSt pair KST.ANHD 0))
+                ;;THE TWO SIBLINGS, same shape, same blind spot. `UEV_PositionalVariable` is a
+                ;;shared bound-checker that takes its message as an ARGUMENT, so none of these three
+                ;;sites is an `enforce` form and none is in `_enforce_coverage.py`'s denominator.
+                ;;Five such sites exist tree-wide; four were unpinned, and three of those are live.
+                ;;All three are closed here and below.
+                (expect "<<ATS-G27>> RUR 1 is inside the bound and answers"
+                    true (> (length (ref-ATS::UR_RewardTokenRUR pair 1)) 0))
+                (expect-failure "<<ATS-G27>> ...and RUR 4 is one past the top of a 3-position range"
+                    "Invalid RUR Integer"
+                    (ref-ATS::UR_RewardTokenRUR pair 4))
+                (expect "<<ATS-G27>> ledger position 1 answers"
+                    true (!= "" (format "{}" [(ATS.UR_P1-7 pair KST.ANHD 1)])))
+                (expect-failure "<<ATS-G27>> ...and ledger position 8 is refused"
+                    "Invalid Position Number"
+                    (ATS.UR_P1-7 pair KST.ANHD 8))
+            ]
+        )
+    )
+    ""
+)
+(rollback-tx)
