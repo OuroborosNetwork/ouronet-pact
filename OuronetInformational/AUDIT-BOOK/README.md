@@ -3,7 +3,7 @@
 > **Status: ALL THREE PARTS WRITTEN** (2026-09-17). Roadmap §1.6.2.1.
 > One consolidated, publishable account of every audit performed on Ouronet, end to end.
 >
-> **~9,000 lines across 18 chapters.** Part I verifies 314 findings from six module audits against
+> **6,184 lines across 17 chapters.** Part I verifies 314 findings from six module audits against
 > *current* source; Part II documents the main-work round from the tree and the commit history
 > rather than from its own plan; Part III records 38 red-team attacks, 20 of which found a defect.
 
