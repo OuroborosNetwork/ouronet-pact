@@ -80,7 +80,7 @@ tree was committed; "the tree was committed" is not a safety property.
 internally; running both duplicates the banners it inserts.
 
 **AS OF 2026-09-17 THE FORMATTER IS FIXED AND THE DRIFT IS APPLIED** — the committed tree is now
-what the tool produces, so a bare `--apply` should be a no-op. What follows is kept because it is
+what the tool produces, and a bare `--apply` IS a no-op — verified by running it twice over the normalised tree. What follows is kept because it is
 why the drift sat unapplied for weeks, and because the failure mode can return.
 
 The warning above understated the risk: the single tool

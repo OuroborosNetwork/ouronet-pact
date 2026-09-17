@@ -139,7 +139,22 @@ def _insert_markers_into_body(body: list[str], title: str) -> list[str]:
     for ix, mm, slug in inserts:
         if ix < 0 or ix > len(out):
             continue
-        if ix > 0 and ";;====" in out[ix - 1] and title[: min(10, len(title))] in out[ix - 1]:
+        # IDEMPOTENCY (fixed 2026-09-17). This looked back exactly ONE line for an existing
+        # `;;====` marker -- but the layout this very function produces is THREE lines:
+        #
+        #     ;;==== TITLE · 01 · slug ====
+        #     (print "--- [TITLE · 01 · slug] ---")
+        #     (env-sigs ...)                          <- the anchor
+        #
+        # so on a second run `out[ix - 1]` is the `(print …)` line, the marker at `ix - 2` is never
+        # seen, and every banner is inserted AGAIN. Measured: a second `--apply` over an
+        # already-normalised tree added 5,738 duplicate lines across 167 files.
+        #
+        # This is why CLAUDE.md's standing warning was "running BOTH tools duplicates the banners" --
+        # the duplication was never about running both. Running the ONE tool twice does it.
+        if any(ix - k >= 0 and ";;====" in out[ix - k]
+               and title[: min(10, len(title))] in out[ix - k]
+               for k in (1, 2, 3)):
             continue
         mm_s = f"{mm:02d}"
         pad = "=" * max(0, 80 - len(title) - len(mm_s) - len(slug))

@@ -3929,4 +3929,31 @@ evidence that 186 files of insertion changed no behaviour. The 618 dropped inser
 of the anchors landing inside an expression.
 
 Applied in two commits: the tool fix, then the formatting alone, which is the standalone reviewable
-act CLAUDE.md asks for. **The drift is gone**; a bare `--apply` is now a no-op.
+act CLAUDE.md asks for.
+
+### A SECOND defect, surfaced by a claim of mine that was false
+
+I wrote here that *"a bare `--apply` is now a no-op"* — **and published it to CLAUDE.md without
+testing it.** Tested afterwards: a second run over the freshly-normalised tree added **5,738
+duplicate lines across 167 files.** The tool was not idempotent.
+
+The cause is exact. The dedup check looked back **one** line for an existing `;;====` marker, but
+the layout this function *produces* is three lines:
+
+```
+;;==== TITLE · 01 · slug ====
+(print "--- [TITLE · 01 · slug] ---")
+(env-sigs ...)                          <- the anchor
+```
+
+so on a second pass `out[ix - 1]` is the `(print …)` line, the marker two lines up is never seen, and
+every banner is re-inserted. Fixed by looking back three lines. Verified the way the first claim was
+not: two consecutive `--apply` runs over the normalised tree, **0 `.repl` files changed by either**,
+gate green at 25,029.
+
+> **This also corrects CLAUDE.md's long-standing warning**, which said *"running BOTH tools
+> duplicates the banners it inserts."* The duplication was never about running both. **Running the
+> ONE tool twice did it** — which is exactly what the 2026-09-16 census hit, and it was attributed to
+> the wrong cause for a month.
+
+**The drift is gone**, and now a bare `--apply` really is a no-op.
