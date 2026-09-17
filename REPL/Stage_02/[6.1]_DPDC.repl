@@ -911,7 +911,7 @@
 (print "")
 ;;==== TX 011 -- Make CD Set · 03 · gas echo ==== =================================================
 (print "--- [TX 011 -- Make CD Set · 03 · gas echo] ---")
-(format "<<<<<<<TX 011 -- Make CD Set Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<TX 011 -- Make CD Set Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -982,7 +982,7 @@
 (print "")
 ;;==== TX 014 -- Equity Collection Tests · 03 · gas echo ==== =====================================
 (print "--- [TX 014 -- Equity Collection Tests · 03 · gas echo] ---")
-(format "<<<<<<<TX 014 -- Equity Collection Tests Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<TX 014 -- Equity Collection Tests Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")

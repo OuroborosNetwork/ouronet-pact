@@ -45,7 +45,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/02_IGNIS.pact")
 ;;==== TX-02 [2.1] - IGNIS Module · 03 · gas echo ==== ============================================
 (print "--- [TX-02 [2.1] - IGNIS Module · 03 · gas echo] ---")
-(format "<<<<<<<IGNIS Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<IGNIS Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -67,7 +67,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/04_BRD.pact")
 ;;==== TX-01 [2.1] - BRD Module · 03 · gas echo ==== ==============================================
 (print "--- [TX-01 [2.1] - BRD Module · 03 · gas echo] ---")
-(format "<<<<<<<BRD Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<BRD Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -87,7 +87,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/05_DPTF.pact")
 ;;==== TX-02 [2.2] - DPTF Module · 03 · gas echo ==== =============================================
 (print "--- [TX-02 [2.2] - DPTF Module · 03 · gas echo] ---")
-(format "<<<<<<<DPTF Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<DPTF Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -107,7 +107,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/00_DPMF.pact")
 ;;==== TX-03 [2.3] - DPMF Module · 03 · gas echo ==== =============================================
 (print "--- [TX-03 [2.3] - DPMF Module · 03 · gas echo] ---")
-(format "<<<<<<<DPMF Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<DPMF Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -129,7 +129,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/06_DPOF.pact")
 ;;==== TX-06 [2.1] - DPOF Module · 03 · gas echo ==== =============================================
 (print "--- [TX-06 [2.1] - DPOF Module · 03 · gas echo] ---")
-(format "<<<<<<<DPOF Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<DPOF Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -149,7 +149,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/07_ELITE.pact")
 ;;==== TX-07 [2.1] - ELITE Module · 03 · gas echo ==== ============================================
 (print "--- [TX-07 [2.1] - ELITE Module · 03 · gas echo] ---")
-(format "<<<<<<<ELITE Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<ELITE Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -169,7 +169,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/08_ATS.pact")
 ;;==== TX-04 [2.4] - ATS Module · 03 · gas echo ==== ==============================================
 (print "--- [TX-04 [2.4] - ATS Module · 03 · gas echo] ---")
-(format "<<<<<<<ATS Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<ATS Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -189,7 +189,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/09_TFT.pact")
 ;;==== TX-05 [2.5] - TFT Module · 03 · gas echo ==== ==============================================
 (print "--- [TX-05 [2.5] - TFT Module · 03 · gas echo] ---")
-(format "<<<<<<<TFT Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<TFT Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -209,7 +209,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/10_ATSU.pact")
 ;;==== TX-06 [2.6] - ATSU Module · 03 · gas echo ==== =============================================
 (print "--- [TX-06 [2.6] - ATSU Module · 03 · gas echo] ---")
-(format "<<<<<<<ATSU Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<ATSU Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -229,7 +229,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/11_VST.pact")
 ;;==== TX-07 [2.7] - VST Module · 03 · gas echo ==== ==============================================
 (print "--- [TX-07 [2.7] - VST Module · 03 · gas echo] ---")
-(format "<<<<<<<VST Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<VST Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -249,7 +249,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/12_LIQUID.pact")
 ;;==== TX-08 [2.8] - LIQUID Module · 03 · gas echo ==== ===========================================
 (print "--- [TX-08 [2.8] - LIQUID Module · 03 · gas echo] ---")
-(format "<<<<<<<LIQUID Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<LIQUID Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -269,7 +269,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/13_OUROBOROS.pact")
 ;;==== TX-09 [2.9] - OUROBOROS Module · 03 · gas echo ==== ========================================
 (print "--- [TX-09 [2.9] - OUROBOROS Module · 03 · gas echo] ---")
-(format "<<<<<<<OUROBOROS Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<OUROBOROS Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -289,7 +289,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/14_SWPT.pact")
 ;;==== TX-10 [2.10] - SWPT Module · 03 · gas echo ==== ============================================
 (print "--- [TX-10 [2.10] - SWPT Module · 03 · gas echo] ---")
-(format "<<<<<<<SWPT Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<SWPT Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -309,7 +309,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact")
 ;;==== TX-11 [2.11] - SWP Module · 03 · gas echo ==== =============================================
 (print "--- [TX-11 [2.11] - SWP Module · 03 · gas echo] ---")
-(format "<<<<<<<SWP Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<SWP Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -329,7 +329,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact")
 ;;==== TX-12 [2.12] - SWPI Module · 03 · gas echo ==== ============================================
 (print "--- [TX-12 [2.12] - SWPI Module · 03 · gas echo] ---")
-(format "<<<<<<<SWPI Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<SWPI Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -349,7 +349,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/17_SWPL.pact")
 ;;==== TX-13 [2.13] - SWPL Module · 03 · gas echo ==== ============================================
 (print "--- [TX-13 [2.13] - SWPL Module · 03 · gas echo] ---")
-(format "<<<<<<<SWPL Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<SWPL Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -369,7 +369,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/18_SWPLC.pact")
 ;;==== TX-14 [2.14] - SWPLC Module · 03 · gas echo ==== ===========================================
 (print "--- [TX-14 [2.14] - SWPLC Module · 03 · gas echo] ---")
-(format "<<<<<<<SWPLC Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<SWPLC Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -389,7 +389,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/19_SWPU.pact")
 ;;==== TX-14 [2.15] - SWPU Module · 03 · gas echo ==== ============================================
 (print "--- [TX-14 [2.15] - SWPU Module · 03 · gas echo] ---")
-(format "<<<<<<<SWPU Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<SWPU Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -409,7 +409,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/20_MTX-SWP.pact")
 ;;==== TX-14 [2.16] - MTX-SWP Module · 03 · gas echo ==== =========================================
 (print "--- [TX-14 [2.16] - MTX-SWP Module · 03 · gas echo] ---")
-(format "<<<<<<<MTX-SWP Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<MTX-SWP Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -429,7 +429,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/21_CODEX.pact")
 ;;==== TX-15 [2.18] - CODEX Module · 03 · gas echo ==== =============================================
 (print "--- [TX-15 [2.18] - CODEX Module · 03 · gas echo] ---")
-(format "<<<<<<<CODEX Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<CODEX Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -449,7 +449,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/22_PYTHIA.pact")
 ;;==== TX-16 [2.19] - PYTHIA Module · 03 · gas echo ==== ============================================
 (print "--- [TX-16 [2.19] - PYTHIA Module · 03 · gas echo] ---")
-(format "<<<<<<<PYTHIA Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<PYTHIA Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")

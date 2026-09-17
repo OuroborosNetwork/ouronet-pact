@@ -42,7 +42,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/3_Talos/01_TS01-A.pact")
 ;;==== TX-01 [2.1] - TS01-A Module · 03 · gas echo ==== ===========================================
 (print "--- [TX-01 [2.1] - TS01-A Module · 03 · gas echo] ---")
-(format "<<<<<<<TS01-A Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<TS01-A Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (env-sigs [])
 (commit-tx)
@@ -67,7 +67,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/3_Talos/02_TS01-C1.pact")
 ;;==== TX-02 [2.2] - TS01-C1 Module · 03 · gas echo ==== ==========================================
 (print "--- [TX-02 [2.2] - TS01-C1 Module · 03 · gas echo] ---")
-(format "<<<<<<<TS01-C1 Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<TS01-C1 Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (env-sigs [])
 (commit-tx)
@@ -92,7 +92,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/3_Talos/03_TS01-C2.pact")
 ;;==== TX-03 [2.3] - TS01-C2 Module · 03 · gas echo ==== ==========================================
 (print "--- [TX-03 [2.3] - TS01-C2 Module · 03 · gas echo] ---")
-(format "<<<<<<<TS01-C2 Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<TS01-C2 Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (env-sigs [])
 (commit-tx)
@@ -117,7 +117,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/3_Talos/04_TS01-C3.pact")
 ;;==== TX-02 [2.2] - TS02-C3 Module · 03 · gas echo ==== ==========================================
 (print "--- [TX-02 [2.2] - TS02-C3 Module · 03 · gas echo] ---")
-(format "<<<<<<<TS01-C3 Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<TS01-C3 Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -141,7 +141,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/3_Talos/06_TS01-C4.pact")
 ;;==== TX-03b [2.3b] - TS01-C4 Module · 03 · gas echo ==== ========================================
 (print "--- [TX-03b [2.3b] - TS01-C4 Module · 03 · gas echo] ---")
-(format "<<<<<<<TS01-C4 Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<TS01-C4 Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (env-sigs [])
 (commit-tx)
@@ -166,7 +166,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/3_Talos/05_TS01-P.pact")
 ;;==== TX-04 [2.4] - TS01-P Module · 03 · gas echo ==== ===========================================
 (print "--- [TX-04 [2.4] - TS01-P Module · 03 · gas echo] ---")
-(format "<<<<<<<TS01-P Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<TS01-P Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (env-sigs [])
 (commit-tx)

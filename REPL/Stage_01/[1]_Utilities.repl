@@ -47,7 +47,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/1_Utilities/01_U_CT.pact")
 ;;==== TX-01 [1.01] - Deploy U|CT · 03 · gas echo ==== ============================================
 (print "--- [TX-01 [1.01] - Deploy U|CT · 03 · gas echo] ---")
-(format "<<<<<<<U|CT Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<U|CT Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -69,7 +69,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/1_Utilities/02_U_G.pact")
 ;;==== TX-02 [1.02] - Deploy U|G · 03 · gas echo ==== =============================================
 (print "--- [TX-02 [1.02] - Deploy U|G · 03 · gas echo] ---")
-(format "<<<<<<<U|G Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<U|G Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -91,7 +91,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/1_Utilities/03_U_ST.pact")
 ;;==== TX-03 [1.03] - Deploy U|ST · 03 · gas echo ==== ============================================
 (print "--- [TX-03 [1.03] - Deploy U|ST · 03 · gas echo] ---")
-(format "<<<<<<<U|ST Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<U|ST Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -113,7 +113,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/1_Utilities/04_U_RS.pact")
 ;;==== TX-04 [1.04] - Deploy U|RD · 03 · gas echo ==== ============================================
 (print "--- [TX-04 [1.04] - Deploy U|RD · 03 · gas echo] ---")
-(format "<<<<<<<U|RS Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<U|RS Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -135,7 +135,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/1_Utilities/05_U_LST.pact")
 ;;==== TX-05 [1.05] - Deploy U|LST · 03 · gas echo ==== ===========================================
 (print "--- [TX-05 [1.05] - Deploy U|LST · 03 · gas echo] ---")
-(format "<<<<<<<U|LST Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<U|LST Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -157,7 +157,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/1_Utilities/06_U_INT.pact")
 ;;==== TX-04 [1.06] - Deploy U|INT · 03 · gas echo ==== ===========================================
 (print "--- [TX-04 [1.06] - Deploy U|INT · 03 · gas echo] ---")
-(format "<<<<<<<U|INT Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<U|INT Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -179,7 +179,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/1_Utilities/07_U_DEC.pact")
 ;;==== TX-04 [1.07] - Deploy U|DEC · 03 · gas echo ==== ===========================================
 (print "--- [TX-04 [1.07] - Deploy U|DEC · 03 · gas echo] ---")
-(format "<<<<<<<U|DEC Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<U|DEC Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -201,7 +201,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/1_Utilities/08_U_DALOS.pact")
 ;;==== TX-04 [1.08] - Deploy U|DALOS · 03 · gas echo ==== =========================================
 (print "--- [TX-04 [1.08] - Deploy U|DALOS · 03 · gas echo] ---")
-(format "<<<<<<<U|DALOS Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<U|DALOS Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -223,7 +223,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/1_Utilities/09_U_ATS.pact")
 ;;==== TX-04 [1.09] - Deploy U|ATS · 03 · gas echo ==== ===========================================
 (print "--- [TX-04 [1.09] - Deploy U|ATS · 03 · gas echo] ---")
-(format "<<<<<<<U|ATS Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<U|ATS Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -245,7 +245,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/1_Utilities/10_U_DPTF.pact")
 ;;==== TX-04 [1.10] - Deploy U|DPTF · 03 · gas echo ==== ==========================================
 (print "--- [TX-04 [1.10] - Deploy U|DPTF · 03 · gas echo] ---")
-(format "<<<<<<<U|DPTF Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<U|DPTF Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -267,7 +267,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/1_Utilities/11_U_VST.pact")
 ;;==== TX-04 [1.11] - Deploy U|VST · 03 · gas echo ==== ===========================================
 (print "--- [TX-04 [1.11] - Deploy U|VST · 03 · gas echo] ---")
-(format "<<<<<<<U|VST Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<U|VST Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -289,7 +289,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/1_Utilities/12_U_SWP.pact")
 ;;==== TX-04 [1.12] - Deploy U|SWP · 03 · gas echo ==== ===========================================
 (print "--- [TX-04 [1.12] - Deploy U|SWP · 03 · gas echo] ---")
-(format "<<<<<<<U|SWP Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<U|SWP Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -311,6 +311,6 @@
 (load "../../1_SOVEREIGN/STAGE_01/1_Utilities/13_U_BFS.pact")
 ;;==== TX-04 [1.13] - Deploy U|BFS · 03 · gas echo ==== ===========================================
 (print "--- [TX-04 [1.13] - Deploy U|BFS · 03 · gas echo] ---")
-(format "<<<<<<<U|BFS Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<U|BFS Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)

@@ -19,7 +19,7 @@
 (load "../../1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact")
 ;;==== TX-Z01 [Z] - INFO-TWO Module · 03 · gas echo ==== ==========================================
 (print "--- [TX-Z01 [Z] - INFO-TWO Module · 03 · gas echo] ---")
-(format "<<<<<<<INFO-TWO Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<INFO-TWO Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")

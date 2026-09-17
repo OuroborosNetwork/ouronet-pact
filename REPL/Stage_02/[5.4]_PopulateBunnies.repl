@@ -163,7 +163,7 @@
 (print "")
 ;;==== TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 03 · gas echo ==== =========================
 (print "--- [TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 03 · gas echo] ---")
-(format "<<<<<<<Mint Nosferatu Legendary (1-70) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Mint Nosferatu Legendary (1-70) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -272,7 +272,7 @@
 (print "")
 ;;==== TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 03 · gas echo ==== =========================
 (print "--- [TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 03 · gas echo] ---")
-(format "<<<<<<<Mint Nosferatu Legendary (1-70) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Mint Nosferatu Legendary (1-70) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -381,7 +381,7 @@
 (print "")
 ;;==== TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 03 · gas echo ==== =========================
 (print "--- [TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 03 · gas echo] ---")
-(format "<<<<<<<Mint Nosferatu Legendary (1-70) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Mint Nosferatu Legendary (1-70) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -490,7 +490,7 @@
 (print "")
 ;;==== TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 03 · gas echo ==== =========================
 (print "--- [TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 03 · gas echo] ---")
-(format "<<<<<<<Mint Nosferatu Legendary (1-70) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Mint Nosferatu Legendary (1-70) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -599,7 +599,7 @@
 (print "")
 ;;==== TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 03 · gas echo ==== =========================
 (print "--- [TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 03 · gas echo] ---")
-(format "<<<<<<<Mint Nosferatu Legendary (1-70) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Mint Nosferatu Legendary (1-70) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -708,7 +708,7 @@
 (print "")
 ;;==== TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 03 · gas echo ==== =========================
 (print "--- [TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 03 · gas echo] ---")
-(format "<<<<<<<Mint Nosferatu Legendary (1-70) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Mint Nosferatu Legendary (1-70) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -817,7 +817,7 @@
 (print "")
 ;;==== TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 03 · gas echo ==== =========================
 (print "--- [TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 03 · gas echo] ---")
-(format "<<<<<<<Mint Nosferatu Legendary (1-70) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Mint Nosferatu Legendary (1-70) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -926,7 +926,7 @@
 (print "")
 ;;==== TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 03 · gas echo ==== =========================
 (print "--- [TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 03 · gas echo] ---")
-(format "<<<<<<<Mint Nosferatu Legendary (1-70) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Mint Nosferatu Legendary (1-70) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -1035,7 +1035,7 @@
 (print "")
 ;;==== TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 03 · gas echo ==== =========================
 (print "--- [TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 03 · gas echo] ---")
-(format "<<<<<<<Mint Nosferatu Legendary (1-70) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Mint Nosferatu Legendary (1-70) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -1144,7 +1144,7 @@
 (print "")
 ;;==== TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 03 · gas echo ==== =========================
 (print "--- [TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 03 · gas echo] ---")
-(format "<<<<<<<Mint Nosferatu Legendary (1-70) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Mint Nosferatu Legendary (1-70) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -1253,7 +1253,7 @@
 (print "")
 ;;==== TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 03 · gas echo ==== =========================
 (print "--- [TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 03 · gas echo] ---")
-(format "<<<<<<<Mint Nosferatu Legendary (1-70) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Mint Nosferatu Legendary (1-70) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -1362,7 +1362,7 @@
 (print "")
 ;;==== TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 03 · gas echo ==== =========================
 (print "--- [TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 03 · gas echo] ---")
-(format "<<<<<<<Mint Nosferatu Legendary (1-70) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Mint Nosferatu Legendary (1-70) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -1471,7 +1471,7 @@
 (print "")
 ;;==== TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 03 · gas echo ==== =========================
 (print "--- [TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 03 · gas echo] ---")
-(format "<<<<<<<Mint Nosferatu Legendary (1-70) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Mint Nosferatu Legendary (1-70) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -1580,7 +1580,7 @@
 (print "")
 ;;==== TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 03 · gas echo ==== =========================
 (print "--- [TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 03 · gas echo] ---")
-(format "<<<<<<<Mint Nosferatu Legendary (1-70) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Mint Nosferatu Legendary (1-70) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -1689,7 +1689,7 @@
 (print "")
 ;;==== TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 03 · gas echo ==== =========================
 (print "--- [TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 03 · gas echo] ---")
-(format "<<<<<<<Mint Nosferatu Legendary (1-70) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Mint Nosferatu Legendary (1-70) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -1798,7 +1798,7 @@
 (print "")
 ;;==== TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 03 · gas echo ==== =========================
 (print "--- [TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 03 · gas echo] ---")
-(format "<<<<<<<Mint Nosferatu Legendary (1-70) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Mint Nosferatu Legendary (1-70) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -1832,7 +1832,7 @@
 (print "")
 ;;==== TX-03 [5.4] - KBN A_BunnyRGBSet (Bunny Class 1 primordial set) · 03 · gas echo ==== ========
 (print "--- [TX-03 [5.4] - KBN A_BunnyRGBSet (Bunny Class 1 primordial set) · 03 · gas echo] ---")
-(format "<<<<<<<KBN A_BunnyRGBSet (Class 1) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<KBN A_BunnyRGBSet (Class 1) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")

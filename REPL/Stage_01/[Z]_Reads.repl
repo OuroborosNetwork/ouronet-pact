@@ -17,7 +17,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/Z_Reads/01_INFO-ZERO.pact")
 ;;==== TX-Z01 [Z] - INFO-ZERO Module · 03 · gas echo ==== =========================================
 (print "--- [TX-Z01 [Z] - INFO-ZERO Module · 03 · gas echo] ---")
-(format "<<<<<<<INFO-ZERO Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<INFO-ZERO Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -37,7 +37,7 @@
 (load "../../1_SOVEREIGN/STAGE_01/Z_Reads/02_INFO-ONE+.pact")
 ;;==== TX-Z02 [Z] - INFO-ONE+ Module · 03 · gas echo ==== =========================================
 (print "--- [TX-Z02 [Z] - INFO-ONE+ Module · 03 · gas echo] ---")
-(format "<<<<<<<INFO-ONE Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<INFO-ONE Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")

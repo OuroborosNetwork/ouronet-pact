@@ -216,7 +216,7 @@
 (print "")
 ;;==== Init STEP 003 - Show Tests · 03 · gas echo ==== ============================================
 (print "--- [Init STEP 003 - Show Tests · 03 · gas echo] ---")
-(format "<<<<<<<STEP 003 Show Tests Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<STEP 003 Show Tests Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -775,7 +775,7 @@
 (print "")
 ;;==== Cold Recovery and Cull Test 2|5 · 03 · gas echo ==== =======================================
 (print "--- [Cold Recovery and Cull Test 2|5 · 03 · gas echo] ---")
-(format "<<<<<<<Cold Recovery and Cull Test 2|5 Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Cold Recovery and Cull Test 2|5 Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")

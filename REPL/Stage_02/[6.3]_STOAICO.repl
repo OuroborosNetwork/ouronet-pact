@@ -175,7 +175,7 @@
 (print "")
 ;;==== TX-01 - Initialise STOA ICO · 03 · gas echo ==== ===========================================
 (print "--- [TX-01 - Initialise STOA ICO · 03 · gas echo] ---")
-(format "<<<<<<<TX-01 - Initialise STOA ICO Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<TX-01 - Initialise STOA ICO Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -265,7 +265,7 @@
 (print "")
 ;;==== TX-02 - STOAICO Stake Tests · 03 · gas echo ==== ===========================================
 (print "--- [TX-02 - STOAICO Stake Tests · 03 · gas echo] ---")
-(format "<<<<<<<TX-01 - STOAICO Stake Tests Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<TX-01 - STOAICO Stake Tests Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")

@@ -42,7 +42,7 @@
 (load "../../1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/00_Demipad.pact")
 ;;==== TX-01 [2] - LAUNCHPAD Module · 03 · gas echo ==== ==========================================
 (print "--- [TX-01 [2] - LAUNCHPAD Module · 03 · gas echo] ---")
-(format "<<<<<<<LAUNCHPAD Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<LAUNCHPAD Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")

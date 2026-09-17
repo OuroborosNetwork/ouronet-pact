@@ -95,7 +95,7 @@
 
 ;;==== TX-01 [4.1.1] - Dalos INIT [01]: Init Sovereign Standard Ouronet Account · 03 · gas echo ==== 
 (print "--- [TX-01 [4.1.1] - Dalos INIT [01]: Init Sovereign Standard Ouronet Account · 03 · gas echo] ---")
-(format "<<<<<<<Dalos INIT [01] Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Dalos INIT [01] Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -188,7 +188,7 @@
 
 ;;==== TX-02 [4.1.2] - Dalos INIT [02]: Define IMC Policies · 03 · gas echo ==== ==================
 (print "--- [TX-02 [4.1.2] - Dalos INIT [02]: Define IMC Policies · 03 · gas echo] ---")
-(format "<<<<<<<Dalos INIT [02] Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Dalos INIT [02] Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -320,7 +320,7 @@
 
 ;;==== TX-03 [4.1.3] - Dalos INIT [03]: Insert Dalos Table Data · 03 · gas echo ==== ==============
 (print "--- [TX-03 [4.1.3] - Dalos INIT [03]: Insert Dalos Table Data · 03 · gas echo] ---")
-(format "<<<<<<<Dalos INIT [03] Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Dalos INIT [03] Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -511,7 +511,7 @@
 
 ;;==== TX-04 [4.1.4] - Dalos INIT [05]: Insert Dalos Table Data · 03 · gas echo ==== ==============
 (print "--- [TX-04 [4.1.4] - Dalos INIT [05]: Insert Dalos Table Data · 03 · gas echo] ---")
-(format "<<<<<<<Dalos INIT [04] Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Dalos INIT [04] Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -743,7 +743,7 @@
 
 ;;==== TX-05 [4.1.5] - Dalos INIT [05]: Mint Primordial Tokens · 03 · gas echo ==== ===============
 (print "--- [TX-05 [4.1.5] - Dalos INIT [05]: Mint Primordial Tokens · 03 · gas echo] ---")
-(format "<<<<<<<Dalos INIT [05] Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Dalos INIT [05] Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -785,7 +785,7 @@
 
 ;;==== TX-06 [4.1.6] - Dalos INIT [06]: Issue Vested Snake Tokens · 03 · gas echo ==== ============
 (print "--- [TX-06 [4.1.6] - Dalos INIT [06]: Issue Vested Snake Tokens · 03 · gas echo] ---")
-(format "<<<<<<<Dalos INIT [06] Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Dalos INIT [06] Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -865,7 +865,7 @@
 
 ;;==== TX-07 [4.1.7] - Dalos INIT [07]: Issue Primordial Autostake Pairs · 03 · gas echo ==== =====
 (print "--- [TX-07 [4.1.7] - Dalos INIT [07]: Issue Primordial Autostake Pairs · 03 · gas echo] ---")
-(format "<<<<<<<Dalos INIT [07] Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Dalos INIT [07] Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -906,7 +906,7 @@
 
 ;;==== TX-08 [4.1.8] - Dalos INIT [08]: Mint Ouroboros Token · 03 · gas echo ==== =================
 (print "--- [TX-08 [4.1.8] - Dalos INIT [08]: Mint Ouroboros Token · 03 · gas echo] ---")
-(format "<<<<<<<Dalos INIT [08] Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Dalos INIT [08] Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -948,7 +948,7 @@
 
 ;;==== TX-09 [4.1.9] - Dalos INIT [09]: Make Startup GAS(IGNIS) · 03 · gas echo ==== ==============
 (print "--- [TX-09 [4.1.9] - Dalos INIT [09]: Make Startup GAS(IGNIS) · 03 · gas echo] ---")
-(format "<<<<<<<Dalos INIT [09] Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Dalos INIT [09] Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -1008,7 +1008,7 @@
 
 ;;==== TX-10 [4.1.10] - Dalos INIT [10]: Setup WSTOA and SSTOA · 03 · gas echo ==== =================
 (print "--- [TX-10 [4.1.10] - Dalos INIT [10]: Setup WSTOA and SSTOA · 03 · gas echo] ---")
-(format "<<<<<<<Dalos INIT [10] Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Dalos INIT [10] Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -1049,7 +1049,7 @@
 
 ;;==== TX-11 [4.1.11] - Dalos INIT [11]: Wrap Stoa · 03 · gas echo ==== =========================
 (print "--- [TX-11 [4.1.11] - Dalos INIT [11]: Wrap Stoa · 03 · gas echo] ---")
-(format "<<<<<<<Dalos INIT [11] Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Dalos INIT [11] Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -1177,7 +1177,7 @@
 
 ;;==== TX-12 [4.1.12] - Dalos INIT [12]: Coil Wrapped Stoa · 03 · gas echo ==== =================
 (print "--- [TX-12 [4.1.12] - Dalos INIT [12]: Coil Wrapped Stoa · 03 · gas echo] ---")
-(format "<<<<<<<Dalos INIT [12] Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Dalos INIT [12] Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -1215,7 +1215,7 @@
 
 ;;==== TX-13 [4.1.13] - Dalos INIT [13]: KickStart Auryndex · 03 · gas echo ==== ==================
 (print "--- [TX-13 [4.1.13] - Dalos INIT [13]: KickStart Auryndex · 03 · gas echo] ---")
-(format "<<<<<<<Dalos INIT [13] Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Dalos INIT [13] Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -1253,7 +1253,7 @@
 
 ;;==== TX-14 [4.1.14] - Dalos INIT [14]: Kickstart EliteAuryndex · 03 · gas echo ==== =============
 (print "--- [TX-14 [4.1.14] - Dalos INIT [14]: Kickstart EliteAuryndex · 03 · gas echo] ---")
-(format "<<<<<<<Dalos INIT [14] Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Dalos INIT [14] Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -1289,7 +1289,7 @@
 
 ;;==== TX-15 [4.1.15] - Dalos INIT [15]: Transmute · 03 · gas echo ==== ===========================
 (print "--- [TX-15 [4.1.15] - Dalos INIT [15]: Transmute · 03 · gas echo] ---")
-(format "<<<<<<<Dalos INIT [15] Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Dalos INIT [15] Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -1332,7 +1332,7 @@
 
 ;;==== TX-16 [4.1.16] - Dalos INIT [16]: Transfer · 03 · gas echo ==== ============================
 (print "--- [TX-16 [4.1.16] - Dalos INIT [16]: Transfer · 03 · gas echo] ---")
-(format "<<<<<<<Dalos INIT [16] Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Dalos INIT [16] Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -1433,7 +1433,7 @@
 
 ;;==== TX-17 [4.1.17] - Dalos INIT [17]: Issue Special Tokens · 03 · gas echo ==== ================
 (print "--- [TX-17 [4.1.17] - Dalos INIT [17]: Issue Special Tokens · 03 · gas echo] ---")
-(format "<<<<<<<Dalos INIT [17] Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Dalos INIT [17] Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -1516,7 +1516,7 @@
 
 ;;==== TX-18 [4.1.18] - Dalos INIT [18]: SWP Setup 1 · 03 · gas echo ==== =========================
 (print "--- [TX-18 [4.1.18] - Dalos INIT [18]: SWP Setup 1 · 03 · gas echo] ---")
-(format "<<<<<<<Dalos INIT [18] Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Dalos INIT [18] Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -1593,7 +1593,7 @@
 
 ;;==== TX-18 [4.1.19] - Dalos INIT [19]: SWP Setup 2 · 03 · gas echo ==== =========================
 (print "--- [TX-18 [4.1.19] - Dalos INIT [19]: SWP Setup 2 · 03 · gas echo] ---")
-(format "<<<<<<<Dalos INIT [19] Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Dalos INIT [19] Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -1765,7 +1765,7 @@
 
 ;;==== TX-02 [4.1.2] - Dalos INIT [02]: Define IMC Policies · 03 · gas echo ==== ==================
 (print "--- [TX-02 [4.1.2] - Dalos INIT [02]: Define IMC Policies · 03 · gas echo] ---")
-(format "<<<<<<<Migrate DPMF [01] Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Migrate DPMF [01] Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")

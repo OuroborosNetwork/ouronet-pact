@@ -87,7 +87,7 @@
 (print "")
 ;;==== Manual Ouro Price Update · 03 · gas echo ==== ==============================================
 (print "--- [Manual Ouro Price Update · 03 · gas echo] ---")
-(format "<<<<<<<Manual Ouro Price Update Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Manual Ouro Price Update Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -127,7 +127,7 @@
 (print "")
 ;;==== Koson Minter FullTilt Testing · 03 · gas echo ==== =========================================
 (print "--- [Koson Minter FullTilt Testing · 03 · gas echo] ---")
-(format "<<<<<<<Minting Koson FullTilt Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Minting Koson FullTilt Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -168,7 +168,7 @@
 (print "")
 ;;==== Koson Minter 1of3 Testing · 03 · gas echo ==== =============================================
 (print "--- [Koson Minter 1of3 Testing · 03 · gas echo] ---")
-(format "<<<<<<<Minting Koson 1of3 Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Minting Koson 1of3 Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -205,7 +205,7 @@
 (print "")
 ;;==== Koson Minter 2of3 Testing · 03 · gas echo ==== =============================================
 (print "--- [Koson Minter 2of3 Testing · 03 · gas echo] ---")
-(format "<<<<<<<Minting Koson 2of3 Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Minting Koson 2of3 Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -273,7 +273,7 @@
 (print "")
 ;;==== Koson Minter 3of3 Testing · 03 · gas echo ==== =============================================
 (print "--- [Koson Minter 3of3 Testing · 03 · gas echo] ---")
-(format "<<<<<<<Minting Koson 3of3 Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Minting Koson 3of3 Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")

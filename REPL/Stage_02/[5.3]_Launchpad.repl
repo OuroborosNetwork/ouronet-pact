@@ -107,7 +107,7 @@
 (print "")
 ;;==== TX-01 - Initialise Launchpad Properties Table · 03 · gas echo ==== =========================
 (print "--- [TX-01 - Initialise Launchpad Properties Table · 03 · gas echo] ---")
-(format "<<<<<<<Init Launchpad (1-75) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Init Launchpad (1-75) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -192,7 +192,7 @@
 (print "")
 ;;==== TX-01 - Initialise Movie Booster aka Spark · 03 · gas echo ==== ============================
 (print "--- [TX-01 - Initialise Movie Booster aka Spark · 03 · gas echo] ---")
-(format "<<<<<<<Init Spark Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Init Spark Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -266,7 +266,7 @@
 (print "")
 ;;==== TX-01 - Initialise Movie Booster aka Spark · 03 · gas echo ==== ============================
 (print "--- [TX-01 - Initialise Movie Booster aka Spark · 03 · gas echo] ---")
-(format "<<<<<<<Init Spark Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Init Spark Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -352,7 +352,7 @@
 (print "")
 ;;==== TX-01 - Initialise Movie Booster aka Spark · 03 · gas echo ==== ============================
 (print "--- [TX-01 - Initialise Movie Booster aka Spark · 03 · gas echo] ---")
-(format "<<<<<<<Init Spark Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Init Spark Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -466,7 +466,7 @@
 (print "")
 ;;==== TX-01 - Initialise Shareholders · 03 · gas echo ==== =======================================
 (print "--- [TX-01 - Initialise Shareholders · 03 · gas echo] ---")
-(format "<<<<<<<Init Shareholders Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Init Shareholders Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -519,7 +519,7 @@
 (print "")
 ;;==== TX-01 - Initialise Custodians · 03 · gas echo ==== =========================================
 (print "--- [TX-01 - Initialise Custodians · 03 · gas echo] ---")
-(format "<<<<<<<Init Custodians Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Init Custodians Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -799,7 +799,7 @@
 (print "")
 ;;==== TX-01 - Initialise Stoa Pay · 03 · gas echo ==== =========================================
 (print "--- [TX-01 - Initialise Stoa Pay · 03 · gas echo] ---")
-(format "<<<<<<<Init Kpay Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Init Kpay Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -938,7 +938,7 @@
 (print "")
 ;;==== TX-01 - Initialise Movie Booster aka Spark · 03 · gas echo ==== ============================
 (print "--- [TX-01 - Initialise Movie Booster aka Spark · 03 · gas echo] ---")
-(format "<<<<<<<Init Spark Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Init Spark Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")

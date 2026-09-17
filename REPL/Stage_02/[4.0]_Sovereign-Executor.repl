@@ -142,7 +142,7 @@
 
 ;;==== TX-01 [4.1] - DPDC INIT [01]: Define IMC Policies · 03 · gas echo ==== =====================
 (print "--- [TX-01 [4.1] - DPDC INIT [01]: Define IMC Policies · 03 · gas echo] ---")
-(format "<<<<<<<DPDC INIT [01] Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<DPDC INIT [01] Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -220,7 +220,7 @@
 
 ;;==== TX-02 [4.2] - Issue Ouronet Custodians Collection · 03 · gas echo ==== =====================
 (print "--- [TX-02 [4.2] - Issue Ouronet Custodians Collection · 03 · gas echo] ---")
-(format "<<<<<<<Issue Ouronet Custodians Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Issue Ouronet Custodians Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -451,7 +451,7 @@
 
 ;;==== TX-02 [4.2] - Issue Ouronet Custodians Collection · 03 · gas echo ==== =====================
 (print "--- [TX-02 [4.2] - Issue Ouronet Custodians Collection · 03 · gas echo] ---")
-(format "<<<<<<<Issue Ouronet Custodians Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Issue Ouronet Custodians Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -564,7 +564,7 @@
 
 ;;==== TX-03 [4.3] - Issue Shareholders Collection · 03 · gas echo ==== ===========================
 (print "--- [TX-03 [4.3] - Issue Shareholders Collection · 03 · gas echo] ---")
-(format "<<<<<<<Issue Demiourgos Shareholders Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Issue Demiourgos Shareholders Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -642,7 +642,7 @@
 
 ;;==== TX-02 [4.2] - Issue Coding Division Collection · 03 · gas echo ==== ========================
 (print "--- [TX-02 [4.2] - Issue Coding Division Collection · 03 · gas echo] ---")
-(format "<<<<<<<Issue Ouronet Custodians Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Issue Ouronet Custodians Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -849,7 +849,7 @@
 
 ;;==== TX-04 [4.4] - Issue Coding Division Collection · 03 · gas echo ==== ========================
 (print "--- [TX-04 [4.4] - Issue Coding Division Collection · 03 · gas echo] ---")
-(format "<<<<<<<Issue Coding Division Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Issue Coding Division Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -927,7 +927,7 @@
 
 ;;==== TX-02 [4.2] - Issue Wonder Coach Collection · 03 · gas echo ==== ===========================
 (print "--- [TX-02 [4.2] - Issue Wonder Coach Collection · 03 · gas echo] ---")
-(format "<<<<<<<Issue Ouronet Custodians Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Issue Ouronet Custodians Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -1267,7 +1267,7 @@
 
 ;;==== TX-06 [4.6] - Issue Wonder Coach Collection · 03 · gas echo ==== ===========================
 (print "--- [TX-06 [4.6] - Issue Wonder Coach Collection · 03 · gas echo] ---")
-(format "<<<<<<<Issue Wonder Coach Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Issue Wonder Coach Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -1350,7 +1350,7 @@
 
 ;;==== TX-07 [4.7] - Issue Nosferatu Collection · 03 · gas echo ==== ==============================
 (print "--- [TX-07 [4.7] - Issue Nosferatu Collection · 03 · gas echo] ---")
-(format "<<<<<<<Issue Nosferatu Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Issue Nosferatu Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -1438,7 +1438,7 @@
 
 ;;==== TX-08 [4.8] - Issue Bloodshed Collection and Bunny · 03 · gas echo ==== ====================
 (print "--- [TX-08 [4.8] - Issue Bloodshed Collection and Bunny · 03 · gas echo] ---")
-(format "<<<<<<<Issue Bloodshed Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Issue Bloodshed Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -1526,7 +1526,7 @@
 
 ;;==== TX-08 [4.8] - Issue Bloodshed Collection and Bunny · 03 · gas echo ==== ====================
 (print "--- [TX-08 [4.8] - Issue Bloodshed Collection and Bunny · 03 · gas echo] ---")
-(format "<<<<<<<Issue Bloodshed Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Issue Bloodshed Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")

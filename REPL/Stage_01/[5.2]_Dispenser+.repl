@@ -209,7 +209,7 @@
 (load "../../2_CITIZEN/Stage_Z/03_DSP+.pact")
 ;;==== TX-02 [2] - DALOS Module · 03 · gas echo ==== ==============================================
 (print "--- [TX-02 [2] - DALOS Module · 03 · gas echo] ---")
-(format "<<<<<<<AOZ Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<AOZ Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -296,7 +296,7 @@
 
 ;;==== TX-03 [3.1] - DSP Init [1]: Dispenser Setup · 03 · gas echo ==== ===========================
 (print "--- [TX-03 [3.1] - DSP Init [1]: Dispenser Setup · 03 · gas echo] ---")
-(format "<<<<<<<Dispenser Init [1] Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Dispenser Init [1] Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")

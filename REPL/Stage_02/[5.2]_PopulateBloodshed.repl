@@ -59,7 +59,7 @@
 (load "../../2_CITIZEN/2_BloodshedMinter/01_BSD-L.pact")
 ;;==== TX-01 [2] - BSD-L Module · 03 · gas echo ==== ==============================================
 (print "--- [TX-01 [2] - BSD-L Module · 03 · gas echo] ---")
-(format "<<<<<<<BSD-L Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<BSD-L Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -79,7 +79,7 @@
 (load "../../2_CITIZEN/2_BloodshedMinter/02_BSD-E.pact")
 ;;==== TX-02 [2] - BSD-E Module · 03 · gas echo ==== ==============================================
 (print "--- [TX-02 [2] - BSD-E Module · 03 · gas echo] ---")
-(format "<<<<<<<BSD-E Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<BSD-E Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -99,7 +99,7 @@
 (load "../../2_CITIZEN/2_BloodshedMinter/03_BSD-R.pact")
 ;;==== TX-03 [2] - BSD-R Module · 03 · gas echo ==== ==============================================
 (print "--- [TX-03 [2] - BSD-R Module · 03 · gas echo] ---")
-(format "<<<<<<<BSD-R Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<BSD-R Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -119,7 +119,7 @@
 (load "../../2_CITIZEN/2_BloodshedMinter/04_BSD-C.pact")
 ;;==== TX-04 [2] - BSD-C Module · 03 · gas echo ==== ==============================================
 (print "--- [TX-04 [2] - BSD-C Module · 03 · gas echo] ---")
-(format "<<<<<<<BSD-C Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<BSD-C Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 (print "")
@@ -139,7 +139,7 @@
 (load "../../2_CITIZEN/2_BloodshedMinter/05_BSD-SETS.pact")
 ;;==== TX-05 [2] - BSD-SETS Module · 03 · gas echo ==== ===========================================
 (print "--- [TX-05 [2] - BSD-SETS Module · 03 · gas echo] ---")
-(format "<<<<<<<BSD-SETS Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<BSD-SETS Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -172,7 +172,7 @@
 (print "")
 ;;==== TX-01 - Bloodshed Legendary (1-160) · 02 · gas echo ==== ===================================
 (print "--- [TX-01 - Bloodshed Legendary (1-160) · 02 · gas echo] ---")
-(format "<<<<<<<Bloodshed Legendary (1-160) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Bloodshed Legendary (1-160) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -197,7 +197,7 @@
 (print "")
 ;;==== TX-02 - Bloodshed Epic (1-790) · 02 · gas echo ==== ========================================
 (print "--- [TX-02 - Bloodshed Epic (1-790) · 02 · gas echo] ---")
-(format "<<<<<<<Bloodshed Epic (1-790) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Bloodshed Epic (1-790) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -222,7 +222,7 @@
 (print "")
 ;;==== TX-03 - Bloodshed Epic (791-1536) · 02 · gas echo ==== =====================================
 (print "--- [TX-03 - Bloodshed Epic (791-1536) · 02 · gas echo] ---")
-(format "<<<<<<<Bloodshed Epic (791-1536) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Bloodshed Epic (791-1536) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -247,7 +247,7 @@
 (print "")
 ;;==== TX-04 - Bloodshed Rare (1-780) · 02 · gas echo ==== ========================================
 (print "--- [TX-04 - Bloodshed Rare (1-780) · 02 · gas echo] ---")
-(format "<<<<<<<Bloodshed Rare (1-780) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Bloodshed Rare (1-780) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -272,7 +272,7 @@
 (print "")
 ;;==== TX-05 - Bloodshed Rare (781-1560) · 02 · gas echo ==== =====================================
 (print "--- [TX-05 - Bloodshed Rare (781-1560) · 02 · gas echo] ---")
-(format "<<<<<<<Bloodshed Rare (781-1560) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Bloodshed Rare (781-1560) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -297,7 +297,7 @@
 (print "")
 ;;==== TX-06 - Bloodshed Rare (1561-2340) · 02 · gas echo ==== ====================================
 (print "--- [TX-06 - Bloodshed Rare (1561-2340) · 02 · gas echo] ---")
-(format "<<<<<<<Bloodshed Rare (1561-2340) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Bloodshed Rare (1561-2340) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -322,7 +322,7 @@
 (print "")
 ;;==== TX-07 - Bloodshed Rare (2341-3120) · 02 · gas echo ==== ====================================
 (print "--- [TX-07 - Bloodshed Rare (2341-3120) · 02 · gas echo] ---")
-(format "<<<<<<<Bloodshed Rare (2341-3120) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Bloodshed Rare (2341-3120) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -348,7 +348,7 @@
 (print "")
 ;;==== TX-08 - Bloodshed Rare (3121-3168) with Bloodshed Common (1-17) · 02 · gas echo ==== =======
 (print "--- [TX-08 - Bloodshed Rare (3121-3168) with Bloodshed Common (1-17) · 02 · gas echo] ---")
-(format "<<<<<<<Bloodshed Rare (3121-3168) with Bloodshed Common (1-17) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Bloodshed Rare (3121-3168) with Bloodshed Common (1-17) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -373,7 +373,7 @@
 (print "")
 ;;==== TX-09 - Bloodshed Common (18-797) · 02 · gas echo ==== =====================================
 (print "--- [TX-09 - Bloodshed Common (18-797) · 02 · gas echo] ---")
-(format "<<<<<<<Bloodshed Common (18-797) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Bloodshed Common (18-797) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -398,7 +398,7 @@
 (print "")
 ;;==== TX-10 - Bloodshed Common (798-1577) · 02 · gas echo ==== ===================================
 (print "--- [TX-10 - Bloodshed Common (798-1577) · 02 · gas echo] ---")
-(format "<<<<<<<Bloodshed Common (798-1577) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Bloodshed Common (798-1577) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -423,7 +423,7 @@
 (print "")
 ;;==== TX-11 - Bloodshed Common (1578-2357) · 02 · gas echo ==== ==================================
 (print "--- [TX-11 - Bloodshed Common (1578-2357) · 02 · gas echo] ---")
-(format "<<<<<<<Bloodshed Common (1578-2357) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Bloodshed Common (1578-2357) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -448,7 +448,7 @@
 (print "")
 ;;==== TX-12 - Bloodshed Common (2358-3137) · 02 · gas echo ==== ==================================
 (print "--- [TX-12 - Bloodshed Common (2358-3137) · 02 · gas echo] ---")
-(format "<<<<<<<Bloodshed Common (2358-3137) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Bloodshed Common (2358-3137) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -473,7 +473,7 @@
 (print "")
 ;;==== TX-13 - Bloodshed Common (3138-3917) · 02 · gas echo ==== ==================================
 (print "--- [TX-13 - Bloodshed Common (3138-3917) · 02 · gas echo] ---")
-(format "<<<<<<<Bloodshed Common (3138-3917) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Bloodshed Common (3138-3917) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -498,7 +498,7 @@
 (print "")
 ;;==== TX-14 - Bloodshed Common (3918-4697) · 02 · gas echo ==== ==================================
 (print "--- [TX-14 - Bloodshed Common (3918-4697) · 02 · gas echo] ---")
-(format "<<<<<<<Bloodshed Common (3918-4697) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Bloodshed Common (3918-4697) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -523,7 +523,7 @@
 (print "")
 ;;==== TX-15 - Bloodshed Common (4698-5477) · 02 · gas echo ==== ==================================
 (print "--- [TX-15 - Bloodshed Common (4698-5477) · 02 · gas echo] ---")
-(format "<<<<<<<Bloodshed Common (4698-5477) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Bloodshed Common (4698-5477) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -548,7 +548,7 @@
 (print "")
 ;;==== TX-16 - Bloodshed Common (5478-6257) · 02 · gas echo ==== ==================================
 (print "--- [TX-16 - Bloodshed Common (5478-6257) · 02 · gas echo] ---")
-(format "<<<<<<<Bloodshed Common (5478-6257) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Bloodshed Common (5478-6257) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -573,7 +573,7 @@
 (print "")
 ;;==== TX-17 - Bloodshed Common (6258-7037) · 02 · gas echo ==== ==================================
 (print "--- [TX-17 - Bloodshed Common (6258-7037) · 02 · gas echo] ---")
-(format "<<<<<<<Bloodshed Common (6258-7037) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Bloodshed Common (6258-7037) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -598,7 +598,7 @@
 (print "")
 ;;==== TX-18 - Bloodshed Common (7038-7817) · 02 · gas echo ==== ==================================
 (print "--- [TX-18 - Bloodshed Common (7038-7817) · 02 · gas echo] ---")
-(format "<<<<<<<Bloodshed Common (7038-7817) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Bloodshed Common (7038-7817) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -623,7 +623,7 @@
 (print "")
 ;;==== TX-19 - Bloodshed Common (7818-8064) · 02 · gas echo ==== ==================================
 (print "--- [TX-19 - Bloodshed Common (7818-8064) · 02 · gas echo] ---")
-(format "<<<<<<<Bloodshed Common (7818-8064) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Bloodshed Common (7818-8064) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -670,7 +670,7 @@
 (print "")
 ;;==== TX-175 - Tier 1 Comati · 02 · gas echo ==== ================================================
 (print "--- [TX-175 - Tier 1 Comati · 02 · gas echo] ---")
-(format "<<<<<<<Tier 1 Comati Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Tier 1 Comati Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -696,7 +696,7 @@
 (print "")
 ;;==== TX-176 - Tier 1 Ursoi · 02 · gas echo ==== =================================================
 (print "--- [TX-176 - Tier 1 Ursoi · 02 · gas echo] ---")
-(format "<<<<<<<Tier 1 Ursoi Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Tier 1 Ursoi Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -722,7 +722,7 @@
 (print "")
 ;;==== TX-177 - Tier 1 Pileati · 02 · gas echo ==== ===============================================
 (print "--- [TX-177 - Tier 1 Pileati · 02 · gas echo] ---")
-(format "<<<<<<<Tier 1 Pileati Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Tier 1 Pileati Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -748,7 +748,7 @@
 (print "")
 ;;==== TX-178 - Tier 1 Smardoi · 02 · gas echo ==== ===============================================
 (print "--- [TX-178 - Tier 1 Smardoi · 02 · gas echo] ---")
-(format "<<<<<<<Tier 1 Smardoi Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Tier 1 Smardoi Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -774,7 +774,7 @@
 (print "")
 ;;==== TX-179 - Tier 1 Carpian · 02 · gas echo ==== ===============================================
 (print "--- [TX-179 - Tier 1 Carpian · 02 · gas echo] ---")
-(format "<<<<<<<Tier 1 Carpian Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Tier 1 Carpian Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -800,7 +800,7 @@
 (print "")
 ;;==== TX-180 - Tier 1 Tarabostes · 02 · gas echo ==== ============================================
 (print "--- [TX-180 - Tier 1 Tarabostes · 02 · gas echo] ---")
-(format "<<<<<<<Tier 1 Tarabostes Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Tier 1 Tarabostes Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -826,7 +826,7 @@
 (print "")
 ;;==== TX-181 - Tier 1 Costoboc · 02 · gas echo ==== ==============================================
 (print "--- [TX-181 - Tier 1 Costoboc · 02 · gas echo] ---")
-(format "<<<<<<<Tier 1 Costoboc Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Tier 1 Costoboc Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -852,7 +852,7 @@
 (print "")
 ;;==== TX-182 - Tier 1 Buridavens Comati · 02 · gas echo ==== =====================================
 (print "--- [TX-182 - Tier 1 Buridavens Comati · 02 · gas echo] ---")
-(format "<<<<<<<Tier 1 Buridavens Comati Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Tier 1 Buridavens Comati Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -1283,7 +1283,7 @@
 (print "")
 ;;==== TX 012 -- Make BS Set · 03 · gas echo ==== =================================================
 (print "--- [TX 012 -- Make BS Set · 03 · gas echo] ---")
-(format "<<<<<<<TX 012 -- Make BS Set Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<TX 012 -- Make BS Set Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")

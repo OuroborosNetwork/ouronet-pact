@@ -59,7 +59,7 @@
 (load "../../2_CITIZEN/3_NosferatuMinter/01_NOSFERATU.pact")
 ;;==== TX-01 [2] - DALOS Module · 03 · gas echo ==== ==============================================
 (print "--- [TX-01 [2] - DALOS Module · 03 · gas echo] ---")
-(format "<<<<<<<AOZ Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<AOZ Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -176,7 +176,7 @@
 (print "")
 ;;==== TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 03 · gas echo ==== =========================
 (print "--- [TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 03 · gas echo] ---")
-(format "<<<<<<<Mint Nosferatu Legendary (1-70) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Mint Nosferatu Legendary (1-70) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -286,7 +286,7 @@
 (print "")
 ;;==== TX-03 [3.2] - Mint Nosferatu Legendary (71-100) and Epic (1-40) · 03 · gas echo ==== =======
 (print "--- [TX-03 [3.2] - Mint Nosferatu Legendary (71-100) and Epic (1-40) · 03 · gas echo] ---")
-(format "<<<<<<<Mint Nosferatu Legendary (71-100) and Epic (1-40) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Mint Nosferatu Legendary (71-100) and Epic (1-40) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -395,7 +395,7 @@
 (print "")
 ;;==== TX-04 [3.3] - Mint Nosferatu Epic (41-110) · 03 · gas echo ==== ============================
 (print "--- [TX-04 [3.3] - Mint Nosferatu Epic (41-110) · 03 · gas echo] ---")
-(format "<<<<<<<Mint Nosferatu Epic (41-110) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Mint Nosferatu Epic (41-110) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -504,7 +504,7 @@
 (print "")
 ;;==== TX-05 [3.4] - Mint Nosferatu Epic (111-180) · 03 · gas echo ==== ===========================
 (print "--- [TX-05 [3.4] - Mint Nosferatu Epic (111-180) · 03 · gas echo] ---")
-(format "<<<<<<<Mint Nosferatu Epic (111-180) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Mint Nosferatu Epic (111-180) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -614,7 +614,7 @@
 (print "")
 ;;==== TX-06 [3.5] - Mint Nosferatu Epic (181-200) and Rare (1-50) · 03 · gas echo ==== ===========
 (print "--- [TX-06 [3.5] - Mint Nosferatu Epic (181-200) and Rare (1-50) · 03 · gas echo] ---")
-(format "<<<<<<<Mint Nosferatu Epic (181-200) and Rare (1-50) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Mint Nosferatu Epic (181-200) and Rare (1-50) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -723,7 +723,7 @@
 (print "")
 ;;==== TX-07 [3.6] - Mint Nosferatu Rare (51-120) · 03 · gas echo ==== ============================
 (print "--- [TX-07 [3.6] - Mint Nosferatu Rare (51-120) · 03 · gas echo] ---")
-(format "<<<<<<<Mint Nosferatu Rare (51-120) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Mint Nosferatu Rare (51-120) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -832,7 +832,7 @@
 (print "")
 ;;==== TX-08 [3.7] - Mint Nosferatu Rare (121-190) · 03 · gas echo ==== ===========================
 (print "--- [TX-08 [3.7] - Mint Nosferatu Rare (121-190) · 03 · gas echo] ---")
-(format "<<<<<<<Mint Nosferatu Rare (121-190) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Mint Nosferatu Rare (121-190) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -941,7 +941,7 @@
 (print "")
 ;;==== TX-09 [3.8] - Mint Nosferatu Rare (191-260) · 03 · gas echo ==== ===========================
 (print "--- [TX-09 [3.8] - Mint Nosferatu Rare (191-260) · 03 · gas echo] ---")
-(format "<<<<<<<Mint Nosferatu Rare (191-260) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Mint Nosferatu Rare (191-260) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -1050,7 +1050,7 @@
 (print "")
 ;;==== TX-10 [3.9] - Mint Nosferatu Rare (261-330) · 03 · gas echo ==== ===========================
 (print "--- [TX-10 [3.9] - Mint Nosferatu Rare (261-330) · 03 · gas echo] ---")
-(format "<<<<<<<Mint Nosferatu Rare (261-330) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Mint Nosferatu Rare (261-330) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -1159,7 +1159,7 @@
 (print "")
 ;;==== TX-11 [3.10] - Mint Nosferatu Rare (331-400) · 03 · gas echo ==== ==========================
 (print "--- [TX-11 [3.10] - Mint Nosferatu Rare (331-400) · 03 · gas echo] ---")
-(format "<<<<<<<Mint Nosferatu Rare (261-330) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Mint Nosferatu Rare (261-330) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -1268,7 +1268,7 @@
 (print "")
 ;;==== TX-12 [3.11] - Mint Nosferatu Common (1-70) · 03 · gas echo ==== ===========================
 (print "--- [TX-12 [3.11] - Mint Nosferatu Common (1-70) · 03 · gas echo] ---")
-(format "<<<<<<<Mint Nosferatu Common (1-70) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Mint Nosferatu Common (1-70) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -1377,7 +1377,7 @@
 (print "")
 ;;==== TX-13 [3.12] - Mint Nosferatu Common (71-140) · 03 · gas echo ==== =========================
 (print "--- [TX-13 [3.12] - Mint Nosferatu Common (71-140) · 03 · gas echo] ---")
-(format "<<<<<<<Mint Nosferatu Common (71-140) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Mint Nosferatu Common (71-140) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -1486,7 +1486,7 @@
 (print "")
 ;;==== TX-14 [3.13] - Mint Nosferatu Common (141-210) · 03 · gas echo ==== ========================
 (print "--- [TX-14 [3.13] - Mint Nosferatu Common (141-210) · 03 · gas echo] ---")
-(format "<<<<<<<Mint Nosferatu Common (141-210) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Mint Nosferatu Common (141-210) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -1595,7 +1595,7 @@
 (print "")
 ;;==== TX-14 [3.14] - Mint Nosferatu Common (211-280) · 03 · gas echo ==== ========================
 (print "--- [TX-14 [3.14] - Mint Nosferatu Common (211-280) · 03 · gas echo] ---")
-(format "<<<<<<<Mint Nosferatu Common (211-280) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Mint Nosferatu Common (211-280) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -1704,7 +1704,7 @@
 (print "")
 ;;==== TX-16 [3.15] - Mint Nosferatu Common (281-350) · 03 · gas echo ==== ========================
 (print "--- [TX-16 [3.15] - Mint Nosferatu Common (281-350) · 03 · gas echo] ---")
-(format "<<<<<<<Mint Nosferatu Common (281-350) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Mint Nosferatu Common (281-350) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -1813,7 +1813,7 @@
 (print "")
 ;;==== TX-17 [3.16] - Mint Nosferatu Common (351-420) · 03 · gas echo ==== ========================
 (print "--- [TX-17 [3.16] - Mint Nosferatu Common (351-420) · 03 · gas echo] ---")
-(format "<<<<<<<Mint Nosferatu Common (351-420) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Mint Nosferatu Common (351-420) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -1922,7 +1922,7 @@
 (print "")
 ;;==== TX-18 [3.17] - Mint Nosferatu Common (421-490) · 03 · gas echo ==== ========================
 (print "--- [TX-18 [3.17] - Mint Nosferatu Common (421-490) · 03 · gas echo] ---")
-(format "<<<<<<<Mint Nosferatu Common (421-490) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Mint Nosferatu Common (421-490) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -2031,7 +2031,7 @@
 (print "")
 ;;==== TX-19 [3.18] - Mint Nosferatu Common (491-560) · 03 · gas echo ==== ========================
 (print "--- [TX-19 [3.18] - Mint Nosferatu Common (491-560) · 03 · gas echo] ---")
-(format "<<<<<<<Mint Nosferatu Common (491-560) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Mint Nosferatu Common (491-560) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -2140,7 +2140,7 @@
 (print "")
 ;;==== TX-20 [3.19] - Mint Nosferatu Common (561-630) · 03 · gas echo ==== ========================
 (print "--- [TX-20 [3.19] - Mint Nosferatu Common (561-630) · 03 · gas echo] ---")
-(format "<<<<<<<Mint Nosferatu Common (561-630) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Mint Nosferatu Common (561-630) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -2249,7 +2249,7 @@
 (print "")
 ;;==== TX-21 [3.20] - Mint Nosferatu Common (631-700) · 03 · gas echo ==== ========================
 (print "--- [TX-21 [3.20] - Mint Nosferatu Common (631-700) · 03 · gas echo] ---")
-(format "<<<<<<<Mint Nosferatu Common (631-700) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Mint Nosferatu Common (631-700) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -2358,7 +2358,7 @@
 (print "")
 ;;==== TX-22 [3.21] - Mint Nosferatu Common (701-770) · 03 · gas echo ==== ========================
 (print "--- [TX-22 [3.21] - Mint Nosferatu Common (701-770) · 03 · gas echo] ---")
-(format "<<<<<<<Mint Nosferatu Common (701-770) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Mint Nosferatu Common (701-770) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -2427,7 +2427,7 @@
 (print "")
 ;;==== TX-23 [3.22] - Mint Nosferatu Common (771-800) · 03 · gas echo ==== ========================
 (print "--- [TX-23 [3.22] - Mint Nosferatu Common (771-800) · 03 · gas echo] ---")
-(format "<<<<<<<Mint Nosferatu Common (771-800) Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Mint Nosferatu Common (771-800) Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")
@@ -2480,7 +2480,7 @@
 (print "")
 ;;==== TX 010 -- Bloodshed Transfer Tests · 02 · gas echo ==== ====================================
 (print "--- [TX 010 -- Bloodshed Transfer Tests · 02 · gas echo] ---")
-(format "<<<<<<<TX 010 -- Bloodshed Transfer Tests Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<TX 010 -- Bloodshed Transfer Tests Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
 (print "===^^^===")

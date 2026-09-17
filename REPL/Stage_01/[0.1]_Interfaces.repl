@@ -43,7 +43,7 @@
 (print "--- [TX-01 [0.01] - Deploy Stage One Utility Interfaces · 02 · load module (NONE — see header)] ---")
 ;;==== TX-01 [0.01] - Deploy Stage One Utility Interfaces · 03 · gas echo ==== ====================
 (print "--- [TX-01 [0.01] - Deploy Stage One Utility Interfaces · 03 · gas echo] ---")
-(format "<<<<<<<Stage One Utility Interfaces Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Stage One Utility Interfaces Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -64,7 +64,7 @@
 (print "--- [TX-02 [0.02] - Deploy Stage One Core Interfaces · 02 · load module (NONE — see header)] ---")
 ;;==== TX-02 [0.02] - Deploy Stage One Core Interfaces · 03 · gas echo ==== =======================
 (print "--- [TX-02 [0.02] - Deploy Stage One Core Interfaces · 03 · gas echo] ---")
-(format "<<<<<<<Core Interfaces Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Core Interfaces Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -85,6 +85,6 @@
 (print "--- [TX-03 [0.03] - Deploy Stage One Talos Interfaces · 02 · load module (NONE — see header)] ---")
 ;;==== TX-03 [0.03] - Deploy Stage One Talos Interfaces · 03 · gas echo ==== ======================
 (print "--- [TX-03 [0.03] - Deploy Stage One Talos Interfaces · 03 · gas echo] ---")
-(format "<<<<<<<Talos Interfaces Costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<<<<<<<Talos Interfaces Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
