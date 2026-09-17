@@ -2967,3 +2967,52 @@ as the unattributable one, deliberately, so the distinction is documented rather
 direct-recovery guards sit **behind** both ownership checks. Proven rather than read — the attack
 reaches the ownership message on KORIndex while its direct recovery is ON. That is why the
 non-vacuity half has to switch it off first, and says so.
+
+## 8.9 G-46 and G-47 — one soft-failing guard, two wrappers, and only one of them faulted
+
+**G-46 is root-caused, and the recorded hypothesis was wrong.** §8.3 guessed the route had shrunk
+after the price move and something indexed the old length. Measured: the route is **identical**
+before and after — same 4 nodes, same 3 edges. Only the reserve-derived values moved.
+
+**The real cause is a guard that refuses by RETURNING.** `19_SWPU.pact:1401`'s slippage floor —
+the line the source itself calls *"the real protection this whole check exists for"* — does not
+`enforce`. On refusal it returns `UDC_ConstructOutputCumulator 0.0 BAR true [exceed-message]`, a
+**one-element** payload. The success arm returns a **four-element** one. Only Talos turns that
+return into anything a caller can see, and the two wrappers did it differently:
+
+| door | index taken | on a refusal | visible result |
+|---|---|---|---|
+| `CC_SmartSwapWithSlippage` | `(at 3 out)` | out of range on a 1-list | **G-46** — `Array index out of bounds. Length (1), Index (3)` |
+| `C_SingleSwapWithSlippage` / `C_MultiSwapWithSlippage` | `(at 0 out)` | **valid** on a 1-list | **G-47** — silent |
+
+> **The same defect, and the louder one was the safer one.** G-46 destroyed the guard's message with
+> a fault. G-47 interpolated the refusal *into a sentence beginning "Succesfully swapped"*, committed
+> the transaction, and emitted the swap `@event` — which sits on the `with-capability`, ahead of the
+> floor check — for a swap that moved zero in and zero out. Measured verbatim on shipped code:
+>
+> `"Succesfully swapped input(s) to Expected Output of 2366.80… out of Slippage bounds min of 990000.0 - max of 1010000.0 OURO-…"`
+>
+> An integrator matching on the leading token, or an indexer consuming the event, credits a swap that
+> never happened. **G-46 was found first only because it was noisy.**
+
+**The two repairs differ because the two payloads differ.** G-46 takes `(= (length out) 4)`, the
+idiom its own bundle twin `C_SmartSwapWithSlippage` has always carried sixty lines below. G-47
+**cannot** use length — on that door success is `[o-id-netto]` and refusal is `[exceed-message]`,
+both one element. The **type** is the only discriminator, so the fix tests
+`(= (typeof (at 0 …)) "string")`. Applied to the `NoSlippage` twins as well: their floor branch is
+unreachable today (`slippage` is hardcoded `-1.0`) but their bundle twins guard it anyway, and an
+unreachable branch is precisely what a later change makes reachable.
+
+**`RT-A-004` changed shape in the same commit, by design.** It pinned no message deliberately —
+pinning the fault text would have made the defect the expected behaviour (§1.2). With the wrapper
+guarded the call **returns** instead of raising, so `expect-failure` no longer applies. It now
+asserts the guard's own words *and* that the wrapper does not call the refusal a success, and —
+because the call now commits rather than reverting — it **measures** that nothing moved rather than
+relying on rollback. `RT-A-005` pins G-47 directly; its load-bearing assertion is
+`(contains "Succesfully" result)` being **false**, which was **true** on shipped code.
+
+**Open, needs a ruling rather than a measurement:** the swap-initiation `@event` fires for a swap
+that did not execute, on both the bundle path (pre-existing) and now the `CC_` path. The fix does not
+introduce it, but makes it reachable on one more door — and `[6.3]_SWP.repl` `SWP|TX 054-03`'s own
+comment asserts the opposite (*"There is no event, no failure, and no balance change to trip over"*).
+That comment is false today, independently of these fixes.

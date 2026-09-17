@@ -371,6 +371,7 @@
 (let
     (
         (ref-SWPU:module{SwapperUsageV3} SWPU)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
         (trader:string KST.AOZT)
         (in-id:string "AKOSON-98c486052a51")
@@ -388,20 +389,46 @@
         (print (format "<(RT-A-004 price move)> => \"{}\""
             [(ref-TS01-C3::SWP|CC_SmartSwapWithSlippage KST.ANHD trader in-id 5.0 out-id
                 (ref-SWPU::UDC_SpawnSmartSwapSlippageBounds in-id 5.0 out-id 50.0))]))
-        (map print
-            [
-                ;;REFUSED -- BUT NOT BY THE GUARD, AND THE MESSAGE IS DELIBERATELY NOT PINNED.
-                ;;Measured 2026-09-17: this returns `Array index out of bounds. Length (1), Index (3)`
-                ;;rather than "…out of Slippage bounds…". The attack fails and nothing moves, so the
-                ;;protection holds -- but it holds by faulting, not by refusing, and an index fault
-                ;;carries no information to a caller or an integrator. Pinning that text would make
-                ;;the DEFECT the expected behaviour and turn the eventual repair red, which is the
-                ;;inversion DEFECT-LEDGER 1.2 warns about ("pinning the WRONG message is worse than
-                ;;pinning none"). So the assertion below pins only what is legitimately true today --
-                ;;the call is refused and no value moves -- and the fault itself is filed as G-46.
-                (expect-failure "<<RT-A-004>> ATTACK REFUSED: a stale quote does not execute"
+        ;;G-46 IS FIXED, SO THIS ASSERTION CHANGED SHAPE -- and the history is the point.
+        ;;When this block was first written the call RAISED `Array index out of bounds. Length (1),
+        ;;Index (3)`, and the assertion was an `expect-failure` that deliberately pinned NO message:
+        ;;pinning the fault text would have made the defect the expected behaviour and turned its
+        ;;repair red, the inversion DEFECT-LEDGER 1.2 warns about. Root-caused since: the slippage
+        ;;floor SOFT-FAILS -- it RETURNS a 1-element cumulator carrying the exceed-message -- and the
+        ;;Talos wrapper indexed `(at 3 out)` unconditionally, destroying the message the guard had
+        ;;already built. With the wrapper guarded, the call RETURNS the refusal instead of raising,
+        ;;so `expect-failure` no longer applies and the message is finally worth pinning.
+        (let
+            (
+                ;;Pact `let` evaluates its bindings IN ORDER, so these four are a timeline, not a
+                ;;set. The two `-before` reads must happen AFTER the price move (which is itself a
+                ;;real swap by this same trader and moves these balances) and BEFORE the attack.
+                (in-before:decimal (ref-DPTF::UR_AccountSupply in-id trader))
+                (out-before:decimal (ref-DPTF::UR_AccountSupply out-id trader))
+                (result:string
                     (ref-TS01-C3::SWP|CC_SmartSwapWithSlippage KST.ANHD trader in-id 5.0 out-id stale-bounds))
-            ]
+                (in-after:decimal (ref-DPTF::UR_AccountSupply in-id trader))
+                (out-after:decimal (ref-DPTF::UR_AccountSupply out-id trader))
+            )
+            (map print
+                [
+                    ;;ATTACK REFUSED, BY THE GUARD, IN ITS OWN WORDS.
+                    (expect "<<RT-A-004>> ATTACK REFUSED: a stale quote is turned away by the slippage floor"
+                        true (contains "out of Slippage bounds" result))
+                    ;;...and it is the REFUSAL sentence, not a success sentence with the refusal
+                    ;;interpolated into it. That distinction is not pedantic: it is exactly the
+                    ;;defect G-47 found on the single/multi-swap doors, where the identical soft-fail
+                    ;;payload was rendered as "Succesfully swapped input(s) to <refusal>".
+                    (expect "<<RT-A-004>> ...and the wrapper does NOT report it as a success"
+                        false (contains "Succesfully" result))
+                    ;;THE REFUSAL IS TOTAL. The call now COMMITS rather than reverting, so "nothing
+                    ;;moved" stopped being guaranteed by transaction rollback and has to be measured.
+                    (expect "<<RT-A-004>> ...and the trader spent nothing"
+                        in-before in-after)
+                    (expect "<<RT-A-004>> ...and received nothing"
+                        out-before out-after)
+                ]
+            )
         )
     )
     ""
@@ -443,6 +470,131 @@
                 (expect "<<RT-A-004>> unmoved, the same swap at the same tolerance succeeds"
                     true (contains "Succesfully smart-swapped"
                         (ref-TS01-C3::SWP|CC_SmartSwapWithSlippage KST.ANHD trader in-id 5.0 out-id fresh-bounds)))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RT-A-005 - a refused swap that reported SUCCESS (G-47)")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== RT-A-005 · 01 · the single-swap door told the caller it had swapped ====
+(print "--- [RT-A-005 · 01 · the single-swap door told the caller it had swapped] ---")
+;;<<RT-A-005>> FAMILY: A | STATUS: FIXED
+;;HYPOTHESIS: a swap refused by the slippage floor should tell the caller it was refused. Found
+;;            while root-causing G-46: the smart-swap door faulted LOUDLY on a refused swap
+;;            (`Array index out of bounds`), which raised the question of what the single- and
+;;            multi-swap doors -- carrying the identical soft-fail payload -- do instead.
+;;METHOD:     drive `SWP|C_SingleSwapWithSlippage` with an unreachable expected output (1,000,000)
+;;            so the floor must refuse, then read the returned string and both trader balances.
+;;            Not an adversarial input: this is the ORDINARY refusal path, and the finding is what
+;;            the protocol SAYS when it refuses.
+;;RESULT:     FIXED. On shipped code it answered "Succesfully swapped input(s) to <the refusal
+;;            message>", committed, and emitted a swap event, having moved nothing.
+;;THE DEFECT: `SWPU`'s slippage floor SOFT-FAILS -- it RETURNS a one-element cumulator carrying
+;;            the exceed-message instead of raising. On the smart-swap door the success payload has
+;;            four elements, so `(at 3 out)` on a refusal raised `Array index out of bounds` (G-46,
+;;            fixed). On THESE doors the success payload is also ONE element -- `[o-id-netto]`, a
+;;            decimal -- so `(at 0 out)` did not fault. It silently interpolated the refusal text
+;;            into a sentence beginning "Succesfully swapped".
+;;
+;;            Measured on shipped code before the fix, verbatim:
+;;              "Succesfully swapped input(s) to Expected Output of 2366.80... out of Slippage
+;;               bounds min of 990000.0 - max of 1010000.0 OURO-98c486052a51"
+;;
+;;            The transaction COMMITS. The swap `@event` has already fired -- it sits on the
+;;            `with-capability`, ahead of the floor check -- so an off-chain indexer sees a swap
+;;            event and a success string for a swap that never happened. Zero in, zero out.
+;;
+;;WHY LENGTH CANNOT FIX IT: on this door BOTH payloads are one element. The refusal is a string,
+;;            the success a decimal, so the TYPE is the only discriminator -- which is why the
+;;            repair here differs from G-46's `(= (length out) 4)` even though the cause is shared.
+;;
+;;THE ASSERTION THAT IS THE REGRESSION is the second one. Before the fix `(contains "Succesfully"
+;;            result)` was TRUE on a swap that moved nothing. Everything else here would have passed
+;;            on the defective code.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-SWPU:module{SwapperUsageV3} SWPU)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
+        (trader:string KST.ANHD)
+        (in-id:string "EURT-98c486052a51")
+        (out-id:string "OURO-98c486052a51")
+        (pool:string "W|OURO-98c486052a51|TEUR-98c486052a51|EURT-98c486052a51|EURC-98c486052a51|EURD-98c486052a51|AEUR-98c486052a51|CEUR-98c486052a51")
+    )
+    (let
+        (
+            ;;Ordered: the two `-before` reads must precede the call. An unreachable expected output
+            ;;of 1,000,000 puts the floor permanently out of range, so the guard must refuse.
+            (in-before:decimal (ref-DPTF::UR_AccountSupply in-id trader))
+            (out-before:decimal (ref-DPTF::UR_AccountSupply out-id trader))
+            (result:string
+                (ref-TS01-C3::SWP|C_SingleSwapWithSlippage trader trader pool in-id 2400.0 out-id
+                    (ref-SWPU::UDC_Slippage 1000000.0 12 1.0)))
+            (in-after:decimal (ref-DPTF::UR_AccountSupply in-id trader))
+            (out-after:decimal (ref-DPTF::UR_AccountSupply out-id trader))
+        )
+        (map print
+            [
+                (expect "<<RT-A-005>> the floor refuses, and says so in its own words"
+                    true (contains "out of Slippage bounds" result))
+                ;;THE REGRESSION. This was TRUE on shipped code, for a swap that moved nothing.
+                (expect "<<RT-A-005>> ...and the wrapper does NOT call that refusal a success"
+                    false (contains "Succesfully" result))
+                ;;Nothing moved -- measured, not assumed, because the call COMMITS rather than
+                ;;reverting, so transaction rollback guarantees nothing here.
+                (expect "<<RT-A-005>> ...the trader spent nothing" in-before in-after)
+                (expect "<<RT-A-005>> ...and received nothing" out-before out-after)
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RT-A-005b - the same door, with a reachable floor, must SUCCEED")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== RT-A-005 · 02 · non-vacuity ====
+(print "--- [RT-A-005 · 02 · non-vacuity] ---")
+;;Without this half, RT-A-005 would pass if `C_SingleSwapWithSlippage` were broken outright -- a
+;;wrapper that returned "Swap not executed" unconditionally satisfies every assertion above.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-SWPU:module{SwapperUsageV3} SWPU)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
+        (trader:string KST.ANHD)
+        (out-id:string "OURO-98c486052a51")
+        (pool:string "W|OURO-98c486052a51|TEUR-98c486052a51|EURT-98c486052a51|EURC-98c486052a51|EURD-98c486052a51|AEUR-98c486052a51|CEUR-98c486052a51")
+    )
+    (let
+        (
+            (out-before:decimal (ref-DPTF::UR_AccountSupply out-id trader))
+            ;;A 1.0 expected output at the maximum permitted 50% tolerance puts the floor at 0.5 --
+            ;;satisfiable by any sane execution, so only a genuinely broken door could fail here.
+            ;;(50.0 is the ceiling: `UEV_Slippage` enforces 0.0 < slippage <= 50.0, or -1.0.)
+            (result:string
+                (ref-TS01-C3::SWP|C_SingleSwapWithSlippage trader trader pool
+                    "EURT-98c486052a51" 2400.0 out-id (ref-SWPU::UDC_Slippage 1.0 12 50.0)))
+        )
+        (map print
+            [
+                (expect "<<RT-A-005>> with a reachable floor, the identical door swaps"
+                    true (contains "Succesfully swapped" result))
+                (expect "<<RT-A-005>> ...and the trader actually received something"
+                    true (> (ref-DPTF::UR_AccountSupply out-id trader) out-before))
             ]
         )
     )

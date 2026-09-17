@@ -951,9 +951,21 @@
                     (lambda (sp:string)
                         (ref-SWP::XE_UpdateStoaValue sp (at 0 (ref-SWPI::URC_PoolValueFromGraph sp graph)))
                     )
-                    (at 3 out)
+                    ;;G-46: `SWPU`'s slippage floor SOFT-FAILS -- it RETURNS a 1-element cumulator
+                    ;;carrying the exceed-message rather than raising. The success arm returns 4
+                    ;;elements. Indexing `(at 3 out)` unconditionally therefore turned every refused
+                    ;;swap into `Array index out of bounds. Length (1), Index (3)`, destroying the
+                    ;;message the guard had already built. The bundle twins have always carried this
+                    ;;guard (see C_SmartSwapWithSlippage); the self-searching CC_ twins never got it.
+                    ;;Applied to the NoSlippage variant too: its floor branch is unreachable today
+                    ;;(the wrapper hardcodes slippage = -1.0), but its bundle twin guards it anyway,
+                    ;;and an unreachable branch is what a later change makes reachable.
+                    (if (= (length out) 4) (at 3 out) [])
                 )
-                (format "Succesfully smart-swapped {} {} to {} {} via {} Swaps over {} Pools" [input-amount input-id (at 0 out) output-id (at 1 out) (at 2 out)])
+                (if (= (length out) 4)
+                    (format "Succesfully smart-swapped {} {} to {} {} via {} Swaps over {} Pools" [input-amount input-id (at 0 out) output-id (at 1 out) (at 2 out)])
+                    (format "Smart Swap not executed: {}" [(at 0 out)])
+                )
             )
         )
     )
@@ -1021,9 +1033,21 @@
                     (lambda (sp:string)
                         (ref-SWP::XE_UpdateStoaValue sp (at 0 (ref-SWPI::URC_PoolValueFromGraph sp graph)))
                     )
-                    (at 3 out)
+                    ;;G-46: `SWPU`'s slippage floor SOFT-FAILS -- it RETURNS a 1-element cumulator
+                    ;;carrying the exceed-message rather than raising. The success arm returns 4
+                    ;;elements. Indexing `(at 3 out)` unconditionally therefore turned every refused
+                    ;;swap into `Array index out of bounds. Length (1), Index (3)`, destroying the
+                    ;;message the guard had already built. The bundle twins have always carried this
+                    ;;guard (see C_SmartSwapWithSlippage); the self-searching CC_ twins never got it.
+                    ;;Applied to the NoSlippage variant too: its floor branch is unreachable today
+                    ;;(the wrapper hardcodes slippage = -1.0), but its bundle twin guards it anyway,
+                    ;;and an unreachable branch is what a later change makes reachable.
+                    (if (= (length out) 4) (at 3 out) [])
                 )
-                (format "Succesfully smart-swapped {} {} to {} {} via {} Swaps over {} Pools" [input-amount input-id (at 0 out) output-id (at 1 out) (at 2 out)])
+                (if (= (length out) 4)
+                    (format "Succesfully smart-swapped {} {} to {} {} via {} Swaps over {} Pools" [input-amount input-id (at 0 out) output-id (at 1 out) (at 2 out)])
+                    (format "Smart Swap not executed: {}" [(at 0 out)])
+                )
             )
         )
     )
@@ -1150,7 +1174,16 @@
                 )
                 (ref-IGNIS::C_Collect patron ico)
                 (ref-SWP::XE_UpdateStoaValue swpair (at 0 (ref-SWPI::URC_PoolValue swpair)))
-                (format "Succesfully swapped input(s) to {} {}" [(at 0 (at "output" ico)) output-id])
+                ;;G-47: the refusal payload is ALSO one element here, so `(at 0 ...)` does not
+                ;;fault -- it silently interpolates the exceed-message into a sentence that starts
+                ;;"Succesfully swapped". The transaction commits, the swap @event has already fired
+                ;;(it sits on the `with-capability`, ahead of the floor check), and nothing moved.
+                ;;Length cannot discriminate: success is `[o-id-netto]` (a decimal), refusal is
+                ;;`[exceed-message]` (a string). The TYPE is the only thing that differs.
+                (if (= (typeof (at 0 (at "output" ico))) "string")
+                    (format "Swap not executed: {}" [(at 0 (at "output" ico))])
+                    (format "Succesfully swapped input(s) to {} {}" [(at 0 (at "output" ico)) output-id])
+                )
             )
         )
     )
@@ -1219,7 +1252,16 @@
                 )
                 (ref-IGNIS::C_Collect patron ico)
                 (ref-SWP::XE_UpdateStoaValue swpair (at 0 (ref-SWPI::URC_PoolValue swpair)))
-                (format "Succesfully swapped input(s) to {} {}" [(at 0 (at "output" ico)) output-id])
+                ;;G-47: the refusal payload is ALSO one element here, so `(at 0 ...)` does not
+                ;;fault -- it silently interpolates the exceed-message into a sentence that starts
+                ;;"Succesfully swapped". The transaction commits, the swap @event has already fired
+                ;;(it sits on the `with-capability`, ahead of the floor check), and nothing moved.
+                ;;Length cannot discriminate: success is `[o-id-netto]` (a decimal), refusal is
+                ;;`[exceed-message]` (a string). The TYPE is the only thing that differs.
+                (if (= (typeof (at 0 (at "output" ico))) "string")
+                    (format "Swap not executed: {}" [(at 0 (at "output" ico))])
+                    (format "Succesfully swapped input(s) to {} {}" [(at 0 (at "output" ico)) output-id])
+                )
             )
         )
     )

@@ -8969,7 +8969,7 @@
             ;;result: it is the shape rule, and it would arrive unchanged if CAP_Owner were
             ;;deleted from the capability. Pinning it here is what makes group 03 a control.
             (expect-failure
-                "<<SWP|TX 055-02>> the NO-OP toggle is refused by the SHAPE rule -- ownership is never reached"
+                "<<SWP|TX 055-02>> the NO-OP toggle is refused by the SHAPE rule -- ownership unreached"
                 "Similar boolean unallowed for <can-add> or <can-swap>"
                 (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.LUMY pool1 true))
         ]
@@ -8998,7 +8998,7 @@
     (map print
         [
             (expect-failure
-                "<<SWP|TX 055-03>> a genuine CHANGE clears the shape rule and CAP_Owner refuses the outsider"
+                "<<SWP|TX 055-03>> a genuine CHANGE clears the shape rule; CAP_Owner refuses the outsider"
                 "Keyset failure (keys-all): [PK_Ancie"
                 (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.LUMY pool1 false))
             ;;NOT decoration. `expect-failure` does not roll back DB writes in the REPL
@@ -9127,7 +9127,7 @@
             ;;Eight targets against a ceiling of seven. Refused -- but by the tier rule, which
             ;;is the shadowing guard, not by ownership. This is the control group 03 needs.
             (expect-failure
-                "<<SWP|TX 056-02>> an over-long list is refused by the TIER rule -- ownership is never reached"
+                "<<SWP|TX 056-02>> an over-long list is refused by the TIER rule -- ownership unreached"
                 "Increase Major Elite Tier to add more Special Targets"
                 (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.LUMY pool1 eight))
         ]
@@ -9155,12 +9155,12 @@
     (map print
         [
             (expect-failure
-                "<<SWP|TX 056-03>> a within-tier list clears the tier rule and CAP_Owner refuses the outsider"
+                "<<SWP|TX 056-03>> a within-tier list clears the tier rule; CAP_Owner refuses the outsider"
                 "Keyset failure (keys-all): [PK_Ancie"
                 (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.LUMY pool1 two))
             ;;T-13 again: a landed write would be visible here. The pool still carries its
             ;;original seven targets, so the attacker redirected nothing.
-            (expect "<<SWP|TX 056-03>> and nothing moved: the pool still carries its 7 original targets"
+            (expect "<<SWP|TX 056-03>> and nothing moved: the pool still holds its 7 original targets"
                 7
                 (length (ref-SWP::UR_FeeSPT pool1)))
         ]
@@ -9286,7 +9286,7 @@
                 true (ref-DPTF::UR_AccountRoleMint tstq KST.SWAPR))
             (expect "<<SWP|TX 057-02>> fee-exemption reads TRUE for SWP on a token it has never touched"
                 true (ref-DPTF::UR_AccountRoleFeeExemption tstq KST.SWAPR))
-            (expect "<<SWP|TX 057-02>> ...and FALSE for an ordinary account, so the reader is not trivially true"
+            (expect "<<SWP|TX 057-02>> ...and FALSE for an ordinary account -- not a trivially-true reader"
                 false
                 (fold (or) false
                     [
@@ -9313,10 +9313,10 @@
     )
     (map print
         [
-            (expect "<<SWP|TX 057-03>> the signer really is the token owner, so this is not an ownership test"
+            (expect "<<SWP|TX 057-03>> the signer IS the token owner, so this is not an ownership test"
                 true (= (ref-DPTF::UR_Konto tstn) KST.ANHD))
             (expect-failure
-                "<<SWP|TX 057-03>> DPTF refuses to toggle a role on the SWP contract account, even for its owner"
+                "<<SWP|TX 057-03>> DPTF refuses a role toggle on the SWP contract account, owner or not"
                 "Non Smart Ouronet Accounts required for exec"
                 (ref-TS01-C1::DPTF|C_ToggleFeeExemptionRole KST.ANHD tstn KST.SWAPR false))
         ]
