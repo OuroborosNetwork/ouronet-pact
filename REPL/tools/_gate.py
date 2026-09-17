@@ -358,6 +358,21 @@ def main():
         print(_px.stdout + _px.stderr)
         sys.exit("GATE FAILED: a live function prefix is unknown to tools/skeleton.py.")
 
+    # MODREF MEMBERS -- fatal only on LIVE class-B: a `(ref-X::member ...)` call where `member` is
+    # defined NOWHERE in the module implementing X. Pact 5 resolves modref members DYNAMICALLY, so
+    # such a call loads and runs, and only raises if that branch is ever taken -- invisible to every
+    # other check here. Measured at introduction (2026-09-17): 13, ALL inside the legacy 00_DPMF,
+    # which CLAUDE.md marks KEEP AS IS. Live code: ZERO. That zero is what this gates.
+    # Deliberately NOT gated: the 165 live calls to members that exist but are not DECLARED on the
+    # interface. A reviewer filed one of those as a coupling defect; measuring the population showed
+    # it is the convention CLAUDE.md describes ("interfaces carry nearly the full public API"), and
+    # fixing the single instance would have made the tree less consistent, not more.
+    _mr = subprocess.run([sys.executable, "tools/_modref.py", "--check"],
+                         capture_output=True, text=True)
+    if _mr.returncode != 0:
+        print(_mr.stdout + _mr.stderr)
+        sys.exit("GATE FAILED: a modref calls a member that does not exist in the implementer.")
+
     # VACUOUS ASSERTIONS -- fatal on VACUOUS only; WEAK stays advisory.
     # An assertion that cannot fail is a green light wired to nothing, and it is indistinguishable
     # from a real one in every summary the gate prints: it counts toward the 21,519, it shows in the

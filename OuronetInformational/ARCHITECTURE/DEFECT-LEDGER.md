@@ -3049,3 +3049,65 @@ is what keeps the widening honest.
 
 > A mutation test that reports "no change" is indistinguishable from a mutation that never happened.
 > Assert the mutation applied, or use a fixture where non-application is impossible.
+
+## 8.11 A reported coupling defect that measurement turned into a convention — and a real check underneath it
+
+A reviewer found `FVT|C>ISSUE-FVT` calling `(ref-RPS::URC_FvtExists fvt-id)` where `URC_FvtExists`
+is implemented in `04_RPS.pact` but **not declared** on `AcquisitionRewardPerShareV1`, and filed it
+as a coupling-contract violation: a second implementer would satisfy the type and fail at runtime.
+The reasoning is sound and the observation is accurate.
+
+**Measuring the population first says otherwise.** There are **165 live instances across 20+
+members** — `P|Info` alone accounts for **57**, `UDC_EmptyOutputCumulatorV2` for 21, `UC_PoolType`
+for 19. That is not an oversight, it is the practice, and CLAUDE.md states it: interfaces carry
+*"nearly the full public API"*. **Fixing the one instance would have made the tree less consistent
+and reported a convention as a bug.**
+
+> Same shape as the DPDC-S set-class sweep, where `RENAME` looked like a lone outlier until the
+> count showed **1 of 8** call sites used the domain guard — so the *guarded* one was the exception.
+> A single instance cannot tell you whether it is a defect or a dialect. Count before filing.
+
+The residual risk is real but cannot bite here: every interface in the tree has exactly **one**
+implementer. If that ever stops being true, class A becomes a defect class overnight.
+
+**What was underneath is worth gating.** Splitting the scan by whether the member exists *anywhere*
+in the implementing module separates two very different things:
+
+| class | meaning | count | live |
+|---|---|---|---|
+| **A** | implemented, not declared on the interface | 166 | 165 — **convention** |
+| **B** | **defined nowhere in the implementer** | 13 | **0** |
+
+Every class-B call is inside the legacy `00_DPMF.pact` (`UDC_BiggestCumulator`, `STOA|C_Collect`, …
+— members that exist in no module at all), which CLAUDE.md marks KEEP AS IS. **Live code: zero.**
+
+New tool `REPL/tools/_modref.py`, `--check` wired fatal into `_gate.py`. It gates only class B,
+and its docstring says why it refuses to gate class A. Pact 5 resolves modref members
+**dynamically**, so a class-B call loads and runs and raises only if the branch is taken — which is
+exactly why nothing else in the gate could see it, and why the zero needs protecting rather than
+remembering.
+
+## 8.12 A process defect of mine: `git add -A` in a shared tree, twice
+
+Two separate agents reported it independently. Committing with `git add -A` while other work was in
+flight swept **another agent's in-progress scratch state** into commits that had nothing to do with
+it — first a stray `PROBE2` block into `2b92246`, which left `[6.3]_SWP.repl` failing to load at
+HEAD, then temporary `"ZZZ"` probe scaffolding into `350ab4d`, `a1c6648` and `a768483`, which left
+`modules/AQP.repl` RED at three commits.
+
+Both were repaired by later commits, and the tree is green now. **"It got fixed by the next commit"
+is not a safety property** — it is the same sentence as *"nothing was lost, because the tree was
+committed"*, which CLAUDE.md already calls out about the 188-file formatter incident.
+
+Two things made it worse than a tidiness problem:
+
+- The scratch state was **deliberately failing** — `expect-failure` probes with a wrong expected
+  message, the standard way to make the REPL print the real one. Committing those makes a suite red
+  *by construction*, and the commit message describes something else entirely, so the red looks like
+  a regression in work that never touched those files.
+- It **misattributes authorship**. Two agents' tests landed under commit messages about a third
+  thing, which makes the record of who established what unreliable — and this programme's entire
+  value rests on that record.
+
+**Rule, effective now: stage explicit paths. Never `git add -A` or `commit -a` while any agent is
+running.** The switch was made mid-session; `e66990e` onward stages named files only.
