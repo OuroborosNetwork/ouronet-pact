@@ -43,6 +43,7 @@
     ;;  [UR]
     ;;
     (defun UR_Set:object{DpdcUdcV2.DPDC|Set} (id:string son:bool set-class:integer))
+    (defun URC_SetExists:bool (id:string son:bool set-class:integer))
     (defun UR_SetClass:integer (id:string son:bool set-class:integer))
     (defun UR_SetName:string (id:string son:bool set-class:integer))
     (defun UR_SetMultiplier:decimal (id:string son:bool set-class:integer))
@@ -308,6 +309,12 @@
     ;;{C3}  Composed
     (defcap DPDC-S|C>MAKE (id:string son:bool nonces:[integer] set-class:integer how-many-sets:integer)
         @event
+        ;;G-44 FIX (2026-09-17). This guard is ABOVE the let deliberately. <iz-active> binds
+        ;;UR_IzSetActive, which funnels to UR_Set's bare <read>, and Pact evaluates let bindings
+        ;;before the body -- so a set-class that does not exist aborted on the raw table key and the
+        ;;"is not active" enforce below could never speak for it. Measured at 0 and at 99.
+        (enforce (URC_SetExists id son set-class)
+            (format "Set-Class {} does not exist for this DPDC" [set-class]))
         (let
             (
                 (iz-active:bool (UR_IzSetActive id son set-class))
@@ -414,6 +421,11 @@
     )
     (defcap DPDC-S|C>RENAME (id:string son:bool set-class:integer new-name:string)
         @event
+        ;;G-45 FIX (2026-09-17). RENAME had NO set-class domain guard: <current-name> binds
+        ;;UR_SetName, the same bare read, so both a nonexistent class and the 1-based off-by-one 0
+        ;;surfaced a raw table key rather than any sentence this module contains.
+        (enforce (URC_SetExists id son set-class)
+            (format "Set-Class {} does not exist for this DPDC" [set-class]))
         (let
             (
                 (ref-DPDC:module{DpdcV2} DPDC)
@@ -479,6 +491,26 @@
         (if son
             (read DPSF|SetsTable (concat [id BAR (format "{}" [set-class])]))
             (read DPNF|SetsTable (concat [id BAR (format "{}" [set-class])]))
+        )
+    )
+
+    (defun URC_SetExists:bool (id:string son:bool set-class:integer)
+        @doc "True when the <set-class> row exists for <id>. TOTAL: answers FALSE for a missing \
+            \ row instead of aborting. UR_Set cannot do this -- it is a bare <read>, and every \
+            \ set reader funnels through it, so a set-class that does not exist dies in the \
+            \ reader before any guard written for it can speak. Set classes are 1-BASED, which \
+            \ makes 0 the likeliest caller error and puts it squarely in that mute case. \
+            \ Added 2026-09-17 for DEFECT-LEDGER G-44/G-45; URC_TripletExists is the precedent."
+        (let
+            (
+                (k:string (concat [id BAR (format "{}" [set-class])]))
+            )
+            (if son
+                (with-default-read DPSF|SetsTable k
+                    { "set-name" : BAR } { "set-name" := sn } (!= sn BAR))
+                (with-default-read DPNF|SetsTable k
+                    { "set-name" : BAR } { "set-name" := sn } (!= sn BAR))
+            )
         )
     )
     (defun UR_SetClass:integer (id:string son:bool set-class:integer)

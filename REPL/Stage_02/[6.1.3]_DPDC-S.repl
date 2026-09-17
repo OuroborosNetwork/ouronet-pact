@@ -849,3 +849,69 @@
 (commit-tx)
 (print "=== END TX-SET-009 ==================================================")
 (print "")
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+
+(begin-tx "TX-SET-010 - G-44/G-45: an out-of-domain set-class now gets a SENTENCE")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-SET-010 · 01 · nonexistent set-class on Make and Rename ====
+(print "--- [TX-SET-010 · 01 · nonexistent set-class on Make and Rename] ---")
+;;THE GUARDS THESE PIN DID NOT EXIST BEFORE 2026-09-17, and the defect they close was found by a
+;;probe that was trying to build a FIXTURE, not to look for a bug: it asked for set-class 0 and died
+;;inside the reader. DPDC set classes are 1-BASED, so 0 is the natural off-by-one and the likeliest
+;;caller error of the two tested here.
+;;
+;;G-44 `DPDC-S|C>MAKE` bound `(iz-active (UR_IzSetActive ...))` in its `let`. Pact evaluates let
+;;bindings before the body and every set reader funnels through `UR_Set`'s bare `read`, so a class
+;;that does not exist aborted on the raw table key and the "is not active" enforce could never speak
+;;for it -- live for an existing-but-inactive class, mute for a missing one.
+;;G-45 `DPDC-S|C>RENAME` had no set-class guard at all, though this module already contained a live
+;;one it was simply not wired to.
+;;
+;;Both now call `URC_SetExists`, a TOTAL reader added for this (`with-default-read`, the
+;;`URC_TripletExists` precedent). The legitimate paths are not re-asserted here because TX-SET-007
+;;above already drives Make and Rename on real classes: if the new guard were wrong, that block goes
+;;red, which is a stronger check than anything this one could add.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+        (owner:string KST.ANHD)
+        (sft-id:string "TSFS-98c486052a51")
+    )
+    (map print
+        [
+            ;;the reader itself: TOTAL where UR_Set is not.
+            (expect "<<TX-SET-010>> URC_SetExists answers FALSE for a missing class instead of aborting"
+                false (ref-DPDC-S::URC_SetExists sft-id true 99))
+            (expect "<<TX-SET-010>> ...and 0, the 1-based off-by-one, is likewise answered not raised"
+                false (ref-DPDC-S::URC_SetExists sft-id true 0))
+            (expect "<<TX-SET-010>> ...while a real class still reads TRUE"
+                true (ref-DPDC-S::URC_SetExists sft-id true 2))
+            ;;G-44: Make
+            (expect-failure "<<TX-SET-010>> Make on a NONEXISTENT set-class names it (G-44)"
+                "Set-Class 99 does not exist for this DPDC"
+                (ref-TS02-C1::DPSF|C_Make owner owner sft-id [1 2] 99 1))
+            (expect-failure "<<TX-SET-010>> Make on set-class 0, the off-by-one, likewise (G-44)"
+                "Set-Class 0 does not exist for this DPDC"
+                (ref-TS02-C1::DPSF|C_Make owner owner sft-id [1 2] 0 1))
+            ;;G-45: Rename
+            (expect-failure "<<TX-SET-010>> Rename on a NONEXISTENT set-class names it (G-45)"
+                "Set-Class 99 does not exist for this DPDC"
+                (ref-TS02-C1::DPSF|C_RenameSet owner sft-id 99 "Xq"))
+            (expect-failure "<<TX-SET-010>> Rename on set-class 0 likewise (G-45)"
+                "Set-Class 0 does not exist for this DPDC"
+                (ref-TS02-C1::DPSF|C_RenameSet owner sft-id 0 "Xq"))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+(print "=== END TX-SET-010 ==================================================")
+(print "")

@@ -1039,12 +1039,21 @@
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
-                    (nonce:integer (ref-DPDC-S::UR_NonceOfSet id set-class))
                 )
+                ;;G-44 FIX (2026-09-17), and the G-14 shape exactly: <nonce> used to be bound HERE,
+                ;;eagerly, purely to be printed in the success message below. `UR_NonceOfSet`
+                ;;funnels to `UR_Set`'s bare `read`, so a set-class that does not exist aborted on
+                ;;the raw table key IN THIS WRAPPER -- before the core was called and therefore
+                ;;before `DPDC-S|C>MAKE`'s own guard could speak. Fixing the defcap alone left this
+                ;;path unchanged, which is how the fix was caught as incomplete.
+                ;;Reading it AFTER the core call is value-identical: "nonce-of-set" is written once,
+                ;;when the set-class is DEFINED, and never updated by a make. Inlined rather than
+                ;;re-bound because it is used exactly once (CLAUDE.md let-vs-inline rule).
                 (ref-IGNIS::C_Collect patron
                     (ref-DPDC-S::C_MakeSemiFungibleSet account id nonces set-class how-many-sets)
                 )
-                (format "Successfully generated {} Class {} Sets (Nonce {}) of SFT Collection {} on Account {}" [how-many-sets set-class nonce id sa])
+                (format "Successfully generated {} Class {} Sets (Nonce {}) of SFT Collection {} on Account {}"
+                    [how-many-sets set-class (ref-DPDC-S::UR_NonceOfSet id set-class) id sa])
             )
         )
     )

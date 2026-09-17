@@ -1112,6 +1112,14 @@ Three sub-shapes, and the third is the one an audit for the first two walks stra
 | **G-16** | `04_RPS.pact:3028` `UEV_QualitySplitContext` | Same shape: a PLAIN link carries a BAR family id and aborts on the raw table key instead of being told it is not a MULTIPLET ladder. Both hoists **added a new guard, and both new guards were pinned in the same edit** — a hoist that leaves its new message undriven just moves the hole. | `<<AQP-G31>>` |
 | **G-42** | `01_DALOS.pact` `GOV\|MIGRATE` — the `GOV\|DALOS_ADMIN` gate | **The 2026-09-14 treasury ruling's own shape, left behind by the sweep that ruling produced.** `(enforce gap "…Pause is online")` ran before the admin compose, and *GAP offline is the normal state*, so in normal operation every caller — admin or stranger — was refused by the business rule and the admin gate was never reached. Identical in kind to `GOV\|WIPE_ALL-TREASURY-DEBT`: delete `GOV\|DALOS_ADMIN` and every refusal is byte-identical. Both composes hoisted above both enforces (`DALOS\|NATIVE-AUTOMATIC` is a C1 `true` with no precondition, so it moves safely). | `<<DALOS-ADMIN-03b>>` ×2, `<<LQD-03pre>>` |
 | **G-43** | `01_DALOS.pact` `GOV\|GAP` — same gate | Same shape, weaker reach: `(enforce (!= gap current-gap) …)` refuses a no-op flip before the admin gate, so only a caller asking for the value already held is turned away without authorisation being consulted. Hoisted. The correctly-ordered twin `DALOS\|C>TOGGLE-ACCOUNT-CREATION-STOA` was **ten lines away in the same file** the whole time — which is why this needed a scan rather than a reading. | `<<DALOS-G3>>` |
+| **G-44** | `08_DPDC-S.pact` `DPDC-S\|C>MAKE` — "Set-Class {} is not active for Set Composition" | A **partial** shadow: the `let` bound `(iz-active (UR_IzSetActive …))`, which funnels to `UR_Set`'s bare `read`, so an *existing but inactive* class reached the message while a *nonexistent* one died on the raw table key. Set classes are **1-based**, putting `0` — the natural off-by-one — in the mute half. Fixed with a hoisted `URC_SetExists` guard. **The defcap fix alone was NOT enough**, and that is the entry's value: the first raiser was in the **Talos wrapper**, which bound `(nonce (UR_NonceOfSet …))` eagerly *purely to print it in the success message*. Same shape as G-14; fixed the same way, by calling the core first. | `<<TX-SET-010>>` |
+| **G-45** | `08_DPDC-S.pact` `DPDC-S\|C>RENAME` — no domain guard at all | Bound `(current-name (UR_SetName …))`, the same hard read, and unlike its sibling never called `UEV_SetClass` — **the module already contained a live guard for this exact input and RENAME was simply not wired to it.** Fixed with the same `URC_SetExists` hoist. | `<<TX-SET-010>>` |
+
+**The reader both fixes needed: `URC_SetExists`** *(added 2026-09-17 under owner authorisation)*. A
+`with-default-read` existence check on the sets tables, answering `false` where `UR_Set` aborts —
+the blocker these two shared with G-21, and the `URC_TripletExists` precedent applied. Found by a
+probe that was building a **fixture**, not hunting a defect: it asked for set-class `0` and died
+inside the reader.
 
 A related latent instance is worth recording because it is **worse in kind** than the rest:
 `04_RPS.pact:3876` `XE_XI_SettleScoreRps` has the same eager-fold-operand shape **inside an `if`**,
@@ -1135,21 +1143,6 @@ because the plan builder does not emit BAR today.
 | **G-26** | `01_DALOS.pact:397/414/425` `GAS_PAYER` exec-code folds (×3) | Same index sub-shape on `exec-lines`. | `<<DALOS-G2e>>`, `<<DALOS-G2f>>` |
 | **G-27** | `04_RPS.pact:3919` | The one remaining `[read]` hit from `_foldeager.py`: a later conjunct `(= (UR_FVT\|FvtClass fvt-id) 0)` hard-reads what an earlier conjunct guards. | — |
 
-| **G-44** | `08_DPDC-S.pact` `DPDC-S\|C>MAKE` — "Set-Class {} is not active for Set Composition" | A **partial** shadow, measured both ways 2026-09-17. The `let` binds `(iz-active (UR_IzSetActive id son set-class))`, which funnels to `UR_Set`'s bare `read` — so an **existing but inactive** class reaches the message, while a **nonexistent** one aborts on `No value found in table … DPSF\|SetsTable for key: TSFS-98c486052a51\|99`. Same split as G-10: live for one input, mute for the likelier one. Set classes are **1-based**, so `0` — the natural off-by-one — is in the mute half. | — |
-| **G-45** | `08_DPDC-S.pact` `DPDC-S\|C>RENAME` — no domain guard at all | Binds `(current-name (UR_SetName …))`, the same hard read, and unlike its sibling never calls `UEV_SetClass`. **The module already contains a live guard for this exact input** — `UEV_SetClass`'s hoisted `(enforce (> set-class 0) "Invalid Set-Class Value")` — and `RENAME` is not wired to it, so `set-class 0` surfaces a raw table key instead of the sentence written for it. Measured at `0` and at `99`. | — |
-
-Both were found by a probe at `set-class 0` that was meant to build a *test fixture*, not to look for
-a defect — the fixture died in the reader. **Fixing either needs a `with-default-read` existence
-reader that `DPDC-S` does not have** (the module's only two `with-default-read`s are on the policy
-table), which is the same disposition and the same blocker as G-21; `URC_TripletExists` remains the
-in-repo precedent. Recorded rather than patched because adding a reader to a canonical Stage-2 module
-and rewiring two client defcaps is a design change, not a mechanical one.
-
-**Not a finding, and worth recording as such:** `UEV_SetClass`'s *second* enforce
-(`(= set-class sc)`, "Invalid DPDC Set Data") is also unreachable for a nonexistent class — but that
-is **already dispositioned**. `02_SCORE.pact:890` keeps its structural twin deliberately, "as a
-data-integrity assertion against a corrupt write (same disposition as `DPDC-S::UEV_SetClass`'s
-`(= set-class sc)`)". A sweep that flagged it would be re-reporting a decision as a defect.
 
 ### 1.2.3 Guards that are dead, and whose stated rule is therefore unenforced
 
