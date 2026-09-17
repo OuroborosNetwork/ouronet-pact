@@ -4671,3 +4671,102 @@
 )
 (env-sigs [])
 (rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "ATSU-G1 — the recoverer gate, bracketed from both sides")
+(print "")
+(print "=== ATSU-G1 — ATSU|C>COLD_RECOVERY =========================================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;`ATSU|C>COLD_RECOVERY` carries `CAP_EnforceAccountOwnership recoverer` and had never refused
+;;anybody. Witnessing it needs care, because an ordinary stranger NEVER REACHES IT: `10_ATSU.pact:497`
+;;runs an `enforce-one` over five guards -- DALOS admin, ATSU admin, the account's own guard, its
+;;SOVEREIGN's and its GOVERNOR's -- and that refuses a stranger first, with a message about ledger
+;;permissions that says nothing about the recoverer.
+;;
+;;So the gate is shadowed by a BROADER check, and the only caller who can reach it is one who already
+;;passed that check while not being the recoverer. The Demiurgoi admin is exactly that caller. The
+;;three assertions below bracket the gate: the first lands short of it, the second ON it, the third
+;;past it.
+;;
+;;ANHD IS THE ATTACKER HERE, deliberately and unusually. Everywhere else in this suite that would be
+;;the wrong choice -- ANHD owns the fixtures, so a refusal would be unattributable. Here it is the
+;;ONLY choice that works: the attack is precisely "the most privileged key in the system still cannot
+;;recover on somebody else's behalf", and no lesser key gets far enough to ask the question.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (pair:string "Auryndex-98c486052a51")
+    )
+    (map print
+        [
+            (expect "<<ATSU-G1>> the pair has cold recovery ON, so the op is live"
+                true (ref-ATS::UR_ToggleColdRecovery pair))
+            ;;SHORT OF THE GATE. A stranger is turned away by the ledger-permission `enforce-one`,
+            ;;whose message concerns the ACCOUNT, not the recoverer. Pinned to document that the
+            ;;obvious attack does not witness this gate at all.
+            (expect-failure "<<ATSU-G1>> SHADOW: a stranger is stopped by the ledger-permission check, never reaching the recoverer gate"
+                "Invalid permission for normalizing ATS|Ledger Account Operations"
+                (ref-TS01-C2::ATS|C_ColdRecovery KST.EMMA KST.ANHD pair 1.0))
+        ]
+    )
+    ""
+)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (pair:string "Auryndex-98c486052a51")
+    )
+    (map print
+        [
+            ;;ON THE GATE. The Demiurgoi master key satisfies the `enforce-one` as DALOS admin, so
+            ;;the ledger check is out of the way -- and the refusal now names the RECOVERER's key,
+            ;;which is the only thing `CAP_EnforceAccountOwnership recoverer` can be.
+            (expect-failure "<<ATSU-G1>> GATE: even the admin cannot cold-recover on someone else's behalf"
+                "Keyset failure (keys-all): [PK_Emma...]"
+                (ref-TS01-C2::ATS|C_ColdRecovery KST.ANHD KST.EMMA pair 1.0))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "ATSU-G1b — recovering for YOURSELF works, so the gate is the only difference")
+(print "")
+(print "--- [ATSU-G1b · 01 · non-vacuity] ---")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;PAST THE GATE. Identical call, identical signer -- only the `recoverer` argument changes, from
+;;someone else to the signer. It succeeds. So the refusal above was neither the ledger check nor a
+;;broken operation: it was ownership of the recoverer account, and nothing else.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (pair:string "Auryndex-98c486052a51")
+    )
+    (let
+        (
+            (rbt-before:integer (ref-ATS::UR_ColdRecoveryPositions pair))
+        )
+        (print (format "<(ATS|C_ColdRecovery for the signer's own account)> => \"{}\""
+            [(ref-TS01-C2::ATS|C_ColdRecovery KST.ANHD KST.ANHD pair 1.0)]))
+        (map print
+            [
+                (expect "<<ATSU-G1>> the pair's cold-recovery configuration is untouched by a recovery"
+                    rbt-before (ref-ATS::UR_ColdRecoveryPositions pair))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)

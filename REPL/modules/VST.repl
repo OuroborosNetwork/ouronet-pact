@@ -3001,3 +3001,95 @@
 )
 (env-sigs [])
 (rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-G2 — the ortofungible twin: holding the nonce is not authority over it")
+(print "")
+(print "=== VST-G2 — VST|X>REPURPOSE-ORTO-FUNGIBLE ==================================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;The DPOF twin of VST-G1, and the attacker is chosen to make one specific point. `UR_Hibernation`
+;;on `H|MOCKA` returns the BASE token `MOCKA`, so the gate is `CAP_Owner MOCKA` -- the owner of the
+;;token the nonces were minted FROM. EMMA HOLDS nonces 2 and 5 of `H|MOCKA` outright, and is still
+;;refused. That is the whole finding: **holding the asset is not authority over it**; repurposing
+;;decommissions a nonce and mints a replacement, which is an issuance power, not a transfer.
+;;
+;;EMMA is therefore the strongest available attacker rather than a convenient one -- she is the only
+;;party with any claim at all. A stranger refused here would leave "was it ownership, or was it that
+;;she has no nonce?" unanswered; the holder refused answers it.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (h:string "H|MOCKA-98c486052a51")
+        (holder:string KST.EMMA)
+        (receiver:string KST.LUMY)
+    )
+    (map print
+        [
+            ;;THE FIXTURE. Both halves matter: the attacker really holds the nonce, and the gate
+            ;;really points at somebody else.
+            (expect "<<VST-G2>> the attacker HOLDS the nonce she is trying to repurpose"
+                true (contains 2 (ref-DPOF::URH_AccountNonces holder h)))
+            (expect "<<VST-G2>> ...but the authorising token is the BASE token, owned by someone else"
+                false (= holder (ref-DPTF::UR_Konto (ref-DPOF::UR_Hibernation h))))
+            ;;THE SHADOW. `UEV_SenderWithReceiver` runs ahead of `CAP_Owner`, so naming one account
+            ;;twice is refused by a shape rule. Pinned so the next assertion can be shown to have
+            ;;cleared it rather than merely differing.
+            (expect-failure "<<VST-G2>> SHADOW: same sender and receiver is refused by the shape rule, not by ownership"
+                "Sender and Receiver must be different"
+                (ref-TS01-C2::VST|C_RepurposeHibernating holder h 2 holder holder))
+            ;;THE GATE. Only the receiver changed. The refusal now names the BASE TOKEN'S owner --
+            ;;not the attacker's key, and not the nonce holder's.
+            (expect-failure "<<VST-G2>> GATE: the nonce HOLDER still may not repurpose it"
+                "Keyset failure (keys-all): [PK_Ancie...]"
+                (ref-TS01-C2::VST|C_RepurposeHibernating holder h 2 holder receiver))
+            ;;...and nothing moved.
+            (expect "<<VST-G2>> ...and the nonce stayed with its holder"
+                true (contains 2 (ref-DPOF::URH_AccountNonces holder h)))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-G2b — with the base token's owner signing, the repurpose goes through")
+(print "")
+(print "--- [VST-G2b · 01 · non-vacuity] ---")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;Exactly one thing changes from VST-G2: the base token owner's signature is added. The receiver's
+;;transfer role is granted first because that guard sits BEHIND the ownership gate -- which VST-G2
+;;itself demonstrates, having reached the ownership message without the role ever being granted.
+(env-sigs [{ "key": "PK_Emma", "caps": [] } { "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (h:string "H|MOCKA-98c486052a51")
+        (holder:string KST.EMMA)
+        (receiver:string KST.LUMY)
+    )
+    (ref-TS01-C2::VST|C_ToggleTransferRoleHibernatingDPOF KST.ANHD h receiver true)
+    (print (format "<(VST|C_RepurposeHibernating with the base token's owner signing)> => \"{}\""
+        [(ref-TS01-C2::VST|C_RepurposeHibernating holder h 2 holder receiver)]))
+    (map print
+        [
+            ;;REPURPOSE IS NOT A TRANSFER -- it decommissions the source nonce and MINTS a new one,
+            ;;so the assertion is "gone from one side, a fresh nonce on the other", never "it moved".
+            (expect "<<VST-G2>> the source nonce is decommissioned from the holder"
+                false (contains 2 (ref-DPOF::URH_AccountNonces holder h)))
+            (expect "<<VST-G2>> ...and the receiver gains a freshly minted one"
+                true (> (length (ref-DPOF::URH_AccountNonces receiver h)) 0))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)

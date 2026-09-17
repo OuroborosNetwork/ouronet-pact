@@ -3111,3 +3111,45 @@ Two things made it worse than a tidiness problem:
 
 **Rule, effective now: stage explicit paths. Never `git add -A` or `commit -a` while any agent is
 running.** The switch was made mid-session; `e66990e` onward stages named files only.
+
+## 8.13 Three gates where the interesting part was choosing the attacker
+
+**`VST|C>REPURPOSE-TRUE-FUNGIBLE` guards more than its name suggests.** `VST-G1b` measures it rather
+than describing it: driven successfully the op wipes the victim's **entire 999250.0 MOCKA balance**
+and re-mints it to an address the caller names, with the emptied account never consenting.
+`repurpose-from` is a free parameter. That gate had never refused anybody.
+
+Its defcap authorises on `UR_Frozen <token>` — the **frozen variant**, owned by the VST smart
+account — while the body operates on the **base** token. Coherent: confiscation is a power of the
+freeze authority, not of the token's owner. But it means the key that matters is never the holder's,
+which is exactly what makes the gate worth a witness.
+
+**`VST|X>REPURPOSE-ORTO-FUNGIBLE` — the attacker is the victim's own asset holder.** EMMA holds
+nonces 2 and 5 of `H|MOCKA` outright and is still refused, because the gate is `CAP_Owner MOCKA`,
+the base token. **Holding the asset is not authority over it** — repurposing decommissions a nonce
+and mints a replacement, which is an issuance power wearing a transfer's clothes. A stranger refused
+here would have left *"was it ownership, or just that she has no nonce?"* open; the holder refused
+answers it.
+
+**`ATSU|C>COLD_RECOVERY` — the admin is the only caller who can reach the gate.** An ordinary
+stranger never does: `10_ATSU.pact:497` runs an `enforce-one` over five guards (DALOS admin, ATSU
+admin, the account's own guard, its sovereign's, its governor's) and turns them away first, with a
+message about *ledger permissions* that says nothing about the recoverer. So the gate is shadowed by
+a **broader** check, and only someone who passes it while not being the recoverer can reach it.
+
+`ATSU-G1` brackets the gate with three calls that land short of it, on it, and past it:
+
+| signer | recoverer | outcome |
+|---|---|---|
+| EMMA | ANHD | `Invalid permission for normalizing ATS\|Ledger Account Operations` — **short of the gate** |
+| ANHD (Demiurgoi) | EMMA | `Keyset failure (keys-all): [PK_Emma...]` — **the gate** |
+| ANHD | ANHD | **succeeds** — past it |
+
+> Everywhere else in these suites, making ANHD the attacker is the mistake — he owns the fixtures,
+> so his refusal is unattributable. Here he is the **only** attacker that works, because the claim
+> is *"the most privileged key in the system still cannot recover on somebody else's behalf"* and no
+> lesser key gets far enough to ask the question. **Which account should attack is a property of the
+> gate, not a house rule.**
+
+**Programme position: the actionable set is 23 → 2**, both DPDC and both in flight. Observed 63 → 82,
+depth-0 attributed 47 → 63.
